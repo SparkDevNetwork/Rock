@@ -18,7 +18,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
-using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -211,15 +211,15 @@ namespace Rock
         /// Attempts to deserialize a JSON string into either a <see cref="ExpandoObject" /> or a list of <see cref="ExpandoObject" />. If it can't be deserialized, throws an exception
         /// </summary>
         /// <param name="val">The value.</param>
-        /// <returns></returns>
+        /// <returns>the object or throws an exception</returns>
         public static object FromJsonDynamic( this string val )
         {
             var converter = new ExpandoObjectConverter();
             object dynamicObject = null;
 
             // keep track of which exception most applies. 
-            Exception singleObjectException = null;
-            Exception arrayObjectException = null;
+            ExceptionDispatchInfo singleObjectException = null;
+            ExceptionDispatchInfo arrayObjectException = null;
 
             try
             {
@@ -230,15 +230,16 @@ namespace Rock
             {
                 try
                 {
-                    singleObjectException = firstException;
+                    // capture to preserve original stack trace if we need to re-throw later
+                    singleObjectException = ExceptionDispatchInfo.Capture( firstException );
                     dynamicObject = JsonConvert.DeserializeObject<List<ExpandoObject>>( val, converter );
-
                 }
                 catch ( Exception secondException )
                 {
                     try
                     {
-                        arrayObjectException = secondException;
+                        // capture to preserve original stack trace if we need to re-throw later
+                        arrayObjectException = ExceptionDispatchInfo.Capture( secondException );
 
                         // if it didn't deserialize as a List of ExpandoObject, try it as a List of plain objects
                         dynamicObject = JsonConvert.DeserializeObject<List<object>>( val, converter );
@@ -248,12 +249,15 @@ namespace Rock
                         // if both the attempt to deserialize an object and an object list fail, it probably isn't valid JSON, so throw the singleObjectException
                         if ( singleObjectException != null )
                         {
-                            throw singleObjectException;
+                            singleObjectException.Throw(); // preserves original stack
                         }
                         else
                         {
-                            throw arrayObjectException;
+                            arrayObjectException.Throw(); // preserves original stack
                         }
+
+                        // keep compiler happy (unreachable)
+                        throw;
                     }
                 }
             }

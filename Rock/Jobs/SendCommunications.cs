@@ -43,22 +43,13 @@ namespace Rock.Jobs
     #region Job Attributes
 
     [IntegerField(
-        "Delay Period",
-        Key = AttributeKey.DelayPeriod,
-        Description = "The number of minutes to wait before sending any new communication (If the communication block's 'Send When Approved' option is turned on, then a delay should be used here to prevent a send overlap).",
-        IsRequired = false,
-        DefaultIntegerValue = 30,
-        Category = "",
-        Order = 0 )]
-
-    [IntegerField(
         "Expiration Period",
         Key = AttributeKey.ExpirationPeriod,
         Description = "The number of days after a communication was created or scheduled to be sent when it should no longer be sent.",
         IsRequired = false,
         DefaultIntegerValue = 3,
         Category = "",
-        Order = 1 )]
+        Order = 0 )]
 
     [IntegerField(
         "Parallel Communications",
@@ -67,7 +58,7 @@ namespace Rock.Jobs
         IsRequired = false,
         DefaultIntegerValue = 3,
         Category = "",
-        Order = 2 )]
+        Order = 1 )]
 
     #endregion
 
@@ -81,7 +72,6 @@ namespace Rock.Jobs
         /// </summary>
         private static class AttributeKey
         {
-            public const string DelayPeriod = "DelayPeriod";
             public const string ExpirationPeriod = "ExpirationPeriod";
             public const string ParallelCommunications = "ParallelCommunications";
         }
@@ -104,9 +94,8 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()" />
         public override void Execute()
         {
-            int expirationDays = this.GetAttributeValue( "ExpirationPeriod" ).AsInteger();
-            int delayMinutes = this.GetAttributeValue( "DelayPeriod" ).AsInteger();
-            int maxParallelization = this.GetAttributeValue( "ParallelCommunications" ).AsInteger();
+            int expirationDays = this.GetAttributeValue( AttributeKey.ExpirationPeriod ).AsInteger();
+            int maxParallelization = this.GetAttributeValue( AttributeKey.ParallelCommunications ).AsInteger();
 
             List<Model.Communication> sendCommunications = null;
             var startDateTime = RockDateTime.Now;
@@ -114,7 +103,7 @@ namespace Rock.Jobs
             using ( var rockContext = new RockContext() )
             {
                 sendCommunications = new CommunicationService( rockContext )
-                    .GetQueued( expirationDays, delayMinutes, false, false )
+                    .GetQueued( expirationDays, 0, false, false )
                     .AsNoTracking()
                     .ToList()
                     .OrderBy( c => c.Id )
@@ -388,7 +377,7 @@ namespace Rock.Jobs
                 }
             };
             var metricsUrl = internalApplicationRoot.EnsureTrailingForwardslash() + communicationPage.BuildUrl().RemoveLeadingForwardslash();
-                
+
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
             mergeFields.Add( "Person", data.EmailMetricsReminderRecipient );
             mergeFields.AddOrReplace( "MetricsUrl", metricsUrl );

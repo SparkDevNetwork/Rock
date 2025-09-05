@@ -28,6 +28,9 @@ export type PagePropertiesOptionsBag = {
     /** Gets or sets a value indicating whether this instance can administrate. */
     canAdministrate: boolean;
 
+    /** Gets or sets the countries. */
+    countries?: ListItemBag[] | null;
+
     /** Gets or sets the display when items. */
     displayWhenItems?: ListItemBag[] | null;
 

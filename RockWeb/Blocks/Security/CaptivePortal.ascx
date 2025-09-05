@@ -8,7 +8,7 @@
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-wifi"></i> Wifi Welcome</h1>
+                <h1 class="panel-title"><i class="ti ti-wifi"></i> Wifi Welcome</h1>
             </div>
 
             <div class="panel-body">

@@ -46,6 +46,11 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder
         public Guid? Template { get; set; }
 
         /// <summary>
+        /// The unique slug for the workflow type.
+        /// </summary>
+        public string Slug { get; set; }
+
+        /// <summary>
         /// The category that this form belongs to for organization purposes.
         /// </summary>
         public ListItemBag Category { get; set; }

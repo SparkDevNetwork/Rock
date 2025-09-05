@@ -12,7 +12,7 @@
                 </li>
             </ul>
             <button type="button" class="btn btn-danger btn-square" @click="emit('delete')">
-                <i class="fa fa-times"></i>
+                <i class="ti ti-x"></i>
             </button>
         </span>
     </div>

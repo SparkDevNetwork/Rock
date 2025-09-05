@@ -10,7 +10,7 @@
                     <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
                     <asp:PlaceHolder runat="server">
                         <div class="wizard-item-icon">
-                            <i class="fa fa-fw fa-th-large"></i>
+                            <i class="ti ti-fw ti-border-all"></i>
                         </div>
                         <div class="wizard-item-label">
                             Event Calendars
@@ -23,7 +23,7 @@
                 <asp:LinkButton ID="lbCalendar" runat="server" OnClick="lbCalendar_Click" CausesValidation="false" >
                     <asp:PlaceHolder runat="server">
                         <div class="wizard-item-icon">
-                            <i class="fa fa-fw fa-calendar"></i>
+                            <i class="ti ti-fw ti-calendar"></i>
                         </div>
                         <div class="wizard-item-label">
                             <asp:Literal ID="lCalendarName" runat="server" Text="Calendar" />
@@ -36,7 +36,7 @@
                 <asp:LinkButton ID="lbCalendarItem" runat="server" OnClick="lbCalendarItem_Click" CausesValidation="false" >
                     <asp:PlaceHolder runat="server">
                         <div class="wizard-item-icon">
-                            <i class="fa fa-fw fa-calendar-check-o"></i>
+                            <i class="ti ti-fw ti-calendar-check"></i>
                         </div>
                         <div class="wizard-item-label">
                             <asp:Literal ID="lCalendarItemName" runat="server" Text="Calendar Item" />
@@ -49,7 +49,7 @@
                 <asp:LinkButton ID="lbEventOccurrence" runat="server" OnClick="lbEventOccurrence_Click" CausesValidation="false" >
                     <asp:PlaceHolder runat="server">
                         <div class="wizard-item-icon">
-                            <i class="fa fa-fw fa-clock-o"></i>
+                            <i class="ti ti-fw ti-clock"></i>
                         </div>
                         <div class="wizard-item-label">
                             <asp:Literal ID="lEventOccurrenceName" runat="server" Text="Event Occurrence" />
@@ -60,7 +60,7 @@
 
             <div id="divContentItem" runat="server" >
                 <div class="wizard-item-icon">
-                    <i class="fa fa-fw fa-bullhorn"></i>
+                    <i class="ti ti-fw ti-speakerphone"></i>
                 </div>
                 <div class="wizard-item-label">
                     <asp:Literal ID="lContentItemName" runat="server" Text="Content Item" />

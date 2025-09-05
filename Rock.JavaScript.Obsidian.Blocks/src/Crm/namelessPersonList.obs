@@ -4,6 +4,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Nameless People"
+          title="Nameless People"
           stickyHeader
           liveUpdates
           :showMergeTemplate="false"
@@ -304,7 +305,7 @@
                 field="foreignKey"
                 :hideOnScreen="true" />
         <ButtonColumn name="showModal"
-                      iconClass="fa fa-user"
+                      iconClass="ti ti-user"
                       @click="onShowModal"
                       :excludeFromExport="true" />
     </Grid>

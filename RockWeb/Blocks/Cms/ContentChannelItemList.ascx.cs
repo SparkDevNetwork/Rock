@@ -180,7 +180,7 @@ namespace RockWeb.Blocks.Cms
             {
                 upnlContent.Visible = true;
 
-                string cssIcon = "fa fa-bullhorn";
+                string cssIcon = "ti ti-speakerphone";
                 var contentChannel = new ContentChannelService( new RockContext() ).Get( _channelId.Value );
                 if ( contentChannel != null )
                 {
@@ -624,7 +624,7 @@ namespace RockWeb.Blocks.Cms
 
         protected string DisplayDateStatus( DateTime aDate )
         {
-            return ( aDate > RockDateTime.Now ) ? "<i class='fa fa-clock'></i>" : string.Empty;
+            return ( aDate > RockDateTime.Now ) ? "<i class='ti ti-clock'></i>" : string.Empty;
         }
 
         /// <summary>

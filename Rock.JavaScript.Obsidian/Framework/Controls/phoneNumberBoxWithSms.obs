@@ -9,7 +9,7 @@
             <div class="control-wrapper">
                 <div class="input-group phone-number-box" :class="inputGroupClasses">
                     <span v-if="availableCountryCodeOptions.length < 2" class="input-group-addon">
-                        <i class="fa fa-phone-square"></i>
+                        <i class="ti ti-phone"></i>
                     </span>
                     <InputGroupDropDown v-else :items="availableCountryCodeOptions" v-model="countryCode" inputGroupClasses="input-group-addon" />
                     <input v-model="number" :id="uniqueId" type="text" class="form-control" v-bind="field" />

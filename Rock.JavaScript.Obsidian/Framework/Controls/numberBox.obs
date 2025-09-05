@@ -1,7 +1,6 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField
-                   :modelValue="internalValue"
+    <RockFormField :modelValue="internalValue"
                    formGroupClasses="rock-number-box"
                    name="numberbox"
                    :validationTitle="validationTitle"
@@ -11,8 +10,7 @@
                 <slot name="prepend" />
                 <div :class="controlContainerClass">
                     <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
-                    <input
-                           :value="internalValue"
+                    <input :value="internalValue"
                            :id="uniqueId"
                            type="text"
                            class="form-control"

@@ -1,0 +1,279 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="communication-trigger" :class="hasError ? 'has-error' : undefined">
+        <DropDownContent class="communication-trigger-button"
+                         :disabled="disabled"
+                         preventOverflowClipping
+                         showArrow>
+            <template #anchor>
+                <RockButton btnSize="xs"
+                            :btnType="hasError ? 'danger' : undefined"
+                            :disabled="disabled">
+                    <i :class="iconCssClass"></i> <span v-html="sendDayDescriptionHtml"></span> <i class="ti ti-chevron-down"></i>
+                </RockButton>
+            </template>
+
+            <div class="communication-trigger-content">
+                <div class="communication-trigger-field">
+                    <label class="communication-trigger-field-label">Wait</label>
+                    <NumberBox v-model="nonNullableDaysToWait"
+                               inputGroupClasses="communication-trigger-field-control number-of-days"
+                               :disabled="disabled"
+                               :minimumValue="0"
+                               :rules="['required', 'gte:0']">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">Day(s)</span>
+                        </template>
+                    </NumberBox>
+                </div>
+
+                <div class="communication-trigger-field">
+                    <label class="communication-trigger-field-label">Send At</label>
+                    <TimePicker :modelValue="timeToSendAsPickerValue"
+                                :disabled="disabled"
+                                @update:modelValue="onTimeToSendUpdated" />
+                </div>
+            </div>
+        </DropDownContent>
+    </div>
+</template>
+
+<style scoped>
+.communication-trigger {
+    text-align: center;
+}
+
+.communication-trigger-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: var(--spacing-large);
+    gap: var(--spacing-large);
+}
+
+.communication-trigger-field {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+}
+
+.communication-trigger-field-label {
+    margin: 0;
+}
+
+:deep(.communication-trigger-field-control.number-of-days) {
+    width: 150px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TimePicker from "@Obsidian/Controls/timePicker.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { CommunicationFlowCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowDetail/communicationFlowCommunicationBag";
+    import { TimePickerValue } from "@Obsidian/ViewModels/Controls/timePickerValue";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { useFormState } from "@Obsidian/Utility/form";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    type CommTrigger = {
+        daysToWait: number,
+        timeToSend: string | null | undefined
+    };
+
+    const props = defineProps({
+        communication: {
+            type: Object as PropType<CommunicationFlowCommunicationBag>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        index: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        communications: {
+            type: Array as PropType<CommunicationFlowCommunicationBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:communication", value: CommunicationFlowCommunicationBag): void;
+    }>();
+
+    const daysToWaitValidationId = newGuid();
+    const timeToSendValidationId = newGuid();
+    const formState = useFormState();
+
+    // #region Values
+
+    const internalCommunication = useVModelPassthrough(props, "communication", emit);
+    const hasError = ref<boolean>(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const internalValue = computed<CommTrigger>(() => {
+        return {
+            daysToWait: internalCommunication.value.daysToWait,
+            timeToSend: internalCommunication.value.timeToSend
+        };
+    });
+
+    const iconCssClass = computed<string>(() => {
+        if (hasError.value) {
+            return "ti ti-exclamation-circle";
+        }
+        else if (nonNullableDaysToWait.value) {
+            return "ti ti-clock";
+        }
+        else {
+            return "ti ti-bolt";
+        }
+    });
+
+    const timeToSendAsPickerValue = computed<TimePickerValue>({
+        get() {
+            const values = /^(\d+):(\d+)/.exec(internalCommunication.value.timeToSend ?? "");
+
+            if (values !== null) {
+                return {
+                    hour: toNumber(values[1]),
+                    minute: toNumber(values[2])
+                };
+            }
+            else {
+                return {};
+            }
+        },
+        set(value: TimePickerValue) {
+            internalCommunication.value = {
+                ...internalCommunication.value,
+                timeToSend: value.hour !== undefined && value.minute !== undefined ? `${value.hour.toString().padStart(2, "0")}:${value.minute.toString().padStart(2, "0")}:00` : ""
+            };
+        }
+    });
+
+    const sendDayDescriptionHtml = computed<string>(() => {
+        function strongifyIfNoErrors(text: string): string {
+            return hasError.value ? text : `<strong>${text}</strong>`;
+        }
+
+        if (nonNullableDaysToWait.value) {
+            const dayLabel = nonNullableDaysToWait.value === 1 ? "Day" : "Days";
+            return `Wait ${strongifyIfNoErrors(`${nonNullableDaysToWait.value} ${dayLabel}`)}, Send at ${strongifyIfNoErrors(timeToSendAsString.value)}`;
+        }
+
+        return `${strongifyIfNoErrors("Same Day")}, Send at ${strongifyIfNoErrors(timeToSendAsString.value)}`;
+    });
+
+    const timeToSendAsString = computed<string>(() => {
+        const time = RockDateTime.parseISO(`1970-01-01T${internalCommunication.value.timeToSend}`);
+
+        if (time !== null) {
+            return time.toLocaleString({ hour: "numeric", minute: "numeric" });
+        }
+        else {
+            return "";
+        }
+    });
+
+    const nonNullableDaysToWait = computed<number | null>({
+        get() {
+            return internalCommunication.value.daysToWait;
+        },
+        set(value: number | null) {
+            internalCommunication.value = {
+                ...internalCommunication.value,
+                daysToWait: value ?? 0
+            };
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function updateValidation(): void {
+        let error = false;
+
+        // Validate Days to Wait.
+        if (internalValue.value.daysToWait < 0) {
+            error = true;
+            formState?.setError(daysToWaitValidationId, "Days to Wait", "must be zero or positive");
+        }
+        else {
+            // Clear the error.
+            formState?.setError(daysToWaitValidationId, "Days to Wait", "");
+        }
+
+        // Validate Time to Send.
+        if (!internalValue.value.timeToSend) {
+            error = true;
+            formState?.setError(timeToSendValidationId, "Time to Send", "is required.");
+        }
+        else if (internalValue.value.daysToWait === 0
+            && compareTimesToSend(internalValue.value.timeToSend, getPreviousCommunicationTime()) < 0) {
+            error = true;
+            formState?.setError(timeToSendValidationId, "Time to Send", "must be on or after the previous communication's time to send");
+        }
+        else {
+            formState?.setError(timeToSendValidationId, "Time to Send", "");
+        }
+
+        hasError.value = error;
+    }
+
+    function getPreviousCommunicationTime(): string | null | undefined {
+        return props.communications[props.index - 1]?.timeToSend;
+    }
+
+    function compareTimesToSend(time1: string | null | undefined, time2: string | null | undefined): number {
+        const date1 = RockDateTime.parseISO(`1970-01-01T${time1}`);
+        const date2 = RockDateTime.parseISO(`1970-01-01T${time2}`);
+
+        if (date1 && date2) {
+            return date1.toMilliseconds() - date2.toMilliseconds();
+        }
+
+        return 0;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onTimeToSendUpdated(value: TimePickerValue): void {
+        if (!isNullish(value.hour) && !isNullish(value.minute)) {
+            // Only update the Time To Send if the time picker is updating with a valid value.
+            // Sometimes when clicking from the field to the main window, it will emit a value of `{}`
+            // which was clearing the Time To Send.
+            timeToSendAsPickerValue.value = value;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch([internalValue, () => props.communications], () => {
+        updateValidation();
+    }, {
+        immediate: true
+    });
+
+    // #endregion Watchers
+</script>

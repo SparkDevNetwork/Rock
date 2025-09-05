@@ -1,0 +1,57 @@
+<template>
+    <div class="row">
+        <div class="col-md-4">
+            <DropDownList v-model="comparisonType" :items="comparisonItems" disableLabel :showBlankItem="false" />
+        </div>
+        <div class="col-md-8">
+            <CurrencyBox v-if="showCurrencyBox" v-model="amount" disableLabel />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import { computed, ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/comparisonTypeOptions";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const comparisonType = ref<`${ComparisonType}`>((props.modelValue.comparisonType as `${ComparisonType}`) ?? `${ComparisonType.EqualTo}`);
+    const amount = ref<number | null>(toNumberOrNull(props.modelValue.amount));
+
+    const comparisonItems = getFilteredComparisonTypeOptions(
+        ComparisonType.EqualTo,
+        ComparisonType.NotEqualTo,
+        ComparisonType.IsBlank,
+        ComparisonType.IsNotBlank,
+        ComparisonType.GreaterThan,
+        ComparisonType.GreaterThanOrEqualTo,
+        ComparisonType.LessThan,
+        ComparisonType.LessThanOrEqualTo
+    );
+
+    const showCurrencyBox = computed(() => {
+        switch (comparisonType.value) {
+            case ComparisonType.IsBlank.toString():
+            case ComparisonType.IsNotBlank.toString():
+                return false;
+            default:
+                return true;
+        }
+    });
+
+    watch([comparisonType, amount], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            comparisonType: comparisonType.value,
+            amount: `${amount.value ?? ""}`,
+        });
+    });
+</script>

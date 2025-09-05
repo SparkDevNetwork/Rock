@@ -122,8 +122,8 @@
     /** The CSS class value to use for the folder icon. */
     const folderClass = computed((): string => {
         return showChildren.value
-            ? "rocktree-icon icon-fw fa fa-fw fa-chevron-down"
-            : "rocktree-icon icon-fw fa fa-fw fa-chevron-right";
+            ? "rocktree-icon icon-fw ti ti-fw ti-chevron-down"
+            : "rocktree-icon icon-fw ti ti-fw ti-chevron-right";
     });
 
     /** The CSS class value to use for the item icon. */

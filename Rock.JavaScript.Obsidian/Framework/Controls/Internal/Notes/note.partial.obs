@@ -37,7 +37,7 @@
                         </span>
                         <span class="note-details">
                             <span v-if="!noteOptions.isLightMode" class="tag-flair">
-                                <i v-if="note.isWatching" class="fa fa-eye mr-1 note-watching-icon" title="You are watching this note."></i>
+                                <i v-if="note.isWatching" class="ti ti-eye mr-1 note-watching-icon" title="You are watching this note."></i>
 
                                 <span class="tag-label" :class="{ 'has-color': !!colorPair }">{{ note.noteType.name }}</span>
                                 &nbsp;&middot;&nbsp;
@@ -273,7 +273,7 @@
      * note's type.
      */
     const noteTypeIconClass = computed((): string => {
-        return props.note.noteType.iconCssClass || "fa fa-comment";
+        return props.note.noteType.iconCssClass || "ti ti-message";
     });
 
     /**
@@ -396,7 +396,7 @@
                 actions.push({
                     title: "Reply",
                     type: "default",
-                    iconCssClass: "fa fa-reply",
+                    iconCssClass: "ti ti-arrow-back-up",
                     handler: onReplyNote
                 });
             }
@@ -406,7 +406,7 @@
             actions.push({
                 title: "Edit",
                 type: "default",
-                iconCssClass: "fa fa-pencil",
+                iconCssClass: "ti ti-pencil",
                 handler: onEditNote
             });
         }
@@ -415,7 +415,7 @@
             actions.push({
                 title: props.note.isWatching ? "Unwatch" : "Watch",
                 type: "default",
-                iconCssClass: props.note.isWatching ? "fa fa-eye-slash" : "fa fa-eye",
+                iconCssClass: props.note.isWatching ? "ti ti-eye-off" : "ti ti-eye",
                 actionCssClass: props.note.isWatching ? "unwatch-note" : "watch-note",
                 handler: onWatchNote
             });
@@ -425,7 +425,7 @@
             actions.push({
                 title: "Delete",
                 type: "danger",
-                iconCssClass: "fa fa-trash",
+                iconCssClass: "ti ti-trash",
                 actionCssClass: "remove-note",
                 handler: onDeleteNote
             });

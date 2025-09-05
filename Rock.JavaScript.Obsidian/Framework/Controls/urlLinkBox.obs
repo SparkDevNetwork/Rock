@@ -9,7 +9,7 @@
             <div class="control-wrapper">
                 <div class="input-group">
                     <span class="input-group-addon">
-                        <i class="fa fa-link"></i>
+                        <i class="ti ti-link"></i>
                     </span>
                     <input v-model="value" :id="uniqueId" class="form-control" v-bind="field" type="url" />
                 </div>

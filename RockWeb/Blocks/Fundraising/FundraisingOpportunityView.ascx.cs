@@ -350,7 +350,7 @@ namespace RockWeb.Blocks.Fundraising
                 }
                 else
                 {
-                    makeDonationButtonText = string.Format( "Contribute to {0} {1}", RockFilters.Possessive( groupMember.Person.NickName ), opportunityType );
+                    makeDonationButtonText = string.Format( "Contribute to {0} {1}", groupMember.Person.NickName?.ToPossessive(), opportunityType );
                 }
 
                 mergeFields.Add( "MakeDonationButtonText", makeDonationButtonText );

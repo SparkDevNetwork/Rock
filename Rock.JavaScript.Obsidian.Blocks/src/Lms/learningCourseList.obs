@@ -30,7 +30,7 @@
                 visiblePriority="xs">
             <template #format="{ row }">
                 <div class="d-flex flex-fill align-items-center">
-                    <i :style="'color: ' + row.categoryColor" :class="'mr-2 flex-shrink-0 fa-2x fw ' + (row.categoryIconCssClass ?? '')"></i>
+                    <i :style="'color: ' + row.categoryColor" :class="'mr-2 flex-shrink-0 ti-2x fw ' + (row.categoryIconCssClass ?? '')"></i>
                     <div class="flex-grow-1">
                         <span class="text-semibold">{{ row.course }}</span>
                         <div class="text-muted text-sm">{{ row.summary }}</div>

@@ -114,6 +114,12 @@ namespace Rock.ViewModels.Blocks.Engagement.StepTypeDetail
         public List<string> PreRequisites { get; set; }
 
         /// <summary>
+        /// Gets or sets the boolean value indicating whether this Step Type is a prerequisite for other
+        /// Step Types in the Program.
+        /// </summary>
+        public bool IsPrerequisiteStepType { get; set; }
+
+        /// <summary>
         /// Gets or sets the step attributes.
         /// </summary>
         /// <value>
@@ -192,5 +198,10 @@ namespace Rock.ViewModels.Blocks.Engagement.StepTypeDetail
         /// The workflow trigger grid definition.
         /// </value>
         public GridDefinitionBag WorkflowTriggerGridDefinition { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Step Type can be deleted. 
+        /// </summary>
+        public bool IsDeletable { get; set; }
     }
 }

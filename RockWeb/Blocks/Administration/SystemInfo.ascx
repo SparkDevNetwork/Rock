@@ -144,7 +144,7 @@
         </div>
 
         <asp:LinkButton runat="server" ID="btnDumpDiagnostics" CssClass="btn btn-action margin-t-lg" OnClick="btnDumpDiagnostics_Click" ToolTip="Generates a diagnostics file for sharing with others.">
-            <i class="fa fa-download"></i> Download Diagnostics File
+            <i class="ti ti-download"></i> Download Diagnostics File
         </asp:LinkButton>
 
     </asp:Panel>

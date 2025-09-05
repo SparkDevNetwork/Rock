@@ -1,0 +1,86 @@
+<template>
+    <StepProgramPicker v-model="stepProgram"
+                       label="Step Program"
+                       help="The Program in which the Step was undertaken."
+                       rules="required"
+                       showBlankItem />
+
+    <StepTypePicker v-if="stepProgram?.value"
+                    v-model="stepTypes"
+                    label="Steps"
+                    help="If selected, specifies the required Steps that have been undertaken."
+                    :stepProgramGuid="stepProgram?.value"
+                    :displayStyle="PickerDisplayStyle.List"
+                    :columnCount="1"
+                    multiple />
+
+    <StepStatusPicker v-if="stepProgram?.value"
+                      v-model="stepStatuses"
+                      label="Statuses"
+                      help="If selected, specifies the required Statuses of the Steps."
+                      :stepProgramGuid="stepProgram?.value"
+                      :displayStyle="PickerDisplayStyle.List"
+                      :columnCount="1"
+                      multiple />
+
+    <SlidingDateRangePicker v-model="dateStarted"
+                            label="Date Started"
+                            help="The date range within which the Step was started." />
+
+    <SlidingDateRangePicker v-model="dateCompleted"
+                            label="Date Completed"
+                            help="The date range within which the Step was completed." />
+
+    <CampusPicker v-model="campuses"
+                  label="Campuses"
+                  help="Select the campuses that the steps were completed at. Not selecting a value will select all campuses."
+                  includeInactive
+                  :displayStyle="PickerDisplayStyle.List"
+                  :columnCount="1"
+                  multiple />
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import StepProgramPicker from "@Obsidian/Controls/stepProgramPicker.obs";
+    import StepTypePicker from "@Obsidian/Controls/stepTypePicker.obs";
+    import StepStatusPicker from "@Obsidian/Controls/stepStatusPicker.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import { parseSlidingDateRangeString, SlidingDateRange, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { SlidingDateRangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
+
+    const props = defineProps(dataViewFilterProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const stepProgram = ref<ListItemBag | null | undefined>(safeParseJson(props.modelValue.stepProgram));
+    const stepTypes = ref<ListItemBag[] | null | undefined>(safeParseJson(props.modelValue.stepTypes));
+    const stepStatuses = ref<ListItemBag[] | null | undefined>(safeParseJson(props.modelValue.stepStatuses));
+    const dateStarted = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateStarted ?? ""));
+    const dateCompleted = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateCompleted ?? ""));
+    const campuses = ref<ListItemBag[] | null | undefined>(safeParseJson(props.modelValue.campuses));
+
+    watch(stepProgram, () => {
+        stepTypes.value = null;
+        stepStatuses.value = null;
+    });
+
+    watch([stepProgram, stepTypes, stepStatuses, dateStarted, dateCompleted, campuses], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            stepProgram: JSON.stringify(stepProgram.value),
+            stepTypes: JSON.stringify(stepTypes.value ?? []),
+            stepStatuses: JSON.stringify(stepStatuses.value ?? []),
+            dateStarted: slidingDateRangeToString(dateStarted.value ?? { rangeType: SlidingDateRangeType.All }),
+            dateCompleted: slidingDateRangeToString(dateCompleted.value ?? { rangeType: SlidingDateRangeType.All }),
+            campuses: JSON.stringify(campuses.value ?? []),
+        });
+    });
+</script>

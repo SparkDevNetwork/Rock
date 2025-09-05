@@ -51,6 +51,8 @@ export const Group = {
     GroupFinanceAdministrators: "6246A7EF-B7A3-4C8C-B1E4-3FF114B84559",
     /** The Finance Users Group guid */
     GroupFinanceUsers: "2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9",
+    /** Role for individuals allowed to develop Lava Applications. */
+    GroupLavaApplicationDevelopers: "F88EC798-2DCC-119C-4459-CF0F304CC036",
     /** The security group used by mobile app */
     GroupMobileApp: "EDD336D5-1429-41D9-8D41-2581A05F0E16",
     /** RSR - Mobile Application Users */

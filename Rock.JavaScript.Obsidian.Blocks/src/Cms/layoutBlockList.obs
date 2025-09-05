@@ -81,7 +81,7 @@
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
-    const icon = "fa fa-cog";
+    const icon = "ti ti-settings";
 
     // #endregion
 

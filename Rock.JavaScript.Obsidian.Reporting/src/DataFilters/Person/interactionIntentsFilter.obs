@@ -1,0 +1,76 @@
+<template>
+    <div class="row form-row field-criteria">
+        <div class="col-md-3">
+            <DropDownList v-model="comparisonType" :items="comparisonItems" disableLabel :showBlankItem="false" />
+        </div>
+        <div class="col-md-1">
+            <NumberBox v-model="count" disableLabel />
+        </div>
+        <div class="col-md-2 mt-1">
+            interactions with the
+        </div>
+        <div class="col-md-5">
+            <DefinedValuePicker v-model="intents"
+                                :definedTypeGuid="DefinedType.InteractionIntent"
+                                disableLabel
+                                multiple
+                                enhanceForLongLists />
+        </div>
+        <div class="col-md-1 mt-1">
+            intent(s)
+        </div>
+    </div>
+    <div class="row form-row mt-3">
+        <div class="col-md-3 mt-4">
+            in the following date range
+        </div>
+        <div class="col-md-9">
+            <SlidingDateRangePicker v-model="dateRange" label="Date Range" help="The date range within which the interaction took place" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/comparisonTypeOptions";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { parseSlidingDateRangeString, SlidingDateRange, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { SlidingDateRangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const comparisonType = ref<`${ComparisonType}`>((props.modelValue.comparisonType as `${ComparisonType}`) ?? `${ComparisonType.EqualTo}`);
+    const count = ref<number | null>(toNumberOrNull(props.modelValue.count) ?? null);
+    const intents = ref<ListItemBag[]>(safeParseJson(props.modelValue.intents) ?? []);
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
+
+    const comparisonItems = getFilteredComparisonTypeOptions(
+        ComparisonType.EqualTo,
+        ComparisonType.GreaterThan,
+        ComparisonType.GreaterThanOrEqualTo,
+        ComparisonType.LessThan,
+        ComparisonType.LessThanOrEqualTo
+    );
+
+    watch([comparisonType, count, intents, dateRange], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            intents: JSON.stringify(intents.value),
+            comparisonType: comparisonType.value,
+            count: `${count.value ?? ""}`,
+            dateRange: slidingDateRangeToString(dateRange.value ?? { rangeType: SlidingDateRangeType.All }),
+        });
+    });
+</script>

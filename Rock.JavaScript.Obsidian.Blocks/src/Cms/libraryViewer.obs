@@ -7,7 +7,8 @@
         <Panel v-else
                type="block"
                class="styled-scroll"
-               :hasFullscreen="true"
+               hasFullscreen
+               hasNoBodyPadding
                title="Library Viewer">
             <template #preBody>
                 <div class="panel-toolbar justify-content-end">
@@ -46,11 +47,6 @@
 </template>
 
 <style scoped>
-.library-viewer-container :deep(.panel-body) {
-    /* Use :deep to target panel body */
-    padding: 0;
-}
-
 .library-viewer-container :deep(.panel-toolbar) {
     gap: 4px;
 }
@@ -77,7 +73,6 @@
 :deep(.styled-scroll *:hover::-webkit-scrollbar-thumb) {
     visibility: visible;
 }
-
 </style>
 
 <script setup lang="ts">

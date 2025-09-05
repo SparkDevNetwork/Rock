@@ -699,7 +699,8 @@ namespace RockWeb.Blocks.Steps
                     AllowMultipleInstances = x.AllowMultiple,
                     HasDuration = x.HasEndDate,
                     StartedCount = startedStepsQry.Count( y => y.StepTypeId == x.Id ),
-                    CompletedCount = completedStepsQry.Count( y => y.StepTypeId == x.Id )
+                    CompletedCount = completedStepsQry.Count( y => y.StepTypeId == x.Id ),
+                    IsSystem = x.IsSystem
                 } )
                 .ToList();
 
@@ -778,6 +779,7 @@ namespace RockWeb.Blocks.Steps
             public bool HasDuration { get; set; }
             public int StartedCount { get; set; }
             public int CompletedCount { get; set; }
+            public bool IsSystem { get; set; }
         }
 
         #endregion Helper Classes

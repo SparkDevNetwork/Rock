@@ -59,6 +59,11 @@ namespace Rock.SystemGuid
         public const string CAMPUS_TYPE = "8C2260A8-6130-414A-BD32-22743FEAB256";
 
         /// <summary>
+        /// GUID for the Chat Reaction defined type.
+        /// </summary>
+        public const string CHAT_REACTION = "879C25EE-8BF3-46CE-8549-DB4CAF4074E9";
+
+        /// <summary>
         /// The types of static color swatches supported
         /// </summary>
         public const string COLOR_PICKER_SWATCHES = "CC1400B3-E161-45E3-BF49-49825D3D6467";
@@ -214,6 +219,11 @@ namespace Rock.SystemGuid
         /// The grouptype inactive reason
         /// </summary>
         public const string GROUPTYPE_INACTIVE_REASONS = "EB5D9839-F770-4E22-8B56-0B09397307D9";
+
+        /// <summary>
+        /// Guid for the icon libraries
+        /// </summary>
+        public const string ICON_LIBRARIES = "EEFC6AA8-3946-47AB-8DAF-149EEF347DF3";
 
         /// <summary>
         /// Guid for the types of interaction service.
@@ -557,8 +567,13 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The statement generator lava template (Legacy)
         /// </summary>
-        [Obsolete("Use FinancialStatementTemplate instead")]
-        [RockObsolete("1.12.4")]
+        [Obsolete( "Use FinancialStatementTemplate instead" )]
+        [RockObsolete( "1.12.4" )]
         public const string STATEMENT_GENERATOR_LAVA_TEMPLATE_LEGACY = "74A23516-A20A-40C9-93B5-1AB5FDFF6750";
+
+        /// <summary>
+        /// Guid for the types of Record Sources (such as external website, event registration, etc.)
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE = "B8F781C5-6690-4E5E-8BCE-75CC62DB0EBB";
     }
 }

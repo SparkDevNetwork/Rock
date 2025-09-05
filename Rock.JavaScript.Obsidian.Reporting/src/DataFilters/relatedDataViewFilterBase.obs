@@ -1,0 +1,30 @@
+<template>
+    <div class="row">
+        <div class="col-sm-6">
+            <DataViewPicker v-model="dataView"
+                            :label="props.modelValue.label ?? 'Data View'"
+                            :help="props.modelValue.help ?? undefined"
+                            :entityTypeGuid="props.modelValue.entityTypeGuid"
+                            showBlankItem />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const dataView = ref<ListItemBag[]>(safeParseJson(props.modelValue.dataView) ?? []);
+
+    watch(dataView, () => {
+        emit("update:modelValue", { ...props.modelValue, dataView: JSON.stringify(dataView.value) });
+    });
+</script>

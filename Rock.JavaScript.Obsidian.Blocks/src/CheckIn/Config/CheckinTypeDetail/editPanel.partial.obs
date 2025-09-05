@@ -21,9 +21,9 @@
 
         <div class="row">
             <div class="col-md-6">
-                <TextBox v-model="iconCssClass"
-                         label="Icon CSS Class"
-                         help="The Font Awesome icon class to use when displaying check-in of this check-in type." />
+                <IconPicker v-model="iconCssClass"
+                            label="Icon CSS Class"
+                            help="The Font Awesome icon class to use when displaying check-in of this check-in type." />
             </div>
         </div>
 
@@ -380,6 +380,7 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";

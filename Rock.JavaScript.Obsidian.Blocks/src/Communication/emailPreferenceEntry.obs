@@ -1,264 +1,907 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Panel title="Email Preference" type="block">
+
+    <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
+        {{ errorMessage }}
+    </NotificationBox>
+
+    <Panel v-else :hasTitle="false" hasNoBodyPadding>
+
         <template #default>
-            <fieldset>
-
-                <template v-if="config.successfullyUnsubscribedText">
-                    <h2>Unsubscribe Successful</h2>
-                    <p>{{ config.successfullyUnsubscribedText }}</p>
-
-                    <RockLabel>Other Actions</RockLabel>
-                </template>
-
-                <NotificationBox alertType="danger" v-if="errorMessage" v-html="errorMessage" />
-
-                <div v-if="noMassEmailsText" class="radio">
-                    <label :for="noMassEmails">
-                        <input :id="noMassEmails"
-                               :name="noMassEmails"
-                               type="radio"
-                               :value="noMassEmails"
-                               v-model="emailPreference" />
-                        <span class="label-text">{{ noMassEmailsText }}</span>
-                    </label>
+            <div class="email-preference-entry-header">
+                <i v-if="config.showHeaderIcon" :class="headerIconCssClass"></i>
+                <h3>
+                    {{ headerTitle }}
+                </h3>
+                <div v-if="headerDescriptionHtml"
+                     v-html="headerDescriptionHtml"
+                     class="email-preference-entry-header-description">
                 </div>
+                <div v-if="showResubscribeButtonInHeader" class="email-preference-entry-header-actions">
 
-                <div v-if="emailsAllowedText" class="radio">
-                    <label :for="emailsAllowed">
-                        <input :id="emailsAllowed"
-                               :name="emailsAllowed"
-                               type="radio"
-                               :value="emailsAllowed"
-                               v-model="emailPreference" />
-                        <span class="label-text">{{ emailsAllowedText }}</span>
-                    </label>
+                    <NotificationBox v-if="resubscribeErrorMessage" :alertType="AlertType.Warning">
+                        {{ resubscribeErrorMessage }}
+                    </NotificationBox>
+
+                    <RockButton :btnType="BtnType.Link" @click="onResubscribeClick" :disabled="isResubscribing">
+                        Resubscribe
+                    </RockButton>
+
                 </div>
-
-                <template v-if="unsubscribeFromListOptions.length > 0">
-                    <div class="radio">
-                        <label :for="unsubscribe">
-                            <input :id="unsubscribe"
-                                   :name="unsubscribe"
-                                   type="radio"
-                                   :value="unsubscribe"
-                                   v-model="emailPreference" />
-                            <span class="label-text">{{ unsubscribeText }}</span>
-                        </label>
-                    </div>
-                    <TransitionVerticalCollapse>
-                        <div v-if="showUnsubscribeList" class="margin-l-lg margin-t-sm">
-                            <CheckBoxList v-model="unsubscribeFromList"
-                                          :items="unsubscribeFromListOptions"
-                                          :horizontal="false" />
-                        </div>
-                    </TransitionVerticalCollapse>
-                </template>
-
-                <template v-if="updateEmailAddressText">
-                    <div class="radio">
-                        <label :for="updateEmailAddress">
-                            <input :id="updateEmailAddress"
-                                   :name="updateEmailAddress"
-                                   type="radio"
-                                   :value="updateEmailAddress"
-                                   v-model="emailPreference" />
-                            <span class="label-text">{{ updateEmailAddressText }}</span>
-                        </label>
-                    </div>
-                    <TransitionVerticalCollapse>
-                        <div v-if="showUpdateEmailInput">
-                            <EmailBox label="Email"
-                                      v-model="email"
-                                      class="input-width-xxl" />
-                        </div>
-                    </TransitionVerticalCollapse>
-                </template>
-
-                <div v-if="noEmailsText" class="radio">
-                    <label :for="noEmails">
-                        <input :id="noEmails"
-                               :name="noEmails"
-                               type="radio"
-                               :value="noEmails"
-                               v-model="emailPreference" />
-                        <span class="label-text">{{ noEmailsText }}</span>
-                    </label>
+                <div v-else-if="showManageMyAccountButtonInHeader" class="email-preference-entry-header-actions">
+                    <RockButton :btnType="BtnType.Link" @click="onManageMyAccountClick">
+                        Manage My Account
+                    </RockButton>
                 </div>
-
-                <template v-if="notInvolvedText">
-                    <div class="radio">
-                        <label :for="notInvolved">
-                            <input :id="notInvolved"
-                                   :name="notInvolved"
-                                   type="radio"
-                                   :value="notInvolved"
-                                   v-model="emailPreference" />
-                            <span class="label-text">{{ notInvolvedText }}</span>
-                        </label>
-                    </div>
-                    <TransitionVerticalCollapse>
-                        <div v-if="notInvolvedText && showNotInvolvedDetails" class="row">
-                            <div class="col-md-6">
-                                <DropDownList label="Reason"
-                                              v-model="inactiveReason"
-                                              :items="inactiveReasons"
-                                              :showBlankItem="false" />
-
-                                <div v-if="allowInactivatingFamily">
-                                    <RockLabel>Inactivate all individuals in my family</RockLabel>
-                                    <Switch v-model="inactivateAllFamily" />
-                                </div>
-
-                                <TextBox label="More Info (optional)"
-                                         v-model="inactiveNote"
-                                         textMode="MultiLine"
-                                         :rows="5"
-                                         :maxLength="100" />
-                            </div>
-                        </div>
-                    </TransitionVerticalCollapse>
-                </template>
-
-            </fieldset>
-
-            <RockButton v-if="!hideSubmitButton"
-                        :btnSize="BtnSize.Default"
-                        :btnType="BtnType.Primary"
-                        :disabled="isSaving"
-                        @click="onStartSubmitForm">
-                Submit
-            </RockButton>
-
-            <div class="mt-4">
-                <NotificationBox :alertType="emailPreferenceUpdateAlertType"
-                                 v-if="emailPreferenceUpdateMessage"
-                                 v-html="emailPreferenceUpdateMessage" />
             </div>
 
+            <div v-if="isConfirmingDeactivation" class="email-preference-entry-confirm-deactivation-form">
+
+                <NotificationBox v-if="deactivateErrorMessage" :alertType="AlertType.Warning">
+                    {{ deactivateErrorMessage }}
+                </NotificationBox>
+
+                <RadioButtonList v-if="config.isDeactivatingFamilyEnabled"
+                                 v-model="recordsToDeactivate"
+                                 label="Record(s) To Deactivate"
+                                 :items="deactivateListItems"
+                                 :disabled="isDeactivating" />
+
+                <RadioButtonList v-if="config.inactiveReasons?.length"
+                                 v-model="inactiveReasonValueGuid"
+                                 label="Reason"
+                                 :items="config.inactiveReasons"
+                                 :disabled="isDeactivating" />
+
+                <TextBox v-model="inactiveReasonNote"
+                         label="Anything Else You'd Like Us To Know? (Optional)"
+                         textMode="multiline"
+                         :disabled="isDeactivating" />
+            </div>
+
+            <div v-else-if="!isRemovedFromChurchInvolvement" class="email-preference-entry-content">
+
+                <ContentSectionContainer :sidebar="false">
+
+                    <ContentSection v-if="showUpdateContactInfoSection" light disableCollapse>
+
+                        <NotificationBox v-if="updateContactInfoErrorMessage" :alertType="AlertType.Warning">
+                            {{ updateContactInfoErrorMessage }}
+                        </NotificationBox>
+
+                        <RockForm @submit="onUpdateContactInfo">
+                            <div class="row d-flex flex-wrap align-items-end">
+                                <div class="col-xs-12 col-md-9">
+                                    <EmailBox v-model="emailAddress"
+                                              label="Email Address"
+                                              :rules="emailAddressRules"
+                                              :disabled="isUpdatingContactInfo" />
+                                </div>
+                                <div class="col-xs-12 col-md-3">
+                                    <div class="form-group">
+                                        <RockButton :btnType="updateContactInfoButtonType"
+                                                    type="submit"
+                                                    class="w-100"
+                                                    :isLoading="isUpdatingContactInfo">
+                                            <i v-if="updateContactInfoButtonIcon" :class="updateContactInfoButtonIcon"></i>
+                                            {{ updateContactInfoButtonText }}
+                                        </RockButton>
+                                    </div>
+                                </div>
+                            </div>
+                        </RockForm>
+                    </ContentSection>
+
+                    <ContentSection title="Opt-Out Options"
+                                    icon="ti ti-mailbox-off"
+                                    disableCollapse>
+
+                        <div v-if="config.optOutOptionsDescriptionHtml"
+                             v-html="config.optOutOptionsDescriptionHtml"
+                             class="email-preference-entry-opt-out-options-description"></div>
+
+                        <NotificationBox v-if="updateEmailPreferenceErrorMessage" :alertType="AlertType.Warning">
+                            {{ updateEmailPreferenceErrorMessage }}
+                        </NotificationBox>
+
+                        <DisplayCardContainer>
+
+                            <DisplayCard :title="config.emailPreferenceTitle"
+                                         :description="config.emailPreferenceDescription">
+                                <template #actions>
+                                    <ButtonGroup v-model="emailPreferenceItem"
+                                                 :items="emailPreferenceItems"
+                                                 :btnSize="BtnSize.Small"
+                                                 :disabled="isUpdatingEmailPreference"
+                                                 @update:modelValue="onUpdateEmailPreference" />
+                                </template>
+                            </DisplayCard>
+
+                            <DisplayCard v-if="config.isRemoveInvolvementEnabled"
+                                         :title="config.removeInvolvementTitle"
+                                         :description="config.removeInvolvementDescription">
+                                <template #actions>
+                                    <div class="email-preference-entry-deactivate-actions">
+                                        <RockButton :btnType="BtnType.Link"
+                                                    :isLoading="isConfirmingDeactivation"
+                                                    @click="onConfirmDeactivateClick">
+                                            Deactivate
+                                        </RockButton>
+                                    </div>
+                                </template>
+                            </DisplayCard>
+
+                        </DisplayCardContainer>
+
+                    </ContentSection>
+
+                    <ContentSection v-if="showCurrentCommunicationChannelsSection"
+                                    title="Current Communication Channels"
+                                    icon="ti ti-speakerphone"
+                                    disableCollapse>
+
+                        <div v-if="config.currentCommunicationChannelsDescriptionHtml"
+                             v-html="config.currentCommunicationChannelsDescriptionHtml"
+                             class="email-preference-entry-current-communication-channels-description"></div>
+
+                        <DisplayCardContainer>
+                            <CurrentCommunicationChannel v-for="channel of currentCommunicationChannels"
+                                                         :key="channel.idKey!"
+                                                         :channel="channel"
+                                                         :messageCountWindowDays="config.messageCountWindowDays"
+                                                         :disabled="isManagingSubscriptionRefs.get(channel.idKey!)?.value || false"
+                                                         @unsubscribe="onUnsubscribe($event)"
+                                                         @updateCommunicationPreference="onUpdateCommunicationPreference($event)" />
+                        </DisplayCardContainer>
+
+                    </ContentSection>
+
+                    <ContentSection v-if="showAvailableCommunicationChannelsSection"
+                                    title="Available Communication Channels"
+                                    icon="ti ti-list-search"
+                                    disableCollapse>
+
+                        <div v-if="config.availableCommunicationChannelsDescriptionHtml"
+                             v-html="config.availableCommunicationChannelsDescriptionHtml"
+                             class="email-preference-entry-available-communication-channels-description"></div>
+
+                        <DisplayCardContainer>
+                            <AvailableCommunicationChannel v-for="channel of availableCommunicationChannels"
+                                                           :key="channel.idKey!"
+                                                           :channel="channel"
+                                                           :disabled="isManagingSubscriptionRefs.get(channel.idKey!)?.value || false"
+                                                           @subscribe="onSubscribe($event)" />
+                        </DisplayCardContainer>
+
+                    </ContentSection>
+
+                </ContentSectionContainer>
+
+            </div>
         </template>
+
+        <template v-if="isConfirmingDeactivation" #footerActions>
+            <div class="email-preference-entry-confirm-deactivation-footer-actions">
+                <RockButton btnType="link"
+                            :disabled="isDeactivating"
+                            @click="isConfirmingDeactivation = false">Cancel</RockButton>
+            </div>
+        </template>
+
+        <template v-if="isConfirmingDeactivation" #footerSecondaryActions>
+            <RockButton btnType="default"
+                        :isLoading="isDeactivating"
+                        @click="onDeactivateClick">Deactivate</RockButton>
+        </template>
+
+        <template v-else-if="showManageMyAccountButtonInFooter" #footerSecondaryActions>
+            <RockButton @click="onManageMyAccountClick">
+                Manage My Account
+            </RockButton>
+        </template>
+
     </Panel>
+
 </template>
 
+<style scoped>
+.email-preference-entry-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--spacing-large);
+}
+
+.email-preference-entry-header-icon-success {
+    color: var(--color-success-strong);
+}
+
+.email-preference-entry-header-icon-warning {
+    color: var(--color-warning-strong);
+}
+
+.email-preference-entry-header h3 {
+    margin-top: 0;
+}
+
+.email-preference-entry-header-description {
+    color: var(--color-interface-medium);
+}
+
+.email-preference-entry-header-actions {
+    margin-top: var(--spacing-medium);
+}
+
+.email-preference-entry-header-actions .btn-link {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-primary);
+}
+
+.email-preference-entry-content {
+    border-top: 1px solid var(--color-interface-soft);
+    padding: var(--spacing-large);
+}
+
+.email-preference-entry-opt-out-options-description,
+.email-preference-entry-current-communication-channels-description,
+.email-preference-entry-available-communication-channels-description {
+    font-size: var(--font-size-small);
+    color: var(--color-interface-medium);
+}
+
+.email-preference-entry-deactivate-actions .btn {
+    color: var(--color-danger-strong);
+    font-weight: var(--font-weight-semibold);
+}
+
+.email-preference-entry-confirm-deactivation {
+    border-top: 1px solid var(--color-interface-soft);
+}
+
+.email-preference-entry-confirm-deactivation-form {
+    border-top: 1px solid var(--color-interface-soft);
+    background-color: var(--color-interface-softer);
+    padding: var(--spacing-large);
+}
+
+.email-preference-entry-confirm-deactivation-footer-actions btn {
+    color: var(--color-primary);
+}
+</style>
+
 <script setup lang="ts">
-    import { ref, watch } from "vue";
-    import Panel from "@Obsidian/Controls/panel.obs";
-    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { computed, nextTick, Ref, ref, watch } from "vue";
+    import AvailableCommunicationChannel from "./EmailPreferenceEntry/availableCommunicationChannel.partial.obs";
+    import CurrentCommunicationChannel from "./EmailPreferenceEntry/currentCommunicationChannel.partial.obs";
+    import { ManageChannelSubscriptionEvent, NavigationUrlKey, UpdateCommunicationPreferenceEvent } from "./EmailPreferenceEntry/types.partial";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import DisplayCardContainer from "@Obsidian/Controls/displayCardContainer.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import Switch from "@Obsidian/Controls/switch.obs";
-    import TextBox from "@Obsidian/Controls/textBox.obs";
-    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
-    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { EmailPreference } from "@Obsidian/Enums/Crm/emailPreference";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { CommunicationChannelBag } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/communicationChannelBag";
+    import { DeactivateRecordRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/deactivateRecordRequestBag";
+    import { DeactivateRecordResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/deactivateRecordResponseBag";
     import { EmailPreferenceEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/emailPreferenceEntryInitializationBox";
-    import { EmailPreferenceEntrySaveRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/emailPreferenceEntrySaveRequestBag";
-    import { EmailPreferenceEntrySaveResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/emailPreferenceEntrySaveResponseBag";
+    import { ManageChannelSubscriptionRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/manageChannelSubscriptionRequestBag";
+    import { UpdateCommunicationPreferenceRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/updateCommunicationPreferenceRequestBag";
+    import { UpdateContactInfoRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/updateContactInfoRequestBag";
+    import { UpdateEmailPreferenceRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/updateEmailPreferenceRequestBag";
 
     const config = useConfigurationValues<EmailPreferenceEntryInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
 
-    //#region Values
-    const unsubscribe = "Unsubscribe";
-    const updateEmailAddress = "Update Email Address";
-    const emailsAllowed = "Emails Allowed";
-    const noMassEmails = "No Mass Emails";
-    const noEmails = "No Emails";
-    const notInvolved = "Not Involved";
-
-    const isSaving = ref(false);
-
-    const inactivateAllFamily = ref(false);
-    const submitForm = ref(false);
-    const allowInactivatingFamily = ref(config.allowInactivatingFamily);
-    const emailPreferenceUpdateAlertType = ref(config.emailPreferenceUpdateAlertType ?? "success");
-    const hideSubmitButton = ref(emailPreferenceUpdateAlertType.value == "danger");
-    const emailPreference = ref(config.emailPreference);
-    const email = ref(config.email ?? "");
-    const inactiveReasons = ref(config.inActiveReasons ?? []);
-    const unsubscribeFromListOptions = ref(config.unsubscribeFromListOptions ?? []);
-    const unsubscribeFromList = ref<string[]>([]);
-    const unsubscribeText = ref(config.unsubscribeText ?? "");
-    const updateEmailAddressText = ref(config.updateEmailAddressText ?? "");
-    const emailsAllowedText = ref(config.emailsAllowedText ?? "");
-    const noMassEmailsText = ref(config.noMassEmailsText ?? "");
-    const noEmailsText = ref(config.noEmailsText ?? "");
-    const notInvolvedText = ref(config.notInvolvedText ?? "");
-    const emailPreferenceUpdateMessage = ref(config.emailPreferenceUpdateMessage);
-    const inactiveReason = ref("");
-    const inactiveNote = ref("");
-    const errorMessage = ref("");
-    const showUnsubscribeList = ref(config.emailPreference === unsubscribe);
-    const showUpdateEmailInput = ref(config.emailPreference === updateEmailAddress);
-    const showNotInvolvedDetails = ref(config.emailPreference === notInvolved);
-    //#endregion
-
-    //#region Event Handlers
-
-    /**
-     * Event handler for the "Submit" button being clicked.
-     */
-    const onStartSubmitForm = (): void => {
-        errorMessage.value = "";
-        if (emailPreference.value === updateEmailAddress) {
-            if (!email.value) {
-                errorMessage.value = "Email is required.";
-            }
-            else {
-                submitForm.value = true;
-            }
-
-        }
-        else {
-            submitForm.value = true;
-        }
-    };
-
-    //#endregion
-
-    watch(() => submitForm.value, async () => {
-        if (submitForm.value === true) {
-            try {
-                isSaving.value = true;
-                const bag: EmailPreferenceEntrySaveRequestBag = {
-                    email: email.value,
-                    inActivateFamily: inactivateAllFamily.value,
-                    emailPreference: emailPreference.value,
-                    inaActiveReason: inactiveReason.value,
-                    inActiveReasonNote: inactiveNote.value,
-                    unsubscribeFromList: unsubscribeFromList.value
-                };
-
-                const result = await invokeBlockAction<EmailPreferenceEntrySaveResponseBag>("Save", { bag });
-
-                if (!result.isSuccess || !result.data) {
-                    errorMessage.value = result.errorMessage || "An unexpected error occurred.";
-                }
-                else if (result.data.errorMessage) {
-                    emailPreferenceUpdateMessage.value = result.data.errorMessage;
-                    emailPreferenceUpdateAlertType.value = result.data.alertType ?? "danger";
-                }
-                else {
-                    emailPreferenceUpdateMessage.value = result.data.successMessage;
-                    emailPreferenceUpdateAlertType.value = result.data.alertType ?? "success";
-                }
-            }
-            finally {
-                isSaving.value = false;
-                submitForm.value = false;
-            }
-        }
-    });
-
-    watch(() => emailPreference.value, () => {
-        showUpdateEmailInput.value = emailPreference.value == updateEmailAddress;
-        showNotInvolvedDetails.value = emailPreference.value == notInvolved;
-        showUnsubscribeList.value = emailPreference.value == unsubscribe;
-    });
-
     onConfigurationValuesChanged(useReloadBlock());
 
+    const fieldRequiredRule = "required";
+
+    const emailPreferenceItems = [
+        {
+            value: EmailPreference.EmailAllowed.toString(),
+            text: "All Email"
+        },
+        {
+            value: EmailPreference.NoMassEmails.toString(),
+            text: "Personal Email"
+        },
+        {
+            value: EmailPreference.DoNotEmail.toString(),
+            text: "No Email"
+        }
+    ];
+
+    const enum RecordsToDeactivate {
+        OnlyMe = "Only Me",
+        Family = "Family"
+    }
+
+    const deactivateListItems: ListItemBag[] = [
+        {
+            value: RecordsToDeactivate.OnlyMe,
+            text: RecordsToDeactivate.OnlyMe
+        },
+        {
+            value: RecordsToDeactivate.Family,
+            text: RecordsToDeactivate.Family
+        }
+    ];
+
+    // #region Values
+
+    const errorMessage = ref(config?.errorMessage ?? "");
+
+    const isRemovedFromChurchInvolvement = ref(config.isRemovedFromChurchInvolvement);
+    const isUnsubscribeMode = ref(config.isUnsubscribeMode);
+
+    const unsubscribedFromChannel = ref(config.unsubscribedFromChannel);
+    const isResubscribing = ref(false);
+    const hasResubscribed = ref(false);
+    const resubscribeErrorMessage = ref("");
+
+    const internalHeaderTitle = ref(config.headerTitle ?? "");
+    const internalHeaderDescriptionHtml = ref(config.headerDescriptionHtml ?? "");
+
+    const manageMyAccountPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ManageMyAccountPage]);
+
+    const isUpdateContactInfoEnabled = ref(config.isUpdateContactInfoEnabled);
+    const isUpdatingContactInfo = ref(false);
+    const updateContactInfoErrorMessage = ref("");
+    const emailAddress = ref(config.emailAddress ?? "");
+    const emailAddressRulesArray = ref<string[]>(["email"]);
+    const showUpdatedContactInfoSuccessButton = ref(false);
+
+    const internalEmailPreference = ref(config.emailPreference);
+    const emailPreferenceItem = ref(config.emailPreference.toString());
+    const isUpdatingEmailPreference = ref(false);
+    const updateEmailPreferenceErrorMessage = ref("");
+
+    const isConfirmingDeactivation = ref(false);
+    const recordsToDeactivate = ref(RecordsToDeactivate.OnlyMe);
+    const inactiveReasonValueGuid = ref(config.inactiveReasons?.length ? config.inactiveReasons[0].value! : "");
+    const inactiveReasonNote = ref("");
+    const isDeactivating = ref(false);
+    const deactivateErrorMessage = ref("");
+
+    const isCurrentCommunicationChannelsSectionEnabled = ref(config.isCurrentCommunicationChannelsSectionEnabled);
+    const currentCommunicationChannels = ref<CommunicationChannelBag[]>(config.currentCommunicationChannels ?? []);
+
+    const isAvailableCommunicationChannelsSectionEnabled = ref(config.isAvailableCommunicationChannelsSectionEnabled);
+    const availableCommunicationChannels = ref<CommunicationChannelBag[]>(config.availableCommunicationChannels ?? []);
+
+    const isManagingSubscriptionRefs = new Map<string, Ref<boolean>>([]);
+
+    if (unsubscribedFromChannel.value?.idKey) {
+        isManagingSubscriptionRefs.set(unsubscribedFromChannel.value.idKey!, ref(false));
+    }
+
+    config.currentCommunicationChannels
+        ?.filter(channel => channel.idKey)
+        ?.forEach(channel => {
+            isManagingSubscriptionRefs.set(channel.idKey!, ref(false));
+        });
+
+    config.availableCommunicationChannels
+        ?.filter(channel => channel.idKey)
+        ?.forEach(channel => {
+            isManagingSubscriptionRefs.set(channel.idKey!, ref(false));
+        });
+
+    const subscribeErrorMessage = ref("");
+    const unsubscribeErrorMessage = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isFamilyRemovedFromChurchInvolvement = computed((): boolean => {
+        return isRemovedFromChurchInvolvement.value
+            && recordsToDeactivate.value === RecordsToDeactivate.Family;
+    });
+
+    const headerIconCssClass = computed((): string => {
+        let icon: string = "";
+        let state: string = "";
+
+        if (isFamilyRemovedFromChurchInvolvement.value) {
+            icon = "users-minus";
+            state = "success";
+        }
+        else if (isRemovedFromChurchInvolvement.value) {
+            icon = "user-off";
+            state = "success";
+        }
+        else if (isConfirmingDeactivation.value) {
+            icon = recordsToDeactivate.value === RecordsToDeactivate.Family
+                ? "users-minus"
+                : "user-off";
+            state = "warning";
+        }
+        else if (isUnsubscribeMode.value && !hasResubscribed.value) {
+            icon = "circle-check-filled";
+            state = "success";
+        }
+        else {
+            icon = "message-circle-cog";
+        }
+
+        return `ti ti-${icon} ti-3x${state ? ` email-preference-entry-header-icon-${state}` : ""}`;
+    });
+
+    const headerTitle = computed((): string => {
+        if (isConfirmingDeactivation.value) {
+            return config.removeInvolvementConfirmationTitle ?? "";
+        }
+        else if (isUnsubscribeMode.value && hasResubscribed.value) {
+            return config.resubscribedHeaderTitle ?? "";
+        }
+
+        return internalHeaderTitle.value;
+    });
+
+    const headerDescriptionHtml = computed((): string => {
+        if (isConfirmingDeactivation.value) {
+            return config.removeInvolvementConfirmationDescriptionHtml ?? "";
+        }
+        else if (isUnsubscribeMode.value && hasResubscribed.value) {
+            return config.resubscribedHeaderDescriptionHtml ?? "";
+        }
+
+        return internalHeaderDescriptionHtml.value;
+    });
+
+    const showResubscribeButtonInHeader = computed((): boolean => {
+        return isUnsubscribeMode.value
+            && !isRemovedFromChurchInvolvement.value
+            && !isConfirmingDeactivation.value
+            && !hasResubscribed.value
+            && (
+                !unsubscribedFromChannel.value
+                || isBulkEmailAllowed.value
+            );
+    });
+
+    const showManageMyAccountButtonInHeader = computed((): boolean => {
+        return !!(
+            manageMyAccountPageUrl.value
+            && isRemovedFromChurchInvolvement.value
+        );
+    });
+
+    const showManageMyAccountButtonInFooter = computed((): boolean => {
+        return !!(
+            manageMyAccountPageUrl.value
+            && isUnsubscribeMode.value
+            && !showManageMyAccountButtonInHeader.value
+        );
+    });
+
+    const showUpdateContactInfoSection = computed((): boolean => {
+        return isUpdateContactInfoEnabled.value;
+    });
+
+    const emailAddressRules = computed((): string => {
+        return emailAddressRulesArray.value.join("|");
+    });
+
+    const updateContactInfoButtonType = computed((): BtnType => {
+        if (!showUpdatedContactInfoSuccessButton.value) {
+            return BtnType.Primary;
+        }
+
+        return BtnType.Success;
+    });
+
+    const updateContactInfoButtonIcon = computed((): string => {
+        if (!showUpdatedContactInfoSuccessButton.value) {
+            return "";
+        }
+
+        return "ti ti-circle-check-filled";
+    });
+
+    const updateContactInfoButtonText = computed((): string => {
+        if (!showUpdatedContactInfoSuccessButton.value) {
+            return "Update Email Address";
+        }
+
+        return "Updated Email Address";
+    });
+
+    const isBulkEmailAllowed = computed((): boolean => {
+        return internalEmailPreference.value === EmailPreference.EmailAllowed;
+    });
+
+    const showCurrentCommunicationChannelsSection = computed((): boolean => {
+        return !!(
+            isBulkEmailAllowed.value
+            && isCurrentCommunicationChannelsSectionEnabled.value
+            && currentCommunicationChannels.value.length
+        );
+    });
+
+    const showAvailableCommunicationChannelsSection = computed((): boolean => {
+        return !!(
+            isBulkEmailAllowed.value
+            && isAvailableCommunicationChannelsSectionEnabled.value
+            && availableCommunicationChannels.value.length
+        );
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Handles the "Resubscribe" button click.
+     */
+    async function onResubscribeClick(): Promise<void> {
+        if (isResubscribing.value || hasResubscribed.value) {
+            return;
+        }
+
+        isResubscribing.value = true;
+        resubscribeErrorMessage.value = "";
+
+        if (unsubscribedFromChannel.value?.idKey) {
+            const bag: ManageChannelSubscriptionRequestBag = {
+                idKey: unsubscribedFromChannel.value.idKey!,
+                communicationChannelType: unsubscribedFromChannel.value.communicationChannelType
+            };
+
+            const result = await invokeBlockAction("Subscribe", { bag });
+            isResubscribing.value = false;
+
+            if (!result.isSuccess) {
+                resubscribeErrorMessage.value = result.errorMessage || "Unknown error while trying to resubscribe to communication channel.";
+                return;
+            }
+
+            // Add it to the Current Communication Channels section.
+            currentCommunicationChannels.value = Enumerable
+                .from([
+                    ...currentCommunicationChannels.value,
+                    unsubscribedFromChannel.value
+                ])
+                .orderBy(c => c.name)
+                .toArray();
+
+            hasResubscribed.value = true;
+
+            return;
+        }
+
+        isUpdatingEmailPreference.value = true;
+
+        if (internalEmailPreference.value === EmailPreference.EmailAllowed) {
+            // There's no work to do, as they're already at the least-restrictive
+            // email preference level. But let's still ensure the button group's
+            // value is in sync.
+            emailPreferenceItem.value = EmailPreference.EmailAllowed.toString();
+            hasResubscribed.value = true;
+        }
+        else {
+            // Move their preference to the next-least-restrictive level.
+            const emailPreference = internalEmailPreference.value === EmailPreference.DoNotEmail
+                ? EmailPreference.NoMassEmails
+                : EmailPreference.EmailAllowed;
+
+            const bag: UpdateEmailPreferenceRequestBag = {
+                emailPreference
+            };
+
+            const result = await invokeBlockAction("UpdateEmailPreference", { bag });
+            isResubscribing.value = false;
+
+            if (!result.isSuccess) {
+                resubscribeErrorMessage.value = result.errorMessage || "Unknown error while trying to resubscribe to communication channel.";
+                isUpdatingEmailPreference.value = false;
+                return;
+            }
+
+            // Update the internal and button group values to match.
+            internalEmailPreference.value = emailPreference;
+            emailPreferenceItem.value = emailPreference.toString();
+
+            hasResubscribed.value = true;
+        }
+
+        nextTick(() => {
+            // Wait one tick to set this back to false so we don't trigger the
+            // `onUpdateEmailPreference()` handler to fire.
+            isUpdatingEmailPreference.value = false;
+        });
+    }
+
+    /**
+     * Handles the "Manage My Account" button click.
+     */
+    function onManageMyAccountClick(): void {
+        if (!manageMyAccountPageUrl.value) {
+            return;
+        }
+
+        window.location.href = manageMyAccountPageUrl.value;
+    }
+
+    /**
+     * Handles the updating of a person's contact info.
+     */
+    async function onUpdateContactInfo(): Promise<void> {
+        if (isUpdatingContactInfo.value) {
+            return;
+        }
+
+        isUpdatingContactInfo.value = true;
+        updateContactInfoErrorMessage.value = "";
+
+        const bag: UpdateContactInfoRequestBag = {
+            emailAddress: emailAddress.value
+        };
+
+        const result = await invokeBlockAction("UpdateContactInfo", { bag });
+        isUpdatingContactInfo.value = false;
+
+        if (!result.isSuccess) {
+            updateContactInfoErrorMessage.value = result.errorMessage || "Unknown error while trying to update email address.";
+            return;
+        }
+
+        showUpdatedContactInfoSuccessButton.value = true;
+    }
+
+    /**
+     * Handles the updating of a person's email preference.
+     */
+    async function onUpdateEmailPreference(): Promise<void> {
+        if (isUpdatingEmailPreference.value) {
+            return;
+        }
+
+        isUpdatingEmailPreference.value = true;
+        updateEmailPreferenceErrorMessage.value = "";
+
+        const bag: UpdateEmailPreferenceRequestBag = {
+            emailPreference: toNumber(emailPreferenceItem.value) as EmailPreference
+        };
+
+        const result = await invokeBlockAction("UpdateEmailPreference", { bag });
+        isUpdatingEmailPreference.value = false;
+
+        if (!result.isSuccess) {
+            updateEmailPreferenceErrorMessage.value = result.errorMessage || "Unknown error while trying to update email preference.";
+            // Set the button group value back to what it was before.
+            emailPreferenceItem.value = internalEmailPreference.value.toString();
+            return;
+        }
+
+        // Update the internal value to match that of the button group.
+        internalEmailPreference.value = bag.emailPreference;
+
+        if (isUnsubscribeMode.value && !hasResubscribed.value && !unsubscribedFromChannel.value) {
+            // The header title and description HTML are most likely no longer
+            // accurate. Treat this scenario as if they have resubscribed.
+            hasResubscribed.value = true;
+        }
+    }
+
+    /**
+     * Shows a confirmation screen before deactivating a person's record.
+     */
+    function onConfirmDeactivateClick(): void {
+        deactivateErrorMessage.value = "";
+        isConfirmingDeactivation.value = true;
+    }
+
+    /**
+     * Handles the deactivation of a person's record.
+     */
+    async function onDeactivateClick(): Promise<void> {
+        if (isDeactivating.value) {
+            return;
+        }
+
+        isDeactivating.value = true;
+        deactivateErrorMessage.value = "";
+
+        const bag: DeactivateRecordRequestBag = {
+            isFamilyDeactivation: recordsToDeactivate.value == RecordsToDeactivate.Family,
+            inactiveReasonValueGuid: inactiveReasonValueGuid.value,
+            inactiveReasonNote: inactiveReasonNote.value
+        };
+
+        const result = await invokeBlockAction<DeactivateRecordResponseBag>("DeactivateRecord", { bag });
+        isDeactivating.value = false;
+
+        if (!result.isSuccess || !result.data) {
+            deactivateErrorMessage.value = result.errorMessage || "Unknown error while trying to deactivate record.";
+            return;
+        }
+
+        internalHeaderTitle.value = result.data.removedInvolvementSuccessTitle ?? "";
+        internalHeaderDescriptionHtml.value = result.data.removedInvolvementSuccessDescriptionHtml ?? "";
+
+        isConfirmingDeactivation.value = false;
+        isRemovedFromChurchInvolvement.value = true;
+    }
+
+    /**
+     * Handles an "Unsubscribe" event.
+     *
+     * @param event The event containing the subscription details.
+     */
+    async function onUnsubscribe(event: ManageChannelSubscriptionEvent): Promise<void> {
+        const isManagingSubscription = isManagingSubscriptionRefs.get(event.idKey);
+        if (!isManagingSubscription || isManagingSubscription.value) {
+            return;
+        }
+
+        isManagingSubscription.value = true;
+        unsubscribeErrorMessage.value = "";
+
+        const bag: ManageChannelSubscriptionRequestBag = {
+            idKey: event.idKey,
+            communicationChannelType: event.channelType
+        };
+
+        const result = await invokeBlockAction("Unsubscribe", { bag });
+        isManagingSubscription.value = false;
+
+        if (!result.isSuccess) {
+            unsubscribeErrorMessage.value = result.errorMessage || "Unknown error while trying to unsubscribe from communication channel.";
+            return;
+        }
+
+        var channel = currentCommunicationChannels.value.find(c => c.idKey === event.idKey);
+        if (!channel) {
+            return;
+        }
+
+        // Remove the channel from the Current Communication Channels section.
+        currentCommunicationChannels.value = Enumerable
+            .from(currentCommunicationChannels.value)
+            .where(c => c.idKey !== event.idKey)
+            .orderBy(c => c.name)
+            .toArray();
+
+        // Add it to the Available Communication Channels section.
+        availableCommunicationChannels.value = Enumerable
+            .from([
+                ...availableCommunicationChannels.value,
+                {
+                    ...channel,
+                    isUnsubscribed: true
+                }
+            ])
+            .orderBy(c => c.name)
+            .toArray();
+    }
+
+    /**
+     * Handles a "Subscribe" event.
+     *
+     * @param event The event containing the subscription details.
+     */
+    async function onSubscribe(event: ManageChannelSubscriptionEvent): Promise<void> {
+        const isManagingSubscription = isManagingSubscriptionRefs.get(event.idKey);
+        if (!isManagingSubscription || isManagingSubscription.value) {
+            return;
+        }
+
+        isManagingSubscription.value = true;
+        subscribeErrorMessage.value = "";
+
+        const bag: ManageChannelSubscriptionRequestBag = {
+            idKey: event.idKey,
+            communicationChannelType: event.channelType
+        };
+
+        const result = await invokeBlockAction("Subscribe", { bag });
+        isManagingSubscription.value = false;
+
+        if (!result.isSuccess) {
+            subscribeErrorMessage.value = result.errorMessage || "Unknown error while trying to subscribe to communication channel.";
+            return;
+        }
+
+        var channel = availableCommunicationChannels.value.find(c => c.idKey === event.idKey);
+        if (!channel) {
+            return;
+        }
+
+        // Remove the channel from the Available Communication Channels section.
+        availableCommunicationChannels.value = Enumerable
+            .from(availableCommunicationChannels.value)
+            .where(c => c.idKey !== event.idKey)
+            .orderBy(c => c.name)
+            .toArray();
+
+        // Add it to the Current Communication Channels section.
+        currentCommunicationChannels.value = Enumerable
+            .from([
+                ...currentCommunicationChannels.value,
+                {
+                    ...channel,
+                    isUnsubscribed: false
+                }
+            ])
+            .orderBy(c => c.name)
+            .toArray();
+    }
+
+    /**
+     * Handles the updating of a communication preference.
+     * @param event The event payload containing the updated communication
+     * preference details.
+     */
+    async function onUpdateCommunicationPreference(event: UpdateCommunicationPreferenceEvent): Promise<void> {
+        const isManagingSubscription = isManagingSubscriptionRefs.get(event.idKey);
+        if (!isManagingSubscription || isManagingSubscription.value) {
+            return;
+        }
+
+        isManagingSubscription.value = true;
+        unsubscribeErrorMessage.value = "";
+
+        const bag: UpdateCommunicationPreferenceRequestBag = {
+            idKey: event.idKey,
+            communicationChannelType: event.channelType,
+            communicationPreference: event.preference
+        };
+
+        const result = await invokeBlockAction("UpdateCommunicationPreference", { bag });
+        isManagingSubscription.value = false;
+
+        if (!result.isSuccess) {
+            unsubscribeErrorMessage.value = result.errorMessage || "Unknown error while trying to update communication preference.";
+        }
+
+        // Update the channel's preference in the Current Communication Channels
+        // list, so it will continue to be accurately-reflected in the UI if
+        // they move it back and forth between the Available and Current lists.
+        var channel = currentCommunicationChannels.value.find(c => c.idKey === event.idKey);
+        if (!channel) {
+            return;
+        }
+
+        channel.communicationPreference = event.preference;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(emailAddress, () => {
+        showUpdatedContactInfoSuccessButton.value = false;
+
+        if (emailAddress.value) {
+            return;
+        }
+
+        if (!emailAddressRulesArray.value.includes(fieldRequiredRule)) {
+            // We'll only show the required indicator if they intentionally
+            // clear the text box's value.
+            emailAddressRulesArray.value = [
+                ...emailAddressRulesArray.value,
+                fieldRequiredRule
+            ];
+        }
+    });
+
+    // #endregion Watchers
 </script>

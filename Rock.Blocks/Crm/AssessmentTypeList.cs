@@ -39,7 +39,7 @@ namespace Rock.Blocks.Crm
     [DisplayName( "Assessment Type List" )]
     [Category( "CRM" )]
     [Description( "Displays a list of assessment types." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

@@ -35,7 +35,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Scheduled Job History" )]
     [Category( "Core" )]
     [Description( "Lists all scheduled job's History." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "4b46834f-c9d3-43f3-9de2-8990d3a232c2" )]

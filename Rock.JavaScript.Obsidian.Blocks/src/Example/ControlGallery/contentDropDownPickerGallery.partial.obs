@@ -10,7 +10,7 @@
                                :showClear="showClearButton"
                                pickerContentBoxHeight="auto"
                                disablePickerContentBoxScroll
-                               iconCssClass="fa fa-cross"
+                               iconCssClass="ti ti-cross"
                                rules="required">
 
             <p>You can place anything you want in here. Click the Save button to select a value or Cancel to close this box.
@@ -78,7 +78,7 @@
         value.value = "";
     }
 
-    const primaryButtonLabel = ref("<i class='fa fa-save'></i> Save");
+    const primaryButtonLabel = ref("<i class='ti ti-device-floppy'></i> Save");
     const secondaryButtonLabel = ref("Close");
     const showClearButton = ref(false);
     const importCode = getSfcControlImportPath("contentDropDownPicker");
@@ -88,7 +88,7 @@
     @clearButtonClicked="clear"
     :innerLabel="innerLabel"
     :showClear="!!value"
-    iconCssClass="fa fa-cross" >
+    iconCssClass="ti ti-cross" >
     You can place anything you want in here. Click the Save button to select a value or Cancel to close this box.
 </ContentDropDownPicker>`;
 </script>

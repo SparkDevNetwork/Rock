@@ -1,0 +1,91 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="links.length" class="communication-detail-link-performances">
+        <div v-for="link of links"
+             :key="link.url!"
+             class="communication-detail-link-performance">
+            <div class="communication-detail-link-performance-stats">
+                <h5 class="communication-detail-link-performance-url text-truncate">
+                    {{ link.url }}
+                </h5>
+                <div class="communication-detail-link-performance-numbers">
+                    <HighlightLabel labelType="info">
+                        Click-Through Rate: {{ asFormattedString(link.clickThroughRate, 1) }}%
+                    </HighlightLabel>
+                    <HighlightLabel labelType="success">
+                        Total: {{ asFormattedString(link.totalClicksCount) }} &bullet; Unique: {{ asFormattedString(link.uniqueClicksCount) }}
+                    </HighlightLabel>
+                </div>
+            </div>
+            <div class="communication-detail-link-performance-bar" :style="`width: ${link.percentOfTopLink}%`">
+                <ProgressBar :percent="getUniqueOfTotalPercent(link)" progressBarType="success" />
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.communication-detail-link-performance-stats {
+    display: flex;
+    justify-content: space-between;
+}
+
+.communication-detail-link-performance-url {
+    margin: 0;
+}
+
+.communication-detail-link-performance-numbers {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: var(--spacing-xsmall);
+}
+
+.communication-detail-link-performance-bar {
+    margin-top: var(--spacing-small);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import ProgressBar from "@Obsidian/Controls/progressBar.obs";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationLinkAnalyticsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationLinkAnalyticsBag";
+
+    const props = defineProps({
+        linksAnalytics: {
+            type: Array as PropType<CommunicationLinkAnalyticsBag[] | null | undefined>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    const links = computed((): CommunicationLinkAnalyticsBag[] => {
+        return props.linksAnalytics
+            ?.filter(la =>
+                la.url
+                && !isNullish(la.totalClicksCount)
+                && !isNullish(la.uniqueClicksCount)
+                && !isNullish(la.clickThroughRate)
+                && !isNullish(la.percentOfTopLink)
+            )
+            ?? [];
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function getUniqueOfTotalPercent(link: CommunicationLinkAnalyticsBag): number {
+        if (link.totalClicksCount <= 0) {
+            return 0;
+        }
+
+        return Math.round(link.uniqueClicksCount / link.totalClicksCount * 100);
+    }
+
+    // #endregion Functions
+</script>

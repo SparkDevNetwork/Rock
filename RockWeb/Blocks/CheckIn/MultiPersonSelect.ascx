@@ -27,7 +27,7 @@
 
                             <div class="control-group checkin-body-container">
                                 <label class="control-label"><asp:Literal ID="lCaption" runat="server" /></label>
-                                <asp:LinkButton CssClass="btn btn-link pull-right" ID="lbEditFamily" runat="server" OnClick="lbEditFamily_Click" Text="<i class='fa fa-pencil-alt'></i> Edit Family" />
+                                <asp:LinkButton CssClass="btn btn-link pull-right" ID="lbEditFamily" runat="server" OnClick="lbEditFamily_Click" Text="<i class='ti ti-pencil'></i> Edit Family" />
                                 <div class="controls checkin-person-list">
                                     <asp:Repeater ID="rSelection" runat="server">
                                         <ItemTemplate>
@@ -36,7 +36,7 @@
                                                     <a data-person-id='<%# Eval("Person.Id") %>' class="btn btn-primary btn-checkin-select btn-block js-person-select <%# GetSelectedClass( (bool)Eval("PreSelected") ) %> <%# GetDisabledClass( (bool)Eval("AnyPossibleSchedules") ) %>">
                                                         <div class="row">
                                                             <div class="checkbox-container">
-                                                                <i class='fa fa-3x <%# GetCheckboxClass( (bool)Eval("PreSelected") ) %>'></i>
+                                                                <i class='ti-3x <%# GetCheckboxClass( (bool)Eval("PreSelected") ) %>'></i>
                                                             </div>
                                                             <asp:Panel ID="pnlPhoto" runat="server" CssClass="photo-container">
                                                                 <div class="photo-round photo-round-md pull-left" style="display: block; background-image: url('<%# GetPersonImageTag( Eval("Person") ) %>');"></div>
@@ -99,7 +99,7 @@
                                                 class='btn btn-primary btn-checkin-select btn-block js-option-select <%# (bool)Eval("Disabled") ? "btn-dimmed" : "" %>' style="text-align: left">
                                                 <div class="row">
                                                     <div class="checkbox-container">
-                                                        <i class='fa fa-2x <%# GetCheckboxClass( (bool)Eval("Selected") ) %>'></i>
+                                                        <i class='ti-2x <%# GetCheckboxClass( (bool)Eval("Selected") ) %>'></i>
                                                     </div>
                                                     <asp:Panel ID="pnlOption" CssClass="col" runat="server"><%# GetOptionText( Container.DataItem ) %></asp:Panel>
                                                 </div>

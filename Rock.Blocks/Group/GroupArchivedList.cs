@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -23,14 +22,11 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Lava.RockLiquid.Blocks;
 using Rock.Model;
 using Rock.Obsidian.UI;
-using Rock.Reporting.DataFilter.Group;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Group.GroupArchivedList;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Group
@@ -41,7 +37,7 @@ namespace Rock.Blocks.Group
     [DisplayName( "Group Archived List" )]
     [Category( "Utility" )]
     [Description( "Lists Groups that have been archived." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "b67a0c89-1550-4960-8aaf-baa713be3277" )]

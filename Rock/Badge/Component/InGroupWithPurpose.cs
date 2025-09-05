@@ -35,7 +35,7 @@ namespace Rock.Badge.Component
     [ExportMetadata( "ComponentName", "In Group With Purpose" )]
 
     [DefinedValueField( SystemGuid.DefinedType.GROUPTYPE_PURPOSE, "Group Type Purpose", "The purpose to filter on." )]
-    [TextField( "Badge Icon CSS", "The CSS icon to use for the badge.", true, "fa fa-users", key: "BadgeIconCss" )]
+    [TextField( "Badge Icon CSS", "The CSS icon to use for the badge.", true, "ti ti-users", key: "BadgeIconCss" )]
     [TextField( "Badge Color", "The color of the badge (#ffffff).", true, "#0ab4dd" )]
     [Rock.SystemGuid.EntityTypeGuid( "1844AC11-7117-4C91-8D82-A6340D50323E")]
     public class InGroupWithPurpose : BadgeComponent

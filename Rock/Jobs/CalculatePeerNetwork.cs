@@ -21,6 +21,8 @@ using System.Text;
 
 using Humanizer;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Logging;
@@ -95,7 +97,7 @@ namespace Rock.Jobs
             using ( var rockContext = new RockContext() )
             {
                 var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
 
                 if ( CalculatePeerNetworkForFollowing( rockContext ) )
                 {
@@ -114,14 +116,14 @@ namespace Rock.Jobs
 
                 foreach ( var peerNetwork in peerNetworksCalculated )
                 {
-                    resultSb.AppendLine( $"<i class='fa fa-circle text-success'></i> {peerNetwork.Titleize()}" );
+                    resultSb.AppendLine( $"<i class='ti ti-circle text-success'></i> {peerNetwork.Titleize()}" );
                 }
 
                 UpdateLastStatusMessage( resultSb.ToString() );
             }
             else
             {
-                UpdateLastStatusMessage( "<i class='fa fa-circle text-warning'></i> No peer network calculations enabled." );
+                UpdateLastStatusMessage( "<i class='ti ti-circle text-warning'></i> No peer network calculations enabled." );
             }
         }
 

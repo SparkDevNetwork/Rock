@@ -40,13 +40,14 @@ namespace Rock.Blocks.Core
     [DisplayName( "Signature Document Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a given signature document." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
     #endregion
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "bca3d113-8a98-4757-8471-a737011226a9" )]
     [Rock.SystemGuid.BlockTypeGuid( "b80e8563-41f2-4528-81e5-c62cf1ece9de" )]
     public class SignatureDocumentDetail : RockEntityDetailBlockType<SignatureDocument, SignatureDocumentBag>

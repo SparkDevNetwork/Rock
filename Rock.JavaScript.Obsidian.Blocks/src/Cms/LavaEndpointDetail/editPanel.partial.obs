@@ -1,0 +1,224 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="slug"
+                         help="The slug to use for this endpoint."
+                         label="Slug"
+                         rules="required" @blur="onSlugChange" />
+                <div v-if="slugError">{{ slugError }}</div>
+            </div>
+            <div class="col-md-6">
+                <RadioButtonList v-model="httpMethod"
+                                 :items="httpMethodOptions"
+                                 horizontal
+                                 label="HTTP Method"
+                                 rules="required"
+                                 help="The HTTP method for this endpoint." />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <RadioButtonList v-model="securityMode"
+                                 :items="securityModeOptions"
+                                 horizontal
+                                 label="Security Mode"
+                                 rules="required"
+                                 help="Determines how security will be determined for the application. Block Integrated will use the security passed from the block. Custom will use the security configured on the backend application and endpoints." />
+            </div>
+            <div class="col-md-6">
+                <CheckBox v-model="enableCrossSiteForgeryProtection"
+                          label="Enable Cross-Site Forgery Protection"
+                          help="When enabled the endpoint will check for a cross-site header for all requests. The Helix Content block provides this header automatically. We strongly encourage you to keep this setting enabled." />
+            </div>
+        </div>
+
+        <CodeEditor v-model="codeTemplate"
+                    label="Code Template"
+                    theme="rock"
+                    mode="text"
+                    help="Your Lava template. Note that the application's configuration rigging is available as 'ConfigurationRigging'."
+                    :editorHeight="600" />
+
+        <LavaCommandPicker v-model="enabledLavaCommands"
+                           label="Enabled Lava Commands"
+                           :enhanceForLongLists="false"
+                           multiple />
+
+        <AttributeValuesContainer v-model="attributeValues" :showCategoryLabel="false" :attributes="attributes" isEditMode :numberOfColumns="2" />
+
+
+
+        <Panel title="Advanced Settings" :hasCollapse="true" :hasFullscreen="false" :isFullscreenPageOnly="true">
+
+            <CacheabilityPicker v-model="cacheControlHeaderSettings" :showBlankItem="false" :multiple="false" />
+
+            <div class="row" v-if="false">
+                <div class="col-md-6">
+                    <NumberBox label="Max Request Per Period" v-model="rateLimitRequestPerPeriod" />
+                </div>
+                <div class="col-md-6">
+                    <NumberBox label="Rate Limit Period" v-model="rateLimitPeriodDurationSeconds">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">seconds</span>
+                        </template>
+                    </NumberBox>
+                </div>
+            </div>
+        </Panel>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker.obs";
+    import CacheabilityPicker from "@Obsidian/Controls/cacheabilityPicker.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { LavaEndpointBag } from "@Obsidian/ViewModels/Blocks/Cms/LavaEndpointDetail/lavaEndpointBag";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import { LavaEndpointDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/LavaEndpointDetail/lavaEndpointDetailOptionsBag";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { LavaEndpointHttpMethod } from "@Obsidian/Enums/Cms/lavaEndpointHttpMethod";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { LavaEndpointSecurityMode } from "@Obsidian/Enums/Cms/lavaEndpointSecurityMode";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<LavaEndpointBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<LavaEndpointDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: LavaEndpointBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const codeTemplate = propertyRef(props.modelValue.codeTemplate ?? "", "CodeTemplate");
+    const httpMethodOptions = ref(props.options.httpMethodOptions ?? []);
+    const slug = propertyRef(props.modelValue.slug ?? "", "Slug");
+    const httpMethod = propertyRef(props.modelValue.httpMethod?.toString(), "HttpMethod");
+    const enabledLavaCommands = propertyRef(props.modelValue.enabledLavaCommands ?? [], "EnabledLavaCommands");
+    const cacheControlHeaderSettings = propertyRef(props.modelValue.cacheControlHeaderSettings ?? null, "CacheControlHeaderSettings");
+    const rateLimitPeriodDurationSeconds = propertyRef(props.modelValue.rateLimitPeriodDurationSeconds ?? null, "RateLimitPeriodDurationSeconds");
+    const rateLimitRequestPerPeriod = propertyRef(props.modelValue.rateLimitRequestPerPeriod ?? null, "RateLimitRequestPerPeriod");
+    const securityModeOptions = ref(props.options.securityModeOptions ?? []);
+    const securityMode = propertyRef(props.modelValue.securityMode?.toString(), "SecurityMode");
+    const enableCrossSiteForgeryProtection = propertyRef(props.modelValue.enableCrossSiteForgeryProtection ?? true, "EnableCrossSiteForgeryProtection");
+    const slugError = ref("");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [name, isActive, description, slug, httpMethod, codeTemplate, enabledLavaCommands, securityMode, cacheControlHeaderSettings, rateLimitPeriodDurationSeconds, rateLimitRequestPerPeriod, enableCrossSiteForgeryProtection];
+
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+    async function onSlugChange(): Promise<void> {
+        const result = await invokeBlockAction<boolean>("ValidateRoute", { slug: slug.value, method: toNumberOrNull(httpMethod.value) as LavaEndpointHttpMethod | null });
+
+        if (result.isSuccess) {
+            console.log(result);
+            if (result.data === true) {
+                slugError.value = "The slug is already in use.";
+            }
+            else {
+                slugError.value = "";
+            }
+        }
+        else {
+            console.error(result.errorMessage || "An error occurred while validating the slug.");
+        }
+    }
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(slug, props.modelValue.slug ?? "");
+        updateRefValue(httpMethod, props.modelValue.httpMethod?.toString() ?? "");
+        updateRefValue(codeTemplate, props.modelValue.codeTemplate ?? "");
+        updateRefValue(enabledLavaCommands, props.modelValue.enabledLavaCommands ?? []);
+        updateRefValue(cacheControlHeaderSettings, props.modelValue.cacheControlHeaderSettings ?? null);
+        updateRefValue(rateLimitPeriodDurationSeconds, props.modelValue.rateLimitPeriodDurationSeconds ?? null);
+        updateRefValue(rateLimitRequestPerPeriod, props.modelValue.rateLimitRequestPerPeriod ?? null);
+        updateRefValue(securityMode, props.modelValue.securityMode?.toString() ?? "");
+        updateRefValue(enableCrossSiteForgeryProtection, props.modelValue.enableCrossSiteForgeryProtection ?? true);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: LavaEndpointBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            name: name.value,
+            isActive: isActive.value,
+            description: description.value,
+            httpMethod: toNumberOrNull(httpMethod.value) as LavaEndpointHttpMethod | null,
+            slug: slug.value,
+            codeTemplate: codeTemplate.value,
+            enabledLavaCommands: enabledLavaCommands.value,
+            cacheControlHeaderSettings: cacheControlHeaderSettings.value,
+            rateLimitPeriodDurationSeconds: rateLimitPeriodDurationSeconds.value,
+            rateLimitRequestPerPeriod: rateLimitRequestPerPeriod.value,
+            securityMode: toNumberOrNull(securityMode.value) as LavaEndpointSecurityMode | null,
+            enableCrossSiteForgeryProtection: enableCrossSiteForgeryProtection.value,
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

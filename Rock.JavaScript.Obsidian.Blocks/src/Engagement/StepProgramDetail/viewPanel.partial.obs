@@ -21,7 +21,7 @@
                                 @click="onRefresh"
                                 loadingText="..."
                                 :isLoading="isRefreshLoading">
-                        <i class="fa fa-refresh"></i>
+                        <i class="ti ti-refresh"></i>
                     </RockButton>
                 </div>
             </div>
@@ -33,6 +33,9 @@
                         <canvas ref="canvasElement"></canvas>
                     </div>
                 </div>
+                <NotificationBox v-if="props.modelValue && !props.modelValue.isDeletable" alertType="warning" class="col-md-12 margin-y-xsmall">
+                    The {{ props.modelValue.name }} Step Program is used by Rock and cannot be deleted.
+                </NotificationBox>
             </div>
         </div>
 
@@ -40,6 +43,12 @@
 
     </fieldset>
 </template>
+
+<style scoped>
+.margin-y-xsmall {
+    margin: var(--spacing-xsmall) 0;
+}
+</style>
 
 <script setup lang="ts">
     import { onMounted, PropType, ref, shallowRef, StyleValue } from "vue";

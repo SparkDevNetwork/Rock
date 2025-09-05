@@ -12,7 +12,11 @@
                                 @showTooltip="showTooltip" />
         </svg>
 
-        <div class="step-flow-legend" v-html="settings.legendHtml" />
+        <div v-if="$slots.legend" class="step-flow-legend">
+            <slot name="legend" />
+        </div>
+
+        <div v-else class="step-flow-legend" v-html="settings.legendHtml" />
 
         <transition name="fade" appear>
             <div v-if="isLoading" class="loadingContainer">

@@ -9,23 +9,23 @@
 .icon-button {
     width: 100px;
     height: 100px;
-    border: 2px solid var(--theme-light);
-    color: var(--theme-dark);
+    border: 2px solid var(--color-interface-soft);
+    color: var(--color-interface-stronger);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 8px;
-    padding: 16px 8px;
+    gap: var(--spacing-xsmall);
+    padding: var(--spacing-medium) var(--spacing-xsmall);
     cursor: grab;
 }
 
 .icon-button:hover {
-    background-color: var(--theme-lightest);
+    background-color: var(--color-interface-softest);
 }
 
 .icon-button .icon {
-    font-size: 28px;
+    font-size: var(--font-size-h3);
 }
 
 .icon-button .title {

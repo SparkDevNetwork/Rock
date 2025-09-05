@@ -294,7 +294,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                             }
                             else
                             {
-                                e.Row.Cells[personLinkColumnIndex.Value].Text = $"<a class='btn btn-default btn-sm' href='/person/{personAlias.PersonId}'><i class='fa fa-user'></i></a>";
+                                e.Row.Cells[personLinkColumnIndex.Value].Text = $"<a class='btn btn-default btn-sm' href='/person/{personAlias.PersonId}'><i class='ti ti-user'></i></a>";
 
                                 rowViewModel.Person = personAlias.Person;
                                 rowViewModel.PersonId = personAlias.PersonId;

@@ -14,21 +14,25 @@
 // limitations under the License.
 // </copyright>
 //
-import { App, Component, createApp, defineComponent, Directive, h, markRaw, onMounted, provide, ref, VNode } from "vue";
+import { App, Component, createApp, defineComponent, Directive, h, markRaw, onMounted, provide, reactive, ref, VNode } from "vue";
+import DynamicComponent from "@Obsidian/Controls/dynamicComponent.obs";
 import RockBlock from "./rockBlock.partial";
 import { useStore } from "@Obsidian/PageState";
 import "@Obsidian/ValidationRules";
 import "@Obsidian/FieldTypes/index";
 import { DebugTiming } from "@Obsidian/ViewModels/Utility/debugTiming";
 import { ObsidianBlockConfigBag } from "@Obsidian/ViewModels/Cms/obsidianBlockConfigBag";
+import { DynamicComponentDefinitionBag } from "@Obsidian/ViewModels/Controls/dynamicComponentDefinitionBag";
+import { FormError, FormState, provideFormState } from "@Obsidian/Utility/form";
 import { PageConfig } from "@Obsidian/Utility/page";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { BasicSuspenseProvider, provideSuspense } from "@Obsidian/Utility/suspense";
 import { alert } from "@Obsidian/Utility/dialogs";
 import { HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
 import { doApiCall, provideHttp } from "@Obsidian/Utility/http";
-import { createInvokeBlockAction, provideBlockBrowserBus, provideBlockGuid, provideBlockTypeGuid } from "@Obsidian/Utility/block";
-import { useBrowserBus } from "@Obsidian/Utility/browserBus";
+import { createInvokeBlockAction, provideBlockGuid, provideBlockTypeGuid } from "@Obsidian/Utility/block";
+import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+import { Guid } from "@Obsidian/Types";
 
 type DebugTimingConfig = {
     elementId: string;
@@ -189,6 +193,8 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
 
                 isLoaded = true;
 
+                let loadingTimeout = 0;
+
                 if (rootElement.classList.contains("obsidian-block-has-placeholder")) {
                     wrapperElement.style.padding = "1px 0px";
                     const realHeight = wrapperElement.getBoundingClientRect().height - 2;
@@ -200,6 +206,7 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
                         rootElement.style.height = "";
                         rootElement.classList.remove("obsidian-block-has-placeholder");
                     }, 200);
+                    loadingTimeout = 201;
                 }
 
                 rootElement.classList.remove("obsidian-block-loading");
@@ -211,7 +218,9 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
                     pendingCount--;
                     document.body.setAttribute("data-obsidian-pending-blocks", pendingCount.toString());
                     if (pendingCount === 0) {
-                        document.body.classList.remove("obsidian-loading");
+                        setTimeout(() => {
+                            document.body.classList.remove("obsidian-loading");
+                        }, loadingTimeout);
                     }
                 }
             };
@@ -318,18 +327,32 @@ export function showShortLink(url: string): void {
 
 /**
  * This is an internal method that will be removed in the future. It serves the
- * ObsidianDataComponentWrapper WebForms control to initialize an Obsidian
+ * ObsidianDynamicComponentWrapper WebForms control to initialize an Obsidian
  * component inside a WebForms component.
  *
- * @param url The URL of the Obsidian component to load.
  * @param rootElementId The identifier of the DOM node to mount the component on.
+ * @param componentGuid The unique identifier of the component.
+ * @param componentDefinitionId The identifier of the DOM node that contains the component definition bag.
  * @param componentDataId The identifier of the DOM node that contains the component data.
  * @param componentPropertiesId The identifier of the DOM node that contains the additional component properties.
+ * @param pageGuid The unique identifier of the page.
+ * @param blockGuid The unique identifier of the block.
  */
-export async function initializeDataComponentWrapper(url: string, rootElementId: string, componentDataId: string, componentPropertiesId: string | undefined): Promise<void> {
-    const componentUrl = `${url}.js`;
+export async function initializeDynamicComponentWrapper(rootElementId: string, componentGuid: Guid, componentDefinitionId: string, componentDataId: string, componentPropertiesId: string | undefined, pageGuid: string | null, blockGuid: string | null): Promise<void> {
+    let definition: DynamicComponentDefinitionBag | null = null;
     let component: Component | null = null;
     let errorMessage = "";
+
+    if (componentDefinitionId) {
+        const componentDefinitionElement = document.getElementById(componentDefinitionId) as HTMLInputElement;
+
+        try {
+            definition = safeParseJson<DynamicComponentDefinitionBag>(decodeURIComponent(componentDefinitionElement.value)) ?? null;
+        }
+        catch {
+            definition = null;
+        }
+    }
 
     const rootElement = document.getElementById(rootElementId);
 
@@ -338,7 +361,8 @@ export async function initializeDataComponentWrapper(url: string, rootElementId:
     }
 
     try {
-        const componentModule = await import(componentUrl);
+
+        const componentModule = await import(`${definition?.url}.js`);
         component = componentModule ?
             (componentModule.default || componentModule) :
             null;
@@ -349,18 +373,69 @@ export async function initializeDataComponentWrapper(url: string, rootElementId:
         errorMessage = `${e}`;
     }
 
-    const name = `Root${componentUrl.replace(/\//g, ".")}`;
+    const name = `Root${definition?.url?.replace(/\//g, ".")}`;
+
+    // Initialize a fake form state to track errors and proxy them to the
+    // WebForms system.
+    const formErrors: Record<string, FormError> = {};
+    const formState = reactive<FormState>({
+        submitCount: 0,
+        setError(id, name, error) {
+            if (error) {
+                formErrors[id] = { name, text: error };
+            }
+            else if (formErrors[id]) {
+                delete formErrors[id];
+            }
+        }
+    });
+
+    // Register the validator function for this component. This will be called
+    // whenever form validation is triggered by submitting a form.
+    window[`validator_${rootElementId}`] = function (validationControl: HTMLElement & { errormessage?: string }, controlState: Record<string, unknown>): void {
+        formState.submitCount++;
+
+        // If we don't have any errors, then the form is valid.
+        if (Object.keys(formErrors).length === 0) {
+            controlState.IsValid = true;
+            return;
+        }
+
+        // Translate the form errors into error strings.
+        const errors: string[] = [];
+        for (const key of Object.keys(formErrors)) {
+            errors.push(`${formErrors[key].name} ${formErrors[key].text}`);
+        }
+
+        // Put the error strings into the WebForms control. It injects the error
+        // text as raw HTML, so we hijack things a bit to make the bullet list
+        // look right.
+        if (errors.length === 1) {
+            validationControl.errormessage = errors[0];
+        }
+        else {
+            const firstError = errors.shift();
+            validationControl.errormessage = `${firstError}</li><li>${errors.join("</li><li>")}</li>`;
+        }
+
+        controlState.IsValid = false;
+    };
 
     const app = createApp({
         name,
+        components: {
+            DynamicComponent
+        },
         setup() {
             let componentData: Record<string, string> = {};
             let componentProperties: Record<string, unknown> = {};
 
+            provideFormState(formState);
+
             try {
                 const componentDataElement = document.getElementById(componentDataId) as HTMLInputElement;
 
-                componentData = JSON.parse(componentDataElement.value) ?? {};
+                componentData = JSON.parse(decodeURIComponent(componentDataElement.value)) ?? {};
             }
             catch (e) {
                 if (!errorMessage) {
@@ -372,7 +447,7 @@ export async function initializeDataComponentWrapper(url: string, rootElementId:
                 try {
                     const componentPropertiesElement = document.getElementById(componentPropertiesId) as HTMLInputElement;
 
-                    componentProperties = JSON.parse(componentPropertiesElement.value) ?? {};
+                    componentProperties = JSON.parse(decodeURIComponent(componentPropertiesElement.value)) ?? {};
                 }
                 catch (e) {
                     if (!errorMessage) {
@@ -385,14 +460,36 @@ export async function initializeDataComponentWrapper(url: string, rootElementId:
                 const componentDataElement = document.getElementById(componentDataId) as HTMLInputElement;
 
                 if (componentDataElement) {
-                    componentDataElement.value = JSON.stringify(data);
+                    componentDataElement.value = encodeURIComponent(JSON.stringify(data));
                 }
+            }
+
+            async function onExecuteRequest(request: Record<string, string>, securityGrantToken: string | null): Promise<Record<string, string | null | undefined> | null> {
+                const url = `/api/v2/BlockActions/${pageGuid}/${blockGuid}/ExecuteComponentRequest`;
+                const data = {
+                    componentGuid,
+                    request,
+                    securityGrantToken,
+                };
+
+                const result = await doApiCall<Record<string, string | null | undefined>>("POST", url, undefined, data);
+
+                if (result.isSuccess) {
+                    return result.data ?? null;
+                }
+                else {
+                    console.log(result.errorMessage || "Error executing component request");
+                }
+
+                return null;
             }
 
             return {
                 component: component ? markRaw(component) : null,
                 componentData,
                 componentProperties,
+                definition,
+                onExecuteRequest,
                 onUpdateComponentData,
                 errorMessage
             };
@@ -406,7 +503,12 @@ export async function initializeDataComponentWrapper(url: string, rootElementId:
     <br />
     {{errorMessage}}
 </div>
-<component v-else :is="component" :modelValue="componentData" @update:modelValue="onUpdateComponentData" v-bind="componentProperties" />`
+<DynamicComponent v-else-if="definition"
+        :modelValue="componentData"
+        :definition="definition"
+        :properties="componentProperties"
+        :executeRequest="onExecuteRequest"
+        @update:modelValue="onUpdateComponentData" />`
     });
 
     app.mount(rootElement);
@@ -497,7 +599,6 @@ export async function showCustomBlockAction(actionFileUrl: string, pageGuid: str
             provide("invokeBlockAction", invokeBlockAction);
             provideBlockGuid(blockGuid);
             provideBlockTypeGuid(blockTypeGuid);
-            provideBlockBrowserBus(useBrowserBus({ block: blockGuid, blockType: blockTypeGuid }));
 
             return {
                 actionComponent,

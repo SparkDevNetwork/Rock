@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -57,14 +58,19 @@ namespace Rock.Rest.Handler
                 {
                     request.Properties["RockServiceProvider"] = scope.ServiceProvider;
 
-                    var responseContext = new RockMessageResponseContext();
                     var wrapper = new HttpRequestMessageWrapper( request );
+                    var responseContext = new RockMessageResponseContext( wrapper );
                     var user = UserLoginService.GetCurrentUser( false, rockContext );
                     var rockRequestContext = new RockRequestContext( wrapper, responseContext, user );
 
                     if ( accessor is RockRequestContextAccessor internalAccessor )
                     {
                         internalAccessor.RockRequestContext = rockRequestContext;
+                    }
+
+                    if ( rockRequestContext.IsClientForbidden() )
+                    {
+                        return request.CreateResponse( HttpStatusCode.Forbidden );
                     }
 
                     var responseMessage = await base.SendAsync( request, cancellationToken );

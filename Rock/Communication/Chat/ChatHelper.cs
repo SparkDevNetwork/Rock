@@ -51,18 +51,6 @@ namespace Rock.Communication.Chat
     [RockInternal( "17.1", true )]
     public class ChatHelper : IDisposable
     {
-        #region Keys
-
-        /// <summary>
-        /// Attribute keys for Rock groups.
-        /// </summary>
-        internal static class GroupAttributeKey
-        {
-            public const string AvatarImage = "AvatarImage";
-        }
-
-        #endregion Keys
-
         #region Fields
 
         /// <summary>
@@ -1244,7 +1232,7 @@ namespace Rock.Communication.Chat
                     bool HasChannelChanged( ChatChannel lastSyncedChannel, ChatChannel currentChannel )
                     {
                         return lastSyncedChannel.Name != currentChannel.Name
-                            || lastSyncedChannel.AvatarImageUrl != currentChannel.AvatarImageUrl
+                            || lastSyncedChannel.AvatarUrl != currentChannel.AvatarUrl
                             || lastSyncedChannel.IsLeavingAllowed != currentChannel.IsLeavingAllowed
                             || lastSyncedChannel.IsPublic != currentChannel.IsPublic
                             || lastSyncedChannel.IsAlwaysShown != currentChannel.IsAlwaysShown
@@ -2743,7 +2731,7 @@ namespace Rock.Communication.Chat
 
                 try
                 {
-                    var result = ChatProvider.GetChatToRockSyncCommands( webhookRequests );
+                    var result = ChatProvider.TransformChatToRockWebhooks( webhookRequests );
                     if ( result == null || result?.HasException == true )
                     {
                         Logger.LogError( result?.Exception, logMessage );
@@ -2752,6 +2740,11 @@ namespace Rock.Communication.Chat
                     if ( result?.SyncCommands?.Any() == true )
                     {
                         await SyncFromChatToRockAsync( result.SyncCommands );
+                    }
+
+                    if ( result?.MessageEvents?.Any() == true )
+                    {
+                        TriggerMessageAutomations( result.MessageEvents );
                     }
                 }
                 catch ( Exception ex )
@@ -3345,24 +3338,30 @@ namespace Rock.Communication.Chat
 
             using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Get Rock Chat Groups for Group Queryable" ) )
             {
-                // Get all groups matching the provided query, along with their chat-specific attributes.
-                var groups = groupQry.AsNoTracking().ToList();
-                groups.LoadFilteredAttributes( a => a.Key == GroupAttributeKey.AvatarImage );
-
-                return groups
+                // Get all groups matching the provided query.
+                return groupQry
+                    .Select( g =>
+                        new
+                        {
+                            Group = g,
+                            AvatarBinaryFileGuid = g.ChatChannelAvatarBinaryFile != null
+                                ? g.ChatChannelAvatarBinaryFile.Guid
+                                : ( Guid? ) null
+                        }
+                    )
+                    .AsEnumerable() // Materialize the query.
                     .Select( g =>
                     {
-                        var groupId = g.Id;
-                        var groupTypeId = g.GroupTypeId;
+                        var groupId = g.Group.Id;
+                        var groupTypeId = g.Group.GroupTypeId;
 
-                        var savedChatChannelKey = g.ChatChannelKey;
+                        var savedChatChannelKey = g.Group.ChatChannelKey;
                         var runtimeChatChannelKey = GetChatChannelKey( groupId, savedChatChannelKey );
 
-                        var avatarImageUrl = string.Empty;
-                        var avatarImageGuid = g.GetAttributeValue( GroupAttributeKey.AvatarImage ).AsGuidOrNull();
-                        if ( avatarImageGuid.HasValue )
+                        var avatarUrl = string.Empty;
+                        if ( g.AvatarBinaryFileGuid.HasValue )
                         {
-                            avatarImageUrl = $"{PublicApplicationRootUrl}GetImage.ashx?guid={avatarImageGuid.Value}&maxwidth=120&maxheight=120";
+                            avatarUrl = $"{PublicApplicationRootUrl}GetImage.ashx?guid={g.AvatarBinaryFileGuid.Value}&maxwidth=120&maxheight=120";
                         }
 
                         return new RockChatGroup
@@ -3372,14 +3371,15 @@ namespace Rock.Communication.Chat
                             ChatChannelTypeKey = GetChatChannelTypeKey( groupTypeId ),
                             ChatChannelKey = runtimeChatChannelKey,
                             ShouldSaveChatChannelKeyInRock = savedChatChannelKey != runtimeChatChannelKey,
-                            Name = g.Name,
-                            AvatarImageUrl = avatarImageUrl,
-                            CampusId = g.CampusId,
-                            IsLeavingAllowed = g.GetIsLeavingChatChannelAllowed(),
-                            IsPublic = g.GetIsChatChannelPublic(),
-                            IsAlwaysShown = g.GetIsChatChannelAlwaysShown(),
-                            IsChatEnabled = g.GetIsChatEnabled(),
-                            IsChatChannelActive = g.GetIsChatChannelActive()
+                            Name = g.Group.Name,
+                            AvatarUrl = avatarUrl,
+                            CampusId = g.Group.CampusId,
+                            IsLeavingAllowed = g.Group.GetIsLeavingChatChannelAllowed(),
+                            IsPublic = g.Group.GetIsChatChannelPublic(),
+                            IsAlwaysShown = g.Group.GetIsChatChannelAlwaysShown(),
+                            ChatNotificationMode = g.Group.GetChatPushNotificationMode(),
+                            IsChatEnabled = g.Group.GetIsChatEnabled(),
+                            IsChatChannelActive = g.Group.GetIsChatChannelActive()
                         };
                     } )
                     .ToList();
@@ -3437,11 +3437,12 @@ namespace Rock.Communication.Chat
                     rockChatGroup.ChatChannelKey = dbRockChatGroup.ChatChannelKey;
                     rockChatGroup.ShouldSaveChatChannelKeyInRock = dbRockChatGroup.ShouldSaveChatChannelKeyInRock;
                     rockChatGroup.Name = dbRockChatGroup.Name;
-                    rockChatGroup.AvatarImageUrl = dbRockChatGroup.AvatarImageUrl;
+                    rockChatGroup.AvatarUrl = dbRockChatGroup.AvatarUrl;
                     rockChatGroup.CampusId = dbRockChatGroup.CampusId;
                     rockChatGroup.IsLeavingAllowed = dbRockChatGroup.IsLeavingAllowed;
                     rockChatGroup.IsPublic = dbRockChatGroup.IsPublic;
                     rockChatGroup.IsAlwaysShown = dbRockChatGroup.IsAlwaysShown;
+                    rockChatGroup.ChatNotificationMode = dbRockChatGroup.ChatNotificationMode;
                     rockChatGroup.IsChatEnabled = dbRockChatGroup.IsChatEnabled;
                     rockChatGroup.IsChatChannelActive = dbRockChatGroup.IsChatChannelActive;
                 }
@@ -3677,9 +3678,6 @@ namespace Rock.Communication.Chat
                         gm.IsArchived,
                         IsGroupActive = gm.Group.IsActive,
                         IsGroupArchived = gm.Group.IsArchived,
-
-                        // For now, hard code this based on the group type.
-                        GroupChatNotificationMode = gm.Group.GroupTypeId == ChatSharedChannelGroupTypeId ? ChatNotificationMode.Mentions : ChatNotificationMode.AllMessages
                     } )
                     .GroupBy( gm => new
                     {
@@ -3693,7 +3691,11 @@ namespace Rock.Communication.Chat
                         g.Key.PersonId,
                         GroupMembers = g.ToList()
                     } )
-                    .ToDictionary( g => $"{g.GroupId}|{g.PersonId}", g => g.GroupMembers );
+                    .ToDictionary( g => $"{g.GroupId}|{g.PersonId}", g => new
+                    {
+                        g.GroupMembers,
+                        g.GroupId
+                    } );
 
                 var rockChatGroupMembers = new List<RockChatGroupMember>();
 
@@ -3722,14 +3724,14 @@ namespace Rock.Communication.Chat
                     rockChatGroupMembers.Add( rockChatChannelMember );
 
                     // Find all member records for this group & person combination.
-                    if ( !membersByGroupAndPerson.TryGetValue( groupAndPersonKey, out var members ) || !members.Any() )
+                    if ( !membersByGroupAndPerson.TryGetValue( groupAndPersonKey, out var members ) || !members.GroupMembers.Any() )
                     {
                         // This person is not currently a member of this group.
                         rockChatChannelMember.ShouldDelete = true;
                         continue;
                     }
 
-                    var memberToSync = members
+                    var memberToSync = members.GroupMembers
                         .OrderBy( gm => gm.IsArchived ) // Prefer non-archived.
                         .ThenByDescending( gm => gm.GroupMemberStatus == GroupMemberStatus.Active ) // Prefer active.
                         .ThenBy( gm => gm.GroupRoleOrder )
@@ -3760,12 +3762,250 @@ namespace Rock.Communication.Chat
                         rockChatChannelMember.IsDeceased = memberToSync.IsDeceased;
                         rockChatChannelMember.ShouldDelete = false;
                         rockChatChannelMember.ShouldIgnore = false;
-                        rockChatChannelMember.PushNotificationMode = memberToSync.GroupChatNotificationMode;
+
+                        // BC TODO: In the future, we can probably pass this from the command instead
+                        // of re-fetching the group from cache.
+                        rockChatChannelMember.PushNotificationMode = GroupCache.Get( members.GroupId ).GetChatPushNotificationMode();
                     }
                 }
 
                 return rockChatGroupMembers;
             }
+        }
+
+        /// <summary>
+        /// Gets a list of <see cref="RockChatFallbackNotificationPerson"/>s who need to receive a fallback notification
+        /// to alert them of recent chat activity.
+        /// </summary>
+        /// <param name="config">The configuration object to provide filters when querying.</param>
+        /// <returns>
+        /// A list of <see cref="RockChatFallbackNotificationPerson"/>s who need to receive a fallback notification.
+        /// </returns>
+        /// <remarks>
+        /// This will target members of the specified channel who either don't have a personal device or don't have any
+        /// personal devices with notifications currently enabled.
+        /// </remarks>
+        internal List<RockChatFallbackNotificationPerson> GetPeopleNeedingFallbackChatNotifications( FallbackChatNotificationsConfig config )
+        {
+            var anyEventChannelMembers = config?.EventChannelMembers?.Any() == true;
+
+            if ( config == null
+                || config.SystemCommunicationId <= 0
+                || ( !config.GroupId.HasValue && !anyEventChannelMembers ) )
+            {
+                // We need a system communication AND either a group ID or a list of channel members to operate against.
+                return new List<RockChatFallbackNotificationPerson>();
+            }
+
+            // The UI allows an administrator to define a suppression window of zero minutes, indicating that fallback
+            // notifications should never be suppressed (the fallback individuals should receive a notification for
+            // every message sent within the channel).
+            var now = RockDateTime.Now;
+            DateTime? suppressOnOrAfterDateTime = null;
+            var notificationSuppressionMinutes = Math.Abs( config.NotificationSuppressionMinutes );
+            if ( notificationSuppressionMinutes > 0 )
+            {
+                suppressOnOrAfterDateTime = now.AddMinutes( -notificationSuppressionMinutes );
+            }
+
+            var personService = new PersonService( RockContext );
+
+            // We'll project into a temporary type while deciding which people to notify.
+            IQueryable<FallbackChatNotificationPerson> fallbackNotificationPersonQry = null;
+
+            if ( config.GroupId.HasValue )
+            {
+                // If group ID (channel) is defined, we'll treat Rock as the system of truth and operate against its
+                // known group member people.
+                fallbackNotificationPersonQry = new GroupMemberService( RockContext )
+                    .Queryable()
+                    .Include( gm => gm.Person.PhoneNumbers ) // Eager-load phone numbers for SMS notifications.
+                    .Where( gm => gm.GroupId == config.GroupId.Value )
+                    .Select( gm => new FallbackChatNotificationPerson
+                    {
+                        RecipientPerson = gm.Person,
+                        GroupMemberCommunicationPreference = gm.CommunicationPreference
+                    } );
+            }
+            else
+            {
+                // While highly unlikely, it's possible for Rock to receive this message event BEFORE receiving the
+                // corresponding event to create a new chat channel. In this case, we'll rely on the list of chat user
+                // keys provided by the external chat system along with this message event, since we may not have a
+                // GroupMember record yet.
+                var memberChatUserKeys = config.EventChannelMembers
+                    .Select( m => m.ChatPersonKey )
+                    .ToHashSet();
+
+                fallbackNotificationPersonQry = personService
+                    .GetPersonByChatUserKeysQuery( memberChatUserKeys )
+                    .Include( p => p.PhoneNumbers ) // Eager-load phone numbers for SMS notifications.
+                    .Select( p => new FallbackChatNotificationPerson
+                    {
+                        RecipientPerson = p,
+                        GroupMemberCommunicationPreference = null
+                    } );
+            }
+
+            if ( config.PersonIdToExclude.HasValue )
+            {
+                fallbackNotificationPersonQry = fallbackNotificationPersonQry.Where( p => p.RecipientPerson.Id != config.PersonIdToExclude.Value );
+            }
+
+            // Limit the query to people who either:
+            //  1) Don't have a personal device.
+            //  2) Don't have any active personal devices with notifications enabled that have been seen within the
+            //     required number of days in the past.
+
+            // The UI allows an administrator to define a day count of zero, indicating that a device isn't required to
+            // have "been seen".
+            DateTime? deviceSeenOnOrAfterDateTime = null;
+            var deviceSeenWithinDays = Math.Abs( config.DeviceSeenWithinDays );
+            if ( deviceSeenWithinDays > 0 )
+            {
+                deviceSeenOnOrAfterDateTime = now.AddDays( -deviceSeenWithinDays );
+            }
+
+            var personIdsWithEnabledDeviceQry = new PersonalDeviceService( RockContext )
+                .Queryable()
+                .Where( pd =>
+                    pd.IsActive
+                    && pd.NotificationsEnabled
+                    && !string.IsNullOrEmpty( pd.DeviceRegistrationId ) // Only mobile devices should have this value defined.
+                    && (
+                        !deviceSeenOnOrAfterDateTime.HasValue
+                        || pd.LastSeenDateTime >= deviceSeenOnOrAfterDateTime
+                    )
+                )
+                .Select( pd => pd.PersonAlias.PersonId )
+                .Distinct();
+
+            fallbackNotificationPersonQry = fallbackNotificationPersonQry.Where( p => !personIdsWithEnabledDeviceQry.Contains( p.RecipientPerson.Id ) );
+
+            // This will be the final return type for the method.
+            List<RockChatFallbackNotificationPerson> fallbackNotificationPeople;
+
+            if ( !suppressOnOrAfterDateTime.HasValue )
+            {
+                // If a suppression window was NOT provided, we'll simply get all people qualified by the rules above.
+                fallbackNotificationPeople = fallbackNotificationPersonQry
+                    .Select( p => new RockChatFallbackNotificationPerson
+                    {
+                        RecipientPerson = p.RecipientPerson,
+                        GroupMemberCommunicationPreference = p.GroupMemberCommunicationPreference
+                    } )
+                    .ToList();
+            }
+            else
+            {
+                // If a suppression window WAS provided, get each qualified person along with the datetime (if any)
+                // they were last sent a fallback notification within the suppression window.
+                var lastNotifiedQry = new CommunicationRecipientService( RockContext )
+                    .Queryable()
+                    .Where( cr =>
+                        cr.PersonAliasId != null
+                        && cr.SendDateTime >= suppressOnOrAfterDateTime
+                        && cr.Communication.SystemCommunicationId == config.SystemCommunicationId
+                    )
+                    .GroupBy( cr => cr.PersonAlias.PersonId )
+                    .Select( g => new
+                    {
+                        PersonId = g.Key,
+                        LastNotifiedRockDateTime = g.Max( cr => cr.SendDateTime.Value )
+                    } );
+
+                // [Left Outer] Join the two queries.
+                // (Also include people who have NOT already received a notification within the suppression window.)
+                fallbackNotificationPeople = fallbackNotificationPersonQry
+                    .GroupJoin(
+                        lastNotifiedQry,
+                        p => p.RecipientPerson.Id,
+                        l => l.PersonId,
+                        ( fallbackNotificationPerson, lastNotified ) => new
+                        {
+                            FallbackNotificationPerson = fallbackNotificationPerson,
+                            LastNotified = lastNotified
+                        }
+                    )
+                    .SelectMany(
+                        pair => pair.LastNotified.DefaultIfEmpty(),
+                        ( pair, lastNotified ) => new RockChatFallbackNotificationPerson
+                        {
+                            RecipientPerson = pair.FallbackNotificationPerson.RecipientPerson,
+                            GroupMemberCommunicationPreference = pair.FallbackNotificationPerson.GroupMemberCommunicationPreference,
+                            LastNotifiedRockDateTime = lastNotified != null ? lastNotified.LastNotifiedRockDateTime : ( DateTime? ) null
+                        }
+                    )
+                    .ToList(); // Materialize the query so we can perform the remaining logic in memory.
+            }
+
+            if ( !anyEventChannelMembers )
+            {
+                // The caller of this method did not provide any event channel members to compare against. We'll notify
+                // only those people who have not been sent a notification within the suppression window (which might be
+                // all people if a suppression window was NOT provided for us to compare against).
+                fallbackNotificationPeople = fallbackNotificationPeople
+                    .Where( p => !p.LastNotifiedRockDateTime.HasValue )
+                    .ToList();
+            }
+            else
+            {
+                // Further refine the recipient list by considering the last datetime they've read the chat channel.
+                // In order to find a given person's last read datetime among the provided channel members,
+                // we'll need to get the mappings between Rock person ID and external chat user key.
+                var personIds = fallbackNotificationPeople.Select( p => p.RecipientPerson.Id ).ToList();
+                var rockChatUserKeys = personService.GetActiveRockChatUserKeys( personIds );
+
+                fallbackNotificationPeople = fallbackNotificationPeople
+                    .Where( p =>
+                    {
+                        var rockChatUserKey = rockChatUserKeys.FirstOrDefault( k => k.PersonId == p.RecipientPerson.Id );
+                        if ( rockChatUserKey == null )
+                        {
+                            // Unable to find a chat user key mapped to this person ID. We'll treat Rock as the system
+                            // of truth and NOT notify them in this case. This will probably never happen.
+                            return false;
+                        }
+
+                        var eventChannelMember = config.EventChannelMembers.FirstOrDefault( m => m.ChatPersonKey == rockChatUserKey.ChatUserKey );
+                        if ( eventChannelMember?.LastReadAtRockDateTime == null )
+                        {
+                            // Unable to find a channel member's last read datetime mapped to this person ID.
+                            // Notify them only if they haven't already been notified within the suppression window.
+                            return !p.LastNotifiedRockDateTime.HasValue;
+                        }
+
+                        // We've successfully matched the Rock person with the external chat system channel member.
+                        // Do NOT notify them if they're already caught up: that is, their last read datetime for the
+                        // channel is on or after the datetime the message event took place. This means they probably
+                        // have the chat web view open and immediately saw the message in their browser.
+                        if ( eventChannelMember.LastReadAtRockDateTime >= config.EventRockDateTime )
+                        {
+                            return false;
+                        }
+
+                        // Notify them if they're not caught up and haven't been sent any notifications within the
+                        // suppression window.
+                        if ( !p.LastNotifiedRockDateTime.HasValue )
+                        {
+                            return true;
+                        }
+
+                        // Finally, notify them if both are true:
+                        //  1) They HAVE read the channel since their last fallback notification was sent, BUT
+                        //  2) They HAVEN'T read the channel since this latest message event took place.
+                        return eventChannelMember.LastReadAtRockDateTime > p.LastNotifiedRockDateTime;
+                    } )
+                    .ToList();
+            }
+
+            return fallbackNotificationPeople
+                .GroupBy( p => p.RecipientPerson.Id ) // Ensure we send only one notification per person.
+                .Select( g => g
+                    .OrderByDescending( p => p.GroupMemberCommunicationPreference.HasValue )
+                    .First()
+                )
+                .ToList();
         }
 
         #endregion Rock Model CRUD
@@ -3811,24 +4051,18 @@ namespace Rock.Communication.Chat
                 ? rockChatGroup.Name
                 : null;
 
-            // Hard-code chat notification mode based on the parent group type.
-            // We'll improve this logic in a future version of Rock.
-            var chatNotificationMode = rockChatGroup.GroupTypeId == ChatSharedChannelGroupTypeId
-                ? ChatNotificationMode.Mentions
-                : ChatNotificationMode.AllMessages;
-
             return new ChatChannel
             {
                 Key = key,
                 ChatChannelTypeKey = GetChatChannelTypeKey( rockChatGroup.GroupTypeId ),
                 QueryableKey = ChatProvider.GetQueryableChatChannelKey( rockChatGroup ),
                 Name = name,
-                AvatarImageUrl = rockChatGroup.AvatarImageUrl,
+                AvatarUrl = rockChatGroup.AvatarUrl,
                 CampusId = rockChatGroup.CampusId,
                 IsLeavingAllowed = rockChatGroup.IsLeavingAllowed,
                 IsPublic = rockChatGroup.IsPublic,
                 IsAlwaysShown = rockChatGroup.IsAlwaysShown,
-                ChatNotificationMode = chatNotificationMode,
+                ChatNotificationMode = rockChatGroup.ChatNotificationMode,
                 IsActive = rockChatGroup.IsChatChannelActive
             };
         }
@@ -4139,33 +4373,23 @@ namespace Rock.Communication.Chat
                     syncCommand.ResetForSyncAttempt();
 
                     int? groupId = syncCommand.GroupId;
-                    int? groupTypeId = syncCommand.GroupTypeId;
-
                     if ( !groupId.HasValue && syncCommand.ChatChannelKey.IsNullOrWhiteSpace() )
                     {
                         syncCommand.MarkAsUnrecoverable( "Rock group ID and chat channel key are both missing from sync command; unable to identify group." );
                         continue;
                     }
 
-                    if ( !groupTypeId.HasValue )
+                    // Only allow sync operations to be performed against chat-enabled Rock group types.
+                    var groupTypeCache = GroupTypeCache.Get( syncCommand.GroupTypeId );
+                    if ( groupTypeCache == null )
                     {
-                        syncCommand.MarkAsUnrecoverable( "Rock group type ID is missing from sync command." );
+                        syncCommand.MarkAsUnrecoverable( $"Rock group type with ID {syncCommand.GroupTypeId} could not be found." );
                         continue;
                     }
-                    else
+                    else if ( !groupTypeCache.IsChatAllowed )
                     {
-                        // Only allow sync operations to be performed against chat-enabled Rock group types.
-                        var groupTypeCache = GroupTypeCache.Get( groupTypeId.Value );
-                        if ( groupTypeCache == null )
-                        {
-                            syncCommand.MarkAsUnrecoverable( $"Rock group type with ID {groupTypeId} could not be found." );
-                            continue;
-                        }
-                        else if ( !groupTypeCache.IsChatAllowed )
-                        {
-                            syncCommand.MarkAsUnrecoverable( $"Rock group type with ID {groupTypeId} is not chat-enabled." );
-                            continue;
-                        }
+                        syncCommand.MarkAsUnrecoverable( $"Rock group type with ID {syncCommand.GroupTypeId} is not chat-enabled." );
+                        continue;
                     }
 
                     // We'll use a new rock context to keep each command isolated.
@@ -4243,7 +4467,7 @@ namespace Rock.Communication.Chat
                             {
                                 ParentGroupId = ChatDirectMessagesGroupId,
                                 Name = groupName,
-                                GroupTypeId = groupTypeId.Value,
+                                GroupTypeId = syncCommand.GroupTypeId,
                                 ChatChannelKey = syncCommand.ChatChannelKey,
                                 IsActive = syncCommand.IsActive
                             };
@@ -5026,6 +5250,96 @@ namespace Rock.Communication.Chat
             }
         }
 
+        /// <summary>
+        /// Triggers message automations when message events are received from the external chat system.
+        /// </summary>
+        /// <param name="messageEvents">The list of message events.</param>
+        private void TriggerMessageAutomations( List<ChatToRockMessageEvent> messageEvents )
+        {
+            messageEvents = messageEvents
+                ?.Where( e => e != null )
+                .ToList();
+
+            if ( !IsChatEnabled || messageEvents?.Any() != true )
+            {
+                return;
+            }
+
+            var logMessagePrefix = $"{LogMessagePrefix} {nameof( TriggerMessageAutomations ).SplitCase()}";
+            string structuredLog;
+
+            var groupTypeService = new GroupTypeService( RockContext );
+            var groupService = new GroupService( RockContext );
+            var personService = new PersonService( RockContext );
+
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Trigger Message Automations" ) )
+            {
+                foreach ( var messageEvent in messageEvents )
+                {
+                    // Ensure the channel type references a Rock group type.
+                    var groupTypeId = GetGroupTypeId( messageEvent.ChatChannelTypeKey );
+                    if ( !groupTypeId.HasValue )
+                    {
+                        structuredLog = "{ChatChannelTypeKey}";
+                        Logger.LogWarning( $"{logMessagePrefix} failed. Rock group type with chat channel type key '{structuredLog}' could not be found.", messageEvent.ChatChannelTypeKey );
+                        continue;
+                    }
+
+                    // Only allow message automations to be triggered against chat-enabled Rock group types.
+                    var groupType = groupTypeService.Get( groupTypeId.Value );
+                    if ( groupType == null )
+                    {
+                        structuredLog = "{GroupTypeId}";
+                        Logger.LogWarning( $"{logMessagePrefix} failed. Rock group type with ID {structuredLog} could not be found.", structuredLog );
+                        continue;
+                    }
+                    else if ( !groupType.IsChatAllowed )
+                    {
+                        structuredLog = "{GroupTypeId}";
+                        Logger.LogWarning( $"{logMessagePrefix} failed. Rock group type with ID {structuredLog} is not chat-enabled.", structuredLog );
+                        continue;
+                    }
+
+                    // Assign the group type to the message event.
+                    messageEvent.ChannelType = groupType;
+
+                    // Try to find a group match.
+                    var group = groupService
+                        .GetChatChannelGroupsQuery()
+                        .FirstOrDefault( g => g.ChatChannelKey == messageEvent.ChatChannelKey );
+
+                    if ( group?.GetIsChatEnabled() == false )
+                    {
+                        // If a group match was found, ensure it's chat-enabled.
+                        structuredLog = "{GroupId}";
+                        Logger.LogWarning( $"{logMessagePrefix} failed. Rock group with ID {structuredLog} is not chat-enabled.", structuredLog );
+                        continue;
+                    }
+
+                    // Assign the group to the message event (knowing that it might be null).
+                    messageEvent.Channel = group;
+
+                    // Try to find and assign the person.
+                    var senderPerson = personService.GetByChatUserKey( messageEvent.SenderChatPersonKey );
+                    messageEvent.SenderPerson = senderPerson;
+
+                    Core.Automation.Triggers.ChatMessageMonitor.ProcessMessageEvent( messageEvent );
+
+                    structuredLog = "Rock group type ID {GroupTypeId} ({GroupTypeName}), group ID {GroupId} ({GroupName}), chat message sender person ID {ChatMessageSenderPersonId} ({ChatMessageSenderPersonFullName})";
+
+                    Logger.LogDebug(
+                        $"{logMessagePrefix} succeeded for {structuredLog}.",
+                        groupType.Id,
+                        groupType.Name,
+                        group?.Id,
+                        group?.Name,
+                        senderPerson?.Id,
+                        senderPerson?.FullName
+                    );
+                }
+            }
+        }
+
         #endregion Synchronization: From Chat Provider To Rock
 
         #endregion Private Methods
@@ -5067,6 +5381,23 @@ namespace Rock.Communication.Chat
             /// Gets or sets the unrecoverable reason why the <see cref="Person"/> could not be found.
             /// </summary>
             public string UnrecoverableReason { get; set; }
+        }
+
+        /// <summary>
+        /// Represents a Rock <see cref="Person"/> who's a candidate to receive a fallback chat notification.
+        /// </summary>
+        private class FallbackChatNotificationPerson
+        {
+            /// <summary>
+            /// Gets or sets the <see cref="Person"/> who should receive a fallback notification.
+            /// </summary>
+            public Person RecipientPerson { get; set; }
+
+            /// <summary>
+            /// Gets or sets the <see cref="CommunicationType"/> preference of the <see cref="GroupMember"/> record that
+            /// represents this <see cref="ChatChannelMember"/>, if applicable.
+            /// </summary>
+            public CommunicationType? GroupMemberCommunicationPreference { get; set; }
         }
 
         #endregion Supporting Members

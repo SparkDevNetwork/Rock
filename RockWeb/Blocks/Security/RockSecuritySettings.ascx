@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlList" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-shield-alt"></i>
+                    <i class="ti ti-shield-half"></i>
                     Security Settings</h1>
             </div>
             <div class="panel-body">

@@ -34,7 +34,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-line-chart"></i>&nbsp;<asp:Literal ID="lTitle" runat="server" Text="Email Analytics" /></h1>
+                <h1 class="panel-title"><i class="ti ti-chart-line"></i>&nbsp;<asp:Literal ID="lTitle" runat="server" Text="Email Analytics" /></h1>
 
                 <div class="panel-labels">
 

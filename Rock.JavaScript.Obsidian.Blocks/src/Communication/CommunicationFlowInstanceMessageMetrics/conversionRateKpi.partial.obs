@@ -1,0 +1,65 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Kpi color="green"
+         :colorShade="700"
+         iconCssClass="ti ti-bolt"
+         isCard
+         label="Conversion Rate*"
+         :value="conversionPercentFormatted" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import Kpi from "@Obsidian/Controls/kpi.obs";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationFlowInstanceCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceCommunicationBag";
+
+    /**
+     * The percentage of PEOPLE who achieved the conversion goal is most important,
+     * not the individual conversion events.
+     */
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<CommunicationFlowInstanceCommunicationBag | null | undefined>,
+            required: true
+        },
+
+        uniquePersonCount: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    const conversionPercentFormatted = computed<string>(() => {
+        if (isNullish(conversionPercent.value)) {
+            return "N/A";
+        }
+
+        return `${(conversionPercent.value).toLocaleString(undefined, { style: "percent", maximumFractionDigits: 2 })}`;
+    });
+
+    /**
+     * Computes the conversion rate percentage [0-1] for the selected flow instance communications.
+     */
+    const conversionPercent = computed<number | null | undefined>(() => {
+        if (isNullish(props.modelValue) || isNullish(props.uniquePersonCount)) {
+            return null;
+        }
+
+        if (props.uniquePersonCount <= 0) {
+            return 0;
+        }
+
+        const conversionCount = Enumerable
+            .from(props.modelValue.recipientMetrics ?? [])
+            .count(rm => !isNullish(rm.conversionDate));
+
+        return conversionCount / props.uniquePersonCount;
+    });
+
+    // #endregion Computed Values
+</script>

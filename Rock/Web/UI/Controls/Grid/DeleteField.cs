@@ -41,7 +41,7 @@ namespace Rock.Web.UI.Controls
                 string iconCssClass = ViewState["IconCssClass"] as string;
                 if ( string.IsNullOrWhiteSpace( iconCssClass ) )
                 {
-                    iconCssClass = "fa fa-times";
+                    iconCssClass = "ti ti-x";
                     ViewState["IconCssClass"] = iconCssClass;
                 }
                 return iconCssClass;

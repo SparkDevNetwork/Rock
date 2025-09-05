@@ -44,9 +44,10 @@ namespace RockWeb.Blocks.Event
     [Description( "Displays the details of the given registration template." )]
 
     [LinkedPage(
-        "Registration Template Placement Page",
-        Key = AttributeKey.RegistrationTemplatePlacementPage,
-        DefaultValue = Rock.SystemGuid.Page.REGISTRATION_TEMPLATE_PLACEMENT + "," + Rock.SystemGuid.PageRoute.REGISTRATION_TEMPLATE_PLACEMENT,
+        "Group Placement Page",
+        Key = AttributeKey.GroupPlacementPage,
+        DefaultValue = Rock.SystemGuid.Page.GROUP_PLACEMENT + "," + Rock.SystemGuid.PageRoute.GROUP_PLACEMENT,
+        Description = "The page used for performing group placements.",
         Order = 0
         )]
 
@@ -133,7 +134,7 @@ namespace RockWeb.Blocks.Event
     {% endif %}
 
     {% assign paymentPlan = Registration.PaymentPlanFinancialScheduledTransaction %}
-    
+
     {% if paymentPlan and paymentPlan.IsActive %}
         Payment Plan: {{ paymentPlan.TotalAmount | FormatAsCurrency }} × {{ paymentPlan.NumberOfPayments }} ({{ paymentPlan.TransactionFrequencyValue | AsString }})<br>
     {% else %}
@@ -297,15 +298,15 @@ namespace RockWeb.Blocks.Event
         Paid {{ payment.Amount | FormatAsCurrency }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }}
         <small>(Acct #: {{ payment.Transaction.FinancialPaymentDetail.AccountNumberMasked }}, Ref #: {{ payment.Transaction.TransactionCode }})</small><br/>
     {% endfor %}
-    
+
     {% assign paymentCount = Registration.Payments | Size %}
-        
+
     {% if paymentCount > 1 %}
         Total Paid: {{ Registration.TotalPaid | FormatAsCurrency }}<br/>
     {% endif %}
 
     {% assign paymentPlan = Registration.PaymentPlanFinancialScheduledTransaction %}
-    
+
     {% if paymentPlan and paymentPlan.IsActive %}
         Payment Plan: {{ paymentPlan.TotalAmount | FormatAsCurrency }} × {{ paymentPlan.NumberOfPayments }} ({{ paymentPlan.TransactionFrequencyValue | AsString }})
     {% else %}
@@ -443,7 +444,7 @@ namespace RockWeb.Blocks.Event
 
         private static class AttributeKey
         {
-            public const string RegistrationTemplatePlacementPage = "RegistrationTemplatePlacementPage";
+            public const string GroupPlacementPage = "GroupPlacementPage";
             public const string DefaultConfirmationEmail = "DefaultConfirmationEmail";
             public const string DefaultReminderEmail = "DefaultReminderEmail";
             public const string DefaultSuccessText = "DefaultSuccessText";
@@ -647,6 +648,7 @@ namespace RockWeb.Blocks.Event
             gRegistrationAttributes.GridReorder += gRegistrationAttributes_GridReorder;
 
             dvpConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).Id;
+            dvpRecordSource.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() ).Id;
 
             var registrationAttributeSecurityField = gRegistrationAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
             registrationAttributeSecurityField.EntityTypeId = EntityTypeCache.GetId<Attribute>() ?? 0;
@@ -883,23 +885,6 @@ The logged-in person's information will be used to complete the registrar inform
         }
 
         /// <summary>
-        /// Handles the Click event of the btnPlacements control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnPlacements_Click( object sender, EventArgs e )
-        {
-            var queryParams = new Dictionary<string, string>();
-
-            if ( hfRegistrationTemplateId.Value.AsIntegerOrNull().HasValue )
-            {
-                queryParams.Add( PageParameterKey.RegistrationTemplateId, hfRegistrationTemplateId.Value );
-            }
-
-            NavigateToLinkedPage( AttributeKey.RegistrationTemplatePlacementPage, queryParams );
-        }
-
-        /// <summary>
         /// Handles the Click event of the btnCopy control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -1072,7 +1057,7 @@ The logged-in person's information will be used to complete the registrar inform
             ParseControls( true );
 
             var rockContext = new RockContext();
-        
+
             var registrationTemplateService = new RegistrationTemplateService( rockContext );
 
             var registrationTemplate = ( RegistrationTemplate ) null;
@@ -1108,6 +1093,7 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.GroupMemberRoleId = rpGroupTypeRole.GroupRoleId;
             registrationTemplate.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
             registrationTemplate.ConnectionStatusValueId = dvpConnectionStatus.SelectedValueAsInt();
+            registrationTemplate.RegistrantRecordSourceValueId = dvpRecordSource.SelectedValueAsInt();
             registrationTemplate.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
             // Rock’s signature system is only in-line enabled so if a new (non-legacy) template is selected
             // RegistrationTemplate.SignatureDocumentAction should be embed, if not then defer to the user's choice.
@@ -2621,12 +2607,9 @@ The logged-in person's information will be used to complete the registrar inform
             }
 
             // Only show the placements button if a linked page is defined AND this template has any placement records
-            var showPlacementsButton = GetAttributeValue( AttributeKey.RegistrationTemplatePlacementPage ).IsNotNullOrWhiteSpace()
+            var showPlacementsButton = GetAttributeValue( AttributeKey.GroupPlacementPage ).IsNotNullOrWhiteSpace()
                 && registrationTemplate.Id > 0
                 && new RegistrationTemplateService( rockContext ).HasRegistrationTemplatePlacements( registrationTemplate.Id );
-
-            btnPlacements.ToolTip = registrationTemplate.Name + " Placement";
-            btnPlacements.Visible = showPlacementsButton;
 
             if ( readOnly )
             {
@@ -2810,6 +2793,7 @@ The logged-in person's information will be used to complete the registrar inform
             rpGroupTypeRole.GroupRoleId = registrationTemplate.GroupMemberRoleId;
             ddlGroupMemberStatus.SetValue( registrationTemplate.GroupMemberStatus.ConvertToInt() );
             dvpConnectionStatus.SetValue( registrationTemplate.ConnectionStatusValueId );
+            dvpRecordSource.SetValue( registrationTemplate.RegistrantRecordSourceValueId );
             ddlSignatureDocumentTemplate.SetValue( registrationTemplate.RequiredSignatureDocumentTemplateId );
             cbDisplayInLine.Checked = registrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
             cbDisplayInLine.Visible = isLegacySignatureSelected;
@@ -2943,7 +2927,7 @@ The logged-in person's information will be used to complete the registrar inform
             lRequiredSignedDocument.Visible = lRequiredSignedDocument.Text.IsNotNullOrWhiteSpace();
             lWorkflowType.Text = registrationTemplate.RegistrationWorkflowType != null ? registrationTemplate.RegistrationWorkflowType.Name : string.Empty;
             lWorkflowType.Visible = lWorkflowType.Text.IsNotNullOrWhiteSpace();
-            rcwRegistrantFormsSummary.Label = $"<strong>Registrant Forms</strong> ({registrationTemplate.Forms.Count}) <i class='fa fa-caret-down'></i>";
+            rcwRegistrantFormsSummary.Label = $"<strong>Registrant Forms</strong> ({registrationTemplate.Forms.Count}) <i class='ti ti-caret-down-filled'></i>";
             lRegistrantFormsSummary.Text = string.Empty;
 
             if ( registrationTemplate.Forms.Any() )
@@ -2987,7 +2971,7 @@ The logged-in person's information will be used to complete the registrar inform
                 .ToAttributeCacheList();
 
             rcwRegistrationAttributesSummary.Visible = registrationAttributeNameList.Any();
-            rcwRegistrationAttributesSummary.Label = $"<strong>Registration Attributes</strong> ({registrationAttributeNameList.Count}) <i class='fa fa-caret-down'></i>";
+            rcwRegistrationAttributesSummary.Label = $"<strong>Registration Attributes</strong> ({registrationAttributeNameList.Count}) <i class='ti ti-caret-down-filled'></i>";
 
             var registrationAttributeTextBuilder = new StringBuilder();
             foreach ( var registrationAttribute in registrationAttributeNameList )
@@ -3023,6 +3007,38 @@ The logged-in person's information will be used to complete the registrar inform
                     : string.Empty;
             }
 
+
+            using ( var rockContext = new RockContext() )
+            {
+                var placementService = new RegistrationTemplatePlacementService( rockContext );
+
+                var rawPlacements = placementService
+                    .Queryable()
+                    .Where( p => p.RegistrationTemplateId == registrationTemplate.Id )
+                    .Select( p => new { p.Id, p.Name } )
+                    .ToList();
+
+                var templatePlacements = rawPlacements
+                .Select( p => new
+                {
+                    Name = p.Name,
+                    Url = LinkedPageUrl( AttributeKey.GroupPlacementPage, new Dictionary<string, string>
+                    {
+                        { PageParameterKey.RegistrationTemplateId, registrationTemplate.Id.ToString() },
+                        { "RegistrationTemplatePlacementId", p.Id.ToString() },
+                        { "ReturnUrl", GetCurrentPageUrl() }
+                    } )
+                } )
+                .Where( p => !string.IsNullOrWhiteSpace( p.Url ) )
+                .ToList();
+
+                if ( templatePlacements.Count == 0 )
+                {
+                    lGroupPlacements.Visible = false;
+                }
+                rptGroupPlacements.DataSource = templatePlacements;
+                rptGroupPlacements.DataBind();
+            }
             rFees.DataSource = registrationTemplate.Fees.OrderBy( f => f.Order ).ToList();
             rFees.DataBind();
         }
@@ -4459,7 +4475,7 @@ The logged-in person's information will be used to complete the registrar inform
                 The "Minimum Initial Payment" field cannot be left blank if "Payment Plans" are enabled.
                 If the "Minimum Initial Payment" is blank, full payment is required, making payment plans unnecessary.
                 To avoid this conflict, require a value in the "Minimum Initial Payment" field when "Payment Plans" are enabled.
-             */            
+             */
             if ( paymentPlansFeatureData.GetValueIfFeatureSupportedOrDefault( p => p.IsPaymentPlanAllowed ) )
             {
                 cbMinimumInitialPayment.Required = true;
@@ -4488,7 +4504,7 @@ The logged-in person's information will be used to complete the registrar inform
         {
             var financialGatewayComponent = GetFinancialGatewayComponent( rockContext, registrationTemplate?.FinancialGatewayId );
             var isPaymentPlansFeatureSupported = IsPaymentPlansFeatureSupportedByFinancialGateway( financialGatewayComponent );
-            
+
             return new PaymentPlansFeatureData
             {
                 FinancialGatewayComponent = financialGatewayComponent,

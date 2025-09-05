@@ -111,7 +111,16 @@ namespace Rock.Model
         public DateTime? FirstSendAttemptDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the datetime that communication was opened by recipient.
+        /// Gets or sets the datetime that communication was delivered to the recipient.
+        /// </summary>
+        /// <value>
+        /// The delivered date time.
+        /// </value>
+        [DataMember]
+        public DateTime? DeliveredDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the datetime that communication was opened by the recipient.
         /// </summary>
         /// <value>
         /// The opened date time.
@@ -176,15 +185,6 @@ namespace Rock.Model
         public string SentMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this communication caused the recipient to unsubscribe.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this communication caused the recipient to unsubscribe; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool CausedUnsubscribe { get; set; } = false;
-
-        /// <summary>
         /// Gets or sets the datetime when the recipient unsubscribed.
         /// </summary>
         /// <value>
@@ -201,6 +201,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public UnsubscribeLevel? UnsubscribeLevel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the datetime when the recipient marked this communication as spam.
+        /// </summary>
+        /// <value>
+        /// The spam complaint date time.
+        /// </value>
+        [DataMember]
+        public DateTime? SpamComplaintDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the personal device identifier.

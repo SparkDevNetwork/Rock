@@ -109,7 +109,7 @@
         </BooleanColumn>
 
         <ButtonColumn name="copy"
-                      iconClass="fa fa-clone"
+                      iconClass="ti ti-copy"
                       width="52"
                       :excludeFromExport="true"
                       @click="onCopyClick" />

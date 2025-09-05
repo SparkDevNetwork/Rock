@@ -40,7 +40,7 @@
                 title=""
                 width="45">
             <template #format="{ row }">
-                <i class='fa fa-clock' v-if="RockDateTime.parseISO(row.startDateTime as string)?.isLaterThan(RockDateTime.now())"></i>
+                <i class='ti ti-clock' v-if="RockDateTime.parseISO(row.startDateTime as string)?.isLaterThan(RockDateTime.now())"></i>
             </template>
         </Column>
 
@@ -49,7 +49,7 @@
 
         <DateColumn v-if="config?.options?.showExpireDateTimeColumn && !config?.options?.includeTime" itemClass="justify-content-end text-right" name="expireDateTime" title="Expire" field="expireDateTime" :filter="config?.options?.showFilters ? dateValueFilter : undefined" width="250" />
 
-        <NumberColumn v-if="config?.options?.showPriorityColumn" itemClass="justify-content-end text-right" name="priority" title="Priority" field="priority" :filter="config?.options?.showFilters ? numberValueFilter : undefined" width="125" />
+        <NumberColumn v-if="config?.options?.showPriorityColumn" name="priority" title="Priority" field="priority" :filter="config?.options?.showFilters ? numberValueFilter : undefined" width="125" />
 
         <BooleanColumn v-if="showOccurrencesColumn" itemClass="justify-content-center text-center" name="occurrences" title="Event Occurrences" field="occurrences" :filter="config?.options?.showFilters ? booleanValueFilter : undefined" width="120" />
 
@@ -61,7 +61,7 @@
                             btnSize="sm"
                             class="text-info"
                             @click.stop="showUpdateModal(row as GridRowItem)">
-                    <i class="fa fa-upload" aria-label="Update"></i>
+                    <i class="ti ti-upload" aria-label="Update"></i>
                 </RockButton>
                 <RockButton v-else-if="row.isDownloadedFromContentLibrary"
                             title="Re-Download"
@@ -69,7 +69,7 @@
                             btnSize="sm"
                             class="text-success"
                             @click.stop="showRedownloadModal(row as GridRowItem)">
-                    <i class="fa fa-download" aria-label="Re-Download"></i>
+                    <i class="ti ti-download" aria-label="Re-Download"></i>
                 </RockButton>
                 <RockButton v-else-if="!row.contentLibrarySourceIdentifier"
                             title="Upload"
@@ -77,7 +77,7 @@
                             btnSize="sm"
                             class="text-muted"
                             @click.stop="showUploadModal(row as GridRowItem)">
-                    <i class="fa fa-upload" aria-label="Upload"></i>
+                    <i class="ti ti-upload" aria-label="Upload"></i>
                 </RockButton>
 
             </template>
@@ -194,7 +194,7 @@
                     title: "Download from Library",
                     tooltip: "Download from Library",
                     isPrimary: true,
-                    iconCssClass: "fa fa-download",
+                    iconCssClass: "ti ti-download",
                     handler: () => {
                         window.location = (config.navigationUrls?.[NavigationUrlKey.LibraryDownloadPage] ?? "/") as (string & Location);
                     }

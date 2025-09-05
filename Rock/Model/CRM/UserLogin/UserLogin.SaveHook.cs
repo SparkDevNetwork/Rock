@@ -110,7 +110,7 @@ namespace Rock.Model
                                     var isUserNameSensitive = ( entityType?.Guid == Rock.SystemGuid.EntityType.AUTHENTICATION_PIN.AsGuid() ) ? true : false;
 
                                     // Get the current person to correctly ascribe the deletion / modification.
-                                    var currentPersonAliasId = DbContext.GetCurrentPersonAlias()?.Id;
+                                    var currentPersonAliasId = DbContext.GetCurrentPersonAliasId();
                                     if ( !isUserNameSensitive )
                                     {
                                         HistoryChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "User Login" ).SetOldValue( userLogin.UserName );

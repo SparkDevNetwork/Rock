@@ -20,7 +20,7 @@
 
         <div class="row">
             <div class="col-md-6">
-                <TextBox v-model="iconCssClass" label="Icon CSS Class" />
+                <IconPicker v-model="iconCssClass" label="Icon CSS Class" />
                 <CategoryPicker v-model="category" label="Category" :entityTypeGuid="EntityType.StepProgram" />
             </div>
             <div class="col-md-6">
@@ -165,6 +165,7 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
@@ -302,7 +303,8 @@
         return {
             key: stepStatus.id,
             name: stepStatus.name,
-            isCompleteStatus: stepStatus.isCompleteStatus
+            isCompleteStatus: stepStatus.isCompleteStatus,
+            isSystem: stepStatus.isSystem
         };
     }
 
@@ -594,7 +596,8 @@
                     isActive: isActiveStepStatus.value,
                     isCompleteStatus: isCompleteStepStatus.value,
                     statusColor: stepStatusDisplayColor.value,
-                    id: currentLength
+                    id: currentLength,
+                    isSystem: false
                 };
                 stepStatuses.value.push(stepStatus);
 

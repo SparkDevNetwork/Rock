@@ -40,8 +40,8 @@ namespace Rock.Blocks.Engagement
     [DisplayName( "Achievement Attempt List" )]
     [Category( "Achievements" )]
     [Description( "Lists all the people that have made an attempt at earning an achievement." )]
-    [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [IconCssClass( "ti ti-list" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the achievement attempt details.",

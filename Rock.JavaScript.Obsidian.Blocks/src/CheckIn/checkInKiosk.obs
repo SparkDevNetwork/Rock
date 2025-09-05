@@ -59,6 +59,7 @@
                                     @next="onNextScreen"
                                     @replaceSession="onReplaceSession"
                                     @editFamily="onEditFamily"
+                                    @addIndividual="onAddIndividual"
                                     @updateActions="onUpdateActions($event, Screen.PersonSelect)" />
 
                 <AutoModeOpportunitySelectScreen v-if="currentScreen === Screen.AutoModeOpportunitySelect"
@@ -424,7 +425,7 @@
 
         // Create a nice HTML message with an icon.
         bodyDiv.classList.add("d-flex", "gap-3", "align-items-center");
-        iconElement.classList.add("fa", "fa-network-wired", "fa-2x", "fa-fw", "text-muted");
+        iconElement.classList.add("ti", "ti-schema", "ti-2x", "ti-fw", "text-muted");
         messageDiv.innerText = "We are having some network issues. Please wait while we reconnect to the server.";
 
         bodyDiv.appendChild(iconElement);
@@ -710,6 +711,12 @@
         previousScreens.value = [];
         registrationData.value = data;
         currentScreen.value = RegistrationScreen.EditFamily;
+    }
+
+    function onAddIndividual(data: RegistrationScreenData): void {
+        previousScreens.value = [];
+        registrationData.value = data;
+        currentScreen.value = RegistrationScreen.EditIndividual;
     }
 
     function onRegistrationScreen(screen: RegistrationScreen): void {

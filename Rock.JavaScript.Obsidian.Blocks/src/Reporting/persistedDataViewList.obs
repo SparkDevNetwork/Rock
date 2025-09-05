@@ -17,22 +17,30 @@
                     width="25%"
                     visiblePriority="xs" />
 
-        <TextColumn name="persistedInterval"
-                    title="Persisted Interval"
-                    field="persistedInterval"
-                    :filter="textValueFilter"
-                    visiblePriority="xs" />
+        <HighlightDetailColumn name="persistedInterval"
+                               title="Persisted Interval"
+                               field="persistedInterval"
+                               :filter="textValueFilter"
+                               filterValue="{{ row.persistedInterval }}"
+                               width="15%"
+                               visiblePriority="xs">
+            <template #detailFormat="{ row }">
+                <template v-if="row.isPersistedIntervalMinutes">Last Refresh: {{ getFormattedDateTime(row.persistedLastRefreshDateTime) }}</template>
+            </template>
+        </HighlightDetailColumn>
 
         <NumberColumn name="persistedLastRunDurationMilliseconds"
                       title="Time to build (ms)"
                       field="persistedLastRunDurationMilliseconds"
                       :filter="numberValueFilter"
+                      width="10%"
                       visiblePriority="md" />
 
         <NumberColumn name="runCount"
                       title="Run Count"
                       field="runCount"
                       :filter="numberValueFilter"
+                      width="8%"
                       visiblePriority="md" />
 
         <DateTimeColumn name="lastRunDateTime"
@@ -43,14 +51,6 @@
                         :filter="dateValueFilter"
                         visiblePriority="md" />
 
-        <DateTimeColumn name="persistedLastRefreshDateTime"
-                        title="Last Refresh"
-                        field="persistedLastRefreshDateTime"
-                        headerClass="title-right"
-                        itemClass="justify-content-end text-right"
-                        :filter="dateValueFilter"
-                        visiblePriority="xs"
-                        width="200" />
     </Grid>
 </template>
 
@@ -63,12 +63,14 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { NumberColumn, numberValueFilter, dateValueFilter, TextColumn, textValueFilter, DateTimeColumn } from "@Obsidian/Controls/grid";
+    import Grid, { NumberColumn, numberValueFilter, dateValueFilter, HighlightDetailColumn, TextColumn, textValueFilter, DateTimeColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PersistedDataViewListOptionsBag } from "@Obsidian/ViewModels/Blocks/Reporting/PersistedDataViewList/persistedDataViewListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./PersistedDataViewList/types.partial";
     import { reactive, ref } from "vue";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { formatAspDate } from "@Obsidian/Utility/aspDateFormat";
 
     const config = useConfigurationValues<ListBlockBox<PersistedDataViewListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -95,6 +97,20 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
+    }
+
+    /**
+     * Gets a formatted date time from the provided date time string.
+     *
+     * @param dateTimeString The date time string to format.
+     */
+    function getFormattedDateTime(dateTimeString: string): string {
+        const rockDateTime = RockDateTime.parseISO(dateTimeString);
+        if (!rockDateTime) {
+            return "";
+        }
+
+        return formatAspDate(rockDateTime, "g");
     }
 
     // #endregion

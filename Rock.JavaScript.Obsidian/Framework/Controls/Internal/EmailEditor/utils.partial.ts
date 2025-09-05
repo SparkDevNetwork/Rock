@@ -358,22 +358,22 @@ export function getComponentTypeName(componentElement: Element): ComponentTypeNa
 
 export function getComponentIconHtml(componentTypeName: EditorComponentTypeName): string {
     function createIconElement(iconCssClass: string): string {
-        return `<i class="${iconCssClass} fa-lg"></i>`;
+        return `<i class="${iconCssClass} ti-lg"></i>`;
     }
 
     switch (componentTypeName) {
         case "title":
-            return createIconElement("fa fa-font");
+            return createIconElement("ti ti-typography");
         case "video":
-            return createIconElement("fa fa-play-circle-o");
+            return createIconElement("ti ti-player-play");
         case "button":
             return `
 <div style="background-color: var(--color-interface-strong); width: 60px; border-radius: var(--border-radius-base);">
-    <i class="fa fa-mouse-pointer fa-sm" style="color: var(--color-interface-softest);"></i>
+    <i class="ti ti-pointer ti-sm" style="color: var(--color-interface-softest);"></i>
 </div>
 `;
         case "text":
-            return createIconElement("fa fa-align-left");
+            return createIconElement("ti ti-align-left");
         case "divider":
             return `
 <div class="d-flex flex-column align-items-center" style="gap: var(--spacing-tiny);">
@@ -382,13 +382,13 @@ export function getComponentIconHtml(componentTypeName: EditorComponentTypeName)
     <div style="width: 42px; height: 10px; background-color: var(--color-interface-soft);"></div>
 </div>`;
         case "message":
-            return createIconElement("fa fa-user");
+            return createIconElement("ti ti-user");
         case "image":
-            return createIconElement("fa fa-image");
+            return createIconElement("ti ti-photo");
         case "code":
-            return createIconElement("fa fa-code");
+            return createIconElement("ti ti-code");
         case "rsvp":
-            return createIconElement("fa fa-check-square-o");
+            return createIconElement("ti ti-square-check");
         case "section":
             return createIconElement("rk rk-one-column");
         case "one-column-section":
@@ -438,7 +438,7 @@ export function getComponentIconHtml(componentTypeName: EditorComponentTypeName)
 `;
         default:
             console.warn(`Unable to retrieve the icon for the unknown component type: '${componentTypeName}'. Returning the default icon.`);
-            return createIconElement("fa fa-question");
+            return createIconElement("ti ti-question-mark");
     }
 }
 
@@ -1680,7 +1680,7 @@ export function getVideoComponentHelper(): ComponentMigrationHelper & {
 
                     // Create the v2-alpha structure
                     newComponent.innerHTML =
-`<tbody>
+                        `<tbody>
     <tr>
         <td>
             <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="border-wrapper border-wrapper-for-video" style="border-collapse: separate !important;">
@@ -2986,13 +2986,17 @@ export function getRsvpComponentHelper(): ComponentMigrationHelper & {
     };
 }
 
+type RowComponentStructure = ComponentStructure & {
+    readonly dropzone: HTMLElement | null;
+};
+
 export function getRowComponentHelper(): ComponentMigrationHelper & {
-    getElements(componentElement: Element): ComponentStructure | null;
+    getElements(componentElement: Element): RowComponentStructure | null;
     createComponentElement(): HTMLElement;
 } {
     const latestVersion = "v17.3-alpha" as const;
 
-    return {
+    const helper = {
         createComponentElement(): HTMLElement {
             const componentElements = createComponent(
                 "row",
@@ -3002,7 +3006,7 @@ export function getRowComponentHelper(): ComponentMigrationHelper & {
             return componentElements.marginWrapper.table;
         },
 
-        getElements(componentElement: Element): ComponentStructure | null {
+        getElements(componentElement: Element): RowComponentStructure | null {
             if (!componentElement.classList.contains("component-row")) {
                 throw new Error(`Element is not a row component element: ${componentElement.outerHTML}`);
             }
@@ -3013,7 +3017,13 @@ export function getRowComponentHelper(): ComponentMigrationHelper & {
                 return null;
             }
 
-            return wrappers;
+            return {
+                ...wrappers,
+
+                get dropzone(): HTMLElement | null {
+                    return (wrappers.marginWrapper.borderWrapper.paddingWrapper.td.querySelector(".dropzone") ?? null) as HTMLElement | null;
+                },
+            };
         },
 
         isMigrationRequired(componentElement: Element): boolean {
@@ -3083,6 +3093,30 @@ export function getRowComponentHelper(): ComponentMigrationHelper & {
                     return componentElement;
                 },
 
+                // Enable placeholder `<div class="component component-row"></div>`
+                // to create a row component.
+                function placeholderToLatest(componentElement: Element): Element {
+                    const outerHTML = componentElement.outerHTML;
+                    const innerHTML = componentElement.innerHTML;
+
+                    const outerHTMLWithoutChildren = outerHTML.replace(innerHTML, "");
+
+                    if (outerHTMLWithoutChildren === `<div class="component component-row"></div>`) {
+                        const newComponent = helper.createComponentElement();
+
+                        if (innerHTML.trim()) {
+                            helper.getElements(newComponent)
+                                ?.dropzone
+                                ?.append(...componentElement.childNodes);
+                        }
+
+                        return newComponent;
+                    }
+                    else {
+                        return componentElement;
+                    }
+                },
+
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 function v2AlphaToV17_3Alpha(componentElement: Element): Element {
                     const versionNumber = getComponentVersionNumber(componentElement);
@@ -3110,6 +3144,8 @@ export function getRowComponentHelper(): ComponentMigrationHelper & {
             return latestVersion;
         }
     };
+
+    return helper;
 }
 
 type SectionComponentTypeName = Extract<EditorComponentTypeName,

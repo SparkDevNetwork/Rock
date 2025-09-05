@@ -36,7 +36,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
     [DisplayName( "Reminder Dashboard" )]
     [Category( "Reminders" )]
     [Description( "Allows management of the current person's reminders." )]
-    [IconCssClass( "fa fa-bell" )]
+    [IconCssClass( "ti ti-bell" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

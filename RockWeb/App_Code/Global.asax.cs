@@ -27,13 +27,14 @@ using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
-
+using Microsoft.Extensions.Logging;
 using Rock;
 using Rock.Blocks;
 using Rock.Communication;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Cms;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Observability;
 using Rock.Security;
@@ -43,6 +44,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.WebStartup;
 
+[assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Global" )]
 namespace RockWeb
 {
     /// <summary>
@@ -235,7 +237,7 @@ namespace RockWeb
 
                 SetError66();
                 var startupException = new RockStartupException( "Error occurred during application startup", ex );
-                LogError( startupException, null );
+                LogException( startupException, null );
                 throw startupException;
             }
 
@@ -358,7 +360,7 @@ namespace RockWeb
                 }
                 catch ( Exception ex )
                 {
-                    LogError( ex, null );
+                    LogException( ex, null );
                 }
             } ).Start();
         }
@@ -395,7 +397,7 @@ namespace RockWeb
                     // Set to background thread so that this thread doesn't prevent Rock from shutting down.
                     Thread.CurrentThread.IsBackground = true;
 
-                    // Set priority to Below Normal. This was origninally set to Lowest so that RockPage.VerifyBlockTypeInstanceProperties() gets priority.
+                    // Set priority to Below Normal. This was originally set to Lowest so that RockPage.VerifyBlockTypeInstanceProperties() gets priority.
                     Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
 
                     Stopwatch stopwatchCompileBlockTypes = Stopwatch.StartNew();
@@ -409,9 +411,7 @@ namespace RockWeb
                     // Pass in a CancellationToken so we can stop compiling if Rock shuts down before it is done
                     BlockTypeService.VerifyBlockTypeInstanceProperties( allUsedBlockTypeIds, _threadCancellationTokenSource.Token );
 
-                    // This methods updates the SiteTypeFlags property on the BlockType Table for each block. This logic was introduce to improve performance.
-                    // The SiteTypeFlags column stores the flags related to the SiteTypes associated with the Block Types which otherwise needs to be fetched using Reflection.
-                    UpdateSiteTypeFlagsOnBlockTypes();
+                    UpdateCompilerAttributesOnBlockTypes();
 
                     Debug.WriteLine( string.Format( "[{0,5:#} seconds] Block Types Compiled", stopwatchCompileBlockTypes.Elapsed.TotalSeconds ) );
                 }
@@ -420,23 +420,31 @@ namespace RockWeb
             BlockTypeCompilationThread.Start();
         }
 
-        private static void UpdateSiteTypeFlagsOnBlockTypes()
+        /// <summary>
+        /// Updates the block types with values from C# attributes when they
+        /// are available. This gives us peformance benefits to store them on
+        /// the block type and also solves issues if the block type C# type is
+        /// not available for some reason.
+        /// </summary>
+        private static void UpdateCompilerAttributesOnBlockTypes()
         {
-            var blockTypesWithSiteTypes = BlockTypeCache.All()
-               .Where( bt => string.IsNullOrEmpty( bt.Path ) )
+            var blockTypesWithCompiledType = BlockTypeCache.All()
                .Select( bt => new
                {
-                   bt.Id,
-                   compiledType = bt.GetCompiledType(),
-                   bt.SiteTypeFlags
+                   BlockType = bt,
+                   CompiledType = bt.GetCompiledType(),
                } );
 
-
-            foreach ( var blockTypeWithSiteType in blockTypesWithSiteTypes )
+            foreach ( var blockTypeWithCompiledType in blockTypesWithCompiledType )
             {
-                var type = blockTypeWithSiteType.compiledType;
+                var type = blockTypeWithCompiledType.CompiledType;
                 var siteTypes = SiteTypeFlags.None;
 
+                // Process the SiteTypeFlags property on the BlockType Table for
+                // each block. This logic was introduce to improve performance.
+                // The SiteTypeFlags column stores the flags related to the
+                // SiteTypes associated with the Block Types which otherwise
+                // needs to be fetched using Reflection.
                 if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
                 {
                     var blockSiteTypes = type.GetCustomAttribute<SupportedSiteTypesAttribute>();
@@ -469,19 +477,34 @@ namespace RockWeb
                     siteTypes |= SiteTypeFlags.Mobile;
                 }
 
-                if ( blockTypeWithSiteType.SiteTypeFlags != siteTypes )
+                var defaultRole = blockTypeWithCompiledType.BlockType.DefaultRole;
+
+                if ( type != null )
+                {
+                    if ( type.GetCustomAttribute<Rock.Cms.DefaultBlockRoleAttribute>() is Rock.Cms.DefaultBlockRoleAttribute blockRoleAttr )
+                    {
+                        defaultRole = blockRoleAttr.DefaultRole;
+                    }
+                    else
+                    {
+                        defaultRole = BlockRole.Content;
+                    }
+                }
+
+                if ( blockTypeWithCompiledType.BlockType.SiteTypeFlags != siteTypes || blockTypeWithCompiledType.BlockType.DefaultRole != defaultRole )
                 {
                     using ( var rockContext = new RockContext() )
                     {
                         var blockTypeService = new BlockTypeService( rockContext );
                         var blockType = blockTypeService.Queryable()
-                            .Where( bt => bt.Id == blockTypeWithSiteType.Id )
+                            .Where( bt => bt.Id == blockTypeWithCompiledType.BlockType.Id )
                             .FirstOrDefault();
                         if ( blockType == null )
                         {
                             continue;
                         }
                         blockType.SiteTypeFlags = siteTypes;
+                        blockType.DefaultRole = defaultRole;
                         rockContext.SaveChanges();
                     }
                 }
@@ -1194,8 +1217,33 @@ namespace RockWeb
             if ( !Global.QueueInUse )
             {
                 Global.QueueInUse = true;
-                RockQueue.Drain( ( ex ) => LogError( ex, null ) );
+                RockQueue.Drain( ( ex ) => WriteErrorToRockLog( ex, "Rock.Transactions", null ) );
                 Global.QueueInUse = false;
+            }
+        }
+
+        /// <summary>
+        /// A handler for Rock Logging exception messages via Rock Logger.
+        /// If a message is provided, it will log that message otherwise
+        /// it will log the exception message.
+        /// </summary>
+        /// <param name="ex"></param>
+        private static void WriteErrorToRockLog( Exception ex, string loggerCategory, string message )
+        {
+            if ( string.IsNullOrWhiteSpace( loggerCategory ) )
+            {
+                loggerCategory = "RockWeb.Global";
+            }
+
+            var logger = RockLogger.LoggerFactory.CreateLogger( loggerCategory );
+
+            if ( !string.IsNullOrWhiteSpace( message ) )
+            {
+                logger.LogError( ex, message );
+            }
+            else
+            {
+                logger.LogError( ex.Message );
             }
         }
 
@@ -1204,7 +1252,7 @@ namespace RockWeb
         /// </summary>
         /// <param name="ex">The ex.</param>
         /// <param name="context">The context.</param>
-        private static void LogError( Exception ex, HttpContext context )
+        private static void LogException( Exception ex, HttpContext context )
         {
             int? pageId;
             int? siteId;
@@ -1278,7 +1326,7 @@ namespace RockWeb
             }
             catch ( Exception ex )
             {
-                LogError( ex, null );
+                LogException( ex, null );
             }
         }
 
@@ -1308,7 +1356,7 @@ namespace RockWeb
                 }
                 catch ( Exception ex )
                 {
-                    LogError( new Exception( "Error doing KeepAlive request.", ex ), null );
+                    LogException( new Exception( "Error doing KeepAlive request.", ex ), null );
                 }
             }
         }

@@ -63,6 +63,7 @@ namespace RockWeb.Blocks.Steps
 
     #endregion Block Attributes
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.BlockTypeGuid( "8D78BC55-6E67-40AB-B453-994D69503838" )]
     public partial class StepEntry : RockBlock
     {

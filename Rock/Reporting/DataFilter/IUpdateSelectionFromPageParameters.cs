@@ -14,11 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Reporting.DataFilter
 {
     /// <summary>
     /// A DataFilter that implements a function that can update the selection from rockblock page parameters or context
     /// </summary>
+    [RockObsolete( "18.0" )]
+    [Obsolete( "This interface is obsolete and will be removed in a future version of Rock because filters are moving to Obsidian, which cannot use RockBlock. Use IUpdateSelectionFromRockRequestContext instead." )]
     public interface IUpdateSelectionFromPageParameters
     {
         /// <summary>

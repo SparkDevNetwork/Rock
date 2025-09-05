@@ -41,6 +41,7 @@
             height: 22px;
             font-size: 0.7em;
             line-height: 22px;
+            margin-left: var(--spacing-tiny);
             }
 
             .taglist .tag-wrap .tag.disabled:hover {
@@ -68,7 +69,7 @@
                                   @inputKeyDown="onInputKeyDown" />
 
                     <span v-else class="text-muted add-new-tags clickable" @click="onAddNewTagsClick">
-                        <i class="fa fa-plus"></i>
+                        <i class="ti ti-plus"></i>
                     </span>
                 </template>
             </div>

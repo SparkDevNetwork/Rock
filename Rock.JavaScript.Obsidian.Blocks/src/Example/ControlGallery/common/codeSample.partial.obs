@@ -1,21 +1,21 @@
 <template>
-    <div class="galleryContent-codeSampleWrapper">
+    <div class="galleryContent-codeSampleWrapper" :class="inline ? 'inline-code' : 'block-code'">
         <pre class="galleryContent-codeSample"><code v-html="styledCode"></code></pre>
         <CopyButton :value="code" class="galleryContent-codeCopyButton" btnSize="sm" btnType="link" />
     </div>
 </template>
 
 <style scoped>
-.galleryContent-codeSampleWrapper {
+.galleryContent-codeSampleWrapper.block-code {
     position: relative;
 }
 
-.galleryContent-codeSample {
+.block-code .galleryContent-codeSample {
     padding-right: 3rem;
     overflow-x: auto;
 }
 
-.galleryContent-codeCopyButton {
+.block-code .galleryContent-codeCopyButton {
     position: absolute;
     top: 1.4rem;
     transform: translateY(-50%);
@@ -23,7 +23,7 @@
     z-index: 1;
 }
 
-.galleryContent-codeCopyButton::before {
+.block-code .galleryContent-codeCopyButton::before {
     content: "";
     position: absolute;
     top: -0.3rem;
@@ -32,6 +32,27 @@
     left: -0.5rem;
     background: linear-gradient(to left, #f5f5f4, #f5f5f4 80%, #f5f5f500);
     z-index: -1;
+}
+
+.inline-code {
+    display: flex;
+    align-items: center;
+    background-color: #f5f5f5;
+    border-radius: var(--rounded-xsmall);
+    padding: 0 var(--spacing-xsmall);
+    gap: var(--spacing-xsmall);
+}
+
+.inline-code pre {
+    padding: 0;
+    margin: 0;
+    line-height: 1;
+}
+
+.inline-code .btn {
+    padding: 0;
+    width: auto;
+    height: auto;
 }
 </style>
 
@@ -48,6 +69,10 @@
         language: {
             type: String,
             default: "typescript"
+        },
+        inline: {
+            type: Boolean,
+            default: false
         }
     });
 

@@ -41,7 +41,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Layout List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of layouts." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes(Model.SiteType.Web)]
     [LinkedPage( "Detail Page", Description = "The page that will show the layout details.", Key = AttributeKey.DetailPage )]
     [Rock.SystemGuid.EntityTypeGuid( "6e1d987d-de38-4440-b54f-717c102795fe" )]

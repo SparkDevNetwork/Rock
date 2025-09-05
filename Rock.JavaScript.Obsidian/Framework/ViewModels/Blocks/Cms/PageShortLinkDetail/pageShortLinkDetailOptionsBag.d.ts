@@ -24,6 +24,9 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type PageShortLinkDetailOptionsBag = {
+    /** Get the Default Domain URLs of the sites to be passed to the front end. */
+    defaultDomainUrls?: ListItemBag[] | null;
+
     /** Gets or sets the site options. */
     siteOptions?: ListItemBag[] | null;
 };

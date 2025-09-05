@@ -125,6 +125,7 @@ namespace RockWeb.Blocks.Core
         Order = 12,
         Key = AttributeKey.CampusStatuses )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.System )]
     [Rock.SystemGuid.BlockTypeGuid( "4A5AAFFC-B1C7-4EFD-A9E4-84363242EA85" )]
     public partial class CampusContextSetter : RockBlock
     {

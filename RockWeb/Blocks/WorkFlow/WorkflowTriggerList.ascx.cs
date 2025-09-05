@@ -240,7 +240,7 @@ namespace RockWeb.Blocks.WorkFlow
                 if ( workflowTrigger.WorkflowTriggerValueChangeType == WorkflowTriggerValueChangeType.ChangeFromTo )
                 {
 
-                    value += " <i class='fa fa-angle-double-right'></i> ";
+                    value += " <i class='ti ti-chevrons-right'></i> ";
 
                     if ( !string.IsNullOrWhiteSpace( workflowTrigger.EntityTypeQualifierValue ) )
                     {

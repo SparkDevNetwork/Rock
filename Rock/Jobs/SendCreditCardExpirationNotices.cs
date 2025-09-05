@@ -108,7 +108,7 @@ namespace Rock.Jobs
             // Report any email send successes.
             if ( sendExpiredCreditCardNoticesResult.NoticesSentCount > 0 || !sendExpiredCreditCardNoticesResult.EmailSendExceptions.Any() )
             {
-                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-success'></i> {sendExpiredCreditCardNoticesResult.NoticesSentCount } notice(s) sent." );
+                jobSummaryBuilder.AppendLine( $"<i class='ti ti-circle text-success'></i> {sendExpiredCreditCardNoticesResult.NoticesSentCount } notice(s) sent." );
             }
 
             this.UpdateLastStatusMessage( jobSummaryBuilder.ToString() );
@@ -119,7 +119,7 @@ namespace Rock.Jobs
             // Report any email send failures.
             if ( sendExpiredCreditCardNoticesResult.EmailSendExceptions.Any() )
             {
-                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-danger'></i> {sendExpiredCreditCardNoticesResult.EmailSendExceptions.Count()} error(s) occurred when sending expired credit card notice(s). See exception log for details." );
+                jobSummaryBuilder.AppendLine( $"<i class='ti ti-circle text-danger'></i> {sendExpiredCreditCardNoticesResult.EmailSendExceptions.Count()} error(s) occurred when sending expired credit card notice(s). See exception log for details." );
                 this.UpdateLastStatusMessage( jobSummaryBuilder.ToString() );
 
                 innerExceptions.AddRange( sendExpiredCreditCardNoticesResult.EmailSendExceptions );
@@ -131,14 +131,14 @@ namespace Rock.Jobs
             // Report any account removal successes.
             if ( removeExpiredSavedAccountsResult.AccountsDeletedCount > 0 )
             {
-                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-success'></i> {removeExpiredSavedAccountsResult.AccountsDeletedCount} saved account(s) that expired before {removeExpiredSavedAccountsResult.DeleteIfExpiredBeforeDate.ToShortDateString()} removed." );
+                jobSummaryBuilder.AppendLine( $"<i class='ti ti-circle text-success'></i> {removeExpiredSavedAccountsResult.AccountsDeletedCount} saved account(s) that expired before {removeExpiredSavedAccountsResult.DeleteIfExpiredBeforeDate.ToShortDateString()} removed." );
                 this.UpdateLastStatusMessage( jobSummaryBuilder.ToString() );
             }
 
             // Report any account removal failures.
             if ( removeExpiredSavedAccountsResult.AccountRemovalExceptions.Any() )
             {
-                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-danger'></i> {removeExpiredSavedAccountsResult.AccountRemovalExceptions.Count()} error(s) occurred when removing saved, expired account(s). See exception log for details." );
+                jobSummaryBuilder.AppendLine( $"<i class='ti ti-circle text-danger'></i> {removeExpiredSavedAccountsResult.AccountRemovalExceptions.Count()} error(s) occurred when removing saved, expired account(s). See exception log for details." );
                 this.UpdateLastStatusMessage( jobSummaryBuilder.ToString() );
 
                 innerExceptions.AddRange( removeExpiredSavedAccountsResult.AccountRemovalExceptions );

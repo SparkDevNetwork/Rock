@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -658,7 +658,7 @@ namespace Rock.Storage.AssetStorage
                 Key = ReverseMapPath( directoryInfo.FullName ) + "/",
                 Uri = string.Empty,
                 Type = AssetType.Folder,
-                IconPath = "fa fa-folder",
+                IconPath = "ti ti-folder",
                 FileSize = 0,
                 LastModifiedDateTime = directoryInfo.LastWriteTime,
                 Description = string.Empty

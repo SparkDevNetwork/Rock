@@ -25,11 +25,11 @@
                             :disabled="disabled"
                             class="btn btn-default btn-square remove-answer-button"
                             @click.prevent="answers.splice(index, 1)">
-                        <i class="fa fa-times" aria-hidden="true"></i>
+                        <i class="ti ti-x" aria-hidden="true"></i>
                     </button>
                 </span>
             </div>
-            <a class="btn btn-xs btn-action btn-square" v-if="!disabled" @click.prevent="answers.push('')"><i class="fa fa-plus-circle"></i></a>
+            <a class="btn btn-xs btn-action btn-square" v-if="!disabled" @click.prevent="answers.push('')"><i class="ti ti-circle-plus"></i></a>
             <div class="correct-answer-field">
                 <DropDownList v-model="correctAnswer" :disabled="disabled" :items="answersAsListItems" label="Correct Answer" :show-blank-item="false" />
             </div>

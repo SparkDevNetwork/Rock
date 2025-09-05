@@ -108,6 +108,7 @@ namespace RockWeb.Blocks.Finance
         Order = 9 )]
     #endregion
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.BlockTypeGuid( "34275D0E-BC7E-4A9C-913E-623D086159A1" )]
     public partial class BenevolenceRequestDetailView : RockBlock
     {

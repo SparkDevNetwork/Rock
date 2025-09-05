@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlDetail" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fas fa-funnel-dollar"></i>
+                    <i class="ti ti-filter-dollar"></i>
                     Giving Automation Configuration</h1>
             </div>
 

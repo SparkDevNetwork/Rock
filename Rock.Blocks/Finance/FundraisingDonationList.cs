@@ -39,7 +39,7 @@ namespace Rock.Blocks.Finance
     [DisplayName("Fundraising Donation List")]
     [Category("Fundraising")]
     [Description("Lists donations in a grid for the current fundraising opportunity or participant.")]
-    [IconCssClass("fa fa-list")]
+    [IconCssClass("ti ti-list")]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [CustomCheckboxListField("Hide Grid Columns",
@@ -76,7 +76,7 @@ namespace Rock.Blocks.Finance
         EditorHeight = 100,
         IsRequired = true,
         DefaultValue = @"<a href=""/Person/{{ Participant.PersonId }}"" class=""pull-right margin-l-sm btn btn-sm btn-default"">
-    <i class=""fa fa-user""></i>
+    <i class=""ti ti-user""></i>
 </a>
 <a href=""/GroupMember/{{ Participant.Id }}"">{{ Participant.Person.FullName }}</a>",
         Category = "Advanced",

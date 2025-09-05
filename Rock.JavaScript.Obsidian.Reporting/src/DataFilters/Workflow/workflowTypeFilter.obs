@@ -1,0 +1,22 @@
+<template>
+    <WorkflowTypePicker v-model="workflowType" label="Workflow Type" />
+</template>
+
+<script setup lang="ts">
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const workflowType = ref<ListItemBag>(safeParseJson(props.modelValue.workflowType) ?? {});
+
+    watch(workflowType, () => {
+        emit("update:modelValue", { ...props.modelValue, workflowType: JSON.stringify(workflowType.value) });
+    });
+</script>

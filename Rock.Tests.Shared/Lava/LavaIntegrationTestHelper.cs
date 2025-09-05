@@ -54,7 +54,6 @@ namespace Rock.Tests.Shared.Lava
 
         public static void Initialize( bool testFluidEngine, bool loadShortcodes )
         {
-            LavaService.RockLiquidIsEnabled = false;
             FluidEngineIsEnabled = testFluidEngine;
 
             RegisterLavaEngineFactories();

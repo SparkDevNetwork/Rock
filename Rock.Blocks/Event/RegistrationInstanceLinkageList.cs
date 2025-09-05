@@ -38,7 +38,7 @@ namespace Rock.Blocks.Event
     [DisplayName( "Registration Instance - Linkage List" )]
     [Category( "Event" )]
     [Description( "Displays the linkages associated with an event registration instance." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     //[SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

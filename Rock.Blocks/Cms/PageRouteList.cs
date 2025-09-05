@@ -36,7 +36,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Route List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of page routes." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

@@ -237,13 +237,13 @@ a.aspNetDisabled.picker-label,
 // highlight required fields
 .form-group.required > .control-label,
 .required-indicator {
-  &::after {
-    margin-left: 4px;
+  &::before {
+    margin-right: var(--spacing-tiny);
     font-family: @fa-font-face;
     font-size: 6px;
     font-weight: @fa-theme-weight;
     color: @required-field-color;
-    vertical-align: super;
+    vertical-align: top;
     content: @fa-var-circle;
   }
 }

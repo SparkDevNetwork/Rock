@@ -44,9 +44,9 @@ namespace Rock.Model
 </div>
 <div class=""card-middle"">
     {% if StepType.HighlightColor == '' or IsComplete == false %}
-        <i class=""{{ StepType.IconCssClass }} fa-4x""></i>
+        <i class=""{{ StepType.IconCssClass }} ti-4x""></i>
     {% else %}
-        <i class=""{{ StepType.IconCssClass }} fa-4x"" style=""color: {{ StepType.HighlightColor }};""></i>
+        <i class=""{{ StepType.IconCssClass }} ti-4x"" style=""color: {{ StepType.HighlightColor }};""></i>
     {% endif %}
 </div>
 <div class=""card-bottom"">
@@ -187,6 +187,16 @@ namespace Rock.Model
                 _cardLavaTemplate = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this Step Type is part of the Rock core system/framework. This property is required.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this Step Type is part of the Rock core system/framework; otherwise <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public bool IsSystem { get; set; }
 
         #endregion Entity Properties
 

@@ -20,6 +20,8 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Quartz;
 
 using Rock.Attribute;
@@ -87,7 +89,7 @@ namespace Rock.Jobs
 
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
                 highestAttributeValueId = new AttributeValueService( rockContext ).Queryable()
                     .Max( av => av.Id );
             }
@@ -157,7 +159,7 @@ WHERE [AV].[Id] >= @LowerId
 
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
 
                 rockContext.Database.ExecuteSqlCommand( booleanQuery, lowerId, upperId );
                 rockContext.Database.ExecuteSqlCommand( personIdQuery, lowerId, upperId, personFieldTypeGuid );

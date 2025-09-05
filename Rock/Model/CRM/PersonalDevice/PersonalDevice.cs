@@ -217,6 +217,12 @@ namespace Rock.Model
         [DataMember]
         public DateTime? LocationPermissionDisabledDateTime { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this device is enabled for beacon monitoring.
+        /// </summary>
+        [DataMember]
+        public bool IsBeaconMonitoringEnabled { get; set; }
+
         #endregion
 
         #region Navigation Properties

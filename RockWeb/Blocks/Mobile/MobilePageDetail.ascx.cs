@@ -407,7 +407,7 @@ namespace RockWeb.Blocks.Mobile
                 {
                     Name = block.Name,
                     Type = block.BlockType.Name,
-                    IconCssClass = iconCssClassAttribute != null ? iconCssClassAttribute.IconCssClass : "fa fa-question",
+                    IconCssClass = iconCssClassAttribute != null ? iconCssClassAttribute.IconCssClass : "ti ti-question-mark",
                     Id = block.Id
                 } );
             }
@@ -480,7 +480,7 @@ namespace RockWeb.Blocks.Mobile
 
                     var item = new ComponentItem
                     {
-                        IconCssClass = iconCssClassAttribute != null ? iconCssClassAttribute.IconCssClass : "fa fa-question",
+                        IconCssClass = iconCssClassAttribute != null ? iconCssClassAttribute.IconCssClass : "ti ti-question-mark",
                         Name = blockType.Name,
                         Id = blockType.Id
                     };
@@ -887,44 +887,44 @@ namespace RockWeb.Blocks.Mobile
 
             if ( additionalSettings.ProcessLavaOnServer && additionalSettings.ProcessLavaOnClient )
             {
-                markup.Append( "<i class='fa fa-fire-alt margin-r-sm text-danger' data-toggle='tooltip' data-placement='top' title='Lava will run on both the server and then again on the client.'></i>" );
+                markup.Append( "<i class='ti ti-flame margin-r-sm text-danger' data-toggle='tooltip' data-placement='top' title='Lava will run on both the server and then again on the client.'></i>" );
             }
             else if ( additionalSettings.ProcessLavaOnServer )
             {
-                markup.Append( "<i class='fa fa-fire-alt margin-r-sm text-primary' data-toggle='tooltip' data-placement='top' title='Lava will run on server.'></i>" );
+                markup.Append( "<i class='ti ti-flame margin-r-sm text-primary' data-toggle='tooltip' data-placement='top' title='Lava will run on server.'></i>" );
             }
             else if ( additionalSettings.ProcessLavaOnClient )
             {
-                markup.Append( "<i class='fa fa-fire-alt margin-r-sm text-success' data-toggle='tooltip' data-placement='top' title='Lava will run on client.'></i>" );
+                markup.Append( "<i class='ti ti-flame margin-r-sm text-success' data-toggle='tooltip' data-placement='top' title='Lava will run on client.'></i>" );
             }
 
             if ( additionalSettings.CacheDuration != 0 )
             {
-                markup.Append( string.Format( "<i class='fa fa-memory margin-r-sm' data-toggle='tooltip' data-placement='top' title='Cache is set to {0} seconds.'></i> ", additionalSettings.CacheDuration ) );
+                markup.Append( string.Format( "<i class='ti ti-cpu margin-r-sm' data-toggle='tooltip' data-placement='top' title='Cache is set to {0} seconds.'></i> ", additionalSettings.CacheDuration ) );
             }
             else
             {
-                markup.Append( "<i class='fa fa-memory margin-r-sm o-30' data-toggle='tooltip' data-placement='top' title='Cache not set.'></i> " );
+                markup.Append( "<i class='ti ti-cpu margin-r-sm o-30' data-toggle='tooltip' data-placement='top' title='Cache not set.'></i> " );
             }
 
             // Show on phone
             if ( additionalSettings.ShowOnPhone )
             {
-                markup.Append( "<i class='fa fa-mobile-alt margin-r-sm' data-toggle='tooltip' data-placement='top' title='Will show on phones.'></i> " );
+                markup.Append( "<i class='ti ti-device-mobile margin-r-sm' data-toggle='tooltip' data-placement='top' title='Will show on phones.'></i> " );
             }
             else
             {
-                markup.Append( "<i class='fa fa-mobile-alt margin-r-sm o-30' data-toggle='tooltip' data-placement='top' title='Will not show on phones.'></i> " );
+                markup.Append( "<i class='ti ti-device-mobile margin-r-sm o-30' data-toggle='tooltip' data-placement='top' title='Will not show on phones.'></i> " );
             }
 
             // Show on tablet
             if ( additionalSettings.ShowOnTablet )
             {
-                markup.Append( "<i class='fa fa-tablet-alt margin-r-sm' data-toggle='tooltip' data-placement='top' title='Will show on tablets.'></i> " );
+                markup.Append( "<i class='ti ti-device-ipad margin-r-sm' data-toggle='tooltip' data-placement='top' title='Will show on tablets.'></i> " );
             }
             else
             {
-                markup.Append( "<i class='fa fa-mobile-alt margin-r-sm o-30' data-toggle='tooltip' data-placement='top' title='Will not show on tablet.'></i> " );
+                markup.Append( "<i class='ti ti-device-mobile margin-r-sm o-30' data-toggle='tooltip' data-placement='top' title='Will not show on tablet.'></i> " );
             }
 
             // Requires Internet
@@ -932,16 +932,16 @@ namespace RockWeb.Blocks.Mobile
             {
                 if ( additionalSettings.NoNetworkContent.IsNullOrWhiteSpace() )
                 {
-                    markup.Append( "<i class='fa fa-wifi margin-r-sm text-warning' data-toggle='tooltip' data-placement='top' title='Requires internet, but no warning content is provided.'></i> " );
+                    markup.Append( "<i class='ti ti-wifi margin-r-sm text-warning' data-toggle='tooltip' data-placement='top' title='Requires internet, but no warning content is provided.'></i> " );
                 }
                 else
                 {
-                    markup.Append( string.Format( "<i class='fa fa-wifi margin-r-sm' data-toggle='tooltip' data-placement='top' title='Requires internet. Content: {0}...'></i> ", additionalSettings.NoNetworkContent.Left( 250 ) ) );
+                    markup.Append( string.Format( "<i class='ti ti-wifi margin-r-sm' data-toggle='tooltip' data-placement='top' title='Requires internet. Content: {0}...'></i> ", additionalSettings.NoNetworkContent.Left( 250 ) ) );
                 }
             }
             else
             {
-                markup.Append( "<i class='fa fa-wifi margin-r-sm o-30' data-toggle='tooltip' data-placement='top' title='Does not require internet.'></i> " );
+                markup.Append( "<i class='ti ti-wifi margin-r-sm o-30' data-toggle='tooltip' data-placement='top' title='Does not require internet.'></i> " );
             }
 
             pnlLayoutItem.Controls.Add( new Literal { Text = markup.ToString() } );
@@ -986,7 +986,7 @@ namespace RockWeb.Blocks.Mobile
             // Block Properties
             var btnBlockProperties = new Literal
             {
-                Text = string.Format( @"<a title='Block Properties' class='btn btn-sm btn-default btn-square properties' href='javascript: Rock.controls.modal.show($(this), ""/BlockProperties/{0}?t=Block Properties"")' height='500px'><i class='fa fa-cog'></i></a>", block.Id )
+                Text = string.Format( @"<a title='Block Properties' class='btn btn-sm btn-default btn-square properties' href='javascript: Rock.controls.modal.show($(this), ""/BlockProperties/{0}?t=Block Properties"")' height='500px'><i class='ti ti-settings'></i></a>", block.Id )
             };
             pnlAdminButtons.Controls.Add( btnBlockProperties );
 
@@ -1009,7 +1009,7 @@ namespace RockWeb.Blocks.Mobile
                 CommandName = "Delete",
                 CommandArgument = block.Id.ToString(),
                 CssClass = "btn btn-sm btn-square btn-danger",
-                Text = "<i class='fa fa-times'></i>",
+                Text = "<i class='ti ti-x'></i>",
                 ToolTip = "Delete Block"
             };
             btnDeleteBlock.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '\"{0}\" block');", block.Name );

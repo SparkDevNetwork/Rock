@@ -14,7 +14,7 @@
                  entityTypeName="Step Type"
                  :isAuditHidden="isAuditHidden"
                  :isBadgesVisible="true"
-                 :isDeleteVisible="isEditable"
+                 :isDeleteVisible="isEditable && isDeletable"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="!isEditable"
@@ -30,9 +30,14 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="stepTypeEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <EditPanel v-model="stepTypeEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
         </template>
     </DetailBlock>
+
+    <StepTypeMoveModal v-model="isStepTypeMoveModalVisible"
+                       :currentStepType="config.entity"
+                       :currentStepStatuses="config.options?.stepStatuses ?? []"
+                       :availableStepPrograms="config.options?.stepPrograms ?? []" />
 </template>
 
 <script setup lang="ts">
@@ -44,18 +49,18 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./StepTypeDetail/editPanel.partial.obs";
     import ViewPanel from "./StepTypeDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock, useReloadBlock } from "@Obsidian/Utility/block";
+    import StepTypeMoveModal from "./StepTypeDetail/stepTypeMoveModal.partial.obs";
     import { NavigationUrlKey } from "./StepTypeDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { StepTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeBag";
     import { StepTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<DetailBlockBox<StepTypeBag, StepTypeDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
     const store = useStore();
 
     // #region Values
@@ -64,32 +69,20 @@
     const errorMessage = ref("");
 
     const stepTypeViewBag = ref(config.entity);
-    const stepTypeEditBag = ref<StepTypeBag>({} as StepTypeBag);
+    const stepTypeEditBag = ref<ValidPropertiesBox<StepTypeBag>>({
+        bag: {} as StepTypeBag
+    });
+
+    const isStepTypeMoveModalVisible = ref<boolean>(false);
 
     const entityTypeGuid = EntityType.StepType;
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "allowManualEditing",
-        "allowMultiple",
-        "audienceDataView",
-        "autoCompleteDataView",
-        "cardLavaTemplate",
-        "description",
-        "hasEndDate",
-        "highlightColor",
-        "isActive",
-        "isDateRequired",
-        "name",
-        "showCountOnBadge",
-        "iconCssClass"
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(stepTypeEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: stepTypeEditBag
+    });
 
     // #endregion
 
@@ -124,14 +117,14 @@
 
         if (stepTypeViewBag.value?.isActive === true) {
             labels.push({
-                iconCssClass: "fa fa-lightbulb",
+                iconCssClass: "ti ti-bulb-filled",
                 title: "Active",
                 type: "success"
             });
         }
         else {
             labels.push({
-                iconCssClass: "far fa-lightbulb",
+                iconCssClass: "ti ti-bulb",
                 title: "Inactive",
                 type: "danger"
             });
@@ -145,11 +138,20 @@
 
         if (panelMode.value === DetailPanelMode.View) {
             actions.push({
-                iconCssClass: "fa fa-truck",
+                iconCssClass: "ti ti-truck",
                 title: "Bulk Entry",
                 type: "default",
                 handler: onBulkEntryClick
             });
+
+            if (isEditable.value) {
+                actions.push({
+                    iconCssClass: "ti ti-switch-3",
+                    title: "Step Type Move",
+                    type: "default",
+                    handler: onStepTypeMove
+                });
+            }
         }
 
         return actions;
@@ -159,6 +161,10 @@
         return config.isEditable === true;
     });
 
+    const isDeletable = computed((): boolean => {
+        return stepTypeViewBag.value?.isDeletable ?? false;
+    });
+
     const options = computed((): StepTypeDetailOptionsBag => {
         return config.options ?? {};
     });
@@ -166,6 +172,10 @@
     // #endregion
 
     // #region Functions
+
+    function onStepTypeMove(): void {
+        isStepTypeMoveModalVisible.value = true;
+    }
 
     // #endregion
 
@@ -186,7 +196,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!stepTypeEditBag.value?.idKey) {
+        if (!stepTypeEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
@@ -227,35 +237,21 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<StepTypeBag, StepTypeDetailOptionsBag>>("Edit", {
+        const result = await invokeBlockAction<ValidPropertiesBox<StepTypeBag>>("Edit", {
             key: stepTypeViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            stepTypeEditBag.value = result.data.entity;
+        if (result.isSuccess && result.data && result.data.bag) {
+            stepTypeEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
             panelMode.value = DetailPanelMode.Edit;
             return true;
         }
         else {
             return false;
         }
-    }
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
     }
 
     /**
@@ -267,19 +263,13 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<StepTypeBag, StepTypeDetailOptionsBag> = {
-            entity: stepTypeEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<StepTypeBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<StepTypeBag> | string>("Save", {
+            box: stepTypeEditBag.value
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                stepTypeViewBag.value = result.data;
+                stepTypeViewBag.value = result.data.bag;
                 panelMode.value = DetailPanelMode.View;
                 return true;
             }
@@ -294,8 +284,6 @@
 
     // #endregion
 
-    provideSecurityGrant(securityGrant);
-
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -304,7 +292,10 @@
         blockError.value = "The specified step type could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        stepTypeEditBag.value = config.entity;
+        stepTypeEditBag.value = {
+            bag: config.entity,
+            validProperties: Object.keys(config.entity)
+        };
         panelMode.value = DetailPanelMode.Add;
     }
 

@@ -37,7 +37,7 @@ namespace Rock.Blocks.Finance
     [DisplayName( "Benevolence Type List" )]
     [Category( "Finance" )]
     [Description( "Block to display the benevolence types." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

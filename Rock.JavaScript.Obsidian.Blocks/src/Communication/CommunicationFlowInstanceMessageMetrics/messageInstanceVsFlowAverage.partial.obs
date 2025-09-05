@@ -1,0 +1,193 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel panelBodyCssClass="chart-container"
+           title="Message Instance vs. Flow Average">
+        <BarChart :series="data.series"
+                  :labels="data.labels"
+                  :barLabels="barLabels"
+                  hideLegend
+                  type="percent" />
+    </Panel>
+</template>
+
+<style scoped>
+:deep(.chart-container) {
+    height: 265px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import BarChart from "@Obsidian/Controls/barChart.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { BarLabelsConfig, BarSeries } from "@Obsidian/Core/Controls/chart";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceBag";
+    import { CommunicationFlowInstanceCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceCommunicationBag";
+
+    /**
+     *  Purpose: "How does this instance of this message compare across all instances of this flow?"
+     */
+
+    enum SeriesName {
+        Instance = "Instance",
+        Average = "Average"
+    }
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<CommunicationFlowInstanceCommunicationBag | null | undefined>,
+            required: true
+        },
+
+        flowInstanceCommunications: {
+            type: Array as PropType<CommunicationFlowInstanceCommunicationBag[] | null | undefined>,
+            required: true
+        },
+
+        instances: {
+            type: Array as PropType<CommunicationFlowInstanceBag[]>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    const barLabels = computed<BarLabelsConfig>(() => {
+        return {
+            inside: {
+                formatter: ({ formattedValue, value }) => {
+                    return formattedValue ?? value.toLocaleString(undefined, { style: "percent", maximumFractionDigits: 0 });
+                }
+            },
+            outside: {
+                formatter: ({ seriesName }) => seriesName
+            }
+        };
+    });
+
+    const data = computed<{ series: BarSeries[]; labels: string[]; }>(() => {
+        const instanceCommunications = props.flowInstanceCommunications ?? [];
+
+        if (isNullish(props.modelValue) || instanceCommunications.length <= 0) {
+            return { labels: [], series: [] };
+        }
+
+        const uniquePersonCountPerInstance = Enumerable
+            .from(props.instances)
+            .toDictionary(i => i.communicationFlowInstanceIdKey, i => i.uniquePersonCount);
+
+        // Calculate conversion and unsubscribe rates for each instance.
+        const allInstanceCommunicationRates = Enumerable
+            .from(instanceCommunications)
+            .select(ic => {
+                const recipientMetrics = ic.recipientMetrics ?? [];
+                const uniquePersonCount = uniquePersonCountPerInstance.get(ic.communicationFlowInstanceIdKey) ?? 0;
+                const recipientCount = Enumerable.from(recipientMetrics).count();
+                const conversionCount = Enumerable.from(recipientMetrics).count(rm => !isNullish(rm.conversionDate));
+                const unsubscribeCount = Enumerable.from(recipientMetrics).count(rm => !isNullish(rm.unsubscribeDate));
+                const openCount = Enumerable.from(recipientMetrics).count(rm => !isNullish(rm.openedDate));
+                const clickCount = Enumerable.from(recipientMetrics).count(rm => !isNullish(rm.clickedDate));
+
+                return {
+                    instanceCommunication: ic,
+                    rates: {
+                        conversionRate: uniquePersonCount && conversionCount ? conversionCount / uniquePersonCount : 0,
+                        unsubscribeRate: recipientCount && unsubscribeCount ? unsubscribeCount / recipientCount : 0,
+                        openRate: recipientCount && openCount ? openCount / recipientCount : 0,
+                        clickRate: recipientCount && clickCount ? clickCount / recipientCount : 0
+                    }
+                };
+            })
+            .toDictionary(ir => ir.instanceCommunication, ir => ir.rates);
+
+        const selectedInstanceCommunicationRates = allInstanceCommunicationRates.has(props.modelValue)
+            ? allInstanceCommunicationRates.get(props.modelValue)
+            : null;
+
+        if (isNullish(selectedInstanceCommunicationRates)) {
+            return { labels: [], series: [] };
+        }
+
+        const averageConversionRate = Enumerable.from(allInstanceCommunicationRates.values()).average(i => i.conversionRate);
+        const averageOpenRate = Enumerable.from(allInstanceCommunicationRates.values()).average(i => i.openRate);
+        const averageClickRate = Enumerable.from(allInstanceCommunicationRates.values()).average(i => i.clickRate);
+        const averageUnsubscribeRate = Enumerable.from(allInstanceCommunicationRates.values()).average(i => i.unsubscribeRate);
+
+        const hasConversionRates = averageConversionRate > 0 || selectedInstanceCommunicationRates.conversionRate > 0;
+        const hasOpenRates = averageOpenRate > 0 || selectedInstanceCommunicationRates.openRate > 0;
+        const hasClickRates = averageClickRate > 0 || selectedInstanceCommunicationRates.clickRate > 0;
+        const hasUnsubscribeRates = averageUnsubscribeRate > 0 || selectedInstanceCommunicationRates.unsubscribeRate > 0;
+
+        const labels: string[] = [];
+        if (hasConversionRates) {
+            labels.push("Conversion Rate");
+        }
+        if (hasOpenRates) {
+            labels.push("Open Rate");
+        }
+        if (hasClickRates) {
+            labels.push("Click-Through Rate");
+        }
+        if (hasUnsubscribeRates) {
+            labels.push("Unsubscribe Rate");
+        }
+
+        const instanceColors: string[] = [];
+
+        const instanceSeries: BarSeries = {
+            label: SeriesName.Instance,
+            data: [],
+            color: instanceColors
+        };
+
+        if (hasConversionRates) {
+            instanceSeries.data.push(selectedInstanceCommunicationRates.conversionRate);
+            instanceColors.push("#2F855A");
+        }
+        if (hasOpenRates) {
+            instanceSeries.data.push(selectedInstanceCommunicationRates.openRate);
+            instanceColors.push("#3182CE");
+        }
+        if (hasClickRates) {
+            instanceSeries.data.push(selectedInstanceCommunicationRates.clickRate);
+            instanceColors.push("#DD6B20");
+        }
+        if (hasUnsubscribeRates) {
+            instanceSeries.data.push(selectedInstanceCommunicationRates.unsubscribeRate);
+            instanceColors.push("#C53030");
+        }
+
+        const averageColors: string[] = [];
+        const averageSeries: BarSeries = {
+            label: SeriesName.Average,
+            data: [],
+            color: averageColors
+        };
+
+        if (hasConversionRates) {
+            averageSeries.data.push(averageConversionRate);
+            averageColors.push("#9AE6B4");
+        }
+        if (hasOpenRates) {
+            averageSeries.data.push(averageOpenRate);
+            averageColors.push("#90CDF4");
+        }
+        if (hasClickRates) {
+            averageSeries.data.push(averageClickRate);
+            averageColors.push("#FBD38D");
+        }
+        if (hasUnsubscribeRates) {
+            averageSeries.data.push(averageUnsubscribeRate);
+            averageColors.push("#FEB2B2");
+        }
+
+        return {
+            labels,
+            series: [instanceSeries, averageSeries]
+        };
+    });
+
+    // #endregion Computed Values
+</script>

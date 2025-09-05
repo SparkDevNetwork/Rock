@@ -38,7 +38,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Rest Controller List" )]
     [Category( "Core" )]
     [Description( "Displays a list of rest controllers." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

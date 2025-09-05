@@ -41,7 +41,7 @@ namespace Rock.Blocks.CheckIn.Config
     [DisplayName( "Check-in Type Detail" )]
     [Category( "Check-in > Configuration" )]
     [Description( "Displays the details of a particular Check-in Type." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

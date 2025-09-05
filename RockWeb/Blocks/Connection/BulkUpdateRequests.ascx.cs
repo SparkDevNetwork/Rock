@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.Connection
             var script = string.Format( @"
 
     // Add the 'bulk-item-selected' class to form-group of any item selected after postback
-    $( 'label.control-label' ).has( 'span.js-select-item > i.fa-check-circle-o').each( function() {{
+    $( 'label.control-label' ).has( 'span.js-select-item > i.ti-circle-check').each( function() {{
         $(this).closest('.form-group').addClass('bulk-item-selected');
     }});
 
@@ -122,8 +122,8 @@ namespace RockWeb.Blocks.Connection
         var enabled = formGroup.hasClass('bulk-item-selected');
 
         // Set the selection icon to show selected
-        selectIcon.toggleClass('fa-check-circle-o', enabled);
-        selectIcon.toggleClass('fa-circle-o', !enabled);
+        selectIcon.toggleClass('ti-circle-check', enabled);
+        selectIcon.toggleClass('ti-circle', !enabled);
 
         // Checkboxes needs special handling
         var checkboxes = formGroup.find(':checkbox');
@@ -792,8 +792,8 @@ namespace RockWeb.Blocks.Connection
         private void SetControlSelection( IRockControl control, string label )
         {
             bool controlEnabled = SelectedFields.Contains( control.ClientID, StringComparer.OrdinalIgnoreCase );
-            string iconCss = controlEnabled ? "fa-check-circle-o" : "fa-circle-o";
-            control.Label = $"<span class='js-select-item'><i class='fa {iconCss}'></i></span> {label}";
+            string iconCss = controlEnabled ? "ti-circle-check" : "ti-circle";
+            control.Label = $"<span class='js-select-item'><i class='ti {iconCss}'></i></span> {label}";
             var webControl = control as WebControl;
             if ( webControl != null )
             {

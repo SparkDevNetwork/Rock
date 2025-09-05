@@ -3,11 +3,11 @@
     <TransitionVerticalCollapse>
         <div v-if="isReconnecting || isDisconnected">
             <div v-if="isDisconnected" class="connection-status connection-status-disconnected">
-                <i class="fa fa-fw fa-ban"></i>
+                <i class="ti ti-fw ti-ban"></i>
                 Disconnected
             </div>
             <div v-else-if="isReconnecting" class="connection-status connection-status-reconnecting">
-                <i class="fa fa-fw fa-spin fa-sync"></i>
+                <i class="ti ti-fw ti-spin ti-refresh"></i>
                 Reconnecting
             </div>
         </div>

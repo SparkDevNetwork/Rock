@@ -1,0 +1,112 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+using Newtonsoft.Json;
+
+using Rock.Data;
+
+namespace Rock.Model
+{
+    /// <summary>
+    /// Represents a Communication Flow Instance Communication Conversion in Rock.
+    /// </summary>
+    [RockDomain( "Communication" )]
+    [Table( "CommunicationFlowInstanceCommunicationConversion" )]
+    [DataContract]
+    [CodeGenerateRest]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.COMMUNICATION_FLOW_INSTANCE_COMMUNICATION_CONVERSION )]
+    public partial class CommunicationFlowInstanceCommunicationConversion : Model<CommunicationFlowInstanceCommunicationConversion>
+    {
+        #region Entity Properties
+
+        /// <summary>
+        /// Gets or sets the identifier of the Communication Flow Instance Communication.
+        /// </summary>
+        [Required]
+        [DataMember]
+        public int CommunicationFlowInstanceCommunicationId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the date that the conversion occurred.
+        /// </summary>
+        [DataMember]
+        public DateTime Date { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier of the Person Alias whom this conversion is for.
+        /// </summary>
+        [Required]
+        [DataMember]
+        public int PersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier of the Communication Recipient whom this conversion is for.
+        /// </summary>
+        [Required]
+        [DataMember]
+        public int CommunicationRecipientId { get; set; }
+
+        #endregion Entity Properties
+
+        #region Navigation Properties
+
+        /// <summary>
+        /// Gets or sets the Communication Flow Instance Communication.
+        /// </summary>
+        [DataMember]
+        public virtual CommunicationFlowInstanceCommunication CommunicationFlowInstanceCommunication { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Person Alias whom this conversion is for.
+        /// </summary>
+        [DataMember]
+        public virtual PersonAlias PersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Person Alias whom this conversion is for.
+        /// </summary>
+        [DataMember]
+        public virtual CommunicationRecipient CommunicationRecipient { get; set; }
+
+        #endregion Navigation Properties
+    }
+
+    #region Entity Configuration
+
+    /// <summary>
+    /// Communication Flow Instance Communication Conversion Configuration class.
+    /// </summary>
+    public partial class CommunicationFlowInstanceCommunicationConversionConfiguration : EntityTypeConfiguration<CommunicationFlowInstanceCommunicationConversion>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CommunicationFlowInstanceCommunicationConversionConfiguration"/> class.
+        /// </summary>
+        public CommunicationFlowInstanceCommunicationConversionConfiguration()
+        {
+            this.HasRequired( c => c.CommunicationFlowInstanceCommunication ).WithMany( i => i.CommunicationFlowInstanceCommunicationConversions ).HasForeignKey( c => c.CommunicationFlowInstanceCommunicationId ).WillCascadeOnDelete( true );
+            this.HasRequired( c => c.PersonAlias ).WithMany().HasForeignKey( c => c.PersonAliasId ).WillCascadeOnDelete( false );
+            this.HasRequired( c => c.CommunicationRecipient ).WithMany().HasForeignKey( c => c.CommunicationRecipientId ).WillCascadeOnDelete( false );
+        }
+    }
+
+    #endregion Entity Configuration
+}

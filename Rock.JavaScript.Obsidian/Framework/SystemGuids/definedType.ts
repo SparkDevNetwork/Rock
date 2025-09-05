@@ -47,6 +47,8 @@ export const DefinedType = {
     CampusType: "8C2260A8-6130-414A-BD32-22743FEAB256",
     /** Guid for the types of chart styles */
     ChartStyles: "FC684FD7-FE68-493F-AF38-1656FBF67E6B",
+    /** GUID for the Chat Reaction defined type. */
+    ChatReaction: "879C25EE-8BF3-46CE-8549-DB4CAF4074E9",
     /** The check in attendance types */
     CheckInAttendanceTypes: "C0508751-3BDD-40A7-BE37-8AA4FC56E00E",
     /** Guid for check-in search type */
@@ -120,6 +122,8 @@ export const DefinedType = {
     GrouptypeInactiveReasons: "EB5D9839-F770-4E22-8B56-0B09397307D9",
     /** Guid for GroupType Purpose */
     GrouptypePurpose: "B23F1E45-BC26-4E82-BEB3-9B191FE5CCC3",
+    /** Guid for the icon libraries */
+    IconLibraries: "EEFC6AA8-3946-47AB-8DAF-149EEF347DF3",
     /** Guid for the types of interaction service. */
     InteractionChannelMedium: "9bf5777a-961f-49a8-a834-45e5c2077967",
     /** Guid for the types of interaction intent. */
@@ -198,6 +202,8 @@ export const DefinedType = {
     ProjectType: "B7842AF3-6F04-495E-9A6C-F403D06C02F3",
     /** Protect My Ministry MVR jurisdiction codes */
     ProtectMyMinistryMvrJurisdictionCodes: "2F8821E8-05B9-4CD5-9FA4-303662AAC85D",
+    /** Guid for the types of Record Sources (such as external website, event registration, etc.) */
+    RecordSourceType: "B8F781C5-6690-4E5E-8BCE-75CC62DB0EBB",
     /** The REST allowed domains */
     RestApiAllowedDomains: "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8",
     /**

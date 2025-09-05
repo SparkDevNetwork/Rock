@@ -14,7 +14,7 @@
                     <div class="col flex-grow-0">
                         <div class="form-group">
                             <label class="control-label">&nbsp;</label>
-                            <RockButton class="btn-square" type="submit" :disabled="isLoading"><i class="fa fa-refresh" :class="{ 'fa-spin': isLoading }"></i></RockButton>
+                            <RockButton class="btn-square" type="submit" :disabled="isLoading"><i class="ti ti-refresh" :class="{ 'ti-spin': isLoading }"></i></RockButton>
                         </div>
                     </div>
                 </div>

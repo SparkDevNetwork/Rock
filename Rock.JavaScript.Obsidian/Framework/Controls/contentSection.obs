@@ -1,0 +1,196 @@
+<template>
+    <div :id="section.anchor.value"
+         class="contentsection"
+         :class="additionalSectionClasses">
+        <div v-if="title"
+             class="contentsection-header"
+             @click="onSectionHeaderClick">
+            <h5 class="contentsection-header-title">
+                <i v-if="icon" :class="icon"></i>
+                {{ title }}
+            </h5>
+
+            <div class="contentsection-header-actions">
+
+                <div v-if="$slots.headerSecondaryActions"
+                     class="contentsection-header-reveal-actions">
+                    <slot name="headerSecondaryActions" />
+                </div>
+
+                <slot name="headerActions" />
+
+                <button v-if="!disableCollapse"
+                        type="button"
+                        class="btn btn-action"
+                        @click="section.isCollapsed.value = !section.isCollapsed.value">
+                    <i class="ti ti-chevron-up"></i>
+                </button>
+            </div>
+        </div>
+
+        <TransitionVerticalCollapse>
+            <div v-show="disableCollapse || !section.isCollapsed.value">
+                <div class="contentsection-body">
+                    <slot />
+                </div>
+
+                <div v-if="$slots.overflow"
+                     class="contentsection-body-overflow"
+                     :class="additionalSectionBodyOverflowClasses">
+                    <div class="contentsection-body-overflow-toggle">
+                        <button type="button"
+                                class="btn btn-link"
+                                @click="isOverflowCollapsed = !isOverflowCollapsed">
+                            <span>{{ overflowText || "Show More" }}</span>
+                            <i class="ti ti-chevron-up"></i>
+                        </button>
+                    </div>
+
+                    <TransitionVerticalCollapse>
+                        <div v-show="!isOverflowCollapsed" class="contentsection-body-overflow-content">
+                            <slot name="overflow" />
+                        </div>
+                    </TransitionVerticalCollapse>
+                </div>
+
+                <div v-if="$slots.footerActions || $slots.footerSecondaryActions" class="contentsection-footer">
+                    <div class="contentsection-footer-actions">
+                        <slot name="footerActions" />
+                    </div>
+
+                    <div class="contentsection-footer-secondary-actions">
+                        <slot name="footerSecondaryActions" />
+                    </div>
+
+                </div>
+            </div>
+        </TransitionVerticalCollapse>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { createSection, useSectionContainer } from "@Obsidian/Core/Controls/contentSection";
+    import { computed, onBeforeUnmount, PropType, ref } from "vue";
+
+    const props = defineProps({
+        /**
+         * The title of the section. This should be a brief, descriptive label
+         * about the contents of the section.
+         */
+        title: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /**
+         * The icon to display next to the title. This is optional and can be
+         * left out if no icon is desired.
+         */
+        icon: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /**
+         * Whether the section should be displayed with a light background.
+         */
+        light: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * A section can be collapsed by default. This will disable that so the
+         * section is always expanded.
+         */
+        disableCollapse: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * The text to display for the button to show the overflow content.
+         */
+        overflowText: {
+            type: String as PropType<string>,
+            required: false
+        },
+    });
+
+    // #region Values
+
+    const title = computed((): string | undefined => props.title);
+    const icon = computed((): string | undefined => props.icon);
+    const isOverflowCollapsed = ref(true);
+
+    const section = createSection(title, icon);
+    const sectionContainer = useSectionContainer();
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Additional classes to apply to the section based on its state and
+     * configuration.
+     */
+    const additionalSectionClasses = computed((): string[] => {
+        const classes: string[] = [];
+
+        if (!props.disableCollapse) {
+            classes.push("contentsection-collapsible");
+        }
+
+        if (section.isCollapsed.value) {
+            classes.push("contentsection-collapsed");
+        }
+
+        if (props.light) {
+            classes.push("contentsection-light");
+        }
+
+        return classes;
+    });
+
+    /**
+     * Additional classes to apply to the section body overflow based on its
+     * state.
+     */
+    const additionalSectionBodyOverflowClasses = computed((): string[] => {
+        const classes: string[] = [];
+
+        if (isOverflowCollapsed.value) {
+            classes.push("contentsection-body-overflow-collapsed");
+        }
+
+        return classes;
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles the click event on the section header to toggle the collapse state
+     * of the section.
+     *
+     * @param ev The mouse event that triggered the click.
+     */
+    function onSectionHeaderClick(ev: MouseEvent): void {
+        if (ev.target && ev.target instanceof HTMLElement && ev.target.closest(".contentsection-header-actions")) {
+            // If the click was on the actions, don't toggle collapse.
+            return;
+        }
+
+        section.isCollapsed.value = !section.isCollapsed.value;
+    }
+
+    // #endregion
+
+    onBeforeUnmount((): void => {
+        sectionContainer.removeSection(section);
+    });
+
+    sectionContainer.addSection(section);
+</script>

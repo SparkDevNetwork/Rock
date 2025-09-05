@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -128,7 +130,7 @@ TimesAttendedInLast16Weeks^Times Attended in Last 16 Weeks",
             }
 
             var rockContext = new RockContext();
-            rockContext.Database.CommandTimeout = commandTimeoutSeconds;
+            rockContext.Database.SetCommandTimeout( commandTimeoutSeconds );
             var groupDataView = DataViewCache.Get( groupDataViewGuid.Value );
             if ( groupDataView == null )
             {

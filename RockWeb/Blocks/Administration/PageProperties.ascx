@@ -105,6 +105,7 @@
                                             <asp:CustomValidator ID="cvPageRoute" runat="server" ControlToValidate="tbPageRoute" OnServerValidate="cvPageRoute_ServerValidate" Display="None" ErrorMessage="Invalid Route(s)" />
                                         </fieldset>
                                         <Rock:DefinedValuesPickerEnhanced ID="dvpPageIntents" runat="server" Label="Page Intent" Help="Helps classify the purpose of the page. This is written to interactions as individuals view the page. You can provide options here by editing the Interaction Intent Defined Type." />
+                                        <Rock:ValueList ID="vlCountriesRestrictedFromAccessing" runat="server" Label="Countries Restricted from Accessing" Help="Select the countries from which access will be restricted to this page. Users attempting to connect from these locations will be blocked." />
                                         <asp:PlaceHolder ID="phContextPanel" runat="server">
                                             <fieldset>
                                                 <h4>Context Parameters</h4>
@@ -182,8 +183,8 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                         <div class="pull-right">
-                            <a title="Child Pages" class="btn btn-default btn-sm btn-square page-child-pages" runat="server" id="aChildPages"><i class="fa fa-sitemap"></i></a>
-                            <asp:LinkButton ID="btnCopy" runat="server" ToolTip="Copy Page" CssClass="btn btn-default btn-sm btn-square" OnClick="btnCopy_Click"><i class="fa fa-clone"></i></asp:LinkButton>
+                            <a title="Child Pages" class="btn btn-default btn-sm btn-square page-child-pages" runat="server" id="aChildPages"><i class="ti ti-sitemap"></i></a>
+                            <asp:LinkButton ID="btnCopy" runat="server" ToolTip="Copy Page" CssClass="btn btn-default btn-sm btn-square" OnClick="btnCopy_Click"><i class="ti ti-copy"></i></asp:LinkButton>
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
                         </div>
                     </asp:Panel>

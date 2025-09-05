@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-using Rock.Data;
+
 using Rock.Lava;
 using Rock.Model;
 
@@ -25,7 +25,7 @@ namespace Rock.Communication.SmsActions
     /// <summary>
     /// 
     /// </summary>
-    public class SmsMessage : ILavaDataDictionary, Lava.ILiquidizable
+    public class SmsMessage : ILavaDataDictionary
     {
         private string _message;
 
@@ -74,6 +74,28 @@ namespace Rock.Communication.SmsActions
         public List<BinaryFile> Attachments { get; set; }
 
         /// <summary>
+        /// Gets or sets whether to prevent Rock from sending automatic SMS replies to opt-in or opt-out messages.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if Rock should not send automatic replies; otherwise, <c>false</c>.
+        /// </value>
+        public bool? SuppressSmsOptInOutAutoReplies { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to prevent Rock from updating an individual's SMS status when they opt in or out of
+        /// receiving SMS messages.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if Rock should not update an individual's SMS status; otherwise, <c>false</c>.
+        /// </value>
+        public bool? DisableSmsOptInOutTracking { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether opt-in/opt-out tracking was processed for this message.
+        /// </summary>
+        public bool WasOptInOutTrackingProcessed { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SmsMessage"/> class.
         /// </summary>
         public SmsMessage()
@@ -115,7 +137,31 @@ namespace Rock.Communication.SmsActions
         /// <returns></returns>
         public object GetValue( string key )
         {
-            return this[key];
+            var propInfo = GetType().GetProperty( key );
+
+            try
+            {
+                object propValue = null;
+                if ( propInfo != null )
+                {
+                    propValue = propInfo.GetValue( this, null );
+                }
+
+                if ( propValue is Guid )
+                {
+                    return ( ( Guid ) propValue ).ToString();
+                }
+                else
+                {
+                    return propValue;
+                }
+            }
+            catch
+            {
+                // intentionally ignore
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -127,6 +173,8 @@ namespace Rock.Communication.SmsActions
         /// <param name="key">The key.</param>
         /// <returns></returns>
         [LavaHidden]
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public virtual object this[object key]
         {
             get
@@ -182,6 +230,8 @@ namespace Rock.Communication.SmsActions
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public virtual bool ContainsKey( object key )
         {
             string propertyKey = key.ToStringSafe();
@@ -198,6 +248,8 @@ namespace Rock.Communication.SmsActions
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public object GetValue( object key )
         {
             return this[key];
@@ -208,6 +260,8 @@ namespace Rock.Communication.SmsActions
         /// </summary>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public object ToLiquid()
         {
             return this;

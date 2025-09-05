@@ -41,7 +41,7 @@ namespace Rock.Blocks.Engagement
     [DisplayName( "Step Participant List" )]
     [Category( "Steps" )]
     [Description( "Lists all the participants in a Step." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage(

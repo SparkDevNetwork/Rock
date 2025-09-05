@@ -489,6 +489,9 @@ namespace Rock.CheckIn.v2
         /// <value>A value indicating how to display the ethnicity field for adults.</value>
         public virtual RequirementLevel DisplayEthnicityForChildren { get; }
 
+        /// <inheritdoc cref="CheckInTemplateSettings.DisplayMobilePhoneOnChildren"/>
+        public virtual RequirementLevel DisplayMobilePhoneForChildren { get; }
+
         /// <summary>
         /// Gets a value indicating if the race field is visible and/or
         /// required for adults on the kiosk registration screen.
@@ -502,6 +505,15 @@ namespace Rock.CheckIn.v2
         /// </summary>
         /// <value>A value indicating how to display the race field for children.</value>
         public virtual RequirementLevel DisplayRaceForChildren { get; }
+
+        /// <inheritdoc cref="CheckInTemplateSettings.DisplaySuffix"/>
+        public virtual AdultsOrChildrenSelectionMode DisplaySuffix { get; }
+
+        /// <inheritdoc cref="CheckInTemplateSettings.ForceSelectionOfKnownRelationshipType"/>
+        public virtual bool ForceSelectionOfKnownRelationshipType { get; set; }
+
+        /// <inheritdoc cref="CheckInTemplateSettings.GradeConfirmationAge"/>
+        public virtual decimal? GradeConfirmationAge { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether the alternate identifier field
@@ -616,6 +628,8 @@ namespace Rock.CheckIn.v2
         /// <param name="rockContext">The context to use if database access is required to load data from cache.</param>
         internal TemplateConfigurationData( GroupTypeCache groupTypeCache, RockContext rockContext )
         {
+            var templateSettings = groupTypeCache.GetAdditionalSettings<CheckInTemplateSettings>();
+
             AbilityLevelDetermination = ( AbilityLevelDeterminationMode ) groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION ).AsInteger();
             AchievementTypeGuids = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES ).SplitDelimitedValues().AsGuidList();
             AgeRestriction = ( AgeRestrictionMode ) groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_AGE_RESTRICTION ).AsInteger();
@@ -680,8 +694,12 @@ namespace Rock.CheckIn.v2
             DisplayGradeForChildren = GetRequirementLevel( groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYGRADEONCHILDREN ) );
             DisplayEthnicityForAdults = GetRequirementLevel( groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYETHNICITYONADULTS ) );
             DisplayEthnicityForChildren = GetRequirementLevel( groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYETHNICITYONCHILDREN ) );
+            DisplayMobilePhoneForChildren = templateSettings.DisplayMobilePhoneOnChildren;
+            DisplaySuffix = templateSettings.DisplaySuffix;
             DisplayRaceForAdults = GetRequirementLevel( groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYRACEONADULTS ) );
             DisplayRaceForChildren = GetRequirementLevel( groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYRACEONCHILDREN ) );
+            ForceSelectionOfKnownRelationshipType = templateSettings.ForceSelectionOfKnownRelationshipType;
+            GradeConfirmationAge = templateSettings.GradeConfirmationAge;
             IsAlternateIdFieldVisibleForAdults = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORADULTS ).AsBoolean();
             IsAlternateIdFieldVisibleForChildren = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORCHILDREN ).AsBoolean();
             IsCheckInAfterRegistrationAllowed = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_ENABLECHECKINAFTERREGISTRATION ).AsBoolean();

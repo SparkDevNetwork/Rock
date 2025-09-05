@@ -38,8 +38,8 @@ namespace Rock.Blocks.Reporting
     [DisplayName( "Merge Template List" )]
     [Category( "Core" )]
     [Description( "Displays a list of all merge templates." )]
-    [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [IconCssClass( "ti ti-list" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the merge template details.",

@@ -1,0 +1,33 @@
+
+
+// Asset Manager - Styles for the asset manager (Rock Component)
+
+
+// =============================================================
+// Table of Content           
+//  + Base style
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.assetmanager-files {
+  .checkbox {
+    width:          20px;
+    padding-left:   0;
+  }
+}
+
+//Panha: TODO Might be a legacy sinces its only use in AssetManager.ascx
+.assetmanager-actions {
+  .fileupload-group {
+    margin-bottom: 0;
+  }
+}
+
+.file-asset-manager-padding-override {
+  margin: var(--file-asset-manager-padding-override );
+}
+// ====================== END BASE STYLE ======================
+
+
+

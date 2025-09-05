@@ -49,6 +49,11 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder
         public List<ListItemBag> RecordStatusOptions { get; set; }
 
         /// <summary>
+        /// The list of record source options that are available to pick from.
+        /// </summary>
+        public List<ListItemBag> RecordSourceOptions { get; set; }
+
+        /// <summary>
         /// The list of connection status options that are available to pick from.
         /// </summary>
         public List<ListItemBag> ConnectionStatusOptions { get; set; }
@@ -83,5 +88,10 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder
         /// are added to the form.
         /// </summary>
         public Guid? DefaultSectionType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of pages that are available to pick from.
+        /// </summary>
+        public List<FormBuilderDetailLinkToFormBag> LinkToFormOptions { get; set; }
     }
 }

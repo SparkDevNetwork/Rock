@@ -41,6 +41,31 @@ namespace Rock.Model
     public partial class InteractionService
     {
         /// <summary>
+        /// The lazy backing field for the <see cref="FriendlyApplicationNameByUnfriendlyNames"/> property.
+        /// </summary>
+        private static readonly Lazy<Dictionary<string, string>> _friendlyApplicationNameByUnfriendlyNames = new Lazy<Dictionary<string, string>>( () =>
+        {
+            // Add new keys to this dictionary in alphabetical order (for ease of visual scanning).
+            return new Dictionary<string, string>
+            {
+                { "GmailImageProxy", "Gmail" },
+                { "Google", "Google Automation" },
+                { "lua-resty-http", "Automated HTTP Request" },
+                { "Mobile Safari UI/WKWebview", "Mobile Safari (In-App Browser)" },
+                { "YahooMailProxy", "Yahoo Mail" }
+            };
+        } );
+
+        /// <summary>
+        /// Gets a dictionary of friendly application names to be used when adding <see cref="InteractionDeviceType"/> records.
+        /// </summary>
+        /// <remarks>
+        /// This dictionary is used to provide friendly names for less-than-friendly application names that are provided
+        /// via 3rd party webhooks, parsed from user agent strings, Etc.
+        /// </remarks>
+        private static Dictionary<string, string> FriendlyApplicationNameByUnfriendlyNames => _friendlyApplicationNameByUnfriendlyNames.Value;
+
+        /// <summary>
         /// Creates a new interaction using the provided interaction info object
         /// and adds the new interaction to the context.
         /// <remarks>
@@ -217,7 +242,7 @@ namespace Rock.Model
             var interactionSessionLocationId = GetInteractionSessionLocationId( info );
 
             // Get device info from user agent.
-            ParseUserAgentString( info.UserAgent ?? string.Empty, out string deviceOs, out string deviceApplication, out string deviceClientType );
+            ParseUserAgentString( info.UserAgent ?? string.Empty, info.UserAgentPlatformVersion, out string deviceOs, out string deviceApplication, out string deviceClientType );
 
             // If all device values were returned (they should have been, since values of "Other" will be
             // returned if parsing is unsuccessful), lookup or add a device type instance.
@@ -308,6 +333,29 @@ namespace Rock.Model
         /// The ua parser
         /// </summary>
         private static UAParser.Parser _uaParser = UAParser.Parser.GetDefault();
+
+        /// <summary>
+        /// Parse the user agent string from a HTTP Request to extract information about the client device.
+        /// See https://learn.microsoft.com/en-us/microsoft-edge/web-platform/how-to-detect-win11
+        /// </summary>
+        /// <param name="userAgent"></param>
+        /// <param name="userAgentPlatformVersion">The user agent client hint (Sec-CH-UA-Platform-Version) which provides the version of the operating system
+        /// on which the user agent is running. (e.g., "13.0.0").</param>
+        /// <param name="deviceOs"></param>
+        /// <param name="deviceApplication"></param>
+        /// <param name="deviceClientType"></param>
+        private static void ParseUserAgentString( string userAgent, string userAgentPlatformVersion, out string deviceOs, out string deviceApplication, out string deviceClientType )
+        {
+            ParseUserAgentString( userAgent, out deviceOs, out deviceApplication, out deviceClientType );
+            if ( userAgentPlatformVersion.IsNotNullOrWhiteSpace() && deviceOs == "Windows 10" )
+            {
+                var majorPlatformVersion =userAgentPlatformVersion.Split( '.' ).FirstOrDefault().AsIntegerOrNull();
+                if ( majorPlatformVersion >= 13 )
+                {
+                    deviceOs = "Windows 11";
+                }
+            }
+        }
 
         /// <summary>
         /// Parse the user agent string from a HTTP Request to extract information about the client device.
@@ -472,6 +520,18 @@ namespace Rock.Model
             {
                 lookupTable = new ConcurrentDictionary<string, int>();
                 RockCacheManager<object>.Instance.AddOrUpdate( DeviceTypeIdLookupCacheKey, lookupTable );
+            }
+
+            if ( application.IsNotNullOrWhiteSpace() )
+            {
+                foreach ( var unfriendlyName in FriendlyApplicationNameByUnfriendlyNames.Keys )
+                {
+                    if ( application.StartsWith( unfriendlyName, StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        application = FriendlyApplicationNameByUnfriendlyNames[unfriendlyName];
+                        break;
+                    }
+                }
             }
 
             var lookupKey = $"{application}|{operatingSystem}|{clientType}";
@@ -684,6 +744,7 @@ namespace Rock.Model
                 InteractionChannelCustom2 = interactionInfo.UrlReferrerSearchTerms,
                 InteractionSummary = title,
                 UserAgent = interactionInfo.UserAgent,
+                UserAgentPlatformVersion = interactionInfo.UserAgentPlatformVersion,
                 IPAddress = interactionInfo.UserHostAddress,
                 BrowserSessionId = interactionInfo.BrowserSessionGuid,
                 GeolocationIpAddress = interactionInfo.GeolocationIpAddress,
@@ -1253,6 +1314,11 @@ namespace Rock.Model
         public string UserAgent { get; set; }
 
         /// <summary>
+        /// Gets the raw user agent platform version string of the client browser.
+        /// </summary>
+        public string UserAgentPlatformVersion { get; set; }
+
+        /// <summary>
         /// Gets the IP host address of the remote client.
         /// </summary>
         public string UserHostAddress { get; set; }
@@ -1332,6 +1398,7 @@ namespace Rock.Model
                 UrlReferrerHostAddress = interactionInfo.UrlReferrerHostAddress,
                 UrlReferrerSearchTerms = interactionInfo.UrlReferrerSearchTerms,
                 UserAgent = interactionInfo.UserAgent,
+                UserAgentPlatformVersion = interactionInfo.UserAgentPlatformVersion,
                 UserHostAddress = interactionInfo.UserHostAddress,
                 BrowserSessionGuid = interactionInfo.BrowserSessionGuid,
                 GeolocationIpAddress = interactionInfo.GeolocationIpAddress,
@@ -1391,6 +1458,11 @@ namespace Rock.Model
         /// Gets the raw user agent string of the client browser.
         /// </summary>
         public string UserAgent { get; set; }
+
+        /// <summary>
+        /// Gets the raw user agent platform version string of the client browser.
+        /// </summary>
+        public string UserAgentPlatformVersion { get; set; }
 
         /// <summary>
         /// Gets the IP host address of the remote client.

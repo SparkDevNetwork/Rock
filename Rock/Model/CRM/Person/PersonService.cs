@@ -27,6 +27,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.BulkExport;
+using Rock.Communication.Chat;
 using Rock.Communication.Chat.DTO;
 using Rock.Data;
 using Rock.Security;
@@ -3067,7 +3068,7 @@ namespace Rock.Model
         /// <returns>
         /// A <see cref="Dictionary{TKey, TValue}"/> where:
         /// <list type="bullet">
-        ///   <item><description><c>TKey</c> = the <see cref="Person.Id"/> of the person (not the spouse).</description></item>
+        ///   <item><description><c>TKey</c> = the <see cref="IEntity.Id"/> of the person (not the spouse).</description></item>
         ///   <item><description><c>TValue</c> = the spouse’s full name as a <see cref="string"/>.</description></item>
         /// </list>
         /// Only people meeting the spouse criteria will be included in the dictionary.
@@ -5508,6 +5509,59 @@ AND GroupTypeId = ${familyGroupType.Id}
             return Queryable()
                 .Where( p => p.Aliases.Any( a => a.ForeignKey == chatUserKey ) )
                 .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets a queryable collection of <see cref="Person"/> entities whose associated <see cref="ChatUser.Key"/>
+        /// values match those provided.
+        /// </summary>
+        /// <param name="chatUserKeys">A set of <see cref="ChatUser.Key"/> values to match against <see cref="Person"/>records.</param>
+        /// <param name="personQueryOptions">Optional filtering options for the person query.</param>
+        /// <returns>
+        /// An <see cref="IQueryable{Person}"/> of people whose associated chat user keys match those provided.
+        /// </returns>
+        /// <remarks>
+        /// Only the first 500 <paramref name="chatUserKeys"/> will be considered in order to prevent SQL query
+        /// performance degradation. If more than 500 keys need to be evaluated, the caller is responsible for batching
+        /// the input and invoking this method multiple times.
+        /// </remarks>
+        internal IQueryable<Person> GetPersonByChatUserKeysQuery( HashSet<string> chatUserKeys, PersonQueryOptions personQueryOptions = null )
+        {
+            var chatAliasGuids = chatUserKeys
+                ?.Take( 500 )
+                .Select( k => ChatHelper.GetPersonAliasGuid( k ) )
+                .Where( g => g.HasValue )
+                .Select( g => g.Value )
+                .ToHashSet();
+
+            if ( chatAliasGuids?.Any() != true )
+            {
+                return Enumerable.Empty<Person>().AsQueryable();
+            }
+
+            var rockContext = this.Context as RockContext;
+            var chatAliasQry = new PersonAliasService( rockContext ).Queryable();
+
+            if ( chatAliasGuids.Count == 1 )
+            {
+                // Most performant: limit queries to just this person.
+                var firstChatAliasGuid = chatAliasGuids.First();
+                chatAliasQry = chatAliasQry.Where( pa => pa.Guid.Equals( firstChatAliasGuid ) );
+            }
+            else if ( chatAliasGuids.Count < 1000 )
+            {
+                // Not ideal, but we're limited to a SQL `WHERE...IN` clause.
+                chatAliasQry = chatAliasQry.Where( pa => chatAliasGuids.Contains( pa.Guid ) );
+            }
+
+            return Queryable( personQueryOptions )
+                .Join(
+                    chatAliasQry,
+                    p => p.Id,
+                    pa => pa.PersonId,
+                    ( p, pa ) => p
+                )
+                .Distinct();
         }
     }
 }

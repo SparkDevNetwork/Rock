@@ -153,6 +153,8 @@ export const FieldType = {
     DefinedValueCategorized: "3217C31F-85B6-4E0D-B6BE-2ADB0D28588D",
     /** Defined Value Range field type */
     DefinedValueRange: "B5C07B16-844D-4620-82E3-4CCA8F5FC350",
+    /** Device field type */
+    Device: "D7F5D737-BDC9-4656-951E-08325D0543FD",
     /** Document Type field type */
     DocumentType: "1FD31CDC-E5E2-431B-8D53-72FC0430044D",
     /** Email field type */

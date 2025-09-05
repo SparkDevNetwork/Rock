@@ -121,7 +121,7 @@
                         @click.prevent="onShowHistory(row, $event)"
                         class="btn btn-sm"
                         title="History">
-                    <i class="fa fa-history"></i>
+                    <i class="ti ti-history"></i>
                 </button>
             </template>
         </Column>
@@ -136,7 +136,7 @@
                         @click.prevent="onRunNowClick(row, $event)"
                         class="btn btn-default btn-sm"
                         title="Run Now">
-                    <i class="fa fa-play"></i>
+                    <i class="ti ti-player-play"></i>
                 </button>
             </template>
         </Column>
@@ -148,10 +148,6 @@
 <style>
 .no-x-padding {
     padding: var(--table-cell-padding-y) 0 !important;
-}
-
-.title-right .grid-column-title {
-    text-align: right;
 }
 
 .title-center .grid-column-title {

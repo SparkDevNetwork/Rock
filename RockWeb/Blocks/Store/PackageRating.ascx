@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
         
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-gift"></i> Store Item Detail</h1>
+                <h1 class="panel-title"><i class="ti ti-gift"></i> Store Item Detail</h1>
 
             </div>
             <div class="panel-body">
@@ -61,7 +61,7 @@
                                 </p>
 
                                 <p class="clearfix">
-                                    <asp:LinkButton ID="lbPackageLink" runat="server" CssClass="btn btn-default btn-sm pull-right"><i class="fa fa-desktop"></i> Package Website</asp:LinkButton>
+                                    <asp:LinkButton ID="lbPackageLink" runat="server" CssClass="btn btn-default btn-sm pull-right"><i class="ti ti-device-desktop"></i> Package Website</asp:LinkButton>
                                 </p>
 
                                 <asp:Literal ID="lVersionWarning" runat="server" />
@@ -87,7 +87,7 @@
 
                                 <asp:Panel ID="pnlAdditionalVersions" runat="server">
                                     <p>
-                                        <a href="#" class="btn btn-xs btn-default pull-right js-showmoreversions">More <i class="fa fa-chevron-down"></i></a>
+                                        <a href="#" class="btn btn-xs btn-default pull-right js-showmoreversions">More <i class="ti ti-chevron-down"></i></a>
                                     </p>
                                     <div class="packagedetail-additionalversions">
                                         <asp:Repeater ID="rptAdditionalVersions" runat="server">

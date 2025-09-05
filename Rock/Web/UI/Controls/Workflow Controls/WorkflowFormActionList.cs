@@ -193,7 +193,7 @@ namespace Rock.Web.UI.Controls
             }
             valueHtml.Append( @"</select></div>" );
             valueHtml.Append( @"<div class=""col-sm-4""><label class=""control-label d-sm-none"">Response Text</label><input class=""form-action-response form-control mb-3 mb-sm-0 js-form-action-input"" type=""text"" placeholder=""Response Text""></input></div>" );
-            valueHtml.Append( @"<div class=""col-sm-1""><a href=""#"" class=""btn btn-square btn-danger form-action-remove""><i class=""fa fa-times""></i></a></div></div>" );
+            valueHtml.Append( @"<div class=""col-sm-1""><a href=""#"" class=""btn btn-square btn-danger form-action-remove""><i class=""ti ti-x""></i></a></div></div>" );
 
             var hfValueHtml = new HtmlInputHidden();
             hfValueHtml.AddCssClass( "js-value-html" );
@@ -310,7 +310,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-sm btn-square btn-danger form-action-remove mb-3 mb-sm-0" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-times" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "ti ti-x" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();  // I
                 writer.RenderEndTag();  // A
@@ -327,7 +327,7 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs btn-square btn-action form-action-add" );
             writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-plus-circle" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "ti ti-circle-plus" );
             writer.RenderBeginTag( HtmlTextWriterTag.I );
             writer.RenderEndTag();      // I
             writer.RenderEndTag();      // A

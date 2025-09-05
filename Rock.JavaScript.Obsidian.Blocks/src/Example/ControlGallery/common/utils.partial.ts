@@ -16,7 +16,6 @@
 //
 
 import { upperCaseFirstCharacter } from "@Obsidian/Utility/stringUtils";
-import { Ref, isRef } from "vue";
 import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -74,49 +73,6 @@ export function convertComponentName(name: string | undefined | null): string {
         .trim();
 }
 
-/**
- * Takes an element name and a collection of attribute keys and values and
- * constructs the example code. This can be used inside a computed call to
- * have the example code dynamically match the selected settings.
- *
- * @param elementName The name of the element to use in the example code.
- * @param attributes The attribute names and values to append to the element name.
- * @param allFalseByDefault If true then all attributes will be considered false by default, so they'll only show up as 'flag' props if they are set to true.
- *
- * @returns A string of valid HTML content for how to use the component.
- */
-export function buildExampleCode(elementName: string, attributes: Record<string, Ref<unknown> | unknown>, allFalseByDefault: boolean = false): string {
-    const attrs: string[] = [];
-
-    for (const attr in attributes) {
-        let value = attributes[attr];
-
-        if (isRef(value)) {
-            value = value.value;
-        }
-
-        if (typeof value === "string") {
-            attrs.push(`${attr}="${value}"`);
-        }
-        else if (typeof value === "number") {
-            attrs.push(`:${attr}="${value}"`);
-        }
-        else if (typeof value === "boolean") {
-            if (allFalseByDefault && value === true) {
-                attrs.push(attr);
-            }
-            else if (!allFalseByDefault) {
-                attrs.push(`:${attr}="${value ? "true" : "false"}"`);
-            }
-        }
-        else if (value === undefined || value === null) {
-            /* Do nothing */
-        }
-    }
-
-    return `<${elementName} ${attrs.join(" ")} />`;
-}
-
 export const displayStyleItems: ListItemBag[] = [
     {
         value: PickerDisplayStyle.Auto,
@@ -131,3 +87,167 @@ export const displayStyleItems: ListItemBag[] = [
         text: "Condensed"
     }
 ];
+
+/**
+ * Converts a number to its corresponding word representation.
+ * This is useful for generating labels or titles based on a number.
+ *
+ * @param index The index of the number to convert to a word. Should be between 1 and 10.
+ *
+ * @returns The word representation of the number.
+ */
+export function getNumberWord(index: number): string {
+    const words = ["First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth"];
+
+    return words[index - 1] || `${index}`;
+}
+
+/**
+ * Returns a string representing an icon class based on the given index.
+ * This is useful for generating icon classes dynamically in a gallery.
+ *
+ * @param index The index of the icon to retrieve. Should be between 1 and 10.
+ *
+ * @returns The icon class string.
+ */
+export function getIconNumber(index: number): string {
+    const icons = ["ti ti-home", "ti ti-user", "ti ti-settings", "ti ti-star", "ti ti-bell", "ti ti-calendar", "ti ti-chart-bar", "ti ti-heart", "ti ti-search", "ti ti-file"];
+
+    return icons[index - 1] || "ti ti-icons";
+}
+
+/**
+ * Represents a component usage that can be used to generate example code for a
+ * control. This handles the attributes and body of the component and properly
+ * formats and indents the code for display.
+ */
+export class ComponentUsage {
+    private readonly name: string;
+    private readonly attributes: { value: string | boolean | number | null | undefined, name: string }[];
+    private body: string = "";
+
+    /**
+     * Creates a new instance of the ComponentUsage class.
+     *
+     * @param name The name of the component to use in the generated code.
+     */
+    constructor(name: string) {
+        this.name = name;
+        this.attributes = [];
+    }
+
+    /**
+     * Adds an attribute to the component usage.
+     *
+     * @param key The name of the attribute.
+     * @param value The value of the attribute.
+     * @param defaultValue The default value of the attribute. If the value matches this, it will not be added. Defaults to undefined.
+     */
+    public addAttribute(key: string, value: string | boolean | number | undefined | null, defaultValue: string | boolean | number | undefined = undefined): void {
+        if (value === defaultValue) {
+            return;
+        }
+
+        if (value === true) {
+            this.attributes.push({
+                value: undefined,
+                name: key
+            });
+        }
+        else {
+            this.attributes.push({
+                value: value,
+                name: typeof value === "number" ? `:${key}` : key
+            });
+        }
+    }
+
+    /**
+     * Converts an attribute to a string representation.
+     * This handles different types of values and formats them appropriately.
+     *
+     * @param attribute The attribute to convert to a string.
+     * @param index The index of the attribute in the list.
+     *
+     * @returns The string representation of the attribute.
+     */
+    private getAttributeString(attribute: { value: string | boolean | number | null | undefined, name: string }, index: number): string {
+        let str = "";
+
+        if (index > 0) {
+            str += " ".repeat(this.name.length + 2);
+        }
+
+        if (attribute.value === undefined) {
+            str += attribute.name;
+        }
+        else if (attribute.value === null) {
+            str += `:${attribute.name}="null"`;
+        }
+        else if (typeof attribute.value === "number" || typeof attribute.value === "boolean") {
+            str += `:${attribute.name}="${attribute.value}"`;
+
+        }
+        else {
+            str += `${attribute.name}="${attribute.value}"`;
+        }
+
+        return str;
+    }
+
+    /**
+     * Adds content to the body of the component usage.
+     * If there is existing content, a newline is added before the new content.
+     *
+     * @param content The content to add to the body.
+     */
+    public addBody(content: string | ComponentUsage): void {
+        if (this.body) {
+            this.body += "\n";
+        }
+
+        if (typeof content === "string") {
+            this.body += content;
+        }
+        else {
+            this.body += content.toString();
+        }
+    }
+
+    /**
+     * Converts the component usage to a string representation.
+     * This generates the full code for the component, including its attributes
+     * and body.
+     *
+     * @returns The string representation of the component usage.
+     */
+    public toString(): string {
+        let code = `<${this.name}`;
+
+        const attributesString = this.attributes
+            .map((attr, index) => `${this.getAttributeString(attr, index)}`)
+            .join("\n");
+
+        if (attributesString.length > 0) {
+            code += ` ${attributesString}`;
+        }
+
+        if (this.body) {
+            const body = this.body
+                .split("\n")
+                .map(line => `    ${line}`)
+                .join("\n");
+
+            code += `>\n${body}\n</${this.name}>`;
+        }
+        else {
+            if (this.attributes.length > 0) {
+                code += " ";
+            }
+
+            code += "/>";
+        }
+
+        return code;
+    }
+}

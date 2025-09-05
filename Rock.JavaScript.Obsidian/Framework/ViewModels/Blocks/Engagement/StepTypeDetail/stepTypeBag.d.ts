@@ -87,6 +87,15 @@ export type StepTypeBag = {
     /** Gets or sets a value indicating whether this step requires a date. */
     isDateRequired: boolean;
 
+    /** Gets or sets a value indicating whether the Step Type can be deleted.  */
+    isDeletable: boolean;
+
+    /**
+     * Gets or sets the boolean value indicating whether this Step Type is a prerequisite for other
+     * Step Types in the Program.
+     */
+    isPrerequisiteStepType: boolean;
+
     /** Gets or sets the kpi. */
     kpi?: string | null;
 

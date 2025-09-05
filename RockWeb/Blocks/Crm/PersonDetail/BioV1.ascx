@@ -21,21 +21,21 @@
                             <b class="caret"></b>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-right">
-                            <li><asp:LinkButton ID="lbImpersonate" runat="server" Visible="false" OnClick="lbImpersonate_Click"><i class='fa-fw fa fa-unlock'></i>&nbsp;Impersonate</asp:LinkButton></li>
-                            <li><asp:HyperLink ID="hlVCard" runat="server"><i class='fa fa-address-card'></i>&nbsp;Download vCard</asp:HyperLink></li>
+                            <li><asp:LinkButton ID="lbImpersonate" runat="server" Visible="false" OnClick="lbImpersonate_Click"><i class='ti-fw ti ti-lock-open'></i>&nbsp;Impersonate</asp:LinkButton></li>
+                            <li><asp:HyperLink ID="hlVCard" runat="server"><i class='ti ti-id'></i>&nbsp;Download vCard</asp:HyperLink></li>
                             <asp:Literal ID="lActions" runat="server" />
                         </ul>
                     </li>
                 </ul>
 
-                <asp:LinkButton ID="lbEditPerson" runat="server" AccessKey="I" ToolTip="Alt+I" CssClass="action" OnClick="lbEditPerson_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
+                <asp:LinkButton ID="lbEditPerson" runat="server" AccessKey="I" ToolTip="Alt+I" CssClass="action" OnClick="lbEditPerson_Click"><i class="ti ti-pencil"></i></asp:LinkButton>
             </div>
 
             <div class="row">
                 <div class="col-sm-3 col-md-2 text-center sm-text-left">
                     <div class="photo">
                         <asp:Literal ID="lImage" runat="server" />  
-                        <asp:Panel ID="pnlFollow" runat="server" CssClass="following-status"><i class="fa fa-star"></i></asp:Panel>
+                        <asp:Panel ID="pnlFollow" runat="server" CssClass="following-status"><i class="ti ti-star"></i></asp:Panel>
                     </div>
                     <div class="social-icons margin-t-sm">
                         <asp:Repeater ID="rptSocial" runat="server">

@@ -1,0 +1,71 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DisplayCard v-if="channel.idKey"
+                 :title="channel.name"
+                 :description="description">
+        <template #actions>
+            <div class="email-preference-entry-subscribe-actions">
+                <RockButton :btnType="BtnType.Link"
+                            :disabled="disabled"
+                            @click="onSubscribeClick">
+                    Subscribe
+                </RockButton>
+            </div>
+        </template>
+    </DisplayCard>
+</template>
+
+<style scoped>
+.email-preference-entry-subscribe-actions .btn {
+    font-weight: var(--font-weight-semibold);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { ManageChannelSubscriptionEvent } from "./types.partial";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { CommunicationChannelBag } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/communicationChannelBag";
+
+    const props = defineProps({
+        channel: {
+            type: Object as PropType<CommunicationChannelBag>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "subscribe", event: ManageChannelSubscriptionEvent): void;
+    }>();
+
+    // #region Computed Values
+
+    const description = computed((): string => {
+        return props.channel.isUnsubscribed
+            ? "Unsubscribed"
+            : "Available But Never Subscribed To";
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Handles the "Subscribe" button click.
+     */
+    function onSubscribeClick(): void {
+        emit("subscribe", {
+            idKey: props.channel.idKey!,
+            channelType: props.channel.communicationChannelType
+        });
+    }
+
+    // #endregion Event Handlers
+</script>

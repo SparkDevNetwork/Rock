@@ -1,0 +1,1026 @@
+<template>
+    <Chart :data="chartData!"
+           :options="chartOptions"
+           :plugins="[ChartDataLabels]"
+           type="bar"
+           :disableAnimations="disableAnimationUntilUpdated"
+           @updated="disableAnimationUntilUpdated = false" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import Chart from "./chart.obs";
+    import { BarChartClickEvent, BarLabelPosition, BarLabelsConfig, BarLabelSpec, BarSeries, LabelDateFormat, LegendAlign, LegendPosition, TooltipCallback } from "@Obsidian/Core/Controls/chart";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
+    import { Chart as ChartJs, ChartData, ChartDataset, ChartOptions, Color, LegendItem, TooltipItem, TooltipLabelStyle, ChartDataLabels, ChartDataLabelOptions } from "@Obsidian/Libs/chart";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { isNullish } from "@Obsidian/Utility/util";
+
+    const defaultLegendIsHidden = false;
+    const defaultLegendPosition = LegendPosition.Bottom;
+    const defaultLegendAlign = LegendAlign.Center;
+
+    const props = defineProps({
+        /** The configuration for the bar labels for all series. */
+        barLabels: {
+            type: Object as PropType<BarLabelsConfig | undefined>
+        },
+
+        /**
+         * Whether the legend is hidden.
+         */
+        hideLegend: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * The format to use for the date labels.
+         *
+         * When set, `labels` is treated as an array of ISO date strings.
+         */
+        labelDateFormat: {
+            type: String as PropType<LabelDateFormat | undefined>
+        },
+
+        /**
+         * When supplying date strings, they MUST be in ISO format and you MUST set `labelDateFormat`.
+         */
+        labels: {
+            type: Array as PropType<string[]>,
+            required: true
+        },
+
+        /**
+         * The alignment of the legend in the chart.
+         */
+        legendAlign: {
+            type: Object as PropType<LegendAlign | null | undefined>
+        },
+
+        /**
+         * The position of the legend in the chart.
+         */
+        legendPosition: {
+            type: Object as PropType<LegendPosition | undefined>
+        },
+
+        /**
+         * When `true`, bars from multiple datasets are drawn in the same position
+         * and overlap each other rather than being shown side-by-side (grouped)
+         * or stacked.
+         *
+         * Note: If the dataset values should accumulate into a single bar,
+         * use the `stack` prop instead.
+         *
+         * For example:
+         * - Default (grouped): each dataset has its own bar next to the others
+         *   for the same category.
+         * - stack: dataset values accumulate vertically (or horizontally) into
+         *   a single bar for each category.
+         * - overlap: all datasets share the same bar slot and are drawn on top of
+         *   each other. This is often combined with transparency to allow visual
+         *   comparison without stacking values.
+         *
+         * Charting pros: Equivalent to Chart.js’s `grouped: false` setting for
+         * bar charts. Unlike stacking, values do not accumulate — bars simply
+         * share the same baseline and x-position.
+         */
+        overlap: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * The series data to display in the chart.
+         */
+        series: {
+            type: Array as PropType<BarSeries[]>,
+            required: true
+        },
+
+        /**
+         * When `true`, bars from multiple data series are stacked on top of each other
+         * instead of being drawn side-by-side.
+         *
+         * Note: If the bars should share the same position without accumulating
+         * their values, use the `overlap` prop instead.
+         *
+         * For example:
+         * - Without stacking (default), each series is shown with its own separate bar
+         *   for the same category (grouped layout).
+         * - With stacking enabled, series values for the same category accumulate
+         *   vertically (or horizontally, if using horizontal bars) into a single bar.
+         *
+         * This makes it easy to compare both the total value across series and the
+         * contribution of each series to that total.
+         *
+         * Charting pros: This prop switches the bar layout mode from "grouped" to
+         * "stack" (cumulative). Stacking preserves relative series proportions
+         * within a category but alters absolute comparisons across categories.
+         */
+        stack: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * The title of the chart.
+         */
+        title: {
+            type: String as PropType<string | undefined>
+        },
+
+        /**
+         * The tooltip formatter function.
+         */
+        tooltip: {
+            type: Function as PropType<TooltipCallback | undefined>
+        },
+
+        /**
+         * The tooltip title formatter function.
+         */
+        tooltipTitle: {
+            type: Function as PropType<TooltipCallback | undefined>
+        },
+
+        /**
+         * The type of data represented in the chart.
+         *
+         * For "percent", the data MUST be in decimal form (e.g., 0.1 for 10%).
+         */
+        type: {
+            type: String as PropType<"number" | "percent">,
+            default: "number"
+        },
+
+        /**
+         * Whether the chart has unfilled areas.
+         *
+         * The per series property, `props.data[n].isUnfilled`, overrides this setting.
+         */
+        unfilled: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * The x-axis label.
+         */
+        xLabel: {
+            type: String as PropType<string | undefined>
+        },
+
+        /**
+         * The maximum number of ticks to show on the x-axis.
+         */
+        xMaxTickCount: {
+            type: Number as PropType<number | undefined>
+        },
+
+        /**
+         * Whether to show the x-axis grid lines. Hidden by default.
+         */
+        xShowGridLines: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * Whether to hide the y-axis grid lines. Shown by default.
+         */
+        yHideGridLines: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * The y-axis label.
+         */
+        yLabel: {
+            type: String as PropType<string | undefined>
+        },
+
+        /**
+         * The maximum number of ticks to show on the y-axis.
+         */
+        yMaxTickCount: {
+            type: Number as PropType<number | undefined>
+        },
+
+        /**
+         * The minimum value to display in the y-axis if there is nothing lower.
+         *
+         * This is useful for controlling the starting point of the y-axis.
+         * The actual minimum value will be used if there is a lower value present.
+         */
+        ySuggestedMin: {
+            type: Number as PropType<number | undefined>
+        },
+
+        /**
+         * The maximum value to display in the y-axis if there is nothing higher.
+         *
+         * This is useful for controlling the ending point of the y-axis.
+         * The actual maximum value will be used if there is a higher value present.
+         */
+        ySuggestedMax: {
+            type: Number as PropType<number | undefined>
+        },
+
+        /**
+         * The number of ticks to show on the y-axis.
+         *
+         * This overrides `yMinTickCount` and `yMaxTickCount`.
+         */
+        yTickCount: {
+            type: Number as PropType<number | undefined>
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "click", value: BarChartClickEvent): void;
+    }>();
+
+    // #region Values
+
+    const disableAnimationUntilUpdated = ref<boolean>(false);
+    const chartData = ref<ChartData<"bar"> | undefined>();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const internalYSuggestedMin = computed<number | undefined>(() => {
+        // Use the supplied ySuggestedMin if present,
+        // otherwise default to 0.0 (0%) for percent charts (based on min value).
+        if (!isNullish(props.ySuggestedMin)) {
+            return props.ySuggestedMin;
+        }
+
+        if (props.type === "percent") {
+            const min = Enumerable.from(props.series)
+                .selectMany(s => s.data)
+                .min(d => d ?? 0);
+
+            if (!min || min > 0) {
+                // Min is nullish, 0, or greater than 0, so return 0.0 (0%).
+                return 0;
+            }
+
+            // Convert the decimal value, 0.11, to an integer percentage, 11.
+            const minInteger = Math.floor(min * 100);
+
+            // Get the next 10s digit.
+            const nextTens = Math.floor(minInteger / 10) * 10;
+
+            // Convert back to a decimal.
+            return nextTens / 100;
+        }
+        else {
+            return 0;
+        }
+    });
+
+    const internalYSuggestedMax = computed<number | undefined>(() => {
+        // Use the supplied ySuggestedMax if present,
+        // otherwise default to the next highest 10s digit for percent charts,
+        // (e.g., 0.7 for 70% if the highest value is 0.67).
+        if (!isNullish(props.ySuggestedMax)) {
+            return clamp(props.ySuggestedMax, 0);
+        }
+
+        if (props.type === "percent") {
+            const max = Enumerable.from(props.series)
+                .selectMany(s => s.data)
+                .max(d => d ?? 0);
+
+            if (!max) {
+                // Max is nullish or 0, so return 1.0 (100%).
+                return 1;
+            }
+
+            // Convert the decimal value, 0.11, to an integer percentage, 11.
+            const maxInteger = Math.ceil(max * 100);
+
+            // Get the next 10s digit.
+            const nextTens = Math.ceil(maxInteger / 10) * 10;
+
+            // // If we are displaying any outside labels, then add another 5 for good measure.
+            // if (nextTens >= 20 && Enumerable.from(props.data).select(s => s.barLabels?.outside).any(o => !isNullish(o))) {
+            //     return nextTens / 100 + 0.05;
+            // }
+
+            // Convert back to a decimal.
+            return nextTens / 100;
+        }
+    });
+
+    const internalLabelDateFormat = computed<"day" | "week" | "month" | "year" | undefined>(() => {
+        if (!props.labelDateFormat) {
+            // No label date format specified,
+            // so assume the labels are categorical, not date strings.
+            return;
+        }
+
+        if (props.labelDateFormat !== LabelDateFormat.Auto) {
+            return props.labelDateFormat;
+        }
+
+        // Use the date unit to determine the label format.
+        const uniqueRockDateTimes = Enumerable
+            .from(props.labels ?? [])
+            .select(label => RockDateTime.parseISO(label))
+            .ofType<RockDateTime>((rockDateTime): rockDateTime is RockDateTime => !isNullish(rockDateTime))
+            .select(rockDateTime => rockDateTime.date)
+            .distinctBy(rockDateTime => rockDateTime.toMilliseconds())
+            .toArray();
+
+        // If there are more than two years then use years.
+        const uniqueYears = Enumerable
+            .from(uniqueRockDateTimes)
+            .select(r => r.year)
+            .distinct()
+            .count();
+
+        if (uniqueYears > 2) {
+            return "year";
+        }
+
+        // If there are more than four unique year+month combinations then use months.
+        const uniqueYearAndMonths = Enumerable
+            .from(uniqueRockDateTimes)
+            .select(r => `${r.year}+${r.month}`)
+            .distinct()
+            .count();
+
+        if (uniqueYearAndMonths > 4) {
+            return "month";
+        }
+
+        // If there are between one and four unique year+month combinations then use weeks.
+        if (uniqueYearAndMonths >= 1) {
+            return "week";
+        }
+
+        return "day";
+    });
+
+    const internalLabels = computed<string[]>(() => {
+        if (!internalLabelDateFormat.value) {
+            // No date format specified, so return the original labels.
+            return props.labels;
+        }
+
+        // Map the original labels to their formatted date strings
+        // without timezone so luxon can parse them correctly.
+        return Enumerable
+            .from(props.labels)
+            .select(label => {
+                const rockDateTime = RockDateTime.parseISO(label);
+
+                if (!rockDateTime) {
+                    // label is not a valid ISO date string so return it without modification.
+                    console.warn(`Invalid ISO date string: ${label}`);
+                    return label;
+                }
+                else {
+                    return rockDateTime.toASPString("yyyy-MM-ddTHH:mm:ss");
+                }
+            })
+            .toArray();
+    });
+
+    function toLabelOptions(bl: BarLabelsConfig, isStacked: boolean): Record<string, ChartDataLabelOptions> {
+        return Enumerable
+            .from(Object.keys(bl ?? {}))
+            .aggregate<Record<string, ChartDataLabelOptions>>((datalabelOptions, barLabelKey) => {
+                const position = <BarLabelPosition>barLabelKey;
+                const spec: BarLabelSpec = bl[barLabelKey];
+
+                if (!spec) {
+                    return datalabelOptions;
+                }
+
+                const options: ChartDataLabelOptions = {
+                    anchor: isStacked ? "center" : "end", // Anchor "inside" and "outside" labels to the end of the bar (top for vertical, left for horizontal)
+                    align: isStacked ? "center"
+                        : position === "outside" ? "end" // "outside" labels should be placed after the end of the bar.
+                            : position === "inside" ? "start" // "inside" labels should be placed before the end of the bar.
+                                : "center", // New positions get placed over the top line of the bar until defined.
+
+                    // When two labels overlap, "auto" will hide the label with the higher data index.
+                    display: "auto",
+
+                    // When a label is outside the chart area, "clip" will hide it.
+                    clip: true,
+
+                    color: spec.color
+                        // For "inside" and stacked labels, use a contrasting color to the bar.
+                        ?? (position === "inside" || isStacked ? (context) => {
+                            const barColor = Array.isArray(context.dataset.backgroundColor) ? context.dataset.backgroundColor[context.dataIndex] : context.dataset.backgroundColor;
+                            return pickContrastColor(barColor, getInheritedBackgroundColor(context.chart.canvas));
+                        } : undefined),
+
+                    formatter: (value, context) => {
+                        return spec.formatter({
+                            label: internalLabels.value[context.dataIndex],
+                            seriesName: context.dataset.label ?? props.series[context.datasetIndex].label,
+                            value: value as number,
+
+                            // Use getters for these to reduce processing.
+                            get formattedLabel(): string | undefined {
+                                return getFormattedLabel(context.chart, context.chart.data, context.dataIndex);
+                            },
+                            get formattedValue(): string | undefined {
+                                return getFormattedValue(context.chart, value, context.dataIndex);
+                            }
+                        });
+                    },
+
+                    textAlign: "center", // align multiline text in the center by default
+
+                };
+
+                datalabelOptions[barLabelKey] = options;
+
+                return datalabelOptions;
+            }, {});
+    }
+
+    /**
+     * Refresh the chart data.
+     */
+    function refreshChartData(): void {
+        chartData.value = {
+            labels: internalLabels.value,
+            datasets: props.series.map<ChartDataset<"bar", (number | [number, number] | null)[]>>((series, index) => {
+
+                const seriesColor = series.color ?? getCategoricalColor(index + 1);
+                const color = isNullish(series.opacity) ? seriesColor
+                    : getColorWithOpacity(seriesColor, series.opacity);
+                const isOverlapped = props.overlap;
+
+                const isUnfilled = (series.isUnfilled ?? props.unfilled) === true;
+                const barLabels = series.barLabels ?? props.barLabels;
+                const labels = barLabels ? toLabelOptions(barLabels!, !!props.stack) : undefined;
+
+                const ds: ChartDataset<"bar", (number | [number, number] | null)[]> = {
+                    label: series.label,
+                    data: series.data,
+
+                    backgroundColor: isUnfilled ? "transparent" : color,
+
+                    borderColor: color,
+                    borderWidth: isUnfilled ? 3 : 0,
+
+                    grouped: isNullish(isOverlapped) ? undefined : !isOverlapped,
+
+                    // Override the global datalabels for this series if necessary.
+                    datalabels: labels ? { labels } : undefined
+                };
+                return ds;
+            })
+        };
+    }
+
+    const chartOptions = computed<ChartOptions<"bar">>(() => {
+        const op: ChartOptions<"bar"> = {
+            // Allow the chart to change size with the parent container.
+            responsive: true,
+            maintainAspectRatio: false,
+
+            // Make it easier to interact and hover over points when using `overlap`.
+            interaction: props.overlap
+                ? { mode: "index" }
+                : undefined,
+
+            onClick: (_event, elements, _chart) => {
+                emit("click", {
+                    targets: Enumerable
+                        .from(elements)
+                        .select<BarChartClickEvent["targets"][0]>(element => {
+                            return {
+                                labelIndex: element.index,
+                                seriesIndex: element.datasetIndex,
+                                label: props.labels[element.index],
+                                series: props.series[element.datasetIndex],
+                                value: props.series[element.datasetIndex].data[element.index]
+                            };
+                        })
+                        .toArray()
+                });
+            },
+
+            plugins: {
+                datalabels: {
+                    // Disable datalabels plugin by default so they are only displayed if defined in the series.
+                    display: false
+                },
+
+                legend: {
+                    display: !((props.hideLegend ?? defaultLegendIsHidden) === true),
+                    position: props.legendPosition ?? defaultLegendPosition,
+                    align: props.legendAlign ?? defaultLegendAlign,
+                    labels: {
+                        // `usePointStyle: true` removes the boxes next to each legend item
+                        // and uses "points" instead. Control the "point" shape inside the
+                        // `generateLabels` callback.
+                        usePointStyle: true,
+                        generateLabels: (chart) => {
+                            const data = chart.data;
+                            if (!data || !data.datasets) {
+                                return [];
+                            }
+
+                            const labelColor = chart.legend?.options.labels.color;
+
+                            return Enumerable
+                                .from(data.datasets)
+                                .withIndex()
+                                .select<LegendItem>(([dataset, index]) => {
+                                    return {
+                                        text: dataset.label ?? "",
+                                        pointStyle: "line",
+                                        strokeStyle: (getColorWithOpacity(Array.isArray(dataset.borderColor) ? dataset.borderColor[0] : dataset.borderColor, 1)) as Color,
+                                        hidden: !chart.isDatasetVisible(index),
+                                        datasetIndex: index,
+                                        lineWidth: 4, // Line thickness
+                                        fontColor: labelColor,
+                                        lineCap: "round"
+                                    };
+                                })
+                                .toArray();
+                        }
+                    }
+                },
+
+                title: {
+                    display: !!props.title,
+                    text: props.title ?? undefined,
+                },
+
+                tooltip: {
+                    // Remove colored box preceding the value.
+                    //displayColors: false,
+
+                    callbacks: {
+                        title: props.tooltipTitle
+                            ? (tooltipItems: TooltipItem<"bar">[]) => {
+                                return Enumerable
+                                    .from(tooltipItems)
+                                    .select(tooltipItem => {
+                                        // There are 3 versions of the label.
+                                        // 1. The raw label (from prop.labels)
+                                        // 2. The formatted label (from the x-axis; using the options.scales.x.ticks.callback formatter)
+                                        // 3. Unpredictable formatted label (from internal chart library formatting via `context.label`; unpredictable so don't use)
+                                        const rawLabel = props.labels[tooltipItem.dataIndex];
+
+                                        return props.tooltipTitle?.({
+                                            label: rawLabel,
+                                            formattedLabel: getFormattedLabel(tooltipItem.chart, tooltipItem.chart.data, tooltipItem.dataIndex) ?? rawLabel,
+                                            value: tooltipItem.raw as number | null,
+                                            formattedValue: getFormattedValue(tooltipItem.chart, tooltipItem.parsed.y, tooltipItem.dataIndex) ?? (tooltipItem.formattedValue || tooltipItem.parsed.y.toString()),
+                                            seriesLabel: tooltipItem.dataset.label ?? ""
+                                        });
+                                    })
+                                    .ofType((t): t is string => typeof t === "string")
+                                    .distinct()
+                                    .toArray();
+                            }
+                            : internalLabelDateFormat.value
+                                ? (tooltipItems: TooltipItem<"bar">[]) => {
+                                    return Enumerable
+                                        .from(tooltipItems)
+                                        .select(tooltipItem => getFormattedLabel(tooltipItem.chart, tooltipItem.chart.data, tooltipItem.dataIndex))
+                                        .ofType((t): t is string => typeof t === "string")
+                                        .distinct()
+                                        .toArray();
+                                }
+                                : undefined,
+
+                        // Override the default tooltip using the following hierarchy:
+                        // 1. props.tooltip, use provided tooltip
+                        // 2. props.type === "percent", use percent-formatted tooltip
+                        // 3. use default
+                        label:
+                            props.tooltip
+                                ? (context) => {
+                                    // There are 3 versions of the label.
+                                    // 1. The raw label (from prop.labels)
+                                    // 2. The formatted label (from the x-axis; using the options.scales.x.ticks.callback formatter)
+                                    // 3. Unpredictable formatted label (from internal chart library formatting via `context.label`; unpredictable so don't use)
+                                    const rawLabel = props.labels[context.dataIndex];
+
+                                    return props.tooltip?.({
+                                        label: rawLabel,
+                                        formattedLabel: getFormattedLabel(context.chart, context.chart.data, context.dataIndex) ?? rawLabel,
+                                        value: context.raw as number | null,
+                                        formattedValue: getFormattedValue(context.chart, context.parsed.y, context.dataIndex) ?? (context.formattedValue || context.parsed.y.toString()),
+                                        seriesLabel: context.dataset.label ?? ""
+                                    }) ?? "";
+                                }
+                                : props.type === "percent"
+                                    ? (context) => {
+                                        let label = context.dataset.label ?? "";
+
+                                        if (label) {
+                                            label += ": ";
+                                        }
+
+                                        if (!isNullish(context.parsed.y)) {
+                                            label += context.parsed.y.toLocaleString(
+                                                undefined,
+                                                { style: "percent", maximumFractionDigits: 2 }
+                                            );
+                                        }
+
+                                        return label;
+                                    }
+                                    : undefined,
+
+                        labelColor: (context): TooltipLabelStyle => {
+                            return {
+                                borderColor: getColorWithOpacity(Array.isArray(context.dataset.borderColor) ? context.dataset.borderColor[0] : context.dataset.borderColor, 1) as Color,
+                                backgroundColor: getColorWithOpacity(Array.isArray(context.dataset.borderColor) ? context.dataset.borderColor[0] : context.dataset.borderColor, 1) as Color
+                            };
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        // Hide x-axis grid lines by default
+                        display: props.xShowGridLines === true
+                    },
+
+                    // Both x and y should be stacked.
+                    stacked: props.stack,
+
+                    ticks: {
+                        autoSkip: true,
+                        autoSkipPadding: 10,
+                        maxRotation: 45,
+                        maxTicksLimit: clamp(props.xMaxTickCount, 0)
+                    },
+
+                    title: {
+                        display: !!props.xLabel,
+                        text: props.xLabel ?? undefined
+                    },
+
+                    time: internalLabelDateFormat.value
+                        ? {
+                            unit: internalLabelDateFormat.value,
+                            minUnit: internalLabelDateFormat.value,
+                            displayFormats: {
+                                day: "M/d/yy",
+                                week: "MMM d, yyyy",
+                                month: "MMM yyyy",
+                                year: "yyyy"
+                            }
+                        }
+                        : undefined,
+                    type: internalLabelDateFormat.value ? "timeseries" : "category"
+                },
+                y: {
+                    beginAtZero: internalYSuggestedMin.value === 0,
+
+                    // When displaying outside labels, add some extra space to the top so the labels are not cut off.
+                    grace: (
+                        !props.stack
+                        && (
+                            !!props.barLabels?.outside
+                            || Enumerable
+                                .from(props.series)
+                                .select(s => s.barLabels?.outside)
+                                .any(o => !isNullish(o))
+                        )
+                    ) ? (props.type === "percent" ? "2.5%" : 5)
+                        : undefined,
+
+                    grid: {
+                        display: props.yHideGridLines !== true
+                    },
+
+                    // Both x and y should be stacked.
+                    stacked: props.stack,
+
+                    // Use `suggestedMin` and `suggestedMax` instead of `min` and `max`
+                    // so points that are close to the edges are not cropped.
+                    // min: props.min ?? undefined,
+                    // max: props.max ?? undefined,
+                    suggestedMin: internalYSuggestedMin.value ?? undefined,
+                    suggestedMax: internalYSuggestedMax.value ?? undefined,
+
+                    ticks: {
+                        count: clamp(props.yTickCount, 0),
+                        maxTicksLimit: clamp(props.yMaxTickCount, 0),
+                        callback: props.type === "percent"
+                            ? (tickValue) => {
+                                if (typeof tickValue !== "number") {
+                                    tickValue = Number(tickValue);
+                                }
+
+                                if (isNaN(tickValue)) {
+                                    // If it's not a number, return the original value.
+                                    return `${tickValue}`;
+                                }
+                                else {
+                                    return tickValue.toLocaleString(
+                                        undefined,
+                                        { style: "percent", maximumFractionDigits: 0 }
+                                    );
+                                }
+                            }
+                            : undefined
+                    },
+
+                    title: {
+                        display: !!props.yLabel,
+                        text: props.yLabel ?? undefined
+                    },
+                }
+            }
+        };
+
+        return op;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function getColorWithOpacity(color: string | string[], opacity: number | (number | null)[]): string | string[] {
+        if (typeof color === "string") {
+            const rockColor = new RockColor(color);
+
+            if (typeof opacity === "number") {
+                rockColor.alpha = opacity;
+                return rockColor.toHex();
+            }
+
+            const colors: string[] = [];
+
+            for (const op of opacity) {
+                if (typeof op === "number") {
+                    rockColor.alpha = op;
+                    colors.push(rockColor.toHex());
+                }
+                else {
+                    colors.push(color);
+                }
+            }
+
+            return colors;
+        }
+        else {
+            const colors: string[] = [];
+
+            for (let i = 0; i < color.length; i++) {
+                const rockColor = new RockColor(color[i]);
+
+                if (typeof opacity === "number") {
+                    rockColor.alpha = opacity;
+                    colors.push(rockColor.toHex());
+                }
+                else {
+                    const op = opacity[i];
+
+                    if (typeof op === "number") {
+                        rockColor.alpha = op;
+                        colors.push(rockColor.toHex());
+                    }
+                    else {
+                        colors.push(color[i]);
+                    }
+                }
+            }
+
+            return colors;
+        }
+    }
+
+    const cssVarValueCache = new Map<string, string>();
+
+    function getCssVar(varName: string): string {
+        if (cssVarValueCache.has(varName)) {
+            return cssVarValueCache.get(varName)!;
+        }
+
+        const value = getComputedStyle(document.documentElement).getPropertyValue(varName);
+        if (value) {
+            // Only cache if there is a value.
+            cssVarValueCache.set(varName, value);
+        }
+
+        return value;
+    }
+
+    function getCategoricalColor(num: number): string {
+        // There are only 8 categorical colors so cycle through them.
+        num = num > 0 ? ((num - 1) % 8) + 1 : 1;
+        return getCssVar(`--color-categorical-${num}`);
+    }
+
+    /**
+     * Clamps a value between an inclusive minimum and maximum value.
+     * @param value The value to clamp.
+     * @param min The minimum value.
+     * @param max The maximum value.
+     * @returns The clamped value.
+     */
+    function clamp(value: number | undefined, min: number = Number.MIN_SAFE_INTEGER, max: number = Number.MAX_SAFE_INTEGER): number | undefined {
+        return isNullish(value) ? undefined : Math.min(Math.max(value, min), max);
+    }
+
+    const contrastMemo: Record<string, string> = {};
+
+    function pickContrastColor(hex: string, backgroundColor: string): string {
+        const key = `${hex}-${backgroundColor}`;
+
+        if (contrastMemo[key]) {
+            return contrastMemo[key];
+        }
+
+        let color = new RockColor(hex);
+
+        if (color.alpha === 0) {
+            // Color is completely transparent so use the background color for testing.
+            color = new RockColor(backgroundColor);
+        }
+
+        const originalAlpha = color.alpha;
+
+        // Remove the alpha channel before testing if the color is light or dark.
+        color.alpha = 1;
+
+        const contrastColor =
+            color.isDark || getStandardLuma(color) < 0.179
+                ? new RockColor("white")
+                : new RockColor("black");
+
+        // Apply the same alpha to the resulting text so it blends with the bars.
+        contrastColor.alpha = clamp(originalAlpha, 0.25)!;
+
+        contrastMemo[key] = contrastColor.hex;
+        return contrastMemo[key];
+    }
+
+    /**
+     * Calculates the luma value based on the latest W3 Standard.
+     */
+    function getStandardLuma(color: RockColor): number {
+        const { red, green, blue } = toStandardRgb(color);
+
+        return (0.2126 * red) + (0.7152 * green) + (0.0722 * blue);
+    }
+
+    /**
+     * Gets the sRGB value of this color.
+     *
+     * @returns This color in the standard RGB color space.
+     */
+    function toStandardRgb(color: RockColor): { red: number, green: number, blue: number } {
+        const linearR = color.r / 255;
+        const linearG = color.g / 255;
+        const linearB = color.b / 255;
+
+        const red = (linearR <= 0.04045) ? linearR / 12.92 : Math.pow((linearR + 0.055) / 1.055, 2.4);
+        const green = (linearG <= 0.04045) ? linearG / 12.92 : Math.pow((linearG + 0.055) / 1.055, 2.4);
+        const blue = (linearB <= 0.04045) ? linearB / 12.92 : Math.pow((linearB + 0.055) / 1.055, 2.4);
+
+        return { red, green, blue };
+    }
+
+    function getInheritedBackgroundColor(el): string {
+        // get default style for current browser
+        var defaultStyle = getDefaultBackground(); // typically "rgba(0, 0, 0, 0)"
+
+        // get computed color for el
+        var backgroundColor = window.getComputedStyle(el).backgroundColor;
+
+        // if we got a real value, return it
+        if (backgroundColor != defaultStyle) return backgroundColor;
+
+        // if we've reached the top parent el without getting an explicit color, return default
+        if (!el.parentElement) return defaultStyle;
+
+        // otherwise, recurse and try again on parent element
+        return getInheritedBackgroundColor(el.parentElement);
+    }
+
+    function getDefaultBackground(): string {
+        // have to add to the document in order to use getComputedStyle
+        var div = document.createElement("div");
+        document.head.appendChild(div);
+        var bg = window.getComputedStyle(div).backgroundColor;
+        document.head.removeChild(div);
+        return bg;
+    }
+
+    function getFormattedLabel(chart: ChartJs, data: ChartData, labelIndex: number): string | undefined {
+        const time = chart.options.scales?.x?.["time"];
+
+        if (!time) {
+            return props.labels[labelIndex];
+        }
+
+        const unit = time.unit ?? "day";
+        const format = time.displayFormats[unit] ?? "MMM d, yyyy";
+
+        // If the ticks have `autoSkip: true`, the label may be undefined above.
+        // In that case, try to format the value manually using the date adapter.
+        const adapter = chart.scales.x?.["_adapter"];
+        const ms = adapter?.parse(data.labels?.[labelIndex]);
+        return adapter?.format(ms, format);
+    }
+
+    function getFormattedValue(chart: ChartJs, value: number, dataIndex: number): string | undefined {
+        // Simply use same formatter configured in our y scale callback.
+        const callback = chartOptions.value.scales?.y?.ticks?.callback;
+
+        if (!callback) {
+            return;
+        }
+
+        const scale = chart.scales.y;
+        const ticks = scale.ticks;
+
+        return callback.call(scale, value, dataIndex, ticks) as string | undefined;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch([() => props.overlap, () => props.stack], ([overlap, stack]) => {
+        // Warn if using both `stack` and `overlap` options.
+        // Applying `stack` and ignoring `overlap` throughout this component
+        // to ensure stack takes precedence instead of leaving it up to the charting library.
+        if (overlap && stack) {
+            console.warn("[BarChart] Both `stack` and `overlap` are true. Applying `stack` and ignoring `overlap`.");
+        }
+    }, {
+        immediate: true
+    });
+
+    watch([() => props.overlap, () => props.unfilled], ([overlap, unfilled]) => {
+        // Warn if using both `overlap` and `unfilled: false` options.
+        if (overlap && unfilled === false) {
+            console.warn("[BarChart] `overlap` is being used with `unfilled: false` which may hide some data points.");
+        }
+    }, {
+        immediate: true
+    });
+
+    watch([() => props.series], ([newSeries], [oldSeries]) => {
+        // Conditionally disable animation until the chart is updated when these props change.
+        const didSeriesDataChange =
+            !oldSeries
+            || !Enumerable
+                .from(newSeries)
+                .sequenceEqual(oldSeries, (d1, d2) => {
+                    return d1.label === d2.label
+                        && Enumerable.from(d1.data).sequenceEqual(d2.data);
+                });
+
+        if (!didSeriesDataChange) {
+            disableAnimationUntilUpdated.value = true;
+        }
+
+        refreshChartData();
+    },
+        {
+            immediate: true
+        });
+
+    watch([() => props.barLabels], ([newBarLabels], [oldBarLabels]) => {
+        const outsideLabelsChanged =
+            (!newBarLabels?.outside && !!oldBarLabels?.outside)
+            || (!!newBarLabels?.outside && !oldBarLabels?.outside);
+
+        const insideLabelsChanged =
+            (!newBarLabels?.inside && !!oldBarLabels?.inside)
+            || (!!newBarLabels?.inside && !oldBarLabels?.inside);
+
+        if (props.stack || (!outsideLabelsChanged && insideLabelsChanged)) {
+            // Only disable the animation if the inside labels change without changing the outside labels.
+            // This prevents unnecessary animations when toggling inside labels.
+            // We need animations when outside labels change because they could increase the y scale to fit them.
+            disableAnimationUntilUpdated.value = true;
+        }
+
+        refreshChartData();
+    });
+
+    watch([() => props.unfilled], () => {
+        // Never animate the chart data refresh when these props change.
+        disableAnimationUntilUpdated.value = true;
+        refreshChartData();
+    });
+
+    watch([internalLabels, () => props.overlap, () => props.stack], () => {
+        // Always animate the chart data refresh when these props change.
+        refreshChartData();
+    });
+
+    // #endregion Watchers
+</script>

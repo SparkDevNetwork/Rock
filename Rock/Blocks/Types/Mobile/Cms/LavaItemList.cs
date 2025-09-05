@@ -34,7 +34,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [DisplayName( "Lava Item List" )]
     [Category( "Mobile > Cms" )]
     [Description( "List items genreated by Lava." )]
-    [IconCssClass( "fa fa-th" )]
+    [IconCssClass( "ti ti-grid-dots" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

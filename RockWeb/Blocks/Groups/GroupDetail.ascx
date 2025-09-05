@@ -128,6 +128,7 @@
                                     <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                                     <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Require Signed Document"
                                         Help="If members of this group need to have signed a document, select that document type here." />
+                                    <Rock:DefinedValuePicker ID="dvpRecordSource" runat="server" Label="Record Source Override" Help="The record source for group members added to this group. If not set, the group type's record source will be used." />
                                 </div>
                             </div>
 
@@ -382,6 +383,17 @@
                                         <asp:ListItem Value="y" Text="Yes" />
                                     </Rock:RockDropDownList>
                                 </div>
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlChatPushNotificationMode" runat="server" CssClass="input-width-xl" Label="Push Notification Mode" Help="Controls how push notifications are sent for this chat channel.">
+                                        <asp:ListItem Value="" Text="Inherit from Group Type" />
+                                        <asp:ListItem Value="0" Text="All Messages" />
+                                        <asp:ListItem Value="1" Text="Mentions" />
+                                        <asp:ListItem Value="2" Text="Silent" />
+                                    </Rock:RockDropDownList>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:ImageUploader ID="imgChatChannelAvatar" runat="server" Label="Channel Avatar" Help="The image to use for this chat channel in the external chat system. Recommended image size is 120x120." />
+                                </div>
                             </div>
                         </Rock:PanelWidget>
 
@@ -442,13 +454,14 @@
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                             <asp:LinkButton ID="btnArchive" runat="server" Text="Archive" CssClass="btn btn-link js-archive-group" OnClick="btnArchive_Click" CausesValidation="false" />
                             <span class="pull-right">
-                                <asp:HyperLink ID="hlGroupRSVP" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Group RSVP"><i class="fa fa-user-check"></i></asp:HyperLink>
-                                <asp:HyperLink ID="hlGroupScheduler" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Group Scheduler"><i class="fa fa-calendar-alt"></i></asp:HyperLink>
-                                <asp:HyperLink ID="hlGroupHistory" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Group History"><i class="fa fa-history"></i></asp:HyperLink>
-                                <asp:HyperLink ID="hlFundraisingProgress" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Fundraising"><i class="fa fa-line-chart"></i></asp:HyperLink>
-                                <asp:HyperLink ID="hlAttendance" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Attendance"><i class="fa fa-check-square-o"></i></asp:HyperLink>
-                                <asp:HyperLink ID="hlMap" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Interactive Map"><i class="fa fa-map-marker"></i></asp:HyperLink>
-                                <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-sm btn-square btn-default " OnClick="btnCopy_Click" ToolTip="Copies the group and all of its associated authorization rules"><i class="fa fa-clone"></i></asp:LinkButton>
+                                <asp:HyperLink ID="hlGroupPlacement" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Group Placement"><i class="ti ti-chart-dots-3"></i></asp:HyperLink>
+                                <asp:HyperLink ID="hlGroupRSVP" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Group RSVP"><i class="ti ti-user-check"></i></asp:HyperLink>
+                                <asp:HyperLink ID="hlGroupScheduler" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Group Scheduler"><i class="ti ti-calendar-month"></i></asp:HyperLink>
+                                <asp:HyperLink ID="hlGroupHistory" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Group History"><i class="ti ti-history"></i></asp:HyperLink>
+                                <asp:HyperLink ID="hlFundraisingProgress" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Fundraising"><i class="ti ti-chart-line"></i></asp:HyperLink>
+                                <asp:HyperLink ID="hlAttendance" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Attendance"><i class="ti ti-square-check"></i></asp:HyperLink>
+                                <asp:HyperLink ID="hlMap" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Interactive Map"><i class="ti ti-map-pin"></i></asp:HyperLink>
+                                <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-sm btn-square btn-default " OnClick="btnCopy_Click" ToolTip="Copies the group and all of its associated authorization rules"><i class="ti ti-copy"></i></asp:LinkButton>
                                 <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" Title="Secure Group" />
                             </span>
                         </div>

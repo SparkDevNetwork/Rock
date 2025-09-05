@@ -47,6 +47,9 @@ export type LearningActivityParticipantBag = {
     /** Gets or sets the name of the related participant. */
     name?: string | null;
 
+    /** Gets or sets the Person Id of the related participant. */
+    personId: number;
+
     /** Gets or sets the name of the role this participant has in the class. */
     roleName?: string | null;
 };

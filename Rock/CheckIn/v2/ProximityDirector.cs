@@ -100,11 +100,11 @@ namespace Rock.CheckIn.v2
                         option.ScheduleId );
 
                     Activity.Current?.AddEvent( new ActivityEvent( "Add Attendance" ) );
-                    attendance = new Attendance
-                    {
-                        OccurrenceId = occurrence.Id,
-                        PersonAliasId = person.PrimaryAliasId
-                    };
+                    // Create it as a proxy so that navigation properties will work.
+                    attendance = _rockContext.Set<Attendance>().Create();
+                    attendance.Occurrence = occurrence;
+                    attendance.OccurrenceId = occurrence.Id;
+                    attendance.PersonAliasId = person.PrimaryAliasId;
 
                     attendanceService.Add( attendance );
 
@@ -116,6 +116,8 @@ namespace Rock.CheckIn.v2
                     Activity.Current?.AddEvent( new ActivityEvent( "Complete IsFirstTime" ) );
                 }
 
+                var sourceValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.ATTENDANCE_SOURCE_PROXIMITY.AsGuid(), _rockContext )?.Id;
+
                 if ( attendance.StartDateTime > now || attendance.StartDateTime == DateTime.MinValue )
                 {
                     attendance.StartDateTime = now;
@@ -125,6 +127,7 @@ namespace Rock.CheckIn.v2
                 attendance.CheckInStatus = Enums.Event.CheckInStatus.Present;
                 attendance.DidAttend = true;
                 attendance.CampusId = option.CampusId;
+                attendance.SourceValueId = sourceValueId;
 
                 _rockContext.SaveChanges();
 

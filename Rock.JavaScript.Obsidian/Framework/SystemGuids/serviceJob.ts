@@ -171,6 +171,26 @@ export const ServiceJob = {
     DataMigrations171PopulateAttendanceRootGroupType: "e6755275-02ca-4159-af16-1e4cdcfa22d0",
     /** The job to run Post v17.1 Data Migrations to update an existing index on the CommunicationRecipient table. */
     DataMigrations171UpdateCommunicationrecipientIndex: "EB00BD84-D89C-44B4-8C0C-56322074C9C4",
+    /** The job to run Post v17.3 Data Migrations to remove a redundant index on the AttendanceOccurrence table. */
+    DataMigrations173UpdateAttendanceoccurrenceIndex: "FFF8E02C-9FAA-4E23-99EE-4B008549F088",
+    /** The job to run Post v17.3 Data Migrations to update the Nameless Schedules. */
+    DataMigrations173UpdateNamelessSchedules: "4C7CC0FC-12A7-4578-B9B1-FEF2732EB912",
+    /** The Job to run Post v18.0 Data Migrations to chop Block. */
+    DataMigrations180ChopObsidianBlocks: "6BFCE2DE-5B38-4B71-8737-423AF51A39B1",
+    /** The job to run Post v18.0 Data Migrations to delete the deprecated GroupLocationHistoricalSchedule table from the database. */
+    DataMigrations180DeleteGrouplocationhistoricalschedule: "6A76B67B-9C25-4C02-8BC6-06B23EC8C7C3",
+    /** The job to run Post v18.0 Data Migrations to Delete Self-Service Kiosk Site, Blocks, BlockTypes and KioskStark theme. */
+    DataMigrations180DeleteSelfserviceKioskSiteAndRelated: "6696B495-3EB0-442B-8DAB-82E861B92B41",
+    /** The job to run Post v18.0 Data Migrations to migrate existing eRA records from the History table to the Steps table. */
+    DataMigrations180MigrateEraDataToSteps: "64CB888D-0F81-473B-B200-8FA38337DAED",
+    /** The job to run Post v18.0 Data Migrations to populate the newly-added [CommunicationRecipient].[DeliveredDateTime] field. */
+    DataMigrations180PopulateCommunicationrecipientDelivereddatetime: "EF2CF0AC-7A83-4BEB-8824-41D3B5B8B832",
+    /** The Job to run Post v18.0 Data Migrations to swap Block. */
+    DataMigrations180SwapObsidianBlocks: "B3663D0F-6426-44BB-9C43-D9921A0974D3",
+    /** The job to run Post v18.0 Data Migrations to update an existing index on the CommunicationRecipient table. */
+    DataMigrations180UpdateCommunicationrecipientIndex: "FE519BCE-CCB8-42B7-A14C-1620859F23E8",
+    /** The job to run Post v18.0 Data Migrations to update the Nameless Locations. */
+    DataMigrations180UpdateNamelessLocations: "6C3EE640-A442-4F9C-92ED-23E353BA8509",
     /**
      * The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
      * Following Event Type Detail, Financial Batch Detail
@@ -192,6 +212,8 @@ export const ServiceJob = {
     Post170UpdateHistoryEntitytypeidIndex: "48D7629C-1FB5-425A-AFAB-E8F220ABADB0",
     /** A run once job after a new installation. The purpose of this job is to populate generated datasets after an initial installation using RockInstaller that are too large to include in the installer. */
     PostInstallDataMigrations: "322984F1-A7A0-4D1B-AE6F-D7F043F66EB3",
+    /** The job for processing communication flows. Rock.Jobs.ProcessCommunicationFlows */
+    ProcessCommunicationFlows: "8D79FB3B-F0B1-4B57-A8DA-EEE46B38A08B",
     /** The Process Elevated Security Job. Rock.Jobs.ProcessElevatedSecurity */
     ProcessElevatedSecurity: "A1AF9D7D-E968-4AF6-B203-6BB4FD625714",
     /** The Rock.Jobs.ProcessReminders job. */
@@ -221,4 +243,6 @@ export const ServiceJob = {
     UpdatePersonalizationData: "67CFE1FE-7C64-4328-8576-F1A4BFD0EA8B",
     /** The job for updating learning program completions. Rock.Jobs.UpdateProgramCompletions. */
     UpdateProgramCompletions: "4E805A88-C031-4BA0-BAD6-0A706E647870",
+    /** The job for updating step program completions. Rock.Jobs.UpdateStepProgramCompletions. */
+    UpdateStepProgramCompletions: "EB658FC8-3DA1-4CE0-86F6-0D3CA6F48AAE",
 };

@@ -36,7 +36,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [DisplayName( "Content Channel Item View" )]
     [Category( "Mobile > Cms" )]
     [Description( "Displays a content channel item by formatting it with XAML." )]
-    [IconCssClass( "fa fa-chalkboard" )]
+    [IconCssClass( "ti ti-chalkboard" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

@@ -14,7 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using System.ComponentModel;using Rock.Attribute;
+using System.ComponentModel;
+
+using Microsoft.EntityFrameworkCore;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
@@ -48,7 +52,7 @@ namespace Rock.Jobs
             // If this somehow fails and throws an exeption, the DeleteJob() call below won't run and it will try again later.
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
                 rockContext.Database.ExecuteSqlCommand( Plugin.HotFixes.HotFixMigrationResource._153_FixERAStartDate_RecoverERAStartDate_Update );
             }
 

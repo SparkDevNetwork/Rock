@@ -617,6 +617,7 @@ namespace RockWeb.Blocks.Event
                 ContactPhone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), tbContactPhone.Number ),
                 ContactEmail = tbContactEmail.Text,
                 Name = tbRegistrationName.Text,
+                RegistrantRecordSourceValueId = dvpRecordSource.SelectedValueAsInt(),
                 RegistrationInstructions = htmlRegistrationInstructions.Text,
                 RegistrationTemplateId = GetSelectedTemplate().Id,
                 SendReminderDateTime = dtpReminderDate.SelectedDateTime,
@@ -1049,6 +1050,7 @@ namespace RockWeb.Blocks.Event
                     Init_SetGroupRequired();
                     Init_SetCalendarEventRequired();
                     Init_SetURLSlugRequired();
+                    Init_SetRecordSourceSelector();
                 }
             }
 
@@ -1244,6 +1246,11 @@ namespace RockWeb.Blocks.Event
                 rtpRegistrationTemplate.Visible = true;
                 ddlTemplate.Visible = false;
             }
+        }
+
+        private void Init_SetRecordSourceSelector()
+        {
+            dvpRecordSource.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() )?.Id;
         }
 
         #endregion Control Initialization

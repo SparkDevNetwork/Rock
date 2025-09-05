@@ -40,7 +40,7 @@ namespace Rock.Blocks.Lms
     [DisplayName( "Learning Class Content Page Detail" )]
     [Category( "LMS" )]
     [Description( "Displays the details of a particular learning class content page." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

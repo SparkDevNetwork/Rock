@@ -39,7 +39,7 @@ namespace Rock.Blocks.Engagement
     [DisplayName( "Step Program List" )]
     [Category( "Steps" )]
     [Description( "Displays a list of step programs." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [CategoryField(
@@ -194,6 +194,7 @@ namespace Rock.Blocks.Engagement
                 .AddField( "stepType", a => a.StepTypes.Count( m => m.IsActive ) )
                 .AddField( "stepsTaken", a => completedStepsQry.Count( y => y.StepType.StepProgramId == a.Id ) )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddField( "isSystem", a => a.IsSystem )
                 .AddAttributeFields( GetGridAttributes() );
         }
 

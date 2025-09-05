@@ -37,7 +37,7 @@ namespace Rock.Blocks.Engagement
     [DisplayName( "Streak Type Exclusion List" )]
     [Category( "Streaks" )]
     [Description( "Lists all the exclusions for a streak type." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     //[SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

@@ -8,8 +8,8 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-map-marker"></i> Group Map</h1>
-                 <div class="pull-right"><a class="btn btn-xs btn-default btn-square" onclick="javascript: toggleOptions()"><i title="Options" class="fa fa-gear"></i></a></div>
+                <h1 class="panel-title"><i class="ti ti-map-pin"></i> Group Map</h1>
+                 <div class="pull-right"><a class="btn btn-xs btn-default btn-square" onclick="javascript: toggleOptions()"><i title="Options" class="ti ti-settings"></i></a></div>
             </div>
 
             <asp:Panel ID="pnlOptions" runat="server" Title="Options" CssClass="panel-body js-options" Style="display: none">
@@ -38,7 +38,7 @@
                         <div class="form-group margin-r-sm js-show-group">
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" id="cbShowGroup" /> <i class="fa fa-circle" style="color:#<%=_groupColor %>"></i> <span id="lGroupName">Show Group</span>
+                                    <input type="checkbox" id="cbShowGroup" /> <i class="ti ti-circle" style="color:#<%=_groupColor %>"></i> <span id="lGroupName">Show Group</span>
                                 </label>
                             </div>
                         </div>
@@ -46,7 +46,7 @@
                         <div class="form-group margin-r-sm js-show-child-groups">
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" id="cbShowChildGroups" /> <i class="fa fa-circle" style="color:#<%=_childGroupColor %>"></i> Groups
+                                    <input type="checkbox" id="cbShowChildGroups" /> <i class="ti ti-circle" style="color:#<%=_childGroupColor %>"></i> Groups
                                 </label>
                             </div>
                         </div>
@@ -54,7 +54,7 @@
                         <div class="form-group margin-r-sm js-show-group-members">
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" id="cbShowGroupMembers" /> <i class="fa fa-circle" style="color:#<%=_memberColor %>"></i> Group Members
+                                    <input type="checkbox" id="cbShowGroupMembers" /> <i class="ti ti-circle" style="color:#<%=_memberColor %>"></i> Group Members
                                 </label>
                             </div>
                         </div>
@@ -66,7 +66,7 @@
                                 <div class="form-group margin-l-sm js-connection-status" style="display:none">
                                     <div class="checkbox">
                                         <label>
-                                            <input type="checkbox" class="js-connection-status-cb" data-item='<%# Eval("Id") %>' data-color='<%# Eval("Color") %>' /> <i class="fa fa-circle" style='color:#<%# Eval("Color") %>'></i> <%# Eval("Name") %>
+                                            <input type="checkbox" class="js-connection-status-cb" data-item='<%# Eval("Id") %>' data-color='<%# Eval("Color") %>' /> <i class="ti ti-circle" style='color:#<%# Eval("Color") %>'></i> <%# Eval("Name") %>
                                         </label>
                                     </div>
                                 </div>

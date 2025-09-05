@@ -372,6 +372,12 @@ namespace Rock.Communication
                             recipient.StatusNote = result.StatusNote;
                             recipient.TransportEntityTypeName = this.GetType().FullName;
 
+                            if ( result.Status == CommunicationRecipientStatus.Delivered )
+                            {
+                                recipient.SendDateTime = RockDateTime.Now;
+                                // Do not set DeliveredDateTime, as this should be set by email transport webhooks.
+                            }
+
                             // Log it
                             try
                             {
@@ -1175,6 +1181,11 @@ namespace Rock.Communication
                     if ( result.Status == CommunicationRecipientStatus.Failed )
                     {
                         recipient.StatusNote = result.StatusNote;
+                    }
+                    else
+                    {
+                        recipient.SendDateTime = RockDateTime.Now;
+                        // Do not set DeliveredDateTime, as this should be set by email transport webhooks.
                     }
 
                     recipient.TransportEntityTypeName = this.GetType().FullName;

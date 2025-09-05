@@ -1,0 +1,41 @@
+
+// Code Editor - styling for code editor (Rock Component)
+
+
+// =============================================================
+// Table of Content           
+//  + Editor style
+// =============================================================
+
+
+// ======================== EDITOR STYLE ========================
+.code-editor {
+  position:             relative;
+}
+
+// styles for ace when inside of summer note
+.note-editor {
+  // Add extra padding when in code to prevent control height from decreasing when resize bar is hidden.
+  &.code-editor-visible {
+    padding-bottom:     var(--spacing-xsmall);
+    background:         var(--color-interface-softer);
+  }
+
+  .ace_editor {
+    margin:             0;
+    border-radius:      0;
+  }
+}
+
+// Prevent Code Editor from flashing onto page before JS has moved it into HtmlEditor control.
+.html-editor-code-editor {
+  display:              none;
+
+  .control-wrapper & {
+    display:            block;
+  }
+}
+// ====================== END EDITOR STYLE ======================
+
+
+

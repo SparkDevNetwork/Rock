@@ -119,20 +119,20 @@
 
         if (scheduleViewBag.value?.isActive === true) {
             labels.push({
-                iconCssClass: "fa fa-lightbulb",
+                iconCssClass: "ti ti-bulb-filled",
                 title: "Active",
                 type: "success"
             });
         }
         else {
             labels.push({
-                iconCssClass: "far fa-lightbulb",
+                iconCssClass: "ti ti-bulb",
                 title: "Inactive",
                 type: "danger"
             });
         }
 
-        if(scheduleViewBag.value?.autoInactivateWhenComplete) {
+        if (scheduleViewBag.value?.autoInactivateWhenComplete) {
             labels.push({
                 title: "Will Close When Complete",
                 type: "danger"
@@ -163,16 +163,16 @@
     });
 
     const footerActions = computed((): PanelAction[] => {
-        if(panelMode.value !== DetailPanelMode.View || !isEditable.value) {
+        if (panelMode.value !== DetailPanelMode.View || !isEditable.value) {
             return [];
         }
         return [
-        {
-            iconCssClass: "fa fa-clone",
-            title: "Copy Schedule",
-            type: "default",
-            handler: onCopy
-        }];
+            {
+                iconCssClass: "ti ti-copy",
+                title: "Copy Schedule",
+                type: "default",
+                handler: onCopy
+            }];
     });
 
     // #endregion
@@ -299,10 +299,10 @@
     /**
      * Called when the copy icon on the detail block has been clicked.
      */
-     async function onCopy(): Promise<void> {
+    async function onCopy(): Promise<void> {
         errorMessage.value = "";
         var result = await invokeBlockAction<ScheduleBag | string>("Copy", {
-                    key: scheduleViewBag.value?.idKey ?? ""
+            key: scheduleViewBag.value?.idKey ?? ""
         });
         if (result.isSuccess && result.data && typeof result.data === "string") {
             window.location.href = makeUrlRedirectSafe(result.data);

@@ -8,7 +8,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-play-circle"></i> Media Accounts
+                    <i class="ti ti-player-play"></i> Media Accounts
                 </h1>
             </div>
             <div class="panel-body">

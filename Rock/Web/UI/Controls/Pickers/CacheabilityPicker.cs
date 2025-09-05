@@ -403,7 +403,7 @@ namespace Rock.Web.UI.Controls
                 Text = @"<label class=""control-label"">Max Age<a class=""help""
                 href=""#"" tabindex=""-1"" data-toggle=""tooltip"" data-placement=""auto""
                 data-container=""body"" data-html=""true"" title=""The maximum amount of time that the item will be cached."">
-                <i class=""fa fa-info-circle""></i></a></label>"
+                <i class=""ti ti-info-circle""></i></a></label>"
             };
         }
 
@@ -433,7 +433,7 @@ namespace Rock.Web.UI.Controls
                 Text = @"<label class=""control-label"">Max Shared Age<a class=""help""
                 href=""#"" tabindex=""-1"" data-toggle=""tooltip"" data-placement=""auto""
                 data-container=""body"" data-html=""true"" title=""The maximum amount of time the item will be cached in a shared cache (e.g. CDN). If not provided then the Max Age is typically used."">
-                <i class=""fa fa-info-circle""></i></a></label>"
+                <i class=""ti ti-info-circle""></i></a></label>"
             };
         }
 

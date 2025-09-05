@@ -37,7 +37,7 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title" data-toc-skip="1">
-                    <i class="fa fa-magic"></i>
+                    <i class="ti ti-wand"></i>
                     Control Gallery
                 </h1>
             </div>
@@ -300,7 +300,7 @@
 
                     <a id="RockCheckBox2"></a>
                     <div runat="server" class="r-example">
-                        <Rock:RockCheckBox ID="cbExample2" runat="server" Label="Rock:RockCheckBox" SelectedIconCssClass="fa fa-check-square-o fa-lg" UnSelectedIconCssClass="fa fa-square-o fa-lg" />
+                        <Rock:RockCheckBox ID="cbExample2" runat="server" Label="Rock:RockCheckBox" SelectedIconCssClass="ti ti-square-check ti-lg" UnSelectedIconCssClass="ti ti-square ti-lg" />
                     </div>
 
                     <a id="RockCheckBoxList"></a>
@@ -846,7 +846,7 @@
 
                     <a id="HighlightLabelErrors"></a>
                     <div runat="server" class="r-example">
-                        <Rock:HighlightLabel ID="hlblExample" runat="server" LabelType="Danger" IconCssClass="fa fa-flag" Text="errors" />
+                        <Rock:HighlightLabel ID="hlblExample" runat="server" LabelType="Danger" IconCssClass="ti ti-flag" Text="errors" />
                     </div>
 
                     <a id="Toggle"></a>
@@ -900,7 +900,7 @@
                     <h2 runat="server">Rock:BootstrapButton</h2>
                     <div runat="server" class="r-example">
                         <Rock:BootstrapButton ID="lbSave" runat="server" Text="Click Me" CssClass="btn btn-primary"
-                            DataLoadingText="&lt;i class='fa fa-refresh fa-spin'&gt;&lt;/i&gt; Saving"
+                            DataLoadingText="&lt;i class='ti ti-refresh ti-spin'&gt;&lt;/i&gt; Saving"
                             CompletedText ="Done" CompletedMessage="<div class='margin-t-md alert alert-success'>Changes have been saved.</div>" CompletedDuration="3"/>
                     </div>
 

@@ -38,7 +38,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Page List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of pages." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

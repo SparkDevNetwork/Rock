@@ -1,0 +1,44 @@
+
+
+// Update Panel Actions - animation for update panels (Rock Component)
+
+
+// =============================================================
+// Table of Content           
+//  + Base style
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+
+.updateprogress-status {
+  position:   fixed;
+  top:        40%;
+  left:       47%;
+  z-index:    ($zindex-modal-background + 100);
+  padding:    var(--spacing-large) var(--spacing-large);
+  margin-left: -30px;
+  background-color: var(--color-primary);
+  border-radius:    120px;
+  box-shadow:       5px 5px 12px 3px rgba(0,0,0,.1);
+  opacity:          1;
+  .updateprogress-loader {
+    color: var(--base-interface-softest);
+    width: 70px;
+  }
+}
+
+@media (min-width: $screen-medium) {
+  
+  .updateprogress-status {
+    padding: var(--spacing-xlarge) var(--spacing-xlarge);
+    margin-left: -60px;
+    
+    .updateprogress-loader {
+      width: 100px;
+    }
+  }
+}
+// ====================== END BASE STYLE ======================
+
+

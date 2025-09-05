@@ -1055,9 +1055,9 @@ namespace Rock.Data
         /// <param name="pageRouteGuid">The page route unique identifier.</param>
         public void DeletePageRoute( string pageRouteGuid )
         {
-            string sql = $@"
+            Migration.Sql( $@"
                 DELETE FROM [dbo].[PageRoute] WHERE [Guid] = '{pageRouteGuid}';
-            ";
+            " );
         }
 
         /// <summary>
@@ -1893,6 +1893,75 @@ END" );
                     guid,
                     order )
             );
+        }
+
+        /// <summary>
+        /// Adds the block type attribute to the category if it hasn't already been added.
+        /// </summary>
+        /// <param name="blockTypeAttributeGuid">The block type attribute GUID.</param>
+        /// <param name="categoryName">The category name.</param>
+        /// <remarks>
+        /// The block type attribute and category must already exist in the database.
+        /// </remarks>
+        [Obsolete( "This migration is not needed (see engineering note below)." )]
+        [RockObsolete( "18.0" )]
+        public void AddBlockTypeAttributeToCategoryIfNotAlreadyAdded( string blockTypeAttributeGuid, string categoryName )
+        {
+            /*
+                8/21/2025 - JPH
+
+                We don't need to manually seed a block type attribute's category, as Rock automatically manages these
+                categories well:
+
+                Startup process verifies all currently-used block type attributes are updated to match the latest code:
+                https://github.com/SparkDevNetwork/Rock/blob/e9ce12561a257d5368ce08ea488160fdb88bfea2/RockWeb/App_Code/Global.asax.cs#L384-L423
+
+                Page initialization process does the same for all blocks on the page:
+                https://github.com/SparkDevNetwork/Rock/blob/a3df8181c4c2e5cf6add0f944b7c4fafe4ca58e6/Rock/Web/UI/RockPage.cs#L1395
+
+                Reason: Call out that this migration - while safe to run - is not needed.
+             */
+
+            Migration.Sql( $@"
+DECLARE @AttributeEntityTypeId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '{Rock.SystemGuid.EntityType.ATTRIBUTE}');
+DECLARE @BlockEntityTypeId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '{Rock.SystemGuid.EntityType.BLOCK}');
+DECLARE @CategoryId INT = (
+    SELECT TOP 1 [Id]
+    FROM [Category]
+    WHERE [EntityTypeId] = @AttributeEntityTypeId
+        AND [EntityTypeQualifierColumn] = 'EntityTypeId'
+        AND [EntityTypeQualifierValue] = CAST(@BlockEntityTypeId AS NVARCHAR(200))
+        AND [Name] = '{categoryName}'
+);
+
+DECLARE @AttributeId INT = (
+    SELECT TOP 1 [Id]
+    FROM [Attribute]
+    WHERE [EntityTypeId] = @BlockEntityTypeId -- Ensure the caller is truly providing a block [type] attribute GUID.
+        AND [EntityTypeQualifierColumn] = 'BlockTypeId'
+        AND [Guid] = '{blockTypeAttributeGuid}'
+);
+
+IF @CategoryId IS NOT NULL
+    AND @AttributeId IS NOT NULL
+    AND NOT EXISTS (
+        SELECT *
+        FROM [AttributeCategory]
+        WHERE [AttributeId] = @AttributeId
+            AND [CategoryId] = @CategoryId
+    )
+BEGIN
+    INSERT INTO [AttributeCategory]
+    (
+        [AttributeId]
+        , [CategoryId]
+    )
+    VALUES
+    (
+        @AttributeId
+        , @CategoryId
+    );
+END" );
         }
 
         /// <summary>
@@ -4092,7 +4161,7 @@ END";
                         [Guid])
                     VALUES(
                         1,@FieldTypeId,@Order,
-                        @CategoryId,'{1}','{2}','{4}',
+                        @CategoryId,N'{1}',N'{2}',N'{4}',
                         '{3}')
                 END
                 ELSE
@@ -4102,9 +4171,9 @@ END";
                         [IsSystem] = 1,
                         [FieldTypeId] = @FieldTypeId,
                         [CategoryId] = @CategoryId,
-                        [Name] = '{1}',
-                        [Description] = '{2}',
-                        [HelpText] = '{4}'
+                        [Name] = N'{1}',
+                        [Description] = N'{2}',
+                        [HelpText] = N'{4}'
                     WHERE [Guid] = '{3}'
 
                 END
@@ -4255,7 +4324,7 @@ END";
                         [Guid])
                     VALUES(
                         1,@FieldTypeId, @EntityTypeId,'DefinedTypeId',CAST(@DefinedTypeId as varchar),
-                        '{2}','{3}','{4}',
+                        N'{2}',N'{3}',N'{4}',
                         {5},0,'{6}',0,0,
                         '{7}')
 
@@ -4266,10 +4335,10 @@ END";
                     UPDATE [Attribute] SET
                         [IsSystem] = 1,
                         [FieldTypeId] = @FieldTypeId,
-                        [Name] = '{3}',
-                        [Description] = '{4}',
+                        [Name] = N'{3}',
+                        [Description] = N'{4}',
                         [Order] = {5},
-                        [DefaultValue] = '{6}',
+                        [DefaultValue] = N'{6}',
                         [Guid] = '{7}'
                     WHERE [EntityTypeId] = @EntityTypeId
                     AND [EntityTypeQualifierColumn] = 'DefinedTypeId'
@@ -8845,8 +8914,8 @@ END
         VALUES ( 
             1
             ,1
-            ,'{name}'
-            ,'{description}'
+            ,'{name.Replace( "'", "''" )}'
+            ,'{description.Replace( "'", "''" )}'
             ,'{jobType}'
             ,'{cronExpression}'
             ,1
@@ -9183,6 +9252,100 @@ END
         WHERE [Guid] = '{0}';",
                 datasetGuid ) );
         }
+        #endregion
+
+        #region Lava Shortcodes
+
+        /// <summary>
+        /// Adds a new or updates an existing LavaShortcode record with the specified values.
+        /// </summary>
+        /// <param name="name">The name of the shortcode.</param>
+        /// <param name="tagName">The tagname (e.g: "campuspicker")</param>
+        /// <param name="description">The description of the shortcode.</param>
+        /// <param name="documentation">The documentation of the shortcode.</param>
+        /// <param name="markup">The markup of the shortcode.</param>
+        /// <param name="parameters">The parameters of the shortcode. This is typically an HTML value.</param>
+        /// <param name="tagType">The TagType. 1 = Inline, 2 = Block</param>
+        /// <param name="categoryGuid">The unique identifier of the category to associate the shortcode with. If null or not valid then no category association will be created.</param>
+        /// <param name="guid">The identifier of the shortcode.</param>
+        public void AddOrUpdateLavaShortcode( string name, string tagName, string description, string documentation, string markup, string parameters, int tagType, string categoryGuid, string guid )
+        {
+            Migration.Sql( $@"
+-- Check if the LavaShortCode already exists by GUID
+IF EXISTS (SELECT 1 FROM [LavaShortcode] WHERE [Guid] = TRY_CONVERT(UNIQUEIDENTIFIER, '{guid}'))
+BEGIN
+    -- Update existing record
+    UPDATE [LavaShortCode]
+    SET [Name] = '{name.Replace( "'", "''" )}',
+        [Description] = '{name.Replace( "'", "''" )}',
+        [Documentation] = '{documentation?.Replace( "'", "''" ) ?? ""}',
+        [Markup] = '{markup.Replace( "'", "''" )}',
+        [TagType] = {tagType},
+        [TagName] = '{tagName.Replace( "'", "''" )}',
+        [Parameters] = '{parameters?.Replace( "'", "''" ) ?? ""}'
+    WHERE [Guid] = '{guid}';
+END
+ELSE
+BEGIN
+    -- Insert new record
+    INSERT INTO [LavaShortcode]
+    (
+        [Name],
+        [Description],
+        [Documentation],
+        [IsSystem],
+        [IsActive],
+        [TagName],
+        [Markup],
+        [TagType],
+        [EnabledLavaCommands],
+        [Parameters],
+        [Guid]
+    )
+    VALUES
+    (
+        '{name.Replace( "'", "''" )}',
+        '{description.Replace( "'", "''" )}',
+        '{documentation?.Replace( "'", "''" ) ?? ""}',
+        1,
+        1,
+        '{tagName.Replace( "'", "''" )}',
+        '{markup.Replace( "'", "''" )}',
+        {tagType},
+        '',
+        '{parameters?.Replace( "'", "''" ) ?? ""}',
+        '{guid}'
+    );
+END
+
+DECLARE @LavaShortcodeId INT = (SELECT [Id] FROM [LavaShortcode] WHERE [Guid] = '{guid}');
+DECLARE @CategoryId INT = (SELECT [Id] FROM [Category] WHERE [Guid] = TRY_CONVERT(UNIQUEIDENTIFIER, '{categoryGuid}'));
+
+IF @CategoryId IS NOT NULL AND @LavaShortcodeId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM [LavaShortcodeCategory] WHERE [LavaShortcodeId] = @LavaShortcodeId AND [CategoryId] = @CategoryId)
+BEGIN
+    INSERT INTO [LavaShortcodeCategory]
+    (
+        [LavaShortcodeId],
+        [CategoryId]
+    )
+    VALUES
+    (
+        @LavaShortcodeId,
+        @CategoryId
+    );
+END
+" );
+        }
+
+        /// <summary>
+        /// Deletes the LavaShortcode record with the specified GUID.
+        /// </summary>
+        /// <param name="guid"></param>
+        public void DeleteLavaShortcode( string guid )
+        {
+            Migration.Sql( $"DELETE FROM [LavaShortcode] WHERE [Guid] = TRY_CONVERT(UNIQUEIDENTIFIER, '{guid}')" );
+        }
+
         #endregion
 
         /// <summary>

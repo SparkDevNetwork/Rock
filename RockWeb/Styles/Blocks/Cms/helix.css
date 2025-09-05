@@ -1,0 +1,48 @@
+/* Reset our custom HTML elements */
+lava-form {
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+lava-validationsummary {
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+/* Styles for button loading indicator */
+.btn .htmx-indicator {
+    display: none;
+}
+
+.btn img.htmx-indicator {
+    width: 16px;
+}
+
+.btn.htmx-request .htmx-indicator {
+    display: inline;
+}
+
+/* Styles for full form overlay indicator */
+lava-form.loading-full {
+    position: relative;
+}
+
+.loading-full .htmx-indicator {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #ffffffaa;
+    display: none;
+}
+
+.loading-full.htmx-request .htmx-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

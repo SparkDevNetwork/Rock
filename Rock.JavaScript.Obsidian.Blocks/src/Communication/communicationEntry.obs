@@ -2,7 +2,7 @@
     <BreakpointObserver>
         <Panel v-if="!config.isHidden"
                :title="config.title ?? 'New Communication'"
-               titleIconCssClass="fa fa-comment-o"
+               titleIconCssClass="ti ti-message"
                type="block">
 
             <template v-if="config.mode === Mode.Full && statusLabel" #subheaderRight>

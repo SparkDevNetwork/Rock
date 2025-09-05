@@ -112,7 +112,7 @@
 
         actions.push({
             title: "Achievement Type",
-            iconCssClass: "fa fa-medal",
+            iconCssClass: "ti ti-medal",
             type: "link",
             handler: onAchievementTypeClick
         });

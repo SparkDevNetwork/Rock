@@ -1,0 +1,200 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel panelBodyCssClass="chart-container"
+           title="Message Performance Over Time">
+        <LineChart :series="series"
+                   :labels="labels"
+                   labelDateFormat="day"
+                   legendPosition="top"
+                   type="percent" />
+    </Panel>
+</template>
+
+<style scoped>
+:deep(.chart-container) {
+    height: 265px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { isRockDateTime, useRockDateTimeParser } from "./utils.partial";
+    import LineChart from "@Obsidian/Controls/lineChart.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationFlowInstanceCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceCommunicationBag";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { alignDataPointsByDate, LineSeries, TooltipCallback, TooltipContext, XYPoint, XYPointEnumerable } from "@Obsidian/Core/Controls/chart";
+
+    enum SeriesName {
+        ConversionRate = "Conversion Rate",
+        UnsubscribeRate = "Unsubscribe Rate",
+        OpenRate = "Open Rate",
+        ClickThroughRate = "Click-Through Rate"
+    }
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<CommunicationFlowInstanceCommunicationBag | null | undefined>,
+            required: true
+        },
+
+        uniquePersonCount: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+
+    const { parseRockDateTime } = useRockDateTimeParser();
+
+    // #region Computed Values
+
+    const labels = computed<string[]>(() => {
+        return dataPoints.value.labels;
+    });
+
+    const series = computed<LineSeries[]>(() => {
+        return dataPoints.value.series;
+    });
+
+    const dataPoints = computed<{ labels: string[]; series: LineSeries[] }>(() => {
+        const recipientMetrics = props.modelValue?.recipientMetrics ?? [];
+
+        if (recipientMetrics.length <= 0) {
+            return { labels: [], series: [] };
+        }
+
+        const recipientMetricsEnumerable = Enumerable.from(recipientMetrics);
+
+        // There are 4 data series: Conversion Rate, Open Rate, Click-Through Rate, and Unsubscribe Rate.
+
+        // First let's process the Conversion Rates per day.
+        // These contain timestamps so they can be sorted with the other data series below.
+        const conversionDataPoints = XYPointEnumerable
+            .fromData(recipientMetricsEnumerable
+                .where(m => !!m.personAliasIdKey && !!m.conversionDate)
+                .groupBy(m => m.personAliasIdKey!)
+                .select<RockDateTime>(g => g
+                    .select(m => parseRockDateTime(m.conversionDate))
+                    .cast<RockDateTime>((r): r is RockDateTime => !isNullish(r))
+                    .first()
+                )
+                .orderBy(r => r.toMilliseconds()) // Sort before accumulating.
+                .select<XYPoint>(r => {
+                    return {
+                        x: r, // Represents a datetime that a person converted (only a person's first conversion date is counted)
+                        y: 1  // Each conversion datetime is counted as 1.
+                    };
+                })
+            )
+            .selectSquishedByDate()
+            .selectAccumulated()
+            .selectAsDecimalPercentage(props.uniquePersonCount)
+            .toArray();
+
+        // Open Rates per day.
+        // These contain timestamps so they can be sorted with the other data series.
+        const openDataPoints = XYPointEnumerable
+            .fromData(
+                recipientMetricsEnumerable
+                    .select(rm => parseRockDateTime(rm.openedDate))
+                    .ofType(isRockDateTime)
+                    .orderBy(r => r.toMilliseconds()) // Sort before accumulating.
+                    .select<XYPoint>(openedRockDateTime => {
+                        return {
+                            x: openedRockDateTime,
+                            y: 1
+                        };
+                    })
+            )
+            .selectSquishedByDate()
+            .selectAccumulated()
+            .selectAsDecimalPercentage(props.uniquePersonCount)
+            .toArray();
+
+        console.log(`open data points`, openDataPoints);
+
+        // Click-Through Rates per day.
+        // These contain timestamps so they can be sorvted with the other data series.
+        const clickThroughDataPoints = XYPointEnumerable
+            .fromData(recipientMetricsEnumerable
+                .select(rm => parseRockDateTime(rm.clickedDate))
+                .ofType(isRockDateTime)
+                .orderBy(r => r.toMilliseconds()) // Sort before accumulating.
+                .select<XYPoint>(rm => {
+                    return {
+                        x: rm,
+                        y: 1
+                    };
+                })
+            )
+            .selectSquishedByDate()
+            .selectAccumulated()
+            .selectAsDecimalPercentage(props.uniquePersonCount)
+            .toArray();
+
+        // Unsubscribe Rates per day.
+        // These contain timestamps so they can be sorted with the other data series.
+        const unsubscribeDataPoints = XYPointEnumerable
+            .fromData(
+                recipientMetricsEnumerable
+                    .where(m => !!m.personAliasIdKey && !!m.unsubscribeDate)
+                    .groupBy(m => m.personAliasIdKey!)
+                    .select<RockDateTime>(g => g
+                        .select(m => parseRockDateTime(m.unsubscribeDate))
+                        .cast<RockDateTime>((r): r is RockDateTime => !isNullish(r))
+                        .first())
+                    .orderBy(r => r.toMilliseconds()) // Sort before accumulating.
+                    .select<XYPoint>(r => {
+                        return {
+                            x: r, // Represents a datetime that a person unsubscribed (only a person's first unsubscribe date is counted)
+                            y: 1  // Each unsubscribe datetime is counted as 1.
+                        };
+                    })
+            )
+            .selectSquishedByDate()
+            .selectAccumulated()
+            .selectAsDecimalPercentage(props.uniquePersonCount)
+            .toArray();
+
+        const alignedData = alignDataPointsByDate(
+            [
+                conversionDataPoints,
+                openDataPoints,
+                clickThroughDataPoints,
+                unsubscribeDataPoints
+            ],
+            {
+                fillWith: "previousValueOrZero"
+            });
+
+        return {
+            labels: alignedData.labels,
+            series: [
+                {
+                    label: SeriesName.ConversionRate,
+                    data: alignedData.values[0],
+                    color: "#68D391"
+                },
+                {
+                    label: SeriesName.OpenRate,
+                    data: alignedData.values[1],
+                    color: "#63B3ED"
+                },
+                {
+                    label: SeriesName.ClickThroughRate,
+                    data: alignedData.values[2],
+                    color: "#F6AD55"
+                },
+                {
+                    label: SeriesName.UnsubscribeRate,
+                    data: alignedData.values[3],
+                    color: "#FC8181"
+                }
+            ]
+        };
+    });
+
+    // #endregion Computed Values
+</script>

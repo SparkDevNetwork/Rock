@@ -88,6 +88,18 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<AutomationEvent>( Context ).Queryable().Any( a => a.ComponentEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, AutomationEvent.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<AutomationTrigger>( Context ).Queryable().Any( a => a.ComponentEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, AutomationTrigger.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<BackgroundCheck>( Context ).Queryable().Any( a => a.ProcessorEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, BackgroundCheck.FriendlyTypeName );
@@ -229,12 +241,6 @@ namespace Rock.Model
             if ( new Service<History>( Context ).Queryable().Any( a => a.RelatedEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, History.FriendlyTypeName );
-                return false;
-            }
-
-            if ( new Service<Interaction>( Context ).Queryable().Any( a => a.RelatedEntityTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Interaction.FriendlyTypeName );
                 return false;
             }
 

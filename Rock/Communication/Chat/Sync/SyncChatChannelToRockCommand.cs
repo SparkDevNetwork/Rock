@@ -28,7 +28,7 @@ namespace Rock.Communication.Chat.Sync
         /// <summary>
         /// Gets or sets the <see cref="GroupType"/> identifier.
         /// </summary>
-        public int? GroupTypeId { get; set; }
+        public int GroupTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Group"/> identifier.

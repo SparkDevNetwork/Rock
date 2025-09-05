@@ -156,6 +156,7 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.HideTransactionsInPendingBatches
         )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.BlockTypeGuid( "E04320BC-67C3-452D-9EF6-D74D8C177154" )]
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler, ICustomGridColumns
     {

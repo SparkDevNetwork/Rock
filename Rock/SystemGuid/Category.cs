@@ -199,6 +199,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string SCHEDULE_PERSISTED_DATASETS = "7D152006-C47D-47E6-BF0B-09C3C2D0AE84";
 
+        /// <summary>
+        /// Gets the Personalization Segment Schedules category guid
+        /// </summary>
+        public const string SCHEDULE_PERSONALIZATION_SEGMENTS = "568A8E6C-DD49-4AC8-84BB-799099EFD9C6";
+
         #endregion
 
         #region Person Attributes
@@ -288,6 +293,11 @@ namespace Rock.SystemGuid
         /// The system communication Sign-Up Group confirmation Category guid
         /// </summary>
         public const string SYSTEM_COMMUNICATION_SIGNUP_GROUP_CONFIRMATION = "CB279EE1-9A12-4837-9A14-1F36B6F7CDAF";
+
+        /// <summary>
+        /// The system communication Form Builder Category guid.
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_FORM_BUILDER = "E3696A97-3F69-4AA8-8DDF-7AC628CAF060";
 
         #endregion
 

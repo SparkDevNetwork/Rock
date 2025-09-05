@@ -4,7 +4,8 @@
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          :itemTerm="config?.options?.mediaFolderName + ' Media Elements'"
+          :title="config?.options?.mediaFolderName + ' Media Elements'"
+          itemTerm="Media Elements"
           :entityTypeGuid="EntityType.MediaElement"
           stickyHeader
           liveUpdates
@@ -37,7 +38,7 @@
                        title="Transcribed"
                        field="transcribed"
                        :filter="booleanValueFilter"
-                       width="10%"
+                       width="15%"
                        visiblePriority="xs" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />

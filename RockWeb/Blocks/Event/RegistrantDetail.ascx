@@ -10,7 +10,7 @@
                     <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
                     <asp:PlaceHolder runat="server">
                         <div class="wizard-item-icon">
-                            <i class="fa fa-fw fa-clipboard"></i>
+                            <i class="ti ti-fw ti-clipboard"></i>
                         </div>
                         <div class="wizard-item-label">
                             <asp:Literal ID="lWizardTemplateName" runat="server" Text="Template" />
@@ -23,7 +23,7 @@
                 <asp:LinkButton ID="lbWizardInstance" runat="server" OnClick="lbWizardInstance_Click" CausesValidation="false">
                     <asp:PlaceHolder runat="server">
                         <div class="wizard-item-icon">
-                            <i class="fa fa-fw fa-file-o"></i>
+                            <i class="ti ti-fw ti-file"></i>
                         </div>
                         <div class="wizard-item-label">
                             <asp:Literal ID="lWizardInstanceName" runat="server" Text="Instance" />
@@ -36,7 +36,7 @@
                 <asp:LinkButton ID="lbWizardRegistration" runat="server" OnClick="lbWizardRegistration_Click" CausesValidation="false">
                     <asp:PlaceHolder runat="server">
                         <div class="wizard-item-icon">
-                            <i class="fa fa-fw fa-group"></i>
+                            <i class="ti ti-fw ti-users"></i>
                         </div>
                         <div class="wizard-item-label">
                             <asp:Literal ID="lWizardRegistrationName" runat="server" Text="Registration" />
@@ -47,7 +47,7 @@
 
             <div class="wizard-item active">
                 <div class="wizard-item-icon">
-                    <i class="fa fa-fw fa-user"></i>
+                    <i class="ti ti-fw ti-user"></i>
                 </div>
                 <div class="wizard-item-label">
                     <asp:Literal ID="lWizardRegistrantName" runat="server" Text="Registration" />
@@ -60,7 +60,7 @@
             <div class="panel panel-block">
 
                 <div class="panel-heading">
-                    <h1 class="panel-title pull-left"><i class="fa fa-user"></i> <asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
+                    <h1 class="panel-title pull-left"><i class="ti ti-user"></i> <asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlCost" runat="server" LabelType="Info" ToolTip="Cost" />
                     </div>

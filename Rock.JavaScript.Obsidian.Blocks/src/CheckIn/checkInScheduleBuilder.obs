@@ -15,7 +15,7 @@
 
                 <div class="grid-quick-filter grid-actions" :class="{ 'active': isSearchExpanded }">
                     <button type="button" class="btn btn-grid-action" title="Search" @click.stop.prevent="onSearchClick">
-                        <i class="fa fa-search fa-fw"></i>
+                        <i class="ti ti-search ti-fw"></i>
                     </button>
 
                     <div ref="quickFilterContainerElement" class="grid-quick-filter-search" :class="{ 'open': isSearchExpanded }">
@@ -64,7 +64,7 @@
                         <div class="grid-column-title text-center" v-html="getScheduleHtml(schedule)"></div>
                         <a href='#'
                            style="display: inline; color: inherit"
-                           :class="['fa', 'js-sched-select-all', isColumnEnabled(schedule.value ?? '') ? 'fa-check-square-o' : 'fa-square-o']"
+                           :class="['ti', 'js-sched-select-all', isColumnEnabled(schedule.value ?? '') ? 'ti-square-check' : 'ti-square']"
                            @click="onScheduleColumnClick(schedule.value ?? '')">
                         </a>
                     </div>
@@ -104,7 +104,7 @@
             <div class="d-flex m-3 align-items-center">
                 <div class="mr-2">
                     <RockButton btnType="primary" @click="onSaveClick" :disabled="isSaving">
-                        <span v-if="isSaving"><i class='fa fa-refresh fa-spin'></i> Saving</span>
+                        <span v-if="isSaving"><i class='ti ti-refresh ti-spin'></i> Saving</span>
                         <span v-else>Save</span>
                     </RockButton>
                     <RockButton :btnSize="BtnSize.Default"

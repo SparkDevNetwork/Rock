@@ -32,7 +32,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
             this.AddCssClass( "input-width-md" );
-            this.AppendText = "<i class='fa fa-calendar'></i>";
+            this.AppendText = "<i class='ti ti-calendar'></i>";
 
             var script = string.Format( @"Rock.controls.yearPicker.initialize({{ id: '{0}' }});", this.ClientID );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "year_picker-" + this.ClientID, script, true );

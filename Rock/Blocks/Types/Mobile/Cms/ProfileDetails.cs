@@ -37,7 +37,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [DisplayName( "Profile Details" )]
     [Category( "Mobile > Cms" )]
     [Description( "Allows the user to edit their account on a mobile application." )]
-    [IconCssClass( "fa fa-user-cog" )]
+    [IconCssClass( "ti ti-user-cog" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

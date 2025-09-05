@@ -99,7 +99,7 @@
         const actions: PanelAction[] = [];
 
         actions.push({
-            iconCssClass: "fa fa-calendar-alt",
+            iconCssClass: "ti ti-calendar-month",
             title: "Export Calendar Feed",
             type: "info",
             handler: onExportClick
@@ -120,14 +120,14 @@
 
         if (eventCalendarViewBag.value?.isActive === true) {
             labels.push({
-                iconCssClass: "fa fa-lightbulb",
+                iconCssClass: "ti ti-bulb-filled",
                 title: "Active",
                 type: "success"
             });
         }
         else {
             labels.push({
-                iconCssClass: "far fa-lightbulb",
+                iconCssClass: "ti ti-bulb",
                 title: "Inactive",
                 type: "danger"
             });

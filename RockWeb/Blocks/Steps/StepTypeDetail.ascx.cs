@@ -145,12 +145,12 @@ namespace RockWeb.Blocks.Steps
             /// </summary>
             public const string KpiLava =
 @"{[kpis style:'card' iconbackground:'true' columncount:'4']}
-    [[ kpi icon:'fa-user' value:'{{IndividualsCompleting | Format:'N0'}}' label:'Individuals Completing' color:'blue-700']][[ endkpi ]]
+    [[ kpi icon:'ti-user' value:'{{IndividualsCompleting | Format:'N0'}}' label:'Individuals Completing' color:'blue-700']][[ endkpi ]]
     {% if StepType.HasEndDate %}
-        [[ kpi icon:'fa-calendar' value:'{{AvgDaysToComplete | Format:'N0'}}' label:'Average Days to Complete' color:'green-600']][[ endkpi ]]
-        [[ kpi icon:'fa-map-marker' value:'{{StepsStarted | Format:'N0'}}' label:'Steps Started' color:'#FF385C']][[ endkpi ]]
+        [[ kpi icon:'fticalendar' value:'{{AvgDaysToComplete | Format:'N0'}}' label:'Average Days to Complete' color:'green-600']][[ endkpi ]]
+        [[ kpi icon:'ti-map-pin' value:'{{StepsStarted | Format:'N0'}}' label:'Steps Started' color:'#FF385C']][[ endkpi ]]
     {% endif %}
-    [[ kpi icon:'fa-check-square' value:'{{StepsCompleted | Format:'N0'}}' label:'Steps Completed' color:'indigo-700']][[ endkpi ]]
+    [[ kpi icon:'ti-checkbox' value:'{{StepsCompleted | Format:'N0'}}' label:'Steps Completed' color:'indigo-700']][[ endkpi ]]
 {[endkpis]}";
         }
 
@@ -1403,10 +1403,18 @@ namespace RockWeb.Blocks.Steps
             else
             {
                 btnEdit.Visible = true;
-                btnDelete.Visible = true;
                 btnSecurity.Visible = true;
                 btnSecurity.Title = "Secure " + stepType.Name;
                 btnSecurity.EntityId = stepType.Id;
+
+                if ( stepType.IsSystem )
+                {
+                    btnDelete.Visible = false;
+                }
+                else
+                {
+                    btnDelete.Visible = true;
+                }
 
                 if ( !stepTypeId.Equals( 0 ) )
                 {
@@ -1436,7 +1444,7 @@ namespace RockWeb.Blocks.Steps
             {
                 stepType = new StepType
                 {
-                    IconCssClass = "fa fa-compress",
+                    IconCssClass = "ti ti-minimize",
                     IsDateRequired = true
                 };
             }
@@ -1572,6 +1580,12 @@ namespace RockWeb.Blocks.Steps
                 if ( !stepType.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
                 {
                     mdDeleteWarning.Show( "You are not authorized to delete this item.", ModalAlertType.Information );
+                    return;
+                }
+
+                if ( stepType.IsSystem )
+                {
+                    mdDeleteWarning.Show( "You cannot delete a System Step Type.", ModalAlertType.Information );
                     return;
                 }
 

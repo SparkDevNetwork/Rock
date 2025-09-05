@@ -121,6 +121,7 @@ namespace RockWeb.Blocks.Groups
         DefaultValue = "1",
         Order = 11 )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.GROUPS_GROUP_MEMBER_DETAIL )]
     public partial class GroupMemberDetail : RockBlock
     {
@@ -604,7 +605,7 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                lGroupIconHtml.Text = "<i class='fa fa-user' ></i>";
+                lGroupIconHtml.Text = "<i class='ti ti-user' ></i>";
             }
 
             if ( groupMember.Id.Equals( 0 ) )

@@ -458,7 +458,7 @@ namespace Rock.Web.UI.Controls
                 }
                 _gLocations.RenderControl( writer );
 
-                writer.WriteLine( "<h3>Overflow Locations <a class=\"help text-sm\" href=\"#\" tabindex=\"-1\" data-toggle=\"tooltip\" data-placement=\"auto\" data-container=\"body\" data-html=\"true\" title=\"Overflow locations will be used if all non-overflow locations are at capacity. This is only supported on next-gen check-in.\"><i class=\"fa fa-info-circle\"></i></a></h3>" );
+                writer.WriteLine( "<h3>Overflow Locations <a class=\"help text-sm\" href=\"#\" tabindex=\"-1\" data-toggle=\"tooltip\" data-placement=\"auto\" data-container=\"body\" data-html=\"true\" title=\"Overflow locations will be used if all non-overflow locations are at capacity. This is only supported on next-gen check-in.\"><i class=\"ti ti-info-circle\"></i></a></h3>" );
                 if ( this.OverflowLocations != null )
                 {
                     _gOverflowLocations.DataSource = this.OverflowLocations.OrderBy( l => l.Order ).ThenBy( l => l.FullNamePath ).ToList();

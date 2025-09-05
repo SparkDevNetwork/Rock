@@ -27,7 +27,7 @@
         <asp:Panel ID="pnlOverview" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
                 <h3 class="panel-title">
-                    <i class="fa fa-mobile"></i>
+                    <i class="ti ti-device-mobile"></i>
                     <asp:Literal ID="ltAppName" runat="server" />
                 </h3>
                 <div class="panel-labels">
@@ -85,7 +85,7 @@
                                     <asp:LinkButton ID="lbEdit" runat="server" CssClass="btn btn-primary" Text="Edit" OnClick="lbEdit_Click" data-shortcut-key="e" AccessKey="m" ToolTip="Alt+e" />
                                     <asp:LinkButton ID="lbCancel" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="lbCancel_Click" CausesValidation="false" data-shortcut-key="c" ToolTip="Alt+c" />
                                     <div class="pull-right">
-                                        <asp:LinkButton ID="lbDeploy" runat="server" CssClass="btn btn-default" OnClick="lbDeploy_Click" OnClientClick="Rock.dialogs.confirmPreventOnCancel( event, 'Are you sure you wish to replace the current package and deploy a new one?');"><i class="fa fa-upload"></i> Deploy</asp:LinkButton>
+                                        <asp:LinkButton ID="lbDeploy" runat="server" CssClass="btn btn-default" OnClick="lbDeploy_Click" OnClientClick="Rock.dialogs.confirmPreventOnCancel( event, 'Are you sure you wish to replace the current package and deploy a new one?');"><i class="ti ti-upload"></i> Deploy</asp:LinkButton>
                                     </div>
                                 </div>
 
@@ -300,7 +300,7 @@
 
                                 <div class="actions margin-t-md">
                                     <Rock:BootstrapButton ID="lbStylesEditSave" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="lbStylesEditSave_Click"
-                                        DataLoadingText="&lt;i class='fa fa-refresh fa-spin'&gt;&lt;/i&gt; Saving"
+                                        DataLoadingText="&lt;i class='ti ti-refresh ti-spin'&gt;&lt;/i&gt; Saving"
                                         CompletedText="Saved"
                                         CompletedMessage="<div class='margin-t-md alert alert-success'>Changes have been saved.</div>"
                                         CompletedDuration="5"></Rock:BootstrapButton>

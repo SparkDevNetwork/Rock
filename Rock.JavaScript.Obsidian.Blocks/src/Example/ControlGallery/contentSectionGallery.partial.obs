@@ -1,0 +1,165 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      demoMode>
+        <ContentSection :title="title"
+                        :icon="icon"
+                        :light="isLight"
+                        :disableCollapse="disableCollapse"
+                        :overflowText="overflowText">
+            <template v-if="hasHeaderActions" #headerActions>
+                <span class="label label-info">Header Action</span>
+            </template>
+
+            <template v-if="hasHeaderSecondaryActions" #headerSecondaryActions>
+                <button type="button" class="btn btn-action">
+                    <i class="ti ti-question-mark"></i>
+                </button>
+                <button type="button" class="btn btn-action">
+                    <i class="ti ti-dots-vertical"></i>
+                </button>
+            </template>
+
+            <ContentStack v-for="index in stackCount"
+                          :key="index"
+                          :title="`${getNumberWord(index)} Stack`"
+                          description="A sample stack in the section.">
+                <TextBox modelValue="" label="Sample Field" />
+            </ContentStack>
+
+            <template v-if="hasOverflow" #overflow>
+                <p>This is some additional content that will be shown when the "Show More" button is clicked.</p>
+                <p>It can contain any valid HTML or Obsidian components.</p>
+            </template>
+            <template v-if="hasFooterActions" #footerActions>
+                <button type="button" class="btn btn-primary">Primary</button>
+                <button type="button" class="btn btn-default">Default</button>
+            </template>
+
+            <template v-if="hasFooterSecondaryActions" #footerSecondaryActions>
+                <button type="button" class="btn btn-action">
+                    <i class="ti ti-copy"></i>
+                </button>
+                <button type="button" class="btn btn-default">Secondary</button>
+            </template>
+        </ContentSection>
+
+        <template #settings>
+            <div class="automatic-layout">
+                <CheckBox label="Light" v-model="isLight" />
+                <CheckBox label="Title" v-model="hasTitle" />
+                <CheckBox label="Icon" v-model="hasIcon" />
+                <CheckBox label="Header Actions" v-model="hasHeaderActions" />
+                <CheckBox label="Header Secondary Actions" v-model="hasHeaderSecondaryActions" />
+                <CheckBox label="Footer Actions" v-model="hasFooterActions" />
+                <CheckBox label="Footer Secondary Actions" v-model="hasFooterSecondaryActions" />
+                <CheckBox label="Disable Collapse" v-model="disableCollapse" />
+                <CheckBox label="Overflow" v-model="hasOverflow" />
+                <TextBox label="Overflow Text" v-model="overflowText" />
+                <NumberUpDown label="Stack Count" v-model="stackCount" :min="1" :max="10" />
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { computed, ref } from "vue";
+    import { ComponentUsage, getNumberWord, getSfcControlImportPath } from "./common/utils.partial";
+
+    const isLight = ref(false);
+    const hasTitle = ref(true);
+    const hasIcon = ref(true);
+    const hasHeaderActions = ref(false);
+    const hasHeaderSecondaryActions = ref(false);
+    const hasFooterActions = ref(false);
+    const hasFooterSecondaryActions = ref(false);
+    const disableCollapse = ref(false);
+    const hasOverflow = ref(false);
+    const overflowText = ref("Show More");
+    const stackCount = ref(2);
+
+    const title = computed((): string | undefined => {
+        return hasTitle.value ? "Sample Section" : undefined;
+    });
+
+    const icon = computed((): string | undefined => {
+        return hasIcon.value ? "ti ti-icons" : undefined;
+    });
+
+    const importCode = getSfcControlImportPath("contentSection");
+    const exampleCode = computed(() => {
+        const usage = new ComponentUsage("ContentSection");
+
+        usage.addAttribute("title", title.value);
+        usage.addAttribute("icon", icon.value);
+        usage.addAttribute("light", isLight.value, false);
+        usage.addAttribute("disableCollapse", disableCollapse.value, false);
+        usage.addAttribute("overflowText", overflowText.value, "Show More");
+
+        if (hasHeaderActions.value) {
+            usage.addBody("<template #headerActions>");
+            usage.addBody("    <span class=\"label label-info\">Header Action</span>");
+            usage.addBody("</template>");
+            usage.addBody("");
+        }
+
+        if (hasHeaderSecondaryActions.value) {
+            usage.addBody("<template #headerSecondaryActions>");
+            usage.addBody("    <button type=\"button\" class=\"btn btn-action\">");
+            usage.addBody("        <i class=\"ti ti-question-mark\"></i>");
+            usage.addBody("    </button>");
+            usage.addBody("    <button type=\"button\" class=\"btn btn-action\">");
+            usage.addBody("        <i class=\"ti ti-dots-vertical\"></i>");
+            usage.addBody("    </button>");
+            usage.addBody("</template>");
+            usage.addBody("");
+        }
+
+        for (let stackIndex = 1; stackIndex <= stackCount.value; stackIndex++) {
+            if (stackIndex > 1) {
+                usage.addBody("");
+            }
+
+            const stackUsage = new ComponentUsage("ContentStack");
+            stackUsage.addAttribute("title", `${getNumberWord(stackIndex)} Stack`);
+            stackUsage.addAttribute("description", "A sample stack in the section.");
+            stackUsage.addBody(`<TextBox label="Sample Field" />`);
+
+            usage.addBody(stackUsage);
+        }
+
+        if (hasOverflow.value) {
+            usage.addBody("");
+            usage.addBody("<template #overflow>");
+            usage.addBody("    <p>This is some additional content that will be shown when the \"Show More\" button is clicked.</p>");
+            usage.addBody("    <p>It can contain any valid HTML or Obsidian components.</p>");
+            usage.addBody("</template>");
+        }
+
+        if (hasFooterActions.value) {
+            usage.addBody("");
+            usage.addBody("<template #footerActions>");
+            usage.addBody("    <button type=\"button\" class=\"btn btn-primary\">Primary</button>");
+            usage.addBody("    <button type=\"button\" class=\"btn btn-default\">Default</button>");
+            usage.addBody("</template>");
+        }
+
+        if (hasFooterSecondaryActions.value) {
+            usage.addBody("");
+            usage.addBody("<template #footerSecondaryActions>");
+            usage.addBody("    <button type=\"button\" class=\"btn btn-action\">");
+            usage.addBody("        <i class=\"ti ti-copy\"></i>");
+            usage.addBody("    </button>");
+            usage.addBody("    <button type=\"button\" class=\"btn btn-default\">Secondary</button>");
+            usage.addBody("</template>");
+        }
+
+        return usage.toString();
+    });
+</script>

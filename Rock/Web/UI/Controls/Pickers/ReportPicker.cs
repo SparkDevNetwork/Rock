@@ -38,7 +38,7 @@ namespace Rock.Web.UI.Controls
         {
             SetExtraRestParams();
 
-            this.IconCssClass = "fa fa-list-alt";
+            this.IconCssClass = "ti ti-list-details";
             base.OnInit( e );
         }
 

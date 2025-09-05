@@ -20,7 +20,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Web;
+
 using Rock.Attribute;
+using Rock.Cms;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -32,7 +35,6 @@ using Rock.ViewModels.Blocks.Administration.PageProperties;
 using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 
 namespace Rock.Blocks.Administration
 {
@@ -42,7 +44,7 @@ namespace Rock.Blocks.Administration
     [DisplayName( "Page Properties" )]
     [Category( "Administration" )]
     [Description( "Displays the page properties." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     //[SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -125,7 +127,8 @@ namespace Rock.Blocks.Administration
                 LayoutItems = LoadLayouts( site ),
                 DisplayWhenItems = typeof( DisplayInNavWhen ).ToEnumListItemBag(),
                 IntentDefinedTypeGuid = InteractionIntentDefinedTypeCache?.Guid.ToString(),
-                EnableFullEditMode = this.GetAttributeValue( AttributeKey.EnableFullEditMode ).AsBoolean()
+                EnableFullEditMode = this.GetAttributeValue( AttributeKey.EnableFullEditMode ).AsBoolean(),
+                Countries = DefinedTypeCache.GetLocationCountryListItemBagList( true )
             };
             return options;
         }
@@ -165,7 +168,7 @@ namespace Rock.Blocks.Administration
                 return new List<ListItemBag>();
             }
 
-            LayoutService.RegisterLayouts( "~" , site );
+            LayoutService.RegisterLayouts( "~", site );
 
             var layouts = new LayoutService( RockContext ).GetBySiteId( site.Id ).Select( l => new ListItemBag()
             {
@@ -349,6 +352,8 @@ namespace Rock.Blocks.Administration
 
             var layout = entity.Layout == null ? entity.ParentPage?.Layout.ToListItemBag() : entity.Layout.ToListItemBag();
 
+            var pageAdditionalSettings = entity.GetAdditionalSettings<PageAdditionalSettings>();
+
             var bag = new PagePropertiesBag
             {
                 IdKey = entity.IdKey,
@@ -388,6 +393,7 @@ namespace Rock.Blocks.Administration
                 Site = entity.Layout?.Site.ToListItemBag() ?? site.ToListItemBag(),
                 PageRoute = string.Join( ",", entity.PageRoutes.Select( route => route.Route ).ToArray() ),
                 Intents = intents,
+                CountriesRestrictedFromAccessing = pageAdditionalSettings.CountriesRestrictedFromAccessing,
                 PageId = entity.Id
             };
 
@@ -580,6 +586,19 @@ namespace Rock.Blocks.Administration
                     entity.LoadAttributes( RockContext );
 
                     entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
+                } );
+
+            box.IfValidProperty( nameof( box.Bag.CountriesRestrictedFromAccessing ),
+                () =>
+                {
+                    var pageAdditionalSettings = entity.GetAdditionalSettings<PageAdditionalSettings>();
+
+                    pageAdditionalSettings.CountriesRestrictedFromAccessing = box.Bag
+                        .CountriesRestrictedFromAccessing
+                        .Distinct()
+                        .ToList();
+
+                    entity.SetAdditionalSettings( pageAdditionalSettings );
                 } );
 
             return true;

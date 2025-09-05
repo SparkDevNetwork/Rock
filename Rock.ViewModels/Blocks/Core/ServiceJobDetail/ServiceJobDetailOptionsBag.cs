@@ -21,7 +21,7 @@ using System.Collections.Generic;
 namespace Rock.ViewModels.Blocks.Core.ServiceJobDetail
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class ServiceJobDetailOptionsBag
     {
@@ -31,7 +31,7 @@ namespace Rock.ViewModels.Blocks.Core.ServiceJobDetail
         /// <value>
         /// The job type options.
         /// </value>
-        public List<ListItemBag> JobTypeOptions { get; set; }
+        public List<ServiceJobOptionsBag> JobTypeOptions { get; set; }
 
         /// <summary>
         /// Gets or sets the notification status options.

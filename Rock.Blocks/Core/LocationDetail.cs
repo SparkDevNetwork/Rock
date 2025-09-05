@@ -43,7 +43,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Location Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a particular location." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -71,6 +71,7 @@ namespace Rock.Blocks.Core
 
     #endregion
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "862067b0-8764-452e-9b4f-dc3e0cf5f876" )]
     [Rock.SystemGuid.BlockTypeGuid( "d0203b97-5856-437e-8700-8846309f8eed" )]
     public class LocationDetail : RockEntityDetailBlockType<Location, LocationBag>

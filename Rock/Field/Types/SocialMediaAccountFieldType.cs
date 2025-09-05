@@ -77,9 +77,9 @@ namespace Rock.Field.Types
                     {
 
                         string iconCssClass = privateConfigurationValues[ICONCSSCLASS_KEY];
-                        if ( !iconCssClass.Contains( "fa-fw" ) )
+                        if ( !iconCssClass.Contains( "ti-fw" ) )
                         {
-                            iconCssClass = iconCssClass + " fa-fw";
+                            iconCssClass = iconCssClass + " ti-fw";
                         }
                         mergeFields.Add( ICONCSSCLASS_KEY, iconCssClass );
                     }

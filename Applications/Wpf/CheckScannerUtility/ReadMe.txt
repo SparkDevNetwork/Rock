@@ -1,5 +1,7 @@
 /*  2019-02-07 MDP. 2020-06-20 MDP. Last Updated 2024-06-24 JDR.
 
+  2025-07-29 - DSH: See this commit for converting this to the new WiX installer: https://github.com/SparkDevNetwork/Rock/commit/9397d13231a90153667be0646f538d73814da475
+
   This application is Dependant on an OCX and having the Drivers for the Range Scanner, and MagTek drivers installed.
   You'll need to do the following:
 

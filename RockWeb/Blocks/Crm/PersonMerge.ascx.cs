@@ -580,6 +580,7 @@ namespace RockWeb.Blocks.Crm
                         primaryPerson.RecordTypeValueId = GetNewIntValue( "RecordType" );
                         primaryPerson.RecordStatusValueId = GetNewIntValue( "RecordStatus" );
                         primaryPerson.RecordStatusReasonValueId = GetNewIntValue( "RecordStatusReason" );
+                        primaryPerson.RecordSourceValueId = GetNewIntValue( "RecordSource" );
                         primaryPerson.ConnectionStatusValueId = GetNewIntValue( "ConnectionStatus" );
                         primaryPerson.IsDeceased = GetNewBoolValue( "Deceased" ) ?? false;
                         primaryPerson.Gender = ( Gender ) GetNewEnumValue( "Gender", typeof( Gender ) );
@@ -2348,12 +2349,12 @@ AND Attendance.Id != @FirstTimeRecordId
 
                         if ( phoneNumber.IsUnlisted )
                         {
-                            iconHtml += " <span class='label label-info' title='Unlisted' data-toggle='tooltip' data-placement='top'><i class='fa fa-phone-slash'></i></span>";
+                            iconHtml += " <span class='label label-info' title='Unlisted' data-toggle='tooltip' data-placement='top'><i class='ti ti-phone-off'></i></span>";
                         }
 
                         if ( phoneNumber.IsMessagingEnabled )
                         {
-                            iconHtml += " <span class='label label-success' title='SMS Enabled' data-toggle='tooltip' data-placement='top'><i class='fa fa-sms'></i></span>";
+                            iconHtml += " <span class='label label-success' title='SMS Enabled' data-toggle='tooltip' data-placement='top'><i class='ti ti-device-mobile-message'></i></span>";
                         }
 
                         AddProperty( key, phoneType.Value, person.Id, phoneNumber.Number, phoneNumber.NumberFormatted + iconHtml );
@@ -2397,12 +2398,12 @@ AND Attendance.Id != @FirstTimeRecordId
 
                             if ( address.IsMailingLocation )
                             {
-                                iconHtml += " <span class='label label-info' title='Mailing' data-toggle='tooltip' data-placement='top'><i class='fa fa-envelope'></i></span>";
+                                iconHtml += " <span class='label label-info' title='Mailing' data-toggle='tooltip' data-placement='top'><i class='ti ti-mail'></i></span>";
                             }
 
                             if ( address.IsMappedLocation )
                             {
-                                iconHtml += " <span class='label label-success' title='Mapped' data-toggle='tooltip' data-placement='top'><i class='fa fa-map-marker'></i></span>";
+                                iconHtml += " <span class='label label-success' title='Mapped' data-toggle='tooltip' data-placement='top'><i class='ti ti-map-pin'></i></span>";
                             }
 
                             var addressKey = key;
@@ -2720,6 +2721,7 @@ AND Attendance.Id != @FirstTimeRecordId
             AddProperty( "RecordType", person.Id, person.RecordTypeValue );
             AddProperty( "RecordStatus", person.Id, person.RecordStatusValue );
             AddProperty( "RecordStatusReason", person.Id, person.RecordStatusReasonValue );
+            AddProperty( "RecordSource", person.Id, person.RecordSourceValue );
             AddProperty( "ConnectionStatus", person.Id, person.ConnectionStatusValue );
             AddProperty( "Deceased", person.Id, person.IsDeceased );
             AddProperty( "Gender", person.Id, person.Gender );

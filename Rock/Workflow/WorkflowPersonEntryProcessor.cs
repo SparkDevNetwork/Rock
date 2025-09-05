@@ -18,6 +18,7 @@ using System;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Rest.Controls;
@@ -152,8 +153,18 @@ namespace Rock.Workflow
         private void UpdatePersonFromEntryValues( WorkflowActionFormCache form, Person person, PersonBasicEditorBag personBag )
         {
             person.FirstName = personBag.FirstName;
-            person.NickName = personBag.NickName.IsNotNullOrWhiteSpace() ? personBag.NickName : personBag.FirstName;
             person.LastName = personBag.LastName;
+
+            if ( personBag.NickName.IsNotNullOrWhiteSpace() )
+            {
+                person.NickName = personBag.NickName;
+            }
+            else if ( string.IsNullOrWhiteSpace( person.NickName ) )
+            {
+                // Only set the nickname in the database to the first name if the nickname is empty.
+                // This prevents a differing nickname from being overwritten with the first name
+                person.NickName = personBag.FirstName;
+            }
 
             if ( form.PersonEntryEmailEntryOption != WorkflowActionFormPersonEntryOption.Hidden )
             {
@@ -382,11 +393,16 @@ namespace Rock.Workflow
                 maritalStatusId = DefinedValueCache.Get( personEntryValues.MaritalStatusGuid.Value, _rockContext )?.Id;
             }
 
+            var recordSourceValueId = RecordSourceHelper.GetSessionRecordSourceValueId()
+                ?? form.PersonEntryRecordSourceValueId
+                ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_WORKFLOW.AsGuid() )?.Id;
+
             var personEntryPerson = CreateOrUpdatePersonFromEntryValues( form, existingPerson, null, personEntryValues.Person );
             if ( personEntryPerson.Id == 0 )
             {
                 personEntryPerson.ConnectionStatusValueId = form.PersonEntryConnectionStatusValueId;
                 personEntryPerson.RecordStatusValueId = form.PersonEntryRecordStatusValueId;
+                personEntryPerson.RecordSourceValueId = recordSourceValueId;
                 PersonService.SaveNewPerson( personEntryPerson, _rockContext, campusId );
             }
 
@@ -421,6 +437,7 @@ namespace Rock.Workflow
                 {
                     personEntryPersonSpouse.ConnectionStatusValueId = form.PersonEntryConnectionStatusValueId;
                     personEntryPersonSpouse.RecordStatusValueId = form.PersonEntryRecordStatusValueId;
+                    personEntryPersonSpouse.RecordSourceValueId = recordSourceValueId;
 
                     // if adding/editing the 2nd Person (should normally be the spouse), set both people to selected Marital Status
 

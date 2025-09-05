@@ -12,7 +12,7 @@
                         <li id="liNavItem" runat="server" class="list-group-item cursor-pointer" >
                             <asp:PlaceHolder runat="server">
                                 <div><%# Eval("Name") %>
-                                <i class="fa fa-chevron-right pull-right" style="margin-top: 4px;"></i></div>
+                                <i class="ti ti-chevron-right pull-right" style="margin-top: 4px;"></i></div>
                             </asp:PlaceHolder>
                         </li>
                     </ItemTemplate>

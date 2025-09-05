@@ -27,7 +27,7 @@ namespace Rock.CheckIn
     /// A group option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInGroup : ILavaDataDictionary, Lava.ILiquidizable
+    public class CheckInGroup : ILavaDataDictionary
     {
         /// <summary>
         /// Gets or sets the group.
@@ -224,7 +224,12 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public object GetValue(string key)
         {
-            return this[key];
+            switch ( key.ToStringSafe() )
+            {
+                case "LastCheckIn": return LastCheckIn;
+                case "Locations": return GetLocations( true );
+                default: return Group[key];
+            }
         }
 
         /// <summary>
@@ -236,6 +241,8 @@ namespace Rock.CheckIn
         /// <param name="key">The key.</param>
         /// <returns></returns>
         [LavaHidden]
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public object this[object key]
         {
             get
@@ -274,6 +281,8 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public bool ContainsKey( object key )
         {
             var additionalKeys = new List<string> { "LastCheckIn", "Locations" };
@@ -295,6 +304,8 @@ namespace Rock.CheckIn
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public object GetValue( object key )
         {
             return this[key];
@@ -305,6 +316,8 @@ namespace Rock.CheckIn
         /// </summary>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public object ToLiquid()
         {
             return this;

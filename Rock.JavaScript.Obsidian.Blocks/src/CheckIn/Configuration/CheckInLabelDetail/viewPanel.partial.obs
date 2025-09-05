@@ -19,7 +19,7 @@
 
                 <div v-if="!isZpl" class="mt-3 text-right">
                     <RockButton @click="onDesignerClick">
-                        <i class="fa fa-palette"></i> Label Designer
+                        <i class="ti ti-palette"></i> Label Designer
                     </RockButton>
                 </div>
             </div>

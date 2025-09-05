@@ -160,7 +160,7 @@ namespace Rock.Web.UI.Controls
                 ExceptionLogService.LogException( new Exception( errorMessage, ex ) );
                 var badgeNameClass = BadgeCache?.Name.ToLower().RemoveAllNonAlphaNumericCharacters() ?? "error";
                 writer.Write( $"<div class='rockbadge rockbadge-{badgeNameClass} rockbadge-id-{BadgeCache?.Id} rockbadge-error' data-toggle='tooltip' data-original-title='{errorMessage}'>" );
-                writer.Write( $"  <i class='fa fa-exclamation-triangle badge-icon text-warning'></i>" );
+                writer.Write( $"  <i class='ti ti-alert-triangle badge-icon text-warning'></i>" );
                 writer.Write( "</div>" );
             }
             finally

@@ -56,7 +56,9 @@ namespace Rock.Rest.v2
                 var webhookValidationResult = await chatHelper.ValidateWebhookRequestAsync( Request );
                 if ( webhookValidationResult?.IsValid == true )
                 {
-                    new HandleChatWebhookRequestTransaction( new ChatWebhookRequest( webhookValidationResult.RequestBody ) ).Enqueue();
+                    new HandleChatWebhookRequestTransaction(
+                        new ChatWebhookRequest( webhookValidationResult.RequestBody )
+                    ).Enqueue( useFastQueue: webhookValidationResult.ShouldProcessImmediately );
                 }
 
                 // If invalid, the chat helper will have already logged the result to Rock Logs.

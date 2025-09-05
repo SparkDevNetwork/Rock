@@ -2,8 +2,9 @@
     Used to manage styles for specific blocks.
 
     1. Communication Entry 
-    2. Communication Detail 
-    3. Communication Wizard
+    2. Communication Detail
+    3. Communication List 
+    4. Communication Wizard
 
 */
 
@@ -31,7 +32,6 @@
   }
 }
 
-
 // 2. Communication Detail
 // -------------------------
 iframe.email-body {
@@ -41,8 +41,29 @@ iframe.email-body {
   border: 1px solid @panel-border;
 }
 
+// 3. Communication List
+// -------------------------
+.hint {
+  background-color: var(--color-interface-soft);
+  padding: 0 6px;
+  border-radius: var(--rounded-small);
+  color: var(--color-interface-strongest);
+}
 
-// 3. Communication Wizard
+.hint-ai {
+  border: 2px solid transparent;
+  border-radius: var(--rounded-small);
+  background: linear-gradient(var(--color-interface-softest), var(--color-interface-softest)) padding-box,
+              linear-gradient(to right, #FBC453, #F7964F, #EF6653) border-box;
+  padding: 0 6px;
+  color: var(--color-primary);
+}
+
+.hint-ai::before {
+  content:'AI';
+}
+
+// 4. Communication Wizard
 // -------------------------
 
 .communication-template {

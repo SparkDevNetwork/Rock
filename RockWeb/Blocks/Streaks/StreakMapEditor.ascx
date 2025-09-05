@@ -5,7 +5,7 @@
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-calendar-check"></i>
+                    <i class="ti ti-calendar-check"></i>
                     <asp:Literal ID="lTitle" runat="server" />
                 </h1>
             </div>
@@ -14,7 +14,7 @@
 
                 <div class="well">
                     <Rock:SlidingDateRangePicker runat="server" ID="sdrpDateRange" FormGroupCssClass="margin-b-sm" EnabledSlidingDateRangeUnits="Day, Week, Month, Year" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
-                    <asp:LinkButton ID="btnRefresh" runat="server" CssClass="btn btn-xs btn-default" ToolTip="Refresh" OnClick="btnRefresh_Click"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
+                    <asp:LinkButton ID="btnRefresh" runat="server" CssClass="btn btn-xs btn-default" ToolTip="Refresh" OnClick="btnRefresh_Click"><i class="ti ti-refresh"></i> Update</asp:LinkButton>
                 </div>
 
                 <Rock:RockCheckBoxList ID="cblCheckboxes" runat="server" RepeatDirection="Vertical" />

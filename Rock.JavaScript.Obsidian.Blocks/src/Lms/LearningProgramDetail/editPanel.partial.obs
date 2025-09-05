@@ -65,11 +65,10 @@
                                          label="Highlight Color"
                                          help="The color to use to differentiate from other learning programs." />
 
-                            <TextBox
-                                     v-model="iconCssClass"
-                                     :maxLength="100"
-                                     class="input-width-xl"
-                                     label="Icon CSS Class" />
+                            <IconPicker
+                                        v-model="iconCssClass"
+                                        class="input-width-xl"
+                                        label="Icon CSS Class" />
 
                             <!-- <NumberBox
                                        v-model="absencesWarningCount"
@@ -151,6 +150,7 @@
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
 
     const props = defineProps({
         modelValue: {

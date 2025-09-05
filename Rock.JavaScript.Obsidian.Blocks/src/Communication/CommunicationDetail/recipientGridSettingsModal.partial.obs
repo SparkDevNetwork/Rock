@@ -1,0 +1,109 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Recipient Grid Settings"
+           saveText="Save"
+           @save="onSave">
+
+        <CheckBoxList v-model="selectedProperties"
+                      :items="personPropertyItems"
+                      :repeatColumns="3"
+                      label="Basic Columns"
+                      help="Choose which Person Properties to display as columns in the grid."
+                      horizontal />
+
+        <DropDownList v-model="selectedAttributes"
+                      :items="personAttributeItems"
+                      :multiple="true"
+                      :enhanceForLongLists="true"
+                      label="Additional Columns"
+                      help="Choose which Person Attributes to display as columns in the grid." />
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { CommunicationRecipientGridOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationRecipientGridOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        gridOptions: {
+            type: Object as PropType<CommunicationRecipientGridOptionsBag | null | undefined>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const selectedProperties = ref(props.modelValue.recipientListSettings.selectedProperties ?? []);
+    const selectedAttributes = ref(props.modelValue.recipientListSettings.selectedAttributes ?? []);
+
+    const personPropertyItems = ref(props.gridOptions?.personPropertyItems ?? []);
+    const personAttributeItems = ref(props.gridOptions?.personAttributeItems ?? []);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the save button is clicked.
+     */
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            recipientListSettings: {
+                selectedProperties: selectedProperties.value,
+                selectedAttributes: selectedAttributes.value
+            }
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch([() => props.modelValue, () => props.gridOptions], () => {
+        selectedProperties.value = props.modelValue.recipientListSettings.selectedProperties ?? [];
+        selectedAttributes.value = props.modelValue.recipientListSettings.selectedAttributes ?? [];
+
+        personPropertyItems.value = props.gridOptions?.personPropertyItems ?? [];
+        personAttributeItems.value = props.gridOptions?.personAttributeItems ?? [];
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+
+    // #endregion Watchers
+</script>

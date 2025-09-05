@@ -63,6 +63,7 @@ namespace RockWeb.Blocks.Reminders
 
     #endregion Block Attributes
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.System )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.REMINDER_LINKS )]
     public partial class ReminderLinks : RockBlock, IRockBlockType
     {

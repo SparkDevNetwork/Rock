@@ -203,12 +203,12 @@ namespace Rock.Jobs
         {
             StringBuilder jobSummaryBuilder = new StringBuilder();
 
-            jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-success'></i> {recordsUpdated:N0} connection {"request".PluralizeIf( recordsUpdated != 1 )} updated" );
-            jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-success'></i> {workflowsTriggered:N0} {"workflow".PluralizeIf( workflowsTriggered != 1 )} triggered" );
+            jobSummaryBuilder.AppendLine( $"<i class='ti ti-circle text-success'></i> {recordsUpdated:N0} connection {"request".PluralizeIf( recordsUpdated != 1 )} updated" );
+            jobSummaryBuilder.AppendLine( $"<i class='ti ti-circle text-success'></i> {workflowsTriggered:N0} {"workflow".PluralizeIf( workflowsTriggered != 1 )} triggered" );
 
             if ( recordsWithError > 0 )
             {
-                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-danger'></i> {recordsWithError:N0} {"record".PluralizeIf( recordsWithError != 1 )} logged an exception" );
+                jobSummaryBuilder.AppendLine( $"<i class='ti ti-circle text-danger'></i> {recordsWithError:N0} {"record".PluralizeIf( recordsWithError != 1 )} logged an exception" );
             }
 
             return jobSummaryBuilder.ToString();

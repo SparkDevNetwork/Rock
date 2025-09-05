@@ -39,7 +39,7 @@ namespace Rock.Blocks.Finance
     [DisplayName( "Account List" )]
     [Category( "Finance" )]
     [Description( "Displays a list of financial accounts." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

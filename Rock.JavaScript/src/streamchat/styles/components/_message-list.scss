@@ -1,0 +1,13 @@
+.rocktheme-community {
+    .str-chat__list {
+        .str-chat__message-list-scroll {
+            padding-inline: 0rem !important;
+            margin-inline: 0 !important;
+
+            .str-chat__li {
+                padding-inline: 0 !important;
+                margin-inline: 0 !important;
+            }
+        }
+    }
+}

@@ -23,7 +23,7 @@
         <div class="message-actions">
             <div class="mark-as-read-button">
                 <RockButton class="btn btn-default btn-sm" type="button" autoDisable @click.prevent.stop="onMarkAsReadClick">
-                    <i class="fa fa-check-square-o"></i>
+                    <i class="ti ti-square-check"></i>
                 </RockButton>
             </div>
 

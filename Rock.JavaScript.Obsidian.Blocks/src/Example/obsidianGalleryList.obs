@@ -49,6 +49,7 @@
                     title="Birth Date"
                     field="birthDate"
                     :filter="dateValueFilter"
+                    :tooltip="dateValueTooltip"
                     visiblePriority="md" />
 
         <NumberColumn name="age"
@@ -107,7 +108,7 @@
         {
             title: "Custom Action",
             tooltip: "This is an example of a custom block action.",
-            iconCssClass: "fa fa-key"
+            iconCssClass: "ti ti-key"
         }
     ];
 
@@ -128,6 +129,23 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
+    }
+
+    /**
+     * Gets the tooltip text for the birthdate value. Normally, if you were
+     * doing this you would also disable the row tooltip. But both are enabled
+     * to demonstrate how use both options.
+     *
+     * @param row The row containing the birthdate value to be formatted.
+     *
+     * @returns The tooltip text.
+     */
+    function dateValueTooltip(row: Record<string, unknown>): string {
+        if (!row.birthDate) {
+            return "Birthdate not available";
+        }
+
+        return new Date(row.birthDate as string).toLocaleDateString(undefined, { dateStyle: "long" });
     }
 
     // #endregion

@@ -68,7 +68,7 @@ namespace Rock.Lms
         public override string HighlightColor => "#2f699f";
 
         /// <inheritdoc/>
-        public override string IconCssClass => "fa fa-video";
+        public override string IconCssClass => "ti ti-video";
 
         /// <inheritdoc/>
         public override string Name => "Video Watch";

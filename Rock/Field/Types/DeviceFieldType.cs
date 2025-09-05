@@ -33,7 +33,7 @@ namespace Rock.Field.Types
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.DEVICE_TYPE,
         Key = AttributeKey.DeviceType )]
 
-    [Rock.SystemGuid.FieldTypeGuid( "d7f5d737-bdc9-4656-951e-08325d0543fd" )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DEVICE )]
     public class DeviceFieldType : UniversalItemPickerFieldType
     {
         #region Keys
@@ -56,7 +56,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         protected sealed override List<ListItemBag> GetListItems( Dictionary<string, string> privateConfigurationValues )
         {
-            var deviceTypeGuid = privateConfigurationValues.GetValueOrNull( AttributeKey.DeviceType ).AsGuidOrNull();
+            var deviceTypeGuid = privateConfigurationValues.GetValueOrNull( AttributeKey.DeviceType ).FromJsonOrNull<ListItemBag>()?.Value.AsGuidOrNull();
             var deviceTypeId = deviceTypeGuid.HasValue
                 ? DefinedValueCache.GetId( deviceTypeGuid.Value )
                 : null;

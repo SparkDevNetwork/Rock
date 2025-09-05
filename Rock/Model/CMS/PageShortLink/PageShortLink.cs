@@ -91,6 +91,12 @@ namespace Rock.Model
         [DataMember]
         public int? CategoryId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the short link is pinned.
+        /// </summary>
+        [DataMember]
+        public bool IsPinned { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties

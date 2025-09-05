@@ -316,7 +316,7 @@ namespace Rock.Lava.Fluid
                 // For example, the following Lava template will throw an error in the standard Fluid parser
                 // due to the unpaired shortcode open tag embedded in the raw tag:
                 //
-                // {[ panel title:'Important Stuff' icon:'fa fa-star' ]}
+                // {[ panel title:'Important Stuff' icon:'ti ti-star' ]}
                 //    This is a super simple panel.
                 //    {% raw %}
                 //        This is some literal text containing an invalid shortcode: {[ panel title:'Example' ]}

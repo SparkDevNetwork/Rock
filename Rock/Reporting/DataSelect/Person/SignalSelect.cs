@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -140,7 +140,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             personLinkQuery = personQry.Select( p =>
                 ( p.TopSignalColor != null && p.TopSignalColor != "" ) ?
-                    "<i class='" + ( ( p.TopSignalIconCssClass != null && p.TopSignalIconCssClass != "" ) ? p.TopSignalIconCssClass : "fa fa-flag" ) + "' style='color: " + p.TopSignalColor + ";'></i>"
+                    "<i class='" + ( ( p.TopSignalIconCssClass != null && p.TopSignalIconCssClass != "" ) ? p.TopSignalIconCssClass : "ti ti-flag" ) + "' style='color: " + p.TopSignalColor + ";'></i>"
                     : string.Empty );
 
             return SelectExpressionExtractor.Extract( personLinkQuery, entityIdProperty, "p" );

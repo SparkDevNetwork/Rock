@@ -54,7 +54,24 @@ namespace Rock.Rest.Utility
         /// <returns><c>true</c> if the property type is a navigation property; otherwise <c>false</c>.</returns>
         internal static bool IsNavigationPropertyType( Type type )
         {
+            // TODO: We might need to take an additional parameter of the type
+            // that owns this property type. Then if it is an IEntity we can
+            // perform more strict checks such as only allowing known safe
+            // property types, such as bool, int, long, etc.
+
             if ( typeof( IEntity ).IsAssignableFrom( type ) || typeof( IEntityCache ).IsAssignableFrom( type ) )
+            {
+                return true;
+            }
+
+            // Special check for navigation properties to analytics tables.
+            if ( type.Namespace == "Rock.Model" && type.Name.StartsWith( "Analytics" ) )
+            {
+                return true;
+            }
+
+            // Special check for the property that handles [HasQueryableAttributes].
+            if ( typeof( QueryableAttributeValue ).IsAssignableFrom( type ) )
             {
                 return true;
             }
@@ -68,8 +85,7 @@ namespace Rock.Rest.Utility
             {
                 var genericArgs = type.GetGenericArguments();
 
-                return typeof( IEntity ).IsAssignableFrom( genericArgs[0] )
-                    || typeof( IEntityCache ).IsAssignableFrom( genericArgs[0] );
+                return IsNavigationPropertyType( genericArgs[0] );
             }
 
             // Special check for IHasAttributes properties.

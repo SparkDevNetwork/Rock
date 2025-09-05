@@ -117,7 +117,7 @@
 
         if (panelMode.value === DetailPanelMode.View) {
             actions.push({
-                iconCssClass: "fa fa-clipboard",
+                iconCssClass: "ti ti-clipboard",
                 title: "Copy",
                 type: "default",
                 handler: onCopyLink

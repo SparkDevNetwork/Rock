@@ -1,0 +1,440 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="communicationDetail" class="communication-detail-analytics">
+        <ContentSection title="Delivery Breakdown" light disableCollapse>
+            <template v-if="mediumRecipientCountLabel" #headerActions>
+                <HighlightLabel labelType="primary">
+                    {{ mediumRecipientCountLabel }}
+                </HighlightLabel>
+            </template>
+
+            <template #default>
+                <DeliveryBreakdown :deliveryBreakdown="deliveryBreakdown" />
+            </template>
+        </ContentSection>
+
+        <LoadingIndicator v-if="showLoadingIndicator" :delay="1000" class="communication-detail-margin-top" />
+
+        <template v-if="showMetrics">
+            <NotificationBox v-if="getAnalyticsDataErrorMessage" :alertType="AlertType.Warning" class="communication-detail-margin-top">
+                {{ getAnalyticsDataErrorMessage }}
+            </NotificationBox>
+
+            <NotificationBox v-else-if="showNoActivityMessage" :alertType="AlertType.Info" class="communication-detail-margin-top">
+                No activity found for this communication.
+            </NotificationBox>
+
+            <template v-else>
+                <ContentSection title="Performance KPIs" light disableCollapse class="communication-detail-margin-top">
+                    <Kpis :kpis="analytics?.kpis" :showEmailMetrics="showEmailMetrics" />
+                </ContentSection>
+
+                <ContentSection title="Performance Chart" light disableCollapse class="communication-detail-margin-top">
+                    <template #headerActions>
+                        <Toggle v-model="isActivityFlowVisible"
+                                trueText="Flow"
+                                falseText="Time"
+                                :btnSize=BtnSize.ExtraSmall />
+                    </template>
+
+                    <template #default>
+                        <div class="communication-detail-performance-chart">
+                            <UniqueActivityFlow v-if="isActivityFlowVisible"
+                                                :activityFlow="analytics?.activityFlow" />
+                            <UniqueInteractionsOverTime v-else
+                                                        :chartDataPoints="analytics?.uniqueInteractionsOverTime" />
+                        </div>
+                    </template>
+                </ContentSection>
+
+                <ContentSection v-if="totalLinksCount"
+                                title="Top Performing Links"
+                                overflowText="See All Links"
+                                light
+                                disableCollapse
+                                class="communication-detail-margin-top">
+                    <template v-if="totalLinksCountLabel" #headerActions>
+                        <HighlightLabel>
+                            {{ totalLinksCountLabel }}
+                        </HighlightLabel>
+                    </template>
+
+                    <template #default>
+                        <LinkPerformances :linksAnalytics="topLinks" />
+                    </template>
+
+                    <template v-if="overflowLinks.length" #overflow>
+                        <LinkPerformances :linksAnalytics="overflowLinks" />
+                    </template>
+                </ContentSection>
+
+                <div class="communication-detail-gender-and-age-chart-sections row d-flex flex-wrap align-items-stretch">
+
+                    <div class="communication-detail-gender-chart-section col-xs-12 col-md-6 communication-detail-margin-top">
+                        <ContentSection title="Unique Opens By Gender" light disableCollapse>
+                            <div class="communication-detail-gender-chart">
+                                <UniqueOpensByGender :chartDataPoints="analytics?.uniqueOpensByGender" />
+                            </div>
+                        </ContentSection>
+                    </div>
+
+                    <div class="communication-detail-age-chart-section col-xs-12 col-md-6 communication-detail-margin-top">
+                        <ContentSection title="Unique Opens By Age Range" light disableCollapse>
+                            <div class="communication-detail-age-chart">
+                                <UniqueOpensByAgeRange :chartDataPoints="analytics?.uniqueOpensByAgeRange" />
+                            </div>
+                        </ContentSection>
+                    </div>
+
+                </div>
+
+                <ContentSection v-if="totalClientsCount"
+                                title="Top Clients"
+                                overflowText="See All Clients"
+                                light
+                                disableCollapse
+                                class="communication-detail-margin-top">
+                    <template v-if="totalClientsCountLabel" #headerActions>
+                        <HighlightLabel>
+                            {{ totalClientsCountLabel }}
+                        </HighlightLabel>
+                    </template>
+
+                    <template #default>
+                        <div class="communication-detail-top-clients-chart">
+                            <TopClients :chartDataPoints="analytics?.topClients" />
+                        </div>
+                    </template>
+
+                    <template v-if="overflowClients.length" #overflow>
+                        <div class="communication-detail-top-clients-overflow-items">
+                            <div v-for="dataPoint in overflowClients" :key="dataPoint.label!"
+                                 class="communication-detail-top-clients-overflow-item">
+                                <span>{{ dataPoint.label }}</span>
+                                <span>{{ `${asFormattedString(dataPoint.value, 1)}%` }}</span>
+                            </div>
+                        </div>
+                    </template>
+                </ContentSection>
+            </template>
+        </template>
+
+        <ContentSection v-else title="Message Performance" light disableCollapse class="communication-detail-margin-top">
+            <div class="communication-detail-no-metrics">
+                <i class="ti ti-alert-triangle ti-4x"></i>
+                <div class="no-metrics-to-show-message">
+                    Nothing To Show
+                </div>
+                <div class="communication-detail-no-metrics-message">
+                    Performance metrics are currently unavailable for this medium.
+                </div>
+            </div>
+        </ContentSection>
+    </div>
+</template>
+
+<style scoped>
+.communication-detail-margin-top {
+    margin-top: var(--spacing-large);
+}
+
+.communication-detail-performance-chart {
+    height: 450px;
+}
+
+.communication-detail-gender-chart,
+.communication-detail-age-chart {
+    height: 350px;
+}
+
+.communication-detail-top-clients-chart {
+    height: 500px;
+}
+
+.communication-detail-top-clients-overflow-items {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+}
+
+.communication-detail-top-clients-overflow-item {
+    width: 100%;
+    max-width: 690px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.communication-detail-no-metrics {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: var(--color-interface-medium);
+}
+
+.communication-detail-no-metrics-message {
+    font-size: var(--font-size-xsmall);
+    margin-top: var(--spacing-tiny);
+    text-align: center;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import DeliveryBreakdown from "./deliveryBreakdown.partial.obs";
+    import Kpis from "./kpis.partial.obs";
+    import LinkPerformances from "./linkPerformances.partial.obs";
+    import TopClients from "./topClients.partial.obs";
+    import { ChartStyles, TabItem } from "./types.partial";
+    import UniqueActivityFlow from "./uniqueActivityFlow.partial.obs";
+    import UniqueInteractionsOverTime from "./uniqueInteractionsOverTime.partial.obs";
+    import UniqueOpensByAgeRange from "./uniqueOpensByAgeRange.partial.obs";
+    import UniqueOpensByGender from "./uniqueOpensByGender.partial.obs";
+    import { provideChartStyles, useCommunicationDetail, useMediumFilter, useSelectedTab } from "./utils.partial";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import { CommunicationType, CommunicationTypeDescription } from "@Obsidian/Enums/Communication/communicationType";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
+    import { CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { debounceAsync } from "@Obsidian/Utility/util";
+    import { CommunicationAnalyticsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationAnalyticsRequestBag";
+    import { CommunicationAnalyticsResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationAnalyticsResponseBag";
+    import { CommunicationDeliveryBreakdownBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationDeliveryBreakdownBag";
+    import { CommunicationLinkAnalyticsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationLinkAnalyticsBag";
+    import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const communicationDetail = useCommunicationDetail();
+    const mediumFilter = useMediumFilter();
+    const selectedTab = useSelectedTab();
+
+    // Ensure rapid filter selection changes result in using only the latest
+    // filter values before making a request to the server for new data.
+    let filterCancellationTokenSource: CancellationTokenSource | null = null;
+
+    const topLinksCount = 3;
+
+    // #region Values
+
+    const isLoadingAnalyticsData = ref(false);
+    const getAnalyticsDataErrorMessage = ref("");
+
+    const deliveryBreakdown = ref<CommunicationDeliveryBreakdownBag | null | undefined>(communicationDetail.value?.deliveryBreakdown);
+    const analytics = ref<CommunicationAnalyticsResponseBag | null>(null);
+
+    const isActivityFlowVisible = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const mediumRecipientCountLabel = computed((): string => {
+        if (!deliveryBreakdown.value || !mediumFilter.value) {
+            return "";
+        }
+
+        return `${CommunicationTypeDescription[mediumFilter.value]}: ${asFormattedString(deliveryBreakdown.value.recipientCount)}`;
+    });
+
+    const showLoadingIndicator = computed((): boolean => {
+        return !analytics.value && isLoadingAnalyticsData.value;
+    });
+
+    const showMetrics = computed((): boolean => {
+        const communicationHasMetrics = [
+            CommunicationType.Email,
+            CommunicationType.PushNotification,
+            CommunicationType.RecipientPreference
+        ].some(
+            t => communicationDetail.value?.type === t
+        );
+
+        return communicationHasMetrics && mediumFilter.value !== CommunicationType.SMS;
+    });
+
+    const showNoActivityMessage = computed((): boolean => {
+        return !!analytics.value?.showNoActivityMessage;
+    });
+
+    const showEmailMetrics = computed((): boolean => {
+        return communicationDetail.value?.type === CommunicationType.Email
+            || mediumFilter.value === CommunicationType.Email;
+    });
+
+    const allLinks = computed((): CommunicationLinkAnalyticsBag[] => {
+        return analytics.value?.allLinksAnalytics ?? [];
+    });
+
+    const totalLinksCount = computed((): number => {
+        return allLinks.value.length;
+    });
+
+    const totalLinksCountLabel = computed((): string => {
+        if (!totalLinksCount.value) {
+            return "";
+        }
+
+        return `${asFormattedString(totalLinksCount.value)} Total ${pluralize("Link", totalLinksCount.value)}`;
+    });
+
+    const topLinks = computed((): CommunicationLinkAnalyticsBag[] => {
+        return allLinks.value.length > topLinksCount
+            ? [...allLinks.value.slice(0, topLinksCount)]
+            : [...allLinks.value];
+    });
+
+    const overflowLinks = computed((): CommunicationLinkAnalyticsBag[] => {
+        return allLinks.value.length > topLinksCount
+            ? [...allLinks.value.slice(topLinksCount)]
+            : [];
+    });
+
+    const allClients = computed((): ChartNumericDataPointBag[] => {
+        return analytics.value?.allClients ?? [];
+    });
+
+    const totalClientsCount = computed((): number => {
+        return allClients.value.length;
+    });
+
+    const totalClientsCountLabel = computed((): string => {
+        if (!totalClientsCount.value) {
+            return "";
+        }
+
+        return `${asFormattedString(totalClientsCount.value)} Total ${pluralize("Client", totalClientsCount.value)}`;
+    });
+
+    const overflowClients = computed((): ChartNumericDataPointBag[] => {
+        const topClientsCount = analytics.value?.topClients?.length ?? 0;
+
+        return totalClientsCount.value > topClientsCount
+            ? allClients.value
+            : [];
+    });
+
+    const chartStyles = computed((): ChartStyles => {
+        return {
+            fontFamily: getCssVariableValue("--font-family-sans-serif", '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'),
+            fontColor: getCssVariableValue("--color-interface-stronger", "#0D1117"),
+            fontSize: parseInt(getCssVariableValue("--font-size-small", "14")),
+            fontWeight: getCssVariableValue("--font-weight-semibold", "600"),
+            legendBoxSize: parseInt(getCssVariableValue("--spacing-large", "24")),
+            fallbackColor: "#8e8e93"
+        };
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Gets the analytics data.
+     *
+     * @param cancellationToken A cancellation token that will instruct this
+     * function to exit early and discard results.
+     */
+    async function getAnalyticsData(cancellationToken?: ICancellationToken): Promise<void> {
+        if (cancellationToken?.isCancellationRequested) {
+            return;
+        }
+
+        isLoadingAnalyticsData.value = true;
+        getAnalyticsDataErrorMessage.value = "";
+
+        const bag: CommunicationAnalyticsRequestBag = {
+            type: mediumFilter.value
+        };
+
+        const result = await invokeBlockAction<CommunicationAnalyticsResponseBag>("GetCommunicationAnalytics", { bag });
+        isLoadingAnalyticsData.value = false;
+
+        if (cancellationToken?.isCancellationRequested) {
+            return;
+        }
+
+        if (!result.isSuccess || !result.data || result.data.errorMessage) {
+            getAnalyticsDataErrorMessage.value = result.errorMessage
+                || result.data?.errorMessage
+                || "Unknown error while trying to get analytics data.";
+            return;
+        }
+
+        deliveryBreakdown.value = result.data.deliveryBreakdown;
+
+        if (!showMetrics.value || !hasAnalyticsDataChanged(result.data)) {
+            // Only overwrite the analytics if metrics should be shown (and if
+            // the data has actually changed since the last load). This will
+            // help prevent unnecessary screen flickering.
+            return;
+        }
+
+        analytics.value = result.data;
+    }
+
+    /**
+     * Calls the `getAnalyticsData` function immediately and then debounces
+     * future calls so it will only be called once during the specified delay
+     * period (250ms).
+     */
+    const getAnalyticsDataDebounce = debounceAsync(getAnalyticsData, { eager: true });
+
+    /**
+     * Cancels any in-progress data loads, then [re]loads data.
+     */
+    function loadData(): void {
+        filterCancellationTokenSource?.cancel();
+        filterCancellationTokenSource = new CancellationTokenSource();
+
+        getAnalyticsDataDebounce(filterCancellationTokenSource.token);
+    }
+
+    /**
+     * Determines if the analytics data has changed since the last time it was
+     * loaded.
+     *
+     * @param newData The latest copy of analytics data to be compared against
+     * the existing data.
+     */
+    function hasAnalyticsDataChanged(newData: CommunicationAnalyticsResponseBag): boolean {
+        // Exclude known-differing non-chart data between [Email] and [SMS], as
+        // we really only care about limiting excessive chart re-animations.
+        const excludedKeys = new Set(["deliveryBreakdown"]);
+
+        const replacer = (key: string, value: unknown): unknown => {
+            return excludedKeys.has(key) ? undefined : value;
+        };
+
+        const newJson = JSON.stringify(newData, replacer);
+        const oldJson = JSON.stringify(analytics.value, replacer);
+
+        return newJson !== oldJson;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch([mediumFilter, selectedTab], () => {
+        if (selectedTab.value !== TabItem.Analytics) {
+            return;
+        }
+
+        loadData();
+    });
+
+    // #endregion Watchers
+
+    loadData();
+
+    provideChartStyles(chartStyles);
+</script>

@@ -19,7 +19,7 @@
 
         <div class="grid-quick-filter grid-actions" v-if="isSearchVisible" :class="{ 'active': isSearchExpanded }">
             <button type="button" class="btn btn-grid-action" title="Search" @click.stop.prevent="onSearchClick">
-                <i class="fa fa-search fa-fw"></i>
+                <i class="ti ti-search ti-fw"></i>
             </button>
 
             <div ref="quickFilterContainerElement" class="grid-quick-filter-search" :class="{ 'open': isSearchExpanded }">

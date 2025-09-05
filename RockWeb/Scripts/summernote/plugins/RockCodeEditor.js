@@ -20,7 +20,7 @@
 
     // create button
     var button = ui.button({
-        contents: '<i class="fa fa-code"/>',
+        contents: '<i class="ti ti-code"/>',
         tooltip: 'Code Editor',
         className: 'btn-codeview note-codeview-keep', // swap out the default btn-codeview with the RockCodeEditor
         click: function () {
@@ -51,7 +51,7 @@
                     context.invoke('toolbar.updateCodeview', false);
                 } else {
                     if ($('.js-wysiwyg-warning').length == 0) {
-                        var $warning = $('<div class="alert alert-warning js-wysiwyg-warning"><button class="close" aria-hidden="true" type="button" data-dismiss="alert"><i class="fa fa-times"></i></button>The markup contains content that may not be compatible with the visual editor.</div>');
+                        var $warning = $('<div class="alert alert-warning js-wysiwyg-warning"><button class="close" aria-hidden="true" type="button" data-dismiss="alert"><i class="ti ti-x"></i></button>The markup contains content that may not be compatible with the visual editor.</div>');
                         $warning.insertBefore(context.layoutInfo.editor);
                     }
 

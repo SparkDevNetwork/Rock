@@ -21,8 +21,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
-using DotLiquid.Tags;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -44,7 +42,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Adaptive Message List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of adaptive messages." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

@@ -29,7 +29,7 @@ namespace Rock.Tests.Integration.Core.Model
         /// Runs before any tests in this class are executed.
         /// </summary>
         [ClassInitialize]
-        public static void ClassInitialize(TestContext testContext)
+        public static void ClassInitialize( TestContext _ )
         {
             CreatePersonWithProtectionProfile( PersonGuid.PersonWithLowAccountProtectionProfileGuid.AsGuid(), AccountProtectionProfile.Low );
             CreatePersonWithProtectionProfile( PersonGuid.PersonWithMediumAccountProtectionProfileGuid.AsGuid(), AccountProtectionProfile.Medium );
@@ -37,7 +37,7 @@ namespace Rock.Tests.Integration.Core.Model
             CreatePersonWithProtectionProfile( PersonGuid.PersonWithExtremeAccountProtectionProfileGuid.AsGuid(), AccountProtectionProfile.Extreme );
         }
 
-        private static void CreatePersonWithProtectionProfile(Guid guid, AccountProtectionProfile accountProtectionProfile)
+        private static void CreatePersonWithProtectionProfile( Guid guid, AccountProtectionProfile accountProtectionProfile )
         {
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
@@ -61,25 +61,6 @@ namespace Rock.Tests.Integration.Core.Model
             };
 
             PersonService.SaveNewPerson( person, rockContext );
-        }
-
-        /// <summary>
-        /// Runs after all tests in this class is executed.
-        /// </summary>
-        [ClassCleanup]
-        public static void ClassCleanup()
-        {
-            //
-        }
-
-        /// <summary>
-        /// Runs after each test in this class is executed.
-        /// Deletes the test data added to the database for each tests.
-        /// </summary>
-        [TestCleanup]
-        public void Cleanup()
-        {
-            //
         }
 
         #endregion

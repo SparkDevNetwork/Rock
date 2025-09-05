@@ -123,7 +123,7 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-history"></i>
+                    <i class="ti ti-history"></i>
                     Group History
                 </h1>
                 <div class="panel-labels">
@@ -132,7 +132,7 @@
                   <a class="btn btn-default btn-xs js-view-year btn-primary active" href="#" data-view="Year">Year</a>
                 </div>
                   <a class="btn btn-xs btn-default btn-square" onclick="javascript: toggleOptions()">
-                      <i title="Options" class="fa fa-gear"></i>
+                      <i title="Options" class="ti ti-settings"></i>
                   </a>
                 </div>
             </div>

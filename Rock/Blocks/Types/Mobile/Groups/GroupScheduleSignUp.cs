@@ -38,7 +38,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [DisplayName( "Schedule Sign Up" )]
     [Category( "Mobile > Groups" )]
     [Description( "A way for individuals to sign up for additional serving times on mobile." )]
-    [IconCssClass( "fa fa-user-plus" )]
+    [IconCssClass( "ti ti-user-plus" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

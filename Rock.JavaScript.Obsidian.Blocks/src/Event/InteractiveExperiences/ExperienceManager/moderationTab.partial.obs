@@ -52,17 +52,17 @@
                         <td v-html="getStatusLabelHtml(row.status)"></td>
                         <td class="grid-columncommand" align="center">
                             <a v-if="row.status !== approvedStatus" class="btn btn-success btn-sm btn-square grid-approve-button" @click.prevent="onApproveAnswer(row)">
-                                <i class="fa fa-thumbs-up"></i>
+                                <i class="ti ti-thumb-up"></i>
                             </a>
                         </td>
                         <td class="grid-columncommand" align="center">
                             <a v-if="row.status !== rejectedStatus" class="btn btn-danger btn-sm btn-square grid-reject-button" @click.prevent="onRejectAnswer(row)">
-                                <i class="fa fa-thumbs-down"></i>
+                                <i class="ti ti-thumb-down"></i>
                             </a>
                         </td>
                         <td class="grid-columncommand" align="center">
                             <a class="btn btn-danger btn-sm btn-square grid-delete-button" @click.prevent="onDeleteAnswer(row)">
-                                <i class="fa fa-times"></i>
+                                <i class="ti ti-x"></i>
                             </a>
                         </td>
                     </tr>

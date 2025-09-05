@@ -90,8 +90,8 @@
 
         if (props.modelValue.trendingEnabled) {
             const label = `<span class="label label-success">Enabled</span>`;
-            const days = `<span class="text-xs"><i class="fa fa-calendar-alt"></i> ${props.modelValue.trendingWindowDay} ${pluralConditional(props.modelValue.trendingWindowDay, "day", "days")}</span>`;
-            const items = `<span class="text-xs"><i class="fa fa-file-alt"></i> ${props.modelValue.trendingMaxItems} ${pluralConditional(props.modelValue.trendingMaxItems, "item", "items")}</span>`;
+            const days = `<span class="text-xs"><i class="ti ti-calendar-month"></i> ${props.modelValue.trendingWindowDay} ${pluralConditional(props.modelValue.trendingWindowDay, "day", "days")}</span>`;
+            const items = `<span class="text-xs"><i class="ti ti-file"></i> ${props.modelValue.trendingMaxItems} ${pluralConditional(props.modelValue.trendingMaxItems, "item", "items")}</span>`;
             valueBuilder.addHtmlValue("Trending", `<div class="content-collection-trending-state text-muted">${label}${days}${items}</div>`);
         }
         else {

@@ -211,11 +211,11 @@ namespace RockWeb.Blocks.Finance
             if ( lActionsTaken != null )
             {
                 string actionHtml = "<div class='status-list'>";
-                actionHtml += string.Format( "<i class='margin-r-sm fa fa-cog' style='opacity: {0};' aria-hidden='true'></i>", alertType.WorkflowTypeId.HasValue ? 1 : 0 );
-                actionHtml += string.Format( "<i class='margin-r-sm fa fa-comment' style='opacity: {0};' aria-hidden='true'></i>", alertType.SystemCommunicationId.HasValue ? 1 : 0 );
-                actionHtml += string.Format( "<i class='margin-r-sm fa fa-plug' style='opacity: {0};' aria-hidden='true'></i>", alertType.ConnectionOpportunityId.HasValue ? 1 : 0 );
-                actionHtml += string.Format( "<i class='margin-r-sm fa fa-bus' style='opacity: {0};' aria-hidden='true'></i>", alertType.SendBusEvent ? 1 : 0 );
-                actionHtml += string.Format( "<i class='margin-r-sm fa fa-building-o' style='opacity: {0};' aria-hidden='true'></i>", alertType.AccountParticipantSystemCommunicationId.HasValue ? 1 : 0 );
+                actionHtml += string.Format( "<i class='margin-r-sm ti ti-settings' style='opacity: {0};' aria-hidden='true'></i>", alertType.WorkflowTypeId.HasValue ? 1 : 0 );
+                actionHtml += string.Format( "<i class='margin-r-sm ti ti-message' style='opacity: {0};' aria-hidden='true'></i>", alertType.SystemCommunicationId.HasValue ? 1 : 0 );
+                actionHtml += string.Format( "<i class='margin-r-sm ti ti-plug' style='opacity: {0};' aria-hidden='true'></i>", alertType.ConnectionOpportunityId.HasValue ? 1 : 0 );
+                actionHtml += string.Format( "<i class='margin-r-sm ti ti-bus' style='opacity: {0};' aria-hidden='true'></i>", alertType.SendBusEvent ? 1 : 0 );
+                actionHtml += string.Format( "<i class='margin-r-sm ti ti-building' style='opacity: {0};' aria-hidden='true'></i>", alertType.AccountParticipantSystemCommunicationId.HasValue ? 1 : 0 );
                 actionHtml += "</div>";
                 lActionsTaken.Text = actionHtml;
             }

@@ -39,7 +39,7 @@
             <%-- Panel Header --%>
             <div class="panel-heading panel-follow">
                 <h1 class="panel-title">
-                    <i class="fa fa-bell"></i>
+                    <i class="ti ti-bell"></i>
                     Reminders
                 </h1>
             </div>
@@ -84,7 +84,7 @@
                                     <div class="btn-group">
                                         <asp:Panel ID="pnlEntityTypeSelection" runat="server" CssClass="dropdown-toggle btn btn-default p-1 btn-lg mb-1" data-toggle="dropdown">
                                             <asp:Literal ID="lSelectedEntityType" runat="server" Text="All Reminders" />
-                                            <i class="fa fa-chevron-down"></i>
+                                            <i class="ti ti-chevron-down"></i>
                                         </asp:Panel>
 
                                         <ul class="dropdown-menu" role="menu">
@@ -113,7 +113,7 @@
 
                                     <div class="btn-group">
                                         <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
-                                            <i class="fa fa-check-circle-o"></i>
+                                            <i class="ti ti-circle-check"></i>
                                             <asp:Literal ID="lCompletionFilter" runat="server" Text="Incomplete" />
                                         </div>
 
@@ -132,7 +132,7 @@
 
                                     <div class="btn-group">
                                         <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
-                                            <i class="fa fa-calendar-alt"></i>
+                                            <i class="ti ti-calendar-month"></i>
                                             <asp:Literal ID="lDueFilter" runat="server" Text="Due" />
                                         </div>
 
@@ -166,7 +166,7 @@
 
                                     <div class="btn-group">
                                         <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
-                                            <i class="fa fa-list"></i>
+                                            <i class="ti ti-list"></i>
                                             <asp:Literal ID="lReminderType" runat="server" Text="All Reminder Types" />
                                         </div>
 
@@ -195,8 +195,8 @@
                             <div class="d-flex flex-sm-wrap py-3 px-sm-4 py-sm-4 border-bottom border-panel cursor-pointer" data-reminder-id="<%# Eval("Id") %>">
                                 <div class="flex-grow-0">
                                     <asp:LinkButton ID="btnComplete" runat="server" class="success-on-hover" CommandArgument='<%# Eval("Id") %>' OnClick="btnComplete_Click">
-                                        <asp:Literal ID="lCheckIcon_Complete" runat="server" Visible='<%# Eval("IsComplete") %>'><i class="fa fa-lg fa-check-circle text-success"></i></asp:Literal>
-                                        <asp:Literal ID="lCheckIcon_Incomplete" runat="server" Visible='<%# (bool) Eval("IsComplete") == true ? false : true %>'><i class="fa fa-lg fa-circle-o"></i></asp:Literal>
+                                        <asp:Literal ID="lCheckIcon_Complete" runat="server" Visible='<%# Eval("IsComplete") %>'><i class="ti ti-lg ti-circle-check text-success"></i></asp:Literal>
+                                        <asp:Literal ID="lCheckIcon_Incomplete" runat="server" Visible='<%# (bool) Eval("IsComplete") == true ? false : true %>'><i class="ti ti-lg ti-circle"></i></asp:Literal>
                                     </asp:LinkButton>
                                 </div>
                                 <div class="d-flex flex-wrap flex-eq">
@@ -225,7 +225,7 @@
                                                         </span>
                                                     </span>
                                                 </div>
-                                                <asp:Literal ID="lClock" runat="server" Visible='<%# Eval("IsRenewing") %>'><div class="dropdown text-info"><i class="fa fa-clock-o"></i></div></asp:Literal>
+                                                <asp:Literal ID="lClock" runat="server" Visible='<%# Eval("IsRenewing") %>'><div class="dropdown text-info"><i class="ti ti-clock"></i></div></asp:Literal>
                                             </div>
 
                                             <div class="note-content">
@@ -237,7 +237,7 @@
                                         <%-- This button is used to initiate a postback for editing, but should not be displayed to the user. --%>
                                         <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-link btn-square btn-sm btn-overflow d-none js-reminder-edit-button" CommandArgument='<%# Eval("Id") %>' OnClick="btnEdit_Click" />
                                         <asp:LinkButton ID="btnDelete" runat="server" CssClass="btn btn-link btn-square btn-sm btn-overflow" CommandArgument='<%# Eval("Id") %>' OnClick="btnDelete_Click">
-                                            <i class="fa fa-close"></i>
+                                            <i class="ti ti-x"></i>
                                         </asp:LinkButton>
                                     </div>
                                 </div>

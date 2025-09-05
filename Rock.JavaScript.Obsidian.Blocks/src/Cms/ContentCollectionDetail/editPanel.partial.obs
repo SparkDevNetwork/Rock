@@ -37,7 +37,7 @@
                                        help="Determines how many days of interactions to look at to determine trending items."
                                        :decimalCount="0"
                                        rules="required|gte:0">
-                                <template #append>
+                                <template #inputGroupAppend>
                                     <span class="input-group-addon">Days</span>
                                 </template>
                             </NumberBox>

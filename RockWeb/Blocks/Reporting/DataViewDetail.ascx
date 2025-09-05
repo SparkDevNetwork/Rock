@@ -8,11 +8,11 @@
             <div id="pnlEditDetails" class="panel panel-block" runat="server">
 
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-filter"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
+                    <h1 class="panel-title"><i class="ti ti-filter"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
 
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlblEditDataViewId" runat="server" />
-                        <div class="label label-primary"><asp:LinkButton ID="lbCreateReport" runat="server" OnClick="lbCreateReport_Click" ><i class="fa fa-plus"></i> Create Report</asp:LinkButton></div>
+                        <div class="label label-primary"><asp:LinkButton ID="lbCreateReport" runat="server" OnClick="lbCreateReport_Click" ><i class="ti ti-plus"></i> Create Report</asp:LinkButton></div>
                     </div>
                 </div>
                 <div class="panel-body">
@@ -110,12 +110,12 @@
             <div id="pnlViewDetails" runat="server">
                 <div class="panel panel-block" runat="server">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-filter"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
+                        <h1 class="panel-title"><i class="ti ti-filter"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
                         <div class="panel-labels">
                              <Rock:HighlightLabel ID="hlblDataViewId" runat="server" />
                              <Rock:HighlightLabel ID="hlblPersisted" LabelType="Info" Text="Persisted" Visible="false" runat="server" />
                              <Rock:HighlightLabel ID="hlblReadOnlyContext" LabelType="Warning" runat="server" Text="Read Only Context Disabled" Visible="false" />
-                            <div class="label label-primary"><asp:LinkButton ID="lbViewCreateReport" runat="server" OnClick="lbCreateReport_Click" ><i class="fa fa-plus"></i> Create Report</asp:LinkButton></div>
+                            <div class="label label-primary"><asp:LinkButton ID="lbViewCreateReport" runat="server" OnClick="lbCreateReport_Click" ><i class="ti ti-plus"></i> Create Report</asp:LinkButton></div>
                         </div>
                     </div>
                     <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
@@ -127,7 +127,7 @@
                                     <Rock:HighlightLabel runat="server" ID="hlTimeToRun" />
                                     <Rock:HighlightLabel runat="server" ID="hlRunSince" CustomClass="" />
 
-                                    <Rock:BootstrapButton CssClass="btn btn-default btn-label" ID="lbResetRunCount" runat="server" OnClick="lbResetRunCount_Click" ToolTip="Reset Counter" ><i class="fa fa-undo"></i></Rock:BootstrapButton>
+                                    <Rock:BootstrapButton CssClass="btn btn-default btn-label" ID="lbResetRunCount" runat="server" OnClick="lbResetRunCount_Click" ToolTip="Reset Counter" ><i class="ti ti-arrow-back-up"></i></Rock:BootstrapButton>
 
                                     <Rock:HighlightLabel runat="server" ID="hlLastRun" />
                                 </div>
@@ -156,7 +156,7 @@
                                 <asp:LinkButton ID="btnEdit" runat="server" data-shortcut-key="e" AccessKey="m" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                                 <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                                 <div class="pull-right">
-                                    <asp:LinkButton ID="btnCopy" runat="server" Text="<i class='fa fa-clone'></i>" Tooltip="Copy Data View" CssClass="btn btn-default btn-square btn-sm" OnClick="btnCopy_Click" />
+                                    <asp:LinkButton ID="btnCopy" runat="server" Text="<i class='ti ti-copy'></i>" Tooltip="Copy Data View" CssClass="btn btn-default btn-square btn-sm" OnClick="btnCopy_Click" />
                                     <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
                                 </div>
                                 <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />

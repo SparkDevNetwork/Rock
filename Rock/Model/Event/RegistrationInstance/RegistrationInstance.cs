@@ -293,6 +293,21 @@ namespace Rock.Model
         [Column( TypeName = "Date" )]
         public DateTime? PaymentDeadlineDate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the default Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing
+        /// the source of <see cref="RegistrationRegistrant"/>s added to this <see cref="RegistrationInstance"/>. If set
+        /// to <see langword="null"/>, then the value of <see cref="RegistrationTemplate.RegistrantRecordSourceValueId"/>
+        /// will be used. This should only be used when editing the registration instance. Call the
+        /// <see cref="GetRegistrantRecordSourceValueId"/> method instead to get the value, as that method wll also
+        /// check the <see cref="RegistrationTemplate.RegistrantRecordSourceValueId"/> property.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.RECORD_SOURCE_TYPE )]
+        public int? RegistrantRecordSourceValueId { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties
@@ -361,6 +376,20 @@ namespace Rock.Model
 
         private ICollection<EventItemOccurrenceGroupMap> _linkages;
 
+        /// <summary>
+        /// Gets or sets the default Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing the source
+        /// of <see cref="RegistrationRegistrant"/>s added to this <see cref="RegistrationInstance"/>. If set to
+        /// <see langword="null"/>, then the value of <see cref="RegistrationTemplate.RegistrantRecordSourceValue"/>
+        /// will be used. This should only be used when editing the registration instance. Call the
+        /// <see cref="GetRegistrantRecordSourceValue"/> method instead to get the value, as that method wll also
+        /// check the <see cref="RegistrationTemplate.RegistrantRecordSourceValue"/> property.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.DefinedValue"/> representing the Record Source Type.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue RegistrantRecordSourceValue { get; set; }
+
         #endregion Navigation Properties
 
         #region Methods
@@ -395,6 +424,7 @@ namespace Rock.Model
             this.HasOptional( i => i.Account ).WithMany().HasForeignKey( i => i.AccountId ).WillCascadeOnDelete( false );
             this.HasOptional( i => i.ContactPersonAlias ).WithMany().HasForeignKey( i => i.ContactPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.RegistrationWorkflowType ).WithMany().HasForeignKey( t => t.RegistrationWorkflowTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.RegistrantRecordSourceValue ).WithMany().HasForeignKey( p => p.RegistrantRecordSourceValueId ).WillCascadeOnDelete( false );
         }
     }
 

@@ -37,8 +37,8 @@ namespace Rock.Blocks.Core
     [DisplayName( "Schedule Category Exclusion List" )]
     [Category( "Core" )]
     [Description( "List of dates that schedules are not active for an entire category." )]
-    [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [IconCssClass( "ti ti-list" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [CategoryField( "Category",
         Description = "Optional Category to use (if not specified, query will be determined by query string).",

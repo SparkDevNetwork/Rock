@@ -37,8 +37,9 @@ import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 import { splitCase } from "@Obsidian/Utility/stringUtils";
 import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
-import { useBlockBrowserBus, useEntityTypeGuid, useEntityTypeName } from "@Obsidian/Utility/block";
+import { hideBlockRole, showBlockRole, useBlockBrowserBus, useEntityTypeGuid, useEntityTypeName } from "@Obsidian/Utility/block";
 import { BlockMessages } from "@Obsidian/Utility/browserBus";
+import { BlockRole } from "@Obsidian/Enums/Cms/blockRole";
 
 /** Provides a pattern for entity detail blocks. */
 export default defineComponent({
@@ -146,7 +147,7 @@ export default defineComponent({
          */
         isFullScreenVisible: {
             type: Boolean as PropType<boolean>,
-            default: true
+            default: false
         },
 
         /** The current display mode for the detail panel. */
@@ -251,7 +252,19 @@ export default defineComponent({
         additionalDeleteMessage: {
             type: String as PropType<string | null>,
             required: false
-        }
+        },
+
+        /**
+         * Enables the worksurface mode which allows the panel to be used on
+         * a full worksurface layout. This will cause the body content to
+         * automatically scroll if it is too large to fit in the panel. All
+         * other panel elements will remain in static positions.
+         */
+        worksurfaceMode: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
     },
 
     emits: {
@@ -335,11 +348,11 @@ export default defineComponent({
             switch (internalMode.value) {
                 // If we are in edit mode show an icon to indicate that to the individual.
                 case DetailPanelMode.Edit:
-                    return "fa fa-pencil";
+                    return "ti ti-pencil";
 
                 // If we are in add mode show an icon to indicate that to the individual.
                 case DetailPanelMode.Add:
-                    return "fa fa-plus";
+                    return "ti ti-plus";
 
                 case DetailPanelMode.View:
                 default:
@@ -377,7 +390,7 @@ export default defineComponent({
             // we have a valid entity then show it.
             if (!props.isSecurityHidden && isViewMode.value && props.entityKey) {
                 actions.push({
-                    iconCssClass: "fa fa-lock",
+                    iconCssClass: "ti ti-lock",
                     title: "Edit Security",
                     type: "default",
                     handler: onSecurityClick
@@ -422,7 +435,7 @@ export default defineComponent({
             if (props.isFollowVisible && isViewMode.value) {
                 actions.push({
                     type: isEntityFollowed.value ? "primary" : "default",
-                    iconCssClass: isEntityFollowed.value ? "fa fa-star" : "fa fa-star-o",
+                    iconCssClass: isEntityFollowed.value ? "ti ti-star-filled" : "ti ti-star",
                     handler: onFollowClick,
                     title: isEntityFollowed.value ? `You are currently following ${props.name}.` : `Click to follow ${props.name}.`
                 });
@@ -492,7 +505,7 @@ export default defineComponent({
          */
         const getActionIconCssClass = (action: PanelAction): string => {
             // Provide a default value if they didn't give us one.
-            return action.iconCssClass || "fa fa-square";
+            return action.iconCssClass || "ti ti-square";
         };
 
         /**
@@ -571,6 +584,8 @@ export default defineComponent({
 
             internalMode.value = DetailPanelMode.View;
             browserBus.publish(BlockMessages.EndEdit);
+
+            await showBlockRole(BlockRole.Secondary);
         };
 
         /**
@@ -603,6 +618,8 @@ export default defineComponent({
             // fully loaded and ready to display.
             editModeReadyCompletionSource = new PromiseCompletionSource();
             await editModeReadyCompletionSource.promise;
+
+            await hideBlockRole(BlockRole.Secondary);
 
             // Perform the final switch into edit mode.
             browserBus.publish(BlockMessages.BeginEdit);
@@ -673,6 +690,8 @@ export default defineComponent({
 
                 internalMode.value = DetailPanelMode.View;
                 browserBus.publish(BlockMessages.EndEdit);
+
+                await showBlockRole(BlockRole.Secondary);
             }
             finally {
                 if (formSubmissionSource !== null) {
@@ -812,6 +831,7 @@ export default defineComponent({
     :title="panelTitle"
     :titleIconCssClass="panelTitleIconCssClass"
     :hasFullscreen="isFullScreenVisible"
+    :worksurfaceMode="worksurfaceMode"
     :headerSecondaryActions="internalHeaderSecondaryActions">
 
     <template v-if="$slots.sidebar" #sidebar>

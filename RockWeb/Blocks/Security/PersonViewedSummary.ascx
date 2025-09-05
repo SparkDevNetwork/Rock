@@ -10,7 +10,7 @@
             <div id="pnlViewedBy" runat="server">
                 <div class="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-eye"></i> Profile Viewed By</h1>
+                        <h1 class="panel-title"><i class="ti ti-eye"></i> Profile Viewed By</h1>
                     </div>
                     <div class="panel-body">
                         <div class="grid grid-panel">
@@ -32,7 +32,7 @@
             <div id="pnlViewed" runat="server">
                 <div class="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-eye"></i> Profiles Viewed</h1>
+                        <h1 class="panel-title"><i class="ti ti-eye"></i> Profiles Viewed</h1>
                     </div>
                     <div class="panel-body">
                         <div class="grid grid-panel">

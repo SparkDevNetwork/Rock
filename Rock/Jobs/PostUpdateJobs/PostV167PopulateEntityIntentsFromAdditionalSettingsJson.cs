@@ -18,6 +18,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -49,7 +51,7 @@ namespace Rock.Jobs
             using ( var rockContext = new RockContext() )
             {
                 // Get the configured timeout, or default to 240 minutes if it is blank.
-                rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
+                rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400 );
 
                 var entityIntentService = new EntityIntentService( rockContext );
 

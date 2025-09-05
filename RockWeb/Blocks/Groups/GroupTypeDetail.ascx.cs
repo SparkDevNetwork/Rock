@@ -535,6 +535,8 @@ namespace RockWeb.Blocks.Groups
             groupType.EnableGroupTag = cbEnableGroupTag.Checked;
             groupType.AllowAnyChildGroupType = cbAllowAnyChildGroupType.Checked;
             groupType.ShowAdministrator = cbShowAdministrator.Checked;
+            groupType.GroupMemberRecordSourceValueId = dvpRecordSource.SelectedValueAsInt();
+            groupType.AllowGroupSpecificRecordSource = cbAllowGroupSpecificRecordSource.Checked;
             groupType.GroupAttendanceRequiresLocation = cbGroupAttendanceRequiresLocation.Checked;
             groupType.GroupAttendanceRequiresSchedule = cbGroupAttendanceRequiresSchedule.Checked;
             groupType.AttendanceCountsAsWeekendService = cbWeekendService.Checked;
@@ -673,6 +675,7 @@ namespace RockWeb.Blocks.Groups
                 groupType.IsLeavingChatChannelAllowed = cbIsLeavingChatChannelAllowed.Checked;
                 groupType.IsChatChannelPublic = cbIsChatChannelPublic.Checked;
                 groupType.IsChatChannelAlwaysShown = cbIsChatChannelAlwaysShown.Checked;
+                groupType.ChatPushNotificationMode = ddlChatPushNotificationMode.SelectedValueAsEnum<ChatNotificationMode>();
             }
 
             if ( !groupType.IsValid )
@@ -962,6 +965,11 @@ namespace RockWeb.Blocks.Groups
             cbGroupsRequireCampus.Checked = groupType.GroupsRequireCampus;
             cbShowAdministrator.Checked = groupType.ShowAdministrator;
 
+            dvpRecordSource.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() )?.Id;
+            dvpRecordSource.SetValue( groupType.GroupMemberRecordSourceValueId );
+
+            cbAllowGroupSpecificRecordSource.Checked = groupType.AllowGroupSpecificRecordSource;
+
             // Peer Network
             cbEnablePeerNetwork.Checked = groupType.IsPeerNetworkEnabled;
             pnlPeerNetwork.Visible = groupType.IsPeerNetworkEnabled;
@@ -1104,6 +1112,7 @@ namespace RockWeb.Blocks.Groups
                 cbIsLeavingChatChannelAllowed.Checked = groupType.IsLeavingChatChannelAllowed;
                 cbIsChatChannelPublic.Checked = groupType.IsChatChannelPublic;
                 cbIsChatChannelAlwaysShown.Checked = groupType.IsChatChannelAlwaysShown;
+                ddlChatPushNotificationMode.SetValue( ( int ) groupType.ChatPushNotificationMode );
 
                 SetChatControlsVisibility( groupType.IsChatAllowed );
 
@@ -1114,6 +1123,7 @@ namespace RockWeb.Blocks.Groups
                     cbIsLeavingChatChannelAllowed.Enabled = false;
                     cbIsChatChannelPublic.Enabled = false;
                     cbIsChatChannelAlwaysShown.Enabled = false;
+                    ddlChatPushNotificationMode.Enabled = false;
 
                     nbChatRunSyncJob.Visible = false;
                 }
@@ -1728,6 +1738,7 @@ namespace RockWeb.Blocks.Groups
             cbIsCheckInAllowed.Checked = groupTypeRole.IsCheckInAllowed;
             cbIsExcludedFromPeerNetwork.Checked = groupTypeRole.IsExcludedFromPeerNetwork;
             cbCanTakeAttendance.Checked = groupTypeRole.CanTakeAttendance;
+            cbRoleIsPublic.Checked = groupTypeRole.IsPublic;
 
             nbMinimumRequired.Text = groupTypeRole.MinCount.HasValue ? groupTypeRole.MinCount.ToString() : string.Empty;
             nbMinimumRequired.Help = string.Format(
@@ -1821,6 +1832,7 @@ namespace RockWeb.Blocks.Groups
             groupTypeRole.IsCheckInAllowed = cbIsCheckInAllowed.Checked;
             groupTypeRole.IsExcludedFromPeerNetwork = cbIsExcludedFromPeerNetwork.Checked;
             groupTypeRole.CanTakeAttendance = cbCanTakeAttendance.Checked;
+            groupTypeRole.IsPublic = cbRoleIsPublic.Checked;
             groupTypeRole.MinCount = nbMinimumRequired.Text.AsIntegerOrNull();
             groupTypeRole.MaxCount = nbMaximumAllowed.Text.AsIntegerOrNull();
             groupTypeRole.ChatRole = ddlChatRole.SelectedValueAsEnum<ChatRole>();
@@ -2747,7 +2759,7 @@ namespace RockWeb.Blocks.Groups
             GroupRequirement requirement = e.Row.DataItem as GroupRequirement;
             if ( requirement != null )
             {
-                lAppliesToDataViewId.Text = requirement.AppliesToDataViewId.HasValue ? "<i class=\"fa fa-check\"></i>" : string.Empty;
+                lAppliesToDataViewId.Text = requirement.AppliesToDataViewId.HasValue ? "<i class=\"ti ti-check\"></i>" : string.Empty;
             }
         }
 
@@ -2863,7 +2875,7 @@ namespace RockWeb.Blocks.Groups
             var dataViewId = dataViewValue.ToString().AsIntegerOrNull();
             if ( dataViewId.HasValue )
             {
-                return "<i class=\"fa fa-check\"></i>";
+                return "<i class=\"ti ti-check\"></i>";
             }
 
             return string.Empty;
@@ -3383,6 +3395,7 @@ namespace RockWeb.Blocks.Groups
             cbIsLeavingChatChannelAllowed.Visible = isChatAllowed;
             cbIsChatChannelPublic.Visible = isChatAllowed;
             cbIsChatChannelAlwaysShown.Visible = isChatAllowed;
+            ddlChatPushNotificationMode.Visible = isChatAllowed;
         }
 
         #endregion Chat Controls

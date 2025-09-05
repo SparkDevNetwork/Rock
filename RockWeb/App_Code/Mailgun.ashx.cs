@@ -350,6 +350,7 @@ public class Mailgun : IHttpHandler
                 case "delivered":
                     communicationRecipient.Status = CommunicationRecipientStatus.Delivered;
                     communicationRecipient.StatusNote = string.Format( "Confirmed delivered by Mailgun at {0}", timeStamp.ToString() );
+                    communicationRecipient.DeliveredDateTime = timeStamp;
                     break;
 
                 case "opened":

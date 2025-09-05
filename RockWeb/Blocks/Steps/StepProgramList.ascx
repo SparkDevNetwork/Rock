@@ -7,7 +7,7 @@
         
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-map-marked-alt"></i> Step Programs</h1>
+                <h1 class="panel-title"><i class="ti ti-map-2"></i> Step Programs</h1>
             </div>
             <div class="panel-body">
 
@@ -25,7 +25,7 @@
                             <Rock:ReorderField />
                              <Rock:RockTemplateField ExcelExportBehavior="NeverInclude" HeaderStyle-Width="48px">
                                 <ItemTemplate>
-                                   <i class="fa-fw <%# Eval( "IconCssClass" ) %>"></i>
+                                   <i class="ti-fw <%# Eval( "IconCssClass" ) %>"></i>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" Visible="true" ExcelExportBehavior="AlwaysInclude" />

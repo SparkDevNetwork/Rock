@@ -35,7 +35,7 @@
                         <div v-if="!isFooterHidden" class="modal-footer">
                             <RockButton v-if="cancelText" @click="onClose" btnType="link">{{ cancelText }}</RockButton>
                             <RockButton v-if="saveThenAddText" @click="onSaveThenAdd" :btnType="saveThenAddBtnType">{{ saveThenAddText }}</RockButton>
-                            <RockButton v-if="saveText" type="submit" btnType="primary" :disabled="isSaveButtonDisabled">{{ saveText }}</RockButton>
+                            <RockButton v-if="saveText" type="submit" btnType="primary" :disabled="internalIsSaveButtonDisabled" :loadingText="saveLoadingText" :isLoading="internalIsSaveButtonLoading">{{ saveText }}</RockButton>
                             <slot name="customButtons" />
                         </div>
                     </RockForm>
@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-    import { nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
+    import { computed, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
     import RockForm from "./rockForm.obs";
     import RockButton from "./rockButton.obs";
     import RockValidation from "./rockValidation.obs";
@@ -132,6 +132,25 @@
             required: false
         },
 
+        /**
+         * Automatically disables the Save button when it is in a loading state or
+         * the click handler is processing. This can prevent duplicate clicks.
+         */
+        saveAutoDisable: {
+            type: Boolean as PropType<boolean | undefined>,
+            required: false
+        },
+
+        saveAutoLoading: {
+            type: Boolean as PropType<boolean | undefined>,
+            required: false
+        },
+
+        saveLoadingText: {
+            type: String as PropType<string | undefined>,
+            required: false
+        },
+
         /** True if the form should attempt to submit. */
         submit: {
             type: Boolean as PropType<boolean>,
@@ -167,6 +186,18 @@
     const overflowResizeObserver: ResizeObserver | undefined = ResizeObserver ? new ResizeObserver(onOverflowResize) : undefined;
 
     // #endregion
+
+    // #region Computed Values
+
+    const internalIsSaveButtonDisabled = computed((): boolean => {
+        return props.isSaveButtonDisabled || (!!props.saveAutoDisable && internalSubmit.value);
+    });
+
+    const internalIsSaveButtonLoading = computed((): boolean => {
+        return !!props.saveAutoLoading && internalSubmit.value;
+    });
+
+    // #endregion Computed Values
 
     // #region Functions
 

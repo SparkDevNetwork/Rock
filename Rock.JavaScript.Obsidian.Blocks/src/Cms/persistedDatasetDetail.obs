@@ -134,7 +134,7 @@
 
         if (persistedDatasetViewBag.value?.isActive === true) {
             labels.push({
-                iconCssClass: "fa fa-lightbulb",
+                iconCssClass: "ti ti-bulb-filled",
                 title: "Active",
                 type: "success",
             });
@@ -142,14 +142,14 @@
             // Add the Last Refresh Date Time Label
             if (persistedDatasetViewBag.value.lastRefreshDateTime) {
                 labels.push({
-                    iconCssClass: "fa fa-refresh",
+                    iconCssClass: "ti ti-refresh",
                     title: `Last Run : ${RockDateTime.parseISO(persistedDatasetViewBag.value.lastRefreshDateTime)?.toString()}`,
                     type: "success",
                 });
             }
             else {
                 labels.push({
-                    iconCssClass: "fa fa-refresh",
+                    iconCssClass: "ti ti-refresh",
                     title: "Never Run",
                     type: "warning",
                 });
@@ -160,14 +160,14 @@
                 : "Never";
 
             labels.push({
-                iconCssClass: "fa fa-clock",
+                iconCssClass: "ti ti-clock",
                 title: `Time To Run: ${timeToRunLabel}`,
                 type: timeToBuildLabelType.value,
             });
         }
         else {
             labels.push({
-                iconCssClass: "far fa-lightbulb",
+                iconCssClass: "ti ti-bulb",
                 title: "Inactive",
                 type: "danger"
             });

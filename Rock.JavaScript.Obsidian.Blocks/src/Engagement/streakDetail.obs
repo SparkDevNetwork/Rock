@@ -107,14 +107,14 @@
 
         if (streakViewBag.value?.isActive === true) {
             labels.push({
-                iconCssClass: "fa fa-lightbulb",
+                iconCssClass: "ti ti-bulb-filled",
                 title: "Active",
                 type: "success"
             });
         }
         else {
             labels.push({
-                iconCssClass: "far fa-lightbulb",
+                iconCssClass: "ti ti-bulb",
                 title: "Inactive",
                 type: "danger"
             });
@@ -137,7 +137,7 @@
         }
         return [
             {
-                iconCssClass: "fa fa-refresh",
+                iconCssClass: "ti ti-refresh",
                 title: "Rebuild",
                 type: "danger",
                 handler: () => {
@@ -177,7 +177,6 @@
 
             }
         }).on("mouseenter", (e: Event) => {
-            console.log(e);
             var target = e.target;
             $(target).popover("show");
             $(target).siblings(".popover").on("mouseleave", () => {

@@ -21,6 +21,8 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Lms;
@@ -364,7 +366,7 @@ namespace Rock.Jobs
         {
             var rockContext = new RockContext();
 
-            rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.CommandTimeoutSeconds ).AsIntegerOrNull() ?? 180;
+            rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.CommandTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
 
             return rockContext;
         }

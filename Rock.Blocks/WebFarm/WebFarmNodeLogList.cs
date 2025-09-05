@@ -38,8 +38,8 @@ namespace Rock.Blocks.WebFarm
     [DisplayName( "Web Farm Node Log List" )]
     [Category( "WebFarm" )]
     [Description( "Displays a list of web farm node logs." )]
-    [IconCssClass( "fa fa-list" )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [IconCssClass( "ti ti-list" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "57e8356d-6e59-4f5b-8db9-a274b7a0efd8" )]
     [Rock.SystemGuid.BlockTypeGuid( "6c824483-6624-460b-9dd8-e127b25ca65d" )]

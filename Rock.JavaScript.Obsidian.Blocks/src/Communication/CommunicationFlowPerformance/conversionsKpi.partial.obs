@@ -1,0 +1,49 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Kpi color="green"
+         :colorShade="700"
+         iconCssClass="ti ti-bolt"
+         isCard
+         :label="label"
+         :value="conversionCount" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { asLocaleString } from "./utils.partial";
+    import Kpi from "@Obsidian/Controls/kpi.obs";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
+
+    const props = defineProps({
+        messages: {
+            type: Array as PropType<MessageBag[]>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    const conversionCount = computed<string>(() => {
+        const messageEnumerable = Enumerable.from(props.messages);
+
+        if (!messageEnumerable.any()) {
+            return "N/A";
+        }
+        else {
+            return asLocaleString(totalConversions.value);
+        }
+    });
+
+    const totalConversions = computed<number>(() => {
+        return Enumerable.from(props.messages)
+            .groupBy(m => m.personAliasIdKey)
+            .count(g => g.any(m => !!m.convertedDateTime));
+    });
+
+    const label = computed<string>(() => {
+        return totalConversions.value === 1 ? "Conversion From Flow" : "Conversions From Flow";
+    });
+
+    // #endregion Computed Values
+</script>

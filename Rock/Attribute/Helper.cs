@@ -28,6 +28,8 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Core;
 using Rock.Data;
 using Rock.Model;
@@ -2266,7 +2268,7 @@ INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]",
                 {
                     // Make this 5 minutes because on large data sets this could take a while.
                     // And by large I mean like 300,000 attribute values.
-                    rockContext.Database.CommandTimeout = 300;
+                    rockContext.Database.SetCommandTimeout( 300 );
 
                     var distinctValues = new AttributeValueService( rockContext )
                         .Queryable()
@@ -3278,6 +3280,11 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
 
                     string categoryName = attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty;
 
+                    if ( attributeAddDisplayControlsOptions.CategoryNameMapper != null )
+                    {
+                        categoryName = attributeAddDisplayControlsOptions.CategoryNameMapper( categoryName );
+                    }
+
                     header.InnerText = string.IsNullOrWhiteSpace( categoryName ) ? item.GetType().GetFriendlyTypeName() + " Attributes" : categoryName.Trim();
                     parentControl.Controls.Add( header );
                 }
@@ -3690,5 +3697,13 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         ///   The attribute category description.
         /// </value>
         public string CategoryDescription { get; set; }
+
+        /// <summary>
+        /// A function that will be called before a category name is displayed
+        /// to allow for custom changes to the name. This is only used by the
+        /// BlockProperties block to deal with the logic to allow an attribute
+        /// category to be named "Tab^Category" for display on custom tabs.
+        /// </summary>
+        internal Func<string, string> CategoryNameMapper { get; set; }
     }
 }

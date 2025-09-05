@@ -10,17 +10,18 @@
         <div class="kpi-stat">
             <span class="kpi-value text-color">{{ calculatedValue }}</span>
             <span class="kpi-label">{{ label }}</span>
+            <div v-if="$slots.secondaryLabel" class="kpi-secondary-label">
+                <slot name="secondaryLabel" />
+            </div>
         </div>
     </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
 
 <script setup lang="ts">
     import { asFormattedString } from "@Obsidian/Utility/numberUtils";
-    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { destroyTooltip, resetTooltip, tooltip } from "@Obsidian/Utility/tooltip";
     import { computed, nextTick, PropType, ref, watch } from "vue";
 
     const props = defineProps({
@@ -111,16 +112,8 @@
 
     // #endregion
 
-    // #region Functions
-
-    // #endregion
-
-    // #region Event Handlers
-
-    // #endregion
-
     watch([kpiElement], () => {
-        if (kpiElement.value) {
+        if (kpiElement.value && props.tooltip) {
             tooltip(kpiElement.value);
         }
     });
@@ -129,7 +122,12 @@
         // Next tick because at this moment the element hasn't been updated yet.
         nextTick(() => {
             if (kpiElement.value) {
-                tooltip(kpiElement.value);
+                if (props.tooltip) {
+                    resetTooltip(kpiElement.value);
+                }
+                else {
+                    destroyTooltip(kpiElement.value);
+                }
             }
         });
     });

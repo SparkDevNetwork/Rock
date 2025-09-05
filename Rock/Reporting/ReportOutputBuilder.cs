@@ -24,6 +24,9 @@ using System.Reflection;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Microsoft.EntityFrameworkCore;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -1082,7 +1085,7 @@ namespace Rock.Reporting
 
                 if ( this.DatabaseTimeout.HasValue )
                 {
-                    reportDbContext.Database.CommandTimeout = this.DatabaseTimeout.Value;
+                    reportDbContext.Database.SetCommandTimeout( this.DatabaseTimeout.Value );
                 }
 
                 if ( serviceInstance != null )

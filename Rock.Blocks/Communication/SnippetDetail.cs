@@ -38,7 +38,7 @@ namespace Rock.Blocks.Communication
     [DisplayName( "Snippet Detail" )]
     [Category( "Communication" )]
     [Description( "Displays the details of a particular snippet." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

@@ -40,7 +40,7 @@ namespace Rock.Blocks.Tv
     [DisplayName( "Roku Application Detail" )]
     [Category( "TV > TV Apps" )]
     [Description( "Displays the details of a Roku application." )]
-    [IconCssClass( "fa fa-tv" )]
+    [IconCssClass( "ti ti-device-tv" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

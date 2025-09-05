@@ -441,7 +441,6 @@ namespace Rock.Model
             this.HasRequired( r => r.InteractionComponent ).WithMany().HasForeignKey( r => r.InteractionComponentId ).WillCascadeOnDelete( true );
             this.HasOptional( r => r.InteractionSession ).WithMany( r => r.Interactions ).HasForeignKey( r => r.InteractionSessionId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.PersonalDevice ).WithMany().HasForeignKey( r => r.PersonalDeviceId ).WillCascadeOnDelete( false );
-            this.HasOptional( r => r.RelatedEntityType ).WithMany().HasForeignKey( r => r.RelatedEntityTypeId ).WillCascadeOnDelete( false );
 
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
             // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed

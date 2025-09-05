@@ -30,7 +30,7 @@
 
                                         <div class="panel-labels">
                                             <a class="btn btn-default btn-xs hidden">
-                                                <i class="fa fa-line-chart"></i>
+                                                <i class="ti ti-chart-line"></i>
                                             </a>
                                         </div>
                                     </div>
@@ -61,7 +61,7 @@
 
                         <div class="panel-labels">
                             <a class="btn btn-default btn-xs hidden">
-                                <i class="fa fa-line-chart"></i>
+                                <i class="ti ti-chart-line"></i>
                             </a>
                         </div>
                     </div>
@@ -81,7 +81,7 @@
 
                         <div class="panel-labels">
                             <a class="btn btn-default btn-xs hidden">
-                                <i class="fa fa-line-chart"></i>
+                                <i class="ti ti-chart-line"></i>
                             </a>
                         </div>
                     </div>
@@ -103,7 +103,7 @@
 
                                 <div class="panel-labels">
                                     <a class="btn btn-default btn-xs hidden">
-                                        <i class="fa fa-line-chart"></i>
+                                        <i class="ti ti-chart-line"></i>
                                     </a>
                                 </div>
                             </div>

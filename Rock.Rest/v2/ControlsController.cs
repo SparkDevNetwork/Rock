@@ -36,7 +36,9 @@ using Rock.ClientService.Core.Category;
 using Rock.ClientService.Core.Category.Options;
 using Rock.Communication;
 using Rock.Configuration;
+using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Communication;
 using Rock.Enums.Controls;
 using Rock.Extension;
 using Rock.Field;
@@ -145,7 +147,7 @@ namespace Rock.Rest.v2
                     Value = a.Guid.ToString(),
                     Text = options.DisplayPublicName ? a.PublicName : a.Name,
                     IsActive = a.IsActive,
-                    IconCssClass = "fa fa-file-o"
+                    IconCssClass = "ti ti-file"
                 } ).ToList();
 
             var resultIds = accountList.Select( f => f.Id ).ToList();
@@ -420,7 +422,7 @@ namespace Rock.Rest.v2
                 EntityTypeGuid = EntityTypeCache.Get<Rock.Model.AdaptiveMessageCategory>().Guid,
                 IncludeUnnamedEntityItems = true,
                 IncludeCategoriesWithoutChildren = false,
-                DefaultIconCssClass = "fa fa-list-ol",
+                DefaultIconCssClass = "ti ti-list-numbers",
                 LazyLoad = true,
                 SecurityGrant = grant
             } );
@@ -1061,7 +1063,7 @@ namespace Rock.Rest.v2
                 {
                     Text = options.NewFolderName,
                     Value = $"0,{parsedAsset.EncryptedRoot},{Path.Combine( parsedAsset.SubPath, options.NewFolderName )}",
-                    IconCssClass = "fa fa-folder",
+                    IconCssClass = "ti ti-folder",
                     HasChildren = false,
                     UnencryptedRoot = parsedAsset.Root
                 } );
@@ -1095,7 +1097,7 @@ namespace Rock.Rest.v2
                     {
                         Text = options.NewFolderName,
                         Value = $"{provider.Id},{parsedAsset.EncryptedRoot},{Path.Combine( parsedAsset.SubPath, options.NewFolderName )}/",
-                        IconCssClass = "fa fa-folder",
+                        IconCssClass = "ti ti-folder",
                         HasChildren = false,
                         UnencryptedRoot = parsedAsset.Root
                     } );
@@ -1646,7 +1648,7 @@ namespace Rock.Rest.v2
                 {
                     Text = folder.Name,
                     Value = folderKey,
-                    IconCssClass = "fa fa-folder",
+                    IconCssClass = "ti ti-folder",
                     HasChildren = hasChildren,
                     UnencryptedRoot = parsedAsset.Root
                 };
@@ -1719,7 +1721,7 @@ namespace Rock.Rest.v2
                     {
                         Text = subDirInfo.Name,
                         Value = subDirKey,
-                        IconCssClass = "fa fa-folder",
+                        IconCssClass = "ti ti-folder",
                         HasChildren = hasChildren,
                         UnencryptedRoot = asset.Root
                     };
@@ -1911,7 +1913,7 @@ namespace Rock.Rest.v2
                 {
                     Text = folder.Name,
                     Value = $"{parentAsset.ProviderId},{parentAsset.EncryptedRoot},{Path.Combine( parentAsset.SubPath, folder.Name ).TrimEnd( '/', '\\' ) + "/"}",
-                    IconCssClass = "fa fa-folder",
+                    IconCssClass = "ti ti-folder",
                     // Verifying if it has any children is slow, so we just say true and it gets fixed
                     // on the client when attempting to expand children
                     HasChildren = true,
@@ -2419,7 +2421,7 @@ namespace Rock.Rest.v2
                     return Unauthorized();
                 }
 
-                var items = new BinaryFileService( new RockContext() )
+                var items = new BinaryFileService( rockContext )
                     .Queryable()
                     .Where( f => f.BinaryFileType.Guid == options.BinaryFileTypeGuid && !f.IsTemporary )
                     .OrderBy( f => f.FileName )
@@ -2969,6 +2971,281 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Communication Recipient Activity
+
+        /// <summary>
+        /// Gets activity for a communication recipient.
+        /// </summary>
+        /// <param name="options">The options that describe the recipient for whom to get activity.</param>
+        /// <returns>A <see cref="CommunicationRecipientGetActivityResultsBag"/> tht represents the activity.</returns>
+        [HttpPost]
+        [Route( "CommunicationRecipientGetActivity" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( CommunicationRecipientGetActivityResultsBag ) )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
+        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [Rock.SystemGuid.RestActionGuid( "429DAC7A-5026-444A-9EC7-B5259DE64432" )]
+        public IActionResult CommunicationRecipientGetActivity( [FromBody] CommunicationRecipientGetActivityOptionsBag options )
+        {
+            if ( ( options?.CommunicationRecipientIdKey ).IsNullOrWhiteSpace() )
+            {
+                return BadRequest( "Communication Recipient IdKey is required." );
+            }
+
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            using ( var rockContext = new RockContext() )
+            {
+                // Eager-load related entities needed for authorization checks.
+                var recipientData = new CommunicationRecipientService( rockContext )
+                    .GetQueryableByKey( options.CommunicationRecipientIdKey )
+                    .Include( cr => cr.Communication.CommunicationTemplate )
+                    .Include( cr => cr.Communication.SystemCommunication )
+                    .AsNoTracking()
+                    .Where( cr => cr.PersonAlias != null )
+                    .Select( cr => new
+                    {
+                        cr.Communication,
+                        CommunicationRecipient = cr,
+                        cr.PersonAlias.Person,
+                        cr.PersonAlias.Person.PhoneNumbers,
+                        CampusName = cr.PersonAlias.Person.PrimaryCampus != null
+                            ? cr.PersonAlias.Person.PrimaryCampus.Name
+                            : string.Empty
+                    } )
+                    .FirstOrDefault();
+
+                var communication = recipientData.Communication;
+                if ( communication == null )
+                {
+                    return BadRequest();
+                }
+
+                if ( grant?.IsAccessGranted( communication, Security.Authorization.VIEW ) != true
+                    && !communication.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                {
+                    return Unauthorized( EditModeMessage.NotAuthorizedToView( Rock.Model.Communication.FriendlyTypeName ) );
+                }
+
+                var recipient = recipientData.CommunicationRecipient;
+                var person = recipientData.Person;
+
+                var personConnectionStatus = person.ConnectionStatusValueId.HasValue
+                    ? DefinedValueCache.Get( person.ConnectionStatusValueId.Value )?.Value
+                    : string.Empty;
+
+                var personMaritalStatus = person.MaritalStatusValueId.HasValue
+                    ? DefinedValueCache.Get( person.MaritalStatusValueId.Value )?.Value
+                    : string.Empty;
+
+                string personPhoneNumber = string.Empty;
+                if ( recipientData.PhoneNumbers?.Any() == true )
+                {
+                    // Prefer SMS phone number; fall back to first phone number.
+                    var phoneNumber = recipientData.PhoneNumbers
+                        .FirstOrDefault( p => p.IsMessagingEnabled )
+                        ?? recipientData.PhoneNumbers.First();
+
+                    personPhoneNumber = phoneNumber.NumberFormatted;
+                }
+
+                var results = new CommunicationRecipientGetActivityResultsBag
+                {
+                    PersonIdKey = person.IdKey,
+                    PersonNickName = person.NickName,
+                    PersonLastName = person.LastName,
+                    PersonPhotoUrl = person.PhotoUrl,
+                    PersonEmail = person.Email,
+                    PersonCampusName = recipientData.CampusName,
+                    PersonAge = person.Age,
+                    PersonConnectionStatus = personConnectionStatus,
+                    PersonMaritalStatus = personMaritalStatus,
+                    PersonPhoneNumber = personPhoneNumber
+                };
+
+                var activities = new List<CommunicationRecipientActivityBag>();
+
+                // A local function to aid with consistent adding and sorting of activities when we've determined there
+                // are no more activities to add below.
+                IActionResult ResponseWithSortedActivities()
+                {
+                    results.Activities = activities
+                        .OrderBy( a => a.ActivityDateTime )
+                        .ThenBy( a => a.Activity ) // Order "Opened" before "Click" (Etc.) when the timestamps match.
+                        .ToList();
+
+                    return Ok( results );
+                }
+
+                var recipientModifiedDateTime = recipient.ModifiedDateTime ?? recipient.CreatedDateTime ?? RockDateTime.Now;
+
+                if ( recipient.Status == CommunicationRecipientStatus.Pending )
+                {
+                    activities.Add( new CommunicationRecipientActivityBag
+                    {
+                        Activity = CommunicationRecipientActivity.Pending,
+                        ActivityDateTime = recipientModifiedDateTime,
+                        Description = $"Message created {communication.CreatedDateTime?.ToString( "g" ) ?? string.Empty}."
+                    } );
+
+                    return ResponseWithSortedActivities();
+                }
+
+                if ( recipient.Status == CommunicationRecipientStatus.Cancelled )
+                {
+                    activities.Add( new CommunicationRecipientActivityBag
+                    {
+                        Activity = CommunicationRecipientActivity.Cancelled,
+                        ActivityDateTime = recipientModifiedDateTime,
+                        Description = "Message cancelled before delivering."
+                    } );
+
+                    return ResponseWithSortedActivities();
+                }
+
+                if ( recipient.SendDateTime.HasValue )
+                {
+                    activities.Add( new CommunicationRecipientActivityBag
+                    {
+                        Activity = CommunicationRecipientActivity.Sent,
+                        ActivityDateTime = recipient.SendDateTime.Value,
+                        Description = "Message successfully sent."
+                    } );
+                }
+
+                if ( recipient.Status == CommunicationRecipientStatus.Failed )
+                {
+                    activities.Add( new CommunicationRecipientActivityBag
+                    {
+                        Activity = CommunicationRecipientActivity.DeliveryFailed,
+                        ActivityDateTime = recipientModifiedDateTime,
+                        Description = recipient.StatusNote ?? "Message delivery failed."
+                    } );
+
+                    return ResponseWithSortedActivities();
+                }
+
+                if ( recipient.DeliveredDateTime.HasValue )
+                {
+                    activities.Add( new CommunicationRecipientActivityBag
+                    {
+                        Activity = CommunicationRecipientActivity.Delivered,
+                        ActivityDateTime = recipient.DeliveredDateTime.Value,
+                        Description = "Message successfully delivered to recipient."
+                    } );
+                }
+
+                if ( recipient.SpamComplaintDateTime.HasValue )
+                {
+                    activities.Add( new CommunicationRecipientActivityBag
+                    {
+                        Activity = CommunicationRecipientActivity.MarkedAsSpam,
+                        ActivityDateTime = recipient.SpamComplaintDateTime.Value,
+                        Description = "Recipient marked email as spam."
+                    } );
+                }
+
+                if ( recipient.UnsubscribeDateTime.HasValue )
+                {
+                    activities.Add( new CommunicationRecipientActivityBag
+                    {
+                        Activity = CommunicationRecipientActivity.Unsubscribed,
+                        ActivityDateTime = recipient.UnsubscribeDateTime.Value,
+                        Description = "Recipient unsubscribed from email."
+                    } );
+                }
+
+                var interactionChannelId = InteractionChannelCache.Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() )?.Id;
+
+                var interactionsByOperation = new InteractionService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( i =>
+                        i.InteractionComponent.InteractionChannelId == interactionChannelId
+                        && i.InteractionComponent.EntityId == communication.Id
+                        && i.EntityId == recipient.Id
+                    )
+                    .Select( i => new
+                    {
+                        i.InteractionDateTime,
+                        i.Operation,
+                        i.InteractionData,
+
+                        IpAddress = i.InteractionSession != null
+                            ? i.InteractionSession.IpAddress
+                            : string.Empty,
+
+                        DeviceTypeName = i.InteractionSession != null
+                            && i.InteractionSession.DeviceType != null
+                                ? i.InteractionSession.DeviceType.Name
+                                : string.Empty
+                    } )
+                    .GroupBy( i => i.Operation )
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select( i =>
+                            {
+                                var ipAddressSuffix = i.IpAddress.IsNotNullOrWhiteSpace()
+                                    ? $" from {i.IpAddress}"
+                                    : string.Empty;
+
+                                var deviceTypeSuffix = i.DeviceTypeName.IsNotNullOrWhiteSpace()
+                                    ? $" using {i.DeviceTypeName}"
+                                    : string.Empty;
+
+                                return new
+                                {
+                                    i.InteractionDateTime,
+                                    i.Operation,
+                                    i.InteractionData,
+                                    DescriptionSuffix = $"{ipAddressSuffix}{deviceTypeSuffix}"
+                                };
+                            } )
+                            .OrderBy( i => i.InteractionDateTime )
+                            .ToList()
+                    );
+
+                interactionsByOperation.TryGetValue( "Opened", out var openedInteractions );
+                interactionsByOperation.TryGetValue( "Click", out var clickInteractions );
+
+                if ( openedInteractions?.Any() != true && clickInteractions?.Any() == true )
+                {
+                    // Treat the first click as an open. This is to capture the scenario where an email is viewed
+                    // without loading the image links that are required to trigger the open event.
+                    var firstClick = clickInteractions.First();
+                    activities.Add( new CommunicationRecipientActivityBag
+                    {
+                        Activity = CommunicationRecipientActivity.Opened,
+                        ActivityDateTime = firstClick.InteractionDateTime,
+                        Description = $"Recipient opened message{firstClick.DescriptionSuffix}."
+                    } );
+                }
+
+                openedInteractions?.ForEach( i =>
+                    activities.Add( new CommunicationRecipientActivityBag
+                    {
+                        Activity = CommunicationRecipientActivity.Opened,
+                        ActivityDateTime = i.InteractionDateTime,
+                        Description = $"Recipient opened message{i.DescriptionSuffix}."
+                    } )
+                );
+
+                clickInteractions?.ForEach( i =>
+                    activities.Add( new CommunicationRecipientActivityBag
+                    {
+                        Activity = CommunicationRecipientActivity.Clicked,
+                        ActivityDateTime = i.InteractionDateTime,
+                        Description = $"Recipient clicked link{( i.InteractionData.IsNotNullOrWhiteSpace() ? $": {i.InteractionData}" : string.Empty )}{i.DescriptionSuffix}."
+                    } )
+                );
+
+                return ResponseWithSortedActivities();
+            }
+        }
+
+        #endregion
+
         #region Component Picker
 
         /// <summary>
@@ -2984,7 +3261,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "75DA0671-38E2-4FF9-B334-CC0C88B559D0" )]
         public IActionResult ComponentPickerGetEntityTypes( [FromBody] ComponentPickerGetComponentsOptionsBag options )
         {
-            var componentsList = GetComponentListItems( options.ContainerType );
+            var componentsList = GetComponentListItems( options.ContainerType, options.IncludeInactive );
 
             return Ok( componentsList );
         }
@@ -3125,7 +3402,7 @@ namespace Rock.Rest.v2
                         item.Value = request.Guid.ToString();
                         item.Text = request.PersonAlias.Person.FullName;
                         item.HasChildren = false;
-                        item.IconCssClass = "fa fa-user";
+                        item.IconCssClass = "ti ti-user";
                         list.Add( item );
                     }
                 }
@@ -3300,6 +3577,67 @@ namespace Rock.Rest.v2
                 Symbol = currencyInfo.Symbol,
                 DecimalPlaces = currencyInfo.DecimalPlaces
             } );
+        }
+
+        #endregion
+
+        #region Data Filter
+
+        /// <summary>
+        /// Gets the formatted string that describes the data filter from the
+        /// selection values.
+        /// </summary>
+        /// <param name="options">The options that describe the filter and selection.</param>
+        /// <returns>A string of text.</returns>
+        [HttpPost]
+        [Route( "DataFilterFormatSelection" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( string ) )]
+        [Rock.SystemGuid.RestActionGuid( "149fcd94-cd27-4017-9d4b-a1bc39e2d575" )]
+        public IActionResult DataFilterFormatSelection( [FromBody] DataFilterFormatSelectionOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var componentData = options.ComponentData.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+
+                if ( options.EntityTypeGuid == Guid.Empty || options.FilterTypeGuid == Guid.Empty )
+                {
+                    return BadRequest( "Invalid request." );
+                }
+
+                var filterEntityType = EntityTypeCache.Get( options.FilterTypeGuid, rockContext );
+                var entityType = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
+
+                if ( filterEntityType == null )
+                {
+                    return BadRequest( "Invalid request." );
+                }
+
+                // We have to check access on the EntityType record because the
+                // component is not an IEntity so it will not work.
+                if ( !grant.IsAccessGranted( filterEntityType, Security.Authorization.VIEW ) )
+                {
+                    return BadRequest( "Security grant token is not valid." );
+                }
+
+                var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( filterEntityType.Name );
+
+                if ( filterComponent == null )
+                {
+                    return BadRequest( "Invalid request." );
+                }
+
+                if ( !filterComponent.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                {
+                    return BadRequest( "Not authorized to access this filter." );
+                }
+
+                var selection = filterComponent.GetSelectionFromObsidianComponentData( entityType.GetEntityType(), componentData, rockContext, RockRequestContext );
+
+                return Ok( filterComponent.FormatSelection( entityType.GetEntityType(), selection ) );
+            }
         }
 
         #endregion
@@ -3615,7 +3953,10 @@ namespace Rock.Rest.v2
                 emailSectionService.Add( emailSection );
 
                 // Ensure the binary file is no longer temporary.
-                emailSection.ThumbnailBinaryFile.IsTemporary = false;
+                if ( emailSection.ThumbnailBinaryFile != null )
+                {
+                    emailSection.ThumbnailBinaryFile.IsTemporary = false;
+                }
 
                 System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", RockRequestContext.CurrentPerson );
                 rockContext.SaveChanges();
@@ -5283,7 +5624,7 @@ namespace Rock.Rest.v2
                         Label = groupRequirement.GroupRequirementType.CheckboxLabel.IsNotNullOrWhiteSpace()
                             ? groupRequirement.GroupRequirementType.CheckboxLabel
                             : groupRequirement.GroupRequirementType.Name,
-                        Icon = "fa fa-square-o fa-fw"
+                        Icon = "ti ti-square ti-fw"
                     };
                 }
 
@@ -5293,7 +5634,7 @@ namespace Rock.Rest.v2
                     {
                         Enabled = true,
                         Label = "Mark as Met",
-                        Icon = "fa fa-check-circle-o fa-fw"
+                        Icon = "ti ti-circle-check ti-fw"
                     };
                 }
 
@@ -5313,7 +5654,7 @@ namespace Rock.Rest.v2
                         Label = groupRequirementType.DoesNotMeetWorkflowLinkText.IsNotNullOrWhiteSpace()
                             ? groupRequirementType.DoesNotMeetWorkflowLinkText
                             : "Requirement Not Met",
-                        Icon = "fa fa-play-circle-o fa-fw"
+                        Icon = "ti ti-player-play ti-fw"
                     };
                 }
 
@@ -5325,7 +5666,7 @@ namespace Rock.Rest.v2
                         Label = groupRequirementType.WarningWorkflowLinkText.IsNotNullOrWhiteSpace() ?
                             groupRequirementType.WarningWorkflowLinkText :
                             "Requirement Met With Warning",
-                        Icon = "fa fa-play-circle-o fa-fw"
+                        Icon = "ti ti-player-play ti-fw"
                     };
                 }
 
@@ -6143,7 +6484,8 @@ namespace Rock.Rest.v2
                 // get all group types that have at least one role
                 var groupTypes = groupTypeService.Queryable()
                     .Where( a => a.Roles.Any() )
-                    .OrderBy( a => a.Name )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name )
                     .Select( g => new ListItemBag { Text = g.Name, Value = g.Guid.ToString() } )
                     .ToList();
 
@@ -6236,6 +6578,54 @@ namespace Rock.Rest.v2
                 .ToList();
 
             return groupRoles;
+        }
+
+        #endregion
+
+        #region Icon Picker
+
+        /// <summary>
+        /// Gets the icon libraries (defined values) that match the options sent in the request body.
+        /// </summary>
+        /// <param name="options">The options that describe which icon libraries to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent a tree of icon libraries.</returns>
+        [HttpPost]
+        [Route( "IconPickerGetIconLibraries" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( ListItemBag ) )]
+        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [Rock.SystemGuid.RestActionGuid( "2ED04DE5-EBE2-48E1-AED0-ACE8EEB9C84D" )]
+        public IActionResult IconPickerGetIconLibraries( IconPickerGetIconLibrariesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.ICON_LIBRARIES );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                if ( definedType == null || ( !definedType.IsAuthorized( Rock.Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) && grant?.IsAccessGranted( definedType, Security.Authorization.VIEW ) == false ) )
+                {
+                    return NotFound();
+                }
+
+                var definedValues = definedType.DefinedValues
+                    .Where( v =>
+                        (
+                            v.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson )
+                            || grant?.IsAccessGranted( v, Security.Authorization.VIEW ) == true
+                        )
+                        && v.IsActive )
+                    .OrderBy( v => v.Order )
+                    .ThenBy( v => v.Value )
+                    .Select( v => new ListItemBag
+                    {
+                        Value = v.Description,
+                        Text = v.Value
+                    } )
+                    .ToList();
+
+                return Ok( definedValues );
+            }
         }
 
         #endregion
@@ -6384,6 +6774,92 @@ namespace Rock.Rest.v2
             foreach ( var command in Rock.Lava.LavaHelper.GetLavaCommands() )
             {
                 items.Add( new ListItemBag { Text = command.SplitCase(), Value = command } );
+            }
+
+            return Ok( items );
+        }
+
+        #endregion
+
+        #region Learning Class Activity Picker
+
+        /// <summary>
+        /// Gets the lava commands that can be displayed in the lava command picker.
+        /// </summary>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the lava commands.</returns>
+        [HttpPost]
+        [Route( "LearningClassActivityPickerGetLearningClassActivities" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [Rock.SystemGuid.RestActionGuid( "C37F74D9-BB42-4544-AC3B-F48543F497E1" )]
+        public IActionResult LearningClassActivityPickerGetLearningClassActivities( [FromBody] LearningClassActivityPickerGetLearningClassActivitiesOptionsBag options )
+        {
+            if ( !options.LearningClassGuid.HasValue )
+            {
+                return NotFound();
+            }
+
+            var selectedClassGuid = options.LearningClassGuid.Value;
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+            var items = new List<ListItemBag>();
+
+            var learningClasses = new LearningClassActivityService( new RockContext() )
+                .Queryable()
+                .Where( lca => lca.LearningClass.Guid == selectedClassGuid )
+                .OrderBy( lca => lca.Order )
+                .ToList();
+
+            foreach ( var lca in learningClasses )
+            {
+                if ( lca.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || ( grant?.IsAccessGranted( lca, Security.Authorization.VIEW ) == true ) )
+                {
+                    items.Add( new ListItemBag { Text = lca.Name, Value = lca.Guid.ToString() } );
+                }
+            }
+
+            return Ok( items );
+        }
+
+        #endregion
+
+        #region Learning Class Picker
+
+        /// <summary>
+        /// Gets the lava commands that can be displayed in the lava command picker.
+        /// </summary>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the lava commands.</returns>
+        [HttpPost]
+        [Route( "LearningClassPickerGetLearningClasses" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [Rock.SystemGuid.RestActionGuid( "C5739387-B814-4ED5-9182-CD204529E8BB" )]
+        public IActionResult LearningClassPickerGetLearningClasses( [FromBody] LearningClassPickerGetLearningClassesOptionsBag options )
+        {
+            if ( !options.LearningCourseGuid.HasValue )
+            {
+                return NotFound();
+            }
+
+            var selectedCourseGuid = options.LearningCourseGuid.Value;
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+            var items = new List<ListItemBag>();
+
+            var learningClasses = new LearningClassService( new RockContext() )
+                .Queryable()
+                .Where( lc => lc.LearningCourse.Guid == selectedCourseGuid )
+                .OrderBy( lc => lc.Order )
+                .ToList();
+
+            foreach ( var lc in learningClasses )
+            {
+                if ( lc.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || ( grant?.IsAccessGranted( lc, Security.Authorization.VIEW ) == true ) )
+                {
+                    items.Add( new ListItemBag { Text = lc.Name, Value = lc.Guid.ToString() } );
+                }
             }
 
             return Ok( items );
@@ -8052,7 +8528,7 @@ namespace Rock.Rest.v2
                 var hasChildren = pageIdentifiersWithChildren.Any( a => a == g.Value );
                 g.HasChildren = hasChildren;
                 g.IsFolder = hasChildren;
-                g.IconCssClass = "fa fa-file-o";
+                g.IconCssClass = "ti ti-file";
             }
 
             return Ok( pageItemList.AsQueryable() );
@@ -8577,7 +9053,7 @@ namespace Rock.Rest.v2
                     EntityTypeGuid = EntityTypeCache.Get<RegistrationTemplate>().Guid,
                     IncludeUnnamedEntityItems = false,
                     IncludeCategoriesWithoutChildren = false,
-                    DefaultIconCssClass = "fa fa-list-ol",
+                    DefaultIconCssClass = "ti ti-list-numbers",
                     LazyLoad = true,
                     SecurityGrant = grant
                 };
@@ -9023,7 +9499,7 @@ namespace Rock.Rest.v2
                     IncludeCategoryGuids = options.IncludeCategoryGuids == null || options.IncludeCategoryGuids.Count == 0 ? null : options.IncludeCategoryGuids,
                     ItemFilterPropertyName = options.EntityTypeGuid.HasValue ? "EntityTypeId" : null,
                     ItemFilterPropertyValue = options.EntityTypeGuid.HasValue ? EntityTypeCache.Get( options.EntityTypeGuid.Value ).Id.ToString() : "",
-                    DefaultIconCssClass = "fa fa-list-ol",
+                    DefaultIconCssClass = "ti ti-list-numbers",
                     LazyLoad = true,
                     SecurityGrant = grant
                 };
@@ -9234,7 +9710,7 @@ namespace Rock.Rest.v2
                     IncludeUnnamedEntityItems = false,
                     IncludeCategoriesWithoutChildren = false,
                     IncludeInactiveItems = options.IncludeInactiveItems,
-                    DefaultIconCssClass = "fa fa-list-ol",
+                    DefaultIconCssClass = "ti ti-list-numbers",
                     LazyLoad = true,
                     SecurityGrant = grant
                 };
@@ -9531,7 +10007,7 @@ namespace Rock.Rest.v2
                     item.Value = category.Key.ToString();
                     item.Text = category.Value;
                     item.HasChildren = true;
-                    item.IconCssClass = "fa fa-folder";
+                    item.IconCssClass = "ti ti-folder";
                     list.Add( item );
                 }
             }
@@ -9548,7 +10024,7 @@ namespace Rock.Rest.v2
                         item.Value = entityType.Guid.ToString();
                         item.Text = ActionContainer.GetComponentName( entityType.Name );
                         item.HasChildren = false;
-                        item.IconCssClass = "fa fa-cube";
+                        item.IconCssClass = "ti ti-cube";
                         list.Add( item );
                     }
                 }
@@ -9735,10 +10211,11 @@ namespace Rock.Rest.v2
         /// Retrieve a list of ListItems representing components for the given container type
         /// </summary>
         /// <param name="containerType"></param>
+        /// <param name="includeInactive">if set to <c>true</c> includes inactive items.</param>
         /// <returns>A list of ListItems representing components</returns>
-        private List<ListItemBag> GetComponentListItems( string containerType )
+        private List<ListItemBag> GetComponentListItems( string containerType, bool includeInactive )
         {
-            return GetComponentListItems( containerType, ( x ) => true );
+            return GetComponentListItems( containerType, ( x ) => true, includeInactive );
         }
 
         /// <summary>
@@ -9747,8 +10224,9 @@ namespace Rock.Rest.v2
         /// </summary>
         /// <param name="containerType"></param>
         /// <param name="isValidComponentChecker"></param>
+        /// <param name="includeInactive">if set to <c>true</c> includes inactive items.</param>
         /// <returns>A list of ListItemBags representing components</returns>
-        private List<ListItemBag> GetComponentListItems( string containerType, Func<Component, bool> isValidComponentChecker )
+        private List<ListItemBag> GetComponentListItems( string containerType, Func<Component, bool> isValidComponentChecker, bool includeInactive = false )
         {
             if ( containerType.IsNullOrWhiteSpace() )
             {
@@ -9778,8 +10256,7 @@ namespace Rock.Rest.v2
             {
                 var componentValue = component.Value.Value;
                 var entityType = EntityTypeCache.Get( componentValue.GetType() );
-
-                if ( !componentValue.IsActive || entityType == null || !isValidComponentChecker( componentValue ) )
+                if ( ( !componentValue.IsActive && !includeInactive ) || entityType == null || !isValidComponentChecker( componentValue ) )
                 {
                     continue;
                 }
@@ -9798,9 +10275,11 @@ namespace Rock.Rest.v2
                     }
                 }
 
+                var itemText = componentValue.IsActive ? componentName : $"{componentName} (inactive)";
+
                 items.Add( new ListItemBag
                 {
-                    Text = componentName,
+                    Text = itemText,
                     Value = entityType.Guid.ToString().ToUpper()
                 } );
             }

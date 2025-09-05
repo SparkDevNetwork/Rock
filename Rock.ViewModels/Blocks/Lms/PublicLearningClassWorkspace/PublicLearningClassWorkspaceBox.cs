@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Enums.Communication;
 using Rock.Enums.Lms;
 using Rock.ViewModels.Blocks.Lms.LearningClassActivityCompletionDetail;
 using Rock.ViewModels.Blocks.Lms.LearningClassAnnouncementDetail;
@@ -131,5 +132,10 @@ namespace Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace
         /// Whether to show grades on the class overview page.
         /// </summary>
         public bool ShowGrades { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication preference
+        /// </summary>
+        public CommunicationType CommunicationPreference { get; set; }
     }
 }

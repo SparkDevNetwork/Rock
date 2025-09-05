@@ -20,8 +20,6 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 
-using DotLiquid.Util;
-
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;

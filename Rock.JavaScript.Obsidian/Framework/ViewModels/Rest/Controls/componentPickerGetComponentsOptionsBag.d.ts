@@ -28,4 +28,7 @@
 export type ComponentPickerGetComponentsOptionsBag = {
     /** Type of the container the components are within */
     containerType?: string | null;
+
+    /**  Gets or sets a value indicating whether inactive components are included. (Defaults to false.) */
+    includeInactive: boolean;
 };

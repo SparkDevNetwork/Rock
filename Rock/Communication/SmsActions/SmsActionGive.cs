@@ -253,7 +253,7 @@ namespace Rock.Communication.SmsActions
         /// <value>
         /// The icon CSS class used to identify this component type.
         /// </value>
-        public override string IconCssClass => "fa fa-dollar";
+        public override string IconCssClass => "ti ti-currency-dollar";
 
         /// <summary>
         /// Gets the description of this SMS Action.

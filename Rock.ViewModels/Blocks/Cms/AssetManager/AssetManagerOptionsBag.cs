@@ -38,9 +38,9 @@ namespace Rock.ViewModels.Blocks.Cms.AssetManager
         public bool EnableFileManager { get; set; }
 
         /// <summary>
-        /// Set this to true to be able to set a CSS height value dictating how tall the block will be. Otherwise, it will grow with the content.
+        /// "static" lets you set a CSS height vie the Height property to determine the height of the block. "flexible" will grow with the content. "full" is designed to fill up a full worksurface page layout.
         /// </summary>
-        public bool IsStaticHeight { get; set; }
+        public string HeightMode { get; set; }
 
         /// <summary>
         /// If `IsStaticHeight` is true, this will be the CSS length value that dictates how tall the block will be.

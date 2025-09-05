@@ -29,7 +29,7 @@ namespace Rock.Blocks.Mobile.CheckIn
     [DisplayName( "Check-in" )]
     [Category( "Mobile > Check-in" )]
     [Description( "Check yourself or family members in/out." )]
-    [IconCssClass( "fa fa-clipboard-check" )]
+    [IconCssClass( "ti ti-clipboard-check" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
@@ -297,7 +297,7 @@ namespace Rock.Blocks.Mobile.CheckIn
             {
                 actions.Add( new BlockCustomActionBag
                 {
-                    IconCssClass = "fa fa-edit",
+                    IconCssClass = "ti ti-edit",
                     Tooltip = "Settings",
                     ComponentFileUrl = "/Obsidian/Blocks/CheckIn/mobileCheckInCustomSettings.obs"
                 } );
@@ -490,12 +490,18 @@ namespace Rock.Blocks.Mobile.CheckIn
                     PerformedByPersonId = RequestContext.CurrentPerson?.IdKey
                 };
 
+                // Default to mobile attendance if not specified.
+                if ( !session.AttendanceSourceValueId.HasValue )
+                {
+                    session.AttendanceSourceValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.ATTENDANCE_SOURCE_MOBILE.AsGuid(), RockContext )?.Id;
+                }
+
                 var result = session.SaveAttendance( sessionRequest, options.Requests, kiosk, RequestContext.ClientInformation.IpAddress );
 
                 if ( !options.Session.IsPending )
                 {
                     var cts = new CancellationTokenSource( 5000 );
-                    await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, null, null, new LabelPrintProvider(), cts.Token );
+                    await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, null, new LabelPrintProvider(), cts.Token );
                 }
 
                 return ActionOk( new MobileCheckInResultBag

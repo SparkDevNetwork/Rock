@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -56,7 +58,7 @@ namespace Rock.Jobs
             // First, get a list of all the Interaction IDs that we'll need to update because later each interaction needs to be updated.
             using ( var rockContext = new Rock.Data.RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
 
                 var interactionChannelIdMediaEvent = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.MEDIA_EVENTS.AsGuid() );
                 if ( !interactionChannelIdMediaEvent.HasValue )
@@ -81,7 +83,7 @@ namespace Rock.Jobs
             {
                 using ( var rockContext = new Rock.Data.RockContext() )
                 {
-                    rockContext.Database.CommandTimeout = commandTimeout;
+                    rockContext.Database.SetCommandTimeout( commandTimeout );
                     var mediaInteraction = new InteractionService( rockContext ).Get( mediaInteractionId );
 
                     var mediaEventInteractionData = mediaInteraction?.InteractionData.FromJsonOrNull<MediaEventInteractionData>();

@@ -7,7 +7,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-bell"></i> 
+                    <i class="ti ti-bell"></i> 
                     Reminder for <asp:Literal ID="lEntity" runat="server" />
                 </h1>
             </div>

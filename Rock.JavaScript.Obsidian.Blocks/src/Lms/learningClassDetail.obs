@@ -133,7 +133,7 @@
         }
 
         labels.push({
-            iconCssClass: "fa fa-users",
+            iconCssClass: "ti ti-users",
             title: `Students: ${learningClassViewBag.value?.studentCount ?? 0}`,
             type: "info"
         });
@@ -181,7 +181,7 @@
 
         if (isEditable.value === true) {
             secondaryActions.push({
-                iconCssClass: "fa fa-clone",
+                iconCssClass: "ti ti-copy",
                 title: "Copy",
                 type: "default",
                 handler: onCopy
@@ -190,7 +190,7 @@
 
         if (showAttendanceButton.value === true) {
             secondaryActions.push({
-                iconCssClass: "fa fa-check-square-o",
+                iconCssClass: "ti ti-square-check",
                 title: "Take Attendance",
                 type: "default",
                 handler: async () => {

@@ -36,7 +36,7 @@ namespace Rock.Blocks.Crm
     [DisplayName( "Person Merge Request List" )]
     [Category( "CRM" )]
     [Description( "Lists Person Merge Requests" )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     //[SupportedSiteTypes( SiteType.Web )]
 
     [SystemGuid.EntityTypeGuid( "9c1a70f8-3177-49c9-97c6-ac3e52fc36b1" )]

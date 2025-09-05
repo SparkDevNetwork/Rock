@@ -94,7 +94,7 @@ namespace Rock.Rest.Controllers
             {
                 int pageId = int.Parse( g.Id );
                 g.HasChildren = qryHasChildren.Any( a => a == pageId );
-                g.IconCssClass = "fa fa-file-o";
+                g.IconCssClass = "ti ti-file";
             }
 
             return pageItemList.AsQueryable();

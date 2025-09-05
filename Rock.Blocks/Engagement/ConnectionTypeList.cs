@@ -38,7 +38,7 @@ namespace Rock.Blocks.Engagement
     [DisplayName( "Connection Type List" )]
     [Category( "Engagement" )]
     [Description( "Displays a list of connection types." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

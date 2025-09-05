@@ -206,7 +206,7 @@ namespace RockWeb.Blocks.Streaks
 
                 if ( person.TopSignalColor.IsNotNullOrWhiteSpace() )
                 {
-                    sbNameHtml.Append( person.GetSignalMarkup() );
+                    sbNameHtml.Append( " " + person.GetSignalMarkup() );
                 }
 
                 lNameWithHtml.Text = sbNameHtml.ToString();

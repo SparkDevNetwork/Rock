@@ -54,7 +54,7 @@
                                     FormGroupCssClass="input-group-sm d-flex flex-wrap justify-content-end" />
 
                                 <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-default btn-sm btn-square" ToolTip="Refresh Chart"
-                                    OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i></asp:LinkButton>
+                                    OnClick="btnRefreshChart_Click"><i class="ti ti-refresh"></i></asp:LinkButton>
                             </div>
                         </div>
                     </div>
@@ -80,7 +80,7 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
-                            <asp:HyperLink ID="hlStepFlow" runat="server" CssClass="btn btn-sm btn-default btn-step-flow" CausesValidation="false"><i class="fas fa-project-diagram"></i> Step Flow</asp:HyperLink>
+                            <asp:HyperLink ID="hlStepFlow" runat="server" CssClass="btn btn-sm btn-default btn-step-flow" CausesValidation="false"><i class="ti ti-chart-dots-3"></i> Step Flow</asp:HyperLink>
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security btn-square" />
                         </span>
                     </div>

@@ -161,6 +161,7 @@ namespace Rock.Model
             target.IconCssClass = source.IconCssClass;
             target.IsActive = source.IsActive;
             target.IsDateRequired = source.IsDateRequired;
+            target.IsSystem = source.IsSystem;
             target.MergeTemplateDescriptor = source.MergeTemplateDescriptor;
             target.MergeTemplateId = source.MergeTemplateId;
             target.Name = source.Name;

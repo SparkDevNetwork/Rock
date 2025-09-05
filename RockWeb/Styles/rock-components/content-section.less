@@ -1,0 +1,355 @@
+// Content Section Control - For grouping content inside panels.
+
+// =============================================================
+// Table of Content
+//  + Base Style
+//  + Light Section
+//  + Content Section Container
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+
+.contentsection {
+    border-radius: var(--rounded-large);
+    height: auto;
+    width: 100%;
+    background-color: var(--color-interface-softer);
+    padding-left: 0;
+    padding-right: 0;
+    overflow: hidden;
+}
+
+/* HEADER */
+
+.contentsection-header {
+    min-height: 58px;
+    padding: var(--spacing-small) var(--spacing-large);
+    display: flex;
+    justify-content: space-between;
+}
+
+.contentsection-collapsible > .contentsection-header {
+    cursor: pointer;
+}
+
+.contentsection-header-actions {
+    display: flex;
+    gap: var(--spacing-tiny);
+    align-items: center;
+    margin-left: var(--spacing-large);
+    color: var(--color-interface-strong);
+    cursor: initial;
+}
+
+.contentsection-header-reveal-actions {
+    display: flex;
+    gap: var(--spacing-tiny);
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    pointer-events: none;
+}
+
+.contentsection-header:hover .contentsection-header-reveal-actions {
+    opacity: 100%;
+    pointer-events: auto;
+}
+
+.contentsection-header-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-tiny);
+    color: var(--color-interface-strong);
+    margin: 0;
+}
+
+.contentsection .contentsection-header-actions .ti-chevron-up {
+    /* 0.35 to match the transition speed in the collapse component */
+    transition: transform 0.35s ease-in-out;
+}
+
+.contentsection.contentsection-collapsed .contentsection-header-actions .ti-chevron-up {
+    transform: rotate(180deg);
+}
+
+/* SECTION BODY */
+
+.contentsection-body,
+contentsection-body-overflow {
+    height: auto;
+    padding: var(--spacing-large);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-large);
+}
+
+.contentsection-header + div > .contentsection-body {
+    border-top: 1px var(--color-interface-soft) solid;
+}
+
+.contentsection .content-stack + .content-stack {
+    border-top: 1px var(--color-interface-soft) solid;
+    padding-top: var(--spacing-large);
+}
+
+/* OVERFLOW BODY */
+
+.contentsection-body-overflow-toggle {
+    margin-bottom: var(--spacing-small);
+}
+
+.contentsection-body-overflow-toggle .btn {
+    font-size: var(--font-size-small);
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-tiny);
+}
+
+.contentsection-body-overflow-toggle .btn:hover > span,
+.contentsection-body-overflow-collapsed .btn:hover > span {
+    text-decoration: underline;
+}
+
+.contentsection-body-overflow-toggle .btn .ti-chevron-up {
+    /* 0.35 to match the transition speed in the collapse component */
+    transition: transform 0.35s ease-in-out;
+}
+
+.contentsection-body-overflow-collapsed .btn .ti-chevron-up {
+    transform: rotate(180deg);
+}
+
+.contentsection-body-overflow-toggle .btn.btn-link:hover,
+.contentsection-body-overflow-collapsed .btn.btn-link:hover,
+.contentsection-body-overflow-toggle .btn.btn-link:focus,
+.contentsection-body-overflow-collapsed .btn.btn-link:focus {
+    text-decoration: none;
+}
+
+.contentsection-body-overflow-content {
+    border-top: 1px var(--color-interface-soft) solid;
+    padding: var(--spacing-large);
+}
+
+/* SECTION FOOTER */
+
+.contentsection-footer {
+    padding: var(--spacing-medium);
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px var(--color-interface-soft) solid;
+    align-items: center;
+}
+
+.contentsection-footer-actions,
+.contentsection-footer-secondary-actions {
+    display: flex;
+    gap: var(--spacing-tiny);
+    align-items: center;
+    color: var(--color-interface-strong);
+    transition: opacity 0.3s ease-in-out;
+}
+
+.contentsection-footer-secondary-actions {
+    margin-left: var(--spacing-large);
+}
+
+.contentsection-footer-secondary-actions > .btn.btn-default {
+    margin-left: var(--spacing-xsmall);
+}
+
+/* ACTION BUTTONS */
+
+.contentsection-header-actions .btn-action,
+.contentsection-footer-actions .btn-action,
+.contentsection-footer-secondary-actions .btn-action,
+.contentsection-nav-header .btn-action {
+    border-radius: var(--rounded-small);
+    padding: var(--spacing-tiny);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-interface-strong);
+    border: 0;
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.contentsection-header-actions .btn-action:hover,
+.contentsection-footer-actions .btn-action:hover,
+.contentsection-footer-secondary-actions .btn-action:hover,
+.contentsection-nav-header .btn-action:hover {
+    background-color: var(--color-interface-softest);
+    color: var(--color-interface-strong);
+}
+
+.contentsection-header-actions .btn-action:focus,
+.contentsection-footer-actions .btn-action:focus,
+.contentsection-footer-secondary-actions .btn-action:focus,
+.contentsection-nav-header .btn-action:focus {
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.contentsection-header-actions .btn-action:active,
+.contentsection-footer-actions .btn-action:active,
+.contentsection-footer-secondary-actions .btn-action:active,
+.contentsection-nav-header .btn-action:active {
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.contentsection-header-actions .btn-action > i,
+.contentsection-footer-actions .btn-action > i,
+.contentsection-footer-secondary-actions .btn-action > i,
+.contentsection-nav-header .btn-action > i {
+    color: var(--color-interface-strong);
+    align-self: center;
+    font-size: var(--font-size-h5);
+    padding: 0 var(--spacing-tiny);
+}
+
+// ======================== END BASE STYLE ========================
+
+// ======================== LIGHT SECTION ========================
+
+.contentsection-light {
+    background-color: var(--color-interface-softest);
+    border: 1px var(--color-interface-soft) solid;
+}
+
+.contentsection-light > .contentsection-header {
+    border-bottom: 0;
+}
+
+.contentsection-light > .contentsection-footer {
+    border-top: 0;
+}
+
+.contentsection-light > .contentsection-body {
+    padding: 0;
+    padding-top: 0;
+    padding-right: var(--spacing-large);
+    padding-bottom: var(--spacing-large);
+    padding-left: var(--spacing-large);
+}
+
+.contentsection-light > .contentsection-header,
+.contentsection-light > .contentsection-footer {
+    display: none;
+}
+
+.contentsection-light > .contentsection-header + div > .contentsection-body {
+    border-top: none;
+}
+
+// ======================== END LIGHT SECTION ========================
+
+// ======================== CONTENT SECTION NAV ========================
+
+.contentsection-nav {
+    border: none;
+    border-radius: var(--rounded-medium);
+    padding: var(--spacing-xsmall);
+    background-color: var(--color-interface-softer);
+    position: sticky;
+    position: -webkit-sticky;
+    /* ← "pin" it 0px from the top of its scroll container */
+    top: 0;
+    /* keep it above your content as you scroll */
+    z-index: 10;
+}
+
+.contentsection-nav > .contentsection-nav-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: var(--spacing-xsmall);
+    margin-bottom: var(--spacing-tiny);
+}
+
+.contentsection-nav > .contentsection-nav-header-title {
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-small);
+    padding-left: var(--spacing-small);
+}
+
+.contentsection-nav > .contentsection-nav-link {
+    border: none;
+    border-radius: var(--rounded-small);
+    background-color: transparent;
+    color: var(--color-interface-strong);
+    padding: var(--spacing-xsmall) var(--spacing-small);
+    font-weight: normal;
+    font-size: var(--font-size-small);
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--spacing-tiny);
+}
+
+.contentsection-nav > .list-group-item i.ti {
+    font-size: var(--font-size-regular);
+    margin-right: var(--spacing-xsmall);
+    color: var(--color-interface-strong);
+    align-self: center;
+}
+
+.contentsection-nav > .list-group-item:hover {
+    background-color: var(--color-interface-softest);
+}
+
+.contentsection-nav > .list-group-item.active {
+    background-color: var(--color-interface-softest);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-strong);
+}
+
+.contentsection-nav > .list-group-item.active i.ti {
+    color: var(--color-interface-strong);
+}
+
+// ======================== END CONTENT SECTION NAV ========================
+
+// ======================== CONTENT SECTION CONTAINER ========================
+
+.contentsection-container {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-large);
+    height: auto;
+    width: 100%;
+    align-items: flex-start;
+}
+
+.contentsection-container > .contentsection-nav {
+    height: 100%;
+    flex: 0 0 20%;
+    position: sticky;
+    top: 0;
+}
+
+.contentsection-list {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 80%;
+    gap: var(--spacing-xlarge);
+    height: auto;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+.contentsection-container.contentsection-nav-left {
+    flex-direction: row-reverse;
+}
+
+@media (max-width: 767px) {
+    .contentsection-container .contentsection-nav {
+        display: none;
+    }
+}
+
+// ======================== END CONTENT SECTION CONTAINER ========================
+

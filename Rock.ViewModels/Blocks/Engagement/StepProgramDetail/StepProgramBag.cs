@@ -139,5 +139,10 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         /// The status options.
         /// </value>
         public List<ListItemBag> StatusOptions { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating wheter the Step Program can be deleted.
+        /// </summary>
+        public bool IsDeletable { get; set; }
     }
 }

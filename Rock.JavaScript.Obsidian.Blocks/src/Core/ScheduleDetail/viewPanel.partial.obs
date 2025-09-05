@@ -86,7 +86,7 @@
 
         if(props.modelValue?.friendlyScheduleText) {
             if(props.options.hasScheduleWarning) {
-                valueBuilder.addHtmlValue("Schedule", `<label class='label label-warning'>${props.modelValue?.friendlyScheduleText ?? ""}</label> <i class='fa fa-exclamation-triangle text-warning'></i>`);
+                valueBuilder.addHtmlValue("Schedule", `<label class='label label-warning'>${props.modelValue?.friendlyScheduleText ?? ""}</label> <i class='ti ti-alert-triangle text-warning'></i>`);
             }
              else {
                 valueBuilder.addHtmlValue("Schedule", props.modelValue?.friendlyScheduleText ?? "");

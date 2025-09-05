@@ -411,6 +411,58 @@ export function replaceAll(str: string, search: string, replace: string): string
     return str.replace(new RegExp(search, "g"), replace);
 }
 
+/**
+ * Attempts to parse the JSON and returns undefined if it could not be parsed.
+ *
+ * @param value The JSON value to parse.
+ *
+ * @returns The object that represents the JSON or undefined.
+ */
+export function safeParseJson<T>(value: string | null | undefined): T | undefined {
+    if (!value) {
+        return undefined;
+    }
+
+    try {
+        return JSON.parse(value);
+    }
+    catch {
+        return undefined;
+    }
+}
+
+/**
+ * Returns a string like "an apple" or "a banana" based on the initial sound of the word.
+ * Handles common English edge cases, including silent 'h' and hard 'u' sounds.
+ */
+export function prependSingularIndefiniteArticle(singularWord: string): string {
+    if (!singularWord) {
+        return singularWord;
+    }
+
+    const lower = singularWord.toLowerCase();
+
+    // Common silent "h" words
+    const silentH = ["honest", "hour", "honor", "heir"];
+    if (silentH.includes(lower)) {
+        return `an ${singularWord}`;
+    }
+
+    // Words starting with hard "u" like "unicorn", "university"
+    const hardURegex = /^(u[bcfhjkqrstn])/i; // "ubiquitous", "unicorn", etc.
+    if (hardURegex.test(singularWord)) {
+        return `a ${singularWord}`;
+    }
+
+    // Words starting with vowel sounds
+    const vowelSound = /^[aeiou]/i;
+    if (vowelSound.test(singularWord)) {
+        return `an ${singularWord}`;
+    }
+
+    return `a ${singularWord}`;
+}
+
 export default {
     asCommaAnd,
     containsHtmlTag,
@@ -428,5 +480,6 @@ export default {
     padRight,
     truncate,
     createHash,
-    replaceAll
+    replaceAll,
+    safeParseJson,
 };

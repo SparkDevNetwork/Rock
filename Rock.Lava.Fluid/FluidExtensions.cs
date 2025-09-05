@@ -188,7 +188,16 @@ namespace Rock.Lava.Fluid
                 {
                     var utcOffset = rockTimeZone.GetUtcOffset( dto );
 
-                    var dstOffsetString = ( utcOffset.Hours < 0 ? "-" : "+" ) + ( utcOffset.Hours > 9 ? "" : "0" ) + utcOffset.Hours + ":" + ( utcOffset.Minutes > 9 ? "" : "0" ) + utcOffset.Minutes;
+                    // We need the offset in the format +HH:MM or -HH:MM to
+                    // append to the string so that it can be parsed correctly.
+                    // The previous code was causing double negatives such as
+                    // "-0-08:00" which was not parsable.
+                    // This trick below gives it two formats for the hours.
+                    // The first (+00) is the positive number format (including zero)
+                    // and the second (-00) is the negative number format (excluding
+                    // zero). In both cases we are including the sign and then
+                    // specifying we want two digits.
+                    var dstOffsetString = $"{utcOffset.Hours:+00;-00}:{utcOffset.Minutes:00}";
 
                     isParsed = DateTimeOffset.TryParse( stringValue + " " + dstOffsetString, out dto );
                 }

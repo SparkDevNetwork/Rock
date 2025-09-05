@@ -16,7 +16,7 @@
 
         <div class="row">
             <div class="col-md-6">
-                <TextBox v-model="iconCssClass" label="Icon CSS Class" />
+                <IconPicker v-model="iconCssClass" label="Icon CSS Class" />
             </div>
             <div class="col-md-6">
                 <CategoryPicker v-model="category" label="Category" :entityTypeGuid="EntityType.GroupRequirementType" />
@@ -58,7 +58,7 @@
                 <div v-if="requirementCheckType === 'Sql'">
                     <div class="col-md-12">
                         <RockLabel>SQL Syntax</RockLabel>
-                        <a class="help" href="javascriot:void(0);"><i class="fa fa-question-circle" :onClick="onSqlInfoClick"></i></a>
+                        <a class="help" href="javascriot:void(0);"><i class="ti ti-zoom-question" :onClick="onSqlInfoClick"></i></a>
                         <TransitionVerticalCollapse>
                             <div v-if="showSqlHelpHTML" class="alert alert-info js-sourcesql-help" v-html="sqlHelpHTML"></div>
                         </TransitionVerticalCollapse>
@@ -213,6 +213,7 @@
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
 
     const props = defineProps({
         modelValue: {

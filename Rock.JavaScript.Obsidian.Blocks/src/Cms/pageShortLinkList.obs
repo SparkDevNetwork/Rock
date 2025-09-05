@@ -8,6 +8,9 @@
           :entityTypeGuid="EntityType.PageShortLink"
           stickyHeader
           liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="onGridSettingsClick"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           :showLaunchWorkflow="false"
           @selectItem="onSelectItem">
@@ -30,34 +33,78 @@
                     :filter="textValueFilter"
                     visiblePriority="xs" />
 
+        <TextColumn name="category"
+                    title="Category"
+                    field="category"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="md" />
+
+        <NumberColumn name="clickCount"
+                      title="Click Count"
+                      field="clickCount"
+                      :filter="numberValueFilter"
+                      visiblePriority="xs" />
+
+        <BooleanColumn name="isPinned"
+                       title="Pinned"
+                       field="isPinned"
+                       :filter="booleanValueFilter"
+                       visiblePriority="xs" />
+
         <ButtonColumn name="copy"
-                      iconClass="fa fa-clipboard"
+                      iconClass="ti ti-clipboard"
                       visiblePriority="xs"
                       @click="onCopyClick" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :currentPerson="config.options?.currentPerson ?? {}" />
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { TextColumn, textValueFilter, DeleteColumn, ButtonColumn, pickExistingValueFilter, } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, textValueFilter, DeleteColumn, NumberColumn, numberValueFilter, ButtonColumn, pickExistingValueFilter, BooleanColumn, booleanValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PageShortLinkListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkList/pageShortLinkListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey } from "./PageShortLinkList/types.partial";
-    import { reactive, ref } from "vue";
+    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./PageShortLinkList/types.partial";
+    import { reactive, ref, computed, watch } from "vue";
     import { IGridState } from "@Obsidian/Types/Controls/grid";
+    import GridSettingsModal from "./PageShortLinkList/gridSettingsModal.partial.obs";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
 
     const config = useConfigurationValues<ListBlockBox<PageShortLinkListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        createdBy: safeParseJson(preferences.getValue(PreferenceKey.FilterCreatedBy)),
+        filterPerson: safeParseJson(preferences.getValue(PreferenceKey.FilterPerson)),
+        createdDateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterCreatedDateRange))
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.createdBy?.value
+            || !!gridSettings.value.filterPerson?.value
+            || !!gridSettings.value.createdDateRange;
+    });
 
     // #endregion
 
@@ -140,7 +187,25 @@
         }
     }
 
+    /**
+    * Called when the grid setting icon is clicked, displays the block filters.
+    *
+    */
+    function onGridSettingsClick(): void {
+        isGridSettingsVisible.value = true;
+    }
+
     // #endregion
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterCreatedBy, JSON.stringify(gridSettings.value.createdBy));
+        preferences.setValue(PreferenceKey.FilterPerson, JSON.stringify(gridSettings.value.filterPerson));
+        preferences.setValue(PreferenceKey.FilterCreatedDateRange, gridSettings.value.createdDateRange ? slidingDateRangeToString(gridSettings.value.createdDateRange) : "");
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
 
     gridDataSource.value = loadGridData();
 </script>

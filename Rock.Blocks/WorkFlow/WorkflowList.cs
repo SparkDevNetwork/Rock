@@ -41,7 +41,7 @@ namespace Rock.Blocks.Workflow
     [DisplayName( "Workflow List" )]
     [Category( "Workflow" )]
     [Description( "Lists all the workflows." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     //[SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Entry Page",

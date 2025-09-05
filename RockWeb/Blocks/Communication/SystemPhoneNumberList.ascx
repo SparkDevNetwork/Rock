@@ -6,7 +6,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-sms"></i><asp:Literal ID="lTitle" Text="System Phone Numbers List" runat="server" /></h1>
+                <h1 class="panel-title"><i class="ti ti-device-mobile-message"></i><asp:Literal ID="lTitle" Text="System Phone Numbers List" runat="server" /></h1>
             </div>
             <div class="panel-body">
 

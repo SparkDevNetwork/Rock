@@ -36,7 +36,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
     [DisplayName( "Prayer Card View" )]
     [Category( "Mobile > Prayer" )]
     [Description( "Provides an additional experience to pray using a card based view." )]
-    [IconCssClass( "fa fa-th" )]
+    [IconCssClass( "ti ti-grid-dots" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

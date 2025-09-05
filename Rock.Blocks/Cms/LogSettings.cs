@@ -40,7 +40,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Log Settings" )]
     [Category( "Administration" )]
     [Description( "Block to edit rock log settings." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [SystemGuid.EntityTypeGuid( "e5f272d4-e63f-46e7-9429-0d62cb458fd1" )]

@@ -54,8 +54,6 @@
                       title="Started"
                       field="startedCount"
                       :filter="numberValueFilter"
-                      headerClass="justify-content-end text-right"
-                      itemClass="justify-content-end text-right"
                       visiblePriority="md"
                       width="5%" />
 
@@ -63,14 +61,13 @@
                       title="Completed"
                       field="completedCount"
                       :filter="numberValueFilter"
-                      headerClass="justify-content-end text-right text-nowrap"
-                      itemClass="justify-content-end text-right"
+                      headerClass="text-nowrap"
                       visiblePriority="md"
                       width="20%" />
 
         <ButtonColumn v-if="config.options?.isBulkEntryColumnVisible"
                       name="bulkEntry"
-                      iconClass="fa fa-truck"
+                      iconClass="ti ti-truck"
                       visiblePriority="md"
                       @click="bulkEntry" />
 
@@ -144,9 +141,9 @@
     });
 
     /**
-    * Makes the key unique to the current event calendar.
+    * Makes the key unique to the current step program.
     *
-    * @param row The preference key.
+    * @param key The preference key.
     */
     function makeKeyUniqueToStepProgram(key: string): string {
         if (config.options?.stepProgramIdKey) {
@@ -194,7 +191,7 @@
     }
 
     /**
-     * Called when the Add button has been clicked by the indivual.
+     * Called when the Add button has been clicked by the individual.
      */
     function onAddItem(): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
@@ -217,11 +214,17 @@
         });
 
         if (gridData?.rows && result.isSuccess) {
-            const itemIndex = gridData.rows.findIndex(r => r["idKey"] === item.idKey);
-            const beforeItemIndex = gridData.rows.findIndex(r => r["idKey"] === beforeItem?.idKey);
+            const itemIndex = gridData.rows.findIndex(r => r["idKey"] === item["idKey"]);
 
-            if (itemIndex !== -1 && beforeItemIndex !== -1) {
-                [gridData.rows[itemIndex], gridData.rows[beforeItemIndex]] = [gridData.rows[beforeItemIndex], gridData.rows[itemIndex]];
+            if (itemIndex !== -1) {
+                const [movedItem] = gridData.rows.splice(itemIndex, 1);
+                let insertIndex = beforeItem ? gridData.rows.findIndex(r => r["idKey"] === beforeItem["idKey"]) : gridData.rows.length;
+
+                if (insertIndex === -1) {
+                    insertIndex = gridData.rows.length;
+                }
+
+                gridData.rows.splice(insertIndex, 0, movedItem);
             }
         }
 

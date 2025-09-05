@@ -2,7 +2,7 @@
 <template>
     <div class="library-viewer-item-list-sort">
         <ToolbarMenu :getTitle="getSortTitle"
-                     iconCssClass="fa fa-sort"
+                     iconCssClass="ti ti-caret-up-down"
                      menuButtonCssClass="library-viewer-toolbar-button">
             <ToolbarMenuButtons v-model="appliedSortOption"
                                 dropDownMenuAlignment="right"
@@ -13,15 +13,15 @@
 </template>
 
 <style scoped>
-    .library-viewer-item-list-sort-container {
-        display: flex;
-        flex-direction: column;
-    }
+.library-viewer-item-list-sort-container {
+    display: flex;
+    flex-direction: column;
+}
 
-    .library-viewer-item-list-sort-button {
-        text-align: left;
-        border: none;
-    }
+.library-viewer-item-list-sort-button {
+    text-align: left;
+    border: none;
+}
 </style>
 
 <script setup lang="ts">

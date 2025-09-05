@@ -312,7 +312,7 @@ Font Bold: true
         public void ShortcodeBlock_WithInvalidShortcodeInRawTag_IsRenderedAsLiteralText()
         {
             var input = @"
-{[ panel title:'Important Stuff' icon:'fa fa-star' ]}
+{[ panel title:'Important Stuff' icon:'ti ti-star' ]}
     This is a super simple panel.
     {% raw %}
         This is some literal text containing an invalid shortcode: {[ panel title:'Example' ]}
@@ -323,7 +323,7 @@ Font Bold: true
             var expectedOutput = @"
 <div class=`panel panel-default`>
     <div class=`panel-heading`>
-        <h3 class=`panel-title`><i class=`fa fa-star`></i>Important Stuff</h3>
+        <h3 class=`panel-title`><i class=`ti ti-star`></i>Important Stuff</h3>
     </div>
     <div class=`panel-body`>
        This is a super simple panel.
@@ -519,7 +519,7 @@ Shortcode content.
         public void PanelShortcode_DefaultOptions_EmitsCorrectHtml()
         {
             var input = @"
-{[ panel title:'Important Stuff' icon:'fa fa-star' ]}
+{[ panel title:'Important Stuff' icon:'ti ti-star' ]}
 This is a super simple panel.
 {[ endpanel ]}
 ";
@@ -530,7 +530,7 @@ This is a super simple panel.
       <div class=``panel-heading``>
         <h3 class=``panel-title``>
             
-                <i class=``fa fa-star``></i> 
+                <i class=``ti ti-star``></i> 
             
             Important Stuff</h3>
       </div>

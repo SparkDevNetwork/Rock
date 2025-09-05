@@ -637,14 +637,7 @@ namespace RockWeb.Blocks.Connection
                             IsUnassigned = opportunitySummary.UnassignedConnectionRequests.Contains( connectionRequestId )
                         };
 
-                        if ( LavaService.RockLiquidIsEnabled )
-                        {
-                            mergeFields.Add( "ConnectionRequestStatusIcons", DotLiquid.Hash.FromAnonymousObject( connectionRequestStatusIcons ) );
-                        }
-                        else
-                        {
-                            mergeFields.Add( "ConnectionRequestStatusIcons", LavaDataObject.FromAnonymousObject( connectionRequestStatusIcons ) );
-                        }
+                        mergeFields.Add( "ConnectionRequestStatusIcons", LavaDataObject.FromAnonymousObject( connectionRequestStatusIcons ) );
 
                         mergeFields.Add( "IdleTooltip", string.Format( "Idle (no activity in {0} days)", opportunitySummary.DaysUntilRequestIdle ) );
                         lStatusIcons.Text = connectionRequestStatusIconTemplate.ResolveMergeFields( mergeFields );

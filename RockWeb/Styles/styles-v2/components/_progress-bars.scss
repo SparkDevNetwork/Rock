@@ -1,0 +1,127 @@
+
+
+// PROGRESS BAR STYLE // TODO there are some harded code value
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style              
+//  + Striped bar
+//  + Active
+//  + Alternative style
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+@-webkit-keyframes progress-bar-stripes {
+  from  { background-position: 40px 0; }
+  to    { background-position: 0 0; }
+}
+
+@keyframes progress-bar-stripes {
+  from  { background-position: 40px 0; }
+  to    { background-position: 0 0; }
+}
+
+// Outer container
+.progress {
+  height:           20px;
+  margin-bottom:    var(--spacing-large);
+  overflow:         hidden;
+  line-height:      20px;
+  font-size:        var(--font-size-small);
+  background-color: var(--color-interface-softer);
+  border-radius:    var(--rounded-small);
+  box-shadow:       inset 0 1px 2px rgba(0, 0, 0, .1);
+}
+
+// Bar of progress
+.progress-bar {
+  float:            left;
+  width:            0%;
+  height:           100%;
+  color:            var(--color-interface-softest);
+  text-align:       center;
+  background-color: var(--color-primary);
+  box-shadow:       inset 0 -1px 0 rgba(0, 0, 0, .15);
+  transition:       width .6s ease;
+}
+// ======================== END BASE STYLE ========================
+
+
+// ========================== STRIPED BAR ==========================
+.progress-striped .progress-bar,
+.progress-bar-striped {
+  #gradient {
+    background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+    background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+  }
+  background-size: 40px 40px;
+}
+// ======================== END STIRPED BAR ========================
+
+
+// ============================ ACTIVE ============================
+.progress.active .progress-bar,
+.progress-bar.active {
+  -webkit-animation: progress-bar-stripes 2s linear infinite;
+       -o-animation: progress-bar-stripes 2s linear infinite;
+          animation: progress-bar-stripes 2s linear infinite;
+}
+// ========================== END ACTIVE ==========================
+
+
+// ========================== ALTERNATIVE STYLE ==========================
+.progress-bar-success {
+  // .progress-bar-variant(@progress-bar-success-bg);
+  background-color: var(--color-success-strong);
+
+  .progress-striped & {
+    #gradient {
+      background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+      background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+      background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+    }
+  }
+}
+
+.progress-bar-info {
+  background-color: var(--color-info-strong);
+
+  .progress-striped & {
+    #gradient {
+      background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+      background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+      background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+    }
+  }
+}
+
+.progress-bar-warning {
+  background-color: var(--color-warning-strong);
+
+  .progress-striped & {
+    #gradient {
+      background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+      background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+      background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+    }
+  }
+}
+
+.progress-bar-danger {
+  background-color: var(--color-danger-strong);
+
+  .progress-striped & {
+    #gradient {
+      background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+      background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+      background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+    }
+  }
+}
+// ======================== END ALTERNATIVE STYLE ========================
+
+
+

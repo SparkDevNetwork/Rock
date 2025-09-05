@@ -129,9 +129,9 @@ namespace Rock.Badge.Component
                                 }}
 
                                 if (linkUrl != '') {{
-                                    badgeContent = '<a href=\'' + linkUrl + '\' class=\'badge-content ' + cssClass + '\'><i class=\'fa fa-desktop badge-icon\'></i><span class=\'metric-value\'>' + daysSinceVisit + '</span></a>';
+                                    badgeContent = '<a href=\'' + linkUrl + '\' class=\'badge-content ' + cssClass + '\'><i class=\'ti ti-device-desktop badge-icon\'></i><span class=\'metric-value\'>' + daysSinceVisit + '</span></a>';
                                 }} else {{
-                                    badgeContent = '<div class=\'badge-content ' + cssClass + '\'><i class=\'fa fa-desktop badge-icon\'></i><span class=\'metric-value\'>' + daysSinceVisit + '</span></div>';
+                                    badgeContent = '<div class=\'badge-content ' + cssClass + '\'><i class=\'ti ti-device-desktop badge-icon\'></i><span class=\'metric-value\'>' + daysSinceVisit + '</span></div>';
                                 }}
 
                                 $('.rockbadge-lastvisitonsite.rockbadge-id-{badge.Id}').html(badgeContent).attr('data-original-title', labelContent);

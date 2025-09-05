@@ -9,7 +9,7 @@
 
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-map-marker"></i>Step Types</h1>
+                    <h1 class="panel-title"><i class="ti ti-map-pin"></i>Step Types</h1>
                 </div>
                 <div class="panel-body">
                     <Rock:NotificationBox ID="nbBlockStatus" runat="server" NotificationBoxType="Info" />
@@ -38,7 +38,7 @@
                                     <Rock:ReorderField />
                                     <Rock:RockTemplateField ExcelExportBehavior="NeverInclude" HeaderStyle-Width="48px">
                                         <ItemTemplate>
-                                            <i class="fa-fw <%# Eval( "IconCssClass" ) %>"></i>
+                                            <i class="ti-fw <%# Eval( "IconCssClass" ) %>"></i>
                                         </ItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" Visible="true" ExcelExportBehavior="AlwaysInclude" />
@@ -46,7 +46,7 @@
                                     <Rock:BoolField DataField="AllowMultipleInstances" HeaderText="Allow Multiple" />
                                     <Rock:RockBoundField DataField="StartedCount" HeaderText="Started" DataFormatString="{0:N0}" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
                                     <Rock:RockBoundField DataField="CompletedCount" HeaderText="Completed" DataFormatString="{0:N0}" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
-                                    <Rock:LinkButtonField ID="lbBulkEntry" Text="<i class='fa fa-truck'></i>" CssClass="btn btn-default btn-sm btn-square" OnClick="gStepType_BulkEntry" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
+                                    <Rock:LinkButtonField ID="lbBulkEntry" Text="<i class='ti ti-truck'></i>" CssClass="btn btn-default btn-sm btn-square" OnClick="gStepType_BulkEntry" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                                     <Rock:SecurityField TitleField="Name" />
                                     <Rock:DeleteField OnClick="gStepType_Delete" />
                                 </Columns>

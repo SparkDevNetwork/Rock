@@ -1,0 +1,132 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="AI Provider"
+          :entityTypeGuid="EntityType.AiProvider"
+          stickyHeader
+          liveUpdates
+          :showLaunchWorkflow="false"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    width="40%"
+                    visiblePriority="md" />
+
+        <TextColumn name="componentEntityType"
+                    title="AI Provider Type"
+                    field="componentEntityType"
+                    :filter="pickExistingValueFilter"
+                    width="40%"
+                    visiblePriority="xs" />
+
+        <BooleanColumn name="isActive"
+                       title="Active"
+                       field="isActive"
+                       :filter="booleanValueFilter"
+                       visiblePriority="xs" />
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { AttributeColumns, BooleanColumn, DeleteColumn, TextColumn, textValueFilter, booleanValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { AIProviderListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AIProviderList/aiProviderListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./AIProviderList/types.partial";
+    import { reactive, ref } from "vue";
+
+    const config = useConfigurationValues<ListBlockBox<AIProviderListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete ai provider.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the individual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>
