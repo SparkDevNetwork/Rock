@@ -151,19 +151,23 @@ namespace Rock.Data
         /// <param name="query">The query.</param>
         /// <param name="commandType">Type of the command.</param>
         /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public static DataTable GetDataTable( string query, CommandType commandType, Dictionary<string, object> parameters )
+        {
+            return GetDataTable( query, commandType, parameters, null, false );
+        }
+
+        /// <summary>
+        /// Static method to get a data table. See also <seealso cref="GetDataTableFromSqlCommand(string, CommandType, Dictionary{string, object})"/>.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
         /// <param name="timeOut">The time out.</param>
         /// <returns></returns>
-        [Obsolete( "This method has been deprecated in favor of the GetDataTable method that does not use a DataSet (small performance gain)." )]
-        [RockObsolete( "1.17" )]
         public static DataTable GetDataTable( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut )
         {
-            DataSet dataSet = DbService.GetDataSet( query, commandType, parameters, timeOut, false );
-            if ( dataSet.Tables.Count > 0 )
-            {
-                return dataSet.Tables[0];
-            }
-
-            return null;
+            return GetDataTable( query, commandType, parameters, timeOut, false );
         }
 
         /// <summary>
@@ -240,26 +244,16 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Static method to get a data table. See also <seealso cref="GetDataTableFromSqlCommand(string, CommandType, Dictionary{string, object})"/>.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <param name="commandType">Type of the command.</param>
-        /// <param name="parameters">The parameters.</param>
-        /// <returns></returns>
-        public static DataTable GetDataTable( string query, CommandType commandType, Dictionary<string, object> parameters )
-        {
-            return GetDataTable( query, commandType, parameters, null );
-        }
-
-        /// <summary>
         /// Static method to get a data set. See also <seealso cref="GetDataSetFromSqlCommand(string, CommandType, Dictionary{string, object})"/>.
         /// This method will wrap the query in a transaction and roll it back to prevent any unexpected updates.
+        ///
+        /// NOTE: This is used by the SQL Command block.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <param name="commandType">Type of the command.</param>
         /// <param name="parameters">The parameters.</param>
         /// <param name="timeOut">The time out in seconds.</param>
-        /// <returns></returns>
+        /// <returns>the DataSet results for the given query.</returns>
         public static DataSet GetDataSetReadOnly( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut = null )
         {
             return GetDataSet( query, commandType, parameters, timeOut, false, rollbackTransaction: true );
@@ -272,10 +266,10 @@ namespace Rock.Data
         /// <param name="commandType">Type of the command.</param>
         /// <param name="parameters">The parameters.</param>
         /// <param name="timeOut">The time out in seconds.</param>
-        /// <returns></returns>
+        /// <returns>the DataSet results for the given query.</returns>
         public static DataSet GetDataSet( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut = null )
         {
-            return GetDataSet( query, commandType, parameters, timeOut, false );
+            return GetDataSet( query, commandType, parameters, timeOut, false, false );
         }
 
         /// <summary>
@@ -285,10 +279,10 @@ namespace Rock.Data
         /// <param name="commandType">Type of the command.</param>
         /// <param name="parameters">The parameters.</param>
         /// <param name="timeOut">The time out in seconds.</param>
-        /// <returns></returns>
+        /// <returns>the DataSet results for the given query.</returns>
         public static DataSet GetDataSetSchema( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut = null )
         {
-            return GetDataSet( query, commandType, parameters, timeOut, true );
+            return GetDataSet( query, commandType, parameters, timeOut, true, false );
         }
 
         /// <summary>
