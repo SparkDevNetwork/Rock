@@ -114,6 +114,12 @@ namespace Rock.AI.Agent.Skills
                 errors.Add( "Invalid date range. Start date cannot be after end date." );
             }
 
+
+            if ( errors.Count > 0 )
+            {
+                return RockToolResult.Error( errors );
+            }
+
             // Defaults: past year → now (safety in case nothing was provided)
             if ( !startDate.HasValue && !endDate.HasValue )
             {
@@ -130,11 +136,6 @@ namespace Rock.AI.Agent.Skills
             var basePageSize = 100;
             var offset = ( pgNumber - 1 ) * basePageSize;
             var take = basePageSize + 1; // N+1 to compute hasMore
-
-            if ( errors.Count > 0 )
-            {
-                return RockToolResult.Error( errors );
-            }
 
             try
             {
@@ -397,7 +398,7 @@ namespace Rock.AI.Agent.Skills
 
         [Description( "Returns a comprehensive profile for a single person, including contact details, demographics, household, and key insights." )]
         [AgentPurpose( "Retrieves the complete profile of a person." )]
-        [AgentPurpose( "-Serves as the primary entry point for gaining insights into an individual." )]
+        [AgentPurpose( "Serves as the primary entry point for gaining insights into an individual." )]
         [AgentToolGuid( "2142A382-6AB2-0995-4480-69B641AE2CDC" )]
         public RockToolResult GetPersonProfile( string personIdKey )
         {

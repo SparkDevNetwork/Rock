@@ -56,6 +56,11 @@ namespace Rock.AI.Agent.Classes.Entity
         public bool? IsPublic { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this prayer request is active.
+        /// </summary>
+        public bool? IsActive { get; set; }
+
+        /// <summary>
         /// Gets or sets the number of times this prayer request has been prayed for.
         /// </summary>
         public int? PrayerCount { get; set; }

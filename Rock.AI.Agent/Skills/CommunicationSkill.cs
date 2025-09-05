@@ -127,7 +127,6 @@ namespace Rock.AI.Agent.Skills
         /// <summary>
         /// Drafts a communication (email/SMS/push) for a specified recipient.
         /// </summary>
-        /// <param name="kernel">The kernel. Used to invoke an internal prompt to structure the comm.</param>
         /// <param name="recipientIdKey">The idKey of the recipient.</param>
         /// <param name="communicationType">SMS, Push or Email.</param>
         /// <param name="subjectHint">The hint of the subject.</param>
