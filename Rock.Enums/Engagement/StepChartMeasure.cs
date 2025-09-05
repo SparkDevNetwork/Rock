@@ -29,35 +29,41 @@ namespace Rock.Enums.Engagement
         Steps = 0,
 
         /// <summary>
+        /// Total Steps
+        /// </summary>
+        TotalSteps = 1,
+
+        /// <summary>
+        /// The total step-adjusted impact
+        /// </summary>
+        [Description( "Total Step-Adjusted Impact" )]
+        TotalStepAdjustedImpact = 2,
+
+        /// <summary>
         /// Impact-Adjusted Steps
         /// </summary>
         [Description( "Impact-Adjusted Steps" )]
-        ImpactAdjustedSteps = 1,
-
-        /// <summary>
-        /// Total Steps
-        /// </summary>
-        TotalSteps = 2,
+        ImpactAdjustedSteps = 3,
 
         /// <summary>
         /// Steps by Engagement Type
         /// </summary>
-        EngagementType = 3,
+        EngagementType = 4,
 
         /// <summary>
         /// Steps by Organization Objective
         /// </summary>
-        OrganizationObjective = 4,
+        OrganizationObjective = 5,
 
         /// <summary>
         /// Steps by Program Completions
         /// </summary>
-        ProgramCompletions = 5,
+        ProgramCompletions = 6,
 
         /// <summary>
         /// Average Total Steps Per Weekend Attendee
         /// </summary>
-        [Description( "Average Total Steps Per Weekend Attendee" )]
-        AvgTotalStepsPerWeekendAttendee = 6,
+        [Description( "Avg. Total Steps Per Weekend Attendee" )]
+        AvgTotalStepsPerWeekendAttendee = 7,
     }
 }

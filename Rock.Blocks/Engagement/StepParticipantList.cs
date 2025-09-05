@@ -203,6 +203,7 @@ namespace Rock.Blocks.Engagement
             var queryable = stepService.Queryable()
                 .Include( x => x.StepStatus )
                 .Include( x => x.PersonAlias.Person )
+                .Include( x => x.Campus )
                 .AsNoTracking()
                 .Where( x => x.StepTypeId == stepType.Id );
 

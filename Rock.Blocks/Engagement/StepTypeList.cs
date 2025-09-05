@@ -237,17 +237,23 @@ namespace Rock.Blocks.Engagement
                     Completed = g.Count( s => s.StepStatus != null && s.StepStatus.IsCompleteStatus )
                 } );
 
-            var queryable = stepTypeQueryable.GroupJoin( stepCountsQueryable, stepType => stepType.Id, stepCount => stepCount.StepTypeId, ( stepType, stepCounts ) => new
-            {
-                StepType = stepType,
-                Counts = stepCounts
-            } )
-            .Select( x => new StepTypeWithCounts
-            {
-                StepType = x.StepType,
-                StartedCount = x.Counts.Select( a => a.Started ).FirstOrDefault(),
-                CompletedCount = x.Counts.Select( a => a.Completed ).FirstOrDefault()
-            } );
+            var queryable = stepTypeQueryable
+                .GroupJoin(
+                    stepCountsQueryable,
+                    st => st.Id,
+                    sc => sc.StepTypeId,
+                    ( st, scs ) => new { StepType = st, Counts = scs }
+                )
+                .SelectMany(
+                    x => x.Counts.DefaultIfEmpty(),
+                    ( x, sc ) => new StepTypeWithCounts
+                    {
+                        StepType = x.StepType,
+                        StartedCount = sc != null ? sc.Started : 0,
+                        CompletedCount = sc != null ? sc.Completed : 0
+                    }
+                );
+
             return queryable;
         }
 

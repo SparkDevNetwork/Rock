@@ -3,7 +3,7 @@
     <CampusPicker :modelValue="selectedCampus"
                   lazyMode="lazy"
                   showBlankItem
-                  blankValue="Select Campus"
+                  blankValue="All Campuses"
                   :forceVisible="forceVisible"
                   :includeInactive="includeInactive"
                   :campusStatusFilter="campusStatusFilter"

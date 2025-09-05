@@ -33,6 +33,11 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         public List<DateTime> DateLabels { get; set; }
 
         /// <summary>
+        /// Gets or sets the time unit for the chart data (e.g. "day", "month", "year").
+        /// </summary>
+        public string TimeUnit { get; set; }
+
+        /// <summary>
         /// Gets or sets the string labels for the chart data.
         /// </summary>
         public List<string> StringLabels { get; set; }

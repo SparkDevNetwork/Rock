@@ -62,6 +62,15 @@ export type StepProgramBag = {
     /** Gets or sets the error message. */
     errorMessage?: string | null;
 
+    /** Gets or sets the value indicating whter the current program contains steps with Engagement Type settings configured. */
+    hasEngagementTypeSteps: boolean;
+
+    /** Gets or sets the value indicating whter the current program contains steps with Impact Adjustment settings configured. */
+    hasImpactAdjustedStepTypes: boolean;
+
+    /** Gets or sets the value indicating whter the current program contains steps with Organization Objective settings configured. */
+    hasOrganizationObjectiveSteps: boolean;
+
     /** Gets or sets the icon CSS class. */
     iconCssClass?: string | null;
 
@@ -79,9 +88,6 @@ export type StepProgramBag = {
 
     /** Gets or sets the name of the program. This property is required. */
     name?: string | null;
-
-    /** Gets or sets a value indicating whether [show chart]. */
-    showChart: boolean;
 
     /** Gets or sets the statuses. */
     statuses?: StepStatusBag[] | null;

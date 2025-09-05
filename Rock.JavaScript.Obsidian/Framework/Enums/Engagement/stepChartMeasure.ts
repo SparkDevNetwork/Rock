@@ -26,40 +26,45 @@ export const StepChartMeasure = {
     /** Steps by Step Type */
     Steps: 0,
 
-    /** Impact-Adjusted Steps */
-    ImpactAdjustedSteps: 1,
-
     /** Total Steps */
-    TotalSteps: 2,
+    TotalSteps: 1,
+
+    /** The total step-adjusted impact */
+    TotalStepAdjustedImpact: 2,
+
+    /** Impact-Adjusted Steps */
+    ImpactAdjustedSteps: 3,
 
     /** Steps by Engagement Type */
-    EngagementType: 3,
+    EngagementType: 4,
 
     /** Steps by Organization Objective */
-    OrganizationObjective: 4,
+    OrganizationObjective: 5,
 
     /** Steps by Program Completions */
-    ProgramCompletions: 5,
+    ProgramCompletions: 6,
 
     /** Average Total Steps Per Weekend Attendee */
-    AvgTotalStepsPerWeekendAttendee: 6
+    AvgTotalStepsPerWeekendAttendee: 7
 } as const;
 
 /** Defines how the steps in a chart should be measured. */
 export const StepChartMeasureDescription: Record<number, string> = {
     0: "Steps",
 
-    1: "Impact-Adjusted Steps",
+    1: "Total Steps",
 
-    2: "Total Steps",
+    2: "Total Step-Adjusted Impact",
 
-    3: "Engagement Type",
+    3: "Impact-Adjusted Steps",
 
-    4: "Organization Objective",
+    4: "Engagement Type",
 
-    5: "Program Completions",
+    5: "Organization Objective",
 
-    6: "Average Total Steps Per Weekend Attendee"
+    6: "Program Completions",
+
+    7: "Avg. Total Steps Per Weekend Attendee"
 };
 
 /** Defines how the steps in a chart should be measured. */

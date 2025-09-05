@@ -110,14 +110,6 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         public string Kpi { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [show chart].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [show chart]; otherwise, <c>false</c>.
-        /// </value>
-        public bool ShowChart { get; set; }
-
-        /// <summary>
         /// Gets or sets the default date range.
         /// </summary>
         /// <value>
@@ -163,6 +155,21 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         /// Gets or sets the Sep Flow Configuration settings used to display the Step Flow diagram.
         /// </summary>
         public SankeyDiagramSettingsBag StepFlowConfigurationBag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value indicating whter the current program contains steps with Impact Adjustment settings configured.
+        /// </summary>
+        public bool HasImpactAdjustedStepTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value indicating whter the current program contains steps with Organization Objective settings configured.
+        /// </summary>
+        public bool HasOrganizationObjectiveSteps { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value indicating whter the current program contains steps with Engagement Type settings configured.
+        /// </summary>
+        public bool HasEngagementTypeSteps { get; set; }
 
         /// <summary>
         /// Gets or sets the error message.

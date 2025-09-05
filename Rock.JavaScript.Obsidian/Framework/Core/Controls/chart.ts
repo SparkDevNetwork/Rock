@@ -1,6 +1,5 @@
 import { Enumerable } from "@Obsidian/Utility/linq";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-import type { LegendOptions } from "chart.js";
 
 // #region Types
 
@@ -63,8 +62,6 @@ export const LegendAlignDescription: Record<string, string> = {
 };
 
 export type LegendAlign = typeof LegendAlign[keyof typeof LegendAlign];
-
-export type LegendLabels = Partial<LegendOptions<"line">["labels"]>;
 
 export type Legend = {
     hidden?: boolean | undefined;

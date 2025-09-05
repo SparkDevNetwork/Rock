@@ -36,4 +36,7 @@ export type ChartDataBag = {
 
     /** Gets or sets the string labels for the chart data. */
     stringLabels?: string[] | null;
+
+    /** Gets or sets the time unit for the chart data (e.g. "day", "month", "year"). */
+    timeUnit?: string | null;
 };
