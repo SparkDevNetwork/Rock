@@ -24,7 +24,7 @@ internal class AgentBuilder
 {
     #region Fields
 
-    private readonly List<AgentFunction> _individualFunctions = [];
+    private readonly List<AgentTool> _individualFunctions = [];
     private readonly List<SkillConfiguration> _skills = [];
     private long? _seed;
     private string _instructions = "You are a helpful assistant for Rock RMS.";
@@ -39,7 +39,7 @@ internal class AgentBuilder
     /// </summary>
     /// <param name="function">The function to add.</param>
     /// <returns>The builder for chaining.</returns>
-    internal AgentBuilder WithFunction( AgentFunction function )
+    internal AgentBuilder WithFunction( AgentTool function )
     {
         _individualFunctions.Add( function );
         return this;
@@ -184,8 +184,13 @@ internal class AgentBuilder
 
         return new SkillConfiguration(
             "Individual Functions",
-            "A collection of individual functions that can be used by the agent.",
-            _individualFunctions
+            new SkillInstructionSettings
+            {
+                Purposes = [ "A collection of individual functions that can be used by the agent." ]
+            },
+            _individualFunctions,
+            null,
+            new AgentSkillSettings()
         );
     }
 

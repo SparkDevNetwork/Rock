@@ -18,10 +18,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 
 using Rock.Data;
 using Rock.Field.Types;
@@ -36,7 +34,7 @@ using Group = Rock.Model.Group;
 namespace Rock.AI.Agent.Skills
 {
     [Description( "Used for managing groups, such as adding or removing members, and getting group information." )]
-    [UserDescription( "Used for managing groups, such as adding or removing members, and getting group information." )]
+    [AgentPurpose( "Used for managing groups, such as adding or removing members, and getting group information." )]
     [AgentSkillGuid( "489e96d7-c66c-4683-b76b-92fbfda372f4" )]
     [EntityTypeGuid( "bed15fba-e033-4741-a894-e8ca6ca2b00a" )]
     internal class GroupManagerSkill : AgentSkillComponent
@@ -105,19 +103,17 @@ namespace Rock.AI.Agent.Skills
 
         #region Skill Tools
 
-        [KernelFunction( "AddNoteToPerson" )]
         [Description( "Adds a note to a person." )]
-        [UserDescription( "Adds a note to a person." )]
-        [AgentFunctionGuid( "eae482a7-4dde-4914-baa8-bcb4a103259a" )]
+        [AgentPurpose( "Adds a note to a person." )]
+        [AgentToolGuid( "eae482a7-4dde-4914-baa8-bcb4a103259a" )]
         public string AddNoteToPerson( int personId, string noteText )
         {
             return "Note added to person successfully.";
         }
 
-        [KernelFunction( "GroupMemberOperations" )]
-        [Description( @"Finds a group of people of a specific group type for a person.
-
-This function is designed to be called multiple times in a progressive flow:
+        [Description( @"Finds a group of people of a specific group type for a person." )]
+        [AgentPurpose( "Finds a group of people of a specific group type for a person." )]
+        [AgentUsage( @"This function is designed to be called multiple times in a progressive flow:
 
 🔍 Phase 1 — Group Type Discovery:
 - If the user mentions joining or finding a group, team, etc, and no specific group type is known yet, call this function with groupTypeId = null.
@@ -133,13 +129,10 @@ This function is designed to be called multiple times in a progressive flow:
 
 🛑 Do NOT:
 - Guess or hardcode group type IDs or the search filter keys.
-- Skip this function if information is incomplete — it is designed to provide what’s needed.
-
-This function may be called 2–3 times per user request and is responsible for guiding the user and the model through the group selection process.
-" )]
-        [UserDescription( @"Finds a group of people of a specific group type for a person." )]
-        [AgentFunctionGuid( "468688c4-86ad-401f-ab46-ac0875de2452" )]
-        public string GroupMemberOperations( Kernel kernel, int personId, int groupId,
+- Skip this function if information is incomplete — it is designed to provide what’s needed." )]
+        [AgentUsage( "This function may be called 2–3 times per user request and is responsible for guiding the user and the model through the group selection process." )]
+        [AgentToolGuid( "468688c4-86ad-401f-ab46-ac0875de2452" )]
+        public string GroupMemberOperations( int personId, int groupId,
             [Description( "The operation to preform (Add|Update|Delete)." )] GroupMemberOperation operation,
             [Description( "The role ID. Pass null if the correct value is not yet known. Do not guess." )] int? groupMemberRoleId = null )
         {
@@ -218,11 +211,9 @@ This function may be called 2–3 times per user request and is responsible for 
             }
         }
 
-        [KernelFunction( "GroupFinder" )]
-        [Description( @"
-Finds a group of a specific group type for a person.
-
-This function supports a two-phase flow:
+        [Description( "Finds a group of a specific group type for a person." )]
+        [AgentPurpose( "Finds a group of a specific group type for a person." )]
+        [AgentUsage( @"This function supports a two-phase flow:
 
 🔍 Phase 1 — Discovery:
 - If the groupTypeId is not known, call this function with groupTypeId = null.
@@ -231,14 +222,11 @@ This function supports a two-phase flow:
 - The function will respond with a list of valid group types and/or search filters for the group type.
 
 ✅ Phase 2 — Filtered Search:
-- Once a valid groupTypeId and searchFilters are known, call this function again to retrieve matching groups.
-
-🚫 Do NOT make up or guess values:
-- Do not pass searchFilters or groupTypeId unless they were explicitly provided by the user or returned from this function.
-- If you're unsure about the valid filters or group type, start by calling this function with null values.
-" )]
-        [UserDescription( "Finds a group of a specific group type for a person." )]
-        [AgentFunctionGuid( "34335be4-bf15-07b2-48c8-fac18be8bc46" )]
+- Once a valid groupTypeId and searchFilters are known, call this function again to retrieve matching groups." )]
+        [AgentGuardrail( "Do NOT make up or guess values." )]
+        [AgentGuardrail( "Do not pass searchFilters or groupTypeId unless they were explicitly provided by the user or returned from this function." )]
+        [AgentGuardrail( "If you're unsure about the valid filters or group type, start by calling this function with null values." )]
+        [AgentToolGuid( "34335be4-bf15-07b2-48c8-fac18be8bc46" )]
         public string GroupFinder( int personId, int? groupTypeId = null,
         [Description(
             @"

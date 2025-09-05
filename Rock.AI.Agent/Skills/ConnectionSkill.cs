@@ -22,7 +22,6 @@ using System.Data.Entity;
 using System.Linq;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
@@ -38,9 +37,9 @@ namespace Rock.AI.Agent.Skills
     /// particularly person-centric website analytics such as page visits, grouped by site.
     /// </summary>
 
+    [Description( "This skill provides an overview of connection features." )]
     [AgentSkillGuid( "02214EF2-B1AB-52A4-42FE-C722262925EE" )]
     [EntityTypeGuid( "FE485F5E-7422-78BB-4973-692975860393" )]
-    [UserDescription( "This skill provides an overview of connection features." )]
     internal sealed class ConnectionSkill : AgentSkillComponent
     {
         #region Fields
@@ -67,13 +66,9 @@ namespace Rock.AI.Agent.Skills
         /// <summary>
         /// Retrieves all configured connection types and opportunities in Rock. 
         /// </summary>
-        [KernelFunction( "LookupConnectionTypesAndOpportunities" )]
-        [UserDescription( "Retrieves all configured websites in Rock." )]
-        [AgentFunctionGuid( "21870C06-126F-0882-47E3-DBFC1846BD92" )]
-        [Description(
-            "🎯 Purpose:\r\n" +
-            "- Retrieves a list of all of the connection types and their configuration. This includes Connection Opportunities and Activity Types."
-        )]
+        [Description( "Retrieves all configured websites in Rock." )]
+        [AgentPurpose( "Retrieves a list of all of the connection types and their configuration. This includes Connection Opportunities and Activity Types." )]
+        [AgentToolGuid( "21870C06-126F-0882-47E3-DBFC1846BD92" )]
         public RockToolResult LookupConnectionTypesAndOpportunities()
         {
             var connectionTypes = RockCache.GetOrAddExisting( "rock.core.aiagent.lookupconnectiontypesandopportunties", null, () =>

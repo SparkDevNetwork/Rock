@@ -22,12 +22,8 @@ using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Dynamic.Core;
-using System.Runtime.InteropServices.ComTypes;
-
-using DocumentFormat.OpenXml.Wordprocessing;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
@@ -49,13 +45,10 @@ namespace Rock.AI.Agent.Skills
     /// Provides data lookup and analytics functions focused on site activity in Rock RMS,
     /// particularly person-centric website analytics such as page visits, grouped by site.
     /// </summary>
+    [Description( "This skill provides a holistic view of a person’s profile, connections, and overall engagement." )]
+    [AgentUsage( "Use the SearchPerson function to retrieve a person's IdKey when one is required as a function parameter." )]
     [AgentSkillGuid( "DD5FA7DD-3277-4C31-848D-285CD67AC7CA" )]
     [EntityTypeGuid( "12E7BDEA-B67A-48D7-8D1E-245BF8E9B555" )]
-    [Description(
-    "🧭 Usage Guidance:\r\n" +
-    "- Use the SearchPerson function to retrieve a person's IdKey when one is required as a function parameter."
-    )]
-    [UserDescription( "This skill provides a holistic view of a person’s profile, connections, and overall engagement." )]
     internal sealed class PersonSkill : AgentSkillComponent
     {
         #region Fields
@@ -89,25 +82,16 @@ namespace Rock.AI.Agent.Skills
         /// session context <c>"site-list"</c> for guardrail enforcement.
         /// Defaults the date range to [now - 1 year, now] if neither start nor end are provided.
         /// </remarks>
-        [KernelFunction]
-        [Description(
-            "🎯 Purpose:\r\n" +
-            "- Retrieves page visits for a specific person, optionally filtered by date and/or site. \r\n" +
-            "- Results include the site type (web, mobile, tv), visited pages and visit counts. \r\n\r\n" +
-
-            "🧭 Usage Guidance: \r\n" +
-            "- The results are paginated (and the 'PageNumber' parameter is required.) \r\n" +
-            "- Do not call this function multiple times per site, unless necessary. It supports all-site aggregation when `siteId` is null." + "\r\n\r\n" +
-            "📋 Prerequisites:\r\n" +
-            "- This function depends on context set by `LookupSites`. Ensure it has been called first to set the site list.\r\n\r\n" +
-
-            "📝 Examples: \r\n" +
-            "1. has Ted Decker been active on any of our mobile applications in the last 2 years \r\n" +
-            "2. has Alisha Marble visted the giving page in the past 30 days \r\n" +
-            "3. has Pete been active on our platform?"
-        )]
-        [UserDescription( "Lists page visits for a specific person." )]
-        [AgentFunctionGuid( "EFDBC338-CC1C-46D2-A7F6-7AE5081147AE" )]
+        [Description( "Lists page visits for a specific person." )]
+        [AgentPurpose( "Retrieves page visits for a specific person, optionally filtered by date and/or site." )]
+        [AgentPurpose( "Results include the site type (web, mobile, tv), visited pages and visit counts." )]
+        [AgentUsage( "The results are paginated (and the 'PageNumber' parameter is required.)" )]
+        [AgentUsage( "Do not call this function multiple times per site, unless necessary. It supports all-site aggregation when `siteId` is null." )]
+        [AgentToolPrerequisite( "This function depends on context set by `LookupSites`. Ensure it has been called first to set the site list." )]
+        [AgentToolExample( "has Ted Decker been active on any of our mobile applications in the last 2 years" )]
+        [AgentToolExample( "has Alisha Marble visted the giving page in the past 30 days" )]
+        [AgentToolExample( "has Pete been active on our platform?" )]
+        [AgentToolGuid( "EFDBC338-CC1C-46D2-A7F6-7AE5081147AE" )]
         public RockToolResult SummarizePageVisitsForPerson( string personIdKey, DateTime? startDate = null, DateTime? endDate = null, string siteIdKey = "", int pageNumber = 1 )
         {
             var errors = new List<string>();
@@ -209,16 +193,10 @@ namespace Rock.AI.Agent.Skills
             }
         }
 
-        [KernelFunction]
-        [Description(
-            "🎯 Purpose:\r\n" +
-            "Retrieves media views for a specific person, optionally filtered by date and/or site. \r\n\r\n" +
-
-            "🧭 Usage Guidance" +
-            "The results are paginated (and the 'PageNumber' parameter is required.)"
-        )]
-        [UserDescription( "Lists page visits for a specific person." )]
-        [AgentFunctionGuid( "AB6CB80C-352A-F895-4233-09BA9DA69CCC" )]
+        [Description( "Lists page visits for a specific person." )]
+        [AgentPurpose( "Retrieves media views for a specific person, optionally filtered by date and/or site." )]
+        [AgentUsage( "The results are paginated (and the 'PageNumber' parameter is required.)" )]
+        [AgentToolGuid( "AB6CB80C-352A-F895-4233-09BA9DA69CCC" )]
         public RockToolResult ListMediaViewsForPerson( string personIdKey, int pageNumber = 1, DateTime? startDate = null, DateTime? endDate = null )
         {
             // Validate person
@@ -307,20 +285,16 @@ namespace Rock.AI.Agent.Skills
         /// </summary>
         /// <param name="options"></param>
         /// <returns></returns>
-        [KernelFunction( "SearchPerson" )]
-        [Description(
-            "🎯 Purpose:\r\n" +
-            "Searches for matching people by name. This will search by exact match as well as 'Sounds Like'. \\r\\n\" +" +
-            "Suffixes should be provide in the format of Sr., Jr., III, IV." +
-            "📦 Returns" +
-            "- A collection of summaries about the matched people. These are not full profiles. Call `GetPersonProfile` passing the personIdKey to get a person's full profile. " )]
-        [UserDescription( "Does a full name sounds like search for the person." )]
-        [AgentFunctionGuid( "03093B11-A02D-F794-4A5E-9AEA2C6EF63E" )]
+        [Description( "Does a full name sounds like search for the person." )]
+        [AgentPurpose( "Searches for matching people by name. This will search by exact match as well as 'Sounds Like'." )]
+        [AgentUsage( "Suffixes should be provide in the format of Sr., Jr., III, IV." )]
+        [AgentToolReturnDescription( "A collection of summaries about the matched people. These are not full profiles. Call `GetPersonProfile` passing the personIdKey to get a person's full profile. " )]
+        [AgentToolGuid( "03093B11-A02D-F794-4A5E-9AEA2C6EF63E" )]
         public RockToolResult SearchPerson( string fullName, int maxResults = 20, string campusIdKey = null )
         {
             if ( fullName == null || fullName.IsNullOrWhiteSpace() )
             {
-                return RockToolResult.Error( "Full name is required.")
+                return RockToolResult.Error( "Full name is required." )
                     .WithInstructions( "The FullName parameter is required. You may also provide optional filters for CampusKey to filter by a specific campus and MaxResults to limit the results." );
             }
 
@@ -334,7 +308,7 @@ namespace Rock.AI.Agent.Skills
                 var specificErrorInstructions = string.Empty;
 
                 // Provide some special instructions for senior and junior as these can commonly be used by voice ai.
-                if ( fullName.EndsWith( "Senior") )
+                if ( fullName.EndsWith( "Senior" ) )
                 {
                     specificErrorInstructions = "Please retry providing the suffix of Sr. instead of Senior";
                 }
@@ -347,7 +321,7 @@ namespace Rock.AI.Agent.Skills
                 return RockToolResult.Error( "Could not find anyone with the name provided." )
                     .WithInstructions( "Could not find anyone with the name provided." );
             }
-            
+
             // Append campus filter if provided
             if ( campusIdKey.IsNotNullOrWhiteSpace() )
             {
@@ -421,13 +395,10 @@ namespace Rock.AI.Agent.Skills
                 .WithMetadata( meta );
         }
 
-        [Description(
-            "🎯 Purpose:\r\n" +
-            "-Retrieves the complete profile of a person. \\r\\n\" +" +
-            "-Serves as the primary entry point for gaining insights into an individual." )]
-        [KernelFunction( "GetPersonProfile" )]
-        [UserDescription( "Returns a comprehensive profile for a single person, including contact details, demographics, household, and key insights." )]
-        [AgentFunctionGuid( "2142A382-6AB2-0995-4480-69B641AE2CDC" )]
+        [Description( "Returns a comprehensive profile for a single person, including contact details, demographics, household, and key insights." )]
+        [AgentPurpose( "Retrieves the complete profile of a person." )]
+        [AgentPurpose( "-Serves as the primary entry point for gaining insights into an individual." )]
+        [AgentToolGuid( "2142A382-6AB2-0995-4480-69B641AE2CDC" )]
         public RockToolResult GetPersonProfile( string personIdKey )
         {
             if ( personIdKey.IsNullOrWhiteSpace() )
@@ -487,10 +458,10 @@ namespace Rock.AI.Agent.Skills
                     IsUnlisted = n.IsUnlisted,
                     PhoneNumber = n.NumberFormatted,
                     PhoneType = new KeyNameResult
-                        {
-                            Id = n.NumberTypeValueId ?? 0,
-                            Name = n.NumberTypeValue != null ? n.NumberTypeValue.Value : string.Empty
-                        },
+                    {
+                        Id = n.NumberTypeValueId ?? 0,
+                        Name = n.NumberTypeValue != null ? n.NumberTypeValue.Value : string.Empty
+                    },
                     IsMessagingEnabled = n.IsMessagingEnabled
                 } ).ToList();
 
@@ -504,7 +475,7 @@ namespace Rock.AI.Agent.Skills
                     State = l.Location.State,
                     PostalCode = l.Location.PostalCode,
                     Country = l.Location.Country,
-                    LocationType = l.GroupLocationTypeValue != null ? l.GroupLocationTypeValue.Value : string.Empty,                   
+                    LocationType = l.GroupLocationTypeValue != null ? l.GroupLocationTypeValue.Value : string.Empty,
                     IsMailingAddress = l.IsMailingLocation,
                     IsMappedLocation = l.IsMappedLocation,
                     GeographyPoint = ( l.Location.Latitude.HasValue && l.Location.Longitude.HasValue ) ? new GeographyPoint( l.Location.Latitude.Value, l.Location.Longitude.Value ) : null
@@ -541,7 +512,8 @@ namespace Rock.AI.Agent.Skills
 
             if ( spouse != null )
             {
-                profileResult.Spouse = new PersonResult {
+                profileResult.Spouse = new PersonResult
+                {
                     Id = spouse.Id,
                     FirstName = spouse.FirstName,
                     NickName = spouse.NickName,
@@ -640,10 +612,8 @@ namespace Rock.AI.Agent.Skills
                 .WithReferenceRoute( requestContext, "View Profile", $"/person/{profileResult.IdKey}", false );
         }
 
-        
-        [KernelFunction( "ListConnectionRequestsForPerson" )]
-        [UserDescription( "Returns a list of connection requests for the user." )]
-        [AgentFunctionGuid( "DC03271E-2C54-D5AF-4F18-9CCC69F25202" )]
+        [Description( "Returns a list of connection requests for the user." )]
+        [AgentToolGuid( "DC03271E-2C54-D5AF-4F18-9CCC69F25202" )]
         public RockToolResult ListConnectionRequestsForPerson( string personIdKey, int pageNumber = 1 )
         {
             if ( personIdKey.IsNullOrWhiteSpace() )
@@ -674,13 +644,13 @@ namespace Rock.AI.Agent.Skills
                         PhotoId = cr.PersonAlias.Person.PhotoId
                     },
                     Comments = cr.Comments,
-                    ConnectionState = new KeyNameResult { Id = (int) cr.ConnectionState, Name = cr.ConnectionState.ToString() },
+                    ConnectionState = new KeyNameResult { Id = ( int ) cr.ConnectionState, Name = cr.ConnectionState.ToString() },
                     ConnectionStatus = new KeyNameResult { Id = cr.ConnectionStatus.Id, Name = cr.ConnectionStatus.Name },
                     ConnectionOpportunity = new ConnectionOpportunityResult
-                        {
-                            Id = cr.ConnectionOpportunity.Id,
-                            Name = cr.ConnectionOpportunity.Name,
-                            ConnectionType = new ConnectionTypeResult { Id = cr.ConnectionOpportunity.ConnectionType.Id, Name = cr.ConnectionOpportunity.ConnectionType.Name }
+                    {
+                        Id = cr.ConnectionOpportunity.Id,
+                        Name = cr.ConnectionOpportunity.Name,
+                        ConnectionType = new ConnectionTypeResult { Id = cr.ConnectionOpportunity.ConnectionType.Id, Name = cr.ConnectionOpportunity.ConnectionType.Name }
                     },
                     CreatedDateTime = cr.CreatedDateTime,
                     ModifiedDateTime = cr.ModifiedDateTime,
@@ -688,13 +658,13 @@ namespace Rock.AI.Agent.Skills
                     Campus = cr.Campus != null ? new CampusResult { Id = cr.Campus.Id, Name = cr.Campus.Name } : null,
                     AssignedGroup = cr.AssignedGroup != null ? new GroupResult { Id = cr.AssignedGroup.Id, Name = cr.AssignedGroup.Name } : null,
                     Connector = cr.ConnectorPersonAlias != null ? new PersonResult
-                        {
-                            Id = cr.ConnectorPersonAlias.Person.Id,
-                            FirstName = cr.ConnectorPersonAlias.Person.FirstName,
-                            LastName = cr.ConnectorPersonAlias.Person.LastName,
-                            NickName = cr.ConnectorPersonAlias.Person.NickName,
-                            PhotoId = cr.ConnectorPersonAlias.Person.PhotoId
-                        } : null,
+                    {
+                        Id = cr.ConnectorPersonAlias.Person.Id,
+                        FirstName = cr.ConnectorPersonAlias.Person.FirstName,
+                        LastName = cr.ConnectorPersonAlias.Person.LastName,
+                        NickName = cr.ConnectorPersonAlias.Person.NickName,
+                        PhotoId = cr.ConnectorPersonAlias.Person.PhotoId
+                    } : null,
                     Activities = cr.ConnectionRequestActivities.Select( a => new ConnectionRequestActivityResult
                     {
                         Id = a.Id,
@@ -713,7 +683,7 @@ namespace Rock.AI.Agent.Skills
                     Attributes = cr.ConnectionRequestAttributeValues
                         .Where( a => isInternal || a.IsPublic )
                         .Select( a =>
-                            new AttributeResult { Id = a.AttributeId, Value = a.PersistedTextValue, Name = a.Name }).ToList()
+                            new AttributeResult { Id = a.AttributeId, Value = a.PersistedTextValue, Name = a.Name } ).ToList()
 
                 } )
                 .OrderBy( cr => cr.Id )

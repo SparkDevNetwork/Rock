@@ -30,7 +30,7 @@ public abstract class BaseFunctionCallTests : MockDatabaseTestsBase
     /// <param name="seed">This may be ignored currently, but it is supported by Azure AI as a "best effort" to provide predictable results.</param>
     /// <param name="function">The function to be registered with the agent for testing.</param>
     /// <returns>An instance of the chat agent, a list that will contain the output after calling the agent, and a list that will contain the logs after calling the agent.</returns>
-    internal static (IChatAgent Chat, List<string> Output, List<string> Logs) ConfigureChatAgent( long? seed, AgentFunction function )
+    internal static (IChatAgent Chat, List<string> Output, List<string> Logs) ConfigureChatAgent( long? seed, AgentTool function )
     {
         var apiKey = ConfigurationManager.AppSettings["AzureOpenAIApiKey"];
         var endpoint = ConfigurationManager.AppSettings["AzureOpenAIEndpoint"];
@@ -93,11 +93,13 @@ public abstract class BaseFunctionCallTests : MockDatabaseTestsBase
             new List<SkillConfiguration>
             {
                 new SkillConfiguration( "Test",
-                    "The only skill available for use.",
-                    new List<AgentFunction>
+                    new SkillInstructionSettings
                     {
-                        function
-                    } )
+                        Purposes = ["The only skill available for use."]
+                    },
+                    [function],
+                    null,
+                    new AgentSkillSettings() )
             } );
 
         // Create a logger factory that captures log messages to a list.

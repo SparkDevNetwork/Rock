@@ -119,7 +119,7 @@ namespace Rock.AI.Agent
         /// used by the MCP server to handle function calls from the client.
         /// </summary>
         /// <param name="skillKey">A string that matches the <see cref="SkillConfiguration.Key"/> value of a registered skill.</param>
-        /// <param name="functionKey">A string that matches the <see cref="AgentFunction.Key"/> value of a registered function in the skill.</param>
+        /// <param name="functionKey">A string that matches the <see cref="AgentTool.Key"/> value of a registered function in the skill.</param>
         /// <param name="arguments">The arguments to pass to the function.</param>
         /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
         /// <returns>The value returned from the function invocation.</returns>

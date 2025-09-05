@@ -61,18 +61,14 @@ public class ProxyFunctionCallTests : BaseFunctionCallTests
             }
         };
 
-        var instructions = """
-            🎯 Purpose:
-            1. This function searches the database for people, groups, content channels that match the query from the user.
-
-            🧭 Usage Guidance:
-            1. This function must be called if the user is trying to search for an entity. Do not attempt to infer the data from previous messages.
-            """;
-
-        var function = new AgentFunction
+        var function = new AgentTool
         {
             Name = "Search",
-            Instructions = instructions,
+            Instructions = new ToolInstructionSettings
+            {
+                Purposes = ["This function searches the database for people, groups, content channels that match the query from the user."],
+                Usages = ["This function must be called if the user is trying to search for an entity. Do not attempt to infer the data from previous messages."]
+            },
             FunctionType = FunctionType.ExecuteLava,
             Prompt = "{% output %}{{ searchTerm }}{% endoutput %}No Results Found.",
             Parameters = parameters,
@@ -135,18 +131,14 @@ public class ProxyFunctionCallTests : BaseFunctionCallTests
             }
         };
 
-        var instructions = """
-                🎯 Purpose:
-                1. This function searches the database for people, groups, content channels that match the query from the user.
-
-                🧭 Usage Guidance:
-                1. This function must be called if the user is trying to search for an entity. Do not attempt to infer the data from previous messages.
-                """;
-
-        var function = new AgentFunction
+        var function = new AgentTool
         {
             Name = "Search",
-            Instructions = instructions,
+            Instructions = new ToolInstructionSettings
+            {
+                Purposes = ["This function searches the database for people, groups, content channels that match the query from the user."],
+                Usages = ["This function must be called if the user is trying to search for an entity. Do not attempt to infer the data from previous messages."]
+            },
             FunctionType = FunctionType.ExecuteLava,
             Prompt = "{% output %}{{ searchTerm }}/{{ firstName }}/{{ lastName }}/{{ groupName }}{% endoutput %}No Results Found.",
             Parameters = parameters,
@@ -219,18 +211,14 @@ public class ProxyFunctionCallTests : BaseFunctionCallTests
             }
         };
 
-        var instructions = """
-                🎯 Purpose:
-                1. This function searches the database for people, groups, content channels that match the query from the user.
-
-                🧭 Usage Guidance:
-                1. This function must be called if the user is trying to search for an entity. Do not attempt to infer the data from previous messages.
-                """;
-
-        var function = new AgentFunction
+        var function = new AgentTool
         {
             Name = "Search",
-            Instructions = instructions,
+            Instructions = new ToolInstructionSettings
+            {
+                Purposes = ["This function searches the database for people, groups, content channels that match the query from the user."],
+                Usages = ["This function must be called if the user is trying to search for an entity. Do not attempt to infer the data from previous messages."]
+            },
             FunctionType = FunctionType.ExecuteLava,
             Prompt = "{% output %}{{ searchTerm }}/{{ firstName }}/{{ lastName }}/{{ groupName }}/{{ entityTypes | Join:',' }}{% endoutput %}No Results Found.",
             Parameters = parameters,
@@ -302,20 +290,14 @@ public class ProxyFunctionCallTests : BaseFunctionCallTests
             }
         };
 
-        var instructions = """
-                🎯 Purpose:
-                1. This function searches the database for people, groups, content channels that match the query from the user.
-
-                🧭 Usage Guidance:
-                1. This function must be called if the user is trying to search for an entity. Do not attempt to infer the data from previous messages.
-
-                
-                """;
-
-        var function = new AgentFunction
+        var function = new AgentTool
         {
             Name = "Search",
-            Instructions = instructions,
+            Instructions = new ToolInstructionSettings
+            {
+                Purposes = ["This function searches the database for people, groups, content channels that match the query from the user."],
+                Usages = ["This function must be called if the user is trying to search for an entity. Do not attempt to infer the data from previous messages."]
+            },
             FunctionType = FunctionType.ExecuteLava,
             Prompt = "{% output %}{{ searchTerm }}/{{ firstName }}/{{ lastName }}/{{ groupName }}/{{ entityTypes }}{% endoutput %}No Results Found.",
             Parameters = parameters,

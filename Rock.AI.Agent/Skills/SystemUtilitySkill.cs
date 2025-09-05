@@ -21,7 +21,6 @@ using System.ComponentModel;
 using System.Linq;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
@@ -33,14 +32,10 @@ using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills
 {
-    [Description(
-        "🎯 Purpose:\r\n" +
-        "Provides common, non-domain-specific helper functions that can be used across multiple skills.\r\n" +
-        "These include utilities for working with dates, times, and simple data conversions." + "\r\n\r\n" +
-        "\U0001f9ed Usage Guidance:" + "\r\n" +
-        "- ALWAYS call DetermineDateRange for natural-language date/time prompts (e.g., \"\"past 3 years\"\", \"\"yesterday\"\", \"\"Q2\"\", \"\"this week\"\", specific dates)."
-    )]
-    [UserDescription( "Provides common, non-domain-specific helper functions that can be used across multiple skills." )]
+    [Description( "Provides common, non-domain-specific helper functions that can be used across multiple skills." )]
+    [AgentPurpose( "Provides common, non-domain-specific helper functions that can be used across multiple skills." )]
+    [AgentPurpose( "These include utilities for working with dates, times, and simple data conversions." )]
+    [AgentUsage( "ALWAYS call DetermineDateRange for natural-language date/time prompts (e.g., \"past 3 years\", \"yesterday\", \"Q2\", \"this week\", specific dates)." )]
     [AgentSkillGuid( "3406D2DC-6718-45A2-99D3-1DAA32BF2EFD" )]
     [EntityTypeGuid( "35CD02D0-1FF7-4256-B495-FBBFBC9A2C9C" )]
     internal sealed class SystemUtilitySkill : AgentSkillComponent
@@ -71,10 +66,10 @@ namespace Rock.AI.Agent.Skills
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns></returns>
-        [KernelFunction( "DetermineDateRange" )]
-        [Description( "🎯 Purpose:\r\n1. Determines a date range from a natural language string.\r\n\r\n\U0001f9ed Usage Guidance:\r\n1. This function is useful in cases where you need to determine a start date and end date for another\r\n   function, such as when you want to filter results by a specific date range." )]
-        [UserDescription( "Determines a date range from a natural language string." )]
-        [AgentFunctionGuid( "87756092-9D52-448E-82EE-556A780DF7CF" )]
+        [Description( "Determines a date range from a natural language string." )]
+        [AgentPurpose( "Determines a date range from a natural language string." )]
+        [AgentUsage( "This function is useful in cases where you need to determine a start date and end date for another function, such as when you want to filter results by a specific date range." )]
+        [AgentToolGuid( "87756092-9D52-448E-82EE-556A780DF7CF" )]
         public RockToolResult DetermineDateRange(
             [Description( "A natural language string, such as 'last week', 'tomorrow', or 'March 1st to March 10th'.")]
             string query )
@@ -91,9 +86,8 @@ namespace Rock.AI.Agent.Skills
             return RockToolResult.Success( dateRange );
         }
 
-        [KernelFunction( "LookupCampuses" )]
-        [AgentFunctionGuid( "1FDDC83F-2911-5E86-4219-DB4A5F10BD42" )]
-        [UserDescription( "Provides information on the campuses." )]
+        [Description( "Provides information on the campuses." )]
+        [AgentToolGuid( "1FDDC83F-2911-5E86-4219-DB4A5F10BD42" )]
         public RockToolResult LookupCampuses()
         {
             var campusResults = RockCache.GetOrAddExisting( "rock.core.aiagent.lookupcampuses", null, () =>

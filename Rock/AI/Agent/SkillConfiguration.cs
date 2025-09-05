@@ -41,12 +41,12 @@ namespace Rock.AI.Agent
         /// Gets the instructions describing the purpose or typical use of
         /// this skill. These will be passed to the language model.
         /// </summary>
-        public string Instructions { get; }
+        public SkillInstructionSettings Instructions { get; }
 
         /// <summary>
         /// Gets the list of function definitions (semantic or native) associated with this skill.
         /// </summary>
-        public List<AgentFunction> Functions { get; } = new List<AgentFunction>();
+        public List<AgentTool> Functions { get; } = new List<AgentTool>();
 
         /// <summary>
         /// Gets the native type implementing this skill, if it is a native (code-based) skill.
@@ -54,41 +54,24 @@ namespace Rock.AI.Agent
         public Type NativeType { get; }
 
         /// <summary>
-        /// Gets the list of disabled function GUIDs for this skill.
-        /// </summary>
-        public List<Guid> DisabledFunctions { get; } = new List<Guid>();
-
-        /// <summary>
         /// Gets a dictionary of configuration values for this skill.
         /// </summary>
         public Dictionary<string, string> ConfigurationValues { get; } = new Dictionary<string, string>();
-
-        /// <summary>
-        /// Initializes a new <see cref="SkillConfiguration"/> for a semantic skill with the specified metadata and functions.
-        /// </summary>
-        /// <param name="name">The display name of the skill.</param>
-        /// <param name="instructions">The instructions describing the skill's purpose.</param>
-        /// <param name="functions">The list of semantic or native functions defined for this skill.</param>
-        public SkillConfiguration( string name, string instructions, List<AgentFunction> functions )
-        {
-            Name = name;
-            Instructions = instructions;
-            Functions = functions ?? new List<AgentFunction>();
-        }
 
         /// <summary>
         /// Initializes a new <see cref="SkillConfiguration"/> for a native skill, specifying its type and settings.
         /// </summary>
         /// <param name="name">The display name of the skill.</param>
         /// <param name="instructions">The instructions describing the skill's purpose.</param>
-        /// <param name="nativeType">The <see cref="Type"/> implementing the native skill.</param>
+        /// <param name="tools">The list of tools that are available for this skill.</param>
+        /// <param name="nativeType">The <see cref="Type"/> implementing the native skill or <c>null</c>.</param>
         /// <param name="agentSkillSettings">The settings used to configure the native skill, including disabled functions and configuration values.</param>
-        public SkillConfiguration( string name, string instructions, Type nativeType, AgentSkillSettings agentSkillSettings )
+        public SkillConfiguration( string name, SkillInstructionSettings instructions, List<AgentTool> tools, Type nativeType, AgentSkillSettings agentSkillSettings )
         {
             Name = name;
             Instructions = instructions;
+            Functions = tools;
             NativeType = nativeType;
-            DisabledFunctions = agentSkillSettings.DisabledFunctions ?? new List<Guid>();
             ConfigurationValues = agentSkillSettings.ConfigurationValues ?? new Dictionary<string, string>();
         }
     }

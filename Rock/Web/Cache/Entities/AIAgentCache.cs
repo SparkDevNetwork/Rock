@@ -112,6 +112,73 @@ namespace Rock.Web.Cache.Entities
         }
 
         /// <summary>
+        /// Get the configuration object that represents the skill.
+        /// </summary>
+        /// <param name="skill">The skill that needs to be initialized.</param>
+        /// <param name="agentSkillSettings">The settings for this skill from the <see cref="AIAgentSkill"/>.</param>
+        /// <param name="currentPerson">The current person that will be interacting with the skill.</param>
+        /// <param name="isSecurityEnabled"><c>true</c> if security should be checked when initializing the skill.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>An instance of <see cref="SkillConfiguration"/> that represents the skill and tools, or <c>null</c> if the skill should not be used.</returns>
+        private static SkillConfiguration GetSkillConfiguration( AISkillCache skill, AgentSkillSettings agentSkillSettings, Person currentPerson, bool isSecurityEnabled, RockContext rockContext )
+        {
+            var functions = new AISkillFunctionService( rockContext )
+                .Queryable()
+                .Where( f => f.AISkillId == skill.Id )
+                .ToList()
+                .Where( f => !isSecurityEnabled || f.IsAuthorized( Authorization.VIEW, currentPerson ) );
+
+            var skillFunctions = new List<AgentTool>();
+
+            foreach ( var function in functions )
+            {
+                if ( agentSkillSettings.DisabledFunctions?.Contains( function.Guid ) == true )
+                {
+                    continue;
+                }
+
+                var prompt = function.GetAdditionalSettings<PromptInformationSettings>();
+                var instructions = function.GetAdditionalSettings<ToolInstructionSettings>();
+
+                var agentFunction = new AgentTool
+                {
+                    Guid = function.Guid,
+                    Name = function.Name,
+                    Description = function.Description,
+                    Instructions = instructions,
+                    Role = ModelServiceRole.Default, // TODO: Fix this
+                    FunctionType = function.FunctionType,
+                    Prompt = prompt.Prompt ?? string.Empty,
+                    EnableLavaPreRendering = prompt.PreRenderLava,
+                    Parameters = prompt.PromptParameters,
+                    Temperature = ( double? ) prompt.Temperature,
+                    MaxTokens = prompt.MaxTokens,
+                };
+
+                skillFunctions.Add( agentFunction );
+            }
+
+            if ( skillFunctions.Count > 0 )
+            {
+                var name = skill.Name;
+                var instructions = skill.GetAdditionalSettings<SkillInstructionSettings>();
+                Type type = null;
+
+                if ( skill.CodeEntityTypeId.HasValue )
+                {
+                    var entityType = EntityTypeCache.Get( skill.CodeEntityTypeId.Value, rockContext );
+                    type = entityType?.GetEntityType();
+                }
+
+                var config = new SkillConfiguration( name, instructions, skillFunctions, type, agentSkillSettings );
+
+                return config;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Adds the system skills to the provided list of skill configurations.
         /// </summary>
         /// <param name="skillConfigurations">The list of configuration skills to update.</param>
@@ -134,23 +201,11 @@ namespace Rock.Web.Cache.Entities
                     continue;
                 }
 
-                var entityType = EntityTypeCache.Get( systemSkill.CodeEntityTypeId.Value, rockContext );
-                var type = entityType?.GetEntityType();
+                var config = GetSkillConfiguration( systemSkill, new AgentSkillSettings(), currentPerson, isSecurityEnabled, rockContext );
 
-                if ( type != null )
+                if ( config != null )
                 {
-                    var agentSkillSettings = new AgentSkillSettings();
-                    var deniedFunctions = new AISkillFunctionService( rockContext )
-                        .Queryable()
-                        .Where( f => f.AISkillId == systemSkill.Id )
-                        .ToList()
-                        .Where( f => isSecurityEnabled && !f.IsAuthorized( Authorization.VIEW, currentPerson ) );
-
-                    // Add the denied functions to the disabled list so that
-                    // they are not made available to the agent.
-                    agentSkillSettings.DisabledFunctions.AddRange( deniedFunctions.Select( f => f.Guid ) );
-
-                    skillConfigurations.Add( new SkillConfiguration( systemSkill.Name, systemSkill.Instructions, type, agentSkillSettings ) );
+                    skillConfigurations.Add( config );
                 }
             }
         }
@@ -180,69 +235,14 @@ namespace Rock.Web.Cache.Entities
 
             foreach ( var agentSkill in agentSkills )
             {
+                var skill = AISkillCache.Get( agentSkill.AISkillId, rockContext );
                 var agentSkillSettings = agentSkill.GetAdditionalSettings<AgentSkillSettings>();
 
-                if ( agentSkill.AISkill.CodeEntityTypeId.HasValue )
+                var config = GetSkillConfiguration( skill, agentSkillSettings, currentPerson, isSecurityEnabled, rockContext );
+
+                if ( config != null )
                 {
-                    var entityType = EntityTypeCache.Get( agentSkill.AISkill.CodeEntityTypeId.Value, rockContext );
-                    var type = entityType?.GetEntityType();
-
-                    if ( type != null )
-                    {
-                        var deniedFunctions = new AISkillFunctionService( rockContext )
-                            .Queryable()
-                            .Where( f => f.AISkillId == agentSkill.AISkillId )
-                            .ToList()
-                            .Where( f => isSecurityEnabled && !f.IsAuthorized( Authorization.VIEW, currentPerson ) );
-
-                        // Add the denied functions to the disabled list so that
-                        // they are not made available to the agent.
-                        agentSkillSettings.DisabledFunctions.AddRange( deniedFunctions.Select( f => f.Guid ) );
-
-                        skillConfigurations.Add( new SkillConfiguration( agentSkill.AISkill.Name, agentSkill.AISkill.Instructions, type, agentSkillSettings ) );
-                    }
-                }
-                else
-                {
-                    var functions = new AISkillFunctionService( rockContext )
-                        .Queryable()
-                        .Where( f => f.AISkillId == agentSkill.AISkillId )
-                        .ToList()
-                        .Where( f => !isSecurityEnabled || f.IsAuthorized( Authorization.VIEW, currentPerson ) );
-
-                    var skillFunctions = new List<AgentFunction>();
-
-                    foreach ( var function in functions )
-                    {
-                        if ( agentSkillSettings.DisabledFunctions?.Contains( function.Guid ) == true )
-                        {
-                            continue;
-                        }
-
-                        var prompt = function.GetAdditionalSettings<PromptInformationSettings>();
-
-                        var agentFunction = new AgentFunction
-                        {
-                            Guid = function.Guid,
-                            Name = function.Name,
-                            Description = function.Description,
-                            Instructions = function.Instructions,
-                            Role = ModelServiceRole.Default, // TODO: Fix this
-                            FunctionType = function.FunctionType,
-                            Prompt = prompt.Prompt ?? string.Empty,
-                            EnableLavaPreRendering = prompt.PreRenderLava,
-                            Parameters = prompt.PromptParameters,
-                            Temperature = ( double? ) prompt.Temperature,
-                            MaxTokens = prompt.MaxTokens,
-                        };
-
-                        skillFunctions.Add( agentFunction );
-                    }
-
-                    if ( skillFunctions.Count > 0 )
-                    {
-                        skillConfigurations.Add( new SkillConfiguration( agentSkill.AISkill.Name, agentSkill.AISkill.Instructions, skillFunctions ) );
-                    }
+                    skillConfigurations.Add( config );
                 }
             }
 

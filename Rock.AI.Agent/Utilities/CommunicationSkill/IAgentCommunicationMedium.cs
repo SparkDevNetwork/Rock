@@ -17,10 +17,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using Microsoft.SemanticKernel;
-
-using Rock.Data;
-
 namespace Rock.AI.Agent.Utilities.CommunicationSkill
 {
     /// <summary>

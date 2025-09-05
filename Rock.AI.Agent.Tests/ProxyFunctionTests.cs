@@ -363,7 +363,7 @@ public class ProxyFunctionTests
 
         var requestContext = new AgentRequestContext( rockRequestContextMock.Object, null );
 
-        var function = new AgentFunction
+        var function = new AgentTool
         {
             Prompt = "Hello, {{ Name }}!",
             Parameters =

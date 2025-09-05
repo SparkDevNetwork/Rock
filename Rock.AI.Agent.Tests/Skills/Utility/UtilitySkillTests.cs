@@ -98,32 +98,41 @@ public class UtilitySkillTests : MockDatabaseTestsBase
     {
         return new SkillConfiguration(
             "Utility Skill",
-            "Used for a variety of standard functions, such as retrieving the current date or converting simple data types.",
-            [ GetMockDetermineDateRangeFunction(), GetMockGetCurrentDateFunction() ]
+            new SkillInstructionSettings
+            {
+                Purposes = ["Used for a variety of standard functions, such as retrieving the current date or converting simple data types."]
+            },
+            [ GetMockDetermineDateRangeFunction(), GetMockGetCurrentDateFunction() ],
+            null,
+            new AgentSkillSettings()
         );
     }
 
     /// <summary>
     /// Returns a mock DetermineDateRange AgentFunction (for parameter/response tests).
     /// </summary>
-    private AgentFunction GetMockDetermineDateRangeFunction()
+    private AgentTool GetMockDetermineDateRangeFunction()
     {
-        return new AgentFunction
+        return new AgentTool
         {
             Name = "DetermineDateRange",
-            Instructions = "🎯 Purpose:\n1. Determines a date range from a natural language string.\n\n🧭 Usage Guidance:\n1. Use for extracting a start and end date from a user's query.",
+            Instructions = new ToolInstructionSettings
+            {
+                Purposes = ["Determines a date range from a natural language string."],
+                Usages = ["Use for extracting a start and end date from a user's query."]
+            },
             FunctionType = FunctionType.ExecuteLava,
             Prompt = "{% output %}{{ query }}{% endoutput %}{\r\n  \"StartDate\": \"2025-07-01T00:00:00\",\r\n  \"EndDate\": \"2025-07-31T00:00:00\"\r\n}",
             Parameters = new List<ParameterSchema>
-        {
-            new ParameterSchema
             {
-                Name = "query",
-                DataType = ParameterSchemaDataType.String,
-                Instructions = "A natural language string, such as 'last week', 'tomorrow', or 'March 1st to March 10th'.",
-                IsRequired = true
-            }
-        },
+                new ParameterSchema
+                {
+                    Name = "query",
+                    DataType = ParameterSchemaDataType.String,
+                    Instructions = "A natural language string, such as 'last week', 'tomorrow', or 'March 1st to March 10th'.",
+                    IsRequired = true
+                }
+            },
             Temperature = 1,
             MaxTokens = 128
         };
@@ -132,12 +141,15 @@ public class UtilitySkillTests : MockDatabaseTestsBase
     /// <summary>
     /// Returns a mock GetCurrentDateTime AgentFunction (for parameter/response tests).
     /// </summary>
-    private AgentFunction GetMockGetCurrentDateFunction()
+    private AgentTool GetMockGetCurrentDateFunction()
     {
-        return new AgentFunction
+        return new AgentTool
         {
             Name = "GetCurrentDateTime",
-            Instructions = "🎯 Purpose:\n1. Returns the current system date/time as an ISO string.",
+            Instructions = new ToolInstructionSettings
+            {
+                Purposes = ["Returns the current system date/time as an ISO string."]
+            },
             FunctionType = FunctionType.ExecuteLava,
             // Outputs the current date for testing (could be fixed or dynamic for a real test)
             Prompt = "{% output %}2025-07-30T12:00:00{% endoutput %}2025-07-30T12:00:00",

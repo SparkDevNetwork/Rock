@@ -18,14 +18,11 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.SiteSkill;
-using Rock.Data;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
@@ -36,9 +33,9 @@ namespace Rock.AI.Agent.Skills
     /// particularly person-centric website analytics such as page visits, grouped by site.
     /// </summary>
 
+    [Description( "This skill provides an overview of site details and engagement across websites, mobile apps, and TV apps." )]
     [AgentSkillGuid( "613D7110-6453-4BAB-892B-064222F8397C" )]
     [EntityTypeGuid( "7A63570D-6FC3-4573-BDF2-89CFF605D5AB" )]
-    [UserDescription( "This skill provides an overview of site details and engagement across websites, mobile apps, and TV apps." )]
     internal sealed class SiteSkill : AgentSkillComponent
     {
         #region Fields
@@ -67,9 +64,8 @@ namespace Rock.AI.Agent.Skills
         /// Also persists a trimmed list (Id, Name, SiteType) into the agent’s session context
         /// under the key <c>"site-list"</c> so that subsequent calls can reference it.
         /// </summary>
-        [KernelFunction( "LookupSites" )]
-        [UserDescription( "Retrieves all configured websites in Rock." )]
-        [AgentFunctionGuid( "6234BB68-99B8-4B7C-884D-0D760B1F081C" )]
+        [Description( "Retrieves all configured websites in Rock." )]
+        [AgentToolGuid( "6234BB68-99B8-4B7C-884D-0D760B1F081C" )]
         public RockToolResult LookupSites()
         {
             var sites = SiteCache.All( AgentRequestContext.RockContext );

@@ -21,7 +21,6 @@ using System.Linq;
 using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel;
 
 using Rock.AI.Agent;
 using Rock.Configuration;
@@ -34,17 +33,17 @@ namespace Rock.Model
     public partial class AISkillFunctionService
     {
         /// <summary>
-        /// Registers all AI skill functions defined on <paramref name="skillType"/>.
-        /// New functions are added to the database. Existing fuinctions are
-        /// updated if necessary. Funcations that no longer exist are not
-        /// currently deleted from the database.
+        /// Registers all AI skill tools defined on <paramref name="skillType"/>.
+        /// New tools are added to the database. Existing tools are updated if
+        /// necessary. Tools that no longer exist are not currently deleted from
+        /// the database.
         /// </summary>
-        /// <param name="skillId">The identifier of the AI skill that these functions are associated with.</param>
-        /// <param name="skillType">The C# type that represents the skill containing the functions to register.</param>
+        /// <param name="skillId">The identifier of the AI skill that these tools are associated with.</param>
+        /// <param name="skillType">The C# type that represents the skill containing the tools to register.</param>
         /// <param name="rockContext">The context to use when saving changes to the database.</param>
         internal static void RegisterFunctions( int skillId, Type skillType, RockContext rockContext )
         {
-            var existingFunctions = new AISkillFunctionService( rockContext )
+            var existingTools = new AISkillFunctionService( rockContext )
                 .Queryable()
                 .ToList();
 
@@ -52,7 +51,7 @@ namespace Rock.Model
 
             foreach ( var method in methods )
             {
-                RegisterFunction( skillId, method, existingFunctions, rockContext );
+                RegisterTool( skillId, method, existingTools, rockContext );
             }
 
             var serviceProvider = RockApp.Current.CreateScope().ServiceProvider;
@@ -69,183 +68,280 @@ namespace Rock.Model
                 return;
             }
 
-            var semanticFunctions = instance.GetSemanticFunctions();
+            var semanticTools = instance.GetSemanticFunctions();
 
-            foreach ( var semanticFunction in semanticFunctions )
+            foreach ( var semanticTool in semanticTools )
             {
-                RegisterSemanticFunction( skillId, semanticFunction, existingFunctions, rockContext );
+                RegisterSemanticTool( skillId, semanticTool, existingTools, rockContext );
             }
         }
 
         /// <summary>
-        /// Registers a single AI function by adding it to the database or
-        /// updating the existing function if it already exists in
-        /// <paramref name="existingFunctions"/>.
+        /// Registers a single AI tool by adding it to the database or
+        /// updating the existing functooltion if it already exists in
+        /// <paramref name="existingTools"/>.
         /// </summary>
-        /// <param name="skillId">The identifier of the AI skill that this function is associated with.</param>
-        /// <param name="method">The C# method that represents the function to register.</param>
-        /// <param name="existingFunctions">The existing functions in the database for this skill.</param>
+        /// <param name="skillId">The identifier of the AI skill that this tool is associated with.</param>
+        /// <param name="method">The C# method that represents the tool to register.</param>
+        /// <param name="existingTools">The existing tools in the database for this skill.</param>
         /// <param name="rockContext">The context to use when saving changes to the database.</param>
-        private static void RegisterFunction( int skillId, MethodInfo method, List<AISkillFunction> existingFunctions, RockContext rockContext )
+        private static void RegisterTool( int skillId, MethodInfo method, List<AISkillFunction> existingTools, RockContext rockContext )
         {
-            var kernelFunction = method.GetCustomAttribute<KernelFunctionAttribute>();
-            var functionGuid = method.GetCustomAttribute<AgentFunctionGuidAttribute>()?.Guid;
+            var toolGuid = method.GetCustomAttribute<AgentToolGuidAttribute>()?.Guid;
 
-            if ( !functionGuid.HasValue )
+            if ( !toolGuid.HasValue )
             {
                 return;
             }
 
-            if ( kernelFunction == null )
-            {
-                return;
-            }
-
-            var function = existingFunctions.FirstOrDefault( f => f.Guid == functionGuid.Value );
-            var name = kernelFunction.Name.IsNotNullOrWhiteSpace() ? kernelFunction.Name.SplitCase() : method.Name.SplitCase();
-            var description = method.GetCustomAttribute<UserDescriptionAttribute>()?.Description;
-            var instructions = method.GetCustomAttribute<DescriptionAttribute>()?.Description;
+            var tool = existingTools.FirstOrDefault( f => f.Guid == toolGuid.Value );
+            var toolName = method.GetCustomAttribute<AgentToolNameAttribute>()?.Name;
+            var name = toolName.IsNotNullOrWhiteSpace() ? toolName.SplitCase() : method.Name.SplitCase();
+            var description = method.GetCustomAttribute<DescriptionAttribute>()?.Description;
+            var purposes = method.GetCustomAttributes<AgentPurposeAttribute>()
+                .Select( a => a.Purpose ?? string.Empty )
+                .ToList();
+            var returnDescription = method.GetCustomAttribute<AgentToolReturnDescriptionAttribute>()?.Description;
+            var usages = method.GetCustomAttributes<AgentUsageAttribute>()
+                .Select( a => a.Usage ?? string.Empty )
+                .ToList();
+            var guardrails = method.GetCustomAttributes<AgentGuardrailAttribute>()
+                .Select( a => a.Guardrail ?? string.Empty )
+                .ToList();
+            var prerequisites = method.GetCustomAttributes<AgentToolPrerequisiteAttribute>()
+                .Select( a => a.Prerequisite ?? string.Empty )
+                .ToList();
+            var examples = method.GetCustomAttributes<AgentToolExampleAttribute>()
+                .Select( a => a.Example ?? string.Empty )
+                .ToList();
             var needSave = false;
 
-            if ( function == null )
+            if ( tool == null )
             {
-                function = rockContext.Set<AISkillFunction>().Create();
+                tool = rockContext.Set<AISkillFunction>().Create();
 
-                function.Guid = functionGuid.Value;
-                function.AISkillId = skillId;
-                function.Name = name;
-                function.Description = description;
-                function.Instructions = instructions;
-                function.FunctionType = FunctionType.ExecuteCode;
+                tool.Guid = toolGuid.Value;
+                tool.AISkillId = skillId;
+                tool.Name = name;
+                tool.Description = description;
+                tool.FunctionType = FunctionType.ExecuteCode;
 
-                new AISkillFunctionService( rockContext ).Add( function );
+                new AISkillFunctionService( rockContext ).Add( tool );
 
                 needSave = true;
             }
             else
             {
-                if ( function.AISkillId != skillId )
+                if ( tool.AISkillId != skillId )
                 {
-                    function.AISkillId = skillId;
+                    tool.AISkillId = skillId;
                     needSave = true;
                 }
 
-                if ( function.Name != name )
+                if ( tool.Name != name )
                 {
-                    function.Name = name;
+                    tool.Name = name;
                     needSave = true;
                 }
 
-                if ( function.Description != description )
+                if ( tool.Description != description )
                 {
-                    function.Description = description;
+                    tool.Description = description;
                     needSave = true;
                 }
 
-                if ( function.Instructions != instructions )
+                if ( tool.FunctionType != FunctionType.ExecuteCode )
                 {
-                    function.Instructions = instructions;
-                    needSave = true;
-                }
-
-                if ( function.FunctionType != FunctionType.ExecuteCode )
-                {
-                    function.FunctionType = FunctionType.ExecuteCode;
+                    tool.FunctionType = FunctionType.ExecuteCode;
                     needSave = true;
                 }
             }
 
+            var toolSettings = tool.GetAdditionalSettings<ToolInstructionSettings>();
+
+            if ( toolSettings.Purposes == null || !toolSettings.Purposes.SequenceEqual( purposes ) )
+            {
+                toolSettings.Purposes = purposes;
+                tool.SetAdditionalSettings( toolSettings );
+                needSave = true;
+            }
+
+            if ( toolSettings.ReturnDescription != returnDescription )
+            {
+                toolSettings.ReturnDescription = returnDescription;
+                tool.SetAdditionalSettings( toolSettings );
+                needSave = true;
+            }
+
+            if ( toolSettings.Usages == null || !toolSettings.Usages.SequenceEqual( usages ) )
+            {
+                toolSettings.Usages = usages;
+                tool.SetAdditionalSettings( toolSettings );
+                needSave = true;
+            }
+
+            if ( toolSettings.Guardrails == null || !toolSettings.Guardrails.SequenceEqual( guardrails ) )
+            {
+                toolSettings.Guardrails = guardrails;
+                tool.SetAdditionalSettings( toolSettings );
+                needSave = true;
+            }
+
+            if ( toolSettings.Prerequisites == null || !toolSettings.Prerequisites.SequenceEqual( prerequisites ) )
+            {
+                toolSettings.Prerequisites = prerequisites;
+                tool.SetAdditionalSettings( toolSettings );
+                needSave = true;
+            }
+
+            if ( toolSettings.Examples == null || !toolSettings.Examples.SequenceEqual( examples ) )
+            {
+                toolSettings.Examples = examples;
+                tool.SetAdditionalSettings( toolSettings );
+                needSave = true;
+            }
+
             if ( needSave )
             {
-                if ( function.Id == 0 )
+                if ( tool.Id == 0 )
                 {
-                    function.CreatedDateTime = RockDateTime.Now;
+                    tool.CreatedDateTime = RockDateTime.Now;
                 }
 
-                function.ModifiedDateTime = RockDateTime.Now;
+                tool.ModifiedDateTime = RockDateTime.Now;
 
                 rockContext.SaveChanges( new SaveChangesArgs { DisablePrePostProcessing = true } );
             }
         }
 
         /// <summary>
-        /// Registers a single AI function by adding it to the database or
-        /// updating the existing function if it already exists in
-        /// <paramref name="existingFunctions"/>.
+        /// Registers a single AI tool by adding it to the database or
+        /// updating the existing tool if it already exists in
+        /// <paramref name="existingTools"/>.
         /// </summary>
-        /// <param name="skillId">The identifier of the AI skill that this function is associated with.</param>
-        /// <param name="semanticFunction">The semantic function to register.</param>
-        /// <param name="existingFunctions">The existing functions in the database for this skill.</param>
+        /// <param name="skillId">The identifier of the AI skill that this tool is associated with.</param>
+        /// <param name="semanticTool">The semantic tool to register.</param>
+        /// <param name="existingTools">The existing tools in the database for this skill.</param>
         /// <param name="rockContext">The context to use when saving changes to the database.</param>
-        private static void RegisterSemanticFunction( int skillId, AgentFunction semanticFunction, List<AISkillFunction> existingFunctions, RockContext rockContext )
+        private static void RegisterSemanticTool( int skillId, AgentTool semanticTool, List<AISkillFunction> existingTools, RockContext rockContext )
         {
-            if ( semanticFunction.Guid == Guid.Empty )
+            if ( semanticTool.Guid == Guid.Empty )
             {
                 return;
             }
 
-            var function = existingFunctions.FirstOrDefault( f => f.Guid == semanticFunction.Guid );
-            var name = semanticFunction.Name.SplitCase();
-            var description = semanticFunction.Description;
-            var instructions = semanticFunction.Instructions;
+            var tool = existingTools.FirstOrDefault( f => f.Guid == semanticTool.Guid );
+            var name = semanticTool.Name.SplitCase();
+            var description = semanticTool.Description;
+            var instructions = semanticTool.Instructions;
             var needSave = false;
 
-            if ( function == null )
+            if ( tool == null )
             {
-                function = rockContext.Set<AISkillFunction>().Create();
+                tool = rockContext.Set<AISkillFunction>().Create();
 
-                function.Guid = semanticFunction.Guid;
-                function.AISkillId = skillId;
-                function.Name = name;
-                function.Description = description;
-                function.Instructions = instructions;
-                function.FunctionType = semanticFunction.FunctionType;
+                tool.Guid = semanticTool.Guid;
+                tool.AISkillId = skillId;
+                tool.Name = name;
+                tool.Description = description;
+                tool.FunctionType = semanticTool.FunctionType;
 
-                new AISkillFunctionService( rockContext ).Add( function );
+                new AISkillFunctionService( rockContext ).Add( tool );
 
                 needSave = true;
             }
             else
             {
-                if ( function.AISkillId != skillId )
+                if ( tool.AISkillId != skillId )
                 {
-                    function.AISkillId = skillId;
+                    tool.AISkillId = skillId;
                     needSave = true;
                 }
 
-                if ( function.Name != name )
+                if ( tool.Name != name )
                 {
-                    function.Name = name;
+                    tool.Name = name;
                     needSave = true;
                 }
 
-                if ( function.Description != description )
+                if ( tool.Description != description )
                 {
-                    function.Description = description;
+                    tool.Description = description;
                     needSave = true;
                 }
 
-                if ( function.Instructions != instructions )
+                if ( tool.FunctionType != semanticTool.FunctionType )
                 {
-                    function.Instructions = instructions;
+                    tool.FunctionType = semanticTool.FunctionType;
+                    needSave = true;
+                }
+            }
+
+            if ( semanticTool.Instructions != null )
+            {
+                var toolSettings = tool.GetAdditionalSettings<ToolInstructionSettings>();
+
+                if ( toolSettings.Purposes == null || !toolSettings.Purposes.SequenceEqual( semanticTool.Instructions.Purposes ) )
+                {
+                    toolSettings.Purposes = semanticTool.Instructions.Purposes;
+                    tool.SetAdditionalSettings( toolSettings );
                     needSave = true;
                 }
 
-                if ( function.FunctionType != semanticFunction.FunctionType )
+                if ( toolSettings.ReturnDescription != semanticTool.Instructions.ReturnDescription )
                 {
-                    function.FunctionType = semanticFunction.FunctionType;
+                    toolSettings.ReturnDescription = semanticTool.Instructions.ReturnDescription;
+                    tool.SetAdditionalSettings( toolSettings );
+                    needSave = true;
+                }
+
+                if ( toolSettings.Usages == null || !toolSettings.Usages.SequenceEqual( semanticTool.Instructions.Usages ) )
+                {
+                    toolSettings.Usages = semanticTool.Instructions.Usages;
+                    tool.SetAdditionalSettings( toolSettings );
+                    needSave = true;
+                }
+
+                if ( toolSettings.Guardrails == null || !toolSettings.Guardrails.SequenceEqual( semanticTool.Instructions.Guardrails ) )
+                {
+                    toolSettings.Guardrails = semanticTool.Instructions.Guardrails;
+                    tool.SetAdditionalSettings( toolSettings );
+                    needSave = true;
+                }
+
+                if ( toolSettings.Prerequisites == null || !toolSettings.Prerequisites.SequenceEqual( semanticTool.Instructions.Prerequisites ) )
+                {
+                    toolSettings.Prerequisites = semanticTool.Instructions.Prerequisites;
+                    tool.SetAdditionalSettings( toolSettings );
+                    needSave = true;
+                }
+
+                if ( toolSettings.Examples == null || !toolSettings.Examples.SequenceEqual( semanticTool.Instructions.Examples ) )
+                {
+                    toolSettings.Examples = semanticTool.Instructions.Examples;
+                    tool.SetAdditionalSettings( toolSettings );
+                    needSave = true;
+                }
+            }
+            else
+            {
+                var toolSettings = tool.GetAdditionalSettingsOrNull<ToolInstructionSettings>();
+
+                if ( toolSettings != null )
+                {
+                    tool.RemoveAdditionalSettings<ToolInstructionSettings>();
                     needSave = true;
                 }
             }
 
             if ( needSave )
             {
-                if ( function.Id == 0 )
+                if ( tool.Id == 0 )
                 {
-                    function.CreatedDateTime = RockDateTime.Now;
+                    tool.CreatedDateTime = RockDateTime.Now;
                 }
 
-                function.ModifiedDateTime = RockDateTime.Now;
+                tool.ModifiedDateTime = RockDateTime.Now;
 
                 rockContext.SaveChanges( new SaveChangesArgs { DisablePrePostProcessing = true } );
             }

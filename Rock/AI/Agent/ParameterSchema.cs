@@ -22,7 +22,7 @@ using Rock.Enums.AI.Agent;
 namespace Rock.AI.Agent
 {
     /// <summary>
-    /// Defines a single parameter to be used with an <see cref="AgentFunction"/>.
+    /// Defines a single parameter to be used with an <see cref="AgentTool"/>.
     /// </summary>
     internal class ParameterSchema
     {

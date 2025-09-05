@@ -73,7 +73,7 @@ namespace Rock.AI.Agent
         /// <param name="function">The function to be executed.</param>
         /// <param name="args">The arguments from the language model that will be passed to the Lava template.</param>
         /// <returns>The output from the Lava template.</returns>
-        public string ExecuteLava( AgentFunction function, KernelArguments args )
+        public string ExecuteLava( AgentTool function, KernelArguments args )
         {
             var mergeFields = _rockRequestContext.GetCommonMergeFields();
 

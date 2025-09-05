@@ -24,27 +24,28 @@ using Rock.Enums.AI.Agent;
 namespace Rock.AI.Agent
 {
     /// <summary>
-    /// Represents a function or skill that can be executed by an AI agent within the Rock AI framework.
-    /// Supports native code, Lava templating, and semantic (AI prompt) function types.
-    /// Contains metadata about the function's identity, usage, parameters, role, and execution settings.
+    /// Represents a tool that can be executed by an AI agent within the Rock
+    /// AI framework. Supports native code, Lava templating, and semantic (AI
+    /// prompt) tool types. Contains metadata about the tool's identity, usage,
+    /// parameters, role, and execution settings.
     /// </summary>
-    internal class AgentFunction
+    internal class AgentTool
     {
         /// <summary>
-        /// AI function names only support alphanumeric characters and spaces.
+        /// AI tool names only support alphanumeric characters and spaces.
         /// </summary>
         private static readonly Regex InvalidNameCharacters = new Regex( @"[^a-zA-Z0-9_]", RegexOptions.Compiled );
 
         /// <summary>
-        /// The unique identifier of this function. If this is not filled in
-        /// with a valid value then the function will be ignored.
+        /// The unique identifier of this tool. If this is not filled in
+        /// with a valid value then the tool will be ignored.
         /// </summary>
         public Guid Guid { get; set; }
 
         /// <summary>
-        /// The unique name used to identify this semantic function within the plugin.
-        /// This name is how the function is called from Semantic Kernel or other orchestrations.
-        /// Should be short, descriptive, and use PascalCase.
+        /// The unique name used to identify this semantic tool within the skill.
+        /// This name is how the tool is called from the language model or other
+        /// orchestrations. Should be short, descriptive, and use PascalCase.
         /// Example: "TranslateToFrench", "SummarizeText", "CapitalOf"
         /// </summary>
         public string Name { get; set; } = string.Empty;
@@ -55,23 +56,20 @@ namespace Rock.AI.Agent
         public string Key => InvalidNameCharacters.Replace( Name, string.Empty );
 
         /// <summary>
-        /// A short human-readable description of what the semantic function does.
-        /// This is displayed in the UI and helps users understand the function's purpose.
+        /// A short human-readable description of what the tool does. This is
+        /// displayed in the UI and helps users understand the tool's purpose.
         /// </summary>
         public string Description { get; set; } = string.Empty;
 
         /// <summary>
-        /// A short of what the semantic function does. This is used to provide
-        /// additional context to the language model. Leave blank when the name
-        /// provides enough context.
+        /// The instructions to provide to the AI model about how to use this
+        /// tool.
         /// </summary>
-        public string Instructions { get; set; } = string.Empty;
+        public ToolInstructionSettings Instructions { get; set; } = new ToolInstructionSettings();
 
         /// <summary>
-        /// The type of function:
-        /// * ExecuteCode - Native code function
-        /// * ExecuteLava - Lava function
-        /// * AiPrompt - Semantic function (AI Prompt)
+        /// The type of tool. <see cref="FunctionType.ExecuteCode"/> is not a
+        /// valid value and intances with this value will be ignored.
         /// </summary>
         public FunctionType FunctionType { get; set; } = FunctionType.AIPrompt;
 
@@ -96,8 +94,9 @@ namespace Rock.AI.Agent
         public List<ParameterSchema> Parameters { get; set; } = new List<ParameterSchema>();
 
         /// <summary>
-        /// If set to true, the prompt will be processed using Lava templating before being sent to the AI model. This 
-        /// is only applicable for AI Prompt functions.
+        /// If set to true, the prompt will be processed using Lava templating
+        /// before being sent to the AI model. This is only applicable for AI
+        /// Prompt tools.
         /// </summary>
         public bool EnableLavaPreRendering { get; set; }
 

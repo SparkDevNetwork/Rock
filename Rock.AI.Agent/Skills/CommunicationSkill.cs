@@ -20,7 +20,6 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.CommunicationSkill;
@@ -39,9 +38,9 @@ namespace Rock.AI.Agent.Skills
     /// Centralized skill for drafting and sending communications (email and SMS) in Rock.
     /// Provides LLM prompts for drafting messages and tool functions for sending them.
     /// </summary>
+    [Description( "This skill helps author and send communications, and track their impact." )]
     [AgentSkillGuid( "37DF3637-9775-4A89-9A77-BF6744232991" )]
     [EntityTypeGuid( "F67D0B02-B59F-475F-A005-8F2A5CCCA91C" )]
-    [UserDescription( "This skill helps author and send communications, and track their impact." )]
     internal sealed class CommunicationSkill : AgentSkillComponent
     {
         #region Fields
@@ -87,7 +86,7 @@ namespace Rock.AI.Agent.Skills
 
             if ( communicationType == AgentCommunicationType.Email )
             {
-                if( !MediumContainer.HasActiveEmailTransport() )
+                if ( !MediumContainer.HasActiveEmailTransport() )
                 {
                     return null;
                 }
@@ -96,7 +95,7 @@ namespace Rock.AI.Agent.Skills
             }
             else if ( communicationType == AgentCommunicationType.Sms )
             {
-                if( !MediumContainer.HasActiveSmsTransport() )
+                if ( !MediumContainer.HasActiveSmsTransport() )
                 {
                     return null;
                 }
@@ -137,17 +136,11 @@ namespace Rock.AI.Agent.Skills
         /// <param name="tone">The tone of the message.</param>
         /// <param name="existingDraftIdKey">The draft to update in place.</param>
         /// <returns></returns>
-        [KernelFunction]
-        [AgentFunctionGuid( "4EEF6200-AA05-4F26-AB4D-19C73DEB3BDD" )]
-        [Description(
-            "🎯 Purpose:\r\n" +
-            "- Creates a new draft (email/SMS/push) for the specified recipient, or updates an existing draft if one is provided. Drafts are saved as communications and can later be sent.\r\n\r\n" +
-            "🧭 Usage Guidance:\r\n" +
-            "- The recipient is always provided by IdKey only. Never ask the user for email addresses or phone numbers.\r\n" +
-            "- The function automatically resolves the recipient's actual contact details from the IdKey.\r\n" +
-            "📋 Prerequisites:\r\n" +
-            "- If a corresponding draft already exists and has not been sent, pass existingDraftIdKey to update it instead of creating a new draft."
-        )]
+        [AgentPurpose( "Creates a new draft (email/SMS/push) for the specified recipient, or updates an existing draft if one is provided. Drafts are saved as communications and can later be sent." )]
+        [AgentUsage( "The recipient is always provided by IdKey only. Never ask the user for email addresses or phone numbers." )]
+        [AgentUsage( "The function automatically resolves the recipient's actual contact details from the IdKey." )]
+        [AgentToolPrerequisite( "If a corresponding draft already exists and has not been sent, pass existingDraftIdKey to update it instead of creating a new draft." )]
+        [AgentToolGuid( "4EEF6200-AA05-4F26-AB4D-19C73DEB3BDD" )]
         public async Task<RockToolResult> DraftCommunicationToPerson(
                     [Description("The IdKey of the person to whom the communication will be sent. Used to fetch the contact information for the person.")]
                     string recipientIdKey,
@@ -277,8 +270,7 @@ namespace Rock.AI.Agent.Skills
             }
         }
 
-        [KernelFunction]
-        [AgentFunctionGuid( "2BB35960-77C6-4EAD-9645-F0ACB0EF132B" )]
+        [AgentToolGuid( "2BB35960-77C6-4EAD-9645-F0ACB0EF132B" )]
         public RockToolResult SendCommunication( string communicationIdKey )
         {
             var requestContext = RockRequestContextAccessor.Current;
@@ -340,8 +332,7 @@ namespace Rock.AI.Agent.Skills
             }
         }
 
-        [KernelFunction]
-        [AgentFunctionGuid( "8EC76EA6-83BE-4796-9B91-6B4A34C0C3AD" )]
+        [AgentToolGuid( "8EC76EA6-83BE-4796-9B91-6B4A34C0C3AD" )]
         public RockToolResult CancelDraft( string communicationIdKey )
         {
             if ( communicationIdKey.IsNullOrWhiteSpace() )

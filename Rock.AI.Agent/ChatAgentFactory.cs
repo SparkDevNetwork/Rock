@@ -19,20 +19,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 using Rock.AI.Agent.Classes;
 using Rock.AI.Agent.Classes.Common;
-using Rock.AI.Agent.Utilities;
 using Rock.Data;
 using Rock.Enums.AI.Agent;
-using Rock.Logging;
 using Rock.Net;
 using Rock.SystemGuid;
 using Rock.Web.Cache.Entities;
@@ -247,24 +243,26 @@ namespace Rock.AI.Agent
                 // Register the C# method functions.
                 foreach ( var method in methods )
                 {
-                    if ( method.GetCustomAttribute<KernelFunctionAttribute>() == null )
-                    {
-                        continue;
-                    }
-
-                    var functionGuid = method.GetCustomAttribute<AgentFunctionGuidAttribute>()?.Guid;
+                    var functionGuid = method.GetCustomAttribute<AgentToolGuidAttribute>()?.Guid;
 
                     if ( !functionGuid.HasValue )
                     {
                         continue;
                     }
 
-                    if ( skillConfiguration.DisabledFunctions.Contains( functionGuid.Value ) )
+                    var tool = skillConfiguration.Functions.FirstOrDefault( f => f.Guid == functionGuid.Value );
+
+                    if ( tool == null )
                     {
                         continue;
                     }
 
-                    pluginFunctions.Add( KernelFunctionFactory.CreateFromMethod( method, skill, loggerFactory: _loggerFactory ) );
+                    pluginFunctions.Add( KernelFunctionFactory.CreateFromMethod(
+                        method: method,
+                        target: skill,
+                        functionName: tool.Key,
+                        description: InstructionFormatter.FormatInstructions( tool.Instructions ),
+                        loggerFactory: _loggerFactory ) );
                 }
 
                 // Register dynamic functions
@@ -280,7 +278,10 @@ namespace Rock.AI.Agent
                     .DistinctBy( kf => kf.Name );
 
                 // Register the plug-in with the native and semantic functions.
-                var plugin = KernelPluginFactory.CreateFromFunctions( skillConfiguration.NativeType.Name, skillConfiguration.Instructions, distinctFunctions );
+                var plugin = KernelPluginFactory.CreateFromFunctions( skillConfiguration.NativeType.Name,
+                    description: InstructionFormatter.FormatInstructions( skillConfiguration.Instructions ),
+                    functions: distinctFunctions );
+
                 pluginCollection.Add( plugin );
             }
         }
@@ -297,7 +298,10 @@ namespace Rock.AI.Agent
 
                 if ( pluginFunctions.Count > 0 )
                 {
-                    var plugin = KernelPluginFactory.CreateFromFunctions( skill.Key, skill.Instructions, pluginFunctions );
+                    var plugin = KernelPluginFactory.CreateFromFunctions( skill.Key,
+                        description: InstructionFormatter.FormatInstructions( skill.Instructions ),
+                        functions: pluginFunctions );
+
                     pluginCollection.Add( plugin );
                 }
             }
@@ -308,7 +312,7 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <param name="functions">The collection of agent functions to process.</param>
         /// <returns>A collection of kernel functions representing the agent's virtual skills.</returns>
-        private ICollection<KernelFunction> GetVirtualSkillFunctions( IReadOnlyCollection<AgentFunction> functions, IServiceProvider kernelServiceProvider )
+        private ICollection<KernelFunction> GetVirtualSkillFunctions( IReadOnlyCollection<AgentTool> functions, IServiceProvider kernelServiceProvider )
         {
             var pluginFunctions = new Dictionary<string, KernelFunction>();
 
@@ -335,7 +339,7 @@ namespace Rock.AI.Agent
                     var semanticFunction = KernelFunctionFactory.CreateFromPrompt(
                         promptTemplate: prompt,
                         functionName: function.Key,
-                        description: function.Instructions,
+                        description: InstructionFormatter.FormatInstructions( function.Instructions ),
                         executionSettings: _agentConfiguration.Provider.GetFunctionPromptExecutionSettingsForRole( function ),
                         loggerFactory: _loggerFactory
                     );
@@ -351,7 +355,7 @@ namespace Rock.AI.Agent
                     var proxyFunction = KernelFunctionFactory.CreateFromMethod(
                         method: ( Func<KernelArguments, string> ) ( args => proxySkill.ExecuteLava( function, args ) ),
                         functionName: function.Key,
-                        description: function.Instructions,
+                        description: InstructionFormatter.FormatInstructions( function.Instructions ),
                         parameters: parameters,
                         loggerFactory: _loggerFactory
                     );

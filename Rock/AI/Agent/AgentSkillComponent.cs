@@ -33,9 +33,7 @@ namespace Rock.AI.Agent
     /// not editable by the individual.
     /// </para>
     /// <para>
-    /// Each individual skill must be decorated with <see cref="Microsoft.SemanticKernel.KernelFunctionAttribute"/>,
-    /// <see cref="System.ComponentModel.DescriptionAttribute"/>, and
-    /// <see cref="SystemGuid.AgentFunctionGuidAttribute"/> attributes.
+    /// Each individual tool must be decorated with <see cref="SystemGuid.AgentToolGuidAttribute"/>.
     /// </para>
     /// </summary>
     internal abstract class AgentSkillComponent : LightComponent
@@ -86,8 +84,8 @@ namespace Rock.AI.Agent
         /// provides a prompt that can be used by an AI model to feed back
         /// into itself and generate a response based on the prompt.
         /// </summary>
-        /// <returns>A collection of <see cref="AgentFunction"/> objects that represent the semantic functions.</returns>
-        public virtual IReadOnlyCollection<AgentFunction> GetSemanticFunctions() => Array.Empty<AgentFunction>();
+        /// <returns>A collection of <see cref="AgentTool"/> objects that represent the semantic functions.</returns>
+        public virtual IReadOnlyCollection<AgentTool> GetSemanticFunctions() => Array.Empty<AgentTool>();
 
         #endregion
 

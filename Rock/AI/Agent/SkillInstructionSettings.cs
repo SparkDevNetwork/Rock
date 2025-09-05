@@ -13,22 +13,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-namespace Rock.SystemGuid
+//
+
+using System.Collections.Generic;
+
+namespace Rock.AI.Agent
 {
     /// <summary>
-    /// Rock Guid attribute to be used to specify the unique identifier of
-    /// an AI agent skill.
+    /// The additional settings that are defined on a <see cref="Model.AISkill"/>.
     /// </summary>
-    [System.AttributeUsage( System.AttributeTargets.Class, Inherited = false, AllowMultiple = false )]
-    internal class AgentSkillGuidAttribute : RockGuidAttribute
+    internal class SkillInstructionSettings
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AgentSkillGuidAttribute"/> class.
+        /// The ordered list of purpose strings for this skill.
         /// </summary>
-        /// <param name="guid">The unique identifier.</param>
-        public AgentSkillGuidAttribute( string guid )
-            : base( guid )
-        {
-        }
+        public List<string> Purposes { get; set; } = new List<string>();
+
+        /// <summary>
+        /// The ordered list of usage strings for this skill.
+        /// </summary>
+        public List<string> Usages { get; set; } = new List<string>();
+
+        /// <summary>
+        /// The ordered list of guardrail strings for this skill.
+        /// </summary>
+        public List<string> Guardrails { get; set; } = new List<string>();
     }
 }

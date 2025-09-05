@@ -13,22 +13,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-namespace Rock.SystemGuid
+namespace Rock.AI.Agent
 {
     /// <summary>
-    /// Rock Guid attribute to be used to specify the unique identifier of
-    /// an AI agent skill.
+    /// Provides an example to the language model of how to call the tool.
     /// </summary>
-    [System.AttributeUsage( System.AttributeTargets.Class, Inherited = false, AllowMultiple = false )]
-    internal class AgentSkillGuidAttribute : RockGuidAttribute
+    [System.AttributeUsage( System.AttributeTargets.Method, Inherited = false, AllowMultiple = true )]
+    internal class AgentToolExampleAttribute : System.Attribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AgentSkillGuidAttribute"/> class.
+        /// The example of how to use the tool.
         /// </summary>
-        /// <param name="guid">The unique identifier.</param>
-        public AgentSkillGuidAttribute( string guid )
-            : base( guid )
+        public string Example { get; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AgentToolExampleAttribute"/> class.
+        /// </summary>
+        /// <param name="example">The example of how to use the tool.</param>
+        public AgentToolExampleAttribute( string example )
         {
+            Example = example;
         }
     }
 }

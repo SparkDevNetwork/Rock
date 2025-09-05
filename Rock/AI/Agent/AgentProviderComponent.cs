@@ -60,7 +60,7 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <param name="function">The agent function to be executed.</param>
         /// <returns>The execution settings that should be used for the function.</returns>
-        public abstract PromptExecutionSettings GetFunctionPromptExecutionSettingsForRole( AgentFunction function );
+        public abstract PromptExecutionSettings GetFunctionPromptExecutionSettingsForRole( AgentTool function );
 
         /// <summary>
         /// Gets the prompt execution settings for a chat completion.

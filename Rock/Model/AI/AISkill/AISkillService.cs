@@ -80,8 +80,16 @@ namespace Rock.Model
             var skillGuid = skillType.GetCustomAttribute<AgentSkillGuidAttribute>().Guid;
             var skill = existingSkills.FirstOrDefault( s => s.Guid == skillGuid );
             var name = skillType.Name.SplitCase();
-            var description = skillType.GetCustomAttribute<UserDescriptionAttribute>()?.Description;
-            var instructions = skillType.GetCustomAttribute<DescriptionAttribute>()?.Description;
+            var description = skillType.GetCustomAttribute<DescriptionAttribute>()?.Description;
+            var purposes = skillType.GetCustomAttributes<AgentPurposeAttribute>()
+                .Select( a => a.Purpose ?? string.Empty )
+                .ToList();
+            var usages = skillType.GetCustomAttributes<AgentUsageAttribute>()
+                .Select( a => a.Usage ?? string.Empty )
+                .ToList();
+            var guardrails = skillType.GetCustomAttributes<AgentGuardrailAttribute>()
+                .Select( a => a.Guardrail ?? string.Empty )
+                .ToList();
             var needSave = false;
 
             if ( skill == null )
@@ -91,7 +99,6 @@ namespace Rock.Model
                 skill.Guid = skillGuid;
                 skill.Name = name;
                 skill.Description = description;
-                skill.Instructions = instructions;
 
                 // Skip the cache because there is almost zero chance it will
                 // be in cache already and that would just cause an additional
@@ -115,12 +122,29 @@ namespace Rock.Model
                     skill.Description = description;
                     needSave = true;
                 }
+            }
 
-                if ( skill.Instructions != instructions )
-                {
-                    skill.Instructions = instructions;
-                    needSave = true;
-                }
+            var skillSettings = skill.GetAdditionalSettings<SkillInstructionSettings>();
+
+            if ( skillSettings.Purposes == null || !skillSettings.Purposes.SequenceEqual( purposes ) )
+            {
+                skillSettings.Purposes = purposes;
+                skill.SetAdditionalSettings( skillSettings );
+                needSave = true;
+            }
+
+            if ( skillSettings.Usages == null || !skillSettings.Usages.SequenceEqual( usages ) )
+            {
+                skillSettings.Usages = usages;
+                skill.SetAdditionalSettings( skillSettings );
+                needSave = true;
+            }
+
+            if ( skillSettings.Guardrails == null || !skillSettings.Guardrails.SequenceEqual( guardrails ) )
+            {
+                skillSettings.Guardrails = guardrails;
+                skill.SetAdditionalSettings( skillSettings );
+                needSave = true;
             }
 
             if ( needSave )

@@ -13,33 +13,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
-
-using System;
-
 namespace Rock.AI.Agent
 {
     /// <summary>
-    /// Specifies the user-friendly description of an AI agent skill or
-    /// function. This value is displayed in the UI to help users
-    /// understand what the skill does.
+    /// Specifies a purpose for the tool. A tool can have multiple purposes
+    /// so this attribute can be applied multiple times to a single method.
     /// </summary>
-    [AttributeUsage( AttributeTargets.Class | AttributeTargets.Method )]
-    public class UserDescriptionAttribute : System.Attribute
+    [System.AttributeUsage( System.AttributeTargets.Class | System.AttributeTargets.Method, Inherited = false, AllowMultiple = true )]
+    internal class AgentPurposeAttribute : System.Attribute
     {
         /// <summary>
-        /// The description to display in the UI for the AI agent skill or function.
+        /// The purpose of the tool.
         /// </summary>
-        public string Description { get; }
+        public string Purpose { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="UserDescriptionAttribute"/> class with the specified
-        /// description.
+        /// Initializes a new instance of the <see cref="AgentPurposeAttribute"/> class.
         /// </summary>
-        /// <param name="description">The description to display in the UI.</param>
-        public UserDescriptionAttribute( string description )
+        /// <param name="purpose">The purpose of the tool.</param>
+        public AgentPurposeAttribute( string purpose )
         {
-            Description = description;
+            Purpose = purpose;
         }
     }
 }

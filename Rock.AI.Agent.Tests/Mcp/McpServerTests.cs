@@ -4,7 +4,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Microsoft.SemanticKernel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.AI.Agent.Mcp;
@@ -150,7 +149,7 @@ namespace Rock.AI.Agent.Tests.Mcp
         {
             var mcp = new McpServer();
             var agent = new AgentBuilder()
-                .WithFunction( new AgentFunction
+                .WithFunction( new AgentTool
                 {
                     Name = "TestTool",
                     FunctionType = FunctionType.ExecuteLava
@@ -225,7 +224,7 @@ namespace Rock.AI.Agent.Tests.Mcp
         {
             var mcp = new McpServer();
             var agent = new AgentBuilder()
-                .WithSkill( new SkillConfiguration( "TestSkill", "", typeof( TestSkill ), new AgentSkillSettings() ) )
+                .WithSkill( GetSkillConfiguration() )
                 .Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"TestSkill__StringTool\", \"arguments\": {}}}" ) );
 
@@ -246,7 +245,7 @@ namespace Rock.AI.Agent.Tests.Mcp
         {
             var mcp = new McpServer();
             var agent = new AgentBuilder()
-                .WithSkill( new SkillConfiguration( "TestSkill", "", typeof( TestSkill ), new AgentSkillSettings() ) )
+                .WithSkill( GetSkillConfiguration() )
                 .Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"TestSkill__StructuredTool\", \"arguments\": {}}}" ) );
 
@@ -269,7 +268,7 @@ namespace Rock.AI.Agent.Tests.Mcp
         {
             var mcp = new McpServer();
             var agent = new AgentBuilder()
-                .WithSkill( new SkillConfiguration( "TestSkill", "", typeof( TestSkill ), new AgentSkillSettings() ) )
+                .WithSkill( GetSkillConfiguration() )
                 .Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"TestSkill__StructuredTool\", \"arguments\": {}}}" ) );
 
@@ -293,17 +292,36 @@ namespace Rock.AI.Agent.Tests.Mcp
 
         #region Support
 
+        private SkillConfiguration GetSkillConfiguration()
+        {
+            var tools = new List<AgentTool>
+            {
+                new AgentTool
+                {
+                    Guid = new Guid("7dd480ca-a1d3-445c-9064-b75748deb6e3" ),
+                    Name = "String Tool",
+                    FunctionType = FunctionType.ExecuteCode
+                },
+                new AgentTool
+                {
+                    Guid = new Guid( "e4802a5e-6d6c-450e-abb0-dab0f65cab0e" ),
+                    Name = "Structured Tool",
+                    FunctionType = FunctionType.ExecuteCode
+                }
+            };
+
+            return new SkillConfiguration( "TestSkill", new SkillInstructionSettings(), tools, typeof( TestSkill ), new AgentSkillSettings() );
+        }
+
         private class TestSkill : AgentSkillComponent
         {
-            [KernelFunction]
-            [AgentFunctionGuid( "7dd480ca-a1d3-445c-9064-b75748deb6e3" )]
+            [AgentToolGuid( "7dd480ca-a1d3-445c-9064-b75748deb6e3" )]
             public string StringTool()
             {
                 return "String Tool";
             }
 
-            [KernelFunction]
-            [AgentFunctionGuid( "e4802a5e-6d6c-450e-abb0-dab0f65cab0e" )]
+            [AgentToolGuid( "e4802a5e-6d6c-450e-abb0-dab0f65cab0e" )]
             public Dictionary<string, string> StructuredTool()
             {
                 return new Dictionary<string, string>

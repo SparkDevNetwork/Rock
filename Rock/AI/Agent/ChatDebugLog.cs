@@ -29,7 +29,7 @@ namespace Rock.AI.Agent
         #region Properties
 
         /// <summary>
-        /// The category of the log entry, such as "Microsoft.SemanticKernel".
+        /// The category of the log entry, such as "Rock.AI.Agent.Skills.CommunicationSkill".
         /// </summary>
         public string Category { get; }
 

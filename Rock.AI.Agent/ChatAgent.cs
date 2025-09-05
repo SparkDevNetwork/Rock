@@ -455,9 +455,11 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
 
             foreach ( var skill in _agentConfiguration.Skills )
             {
-                if ( skill.Instructions.IsNotNullOrWhiteSpace() )
+                var instructions = InstructionFormatter.FormatInstructions( skill.Instructions );
+
+                if ( instructions.IsNotNullOrWhiteSpace() )
                 {
-                    _context.AddSystemMessage( $"Plugin {skill.Key} Instructions: {skill.Instructions}" );
+                    _context.AddSystemMessage( $"Plugin {skill.Key} Instructions: {instructions}" );
                 }
             }
 
