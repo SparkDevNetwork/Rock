@@ -75,6 +75,10 @@ namespace Rock.AI.Agent.Skills
                 return RockToolResult.NoData();
             }
 
+            // If the agent is running in an internal context (e.g., staff user), include inactive sites.
+            var isInternal = AgentRequestContext.AudienceType == Enums.AI.Agent.AudienceType.Internal;
+            sites = sites.Where( s => isInternal || s.IsActive ).ToList();
+
             var siteList = sites.Select( s => new SiteResult
             {
                 IdKey = s.IdKey,
@@ -93,7 +97,7 @@ namespace Rock.AI.Agent.Skills
             } );
 
             return RockToolResult.Success( siteList )
-                .WithHistoryContent( trimmedForHistory );
+                .WithHistoryContent( trimmedForHistory, "site-list" );
         }
 
         #endregion
