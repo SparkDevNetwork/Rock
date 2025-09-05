@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -659,7 +660,7 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
         /// <returns></returns>
         private async Task AddOrReplaceToolMessageAsync( string message, int tokenCount, int consumedTokenCount, CancellationToken token = default )
         {
-            var toolMessageContent = ToolResultContent.FromJson( message ).GetResult<HistoryContentBag>();
+            var toolMessageContent = JsonSerializer.Deserialize<ToolResultContent>( message, AgentSerializerOptions.ChatOptions ).Result;
 
             // Tool messages have a key associated.
             // We want to go cleanup any existing tool messages (with the same key) before adding a new one.
@@ -676,7 +677,7 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
                 foreach ( var toolMessage in existingToolMessages )
                 {
                     // Parse the tool content to get the key.
-                    var toolResultContent = ToolResultContent.FromJson( toolMessage.Message )?.GetResult<HistoryContentBag>();
+                    var toolResultContent = JsonSerializer.Deserialize<ToolResultContent>( toolMessage.Message, AgentSerializerOptions.ChatOptions )?.Result;
                     if ( toolResultContent.HistoryToken.IsNotNullOrWhiteSpace() && toolMessageContent.HistoryToken == toolResultContent.HistoryToken )
                     {
                         // This is the same tool message, remove it.

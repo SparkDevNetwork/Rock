@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -262,6 +263,7 @@ namespace Rock.AI.Agent
                         target: skill,
                         functionName: tool.Key,
                         description: InstructionFormatter.FormatInstructions( tool.Instructions ),
+                        jsonSerializerOptions: AgentSerializerOptions.ChatOptions,
                         loggerFactory: _loggerFactory ) );
                 }
 
@@ -341,6 +343,7 @@ namespace Rock.AI.Agent
                         functionName: function.Key,
                         description: InstructionFormatter.FormatInstructions( function.Instructions ),
                         executionSettings: _agentConfiguration.Provider.GetFunctionPromptExecutionSettingsForRole( function ),
+                        jsonSerializerOptions: AgentSerializerOptions.ChatOptions,
                         loggerFactory: _loggerFactory
                     );
 
@@ -357,6 +360,7 @@ namespace Rock.AI.Agent
                         functionName: function.Key,
                         description: InstructionFormatter.FormatInstructions( function.Instructions ),
                         parameters: parameters,
+                        jsonSerializerOptions: AgentSerializerOptions.ChatOptions,
                         loggerFactory: _loggerFactory
                     );
 
@@ -417,6 +421,21 @@ namespace Rock.AI.Agent
                 {
                     var rockToolResult = functionResult.GetValue<RockToolResult>();
 
+                    // Replace the result with one that is properly serialized
+                    // into JSON. At the end of the call chain, Semantic Kernel
+                    // does this itself. However, it uses its own serializer
+                    // settings rather than the one defined on the function.
+                    // That means it doesn't properly handle our custom serializer
+                    // settings. So we encode it into a ChatMessageContent here
+                    // which causes it to use the raw string value of our own JSON.
+                    var resultJson = JsonSerializer.Serialize( rockToolResult, context.Function.JsonSerializerOptions ?? AgentSerializerOptions.ChatOptions );
+                    var messageResult = new ChatMessageContent
+                    {
+                        Content = resultJson,
+                        InnerContent = rockToolResult
+                    };
+                    context.Result = new FunctionResult( context.Function, resultJson, functionResult.Culture, functionResult.Metadata );
+
                     if ( rockToolResult?.HistoryContent != null )
                     {
                         var key = rockToolResult.HistoryContentKey.IsNotNullOrWhiteSpace() ? rockToolResult.HistoryContentKey : context.ToolCallId;
@@ -427,7 +446,7 @@ namespace Rock.AI.Agent
                         };
 
                         var functionResultContent = new ToolResultContent( context.Function.Name, context.Function.PluginName, context.ToolCallId, historyContent );
-                        await _agent.AddMessageAsync( Enums.AI.Agent.AuthorRole.Tool, functionResultContent.ToJson() );
+                        await _agent.AddMessageAsync( AuthorRole.Tool, JsonSerializer.Serialize( functionResultContent, AgentSerializerOptions.ChatOptions ) );
                     }
                 }
                 catch ( InvalidCastException )

@@ -66,7 +66,7 @@ namespace Rock.AI.Agent.Mcp
         /// <param name="stream">The input stream containing the JSON payload to deserialize. Must not be <see langword="null"/>.</param>
         public JsonRpcRequest( Stream stream )
         {
-            _rootElement = JsonSerializer.Deserialize<JsonElement>( stream, McpServer.JsonSerializerOptions );
+            _rootElement = JsonSerializer.Deserialize<JsonElement>( stream, AgentSerializerOptions.McpOptions );
         }
 
         #endregion
@@ -85,7 +85,7 @@ namespace Rock.AI.Agent.Mcp
             {
                 try
                 {
-                    return JsonSerializer.Deserialize<T>( parameters.GetRawText(), McpServer.JsonSerializerOptions );
+                    return JsonSerializer.Deserialize<T>( parameters.GetRawText(), AgentSerializerOptions.McpOptions );
                 }
                 catch
                 {

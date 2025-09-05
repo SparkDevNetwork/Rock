@@ -93,7 +93,7 @@ namespace Rock.AI.Agent.Mcp
         /// <param name="stream">The stream that the result should be written to.</param>
         public void ToJson( Stream stream )
         {
-            JsonSerializer.Serialize( stream, this, McpServer.JsonSerializerOptions );
+            JsonSerializer.Serialize( stream, this, AgentSerializerOptions.McpOptions );
             stream.Flush();
         }
 

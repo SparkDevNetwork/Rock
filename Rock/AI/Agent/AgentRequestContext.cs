@@ -16,6 +16,7 @@
 //
 
 using System.Collections.Generic;
+using System.Text.Json;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -186,7 +187,7 @@ namespace Rock.AI.Agent
         /// </summary>
         internal void AddToolResultMessage( string toolResultContentJson )
         {
-            var toolResultContent = ToolResultContent.FromJson( toolResultContentJson );
+            var toolResultContent = JsonSerializer.Deserialize<ToolResultContent>( toolResultContentJson, AgentSerializerOptions.ChatOptions );
 
             var functionCallContent = new FunctionCallContent(
                 functionName: toolResultContent.FunctionName,

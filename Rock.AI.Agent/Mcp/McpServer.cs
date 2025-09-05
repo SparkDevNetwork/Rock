@@ -36,23 +36,6 @@ namespace Rock.AI.Agent.Mcp
     /// </summary>
     internal class McpServer : IMcpServer
     {
-        #region Constants
-
-        /// <summary>
-        /// Provides a lazily initialized instance of the JSON serializer options
-        /// we used for serializing and deserializing JSON-RPC requests and
-        /// responses.
-        /// </summary>
-        private static readonly Lazy<JsonSerializerOptions> _jsonSerializerOptions = new Lazy<JsonSerializerOptions>( () => new JsonSerializerOptions( AIJsonUtilities.DefaultOptions ) );
-
-        /// <summary>
-        /// The JSON serializer options used for parsing and serializing
-        /// JSON-RPC requests and responses.
-        /// </summary>
-        public static JsonSerializerOptions JsonSerializerOptions => _jsonSerializerOptions.Value;
-
-        #endregion
-
         #region Methods
 
         /// <inheritdoc/>
@@ -231,7 +214,7 @@ namespace Rock.AI.Agent.Mcp
 
             try
             {
-                args = JsonSerializer.Deserialize<KernelArguments>( parameters.Arguments.GetRawText(), JsonSerializerOptions );
+                args = JsonSerializer.Deserialize<KernelArguments>( parameters.Arguments.GetRawText(), AgentSerializerOptions.McpOptions );
 
                 foreach ( var key in args.Keys.ToList() )
                 {
@@ -257,7 +240,7 @@ namespace Rock.AI.Agent.Mcp
             {
                 response.Content.Add( new Protocol.TextContent
                 {
-                    Text = JsonSerializer.Serialize( result, JsonSerializerOptions )
+                    Text = JsonSerializer.Serialize( result, AgentSerializerOptions.McpOptions )
                 } );
 
                 response.StructuredContent = result;
