@@ -24,11 +24,14 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.AI.Agent.Classes.Skills.PersonSkill;
+using Rock.Cms.ContentCollection.Search;
 using Rock.Core.Geography.Classes;
+using Rock.Data;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
 using Rock.Net;
@@ -320,7 +323,7 @@ namespace Rock.AI.Agent.Skills
                 }
 
                 return RockToolResult.Error( "Could not find anyone with the name provided." )
-                    .WithInstructions( "Could not find anyone with the name provided." );
+                    .WithInstructions( "Could not find anyone with the name provided. You must now call SearchPersonPartial with a modified search term. Provide only the first two characters of the first name and three characters of the last name. Example: If the term was 'ted decker' pass 'te dec' to SearchPersonPartial. You must describe the results as possible matches." );
             }
 
             // Append campus filter if provided
@@ -393,6 +396,102 @@ namespace Rock.AI.Agent.Skills
             return RockToolResult.Success( results )
                 .WithInstructions( "This data represents results that match the search query. These are both exact matches and those that are similar based on metaphone sounds like. All results should be displayed, even if they don't match exactly what was provided." )
                 .WithReferenceRoute( RockRequestContextAccessor.Current, "Additional Search Options", $"/Person/Search/name/?SearchTerm={fullName}" )
+                .WithMetadata( meta );
+        }
+
+        /// <summary>
+        /// Searches for a person using a partial name.
+        /// </summary>
+        /// <param name="searchPattern"></param>
+        /// <param name="maxResults"></param>
+        /// <param name="campusIdKey"></param>
+        /// <returns></returns>
+        [KernelFunction( "SearchPersonPartial" )]
+        [AgentPurpose( "Searches for matching people by a partial first name or last name." )]
+        [AgentToolExample( "t decker would search the database for people who's first name starts with t and last name starts with decker." )]
+        [AgentToolReturnDescription( "A collection of summaries about the matched people. These are not full profiles. Call `GetPersonProfile` passing the personIdKey to get a person's full profile." )]
+        [Description( "Does a name search based on a partial search (e.g. 't dec')." )]
+        [AgentToolGuid( "873AFC46-1872-999F-4E6C-94409654F6BC" )]
+        public RockToolResult SearchPersonPartial( string searchPattern, int maxResults = 20, string campusIdKey = null )
+        {
+            if ( searchPattern == null || searchPattern.IsNullOrWhiteSpace() )
+            {
+                return RockToolResult.Error( "Search pattern is required." )
+                    .WithInstructions( "The searchPattern parameter is required. You may also provide optional filters for CampusKey to filter by a specific campus and MaxResults to limit the results." );
+            }
+
+            var searchQueryable = new PersonService( AgentRequestContext.RockContext )
+                .GetByFullNameOrdered( searchPattern, true, false, false, out _ );
+
+            // Append campus filter if provided
+            if ( campusIdKey.IsNotNullOrWhiteSpace() )
+            {
+                var campusId = IdHasher.Instance.GetId( campusIdKey );
+
+                if ( !campusId.HasValue || campusId <= 0 )
+                {
+                    return RockToolResult.Error( "Invalid CampusIdKey provided." );
+                }
+
+                // Confirm that the campusId is valid and filter the search results.
+                var campus = CampusCache.Get( campusId.Value );
+
+                if ( campus == null )
+                {
+                    return RockToolResult.Error( "Invalid CampusIdKey provided." );
+                }
+
+                searchQueryable = ( IOrderedQueryable<Model.Person> ) searchQueryable
+                    .Where( p => p.PrimaryCampusId == campusId.Value );
+            }
+
+            // Get results
+            var results = searchQueryable
+                .Select( p => new PersonResult
+                {
+                    Id = p.Id,
+                    FirstName = p.FirstName,
+                    NickName = p.NickName,
+                    LastName = p.LastName,
+                    Suffix = p.SuffixValue != null ? p.SuffixValue.Value : "",
+                    PrimaryFamilyId = p.PrimaryFamilyId,
+                    AgeClassification = p.AgeClassification,
+                    Campus = p.PrimaryCampus != null ? new KeyNameResult { Id = p.PrimaryCampus.Id, Name = p.PrimaryCampus.Name } : null,
+                    PhotoId = p.PhotoId,
+                    RecordTypeValueId = p.RecordTypeValueId,
+                    ConnectionStatus = p.ConnectionStatusValue.Value,
+                    RecordStatus = p.RecordStatusValue != null ? p.RecordStatusValue.Value : "",
+                    MaritalStatusGuid = p.MaritalStatusValue != null ? p.MaritalStatusValue.Guid : Guid.Empty,
+                    MaritalStatus = p.MaritalStatusValue != null ? p.MaritalStatusValue.Value : "",
+                    Age = p.Age,
+                    Email = p.Email,
+                    Gender = p.Gender
+                } )
+                .OrderBy( p => p.LastName )
+                .ThenBy( p => p.NickName )
+                .Take( maxResults + 1 )
+                .ToList();
+
+            // Provide indication of more results.
+            var hasMore = results.Count > maxResults;
+
+            if ( hasMore )
+            {
+                results.RemoveAt( results.Count - 1 );
+            }
+
+            results = AppendExtendedProperties( results );
+
+            // Define meta data
+            var meta = new Dictionary<string, object>
+                {
+                    { "returnedRows", results.Count },
+                    { "hasMore", hasMore }
+                };
+
+            return RockToolResult.Success( results )
+                .WithInstructions( "This data represents results that match the search query. All results should be displayed, even if they don't match exactly what was provided." )
+                .WithReferenceRoute( RockRequestContextAccessor.Current, "Additional Search Options", $"/Person/Search/name/?SearchTerm={searchPattern}" )
                 .WithMetadata( meta );
         }
 
@@ -609,6 +708,14 @@ namespace Rock.AI.Agent.Skills
                 .Take( 5 )
                 .ToList();
 
+            // Run security on profile result
+            var securityCheckPassed = profileResult.SanitizeForSecurity( currentPerson );
+
+            if ( !securityCheckPassed )
+            {
+                return RockToolResult.Error( "You do not have permission to view this person's profile." );
+            }
+
             return RockToolResult.Success( profileResult )
                 .WithReferenceRoute( requestContext, "View Profile", $"/person/{profileResult.IdKey}", false );
         }
@@ -630,9 +737,14 @@ namespace Rock.AI.Agent.Skills
             var personId = IdHasher.Instance.GetId( personIdKey );
             var isInternal = AgentRequestContext.AudienceType == AudienceType.Internal;
 
+            // We need to get a list of connection opportunities that the current user is authorized to see.
+            // TODO: This could be optimized by creating a connection opportunity cache. 
+            var authorizedConnectionOpportunityIds = AuthorizedConnectionOpportunityIds();
 
             var connectionRequests = new ConnectionRequestService( AgentRequestContext.RockContext ).Queryable()
-                .Where( cr => cr.PersonAlias.PersonId == personId )
+                .Where( cr =>
+                    cr.PersonAlias.PersonId == personId
+                    && authorizedConnectionOpportunityIds.Contains( cr.ConnectionOpportunityId ) )
                 .Select( cr => new ConnectionRequestResult
                 {
                     Id = cr.Id,
@@ -692,6 +804,12 @@ namespace Rock.AI.Agent.Skills
                 .Take( take )
                 .ToList();
 
+            // Run security on each person (removes any data they shouldn't see)
+            foreach( var request in connectionRequests )
+            {
+                request.SanitizeForSecurity( AgentRequestContext.RockRequestContext.CurrentPerson );
+            }          
+
             var hasMore = connectionRequests.Count > basePageSize;
             if ( hasMore )
             {
@@ -720,6 +838,27 @@ namespace Rock.AI.Agent.Skills
         #endregion
 
         #region Helpers
+
+        /// <summary>
+        /// Gets a list of connection opportunity ids that the current user is authorized to view.
+        /// </summary>
+        /// <returns></returns>
+        private List<int> AuthorizedConnectionOpportunityIds()
+        {
+            var authorizedConnectionOpportunityIds = new List<int>();
+
+            var connectionOpportunities = new ConnectionOpportunityService( AgentRequestContext.RockContext ).Queryable().AsNoTracking();
+
+            foreach ( var opportunity in connectionOpportunities )
+            {
+                if ( opportunity.IsAuthorized( Rock.Security.Authorization.VIEW, AgentRequestContext.RockRequestContext.CurrentPerson ) )
+                {
+                    authorizedConnectionOpportunityIds.Add( opportunity.Id );
+                }
+            }
+
+            return authorizedConnectionOpportunityIds;
+        }
 
         /// <summary>
         /// Cleans up the media views by determining the medium and adjusting the viewing location URL.
