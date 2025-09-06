@@ -18,6 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
+using DocumentFormat.OpenXml.Spreadsheet;
+
+using Rock.Model;
+using Rock.Security;
+using Rock.Web.Cache;
+
 namespace Rock.AI.Agent.Classes.Entity
 {
     /// <summary>
@@ -63,5 +69,54 @@ namespace Rock.AI.Agent.Classes.Entity
         /// Attributes of the defined value.
         /// </summary>
         public List<AttributeResult> Attributes { get; set; }
+
+        #region Public Methods
+
+        /// <summary>
+        /// Sanitizes the entity for security by checking attribute security.
+        /// </summary>
+        /// <param name="currentPerson"></param>
+        /// <returns>True if the security checks passed; false if the checks failed.</returns>
+        public virtual bool SanitizeForSecurity( Person currentPerson )
+        {
+            // Default logic (very basic, override in subclasses for custom behavior)
+            if ( currentPerson == null )
+            {
+                return false;
+            }
+
+            // Remove attributes the current person does not have view access to.
+            CheckAttributeSecurity( currentPerson );
+
+            // Currently there is need to prevent the security from passing.
+            return true;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Removes any attributes that the current person does not have view access to.
+        /// </summary>
+        /// <param name="currentPerson"></param>
+        private void CheckAttributeSecurity( Person currentPerson )
+        {
+            if ( Attributes != null )
+            {
+                for ( int i = Attributes.Count - 1; i >= 0; i-- )
+                {
+                    var isAllowedViewAccess = AttributeCache.Get( Attributes[i].Id )?.IsAuthorized( Authorization.VIEW, currentPerson ) ?? false;
+
+                    if ( !isAllowedViewAccess )
+                    {
+                        Attributes.RemoveAt( i );
+                    }
+                }
+            }
+        }
+
+        #endregion
+
     }
 }
