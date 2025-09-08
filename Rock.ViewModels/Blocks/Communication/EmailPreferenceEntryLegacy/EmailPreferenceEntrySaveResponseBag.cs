@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Blocks.Communication.EmailPreferenceEntry
+namespace Rock.ViewModels.Blocks.Communication.EmailPreferenceEntryLegacy
 {
     /// <summary>
     /// 

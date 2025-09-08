@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -52,6 +53,13 @@ namespace Rock.Cms
         /// The marker used to indicate the end of the bottom overrides section.
         /// </summary>
         internal const string BottomOverrideEndMarker = "/* CSS Overrides Bottom End */";
+
+        /// <summary>
+        /// A regular expression that finds the @charset "UTF-8"; line at the
+        /// start of the CSS file. This will also match the trailing line feed
+        /// if any so we can remove it like it never existed.
+        /// </summary>
+        private static readonly Regex CharsetPattern = new Regex( "^@charset\\s+['\"][^'\"]*['\"];\\s*", RegexOptions.Compiled | RegexOptions.Singleline );
 
         /// <summary>
         /// A regular expression that finds all the top override section content
@@ -181,12 +189,15 @@ namespace Rock.Cms
         {
             var sb = new StringBuilder();
 
+            originalThemeCss = CharsetPattern.Replace( originalThemeCss, string.Empty );
             originalThemeCss = TopOverridePattern.Replace( originalThemeCss, string.Empty );
             originalThemeCss = BottomOverridePattern.Replace( originalThemeCss, string.Empty );
             originalThemeCss = originalThemeCss.Trim();
 
             var topOverrides = BuildTopOverrides().Trim();
             var bottomOverrides = BuildBottomOverrides().Trim();
+
+            sb.AppendLine( "@charset \"UTF-8\";" );
 
             if ( topOverrides.Length > 0 )
             {
@@ -225,9 +236,45 @@ namespace Rock.Cms
             {
                 foreach ( var importUrl in _urlImports )
                 {
-                    var url = importUrl.StartsWith( "~" )
-                        ? RockApp.Current.ResolveRockUrl( importUrl, ThemeName )
-                        : importUrl;
+                    string url;
+                    string path;
+
+                    if ( importUrl.StartsWith( "~" ) )
+                    {
+                        url = RockApp.Current.ResolveRockUrl( importUrl, ThemeName );
+                        path = RockApp.Current.MapPath( importUrl, ThemeName );
+                    }
+                    else
+                    {
+                        url = importUrl;
+                        path = RockApp.Current.MapPath( $"~/{importUrl.TrimStart( '/' )}" );
+                    }
+
+                    // Add a fingerprint to the imported CSS file so that the
+                    // browser will request the file again if it is changed.
+                    // Otherwise browsers won't notice if any imported CSS
+                    // files change because our normal fingerprinting only
+                    // affects the main theme.css file and not any @import rules.
+                    if ( !url.Contains( "?v=" ) && !url.Contains( "&v=" ) && File.Exists( path ) )
+                    {
+                        try
+                        {
+                            var content = File.ReadAllText( path );
+                            var hash = content.XxHash();
+
+                            if ( url.Contains( '?' ) )
+                            {
+                                url = $"{url}&v={hash}";
+                            }
+                            else
+                            {
+                                url = $"{url}?v={hash}";
+                            }
+                        }
+                        catch
+                        {
+                        }
+                    }
 
                     sb.AppendLine( $"@import url('{url}');" );
                 }

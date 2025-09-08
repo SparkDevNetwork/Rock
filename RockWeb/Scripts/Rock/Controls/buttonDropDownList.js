@@ -18,7 +18,7 @@
                 $('.dropdown-menu a', $control).on('click', function (e) {
                     var $el = $(this);
                     var text = $el.html();
-                    var textHtml = $el.html() + " <span class='ti ti-caret-down' ></span >";
+                    var textHtml = $el.html() + " <span class='ti ti-caret-down-filled' ></span >";
                     var idValue = $el.attr('data-id');
                     var postbackScript = $el.attr('data-postback-script');
 

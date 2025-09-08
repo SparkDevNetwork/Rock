@@ -180,7 +180,8 @@ namespace Rock.Web.Cache
                 .Queryable()
                 .AsNoTracking()
                 .Where( e => e.AutomationTriggerId == automationTriggerId
-                    && e.AutomationTrigger.IsActive )
+                    && e.AutomationTrigger.IsActive
+                    && e.IsActive == true )
                 .OrderBy( e => e.Order )
                 .ThenBy( e => e.Id )
                 .ToList();

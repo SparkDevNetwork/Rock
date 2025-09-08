@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -76,18 +75,15 @@ namespace Rock.Blocks.Engagement
         private static class PreferenceKey
         {
             public const string FilterActive = "filter-active";
-
-            public const string FilterCategory = "filter-category";
         }
 
         #endregion Keys
 
         #region Properties
+
         protected string FilterActive => GetBlockPersonPreferences()
             .GetValue(PreferenceKey.FilterActive);
 
-        protected string FilterCategory => GetBlockPersonPreferences()
-            .GetValue(PreferenceKey.FilterCategory);
         #endregion
 
         #region Methods
@@ -149,17 +145,13 @@ namespace Rock.Blocks.Engagement
         {
             var query = base.GetListQueryable( rockContext );
 
-            // Filter by Category (first by block setting, and then by selected filter).
+            // Filter by Category
             var categoryGuids = GetAttributeValue( AttributeKey.Categories ).SplitDelimitedValues().AsGuidList();
             if ( categoryGuids.Any() )
             {
                 query = query.Where( sp => sp.Category != null && categoryGuids.Contains( sp.Category.Guid ) );
             }
 
-            if ( !string.IsNullOrWhiteSpace( FilterCategory ) )
-            {
-                query = ( IOrderedQueryable<StepProgram> ) query.Where( sp => sp.Category.Name == FilterCategory );
-            }
 
             // Filter by isActive
             if ( !string.IsNullOrWhiteSpace( FilterActive ) )

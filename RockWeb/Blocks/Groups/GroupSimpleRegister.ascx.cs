@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Load Current Person from Page", "If set to true the form will autopopulate fields from the person profile", false, key: "LoadPerson" )]
     [BooleanField(
         "Disable Captcha Support",
-        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        Description = "If set to 'Yes' the CAPTCHA verification will be skipped. \n\nNote: If the CAPTCHA site key and/or secret key are not configured in the system settings, this option will be forced as 'Yes', even if 'No' is visually selected.",
         DefaultBooleanValue = false,
         Key = AttributeKey.DisableCaptchaSupport )]
     [Rock.SystemGuid.BlockTypeGuid( "82A285C1-0D6B-41E0-B1AA-DD356021BDBF" )]

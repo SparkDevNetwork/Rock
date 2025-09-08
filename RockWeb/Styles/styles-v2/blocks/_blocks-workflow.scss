@@ -4,16 +4,26 @@
 
 
 // =============================================================
-// Table of Content           
-//  + User Entry
+// Table of Content
+//  + Workflow Entry
 // =============================================================
 
 
-// ======================== USER ENTRY ========================
+// ======================== WORKFLOW ENTRY ========================
 .workflow-entry-panel {
   & > h1:first-of-type {
     margin-top: 0;
   }
 }
-// ====================== END USER ENTRY ======================
 
+// Override list group item styles to add flex and remove table styles
+.panel-workflowitem .list-group-item {
+  display: flex;
+  justify-content: space-between;
+  &::before,
+  &::after {
+    all: unset;
+  }
+}
+
+// ====================== END WORKFLOW ENTRY ======================

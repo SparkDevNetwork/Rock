@@ -14,7 +14,7 @@
                :headerSecondaryActions="secondaryActions">
 
             <template #helpContent>
-                <div class="p-3 bg-white">
+                <div class="p-3">
                     <div>
                         <h5 class="mt-0 mb-4">Group Scheduler Help</h5>
                         <p><strong>Scheduling Basics</strong></p>
@@ -25,9 +25,9 @@
                             <p><strong>Scheduled Individual Legend</strong></p>
                             <p>Each scheduled individual has one of three invite statuses:</p>
                             <ul>
-                                <li><i class="ti ti-circle text-success"></i> Accepted Invite</li>
-                                <li><i class="ti ti-circle text-muted"></i> Pending Invite</li>
-                                <li><i class="ti ti-circle text-danger"></i> Declined Invite</li>
+                                <li><i class="ti ti-circle-filled text-success"></i> Accepted Invite</li>
+                                <li><i class="ti ti-circle-filled text-muted"></i> Pending Invite</li>
+                                <li><i class="ti ti-circle-filled text-danger"></i> Declined Invite</li>
                             </ul>
                             <p>The invite status is shown by a border around the individual's avatar.</p>
                             <p>Some scheduled individuals may also have notification icons that alert you to issues with their schedule.</p>

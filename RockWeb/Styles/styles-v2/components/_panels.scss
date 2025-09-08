@@ -79,6 +79,7 @@
   margin-bottom:  0;
   font-size:      calc(var(--font-size-regular) * 1.125);
   color:          inherit;
+  line-height:    var(--line-height-normal);
 
   > a,
   > small,
@@ -554,8 +555,9 @@ ul.activeusers {
             margin-bottom: 6px;
 
             & > a {
-                background-color: transparent;
+                background-color: var(--color-interface-softer);
                 color: var(--color-interface-strong);
+                font-weight: var(--font-weight-medium);
             }
 
             & > a:hover {
@@ -1067,10 +1069,16 @@ ul.activeusers {
   border: none;
 }
 
-.panel-body:has(.grid-obsidian) {
+// If there's a non-light grid make the panel body take up the full height and remove padding
+.panel-body:has(.grid-obsidian:not(.grid-light)) {
   overflow: hidden auto;
   flex-grow: 1;
   padding: 0;
+}
+
+// Keep padding when there's a content section with a light grid
+.panel-body:has(.contentsection-container) {
+  padding: var(--spacing-medium);
 }
 
 .panel-worksurface .panel-scrollable-content:has(.grid-obsidian) {

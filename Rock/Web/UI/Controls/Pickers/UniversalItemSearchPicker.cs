@@ -512,7 +512,7 @@ namespace Rock.Web.UI.Controls
 
                 _btnSelectNone.RenderControl( writer );
 
-                writer.Write( $@"<b class='ti ti-caret-down'></b>" );
+                writer.Write( $@"<b class='ti ti-caret-down-filled'></b>" );
 
                 writer.RenderEndTag();
 

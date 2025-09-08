@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Event
     {% endif %}
 
     {% assign paymentPlan = Registration.PaymentPlanFinancialScheduledTransaction %}
-    
+
     {% if paymentPlan and paymentPlan.IsActive %}
         Payment Plan: {{ paymentPlan.TotalAmount | FormatAsCurrency }} × {{ paymentPlan.NumberOfPayments }} ({{ paymentPlan.TransactionFrequencyValue | AsString }})<br>
     {% else %}
@@ -298,15 +298,15 @@ namespace RockWeb.Blocks.Event
         Paid {{ payment.Amount | FormatAsCurrency }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }}
         <small>(Acct #: {{ payment.Transaction.FinancialPaymentDetail.AccountNumberMasked }}, Ref #: {{ payment.Transaction.TransactionCode }})</small><br/>
     {% endfor %}
-    
+
     {% assign paymentCount = Registration.Payments | Size %}
-        
+
     {% if paymentCount > 1 %}
         Total Paid: {{ Registration.TotalPaid | FormatAsCurrency }}<br/>
     {% endif %}
 
     {% assign paymentPlan = Registration.PaymentPlanFinancialScheduledTransaction %}
-    
+
     {% if paymentPlan and paymentPlan.IsActive %}
         Payment Plan: {{ paymentPlan.TotalAmount | FormatAsCurrency }} × {{ paymentPlan.NumberOfPayments }} ({{ paymentPlan.TransactionFrequencyValue | AsString }})
     {% else %}
@@ -1057,7 +1057,7 @@ The logged-in person's information will be used to complete the registrar inform
             ParseControls( true );
 
             var rockContext = new RockContext();
-        
+
             var registrationTemplateService = new RegistrationTemplateService( rockContext );
 
             var registrationTemplate = ( RegistrationTemplate ) null;
@@ -2927,7 +2927,7 @@ The logged-in person's information will be used to complete the registrar inform
             lRequiredSignedDocument.Visible = lRequiredSignedDocument.Text.IsNotNullOrWhiteSpace();
             lWorkflowType.Text = registrationTemplate.RegistrationWorkflowType != null ? registrationTemplate.RegistrationWorkflowType.Name : string.Empty;
             lWorkflowType.Visible = lWorkflowType.Text.IsNotNullOrWhiteSpace();
-            rcwRegistrantFormsSummary.Label = $"<strong>Registrant Forms</strong> ({registrationTemplate.Forms.Count}) <i class='ti ti-caret-down'></i>";
+            rcwRegistrantFormsSummary.Label = $"<strong>Registrant Forms</strong> ({registrationTemplate.Forms.Count}) <i class='ti ti-caret-down-filled'></i>";
             lRegistrantFormsSummary.Text = string.Empty;
 
             if ( registrationTemplate.Forms.Any() )
@@ -2971,7 +2971,7 @@ The logged-in person's information will be used to complete the registrar inform
                 .ToAttributeCacheList();
 
             rcwRegistrationAttributesSummary.Visible = registrationAttributeNameList.Any();
-            rcwRegistrationAttributesSummary.Label = $"<strong>Registration Attributes</strong> ({registrationAttributeNameList.Count}) <i class='ti ti-caret-down'></i>";
+            rcwRegistrationAttributesSummary.Label = $"<strong>Registration Attributes</strong> ({registrationAttributeNameList.Count}) <i class='ti ti-caret-down-filled'></i>";
 
             var registrationAttributeTextBuilder = new StringBuilder();
             foreach ( var registrationAttribute in registrationAttributeNameList )
@@ -4475,7 +4475,7 @@ The logged-in person's information will be used to complete the registrar inform
                 The "Minimum Initial Payment" field cannot be left blank if "Payment Plans" are enabled.
                 If the "Minimum Initial Payment" is blank, full payment is required, making payment plans unnecessary.
                 To avoid this conflict, require a value in the "Minimum Initial Payment" field when "Payment Plans" are enabled.
-             */            
+             */
             if ( paymentPlansFeatureData.GetValueIfFeatureSupportedOrDefault( p => p.IsPaymentPlanAllowed ) )
             {
                 cbMinimumInitialPayment.Required = true;
@@ -4504,7 +4504,7 @@ The logged-in person's information will be used to complete the registrar inform
         {
             var financialGatewayComponent = GetFinancialGatewayComponent( rockContext, registrationTemplate?.FinancialGatewayId );
             var isPaymentPlansFeatureSupported = IsPaymentPlansFeatureSupportedByFinancialGateway( financialGatewayComponent );
-            
+
             return new PaymentPlansFeatureData
             {
                 FinancialGatewayComponent = financialGatewayComponent,

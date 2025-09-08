@@ -193,6 +193,8 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
 
                 isLoaded = true;
 
+                let loadingTimeout = 0;
+
                 if (rootElement.classList.contains("obsidian-block-has-placeholder")) {
                     wrapperElement.style.padding = "1px 0px";
                     const realHeight = wrapperElement.getBoundingClientRect().height - 2;
@@ -204,6 +206,7 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
                         rootElement.style.height = "";
                         rootElement.classList.remove("obsidian-block-has-placeholder");
                     }, 200);
+                    loadingTimeout = 201;
                 }
 
                 rootElement.classList.remove("obsidian-block-loading");
@@ -215,7 +218,9 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
                     pendingCount--;
                     document.body.setAttribute("data-obsidian-pending-blocks", pendingCount.toString());
                     if (pendingCount === 0) {
-                        document.body.classList.remove("obsidian-loading");
+                        setTimeout(() => {
+                            document.body.classList.remove("obsidian-loading");
+                        }, loadingTimeout);
                     }
                 }
             };

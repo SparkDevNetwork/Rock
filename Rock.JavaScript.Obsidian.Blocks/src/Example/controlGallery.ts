@@ -1122,6 +1122,12 @@ export default defineComponent({
     overflow: hidden;
 }
 
+.galleryContainer .input-container {
+    padding: var(--spacing-xsmall);
+    border-right: 1px solid var(--color-interface-soft);
+    background-color: var(--color-interface-softer);
+}
+
 .gallerySidebar {
     border-radius: 0;
     margin: -1px 0 -1px -1px;

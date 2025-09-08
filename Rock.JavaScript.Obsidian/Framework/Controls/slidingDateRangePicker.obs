@@ -6,7 +6,7 @@
         </template>
         <template #default="{ uniqueId }">
             <div :id="uniqueId" class="form-control-group">
-                <DropDownList v-model="rangeType" :items="computedRangeTypeOptions" showBlankItem class="input-width-md slidingdaterange-select" />
+                <DropDownList v-model="rangeType" :items="computedRangeTypeOptions" :showBlankItem="isRangeClearable" class="input-width-md slidingdaterange-select" />
 
                 <input v-if="isNumberVisible" v-model="timeValue" class="form-control input-width-sm slidingdaterange-number" type="text" pattern="[0-9]*" inputmode="numeric" />
 
@@ -63,6 +63,11 @@
         previewLocation: {
             type: String as PropType<"Right" | "Top" | "None">,
             default: "Top"
+        },
+
+        isRangeClearable: {
+            type: Boolean as PropType<boolean>,
+            default: true
         }
     });
 

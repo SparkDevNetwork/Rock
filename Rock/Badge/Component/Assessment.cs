@@ -233,9 +233,9 @@ namespace Rock.Badge.Component
                 }
 
                 badgeIcons.AppendLine( $@"
-                        <span class='ti-stack'>
-                            <i class='ti ti-circle ti-stack-2x'></i>
-                            <i class='{assessmentType.IconCssClass} ti-stack-1x {AssessmentBadgeCssClasses.AssessmentIcon}'></i>
+                        <span class='ti-stacked'>
+                            <i class='ti ti-circle-filled ti-stacked-2x'></i>
+                            <i class='{assessmentType.IconCssClass} ti-stacked-1x {AssessmentBadgeCssClasses.AssessmentIcon}'></i>
                         </span>" );
 
                 // Close the anchor for the linked assessment test
@@ -250,9 +250,9 @@ namespace Rock.Badge.Component
                 toolTipText.AppendLine( $@"
                     <div class='assessment-tooltip-item'>
                         <span {badgeToolTipColorHtml} class='{assessmentTypeClass}'>
-                            <span class='ti-stack'>
-                                <i class='ti ti-circle ti-stack-2x'></i>
-                                <i class='{assessmentType.IconCssClass} ti-stack-1x {AssessmentBadgeCssClasses.AssessmentIcon}'></i>
+                            <span class='ti-stacked'>
+                                <i class='ti ti-circle-filled ti-stacked-2x'></i>
+                                <i class='{assessmentType.IconCssClass} ti-stacked-1x {AssessmentBadgeCssClasses.AssessmentIcon}'></i>
                             </span>
                         </span>
                         <span class='assessment-tooltip-value'>

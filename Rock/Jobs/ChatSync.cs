@@ -81,13 +81,20 @@ namespace Rock.Jobs
         DefaultBooleanValue = true,
         Order = 5 )]
 
+    [IntegerField( "API Throttle",
+        Key = AttributeKey.ApiThrottle,
+        Description = "The number of milliseconds to wait between tightly-consecutive API calls to the external Chat system, helping to proactively avoid rate limiting.",
+        IsRequired = false,
+        DefaultIntegerValue = 100,
+        Order = 6 )]
+
     [IntegerField( "Command Timeout",
         Key = AttributeKey.CommandTimeout,
         Description = "Maximum amount of time (in seconds) to wait for the sql operations to complete. Leave blank to use the default for this job (3600). Note, some operations could take several minutes, so you might want to set it at 3600 (60 minutes) or higher.",
         IsRequired = false,
         DefaultIntegerValue = 60 * 60,
         Category = "General",
-        Order = 6 )]
+        Order = 7 )]
 
     #endregion Job Attributes
 
@@ -107,6 +114,7 @@ namespace Rock.Jobs
             public const string EnforceDefaultGrantsPerRole = "EnforceDefaultGrantsPerRole";
             public const string EnforceDefaultSyncSettings = "EnforceDefaultSyncSettings";
             public const string CommandTimeout = "CommandTimeout";
+            public const string ApiThrottle = "ApiThrottle";
         }
 
         /// <summary>
@@ -132,7 +140,32 @@ namespace Rock.Jobs
         /// </summary>
         private readonly List<ChatSyncResultSection> _resultSections = new List<ChatSyncResultSection>();
 
+        /// <summary>
+        /// The backing field for the <see cref="ApiThrottleMs"/> property.
+        /// </summary>
+        private int? _apiThrottleMs;
+
         #endregion Fields
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the API throttle milliseconds.
+        /// </summary>
+        private int ApiThrottleMs
+        {
+            get
+            {
+                if ( !_apiThrottleMs.HasValue )
+                {
+                    _apiThrottleMs = Math.Abs( GetAttributeValue( AttributeKey.ApiThrottle ).AsInteger() );
+                }
+
+                return _apiThrottleMs.Value;
+            }
+        }
+
+        #endregion Properties
 
         #region Constructors
 
@@ -178,7 +211,7 @@ namespace Rock.Jobs
 
                     if ( GetAttributeValue( AttributeKey.SynchronizeData ).AsBoolean() )
                     {
-                        await SynchronizeData( rockContext, chatHelper );
+                        await SynchronizeDataAsync( rockContext, chatHelper );
                     }
 
                     if ( GetAttributeValue( AttributeKey.CreateInteractions ).AsBoolean() )
@@ -216,7 +249,7 @@ namespace Rock.Jobs
         /// <param name="rockContext">The rock context.</param>
         /// <param name="chatHelper">The chat helper.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        private async Task SynchronizeData( RockContext rockContext, ChatHelper chatHelper )
+        private async Task SynchronizeDataAsync( RockContext rockContext, ChatHelper chatHelper )
         {
             #region 1) Rock-to-Chat Sync
 
@@ -523,7 +556,11 @@ namespace Rock.Jobs
 
             if ( chatEnabledGroupSyncCommands.Any() )
             {
-                var syncConfig = new RockToChatGroupSyncConfig { ShouldSyncAllGroupMembers = true };
+                var syncConfig = new RockToChatGroupSyncConfig
+                {
+                    ShouldSyncAllGroupMembers = true,
+                    ApiThrottleMs = ApiThrottleMs
+                };
 
                 var chatEnabledChannelCrudResult = await chatHelper.SyncGroupsToChatProviderAsync( chatEnabledGroupSyncCommands, syncConfig );
                 if ( chatEnabledChannelCrudResult != null )
@@ -892,6 +929,8 @@ namespace Rock.Jobs
                 var groupId = groupCache.Id;
                 var chatChannelKey = ChatHelper.GetChatChannelKey( groupId, groupCache.ChatChannelKey );
                 var chatChannelTypeKey = ChatHelper.GetChatChannelTypeKey( groupCache.GroupTypeId );
+
+                await ChatHelper.TryThrottleApiRequestsAsync( ApiThrottleMs );
 
                 // Start by querying the external chat system for a list of channel members.
                 var getChatChannelMembersResult = await chatHelper.GetChatChannelMembersAsync( chatChannelTypeKey, chatChannelKey );

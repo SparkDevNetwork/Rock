@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [ToolboxData( "<{0}:ButtonDropDownList runat=server></{0}:ButtonDropDownList>" )]
     public class ButtonDropDownList : ListControl, IRockControl, INamingContainer
@@ -245,7 +245,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public enum ButtonSelectionStyle
         {
@@ -455,11 +455,11 @@ namespace Rock.Web.UI.Controls
 
             string selectedText = ( ( this.SelectionStyle == ButtonSelectionStyle.Title ) && SelectedItem != null ) ? SelectedItem.Text : Title;
             _btnSelect.Controls.Clear();
-            _btnSelect.Controls.Add( new LiteralControl { Text = string.Format( "{0} <span class='ti ti-caret-down'></span>", selectedText ) } );
+            _btnSelect.Controls.Add( new LiteralControl { Text = string.Format( "{0} <span class='ti ti-caret-down-filled'></span>", selectedText ) } );
 
             // only add a postback if there is a SelectionChanged event or if AutoPostBack is set to true
             bool doPostBack = ( SelectionChanged != null || AutoPostBack == true );
-            
+
             var updatePanel = this.ParentUpdatePanel();
             string postbackControlId;
             if ( updatePanel != null )

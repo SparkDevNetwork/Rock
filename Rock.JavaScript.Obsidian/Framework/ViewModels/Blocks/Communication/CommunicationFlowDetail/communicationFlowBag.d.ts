@@ -73,12 +73,12 @@ export type CommunicationFlowBag = {
     /** Gets or sets the name of the Communication Flow (maximum 100 characters). */
     name?: string | null;
 
+    /** Gets or sets the public name (maximum 500 characters). */
+    publicName?: string | null;
+
     /** Gets or sets the Data View used to define the initial target audience for this Communication Flow. */
     targetAudienceDataView?: ListItemBag | null;
 
     /** Gets or sets a value indicating how this Communication Flow is triggered. */
     triggerType: CommunicationFlowTriggerType;
-
-    /** Gets or sets the unsubscribe message (maximum 500 characters). */
-    unsubscribeMessage?: string | null;
 };

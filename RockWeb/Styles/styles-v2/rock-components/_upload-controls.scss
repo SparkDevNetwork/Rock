@@ -1,11 +1,11 @@
 
 
-// File Upload / Image Upload - styles for the 
+// File Upload / Image Upload - styles for the
 // file / image uploader (Rock Component)
 
 
 // =============================================================
-// Table of Content           
+// Table of Content
 //  + Image upload style
 //  + Picker asset style
 //  + File upload style
@@ -18,7 +18,6 @@
   position:         relative;
   display:          inline-block;
   padding:          2px;
-  margin-bottom:    var(--spacing-medium);
   cursor:           pointer;
   border:           1px solid var(--color-interface-soft);
   border-radius:    var(--rounded-small);
@@ -46,7 +45,6 @@
     .imageupload-thumbnail-image {
       width:                100%;
       height:               100%;
-      background-color: var(--color-interface-soft);
       background-position:  50%;
       background-size:      cover;
       border-radius:    var(--rounded-xsmall) var(--rounded-xsmall) 0 0;
@@ -102,9 +100,8 @@
 
       &::before {
         padding-right:  .25em;
-        font-family:    'FontAwesome';
-        font-weight:    var(--font-weight-black);
-        content:        "\f093";
+        font-family:    'tabler-icons';
+        content:        "\eb47";
       }
     }
   }
@@ -150,7 +147,7 @@
   .file-link-default {
     &::after {
       display:      block;
-      content:      "\f07c";
+      content:      "\faf7";
     }
   }
 
@@ -225,9 +222,8 @@
 
       &::before {
         padding-right:  var(--spacing-tiny);
-        font-family:    'FontAwesome';
-        font-weight:    var(--font-weight-black);
-        content:        "\f093";
+        font-family:    'tabler-icons';
+        content:        "\eb47";
       }
     }
   }
@@ -313,16 +309,16 @@
       left:             0;
       z-index:          -1;
       width:            100%;
-      font-family:      'FontAwesome';
+      font-family:      'tabler-icons';
       font-size:        50px;
-      font-weight:      var(--font-weight-black);
       line-height:      0;
       color:            var(--color-interface-soft);
-      content:          "\f15b";
+      content:          "\f747";
     }
 
     &.file-exists::after {
-      content:          "\f15c";
+      font-family:      'tabler-icons';
+      content:          "\eaa2";
     }
   }
 }
@@ -388,6 +384,7 @@
 
     &::after {
       font-size:  72px;
+      font-family: 'tabler-icons';
       content:    "\f15c";
 
       @media (min-width: $screen-small) {

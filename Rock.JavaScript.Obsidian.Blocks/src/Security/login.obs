@@ -26,7 +26,7 @@
 
                     <div :class="['login-container', 'row', isMobile ? 'mobile-layout' : 'd-flex']">
                         <div v-if="isAnyExternalAuthProviderVisible || areBothInternalAuthProvidersVisible"
-                            :class="['login-methods', isMobileForced ? 'col-sm-12' : 'col-sm-5', 'remote-logins']">
+                             :class="['login-methods', isMobileForced ? 'col-sm-12' : 'col-sm-5', 'remote-logins']">
                             <ExternalLogin v-if="isAnyExternalAuthProviderVisible"
                                            :modelValue="config.externalAuthProviderButtons || []"
                                            :caption="config.remoteAuthorizationPromptMessage ?? ''"
@@ -50,26 +50,26 @@
                             <div v-if="mfaMessage" v-html="mfaMessage"></div>
 
                             <CredentialLogin v-if="loginMethod === LoginMethod.InternalDatabase
-                                                   && ((config.isInternalDatabaseLoginSupported && !mfa?.credentialLogin) || mfa?.credentialLogin?.isError === false)"
-                                            :disabled="isAuthenticating || isNavigating"
-                                            :isMobileForced="isMobileForced"
-                                            :isNewAccountHidden="currentMfaFactor === LoginMethod.InternalDatabase || config.hideNewAccountOption"
-                                            :isRememberMeHidden="currentMfaFactor === LoginMethod.InternalDatabase"
-                                            :newAccountButtonText="config.newAccountButtonText"
-                                            :promptMessage="config.promptMessage"
-                                            :usernameFieldLabel="config.usernameFieldLabel"
-                                            @forgotAccount="onForgotAccount()"
-                                            @login="onCredentialLogin($event)"
-                                            @register="onRegister()" />
+                                && ((config.isInternalDatabaseLoginSupported && !mfa?.credentialLogin) || mfa?.credentialLogin?.isError === false)"
+                                             :disabled="isAuthenticating || isNavigating"
+                                             :isMobileForced="isMobileForced"
+                                             :isNewAccountHidden="currentMfaFactor === LoginMethod.InternalDatabase || config.hideNewAccountOption"
+                                             :isRememberMeHidden="currentMfaFactor === LoginMethod.InternalDatabase"
+                                             :newAccountButtonText="config.newAccountButtonText"
+                                             :promptMessage="config.promptMessage"
+                                             :usernameFieldLabel="config.usernameFieldLabel"
+                                             @forgotAccount="onForgotAccount()"
+                                             @login="onCredentialLogin($event)"
+                                             @register="onRegister()" />
 
                             <PasswordlessLogin v-else-if="loginMethod !== LoginMethod.InternalDatabase
-                                                          && ((config.isPasswordlessLoginSupported && !mfa?.passwordless) || mfa?.passwordless?.isError === false)"
-                                            v-model="passwordlessLoginOptions"
-                                            :config="config"
-                                            :disabled="isAuthenticating || isNavigating"
-                                            :isMobileForced="isMobileForced"
-                                            @start="onPasswordlessLoginStart($event)"
-                                            @verify="onPasswordlessLoginVerify($event)" />
+                                && ((config.isPasswordlessLoginSupported && !mfa?.passwordless) || mfa?.passwordless?.isError === false)"
+                                               v-model="passwordlessLoginOptions"
+                                               :config="config"
+                                               :disabled="isAuthenticating || isNavigating"
+                                               :isMobileForced="isMobileForced"
+                                               @start="onPasswordlessLoginStart($event)"
+                                               @verify="onPasswordlessLoginVerify($event)" />
 
                             <NotificationBox v-if="errorMessage"
                                              alertType="warning"
@@ -86,7 +86,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, onMounted, ref } from "vue";
+    import { computed, nextTick, onMounted, ref } from "vue";
     import BreakpointObserver from "./breakpointObserver.partial.obs";
     import CredentialLogin from "./Login/credentialLogin.partial.obs";
     import Divider from "./Login/divider.partial.obs";
@@ -585,7 +585,7 @@
 
     //#endregion
 
-    onMounted(() => {
+    onMounted(async () => {
         // Redirect since already authenticated.
         if (config.shouldRedirect) {
             // If the redirect URL is not set, then redirect to the default route.
@@ -616,7 +616,7 @@
         }
     });
 
-    const [ mfaParameter, ..._ ] = removeCurrentUrlQueryParams("Mfa", "State", "Code", "IsPasswordless", "state", "code", "scope", "authuser", "prompt");
+    const [mfaParameter, ..._] = removeCurrentUrlQueryParams("Mfa", "State", "Code", "IsPasswordless", "state", "code", "scope", "authuser", "prompt");
 
     onConfigurationValuesChanged(useReloadBlock());
 </script>

@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -47,7 +48,7 @@ namespace Rock.Blocks.Core
     [Rock.SystemGuid.EntityTypeGuid( "8fae9715-89f1-4faa-a35f-18cb55e269c0" )]
     [Rock.SystemGuid.BlockTypeGuid( "ffca1f50-e5fa-45b0-8d97-e2707e19bba7" )]
     [CustomizedGrid]
-    public class SignatureDocumentTemplateList : RockEntityListBlockType<SignatureDocumentTemplate>
+    public class SignatureDocumentTemplateList : RockListBlockType<SignatureDocumentTemplateList.SignatureDocumentTemplateData>
     {
         #region Keys
 
@@ -115,37 +116,49 @@ namespace Rock.Blocks.Core
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<SignatureDocumentTemplate> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<SignatureDocumentTemplateData> GetListQueryable( RockContext rockContext )
         {
-            return new SignatureDocumentTemplateService( rockContext ).Queryable();
+            var signatureDocumentQuery = new SignatureDocumentService( rockContext )
+                .Queryable()
+                .Include( sd => sd.SignatureDocumentTemplate );
+            var signatureDocumentTemplateQuery = new SignatureDocumentTemplateService( rockContext )
+                .Queryable()
+                .Include( sdt => sdt.BinaryFileType );
+
+            return signatureDocumentTemplateQuery.Select( s => new SignatureDocumentTemplateData
+            {
+                SignatureDocumentTemplate = s,
+                BinaryFileTypeName = s.BinaryFileType.Name,
+                Count = signatureDocumentQuery.Where( sd => sd.SignatureDocumentTemplateId == s.Id ).Count()
+            } );
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<SignatureDocumentTemplate> GetOrderedListQueryable( IQueryable<SignatureDocumentTemplate> queryable, RockContext rockContext )
+        protected override IQueryable<SignatureDocumentTemplateData> GetOrderedListQueryable( IQueryable<SignatureDocumentTemplateData> queryable, RockContext rockContext )
         {
-            return queryable.OrderBy( s => s.Name );
+            return queryable.OrderBy( s => s.SignatureDocumentTemplate.Name );
         }
 
         /// <inheritdoc/>
-        protected override List<SignatureDocumentTemplate> GetListItems( IQueryable<SignatureDocumentTemplate> queryable, RockContext rockContext )
+        protected override List<SignatureDocumentTemplateData> GetListItems( IQueryable<SignatureDocumentTemplateData> queryable, RockContext rockContext )
         {
             var items = queryable.ToList();
             var currentPerson = GetCurrentPerson();
-            return items.Where( s => s.IsAuthorized( Authorization.VIEW, currentPerson ) ).ToList();
+            return items.Where( s => s.SignatureDocumentTemplate.IsAuthorized( Authorization.VIEW, currentPerson ) ).ToList();
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<SignatureDocumentTemplate> GetGridBuilder()
+        protected override GridBuilder<SignatureDocumentTemplateData> GetGridBuilder()
         {
-            return new GridBuilder<SignatureDocumentTemplate>()
+            return new GridBuilder<SignatureDocumentTemplateData>()
                 .WithBlock( this )
-                .AddTextField( "idKey", a => a.IdKey )
-                .AddTextField( "name", a => a.Name )
-                .AddTextField( "description", a => a.Description )
-                .AddTextField( "binaryFileType", a => a.BinaryFileType?.Name )
-                .AddTextField( "providerTemplateKey", a => a.ProviderTemplateKey )
-                .AddField( "documents", a => a.Documents.Count )
-                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
+                .AddTextField( "idKey", a => a.SignatureDocumentTemplate.IdKey )
+                .AddTextField( "name", a => a.SignatureDocumentTemplate.Name )
+                .AddTextField( "description", a => a.SignatureDocumentTemplate.Description )
+                .AddTextField( "binaryFileType", a => a.BinaryFileTypeName )
+                .AddTextField( "providerTemplateKey", a => a.SignatureDocumentTemplate.ProviderTemplateKey )
+                .AddField( "documents", a => a.Count )
+                .AddField( "isSecurityDisabled", a => !a.SignatureDocumentTemplate.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
         }
 
         #endregion
@@ -185,6 +198,37 @@ namespace Rock.Blocks.Core
 
                 return ActionOk();
             }
+        }
+
+        #endregion
+
+        #region Support Classes
+
+        /// <summary>
+        /// The temporary data format to use when building the results for the
+        /// grid.
+        /// </summary>
+        public class SignatureDocumentTemplateData
+        {
+            /// <summary>
+            /// Gets or sets the whole SignatureDocumentTemplate object from the database.
+            /// </summary>
+            /// <value>
+            /// The whole SignatureDocumentTemplate object from the database.
+            /// </value>
+            public SignatureDocumentTemplate SignatureDocumentTemplate { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the binary file type.
+            /// </summary>
+            public string BinaryFileTypeName { get; set; }
+            /// <summary>
+            /// Gets or sets the number documents with this SignatureDocumentTemplate.
+            /// </summary>
+            /// <value>
+            /// The number of documents with this SignatureDocumentTemplate.
+            /// </value>
+            public int Count { get; set; }
         }
 
         #endregion

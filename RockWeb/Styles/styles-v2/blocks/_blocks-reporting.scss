@@ -4,7 +4,7 @@
 
 
 // =============================================================
-// Table of Content           
+// Table of Content
 //  + Data Views - block for creating data views
 //  + Dynamic Report - block for making reports dynamically updated
 //  + Interactions
@@ -119,6 +119,11 @@ span.data-view-filter-label {
     }
   }
 }
+
+.form-inline .form-group.person-picker:first-child:not(:only-child) {
+  margin-right:          var(--spacing-medium);
+}
+
 // ================== END INTERACTIONS ==================
 
 

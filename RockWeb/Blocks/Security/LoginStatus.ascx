@@ -8,7 +8,7 @@
                 <div id="divProfilePhoto" runat="server" class="profile-photo"></div>
                 <asp:PlaceHolder ID="phHello" runat="server"><asp:Literal ID="lHello" runat="server" /></asp:PlaceHolder>
             </div>
-            <b class="ti ti-caret-down"></b>
+            <b class="ti ti-caret-down-filled"></b>
         </a>
 
         <ul class="dropdown-menu">

@@ -139,10 +139,12 @@ namespace RockWeb.Blocks.Core
         {
             if ( !Page.IsPostBack )
             {
-                string categoryIdParam = PageParameter( "CategoryId" );
-                if ( !string.IsNullOrEmpty( categoryIdParam ) )
+                var categoryId = GetCategoryIdFromPageParameter();
+                var parentCategoryId = GetParentCategoryIdFromPageParameter();
+
+                if ( categoryId.HasValue )
                 {
-                    ShowDetail( categoryIdParam.AsInteger(), PageParameter( "ParentCategoryId" ).AsIntegerOrNull() );
+                    ShowDetail( categoryId.Value, parentCategoryId );
                 }
                 else
                 {
@@ -166,8 +168,8 @@ namespace RockWeb.Blocks.Core
         {
             if ( hfCategoryId.Value.Equals( "0" ) )
             {
-                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
-                // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
+                int? parentCategoryId = GetParentCategoryIdFromPageParameter();
+                // Canceling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
                 var qryParams = new Dictionary<string, string>();
                 qryParams["CategoryId"] = parentCategoryId.ToString();
                 qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
@@ -577,6 +579,30 @@ namespace RockWeb.Blocks.Core
             mdCategoryDetailConfig.Visible = false;
             mdCategoryDetailConfig.Hide();
             Block_BlockUpdated( sender, e );
+        }
+
+        private int? GetCategoryIdFromPageParameter()
+        {
+            var categoryId = PageParameter( "CategoryId" ).AsIntegerOrNull();
+
+            // See if it's an IdKey...
+            if ( categoryId == null )
+            {
+                categoryId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( "CategoryId" ) );
+            }
+            return categoryId;
+        }
+
+        private int? GetParentCategoryIdFromPageParameter()
+        {
+            var parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
+
+            // See if it's an IdKey...
+            if ( parentCategoryId == null )
+            {
+                parentCategoryId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( "ParentCategoryId" ) );
+            }
+            return parentCategoryId;
         }
 
         #endregion

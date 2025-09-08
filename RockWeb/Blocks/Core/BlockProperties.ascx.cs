@@ -781,7 +781,7 @@ namespace RockWeb.Blocks.Core
 
             foreach ( var kvp in CustomSettingsProviders )
             {
-                kvp.Value.Visible = CurrentTab.Equals( kvp.Key.CustomSettingsTitle );
+                kvp.Value.Visible = CurrentTab.Substring( 2 ).Equals( kvp.Key.CustomSettingsTitle );
             }
         }
 

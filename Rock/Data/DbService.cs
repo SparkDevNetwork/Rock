@@ -151,17 +151,10 @@ namespace Rock.Data
         /// <param name="query">The query.</param>
         /// <param name="commandType">Type of the command.</param>
         /// <param name="parameters">The parameters.</param>
-        /// <param name="timeOut">The time out.</param>
         /// <returns></returns>
-        public static DataTable GetDataTable( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut )
+        public static DataTable GetDataTable( string query, CommandType commandType, Dictionary<string, object> parameters )
         {
-            DataSet dataSet = DbService.GetDataSet( query, commandType, parameters, timeOut, false );
-            if ( dataSet.Tables.Count > 0 )
-            {
-                return dataSet.Tables[0];
-            }
-
-            return null;
+            return GetDataTable( query, commandType, parameters, null, false );
         }
 
         /// <summary>
@@ -170,10 +163,100 @@ namespace Rock.Data
         /// <param name="query">The query.</param>
         /// <param name="commandType">Type of the command.</param>
         /// <param name="parameters">The parameters.</param>
+        /// <param name="timeOut">The time out.</param>
         /// <returns></returns>
-        public static DataTable GetDataTable( string query, CommandType commandType, Dictionary<string, object> parameters )
+        public static DataTable GetDataTable( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut )
         {
-            return GetDataTable( query, commandType, parameters, null );
+            return GetDataTable( query, commandType, parameters, timeOut, false );
+        }
+
+        /// <summary>
+        /// Static method to get a data table. See also <seealso cref="GetDataTableFromSqlCommand(string, CommandType, Dictionary{string, object})"/>.
+        /// </summary>
+        /// <param name="sqlQuery">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <param name="timeOut">The time out.</param>
+        /// <param name="rollbackTransaction">if set to <c>true</c> the transaction is rolled back (to prevent any nefarious update from occurring).</param>
+        /// <returns></returns>
+        public static DataTable GetDataTable( string sqlQuery, CommandType commandType, Dictionary<string, object> parameters, int? timeOut, bool rollbackTransaction = false )
+        {
+            string connectionString = RockApp.Current.InitializationSettings.ConnectionString;
+            if ( string.IsNullOrWhiteSpace( connectionString ) )
+            {
+                throw new ArgumentException( "connectionString cannot be null/empty", nameof( connectionString ) );
+            }
+
+            DataTable resultTable = new DataTable();
+
+            using ( SqlConnection con = new SqlConnection( connectionString ) )
+            {
+                using ( SqlCommand sqlCommand = new SqlCommand( sqlQuery, con ) )
+                {
+                    sqlCommand.CommandType = commandType;
+
+                    if ( timeOut.HasValue )
+                    {
+                        sqlCommand.CommandTimeout = timeOut.Value;
+                    }
+
+                    // Add parameters from the dictionary to the SqlCommand
+                    if ( parameters != null )
+                    {
+                        foreach ( KeyValuePair<string, object> parameter in parameters )
+                        {
+                            // The parameter key should start with "@" for named parameters
+                            SqlParameter sqlParam = new SqlParameter();
+                            sqlParam.ParameterName = parameter.Key.StartsWith( "@" ) ? parameter.Key : "@" + parameter.Key;
+                            sqlParam.Value = parameter.Value;
+                            sqlCommand.Parameters.Add( sqlParam );
+                        }
+                    }
+
+                    using ( SqlDataAdapter adapter = new SqlDataAdapter( sqlCommand ) )
+                    {
+                        con.Open();
+
+                        if ( rollbackTransaction )
+                        {
+                            using ( var tran = con.BeginTransaction( System.Data.IsolationLevel.ReadCommitted ) )
+                            {
+                                try
+                                {
+                                    sqlCommand.Transaction = tran;
+                                    adapter.Fill( resultTable );
+                                }
+                                finally
+                                {
+                                    tran.Rollback();
+                                }
+                            }
+                        }
+                        else
+                        {
+                            adapter.Fill( resultTable );
+                        }
+                    }
+                }
+            }
+
+            return resultTable;
+        }
+
+        /// <summary>
+        /// Static method to get a data set. See also <seealso cref="GetDataSetFromSqlCommand(string, CommandType, Dictionary{string, object})"/>.
+        /// This method will wrap the query in a transaction and roll it back to prevent any unexpected updates.
+        ///
+        /// NOTE: This is used by the SQL Command block.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <param name="timeOut">The time out in seconds.</param>
+        /// <returns>the DataSet results for the given query.</returns>
+        public static DataSet GetDataSetReadOnly( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut = null )
+        {
+            return GetDataSet( query, commandType, parameters, timeOut, false, rollbackTransaction: true );
         }
 
         /// <summary>
@@ -183,10 +266,10 @@ namespace Rock.Data
         /// <param name="commandType">Type of the command.</param>
         /// <param name="parameters">The parameters.</param>
         /// <param name="timeOut">The time out in seconds.</param>
-        /// <returns></returns>
+        /// <returns>the DataSet results for the given query.</returns>
         public static DataSet GetDataSet( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut = null )
         {
-            return GetDataSet( query, commandType, parameters, timeOut, false );
+            return GetDataSet( query, commandType, parameters, timeOut, false, false );
         }
 
         /// <summary>
@@ -196,10 +279,10 @@ namespace Rock.Data
         /// <param name="commandType">Type of the command.</param>
         /// <param name="parameters">The parameters.</param>
         /// <param name="timeOut">The time out in seconds.</param>
-        /// <returns></returns>
+        /// <returns>the DataSet results for the given query.</returns>
         public static DataSet GetDataSetSchema( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut = null )
         {
-            return GetDataSet( query, commandType, parameters, timeOut, true );
+            return GetDataSet( query, commandType, parameters, timeOut, true, false );
         }
 
         /// <summary>
@@ -209,9 +292,10 @@ namespace Rock.Data
         /// <param name="commandType">Type of the command.</param>
         /// <param name="parameters">The parameters.</param>
         /// <param name="timeOut">The time out in seconds.</param>
-        /// <param name="schemaOnly">if set to <c>true</c> [schema only].</param>
+        /// <param name="schemaOnly">if set to <c>true</c> only schema is returned.</param>
+        /// <param name="rollbackTransaction">if set to <c>true</c> the transaction is rolled back (to prevent any nefarious update from occurring).</param>
         /// <returns>DataSet.</returns>
-        private static DataSet GetDataSet( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut = null, bool schemaOnly = false )
+        private static DataSet GetDataSet( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut = null, bool schemaOnly = false, bool rollbackTransaction = false )
         {
             string connectionString = RockApp.Current.InitializationSettings.ConnectionString;
             if ( !string.IsNullOrWhiteSpace( connectionString ) )
@@ -241,13 +325,24 @@ namespace Rock.Data
 
                         SqlDataAdapter adapter = new SqlDataAdapter( sqlCommand );
                         DataSet dataSet = new DataSet( "rockDs" );
-                        if ( schemaOnly )
+                        if ( rollbackTransaction )
                         {
-                            adapter.FillSchema( dataSet, SchemaType.Source );
+                            using ( var tran = con.BeginTransaction( System.Data.IsolationLevel.ReadCommitted ) )
+                            {
+                                try
+                                {
+                                    sqlCommand.Transaction = tran;
+                                    FillDataSetOrSchema( adapter, dataSet, schemaOnly );
+                                }
+                                finally
+                                {
+                                    tran.Rollback();
+                                }
+                            }
                         }
                         else
                         {
-                            adapter.Fill( dataSet );
+                            FillDataSetOrSchema( adapter, dataSet, schemaOnly );
                         }
                         return dataSet;
                     }
@@ -255,6 +350,24 @@ namespace Rock.Data
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Helper method to keep GetDataSet method clean and DRY.
+        /// </summary>
+        /// <param name="adapter"></param>
+        /// <param name="dataSet"></param>
+        /// <param name="schemaOnly"></param>
+        private static void FillDataSetOrSchema( SqlDataAdapter adapter, DataSet dataSet, bool schemaOnly )
+        {
+            if ( schemaOnly )
+            {
+                adapter.FillSchema( dataSet, SchemaType.Source );
+            }
+            else
+            {
+                adapter.Fill( dataSet );
+            }
         }
 
         /// <summary>

@@ -94,10 +94,10 @@ namespace RockWeb.Blocks.Steps
             /// </summary>
             public const string KpiLava =
 @"{[kpis style:'card' iconbackground:'true']}
-  [[ kpi icon:'fa-user' value:'{{IndividualsCompleting | Format:'N0'}}' label:'Individuals Completing Program' color:'blue-700']][[ endkpi ]]
-  [[ kpi icon:'fa-calendar' value:'{{AvgDaysToComplete | Format:'N0'}}' label:'Average Days to Complete Program' color:'green-600']][[ endkpi ]]
-  [[ kpi icon:'fa-map-marker' value:'{{StepsStarted | Format:'N0'}}' label:'Steps Started' color:'#FF385C']][[ endkpi ]]
-  [[ kpi icon:'fa-check-square' value:'{{StepsCompleted | Format:'N0'}}' label:'Steps Completed' color:'indigo-700']][[ endkpi ]]
+  [[ kpi icon:'ti-user' value:'{{IndividualsCompleting | Format:'N0'}}' label:'Individuals Completing Program' color:'blue-700']][[ endkpi ]]
+  [[ kpi icon:'ti-calendar' value:'{{AvgDaysToComplete | Format:'N0'}}' label:'Average Days to Complete Program' color:'green-600']][[ endkpi ]]
+  [[ kpi icon:'ti-map-pin' value:'{{StepsStarted | Format:'N0'}}' label:'Steps Started' color:'#FF385C']][[ endkpi ]]
+  [[ kpi icon:'ti-checkbox' value:'{{StepsCompleted | Format:'N0'}}' label:'Steps Completed' color:'indigo-700']][[ endkpi ]]
 {[endkpis]}";
         }
 

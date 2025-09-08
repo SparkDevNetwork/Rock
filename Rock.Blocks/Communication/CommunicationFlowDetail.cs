@@ -1334,7 +1334,7 @@ namespace Rock.Blocks.Communication
                 Name = entity.Name,
                 TargetAudienceDataView = entity.TargetAudienceDataView.ToListItemBag(),
                 TriggerType = entity.TriggerType,
-                UnsubscribeMessage = entity.UnsubscribeMessage
+                PublicName = entity.PublicName
             };
 
             if ( entity.Attributes == null )
@@ -1536,7 +1536,7 @@ namespace Rock.Blocks.Communication
                 entity.Schedule = null;
             }
 
-            entity.UnsubscribeMessage = bag.UnsubscribeMessage;
+            entity.PublicName = bag.PublicName;
 
             // Attributes
             entity.LoadAttributes( RockContext );

@@ -46,6 +46,7 @@ namespace Rock.Blocks.Communication
     /// <summary>
     /// Used for displaying details of an existing communication that has already been created.
     /// </summary>
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Communication Detail" )]
     [Category( "Communication" )]

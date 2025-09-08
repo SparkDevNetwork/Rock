@@ -936,7 +936,7 @@ html ::-webkit-scrollbar-thumb:hover {
     padding: var(--spacing-large) var(--spacing-medium);
     outline: 1px dashed var(--color-interface-medium);
     outline-offset: -1px;
-    background-color: var(--color-interface-softer);
+    background-color: var(--base-interface-softer);
     min-height: 22px;
 }
 

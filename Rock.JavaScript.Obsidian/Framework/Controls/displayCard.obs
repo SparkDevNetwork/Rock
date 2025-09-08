@@ -34,26 +34,37 @@
             <small v-if="aside">{{ aside }}</small>
         </div>
 
-        <div v-if="primaryActions?.length || secondaryActions?.length" class="displaycard-actions">
-            <div v-if="primaryActions?.length" class="displaycard-primary-actions">
-                <template v-for="action in primaryActions" :key="`${action.title}${action.iconCssClass}`">
-                    <RockButton v-if="action.iconCssClass" isSquare btnSize="sm" :btnType="action.type" :tooltip="action.title" @click.stop="action.handler">
-                        <i :class="action.iconCssClass"></i>
-                    </RockButton>
+        <div v-if="primaryActions?.length || secondaryActions?.length || $slots.actions" class="displaycard-actions">
+            <slot name="actions">
+                <div v-if="primaryActions?.length" class="displaycard-primary-actions">
+                    <template v-for="action in primaryActions" :key="`${action.title}${action.iconCssClass}`">
+                        <RockButton v-if="action.iconCssClass"
+                                    isSquare btnSize="sm"
+                                    :btnType="action.type"
+                                    :tooltip="action.title"
+                                    :disabled="action.disabled"
+                                    @click.stop="action.handler">
+                            <i :class="action.iconCssClass"></i>
+                        </RockButton>
 
-                    <RockButton v-else btnSize="sm" @click.stop="action.handler">
-                        {{ action.title }}
-                    </RockButton>
-                </template>
-            </div>
+                        <RockButton v-else btnSize="sm"
+                                    :btnType="action.type"
+                                    :tooltip="action.title"
+                                    :disabled="action.disabled"
+                                    @click.stop="action.handler">
+                            {{ action.title }}
+                        </RockButton>
+                    </template>
+                </div>
 
-            <div v-if="secondaryActions?.length" class="displaycard-secondary-actions">
-                <DropDownMenu align="right"
-                              :items="secondaryActions"
-                              @click.stop
-                              @mouseenter="isHovering = false"
-                              @mouseleave="isHovering = true" />
-            </div>
+                <div v-if="secondaryActions?.length" class="displaycard-secondary-actions">
+                    <DropDownMenu align="right"
+                                  :items="secondaryActions"
+                                  @click.stop
+                                  @mouseenter="isHovering = false"
+                                  @mouseleave="isHovering = true" />
+                </div>
+            </slot>
         </div>
     </div>
 </template>

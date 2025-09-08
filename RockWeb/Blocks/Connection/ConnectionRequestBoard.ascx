@@ -780,7 +780,7 @@
                 </div>
                 <div>
                     <div class="btn-group dropdown-right">
-                        <button type="button" class="btn btn-sm text-muted bg-white dropdown-toggle pr-0" data-toggle="dropdown">
+                        <button type="button" class="btn btn-sm text-muted bg-transparent dropdown-toggle pr-0" data-toggle="dropdown">
                             <i class="ti ti-dots"></i>
                         </button>
                         <ul class="dropdown-menu">

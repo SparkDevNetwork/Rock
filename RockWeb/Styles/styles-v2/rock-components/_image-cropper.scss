@@ -4,7 +4,7 @@
 
 
 // =============================================================
-// Table of Content           
+// Table of Content
 //  + Base style
 // =============================================================
 
@@ -19,16 +19,17 @@
     width: 150px;
     height: 150px;
     border: 3px solid var(--color-interface-soft);
+    border-radius: var(--rounded-medium);
   }
 
   .options {
     position: absolute;
-    top: 110px;
-    right: 0;
+    bottom: var(--spacing-xsmall);
+    right: var(--spacing-xsmall);
     padding: 0 var(--spacing-xsmall);
     color: var(--color-interface-stronger);
-    background-color: $ui-autocomplete-bg;
-    border-radius: var(--rounded-small) 0 0 var(--rounded-small);
+    background-color: var(--color-info-strong);
+    border-radius: var(--rounded-small);
     opacity: 0;
     -webkit-transition: opacity .25s ease-in-out;
     -moz-transition: opacity .25s ease-in-out;
@@ -40,7 +41,7 @@
 
     a {
       display: inline-block;
-      padding: 6px; // Need to hard code for Rock:imageEditor to fit right 
+      padding: 6px; // Need to hard code for Rock:imageEditor to fit right
       color: var(--color-interface-stronger);
       text-decoration: none;
       cursor: pointer;

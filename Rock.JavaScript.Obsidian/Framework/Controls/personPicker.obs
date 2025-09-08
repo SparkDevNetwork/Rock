@@ -10,7 +10,7 @@
                         <button role="button" type="button" aria-label="Clear selection" v-if="showClear" class="btn picker-select-none" @click.prevent.stop="onClear">
                             <i class="ti ti-x"></i>
                         </button>
-                        <b class="ti ti-caret-down"></b>
+                        <b class="ti ti-caret-down-filled"></b>
                     </a>
 
                     <div v-if="showPopup" class="backdrop" @keydown.esc.stop="onCancel">

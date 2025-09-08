@@ -53,7 +53,7 @@
                     <asp:LinkButton ID="btnConfiguration" runat="server" CssClass="btn btn-default btn-square btn-xs" CausesValidation="false" OnClick="btnConfiguration_Click"><i class="ti ti-settings"></i></asp:LinkButton>
                 </div>
             </div>
-            <div class="locations js-scheduled-occurrences">
+            <div class="locations js-scheduled-occurrences p-3">
                 <asp:Literal ID="lOccurrenceRosterHTML" runat="server" />
             </div>
 

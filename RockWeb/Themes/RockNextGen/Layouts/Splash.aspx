@@ -16,6 +16,7 @@
         lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath("~/Assets/Images/rock-logo-circle.svg") );
     }
 
+
 </script>
 
 <html>
@@ -32,7 +33,7 @@
 	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
 
 </head>
-<body id="splash">
+<body id="splash" class="is-booting">
 
     <form id="form1" runat="server">
 

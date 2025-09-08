@@ -501,7 +501,7 @@ namespace Rock.Blocks.Mobile.CheckIn
                 if ( !options.Session.IsPending )
                 {
                     var cts = new CancellationTokenSource( 5000 );
-                    await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, null, null, new LabelPrintProvider(), cts.Token );
+                    await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, null, new LabelPrintProvider(), cts.Token );
                 }
 
                 return ActionOk( new MobileCheckInResultBag

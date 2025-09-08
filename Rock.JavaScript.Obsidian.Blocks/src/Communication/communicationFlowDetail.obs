@@ -19,13 +19,11 @@
                             v-model:isActive="isActive"
                             v-model:isGoalTrackingEnabled="isGoalTrackingEnabled"
                             v-model:name="name"
+                            v-model:publicName="publicName"
                             v-model:targetAudienceDataView="targetAudienceDataView"
                             v-model:triggerType="triggerType"
-                            v-model:unsubscribeMessage="unsubscribeMessage"
                             title="1. Flow Overview"
-                            @nextStep="onNextStepClicked"
-                            @update:name="onNameUpdated"
-                            @update:unsubscribeMessage="onUnsubscribeMessageUpdated" />
+                            @nextStep="onNextStepClicked" />
 
         <ConversionGoalStep v-else-if="step === 'conversionGoal'"
                             v-model:conversionGoalSettings="conversionGoalSettings"
@@ -158,7 +156,6 @@
     const wasNextButtonClickedOnce = ref<boolean>(false);
 
     const isGoalTrackingEnabled = ref<boolean>(!isNullish(config.entity?.conversionGoalType));
-    const isCustomUnsubscribeMessage = ref<boolean>(!!config.entity?.unsubscribeMessage);
     const isSavingCommunicationTemplate = ref<boolean>(false);
 
     const emailPreviewDevice = ref<"desktop" | "mobile">("desktop");
@@ -180,13 +177,11 @@
     const exitConditionType = ref<ExitConditionType>(config.entity?.exitConditionType ?? ExitConditionType.LastMessageSent);
     const iCalendarContent = ref<string | null | undefined>(config.entity?.iCalendarContent);
     const idKey = ref<string | null | undefined>(config.entity?.idKey);
-    // The individual will activate the communication flow after setup is complete.
-    // Initialize to false for now to avoid sending communications prematurely.
     const isActive = ref<boolean>(config.entity?.isActive ?? true);
     const name = ref<string | null | undefined>(config.entity?.name);
     const targetAudienceDataView = ref<ListItemBag | null | undefined>(config.entity?.targetAudienceDataView);
     const triggerType = ref(config.entity?.triggerType ?? CommunicationFlowTriggerType.Recurring);
-    const unsubscribeMessage = ref<string | null | undefined>(config.entity?.unsubscribeMessage ?? generateUnsubscribeMessage(name.value));
+    const publicName = ref<string | null | undefined>(config.entity?.publicName);
 
     // #endregion
 
@@ -240,10 +235,6 @@
 
     // #region Functions
 
-    function generateUnsubscribeMessage(name: string | null | undefined): string {
-        return `Only unsubscribe from the ${name ? `${name} ` : ""}flow.`;
-    }
-
     function moveToNextStep(): void {
         if (nextStep.value) {
             setStep(nextStep.value);
@@ -271,14 +262,6 @@
     // #endregion Functions
 
     // #region Event Handlers
-
-    function onNameUpdated(newName: string | null | undefined): void {
-        name.value = newName;
-
-        if (!isCustomUnsubscribeMessage.value) {
-            unsubscribeMessage.value = generateUnsubscribeMessage(newName);
-        }
-    }
 
     function onTriggerTypeUpdated(newTriggerType: CommunicationFlowTriggerType): void {
         if (newTriggerType === CommunicationFlowTriggerType.OneTime || newTriggerType === CommunicationFlowTriggerType.Recurring) {
@@ -308,11 +291,6 @@
             iCalendarContent.value = null;
             targetAudienceDataView.value = null;
         }
-    }
-
-    function onUnsubscribeMessageUpdated(newUnsubscribeMessage: string | null | undefined): void {
-        unsubscribeMessage.value = newUnsubscribeMessage;
-        isCustomUnsubscribeMessage.value = !isNullish(newUnsubscribeMessage);
     }
 
     function onNextStepClicked(): void {
@@ -355,9 +333,9 @@
             iCalendarContent: iCalendarContent.value,
             isActive: isActive.value,
             name: name.value,
+            publicName: publicName.value,
             targetAudienceDataView: targetAudienceDataView.value,
             triggerType: triggerType.value,
-            unsubscribeMessage: unsubscribeMessage.value,
         };
 
         const result = await invokeBlockAction<string>("Save", {

@@ -220,6 +220,8 @@
   --modal-backdrop:           rgba(94, 94, 94, 0.6);
 
   --box-shadow:               rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;
+  --box-shadow-strong:        rgba(145, 158, 171, 0.2) 0px 20px 25px -5px,rgba(145, 158, 171, 0.12) 0px 10px 10px -5px;
+  --popup-box-shadow:         0 1rem 3rem rgba(0,0,0,.175);
   --popup-box-shadow:         0 1rem 3rem rgba(0,0,0,.175);
   --dropdown-box-shadow:      0 4px 8px 0 rgba(145, 158, 171,.12);
   --input-box-shadow:         0 1px 1px rgba(24, 36, 51, 0.06);
@@ -243,7 +245,7 @@
 
   // it is used by the range slider (obisidian control gallery "Range Slider").
   --slider-height: 8px;
-  --slider-bg: var(--color-interface-softer);
+  --slider-bg: var(--color-interface-soft);
   --slider-progress-bg: var(--color-primary);
   --slider-handle-offset: 29px;
   --slider-handle-bg: var(--color-interface-softest);
@@ -309,5 +311,7 @@
   --color-critical-strong:  color-mix(in srgb, var(--base-critical) 50%, #fff var(--tint-white-percentage));
 
   --box-shadow:               rgba(145, 158, 171, 0.3) 0px 0px 2px 0px,rgba(145, 158, 171, .04) 0px 12px 24px -4px;
+  --box-shadow-strong:        rgba(255, 255, 255, 0.06) 0px 20px 25px -5px,rgba(255, 255, 255, 0.03) 0px 10px 10px -5px;
+
   --popup-box-shadow:         0 1rem 3rem rgba(255, 255, 255,.04);
 }

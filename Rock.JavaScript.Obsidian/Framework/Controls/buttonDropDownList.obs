@@ -6,7 +6,7 @@
                 <div :class="{ open: isDropDownOpen }" ref="dropdownElement">
                     <RockButton class="dropdown-toggle" :btnType="btnType" :aria-expanded="isDropDownOpen ? 'true' : 'false'" @click.prevent.stop="toggleOpen" :id="uniqueId" v-bind="field">
                         {{ selectionStyle === 'title' && internalValue ? selectedText : title }}
-                        <span class="ti ti-caret-down"></span>
+                        <span class="ti ti-caret-down-filled"></span>
                     </RockButton>
                     <ul class="dropdown-menu">
                         <li v-for="item of items" :key="item.value ?? 0" @click.stop="selectValue(item.value ?? '')">

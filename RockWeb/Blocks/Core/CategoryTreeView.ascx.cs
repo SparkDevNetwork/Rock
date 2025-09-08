@@ -318,6 +318,11 @@ namespace RockWeb.Blocks.Core
                     string selectedNodeId = null;
 
                     int? itemId = PageParameter( PageParameterName ).AsIntegerOrNull();
+                    if ( itemId == null )
+                    {
+                        itemId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterName ) );
+                    }
+
                     string selectedEntityType;
                     if ( itemId.HasValue )
                     {

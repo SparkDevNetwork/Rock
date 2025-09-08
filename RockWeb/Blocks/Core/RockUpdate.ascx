@@ -130,7 +130,7 @@
                                             <asp:Literal ID="litPackageSummary" runat="server" Text='<%# Eval( "Summary" ) %>'></asp:Literal>
 
                                             <div class="releasenotes">
-                                                <div class="btn btn-sm btn-default margin-v-sm js-releasenote">Release Notes <i class="ti ti-caret-down"></i></div>
+                                                <div class="btn btn-sm btn-default margin-v-sm js-releasenote">Release Notes <i class="ti ti-caret-down-filled"></i></div>
 
                                                 <div class="releasenotes-body" style="display: none">
                                                     <asp:Literal ID="litReleaseNotes" runat="server" Text='<%# ConvertToHtmlLiWrappedUl( Eval( "ReleaseNotes" ).ToStringSafe() ).ConvertCrLfToHtmlBr()  %>'></asp:Literal>

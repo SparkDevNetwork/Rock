@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="goal-summary">
-        <span><i class="ti ti-target"></i>
+        <span><i class="ti ti-target mr-1"></i>
             <slot></slot>
         </span>
     </div>

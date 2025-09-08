@@ -233,40 +233,42 @@ namespace Rock.Transactions
                     }
                 }
 
-                if ( this.Recipients?.Any() == true )
+                if ( this.Recipients?.Any() != true )
                 {
-                    var emailRecipients = this.Recipients.OfType<RockEmailMessageRecipient>().ToList();
-                    var createEmailCommunicationArgs = new CommunicationService.CreateEmailCommunicationArgs
-                    {
-                        Recipients = emailRecipients,
-                        FromName = this.FromName,
-                        FromAddress = this.FromAddress,
-                        ReplyTo = this.ReplyTo,
-                        Subject = this.Subject,
-                        Message = this.HtmlMessage,
-                        BulkCommunication = this.BulkCommunication,
-                        SendDateTime = this.SendDateTime,
-                        RecipientStatus = this.RecipientStatus,
-                        SenderPersonAliasId = senderPersonAliasId,
-                        SystemCommunicationId = this.SystemCommunicationId
-                    };
-
-                    var communication = new CommunicationService( rockContext ).CreateEmailCommunication( createEmailCommunicationArgs );
-
-                    if ( communication != null )
-                    {
-                        if ( communication.Recipients.Count() == 1 && this.RecipientGuid.HasValue )
-                        {
-                            communication.Recipients.First().Guid = this.RecipientGuid.Value;
-                        }
-                    }
-
-                    rockContext.SaveChanges();
-
-                    return communication.Id;
+                    return null;
                 }
 
-                return null;
+                var emailRecipients = this.Recipients.OfType<RockEmailMessageRecipient>().ToList();
+                var createEmailCommunicationArgs = new CommunicationService.CreateEmailCommunicationArgs
+                {
+                    Recipients = emailRecipients,
+                    FromName = this.FromName,
+                    FromAddress = this.FromAddress,
+                    ReplyTo = this.ReplyTo,
+                    Subject = this.Subject,
+                    Message = this.HtmlMessage,
+                    BulkCommunication = this.BulkCommunication,
+                    SendDateTime = this.SendDateTime,
+                    RecipientStatus = this.RecipientStatus,
+                    SenderPersonAliasId = senderPersonAliasId,
+                    SystemCommunicationId = this.SystemCommunicationId
+                };
+
+                var communication = new CommunicationService( rockContext ).CreateEmailCommunication( createEmailCommunicationArgs );
+
+                if ( communication == null )
+                {
+                    return null;
+                }
+
+                if ( communication.Recipients.Count() == 1 && this.RecipientGuid.HasValue )
+                {
+                    communication.Recipients.First().Guid = this.RecipientGuid.Value;
+                }
+
+                rockContext.SaveChanges();
+
+                return communication.Id;
             }
         }
     }

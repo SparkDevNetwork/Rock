@@ -3,8 +3,8 @@
 
 
 // =============================================================
-// Table of Content           
-//  + Base Style  
+// Table of Content
+//  + Base Style
 // =============================================================
 
 
@@ -25,7 +25,7 @@
   &:before,
   &:after {
     display:  table;
-    content: " "; 
+    content: " ";
   }
   &:after {
     clear:    both;
@@ -43,6 +43,7 @@
     text-align:   center;
     word-break:   break-word;
     cursor:       default;
+    margin-right: 6px;
 
     a {
       color:      var(--color-interface-stronger);
@@ -60,6 +61,7 @@
         background:     var(--color-interface-softest);
         border:         1px solid var(--color-interface-soft);
         border-radius:  60px;
+        margin-left:    6px;
       }
     }
     .wizard-item-label {
@@ -69,7 +71,7 @@
     &::before {
       position:         absolute;
       top:              18px; //Hard coded because it need to be exact
-      left:             -49%; // Original Value was "-50%"
+      left:             calc(-50% + 2px); // Fix positioning of line - need to be exact.
       width:            calc(100% - 36px);  // Fix the decorative line that run from one wizard to another.
       height:           1px;
       margin-left:      var(--spacing-medium); /* 11px = 1/2 icon width */

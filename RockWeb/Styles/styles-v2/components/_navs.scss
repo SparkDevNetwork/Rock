@@ -4,11 +4,11 @@
 
 
 // =============================================================
-// Table of Content           
+// Table of Content
 //  + Base Style
 //  + Tab
 //  + Pill
-//  + Stack pill   
+//  + Stack pill
 //  + Justified nav link
 //  + Tab content
 //  + Nav dropdown
@@ -95,7 +95,10 @@
 
 // ===================== TAB =====================
 .nav-tabs {
-  border-bottom:      1px solid var(--color-interface-soft);
+  border:           1px solid var(--color-interface-soft);
+  border-radius:    var(--rounded-medium);
+  background-color: var(--color-interface-softest);
+  padding: var(--spacing-small);
   > li {
     float: left;
     // Make the list-items overlay the bottom border
@@ -103,13 +106,18 @@
 
     // Actual tabs (as links)
     > a {
-      margin-right:     2px;
+      margin-right:     var(--spacing-small);
       line-height:      var(--line-height-normal);
-      border:           1px solid transparent;
-      border-radius:    var(--rounded-small) var(--rounded-small) 0 0;
+      border-radius:    var(--rounded-small);
+      color: var(--color-interface-strong);
+      font-weight: var(--font-weight-medium);
+      background-color: var(--color-interface-softer);
+
       &:hover {
-        border-color:   var(--color-interface-softer) var(--color-interface-softer) var(--color-interface-soft);
+        background-color: var(--color-primary-soft);
+        color: var(--color-primary);
       }
+
     }
 
     // Active state, and its :hover to override normal :hover
@@ -117,11 +125,9 @@
       &,
       &:hover,
       &:focus {
-        color:                var(--color-interface-strong);
+        color:                var(--color-primary);
         cursor:               default;
-        background-color:     var(--color-interface-softest);
-        border:               1px solid var(--color-interface-soft);
-        border-bottom-color:  transparent;
+        background-color:     var(--color-primary-soft);
       }
     }
   }
@@ -136,12 +142,12 @@
         text-align:     center;
       }
     }
-  
+
     > .dropdown .dropdown-menu {
       top:    auto;
       left:   auto;
     }
-  
+
     @media (min-width: $screen-small) {
       > li {
         display:  table-cell;
@@ -159,13 +165,13 @@
       margin-right:   0;
       border-radius:  var(--rounded-small);
     }
-  
+
     > .active > a,
     > .active > a:hover,
     > .active > a:focus {
       border:   1px solid var(--color-interface-soft);
     }
-  
+
     @media (min-width: $screen-small) {
       > li > a {
         border-bottom:  1px solid var(--color-interface-soft);
@@ -178,8 +184,17 @@
       }
     }
   }
-  
+
+
+
 }
+
+.panel:has(.nav-tabs) .nav-tabs {
+    border:           none;
+    border-radius:    0;
+    padding:          0;
+  }
+
 // =================== END TAB ===================
 
 
@@ -293,6 +308,10 @@
   > .active {
     display: block;
   }
+}
+
+.nav-tabs + .tab-content {
+  margin-top: var(--spacing-small);
 }
 
 // =================== END TAB CONTENT ===================

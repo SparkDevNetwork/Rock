@@ -25,10 +25,23 @@
                     </div>
                 </div>
 
-                <TextBox :modelValue="internalDescription ?? ''"
-                         label="Description"
-                         textMode="multiline"
-                         @update:modelValue="internalDescription = $event || null" />
+                <div class="row">
+                    <div class="col-md-12">
+                        <TextBox :modelValue="internalDescription ?? ''"
+                                 label="Description"
+                                 textMode="multiline"
+                                 @update:modelValue="internalDescription = $event || null" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="publicNameOrEmptyString"
+                                 :help="publicNameHelpText"
+                                 label="Public Name"
+                                 :maxLength="500" />
+                    </div>
+                </div>
 
                 <div class="row">
                     <div class="col-md-3">
@@ -101,24 +114,6 @@
                 <AttributeValuesContainer v-model="attributeValuesOrEmpty"
                                           :attributes="attributesOrEmpty"
                                           isEditMode :numberOfColumns="2" />
-
-                <div class="form-group">
-                    <a class="show-options-button"
-                       role="button"
-                       @click="areAdvancedSettingsShown = !areAdvancedSettingsShown">
-                        {{ areAdvancedSettingsShown ? 'Hide' : 'Show' }} Advanced Settings
-                    </a>
-                </div>
-
-                <TransitionVerticalCollapse>
-                    <ConditionalWell v-if="areAdvancedSettingsShown">
-                        <TextBox v-model="unsubscribeMessageOrEmptyString"
-                                 help="Displays in the unsubscribe block when a recipient opts out of this flow. Applies only to flows with Email or SMS messages. Default: 'Only unsubscribe me from the [FlowName] flow.'"
-                                 label="Unsubscribe Message"
-                                 :maxLength="500"
-                                 textMode="multiline" />
-                    </ConditionalWell>
-                </TransitionVerticalCollapse>
             </fieldset>
         </RockForm>
 
@@ -215,6 +210,11 @@
             required: true
         },
 
+        publicName: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        },
+
         targetAudienceDataView: {
             type: Object as PropType<ListItemBag | null | undefined>,
             required: true
@@ -227,11 +227,6 @@
 
         triggerType: {
             type: Number as PropType<CommunicationFlowTriggerType>,
-            required: true
-        },
-
-        unsubscribeMessage: {
-            type: String as PropType<string | null | undefined>,
             required: true
         }
     });
@@ -246,9 +241,9 @@
         (e: "update:isActive", value: boolean): void;
         (e: "update:isGoalTrackingEnabled", value: boolean): void;
         (e: "update:name", value: string | null | undefined): void;
+        (e: "update:publicName", value: string | null | undefined): void;
         (e: "update:targetAudienceDataView", value: ListItemBag | null | undefined): void;
         (e: "update:triggerType", value: CommunicationFlowTriggerType): void;
-        (e: "update:unsubscribeMessage", value: string | null | undefined): void;
     }>();
 
     const triggerTypes: TileListItemBag[] = [
@@ -288,13 +283,18 @@
     const internalDescription = useVModelPassthrough(props, "description", emit);
     const internalIsActive = useVModelPassthrough(props, "isActive", emit);
     const internalName = useVModelPassthrough(props, "name", emit);
+    const internalPublicName = useVModelPassthrough(props, "publicName", emit);
     const internalTargetAudienceDataView = useVModelPassthrough(props, "targetAudienceDataView", emit);
     const internalTriggerType = useVModelPassthrough(props, "triggerType", emit);
-    const internalUnsubscribeMessage = useVModelPassthrough(props, "unsubscribeMessage", emit);
 
     // #endregion
 
     // #region Computed Values
+
+    const publicNameHelpText = computed<string>(() => {
+        const name = props.publicName || props.name;
+        return `Use this term to describe the flow shown to the public—most commonly seen during the unsubscribe process (e.g., "You've successfully unsubscribed from ${name}."). If left blank, the value from the Name field will be used instead.`;
+    });
 
     const startDateTimeIsoString = computed<string | null>({
         get(): string | null {
@@ -373,12 +373,12 @@
         }
     });
 
-    const unsubscribeMessageOrEmptyString = computed<string>({
+    const publicNameOrEmptyString = computed<string>({
         get() {
-            return internalUnsubscribeMessage.value ?? "";
+            return internalPublicName.value ?? "";
         },
         set(value: string) {
-            internalUnsubscribeMessage.value = value;
+            internalPublicName.value = value;
         }
     });
 

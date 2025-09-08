@@ -4,8 +4,8 @@
 
 
 // =============================================================
-// Table of Content           
-//  + Base Style              
+// Table of Content
+//  + Base Style
 //  + Inner & arrow
 // =============================================================
 
@@ -88,7 +88,7 @@
     border-width:         0 var(--spacing-tiny) var(--spacing-tiny);
     border-bottom-color:  var(--color-interface-strongest);
   }
-  
+
   &.bottom-left .tooltip-arrow {
     top:                  0;
     right:                var(--spacing-tiny);
@@ -96,7 +96,7 @@
     border-width:         0 var(--spacing-tiny) var(--spacing-tiny);
     border-bottom-color:  var(--color-interface-strongest);
   }
-  
+
   &.bottom-right .tooltip-arrow {
     top:                  0;
     left:                 var(--spacing-tiny);
@@ -129,5 +129,27 @@
 }
 // ====================== END INNER & ARROW ======================
 
+// ======================== CUSTOM STYLES ========================
+
+.tip {
+  padding: var(--spacing-tiny);
+  font-size: var(--font-size-xsmall);
+  color: var(--color-interface-softest);
+  background-color: var(--color-interface-stronger);
+  border-radius: var(--rounded-xsmall);
+}
+
+.tip-liquid,
+.tip-lava {
+  &::after {
+    content: "{{ Lava }}";
+    background-color: var(--color-info-strong);
+  }
+}
 
 
+.tip-html {
+  &::after {
+    content: "< HTML />";
+  }
+}

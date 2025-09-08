@@ -23,13 +23,14 @@
 
         <ReorderColumn v-if="config.options?.canEdit" @orderChanged="onOrderChanged" />
 
-        <Column name="icon"
-                visiblePriority="xs"
-                width="57px">
+        <TextColumn name="iconCssClass"
+                    field="iconCssClass"
+                    visiblePriority="xs"
+                    width="57px">
             <template #format="{ row }">
                 <i :class="`fa-fw ${row.iconCssClass}`"></i>
             </template>
-        </Column>
+        </TextColumn>
 
         <TextColumn name="name"
                     title="Name"

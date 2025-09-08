@@ -198,6 +198,10 @@
                     cursor: -moz-zoom-out;
                     cursor: zoom-out;
                 }
+                .packagedetail h1 > small,
+                .packagedetail h2 > small {
+                    color: var(--color-interface-medium);
+                }
             </style>
 
         </asp:Panel>

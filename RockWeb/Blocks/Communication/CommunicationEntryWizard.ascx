@@ -381,7 +381,7 @@
                             <div id="emaileditor-designer" style="visibility:hidden;opacity: 0;">
                                 <iframe id="ifEmailDesigner" name="emaileditor-iframe" class="emaileditor-iframe js-emaileditor-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0"></iframe>
                             </div>
-                            <div id="emaileditor-properties" class="position-absolute top-0 right-0 bottom-0 overflow-auto">
+                            <div id="emaileditor-properties" class="position-absolute top-0 right-0 bottom-0">
                                     <div class="js-email-sendtest-inputs" style="display: none">
                                         <Rock:EmailBox ID="tbTestEmailAddress" runat="server" Label="Email" ValidationGroup="vgEmailEditorSendTest" Required="true" AllowMultiple="false" Help="This will temporarily change your email address during the test, but it will be changed back after the test is complete." />
                                         <asp:LinkButton ID="btnEmailSendTest" runat="server" CssClass="btn btn-xs btn-primary js-saveeditorhtml" Text="Send Test" CausesValidation="true" ValidationGroup="vgEmailEditorSendTest" OnClick="btnEmailSendTest_Click" />

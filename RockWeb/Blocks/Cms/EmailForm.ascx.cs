@@ -157,7 +157,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.SaveCommunicationHistory )]
     [BooleanField(
         "Disable Captcha Support",
-        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        Description = "If set to 'Yes' the CAPTCHA verification will be skipped. \n\nNote: If the CAPTCHA site key and/or secret key are not configured in the system settings, this option will be forced as 'Yes', even if 'No' is visually selected.",
         DefaultBooleanValue = false,
         Order = 15,
         Key = AttributeKey.DisableCaptchaSupport )]

@@ -152,7 +152,7 @@
                         <div class="col-md-12">
                             <a class="workflow-activities-readonly-header" href="#" onclick="javascript: toggleReadOnlyActivitiesList();">
                                 <asp:Label ID="lblActivitiesReadonlyHeaderLabel" runat="server" Text="Activities" EnableViewState="false" />
-                                <b class="ti ti-caret-down"></b>
+                                <b class="ti ti-caret-down-filled"></b>
                             </a>
 
                             <div class="workflow-activities-readonly-list" style="display: none">
@@ -302,6 +302,6 @@
                     }
                 };
             })();
-        </script> 
+        </script>
     </ContentTemplate>
 </asp:UpdatePanel>

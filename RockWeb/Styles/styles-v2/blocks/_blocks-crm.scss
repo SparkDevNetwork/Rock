@@ -75,17 +75,20 @@
     padding:        var(--spacing-small);
   }
 
-  .fa-stack {
+  .fa-stack,
+  .ti-stacked {
     width:          1em;
     height:         1em;
     line-height:    1em;
   }
 
-  .fa-stack-1x {
+  .fa-stack-1x,
+  .ti-stacked-1x {
     font-size:      .5em;
   }
 
-  .fa-stack-2x {
+  .fa-stack-2x,
+  .ti-stacked-2x {
     font-size:      1em;
   }
 }
@@ -270,7 +273,7 @@ $badge-count-width: 18px;
 }
 
 .rockbadge-baptism {
-  color:        var(--color-info-soft);
+  color:        var(--color-info-tint);
 }
 
 .rockbadge-disc {

@@ -177,3 +177,21 @@
 .structuredcontent-attachment.structuredcontent-attachment-loading .structuredcontent-attachment-upload {
   display: none;
 }
+
+.structured-content-container .codex-editor {
+  box-shadow: var(--box-shadow-strong);
+}
+
+.ce-toolbar__plus {
+  color: var(--color-interface-strong);
+  &:hover {
+    background-color: var(--color-interface-softer);
+  }
+}
+
+.ce-toolbar__settings-btn {
+  color: var(--color-interface-medium);
+  &:hover {
+    background-color: var(--color-interface-softer);
+  }
+}

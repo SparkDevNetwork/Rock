@@ -707,7 +707,7 @@ export default defineComponent({
          */
         const onDeleteClick = async (): Promise<void> => {
             if (props.onDelete) {
-                if (!await confirmDelete(entityTypeName.value, props.additionalDeleteMessage ?? "")) {
+                if (!await confirmDelete(splitCase(entityTypeName.value), props.additionalDeleteMessage ?? "")) {
                     return;
                 }
 

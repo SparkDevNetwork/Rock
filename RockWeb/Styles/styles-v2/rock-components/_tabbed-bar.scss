@@ -18,9 +18,8 @@
 
 .tabbed-bar > .toolbar-nav {
     display: flex;
-    margin: 0;
+    margin: 0 0 -6px;
     padding: 0;
-    margin-bottom: -6px;
     list-style-type: none;
 }
 
@@ -53,6 +52,10 @@
 
 .tabbed-bar > .toolbar-nav > li.more-items {
     font-weight: initial;
+}
+
+.tabbed-bar > .toolbar-nav > li.more-items > .dropdown > .btn {
+    padding: 0;
 }
 
 .tabbed-bar > .toolbar-nav > li.more-items .ti {

@@ -439,7 +439,8 @@ margin-top: 0;
 
 
 /* With the title bar having a title and add button on left and right respectively. */
-.assessment-items-section > .assessment-items-title-bar {
+.assessment-items-section > .assessment-items-title-bar,
+.content-blocks-header {
     display: flex;
     justify-content: space-between;
     margin-bottom: 8px;

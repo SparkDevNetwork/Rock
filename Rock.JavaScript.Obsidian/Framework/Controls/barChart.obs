@@ -13,9 +13,11 @@
     import { BarChartClickEvent, BarLabelPosition, BarLabelsConfig, BarLabelSpec, BarSeries, LabelDateFormat, LegendAlign, LegendPosition, TooltipCallback } from "@Obsidian/Core/Controls/chart";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { Chart as ChartJs, ChartData, ChartDataset, ChartOptions, Color, LegendItem, TooltipItem, TooltipLabelStyle, ChartDataLabels, ChartDataLabelOptions } from "@Obsidian/Libs/chart";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { isNullish } from "@Obsidian/Utility/util";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 
     const defaultLegendIsHidden = false;
     const defaultLegendPosition = LegendPosition.Bottom;
@@ -31,6 +33,13 @@
          * Whether the legend is hidden.
          */
         hideLegend: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * Whether to display horizontal bars instead of vertical bars.
+         */
+        horizontal: {
             type: Boolean as PropType<boolean | undefined>
         },
 
@@ -163,73 +172,73 @@
         },
 
         /**
-         * The x-axis label.
+         * The category axis label.
          */
-        xLabel: {
+        categoryLabel: {
             type: String as PropType<string | undefined>
         },
 
         /**
-         * The maximum number of ticks to show on the x-axis.
+         * The maximum number of ticks to show on the category axis.
          */
-        xMaxTickCount: {
+        categoryMaxTickCount: {
             type: Number as PropType<number | undefined>
         },
 
         /**
-         * Whether to show the x-axis grid lines. Hidden by default.
+         * Whether to show the category axis grid lines. Hidden by default.
          */
-        xShowGridLines: {
+        categoryShowGridLines: {
             type: Boolean as PropType<boolean | undefined>
         },
 
         /**
-         * Whether to hide the y-axis grid lines. Shown by default.
+         * Whether to hide the value axis grid lines. Shown by default.
          */
-        yHideGridLines: {
+        valueHideGridLines: {
             type: Boolean as PropType<boolean | undefined>
         },
 
         /**
-         * The y-axis label.
+         * The value axis label.
          */
-        yLabel: {
+        valueLabel: {
             type: String as PropType<string | undefined>
         },
 
         /**
-         * The maximum number of ticks to show on the y-axis.
+         * The maximum number of ticks to show on the value axis.
          */
-        yMaxTickCount: {
+        valueMaxTickCount: {
             type: Number as PropType<number | undefined>
         },
 
         /**
-         * The minimum value to display in the y-axis if there is nothing lower.
+     * The minimum value to display in the value axis if there is nothing lower.
          *
-         * This is useful for controlling the starting point of the y-axis.
+         * This is useful for controlling the starting point of the value axis.
          * The actual minimum value will be used if there is a lower value present.
          */
-        ySuggestedMin: {
+        valueSuggestedMin: {
             type: Number as PropType<number | undefined>
         },
 
         /**
-         * The maximum value to display in the y-axis if there is nothing higher.
+         * The maximum value to display in the value axis if there is nothing higher.
          *
-         * This is useful for controlling the ending point of the y-axis.
+         * This is useful for controlling the ending point of the value axis.
          * The actual maximum value will be used if there is a higher value present.
          */
-        ySuggestedMax: {
+        valueSuggestedMax: {
             type: Number as PropType<number | undefined>
         },
 
         /**
-         * The number of ticks to show on the y-axis.
+         * The number of ticks to show on the value axis.
          *
-         * This overrides `yMinTickCount` and `yMaxTickCount`.
+         * This overrides `valueMinTickCount` and `valueMaxTickCount`.
          */
-        yTickCount: {
+        valueTickCount: {
             type: Number as PropType<number | undefined>
         }
     });
@@ -247,14 +256,47 @@
 
     // #region Computed Values
 
-    const internalYSuggestedMin = computed<number | undefined>(() => {
-        // Use the supplied ySuggestedMin if present,
+    const hasAnySeriesData = computed<boolean>(() => {
+        return Enumerable.from(props.series).any(s => s.data.length > 0);
+    });
+
+    const internalGrace = computed<string | number | undefined>(() => {
+        // Add some extra padding for non-stacked charts with outside labels.
+        if (!hasAnySeriesData.value) {
+            // No padding if there is no data.
+            return;
+        }
+
+        const isNotStacked = !props.stack;
+        const hasOutsideLabels =
+            !isNullish(props.barLabels?.outside)
+            || Enumerable
+                .from(props.series)
+                .any(s => !isNullish(s.barLabels?.outside));
+        const isPercentData = props.type === "percent";
+
+        if (isNotStacked && hasOutsideLabels) {
+            if (isPercentData) {
+                return "2.5%";
+            }
+            else {
+                return 5;
+            }
+        }
+    });
+
+    const internalValueSuggestedMin = computed<number | undefined>(() => {
+        // Use the supplied valueSuggestedMin if present,
         // otherwise default to 0.0 (0%) for percent charts (based on min value).
-        if (!isNullish(props.ySuggestedMin)) {
-            return props.ySuggestedMin;
+        if (!isNullish(props.valueSuggestedMin)) {
+            return props.valueSuggestedMin;
         }
 
         if (props.type === "percent") {
+            if (!hasAnySeriesData.value) {
+                return 0;
+            }
+
             const min = Enumerable.from(props.series)
                 .selectMany(s => s.data)
                 .min(d => d ?? 0);
@@ -278,15 +320,19 @@
         }
     });
 
-    const internalYSuggestedMax = computed<number | undefined>(() => {
-        // Use the supplied ySuggestedMax if present,
+    const internalValueSuggestedMax = computed<number | undefined>(() => {
+        // Use the supplied valueSuggestedMax if present,
         // otherwise default to the next highest 10s digit for percent charts,
         // (e.g., 0.7 for 70% if the highest value is 0.67).
-        if (!isNullish(props.ySuggestedMax)) {
-            return clamp(props.ySuggestedMax, 0);
+        if (!isNullish(props.valueSuggestedMax)) {
+            return clamp(props.valueSuggestedMax, 0);
         }
 
         if (props.type === "percent") {
+            if (!hasAnySeriesData.value) {
+                return 1;
+            }
+
             const max = Enumerable.from(props.series)
                 .selectMany(s => s.data)
                 .max(d => d ?? 0);
@@ -309,6 +355,19 @@
 
             // Convert back to a decimal.
             return nextTens / 100;
+        }
+    });
+
+    const internalValueTickCount = computed<number | undefined>(() => {
+        if (!isNullish(props.valueTickCount)) {
+            return clamp(props.valueTickCount, 0);
+        }
+
+        if (props.type === "percent") {
+            if (props.series.length === 0) {
+                // Default to 5 ticks (1 every 20%) for percent data.
+                return 5;
+            }
         }
     });
 
@@ -399,14 +458,12 @@
                 }
 
                 const options: ChartDataLabelOptions = {
-                    anchor: isStacked ? "center" : "end", // Anchor "inside" and "outside" labels to the end of the bar (top for vertical, left for horizontal)
                     align: isStacked ? "center"
                         : position === "outside" ? "end" // "outside" labels should be placed after the end of the bar.
                             : position === "inside" ? "start" // "inside" labels should be placed before the end of the bar.
                                 : "center", // New positions get placed over the top line of the bar until defined.
 
-                    // When two labels overlap, "auto" will hide the label with the higher data index.
-                    display: "auto",
+                    anchor: isStacked ? "center" : "end", // Anchor "inside" and "outside" labels to the end of the bar (top for vertical, left for horizontal)
 
                     // When a label is outside the chart area, "clip" will hide it.
                     clip: true,
@@ -416,7 +473,16 @@
                         ?? (position === "inside" || isStacked ? (context) => {
                             const barColor = Array.isArray(context.dataset.backgroundColor) ? context.dataset.backgroundColor[context.dataIndex] : context.dataset.backgroundColor;
                             return pickContrastColor(barColor, getInheritedBackgroundColor(context.chart.canvas));
-                        } : undefined),
+                        } : (position === "outside" ? getCssVar("--color-interface-strong") : undefined)),
+
+                    // When two labels overlap, "auto" will hide the label with the higher data index.
+                    display: "auto",
+
+                    font: {
+                        family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                        size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
+                        weight: toNumberOrNull(getCssVar("--font-weight-regular")) ?? <"normal" | "bold" | "bolder" | "lighter" | undefined>(getCssVar("--font-weight-regular") || undefined)
+                    },
 
                     formatter: (value, context) => {
                         return spec.formatter({
@@ -435,7 +501,6 @@
                     },
 
                     textAlign: "center", // align multiline text in the center by default
-
                 };
 
                 datalabelOptions[barLabelKey] = options;
@@ -491,6 +556,12 @@
                 ? { mode: "index" }
                 : undefined,
 
+            elements: {
+                bar: {
+                    borderRadius: parseInt(getCssVar("--rounded-small")) || undefined
+                }
+            },
+
             onClick: (_event, elements, _chart) => {
                 emit("click", {
                     targets: Enumerable
@@ -508,6 +579,8 @@
                 });
             },
 
+            indexAxis: categoryAxis.value,
+
             plugins: {
                 datalabels: {
                     // Disable datalabels plugin by default so they are only displayed if defined in the series.
@@ -515,44 +588,58 @@
                 },
 
                 legend: {
-                    display: !((props.hideLegend ?? defaultLegendIsHidden) === true),
-                    position: props.legendPosition ?? defaultLegendPosition,
                     align: props.legendAlign ?? defaultLegendAlign,
+                    display: !((props.hideLegend ?? defaultLegendIsHidden) === true),
                     labels: {
-                        // `usePointStyle: true` removes the boxes next to each legend item
-                        // and uses "points" instead. Control the "point" shape inside the
-                        // `generateLabels` callback.
-                        usePointStyle: true,
+                        font: {
+                            family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                            size: parseInt(getCssVar("--font-size-small")) || undefined,
+                            weight: getCssVar("--font-weight-semibold")
+                        },
+
                         generateLabels: (chart) => {
                             const data = chart.data;
                             if (!data || !data.datasets) {
                                 return [];
                             }
 
-                            const labelColor = chart.legend?.options.labels.color;
-
                             return Enumerable
                                 .from(data.datasets)
                                 .withIndex()
                                 .select<LegendItem>(([dataset, index]) => {
+                                    const borderColor = Array.isArray(dataset.borderColor) ? dataset.borderColor[0] : dataset.borderColor;
                                     return {
                                         text: dataset.label ?? "",
                                         pointStyle: "line",
-                                        strokeStyle: (getColorWithOpacity(Array.isArray(dataset.borderColor) ? dataset.borderColor[0] : dataset.borderColor, 1)) as Color,
+                                        strokeStyle: borderColor ? (getColorWithOpacity(borderColor, 1)) as Color : undefined,
                                         hidden: !chart.isDatasetVisible(index),
                                         datasetIndex: index,
                                         lineWidth: 4, // Line thickness
-                                        fontColor: labelColor,
+                                        fontColor: getCssVar("--color-interface-strong"),
                                         lineCap: "round"
                                     };
                                 })
                                 .toArray();
-                        }
-                    }
+                        },
+
+                        padding: 20,
+
+                        // `usePointStyle: true` removes the boxes next to each legend item
+                        // and uses "points" instead. Control the "point" shape inside the
+                        // `generateLabels` callback.
+                        usePointStyle: true
+                    },
+                    position: props.legendPosition ?? defaultLegendPosition
                 },
 
                 title: {
+                    color: getCssVar("--color-interface-strong"),
                     display: !!props.title,
+                    font: {
+                        family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                        size: parseInt(getCssVar("--font-size-small")) || undefined,
+                        weight: getCssVar("--font-weight-semibold")
+                    },
                     text: props.title ?? undefined,
                 },
 
@@ -568,7 +655,7 @@
                                     .select(tooltipItem => {
                                         // There are 3 versions of the label.
                                         // 1. The raw label (from prop.labels)
-                                        // 2. The formatted label (from the x-axis; using the options.scales.x.ticks.callback formatter)
+                                        // 2. The formatted label (from the category axis; using the options.scales.x.ticks.callback formatter)
                                         // 3. Unpredictable formatted label (from internal chart library formatting via `context.label`; unpredictable so don't use)
                                         const rawLabel = props.labels[tooltipItem.dataIndex];
 
@@ -576,7 +663,7 @@
                                             label: rawLabel,
                                             formattedLabel: getFormattedLabel(tooltipItem.chart, tooltipItem.chart.data, tooltipItem.dataIndex) ?? rawLabel,
                                             value: tooltipItem.raw as number | null,
-                                            formattedValue: getFormattedValue(tooltipItem.chart, tooltipItem.parsed.y, tooltipItem.dataIndex) ?? (tooltipItem.formattedValue || tooltipItem.parsed.y.toString()),
+                                            formattedValue: getFormattedValue(tooltipItem.chart, tooltipItem.parsed[valueAxis.value], tooltipItem.dataIndex) ?? (tooltipItem.formattedValue || tooltipItem.parsed[valueAxis.value].toString()),
                                             seriesLabel: tooltipItem.dataset.label ?? ""
                                         });
                                     })
@@ -604,7 +691,7 @@
                                 ? (context) => {
                                     // There are 3 versions of the label.
                                     // 1. The raw label (from prop.labels)
-                                    // 2. The formatted label (from the x-axis; using the options.scales.x.ticks.callback formatter)
+                                    // 2. The formatted label (from the category axis; using the options.scales.x.ticks.callback formatter)
                                     // 3. Unpredictable formatted label (from internal chart library formatting via `context.label`; unpredictable so don't use)
                                     const rawLabel = props.labels[context.dataIndex];
 
@@ -612,7 +699,7 @@
                                         label: rawLabel,
                                         formattedLabel: getFormattedLabel(context.chart, context.chart.data, context.dataIndex) ?? rawLabel,
                                         value: context.raw as number | null,
-                                        formattedValue: getFormattedValue(context.chart, context.parsed.y, context.dataIndex) ?? (context.formattedValue || context.parsed.y.toString()),
+                                        formattedValue: getFormattedValue(context.chart, context.parsed[valueAxis.value], context.dataIndex) ?? (context.formattedValue || context.parsed[valueAxis.value].toString()),
                                         seriesLabel: context.dataset.label ?? ""
                                     }) ?? "";
                                 }
@@ -624,8 +711,8 @@
                                             label += ": ";
                                         }
 
-                                        if (!isNullish(context.parsed.y)) {
-                                            label += context.parsed.y.toLocaleString(
+                                        if (!isNullish(context.parsed[valueAxis.value])) {
+                                            label += context.parsed[valueAxis.value].toLocaleString(
                                                 undefined,
                                                 { style: "percent", maximumFractionDigits: 2 }
                                             );
@@ -645,10 +732,15 @@
                 }
             },
             scales: {
-                x: {
+                [categoryAxis.value]: {
+                    border: {
+                        color: getCssVar("--color-interface-soft")
+                    },
+
                     grid: {
-                        // Hide x-axis grid lines by default
-                        display: props.xShowGridLines === true
+                        color: getCssVar("--color-interface-soft"),
+                        // Hide category axis grid lines by default
+                        display: props.categoryShowGridLines === true
                     },
 
                     // Both x and y should be stacked.
@@ -657,13 +749,25 @@
                     ticks: {
                         autoSkip: true,
                         autoSkipPadding: 10,
+                        color: getCssVar("--color-interface-strong"),
+                        font: {
+                            family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                            size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
+                            weight: getCssVar("--font-weight-regular")
+                        },
                         maxRotation: 45,
-                        maxTicksLimit: clamp(props.xMaxTickCount, 0)
+                        maxTicksLimit: clamp(props.categoryMaxTickCount, 0)
                     },
 
                     title: {
-                        display: !!props.xLabel,
-                        text: props.xLabel ?? undefined
+                        color: getCssVar("--color-interface-strong"),
+                        display: !!props.categoryLabel,
+                        font: {
+                            family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                            size: parseInt(getCssVar("--font-size-small")) || undefined,
+                            weight: getCssVar("--font-weight-semibold")
+                        },
+                        text: props.categoryLabel ?? undefined
                     },
 
                     time: internalLabelDateFormat.value
@@ -680,24 +784,20 @@
                         : undefined,
                     type: internalLabelDateFormat.value ? "timeseries" : "category"
                 },
-                y: {
-                    beginAtZero: internalYSuggestedMin.value === 0,
+
+                [valueAxis.value]: {
+                    beginAtZero: internalValueSuggestedMin.value === 0,
+
+                    border: {
+                        color: getCssVar("--color-interface-soft")
+                    },
 
                     // When displaying outside labels, add some extra space to the top so the labels are not cut off.
-                    grace: (
-                        !props.stack
-                        && (
-                            !!props.barLabels?.outside
-                            || Enumerable
-                                .from(props.series)
-                                .select(s => s.barLabels?.outside)
-                                .any(o => !isNullish(o))
-                        )
-                    ) ? (props.type === "percent" ? "2.5%" : 5)
-                        : undefined,
+                    grace: internalGrace.value,
 
                     grid: {
-                        display: props.yHideGridLines !== true
+                        display: props.valueHideGridLines !== true,
+                        color: getCssVar("--color-interface-soft"),
                     },
 
                     // Both x and y should be stacked.
@@ -707,12 +807,10 @@
                     // so points that are close to the edges are not cropped.
                     // min: props.min ?? undefined,
                     // max: props.max ?? undefined,
-                    suggestedMin: internalYSuggestedMin.value ?? undefined,
-                    suggestedMax: internalYSuggestedMax.value ?? undefined,
+                    suggestedMin: internalValueSuggestedMin.value ?? undefined,
+                    suggestedMax: internalValueSuggestedMax.value ?? undefined,
 
                     ticks: {
-                        count: clamp(props.yTickCount, 0),
-                        maxTicksLimit: clamp(props.yMaxTickCount, 0),
                         callback: props.type === "percent"
                             ? (tickValue) => {
                                 if (typeof tickValue !== "number") {
@@ -730,18 +828,40 @@
                                     );
                                 }
                             }
-                            : undefined
+                            : undefined,
+                        color: getCssVar("--color-interface-strong"),
+                        count: internalValueTickCount.value,
+                        font: {
+                            family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                            size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
+                            weight: getCssVar("--font-weight-regular")
+                        },
+                        maxTicksLimit: clamp(props.valueMaxTickCount, 0)
                     },
 
                     title: {
-                        display: !!props.yLabel,
-                        text: props.yLabel ?? undefined
+                        color: getCssVar("--color-interface-strong"),
+                        display: !!props.valueLabel,
+                        font: {
+                            family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                            size: parseInt(getCssVar("--font-size-small")) || undefined,
+                            weight: getCssVar("--font-weight-semibold")
+                        },
+                        text: props.valueLabel ?? undefined
                     },
                 }
             }
         };
 
         return op;
+    });
+
+    const categoryAxis = computed<"x" | "y">(() => {
+        return !props.horizontal ? "x" : "y";
+    });
+
+    const valueAxis = computed<"x" | "y">(() => {
+        return !props.horizontal ? "y" : "x";
     });
 
     // #endregion Computed Values
@@ -805,7 +925,8 @@
             return cssVarValueCache.get(varName)!;
         }
 
-        const value = getComputedStyle(document.documentElement).getPropertyValue(varName);
+        const value = getCssVariableValue(varName);
+
         if (value) {
             // Only cache if there is a value.
             cssVarValueCache.set(varName, value);
@@ -917,7 +1038,7 @@
     }
 
     function getFormattedLabel(chart: ChartJs, data: ChartData, labelIndex: number): string | undefined {
-        const time = chart.options.scales?.x?.["time"];
+        const time = chart.options.scales?.[categoryAxis.value]?.["time"];
 
         if (!time) {
             return props.labels[labelIndex];
@@ -928,20 +1049,20 @@
 
         // If the ticks have `autoSkip: true`, the label may be undefined above.
         // In that case, try to format the value manually using the date adapter.
-        const adapter = chart.scales.x?.["_adapter"];
+        const adapter = chart.scales?.[categoryAxis.value]?.["_adapter"];
         const ms = adapter?.parse(data.labels?.[labelIndex]);
         return adapter?.format(ms, format);
     }
 
     function getFormattedValue(chart: ChartJs, value: number, dataIndex: number): string | undefined {
-        // Simply use same formatter configured in our y scale callback.
-        const callback = chartOptions.value.scales?.y?.ticks?.callback;
+        // Simply use same formatter configured in our value scale callback.
+        const callback = chartOptions.value.scales?.[valueAxis.value]?.ticks?.callback;
 
         if (!callback) {
             return;
         }
 
-        const scale = chart.scales.y;
+        const scale = chart.scales[valueAxis.value];
         const ticks = scale.ticks;
 
         return callback.call(scale, value, dataIndex, ticks) as string | undefined;
@@ -1004,7 +1125,7 @@
         if (props.stack || (!outsideLabelsChanged && insideLabelsChanged)) {
             // Only disable the animation if the inside labels change without changing the outside labels.
             // This prevents unnecessary animations when toggling inside labels.
-            // We need animations when outside labels change because they could increase the y scale to fit them.
+            // We need animations when outside labels change because they could increase the value scale to fit them.
             disableAnimationUntilUpdated.value = true;
         }
 

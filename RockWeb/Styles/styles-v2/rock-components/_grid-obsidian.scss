@@ -33,6 +33,10 @@
 
 .grid-obsidian .grid-header-prepend {
     border-bottom: 1px solid var(--color-interface-soft);
+
+    > * {
+        padding: var(--spacing-medium);
+    }
 }
 
 .grid-obsidian.grid-sticky .sticky-column-header {
@@ -334,6 +338,10 @@
     display: block;
 }
 
+.grid-cell > .label:empty {
+    display: none;
+}
+
 .grid-select-field {
     min-width: 60px;
 }
@@ -367,7 +375,7 @@
 .grid-footing {
     color: var(--color-interface-strongest);
     background-color: var(--color-interface-softest);
-    border-radius: 0 0 4px 4px;
+    border-radius: 0 0 var(--spacing-xsmall) var(--spacing-xsmall);
     overflow: hidden;
 }
 

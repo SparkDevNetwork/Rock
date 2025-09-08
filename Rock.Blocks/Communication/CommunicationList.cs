@@ -44,6 +44,7 @@ namespace Rock.Blocks.Communication
     /// <summary>
     /// Lists the status of all previously created communications.
     /// </summary>
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Communication List" )]
     [Category( "Communication" )]

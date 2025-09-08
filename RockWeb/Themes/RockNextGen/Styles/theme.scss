@@ -1,7 +1,6 @@
-
 @import "../../../Styles/summernote/summernote.min.css";
 @import "../../../Styles/styles-v2/sass-variable";
-@import "../../../Styles/styles-v2/core.css";
+@import "../../../Styles/styles-v2/core";
 
 // @import "../../../Styles/style-v2/icons/fontawesome-icon.css";
 // @import "../../../Styles/style-v2/icons/fontawesome-regular.css";
@@ -1342,14 +1341,21 @@ a.rock-bookmark {
 #splash {
   display: flex;
   justify-content: center;
-  align-items: center;;
+  align-items: center;
   height: 100vh;
+
+  &.obsidian-loading #content {
+    visibility: hidden;
+    opacity: 0;
+  }
 
   #content {
     position: relative;
     display: grid;
     grid-template-columns: 10fr 8fr;
     align-items: center;
+    transition: opacity .2s ease;
+    opacity: 1;
 
     background-color: var(--color-interface-softest);
     padding: var(--spacing-large);

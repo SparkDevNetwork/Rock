@@ -1,5 +1,6 @@
+@charset "UTF-8";
 /* CSS Overrides Top Start */
-@import url('/Styles/styles-v2/icons/tabler-icon.css');
+@import url('/Styles/styles-v2/icons/tabler-icon.css?v=225734114');
 /* CSS Overrides Top End */
 
 @import "../../../Styles/styles-v2/core.css";

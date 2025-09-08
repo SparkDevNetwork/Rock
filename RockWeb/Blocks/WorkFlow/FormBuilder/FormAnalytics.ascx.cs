@@ -241,9 +241,9 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         {
             const string kpiLava = @"
 {[kpis style:'card' columncount:'3']}
-  [[ kpi icon:'fa-user' value:'{{TotalViews | Format:'N0' }}' label:'Total Views' color:'blue-500' ]][[ endkpi ]]
-  [[ kpi icon:'fa-check-circle' value:'{{Completions | Format:'N0' }}' label:'Completions' color:'green-500' ]][[ endkpi ]]
-  [[ kpi icon:'fa-percentage' value:'{{ConversionRate | Format:'P0' }}' label:'Conversion Rate' color:'indigo-500' ]][[ endkpi ]]
+  [[ kpi icon:'ti-user' value:'{{TotalViews | Format:'N0' }}' label:'Total Views' color:'blue-500' ]][[ endkpi ]]
+  [[ kpi icon:'ti-circle-check' value:'{{Completions | Format:'N0' }}' label:'Completions' color:'green-500' ]][[ endkpi ]]
+  [[ kpi icon:'ti-percentage' value:'{{ConversionRate | Format:'P0' }}' label:'Conversion Rate' color:'indigo-500' ]][[ endkpi ]]
 {[endkpis]}";
 
             int completionsCount = completions.Sum();

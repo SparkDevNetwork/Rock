@@ -134,9 +134,9 @@
         const iconCssClass = row.iconCssClass as string;
 
         return `
-            <span class="ti-stack">
-                <i class="ti ti-circle ti-stack-2x" style="color: ${pair.backgroundColor.toRgba()}"></i>
-                <i style="color: ${pair.foregroundColor.toRgba()}" class="${iconCssClass} ti-stack-1x"></i>
+            <span class="ti-stacked">
+                <i class="ti ti-circle-filled ti-stacked-2x" style="color: ${pair.backgroundColor.toRgba()}"></i>
+                <i style="color: ${pair.foregroundColor.toRgba()}" class="${iconCssClass} ti-stacked-1x"></i>
             </span>`;
     }
 

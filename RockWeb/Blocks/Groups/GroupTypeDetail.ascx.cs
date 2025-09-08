@@ -276,7 +276,7 @@ namespace RockWeb.Blocks.Groups
         {
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "GroupTypeId" ).AsInteger() );
+                ShowDetail( GetIdFromPageParameter( "GroupTypeId" ).ToIntSafe() );
             }
             else
             {
@@ -339,10 +339,10 @@ namespace RockWeb.Blocks.Groups
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? groupTypeId = PageParameter( pageReference, "GroupTypeId" ).AsIntegerOrNull();
-            if ( groupTypeId != null )
+            var groupTypeId = PageParameter( pageReference, "GroupTypeId" );
+            if ( ! string.IsNullOrEmpty( groupTypeId ) )
             {
-                GroupType groupType = new GroupTypeService( new RockContext() ).Get( groupTypeId.Value );
+                var groupType = GroupTypeCache.Get( groupTypeId, !PageCache.Layout.Site.DisablePredictableIds );
                 if ( groupType != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( groupType.Name, pageReference ) );
@@ -358,6 +358,18 @@ namespace RockWeb.Blocks.Groups
             }
 
             return breadCrumbs;
+        }
+
+        private int? GetIdFromPageParameter( string pageParameterKey )
+        {
+            var id = PageParameter( pageParameterKey ).AsIntegerOrNull();
+
+            // See if it's an IdKey...
+            if ( id == null )
+            {
+                id = Rock.Utility.IdHasher.Instance.GetId( PageParameter( pageParameterKey ) );
+            }
+            return id;
         }
 
         #endregion

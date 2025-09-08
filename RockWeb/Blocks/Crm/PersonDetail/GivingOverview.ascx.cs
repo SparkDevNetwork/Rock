@@ -447,7 +447,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{growthPercentClass}""
 
             // Gives as family / individual KPI
             var givesAs = Person.GivingGroupId.HasValue ? "Family" : "Individual";
-            var givesAsIcon = Person.GivingGroupId.HasValue ? "fa-fw fa-users" : "fa-fw fa-user";
+            var givesAsIcon = Person.GivingGroupId.HasValue ? "ti-users" : "ti-user";
             var kpiGivesAs = GetKpiShortCode( "Gives As", givesAs, icon: givesAsIcon );
 
             // Giving Journey
@@ -606,11 +606,11 @@ $@"<span title=""{growthPercentText}"" class=""small text-{growthPercentClass}""
                         iconCssClass = preferredCurrencyValue.GetAttributeValue( "IconCssClass" );
                     }
 
-                    stringBuilder.Append( GetKpiShortCode( "Preferred Currency", preferredCurrencyValue.Value, icon: "fa-fw " + iconCssClass ) );
+                    stringBuilder.Append( GetKpiShortCode( "Preferred Currency", preferredCurrencyValue.Value, icon: iconCssClass ) );
                 }
                 else
                 {
-                    stringBuilder.Append( GetKpiShortCode( "Preferred Currency", string.Empty, icon: "fa-fw " + iconCssClass ) );
+                    stringBuilder.Append( GetKpiShortCode( "Preferred Currency", string.Empty, icon: iconCssClass ) );
                 }
             }
 
@@ -628,11 +628,11 @@ $@"<span title=""{growthPercentText}"" class=""small text-{growthPercentClass}""
                         iconCssClass = preferredSourceValue.GetAttributeValue( "IconCssClass" );
                     }
 
-                    stringBuilder.Append( GetKpiShortCode( "Preferred Source", preferredSourceValue.Value, icon: "fa-fw " + iconCssClass ) );
+                    stringBuilder.Append( GetKpiShortCode( "Preferred Source", preferredSourceValue.Value, icon: iconCssClass ) );
                 }
                 else
                 {
-                    stringBuilder.Append( GetKpiShortCode( "Preferred Source", string.Empty, icon: "fa-fw " + iconCssClass ) );
+                    stringBuilder.Append( GetKpiShortCode( "Preferred Source", string.Empty, icon: iconCssClass ) );
                 }
             }
 

@@ -417,6 +417,44 @@
     }
   }
 }
+
+.individual-plays-container {
+
+  .individual-play-row .individual-play-date,
+  .individual-play-row .individual-play-person-location {
+    color: var(--color-interface-medium);
+  }
+
+  .individual-play-person-detail {
+    color: var(--color-interface-strong);
+  }
+
+  .individual-play-row .individual-play-bar {
+    background-color: var(--color-interface-softer);
+    border: var(--color-interface-soft) 1px solid;
+  }
+
+  .individual-play-row .individual-play-chart {
+    background: var(--color-interface-soft);
+  }
+
+  .individual-play-interaction {
+    background: var(--color-interface-softest);
+
+    .individual-play-interaction-session {
+      color: var(--color-interface-strong);
+    }
+  }
+
+  .individual-play-row .individual-play-bar {
+    background-color: var(--color-interface-softest);
+  }
+
+}
+
+
+
+
 // ================== END MEDIA ELEMENT ==================
 
 // ================== START ASSET MANAGER ==================

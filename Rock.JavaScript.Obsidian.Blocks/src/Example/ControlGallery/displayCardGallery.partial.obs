@@ -12,6 +12,10 @@
                      :title="title"
                      :onClick="simulateNotClickable ? undefined : onClick">
 
+            <template v-if="simulateActionsSlot" #actions>
+                <RockButton :btnType="BtnType.Link" @click.stop="onClick('Subscribe')">Subscribe</RockButton>
+            </template>
+
             <template v-if="simulatePrependSlot" #prepend>
                 Prepend Slot Content
             </template>
@@ -55,6 +59,8 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import IconPicker from "@Obsidian/Controls/iconPicker.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -90,13 +96,13 @@
                 iconCssClass: "ti ti-edit",
                 title: "Edit",
                 type: "default",
-                handler: () => alert("Edit clicked"),
+                handler: () => onClick("Edit"),
             },
             {
                 iconCssClass: "ti ti-copy",
                 title: "Duplicate",
                 type: "default",
-                handler: () => alert("Duplicate clicked"),
+                handler: () => onClick("Duplicate"),
             }
         ];
     });
@@ -111,7 +117,7 @@
                 iconCssClass: "ti ti-trash",
                 title: "Delete",
                 type: "default",
-                handler: () => alert("Delete clicked"),
+                handler: () => onClick("Delete"),
             }
         ];
     });
@@ -124,6 +130,10 @@
         {
             value: "secondaryActions",
             text: "Secondary Actions"
+        },
+        {
+            value: "actions",
+            text: "Actions Slot"
         },
         {
             value: "prepend",
@@ -139,27 +149,36 @@
         }
     ];
 
+    const simulateActionsSlot = computed((): boolean => simulateValues.value.includes("actions"));
+
     const simulatePrependSlot = computed((): boolean => simulateValues.value.includes("prepend"));
 
     const simulateDescriptionSlot = computed((): boolean => simulateValues.value.includes("description"));
 
     const anySlotsSimulated = computed((): boolean => {
-        return simulatePrependSlot.value || simulateDescriptionSlot.value;
+        return simulateActionsSlot.value
+            || simulatePrependSlot.value
+            || simulateDescriptionSlot.value;
     });
 
     const simulateNotClickable = computed((): boolean => simulateValues.value.includes("notClickable"));
 
     const exampleCode = computed<string>(() => {
         return `<DisplayCard aside="${aside.value}"
-                   asideIconCssClass="${asideIconCssClass.value}"
-                   badgeText="${badgeText.value}"
-                   iconCssClass="${iconCssClass.value}"
-                   iconLabelType="${iconLabelCssClass.value || iconLabelType.value}"
-                   description="${description.value}"
-                   :primaryActions="${JSON.stringify(primaryActions.value, null, 2).replace(/\n/g, "\n                   ").replace(/"/g, "'")}"
-                   :secondaryActions="${JSON.stringify(secondaryActions.value, null, 2).replace(/\n/g, "\n                   ").replace(/"/g, "'")}"
-                   title="${title.value}"${!simulateNotClickable.value ? `
-                   @click="onClick"` : ""}${anySlotsSimulated.value ? `>${simulatePrependSlot.value ? `
+             asideIconCssClass="${asideIconCssClass.value}"
+             badgeText="${badgeText.value}"
+             iconCssClass="${iconCssClass.value}"
+             iconLabelType="${iconLabelCssClass.value || iconLabelType.value}"
+             description="${description.value}"
+             :primaryActions="${JSON.stringify(primaryActions.value, null, 2).replace(/\n/g, "\n                   ").replace(/"/g, "'")}"
+             :secondaryActions="${JSON.stringify(secondaryActions.value, null, 2).replace(/\n/g, "\n                   ").replace(/"/g, "'")}"
+             title="${title.value}"${!simulateNotClickable.value ? `
+             @click="onClick"` : ""}${anySlotsSimulated.value ? `>${simulateActionsSlot.value ? `
+    <template #actions>
+        <RockButton :btnType="BtnType.Link" @click.stop="onSubscribe">
+            Subscribe
+        </RockButton>
+    </template>` : ""}${simulatePrependSlot.value ? `
     <template #prepend>
         Prepend Slot Content
     </template>` : ""}${simulateDescriptionSlot.value ? `
@@ -169,8 +188,8 @@
 </DisplayCard>` : " />"}`;
     });
 
-    function onClick(): void {
-        alert("Item clicked!");
+    function onClick(item?: string): void {
+        alert(`${item ?? "Item"} clicked!`);
     }
 
     watch(iconLabelType, (newValue) => {

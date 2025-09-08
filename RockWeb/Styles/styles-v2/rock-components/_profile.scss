@@ -27,6 +27,7 @@
       padding: var(--spacing-xsmall) var(--spacing-small);
       font-weight: var(--font-weight-semibold);
       white-space: nowrap;
+      background-color: var(--color-interface-softer);
     }
   }
 
@@ -311,7 +312,7 @@
       font-size:    var(--font-size-xsmall);
       font-weight:  var(--font-weight-semibold);
       color:      var(--color-interface-strong);
-      background: #e9ecef;
+      background: var(--color-interface-softer);
   }
 
   .bio-data {
@@ -668,11 +669,11 @@ background: currentColor;
   color: inherit;
 }
 
-.rockbadge-assessment .fa-stack-1x {
+.rockbadge-assessment .ti-stacked-1x {
   color: var(--color-interface-softest) !important;
 }
 
-.rockbadge-assessment .fa-stack-2x {
+.rockbadge-assessment .ti-stacked-2x {
   color: currentColor !important;
 }
 

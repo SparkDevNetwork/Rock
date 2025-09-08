@@ -5,7 +5,7 @@
         $(".js-advanced").on("click", function (event) {
             var $parent = $(this).closest('.filter-options');
             var $icon = $(this).find("i")
-            $icon.toggleClass("ti-caret-up").toggleClass("ti-caret-down");
+            $icon.toggleClass("ti-caret-up").toggleClass("ti-caret-down-filled");
             $parent.find(".js-advanced-visible").val($icon.hasClass('ti-caret-up'));
             $parent.find(".js-advanced-settings").slideToggle(500);
         });
@@ -56,7 +56,7 @@
 
                         <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"/>
                         <div class="clearfix">
-                            <asp:Label ID="lblAdvancedOptions" runat="server" CssClass="js-advanced btn pull-right btn-default btn-xs">Advanced Options <i class="ti ti-caret-down"></i></asp:Label>
+                            <asp:Label ID="lblAdvancedOptions" runat="server" CssClass="js-advanced btn pull-right btn-default btn-xs">Advanced Options <i class="ti ti-caret-down-filled"></i></asp:Label>
                         </div>
                         <Rock:HiddenFieldWithClass ID="hfAdvancedVisible" runat="server" CssClass="js-advanced-visible" Value="false" />
                         <div id="divAdvancedSettings" runat="server" class="js-advanced-settings clearfix" >

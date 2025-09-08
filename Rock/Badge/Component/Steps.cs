@@ -201,16 +201,16 @@ $@"$.ajax({{
                     var iconClass = stepTypeData.IconCssClass || (isComplete ? 'ti ti-check' : 'ti ti-x');
 
                     html.push('<div class=""rockbadge"">');
-                    html.push('    <span class=""ti-stack"">');
-                    html.push('        <i style=""color: ' + color + ';"" class=""ti ti-circle ti-stack-2x""></i>');
-                    html.push('        <i class=""ti ' + iconClass + ' ti-stack-1x""></i>');
+                    html.push('    <span class=""ti-stacked"">');
+                    html.push('        <i style=""color: ' + color + ';"" class=""ti ti-circle-filled ti-stacked-2x""></i>');
+                    html.push('        <i class=""ti ' + iconClass + ' ti-stacked-1x""></i>');
                     html.push('    </span>');
                     html.push('</div>\n');
 
                     tooltip.push('<p class=""margin-b-sm"">');
-                    tooltip.push('    <span class=""ti-stack"">');
-                    tooltip.push('        <i style=""color: ' + color + ';"" class=""ti ti-circle ti-stack-2x""></i>');
-                    tooltip.push('        <i class=""ti ' + iconClass + ' ti-stack-1x""></i>');
+                    tooltip.push('    <span class=""ti-stacked"">');
+                    tooltip.push('        <i style=""color: ' + color + ';"" class=""ti ti-circle-filled ti-stacked-2x""></i>');
+                    tooltip.push('        <i class=""ti ' + iconClass + ' ti-stacked-1x""></i>');
                     tooltip.push('    </span>');
                     tooltip.push('    <strong>' + stepTypeData.StepTypeName + ':</strong> ' + (stepTypeData.Statuses[0] || 'Incomplete'));
                     tooltip.push('</p>\n');

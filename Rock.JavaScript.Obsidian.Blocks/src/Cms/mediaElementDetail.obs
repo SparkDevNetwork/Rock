@@ -95,7 +95,7 @@
                     <div v-if="!showNoStatsMessage" class="row">
                         <div class="col-md-12">
                             <h5>Individual Plays</h5>
-                            <div id="individualPlaysContainer">
+                            <div id="individualPlaysContainer" class="individual-plays-container">
                                 <div v-if="individualPlaysData && individualPlaysData.items.length > 0">
                                     <div v-for="(item, index) in individualPlaysData.items" :key="index" class="individual-play-row">
                                         <div class="individual-play-date">

@@ -12,13 +12,13 @@
   display:      flex;
   gap:          6px;
   align-items:  center;
-  flex-direction: column;
+  flex-direction: row;
 }
 
 .picker {
   @media (min-width: $screen-small) {
     position:     relative;
-    width:        250px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
+    width:        100%;
     max-width:    100%;
   }
 

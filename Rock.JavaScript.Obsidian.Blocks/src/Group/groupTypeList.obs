@@ -16,32 +16,41 @@
                     title="Name"
                     field="name"
                     :filter="textValueFilter"
-                    width="25%"
+                    width="20%"
                     visiblePriority="xs" />
 
         <TextColumn name="purpose"
                     title="Purpose"
                     field="purpose"
                     :filter="pickExistingValueFilter"
-                    width="15%"
+                    width="10%"
                     visiblePriority="md" />
 
         <NumberColumn name="groupsCount"
                       title="Group Count"
                       field="groupsCount"
                       :filter="numberValueFilter"
+                      headerClass="text-right"
+                      itemClass="justify-content-end text-right"
+                      width="10%"
                       visiblePriority="md" />
 
         <BooleanColumn name="showInNavigation"
                        title="Show In Navigation"
                        field="showInNavigation"
                        :filter="booleanValueFilter"
+                       headerClass="text-center"
+                       itemClass="justify-content-center text-center"
+                       width="10%"
                        visiblePriority="md" />
 
         <BooleanColumn name="isSystem"
                        title="System"
                        field="isSystem"
                        :filter="booleanValueFilter"
+                       headerClass="text-center"
+                       itemClass="justify-content-center text-center"
+                       width="5%"
                        visiblePriority="xs" />
 
         <SecurityColumn :itemTitle="'name'" />

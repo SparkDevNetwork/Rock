@@ -1,5 +1,5 @@
 /*
-    DOCUMENTATION: 
+    DOCUMENTATION:
 
     This is copy from ion.rangeSlider.Rock.css.
     Located: `RockWeb\Scripts\ion.rangeSlider\css\ion.rangeSlider.Rock.css`.
@@ -11,7 +11,7 @@
 /*
     MODIFICATION MADE:
 
-    We wrap all the style under .form-group { } to win in specificity 
+    We wrap all the style under .form-group { } to win in specificity
     over the ion.rangeSlider.Rock.css stylesheet added by the controls.
 */
 
@@ -62,7 +62,7 @@
         right:              0;
         width:              11%;
     }
-    
+
     .irs-bar {
         position:             absolute;
         top:                 33px;
@@ -86,14 +86,14 @@
         border-right:         0;
         border-radius:        var(--rounded-xlarge) 0 0 var(--rounded-xlarge);
     }
-    
+
     .irs-shadow {
         position:              absolute;
         left:                 0;
         display:               none;
         width:                 0;
     }
-    
+
     .irs-slider {
         position:              absolute;
         top:                  var(--slider-handle-offset, 25px);
@@ -106,21 +106,21 @@
         border:               1px solid var(--slider-handle-border-color, #aaa);
         border-radius:        var(--slider-handle-height, 27px);
     }
-    
+
     .irs-slider.type_last {
         z-index:              2;
     }
-    
+
     .irs-slider:hover {
         background:           var(--slider-handle-bg--hover, #fff);
         border:               1px solid var(--slider-handle-border-color--hover, #aaa);
     }
-    
+
     .irs-slider.state_hover {
         border:               1px solid var(--color-primary);
         box-shadow:           var(--input-focus-box-shadow);
     }
-    
+
     .irs-min,
     .irs-max {
         position:              absolute;
@@ -129,21 +129,21 @@
         padding:              1px 5px;
         font-size:            var(--font-size-xsmall);
         line-height:          1.333;
-        color:                #333;
+        color:                var(--color-interface-strong);
         text-shadow:          none;
         cursor:               default;
         background:           var(--color-interface-soft);
         border-radius:        var(--border-radius-base, 3px);
     }
-    
+
     .irs-min {
         left:                0;
     }
-    
+
     .irs-max {
         right:               0;
     }
-    
+
     .irs-from,
     .irs-to,
     .irs-single {
@@ -154,20 +154,20 @@
         padding:              1px 5px;
         font-size:           var(--font-size-small);
         line-height:          1.333;
-        color:                var(--color-interface-softest);
+        color:                var(--base-interface-softest);
         text-shadow:          none;
         white-space:          nowrap;
         cursor:               default;
         background:           var(--color-primary, #428bca);
         border-radius:        3px;
     }
-    
+
     .lt-ie9 .irs-from,
     .lt-ie9 .irs-to,
     .lt-ie9 .irs-single {
         background:           #999;
     }
-    
+
     .irs-grid {
         position:              absolute;
         bottom:               0;
@@ -176,7 +176,7 @@
         width:                100%;
         height:               var(--slider-handle-height, 20px);
     }
-    
+
     .irs-with-grid .irs-grid {
         display:              block;
     }
@@ -190,7 +190,7 @@
         background:           #428bca;
         opacity:              0.5;
     }
-    
+
     .irs-grid-pol.small {
         height:               4px;
         background:           #999;
@@ -207,7 +207,7 @@
         text-align:           center;
         white-space:          nowrap;
     }
-    
+
     .irs-disable-mask {
         position:              absolute;
         top:                  0;
@@ -225,11 +225,11 @@
         background:           #000;
         filter:               alpha(opacity=0);
     }
-    
+
     .irs-disabled {
         opacity:              0.4;
     }
-    
+
     .irs-hidden-input {
         position:              absolute !important;
         top:                  0 !important;
@@ -248,11 +248,11 @@
         border-style:         solid !important;
         outline:              none !important;
     }
-    
+
     .irs-with-grid {
         height:               75px;
     }
-    
+
     .lt-ie9 .irs-min,
     .lt-ie9 .irs-max {
         background:           var(--color-interface-soft);

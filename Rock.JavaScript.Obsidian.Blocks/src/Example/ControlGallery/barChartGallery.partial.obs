@@ -5,7 +5,11 @@
             <BarChart :labels="labels"
                       :series="series"
                       :barLabels="barLabels"
+                      :categoryLabel="categoryLabel"
+                      :categoryMaxTickCount="categoryMaxTickCount"
+                      :categoryShowGridLines="categoryShowGridLines"
                       :hideLegend="isLegendHidden"
+                      :horizontal="isHorizontal"
                       :labelDateFormat="labelDateFormat"
                       :legendAlign="legendAlign"
                       :legendPosition="legendPosition"
@@ -16,15 +20,12 @@
                       :tooltipTitle="tooltipTitle"
                       :type="isPercent ? 'percent' : isPercent === false ? 'number' : undefined"
                       :unfilled="isUnfilled"
-                      :xLabel="xLabel"
-                      :xMaxTickCount="xMaxTickCount"
-                      :xShowGridLines="xShowGridLines"
-                      :yHideGridLines="yHideGridLines"
-                      :yLabel="yLabel"
-                      :yMaxTickCount="yMaxTickCount"
-                      :ySuggestedMax="ySuggestedMax"
-                      :ySuggestedMin="ySuggestedMin"
-                      :yTickCount="yTickCount"
+                      :valueHideGridLines="valueHideGridLines"
+                      :valueLabel="valueLabel"
+                      :valueMaxTickCount="valueMaxTickCount"
+                      :valueSuggestedMax="valueSuggestedMax"
+                      :valueSuggestedMin="valueSuggestedMin"
+                      :valueTickCount="valueTickCount"
                       @click="onBarChartClicked" />
         </div>
 
@@ -84,6 +85,10 @@
                             <Switch :modelValue="hasCustomTooltip ?? false"
                                     label="Custom Tooltip"
                                     @update:modelValue="hasCustomTooltip = $event" />
+
+                            <Switch :modelValue="isHorizontal ?? false"
+                                    label="Horizontal"
+                                    @update:modelValue="isHorizontal = $event" />
                         </div>
 
                         <div class="autolayout">
@@ -117,41 +122,43 @@
                         </div>
                     </ContentStack>
 
-                    <ContentStack title="X-Axis">
+                    <ContentStack title="Category Axis"
+                                  :description="!isHorizontal ? '(x-axis)' : '(y-axis)'">
                         <div class="autolayout">
-                            <TextBox :modelValue="xLabel ?? ''"
+                            <TextBox :modelValue="categoryLabel ?? ''"
                                      label="Label"
-                                     @update:modelValue="xLabel = $event" />
+                                     @update:modelValue="categoryLabel = $event" />
 
-                            <NumberBox v-model="xMaxTickCount"
+                            <NumberBox v-model="categoryMaxTickCount"
                                        label="Max Tick Count" />
 
-                            <Switch :modelValue="xShowGridLines ?? false"
+                            <Switch :modelValue="categoryShowGridLines ?? false"
                                     label="Show Grid Lines"
-                                    @update:modelValue="xShowGridLines = $event" />
+                                    @update:modelValue="categoryShowGridLines = $event" />
                         </div>
                     </ContentStack>
 
-                    <ContentStack title="Y-Axis">
+                    <ContentStack title="Value Axis"
+                                  :description="!isHorizontal ? '(y-axis)' : '(x-axis)'">
                         <div class="autolayout">
-                            <TextBox :modelValue="yLabel ?? ''"
+                            <TextBox :modelValue="valueLabel ?? ''"
                                      label="Label"
-                                     @update:modelValue="yLabel = $event" />
+                                     @update:modelValue="valueLabel = $event" />
 
-                            <Switch :modelValue="yHideGridLines ?? false"
+                            <Switch :modelValue="valueHideGridLines ?? false"
                                     label="Hide Grid Lines"
-                                    @update:modelValue="yHideGridLines = $event" />
+                                    @update:modelValue="valueHideGridLines = $event" />
 
-                            <NumberBox v-model="yTickCount"
+                            <NumberBox v-model="valueTickCount"
                                        label="Tick Count" />
 
-                            <NumberBox v-model="yMaxTickCount"
+                            <NumberBox v-model="valueMaxTickCount"
                                        label="Max Tick Count" />
 
-                            <NumberBox v-model="ySuggestedMin"
+                            <NumberBox v-model="valueSuggestedMin"
                                        label="Suggested Min" />
 
-                            <NumberBox v-model="ySuggestedMax"
+                            <NumberBox v-model="valueSuggestedMax"
                                        label="Suggested Max" />
                         </div>
                     </ContentStack>
@@ -236,10 +243,10 @@
     ]);
     const minValue = ref<number>(0);
     const maxValue = ref<number>(100);
-    const xShowGridLines = ref<boolean | undefined>();
-    const yHideGridLines = ref<boolean | undefined>();
-    const xMaxTickCount = ref<number | undefined>();
-    const yMaxTickCount = ref<number | undefined>();
+    const categoryShowGridLines = ref<boolean | undefined>();
+    const valueHideGridLines = ref<boolean | undefined>();
+    const categoryMaxTickCount = ref<number | undefined>();
+    const valueMaxTickCount = ref<number | undefined>();
     const isUnfilled = ref<boolean | undefined>();
     const isOverlapped = ref<boolean | undefined>();
     const isStacked = ref<boolean | undefined>();
@@ -247,14 +254,15 @@
     const legendPosition = ref<LegendPosition | undefined>();
     const legendAlign = ref<LegendAlign | undefined>();
     const isLegendHidden = ref<boolean | undefined>();
+    const isHorizontal = ref<boolean | undefined>();
     const labelDateFormat = ref<LabelDateFormat | undefined>(LabelDateFormat.Auto);
     const isPercent = ref<boolean | undefined>();
-    const yTickCount = ref<number | undefined>();
-    const xLabel = ref<string | undefined>("X Axis");
-    const yLabel = ref<string | undefined>("Y Axis");
+    const valueTickCount = ref<number | undefined>();
+    const categoryLabel = ref<string | undefined>("Category Label");
+    const valueLabel = ref<string | undefined>("Value Label");
     const title = ref<string | undefined>("Chart Title");
-    const ySuggestedMin = ref<number | undefined>();
-    const ySuggestedMax = ref<number | undefined>();
+    const valueSuggestedMin = ref<number | undefined>();
+    const valueSuggestedMax = ref<number | undefined>();
     const opacity = ref<number | number[] | undefined>();
     const hasOutsideBarLabels = ref<boolean | undefined>();
     const hasInsideBarLabels = ref<boolean | undefined>();
@@ -265,75 +273,77 @@
     // #region Computed Values
 
     const exampleCode = computed<string>(() => {
-        let lineChartProps: string[] = [
+        let barChartProps: string[] = [
             `:labels="labels"`,
             `:series="series"`
         ];
 
+        if (categoryLabel.value) {
+            barChartProps.push(`categoryLabel="${categoryLabel.value}"`);
+        }
+        if (!isNullish(categoryMaxTickCount.value)) {
+            barChartProps.push(`:categoryMaxTickCount="${categoryMaxTickCount.value}"`);
+        }
+        if (!isNullish(categoryShowGridLines.value)) {
+            barChartProps.push(`categoryShowGridLines="${categoryShowGridLines.value}"`);
+        }
         if (!isNullish(isLegendHidden.value)) {
-            lineChartProps.push(`:hideLegend="${isLegendHidden.value}"`);
+            barChartProps.push(`:hideLegend="${isLegendHidden.value}"`);
+        }
+        if (!isNullish(isHorizontal.value)) {
+            barChartProps.push(`:horizontal="${isHorizontal.value}"`);
         }
         if (!isNullish(labelDateFormat.value)) {
-            lineChartProps.push(`labelDateFormat="${labelDateFormat.value}"`);
+            barChartProps.push(`labelDateFormat="${labelDateFormat.value}"`);
         }
-
         if (!isNullish(legendAlign.value)) {
-            lineChartProps.push(`legendAlign="${legendAlign.value}"`);
+            barChartProps.push(`legendAlign="${legendAlign.value}"`);
         }
         if (!isNullish(legendPosition.value)) {
-            lineChartProps.push(`legendPosition="${legendPosition.value}"`);
+            barChartProps.push(`legendPosition="${legendPosition.value}"`);
         }
         if (!isNullish(isOverlapped.value)) {
-            lineChartProps.push(`:overlap="${isOverlapped.value}"`);
+            barChartProps.push(`:overlap="${isOverlapped.value}"`);
         }
         if (!isNullish(isStacked.value)) {
-            lineChartProps.push(`:stack="${isStacked.value}"`);
+            barChartProps.push(`:stack="${isStacked.value}"`);
         }
         if (title.value) {
-            lineChartProps.push(`title="${title.value}"`);
+            barChartProps.push(`title="${title.value}"`);
         }
         if (!isNullish(isPercent.value)) {
             if (isPercent.value) {
-                lineChartProps.push(`type="percent"`);
+                barChartProps.push(`type="percent"`);
             }
             else {
-                lineChartProps.push(`type="number"`);
+                barChartProps.push(`type="number"`);
             }
         }
         if (!isNullish(isUnfilled.value)) {
-            lineChartProps.push(`"unfilled="${isUnfilled.value}"`);
+            barChartProps.push(`"unfilled="${isUnfilled.value}"`);
         }
-        if (xLabel.value) {
-            lineChartProps.push(`xLabel="${xLabel.value}"`);
+        if (!isNullish(valueHideGridLines.value)) {
+            barChartProps.push(`valueHideGridLines="${valueHideGridLines.value}"`);
         }
-        if (!isNullish(xMaxTickCount.value)) {
-            lineChartProps.push(`:xMaxTickCount="${xMaxTickCount.value}"`);
+        if (valueLabel.value) {
+            barChartProps.push(`valueLabel="${valueLabel.value}"`);
         }
-        if (!isNullish(xShowGridLines.value)) {
-            lineChartProps.push(`xShowGridLines="${xShowGridLines.value}"`);
+        if (!isNullish(valueMaxTickCount.value)) {
+            barChartProps.push(`:valueMaxTickCount="${valueMaxTickCount.value}"`);
         }
-        if (!isNullish(yHideGridLines.value)) {
-            lineChartProps.push(`yHideGridLines="${yHideGridLines.value}"`);
+        if (!isNullish(valueSuggestedMax.value)) {
+            barChartProps.push(`:valueSuggestedMax="${valueSuggestedMax.value}"`);
         }
-        if (yLabel.value) {
-            lineChartProps.push(`yLabel="${yLabel.value}"`);
+        if (!isNullish(valueSuggestedMin.value)) {
+            barChartProps.push(`:valueSuggestedMin="${valueSuggestedMin.value}"`);
         }
-        if (!isNullish(yMaxTickCount.value)) {
-            lineChartProps.push(`:yMaxTickCount="${yMaxTickCount.value}"`);
-        }
-        if (!isNullish(ySuggestedMax.value)) {
-            lineChartProps.push(`:ySuggestedMax="${ySuggestedMax.value}"`);
-        }
-        if (!isNullish(ySuggestedMin.value)) {
-            lineChartProps.push(`:ySuggestedMin="${ySuggestedMin.value}"`);
-        }
-        if (!isNullish(yTickCount.value)) {
-            lineChartProps.push(`:yTickCount="${yTickCount.value}"`);
+        if (!isNullish(valueTickCount.value)) {
+            barChartProps.push(`:valueTickCount="${valueTickCount.value}"`);
         }
 
         const prefix = "<BarChart ";
         const spaces = " ".repeat(prefix.length);
-        return `${prefix}${lineChartProps.join(`\n${spaces}`)} />`;
+        return `${prefix}${barChartProps.join(`\n${spaces}`)} />`;
     });
 
     const tooltip = computed<TooltipCallback | undefined>(() => {

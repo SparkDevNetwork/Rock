@@ -92,9 +92,9 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowDetail
         public CommunicationFlowTriggerType TriggerType { get; set; }
 
         /// <summary>
-        /// Gets or sets the unsubscribe message (maximum 500 characters).
+        /// Gets or sets the public name (maximum 500 characters).
         /// </summary>
-        public string UnsubscribeMessage { get; set; }
+        public string PublicName { get; set; }
 
         /// <summary>
         /// Gets or sets the conversion goal settings.

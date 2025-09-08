@@ -46,5 +46,11 @@ namespace Rock.Communication.Chat.Sync
         /// that didn't already have a channel representation within the external chat system.
         /// </remarks>
         public bool ShouldSyncAllGroupMembers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of milliseconds to wait between tightly-consecutive API calls to the external chat
+        /// system, helping to proactively avoid rate limiting.
+        /// </summary>
+        public int ApiThrottleMs { get; set; } = 100;
     }
 }

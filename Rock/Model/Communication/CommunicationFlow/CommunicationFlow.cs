@@ -148,7 +148,7 @@ namespace Rock.Model
         public ExitConditionType ExitConditionType { get; set; }
 
         /// <summary>
-        /// Gets or sets the unsubscribe message (maximum 500 characters).
+        /// Gets or sets the public name (maximum 500 characters).
         /// </summary>
         /// <remarks>
         /// Displayed in the unsubscribe block when a recipient opts out of this Communication Flow.
@@ -156,7 +156,7 @@ namespace Rock.Model
         /// </remarks>
         [MaxLength( 500 )]
         [DataMember]
-        public string UnsubscribeMessage { get; set; }
+        public string PublicName { get; set; }
 
         /// <inheritdoc />
         [DataMember]

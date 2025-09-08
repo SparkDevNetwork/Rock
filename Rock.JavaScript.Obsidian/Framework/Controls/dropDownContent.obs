@@ -19,13 +19,16 @@
 <style scoped>
 .floating-dropdown {
     z-index: 3;
-    filter: drop-shadow(rgba(51, 51, 51, 0.533) 0 0 2px);
+    box-shadow: none;
+    padding-top: 5px;
+
 }
 
 .floating-dropdown > .body {
-    background-color: white;
+    background-color: var(--color-interface-softer);
     margin-top: 6px;
     border-radius: 4px;
+    box-shadow: var(--box-shadow);
 }
 
 .floating-dropdown:not(.allow-overflow) > .body {
@@ -36,7 +39,7 @@
     position: absolute;
     width: 10px;
     height: 7px;
-    fill: white;
+    fill: var(--color-interface-softer);
 }
 </style>
 
