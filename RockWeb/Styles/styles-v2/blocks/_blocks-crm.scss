@@ -215,7 +215,7 @@ $badge-count-width: 18px;
   .metric-value {
     position:   absolute;
     top:        .388em;
-    left:       .2em;
+    left:       .1em;
     display:    block;
     width:      1em;
     font-size:  .45em;
@@ -226,7 +226,7 @@ $badge-count-width: 18px;
 
   .metric-unit {
     position:       absolute;
-    right:          .363em;
+    right:          .6em;
     bottom:         .9em;
     font-size:      .275em; // 11px
     font-weight:    var(--font-weight-semibold);
@@ -352,12 +352,12 @@ $badge-count-width: 18px;
 
   .badge-icon {
     position:     absolute;
-    top:          0;
+    top:          -6px;
     right:        0;
-    left:         0;
-    font-size:    inherit;
+    left:         -5px;
     line-height:  1.15em;
     text-align:   center;
+    font-size:   $badge-icon-height;
   }
 
   &-invert {
@@ -368,7 +368,7 @@ $badge-count-width: 18px;
 
   .metric-value {
     position:     absolute;
-    top:          .7em; // 8px
+    top:          .4em;
     right:        .3em;
     bottom:       .95em;
     left:         .3em;
@@ -386,7 +386,7 @@ $badge-count-width: 18px;
 
     &.today {
       .metric-value {
-        font-size: .275em;
+        font-size: .25em;
       }
     }
 
@@ -414,9 +414,11 @@ $badge-count-width: 18px;
 }
 
 .rockbadge-personaldevice {
-  width:  .6em;
+  width:  .9em;
   .badge-content .metric-value {
-    top:  .7142em;
+    top:  .9em;
+    left: .6em;
+    font-size: .3em;
   }
 }
 
