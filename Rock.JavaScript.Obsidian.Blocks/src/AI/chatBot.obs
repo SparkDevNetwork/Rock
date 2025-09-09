@@ -37,7 +37,7 @@
                      :key="index"
                      class="message"
                      :class="getMessageClass(message)">
-                    <div class="message-text" v-html="parse(message.message ?? '')"></div>
+                    <div class="message-text" v-html="parseMarkdown(message.message ?? '')"></div>
 
                     <div v-if="isDebugEnabled && message.role == AuthorRole.Assistant" class="message-debug">
                         <span class="label label-info" title="Prompt Tokens">
@@ -80,7 +80,7 @@
                         <span class="ti ti-loader fa fa-spin"></span>
                     </div>
 
-                    <div v-else class="message-text" v-html="parse(liveMessage.message ?? '')"></div>
+                    <div v-else class="message-text" v-html="parseMarkdown(liveMessage.message ?? '')"></div>
                 </div>
 
                 <div v-else-if="isSending"
@@ -438,7 +438,7 @@
     import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import HighlightJs from "@Obsidian/Libs/highlightJs";
-    import { parse } from "@Obsidian/Libs/marked";
+    import { parse, Renderer } from "@Obsidian/Libs/marked";
     import { useConfigurationValues, useInvokeBlockAction, useInvokeStreamingBlockAction } from "@Obsidian/Utility/block";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
     import { asFormattedString } from "@Obsidian/Utility/numberUtils";
@@ -544,6 +544,8 @@
     const invokeBlockAction = useInvokeBlockAction();
     const invokeStreamingBlockAction = useInvokeStreamingBlockAction();
 
+    // #region Values
+
     const chatContainer = ref<HTMLDivElement>();
     const sessionsContainer = ref<HTMLDivElement>();
     const messagesContainer = ref<HTMLDivElement>();
@@ -561,6 +563,10 @@
     const debugMessage = ref<ExtendedChatMessageBag | null>(null);
     const messageDebugTab = ref<"Function Calls" | "Logs">("Function Calls");
 
+    // #endregion
+
+    // #region Computed Values
+
     const isSendDisabled = computed((): boolean => {
         return isSending.value || !message.value;
     });
@@ -568,6 +574,10 @@
     const sortedAnchors = computed((): ChatAnchorBag[] => {
         return anchors.sort((a, b) => a.entityTypeName?.localeCompare(b.entityTypeName ?? "") || 0);
     });
+
+    // #endregion
+
+    // #region Functions
 
     function updateContainerHeight(): void {
         if (!chatContainer.value) {
@@ -725,6 +735,24 @@
             return escapeHtml(code);
         }
     }
+
+    function parseMarkdown(text: string): string {
+        return parse(text, {
+            renderer: new CustomRenderer()
+        }) as string;
+    }
+
+    class CustomRenderer extends Renderer {
+        override table(token): string {
+            const html = super.table(token);
+
+            return html.replace("<table>", `<table class="table table-bordered table-striped">`);
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
 
     async function onSubmit(): Promise<void> {
         if (!message.value) {
@@ -940,6 +968,8 @@
         messageDebugTab.value = "Function Calls";
         isMessageDebugVisible.value = true;
     }
+
+    // #endregion
 
     onMounted(() => {
         updateContainerHeight();
