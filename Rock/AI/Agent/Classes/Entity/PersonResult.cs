@@ -22,7 +22,9 @@ using System.Text.Json.Serialization;
 using AngleSharp.Text;
 
 using Rock.AI.Agent.Classes.Common;
+using Rock.Enums.AI.Agent;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Classes.Entity
 {
@@ -92,9 +94,24 @@ namespace Rock.AI.Agent.Classes.Entity
         public string PrimaryFamilyIdKey { get; set; }
 
         /// <summary>
+        /// Determines if the internal profile should be included in the return.
+        /// </summary>
+        public bool IncludePublicProfile { get; set; }
+
+        /// <summary>
         /// The URL to the person's internal profile.
         /// </summary>
-        public string ProfileUrl { get; set; }
+        public string InternalProfileUrl {
+            get
+            {
+                if ( !IncludePublicProfile )
+                {
+                    return null;
+                }
+
+                return $"{GlobalAttributesCache.Get().GetValue( "InternalApplicationRoot" ).EnsureTrailingForwardslash()}person/{IdKey}";
+            }
+        }
 
         /// <summary>
         /// Gets or sets the person's first/given name.
@@ -169,6 +186,7 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <summary>
         /// Gets or sets the age classification.
         /// </summary>
+        [JsonIgnore( Condition = JsonIgnoreCondition.WhenWritingDefault )]
         public AgeClassification AgeClassification { get; set; }
 
         /// <summary>
@@ -214,6 +232,7 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <summary>
         /// Gets or sets the gender.
         /// </summary>
+        [JsonIgnore( Condition = JsonIgnoreCondition.WhenWritingDefault )]
         public Gender Gender { get; set; }
 
         /// <summary>
