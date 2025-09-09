@@ -208,8 +208,8 @@
      */
     async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
         const result = await invokeBlockAction<string>("ReorderItem", {
-            idKey: item["idKey"],
-            beforeIdKey: beforeItem?.["idKey"] ?? null
+            key: item["idKey"],
+            beforeKey: beforeItem?.["idKey"] ?? null
         });
 
         return result.isSuccess;

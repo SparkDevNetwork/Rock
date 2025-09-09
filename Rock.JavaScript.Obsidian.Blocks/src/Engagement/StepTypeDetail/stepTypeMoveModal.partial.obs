@@ -17,7 +17,7 @@
         <div class="form-group">
             <p class="overflow-modal">Select the Step Program you want to move this type to. You'll then need to re-map the statuses to align with the new program.</p>
             <DropDownList v-model="targetStepProgram"
-                          label="Select Existing Step Program"
+                          label="Select Step Program to Move To"
                           :items="existingStepPrograms"
                           rules="required" />
         </div>

@@ -193,6 +193,13 @@
         },
 
         /**
+         * Whether to show all ticks on the category axis.
+         */
+        categoryShowAllTicks: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
          * Whether to hide the value axis grid lines. Shown by default.
          */
         valueHideGridLines: {
@@ -236,7 +243,7 @@
         /**
          * The number of ticks to show on the value axis.
          *
-         * This overrides `valueMinTickCount` and `valueMaxTickCount`.
+         * This overrides `valueMaxTickCount`.
          */
         valueTickCount: {
             type: Number as PropType<number | undefined>
@@ -355,6 +362,12 @@
 
             // Convert back to a decimal.
             return nextTens / 100;
+        }
+    });
+
+    const internalCategoryMaxTickCount = computed<number | undefined>(() => {
+        if (!props.categoryShowAllTicks && !isNullish(props.categoryMaxTickCount)) {
+            return clamp(props.categoryMaxTickCount, 0);
         }
     });
 
@@ -635,18 +648,34 @@
                 title: {
                     color: getCssVar("--color-interface-strong"),
                     display: !!props.title,
+
                     font: {
                         family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                         size: parseInt(getCssVar("--font-size-small")) || undefined,
                         weight: getCssVar("--font-weight-semibold")
                     },
+
                     text: props.title ?? undefined,
                 },
 
                 tooltip: {
-                    // Remove colored box preceding the value.
-                    //displayColors: false,
+                    backgroundColor: getCssVar("--color-interface-softest"),
 
+                    bodyColor: getCssVar("--color-interface-stronger"),
+
+                    bodyFont: {
+                        family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                        size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
+                        weight: getCssVar("--font-weight-regular")
+                    },
+
+                    borderColor: getCssVar("--color-interface-soft"),
+                    borderWidth: 1,
+
+                    // Adjust the colored box sizing next to the tooltip text (color is defined in `callbacks.labelColor`).
+                    boxHeight: parseInt(getCssVar("--font-size-regular")) || undefined,
+                    boxPadding: parseInt(getCssVar("--spacing-tiny")) || undefined,
+                    boxWidth: parseInt(getCssVar("--font-size-regular")) || undefined,
                     callbacks: {
                         title: props.tooltipTitle
                             ? (tooltipItems: TooltipItem<"bar">[]) => {
@@ -724,10 +753,32 @@
 
                         labelColor: (context): TooltipLabelStyle => {
                             return {
-                                borderColor: getColorWithOpacity(Array.isArray(context.dataset.borderColor) ? context.dataset.borderColor[0] : context.dataset.borderColor, 1) as Color,
-                                backgroundColor: getColorWithOpacity(Array.isArray(context.dataset.borderColor) ? context.dataset.borderColor[0] : context.dataset.borderColor, 1) as Color
+                                backgroundColor:
+                                    (Array.isArray(context.dataset.borderColor)
+                                        ? context.dataset.borderColor[context.dataIndex]
+                                        : context.dataset.borderColor) as Color,
+                                borderColor: "transparent",
+                                borderWidth: 0
                             };
                         }
+                    },
+
+                    cornerRadius: parseInt(getCssVar("--rounded-small")) || undefined,
+
+                    // Remove the little white box around the tooltip boxes.
+                    multiKeyBackground: "transparent",
+
+                    // Remove colored box preceding the value.
+                    //displayColors: false,
+
+                    padding: parseInt(getCssVar("--spacing-xsmall")) || undefined,
+
+                    titleColor: getCssVar("--color-interface-stronger"),
+
+                    titleFont: {
+                        family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                        size: parseInt(getCssVar("--font-size-small")) || undefined,
+                        weight: getCssVar("--font-weight-semibold")
                     }
                 }
             },
@@ -747,27 +798,21 @@
                     stacked: props.stack,
 
                     ticks: {
-                        autoSkip: true,
-                        autoSkipPadding: 10,
+                        // Only auto-skip ticks if we are not showing all ticks.
+                        autoSkip: !props.categoryShowAllTicks,
+                        autoSkipPadding: !props.categoryShowAllTicks ? 10 : undefined,
+
                         color: getCssVar("--color-interface-strong"),
+
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                             size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
                             weight: getCssVar("--font-weight-regular")
                         },
-                        maxRotation: 45,
-                        maxTicksLimit: clamp(props.categoryMaxTickCount, 0)
-                    },
 
-                    title: {
-                        color: getCssVar("--color-interface-strong"),
-                        display: !!props.categoryLabel,
-                        font: {
-                            family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
-                            size: parseInt(getCssVar("--font-size-small")) || undefined,
-                            weight: getCssVar("--font-weight-semibold")
-                        },
-                        text: props.categoryLabel ?? undefined
+                        // Limit the maximum label rotation to 45 degrees when not showing all ticks (showing all ticks may require more rotation).
+                        maxRotation: !props.categoryShowAllTicks ? 45 : undefined,
+                        maxTicksLimit: internalCategoryMaxTickCount.value
                     },
 
                     time: internalLabelDateFormat.value
@@ -782,6 +827,20 @@
                             }
                         }
                         : undefined,
+
+                    title: {
+                        color: getCssVar("--color-interface-strong"),
+                        display: !!props.categoryLabel,
+
+                        font: {
+                            family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                            size: parseInt(getCssVar("--font-size-small")) || undefined,
+                            weight: getCssVar("--font-weight-semibold")
+                        },
+
+                        text: props.categoryLabel ?? undefined
+                    },
+
                     type: internalLabelDateFormat.value ? "timeseries" : "category"
                 },
 
@@ -796,8 +855,8 @@
                     grace: internalGrace.value,
 
                     grid: {
-                        display: props.valueHideGridLines !== true,
                         color: getCssVar("--color-interface-soft"),
+                        display: props.valueHideGridLines !== true
                     },
 
                     // Both x and y should be stacked.
@@ -831,22 +890,26 @@
                             : undefined,
                         color: getCssVar("--color-interface-strong"),
                         count: internalValueTickCount.value,
+
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                             size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
                             weight: getCssVar("--font-weight-regular")
                         },
+
                         maxTicksLimit: clamp(props.valueMaxTickCount, 0)
                     },
 
                     title: {
                         color: getCssVar("--color-interface-strong"),
                         display: !!props.valueLabel,
+
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                             size: parseInt(getCssVar("--font-size-small")) || undefined,
                             weight: getCssVar("--font-weight-semibold")
                         },
+
                         text: props.valueLabel ?? undefined
                     },
                 }

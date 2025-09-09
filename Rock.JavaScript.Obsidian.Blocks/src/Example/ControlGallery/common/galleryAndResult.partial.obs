@@ -85,6 +85,7 @@
     transition: transform 0.65s ease-in-out;
     transform: rotateY(0deg);
     backface-visibility: hidden;
+    padding: var(--spacing-tiny);
 }
 
 .galleryContent-usage {

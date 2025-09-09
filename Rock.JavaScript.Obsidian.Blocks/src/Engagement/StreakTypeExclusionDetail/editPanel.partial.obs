@@ -2,7 +2,7 @@
 <template>
     <fieldset>
         <div class="row">
-            <div class="col-sm-4 col-md-2">
+            <div class="col-md-3">
                 <LocationItemPicker label="Location"
                                     v-model="location"
                                     :multiple="false" />

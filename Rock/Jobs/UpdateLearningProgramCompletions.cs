@@ -34,7 +34,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Job that updates Learning Program Completion Data.
     /// </summary>
-    [DisplayName( "Update Program Completions" )]
+    [DisplayName( "Update Learning Program Completions" )]
     [Description( "Job that updates Learning Program Completion Data." )]
 
     [IntegerField(
@@ -45,7 +45,7 @@ namespace Rock.Jobs
         DefaultIntegerValue = 60 * 3,
         Order = 1 )]
 
-    public class UpdateProgramCompletions : RockJob
+    public class UpdateLearningProgramCompletions : RockJob
     {
         /// <summary>
         /// Keys to use for Attributes
@@ -71,7 +71,7 @@ namespace Rock.Jobs
             {
                 using ( var individualRockContext = CreateRockContext() )
                 {
-                    AddOrUpdateProgramCompletion( activeParticipantAndProgram, state, individualRockContext );
+                    AddOrUpdateLearningProgramCompletion( activeParticipantAndProgram, state, individualRockContext );
                 }
             }
 
@@ -147,7 +147,7 @@ namespace Rock.Jobs
         /// <param name="participantAndProgram">The participant and program to be processed.</param>
         /// <param name="state">The job state object.</param>
         /// <param name="rockContext">The context to use when accessing the database.</param>
-        private static void AddOrUpdateProgramCompletion( ParticipantAndProgram participantAndProgram, JobState state, RockContext rockContext )
+        private static void AddOrUpdateLearningProgramCompletion( ParticipantAndProgram participantAndProgram, JobState state, RockContext rockContext )
         {
             var programCompletionService = new LearningProgramCompletionService( rockContext );
 

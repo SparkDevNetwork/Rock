@@ -1,12 +1,13 @@
 <template>
     <GalleryAndResult :value="{ series: series, labels: labels }" hasMultipleValues :importCode="importCode" :exampleCode="exampleCode">
 
-        <div style="height: 300px;">
+        <div style="height: 300px">
             <BarChart :labels="labels"
                       :series="series"
                       :barLabels="barLabels"
                       :categoryLabel="categoryLabel"
                       :categoryMaxTickCount="categoryMaxTickCount"
+                      :categoryShowAllTicks="categoryShowAllTicks"
                       :categoryShowGridLines="categoryShowGridLines"
                       :hideLegend="isLegendHidden"
                       :horizontal="isHorizontal"
@@ -132,6 +133,10 @@
                             <NumberBox v-model="categoryMaxTickCount"
                                        label="Max Tick Count" />
 
+                            <Switch :modelValue="categoryShowAllTicks ?? false"
+                                    label="Show All Ticks"
+                                    @update:modelValue="categoryShowAllTicks = $event" />
+
                             <Switch :modelValue="categoryShowGridLines ?? false"
                                     label="Show Grid Lines"
                                     @update:modelValue="categoryShowGridLines = $event" />
@@ -145,10 +150,6 @@
                                      label="Label"
                                      @update:modelValue="valueLabel = $event" />
 
-                            <Switch :modelValue="valueHideGridLines ?? false"
-                                    label="Hide Grid Lines"
-                                    @update:modelValue="valueHideGridLines = $event" />
-
                             <NumberBox v-model="valueTickCount"
                                        label="Tick Count" />
 
@@ -160,6 +161,10 @@
 
                             <NumberBox v-model="valueSuggestedMax"
                                        label="Suggested Max" />
+
+                            <Switch :modelValue="valueHideGridLines ?? false"
+                                    label="Hide Grid Lines"
+                                    @update:modelValue="valueHideGridLines = $event" />
                         </div>
                     </ContentStack>
                 </ContentSection>
@@ -246,6 +251,7 @@
     const categoryShowGridLines = ref<boolean | undefined>();
     const valueHideGridLines = ref<boolean | undefined>();
     const categoryMaxTickCount = ref<number | undefined>();
+    const categoryShowAllTicks = ref<boolean | undefined>();
     const valueMaxTickCount = ref<number | undefined>();
     const isUnfilled = ref<boolean | undefined>();
     const isOverlapped = ref<boolean | undefined>();
@@ -283,6 +289,9 @@
         }
         if (!isNullish(categoryMaxTickCount.value)) {
             barChartProps.push(`:categoryMaxTickCount="${categoryMaxTickCount.value}"`);
+        }
+        if (!isNullish(categoryShowAllTicks.value)) {
+            barChartProps.push(`:categoryShowAllTicks="${categoryShowAllTicks.value}"`);
         }
         if (!isNullish(categoryShowGridLines.value)) {
             barChartProps.push(`categoryShowGridLines="${categoryShowGridLines.value}"`);

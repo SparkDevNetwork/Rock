@@ -502,7 +502,6 @@ function() {
             var selectionConfig = SelectionConfig.Parse( selection );
             var comparisonType = selectionConfig.ComparisonValue.ConvertToEnumOrNull<ComparisonType>();
             var rockContext = ( RockContext ) serviceInstance.Context;
-            rockContext.Database.Log = s => Debug.WriteLine( s );
 
             IQueryable<Rock.Model.Interaction> interactionQry;
 
@@ -520,12 +519,12 @@ function() {
                 var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( selectionConfig.DelimitedDateRangeValues );
                 if ( dateRange.Start.HasValue )
                 {
-                    interactionQry = interactionQry.Where( n => n.CreatedDateTime >= dateRange.Start.Value );
+                    interactionQry = interactionQry.Where( n => n.InteractionDateTime >= dateRange.Start.Value );
                 }
 
                 if ( dateRange.End.HasValue )
                 {
-                    interactionQry = interactionQry.Where( n => n.CreatedDateTime <= dateRange.End.Value );
+                    interactionQry = interactionQry.Where( n => n.InteractionDateTime <= dateRange.End.Value );
                 }
             }
 

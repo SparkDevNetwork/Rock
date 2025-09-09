@@ -1596,7 +1596,7 @@ namespace Rock.Blocks.Engagement
                     .Queryable()
                     .Where( s => s.StepTypeId == stepType.Id && s.StepStatusId == currentStatusId );
 
-                RockContext.BulkUpdate( stepsQuery, s => new Step { StepStatusId = newStatusId } );
+                RockContext.BulkUpdate( stepsQuery, s => new Step { StepStatusId = newStatusId, StepProgramCompletionId = null } );
             }
 
             stepType.StepProgramId = targetStepProgram.Id;

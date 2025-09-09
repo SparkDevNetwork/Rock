@@ -109,87 +109,7 @@ namespace Rock.Jobs
         /// <param name="jobState">The job state object</param>
         private static void CleanupStepProgramCompletions( int programId, RockContext rockContext, JobState jobState )
         {
-            RemoveInvalidCompletions( rockContext, jobState, programId );
-
             AddMissingCompletions( rockContext, jobState, programId );
-        }
-
-        /// <summary>
-        /// Removes any invalid Step Program Completions and updates any Steps that were affected.
-        /// </summary>
-        /// <param name="rockContext">The context to use when accessing the database.</param>
-        /// <param name="jobState">The job state object</param>
-        /// <param name="programId">The Step Program Id we are checking.</param>
-        private static void RemoveInvalidCompletions( RockContext rockContext, JobState jobState, int programId )
-        {
-            var removeInvalidCompletionsQuery = $@"
-DECLARE @StepsUpdated INT = 0;
-DECLARE @CompletionsRemoved INT = 0;
-
-CREATE TABLE #InvalidCompletions (Id INT);
-
-INSERT INTO #InvalidCompletions (Id)
-SELECT c.Id
-FROM StepProgramCompletion c
-WHERE c.StepProgramId = {programId}
-  AND (
-      -- Case 1: Missing a required active step type in this program
-      EXISTS (
-          SELECT 1
-          FROM StepType st
-          WHERE st.StepProgramId = {programId}
-            AND st.IsActive = 1
-            AND NOT EXISTS (
-                SELECT 1
-                FROM Step s
-                INNER JOIN StepStatus ss ON s.StepStatusId = ss.Id AND ss.IsCompleteStatus = 1
-                WHERE s.PersonAliasId = c.PersonAliasId
-                  AND s.StepTypeId = st.Id
-            )
-      )
-      OR
-      -- Case 2: Has a step completion tied to a different program
-      EXISTS (
-          SELECT 1
-          FROM Step s
-          INNER JOIN StepType st ON s.StepTypeId = st.Id
-          WHERE s.StepProgramCompletionId = c.Id
-            AND st.StepProgramId <> c.StepProgramId
-      )
-  );
-
--- Step 1: Null out StepProgramCompletionId for affected steps
-UPDATE [s]
-SET [s].[StepProgramCompletionId] = NULL
-FROM [Step] AS [s]
-INNER JOIN #InvalidCompletions ic ON [s].[StepProgramCompletionId] = ic.Id;
-
-SET @StepsUpdated = @@ROWCOUNT;
-
--- Step 2: Delete all orphaned completions (nothing points to them anymore)
-DELETE c
-FROM StepProgramCompletion c
-WHERE c.StepProgramId = {programId}
-  AND NOT EXISTS (
-      SELECT 1
-      FROM Step s
-      WHERE s.StepProgramCompletionId = c.Id
-  );
-
-SET @CompletionsRemoved = @@ROWCOUNT;
-
-DROP TABLE #InvalidCompletions;
-
-SELECT @StepsUpdated AS StepsUpdated, @CompletionsRemoved AS CompletionsRemoved;
-";
-
-            var result = rockContext.Database.SqlQuery<CleanupResult>( removeInvalidCompletionsQuery ).FirstOrDefault();
-
-            if ( result != null )
-            {
-                jobState.StepsUpdated += result.StepsUpdated;
-                jobState.CompletionsRemoved += result.CompletionsRemoved;
-            }
         }
 
         /// <summary>
@@ -271,6 +191,22 @@ SET @StepsUpdated = @@ROWCOUNT;
 
 DROP TABLE #NewCompletions;
 
+;WITH [OrphanedCompletions] AS (
+    SELECT c.Id, c.PersonAliasId
+    FROM [StepProgramCompletion] c
+    WHERE c.[StepProgramId] = {programId}
+)
+UPDATE s
+SET s.[StepProgramCompletionId] = oc.[Id]
+FROM [Step] s
+INNER JOIN [StepType] st ON s.[StepTypeId] = st.[Id]
+INNER JOIN [OrphanedCompletions] oc 
+    ON s.[PersonAliasId] = oc.[PersonAliasId]
+WHERE st.[StepProgramId] = {programId}
+  AND s.[StepProgramCompletionId] IS NULL;
+
+SET @StepsUpdated = @StepsUpdated + @@ROWCOUNT;
+
 SELECT @CompletionsAdded AS CompletionsAdded, @StepsUpdated AS StepsUpdated;
 ";
 
@@ -290,12 +226,10 @@ SELECT @CompletionsAdded AS CompletionsAdded, @StepsUpdated AS StepsUpdated;
         /// <returns>The status message string</returns>
         private static string GetJobResultText( JobState jobState )
         {
-            var completionRemovedText = "completion".PluralizeIf( jobState.CompletionsRemoved != 1 );
             var completionsAddedText = "completion".PluralizeIf( jobState.CompletionsAdded != 1 );
             var stepsUpdatedText = "step".PluralizeIf( jobState.StepsUpdated != 1 );
             var results = new StringBuilder();
 
-            results.AppendLine( $"{jobState.CompletionsRemoved} invalid {completionRemovedText} removed." );
             results.AppendLine( $"{jobState.CompletionsAdded} {completionsAddedText} added." );
             results.AppendLine( $"{jobState.StepsUpdated} {stepsUpdatedText} updated." );
 
@@ -307,8 +241,6 @@ SELECT @CompletionsAdded AS CompletionsAdded, @StepsUpdated AS StepsUpdated;
         private class JobState
         {
             public List<int> ProgramIds { get; set; }
-
-            public int CompletionsRemoved { get; set; }
 
             public int CompletionsAdded { get; set; }
 
@@ -322,7 +254,6 @@ SELECT @CompletionsAdded AS CompletionsAdded, @StepsUpdated AS StepsUpdated;
 
         private class CleanupResult
         {
-            public int CompletionsRemoved { get; set; }
             public int CompletionsAdded { get; set; }
             public int StepsUpdated { get; set; }
         }

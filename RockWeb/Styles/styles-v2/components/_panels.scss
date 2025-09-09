@@ -127,6 +127,12 @@
       border-top-right-radius: 0;
     }
   }
+  &.panel-note:not(:has(.note-new)) {
+    .panel-heading {
+      border-bottom: none;
+      border-radius: var(--rounded-medium);
+    }
+  }
 
   // If a panel is collapsed and has a tabbed bar, drawer, or sub-header, the border should stay.
   &.panel-collapsed:has(.tabbed-bar) .panel-heading,
@@ -262,11 +268,11 @@ ul.activeusers {
 
         td:first-child,
         th:first-child {
-          border-bottom-left-radius:  3px;
+          border-bottom-left-radius:  var(--rounded-medium);
         }
         td:last-child,
         th:last-child {
-          border-bottom-right-radius: 3px;
+          border-bottom-right-radius: var(--rounded-medium);
         }
       }
     }
@@ -407,15 +413,15 @@ ul.activeusers {
 }
 
 .panel-success {          // TODO Color is hard coded needs to change
-  border-color:         #cce0c1;
+  border-color:         var(--color-success-strong);
 
   & > .panel-heading {
     color:              var(--color-success-strong);
     background-color:   var(--color-success-soft);
-    border-color:       #cce0c1;
+    border-color:       var(--color-success-strong);
 
     + .panel-collapse > .panel-body {
-      border-top-color: #cce0c1;
+      border-top-color: var(--color-success-strong);
     }
     .badge {
       color:            var(--color-success-soft);
@@ -424,21 +430,21 @@ ul.activeusers {
   }
   & > .panel-footer {
     + .panel-collapse > .panel-body {
-      border-bottom-color: #cce0c1;
+      border-bottom-color: var(--color-success-strong);
     }
   }
 }
 
 .panel-info {             // TODO Color is hard coded needs to change
-  border-color:         #c2e0ec;
+  border-color:         var(--color-info-strong);
 
   & > .panel-heading {
     color:                var(--color-info-strong);
     background-color:     var(--color-info-soft);
-    border-color:       #c2e0ec;
+    border-color:       var(--color-info-strong);
 
     + .panel-collapse > .panel-body {
-      border-top-color: #c2e0ec;
+      border-top-color: var(--color-info-strong);
     }
     .badge {
       color:                var(--color-info-soft);
@@ -447,45 +453,45 @@ ul.activeusers {
   }
   & > .panel-footer {
     + .panel-collapse > .panel-body {
-      border-bottom-color:#c2e0ec;
+      border-bottom-color: var(--color-info-strong);
     }
   }
 }
 
 .panel-warning {          // TODO Color is hard coded needs to change
-  border-color: #f6eec2;
+  border-color: var(--color-warning-strong);
 
 & > .panel-heading {
-  color: var(--color-warning-storng);
+  color: var(--color-warning-strong);
   background-color: var(--color-warning-soft);
-  border-color: #f6eec2;
+  border-color: var(--color-warning-strong);
 
   + .panel-collapse > .panel-body {
-    border-top-color: #f6eec2;
+    border-top-color: var(--color-warning-strong);
   }
   .badge {
     color: var(--color-warning-soft);
-    background-color: var(--color-warning-storng);
+    background-color: var(--color-warning-strong);
   }
 }
 & > .panel-footer {
   + .panel-collapse > .panel-body {
-    border-bottom-color: #f6eec2;
+    border-bottom-color: var(--color-warning-strong);
   }
 }
 }
 
 .panel-danger {           // TODO Color is hard coded needs to change
   // .panel-variant(@panel-danger-border; @panel-danger-text; @panel-danger-heading-bg; @panel-danger-border);
-  border-color:       #e9c9c8;
+  border-color:       var(--color-danger-strong);
 
 & > .panel-heading {
   color:                var(--color-danger-strong);
   background-color:     var(--color-danger-soft);
-  border-color:       #e9c9c8;
+  border-color:       var(--color-danger-strong);
 
   + .panel-collapse > .panel-body {
-    border-top-color: #e9c9c8;
+    border-top-color: var(--color-danger-strong);
   }
   .badge {
     color: var(--color-danger-soft);
@@ -494,7 +500,7 @@ ul.activeusers {
 }
 & > .panel-footer {
   + .panel-collapse > .panel-body {
-    border-bottom-color: #e9c9c8;
+    border-bottom-color: var(--color-danger-strong);
   }
 }
 }

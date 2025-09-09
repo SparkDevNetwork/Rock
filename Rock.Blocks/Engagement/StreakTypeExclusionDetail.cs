@@ -18,6 +18,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -26,6 +27,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.StreakTypeExclusionDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Engagement
@@ -46,7 +48,7 @@ namespace Rock.Blocks.Engagement
 
     [Rock.SystemGuid.EntityTypeGuid( "0667f91d-e7fc-44e6-a969-eebbf99802b2" )]
     [Rock.SystemGuid.BlockTypeGuid( "d8b2132d-8725-47ff-84cd-c86c163abe4d" )]
-    public class StreakTypeExclusionDetail : RockEntityDetailBlockType<StreakTypeExclusion, StreakTypeExclusionBag>
+    public class StreakTypeExclusionDetail : RockEntityDetailBlockType<StreakTypeExclusion, StreakTypeExclusionBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -339,6 +341,24 @@ namespace Rock.Blocks.Engagement
             }
 
             return streakType;
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var exclusionId = pageReference.GetPageParameter( PageParameterKey.StreakTypeExclusionId );
+            var exclusionLocationName = new StreakTypeExclusionService( RockContext )
+                .GetSelect( exclusionId, exclusion => exclusion.Location.Name );
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
+            var breadCrumb = new BreadCrumbLink( exclusionLocationName ?? "New Exclusion", breadCrumbPageRef );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb>
+                {
+                    breadCrumb
+                }
+            };
         }
 
         #endregion

@@ -2,29 +2,15 @@
     <GalleryAndResult :value="{ series: series, labels: labels }" hasMultipleValues :importCode="importCode" :exampleCode="exampleCode">
 
         <div style="height: 300px;">
-            <LineChart :labels="labels"
-                       :series="series"
-                       :categoryLabel="categoryLabel"
-                       :categoryMaxTickCount="categoryMaxTickCount"
-                       :categoryShowGridLines="categoryShowGridLines"
-                       :hideLegend="isLegendHidden"
-                       :labelDateFormat="labelDateFormat"
-                       :legendAlign="legendAlign"
-                       :legendPosition="legendPosition"
-                       :linear="isLinear"
-                       :lineStyle="lineStyle"
-                       :stack="isStacked"
-                       :title="title"
-                       :tooltip="tooltip"
-                       :tooltipTitle="tooltipTitle"
-                       :type="isPercent ? 'percent' : isPercent === false ? 'number' : undefined"
-                       :unfilled="isUnfilled"
-                       :valueHideGridLines="valueHideGridLines"
-                       :valueLabel="valueLabel"
-                       :valueMaxTickCount="valueMaxTickCount"
-                       :valueSuggestedMax="valueSuggestedMax"
-                       :valueSuggestedMin="valueSuggestedMin"
-                       :valueTickCount="valueTickCount" />
+            <PieChart :labels="labels"
+                      :series="series"
+                      :hideLegend="isLegendHidden"
+                      :legendAlign="legendAlign"
+                      :legendPosition="legendPosition"
+                      :title="title"
+                      :tooltip="tooltip"
+                      :tooltipTitle="tooltipTitle"
+                      :type="isPercent ? 'percent' : isPercent === false ? 'number' : undefined" />
         </div>
 
         <template #settings>
@@ -49,30 +35,6 @@
                                 <RockButton btnType="primary"
                                             @click="onRandomizeDataClicked">Randomize Data</RockButton>
                             </div>
-
-                            <DropDownList :modelValue="labelDateFormat ?? ''"
-                                          help="If specified, then the labels array must have ISO 8601-formatted dates. If not specified, the labels will be treated as simple strings."
-                                          :items="labelDateFormatItems"
-                                          label="Label Date Format"
-                                          @update:modelValue="labelDateFormat = <LabelDateFormat>$event" />
-
-                            <DropDownList :modelValue="lineStyle ?? ''"
-                                          :items="lineStyleItems"
-                                          label="Line Style"
-                                          @update:modelValue="lineStyle = <LineStyle>$event" />
-
-                            <Switch :modelValue="isStacked ?? false"
-                                    label="Stacked"
-                                    @update:modelValue="isStacked = $event" />
-
-                            <Switch :modelValue="isUnfilled ?? false"
-                                    label="Unfilled"
-                                    @update:modelValue="isUnfilled = $event" />
-
-                            <Switch :modelValue="isLinear ?? false"
-                                    help="Connects data points with straight line segments instead of curves."
-                                    label="Linear"
-                                    @update:modelValue="isLinear = $event" />
 
                             <Switch :modelValue="isPercent ?? false"
                                     help="For 'percent', the data must be in decimal form (e.g., 0.1 for 10%)."
@@ -100,47 +62,6 @@
                             <Switch :modelValue="isLegendHidden ?? false"
                                     label="Hide"
                                     @update:modelValue="isLegendHidden = $event" />
-                        </div>
-                    </ContentStack>
-
-                    <ContentStack title="Category Axis"
-                                  description="(x-axis)">
-                        <div class="autolayout">
-                            <TextBox :modelValue="categoryLabel ?? ''"
-                                     label="Label"
-                                     @update:modelValue="categoryLabel = $event" />
-
-                            <NumberBox v-model="categoryMaxTickCount"
-                                       label="Max Tick Count" />
-
-                            <Switch :modelValue="categoryShowGridLines ?? false"
-                                    label="Show Grid Lines"
-                                    @update:modelValue="categoryShowGridLines = $event" />
-                        </div>
-                    </ContentStack>
-
-                    <ContentStack title="Value Axis"
-                                  description="(y-axis)">
-                        <div class="autolayout">
-                            <TextBox :modelValue="valueLabel ?? ''"
-                                     label="Label"
-                                     @update:modelValue="valueLabel = $event" />
-
-                            <Switch :modelValue="valueHideGridLines ?? false"
-                                    label="Hide Grid Lines"
-                                    @update:modelValue="valueHideGridLines = $event" />
-
-                            <NumberBox v-model="valueTickCount"
-                                       label="Tick Count" />
-
-                            <NumberBox v-model="valueMaxTickCount"
-                                       label="Max Tick Count" />
-
-                            <NumberBox v-model="valueSuggestedMin"
-                                       label="Suggested Min" />
-
-                            <NumberBox v-model="valueSuggestedMax"
-                                       label="Suggested Max" />
                         </div>
                     </ContentStack>
                 </ContentSection>
@@ -174,35 +95,22 @@
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import LineChart from "@Obsidian/Controls/lineChart.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import PieChart from "@Obsidian/Controls/pieChart.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { LabelDateFormat, LegendAlign, LegendPosition, LineStyle, LineSeries, LineStyleDescription, LabelDateFormatDescription, LegendAlignDescription, LegendPositionDescription, TooltipCallback } from "@Obsidian/Core/Controls/chart";
+    import { LegendAlign, LegendPosition, LegendAlignDescription, LegendPositionDescription, PieSeries, TooltipCallback } from "@Obsidian/Core/Controls/chart";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { isNullish } from "@Obsidian/Utility/util";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const importCode = getSfcControlImportPath("chart");
     const labels = [
-        "2024-01-01T00:00:00",
-        "2024-02-01T00:00:00",
-        "2024-03-01T00:00:00",
-        "2024-04-01T00:00:00",
-        "2024-05-01T00:00:00",
-        "2024-06-01T00:00:00",
-        "2024-07-01T00:00:00",
-        "2024-08-01T00:00:00",
-        "2024-09-01T00:00:00",
-        "2024-10-01T00:00:00",
-        "2024-11-01T00:00:00",
-        "2024-12-01T00:00:00",
-        "2025-01-01T00:00:00",
-        "2025-02-01T00:00:00",
-        "2025-03-01T00:00:00",
-        "2025-04-01T00:00:00"
+        "Slice 1",
+        "Slice 2",
+        "Slice 3",
+        "Slice 4"
     ];
     const legendPositionItems = [
         { text: LegendPositionDescription[LegendPosition.Top], value: LegendPosition.Top },
@@ -215,138 +123,57 @@
         { text: LegendAlignDescription[LegendAlign.Center], value: LegendAlign.Center },
         { text: LegendAlignDescription[LegendAlign.End], value: LegendAlign.End }
     ];
-    const labelDateFormatItems = [
-        { text: LabelDateFormatDescription[LabelDateFormat.Auto], value: LabelDateFormat.Auto },
-        { text: LabelDateFormatDescription[LabelDateFormat.Day], value: LabelDateFormat.Day },
-        { text: LabelDateFormatDescription[LabelDateFormat.Week], value: LabelDateFormat.Week },
-        { text: LabelDateFormatDescription[LabelDateFormat.Month], value: LabelDateFormat.Month },
-        { text: LabelDateFormatDescription[LabelDateFormat.Year], value: LabelDateFormat.Year }
-    ];
-    const lineStyleItems = [
-        { text: LineStyleDescription[LineStyle.Solid], value: LineStyle.Solid },
-        { text: LineStyleDescription[LineStyle.Dashed], value: LineStyle.Dashed },
-        { text: LineStyleDescription[LineStyle.Dotted], value: LineStyle.Dotted }
-    ];
 
     // #region Values
 
-    const minValue = ref<number>(0);
-    const maxValue = ref<number>(100);
+    const series = ref<PieSeries[]>([
+        {
+            label: "Series 1",
+            data: generateRandomData(4, 10, 40, false)
+        }
+    ]);
     const hasCustomTooltip = ref<boolean | undefined>();
-    const categoryShowGridLines = ref<boolean | undefined>();
-    const valueHideGridLines = ref<boolean | undefined>();
-    const categoryMaxTickCount = ref<number | undefined>();
-    const valueMaxTickCount = ref<number | undefined>();
-    const isUnfilled = ref<boolean | undefined>();
-    const isLinear = ref<boolean | undefined>();
-    const isStacked = ref<boolean | undefined>();
-    const seriesCount = ref<number>(4);
+    const seriesCount = ref<number>(series.value.length);
     const legendPosition = ref<LegendPosition | undefined>();
     const legendAlign = ref<LegendAlign | undefined>();
     const isLegendHidden = ref<boolean | undefined>();
-    const labelDateFormat = ref<LabelDateFormat | undefined>(LabelDateFormat.Auto);
-    const lineStyle = ref<LineStyle | undefined>();
     const isPercent = ref<boolean | undefined>();
-    const valueTickCount = ref<number | undefined>();
-    const categoryLabel = ref<string | undefined>("Category Label");
-    const valueLabel = ref<string | undefined>("Value Label");
     const title = ref<string | undefined>("Chart Title");
-    const valueSuggestedMin = ref<number | undefined>();
-    const valueSuggestedMax = ref<number | undefined>();
-    const series = ref<LineSeries[]>([
-        {
-            label: "Small Group",
-            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        },
-        {
-            label: "Baptism",
-            data: [0, 5, 7, 11, 13, 15, 16, 18, 19, 20, 20, 20, 22, 24, 27, 30],
-        },
-        {
-            label: "Starting Point Class",
-            data: [0, 2, 3, 4, 5, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10],
-        },
-        {
-            label: "Serve",
-            data: [0, 1, 1, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 6],
-        }]);
 
     // #endregion Values
 
     // #region Computed Values
 
     const exampleCode = computed<string>(() => {
-        let lineChartProps: string[] = [
+        let pieChartProps: string[] = [
             `:labels="labels"`,
             `:series="series"`
         ];
 
-        if (categoryLabel.value) {
-            lineChartProps.push(`categoryLabel="${categoryLabel.value}"`);
-        }
-        if (!isNullish(categoryMaxTickCount.value)) {
-            lineChartProps.push(`:categoryMaxTickCount="${categoryMaxTickCount.value}"`);
-        }
-        if (!isNullish(categoryShowGridLines.value)) {
-            lineChartProps.push(`categoryShowGridLines="${categoryShowGridLines.value}"`);
-        }
         if (!isNullish(isLegendHidden.value)) {
-            lineChartProps.push(`hideLegend="${isLegendHidden.value}"`);
-        }
-        if (!isNullish(labelDateFormat.value)) {
-            lineChartProps.push(`labelDateFormat="${labelDateFormat.value}"`);
+            pieChartProps.push(`hideLegend="${isLegendHidden.value}"`);
         }
         if (!isNullish(legendAlign.value)) {
-            lineChartProps.push(`legendAlign="${legendAlign.value}"`);
+            pieChartProps.push(`legendAlign="${legendAlign.value}"`);
         }
         if (!isNullish(legendPosition.value)) {
-            lineChartProps.push(`legendPosition="${legendPosition.value}"`);
-        }
-        if (!isNullish(isLinear.value)) {
-            lineChartProps.push(`linear="${isLinear.value}"`);
-        }
-        if (!isNullish(lineStyle.value)) {
-            lineChartProps.push(`lineStyle="${lineStyle.value}"`);
-        }
-        if (!isNullish(isStacked.value)) {
-            lineChartProps.push(`stack="${isStacked.value}"`);
+            pieChartProps.push(`legendPosition="${legendPosition.value}"`);
         }
         if (title.value) {
-            lineChartProps.push(`title="${title.value}"`);
+            pieChartProps.push(`title="${title.value}"`);
         }
         if (!isNullish(isPercent.value)) {
             if (isPercent.value) {
-                lineChartProps.push(`type="percent"`);
+                pieChartProps.push(`type="percent"`);
             }
             else {
-                lineChartProps.push(`type="number"`);
+                pieChartProps.push(`type="number"`);
             }
         }
-        if (!isNullish(isUnfilled.value)) {
-            lineChartProps.push(`unfilled="${isUnfilled.value}"`);
-        }
-        if (!isNullish(valueHideGridLines.value)) {
-            lineChartProps.push(`valueHideGridLines="${valueHideGridLines.value}"`);
-        }
-        if (valueLabel.value) {
-            lineChartProps.push(`valueLabel="${valueLabel.value}"`);
-        }
-        if (!isNullish(valueMaxTickCount.value)) {
-            lineChartProps.push(`:valueMaxTickCount="${valueMaxTickCount.value}"`);
-        }
-        if (!isNullish(valueSuggestedMin.value)) {
-            lineChartProps.push(`:valueSuggestedMin="${valueSuggestedMin.value}"`);
-        }
-        if (!isNullish(valueSuggestedMax.value)) {
-            lineChartProps.push(`:valueSuggestedMax="${valueSuggestedMax.value}"`);
-        }
-        if (!isNullish(valueTickCount.value)) {
-            lineChartProps.push(`:valueTickCount="${valueTickCount.value}"`);
-        }
 
-        const prefix = "<LineChart ";
+        const prefix = "<PieChart ";
         const spaces = " ".repeat(prefix.length);
-        return `${prefix}${lineChartProps.join(`\n${spaces}`)} />`;
+        return `${prefix}${pieChartProps.join(`\n${spaces}`)} />`;
     });
 
     const tooltip = computed<TooltipCallback | undefined>(() => {
@@ -374,31 +201,28 @@
 
     // #region Functions
 
-    function generateSeries(): LineSeries[] {
+    function generateSeries(): PieSeries[] {
         return Enumerable
             .from(Array(seriesCount.value).keys())
             .select(i => generateOneSeries(i))
             .toArray();
     }
 
-    function generateOneSeries(i: number): LineSeries {
-        const min = Math.min(minValue.value, maxValue.value);
-        const max = Math.max(minValue.value, maxValue.value);
-        let data = generateTrendingRandomData(labels.length, min, max, true);
+    function generateOneSeries(i: number): PieSeries {
+        const min = 10;
+        const max = 40;
+        let data = generateRandomData(labels.length, min, max, false);
         if (isPercent.value) {
             data = Enumerable.from(data).select(n => typeof n === "number" ? n / 100 : n).toArray();
         }
-        const s: LineSeries = {
+        const s: PieSeries = {
             label: `Series ${i + 1}`,
-            data: data,
-            // isUnfilled: isUnfilled.value,
-            // isLinear: isLinear.value,
-            // lineStyle: lineStyle.value
+            data: data
         };
         return s;
     }
 
-    function generateTrendingRandomData(
+    function generateRandomData(
         count: number,
         min: number,
         max: number,
@@ -535,32 +359,6 @@
             }
         }
     });
-
-    watch([minValue, maxValue], () => {
-        const min = Math.min(minValue.value, maxValue.value);
-        const max = Math.max(minValue.value, maxValue.value);
-        series.value = Enumerable
-            .from(series.value)
-            .select(s => {
-                return {
-                    ...s,
-                    data: generateTrendingRandomData(labels.length, min, max, true)
-                };
-            })
-            .toArray();
-    });
-
-    // watch(lineStyle, (newValue) => {
-    //     series.value = Enumerable
-    //         .from(series.value)
-    //         .select<LineSeries>(s => {
-    //             return {
-    //                 ...s,
-    //                 lineStyle: newValue
-    //             };
-    //         })
-    //         .toArray();
-    // });
 
     watch(isPercent, (newValue) => {
         if (newValue) {

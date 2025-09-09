@@ -171,6 +171,12 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <inheritdoc/>
+        protected override IQueryable<StepProgram> GetOrderedListQueryable( IQueryable<StepProgram> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( sp => sp.Order ).ThenBy( sp => sp.Id );
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<StepProgram> GetGridBuilder()
         {
             var completedStepsQry = new StepService(  RockContext ).Queryable().Where( x => x.StepStatus != null && x.StepStatus.IsCompleteStatus && x.StepType.IsActive );
@@ -197,32 +203,29 @@ namespace Rock.Blocks.Engagement
         /// <summary>
         /// Changes the ordered position of a single item.
         /// </summary>
-        /// <param name="idKey">The identifier of the item that will be moved.</param>
-        /// <param name="beforeIdKey">The identifier of the item it will be placed before.</param>
+        /// <param name="key">The identifier of the item that will be moved.</param>
+        /// <param name="beforeKey">The identifier of the item it will be placed before.</param>
         /// <returns>An empty result that indicates if the operation succeeded.</returns>
         [BlockAction]
-        public BlockActionResult ReorderItem( int idKey, int? beforeIdKey )
+        public BlockActionResult ReorderItem( string key, string beforeKey )
         {
-            using ( var rockContext = new RockContext() )
+            var stepProgramService = new StepProgramService( RockContext );
+
+            // Get the queryable and make sure it is ordered correctly.
+            var qry = GetListQueryable( RockContext );
+            qry = GetOrderedListQueryable( qry, RockContext );
+
+            // Get the entities from the database.
+            var items = GetListItems( qry, RockContext );
+
+            if ( !items.ReorderEntity( key, beforeKey ) )
             {
-                var stepProgramService = new StepProgramService( rockContext );
-
-                // Get all step programs
-                var allStepPrograms = stepProgramService.Queryable().OrderBy( sp => sp.Order ).ToList();
-
-                // Find the current and new index for the moved item
-                int currentIndex = allStepPrograms.FindIndex( sp => sp.Id == idKey );
-                int newIndex = beforeIdKey.HasValue ? allStepPrograms.FindIndex( sp => sp.Id == beforeIdKey.Value ) : allStepPrograms.Count - 1;
-
-                // Perform the reordering
-                if ( currentIndex != newIndex )
-                {
-                    stepProgramService.Reorder( allStepPrograms, currentIndex, newIndex );
-                    rockContext.SaveChanges();
-                }
-
-                return ActionOk();
+                return ActionBadRequest( "Invalid reorder attempt." );
             }
+
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         /// <summary>
@@ -233,31 +236,28 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new StepProgramService( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
             {
-                var entityService = new StepProgramService( rockContext );
-                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-                if ( entity == null )
-                {
-                    return ActionBadRequest( $"{StepProgram.FriendlyTypeName} not found." );
-                }
-
-                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete {StepProgram.FriendlyTypeName}." );
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( $"{StepProgram.FriendlyTypeName} not found." );
             }
+
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete {StepProgram.FriendlyTypeName}." );
+            }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         #endregion

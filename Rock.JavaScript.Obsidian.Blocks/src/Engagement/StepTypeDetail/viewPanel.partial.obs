@@ -31,9 +31,6 @@
                 <div v-if="showChart && !notificationMessage" style="height: 350px;" class="col-md-12">
                     <Chart type="line" :data="chartData" :options="options" />
                 </div>
-                <NotificationBox v-if="props.modelValue && !props.modelValue.isDeletable" alertType="warning" class="col-md-12 margin-y-xsmall">
-                    The {{ props.modelValue.name }} Step Type is used by Rock and cannot be deleted.
-                </NotificationBox>
             </div>
         </div>
 

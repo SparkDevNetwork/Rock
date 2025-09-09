@@ -7962,6 +7962,10 @@ ul ul, ol ul, ul ol, ol ol {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 }
+.panel.panel-note:not(:has(.note-new)) .panel-heading {
+  border-bottom: none;
+  border-radius: var(--rounded-medium);
+}
 .panel.panel-collapsed:has(.tabbed-bar) .panel-heading, .panel.panel-collapsed:has(.panel-drawer) .panel-heading, .panel.panel-collapsed:has(.panel-sub-header) .panel-heading {
   border-bottom: 1px solid var(--color-interface-soft);
   border-bottom-left-radius: 0;
@@ -8080,7 +8084,7 @@ ul.activeusers {
 .panel > .table-responsive:last-child > .table:last-child > tbody:last-child > tr:last-child th:first-child,
 .panel > .table-responsive:last-child > .table:last-child > tfoot:last-child > tr:last-child td:first-child,
 .panel > .table-responsive:last-child > .table:last-child > tfoot:last-child > tr:last-child th:first-child {
-  border-bottom-left-radius: 3px;
+  border-bottom-left-radius: var(--rounded-medium);
 }
 .panel > .table:last-child > tbody:last-child > tr:last-child td:last-child,
 .panel > .table:last-child > tbody:last-child > tr:last-child th:last-child,
@@ -8090,7 +8094,7 @@ ul.activeusers {
 .panel > .table-responsive:last-child > .table:last-child > tbody:last-child > tr:last-child th:last-child,
 .panel > .table-responsive:last-child > .table:last-child > tfoot:last-child > tr:last-child td:last-child,
 .panel > .table-responsive:last-child > .table:last-child > tfoot:last-child > tr:last-child th:last-child {
-  border-bottom-right-radius: 3px;
+  border-bottom-right-radius: var(--rounded-medium);
 }
 .panel > .panel-body + .table,
 .panel > .panel-body + .table-responsive,
@@ -8222,79 +8226,79 @@ ul.activeusers {
 }
 
 .panel-success {
-  border-color: #cce0c1;
+  border-color: var(--color-success-strong);
 }
 .panel-success > .panel-heading {
   color: var(--color-success-strong);
   background-color: var(--color-success-soft);
-  border-color: #cce0c1;
+  border-color: var(--color-success-strong);
 }
 .panel-success > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #cce0c1;
+  border-top-color: var(--color-success-strong);
 }
 .panel-success > .panel-heading .badge {
   color: var(--color-success-soft);
   background-color: var(--color-success-strong);
 }
 .panel-success > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #cce0c1;
+  border-bottom-color: var(--color-success-strong);
 }
 
 .panel-info {
-  border-color: #c2e0ec;
+  border-color: var(--color-info-strong);
 }
 .panel-info > .panel-heading {
   color: var(--color-info-strong);
   background-color: var(--color-info-soft);
-  border-color: #c2e0ec;
+  border-color: var(--color-info-strong);
 }
 .panel-info > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #c2e0ec;
+  border-top-color: var(--color-info-strong);
 }
 .panel-info > .panel-heading .badge {
   color: var(--color-info-soft);
   background-color: var(--color-info-strong);
 }
 .panel-info > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #c2e0ec;
+  border-bottom-color: var(--color-info-strong);
 }
 
 .panel-warning {
-  border-color: #f6eec2;
+  border-color: var(--color-warning-strong);
 }
 .panel-warning > .panel-heading {
-  color: var(--color-warning-storng);
+  color: var(--color-warning-strong);
   background-color: var(--color-warning-soft);
-  border-color: #f6eec2;
+  border-color: var(--color-warning-strong);
 }
 .panel-warning > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #f6eec2;
+  border-top-color: var(--color-warning-strong);
 }
 .panel-warning > .panel-heading .badge {
   color: var(--color-warning-soft);
-  background-color: var(--color-warning-storng);
+  background-color: var(--color-warning-strong);
 }
 .panel-warning > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #f6eec2;
+  border-bottom-color: var(--color-warning-strong);
 }
 
 .panel-danger {
-  border-color: #e9c9c8;
+  border-color: var(--color-danger-strong);
 }
 .panel-danger > .panel-heading {
   color: var(--color-danger-strong);
   background-color: var(--color-danger-soft);
-  border-color: #e9c9c8;
+  border-color: var(--color-danger-strong);
 }
 .panel-danger > .panel-heading + .panel-collapse > .panel-body {
-  border-top-color: #e9c9c8;
+  border-top-color: var(--color-danger-strong);
 }
 .panel-danger > .panel-heading .badge {
   color: var(--color-danger-soft);
   background-color: var(--color-danger-strong);
 }
 .panel-danger > .panel-footer + .panel-collapse > .panel-body {
-  border-bottom-color: #e9c9c8;
+  border-bottom-color: var(--color-danger-strong);
 }
 
 .panel-settings {

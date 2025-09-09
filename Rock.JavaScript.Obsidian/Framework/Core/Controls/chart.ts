@@ -5,12 +5,6 @@ import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
 // #region Common
 
-export type Series = {
-    label: string;
-    data: (number | null)[];
-    color?: string | undefined;
-};
-
 export const LabelDateFormat = {
     Auto: "auto",
     Day: "day",
@@ -95,7 +89,10 @@ export type TooltipCallback = (context: TooltipContext) => string;
 
 // #region Line Chart
 
-export type LineSeries = Series & {
+export type LineSeries = {
+    label: string;
+    data: (number | null)[];
+    color?: string | undefined;
     isUnfilled?: boolean | undefined;
     isLinear?: boolean | undefined;
     lineStyle?: LineStyle | undefined;
@@ -119,14 +116,16 @@ export type LineStyle = typeof LineStyle[keyof typeof LineStyle];
 
 // #region Bar Chart
 
-export type BarSeries = Omit<Series, "color"> & {
+export type BarSeries = {
+    label: string;
+    data: (number | null)[];
+    /** Color of the bars. Can be a single value or an array for each data point. */
+    color?: string | string[] | undefined;
     isUnfilled?: boolean | undefined;
     /** Opacity of the bars (0-1). Can be a single value or an array for each data point. */
     opacity?: number | number[] | undefined;
     /** Configuration for the bar labels. */
     barLabels?: BarLabelsConfig | undefined;
-    /** Color of the bars. Can be a single value or an array for each data point. */
-    color?: string | string[] | undefined;
 };
 
 export type BarChartClickEvent = {
@@ -174,6 +173,17 @@ export type BarLabelsConfig = Partial<Record<
 >>;
 
 // #endregion Bar Chart
+
+// #region Pie Chart
+
+/** Represents a pie chart series where each data + color combination is a slice of the pie. */
+export type PieSeries = {
+    label: string;
+    data: number[];
+    colors?: string[] | undefined;
+};
+
+// #endregion Pie Chart
 
 // #endregion Types
 
