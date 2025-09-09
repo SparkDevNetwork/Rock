@@ -21,8 +21,7 @@ using Rock.Web.Cache;
 namespace Rock.AI.Agent.Skills
 {
     /// <summary>
-    /// Provides data lookup and analytics functions focused on site activity in Rock RMS,
-    /// particularly person-centric website analytics such as page visits, grouped by site.
+    /// Provides functionality to manage prayer.
     /// </summary>
     [AgentSkillGuid( "0EF2BBFD-52D9-441B-9BE5-F4C5D2B42ED0" )]
     [EntityTypeGuid( "6033D65E-C782-45BA-9A74-23F9B9353A27" )]
@@ -39,8 +38,9 @@ namespace Rock.AI.Agent.Skills
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SiteSkill"/> class.
+        /// Initializes a new instance of the <see cref="PrayerSkill"/> class.
         /// </summary>
+        /// <param name="rockContextFactory">Factory to create rock contexts.</param>
         /// <param name="logger">Logger for diagnostics and error reporting.</param>
         public PrayerSkill( IRockContextFactory rockContextFactory, ILogger<PrayerSkill> logger )
         {
@@ -304,20 +304,24 @@ namespace Rock.AI.Agent.Skills
                     qry = qry.Where( pr => pr.IsActive == isActive.Value );
                 }
 
-                // Name filters (match on stored first/last name fields)
+                // Either match on the requested by person alias id, or first/last name
                 if ( requestedByPersonAliasId.HasValue )
                 {
                     qry = qry.Where( pr => pr.RequestedByPersonAliasId == requestedByPersonAliasId.Value );
                 }
-                else if ( firstName.IsNotNullOrWhiteSpace() )
+                else
                 {
-                    var fn = firstName.Trim();
-                    qry = qry.Where( pr => pr.FirstName.Contains( fn ) );
-                }
-                else if ( lastName.IsNotNullOrWhiteSpace() )
-                {
-                    var ln = lastName.Trim();
-                    qry = qry.Where( pr => pr.LastName.Contains( ln ) );
+                    if ( firstName.IsNotNullOrWhiteSpace() )
+                    {
+                        var fn = firstName.Trim();
+                        qry = qry.Where( pr => pr.FirstName.Contains( fn ) );
+                    }
+
+                    else if ( lastName.IsNotNullOrWhiteSpace() )
+                    {
+                        var ln = lastName.Trim();
+                        qry = qry.Where( pr => pr.LastName.Contains( ln ) );
+                    }
                 }
 
                 // Sort: newest first; tie-break by Id for determinism
@@ -381,7 +385,11 @@ namespace Rock.AI.Agent.Skills
 
                 return RockToolResult.Success( items )
                     .WithMetadata( meta )
-                    .WithHistoryContent( historyItems, "prayer-requests" );
+                    .WithHistoryContent( new
+                    {
+                        Items = historyItems,
+                        PageNumber = pageNumber
+                    } );
             }
         }
 
@@ -446,12 +454,12 @@ namespace Rock.AI.Agent.Skills
                         return RockToolResult.Error( "The personIdKey is not valid." );
                     }
 
-                    if( firstName.IsNullOrWhiteSpace() )
+                    if ( firstName.IsNullOrWhiteSpace() )
                     {
                         firstName = person.NickName;
                     }
 
-                    if( lastName.IsNullOrWhiteSpace() )
+                    if ( lastName.IsNullOrWhiteSpace() )
                     {
                         lastName = person.LastName;
                     }

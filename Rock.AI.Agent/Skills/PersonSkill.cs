@@ -369,7 +369,8 @@ namespace Rock.AI.Agent.Skills
                     MaritalStatus = p.MaritalStatusValue != null ? p.MaritalStatusValue.Value : "",
                     Age = p.Age,
                     Email = p.Email,
-                    Gender = p.Gender
+                    Gender = p.Gender,
+                    IncludePublicProfile = true
                 } )
                 .OrderBy( p => p.LastName )
                 .ThenBy( p => p.NickName )
@@ -465,7 +466,8 @@ namespace Rock.AI.Agent.Skills
                     MaritalStatus = p.MaritalStatusValue != null ? p.MaritalStatusValue.Value : "",
                     Age = p.Age,
                     Email = p.Email,
-                    Gender = p.Gender
+                    Gender = p.Gender,
+                    IncludePublicProfile = true
                 } )
                 .OrderBy( p => p.LastName )
                 .ThenBy( p => p.NickName )
@@ -544,6 +546,7 @@ namespace Rock.AI.Agent.Skills
             profileResult.Email = person.Email;
             profileResult.MaritalStatus = person.MaritalStatusValue != null ? person.MaritalStatusValue.Value : null;
             profileResult.Campus = person.PrimaryCampus != null ? new KeyNameResult { Id = person.PrimaryCampus.Id, Name = person.PrimaryCampus.Name } : null;
+            profileResult.IncludePublicProfile = true;
 
             profileResult.PreviousLastNames = person.GetPreviousNames()
                 .Select( p => p.LastName )
@@ -923,12 +926,14 @@ namespace Rock.AI.Agent.Skills
                 .Where( m => familyIds.Contains( m.GroupId ) && m.GroupMemberStatus == GroupMemberStatus.Active )
                 .Select( m => new
                 {
-                    FirstName = m.Person.NickName,
+                    NickName = m.Person.NickName,
                     LastName = m.Person.LastName,
                     GroupRoleGuid = m.GroupRole.Guid,
                     PersonId = m.Person.Id,
                     FamilyId = m.GroupId,
                     Gender = m.Person.Gender,
+                    AgeClassification = m.Person.AgeClassification,
+                    Age = m.Person.Age,
                     MaritalStatusGuid = m.Person.MaritalStatusValue != null ? m.Person.MaritalStatusValue.Guid : Guid.Empty,
                     Suffix = m.Person.SuffixValue != null ? m.Person.SuffixValue.Value : string.Empty
                 } )
@@ -940,13 +945,13 @@ namespace Rock.AI.Agent.Skills
                 result.ChildrenInFamily = familyMembers.Where( m => m.FamilyId == result.PrimaryFamilyId
                                                 && m.GroupRoleGuid == childGuid
                                                 && m.PersonId != result.Id )
-                                            .Select( m => new PersonResult { FirstName = m.FirstName, LastName = m.LastName, Id = m.PersonId, Suffix = m.Suffix } )
+                                            .Select( m => new PersonResult { NickName = m.NickName, LastName = m.LastName, Id = m.PersonId, Suffix = m.Suffix, Age = m.Age, IncludePublicProfile = true } )
                                             .ToList();
 
                 result.AdultsInFamily = familyMembers.Where( m => m.FamilyId == result.PrimaryFamilyId
                                                 && m.GroupRoleGuid == adultGuid
                                                 && m.PersonId != result.Id )
-                                            .Select( m => new PersonResult { FirstName = m.FirstName, LastName = m.LastName, Id = m.PersonId, Suffix = m.Suffix } )
+                                            .Select( m => new PersonResult { NickName = m.NickName, LastName = m.LastName, Id = m.PersonId, Suffix = m.Suffix, Age = m.Age, IncludePublicProfile = true } )
                                             .ToList();
 
                 var personRoleInFamily = familyMembers.Where( m => m.FamilyId == result.PrimaryFamilyId && m.PersonId == result.Id )
@@ -961,13 +966,8 @@ namespace Rock.AI.Agent.Skills
                                                 && m.PersonId != result.Id
                                                 && m.MaritalStatusGuid == marriedMaritalStatusGuid
                                                 && ( !isBibleStrictSpouse || m.Gender != result.Gender || m.Gender == Gender.Unknown || result.Gender == Gender.Unknown ) )
-                                             .Select( m => new PersonResult { FirstName = m.FirstName, LastName = m.LastName, Id = m.PersonId, Suffix = m.Suffix } )
+                                             .Select( m => new PersonResult { NickName = m.NickName, LastName = m.LastName, Id = m.PersonId, Suffix = m.Suffix, Age = m.Age, IncludePublicProfile = true } )
                                              .FirstOrDefault();
-                }
-
-                if ( AgentRequestContext.AudienceType == AudienceType.Internal )
-                {
-                    result.ProfileUrl = $"{GlobalAttributesCache.Get().GetValue( "InternalApplicationRoot" )}/person/{result.IdKey}";
                 }
             }
 

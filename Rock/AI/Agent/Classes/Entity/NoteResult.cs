@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using Nest;
+
 using Rock.AI.Agent.Classes.Common;
 
 namespace Rock.AI.Agent.Classes.Entity
@@ -27,7 +29,12 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <summary>
         /// Gets or sets the type of note.
         /// </summary>
-        public KeyNameResult NoteType { get; set; }
+        public NoteTypeResult NoteType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the entity (If it is a Note on a Person, it would be the person's name, etc)
+        /// </summary>
+        public string EntityName { get; set; }
 
         /// <summary>
         /// Gets or sets the caption.

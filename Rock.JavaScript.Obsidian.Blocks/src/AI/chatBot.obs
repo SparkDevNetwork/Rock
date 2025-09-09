@@ -363,6 +363,7 @@
     color: var(--color-interface-medium);
     margin-right: var(--spacing-small);
     font-size: var(--font-size-xsmall);
+    margin-top: var(--spacing-small);
 }
 
 .message-debug .btn {
