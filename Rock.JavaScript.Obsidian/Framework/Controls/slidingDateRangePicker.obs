@@ -73,7 +73,6 @@
 
     const emit = defineEmits<{
         (e: "update:modelValue", v: SlidingDateRange | null): void
-        (e: "dateRangeTextChanged", v: string): void;
     }>();
 
     const internalValue = ref(props.modelValue);
@@ -157,8 +156,6 @@
         else {
             dateRangeText.value = "";
         }
-
-        emit("dateRangeTextChanged", dateRangeText.value);
     };
 
     watch(rangeType, () => {

@@ -6,8 +6,7 @@
                                     :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]"
                                     :enabledTimeUnits="[TimeUnit.Week, TimeUnit.Month, TimeUnit.Year, TimeUnit.Day, TimeUnit.Hour]"
                                     :isRangeClearable="false"
-                                    previewLocation="None"
-                                    @dateRangeTextChanged="onDateRangeTextChanged" />
+                                    previewLocation="None" />
 
             <ButtonGroup v-model="selectedStepProgramView"
                          :btnSize="BtnSize.Default"
@@ -50,10 +49,10 @@
                     <div v-if="selectedStepProgramViewEnum === StepProgramView.Trends"
                          class="pull-right">
                         <div class="btn-group btn-toggle btn-group">
-                            <RockButton @click="updateChartType(true)" :class="isBarChart ? selectedButtonClasses : unselectedButtonClasses">
+                            <RockButton @click="updateChartType(false)" :class="isBarChart ? unselectedButtonClasses : selectedButtonClasses">
                                 <i class="ti ti-chart-line"></i>
                             </RockButton>
-                            <RockButton @click="updateChartType(false)" :class="isBarChart ? unselectedButtonClasses : selectedButtonClasses">
+                            <RockButton @click="updateChartType(true)" :class="isBarChart ? selectedButtonClasses : unselectedButtonClasses">
                                 <i class="ti ti-chart-bar"></i>
                             </RockButton>
                         </div>
@@ -83,30 +82,30 @@
                            nodeTooltipActionLabel="Total Steps Taken"
                            :settings="settings" />
 
-            <div v-else style="height: 300px">
-                <LineChart v-if="isBarChart"
-                           :series="lineSeries"
-                           :labels="chartLabels"
-                           :labelDateFormat="dateUnit"
-                           :hideLegend="isLegendHidden"
-                           xShowGridLines
-                           linear
-                           unfilled />
-
-                <BarChart v-else
+            <div v-else :style="{ height: chartHeight }">
+                <BarChart v-if="isBarChart"
                           :series="barSeries"
                           :labels="chartLabels"
                           :labelDateFormat="dateUnit"
                           :stack="isStacked"
+                          :horizontal="isHorizontal"
                           :hideLegend="isLegendHidden"
+                          categoryShowAllTicks
                           @click="onBarChartClicked" />
+
+                <LineChart v-else
+                           :series="lineSeries"
+                           :labels="chartLabels"
+                           :labelDateFormat="dateUnit"
+                           :hideLegend="isLegendHidden"
+                           categoryShowGridLines
+                           linear
+                           unfilled />
+
             </div>
 
         </div>
 
-        <NotificationBox v-if="props.modelValue && !props.modelValue.isDeletable" alertType="warning" class="col-md-12 margin-y-xsmall">
-            The {{ props.modelValue.name }} Step Program is used by Rock and cannot be deleted.
-        </NotificationBox>
         <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
 
     </fieldset>
@@ -198,6 +197,7 @@
     import { PreferenceKey } from "./types.partial";
     import { asBoolean } from "@Obsidian/Utility/booleanUtils";
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { useHttp } from "@Obsidian/Utility/http";
 
     const props = defineProps({
         modelValue: {
@@ -213,6 +213,7 @@
 
     // #region Values
 
+    const http = useHttp();
     const browserBus = useBlockBrowserBus();
     const contextEntities = useContextEntities();
     const preferences = usePersonPreferences().blockPreferences;
@@ -330,6 +331,30 @@
         return true;
     });
 
+    const isHorizontal = computed(() => {
+        return chartLabels.value.length > 15 ? true : false;
+    });
+
+    const chartHeight = computed(() => {
+        if (!isBarChart.value) {
+            return "300px";
+        }
+        if (isHorizontal.value) {
+            let perBarSize = 30;
+
+            if (!isLegendHidden.value) {
+                perBarSize += 10;
+            }
+
+            if (isStacked.value) {
+                perBarSize += 30;
+            }
+
+            return chartLabels.value.length * perBarSize + "px";
+        }
+        return "300px";
+    });
+
     const measureOptions = computed(() => {
         let filteredMeasureOptions = baseMeasureOptions;
 
@@ -411,10 +436,6 @@
 
     // #region Functions
 
-    function onDateRangeTextChanged(newText: string): void {
-        dateRangeText.value = newText;
-    }
-
     function resetAllStateFlags(initialValue = false): void {
         for (const key in StepProgramView) {
             const value = StepProgramView[key as keyof typeof StepProgramView];
@@ -435,8 +456,8 @@
         fetchByStepProgramView[selectedStepProgramViewEnum.value]();
     }
 
-    function updateChartType(isLineChartSelected: boolean) {
-        isBarChart.value = isLineChartSelected;
+    function updateChartType(isBarChartSelected: boolean) {
+        isBarChart.value = isBarChartSelected;
     }
 
     async function handleCampusContextChanged(data: ContextEntityChangedData) {
@@ -545,6 +566,32 @@
     // #endregion
 
     // #region Event Handlers
+
+    async function updateDateRangeText(): Promise<void> {
+        const parameters: Record<string, string> = {
+            slidingDateRangeType: filterDate.value?.rangeType?.toString() || "0",
+            timeUnitType: filterDate.value?.timeUnit?.toString() || "0",
+            number: filterDate.value?.timeValue?.toString() || "1"
+        };
+
+        const lowerDate = filterDate.value?.lowerDate;
+        const upperDate = filterDate.value?.upperDate;
+
+        if (lowerDate && upperDate) {
+            parameters["startDate"] = lowerDate;
+            parameters["endDate"] = upperDate;
+        }
+
+        const result = await http.get<string>("/api/Utility/GetSlidingDateRangeTextValue", parameters);
+
+        if (result.isSuccess && result.data) {
+            dateRangeText.value = result.data;
+        }
+        else {
+            dateRangeText.value = "";
+        }
+    }
+
     /**
      * Event handler for the Refresh button being clicked. Request new chart
      * data from the server using the specified filter date.
@@ -687,7 +734,7 @@
 
         // If we are switching to the Totals or Campuses view than we need to set the chart type to a Bar Chart.
         if (selectedStepProgramViewEnum.value === StepProgramView.Totals || selectedStepProgramViewEnum.value === StepProgramView.Campuses) {
-            updateChartType(false);
+            updateChartType(true);
         }
 
         if (!chartStateFlags[selectedStepProgramViewEnum.value]) {
@@ -700,7 +747,7 @@
     });
 
     watch(filterDate, () => {
-        console.log("Filter date changed. All Chart states are now dirty.");
+        updateDateRangeText();
         resetAllStateFlags();
 
         fetchByStepProgramView[selectedStepProgramViewEnum.value]();
@@ -725,6 +772,7 @@
     });
 
     onMounted(() => {
+        updateDateRangeText();
         resetAllStateFlags();
         // KPIs are populated off of the Block Initialization so its state is valid.
         chartStateFlags[StepProgramView.KPIs] = true;
