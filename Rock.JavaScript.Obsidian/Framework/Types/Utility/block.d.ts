@@ -41,3 +41,6 @@ export type BlockEvent<T = Record<string, unknown> | undefined> = {
 
 /** A function that will invoke a block action. */
 export type InvokeBlockActionFunc = <T>(actionName: string, data?: HttpBodyData, actionContext?: BlockActionContextBag, cancellationToken?: ICancellationToken) => Promise<HttpResult<T>>;
+
+/** A function that will invoke a block action returning streaming events. */
+export type InvokeStreamingBlockActionFunc = <T>(actionName: string, data?: HttpBodyData, actionContext?: BlockActionContextBag, cancellationToken?: ICancellationToken) => Promise<HttpResult<ReadableStream<T>>>;

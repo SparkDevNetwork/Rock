@@ -72,7 +72,18 @@
                     </div>
                 </div>
 
-                <div v-if="isSending"
+                <div v-if="liveMessage && (liveMessage.function || liveMessage?.message)"
+                     class="message"
+                     :class="getMessageClass(liveMessage)">
+                    <div v-if="liveMessage.function" class="message-text">
+                        {{ liveMessage.function }}
+                        <span class="ti ti-loader fa fa-spin"></span>
+                    </div>
+
+                    <div v-else class="message-text" v-html="parse(liveMessage.message ?? '')"></div>
+                </div>
+
+                <div v-else-if="isSending"
                      class="message-thinking">
                     <span class="ti ti-loader fa fa-spin"></span>
                 </div>
@@ -427,7 +438,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import HighlightJs from "@Obsidian/Libs/highlightJs";
     import { parse } from "@Obsidian/Libs/marked";
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, useInvokeStreamingBlockAction } from "@Obsidian/Utility/block";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
     import { asFormattedString } from "@Obsidian/Utility/numberUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
@@ -471,6 +482,8 @@
     type SendMessageResponseBag = {
         message?: ChatMessageBag | null;
 
+        function?: string | null;
+
         logs?: ChatLogBag[] | null;
     };
 
@@ -488,6 +501,8 @@
 
     type ExtendedChatMessageBag = ChatMessageBag & {
         logs?: ChatLogBag[] | null;
+
+        function?: string | null;
     };
 
     type ChatLogBag = {
@@ -526,6 +541,7 @@
 
     const config = useConfigurationValues<ChatBotConfigurationBag>();
     const invokeBlockAction = useInvokeBlockAction();
+    const invokeStreamingBlockAction = useInvokeStreamingBlockAction();
 
     const chatContainer = ref<HTMLDivElement>();
     const sessionsContainer = ref<HTMLDivElement>();
@@ -534,6 +550,7 @@
     const message = ref("");
     const isSending = ref(false);
     const messages = reactive<ExtendedChatMessageBag[]>(config.messages ?? []);
+    const liveMessage = ref<ExtendedChatMessageBag | null>(null);
     const sessions = reactive(config.sessions ?? []);
     const anchors = reactive(config.anchors ?? []);
     const sessionId = ref(config.sessionId ?? 0);
@@ -738,13 +755,60 @@
                 isDebugEnabled: isDebugEnabled.value
             };
 
-            const response = await invokeBlockAction<SendMessageResponseBag>("SendMessage", { request });
+            const response = await invokeStreamingBlockAction<SendMessageResponseBag>("SendMessage", { request });
 
-            if (response.isSuccess && response.data?.message) {
-                messages.push({
-                    ...response.data.message,
-                    logs: response.data.logs
+            if (response.isSuccess && response.data) {
+                const reader = response.data.getReader();
+                liveMessage.value = reactive({
+                    duration: 0,
+                    role: AuthorRole.Assistant,
+                    message: "",
+                    tokenCount: 0,
+                    consumedTokenCount: 0
                 });
+                // messages.push(msg);
+
+                // eslint-disable-next-line no-constant-condition
+                while (true) {
+                    const { value, done } = await reader.read();
+
+                    if (done) {
+                        break;
+                    }
+
+                    if (value.function) {
+                        liveMessage.value.function = value.function;
+                        nextTick(() => messagesContainer.value?.scrollTo(0, messagesContainer.value.scrollHeight));
+                    }
+
+                    if (value.logs) {
+                        liveMessage.value.logs = value.logs;
+                    }
+
+                    if (value.message) {
+                        if (value.message.duration > 0) {
+                            liveMessage.value.duration = value.message.duration;
+                        }
+
+                        if (value.message.consumedTokenCount > 0) {
+                            liveMessage.value.consumedTokenCount = value.message.consumedTokenCount;
+                        }
+
+                        if (value.message.tokenCount > 0) {
+                            liveMessage.value.tokenCount = value.message.tokenCount;
+                        }
+
+                        if (value.message.message) {
+                            liveMessage.value.function = undefined;
+                            liveMessage.value.message = `${liveMessage.value.message}${value.message.message}`;
+                        }
+
+                        nextTick(() => messagesContainer.value?.scrollTo(0, messagesContainer.value.scrollHeight));
+                    }
+                }
+
+                messages.push(liveMessage.value);
+                liveMessage.value = null;
                 updateSessionDate();
                 nextTick(() => messagesContainer.value?.scrollTo(0, messagesContainer.value.scrollHeight));
             }

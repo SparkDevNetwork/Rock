@@ -20,7 +20,7 @@ using System.Collections.Generic;
 namespace Rock.AI.Agent
 {
     /// <summary>
-    /// The additional settings that are defined on a <see cref="Model.AISkillFunction"/>.
+    /// The instruction settings that are defined on a <see cref="Model.AISkillFunction"/>.
     /// </summary>
     internal class ToolInstructionSettings
     {

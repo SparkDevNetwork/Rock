@@ -18,10 +18,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -30,7 +33,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 using Rock.AI.Agent.Classes;
-using Rock.AI.Agent.Classes.Common;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -547,30 +549,7 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
 
             if ( SessionId.HasValue && _sessionNeedsName )
             {
-                sessionNameTask = Task.Run( async () =>
-                {
-                    using ( var sessionRockContext = _rockContextFactory.CreateRockContext() )
-                    {
-                        var session = new AIAgentSessionService( sessionRockContext ).Get( SessionId.Value );
-
-                        if ( session != null && session.AIAgentSessionHistories.Count > 0 )
-                        {
-                            var message = session.AIAgentSessionHistories.First().Message;
-                            var prompt = $"Please provide a name for this session (7 words or less, but it should read like proper english) title for a new chat session with the initial message: {message}";
-
-                            var sessionResult = await chat.GetChatMessageContentAsync(
-                                new ChatHistory { new ChatMessageContent( Microsoft.SemanticKernel.ChatCompletion.AuthorRole.User, prompt ) },
-                                executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings(),
-                                kernel: _kernel
-                            );
-
-                            session.Name = sessionResult.Content.Truncate( 100 );
-                            sessionRockContext.SaveChanges();
-
-                            _sessionNeedsName = false;
-                        }
-                    }
-                } );
+                sessionNameTask = Task.Run( async () => await GenerateSessionNameAsync( chat ) );
             }
 
             var history = _context.GetChatHistory();
@@ -599,6 +578,62 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
             }
 
             return new ChatMessageResponse( result, usage, GetChatDebug() );
+        }
+
+        /// <inheritdoc/>
+        public async IAsyncEnumerable<StreamingChatMessageResponse> GetStreamingChatMessageResponsesAsync( [EnumeratorCancellation] CancellationToken cancellationToken )
+        {
+            var chat = _kernel.GetRequiredService<IChatCompletionService>( _agentConfiguration.Role.ToString() );
+
+            Task sessionNameTask = null;
+
+            if ( SessionId.HasValue && _sessionNeedsName )
+            {
+                sessionNameTask = Task.Run( async () => await GenerateSessionNameAsync( chat ) );
+            }
+
+            var history = _context.GetChatHistory();
+
+            var asyncEnumerable = chat.GetStreamingChatMessageContentsAsync(
+                history,
+                executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings(),
+                kernel: _kernel,
+                cancellationToken: cancellationToken );
+
+            var responseTextBuilder = new StringBuilder();
+            UsageMetric responseUsage = null;
+
+            await foreach ( var result in asyncEnumerable )
+            {
+                var usage = GetMetricUsageFromResult( result );
+                var response = new StreamingChatMessageResponse( GetStreamingContentItems( result.Items ), usage, null );
+
+                var text = response.Content;
+
+                // Intentionally not using IsNotNullOrWhiteSpace so that we capture whitespace.
+                if ( !string.IsNullOrEmpty( text ) )
+                {
+                    responseTextBuilder.Append( text );
+                }
+
+                if ( usage != null )
+                {
+                    responseUsage = usage;
+                }
+
+                yield return new StreamingChatMessageResponse( GetStreamingContentItems( result.Items ), usage, null );
+            }
+
+            var responseText = responseTextBuilder.ToString();
+
+            if ( sessionNameTask != null )
+            {
+                await sessionNameTask;
+            }
+
+            await AddMessageAsync( AuthorRole.Assistant, responseText, responseUsage?.OutputTokenCount ?? CountTokens( responseText ), responseUsage?.TotalTokenCount ?? 0, cancellationToken );
+
+            yield return new StreamingChatMessageResponse( null, null, GetChatDebug() );
         }
 
         /// <inheritdoc/>
@@ -638,6 +673,22 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
         /// <inheritdoc/>
         private UsageMetric GetMetricUsageFromResult( ChatMessageContent result )
         {
+            if ( result == null )
+            {
+                return null;
+            }
+
+            return _agentConfiguration.Provider.GetMetricUsageFromResult( result );
+        }
+
+        /// <inheritdoc/>
+        private UsageMetric GetMetricUsageFromResult( StreamingChatMessageContent result )
+        {
+            if ( result == null )
+            {
+                return null;
+            }
+
             return _agentConfiguration.Provider.GetMetricUsageFromResult( result );
         }
 
@@ -756,6 +807,101 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
             {
                 return 0;
             }
+        }
+
+        /// <summary>
+        /// Generates a new name for the session based on the initial user message.
+        /// </summary>
+        /// <param name="chat">The chat completion service to use when generating the summary name.</param>
+        /// <returns>A name that can be used as the default session name.</returns>
+        private async Task<string> GenerateSessionNameAsync( IChatCompletionService chat )
+        {
+            using ( var sessionRockContext = _rockContextFactory.CreateRockContext() )
+            {
+                var session = new AIAgentSessionService( sessionRockContext ).Get( SessionId.Value );
+
+                if ( session == null || session.AIAgentSessionHistories.Count == 0 )
+                {
+                    return null;
+                }
+
+                var message = session.AIAgentSessionHistories.First().Message;
+                var prompt = $"Please provide a name for this session (7 words or less, but it should read like proper english) title for a new chat session with the initial message: {message}";
+
+                var sessionResult = await chat.GetChatMessageContentAsync(
+                    new ChatHistory { new ChatMessageContent( Microsoft.SemanticKernel.ChatCompletion.AuthorRole.User, prompt ) },
+                    executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings(),
+                    kernel: _kernel
+                );
+
+                session.Name = sessionResult.Content.Truncate( 100 );
+                sessionRockContext.SaveChanges();
+
+                _sessionNeedsName = false;
+
+                return session.Name;
+            }
+        }
+
+        /// <summary>
+        /// Converts the Semantic Kernel streaming content items into our own
+        /// items that can be used to inspect the inner content.
+        /// </summary>
+        /// <param name="kernelItems">The original Semantic Kernel content items.</param>
+        /// <returns>A list of Rock-safe content items.</returns>
+        private IList<StreamingAgentContent> GetStreamingContentItems( IList<StreamingKernelContent> kernelItems )
+        {
+            var items = new List<StreamingAgentContent>();
+
+            if ( kernelItems == null )
+            {
+                return items;
+            }
+
+            foreach ( var item in kernelItems )
+            {
+                if ( item is Microsoft.SemanticKernel.StreamingTextContent textContent )
+                {
+                    items.Add( new StreamingTextContent( textContent.Text ) );
+                }
+                else if ( item is Microsoft.SemanticKernel.StreamingFunctionCallUpdateContent functionCallContent )
+                {
+                    string preamble = null;
+
+                    if ( functionCallContent.Name.IsNotNullOrWhiteSpace() )
+                    {
+                        preamble = $"Calling {functionCallContent.Name}";
+
+                        var parts = functionCallContent.Name.Split( new[] { '_', '-' } );
+
+                        if ( parts.Length == 2 )
+                        {
+                            var skill = _agentConfiguration.Skills.FirstOrDefault( s => s.Key == parts[0] );
+
+                            if ( skill?.Tools != null )
+                            {
+                                var tool = skill.Tools.FirstOrDefault( t => t.Key == parts[1] );
+
+                                if ( tool != null )
+                                {
+                                    if ( tool.Preamble.IsNotNullOrWhiteSpace() )
+                                    {
+                                        preamble = tool.Preamble;
+                                    }
+                                    else
+                                    {
+                                        preamble = $"Calling {tool.Name}";
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    items.Add( new StreamingFunctionCallContent( functionCallContent.CallId, functionCallContent.Name, preamble ) );
+                }
+            }
+
+            return items;
         }
 
         #endregion

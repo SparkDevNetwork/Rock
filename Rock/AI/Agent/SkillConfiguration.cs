@@ -22,7 +22,7 @@ namespace Rock.AI.Agent
 {
     /// <summary>
     /// Represents the configuration for a single agent skill, including its metadata,
-    /// function definitions, and optional native type or settings.
+    /// tool definitions, and optional native type or settings.
     /// Used to register both semantic and native skills for an AI agent.
     /// </summary>
     internal class SkillConfiguration
@@ -44,9 +44,9 @@ namespace Rock.AI.Agent
         public SkillInstructionSettings Instructions { get; }
 
         /// <summary>
-        /// Gets the list of function definitions (semantic or native) associated with this skill.
+        /// Gets the list of tool definitions (semantic or native) associated with this skill.
         /// </summary>
-        public List<AgentTool> Functions { get; } = new List<AgentTool>();
+        public List<AgentTool> Tools { get; } = new List<AgentTool>();
 
         /// <summary>
         /// Gets the native type implementing this skill, if it is a native (code-based) skill.
@@ -65,12 +65,12 @@ namespace Rock.AI.Agent
         /// <param name="instructions">The instructions describing the skill's purpose.</param>
         /// <param name="tools">The list of tools that are available for this skill.</param>
         /// <param name="nativeType">The <see cref="Type"/> implementing the native skill or <c>null</c>.</param>
-        /// <param name="agentSkillSettings">The settings used to configure the native skill, including disabled functions and configuration values.</param>
+        /// <param name="agentSkillSettings">The settings used to configure the native skill, including configuration values.</param>
         public SkillConfiguration( string name, SkillInstructionSettings instructions, List<AgentTool> tools, Type nativeType, AgentSkillSettings agentSkillSettings )
         {
             Name = name;
             Instructions = instructions;
-            Functions = tools;
+            Tools = tools;
             NativeType = nativeType;
             ConfigurationValues = agentSkillSettings.ConfigurationValues ?? new Dictionary<string, string>();
         }

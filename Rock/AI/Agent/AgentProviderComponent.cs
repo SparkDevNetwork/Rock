@@ -55,6 +55,13 @@ namespace Rock.AI.Agent
         public abstract UsageMetric GetMetricUsageFromResult( ChatMessageContent result );
 
         /// <summary>
+        /// Gets the usage metric from the result metadata.
+        /// </summary>
+        /// <param name="result">The result from the chat message.</param>
+        /// <returns>An object that represents the token usage metrics from the chat message.</returns>
+        public abstract UsageMetric GetMetricUsageFromResult( StreamingChatMessageContent result );
+
+        /// <summary>
         /// Gets the prompt execution settings for a specific role for use with
         /// a function call.
         /// </summary>

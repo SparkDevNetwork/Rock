@@ -67,6 +67,7 @@ namespace Rock.AI.Agent.Skills
         /// <param name="query">The query.</param>
         /// <returns></returns>
         [Description( "Determines a date range from a natural language string." )]
+        [AgentToolPreamble( "Determining date range for query." )]
         [AgentPurpose( "Determines a date range from a natural language string." )]
         [AgentUsage( "This function is useful in cases where you need to determine a start date and end date for another function, such as when you want to filter results by a specific date range." )]
         [AgentToolGuid( "87756092-9D52-448E-82EE-556A780DF7CF" )]

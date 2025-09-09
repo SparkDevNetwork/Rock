@@ -62,6 +62,12 @@ namespace Rock.AI.Agent
         public string Description { get; set; } = string.Empty;
 
         /// <summary>
+        /// A short human-readable message that will be displayed in the agent
+        /// UI when the tool is executing.
+        /// </summary>
+        public string Preamble { get; set; } = string.Empty;
+
+        /// <summary>
         /// The instructions to provide to the AI model about how to use this
         /// tool.
         /// </summary>

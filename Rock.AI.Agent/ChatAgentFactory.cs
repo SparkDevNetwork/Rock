@@ -251,7 +251,7 @@ namespace Rock.AI.Agent
                         continue;
                     }
 
-                    var tool = skillConfiguration.Functions.FirstOrDefault( f => f.Guid == functionGuid.Value );
+                    var tool = skillConfiguration.Tools.FirstOrDefault( f => f.Guid == functionGuid.Value );
 
                     if ( tool == null )
                     {
@@ -296,7 +296,7 @@ namespace Rock.AI.Agent
         {
             foreach ( var skill in _agentConfiguration.Skills )
             {
-                var pluginFunctions = GetVirtualSkillFunctions( skill.Functions, kernelServiceProvider );
+                var pluginFunctions = GetVirtualSkillFunctions( skill.Tools, kernelServiceProvider );
 
                 if ( pluginFunctions.Count > 0 )
                 {

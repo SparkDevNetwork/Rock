@@ -31,6 +31,10 @@ namespace Rock.Web.Cache.Entities
     {
         #region Entity Properties
 
+        /// <inheritdoc cref="AISkillFunction.AISkillId"/>
+        [DataMember]
+        public int AISkillId { get; private set; }
+
         /// <inheritdoc cref="AISkillFunction.Name"/>
         [DataMember]
         public string Name { get; private set; }
@@ -69,6 +73,7 @@ namespace Rock.Web.Cache.Entities
                 return;
             }
 
+            AISkillId = function.AISkillId;
             Name = function.Name;
             Description = function.Description;
             Instructions = function.Instructions;

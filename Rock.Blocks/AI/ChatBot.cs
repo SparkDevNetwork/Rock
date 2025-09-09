@@ -242,39 +242,59 @@ namespace Rock.Blocks.AI
             await agent.LoadSessionAsync( request.SessionId );
             await agent.AddMessageAsync( AuthorRole.User, request.Message );
 
-            var sw = System.Diagnostics.Stopwatch.StartNew();
-            var response = await agent.GetChatMessageResponseAsync();
-            sw.Stop();
-
-            var messageBag = new ChatMessageBag
+            async IAsyncEnumerable<SendMessageResponseBag> ResponseFactory()
             {
-                Role = AuthorRole.Assistant,
-                Message = response.Content,
-                TokenCount = response.Usage.OutputTokenCount,
-                ConsumedTokenCount = response.Usage.TotalTokenCount,
-                Duration = sw.ElapsedMilliseconds
-            };
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                var responseStream = agent.GetStreamingChatMessageResponsesAsync();
 
-            var responseBag = new SendMessageResponseBag
-            {
-                Message = messageBag
-            };
-
-            if ( request.IsDebugEnabled )
-            {
-                responseBag.Logs = response.Debug
-                    ?.Logs
-                    ?.Select( l => new ChatLogBag
+                await foreach ( var response in responseStream )
+                {
+                    if ( response.Items != null && response.Items.Any() && response.Items[0] is StreamingFunctionCallContent sfcc )
                     {
-                        Category = l.Category,
-                        LogLevel = ( int ) l.LogLevel,
-                        LogLevelName = l.LogLevel.ToString(),
-                        Message = l.Message,
-                        Timestamp = l.Timestamp.ToRockDateTimeOffset()
-                    } ).ToList();
-            }
+                        if ( sfcc.Description.IsNotNullOrWhiteSpace() )
+                        {
+                            yield return new SendMessageResponseBag
+                            {
+                                Function = sfcc.Description
+                            };
+                        }
 
-            return ActionOk( responseBag );
+                        continue;
+                    }
+
+                    var messageBag = new ChatMessageBag
+                    {
+                        Role = AuthorRole.Assistant,
+                        Message = response.Content,
+                        TokenCount = response.Usage?.OutputTokenCount ?? 0,
+                        ConsumedTokenCount = response.Usage?.TotalTokenCount ?? 0,
+                        Duration = sw.ElapsedMilliseconds
+                    };
+
+                    var responseBag = new SendMessageResponseBag
+                    {
+                        Message = messageBag
+                    };
+
+                    if ( request.IsDebugEnabled && response.Debug != null )
+                    {
+                        responseBag.Logs = response.Debug
+                            ?.Logs
+                            ?.Select( l => new ChatLogBag
+                            {
+                                Category = l.Category,
+                                LogLevel = ( int ) l.LogLevel,
+                                LogLevelName = l.LogLevel.ToString(),
+                                Message = l.Message,
+                                Timestamp = l.Timestamp.ToRockDateTimeOffset()
+                            } ).ToList();
+                    }
+
+                    yield return responseBag;
+                }
+            };
+
+            return new ServerSentEventsBlockActionResult<SendMessageResponseBag>( ResponseFactory() );
         }
 
         /// <summary>
@@ -623,6 +643,11 @@ namespace Rock.Blocks.AI
             /// The response message from the chat agent.
             /// </summary>
             public ChatMessageBag Message { get; set; }
+
+            /// <summary>
+            /// The function that was called, if any.
+            /// </summary>
+            public string Function { get; set; }
 
             /// <summary>
             /// The debug logs that were collected during processing.

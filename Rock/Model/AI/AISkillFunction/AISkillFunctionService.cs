@@ -98,6 +98,7 @@ namespace Rock.Model
             var toolName = method.GetCustomAttribute<AgentToolNameAttribute>()?.Name;
             var name = toolName.IsNotNullOrWhiteSpace() ? toolName.SplitCase() : method.Name.SplitCase();
             var description = method.GetCustomAttribute<DescriptionAttribute>()?.Description;
+            var preamble = method.GetCustomAttribute<AgentToolPreambleAttribute>()?.Preamble ?? string.Empty;
             var purposes = method.GetCustomAttributes<AgentPurposeAttribute>()
                 .Select( a => a.Purpose ?? string.Empty )
                 .ToList();
@@ -157,47 +158,55 @@ namespace Rock.Model
                 }
             }
 
-            var toolSettings = tool.GetAdditionalSettings<ToolInstructionSettings>();
+            var additionalSettings = tool.GetAdditionalSettings<ToolAdditionalSettings>();
+            var instructionSettings = tool.GetAdditionalSettings<ToolInstructionSettings>();
 
-            if ( toolSettings.Purposes == null || !toolSettings.Purposes.SequenceEqual( purposes ) )
+            if ( additionalSettings.Preamble != preamble )
             {
-                toolSettings.Purposes = purposes;
-                tool.SetAdditionalSettings( toolSettings );
+                additionalSettings.Preamble = preamble;
+                tool.SetAdditionalSettings( additionalSettings );
                 needSave = true;
             }
 
-            if ( toolSettings.ReturnDescription != returnDescription )
+            if ( instructionSettings.Purposes == null || !instructionSettings.Purposes.SequenceEqual( purposes ) )
             {
-                toolSettings.ReturnDescription = returnDescription;
-                tool.SetAdditionalSettings( toolSettings );
+                instructionSettings.Purposes = purposes;
+                tool.SetAdditionalSettings( instructionSettings );
                 needSave = true;
             }
 
-            if ( toolSettings.Usages == null || !toolSettings.Usages.SequenceEqual( usages ) )
+            if ( instructionSettings.ReturnDescription != returnDescription )
             {
-                toolSettings.Usages = usages;
-                tool.SetAdditionalSettings( toolSettings );
+                instructionSettings.ReturnDescription = returnDescription;
+                tool.SetAdditionalSettings( instructionSettings );
                 needSave = true;
             }
 
-            if ( toolSettings.Guardrails == null || !toolSettings.Guardrails.SequenceEqual( guardrails ) )
+            if ( instructionSettings.Usages == null || !instructionSettings.Usages.SequenceEqual( usages ) )
             {
-                toolSettings.Guardrails = guardrails;
-                tool.SetAdditionalSettings( toolSettings );
+                instructionSettings.Usages = usages;
+                tool.SetAdditionalSettings( instructionSettings );
                 needSave = true;
             }
 
-            if ( toolSettings.Prerequisites == null || !toolSettings.Prerequisites.SequenceEqual( prerequisites ) )
+            if ( instructionSettings.Guardrails == null || !instructionSettings.Guardrails.SequenceEqual( guardrails ) )
             {
-                toolSettings.Prerequisites = prerequisites;
-                tool.SetAdditionalSettings( toolSettings );
+                instructionSettings.Guardrails = guardrails;
+                tool.SetAdditionalSettings( instructionSettings );
                 needSave = true;
             }
 
-            if ( toolSettings.Examples == null || !toolSettings.Examples.SequenceEqual( examples ) )
+            if ( instructionSettings.Prerequisites == null || !instructionSettings.Prerequisites.SequenceEqual( prerequisites ) )
             {
-                toolSettings.Examples = examples;
-                tool.SetAdditionalSettings( toolSettings );
+                instructionSettings.Prerequisites = prerequisites;
+                tool.SetAdditionalSettings( instructionSettings );
+                needSave = true;
+            }
+
+            if ( instructionSettings.Examples == null || !instructionSettings.Examples.SequenceEqual( examples ) )
+            {
+                instructionSettings.Examples = examples;
+                tool.SetAdditionalSettings( instructionSettings );
                 needSave = true;
             }
 
@@ -277,57 +286,66 @@ namespace Rock.Model
                 }
             }
 
+            var additionalSettings = tool.GetAdditionalSettings<ToolAdditionalSettings>();
+
+            if ( additionalSettings.Preamble != semanticTool.Preamble )
+            {
+                additionalSettings.Preamble = semanticTool.Preamble;
+                tool.SetAdditionalSettings( additionalSettings );
+                needSave = true;
+            }
+
             if ( semanticTool.Instructions != null )
             {
-                var toolSettings = tool.GetAdditionalSettings<ToolInstructionSettings>();
+                var instructionSettings = tool.GetAdditionalSettings<ToolInstructionSettings>();
 
-                if ( toolSettings.Purposes == null || !toolSettings.Purposes.SequenceEqual( semanticTool.Instructions.Purposes ) )
+                if ( instructionSettings.Purposes == null || !instructionSettings.Purposes.SequenceEqual( semanticTool.Instructions.Purposes ) )
                 {
-                    toolSettings.Purposes = semanticTool.Instructions.Purposes;
-                    tool.SetAdditionalSettings( toolSettings );
+                    instructionSettings.Purposes = semanticTool.Instructions.Purposes;
+                    tool.SetAdditionalSettings( instructionSettings );
                     needSave = true;
                 }
 
-                if ( toolSettings.ReturnDescription != semanticTool.Instructions.ReturnDescription )
+                if ( instructionSettings.ReturnDescription != semanticTool.Instructions.ReturnDescription )
                 {
-                    toolSettings.ReturnDescription = semanticTool.Instructions.ReturnDescription;
-                    tool.SetAdditionalSettings( toolSettings );
+                    instructionSettings.ReturnDescription = semanticTool.Instructions.ReturnDescription;
+                    tool.SetAdditionalSettings( instructionSettings );
                     needSave = true;
                 }
 
-                if ( toolSettings.Usages == null || !toolSettings.Usages.SequenceEqual( semanticTool.Instructions.Usages ) )
+                if ( instructionSettings.Usages == null || !instructionSettings.Usages.SequenceEqual( semanticTool.Instructions.Usages ) )
                 {
-                    toolSettings.Usages = semanticTool.Instructions.Usages;
-                    tool.SetAdditionalSettings( toolSettings );
+                    instructionSettings.Usages = semanticTool.Instructions.Usages;
+                    tool.SetAdditionalSettings( instructionSettings );
                     needSave = true;
                 }
 
-                if ( toolSettings.Guardrails == null || !toolSettings.Guardrails.SequenceEqual( semanticTool.Instructions.Guardrails ) )
+                if ( instructionSettings.Guardrails == null || !instructionSettings.Guardrails.SequenceEqual( semanticTool.Instructions.Guardrails ) )
                 {
-                    toolSettings.Guardrails = semanticTool.Instructions.Guardrails;
-                    tool.SetAdditionalSettings( toolSettings );
+                    instructionSettings.Guardrails = semanticTool.Instructions.Guardrails;
+                    tool.SetAdditionalSettings( instructionSettings );
                     needSave = true;
                 }
 
-                if ( toolSettings.Prerequisites == null || !toolSettings.Prerequisites.SequenceEqual( semanticTool.Instructions.Prerequisites ) )
+                if ( instructionSettings.Prerequisites == null || !instructionSettings.Prerequisites.SequenceEqual( semanticTool.Instructions.Prerequisites ) )
                 {
-                    toolSettings.Prerequisites = semanticTool.Instructions.Prerequisites;
-                    tool.SetAdditionalSettings( toolSettings );
+                    instructionSettings.Prerequisites = semanticTool.Instructions.Prerequisites;
+                    tool.SetAdditionalSettings( instructionSettings );
                     needSave = true;
                 }
 
-                if ( toolSettings.Examples == null || !toolSettings.Examples.SequenceEqual( semanticTool.Instructions.Examples ) )
+                if ( instructionSettings.Examples == null || !instructionSettings.Examples.SequenceEqual( semanticTool.Instructions.Examples ) )
                 {
-                    toolSettings.Examples = semanticTool.Instructions.Examples;
-                    tool.SetAdditionalSettings( toolSettings );
+                    instructionSettings.Examples = semanticTool.Instructions.Examples;
+                    tool.SetAdditionalSettings( instructionSettings );
                     needSave = true;
                 }
             }
             else
             {
-                var toolSettings = tool.GetAdditionalSettingsOrNull<ToolInstructionSettings>();
+                var instructionSettings = tool.GetAdditionalSettingsOrNull<ToolInstructionSettings>();
 
-                if ( toolSettings != null )
+                if ( instructionSettings != null )
                 {
                     tool.RemoveAdditionalSettings<ToolInstructionSettings>();
                     needSave = true;

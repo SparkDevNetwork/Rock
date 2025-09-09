@@ -168,6 +168,29 @@ namespace Rock.AI.Agent.Providers
         }
 
         /// <inheritdoc/>
+        public override UsageMetric GetMetricUsageFromResult( StreamingChatMessageContent result )
+        {
+            var resultMetadata = result?.Metadata;
+
+            if ( resultMetadata == null || !resultMetadata.ContainsKey( "Usage" ) || resultMetadata["Usage"] == null )
+            {
+                return null;
+            }
+
+            if ( !( resultMetadata["Usage"] is OpenAI.Chat.ChatTokenUsage usage ) )
+            {
+                return null;
+            }
+
+            return new UsageMetric
+            {
+                InputTokenCount = usage.InputTokenCount,
+                OutputTokenCount = usage.OutputTokenCount,
+                TotalTokenCount = usage.TotalTokenCount
+            };
+        }
+
+        /// <inheritdoc/>
         public override PromptExecutionSettings GetFunctionPromptExecutionSettingsForRole( AgentTool function )
         {
             return new OpenAIPromptExecutionSettings

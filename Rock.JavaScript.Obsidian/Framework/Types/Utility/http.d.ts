@@ -31,12 +31,15 @@ export type HttpResult<T> = {
 
 export type HttpDoApiCallFunc = <T>(method: HttpMethod, url: string, params?: HttpUrlParams, data?: HttpBodyData, cancellationToken?: ICancellationToken) => Promise<HttpResult<T>>;
 
+export type HttpDoStreamingApiCallFunc = <T>(method: HttpMethod, url: string, params?: HttpUrlParams, data?: HttpBodyData, cancellationToken?: ICancellationToken) => Promise<HttpResult<ReadableStream<T>>>;
+
 export type HttpGetFunc = <T>(url: string, params?: HttpUrlParams) => Promise<HttpResult<T>>;
 
 export type HttpPostFunc = <T>(url: string, params?: HttpUrlParams, data?: HttpBodyData, cancellationToken?: ICancellationToken) => Promise<HttpResult<T>>;
 
 export type HttpFunctions = {
     doApiCall: HttpDoApiCallFunc;
+    doStreamingApiCall: HttpDoStreamingApiCallFunc;
     get: HttpGetFunc;
     post: HttpPostFunc;
 };

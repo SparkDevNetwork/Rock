@@ -115,6 +115,14 @@ namespace Rock.AI.Agent
         Task<ChatMessageResponse> GetChatMessageResponseAsync( CancellationToken cancellationToken = default );
 
         /// <summary>
+        /// Sends the current chat history information to the language model
+        /// for processing and returns the response from the assistant.
+        /// </summary>
+        /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
+        /// <returns>An object that represents the response from the assistant.</returns>
+        IAsyncEnumerable<StreamingChatMessageResponse> GetStreamingChatMessageResponsesAsync( CancellationToken cancellationToken = default );
+
+        /// <summary>
         /// Invokes a specific function on the chat agent. This is primarily
         /// used by the MCP server to handle function calls from the client.
         /// </summary>

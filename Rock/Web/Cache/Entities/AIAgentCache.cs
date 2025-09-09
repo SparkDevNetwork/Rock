@@ -122,32 +122,34 @@ namespace Rock.Web.Cache.Entities
         /// <returns>An instance of <see cref="SkillConfiguration"/> that represents the skill and tools, or <c>null</c> if the skill should not be used.</returns>
         private static SkillConfiguration GetSkillConfiguration( AISkillCache skill, AgentSkillSettings agentSkillSettings, Person currentPerson, bool isSecurityEnabled, RockContext rockContext )
         {
-            var functions = new AISkillFunctionService( rockContext )
+            var tools = new AISkillFunctionService( rockContext )
                 .Queryable()
                 .Where( f => f.AISkillId == skill.Id )
                 .ToList()
                 .Where( f => !isSecurityEnabled || f.IsAuthorized( Authorization.VIEW, currentPerson ) );
 
-            var skillFunctions = new List<AgentTool>();
+            var skillTools = new List<AgentTool>();
 
-            foreach ( var function in functions )
+            foreach ( var tool in tools )
             {
-                if ( agentSkillSettings.DisabledFunctions?.Contains( function.Guid ) == true )
+                if ( agentSkillSettings.DisabledFunctions?.Contains( tool.Guid ) == true )
                 {
                     continue;
                 }
 
-                var prompt = function.GetAdditionalSettings<PromptInformationSettings>();
-                var instructions = function.GetAdditionalSettings<ToolInstructionSettings>();
+                var prompt = tool.GetAdditionalSettings<PromptInformationSettings>();
+                var additionalSettings = tool.GetAdditionalSettings<ToolAdditionalSettings>();
+                var instructions = tool.GetAdditionalSettings<ToolInstructionSettings>();
 
                 var agentFunction = new AgentTool
                 {
-                    Guid = function.Guid,
-                    Name = function.Name,
-                    Description = function.Description,
+                    Guid = tool.Guid,
+                    Name = tool.Name,
+                    Description = tool.Description,
+                    Preamble = additionalSettings.Preamble,
                     Instructions = instructions,
                     Role = ModelServiceRole.Default, // TODO: Fix this
-                    FunctionType = function.FunctionType,
+                    FunctionType = tool.FunctionType,
                     Prompt = prompt.Prompt ?? string.Empty,
                     EnableLavaPreRendering = prompt.PreRenderLava,
                     Parameters = prompt.PromptParameters,
@@ -155,10 +157,10 @@ namespace Rock.Web.Cache.Entities
                     MaxTokens = prompt.MaxTokens,
                 };
 
-                skillFunctions.Add( agentFunction );
+                skillTools.Add( agentFunction );
             }
 
-            if ( skillFunctions.Count > 0 )
+            if ( skillTools.Count > 0 )
             {
                 var name = skill.Name;
                 var instructions = skill.GetAdditionalSettings<SkillInstructionSettings>();
@@ -170,7 +172,7 @@ namespace Rock.Web.Cache.Entities
                     type = entityType?.GetEntityType();
                 }
 
-                var config = new SkillConfiguration( name, instructions, skillFunctions, type, agentSkillSettings );
+                var config = new SkillConfiguration( name, instructions, skillTools, type, agentSkillSettings );
 
                 return config;
             }
