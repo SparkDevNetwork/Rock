@@ -515,7 +515,7 @@
 
         message?: string | null;
 
-        timestamp?: string | null;
+        timestamp: number;
     };
 
     type ChatAnchorBag = {
@@ -637,13 +637,9 @@
         }
 
         let logText = "";
-        const firstTimestamp = RockDateTime.parseISO(message.logs[0].timestamp!)?.toMilliseconds() ?? 0;
 
         for (const log of message.logs) {
-            const timestamp = RockDateTime.parseISO(log.timestamp!)?.toMilliseconds() ?? 0;
-            const duration = asFormattedString(timestamp - firstTimestamp, 0);
-
-            logText += `<span class="log-time">@${duration}ms</span>`;
+            logText += `<span class="log-time">@${asFormattedString(log.timestamp)}ms</span>`;
             logText += `<span class="log-category" title="${log.category}">${log.logLevelName}</span>`;
             logText += `<span class="log-message">${escapeHtml(log.message!)}</span>\n`;
         }
@@ -815,6 +811,8 @@
                     }
 
                     if (value.message) {
+                        console.log(`Received message chunk: '${value.message.message}'`);
+
                         if (value.message.duration > 0) {
                             liveMessage.value.duration = value.message.duration;
                         }

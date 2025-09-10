@@ -233,6 +233,9 @@ namespace Rock.Blocks.AI
                 return ActionBadRequest( "You are not authorized to access this agent." );
             }
 
+            var startTimestamp = RockDateTime.Now;
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
             var agent = _agentBuilder.Build( agentCache.Id, new ChatAgentOptions
             {
                 IsDebugEnabled = request.IsDebugEnabled,
@@ -241,14 +244,31 @@ namespace Rock.Blocks.AI
 
             await agent.LoadSessionAsync( request.SessionId );
             await agent.AddMessageAsync( AuthorRole.User, request.Message );
+            var internalLogs = new List<ChatDebugLog>();
 
-            async IAsyncEnumerable<SendMessageResponseBag> ResponseFactory()
+            if ( PageParameter( "test" ) == "true" )
             {
-                var sw = System.Diagnostics.Stopwatch.StartNew();
                 var responseStream = agent.GetStreamingChatMessageResponsesAsync();
 
                 await foreach ( var response in responseStream )
                 {
+                    internalLogs.Add( new ChatDebugLog( "Internal", Microsoft.Extensions.Logging.LogLevel.Trace, $"Recieved content chunk '{response.Content}'." ) );
+                }
+
+                var logs = internalLogs.Select( l => $"[@{( long )( l.Timestamp - startTimestamp ).TotalMilliseconds}ms] {l.Message}" ).ToList();
+                logs.Insert( 0, $"Test completed in {sw.Elapsed.TotalMilliseconds}ms." );
+
+                return ActionContent( System.Net.HttpStatusCode.BadRequest, logs );
+            }
+
+            async IAsyncEnumerable<SendMessageResponseBag> ResponseFactory()
+            {
+                var responseStream = agent.GetStreamingChatMessageResponsesAsync();
+
+                await foreach ( var response in responseStream )
+                {
+                    internalLogs.Add( new ChatDebugLog( "Internal", Microsoft.Extensions.Logging.LogLevel.Trace, $"Recieved content chunk '{response.Content}'." ) );
+
                     if ( response.Items != null && response.Items.Any() && response.Items[0] is StreamingFunctionCallContent sfcc )
                     {
                         if ( sfcc.Description.IsNotNullOrWhiteSpace() )
@@ -259,6 +279,11 @@ namespace Rock.Blocks.AI
                             };
                         }
 
+                        continue;
+                    }
+
+                    if ( string.IsNullOrEmpty( response.Content ) && response.Usage == null && response.Debug == null )
+                    {
                         continue;
                     }
 
@@ -286,8 +311,18 @@ namespace Rock.Blocks.AI
                                 LogLevel = ( int ) l.LogLevel,
                                 LogLevelName = l.LogLevel.ToString(),
                                 Message = l.Message,
-                                Timestamp = l.Timestamp.ToRockDateTimeOffset()
-                            } ).ToList();
+                                Timestamp = ( long ) ( l.Timestamp - startTimestamp ).TotalMilliseconds
+                            } ).ToList()
+                            ?? new List<ChatLogBag>();
+
+                        responseBag.Logs.AddRange( internalLogs.Select( l => new ChatLogBag
+                        {
+                            Category = l.Category,
+                            LogLevel = ( int ) l.LogLevel,
+                            LogLevelName = l.LogLevel.ToString(),
+                            Message = l.Message,
+                            Timestamp = ( long ) ( l.Timestamp - startTimestamp ).TotalMilliseconds
+                        } ) );
                     }
 
                     yield return responseBag;
@@ -610,7 +645,7 @@ namespace Rock.Blocks.AI
 
             public string Message { get; set; }
 
-            public DateTimeOffset Timestamp { get; set; }
+            public long Timestamp { get; set; }
         }
 
         /// <summary>
