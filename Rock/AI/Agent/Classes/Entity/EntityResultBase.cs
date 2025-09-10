@@ -80,10 +80,10 @@ namespace Rock.AI.Agent.Classes.Entity
         public virtual bool SanitizeForSecurity( Person currentPerson )
         {
             // Default logic (very basic, override in subclasses for custom behavior)
-            if ( currentPerson == null )
-            {
-                return false;
-            }
+            //if ( currentPerson == null )
+            //{
+            //    return false;
+            //}
 
             // Remove attributes the current person does not have view access to.
             CheckAttributeSecurity( currentPerson );

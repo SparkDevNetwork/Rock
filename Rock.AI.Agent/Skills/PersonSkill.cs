@@ -516,7 +516,7 @@ namespace Rock.AI.Agent.Skills
             }
 
             // Get the request context
-            var requestContext = RockRequestContextAccessor.Current;
+            var requestContext = AgentRequestContext.RockRequestContext;
             var currentPerson = requestContext?.CurrentPerson;
 
             var profileResult = new PersonResult( AgentRequestContext );
