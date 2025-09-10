@@ -4,7 +4,7 @@
         {{ config.error }}
     </NotificationBox>
 
-    <div v-else class="chat-container" ref="chatContainer">
+    <div v-else class="chat-container styled-scroll" ref="chatContainer">
         <div class="sessions-column">
             <div class="sessions-container" ref="sessionsContainer">
                 <div v-for="session in sessions"
@@ -89,47 +89,50 @@
                 </div>
             </div>
 
-            <div v-if="sortedAnchors.length > 0" class="anchors-container">
-                <div v-for="anchor in sortedAnchors"
-                     :key="anchor.id"
-                     class="anchor">
-                    <span class="anchor-type">{{ anchor.entityTypeName }}</span>
-                    <span class="anchor-text">{{ anchor.name }}</span>
-                    <span class="anchor-clear" @click="onDeleteAnchor(anchor.entityTypeId)"><i class="ti ti-x"></i></span>
+            <div class="footer-actions">
+                <div v-if="sortedAnchors.length > 0" class="anchors-container">
+                    <div v-for="anchor in sortedAnchors"
+                         :key="anchor.id"
+                         class="anchor">
+                        <span class="anchor-type">{{ anchor.entityTypeName }}</span>
+                        <span class="anchor-text">{{ anchor.name }}</span>
+                        <span class="anchor-clear" @click="onDeleteAnchor(anchor.entityTypeId)"><i class="ti ti-x"></i></span>
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <div class="action-bar-container">
+                        <TextBox v-model="message"
+                                 placeholder="Ask anything..."
+                                 @keyup.enter="onSubmit">
+                            <template #inputGroupAppend>
+                                <span class="input-group-btn">
+                                    <button :class="isDebugEnabled ? 'btn btn-warning' : 'btn btn-default'"
+                                            type="button"
+                                            :title="isDebugEnabled ? 'Disable Debug Mode' : 'Enable Debug Mode'"
+                                            @click.prevent="onToggleDebugClick">
+                                        <i v-if="isDebugEnabled" class="ti ti-bug"></i>
+                                        <i v-else class="ti ti-bug-off"></i>
+                                    </button>
+
+                                    <button class="btn btn-default"
+                                            type="button"
+                                            @click.prevent="onClearMessages"
+                                            title="Clear Chat History">
+                                        <i class="ti ti-trash"></i>
+                                    </button>
+
+                                    <button class="btn btn-primary"
+                                            type="button"
+                                            :disabled="isSendDisabled"
+                                            @click.prevent="onSubmit"><i class="ti ti-arrow-up"></i></button>
+                                </span>
+                            </template>
+                        </TextBox>
+                    </div>
                 </div>
             </div>
 
-            <div class="action-bar">
-                <div class="action-bar-container">
-                    <TextBox v-model="message"
-                             placeholder="Type your message here..."
-                             @keyup.enter="onSubmit">
-                        <template #inputGroupAppend>
-                            <span class="input-group-btn">
-                                <button :class="isDebugEnabled ? 'btn btn-warning' : 'btn btn-default'"
-                                        type="button"
-                                        :title="isDebugEnabled ? 'Disable Debug Mode' : 'Enable Debug Mode'"
-                                        @click.prevent="onToggleDebugClick">
-                                    <i v-if="isDebugEnabled" class="ti ti-bug"></i>
-                                    <i v-else class="ti ti-bug-off"></i>
-                                </button>
-
-                                <button class="btn btn-default"
-                                        type="button"
-                                        @click.prevent="onClearMessages"
-                                        title="Clear Chat History">
-                                    <i class="ti ti-trash"></i>
-                                </button>
-
-                                <button class="btn btn-primary"
-                                        type="button"
-                                        :disabled="isSendDisabled"
-                                        @click.prevent="onSubmit"><i class="ti ti-arrow-up"></i></button>
-                            </span>
-                        </template>
-                    </TextBox>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -262,7 +265,7 @@
     position: relative;
 }
 
-.action-bar {
+.footer-actions {
     /* this is ugly, don't use as final */
     position: absolute;
     bottom: 0;
@@ -312,7 +315,7 @@
     overflow-y: auto;
     gap: var(--spacing-small);
     margin-bottom: 0;
-    padding: var(--spacing-medium) var(--spacing-medium) 120px var(--spacing-medium);
+    padding: var(--spacing-medium) var(--spacing-medium) 160px var(--spacing-medium);
     background-color: var(--color-interface-softer);
     border: 1px solid var(--color-interface-soft);
     border-radius: var(--rounded-small);
@@ -374,6 +377,7 @@
 .anchors-container {
     display: flex;
     gap: var(--spacing-xsmall);
+    margin: var(--spacing-small) var(--spacing-xlarge);
 }
 
 .anchor {
