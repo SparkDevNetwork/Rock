@@ -198,6 +198,7 @@
     import { asBoolean } from "@Obsidian/Utility/booleanUtils";
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
     import { useHttp } from "@Obsidian/Utility/http";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
 
     const props = defineProps({
         modelValue: {
@@ -340,17 +341,25 @@
             return "300px";
         }
         if (isHorizontal.value) {
-            let perBarSize = 30;
+            const mediumSpacing = parseInt(getCssVariableValue("--spacing-medium", "16"));
+            const barHeight = mediumSpacing;
+            const spaceBetweenBars = parseInt(getCssVariableValue("--spacing-small", "12"));
+            const legendHeight = mediumSpacing;
+
+            let perBarHeight = spaceBetweenBars + barHeight;
+            let chartHeightResult = parseInt(getCssVariableValue("--spacing-xlarge", "48"));
 
             if (!isLegendHidden.value) {
-                perBarSize += 10;
+                chartHeightResult += legendHeight;
             }
 
-            if (isStacked.value) {
-                perBarSize += 30;
+            if (!isStacked.value) {
+                perBarHeight = perBarHeight * barSeries.value.length;
             }
 
-            return chartLabels.value.length * perBarSize + "px";
+            chartHeightResult += chartLabels.value.length * perBarHeight;
+
+            return chartHeightResult + "px";
         }
         return "300px";
     });
@@ -553,6 +562,7 @@
 
     function updateChartForView(chartData: ChartDataBag): void {
         chartLabels.value = chartData.dateLabels ?? chartData.stringLabels ?? chartData?.campusLabels?.map(c => c.text) as string[] ?? [];
+        console.log("Chart Labels: ", chartLabels.value);
         chartSeries.value = (chartData.series ?? []) as LineSeries[];
 
         if (selectedStepProgramViewEnum.value === StepProgramView.Trends) {
@@ -623,6 +633,8 @@
             selectedMeasure: toNumber(selectedMeasure.value) as StepChartMeasure,
             selectedStatusFilter: selectedStatusFilter.value
         });
+
+        console.log("Chart result: ", result);
 
         isLoading.value = false;
 
