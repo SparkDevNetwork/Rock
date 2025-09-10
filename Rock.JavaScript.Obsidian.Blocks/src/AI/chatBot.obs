@@ -75,7 +75,7 @@
                 <div v-if="liveMessage && (liveMessage.function || liveMessage?.message)"
                      class="message"
                      :class="getMessageClass(liveMessage)">
-                    <div v-if="liveMessage.function" class="message-text">
+                    <div v-if="liveMessage.function" class="message-preamble">
                         {{ liveMessage.function }}
                         <span class="ti ti-loader fa fa-spin"></span>
                     </div>
@@ -271,8 +271,8 @@
     bottom: 0;
     left: 0;
     right: 0;
-    padding: var(--spacing-small);
     margin: 0 24px;
+    padding: var(--spacing-large)
 }
 
 .action-bar .btn-warning,
@@ -300,6 +300,7 @@
     border: 1px solid var(--color-interface-soft);
     padding: var(--spacing-small);
     border-radius: 1000px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
 .action-bar-container :deep(input) {
@@ -316,9 +317,9 @@
     gap: var(--spacing-small);
     margin-bottom: 0;
     padding: var(--spacing-medium) var(--spacing-medium) 160px var(--spacing-medium);
-    background-color: var(--color-interface-softer);
     border: 1px solid var(--color-interface-soft);
     border-radius: var(--rounded-small);
+    background-color: var(--color-interface-softest)
 }
 
 .message {
@@ -328,7 +329,7 @@
 }
 
 .message-user {
-    background-color: var(--color-interface-softest);
+    background-color: var(--color-interface-softer);
     border: 1px solid var(--color-interface-soft);
     color: var(--color-interface-strong);
     margin-left: auto;
@@ -340,12 +341,21 @@
 }
 
 .message-assistant {
-    color: var(--color-interface-stronger);
+
     margin-right: auto;
 }
 
 .message-assistant .message-text :deep(p) {
     color: var(--color-interface-stronger);
+}
+
+.message-preamble {
+    font-size: var(--font-size-small);
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-medium);
+    color: var(--color-interface-strong);
+    padding: var(--spacing-tiny) var(--spacing-small);
 }
 
 .message-thinking {
