@@ -794,6 +794,9 @@
                         display: props.categoryShowGridLines === true
                     },
 
+                    // Reverse the axis labels if displaying horizontal bars with date labels.
+                    reverse: !!props.horizontal && !!internalLabelDateFormat.value,
+
                     // Both x and y should be stacked.
                     stacked: props.stack,
 

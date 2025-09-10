@@ -1,4 +1,10 @@
 @charset "UTF-8";
+/* CSS Overrides Top Start */
+@import url('/Styles/styles-v2/icons/fontawesome-icon.css?v=4232385967');
+@import url('/Styles/styles-v2/icons/fontawesome-solid.css?v=4137481333');
+@import url('/Styles/styles-v2/icons/tabler-icon.css?v=225734114');
+/* CSS Overrides Top End */
+
 @import "../../../Styles/summernote/summernote.min.css";
 /* ==================== NORMALIZE ==================== */
 * {
@@ -3487,7 +3493,7 @@ input[type=button].btn-block {
   font-size: var(--font-size-small);
   font-weight: var(--font-weight-bold);
   line-height: var(--line-height-compact);
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   text-align: center;
   white-space: nowrap;
   vertical-align: middle;
@@ -3547,27 +3553,27 @@ input[type=button].btn-block {
 }
 
 .badge-danger {
-  color: var(--color-interface-softest) !important;
+  color: var(--base-interface-softest) !important;
   background-color: var(--color-danger-strong) !important;
 }
 
 .badge-warning {
-  color: var(--color-interface-softest) !important;
+  color: var(--base-interface-softest) !important;
   background-color: var(--color-warning-strong) !important;
 }
 
 .badge-success {
-  color: var(--color-interface-softest) !important;
+  color: var(--base-interface-softest) !important;
   background-color: var(--color-success-strong) !important;
 }
 
 .badge-info {
-  color: var(--color-interface-softest) !important;
+  color: var(--base-interface-softest) !important;
   background-color: var(--color-info-strong) !important;
 }
 
 .badge-critical {
-  color: var(--color-interface-softest) !important;
+  color: var(--base-interface-softest) !important;
   background-color: var(--color-critical-strong) !important;
 }
 
@@ -6214,7 +6220,7 @@ th {
 .table.table-light > thead > tr > th {
   color: var(--color-interface-stronger);
   background-color: transparent;
-  border-color: var(--color-interface-strong);
+  border-color: var(--color-interface-soft);
 }
 .table .table {
   background-color: var(--color-interface-softest);
@@ -7318,16 +7324,21 @@ td.grid-actions {
 }
 .chosen-container-single .chosen-single div {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 14px;
+  right: 12px;
   display: block;
-  width: 36px;
-  height: 38px;
+  width: 12px;
+  height: 12px;
   padding-left: var(--spacing-xsmall);
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: var(--spacing-medium) 12px;
+  -webkit-mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  background-color: var(--color-interface-medium);
 }
 .chosen-container-single .chosen-default {
   color: var(--color-interface-strong);
@@ -13165,7 +13176,10 @@ ul.list-group-panel .list-group-item:last-child,
 
 .assetmanager-files .checkbox {
   width: 20px;
+  height: 20px;
   padding-left: 0;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .assetmanager-actions .fileupload-group {
@@ -13401,7 +13415,7 @@ ul.list-group-panel .list-group-item:last-child,
   border-radius: var(--rounded-small);
 }
 .fileupload-group .fileupload-button span {
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
 }
 .fileupload-group .fileuploaddefault-button {
   width: 100px;
@@ -21813,6 +21827,22 @@ span.data-view-filter-label {
   float: left;
 }
 
+.filter-rule-comparefield,
+.filter-rule-fields {
+  min-width: 0;
+}
+
+.filter-rule-comparefield .ant-select .ant-select-selector {
+  overflow: hidden;
+}
+
+.filter-rule-comparefield .ant-select .ant-select-selection-item,
+.filter-rule-comparefield .ant-select .ant-select-selection-placeholder {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .contribution-payment .tab-content {
   margin-top: 7.5px;
 }
@@ -25253,6 +25283,7 @@ body.rock-modal-page {
   background: var(--color-interface-softer);
 }
 
+.card.card-profile,
 .card.card-profile.card-profile-bio,
 .card:has(.dropdown.open) {
   overflow: visible;
@@ -33678,3 +33709,42 @@ a.rock-bookmark {
 }
 
 /*# sourceMappingURL=theme.css.map */
+
+/* CSS Overrides Bottom Start */
+:root {
+    --base-primary: #FF791D;
+    --logo-image: url('/Assets/Images/rock-logo-circle-white.svg');
+    --base-link: #006DCC;
+    --base-secondary: #83758f;
+    --base-critical: #ee7725;
+    --base-danger: #D70015;
+    --base-info: #005DD7;
+    --base-success: #01A11E;
+    --base-warning: #E58600;
+    --base-interface-strongest: #0a0a0a;
+    --base-interface-stronger: #0d1117;
+    --base-interface-strong: #3d444d;
+    --base-interface-medium: #8B8BA7;
+    --base-interface-soft: #D9D9E3;
+    --base-interface-softer: #f8f8fc;
+    --base-interface-softest: #fdfdfd;
+    --font-size-xsmall: 12px;
+    --font-size-small: 14px;
+    --font-size-regular: 16px;
+    --font-size-h1: 44px;
+    --font-size-h2: 36px;
+    --font-size-h3: 28px;
+    --font-size-h4: 22px;
+    --font-size-h5: 18px;
+    --font-size-h6: 16px;
+    --font-family-title: -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';
+    --font-family-body: -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';
+    --spacing-tiny: 4px;
+    --spacing-xsmall: 8px;
+    --spacing-small: 12px;
+    --spacing-medium: 16px;
+    --spacing-large: 24px;
+    --spacing-xlarge: 48px;
+    --spacing-huge: 80px;
+}
+/* CSS Overrides Bottom End */

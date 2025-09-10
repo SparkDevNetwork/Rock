@@ -148,7 +148,7 @@ th {
   &.table-light > thead > tr > th {
     color:              var(--color-interface-stronger);;
     background-color:   transparent;
-    border-color:       var(--color-interface-strong); //Lighten the ui stronger by 40% when aviable;
+    border-color:       var(--color-interface-soft);
   }
 
   // Nesting

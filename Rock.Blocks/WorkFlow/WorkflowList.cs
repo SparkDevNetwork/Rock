@@ -198,8 +198,9 @@ namespace Rock.Blocks.Workflow
                 var workflowService = new WorkflowService( rockContext );
 
                 workflows = workflowService
-                    .Queryable( "Activities.ActivityType,InitiatorPersonAlias.Person" ).AsNoTracking()
-                    .Where( w => w.WorkflowTypeId.Equals( workflowType.Id ) );
+	                .Queryable( "Activities.ActivityType,Activities.AssignedGroup.Members,Activities.AssignedPersonAlias.Person,Activities.Actions.ActionType,InitiatorPersonAlias.Person,WorkflowType" )
+	                .AsNoTracking()
+	                .Where( w => w.WorkflowTypeId.Equals( workflowType.Id ) );
 
                 // Activated Date Range Filter
                 if ( FilterActivatedDateRangeLowerValue.HasValue )
@@ -248,6 +249,7 @@ namespace Rock.Blocks.Workflow
                 .AddField( "isCompleted", a => a.CompletedDateTime.HasValue )
                 .AddField( "guid", a => a.Guid )
                 .AddField( "workflowTypeIdKey", a => a.WorkflowType.IdKey )
+                .AddField( "hasActiveEntryForm", a => a.HasActiveEntryForm( GetCurrentPerson() ) )
                 .AddAttributeFields( GetGridAttributes() );
         }
 

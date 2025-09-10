@@ -18,7 +18,7 @@
   font-size:          var(--font-size-small);
   font-weight:        var(--font-weight-bold);
   line-height:        var(--line-height-compact);
-  color:              var(--color-interface-softest);
+  color:              var(--base-interface-softest);
   text-align:         center;
   white-space:        nowrap;
   vertical-align:     middle;
@@ -101,27 +101,27 @@
 
 // ======================== ALTERNATIVE BADGE ========================
 .badge-danger {
-  color:            var(--color-interface-softest) !important;
+  color:            var(--base-interface-softest) !important;
   background-color: var(--color-danger-strong) !important;
 }
 
 .badge-warning {
-  color:            var(--color-interface-softest) !important;
+  color:            var(--base-interface-softest) !important;
   background-color: var(--color-warning-strong) !important;
 }
 
 .badge-success {
-  color:            var(--color-interface-softest)  !important;
+  color:            var(--base-interface-softest)  !important;
   background-color: var(--color-success-strong) !important;
 }
 
 .badge-info {
-  color:            var(--color-interface-softest) !important;
+  color:            var(--base-interface-softest) !important;
   background-color: var(--color-info-strong) !important;
 }
 
 .badge-critical {
-  color:            var(--color-interface-softest)  !important;
+  color:            var(--base-interface-softest)  !important;
   background-color: var(--color-critical-strong) !important;
 }
 // ======================== END ALTERNATIVE BADGE ========================

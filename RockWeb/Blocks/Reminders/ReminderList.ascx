@@ -193,14 +193,14 @@
                     <asp:Repeater ID="rptReminders" runat="server" OnItemDataBound="rptReminders_ItemDataBound">
                         <ItemTemplate>
                             <div class="d-flex flex-sm-wrap py-3 px-sm-4 py-sm-4 border-bottom border-panel cursor-pointer" data-reminder-id="<%# Eval("Id") %>">
-                                <div class="flex-grow-0">
+                                <div class="flex-grow-0 d-flex mr-3 align-items-center">
                                     <asp:LinkButton ID="btnComplete" runat="server" class="success-on-hover" CommandArgument='<%# Eval("Id") %>' OnClick="btnComplete_Click">
                                         <asp:Literal ID="lCheckIcon_Complete" runat="server" Visible='<%# Eval("IsComplete") %>'><i class="ti ti-lg ti-circle-check text-success"></i></asp:Literal>
                                         <asp:Literal ID="lCheckIcon_Incomplete" runat="server" Visible='<%# (bool) Eval("IsComplete") == true ? false : true %>'><i class="ti ti-lg ti-circle"></i></asp:Literal>
                                     </asp:LinkButton>
                                 </div>
                                 <div class="d-flex flex-wrap flex-eq">
-                                    <div class="d-inline-flex align-items-center align-items-sm-start col-xs-6 col-sm flex-grow-0 text-nowrap js-reminder-edit-trigger">
+                                    <div class="d-inline-flex align-items-center col-xs-6 col-sm flex-grow-0 text-nowrap js-reminder-edit-trigger">
                                         <span class="label label-default"><asp:Literal ID="lReminderDate" runat="server" Text='<%# Eval("ReminderDate", "{0: M/d/yyyy}") %>' /></span>
                                     </div>
                                     <div class="col-xs-12 col-sm order-3 order-sm-0 mt-2 mt-sm-0 js-reminder-edit-trigger">
@@ -233,7 +233,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-xs-6 col-sm flex-grow-0 text-nowrap text-right">
+                                    <div class="col-xs-6 col-sm d-flex align-items-center flex-grow-0 text-nowrap text-right">
                                         <%-- This button is used to initiate a postback for editing, but should not be displayed to the user. --%>
                                         <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-link btn-square btn-sm btn-overflow d-none js-reminder-edit-button" CommandArgument='<%# Eval("Id") %>' OnClick="btnEdit_Click" />
                                         <asp:LinkButton ID="btnDelete" runat="server" CssClass="btn btn-link btn-square btn-sm btn-overflow" CommandArgument='<%# Eval("Id") %>' OnClick="btnDelete_Click">
@@ -247,7 +247,7 @@
                     </asp:Repeater>
 
                 </div>
-        
+
             </asp:Panel>
         </div>
 

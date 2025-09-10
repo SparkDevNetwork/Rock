@@ -1969,7 +1969,8 @@ namespace Rock.Communication.Chat
                         var rockChatUserKeys = ( personService ?? new PersonService( RockContext ) )
                             .GetActiveRockChatUserKeys( deletePersonIds );
 
-                        // Just in case any people don't have a chat user key, let's at least log them.
+                        // Just in case any people don't have a chat user key, let's at least debug-log them. This often
+                        // represents pending or inactive members that have never been synced to the external chat system.
                         // Subbing "user" for "person" here, as this can get logged in the UI.
                         var membersWithoutChatPersonKeys = deleteMembers
                             .Where( c => !rockChatUserKeys.Any( r => r.PersonId == c.PersonId ) )
@@ -1978,7 +1979,7 @@ namespace Rock.Communication.Chat
                         if ( membersWithoutChatPersonKeys.Any() )
                         {
                             var deleteMembersStructuredLog = "{@MembersWithoutChatPersonKeys}";
-                            Logger.LogWarning( $"{logMessagePrefix}: Unable to delete chat channel members in the external chat system, as matching chat person keys could not be found in Rock. {structuredLog} {deleteMembersStructuredLog}", syncCommands, groupSyncConfig, membersWithoutChatPersonKeys );
+                            Logger.LogDebug( $"{logMessagePrefix}: Unable to delete chat channel members in the external chat system, as matching chat person keys could not be found in Rock. {structuredLog} {deleteMembersStructuredLog}", syncCommands, groupSyncConfig, membersWithoutChatPersonKeys );
                         }
 
                         // Filter down to members that we're sure have keys.

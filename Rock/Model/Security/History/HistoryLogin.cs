@@ -29,7 +29,7 @@ namespace Rock.Model
     /// Represents a history that is entered in Rock and associated with a user login, for both successful and failed login attempts.
     /// Can represent internal and external (OpenID Connect) logins.
     /// </summary>
-    [RockDomain( "Security " )]
+    [RockDomain( "Security" )]
     [NotAudited]
     [Table( "HistoryLogin" )]
     [DataContract]

@@ -155,26 +155,19 @@
   --theme-medium: @gray;
   --theme-light: @gray-lighter;
   --theme-lightest: @gray-lightest;
-
   --theme-white: @white;
   --theme-black: #343A40;
-
   --text-color: @text-color;
-
   --color-primary: @brand-primary;
   --color-success: @brand-success;
   --color-info: @brand-info;
   --color-warning: @brand-warning;
   --color-danger: @brand-danger;
-
   --gutter-x: @grid-gutter-width;
-
   --panel-border: @panel-border;
   --panel-body-padding: @panel-body-padding;
-
   --fa-font-face: @fa-font-face;
   --fa-theme-weight: @fa-theme-weight;
-
   --border-radius-base: @border-radius-base;
   --color-base-primary: @color-base-primary;
   --focus-state-border: 1px solid @input-border-focus;
@@ -233,7 +226,6 @@
 @import "./JCrop/jcrop.less";
 @import "./chosen/bootstrap-chosen-variables.less";
 @import "./chosen/bootstrap-chosen.less";
-
 .fa-font-face( @fa-theme-weight-name, @fa-edition );
 // Single quotes are required for LESS compilation in Rock
 .fa-font-face( 'brands' );
@@ -272,8 +264,13 @@
 
 @import "./Bootstrap/mixins.less";
 
-.imports(true) { @import "_legacy-badges.less"; }
-.imports(false) {  }
+.imports(true) {
+  @import "_legacy-badges.less";
+}
+
+.imports(false) {
+}
+
 .imports(@enable-legacy-badges);
 
 // 2. HTML Overrides
@@ -289,6 +286,7 @@ iframe {
 .form-row {
   .make-row(10px);
   .clearfix();
+
   & > .col,
   & > [class*="col-"] {
     padding-right: 5px;
@@ -393,7 +391,6 @@ a.warning {
     overflow-y: visible;
     font-size: @font-size-base;
   }
-
   // Added to Support Right Aligned Dropdowns
   .dropdown-right & {
     right: 0;
@@ -418,6 +415,7 @@ a.warning {
 
   .dropdown-item-danger {
     color: @brand-danger;
+
     &:hover {
       color: #fff;
       background-color: @brand-danger;
@@ -473,7 +471,6 @@ th[align="right"] {
 .form-right {
   margin-bottom: 12px;
   text-align: right;
-
   .clearfix();
 
   .control-label {
@@ -552,7 +549,6 @@ th[align="right"] {
     background-color: @popover-title-bg;
     border-bottom: 1px solid darken(@popover-title-bg, 5%);
     border-radius: 5px 5px 0 0;
-
     .clearfix();
 
     img {
@@ -658,7 +654,6 @@ th[align="right"] {
       margin-bottom: 0;
     }
   }
-
   // .panel-body {
   //   border-radius: 0 0 @border-radius-base @border-radius-base;
   // }
@@ -847,8 +842,10 @@ th[align="right"] {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
+
     .actions {
       margin: -4px 0 -4px auto;
+
       a {
         margin-left: 4px;
       }
@@ -871,7 +868,6 @@ th[align="right"] {
             line-height: 1.5;
             // force long words to wrap
             overflow-wrap: break-word;
-
             // force link attributes to clamp to one line with ellipsis without using block
             > a {
               display: inline-block;
@@ -890,7 +886,6 @@ th[align="right"] {
         label {
           margin-bottom: 3px;
         }
-
       }
     }
 
@@ -906,7 +901,6 @@ th[align="right"] {
     .form-group + h4 {
       margin-top: 24px;
     }
-
     // styles for matrix attributes
     .form-group.static-control.matrix-attribute label {
       width: 100%;
@@ -930,7 +924,6 @@ th[align="right"] {
 
 .panel-block {
   border-top-color: @panel-top-border-color;
-
   .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
   > .panel-heading {
@@ -1010,6 +1003,7 @@ th[align="right"] {
       > [class*="col-"] {
         padding-top: @panel-body-padding;
         padding-bottom: @panel-body-padding;
+
         &:not(:last-child),
         &.show-divider {
           border-bottom: 1px solid @panel-border;
@@ -1059,7 +1053,6 @@ th[align="right"] {
 .panel-analytics {
   .panel-body {
     padding: ~"0 calc(var(--gutter-x) * 0.5)";
-
     // & > .row > [class*="col-"]:first-child {
     //   padding-top: 15px;
     //   padding-bottom: 15px;
@@ -1120,7 +1113,6 @@ th[align="right"] {
   color: @panel-heading-text-color;
   cursor: pointer;
   border-bottom: 1px solid @panel-border;
-
   .clearfix();
 
   i {
@@ -1197,7 +1189,6 @@ th[align="right"] {
 .btn.aspNetDisabled {
   pointer-events: none; // Future-proof disabling of clicks
   cursor: not-allowed;
-
   .opacity(.65);
   .box-shadow(none);
 }
@@ -1242,6 +1233,7 @@ th[align="right"] {
 
   &.google {
     color: @btn-default-color;
+
     &:before {
       background-image: url("/Assets/Icons/googlesigninicon.svg");
       background-size: contain;
@@ -1283,6 +1275,7 @@ th[align="right"] {
 
 .btn-overflow {
   color: @text-muted;
+
   &:hover,
   &:focus {
     color: @text-color;
@@ -1342,7 +1335,7 @@ th[align="right"] {
 }
 
 .alert {
-  .help{
+  .help {
     border-bottom: 0;
   }
 }
@@ -1432,6 +1425,7 @@ div.aspNetDisabled {
 .btn-outline-default {
   .button-outline-variant(@btn-default-color; @btn-default-bg; @btn-default-border);
 }
+
 .btn-outline-primary {
   .button-outline-variant(@btn-primary-color; @btn-primary-bg; @btn-primary-border);
 }
@@ -1459,11 +1453,13 @@ div.aspNetDisabled {
     background-color: darken(@btn-danger-bg, 10%);
     border-color: darken(@btn-danger-border, 25%);
   }
+
   &:hover {
     color: @btn-danger-color;
     background-color: darken(@btn-danger-bg, 10%);
     border-color: darken(@btn-danger-border, 12%);
   }
+
   &:active,
   &.active,
   .open > .dropdown-toggle& {
@@ -1480,6 +1476,7 @@ div.aspNetDisabled {
       border-color: darken(@btn-danger-border, 25%);
     }
   }
+
   &.disabled,
   &[disabled],
   fieldset[disabled] & {
@@ -1504,7 +1501,6 @@ div.aspNetDisabled {
 .badge-bar {
   display: flex;
   align-items: center;
-
   --badge-size: 36px;
 
   .badge {
@@ -1566,6 +1562,7 @@ div.aspNetDisabled {
   text-align: center;
   max-width: 580px;
   margin: 32px auto;
+
   .text {
     padding: 0 6px;
     text-transform: uppercase;
@@ -1601,8 +1598,8 @@ div.aspNetDisabled {
     border-top-right-radius: inherit;
   }
 }
+
 .modal.container.modal-content.rock-modal form {
   border-bottom-right-radius: inherit;
   border-bottom-left-radius: inherit;
-
 }

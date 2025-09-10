@@ -288,15 +288,35 @@ namespace Rock.Jobs
             // -------------------------------------------------------------------------------
             // 1b) Delete any Rock chat users who no longer exist in the external chat system.
 
-            UpdateLastStatusMessage( "Synchronizing Rock People to Chat Individuals..." );
-
             // Technically, this should be considered a Chat-to-Rock sync operation, but we need to perform it up front,
             // as it's important to delete these Rock chat users before attempting to perform the remaining Rock-to-Chat
             // sync operations. This should prevent exceptions that might otherwise be encountered by referencing chat
             // user keys that have already been deleted in the external chat system. We won't report these deletions in
             // the job results, as we don't want to cause alarm.
 
-            await chatHelper.DeleteRockChatUsersMissingFromChatProviderAsync();
+            /*
+                9/9/2025 - JPH
+
+                The following `chatHelper.DeleteRockChatUsersMissingFromChatProviderAsync()` call is problematic, as
+                Stream doesn't let us query for all users while providing an offset value > 1000. If we decide to
+                re-enable this step of the job, we should improve our `StreamChatProvider.GetAllChatUserKeysAsync()`
+                method to use Stream's ID-based pagination approach. However - for now - we don't think we need this
+                step of the job at all, since we've added pretty robust exception handling to detect if a chat user has
+                been deleted from Stream without Rock receiving and properly handling the corresponding webhook.
+
+                Here's the exception handling to detect and remove deleted Stream chat users:
+                https://github.com/SparkDevNetwork/Rock/blob/a5736ac2bd4f22956e3d412de51f02792d3fbe9f/Rock/Communication/Chat/Stream/StreamChatProvider.cs#L3353-L3413
+
+                Here's where Stream mentions their offset limit of 1000:
+                https://getstream.io/chat/docs/dotnet-csharp/query_users/#supported-queries
+
+                Reason: Prevent Stream exceptions when attempting to query for more than 1k users.
+             */
+
+
+            //UpdateLastStatusMessage( "Synchronizing Rock People to Chat Individuals..." );
+
+            //await chatHelper.DeleteRockChatUsersMissingFromChatProviderAsync();
 
             // ------------------------------------------------------------------
             // 1c) Delete any deceased individuals from the external chat system.

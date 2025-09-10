@@ -302,7 +302,6 @@ namespace Rock.Model
                     // may not be set if the entityType was just added.
                     block.EntityType = entityType;
                     block.Path = null;
-                    BlockTypeCache.FlushItem( block.Id );
 
                     // Look for older blocktypes that were formerly using that EntityId
                     // and remove them.
@@ -313,7 +312,6 @@ namespace Rock.Model
                         foreach ( var oldBlockType in oldBlockTypes )
                         {
                             blockTypeService.Delete( oldBlockType );
-                            BlockTypeCache.FlushItem( oldBlockType.Id );
                         }
                     }
                 }

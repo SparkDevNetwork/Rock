@@ -4,22 +4,23 @@
 
         <ValueDetailList :modelValue="topValues" />
 
-        <div class="row mb-4">
+        <div class="row">
             <div class="col-md-6">
                 <ValueDetailList :modelValue="leftSideValues" />
+                <NotificationBox v-if="resendMessage" :alertType="resendMessageType">{{ resendMessage }}</NotificationBox>
+            </div>
 
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-md-6">
                 <RockButton :btnSize="BtnSize.Default"
                             :btnType="BtnType.Default"
                             class="btn btn-default btn-xs"
                             @click="onResend"
                             :isLoading="isResendLoading">Resend</RockButton>
-
-                <NotificationBox v-if="resendMessage" :alertType="resendMessageType">{{ resendMessage }}</NotificationBox>
-
-            </div>
-
-            <div class="col-md-6">
-                <ValueDetailList :modelValue="rightSideValues" />
             </div>
         </div>
 
@@ -28,7 +29,7 @@
         <div class="pdfobject-container" v-if="documentUrl">
             <embed :src="documentUrl" class="pdfobject" type="application/pdf" title="Embedded PDF" style="overflow: auto; width: 100%; height: 900px;" />
         </div>
-    
+
     </fieldset>
 </template>
 
@@ -91,11 +92,11 @@
         if (!props.modelValue) {
             return valueBuilder.build();
         }
-        
+
         if(props.modelValue.appliesToPersonAlias?.text) {
             valueBuilder.addTextValue("Applies To", props.modelValue.appliesToPersonAlias.text);
         }
-        
+
         if (props.modelValue.signedByPersonAlias?.text) {
             valueBuilder.addTextValue("Signed By", props.modelValue.signedByPersonAlias.text);
         }
@@ -158,7 +159,7 @@
 
     // #region Event Handlers
     /**
-     * Event handler for the Resend button being clicked. 
+     * Event handler for the Resend button being clicked.
      */
     async function onResend(): Promise<void> {
         isResendLoading.value = true;

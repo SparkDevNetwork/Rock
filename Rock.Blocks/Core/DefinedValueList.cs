@@ -120,8 +120,12 @@ namespace Rock.Blocks.Core
             }
 
             var entity = GetDefinedType();
-            var attributes = AttributeCache.GetByEntityTypeQualifier( new DefinedValue().TypeId, "DefinedTypeId", entity.Id.ToString(), true );
-            securityGrant.AddRulesForAttributes( attributes );
+
+            if ( entity != null )
+            {
+                var attributes = AttributeCache.GetByEntityTypeQualifier( new DefinedValue().TypeId, "DefinedTypeId", entity.Id.ToString(), true );
+                securityGrant.AddRulesForAttributes( attributes );
+            }
 
             return securityGrant.ToToken();
         }

@@ -430,7 +430,7 @@ namespace Rock.Workflow
             var personService = new PersonService( _rockContext );
             var primaryFamily = personService.GetSelect( personEntryPersonId, s => s.PrimaryFamily );
 
-            if ( personEntryValues.Spouse != null )
+            if ( personEntryValues.Spouse != null && personEntryValues.Spouse.FirstName.IsNotNullOrWhiteSpace() )
             {
                 var personEntryPersonSpouse = CreateOrUpdatePersonFromEntryValues( form, existingSpouse, primaryFamily, personEntryValues.Spouse );
                 if ( personEntryPersonSpouse.Id == 0 )

@@ -28,29 +28,29 @@
                               label="Applies To"
                               help="The person that this document applies to."
                               rules="required" />
-                <template v-else>
-                    <RockLabel>Applies To</RockLabel>
-                    <div>{{ appliesToPersonAlias?.text }}</div>
-                </template>
+
+                <StaticFormControl v-else
+                            label="Applies To"
+                            :modelValue="appliesToPersonAlias.text ?? ''" />
 
                 <PersonPicker v-model="assignedToPersonAlias"
                               v-if="isLegacyDocument"
                               label="Assigned To"
                               help="The person that this document was assigned to for getting a signature."
                               rules="required" />
-                <template v-else>
-                    <RockLabel>Assigned To</RockLabel> 
-                    <div>{{ assignedToPersonAlias?.text }}</div>
-                </template>
+
+                <StaticFormControl v-else
+                            label="Assigned To"
+                            :modelValue="assignedToPersonAlias.text ?? ''" />
 
                 <PersonPicker v-model="signedByPersonAlias"
                               v-if="isLegacyDocument"
                               label="Signed By"
                               help="The person that signed this." />
-                <template v-else>
-                    <RockLabel>Signed By</RockLabel>
-                    <div>{{ signedByPersonAlias?.text }}</div>
-                </template>
+
+                <StaticFormControl v-else
+                            label="Signed By"
+                            :modelValue="signedByPersonAlias.text ?? ''" />
             </div>
         </div>
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
@@ -65,6 +65,7 @@
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { SignatureDocumentBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentDetail/signatureDocumentBag";
@@ -142,7 +143,7 @@
         const newValue: ValidPropertiesBox<SignatureDocumentBag> = {
             bag: { ...props.modelValue.bag } as SignatureDocumentBag
         };
-        
+
         setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
         setPropertiesBoxValue(newValue, "name", name.value);
         setPropertiesBoxValue(newValue, "status", toNumber(status.value) as SignatureDocumentStatus);

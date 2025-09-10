@@ -35,14 +35,14 @@
 <style scoped>
 .message {
     display: flex;
-    padding: 12px;
-    border-radius: 6px;
+    padding: var(--spacing-small);
+    border-radius: var(--rounded-small);
     cursor: pointer;
     transition: background-color 0.15s linear;
 }
 
 .message:hover {
-    background-color: #faf7f5;
+    background-color: var(--color-interface-softer);
 }
 
 .message-icon {
@@ -51,12 +51,12 @@
 }
 
 .message-icon > .image {
-    background: #eee;
+    background: var(--color-interface-softest);
     width: 48px;
     height: 48px;
-    border-radius: 24px;
-    margin-right: 16px;
-    margin-bottom: 16px;
+    border-radius: var(--rounded-huge);
+    margin-right: var(--spacing-medium);
+    margin-bottom: var(--spacing-medium);
 }
 
 .message-icon > .count {
@@ -64,11 +64,11 @@
     color: var(--message-dark-color, #fff);
     width: 32px;
     height: 32px;
-    border-radius: 16px;
+    border-radius: var(--rounded-xlarge);
     position: absolute;
     right: 0;
     bottom: 0;
-    border: 3px solid #fff;
+    border: 3px solid var(--color-interface-softest);
     text-align: center;
 }
 
@@ -82,9 +82,10 @@
 }
 
 .mark-as-read-button {
-    margin-left: 16px;
+    margin-left: var(--spacing-medium);
     opacity: 0;
     transition: opacity 0.15s linear;
+    align-self: center;
 }
 
 .message:hover .mark-as-read-button {
@@ -93,7 +94,7 @@
 
 .unread-indicator {
     align-self: center;
-    margin-left: 16px;
+    margin-left: var(--spacing-medium);
     width: 14px;
     height: 14px;
     border-radius: 7px;
@@ -211,6 +212,11 @@
             return await alert(result.errorMessage || "Unable to interact with the action.");
         }
 
+        // Temporary fix to force the reminder/notification counts to update
+        // on next page load. In the future this will be replaced with a browser
+        // bus message to cause an immediate update.
+        localStorage.removeItem("Rock.Core.ReminderLinks.Counts");
+
         props.message.isRead = request.isRead;
 
         if (result.data?.isDeleted) {
@@ -249,6 +255,11 @@
         }
 
         props.message.isRead = request.isRead;
+
+        // Temporary fix to force the reminder/notification counts to update
+        // on next page load. In the future this will be replaced with a browser
+        // bus message to cause an immediate update.
+        localStorage.removeItem("Rock.Core.ReminderLinks.Counts");
 
         if (result.data?.isDeleted) {
             emit("remove");

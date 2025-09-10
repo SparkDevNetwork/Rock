@@ -83,7 +83,7 @@ namespace Rock.Net
         /// <value>
         /// The current user.
         /// </value>
-        public virtual UserLogin CurrentUser { get; protected set; }
+        public virtual UserLogin CurrentUser { get; internal set; }
 
         /// <summary>
         /// Gets the current person.
