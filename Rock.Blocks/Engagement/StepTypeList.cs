@@ -228,31 +228,44 @@ namespace Rock.Blocks.Engagement
                 stepQueryable = stepQueryable.Where( s => s.CampusId == campusContext.Id );
             }
 
-            var stepCountsQueryable = stepQueryable
-                .GroupBy( s => s.StepTypeId )
-                .Select( g => new
-                {
-                    StepTypeId = g.Key,
-                    Started = g.Count(),
-                    Completed = g.Count( s => s.StepStatus != null && s.StepStatus.IsCompleteStatus )
-                } );
+            //var stepCountsQueryable = stepQueryable
+            //    .GroupBy( s => s.StepTypeId )
+            //    .Select( g => new
+            //    {
+            //        StepTypeId = g.Key,
+            //        Started = g.Count(),
+            //        Completed = g.Count( s => s.StepStatus != null && s.StepStatus.IsCompleteStatus )
+            //    } );
+
+            //var queryable = stepTypeQueryable
+            //    .GroupJoin(
+            //        stepCountsQueryable,
+            //        st => st.Id,
+            //        sc => sc.StepTypeId,
+            //        ( st, scs ) => new { StepType = st, Counts = scs }
+            //    )
+            //    .SelectMany(
+            //        x => x.Counts.DefaultIfEmpty(),
+            //        ( x, sc ) => new StepTypeWithCounts
+            //        {
+            //            StepType = x.StepType,
+            //            StartedCount = sc != null ? sc.Started : 0,
+            //            CompletedCount = sc != null ? sc.Completed : 0
+            //        }
+            //    );
 
             var queryable = stepTypeQueryable
                 .GroupJoin(
-                    stepCountsQueryable,
+                    stepQueryable,
                     st => st.Id,
-                    sc => sc.StepTypeId,
-                    ( st, scs ) => new { StepType = st, Counts = scs }
-                )
-                .SelectMany(
-                    x => x.Counts.DefaultIfEmpty(),
-                    ( x, sc ) => new StepTypeWithCounts
+                    s => s.StepTypeId,
+                    ( st, steps ) => new StepTypeWithCounts
                     {
-                        StepType = x.StepType,
-                        StartedCount = sc != null ? sc.Started : 0,
-                        CompletedCount = sc != null ? sc.Completed : 0
-                    }
-                );
+                        StepType = st,
+                        StartedCount = steps.Count(),
+                        CompletedCount = steps.Count( s => s.StepStatus != null && s.StepStatus.IsCompleteStatus )
+                    } );
+
 
             return queryable;
         }

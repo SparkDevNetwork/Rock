@@ -157,6 +157,11 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         public SankeyDiagramSettingsBag StepFlowConfigurationBag { get; set; }
 
         /// <summary>
+        /// Gets or sets a list of ListItemBags for the Step Type dropdown list filter on the Step Flow view.
+        /// </summary>
+        public List<ListItemBag> StepTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets the value indicating whter the current program contains steps with Impact Adjustment settings configured.
         /// </summary>
         public bool HasImpactAdjustedStepTypes { get; set; }

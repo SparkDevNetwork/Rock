@@ -115,7 +115,7 @@
 </style>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { EngagementType, EngagementTypeDescription } from "@Obsidian/Enums/Engagement/engagementType";
     import Grid, { TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, NumberColumn, Column, ButtonColumn, numberValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
@@ -128,10 +128,20 @@
     import GridSettingsModal from "./StepTypeList/gridSettingsModal.partial.obs";
     import { computed, reactive, ref, watch } from "vue";
     import { useStore } from "@Obsidian/PageState";
+    import { PageMessages } from "@Obsidian/Utility/browserBus";
+    import { ContextEntityChangedData, Message } from "@Obsidian/Types/Utility/browserBus";
+    import { areEqual } from "@Obsidian/Utility/guid";
 
     const config = useConfigurationValues<ListBlockBox<StepTypeListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const preferences = usePersonPreferences().blockPreferences;
+    const browserBus = useBlockBrowserBus();
+
+    browserBus.subscribe(PageMessages.ContextEntityChanged, async (message: Message<ContextEntityChangedData>) => {
+        if (areEqual(message.data.entityTypeGuid, EntityType.Campus)) {
+            gridDataSource.value = loadGridData();
+        }
+    });
 
     // #region Values
 

@@ -1,5 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
+    <ContextSlicer title="Filter By Campus"
+                   class="campus-slicer"
+                   showCampus />
+
     <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
     <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
@@ -40,6 +44,12 @@
                        :availableStepPrograms="config.options?.stepPrograms ?? []" />
 </template>
 
+<style scoped>
+.campus-slicer {
+    margin-bottom: var(--spacing-large);
+}
+</style>
+
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -48,6 +58,7 @@
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./StepTypeDetail/editPanel.partial.obs";
+    import ContextSlicer from "@Obsidian/Controls/contextSlicer.obs";
     import ViewPanel from "./StepTypeDetail/viewPanel.partial.obs";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock, useReloadBlock } from "@Obsidian/Utility/block";
     import StepTypeMoveModal from "./StepTypeDetail/stepTypeMoveModal.partial.obs";

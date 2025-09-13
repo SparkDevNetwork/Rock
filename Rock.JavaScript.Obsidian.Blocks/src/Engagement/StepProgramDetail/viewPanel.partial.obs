@@ -17,7 +17,7 @@
             <ContentStack>
                 <div v-if="selectedStepProgramViewEnum === StepProgramView.Flow" class="row">
                     <RockForm @submit="fetchStepFlowData" ref="flowForm">
-                        <div class="col-md-3">
+                        <div class="col-md-6">
                             <NumberBox v-model="maxLevels"
                                        :decimalCount="0"
                                        :minimumValue="2"
@@ -25,6 +25,12 @@
                                        formGroupClasses="col"
                                        label="Max Levels to Display"
                                        help="The maximum number of levels to show in the flow. It's possible that an individual could take the same level twice in the course of completing a step program." />
+                        </div>
+                        <div class="col-md-6">
+                            <DropDownList v-model="startingStepTypes"
+                                          :items="availableStepTypes"
+                                          :multiple="true"
+                                          label="Starting Step Types" />
                         </div>
                     </RockForm>
                 </div>
@@ -90,6 +96,7 @@
                           :stack="isStacked"
                           :horizontal="isHorizontal"
                           :hideLegend="isLegendHidden"
+                          :valueSuggestedMin="0"
                           categoryShowAllTicks
                           @click="onBarChartClicked" />
 
@@ -98,9 +105,8 @@
                            :labels="chartLabels"
                            :labelDateFormat="dateUnit"
                            :hideLegend="isLegendHidden"
-                           categoryShowGridLines
-                           linear
-                           unfilled />
+                           :valueSuggestedMin="0"
+                           categoryShowGridLines />
 
             </div>
 
@@ -267,7 +273,7 @@
 
     const flowNodes = ref<SankeyDiagramNodeBag[]>([]);
     const flowEdges = ref<SankeyDiagramEdgeBag[]>([]);
-    // These are Block Attributes on the Step Flow Block.
+    // TODO - These are Block Attributes on the Step Flow Block.
     const settings = ref<SankeyDiagramSettingsBag>({
         nodeWidth: 8,
         nodeVerticalSpacing: 8,
@@ -276,6 +282,7 @@
         legendHtml: props.modelValue?.stepFlowConfigurationBag?.legendHtml ?? ""
     });
     const flowForm = ref<InstanceType<typeof RockForm>>();
+    const availableStepTypes = ref<ListItemBag[]>(props.modelValue?.stepTypes ?? []);
 
     const chartSeries = ref<LineSeries[] | BarSeries[]>([]);
     const chartLabels = ref<string[]>([]);
@@ -287,6 +294,7 @@
     const attributes = ref(props.modelValue?.attributes ?? {});
     const attributeValues = ref(props.modelValue?.attributeValues ?? {});
     const maxLevels = ref(4);
+    const startingStepTypes = ref();
     const isLoading = ref(false);
     const dateRangeText = ref<string>("");
     const name = ref(props.modelValue?.name ?? "");
@@ -563,7 +571,7 @@
     function updateChartForView(chartData: ChartDataBag): void {
         chartLabels.value = chartData.dateLabels ?? chartData.stringLabels ?? chartData?.campusLabels?.map(c => c.text) as string[] ?? [];
         console.log("Chart Labels: ", chartLabels.value);
-        chartSeries.value = (chartData.series ?? []) as LineSeries[];
+        chartSeries.value = (chartData.series ?? []) as LineSeries[] | BarSeries[];
 
         if (selectedStepProgramViewEnum.value === StepProgramView.Trends) {
             updateDateUnit(chartData);
@@ -702,9 +710,11 @@
         const request: {
             dateRange: SlidingDateRangeBag | null;
             maxLevels: number;
+            startingStepTypes: string[]
         } = {
             dateRange: dateRangeParam,
             maxLevels: maxLevels.value,
+            startingStepTypes: startingStepTypes.value ?? []
         };
 
         const response = await invokeBlockAction<StepFlowGetDataBag>("GetStepFlowData", request);
@@ -736,12 +746,17 @@
 
         // Setting default measure values.
         if (selectedMeasure.value === "") {
-            if (selectedStepProgramView.value === StepProgramView.Campuses.toString()) {
+            if (selectedStepProgramViewEnum.value === StepProgramView.Campuses) {
                 selectedMeasure.value = StepChartMeasure.TotalSteps.toString();
             }
-            else if (selectedStepProgramView.value === StepProgramView.Trends.toString() || selectedStepProgramView.value === StepProgramView.Totals.toString()) {
+            else if (selectedStepProgramViewEnum.value === StepProgramView.Trends || selectedStepProgramViewEnum.value === StepProgramView.Totals) {
                 selectedMeasure.value = StepChartMeasure.Steps.toString();
             }
+        }
+
+        if (selectedMeasureEnum.value === StepChartMeasure.AvgTotalStepsPerWeekendAttendee && selectedStepProgramViewEnum.value !== StepProgramView.Campuses) {
+            selectedMeasure.value = StepChartMeasure.Steps.toString();
+            resetChartStateFlags();
         }
 
         // If we are switching to the Totals or Campuses view than we need to set the chart type to a Bar Chart.
@@ -765,7 +780,7 @@
         fetchByStepProgramView[selectedStepProgramViewEnum.value]();
     });
 
-    watch(maxLevels, () => {
+    watch([maxLevels, startingStepTypes], () => {
         console.log("Max Levels changed. Flow state is now dirty.");
 
         chartStateFlags[StepProgramView.Flow] = false;

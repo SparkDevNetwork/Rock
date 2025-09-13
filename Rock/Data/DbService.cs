@@ -90,10 +90,21 @@ namespace Rock.Data
                         {
                             foreach ( var parameter in parameters )
                             {
-                                SqlParameter sqlParam = new SqlParameter();
-                                sqlParam.ParameterName = parameter.Key.StartsWith( "@" ) ? parameter.Key : "@" + parameter.Key;
-                                sqlParam.Value = parameter.Value;
-                                sqlCommand.Parameters.Add( sqlParam );
+                                if ( parameter.Value is SqlParameter existingParam )
+                                {
+                                    if ( string.IsNullOrWhiteSpace( existingParam.ParameterName ) )
+                                    {
+                                        existingParam.ParameterName = parameter.Key.StartsWith( "@" ) ? parameter.Key : "@" + parameter.Key;
+                                    }
+                                    sqlCommand.Parameters.Add( existingParam );
+                                }
+                                else
+                                {
+                                    SqlParameter sqlParam = new SqlParameter();
+                                    sqlParam.ParameterName = parameter.Key.StartsWith( "@" ) ? parameter.Key : "@" + parameter.Key;
+                                    sqlParam.Value = parameter.Value;
+                                    sqlCommand.Parameters.Add( sqlParam );
+                                }
                             }
                         }
 

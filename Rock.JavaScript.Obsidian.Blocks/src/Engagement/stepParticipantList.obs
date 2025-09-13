@@ -130,7 +130,7 @@
 </style>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
     import Grid, { AttributeColumns, pickExistingValueFilter, dateValueFilter, TextColumn, textValueFilter, DeleteColumn, SelectColumn, DateColumn, ButtonColumn, Column } from "@Obsidian/Controls/grid";
@@ -142,9 +142,19 @@
     import { computed, reactive, ref } from "vue";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { useStore } from "@Obsidian/PageState";
+    import { PageMessages } from "@Obsidian/Utility/browserBus";
+    import { ContextEntityChangedData, Message } from "@Obsidian/Types/Utility/browserBus";
+    import { areEqual } from "@Obsidian/Utility/guid";
 
     const config = useConfigurationValues<ListBlockBox<StepParticipantListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const browserBus = useBlockBrowserBus();
+
+    browserBus.subscribe(PageMessages.ContextEntityChanged, async (message: Message<ContextEntityChangedData>) => {
+        if (areEqual(message.data.entityTypeGuid, EntityType.Campus)) {
+            gridDataSource.value = loadGridData();
+        }
+    });
 
     // #region Values
 

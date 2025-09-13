@@ -24,6 +24,8 @@ using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
+using ChartDataBag = Rock.ViewModels.Blocks.Engagement.StepProgramDetail.ChartDataBag;
+using SeriesBag = Rock.ViewModels.Blocks.Engagement.StepProgramDetail.SeriesBag;
 using Rock.ViewModels.Blocks.Engagement.StepTypeDetail;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
@@ -468,21 +470,6 @@ namespace Rock.Blocks.Engagement
 
             bag.Kpi = GetKpi( defaultDateRange );
             bag.DefaultDateRange = GetSlidingDateRangeBag( defaultDateRange );
-
-            var showActivitySummary = ShowActivitySummary();
-
-            if ( showActivitySummary )
-            {
-                // Get chart data and set visibility of related elements.
-                var chartFactory = GetChartJsFactory( defaultDateRange );
-
-                if ( chartFactory.HasData )
-                {
-                    var args = GetChartArgs();
-                    // Add client script to construct the chart.
-                    bag.ChartData = chartFactory.GetChartDataJson( args );
-                }
-            }
 
             bag.ShowChart = GetAttributeValue( AttributeKey.ShowChart ).AsBoolean();
 
@@ -1062,127 +1049,6 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <summary>
-        /// Returns true if the block should display the Activity Summary chart.
-        /// </summary>
-        /// <returns></returns>
-        private bool ShowActivitySummary()
-        {
-            // Set the visibility of the Activity Summary chart.
-            var showActivitySummary = GetAttributeValue( AttributeKey.ShowChart ).AsBoolean( true );
-            var stepTypeId = GetStepTypeId();
-
-            if ( showActivitySummary )
-            {
-                // If the Step Type does not have any activity, hide the Activity Summary.
-                var stepService = new StepService( RockContext );
-                var stepsQuery = stepService.Queryable().AsNoTracking()
-                                    .Where( x => x.StepTypeId == stepTypeId );
-                showActivitySummary = stepsQuery.Any();
-            }
-
-            return showActivitySummary;
-        }
-
-        /// <summary>
-        /// Gets a configured factory that creates the data required for the chart.
-        /// </summary>
-        /// <returns></returns>
-        public ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( string delimitedDateRange )
-        {
-            var reportPeriod = new TimePeriod( delimitedDateRange );
-            var dateRange = reportPeriod.GetDateRange();
-            var startDate = dateRange.Start?.Date;
-            var endDate = dateRange.End;
-
-            // Initialize a new Chart Factory.
-            var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>();
-
-            if ( reportPeriod.TimeUnit == TimePeriodUnitSpecifier.Year )
-            {
-                factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Month;
-            }
-            else
-            {
-                factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Day;
-            }
-
-            factory.StartDateTime = startDate;
-            factory.EndDateTime = endDate;
-            factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line;
-
-            // Determine the appropriate date grouping for the chart data points.
-            Func<int, int> groupKeySelector;
-            var groupByDay = factory.TimeScale == ChartJsTimeSeriesTimeScaleSpecifier.Day;
-
-            if ( groupByDay )
-            {
-                // Group Steps by Start Date.
-                groupKeySelector = x => x;
-            }
-            else
-            {
-                // Group Steps by Start Date rounded to beginning of the month.
-                groupKeySelector = x => x / 100;
-            }
-
-            // Add data series for Steps started.
-            var startedSeriesDataPoints = GetStartedStepQuery( delimitedDateRange )
-                .Select( x => x.StartDateKey.Value )
-                .ToList()
-                .GroupBy( groupKeySelector )
-                .Select( x => new ChartDatasetInfo
-                {
-                    DatasetName = "Started",
-                    DateTime = groupByDay ? x.Key.GetDateKeyDate() : ( ( x.Key * 100 ) + 1 ).GetDateKeyDate(), // Adding +1 to get the first day of month.
-                    Value = x.Count(),
-                    SortKey = "1"
-                } );
-
-            // Add data series for Steps completed.
-            var completedSeriesDataPoints = GetCompletedStepQuery( delimitedDateRange )
-                .Select( x => x.CompletedDateKey.Value )
-                .ToList()
-                .GroupBy( groupKeySelector )
-                .Select( x => new ChartDatasetInfo
-                {
-                    DatasetName = "Completed",
-                    DateTime = groupByDay ? x.Key.GetDateKeyDate() : ( ( x.Key * 100 ) + 1 ).GetDateKeyDate(), // Adding +1 to get the first day of month.
-                    Value = x.Count(),
-                    SortKey = "2"
-                } );
-
-            var allDataPoints = startedSeriesDataPoints.Union( completedSeriesDataPoints ).OrderBy( x => x.SortKey ).ThenBy( x => x.DateTime );
-
-            // Add Dataset for Steps Started.
-            var colorStarted = new RockColor( ChartJsConstants.Colors.Blue );
-            var startedDataset = this.CreateDataSet( allDataPoints, "Started", colorStarted.ToHex() );
-
-            factory.Datasets.Add( startedDataset );
-
-            // Add Dataset for Steps Completed.
-            var colorCompleted = new RockColor( ChartJsConstants.Colors.Green );
-            var completedDataset = this.CreateDataSet( allDataPoints, "Completed", colorCompleted.ToHex() );
-
-            factory.Datasets.Add( completedDataset );
-
-            return factory;
-        }
-
-        private ChartJsTimeSeriesDataset CreateDataSet( IOrderedEnumerable<ChartDatasetInfo> allDataPoints, string datasetName, string colorString )
-        {
-            var dataset = new ChartJsTimeSeriesDataset();
-            dataset.Name = datasetName;
-            dataset.DataPoints = allDataPoints
-                                    .Where( x => x.DatasetName == datasetName )
-                                    .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.DateTime, Value = x.Value } )
-                                    .Cast<IChartJsTimeSeriesDataPoint>()
-                                    .ToList();
-            dataset.BorderColor = colorString;
-
-            return dataset;
-        }
-
-        /// <summary>
         /// Gets the attributes grid builder.
         /// </summary>
         /// <returns></returns>
@@ -1205,6 +1071,115 @@ namespace Rock.Blocks.Engagement
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "workflowType", a => a.WorkflowType.Text )
                 .AddTextField( "workflowTrigger", a => a.WorkflowTrigger.Text );
+        }
+
+        private CampusCache GetSelectedCampusFromContext()
+        {
+            var campusContext = RequestContext.GetContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                return CampusCache.Get( campusContext.Id );
+            }
+
+            return null;
+        }
+
+        private List<DateTime> GetAllDateTimesWithinFilter( int timeUnitHelper, DateTime startDate, DateTime endDate )
+        {
+            var allDateTimes = new List<DateTime>();
+            var cursor = startDate;
+
+            while ( cursor <= endDate )
+            {
+                allDateTimes.Add( cursor );
+
+                switch ( timeUnitHelper )
+                {
+                    case 1:
+                        cursor = cursor.AddDays( 1 );
+                        break;
+
+                    case 100:
+                        cursor = cursor.AddMonths( 1 );
+                        break;
+
+                    case 10000:
+                        cursor = cursor.AddYears( 1 );
+                        break;
+
+                    default:
+                        cursor = cursor.AddDays( 1 );
+                        break;
+                }
+            }
+
+            return allDateTimes;
+        }
+
+        private SeriesBag GetSeriesForStepStatuses( int startDateKey, int endDateKey, int timeUnitHelper, List<DateTime> allDates, IQueryable<StepStatusProjection> stepStatusProjection, string label )
+        {
+            var startedStepsData = stepStatusProjection.Where( s => s.DateKey >= startDateKey && s.DateKey <= endDateKey )
+                .GroupBy( s => s.DateKey / timeUnitHelper )
+                .Select( g => new
+                {
+                    DateKey = g.Key,
+                    Count = ( double ) g.Count()
+                } )
+                .ToList();
+
+            return new SeriesBag
+            {
+                Label = label,
+                Data = allDates.Select( date => startedStepsData.FirstOrDefault( d => d.DateKey == date.ToDateKey() / timeUnitHelper )?.Count ?? 0 ).ToList()
+            };
+        }
+
+        private ChartDataBag GetChartForStepStatuses( StepTypeCache stepType, int timeUnitHelper, DateTime startDate, DateTime endDate )
+        {
+            var stepService = new StepService( RockContext );
+            var query = stepService.Queryable()
+                .AsNoTracking()
+                .Include( x => x.StepType )
+                .Include( x => x.StepStatus )
+                .Include( x => x.Campus )
+                    .Where( x =>
+                    x.StepType.Id == stepType.Id
+                    && x.StepType.IsActive
+                    && x.StepStatusId.HasValue );
+
+            var allDates = GetAllDateTimesWithinFilter( timeUnitHelper, startDate, endDate );
+            var selectedCampus = GetSelectedCampusFromContext();
+
+            if ( selectedCampus != null )
+            {
+                query = query.Where( x => x.CampusId == selectedCampus.Id );
+            }
+
+            var startDateKey = startDate.ToDateKey();
+            var endDateKey = endDate.ToDateKey();
+
+            var startedStepsProjection = query.Where( s => s.StartDateKey.HasValue )
+                .Select( s => new StepStatusProjection
+                {
+                    DateKey = s.StartDateKey.Value
+                } );
+
+            var completedStepsProjection = query.Where( s => s.StepStatus.IsCompleteStatus && s.CompletedDateKey.HasValue )
+                .Select( s => new StepStatusProjection
+                {
+                    DateKey = s.CompletedDateKey.Value
+                } );
+
+            var startedSeries = GetSeriesForStepStatuses( startDateKey, endDateKey, timeUnitHelper, allDates, startedStepsProjection, "Started" );
+            var completedSeries = GetSeriesForStepStatuses( startDateKey, endDateKey, timeUnitHelper, allDates, completedStepsProjection, "Completed" );
+
+            var chartDataBag = new ChartDataBag
+            {
+                DateLabels = allDates,
+                Series = new List<SeriesBag> { startedSeries, completedSeries }
+            };
+
+            return chartDataBag;
         }
 
         #endregion
@@ -1481,33 +1456,50 @@ namespace Rock.Blocks.Engagement
             return ActionOk( new { editableAttribute, reservedKeyNames, modalTitle } );
         }
 
-        /// <summary>
-        /// Refresh the chart using the current filter settings.
-        /// </summary>
-        /// <param name="dateRange"></param>
-        /// <returns></returns>
         [BlockAction]
-        public BlockActionResult RefreshChart( string dateRange )
+        public BlockActionResult GetChartData( DateTimeOffset startDateTime, DateTimeOffset endDateTime )
         {
-            var showActivitySummary = ShowActivitySummary();
-            var chartDataJson = string.Empty;
+            var stepType = StepTypeCache.Get( PageParameter( PageParameterKey.StepTypeId ), !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( showActivitySummary )
+            if ( stepType == null )
             {
-                // Get chart data and set visibility of related elements.
-                var chartFactory = GetChartJsFactory( dateRange );
-
-                if ( chartFactory.HasData )
-                {
-                    var args = GetChartArgs();
-                    // Add client script to construct the chart.
-                    chartDataJson = chartFactory.GetChartDataJson( args );
-                }
+                return ActionBadRequest( "Could not find the specified Step Type" );
             }
 
-            var kpi = GetKpi( dateRange );
+            DateTime startDate = startDateTime.ToOrganizationDateTime();
+            DateTime endDate = endDateTime.ToOrganizationDateTime();
+            double totalDays = ( endDate - startDate ).TotalDays;
 
-            return ActionOk( new StepTypeBag() { ChartData = chartDataJson, Kpi = kpi, ShowChart = showActivitySummary } );
+            int timeUnitHelper;
+            string timeUnit;
+            ChartDataBag chartDataBag;
+
+            // More than 3 years
+            if ( totalDays > 365 * 3 )
+            {
+                // Group by Year
+                timeUnitHelper = 10000;
+                timeUnit = "year";
+            }
+            // More than 3 months
+            else if ( totalDays > 90 )
+            {
+                // Group by Month
+                timeUnitHelper = 100;
+                timeUnit = "month";
+            }
+            else
+            {
+                // Group by Day
+                timeUnitHelper = 1;
+                timeUnit = "day";
+            }
+
+            chartDataBag = GetChartForStepStatuses( stepType, timeUnitHelper, startDate, endDate );
+
+            chartDataBag.TimeUnit = timeUnit;
+
+            return ActionOk( chartDataBag );
         }
 
         /// <summary>
@@ -1648,6 +1640,11 @@ namespace Rock.Blocks.Engagement
             public int Value { get; set; }
 
             public string SortKey { get; set; }
+        }
+
+        private class StepStatusProjection
+        {
+            public int DateKey { get; set; }
         }
     }
 }

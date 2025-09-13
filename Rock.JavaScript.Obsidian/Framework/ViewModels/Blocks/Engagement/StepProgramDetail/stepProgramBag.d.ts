@@ -107,6 +107,9 @@ export type StepProgramBag = {
     /** Gets or sets the step program attributes. */
     stepProgramAttributes?: PublicEditableAttributeBag[] | null;
 
+    /** Gets or sets a list of ListItemBags for the Step Type dropdown list filter on the Step Flow view. */
+    stepTypes?: ListItemBag[] | null;
+
     /** Gets or sets the workflow triggers. */
     workflowTriggers?: StepProgramWorkflowTriggerBag[] | null;
 };
