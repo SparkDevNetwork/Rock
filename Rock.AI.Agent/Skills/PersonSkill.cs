@@ -23,8 +23,6 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 
-using DocumentFormat.OpenXml.Wordprocessing;
-
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
