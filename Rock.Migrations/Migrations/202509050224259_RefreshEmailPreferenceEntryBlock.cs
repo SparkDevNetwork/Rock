@@ -36,8 +36,8 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            JPH_RenameExistingEmailPreferenceEntryBlock_20250904_Down();
             JPH_AddRefreshedEmailPreferenceEntryBlockType_20250904_Down();
+            JPH_RenameExistingEmailPreferenceEntryBlock_20250904_Down();
         }
 
         /// <summary>
