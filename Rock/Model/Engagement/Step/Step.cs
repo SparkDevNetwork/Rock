@@ -156,6 +156,24 @@ namespace Rock.Model
             private set { }
         }
 
+        /// <summary>
+        /// Gets or sets the related entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The related entity type identifier.
+        /// </value>
+        [DataMember]
+        public int? RelatedEntityTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the related entity identifier.
+        /// </summary>
+        /// <value>
+        /// The related entity identifier.
+        /// </value>
+        [DataMember]
+        public int? RelatedEntityId { get; set; }
+
         #endregion
 
         #region IOrdered
