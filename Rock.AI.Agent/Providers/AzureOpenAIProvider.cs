@@ -214,7 +214,7 @@ namespace Rock.AI.Agent.Providers
                 Temperature = GetAttributeValue( AttributeKey.DefaultTemperature ).AsDoubleOrNull(),
                 TopP = GetAttributeValue( AttributeKey.DefaultTopP ).AsDoubleOrNull(),
                 Seed = GetSeed(),
-                ReasoningEffort = "low"
+                ReasoningEffort = "minimal"
             };
         }
 
