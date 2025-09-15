@@ -94,17 +94,27 @@ namespace Rock.AI.Agent.Skills
                 return null;
             }
 
+            // This may not be populated since we could have just saved, so eager
+            // load it if necessary.
+            var noteType = NoteTypeCache.Get( note.NoteTypeId );
             string entityName = null;
+            string entityTypeName = null;
 
             // Fetch the entity type and name
-            if ( note.EntityId.HasValue )
+            if ( note.EntityId.HasValue && noteType.EntityTypeId.HasValue )
             {
-                var entity = new EntityTypeService( rockContext ).GetEntity( note.NoteType.EntityTypeId, note.EntityId.Value );
+                var entity = new EntityTypeService( rockContext ).GetEntity( noteType.EntityTypeId.Value, note.EntityId.Value );
 
                 if( entity != null )
                 {
                     entityName = entity?.ToString();
                 }
+            }
+
+            if( noteType.EntityTypeId.HasValue )
+            {
+                var entityType = EntityTypeCache.Get( noteType.EntityTypeId.Value );
+                entityTypeName = entityType.FriendlyName;
             }
 
             return new NoteResult
@@ -121,11 +131,11 @@ namespace Rock.AI.Agent.Skills
                 {
                     EntityType = new KeyNameResult
                     {
-                        Id = note.NoteType.EntityTypeId,
-                        Name = note.NoteType.EntityType != null ? note.NoteType.EntityType.FriendlyName : string.Empty
+                        Id = noteType.EntityTypeId,
+                        Name = entityTypeName
                     },
-                    Id = note.NoteType.Id,
-                    Name = note.NoteType.Name
+                    Id = noteType.Id,
+                    Name = noteType.Name
                 },
                 EntityName = entityName,
                 Caption = note.Caption,
