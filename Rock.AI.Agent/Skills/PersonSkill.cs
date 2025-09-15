@@ -1275,7 +1275,7 @@ namespace Rock.AI.Agent.Skills
             errorMessage = null;
 
             // If nothing needs to be updated, we are done.
-            if ( nickName == null && firstName == null && middleName == null && lastName == null )
+            if ( nickName == null && firstName == null && middleName == null && lastName == null && gender == null )
             {
                 return true;
             }
