@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
@@ -31,6 +32,7 @@ using Rock.Model;
 using Rock.Net;
 using Rock.SystemGuid;
 using Rock.Tasks;
+using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills
 {
@@ -80,7 +82,7 @@ namespace Rock.AI.Agent.Skills
         /// </summary>
         /// <param name="communicationType"></param>
         /// <returns></returns>
-        private IAgentCommunicationMedium TryGetCommunicationMedium( AgentCommunicationType communicationType, RockContext rockContext )
+        private IAgentCommunicationMedium TryGetCommunicationMedium( AgentCommunicationType communicationType, RockContext rockContext, int? fromNumberId = null )
         {
             IAgentCommunicationMedium medium;
 
@@ -95,13 +97,17 @@ namespace Rock.AI.Agent.Skills
             }
             else if ( communicationType == AgentCommunicationType.Sms )
             {
+                if ( !fromNumberId.HasValue )
+                {
+                    return null;
+                }
+
                 if ( !MediumContainer.HasActiveSmsTransport() )
                 {
                     return null;
                 }
 
-                //medium = new SmsMedium( rockContext );
-                medium = new EmailMedium();
+                medium = new SmsMedium( fromNumberId.Value );
             }
             else if ( communicationType == AgentCommunicationType.Push )
             {
@@ -173,7 +179,19 @@ namespace Rock.AI.Agent.Skills
                         .WithInstructions( "Verify the recipientIdKey and try again." );
                 }
 
-                var medium = TryGetCommunicationMedium( communicationType, rockContext );
+                int? fromNumberId = null;
+                if ( communicationType == AgentCommunicationType.Sms )
+                {
+                    fromNumberId = SystemPhoneNumberCache.All().Where( spn => spn.IsActive && spn.IsSmsEnabled ).Select( spn => spn.Id ).FirstOrDefault();
+
+                    if ( !fromNumberId.HasValue )
+                    {
+                        return RockToolResult.Error( "No active SMS-enabled system phone number is configured. Unable to send SMS." )
+                            .WithInstructions( "Add and activate an SMS-enabled system phone number in Rock." );
+                    }
+                }
+
+                var medium = TryGetCommunicationMedium( communicationType, rockContext, fromNumberId );
                 if ( medium == null )
                 {
                     return RockToolResult.Error( $"The communication type '{communicationType}' is not supported." );
@@ -286,48 +304,46 @@ namespace Rock.AI.Agent.Skills
                     .WithInstructions( "Ask the user if they would like to draft one." );
             }
 
-            using ( var rockContext = _rockContextFactory.CreateRockContext() )
+            using var rockContext = _rockContextFactory.CreateRockContext();
+            var communicationService = new CommunicationService( rockContext );
+            var communication = communicationService.Get( communicationIdKey );
+
+            if ( communication == null )
             {
-                var communicationService = new CommunicationService( rockContext );
-                var communication = communicationService.Get( communicationIdKey );
-
-                if ( communication == null )
-                {
-                    return RockToolResult.Error( $"No valid communication found for the provided communicationIdKey: {communicationIdKey}." );
-                }
-
-                if ( communication.Status != CommunicationStatus.Transient )
-                {
-                    return RockToolResult.Error( "The communication is not in a transient state and cannot be sent." )
-                        .WithInstructions( "Ensure the communication is in a transient state before sending." );
-                }
-
-                communication.Status = CommunicationStatus.Approved;
-                communication.ReviewedDateTime = RockDateTime.Now;
-                communication.ReviewerPersonAliasId = currentPerson.PrimaryAliasId;
-
-                try
-                {
-                    rockContext.SaveChanges();
-                }
-                catch ( Exception ex )
-                {
-                    _logger.LogError( ex, "Failed to update communication status." );
-                    return RockToolResult.Error( "Failed to update the communication status. Check the logs for details." );
-                }
-
-                SendCommunication( communication.Id );
-
-                var instructions = "The communication has been queued to be sent. The user can view the details of the communication via the reference url.";
-
-                return RockToolResult.Success( new SendCommunicationResult
-                {
-                    CommunicationIdKey = communication.IdKey
-                } )
-                .WithInstructions( instructions )
-                .WithHistoryKey( communicationIdKey )
-                .WithReferenceRoute( requestContext, "Communication", $"/Communication/{communication.Id}", false );
+                return RockToolResult.Error( $"No valid communication found for the provided communicationIdKey: {communicationIdKey}." );
             }
+
+            if ( communication.Status != CommunicationStatus.Transient )
+            {
+                return RockToolResult.Error( "The communication is not in a transient state and cannot be sent." )
+                    .WithInstructions( "Ensure the communication is in a transient state before sending." );
+            }
+
+            communication.Status = CommunicationStatus.Approved;
+            communication.ReviewedDateTime = RockDateTime.Now;
+            communication.ReviewerPersonAliasId = currentPerson.PrimaryAliasId;
+
+            try
+            {
+                rockContext.SaveChanges();
+            }
+            catch ( Exception ex )
+            {
+                _logger.LogError( ex, "Failed to update communication status." );
+                return RockToolResult.Error( "Failed to update the communication status. Check the logs for details." );
+            }
+
+            SendCommunication( communication.Id );
+
+            var instructions = "The communication has been queued to be sent. The user can view the details of the communication via the reference url.";
+
+            return RockToolResult.Success( new SendCommunicationResult
+            {
+                CommunicationIdKey = communication.IdKey
+            } )
+            .WithInstructions( instructions )
+            .WithHistoryKey( communicationIdKey )
+            .WithReferenceRoute( AgentRequestContext.RockRequestContext, "Communication", $"/Communication/{communication.Id}", false );
         }
 
         [AgentToolGuid( "8EC76EA6-83BE-4796-9B91-6B4A34C0C3AD" )]

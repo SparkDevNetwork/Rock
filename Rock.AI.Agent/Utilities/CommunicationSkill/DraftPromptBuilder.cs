@@ -73,6 +73,7 @@ $@"You are an assistant that drafts concise, engaging push notifications.
 - From Name: {request.CurrentPerson.FullName}
 - Tone: {request.Tone}
 - Guidance: {request.DraftGuidance}
+- Subject hint: {request.SubjectHint}
 
 ### Relevant Data
 {request.RelevantData}
@@ -89,6 +90,41 @@ $@"You are an assistant that drafts concise, engaging push notifications.
       ""subject"": ""string"",
       ""body"": ""string""
     }}";
+        }
+
+        public static string BuildSmsDraftPrompt(
+   DraftRequest request, string fromNumber )
+        {
+            string recipientsSection = "### Recipients\r\n";
+            foreach ( var recipient in request.Recipients )
+            {
+                recipientsSection += $"- {recipient.FullName}\r\n";
+            }
+
+            return
+$@"You are an assistant that drafts concise, engaging SMS messages.
+{recipientsSection}
+
+### Context
+- From Number: {fromNumber}
+- Tone: {request.Tone}
+- Guidance: {request.DraftGuidance}
+- Subject hint: {request.SubjectHint}
+
+### Relevant Data
+{request.RelevantData}
+
+### Requirements
+- Keep the message short and direct (≤ 200 characters).
+- Match the requested tone.
+- Avoid greetings, signatures, or extra filler.
+- Do **not** include explanations, notes, or extra text.
+- This message is intended to be directly sent, so ensure there are no placeholders.
+- Respond with **valid JSON only** in the following format:
+{{
+    ""subject"": ""string"",
+    ""body"": ""string""
+}}";
         }
     }
 }
