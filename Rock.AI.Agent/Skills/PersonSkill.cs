@@ -25,7 +25,6 @@ using System.Linq.Dynamic.Core;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
@@ -911,7 +910,6 @@ namespace Rock.AI.Agent.Skills
         /// <param name="maxResults"></param>
         /// <param name="campusIdKey"></param>
         /// <returns></returns>
-        [KernelFunction( "SearchPersonPartial" )]
         [AgentPurpose( "Searches for matching people by a partial first name or last name." )]
         [AgentUsage( "Use this for partial name searches including searches for only last names." )]
         [AgentToolExample( "t decker would search the database for people who's first name starts with t and last name starts with decker." )]
