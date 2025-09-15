@@ -92,7 +92,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets how the steps in a program are ordered and how prerequisites are handled..
+        /// Gets or sets how the steps in a program are ordered and how prerequisites are handled.
         /// </summary>
         /// <value>
         /// A <see cref="System.Enum"/> for the completion flow (i.e Linear Required, Linear Preferred, Non-Linear).
