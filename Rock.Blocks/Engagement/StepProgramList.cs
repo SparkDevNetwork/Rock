@@ -39,7 +39,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Steps" )]
     [Description( "Displays a list of step programs." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [CategoryField(
         "Categories",
@@ -55,7 +55,8 @@ namespace Rock.Blocks.Engagement
         Key = AttributeKey.DetailPage )]
 
     [Rock.SystemGuid.EntityTypeGuid( "ef0d9904-48be-4ba5-9950-e77d318a4cfa" )]
-    [Rock.SystemGuid.BlockTypeGuid( "5284b259-a9ec-431c-b949-661780bfcd68" )]
+    // Was [Rock.SystemGuid.BlockTypeGuid( "5284b259-a9ec-431c-b949-661780bfcd68" )]
+    [Rock.SystemGuid.BlockTypeGuid( "429A817E-1379-4BCC-AEFE-01D9C75273E5" )]
     [CustomizedGrid]
     public class StepProgramList : RockEntityListBlockType<StepProgram>
     {

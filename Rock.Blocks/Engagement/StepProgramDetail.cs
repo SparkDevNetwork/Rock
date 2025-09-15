@@ -79,7 +79,8 @@ namespace Rock.Blocks.Engagement
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "7260278e-efb7-4b98-a862-15bf0a40ba2e" )]
-    [Rock.SystemGuid.BlockTypeGuid( "e2f965d1-7419-4062-9568-08613bb696e3" )]
+    // Was [Rock.SystemGuid.BlockTypeGuid( "e2f965d1-7419-4062-9568-08613bb696e3" )]
+    [Rock.SystemGuid.BlockTypeGuid( "CF372F6E-7131-4FF7-8BCD-6053DBB67D34" )]
     public class StepProgramDetail : RockEntityDetailBlockType<StepProgram, StepProgramBag>, IBreadCrumbBlock
     {
         #region Keys
@@ -104,7 +105,7 @@ namespace Rock.Blocks.Engagement
         private static class DefaultValue
         {
             /// <summary>
-            /// The kpi lava TODO - Add a Migration to update default value in the database.
+            /// The kpi lava
             /// </summary>
             public const string KpiLava =
 @"{[kpis style:'card' iconbackground:'true']}

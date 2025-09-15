@@ -63,7 +63,8 @@ namespace Rock.Blocks.Engagement
         Order = 3 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "f3a7b501-61c4-4784-8f73-958e2f1fc353" )]
-    [Rock.SystemGuid.BlockTypeGuid( "6a7c7c71-4760-4e6c-9d6f-6926c81caf8f" )]
+    // Was [Rock.SystemGuid.BlockTypeGuid( "6a7c7c71-4760-4e6c-9d6f-6926c81caf8f" )]
+    [Rock.SystemGuid.BlockTypeGuid( "3EFB4302-9AB4-420F-A818-48B1B06AD109" )]
     [CustomizedGrid]
     [ContextAware( typeof( Campus ) )]
     public class StepTypeList : RockListBlockType<StepTypeList.StepTypeWithCounts>
@@ -227,32 +228,6 @@ namespace Rock.Blocks.Engagement
             {
                 stepQueryable = stepQueryable.Where( s => s.CampusId == campusContext.Id );
             }
-
-            //var stepCountsQueryable = stepQueryable
-            //    .GroupBy( s => s.StepTypeId )
-            //    .Select( g => new
-            //    {
-            //        StepTypeId = g.Key,
-            //        Started = g.Count(),
-            //        Completed = g.Count( s => s.StepStatus != null && s.StepStatus.IsCompleteStatus )
-            //    } );
-
-            //var queryable = stepTypeQueryable
-            //    .GroupJoin(
-            //        stepCountsQueryable,
-            //        st => st.Id,
-            //        sc => sc.StepTypeId,
-            //        ( st, scs ) => new { StepType = st, Counts = scs }
-            //    )
-            //    .SelectMany(
-            //        x => x.Counts.DefaultIfEmpty(),
-            //        ( x, sc ) => new StepTypeWithCounts
-            //        {
-            //            StepType = x.StepType,
-            //            StartedCount = sc != null ? sc.Started : 0,
-            //            CompletedCount = sc != null ? sc.Completed : 0
-            //        }
-            //    );
 
             var queryable = stepTypeQueryable
                 .GroupJoin(
