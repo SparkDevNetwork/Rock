@@ -272,8 +272,7 @@ namespace Rock.AI.Agent.Skills
         [AgentToolGuid( "2BB35960-77C6-4EAD-9645-F0ACB0EF132B" )]
         public RockToolResult SendCommunication( string communicationIdKey )
         {
-            var requestContext = RockRequestContextAccessor.Current;
-            var currentPerson = requestContext?.CurrentPerson;
+            var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
 
             if ( currentPerson == null )
             {
