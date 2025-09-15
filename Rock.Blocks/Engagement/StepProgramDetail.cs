@@ -177,7 +177,8 @@ namespace Rock.Blocks.Engagement
                     new ListItemBag() { Text = "Manual", Value = StepWorkflowTrigger.WorkflowTriggerCondition.Manual.ToString() }
                 },
 
-                AreViewDisplayOptionsVisible = GetAttributeValue( AttributeKey.EnableListViewDisplayOptions ).AsBoolean()
+                AreViewDisplayOptionsVisible = GetAttributeValue( AttributeKey.EnableListViewDisplayOptions ).AsBoolean(),
+                IsReOrderColumnVisible = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
             };
 
             return options;
@@ -272,7 +273,7 @@ namespace Rock.Blocks.Engagement
                 CanAdministrate = entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ),
                 CompletionFlow = entity.Id > 0 ? ( CompletionFlow? ) entity.CompletionFlow : null,
                 IsDeletable = !entity.IsSystem,
-                StatusFilterOptions = entity.StepStatuses
+                StatusFilterOptions = GetStepStatuses( entity.Id )
                     .Select( s => new ListItemBag
                     {
                         Value = s.Guid.ToString(),
@@ -342,9 +343,9 @@ namespace Rock.Blocks.Engagement
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
-            bag.StepProgramAttributes = GetStepTypeAttributes( RockContext, entity.Id.ToString() ).ConvertAll( e => PublicAttributeHelper.GetPublicEditableAttribute( e ) );
+            bag.StepProgramAttributes = GetStepTypeAttributes( entity.Id.ToString() ).ConvertAll( e => PublicAttributeHelper.GetPublicEditableAttribute( e ) );
 
-            bag.Statuses = entity.StepStatuses.Select( s => new StepStatusBag()
+            bag.Statuses = GetStepStatuses( entity.Id ).Select( s => new StepStatusBag()
             {
                 Guid = s.Guid,
                 Id = s.Id,
@@ -363,8 +364,8 @@ namespace Rock.Blocks.Engagement
                     Guid = wt.Guid,
                     WorkflowTrigger = GetTriggerType( wt.TriggerType, wt.TypeQualifier ),
                     WorkflowType = wt.WorkflowType.ToListItemBag(),
-                    PrimaryQualifier = GetStepStatuses( entity ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).FromStatusId )?.Guid.ToString(),
-                    SecondaryQualifier = GetStepStatuses( entity ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).ToStatusId )?.Guid.ToString(),
+                    PrimaryQualifier = GetStepStatuses( entity.Id ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).FromStatusId )?.Guid.ToString(),
+                    SecondaryQualifier = GetStepStatuses( entity.Id ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).ToStatusId )?.Guid.ToString(),
                 } ).ToList();
 
             bag.StatusOptions = new StepStatusService( RockContext ).Queryable().Where( s => s.StepProgramId == entity.Id ).AsEnumerable().ToListItemBagList();
@@ -377,12 +378,11 @@ namespace Rock.Blocks.Engagement
         /// <summary>
         /// Gets the StepType's attributes.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="stepProgramId">The Step Program identifier qualifier value.</param>
         /// <returns></returns>
-        private static List<Model.Attribute> GetStepTypeAttributes( RockContext rockContext, string stepProgramId )
+        private List<Model.Attribute> GetStepTypeAttributes( string stepProgramId )
         {
-            return new AttributeService( rockContext ).GetByEntityTypeId( new StepType().TypeId, true ).AsQueryable()
+            return new AttributeService( RockContext ).GetByEntityTypeId( new StepType().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "StepProgramId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( stepProgramId ) )
@@ -410,13 +410,13 @@ namespace Rock.Blocks.Engagement
         /// Gets all the available step statuses.
         /// </summary>
         /// <returns></returns>
-        private List<StepStatus> GetStepStatuses( StepProgram entity )
+        private List<StepStatus> GetStepStatuses( int stepProgramId )
         {
-            var stepProgramId = entity.Id;
-
             return new StepStatusService( RockContext )
                 .Queryable()
                 .Where( s => s.StepProgramId == stepProgramId )
+                .OrderBy( s => s.Order )
+                .ThenBy( s => s.Name )
                 .ToList();
         }
 
@@ -875,6 +875,14 @@ namespace Rock.Blocks.Engagement
         #endregion KPI Methods
 
         #region Chart Methods
+
+        /// <summary>
+        /// Filters the provided steps by the given status filter and returns the matching query.
+        /// </summary>
+        /// <param name="selectedStatusFilter">The status filter value (e.g. "All", "AllComplete", "AllIncomplete", or a status GUID).</param>
+        /// <param name="stepsQuery">The queryable collection of steps to filter.</param>
+        /// <param name="isCompletionOnly">Outputs whether the filter represents only completed statuses.</param>
+        /// <returns>A filtered IQueryable of steps based on the selected status filter.</returns>
         private IQueryable<Step> GetStepsFilteredByStatus( string selectedStatusFilter, IQueryable<Step> stepsQuery, out bool isCompletionOnly )
         {
             switch ( selectedStatusFilter )
@@ -901,6 +909,10 @@ namespace Rock.Blocks.Engagement
             return stepsQuery;
         }
 
+        /// <summary>
+        /// Retrieves the campus from the current request context, if available.
+        /// </summary>
+        /// <returns>The selected campus as a CampusCache object, or null if none is found.</returns>
         private CampusCache GetSelectedCampusFromContext()
         {
             var campusContext = RequestContext.GetContextEntity<Campus>();
@@ -912,6 +924,15 @@ namespace Rock.Blocks.Engagement
             return null;
         }
 
+        /// <summary>
+        /// Builds chart data showing step program completions within the given date range and view type.
+        /// </summary>
+        /// <param name="stepProgram">The step program to report completions for.</param>
+        /// <param name="timeUnitHelper">Helper value for grouping data by time intervals.</param>
+        /// <param name="startDate">The start date of the reporting range.</param>
+        /// <param name="endDate">The end date of the reporting range.</param>
+        /// <param name="selectedProgramView">The type of chart view to generate (Trends, Totals, or Campuses).</param>
+        /// <returns>A ChartDataBag containing the requested completion data, or null if no view matches.</returns>
         private ChartDataBag GetChartForStepProgramCompletions( StepProgramCache stepProgram, int timeUnitHelper, DateTime startDate, DateTime endDate, StepProgramView selectedProgramView )
         {
             var qry = new StepProgramCompletionService( RockContext ).Queryable()
@@ -955,6 +976,17 @@ namespace Rock.Blocks.Engagement
             return null;
         }
 
+        /// <summary>
+        /// Builds chart data for steps in a program within the given date range, filtered by status and view type.
+        /// </summary>
+        /// <param name="stepProgram">The step program to report on.</param>
+        /// <param name="timeUnitHelper">Helper value for grouping data by time intervals.</param>
+        /// <param name="startDate">The start date of the reporting range.</param>
+        /// <param name="endDate">The end date of the reporting range.</param>
+        /// <param name="selectedMeasure">The measure to use for charting (e.g., counts or impact).</param>
+        /// <param name="statusFilter">A filter for step status (All, Complete, Incomplete, or status GUID).</param>
+        /// <param name="selectedProgramView">The type of chart view to generate (Trends, Totals, or Campuses).</param>
+        /// <returns>A ChartDataBag containing the requested step data, or null if no view matches.</returns>
         private ChartDataBag GetChartForSteps( StepProgramCache stepProgram, int timeUnitHelper, DateTime startDate, DateTime endDate, StepChartMeasure selectedMeasure, string statusFilter, StepProgramView selectedProgramView )
         {
             var stepService = new StepService( RockContext );
@@ -1011,6 +1043,13 @@ namespace Rock.Blocks.Engagement
             return null;
         }
 
+        /// <summary>
+        /// Generates a list of dates between the start and end dates based on the specified time unit.
+        /// </summary>
+        /// <param name="timeUnitHelper">The time unit for stepping through dates (1 = daily, 100 = monthly, 10000 = yearly).</param>
+        /// <param name="startDate">The starting date of the range.</param>
+        /// <param name="endDate">The ending date of the range.</param>
+        /// <returns>A list of DateTime values within the specified range.</returns>
         private List<DateTime> GetAllDateTimesWithinFilter( int timeUnitHelper, DateTime startDate, DateTime endDate )
         {
             var allDateTimes = new List<DateTime>();
@@ -1045,6 +1084,15 @@ namespace Rock.Blocks.Engagement
 
         #region Trends Chart Methods
 
+        /// <summary>
+        /// Builds trend chart data for steps based on the selected measure within a date range.
+        /// </summary>
+        /// <param name="selectedMeasure">The measure to chart (e.g., Steps, Impact, Totals, Objectives, or EngagementType).</param>
+        /// <param name="qry">The step projection query to aggregate.</param>
+        /// <param name="timeUnitHelper">The time unit for grouping data (1 = daily, 100 = monthly, 10000 = yearly).</param>
+        /// <param name="startDate">The start date of the reporting range.</param>
+        /// <param name="endDate">The end date of the reporting range.</param>
+        /// <returns>A ChartDataBag with series data for the selected measure, or null if no match.</returns>
         private ChartDataBag GetStepTrendsByMeasure( StepChartMeasure selectedMeasure, IQueryable<StepProjection> qry, int timeUnitHelper, DateTime startDate, DateTime endDate )
         {
             qry = qry.Select( s => new StepProjection
@@ -1193,7 +1241,6 @@ namespace Rock.Blocks.Engagement
                         } )
                         .ToList();
 
-                    // Chart with a single "Total" series
                     chartData = new ChartDataBag
                     {
                         DateLabels = allDates,
@@ -1270,6 +1317,14 @@ namespace Rock.Blocks.Engagement
             return null;
         }
 
+        /// <summary>
+        /// Builds trend chart data showing step program completions over the given date range.
+        /// </summary>
+        /// <param name="timeUnitHelper">The time unit for grouping data (1 = daily, 100 = monthly, 10000 = yearly).</param>
+        /// <param name="qry">The step program completion query to aggregate.</param>
+        /// <param name="startDate">The start date of the reporting range.</param>
+        /// <param name="endDate">The end date of the reporting range.</param>
+        /// <returns>A ChartDataBag with time-based completion data.</returns>
         private ChartDataBag GetStepProgramCompletionTrends( int timeUnitHelper, IQueryable<StepProgramCompletionProjection> qry, DateTime startDate, DateTime endDate )
         {
             var stepProgramCompletionData = qry.GroupBy( spc => spc.DateKey.Value / timeUnitHelper )
@@ -1304,6 +1359,12 @@ namespace Rock.Blocks.Engagement
 
         #region Totals Chart Methods
 
+        /// <summary>
+        /// Builds total chart data for steps based on the selected measure.
+        /// </summary>
+        /// <param name="selectedMeasure">The measure to chart (e.g., Steps, Impact, Totals, Objectives, or EngagementType).</param>
+        /// <param name="qry">The step projection query to aggregate.</param>
+        /// <returns>A ChartDataBag with aggregated totals for the selected measure.</returns>
         private ChartDataBag GetStepTotalsByMeasure( StepChartMeasure selectedMeasure, IQueryable<StepProjection> qry )
         {
             var stringLabels = new List<string>();
@@ -1411,15 +1472,6 @@ namespace Rock.Blocks.Engagement
                     var totalStepAdjustedImpact = qry
                         .Where( s => s.ImpactWeight.HasValue )
                         .Sum( s => s.ImpactWeight.Value );
-                    //var impactStepsDataPartial = qry.Where( s => s.ImpactWeight.HasValue )
-                    //    .GroupBy( s => new { ImpactWeight = s.ImpactWeight.Value } )
-                    //    .Select( g => new
-                    //    {
-                    //        Count = g.Count() * g.Key.ImpactWeight
-                    //    } )
-                    //    .ToList();
-
-                    //var totalStepAdjustedImpact = ( double ) impactStepsDataPartial.Sum( x => x.Count );
 
                     chartData = new ChartDataBag
                     {
@@ -1505,6 +1557,11 @@ namespace Rock.Blocks.Engagement
             return null;
         }
 
+        /// <summary>
+        /// Builds total chart data for step program completions.
+        /// </summary>
+        /// <param name="qry">The step program completion query to aggregate.</param>
+        /// <returns>A ChartDataBag containing the total number of completions.</returns>
         private ChartDataBag GetStepProgramCompletionTotals( IQueryable<StepProgramCompletionProjection> qry )
         {
             var stepProgramCompletionCount = qry.Count();
@@ -1529,6 +1586,13 @@ namespace Rock.Blocks.Engagement
 
         #region Campus Chart Methods
 
+        /// <summary>
+        /// Builds campus-level chart data for steps based on the selected measure.
+        /// </summary>
+        /// <param name="selectedMeasure">The measure to chart (e.g., Steps, Impact, Totals, Objectives, EngagementType, or Attendance ratios).</param>
+        /// <param name="qry">The step projection query to aggregate.</param>
+        /// <param name="selectedCampus">The campus to emphasize in the chart, or null for all campuses.</param>
+        /// <returns>A ChartDataBag with campus-based series data for the selected measure.</returns>
         private ChartDataBag GetStepCampusesByMeasure( StepChartMeasure selectedMeasure, IQueryable<StepProjection> qry, CampusCache selectedCampus )
         {
             var campusLabels = new List<ListItemBag>();
@@ -1687,7 +1751,6 @@ namespace Rock.Blocks.Engagement
                     return chartData;
 
                 case StepChartMeasure.TotalStepAdjustedImpact:
-                    // Step 1: per-type, per-date weighted counts
                     var impactStepsPartialData = qry.Where( s => s.ImpactWeight.HasValue )
                         .GroupBy( s => new { s.CampusGuid, s.CampusName, s.CampusOrder, s.ImpactWeight } )
                         .Select( g => new
@@ -1699,7 +1762,6 @@ namespace Rock.Blocks.Engagement
                         } )
                         .ToList();
 
-                    // Step 2: per-date totals by summing the per-type counts
                     var totalImpactSteps = impactStepsPartialData
                         .GroupBy( d => new { d.CampusGuid, d.CampusName, d.CampusOrder } )
                         .Select( g => new
@@ -1711,7 +1773,6 @@ namespace Rock.Blocks.Engagement
                         } )
                         .ToList();
 
-                    // Distinct dates
                     campusLabels = totalImpactSteps
                         .DistinctBy( d => d.CampusGuid )
                         .OrderBy( d => d.CampusOrder )
@@ -1723,7 +1784,6 @@ namespace Rock.Blocks.Engagement
                         } )
                         .ToList();
 
-                    // Chart with a single "Total" series
                     chartData = new ChartDataBag
                     {
                         CampusLabels = campusLabels,
@@ -1866,6 +1926,12 @@ namespace Rock.Blocks.Engagement
             return null;
         }
 
+        /// <summary>
+        /// Builds campus-level chart data for step program completions.
+        /// </summary>
+        /// <param name="qry">The step program completion query to aggregate.</param>
+        /// <param name="selectedCampusName">The campus name to emphasize in the chart, or null/empty for all campuses.</param>
+        /// <returns>A ChartDataBag with campus-based completion data.</returns>
         private ChartDataBag GetStepProgramCompletionCampuses( IQueryable<StepProgramCompletionProjection> qry, string selectedCampusName )
         {
             bool isCampusSelected = selectedCampusName.IsNotNullOrWhiteSpace();
@@ -1919,6 +1985,11 @@ namespace Rock.Blocks.Engagement
 
         #region Step Flow Methods
 
+        /// <summary>
+        /// Builds the Sankey diagram configuration for a step program, including legend HTML and colors.
+        /// </summary>
+        /// <param name="stepProgram">The step program whose steps are used to generate the configuration.</param>
+        /// <returns>A SankeyDiagramSettingsBag containing the flow legend and settings.</returns>
         private SankeyDiagramSettingsBag GetStepFlowConfigBag( StepProgram stepProgram)
         {
             var lavaNodes = new List<Object>();
@@ -1953,6 +2024,14 @@ namespace Rock.Blocks.Engagement
             };
         }
 
+        /// <summary>
+        /// Builds an HTML tooltip string describing the flow between two step types.
+        /// </summary>
+        /// <param name="source">The source step type.</param>
+        /// <param name="target">The target step type.</param>
+        /// <param name="units">The number of steps taken between source and target.</param>
+        /// <param name="days">The average number of days between steps, or null if unknown.</param>
+        /// <returns>An HTML-formatted tooltip string.</returns>
         private string BuildTooltip( StepTypeCache source, StepTypeCache target, int units, int? days )
         {
             string sourceName = source?.Name ?? "Unknown Source";
@@ -1964,7 +2043,12 @@ namespace Rock.Blocks.Engagement
                 $"Avg Days Between Steps: {dayString}";
         }
 
+        /// <summary>
+        /// Retrieves the next default color in sequence, cycling back when the list ends.
+        /// </summary>
+        /// <returns>A hex color string from the default color list.</returns>
         private string GetNextDefaultColor()
+
         {
             if ( currentColorIndex >= defaultColors.Length )
             {
@@ -2045,6 +2129,58 @@ namespace Rock.Blocks.Engagement
         #endregion
 
         #region Block Actions
+
+        /// <summary>
+        /// Changes the ordered position of a single step status.
+        /// </summary>
+        /// <param name="key">The identifier of the step status that will be moved.</param>
+        /// <param name="beforeKey">The identifier of the step status it will be placed before.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult ReorderStepStatus( string key, string beforeKey )
+        {
+            var stepProgram = StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ), !PageCache.Layout.Site.DisablePredictableIds );
+            if ( stepProgram == null )
+            {
+                return ActionBadRequest( "Step program not found." );
+            }
+
+            var items = GetStepStatuses( stepProgram.Id );
+
+            if ( !items.ReorderEntity( key, beforeKey ) )
+            {
+                return ActionBadRequest( "Invalid reorder attempt." );
+            }
+
+            RockContext.SaveChanges();
+            return ActionOk();
+        }
+
+        /// <summary>
+        /// Changes the ordered position of a single step type attribute.
+        /// </summary>
+        /// <param name="key">The identifier of the step type attribute that will be moved.</param>
+        /// <param name="beforeKey">The identifier of the step type attribute it will be placed before.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult ReorderStepTypeAttribute( string key, string beforeKey )
+        {
+            var stepProgram = StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ), !PageCache.Layout.Site.DisablePredictableIds );
+            if ( stepProgram == null )
+            {
+                return ActionBadRequest( "Step program not found." );
+            }
+
+            var items = GetStepTypeAttributes( stepProgram.Id.ToString() );
+
+            if ( !items.ReorderEntity( key, beforeKey ) )
+            {
+                return ActionBadRequest( "Invalid reorder attempt." );
+            }
+
+            RockContext.SaveChanges();
+            return ActionOk();
+        }
 
         /// <summary>
         /// Gets the box that will contain all the information needed to begin
@@ -2152,7 +2288,7 @@ namespace Rock.Blocks.Engagement
 
             entity.LoadAttributes( RockContext );
 
-            var bag = GetEntityBagForEdit( entity );
+            var bag = GetEntityBagForView( entity );
 
             return ActionOk( new ValidPropertiesBox<StepProgramBag>
             {

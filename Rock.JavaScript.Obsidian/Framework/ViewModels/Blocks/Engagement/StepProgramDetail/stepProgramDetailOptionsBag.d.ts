@@ -28,6 +28,9 @@ export type StepProgramDetailOptionsBag = {
     /** Gets or sets the value indicating if the View Mode options will be displayed on the Edit page. */
     areViewDisplayOptionsVisible?: boolean | null;
 
+    /** Gets or sets a value indicating whether the reorder column should be visible in the Step Attributes grid. */
+    isReOrderColumnVisible?: boolean | null;
+
     /** Gets or sets the trigger types. */
     triggerTypes?: ListItemBag[] | null;
 

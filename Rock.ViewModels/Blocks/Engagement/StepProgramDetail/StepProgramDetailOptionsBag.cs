@@ -45,5 +45,13 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         /// Gets or sets the value indicating if the View Mode options will be displayed on the Edit page.
         /// </summary>
         public bool? AreViewDisplayOptionsVisible { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the reorder column should be visible in the Step Attributes grid.
+        /// </summary>
+        /// <value>
+        /// Whether the reorder column is visible.
+        /// </value>
+        public bool? IsReOrderColumnVisible { get; set; }
     }
 }

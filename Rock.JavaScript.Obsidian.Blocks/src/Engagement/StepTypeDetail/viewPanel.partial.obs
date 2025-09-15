@@ -46,7 +46,7 @@
     import { PropType, ref, watch, onMounted } from "vue";
     import { useInvokeBlockAction, useBlockBrowserBus } from "@Obsidian/Utility/block";
     import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
-    import { RangeType, SlidingDateRange, TimeUnit, calculateSlidingDateRange, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { RangeType, SlidingDateRange, TimeUnit, calculateSlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import LineChart from "@Obsidian/Controls/lineChart.obs";
     import Loading from "@Obsidian/Controls/loading.obs";

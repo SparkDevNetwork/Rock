@@ -89,7 +89,15 @@
                            :settings="settings" />
 
             <div v-else :style="{ height: chartHeight }">
-                <BarChart v-if="isBarChart"
+                <LineChart v-if="selectedStepProgramViewEnum === StepProgramView.Trends && !isBarChart"
+                           :series="lineSeries"
+                           :labels="chartLabels"
+                           :labelDateFormat="dateUnit"
+                           :hideLegend="isLegendHidden"
+                           :valueSuggestedMin="0"
+                           categoryShowGridLines />
+
+                <BarChart v-else
                           :series="barSeries"
                           :labels="chartLabels"
                           :labelDateFormat="dateUnit"
@@ -99,14 +107,6 @@
                           :valueSuggestedMin="0"
                           categoryShowAllTicks
                           @click="onBarChartClicked" />
-
-                <LineChart v-else
-                           :series="lineSeries"
-                           :labels="chartLabels"
-                           :labelDateFormat="dateUnit"
-                           :hideLegend="isLegendHidden"
-                           :valueSuggestedMin="0"
-                           categoryShowGridLines />
 
             </div>
 
@@ -134,7 +134,6 @@
 .chart-subtitle {
     font-size: var(--font-size-xsmall);
     color: var(--color-interface-medium);
-    /* margin: 0; */
 }
 
 :deep(.flow-node-diagram-container) {
@@ -162,49 +161,49 @@
 </style>
 
 <script setup lang="ts">
-    import { onMounted, PropType, ref, watch, computed, nextTick } from "vue";
-    import { useBlockBrowserBus, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
     import { RangeType, SlidingDateRange, TimeUnit, calculateSlidingDateRange, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
-    import ContentSection from "@Obsidian/Controls/contentSection.obs";
-    import ContentStack from "@Obsidian/Controls/contentStack.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
-    import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import Loading from "@Obsidian/Controls/loading.obs";
-    import LineChart from "@Obsidian/Controls/lineChart.obs";
-    import BarChart from "@Obsidian/Controls/barChart.obs";
-    import SankeyDiagram from "@Obsidian/Controls/internal/SankeyDiagram/sankeyDiagram.obs";
+    import { StepProgramDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/stepProgramDetailOptionsBag";
+    import { StepChartMeasure, StepChartMeasureDescription } from "@Obsidian/Enums/Engagement/stepChartMeasure";
+    import { StepProgramView, StepProgramViewDescription } from "@Obsidian/Enums/Engagement/stepProgramView";
+    import { useBlockBrowserBus, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { StepProgramBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/stepProgramBag";
+    import { ChartDataBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/chartDataBag";
+    import { StepFlowGetDataBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/stepFlowGetDataBag";
+    import { SankeyDiagramSettingsBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramSettingsBag";
+    import { BarChartClickEvent, BarSeries, LineSeries } from "@Obsidian/Core/Controls/chart";
     import { SankeyDiagramNodeBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramNodeBag";
     import { SankeyDiagramEdgeBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramEdgeBag";
-    import { SankeyDiagramSettingsBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramSettingsBag";
-    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
-    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
-    import { StepProgramBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/stepProgramBag";
-    import { StepProgramDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/stepProgramDetailOptionsBag";
-    import { ChartDataBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/chartDataBag";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { SlidingDateRangeBag } from "@Obsidian/ViewModels/Controls/slidingDateRangeBag";
-    import { StepProgramView, StepProgramViewDescription } from "@Obsidian/Enums/Engagement/stepProgramView";
-    import { StepChartMeasure, StepChartMeasureDescription } from "@Obsidian/Enums/Engagement/stepChartMeasure";
-    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
-    import { StepFlowGetDataBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/stepFlowGetDataBag";
-    import { toNumber } from "@Obsidian/Utility/numberUtils";
-    import { BarChartClickEvent, BarSeries, LineSeries } from "@Obsidian/Core/Controls/chart";
-    import { PageMessages } from "@Obsidian/Utility/browserBus";
     import { ContextEntityChangedData, Message } from "@Obsidian/Types/Utility/browserBus";
     import { useContextEntities } from "@Obsidian/Core/Utilities/contextEntity";
-    import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import { areEqual } from "@Obsidian/Utility/guid";
-    import { PreferenceKey } from "./types.partial";
-    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+    import { onMounted, PropType, ref, watch, computed, nextTick } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
-    import { useHttp } from "@Obsidian/Utility/http";
     import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { PageMessages } from "@Obsidian/Utility/browserBus";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { PreferenceKey } from "./types.partial";
+    import Loading from "@Obsidian/Controls/loading.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import BarChart from "@Obsidian/Controls/barChart.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import LineChart from "@Obsidian/Controls/lineChart.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import SankeyDiagram from "@Obsidian/Controls/internal/SankeyDiagram/sankeyDiagram.obs";
 
     const props = defineProps({
         modelValue: {
@@ -271,6 +270,7 @@
         statusOptions.push(...props.modelValue.statusFilterOptions);
     }
 
+    // Step Flow refs
     const flowNodes = ref<SankeyDiagramNodeBag[]>([]);
     const flowEdges = ref<SankeyDiagramEdgeBag[]>([]);
     // TODO - These are Block Attributes on the Step Flow Block.
@@ -282,26 +282,28 @@
         legendHtml: props.modelValue?.stepFlowConfigurationBag?.legendHtml ?? ""
     });
     const flowForm = ref<InstanceType<typeof RockForm>>();
+    const startingStepTypes = ref();
     const availableStepTypes = ref<ListItemBag[]>(props.modelValue?.stepTypes ?? []);
+    const maxLevels = ref(4);
 
+    // Chart refs
     const chartSeries = ref<LineSeries[] | BarSeries[]>([]);
     const chartLabels = ref<string[]>([]);
-
-    const selectedStepProgramView = ref(StepProgramView.KPIs.toString());
     const selectedMeasure = ref("");
     const selectedStatusFilter = ref(statusOptions[0].value ?? "All");
     const isBarChart = ref(asBoolean(preferences.getValue(PreferenceKey.IsBarChart)));
+    const dateRangeText = ref<string>("");
+    const dateUnit = ref<"day" | "month" | "year" | undefined>();
+
+    const selectedStepProgramView = ref(StepProgramView.KPIs.toString());
+    const filterDate = ref(props.modelValue?.defaultDateRange as SlidingDateRange);
+    const isLoading = ref(false);
+    const kpi = ref(props.modelValue?.kpi ?? "");
+
     const attributes = ref(props.modelValue?.attributes ?? {});
     const attributeValues = ref(props.modelValue?.attributeValues ?? {});
-    const maxLevels = ref(4);
-    const startingStepTypes = ref();
-    const isLoading = ref(false);
-    const dateRangeText = ref<string>("");
     const name = ref(props.modelValue?.name ?? "");
-    const kpi = ref(props.modelValue?.kpi ?? "");
     const notificationMessage = ref();
-    const filterDate = ref(props.modelValue?.defaultDateRange as SlidingDateRange);
-    const dateUnit = ref<"day" | "month" | "year" | undefined>();
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -345,7 +347,7 @@
     });
 
     const chartHeight = computed(() => {
-        if (!isBarChart.value) {
+        if (selectedStepProgramViewEnum.value === StepProgramView.Trends && !isBarChart.value) {
             return "300px";
         }
         if (isHorizontal.value) {
@@ -385,7 +387,7 @@
             filteredMeasureOptions = filteredMeasureOptions.filter(o => o.value !== StepChartMeasure.EngagementType.toString());
         }
 
-        if (selectedStepProgramView.value === StepProgramView.Campuses.toString()) {
+        if (selectedStepProgramViewEnum.value === StepProgramView.Campuses) {
             return filteredMeasureOptions;
         }
         else {
@@ -394,26 +396,26 @@
     });
 
     const chartTitle = computed(() => {
-        if (selectedStepProgramView.value === StepProgramView.Flow.toString()) {
+        if (selectedStepProgramViewEnum.value === StepProgramView.Flow) {
             return `${name.value} Flow`;
         }
         else {
-            switch (selectedMeasure.value) {
-                case StepChartMeasure.Steps.toString():
+            switch (selectedMeasureEnum.value) {
+                case StepChartMeasure.Steps:
                     return "Steps by Type";
-                case StepChartMeasure.ImpactAdjustedSteps.toString():
+                case StepChartMeasure.ImpactAdjustedSteps:
                     return "Impact-Adjusted Steps by Type";
-                case StepChartMeasure.TotalStepAdjustedImpact.toString():
+                case StepChartMeasure.TotalStepAdjustedImpact:
                     return "Total Step-Adjusted Impact";
-                case StepChartMeasure.TotalSteps.toString():
+                case StepChartMeasure.TotalSteps:
                     return "Total Steps";
-                case StepChartMeasure.EngagementType.toString():
+                case StepChartMeasure.EngagementType:
                     return "Steps by Engagement Type";
-                case StepChartMeasure.OrganizationObjective.toString():
+                case StepChartMeasure.OrganizationObjective:
                     return "Steps by Organization Objective";
-                case StepChartMeasure.ProgramCompletions.toString():
+                case StepChartMeasure.ProgramCompletions:
                     return "Individual Program Completions"; // no subtitle
-                case StepChartMeasure.AvgTotalStepsPerWeekendAttendee.toString():
+                case StepChartMeasure.AvgTotalStepsPerWeekendAttendee:
                     return "Average Total Steps Per Weekend Attendee";
                 default:
                     return "Steps";
@@ -422,10 +424,10 @@
     });
 
     const chartSubtitle = computed(() => {
-        if (selectedStepProgramView.value === StepProgramView.Flow.toString()) {
+        if (selectedStepProgramViewEnum.value === StepProgramView.Flow) {
             return "All Completed Steps from " + dateRangeText.value;
         }
-        else if (selectedMeasure.value === StepChartMeasure.ProgramCompletions.toString()) {
+        else if (selectedMeasureEnum.value === StepChartMeasure.ProgramCompletions) {
             return "";
         }
         else {
@@ -443,16 +445,14 @@
         }
     });
 
-    const isChartShown = computed(() => {
-        return selectedStepProgramViewEnum.value === StepProgramView.Trends
-            || selectedStepProgramViewEnum.value === StepProgramView.Totals
-            || selectedStepProgramViewEnum.value === StepProgramView.Campuses;
-    });
-
     // #endregion
 
     // #region Functions
 
+    /**
+     * Resets all state flags to the given initial value.
+     * @param initialValue The value to assign to each state flag (default: false).
+     */
     function resetAllStateFlags(initialValue = false): void {
         for (const key in StepProgramView) {
             const value = StepProgramView[key as keyof typeof StepProgramView];
@@ -460,24 +460,37 @@
         }
     }
 
+    /**
+     * Resets all chart state flags.
+     */
     function resetChartStateFlags(): void {
         chartStateFlags[StepProgramView.Trends] = false;
         chartStateFlags[StepProgramView.Totals] = false;
         chartStateFlags[StepProgramView.Campuses] = false;
     }
 
-    function handleChartFilterChanged() {
+    /**
+     * Excutes functions that refresh chart state when a chart filter is changes.
+     */
+    function handleChartFilterChanged(): void {
         resetChartStateFlags();
 
-        console.log("CHART FILTER CHANGED...");
         fetchByStepProgramView[selectedStepProgramViewEnum.value]();
     }
 
-    function updateChartType(isBarChartSelected: boolean) {
+    /**
+     * Updates the chart type flag based on whether a bar chart is selected.
+     * @param isBarChartSelected True to use a bar chart, false for an alternate type.
+     */
+    function updateChartType(isBarChartSelected: boolean): void {
         isBarChart.value = isBarChartSelected;
     }
 
-    async function handleCampusContextChanged(data: ContextEntityChangedData) {
+    /**
+     * Handles updates when the campus context changes and adjusts chart opacity or filters accordingly.
+     * @param data The context change event data.
+     */
+    async function handleCampusContextChanged(data: ContextEntityChangedData): Promise<void> {
         if (!data.entityType) {
             return;
         }
@@ -507,7 +520,11 @@
 
     }
 
-    async function onBarChartClicked(event: BarChartClickEvent) {
+    /**
+     * Handles click events on bar charts and updates the campus context if applicable.
+     * @param event The bar chart click event data.
+     */
+    async function onBarChartClicked(event: BarChartClickEvent): Promise<void> {
         if (event.targets.length === 0) {
             return;
         }
@@ -556,6 +573,10 @@
         return standardListItemBagList;
     }
 
+    /**
+     * Updates the date unit value based on the chart data's time unit.
+     * @param chartData The chart data bag containing the time unit.
+     */
     function updateDateUnit(chartData: ChartDataBag): void {
         if (!isNullOrWhiteSpace(chartData?.timeUnit)) {
             const unit = chartData!.timeUnit;
@@ -568,9 +589,12 @@
         dateUnit.value = undefined;
     }
 
+    /**
+     * Updates chart labels, series, and date unit based on the selected view.
+     * @param chartData The chart data bag used to populate the chart.
+     */
     function updateChartForView(chartData: ChartDataBag): void {
         chartLabels.value = chartData.dateLabels ?? chartData.stringLabels ?? chartData?.campusLabels?.map(c => c.text) as string[] ?? [];
-        console.log("Chart Labels: ", chartLabels.value);
         chartSeries.value = (chartData.series ?? []) as LineSeries[] | BarSeries[];
 
         if (selectedStepProgramViewEnum.value === StepProgramView.Trends) {
@@ -585,6 +609,9 @@
 
     // #region Event Handlers
 
+    /**
+     * Updates the displayed date range text by requesting a formatted value from the server.
+     */
     async function updateDateRangeText(): Promise<void> {
         const parameters: Record<string, string> = {
             slidingDateRangeType: filterDate.value?.rangeType?.toString() || "0",
@@ -611,8 +638,7 @@
     }
 
     /**
-     * Event handler for the Refresh button being clicked. Request new chart
-     * data from the server using the specified filter date.
+     * Fetches chart data based on filter date, program view, selected measure, and selected status filter.
      */
     async function fetchChartData(): Promise<void> {
         if (isLoading.value) {
@@ -633,7 +659,6 @@
             return;
         }
 
-        console.log("filter date: ", slidingDateRangeToString(filterDate.value as SlidingDateRange));
         const result = await invokeBlockAction<ChartDataBag>("GetChartData", {
             startDateTime: dates.start.toISOString(),
             endDateTime: dates.end.toISOString(),
@@ -641,8 +666,6 @@
             selectedMeasure: toNumber(selectedMeasure.value) as StepChartMeasure,
             selectedStatusFilter: selectedStatusFilter.value
         });
-
-        console.log("Chart result: ", result);
 
         isLoading.value = false;
 
@@ -657,6 +680,9 @@
         }
     }
 
+    /**
+     * Fetches KPI data based on filter date.
+     */
     async function fetchKPIData(): Promise<void> {
         if (isLoading.value) {
             // Still Loading Previous Request. Don't want to start another one.
@@ -668,8 +694,6 @@
         const result = await invokeBlockAction<string>("GetKPIData", {
             dateRange: filterDate.value ? slidingDateRangeToString(filterDate.value as SlidingDateRange) : "DateRange||||"
         });
-
-        console.log("Kpi result: ", result);
 
         if (result.isSuccess && result.data) {
             kpi.value = result.data ?? "";
@@ -683,9 +707,10 @@
         isLoading.value = false;
     }
 
+    /**
+     * Fetches Step Flow Data based on filter date, max levels, and starting step types.
+     */
     async function fetchStepFlowData(): Promise<void> {
-        console.log("Fetching Step Flow Data");
-
         if (isLoading.value) {
             // Still Loading Previous Request. Don't want to start another one.
             return;
@@ -733,6 +758,8 @@
         }
     }
 
+    // #endregion
+
     watch(selectedStepProgramView, () => {
         // Clear any warning message that may be displayed
         notificationMessage.value = "";
@@ -754,22 +781,20 @@
             }
         }
 
+        // If the selected measure is specific to the Campus View and we are not on Campus View then set the selected measure to its default (Steps)
+        // and reset chart state.
         if (selectedMeasureEnum.value === StepChartMeasure.AvgTotalStepsPerWeekendAttendee && selectedStepProgramViewEnum.value !== StepProgramView.Campuses) {
             selectedMeasure.value = StepChartMeasure.Steps.toString();
             resetChartStateFlags();
         }
 
-        // If we are switching to the Totals or Campuses view than we need to set the chart type to a Bar Chart.
-        if (selectedStepProgramViewEnum.value === StepProgramView.Totals || selectedStepProgramViewEnum.value === StepProgramView.Campuses) {
-            updateChartType(true);
-        }
-
-        if (!chartStateFlags[selectedStepProgramViewEnum.value]) {
-            console.log("Chart state was dirty fetching now...");
-            fetchByStepProgramView[selectedStepProgramViewEnum.value]();
-        }
-        else if (isChartShown.value && stepProgramViewData[selectedStepProgramViewEnum.value]) {
+        // If our chart state is clean and we have data for the selected view than update chart from state.
+        if (chartStateFlags[selectedStepProgramViewEnum.value] && stepProgramViewData[selectedStepProgramViewEnum.value]) {
             updateChartForView(stepProgramViewData[selectedStepProgramViewEnum.value]!);
+        }
+        else {
+            // Chart state is dirty so feth from server.
+            fetchByStepProgramView[selectedStepProgramViewEnum.value]();
         }
     });
 
@@ -781,8 +806,6 @@
     });
 
     watch([maxLevels, startingStepTypes], () => {
-        console.log("Max Levels changed. Flow state is now dirty.");
-
         chartStateFlags[StepProgramView.Flow] = false;
         nextTick(() => {
             // Performs validation rules on the Max Levels Number Box everytime its data is changed.
@@ -804,6 +827,4 @@
         // KPIs are populated off of the Block Initialization so its state is valid.
         chartStateFlags[StepProgramView.KPIs] = true;
     });
-
-    // #endregion
 </script>

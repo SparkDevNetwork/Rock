@@ -259,7 +259,6 @@
                 bag: result.data.bag,
                 validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
             };
-            panelMode.value = DetailPanelMode.Edit;
             return true;
         }
         else {
@@ -283,7 +282,6 @@
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
                 stepTypeViewBag.value = result.data.bag;
-                panelMode.value = DetailPanelMode.View;
                 return true;
             }
             else if (result.statusCode === 201 && typeof result.data === "string") {

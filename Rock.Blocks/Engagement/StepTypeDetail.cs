@@ -16,13 +16,11 @@
 //
 
 using Rock.Attribute;
-using Rock.Chart;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
-using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using ChartDataBag = Rock.ViewModels.Blocks.Engagement.StepProgramDetail.ChartDataBag;
 using SeriesBag = Rock.ViewModels.Blocks.Engagement.StepProgramDetail.SeriesBag;
@@ -56,23 +54,12 @@ namespace Rock.Blocks.Engagement
     [ContextAware( typeof( Campus ) )]
 
     #region Block Attributes
-    [BooleanField
-        ( "Show Chart",
-          Key = AttributeKey.ShowChart,
-          DefaultValue = "true",
-          Order = 0 )]
-    [DefinedValueField
-        ( Rock.SystemGuid.DefinedType.CHART_STYLES,
-         "Chart Style",
-         Key = AttributeKey.ChartStyle,
-         DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK,
-         Order = 1 )]
     [SlidingDateRangeField
         ( "Default Chart Date Range",
           Key = AttributeKey.SlidingDateRange,
           DefaultValue = "Current||Year||",
           EnabledSlidingDateRangeTypes = "Last,Previous,Current,DateRange",
-          Order = 2 )]
+          Order = 0 )]
     [CategoryField(
         "Data View Categories",
         Key = AttributeKey.DataViewCategories,
@@ -84,13 +71,13 @@ namespace Rock.Blocks.Engagement
         IsRequired = false,
         DefaultValue = "",
         Category = "",
-        Order = 7 )]
+        Order = 1 )]
 
     [LinkedPage(
         name: "Bulk Entry Page",
         description: "The page to use for bulk entry of steps data",
         required: false,
-        order: 8,
+        order: 2,
         key: AttributeKey.BulkEntryPage )]
 
     [CodeEditorField(
@@ -100,7 +87,7 @@ namespace Rock.Blocks.Engagement
         Key = AttributeKey.KpiLava,
         EditorMode = CodeEditorMode.Lava,
         Description = "The Lava used to render the Key Performance Indicators bar. <span class='tip tip-lava'></span>",
-        Order = 9 )]
+        Order = 3 )]
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "458b0a6c-73d6-456a-9a94-56b5ae3f0592" )]
@@ -122,8 +109,6 @@ namespace Rock.Blocks.Engagement
 
         private static class AttributeKey
         {
-            public const string ShowChart = "ShowChart";
-            public const string ChartStyle = "ChartStyle";
             public const string SlidingDateRange = "SlidingDateRange";
             public const string DataViewCategories = "DataViewCategories";
             public const string BulkEntryPage = "BulkEntryPage";
@@ -133,16 +118,16 @@ namespace Rock.Blocks.Engagement
         private static class DefaultValue
         {
             /// <summary>
-            /// The kpi lava
+            /// The kpi lava - TODO update default value in migration
             /// </summary>
             public const string KpiLava =
 @"{[kpis style:'card' iconbackground:'true' columncount:'4']}
     [[ kpi icon:'ti-user' value:'{{IndividualsCompleting | Format:'N0'}}' label:'Individuals Completing' color:'blue-700']][[ endkpi ]]
     {% if StepType.HasEndDate %}
-        [[ kpi icon:'ti-calendar' value:'{{AvgDaysToComplete | Format:'N0'}}' label:'Average Days to Complete' color:'green-600']][[ endkpi ]]
-        [[ kpi icon:'ti-map-pin' value:'{{StepsStarted | Format:'N0'}}' label:'Steps Started' color:'#FF385C']][[ endkpi ]]
+        [[ kpi icon:'ti-calendar' value:'{{AvgDaysToComplete | Format:'N0'}}' label:'Average Days to Complete' color:'gray-700']][[ endkpi ]]
+        [[ kpi icon:'ti-stairs' value:'{{StepsStarted | Format:'N0'}}' label:'Steps Started' color:'orange-700']][[ endkpi ]]
     {% endif %}
-    [[ kpi icon:'ti-checkbox' value:'{{StepsCompleted | Format:'N0'}}' label:'Steps Completed' color:'indigo-700']][[ endkpi ]]
+    [[ kpi icon:'ti-circle-check' value:'{{StepsCompleted | Format:'N0'}}' label:'Steps Completed' color:'green-700']][[ endkpi ]]
 {[endkpis]}";
         }
 
@@ -471,24 +456,7 @@ namespace Rock.Blocks.Engagement
             bag.Kpi = GetKpi( defaultDateRange );
             bag.DefaultDateRange = GetSlidingDateRangeBag( defaultDateRange );
 
-            bag.ShowChart = GetAttributeValue( AttributeKey.ShowChart ).AsBoolean();
-
             return bag;
-        }
-
-        /// <summary>
-        /// Gets the arguments for creating the Chart.
-        /// </summary>
-        /// <returns></returns>
-        private static ChartJsTimeSeriesDataFactory.GetJsonArgs GetChartArgs()
-        {
-            return new ChartJsTimeSeriesDataFactory.GetJsonArgs
-            {
-                DisplayLegend = false,
-                LineTension = 0.4m,
-                MaintainAspectRatio = false,
-                SizeToFitContainerWidth = true
-            };
         }
 
         /// <summary>
@@ -1073,6 +1041,10 @@ namespace Rock.Blocks.Engagement
                 .AddTextField( "workflowTrigger", a => a.WorkflowTrigger.Text );
         }
 
+        /// <summary>
+        /// Retrieves the campus from the current request context if one is set.
+        /// </summary>
+        /// <returns>A CampusCache for the selected campus, or null if none is found.</returns>
         private CampusCache GetSelectedCampusFromContext()
         {
             var campusContext = RequestContext.GetContextEntity<Campus>();
@@ -1084,6 +1056,13 @@ namespace Rock.Blocks.Engagement
             return null;
         }
 
+        /// <summary>
+        /// Generates all date values between the start and end dates, incremented by the given time unit.
+        /// </summary>
+        /// <param name="timeUnitHelper">The time unit for stepping through dates (1 = daily, 100 = monthly, 10000 = yearly).</param>
+        /// <param name="startDate">The start date of the range.</param>
+        /// <param name="endDate">The end date of the range.</param>
+        /// <returns>A list of DateTime values within the specified range.</returns>
         private List<DateTime> GetAllDateTimesWithinFilter( int timeUnitHelper, DateTime startDate, DateTime endDate )
         {
             var allDateTimes = new List<DateTime>();
@@ -1116,6 +1095,16 @@ namespace Rock.Blocks.Engagement
             return allDateTimes;
         }
 
+        /// <summary>
+        /// Builds a series of step status counts over time for charting.
+        /// </summary>
+        /// <param name="startDateKey">The start date key of the range.</param>
+        /// <param name="endDateKey">The end date key of the range.</param>
+        /// <param name="timeUnitHelper">The time unit for grouping data (1 = daily, 100 = monthly, 10000 = yearly).</param>
+        /// <param name="allDates">The list of all dates in the range.</param>
+        /// <param name="stepStatusProjection">The query of step status projections to aggregate.</param>
+        /// <param name="label">The label for the series.</param>
+        /// <returns>A SeriesBag containing the aggregated step status data.</returns>
         private SeriesBag GetSeriesForStepStatuses( int startDateKey, int endDateKey, int timeUnitHelper, List<DateTime> allDates, IQueryable<StepStatusProjection> stepStatusProjection, string label )
         {
             var startedStepsData = stepStatusProjection.Where( s => s.DateKey >= startDateKey && s.DateKey <= endDateKey )
@@ -1134,6 +1123,14 @@ namespace Rock.Blocks.Engagement
             };
         }
 
+        /// <summary>
+        /// Builds chart data for a step type showing started and completed statuses over time.
+        /// </summary>
+        /// <param name="stepType">The step type to report on.</param>
+        /// <param name="timeUnitHelper">The time unit for grouping data (1 = daily, 100 = monthly, 10000 = yearly).</param>
+        /// <param name="startDate">The start date of the reporting range.</param>
+        /// <param name="endDate">The end date of the reporting range.</param>
+        /// <returns>A ChartDataBag containing series for started and completed steps.</returns>
         private ChartDataBag GetChartForStepStatuses( StepTypeCache stepType, int timeUnitHelper, DateTime startDate, DateTime endDate )
         {
             var stepService = new StepService( RockContext );
@@ -1376,7 +1373,7 @@ namespace Rock.Blocks.Engagement
             entity = entityService.Get( entity.Id );
             entity.LoadAttributes( RockContext );
 
-            var bag = GetEntityBagForEdit( entity );
+            var bag = GetEntityBagForView( entity );
 
             return ActionOk( new ValidPropertiesBox<StepTypeBag>
             {
@@ -1626,20 +1623,6 @@ namespace Rock.Blocks.Engagement
 
             RockContext.SaveChanges();
             return ActionOk();
-        }
-
-        /// <summary>
-        /// Stores information about a dataset to be displayed on a chart.
-        /// </summary>
-        private sealed class ChartDatasetInfo
-        {
-            public string DatasetName { get; set; }
-
-            public DateTime DateTime { get; set; }
-
-            public int Value { get; set; }
-
-            public string SortKey { get; set; }
         }
 
         private class StepStatusProjection
