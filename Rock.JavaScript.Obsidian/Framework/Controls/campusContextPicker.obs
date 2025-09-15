@@ -120,7 +120,6 @@
         }
 
         selectedCampus.value = newValue;
-        console.log("WE ARE CALLING THIS: ", selectedCampus.value);
         await contextEntities.set(EntityType.Campus, value, false);
     }
 
