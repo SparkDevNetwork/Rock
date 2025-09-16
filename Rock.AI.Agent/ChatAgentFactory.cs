@@ -22,6 +22,8 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 
+using MassTransit.NewIdProviders;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -193,6 +195,8 @@ namespace Rock.AI.Agent
         /// <returns>A constructed chat agent instance.</returns>
         public IChatAgent Build()
         {
+            var serializerOptions = AgentSerializerOptions.GetOptions( _agentConfiguration.AgentType, _agentConfiguration.AudienceType );
+
             var sw = System.Diagnostics.Stopwatch.StartNew();
             var kernel = _kernelBuilder.Build();
             sw.Stop();
@@ -200,13 +204,13 @@ namespace Rock.AI.Agent
             _logger.LogInformation( "Kernel built in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentConfiguration.AgentId );
 
             sw.Restart();
-            LoadPluginsForAgent( kernel );
+            LoadPluginsForAgent( kernel, serializerOptions );
             sw.Stop();
 
             _logger.LogInformation( "Plugins loaded in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentConfiguration.AgentId );
 
             var agent = new ChatAgent( kernel, _agentConfiguration, _rockContextFactory, _requestContextAccessor, _options );
-            kernel.AutoFunctionInvocationFilters.Add( new StoreHistoryContentFunctionFilter( agent ) );
+            kernel.AutoFunctionInvocationFilters.Add( new StoreHistoryContentFunctionFilter( agent, serializerOptions ) );
 
             return agent;
         }
@@ -214,19 +218,22 @@ namespace Rock.AI.Agent
         /// <summary>
         /// Registers the plug-ins for the agent.
         /// </summary>
-        /// <param name="kernel"></param>
-        private void LoadPluginsForAgent( Kernel kernel )
+        /// <param name="kernel">The native SK kernel that we will load plugins/skills into.</param>
+        /// <param name="serializerOptions">The options to use when serializing and deserializing JSON data.</param>
+        private void LoadPluginsForAgent( Kernel kernel, JsonSerializerOptions serializerOptions )
         {
-            LoadNativeSkills( kernel.Plugins, kernel.Services, _serviceProvider );
-            LoadVirtualSkills( kernel.Plugins, kernel.Services );
+            LoadNativeSkills( kernel.Plugins, kernel.Services, _serviceProvider, serializerOptions );
+            LoadVirtualSkills( kernel.Plugins, kernel.Services, serializerOptions );
         }
 
         /// <summary>
         /// Registers the native skills with the kernel.
         /// </summary>
-        /// <param name="kernel"></param>
-        /// <exception cref="InvalidOperationException"></exception>
-        private void LoadNativeSkills( KernelPluginCollection pluginCollection, IServiceProvider kernelServiceProvider, IServiceProvider serviceProvider )
+        /// <param name="pluginCollection">The collection of plugins to add the skills into.</param>
+        /// <param name="kernelServiceProvider">The service provider for the SK kernel.</param>
+        /// <param name="serviceProvider">The service provider from Rock.</param>
+        /// <param name="serializerOptions">The options to use when serializing and deserializing JSON data.</param>
+        private void LoadNativeSkills( KernelPluginCollection pluginCollection, IServiceProvider kernelServiceProvider, IServiceProvider serviceProvider, JsonSerializerOptions serializerOptions )
         {
             // Register native skills
             var nativeSkills = _agentConfiguration.Skills
@@ -263,12 +270,12 @@ namespace Rock.AI.Agent
                         target: skill,
                         functionName: tool.Key,
                         description: InstructionFormatter.FormatInstructions( tool.Instructions ),
-                        jsonSerializerOptions: AgentSerializerOptions.ChatOptions,
+                        jsonSerializerOptions: serializerOptions,
                         loggerFactory: _loggerFactory ) );
                 }
 
                 // Register dynamic functions
-                var virtualFunctions = GetVirtualSkillFunctions( skill.GetSemanticFunctions(), kernelServiceProvider );
+                var virtualFunctions = GetVirtualSkillFunctions( skill.GetSemanticFunctions(), kernelServiceProvider, serializerOptions );
                 pluginFunctions.AddRange( virtualFunctions );
 
                 if ( pluginFunctions.Count == 0 )
@@ -291,12 +298,14 @@ namespace Rock.AI.Agent
         /// <summary>
         /// Loads the virtual skills. These are skills that are not native to the system but are defined in the database.
         /// </summary>
-        /// <param name="kernel"></param>
-        private void LoadVirtualSkills( KernelPluginCollection pluginCollection, IServiceProvider kernelServiceProvider )
+        /// <param name="pluginCollection">The collection of plugins to add the skills into.</param>
+        /// <param name="kernelServiceProvider">The service provider for the SK kernel.</param>
+        /// <param name="serializerOptions">The options to use when serializing and deserializing JSON data.</param>
+        private void LoadVirtualSkills( KernelPluginCollection pluginCollection, IServiceProvider kernelServiceProvider, JsonSerializerOptions serializerOptions )
         {
             foreach ( var skill in _agentConfiguration.Skills )
             {
-                var pluginFunctions = GetVirtualSkillFunctions( skill.Tools, kernelServiceProvider );
+                var pluginFunctions = GetVirtualSkillFunctions( skill.Tools, kernelServiceProvider, serializerOptions );
 
                 if ( pluginFunctions.Count > 0 )
                 {
@@ -313,8 +322,10 @@ namespace Rock.AI.Agent
         /// Retrieves a collection of virtual skill functions (semantic or proxy) from a list of agent functions.
         /// </summary>
         /// <param name="functions">The collection of agent functions to process.</param>
+        /// <param name="kernelServiceProvider">The service provider for the SK kernel.</param>
+        /// <param name="serializerOptions">The options to use when serializing and deserializing JSON data.</param>
         /// <returns>A collection of kernel functions representing the agent's virtual skills.</returns>
-        private ICollection<KernelFunction> GetVirtualSkillFunctions( IReadOnlyCollection<AgentTool> functions, IServiceProvider kernelServiceProvider )
+        private ICollection<KernelFunction> GetVirtualSkillFunctions( IReadOnlyCollection<AgentTool> functions, IServiceProvider kernelServiceProvider, JsonSerializerOptions serializerOptions )
         {
             var pluginFunctions = new Dictionary<string, KernelFunction>();
 
@@ -343,7 +354,7 @@ namespace Rock.AI.Agent
                         functionName: function.Key,
                         description: InstructionFormatter.FormatInstructions( function.Instructions ),
                         executionSettings: _agentConfiguration.Provider.GetFunctionPromptExecutionSettingsForRole( function ),
-                        jsonSerializerOptions: AgentSerializerOptions.ChatOptions,
+                        jsonSerializerOptions: serializerOptions,
                         loggerFactory: _loggerFactory
                     );
 
@@ -360,7 +371,7 @@ namespace Rock.AI.Agent
                         functionName: function.Key,
                         description: InstructionFormatter.FormatInstructions( function.Instructions ),
                         parameters: parameters,
-                        jsonSerializerOptions: AgentSerializerOptions.ChatOptions,
+                        jsonSerializerOptions: serializerOptions,
                         loggerFactory: _loggerFactory
                     );
 
@@ -396,9 +407,12 @@ namespace Rock.AI.Agent
         {
             private readonly IChatAgent _agent;
 
-            public StoreHistoryContentFunctionFilter( IChatAgent agent )
+            private readonly JsonSerializerOptions _serializerOptions;
+
+            public StoreHistoryContentFunctionFilter( IChatAgent agent, JsonSerializerOptions serializerOptions )
             {
                 _agent = agent ?? throw new ArgumentNullException( nameof( agent ) );
+                _serializerOptions = serializerOptions ?? throw new ArgumentNullException( nameof( serializerOptions ) );
             }
 
             public async Task OnAutoFunctionInvocationAsync(
@@ -428,7 +442,7 @@ namespace Rock.AI.Agent
                     // That means it doesn't properly handle our custom serializer
                     // settings. So we encode it into a ChatMessageContent here
                     // which causes it to use the raw string value of our own JSON.
-                    var resultJson = JsonSerializer.Serialize( rockToolResult, context.Function.JsonSerializerOptions ?? AgentSerializerOptions.ChatOptions );
+                    var resultJson = JsonSerializer.Serialize( rockToolResult, context.Function.JsonSerializerOptions ?? _serializerOptions );
                     var messageResult = new ChatMessageContent
                     {
                         Content = resultJson,
@@ -446,7 +460,7 @@ namespace Rock.AI.Agent
                         };
 
                         var functionResultContent = new ToolResultContent( context.Function.Name, context.Function.PluginName, context.ToolCallId, historyContent );
-                        await _agent.AddMessageAsync( AuthorRole.Tool, JsonSerializer.Serialize( functionResultContent, AgentSerializerOptions.ChatOptions ) );
+                        await _agent.AddMessageAsync( AuthorRole.Tool, JsonSerializer.Serialize( functionResultContent, context.Function.JsonSerializerOptions ?? _serializerOptions ) );
                     }
                 }
                 catch ( InvalidCastException )

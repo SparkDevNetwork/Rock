@@ -20,6 +20,8 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using Rock.Enums.AI.Agent;
+
 namespace Rock.AI.Agent.Mcp
 {
     /// <summary>
@@ -33,6 +35,11 @@ namespace Rock.AI.Agent.Mcp
         /// The root element of the JSON-RPC request.
         /// </summary>
         private readonly JsonElement _rootElement;
+
+        /// <summary>
+        /// The serializer options to use when deserializing JSON data.
+        /// </summary>
+        private readonly JsonSerializerOptions _serializerOptions;
 
         #endregion
 
@@ -64,9 +71,12 @@ namespace Rock.AI.Agent.Mcp
         /// by deserializing a JSON payload from the specified stream.
         /// </summary>
         /// <param name="stream">The input stream containing the JSON payload to deserialize. Must not be <see langword="null"/>.</param>
-        public JsonRpcRequest( Stream stream )
+        /// <param name="serializerOptions">The serializer options to use when deserializing the JSON data.</param>
+        /// <param name="audienceType">The type of audience to serialize and deserialize for.</param>
+        public JsonRpcRequest( Stream stream, JsonSerializerOptions serializerOptions )
         {
-            _rootElement = JsonSerializer.Deserialize<JsonElement>( stream, AgentSerializerOptions.McpOptions );
+            _serializerOptions = serializerOptions;
+            _rootElement = JsonSerializer.Deserialize<JsonElement>( stream, _serializerOptions );
         }
 
         #endregion
@@ -85,7 +95,7 @@ namespace Rock.AI.Agent.Mcp
             {
                 try
                 {
-                    return JsonSerializer.Deserialize<T>( parameters.GetRawText(), AgentSerializerOptions.McpOptions );
+                    return JsonSerializer.Deserialize<T>( parameters.GetRawText(), _serializerOptions );
                 }
                 catch
                 {

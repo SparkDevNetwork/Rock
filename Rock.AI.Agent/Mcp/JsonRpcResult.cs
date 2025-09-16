@@ -91,9 +91,10 @@ namespace Rock.AI.Agent.Mcp
         /// Writes the JSON-RPC result to a stream in JSON format.
         /// </summary>
         /// <param name="stream">The stream that the result should be written to.</param>
-        public void ToJson( Stream stream )
+        /// <param name="serializerOptions">The options to use when serializing the result.</param>
+        public void ToJson( Stream stream, JsonSerializerOptions serializerOptions )
         {
-            JsonSerializer.Serialize( stream, this, AgentSerializerOptions.McpOptions );
+            JsonSerializer.Serialize( stream, this, serializerOptions );
             stream.Flush();
         }
 

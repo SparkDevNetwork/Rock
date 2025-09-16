@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -34,32 +34,9 @@ namespace Rock.AI.Agent
         #region Fields
 
         /// <summary>
-        /// Provides a lazily initialized instance of the JSON serializer options
-        /// we use for parsing and serializing objects for <see cref="AgentType.Chat"/> agents.
+        /// The cached serializer options that will be used with agents.
         /// </summary>
-        private static readonly Lazy<JsonSerializerOptions> _chatOptions = new Lazy<JsonSerializerOptions>( CreateChatOptions );
-
-        /// <summary>
-        /// Provides a lazily initialized instance of the JSON serializer options
-        /// we use for parsing and serializing objects for <see cref="AgentType.Mcp"/> agents.
-        /// </summary>
-        private static readonly Lazy<JsonSerializerOptions> _mcpOptions = new Lazy<JsonSerializerOptions>( CreateMcpOptions );
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// The JSON serializer options used for parsing and serializing
-        /// objects for <see cref="AgentType.Chat"/> agents.
-        /// </summary>
-        public static JsonSerializerOptions ChatOptions => _chatOptions.Value;
-
-        /// <summary>
-        /// The JSON serializer options used for parsing and serializing
-        /// objects for <see cref="AgentType.Mcp"/> agents.
-        /// </summary>
-        public static JsonSerializerOptions McpOptions => _mcpOptions.Value;
+        private static readonly ConcurrentDictionary<(AgentType, AudienceType), JsonSerializerOptions> _serializerOptions = new ConcurrentDictionary<(AgentType, AudienceType), JsonSerializerOptions>();
 
         #endregion
 
@@ -69,47 +46,31 @@ namespace Rock.AI.Agent
         /// Gets the serializer options for the specified agent type.
         /// </summary>
         /// <param name="agentType">The type of agent to get the serializer options for.</param>
+        /// <param name="audienceType">The type of audience to get the serializer options for.</param>
         /// <returns>An instance of <see cref="JsonSerializerOptions"/>.</returns>
-        public static JsonSerializerOptions GetOptions( AgentType agentType )
+        public static JsonSerializerOptions GetOptions( AgentType agentType, AudienceType audienceType )
         {
-            if ( agentType == AgentType.Mcp )
-            {
-                return _mcpOptions.Value;
-            }
-            else
-            {
-                return _chatOptions.Value;
-            }
+            return _serializerOptions.GetOrAdd( (agentType, audienceType), key => CreateOptions( key.Item1, key.Item2 ) );
         }
 
         /// <summary>
-        /// Creates the serializer options for an agent configured to be a
-        /// <see cref="AgentType.Chat"/> agent.
+        /// Creates a configured instance of <see cref="JsonSerializerOptions"/>
+        /// that customizes serialization behavior based on the specified
+        /// agent and audience types.
         /// </summary>
-        /// <returns>A singleton instance of <see cref="JsonSerializerOptions"/>.</returns>
-        private static JsonSerializerOptions CreateChatOptions()
+        /// <returns>A <see cref="JsonSerializerOptions"/> instance properly configured.</returns>
+        private static JsonSerializerOptions CreateOptions( AgentType agentType, AudienceType audienceType )
         {
-            var options = new JsonSerializerOptions( AIJsonUtilities.DefaultOptions );
+            var serializerOptions = new JsonSerializerOptions( AIJsonUtilities.DefaultOptions )
+            {
+                TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+                    .WithAddedModifier( t => ExcludeAgentTypeProperties( t, agentType ) )
+                    .WithAddedModifier( t => ExcludeAudienceTypeProperties( t, audienceType ) )
+            };
 
-            options.TypeInfoResolver = new DefaultJsonTypeInfoResolver()
-                .WithAddedModifier( t => ExcludeAgentTypeProperties( t, AgentType.Chat ) );
+            serializerOptions.MakeReadOnly();
 
-            return options;
-        }
-
-        /// <summary>
-        /// Creates the serializer options for an agent configured to be a
-        /// <see cref="AgentType.Mcp"/> agent.
-        /// </summary>
-        /// <returns>A singleton instance of <see cref="JsonSerializerOptions"/>.</returns>
-        private static JsonSerializerOptions CreateMcpOptions()
-        {
-            var options = new JsonSerializerOptions( AIJsonUtilities.DefaultOptions );
-
-            options.TypeInfoResolver = new DefaultJsonTypeInfoResolver()
-                .WithAddedModifier( t => ExcludeAgentTypeProperties( t, AgentType.Mcp ) );
-
-            return options;
+            return serializerOptions;
         }
 
         /// <summary>
@@ -133,6 +94,34 @@ namespace Rock.AI.Agent
                 foreach ( var attr in attributes.Cast<JsonIgnoreAgentTypeAttribute>() )
                 {
                     if ( attr.AgentType == agentType )
+                    {
+                        prop.ShouldSerialize = ( _, __ ) => false;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks all the properties of the type and excludes any that are
+        /// decorated with a <see cref="JsonIgnoreAgentTypeAttribute"/> that
+        /// matches the specified <paramref name="audienceType"/>.
+        /// </summary>
+        /// <param name="typeInfo">The type information object.</param>
+        /// <param name="audienceType">The type of audience this type is being used with.</param>
+        private static void ExcludeAudienceTypeProperties( JsonTypeInfo typeInfo, AudienceType audienceType )
+        {
+            foreach ( var prop in typeInfo.Properties )
+            {
+                var attributes = prop.AttributeProvider?.GetCustomAttributes( typeof( JsonIgnoreAudienceTypeAttribute ), false );
+
+                if ( attributes == null )
+                {
+                    continue;
+                }
+
+                foreach ( var attr in attributes.Cast<JsonIgnoreAudienceTypeAttribute>() )
+                {
+                    if ( attr.AudienceType == audienceType )
                     {
                         prop.ShouldSerialize = ( _, __ ) => false;
                     }

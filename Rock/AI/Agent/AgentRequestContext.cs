@@ -187,7 +187,8 @@ namespace Rock.AI.Agent
         /// </summary>
         internal void AddToolResultMessage( string toolResultContentJson )
         {
-            var toolResultContent = JsonSerializer.Deserialize<ToolResultContent>( toolResultContentJson, AgentSerializerOptions.ChatOptions );
+            var serializerOptions = AgentSerializerOptions.GetOptions( AgentType, AudienceType );
+            var toolResultContent = JsonSerializer.Deserialize<ToolResultContent>( toolResultContentJson, serializerOptions );
 
             var functionCallContent = new FunctionCallContent(
                 functionName: toolResultContent.FunctionName,

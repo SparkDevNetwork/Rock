@@ -23,10 +23,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 
 using Rock.AI.Agent.Mcp.Protocol;
+using Rock.Enums.AI.Agent;
 
 namespace Rock.AI.Agent.Mcp
 {
@@ -46,8 +46,9 @@ namespace Rock.AI.Agent.Mcp
                 throw new ArgumentOutOfRangeException( nameof( agent ), $"Parameter must be of type {typeof( ChatAgent ).FullName}." );
             }
 
-            var rpcRequest = new JsonRpcRequest( request.Content );
-            var response = await HandleRequestAsync( chatAgent, rpcRequest, cancellationToken );
+            var serializerOptions = AgentSerializerOptions.GetOptions( AgentType.Mcp, chatAgent.AgentConfiguration.AudienceType );
+            var rpcRequest = new JsonRpcRequest( request.Content, serializerOptions );
+            var response = await HandleRequestAsync( chatAgent, rpcRequest, serializerOptions, cancellationToken );
 
             if ( response == null )
             {
@@ -56,7 +57,7 @@ namespace Rock.AI.Agent.Mcp
 
             var ms = new MemoryStream();
 
-            response.ToJson( ms );
+            response.ToJson( ms, serializerOptions );
 
             ms.Position = 0;
 
@@ -71,9 +72,10 @@ namespace Rock.AI.Agent.Mcp
         /// </summary>
         /// <param name="agent">The agent that will handle tool related requests.</param>
         /// <param name="request">The object that represents the request from the client.</param>
+        /// <param name="serializerOptions">The options that will be used when serializing and deserializing JSON data.</param>
         /// <param name="cancellationToken">A token that indicates if the request should be cancelled.</param>
         /// <returns>The response to the request.</returns>
-        internal async Task<JsonRpcResult> HandleRequestAsync( ChatAgent agent, JsonRpcRequest request, CancellationToken cancellationToken )
+        internal async Task<JsonRpcResult> HandleRequestAsync( ChatAgent agent, JsonRpcRequest request, JsonSerializerOptions serializerOptions, CancellationToken cancellationToken )
         {
             if ( request.Method.StartsWith( "notifications/" ) || !request.Id.HasValue )
             {
@@ -94,7 +96,7 @@ namespace Rock.AI.Agent.Mcp
             }
             else if ( request.Method == "tools/call" )
             {
-                return await ProcessToolsCallAsync( request, agent, cancellationToken );
+                return await ProcessToolsCallAsync( request, agent, serializerOptions, cancellationToken );
             }
             else
             {
@@ -188,9 +190,10 @@ namespace Rock.AI.Agent.Mcp
         /// </summary>
         /// <param name="rpcRequest">The JSON-RPC request containing the tool call details.</param>
         /// <param name="agent">The chat agent responsible for providing the kernel for tool invocation.</param>
+        /// <param name="serializerOptions">The options to use when deserializing the arguments and serializing the response.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>A <see cref="JsonRpcResult"/> containing the result of the tool function invocation.</returns>
-        private async Task<JsonRpcResult> ProcessToolsCallAsync( JsonRpcRequest rpcRequest, ChatAgent agent, CancellationToken cancellationToken )
+        private async Task<JsonRpcResult> ProcessToolsCallAsync( JsonRpcRequest rpcRequest, ChatAgent agent, JsonSerializerOptions serializerOptions, CancellationToken cancellationToken )
         {
             var parameters = rpcRequest.GetParameters<CallToolParameters>();
 
@@ -214,7 +217,7 @@ namespace Rock.AI.Agent.Mcp
 
             try
             {
-                args = JsonSerializer.Deserialize<KernelArguments>( parameters.Arguments.GetRawText(), AgentSerializerOptions.McpOptions );
+                args = JsonSerializer.Deserialize<KernelArguments>( parameters.Arguments.GetRawText(), serializerOptions );
 
                 foreach ( var key in args.Keys.ToList() )
                 {
@@ -240,7 +243,7 @@ namespace Rock.AI.Agent.Mcp
             {
                 response.Content.Add( new Protocol.TextContent
                 {
-                    Text = JsonSerializer.Serialize( result, AgentSerializerOptions.McpOptions )
+                    Text = JsonSerializer.Serialize( result, serializerOptions )
                 } );
 
                 response.StructuredContent = result;

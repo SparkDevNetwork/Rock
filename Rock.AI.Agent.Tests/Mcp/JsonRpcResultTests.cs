@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.AI.Agent.Mcp;
+using Rock.Enums.AI.Agent;
 
 namespace Rock.AI.Agent.Tests.Mcp
 {
@@ -16,7 +17,7 @@ namespace Rock.AI.Agent.Tests.Mcp
             var result = new JsonRpcResult( 123, "test" );
             var ms = new MemoryStream();
 
-            result.ToJson( ms );
+            result.ToJson( ms, AgentSerializerOptions.GetOptions( AgentType.Mcp, AudienceType.Public ) );
 
             ms.Position = 0;
             using var reader = new StreamReader( ms );
@@ -34,7 +35,7 @@ namespace Rock.AI.Agent.Tests.Mcp
             var result = new JsonRpcResult( 123, 456, "test" );
             var ms = new MemoryStream();
 
-            result.ToJson( ms );
+            result.ToJson( ms, AgentSerializerOptions.GetOptions( AgentType.Mcp, AudienceType.Public ) );
 
             ms.Position = 0;
             using var reader = new StreamReader( ms );
