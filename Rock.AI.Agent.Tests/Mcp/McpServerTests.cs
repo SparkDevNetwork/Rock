@@ -129,6 +129,77 @@ namespace Rock.AI.Agent.Tests.Mcp
             Assert.IsTrue( result.Capabilities.ContainsKey( "tools" ) );
         }
 
+        [TestMethod]
+        public async Task Initialize_WithProtocolVersion20250618_ReturnsMatchedVersion()
+        {
+            var mcp = new McpServer();
+            var agent = new AgentBuilder().Build();
+            var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"initialize\", \"params\":{\"protocolVersion\":\"2025-06-18\"}}" ), _serializerOptions );
+
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+
+            Assert.IsNotNull( rpcResult );
+            Assert.IsNotNull( rpcResult.Result );
+
+            var result = ( InitializeResult ) rpcResult.Result;
+
+            Assert.AreEqual( "2025-06-18", result.ProtocolVersion );
+        }
+
+        [TestMethod]
+        public async Task Initialize_WithProtocolVersion20250326_ReturnsMatchedVersion()
+        {
+            var mcp = new McpServer();
+            var agent = new AgentBuilder().Build();
+            var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"initialize\", \"params\":{\"protocolVersion\":\"2025-03-26\"}}" ), _serializerOptions );
+
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+
+            Assert.IsNotNull( rpcResult );
+            Assert.IsNotNull( rpcResult.Result );
+
+            var result = ( InitializeResult ) rpcResult.Result;
+
+            Assert.AreEqual( "2025-03-26", result.ProtocolVersion );
+        }
+
+        [TestMethod]
+        public async Task Initialize_WithSkillInstructions_IncludesInstructions()
+        {
+            var expectedInstructions = "Custom Test Instructions";
+            var mcp = new McpServer();
+            var agent = new AgentBuilder()
+                .WithSkill( GetSkillConfiguration( expectedInstructions ) )
+                .Build();
+            var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"initialize\", \"params\":{\"protocolVersion\":\"2025-03-26\"}}" ), _serializerOptions );
+
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+
+            Assert.IsNotNull( rpcResult );
+            Assert.IsNotNull( rpcResult.Result );
+
+            var result = ( InitializeResult ) rpcResult.Result;
+
+            Assert.Contains( expectedInstructions, result.Instructions );
+        }
+
+        #endregion
+
+        #region Ping Tests
+
+        [TestMethod]
+        public async Task Ping_WithoutParameters_ReturnsSuccess()
+        {
+            var mcp = new McpServer();
+            var agent = new AgentBuilder().Build();
+            var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"ping\"}" ), _serializerOptions );
+
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+
+            Assert.IsNotNull( rpcResult );
+            Assert.IsNull( rpcResult.Error );
+        }
+
         #endregion
 
         #region ToolsList Tests
@@ -290,11 +361,68 @@ namespace Rock.AI.Agent.Tests.Mcp
             Assert.AreEqual( "Tool", dictionary["Structured"] );
         }
 
+        [TestMethod]
+        public async Task ToolsCall_CallingToolWithIntegerEnum_ParsesEnum()
+        {
+            var mcp = new McpServer();
+            var agent = new AgentBuilder()
+                .WithSkill( GetSkillConfiguration() )
+                .Build();
+            var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"TestSkill__EnumToString\", \"arguments\": {\"agentType\": 1}}}" ), _serializerOptions );
+
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+
+            Assert.IsNotNull( rpcResult );
+            Assert.IsNotNull( rpcResult.Result );
+
+            var result = ( CallToolResult ) rpcResult.Result;
+
+            Assert.AreEqual( AgentType.Mcp.ToString(), result.Content[0].Text );
+        }
+
+        [TestMethod]
+        public async Task ToolsCall_CallingToolWithNamedEnum_ParsesEnum()
+        {
+            var mcp = new McpServer();
+            var agent = new AgentBuilder()
+                .WithSkill( GetSkillConfiguration() )
+                .Build();
+            var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"TestSkill__EnumToString\", \"arguments\": {\"agentType\": \"Mcp\"}}}" ), _serializerOptions );
+
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+
+            Assert.IsNotNull( rpcResult );
+            Assert.IsNotNull( rpcResult.Result );
+
+            var result = ( CallToolResult ) rpcResult.Result;
+
+            Assert.AreEqual( AgentType.Mcp.ToString(), result.Content[0].Text );
+        }
+
+        [TestMethod]
+        public async Task ToolsCall_CallingToolWithNullString_CallsMethodWithNull()
+        {
+            var mcp = new McpServer();
+            var agent = new AgentBuilder()
+                .WithSkill( GetSkillConfiguration() )
+                .Build();
+            var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"TestSkill__Echo\", \"arguments\": {\"input\": null}}}" ), _serializerOptions );
+
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+
+            Assert.IsNotNull( rpcResult );
+            Assert.IsNotNull( rpcResult.Result );
+
+            var result = ( CallToolResult ) rpcResult.Result;
+
+            Assert.IsNull( result.StructuredContent );
+        }
+
         #endregion
 
         #region Support
 
-        private SkillConfiguration GetSkillConfiguration()
+        private SkillConfiguration GetSkillConfiguration( string purpose = null )
         {
             var tools = new List<AgentTool>
             {
@@ -309,10 +437,34 @@ namespace Rock.AI.Agent.Tests.Mcp
                     Guid = new Guid( "e4802a5e-6d6c-450e-abb0-dab0f65cab0e" ),
                     Name = "Structured Tool",
                     FunctionType = FunctionType.ExecuteCode
+                },
+                new AgentTool
+                {
+                    Guid = new Guid( "9ace29b2-a1fa-497a-9743-6daf076b5181" ),
+                    Name = "Enum To String",
+                    FunctionType = FunctionType.ExecuteCode
+                },
+                new AgentTool
+                {
+                    Guid = new Guid( "dd15667a-4caf-4f77-b73d-b2648bbd933a" ),
+                    Name = "Echo",
+                    FunctionType = FunctionType.ExecuteCode
                 }
             };
 
-            return new SkillConfiguration( "TestSkill", new SkillInstructionSettings(), tools, typeof( TestSkill ), new AgentSkillSettings() );
+            var instructionSettings = new SkillInstructionSettings();
+
+            if ( purpose != null )
+            {
+                instructionSettings.Purposes.Add( purpose );
+            }
+
+            return new SkillConfiguration(
+                "TestSkill",
+                instructionSettings,
+                tools,
+                typeof( TestSkill ),
+                new AgentSkillSettings() );
         }
 
         private class TestSkill : AgentSkillComponent
@@ -330,6 +482,18 @@ namespace Rock.AI.Agent.Tests.Mcp
                 {
                     ["Structured"] = "Tool"
                 };
+            }
+
+            [AgentToolGuid( "9ace29b2-a1fa-497a-9743-6daf076b5181" )]
+            public string EnumToString( AgentType agentType )
+            {
+                return agentType.ToString();
+            }
+
+            [AgentToolGuid( "dd15667a-4caf-4f77-b73d-b2648bbd933a" )]
+            public string Echo( string input )
+            {
+                return input;
             }
         }
 

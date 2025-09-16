@@ -143,7 +143,7 @@ namespace Rock.AI.Agent.Mcp
                     Name = $"Rock RMS: {agent.AgentConfiguration.Name}",
                     Version = VersionInfo.VersionInfo.GetRockSemanticVersionNumber(),
                 },
-                Instructions = agent.AgentConfiguration.Instructions
+                Instructions = instructions
             };
 
             return rpcRequest.CreateResult( response );
