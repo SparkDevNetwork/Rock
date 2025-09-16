@@ -316,7 +316,7 @@
     overflow-y: auto;
     gap: var(--spacing-small);
     margin-bottom: 0;
-    padding: var(--spacing-medium) var(--spacing-medium) 160px var(--spacing-medium);
+    padding: var(--spacing-medium) var(--spacing-xlarge) 160px var(--spacing-xlarge);
     border: 1px solid var(--color-interface-soft);
     border-radius: var(--rounded-small);
     background-color: var(--color-interface-softest)
@@ -333,6 +333,7 @@
     border: 1px solid var(--color-interface-soft);
     color: var(--color-interface-strong);
     margin-left: auto;
+    max-width: 400px;
 }
 
 .message-user .message-text :deep(p) {
