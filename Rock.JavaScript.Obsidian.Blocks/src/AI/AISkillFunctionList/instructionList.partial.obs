@@ -29,13 +29,16 @@
                 </div>
             </template>
         </Column>
+
+        <DeleteColumn disableConfirmation
+                      @click="onDeleteInstructionClick" />
     </Grid>
 </template>
 
 <script setup lang="ts">
     import AutoHeightTextBox from "./autoHeightTextBox.partial.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import Grid, { Column, ReorderColumn } from "@Obsidian/Controls/grid";
+    import Grid, { Column, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { computed, PropType, ref, watch } from "vue";
@@ -111,13 +114,11 @@
      * Called when the add instruction button is clicked.
      */
     function onAddInstructionClick(): void {
-        instructions.value = [
-            ...instructions.value,
-            {
-                id: newGuid(),
-                type: "Purpose",
-                text: ""
-            }];
+        instructions.value.push({
+            id: newGuid(),
+            type: "Purpose",
+            text: ""
+        });
     }
 
     /**
@@ -134,9 +135,10 @@
         }
 
         if (beforeItem === null) {
-            const movedItem = instructions.value.splice(itemIndex, 1)[0];
+            const newInstructions = [...instructions.value];
+            const movedItem = newInstructions.splice(itemIndex, 1)[0];
             instructions.value = [
-                ...instructions.value,
+                ...newInstructions,
                 movedItem
             ];
         }
@@ -147,15 +149,28 @@
                 return;
             }
 
-            const movedItem = instructions.value.splice(itemIndex, 1)[0];
-            instructions.value.splice(beforeItemIndex, 0, movedItem);
-            instructions.value = [...instructions.value];
+            const newInstructions = [...instructions.value];
+            const movedItem = newInstructions.splice(itemIndex, 1)[0];
+            newInstructions.splice(beforeItemIndex, 0, movedItem);
+            instructions.value = [...newInstructions];
         }
+    }
+
+    function onDeleteInstructionClick(key: string): void {
+        const itemIndex = instructions.value.findIndex(i => i.id === key);
+        console.log(itemIndex);
+
+        if (itemIndex < 0) {
+            return;
+        }
+
+        instructions.value.splice(itemIndex, 1);
     }
 
     // #endregion
 
     watch(() => props.modelValue, () => {
+        console.log("modelValue changed", props.modelValue);
         updateRefValue(instructions, props.modelValue);
     });
 
