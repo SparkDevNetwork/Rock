@@ -353,7 +353,7 @@ namespace Rock.AI.Agent
                 else if ( function.FunctionType == FunctionType.ExecuteLava )
                 {
                     var parameters = function.Parameters.Select( schemaBuilder.BuildKernelParameterMetadata ).ToList();
-                    var proxySkill = new ProxyFunction( kernelServiceProvider.GetRequiredService<AgentRequestContext>(), requestContext );
+                    var proxySkill = new LavaToolFunction( kernelServiceProvider.GetRequiredService<AgentRequestContext>(), requestContext );
 
                     var proxyFunction = KernelFunctionFactory.CreateFromMethod(
                         method: ( Func<KernelArguments, RockToolResult> ) ( args => proxySkill.ExecuteLava( function, args ) ),

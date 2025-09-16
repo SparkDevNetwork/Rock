@@ -23,7 +23,8 @@ namespace Rock.AI.Agent.Tests;
 [TestClass]
 [MethodIgnoreIf( nameof( HasRequiredConfiguration ), "Missing configuration settings in app.TestSettings.config file." )]
 [MethodIgnoreIf( nameof( TestsAreDisabled ), "Test disabled in in app.TestSettings.config file." )]
-public class ProxyFunctionCallTests : BaseFunctionCallTests
+[Ignore( "These tests are used for local testing of function calls. They are not part of the normal testing process." )]
+public class FunctionCallTests : BaseFunctionCallTests
 {
     /// <summary>
     /// Checks if the required configuration settings for Azure OpenAI are present.

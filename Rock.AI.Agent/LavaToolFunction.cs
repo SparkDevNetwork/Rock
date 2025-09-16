@@ -34,7 +34,7 @@ namespace Rock.AI.Agent
     /// Support class to handle executing a native function backed by a
     /// Lava template.
     /// </summary>
-    internal class ProxyFunction
+    internal class LavaToolFunction
     {
         #region Fields
 
@@ -54,11 +54,11 @@ namespace Rock.AI.Agent
         #region Constructors
 
         /// <summary>
-        /// Creates a new instance of <see cref="ProxyFunction"/>.
+        /// Creates a new instance of <see cref="LavaToolFunction"/>.
         /// </summary>
         /// <param name="requestContext">The agent request context that this function will be executed for.</param>
         /// <param name="rockRequestContext">The current request context.</param>
-        public ProxyFunction( AgentRequestContext requestContext, RockRequestContext rockRequestContext )
+        public LavaToolFunction( AgentRequestContext requestContext, RockRequestContext rockRequestContext )
         {
             _agentRequestContext = requestContext;
             _rockRequestContext = rockRequestContext;

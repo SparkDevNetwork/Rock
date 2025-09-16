@@ -15,7 +15,7 @@ using Rock.Tests.Shared;
 namespace Rock.AI.Agent.Tests;
 
 [TestClass]
-public class ProxyFunctionTests
+public class LavaToolFunctionTests
 {
     #region AddParametersToMergeFields Tests
 
@@ -29,7 +29,7 @@ public class ProxyFunctionTests
             ["UnknownProperty"] = "Some Value"
         };
 
-        ProxyFunction.AddParametersToMergeFields( mergeFields, parameters, args );
+        LavaToolFunction.AddParametersToMergeFields( mergeFields, parameters, args );
 
         Assert.AreEqual( 0, mergeFields.Count );
     }
@@ -48,7 +48,7 @@ public class ProxyFunctionTests
         };
         var args = new KernelArguments();
 
-        ProxyFunction.AddParametersToMergeFields( mergeFields, parameters, args );
+        LavaToolFunction.AddParametersToMergeFields( mergeFields, parameters, args );
 
         Assert.IsNull( mergeFields["MissingParameter"] );
     }
@@ -71,7 +71,7 @@ public class ProxyFunctionTests
             ["PersonIds"] = new List<int> { 1, 2, 3 }
         };
 
-        ProxyFunction.AddParametersToMergeFields( mergeFields, parameters, args );
+        LavaToolFunction.AddParametersToMergeFields( mergeFields, parameters, args );
 
         var result = mergeFields["PersonIds"];
 
@@ -97,7 +97,7 @@ public class ProxyFunctionTests
             ["PersonId"] = 42
         };
 
-        ProxyFunction.AddParametersToMergeFields( mergeFields, parameters, args );
+        LavaToolFunction.AddParametersToMergeFields( mergeFields, parameters, args );
 
         var result = mergeFields["PersonId"];
 
@@ -113,7 +113,7 @@ public class ProxyFunctionTests
     {
         var expectedValue = new List<string> { "Hello", "World" };
 
-        var result = ProxyFunction.ConvertValueToCollection( expectedValue, ParameterSchemaDataType.String );
+        var result = LavaToolFunction.ConvertValueToCollection( expectedValue, ParameterSchemaDataType.String );
 
         CollectionAssert.AreEqual( expectedValue, result );
     }
@@ -123,7 +123,7 @@ public class ProxyFunctionTests
     {
         var expectedValue = new List<string> { "10", "20" };
 
-        var result = ProxyFunction.ConvertValueToCollection( new[] { 10, 20 }, ParameterSchemaDataType.String );
+        var result = LavaToolFunction.ConvertValueToCollection( new[] { 10, 20 }, ParameterSchemaDataType.String );
 
         CollectionAssert.AreEqual( expectedValue, result );
     }
@@ -133,7 +133,7 @@ public class ProxyFunctionTests
     {
         var expectedValue = new List<string> { "Hello" };
 
-        var result = ProxyFunction.ConvertValueToCollection( "Hello", ParameterSchemaDataType.String );
+        var result = LavaToolFunction.ConvertValueToCollection( "Hello", ParameterSchemaDataType.String );
 
         CollectionAssert.AreEqual( expectedValue, result );
     }
@@ -143,7 +143,7 @@ public class ProxyFunctionTests
     {
         var expectedValue = new List<string> { "10" };
 
-        var result = ProxyFunction.ConvertValueToCollection( 10, ParameterSchemaDataType.String );
+        var result = LavaToolFunction.ConvertValueToCollection( 10, ParameterSchemaDataType.String );
 
         CollectionAssert.AreEqual( expectedValue, result );
     }
@@ -153,7 +153,7 @@ public class ProxyFunctionTests
     {
         var expectedValue = new List<string> { "10", "20" };
 
-        var result = ProxyFunction.ConvertValueToCollection( "[10, 20]", ParameterSchemaDataType.String );
+        var result = LavaToolFunction.ConvertValueToCollection( "[10, 20]", ParameterSchemaDataType.String );
 
         CollectionAssert.AreEqual( expectedValue, result );
     }
@@ -161,7 +161,7 @@ public class ProxyFunctionTests
     [TestMethod]
     public void ConvertValueToCollection_JsonNullAsStringCollection_ReturnsEmptyStringCollection()
     {
-        var result = ProxyFunction.ConvertValueToCollection( "null", ParameterSchemaDataType.String );
+        var result = LavaToolFunction.ConvertValueToCollection( "null", ParameterSchemaDataType.String );
 
         Assert.That.Empty( result );
     }
@@ -175,7 +175,7 @@ public class ProxyFunctionTests
     {
         var expectedValue = "Hello World!";
 
-        var result = ProxyFunction.ConvertValueToType( expectedValue, ParameterSchemaDataType.String );
+        var result = LavaToolFunction.ConvertValueToType( expectedValue, ParameterSchemaDataType.String );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -185,7 +185,7 @@ public class ProxyFunctionTests
     {
         var expectedValue = "42";
 
-        var result = ProxyFunction.ConvertValueToType( 42, ParameterSchemaDataType.String );
+        var result = LavaToolFunction.ConvertValueToType( 42, ParameterSchemaDataType.String );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -195,7 +195,7 @@ public class ProxyFunctionTests
     {
         var expectedValue = "True";
 
-        var result = ProxyFunction.ConvertValueToType( true, ParameterSchemaDataType.String );
+        var result = LavaToolFunction.ConvertValueToType( true, ParameterSchemaDataType.String );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -203,7 +203,7 @@ public class ProxyFunctionTests
     [TestMethod]
     public void ConvertValueToType_NullAsString_ReturnsNull()
     {
-        var result = ProxyFunction.ConvertValueToType( null, ParameterSchemaDataType.String );
+        var result = LavaToolFunction.ConvertValueToType( null, ParameterSchemaDataType.String );
 
         Assert.IsNull( result );
     }
@@ -213,7 +213,7 @@ public class ProxyFunctionTests
     {
         var expectedValue = 42;
 
-        var result = ProxyFunction.ConvertValueToType( 42, ParameterSchemaDataType.Number );
+        var result = LavaToolFunction.ConvertValueToType( 42, ParameterSchemaDataType.Number );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -223,7 +223,7 @@ public class ProxyFunctionTests
     {
         var expectedValue = 42.0;
 
-        var result = ProxyFunction.ConvertValueToType( 42.0, ParameterSchemaDataType.Number );
+        var result = LavaToolFunction.ConvertValueToType( 42.0, ParameterSchemaDataType.Number );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -233,7 +233,7 @@ public class ProxyFunctionTests
     {
         var expectedValue = 42.0;
 
-        var result = ProxyFunction.ConvertValueToType( "42", ParameterSchemaDataType.Number );
+        var result = LavaToolFunction.ConvertValueToType( "42", ParameterSchemaDataType.Number );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -241,7 +241,7 @@ public class ProxyFunctionTests
     [TestMethod]
     public void ConvertValueToType_NullAsNumber_ReturnsNull()
     {
-        var result = ProxyFunction.ConvertValueToType( null, ParameterSchemaDataType.Number );
+        var result = LavaToolFunction.ConvertValueToType( null, ParameterSchemaDataType.Number );
 
         Assert.IsNull( result );
     }
@@ -251,7 +251,7 @@ public class ProxyFunctionTests
     {
         var expectedValue = true;
 
-        var result = ProxyFunction.ConvertValueToType( true, ParameterSchemaDataType.Boolean );
+        var result = LavaToolFunction.ConvertValueToType( true, ParameterSchemaDataType.Boolean );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -261,7 +261,7 @@ public class ProxyFunctionTests
     {
         var expectedValue = true;
 
-        var result = ProxyFunction.ConvertValueToType( 1, ParameterSchemaDataType.Boolean );
+        var result = LavaToolFunction.ConvertValueToType( 1, ParameterSchemaDataType.Boolean );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -271,7 +271,7 @@ public class ProxyFunctionTests
     {
         var expectedValue = true;
 
-        var result = ProxyFunction.ConvertValueToType( "True", ParameterSchemaDataType.Boolean );
+        var result = LavaToolFunction.ConvertValueToType( "True", ParameterSchemaDataType.Boolean );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -279,7 +279,7 @@ public class ProxyFunctionTests
     [TestMethod]
     public void ConvertValueToType_NullAsBoolean_ReturnsNull()
     {
-        var result = ProxyFunction.ConvertValueToType( null, ParameterSchemaDataType.Boolean );
+        var result = LavaToolFunction.ConvertValueToType( null, ParameterSchemaDataType.Boolean );
 
         Assert.IsNull( result );
     }
@@ -287,7 +287,7 @@ public class ProxyFunctionTests
     [TestMethod]
     public void ConvertValueToType_NullAsDate_ReturnsNull()
     {
-        var result = ProxyFunction.ConvertValueToType( null, ParameterSchemaDataType.Date );
+        var result = LavaToolFunction.ConvertValueToType( null, ParameterSchemaDataType.Date );
 
         Assert.IsNull( result );
     }
@@ -297,7 +297,7 @@ public class ProxyFunctionTests
     {
         var expectedValue = new DateTime( 2025, 7, 30 );
 
-        var result = ProxyFunction.ConvertValueToType( "2025-07-30", ParameterSchemaDataType.Date );
+        var result = LavaToolFunction.ConvertValueToType( "2025-07-30", ParameterSchemaDataType.Date );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -307,7 +307,7 @@ public class ProxyFunctionTests
     {
         var expectedValue = "today";
 
-        var result = ProxyFunction.ConvertValueToType( "today", ParameterSchemaDataType.Date );
+        var result = LavaToolFunction.ConvertValueToType( "today", ParameterSchemaDataType.Date );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -315,7 +315,7 @@ public class ProxyFunctionTests
     [TestMethod]
     public void ConvertValueToType_NullAsDateTime_ReturnsNull()
     {
-        var result = ProxyFunction.ConvertValueToType( null, ParameterSchemaDataType.DateTime );
+        var result = LavaToolFunction.ConvertValueToType( null, ParameterSchemaDataType.DateTime );
 
         Assert.IsNull( result );
     }
@@ -325,7 +325,7 @@ public class ProxyFunctionTests
     {
         var expectedValue = new DateTime( 2025, 7, 30, 18, 23, 12 );
 
-        var result = ProxyFunction.ConvertValueToType( "2025-07-30T18:23:12", ParameterSchemaDataType.DateTime );
+        var result = LavaToolFunction.ConvertValueToType( "2025-07-30T18:23:12", ParameterSchemaDataType.DateTime );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -335,7 +335,7 @@ public class ProxyFunctionTests
     {
         var expectedValue = "today at noon";
 
-        var result = ProxyFunction.ConvertValueToType( "today at noon", ParameterSchemaDataType.DateTime );
+        var result = LavaToolFunction.ConvertValueToType( "today at noon", ParameterSchemaDataType.DateTime );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -343,7 +343,7 @@ public class ProxyFunctionTests
     [TestMethod]
     public void ConvertValueToType_StringAsUnknown_ReturnsNull()
     {
-        var result = ProxyFunction.ConvertValueToType( "Hello World!", ( ParameterSchemaDataType ) 999 );
+        var result = LavaToolFunction.ConvertValueToType( "Hello World!", ( ParameterSchemaDataType ) 999 );
 
         Assert.IsNull( result );
     }
@@ -387,10 +387,10 @@ public class ProxyFunctionTests
         {
             LavaService.SetCurrentEngine( new FluidEngine() );
 
-            var proxyFunction = new ProxyFunction( requestContext, rockRequestContextMock.Object );
+            var proxyFunction = new LavaToolFunction( requestContext, rockRequestContextMock.Object );
             var result = proxyFunction.ExecuteLava( function, args );
 
-            Assert.AreEqual( "Hello, Alisha!", result );
+            Assert.AreEqual( "Hello, Alisha!", result.Content );
         }
         finally
         {
