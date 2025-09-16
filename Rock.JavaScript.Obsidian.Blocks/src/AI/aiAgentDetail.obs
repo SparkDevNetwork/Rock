@@ -10,7 +10,7 @@
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :isAuditHidden="false"
-                 :isBadgesVisible="true"
+                 :isBadgesVisible="false"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"

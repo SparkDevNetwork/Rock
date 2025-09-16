@@ -38,10 +38,6 @@ namespace Rock.Web.Cache.Entities
         [DataMember]
         public string Description { get; private set; }
 
-        /// <inheritdoc cref="AISkill.Instructions"/>
-        [DataMember]
-        public string Instructions { get; private set; }
-
         /// <inheritdoc cref="AISkill.CodeEntityTypeId"/>
         [DataMember]
         public int? CodeEntityTypeId { get; private set; }
@@ -81,7 +77,6 @@ namespace Rock.Web.Cache.Entities
 
             Name = skill.Name;
             Description = skill.Description;
-            Instructions = skill.Instructions;
             CodeEntityTypeId = skill.CodeEntityTypeId;
             AdditionalSettingsJson = skill.AdditionalSettingsJson;
         }

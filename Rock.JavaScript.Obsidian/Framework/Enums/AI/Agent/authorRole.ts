@@ -31,7 +31,10 @@ export const AuthorRole = {
     User: 0,
 
     /** The message is a response from the assistant (the AI agent). */
-    Assistant: 1
+    Assistant: 1,
+
+    /** The message is a tool result, indicating that a tool was called. */
+    Tool: 2
 } as const;
 
 /**
@@ -42,7 +45,9 @@ export const AuthorRole = {
 export const AuthorRoleDescription: Record<number, string> = {
     0: "User",
 
-    1: "Assistant"
+    1: "Assistant",
+
+    2: "Tool"
 };
 
 /**

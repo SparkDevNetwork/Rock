@@ -64,14 +64,6 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// A concise, but descriptive, hint to the language model that provides
-        /// context about when this function should be used in response to an
-        /// individual's input.
-        /// </summary>
-        [DataMember]
-        public string Instructions { get; set; }
-
-        /// <summary>
         /// The type of function represented by this entity. This indicates
         /// how the function will be configured and executed in the language
         /// model.

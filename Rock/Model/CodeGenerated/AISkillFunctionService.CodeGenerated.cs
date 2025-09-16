@@ -136,7 +136,6 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.FunctionType = source.FunctionType;
-            target.Instructions = source.Instructions;
             target.Name = source.Name;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

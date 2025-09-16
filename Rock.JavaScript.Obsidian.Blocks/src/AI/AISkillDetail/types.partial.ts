@@ -15,6 +15,18 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
+
 export const enum NavigationUrlKey {
     ParentPage = "ParentPage"
 }
+
+export type InstructionTypes = "Purpose" | "Usage" | "Guardrail";
+
+export type InstructionItem = {
+    id: Guid;
+
+    type: InstructionTypes;
+
+    text: string;
+};

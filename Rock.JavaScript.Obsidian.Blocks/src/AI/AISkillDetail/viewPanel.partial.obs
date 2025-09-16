@@ -56,8 +56,12 @@
             valueBuilder.addTextValue("Description", props.modelValue.description);
         }
 
-        if (props.modelValue.instructions) {
-            valueBuilder.addTextValue("Instructions", props.modelValue.instructions);
+        if (props.modelValue.instructions && props.modelValue.instructions.length > 0) {
+            const html = "<ul>"
+                + props.modelValue.instructions.map(i => `<li>${i.text}: ${i.value}</li>`).join("")
+                + "</ul>";
+
+            valueBuilder.addHtmlValue("Instructions", html);
         }
 
         return valueBuilder.build();

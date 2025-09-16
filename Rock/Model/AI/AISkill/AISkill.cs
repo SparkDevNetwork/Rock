@@ -57,14 +57,6 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// A concise, but descriptive, hint to the language model that provides
-        /// context about when this skill's functions should be used in response
-        /// to an individual's input.
-        /// </summary>
-        [DataMember]
-        public string Instructions { get; set; }
-
-        /// <summary>
         /// The entity type identifier that represents the C# class that
         /// implements the functions for this skill. If this is not null then
         /// the skill and related functions should not allow editing beyond

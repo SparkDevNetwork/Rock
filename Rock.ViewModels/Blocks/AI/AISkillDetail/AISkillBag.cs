@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.AI.AISkillDetail
@@ -39,11 +41,10 @@ namespace Rock.ViewModels.Blocks.AI.AISkillDetail
         public string Description { get; set; }
 
         /// <summary>
-        /// A concise, but descriptive, hint to the language model that provides
-        /// context about when this skill's functions should be used in response
-        /// to an individual's input.
+        /// The instructions that provide context about when and how this
+        /// skill should be used.
         /// </summary>
-        public string Instructions { get; set; }
+        public List<ListItemBag> Instructions { get; set; }
 
         /// <summary>
         /// The friendly name of the skill that will be used to identify it in

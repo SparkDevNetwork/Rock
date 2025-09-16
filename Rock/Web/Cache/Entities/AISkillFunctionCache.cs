@@ -43,10 +43,6 @@ namespace Rock.Web.Cache.Entities
         [DataMember]
         public string Description { get; private set; }
 
-        /// <inheritdoc cref="AISkillFunction.Instructions"/>
-        [DataMember]
-        public string Instructions { get; private set; }
-
         /// <inheritdoc cref="AISkillFunction.FunctionType"/>
         [DataMember]
         public FunctionType FunctionType { get; private set; }
@@ -76,7 +72,6 @@ namespace Rock.Web.Cache.Entities
             AISkillId = function.AISkillId;
             Name = function.Name;
             Description = function.Description;
-            Instructions = function.Instructions;
             FunctionType = function.FunctionType;
             AdditionalSettingsJson = function.AdditionalSettingsJson;
         }

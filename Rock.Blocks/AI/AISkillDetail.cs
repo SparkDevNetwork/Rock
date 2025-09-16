@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
+using Rock.AI.Agent;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -163,13 +164,15 @@ namespace Rock.Blocks.AI
                 return null;
             }
 
+            var instructions = entity.GetAdditionalSettings<SkillInstructionSettings>();
+
             return new AISkillBag
             {
                 IdKey = entity.IdKey,
                 CodeEntityType = entity.CodeEntityType.ToListItemBag(),
                 Description = entity.Description,
+                Instructions = ToInstructionBags( instructions ),
                 Name = entity.Name,
-                Instructions = entity.Instructions
             };
         }
 
@@ -210,14 +213,18 @@ namespace Rock.Blocks.AI
             // Limited editing is supported for C# based skills.
             if ( !entity.CodeEntityTypeId.HasValue )
             {
+                var instructions = entity.GetAdditionalSettings<SkillInstructionSettings>();
+
                 box.IfValidProperty( nameof( box.Bag.Description ),
                     () => entity.Description = box.Bag.Description );
+
+                box.IfValidProperty( nameof( box.Bag.Instructions ),
+                    () => instructions = GetInstructionSettings( box.Bag.Instructions ) );
 
                 box.IfValidProperty( nameof( box.Bag.Name ),
                     () => entity.Name = box.Bag.Name );
 
-                box.IfValidProperty( nameof( box.Bag.Instructions ),
-                    () => entity.Instructions = box.Bag.Instructions );
+                entity.SetAdditionalSettings( instructions );
             }
 
             return true;
@@ -274,6 +281,54 @@ namespace Rock.Blocks.AI
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Convert the tool instructions to bags that can be sent to the client.
+        /// </summary>
+        /// <param name="instructions">The current skill instructions.</param>
+        /// <returns>A collection of <see cref="ListItemBag"/> objects.</returns>
+        private static List<ListItemBag> ToInstructionBags( SkillInstructionSettings instructions )
+        {
+            var bags = new List<ListItemBag>();
+
+            if ( instructions.Purposes != null )
+            {
+                bags.AddRange( instructions.Purposes.Select( i => new ListItemBag { Text = "Purpose", Value = i } ) );
+            }
+
+            if ( instructions.Usages != null )
+            {
+                bags.AddRange( instructions.Usages.Select( i => new ListItemBag { Text = "Usage", Value = i } ) );
+            }
+
+            if ( instructions.Guardrails != null )
+            {
+                bags.AddRange( instructions.Guardrails.Select( i => new ListItemBag { Text = "Guardrail", Value = i } ) );
+            }
+
+            return bags;
+        }
+
+        /// <summary>
+        /// Converts the instruction bags received from the client to the
+        /// native instruction settings.
+        /// </summary>
+        /// <param name="bags">The bags from the client.</param>
+        /// <returns>The native skill instructions.</returns>
+        private static SkillInstructionSettings GetInstructionSettings( List<ListItemBag> bags )
+        {
+            if ( bags == null )
+            {
+                return new SkillInstructionSettings();
+            }
+
+            return new SkillInstructionSettings
+            {
+                Purposes = bags.Where( b => b.Text == "Purpose" ).Select( b => b.Value ).ToList(),
+                Usages = bags.Where( b => b.Text == "Usage" ).Select( b => b.Value ).ToList(),
+                Guardrails = bags.Where( b => b.Text == "Guardrail" ).Select( b => b.Value ).ToList(),
+            };
         }
 
         #endregion

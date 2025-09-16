@@ -222,7 +222,7 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
                 var session = new AIAgentSession
                 {
                     AIAgentId = _agentConfiguration.AgentId,
-                    PersonAliasId = _requestContext.CurrentPerson.PrimaryAliasId.Value,
+                    PersonAliasId = _requestContext.CurrentPerson.PrimaryAliasId,
                     RelatedEntityTypeId = entityTypeId,
                     RelatedEntityId = entityId
                 };

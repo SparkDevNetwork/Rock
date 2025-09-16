@@ -132,6 +132,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.AgentType = source.AgentType;
+            target.AudienceType = source.AudienceType;
             target.AvatarBinaryFileId = source.AvatarBinaryFileId;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;

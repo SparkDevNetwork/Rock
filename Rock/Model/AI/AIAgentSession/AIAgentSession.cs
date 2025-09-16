@@ -52,9 +52,8 @@ namespace Rock.Model
         /// session. This is used to ensure that a person cannot view another
         /// person's chat history.
         /// </summary>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public int PersonAliasId { get; set; }
+        [DataMember]
+        public int? PersonAliasId { get; set; }
 
         /// <summary>
         /// An optional name for the session. This can be used to help identify
@@ -149,7 +148,7 @@ namespace Rock.Model
         public AIAgentSessionConfiguration()
         {
             this.HasRequired( a => a.AIAgent ).WithMany().HasForeignKey( a => a.AIAgentId ).WillCascadeOnDelete( true );
-            this.HasRequired( a => a.PersonAlias ).WithMany().HasForeignKey( a => a.PersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.PersonAlias ).WithMany().HasForeignKey( a => a.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.RelatedEntityType ).WithMany().HasForeignKey( a => a.RelatedEntityTypeId ).WillCascadeOnDelete( true );
         }
     }

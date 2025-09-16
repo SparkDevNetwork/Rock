@@ -14,7 +14,7 @@
             <template #format="{ row }: { row: InstructionItem }">
                 <div class="flex-grow-1">
                     <DropDownList v-model="row.type"
-                                  :items="getRowTypes(row.type)"
+                                  :items="typeItems"
                                   :showBlankItem="false" />
                 </div>
             </template>
@@ -36,13 +36,13 @@
 </template>
 
 <script setup lang="ts">
-    import AutoHeightTextBox from "./autoHeightTextBox.partial.obs";
+    import AutoHeightTextBox from "../AISkillFunctionList/autoHeightTextBox.partial.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import Grid, { Column, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { computed, PropType, ref, watch } from "vue";
-    import { InstructionItem, InstructionTypes } from "./types.partial";
+    import { InstructionItem } from "./types.partial";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -64,10 +64,7 @@
     const typeItems: ListItemBag[] = [
         { value: "Purpose", text: "Purpose" },
         { value: "Usage", text: "Usage" },
-        { value: "Guardrail", text: "Guardrail" },
-        { value: "Prerequisite", text: "Prerequisite" },
-        { value: "Example", text: "Example" },
-        { value: "Returns", text: "Returns" }
+        { value: "Guardrail", text: "Guardrail" }
     ];
 
     // #endregion
@@ -83,28 +80,6 @@
     // #endregion
 
     // #region Functions
-
-    /**
-     * Get the available row types for a specific instruction.
-     *
-     * @param existingValue The currently selected value for the instruction.
-     *
-     * @returns An array of available row types.
-     */
-    function getRowTypes(existingValue: InstructionTypes): ListItemBag[] {
-        // If the existing value is "Returns", always allow it to be selected.
-        if (existingValue === "Returns") {
-            return typeItems;
-        }
-
-        // If any instruction is already of type "Returns", then filter it out.
-        if (instructions.value.some(i => i.type === "Returns")) {
-            return typeItems.filter(i => i.value !== "Returns");
-        }
-        else {
-            return typeItems;
-        }
-    }
 
     // #endregion
 
