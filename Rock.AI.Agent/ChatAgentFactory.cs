@@ -356,7 +356,7 @@ namespace Rock.AI.Agent
                     var proxySkill = new ProxyFunction( kernelServiceProvider.GetRequiredService<AgentRequestContext>(), requestContext );
 
                     var proxyFunction = KernelFunctionFactory.CreateFromMethod(
-                        method: ( Func<KernelArguments, string> ) ( args => proxySkill.ExecuteLava( function, args ) ),
+                        method: ( Func<KernelArguments, RockToolResult> ) ( args => proxySkill.ExecuteLava( function, args ) ),
                         functionName: function.Key,
                         description: InstructionFormatter.FormatInstructions( function.Instructions ),
                         parameters: parameters,

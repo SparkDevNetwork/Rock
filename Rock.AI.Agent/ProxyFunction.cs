@@ -23,7 +23,9 @@ using System.Text.Json;
 
 using Microsoft.SemanticKernel;
 
+using Rock.AI.Agent.Classes.Common;
 using Rock.Enums.AI.Agent;
+using Rock.Lava;
 using Rock.Net;
 
 namespace Rock.AI.Agent
@@ -73,18 +75,45 @@ namespace Rock.AI.Agent
         /// <param name="function">The function to be executed.</param>
         /// <param name="args">The arguments from the language model that will be passed to the Lava template.</param>
         /// <returns>The output from the Lava template.</returns>
-        public string ExecuteLava( AgentTool function, KernelArguments args )
+        public RockToolResult ExecuteLava( AgentTool function, KernelArguments args )
         {
             var mergeFields = _rockRequestContext.GetCommonMergeFields();
+            var proxyFunctionResponse = new Dictionary<string, object>();
 
             mergeFields["AgentContext"] = _agentRequestContext;
+            mergeFields[$"{LavaHelper.InternalMergeFieldPrefix}ProxyFunction"] = proxyFunctionResponse;
 
             AddParametersToMergeFields( mergeFields, function.Parameters, args );
 
             // Because only administrators (or those granted access by an
             // administrator) can create or edit functions, we can safely
             // just enable all lava commands.
-            return function.Prompt.ResolveMergeFields( mergeFields, "All" ).Trim();
+            try
+            {
+                var output = function.Prompt.ResolveMergeFields( mergeFields, "All", throwExceptionOnErrors: true ).Trim();
+
+                if ( proxyFunctionResponse.TryGetValue( "ToolResult", out var resultObject ) && resultObject is RockToolResult toolResult )
+                {
+                    return toolResult;
+                }
+                else if ( output.IsNotNullOrWhiteSpace() )
+                {
+                    return RockToolResult.Success( output );
+                }
+                else
+                {
+                    return RockToolResult.NoData();
+                }
+            }
+            catch ( LavaToolException ex ) when ( ex.ErrorResult != null )
+            {
+                return ex.ErrorResult;
+            }
+            catch ( Exception ex )
+            {
+                return RockToolResult.Error( $"An error occurred while executing the function: {ex.Message}" )
+                    .WithInstructions( "An internal error has occurred. The error message should be displayed so the user can diagnose the problem." );
+            }
         }
 
         /// <summary>
