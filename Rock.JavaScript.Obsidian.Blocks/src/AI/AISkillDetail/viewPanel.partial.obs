@@ -58,7 +58,7 @@
 
         if (props.modelValue.instructions && props.modelValue.instructions.length > 0) {
             const html = "<ul>"
-                + props.modelValue.instructions.map(i => `<li>${i.text}: ${i.value}</li>`).join("")
+                + props.modelValue.instructions.map(i => `<li>${i.text}: ${i.value?.replace(/\n/g, "<br>")}</li>`).join("")
                 + "</ul>";
 
             valueBuilder.addHtmlValue("Instructions", html);
