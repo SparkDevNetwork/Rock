@@ -22,6 +22,9 @@ namespace Rock.AI.Agent.Skills
     /// <summary>
     /// Provides functionality to create and manage notes within the AI agent.
     /// </summary>
+    /// <remarks>
+    /// This skill allows for operations such as adding, updating, deleting, and listing notes. It also provides tools to look up note types and retrieve specific notes.
+    /// </remarks>
     [AgentSkillGuid( "216E5428-DE1A-4458-A22C-22812955264A" )]
     [EntityTypeGuid( "76DD142A-FB37-4B9E-A1F0-305A5B675B76" )]
     [Description( "This skill provides functionality to manage notes." )]
@@ -29,7 +32,14 @@ namespace Rock.AI.Agent.Skills
     {
         #region Fields
 
+        /// <summary>
+        /// The logger instance for logging messages.
+        /// </summary>
         private readonly ILogger<NoteSkill> _logger;
+
+        /// <summary>
+        /// The factory for creating RockContext instances.
+        /// </summary>
         private readonly IRockContextFactory _rockContextFactory;
 
         #endregion
@@ -49,107 +59,12 @@ namespace Rock.AI.Agent.Skills
 
         #endregion
 
-        #region Methods
-
-        private static List<NoteTypeResult> GetNoteTypes( Rock.Model.Person currentPerson )
-        {
-            var noteTypes = NoteTypeCache.All()
-                .Where( nt => nt.UserSelectable )
-                .Where( a => a.IsAuthorized( Authorization.VIEW, currentPerson ) );
-
-            var noteTypeResults = new List<NoteTypeResult>();
-
-            foreach ( var noteType in noteTypes )
-            {
-                // Populate entity type information
-                var noteTypeResult = new NoteTypeResult
-                {
-                    Id = noteType.Id,
-                    Name = noteType.Name,
-                };
-
-                if ( noteType.EntityTypeId.HasValue )
-                {
-                    var entityType = EntityTypeCache.Get( noteType.EntityTypeId.Value );
-                    if ( entityType != null )
-                    {
-                        noteTypeResult.EntityType = new KeyNameResult
-                        {
-                            Id = entityType.Id,
-                            Name = entityType.FriendlyName,
-                        };
-                    }
-                }
-
-                noteTypeResults.Add( noteTypeResult );
-            }
-
-            return noteTypeResults;
-        }
-
-        private static NoteResult GetNoteResult( Rock.Model.Note note, RockContext rockContext )
-        {
-            if ( note == null )
-            {
-                return null;
-            }
-
-            // This may not be populated since we could have just saved, so eager
-            // load it if necessary.
-            var noteType = NoteTypeCache.Get( note.NoteTypeId );
-            string entityName = null;
-            string entityTypeName = null;
-
-            // Fetch the entity type and name
-            if ( note.EntityId.HasValue && noteType.EntityTypeId.HasValue )
-            {
-                var entity = new EntityTypeService( rockContext ).GetEntity( noteType.EntityTypeId.Value, note.EntityId.Value );
-
-                if( entity != null )
-                {
-                    entityName = entity?.ToString();
-                }
-            }
-
-            if( noteType.EntityTypeId.HasValue )
-            {
-                var entityType = EntityTypeCache.Get( noteType.EntityTypeId.Value );
-                entityTypeName = entityType.FriendlyName;
-            }
-
-            return new NoteResult
-            {
-                Author = note.CreatedByPersonAlias != null
-                    ? new PersonResult
-                    {
-                        Id = note.CreatedByPersonAlias.Person.Id,
-                        NickName = note.CreatedByPersonAlias.Person.NickName,
-                        LastName = note.CreatedByPersonAlias.Person.LastName
-                    }
-                    : null,
-                NoteType = new NoteTypeResult
-                {
-                    EntityType = new KeyNameResult
-                    {
-                        Id = noteType.EntityTypeId,
-                        Name = entityTypeName
-                    },
-                    Id = noteType.Id,
-                    Name = noteType.Name
-                },
-                EntityName = entityName,
-                Caption = note.Caption,
-                IsAlert = note.IsAlert ?? false,
-                Id = note.Id,
-                IsPinned = note.IsPinned,
-                IsPrivate = note.IsPrivateNote,
-                Text = note.Text,
-            };
-        }
-        #endregion
-
         #region Agent Tools
 
+        /// <summary>
+        /// Looks up all available note types for the current user.
+        /// </summary>
+        /// <returns>A <see cref="RockToolResult"/> containing the list of note types or an error message.</returns>
         [AgentToolGuid( "51046397-D246-4296-A1C0-EC6BF0D01FAA" )]
         public RockToolResult LookupNoteTypes()
         {
@@ -165,6 +80,11 @@ namespace Rock.AI.Agent.Skills
                 .WithHistoryKey( "note-types" );
         }
 
+        /// <summary>
+        /// Retrieves a specific note by its identifier key.
+        /// </summary>
+        /// <param name="idKey">The identifier key of the note to retrieve.</param>
+        /// <returns>A <see cref="RockToolResult"/> containing the note details or an error message.</returns>
         [AgentToolGuid( "C5690ED4-5CB3-4299-9E75-1D4E6FF7D323" )]
         public RockToolResult GetNote( string idKey )
         {
@@ -193,6 +113,16 @@ namespace Rock.AI.Agent.Skills
             }
         }
 
+        /// <summary>
+        /// Adds a new note to the specified entity of the given note type.
+        /// </summary>
+        /// <param name="noteTypeIdKey">The identifier key of the note type.</param>
+        /// <param name="entityIdKey">The identifier key of the entity to associate with the note.</param>
+        /// <param name="note">The text of the note.</param>
+        /// <param name="isAlert">Indicates whether the note is an alert.</param>
+        /// <param name="isPrivateNote">Indicates whether the note is private.</param>
+        /// <param name="isPinned">Indicates whether the note is pinned.</param>
+        /// <returns>A <see cref="RockToolResult"/> indicating the success or failure of the operation.</returns>
         [AgentToolGuid( "FB0E044A-068A-4B47-9990-B2A582F87B3A" )]
         [AgentUsage( "Adds a note to the specified entity of the given note type." )]
         [AgentToolPrerequisite( "Call the LookupNoteTypes function to determine available note types. Select one that matches the note sentiment." )]
@@ -265,6 +195,16 @@ namespace Rock.AI.Agent.Skills
             }
         }
 
+        /// <summary>
+        /// Updates an existing note.
+        /// </summary>
+        /// <param name="noteIdKey">The identifier key of the note to update.</param>
+        /// <param name="note">The updated text of the note (optional).</param>
+        /// <param name="noteTypeIdKey">The updated note type identifier key (optional).</param>
+        /// <param name="isAlert">The updated alert status (optional).</param>
+        /// <param name="isPrivateNote">The updated private status (optional).</param>
+        /// <param name="isPinned">The updated pinned status (optional).</param>
+        /// <returns>A <see cref="RockToolResult"/> indicating the success or failure of the operation.</returns>
         [AgentToolGuid( "322A8DE0-6F51-4882-9EEB-8A8792607A8B" )]
         public RockToolResult UpdateNote(
             string noteIdKey,
@@ -346,6 +286,11 @@ namespace Rock.AI.Agent.Skills
             }
         }
 
+        /// <summary>
+        /// Deletes a note by its identifier key.
+        /// </summary>
+        /// <param name="idKey">The identifier key of the note to delete.</param>
+        /// <returns>A <see cref="RockToolResult"/> indicating the success or failure of the operation.</returns>
         [AgentToolGuid( "DC4F7ABA-50F1-4ADD-A1E0-A9DAE8D51D2D" )]
         [AgentGuardrail( "This action will permanently delete the specified note. Ensure that this action is intentional and that you have the correct note identifier before proceeding." )]
         public RockToolResult DeleteNote( string idKey )
@@ -388,6 +333,20 @@ namespace Rock.AI.Agent.Skills
             }
         }
 
+        /// <summary>
+        /// Lists notes based on the specified filters.
+        /// </summary>
+        /// <param name="startDate">The start date for filtering notes (optional).</param>
+        /// <param name="endDate">The end date for filtering notes (optional).</param>
+        /// <param name="noteTypeIdKey">The identifier key of the note type to filter by (optional).</param>
+        /// <param name="entityIdKey">The identifier key of the entity to filter by (optional).</param>
+        /// <param name="entityTypeIdKey">The identifier key of the entity type to filter by (optional).</param>
+        /// <param name="createdByPersonIdKey">The identifier key of the person who created the notes (optional).</param>
+        /// <param name="isAlert">The alert status to filter by (optional).</param>
+        /// <param name="isPrivateNote">The private status to filter by (optional).</param>
+        /// <param name="isPinned">The pinned status to filter by (optional).</param>
+        /// <param name="pageNumber">The page number for pagination (optional).</param>
+        /// <returns>A <see cref="RockToolResult"/> containing the list of notes or an error message.</returns>
         [AgentToolGuid( "22B609E6-5D0A-4588-8BB9-456EF6F7D4A4" )]
         public RockToolResult ListNotes(
             DateTime? startDate = null,
@@ -584,6 +543,117 @@ namespace Rock.AI.Agent.Skills
                     }, "notes-list" )
                     .WithMetadata( meta );
             }
+        }
+
+        #endregion
+
+        #region Helpers
+
+        /// <summary>
+        /// Retrieves the list of note types available to the current user.
+        /// </summary>
+        /// <param name="currentPerson">The current person.</param>
+        /// <returns>A list of <see cref="NoteTypeResult"/> objects representing the available note types.</returns>
+        private static List<NoteTypeResult> GetNoteTypes( Rock.Model.Person currentPerson )
+        {
+            var noteTypes = NoteTypeCache.All()
+                .Where( nt => nt.UserSelectable )
+                .Where( a => a.IsAuthorized( Authorization.VIEW, currentPerson ) );
+
+            var noteTypeResults = new List<NoteTypeResult>();
+
+            foreach ( var noteType in noteTypes )
+            {
+                // Populate entity type information
+                var noteTypeResult = new NoteTypeResult
+                {
+                    Id = noteType.Id,
+                    Name = noteType.Name,
+                };
+
+                if ( noteType.EntityTypeId.HasValue )
+                {
+                    var entityType = EntityTypeCache.Get( noteType.EntityTypeId.Value );
+                    if ( entityType != null )
+                    {
+                        noteTypeResult.EntityType = new KeyNameResult
+                        {
+                            Id = entityType.Id,
+                            Name = entityType.FriendlyName,
+                        };
+                    }
+                }
+
+                noteTypeResults.Add( noteTypeResult );
+            }
+
+            return noteTypeResults;
+        }
+
+        /// <summary>
+        /// Retrieves the result object for a specific note.
+        /// </summary>
+        /// <param name="note">The note object.</param>
+        /// <param name="rockContext">The Rock context.</param>
+        /// <returns>A <see cref="NoteResult"/> object containing the note details.</returns>
+        private static NoteResult GetNoteResult( Rock.Model.Note note, RockContext rockContext )
+        {
+            if ( note == null )
+            {
+                return null;
+            }
+
+            // This may not be populated since we could have just saved, so eager
+            // load it if necessary.
+            var noteType = NoteTypeCache.Get( note.NoteTypeId );
+            string entityName = null;
+            string entityTypeName = null;
+
+            // Fetch the entity type and name
+            if ( note.EntityId.HasValue && noteType.EntityTypeId.HasValue )
+            {
+                var entity = new EntityTypeService( rockContext ).GetEntity( noteType.EntityTypeId.Value, note.EntityId.Value );
+
+                if ( entity != null )
+                {
+                    entityName = entity?.ToString();
+                }
+            }
+
+            if ( noteType.EntityTypeId.HasValue )
+            {
+                var entityType = EntityTypeCache.Get( noteType.EntityTypeId.Value );
+                entityTypeName = entityType.FriendlyName;
+            }
+
+            return new NoteResult
+            {
+                Author = note.CreatedByPersonAlias != null
+                    ? new PersonResult
+                    {
+                        Id = note.CreatedByPersonAlias.Person.Id,
+                        NickName = note.CreatedByPersonAlias.Person.NickName,
+                        LastName = note.CreatedByPersonAlias.Person.LastName
+                    }
+                    : null,
+                NoteType = new NoteTypeResult
+                {
+                    EntityType = new KeyNameResult
+                    {
+                        Id = noteType.EntityTypeId,
+                        Name = entityTypeName
+                    },
+                    Id = noteType.Id,
+                    Name = noteType.Name
+                },
+                EntityName = entityName,
+                Caption = note.Caption,
+                IsAlert = note.IsAlert ?? false,
+                Id = note.Id,
+                IsPinned = note.IsPinned,
+                IsPrivate = note.IsPrivateNote,
+                Text = note.Text,
+            };
         }
 
         #endregion
