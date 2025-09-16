@@ -29,11 +29,8 @@
                     </div>
                 </div>
 
-                <TextBox v-model="editFunctionInstructions"
-                         label="Instructions"
-                         rules="required"
-                         textMode="multiline"
-                         :rows="6" />
+                <TextBox v-model="editFunctionPreamble"
+                         label="Preamble" />
 
                 <div v-if="editFunctionType === FunctionType.AIPrompt.toString()"
                      class="row">
@@ -68,18 +65,40 @@
             </ContentStack>
         </ContentSection>
 
+        <ContentSection title="Instructions"
+                        icon="ti ti-info-circle"
+                        overflowText="Help">
+            <ContentStack>
+                <InstructionList v-model="editFunctionInstructions" />
+            </ContentStack>
+
+            <template #overflow>
+                <p>
+                    Instructions are used to provide additional context to the
+                    language model about how to use this tool.
+                </p>
+
+                <ul>
+                    <li>Purpose - Describes the basic purpose of the tool.</li>
+                    <li>Usage - Provides details on usage instructions for the tool.</li>
+                    <li>Guardrail - Provides instructions around how to safely call the tool (like warnings that data will be updated or deleted.)</li>
+                    <li>Prerequisite - Describes steps that should be completed before calling this step.</li>
+                    <li>Example - Provides an example of usage for the orchestrator.</li>
+                    <li>Returns - Provides information about what the tool will return after it is called.</li>
+                </ul>
+            </template>
+        </ContentSection>
+
         <ContentSection v-if="editFunctionType === FunctionType.ExecuteLava.toString()"
                         title="Parameters"
                         icon="ti ti-adjustments-cog">
             <ContentStack>
-                <div class="form-group">
-                    <RockLabel help="The parameters that will be passed to your Lava as merge fields. These are used by the language model to understand what data is passed in, but it is not guaranteed to perfectly honor what is defined here.">
-                        Parameter List
-                    </RockLabel>
+                <RockLabel help="The parameters that will be passed to your Lava as merge fields. These are used by the language model to understand what data is passed in, but it is not guaranteed to perfectly honor what is defined here.">
+                    Parameter List
+                </RockLabel>
 
-                    <div class="control-wrapper">
-                        <ParameterList v-model="editFunctionPromptParameters" />
-                    </div>
+                <div class="control-wrapper">
+                    <ParameterList v-model="editFunctionPromptParameters" />
                 </div>
             </ContentStack>
         </ContentSection>
@@ -93,12 +112,13 @@
     import ContentSectionWrapper from "@Obsidian/Controls/contentSectionWrapper.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import InstructionList from "./instructionList.partial.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import ParameterList from "./parameterList.partial.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { computed, PropType, ref, watch } from "vue";
-    import { AugmentedParameterSchemaBag } from "./types.partial";
+    import { AugmentedParameterSchemaBag, InstructionItem, InstructionTypes } from "./types.partial";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { FunctionType, FunctionTypeDescription } from "@Obsidian/Enums/AI/Agent/functionType";
     import { AISkillFunctionBag } from "@Obsidian/ViewModels/Blocks/AI/AISkillFunctionList/aiSkillFunctionBag";
@@ -122,7 +142,8 @@
     const editFunctionName = ref("");
     const editFunctionType = ref("");
     const editFunctionDescription = ref("");
-    const editFunctionInstructions = ref("");
+    const editFunctionPreamble = ref("");
+    const editFunctionInstructions = ref<InstructionItem[]>([]);
     const editFunctionPreRenderLava = ref(false);
     const editFunctionTemperature = ref(0.7);
     const editFunctionMaxTokens = ref<number>();
@@ -175,7 +196,10 @@
         updateRefValue(editFunctionName, props.modelValue.name ?? "");
         updateRefValue(editFunctionType, props.modelValue.functionType.toString());
         updateRefValue(editFunctionDescription, props.modelValue.description ?? "");
-        updateRefValue(editFunctionInstructions, props.modelValue.instructions ?? "");
+        updateRefValue(editFunctionPreamble, props.modelValue.preamble ?? "");
+        updateRefValue(editFunctionInstructions, props.modelValue.instructions
+            ?.map(h => ({ id: h.category || newGuid(), type: h.text as InstructionTypes, text: h.value ?? "" }))
+            ?? []);
         updateRefValue(editFunctionPreRenderLava, props.modelValue.preRenderLava);
         updateRefValue(editFunctionTemperature, props.modelValue.temperature);
         updateRefValue(editFunctionMaxTokens, props.modelValue.maxTokens ?? undefined);
@@ -185,12 +209,13 @@
             ?? []);
     }, { immediate: true });
 
-    watch([editFunctionName, editFunctionType, editFunctionDescription, editFunctionInstructions, editFunctionPreRenderLava, editFunctionTemperature, editFunctionMaxTokens, editFunctionPrompt, editFunctionPromptParameters], () => {
+    watch([editFunctionName, editFunctionType, editFunctionDescription, editFunctionPreamble, editFunctionInstructions, editFunctionPreRenderLava, editFunctionTemperature, editFunctionMaxTokens, editFunctionPrompt, editFunctionPromptParameters], () => {
         emit("update:modelValue", {
             name: editFunctionName.value,
             functionType: <FunctionType>toNumber(editFunctionType.value),
             description: editFunctionDescription.value,
-            instructions: editFunctionInstructions.value,
+            instructions: editFunctionInstructions.value.map(h => ({ text: h.type, value: h.text, category: h.id })),
+            preamble: editFunctionPreamble.value,
             preRenderLava: editFunctionPreRenderLava.value,
             temperature: editFunctionTemperature.value,
             maxTokens: editFunctionMaxTokens.value,

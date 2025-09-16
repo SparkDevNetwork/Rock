@@ -3,6 +3,7 @@
         <Grid v-if="!isEditingParameter" :data="parameterData"
               keyField="id"
               light
+              class="mb-0"
               @addItem="onAddParameterClick">
             <TextColumn name="name"
                         title="Name"

@@ -40,17 +40,22 @@ namespace Rock.ViewModels.Blocks.AI.AISkillFunctionList
         public FunctionType FunctionType { get; set; }
 
         /// <summary>
-        /// A concise, but descriptive, hint to the language model that provides
-        /// context about when this function should be used in response to an
-        /// individual's input.
+        /// The instructions that provide context about when and how this
+        /// tool should be executed.
         /// </summary>
-        public string Instructions { get; set; }
+        public List<ListItemBag> Instructions { get; set; }
 
         /// <summary>
         /// The friendly name of the function that will be used to identify it
         /// in the UI.
         /// </summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// The preamble text that will be displayed in the UI when an agent is
+        /// executing this tool.
+        /// </summary>
+        public string Preamble { get; set; }
 
         /// <summary>
         /// Indicates that the prompt should be rendered using Lava before being

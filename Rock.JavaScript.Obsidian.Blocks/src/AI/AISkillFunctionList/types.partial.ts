@@ -25,3 +25,14 @@ export const enum NavigationUrlKey {
 export type AugmentedParameterSchemaBag = ParameterSchemaBag & {
     id: Guid;
 };
+
+export type InstructionTypes = "Purpose" | "Usage" | "Guardrail" | "Prerequisite" | "Example" | "Returns";
+
+export type InstructionItem = {
+    id: Guid;
+
+    type: InstructionTypes;
+
+    text: string;
+};
+

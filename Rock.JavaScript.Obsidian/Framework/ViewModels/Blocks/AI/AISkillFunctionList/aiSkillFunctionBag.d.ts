@@ -23,6 +23,7 @@
 
 import { FunctionType } from "@Obsidian/Enums/AI/Agent/functionType";
 import { ParameterSchemaBag } from "@Obsidian/ViewModels/Blocks/AI/AISkillFunctionList/parameterSchemaBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /** The item details for the AI Skill Function List block. */
@@ -50,11 +51,10 @@ export type AISkillFunctionBag = {
     idKey?: string | null;
 
     /**
-     * A concise, but descriptive, hint to the language model that provides
-     * context about when this function should be used in response to an
-     * individual's input.
+     * The instructions that provide context about when and how this
+     * tool should be executed.
      */
-    instructions?: string | null;
+    instructions?: ListItemBag[] | null;
 
     /** The maximum number of tokens that the language model should consume. */
     maxTokens?: number | null;
@@ -64,6 +64,12 @@ export type AISkillFunctionBag = {
      * in the UI.
      */
     name?: string | null;
+
+    /**
+     * The preamble text that will be displayed in the UI when an agent is
+     * executing this tool.
+     */
+    preamble?: string | null;
 
     /**
      * Indicates that the prompt should be rendered using Lava before being

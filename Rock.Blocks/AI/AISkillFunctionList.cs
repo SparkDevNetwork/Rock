@@ -195,14 +195,17 @@ namespace Rock.Blocks.AI
                 return null;
             }
 
+            var additionalSettings = entity.GetAdditionalSettings<ToolAdditionalSettings>();
             var promptSettings = entity.GetAdditionalSettings<PromptInformationSettings>();
+            var instructions = entity.GetAdditionalSettings<ToolInstructionSettings>();
 
             return new AISkillFunctionBag
             {
                 IdKey = entity.IdKey,
                 Description = entity.Description,
                 Name = entity.Name,
-                Instructions = entity.Instructions,
+                Preamble = additionalSettings.Preamble,
+                Instructions = ToInstructionBags( instructions ),
                 FunctionType = entity.FunctionType = entity.FunctionType,
                 PreRenderLava = promptSettings.PreRenderLava,
                 Temperature = promptSettings.Temperature,
@@ -306,10 +309,15 @@ namespace Rock.Blocks.AI
             box.IfValidProperty( nameof( box.Bag.Name ),
                 () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Bag.Instructions ),
-                () => entity.Instructions = box.Bag.Instructions );
-
+            var additionalSettings = entity.GetAdditionalSettings<ToolAdditionalSettings>();
+            var instructions = entity.GetAdditionalSettings<ToolInstructionSettings>();
             var promptSettings = entity.GetAdditionalSettings<PromptInformationSettings>();
+
+            box.IfValidProperty( nameof( box.Bag.Preamble ),
+                () => additionalSettings.Preamble = box.Bag.Preamble );
+
+            box.IfValidProperty( nameof( box.Bag.Instructions ),
+                () => instructions = GetInstructionSettings( box.Bag.Instructions ) );
 
             box.IfValidProperty( nameof( box.Bag.PreRenderLava ),
                 () => promptSettings.PreRenderLava = box.Bag.PreRenderLava );
@@ -326,6 +334,8 @@ namespace Rock.Blocks.AI
             box.IfValidProperty( nameof( box.Bag.PromptParameters ),
                 () => promptSettings.PromptParameters = box.Bag.PromptParameters?.Select( FromParameterBag ).ToList() );
 
+            entity.SetAdditionalSettings( additionalSettings );
+            entity.SetAdditionalSettings( instructions );
             entity.SetAdditionalSettings( promptSettings );
 
             return true;
@@ -336,7 +346,7 @@ namespace Rock.Blocks.AI
         /// </summary>
         /// <param name="parameter">The parameter to be converted.</param>
         /// <returns>An instance of <see cref="ParameterSchemaBag"/>.</returns>
-        private ParameterSchemaBag ToParameterBag( ParameterSchema parameter )
+        private static ParameterSchemaBag ToParameterBag( ParameterSchema parameter )
         {
             return new ParameterSchemaBag
             {
@@ -347,6 +357,72 @@ namespace Rock.Blocks.AI
                 IsRequired = parameter.IsRequired,
                 IsCollection = parameter.IsCollection,
                 Name = parameter.Name,
+            };
+        }
+
+        /// <summary>
+        /// Convert the tool instructions to bags that can be sent to the client.
+        /// </summary>
+        /// <param name="instructions">The current tool instructions.</param>
+        /// <returns>A collection of <see cref="ListItemBag"/> objects.</returns>
+        private static List<ListItemBag> ToInstructionBags( ToolInstructionSettings instructions )
+        {
+            var bags = new List<ListItemBag>();
+
+            if ( instructions.Purposes != null )
+            {
+                bags.AddRange( instructions.Purposes.Select( i => new ListItemBag { Text = "Purpose", Value = i } ) );
+            }
+
+            if ( instructions.Usages != null )
+            {
+                bags.AddRange( instructions.Usages.Select( i => new ListItemBag { Text = "Usage", Value = i } ) );
+            }
+
+            if ( instructions.Guardrails != null )
+            {
+                bags.AddRange( instructions.Guardrails.Select( i => new ListItemBag { Text = "Guardrail", Value = i } ) );
+            }
+
+            if ( instructions.Prerequisites != null )
+            {
+                bags.AddRange( instructions.Prerequisites.Select( i => new ListItemBag { Text = "Prerequisite", Value = i } ) );
+            }
+
+            if ( instructions.Examples != null )
+            {
+                bags.AddRange( instructions.Examples.Select( i => new ListItemBag { Text = "Example", Value = i } ) );
+            }
+
+            if ( instructions.ReturnDescription?.IsNotNullOrWhiteSpace() == true )
+            {
+                bags.Add( new ListItemBag { Text = "Returns", Value = instructions.ReturnDescription } );
+            }
+
+            return bags;
+        }
+
+        /// <summary>
+        /// Converts the instruction bags received from the client to the
+        /// native instruction settings.
+        /// </summary>
+        /// <param name="bags">The bags from the client.</param>
+        /// <returns>The native tool instructions.</returns>
+        private static ToolInstructionSettings GetInstructionSettings( List<ListItemBag> bags )
+        {
+            if ( bags == null )
+            {
+                return new ToolInstructionSettings();
+            }
+
+            return new ToolInstructionSettings
+            {
+                Purposes = bags.Where( b => b.Text == "Purpose" ).Select( b => b.Value ).ToList(),
+                Usages = bags.Where( b => b.Text == "Usage" ).Select( b => b.Value ).ToList(),
+                Guardrails = bags.Where( b => b.Text == "Guardrail" ).Select( b => b.Value ).ToList(),
+                Prerequisites = bags.Where( b => b.Text == "Prerequisite" ).Select( b => b.Value ).ToList(),
+                Examples = bags.Where( b => b.Text == "Example" ).Select( b => b.Value ).ToList(),
+                ReturnDescription = bags.Where( b => b.Text == "Returns" ).Select( b => b.Value ).FirstOrDefault()
             };
         }
 
