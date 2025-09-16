@@ -16,8 +16,9 @@
 //
 
 using Rock.AI.Agent.Classes.Common;
+using Rock.AI.Agent.Classes.Entity;
 
-namespace Rock.AI.Agent.Classes.Entity
+namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
 {
     /// <summary>
     /// POCO result for a note.

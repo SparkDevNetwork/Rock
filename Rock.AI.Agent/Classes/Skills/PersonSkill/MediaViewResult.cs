@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Rock.AI.Agent.Classes.Skills.PersonSkill
@@ -22,6 +23,7 @@ namespace Rock.AI.Agent.Classes.Skills.PersonSkill
     /// <summary>
     /// Lightweight result model for a person's page-visit aggregate.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class MediaViewResult
     {
         /// <summary>
@@ -33,12 +35,7 @@ namespace Rock.AI.Agent.Classes.Skills.PersonSkill
         /// <summary>
         /// The opaque identifier for the media view record (Id Key).
         /// </summary>
-        public string MediaElementIdKey {
-            get
-            {
-                return this.MediaElementId.AsIdKey();
-            }
-        }
+        public string MediaElementIdKey => MediaElementId.AsIdKey();
 
         /// <summary>
         /// The date and time when the view data was viewed.

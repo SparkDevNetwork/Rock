@@ -25,6 +25,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
+using Rock.AI.Agent.Classes.Skills.ConnectionSkill;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
 using Rock.Net;

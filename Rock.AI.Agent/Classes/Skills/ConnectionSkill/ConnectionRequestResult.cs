@@ -17,15 +17,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.Windows.Documents;
+using System.Diagnostics.CodeAnalysis;
 
 using Rock.AI.Agent.Classes.Common;
+using Rock.AI.Agent.Classes.Entity;
 
-namespace Rock.AI.Agent.Classes.Entity
+namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
 {
     /// <summary>
     /// POCO result for a note.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class ConnectionRequestResult : EntityResultBase
     {
         /// <summary>
@@ -81,11 +83,6 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <summary>
         /// The URL to the request.
         /// </summary>
-        public string Url {
-            get
-            {
-                return "/connectionrequest/" + this.Id;
-            }
-        }
+        public string Url => $"/connectionrequest/{Id}";
     }
 }
