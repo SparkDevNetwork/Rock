@@ -149,6 +149,17 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
         private readonly ChatAgentOptions _options;
 
         /// <summary>
+        /// The cached organization prompt value that has been Lava merged.
+        /// </summary>
+        private static string _organizationPromptCacheValue = null;
+
+        /// <summary>
+        /// The cached organization prompt hash that indicates if
+        /// <see cref="_organizationPromptCacheValue"/> needs to be updated.
+        /// </summary>
+        private static string _organizationPromptCacheHash = null;
+
+        /// <summary>
         /// Indicates whether the chat history needs to be summarized before
         /// sending a new message to the language model.
         /// </summary>
@@ -454,6 +465,32 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
         }
 
         /// <summary>
+        /// Gets the organization prompt. This will handle Lava merging and
+        /// caching the result for performance.
+        /// </summary>
+        /// <returns>The string to use for the organization prompt.</returns>
+        private static string GetOrganizationPrompt()
+        {
+            var organizationPrompt = AgentSystemSettings.DefaultOrganizationPrompt;
+
+            var settings = Rock.Web.SystemSettings.GetValue( SystemKey.SystemSetting.AI_AGENT_SYSTEM_SETTINGS )
+                ?.FromJsonOrNull<AgentSystemSettings>();
+
+            if ( settings != null && settings.OrganizationPrompt.IsNotNullOrWhiteSpace() )
+            {
+                organizationPrompt = settings.OrganizationPrompt;
+            }
+
+            if ( _organizationPromptCacheHash != organizationPrompt.XxHash() )
+            {
+                _organizationPromptCacheValue = organizationPrompt.ResolveMergeFields( new Dictionary<string, object>() );
+                _organizationPromptCacheHash = organizationPrompt.XxHash();
+            }
+
+            return _organizationPromptCacheValue;
+        }
+
+        /// <summary>
         /// Adds the system messages to the chat context. This is used to
         /// define the core personality and behavior of the assistant. It also
         /// provides some common context information, such as the current
@@ -462,6 +499,7 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
         private void AddSystemMessages()
         {
             _context.AddSystemMessage( CoreSystemPrompt.Value );
+            _context.AddSystemMessage( GetOrganizationPrompt() );
             _context.AddSystemMessage( $"Instructions|{_agentConfiguration.Instructions}" );
 
             foreach ( var skill in _agentConfiguration.Skills )
