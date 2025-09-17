@@ -26,6 +26,7 @@ using Rock;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.SystemKey;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -72,6 +73,7 @@ namespace RockWeb.Blocks.Crm
         {
             if ( !Page.IsPostBack )
             {
+                LoadDropDowns();
                 ConfigurePreferences();
             }
 
@@ -98,6 +100,21 @@ namespace RockWeb.Blocks.Crm
 
         #region Methods
 
+        private void LoadDropDowns()
+        {
+            var phoneNumbers = SystemPhoneNumberCache.All()
+                .Where( spn => spn.IsSmsEnabled
+                    && spn.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
+
+            ddlDefaultSmsPhoneNumber.Items.Clear();
+            ddlDefaultSmsPhoneNumber.Items.Add( new ListItem() );
+
+            foreach ( var phoneNumber in phoneNumbers )
+            {
+                ddlDefaultSmsPhoneNumber.Items.Add( new ListItem( phoneNumber.Name, phoneNumber.Id.ToString() ) );
+            }
+        }
+
         private void ConfigurePreferences()
         {
             var pbxComponent = Rock.Pbx.PbxContainer.GetAllowedActiveComponentWithOriginationSupport( CurrentPerson );
@@ -106,25 +123,29 @@ namespace RockWeb.Blocks.Crm
             if ( pbxComponent == null )
             {
                 dvpOriginateCallSource.Visible = false;
-                this.Visible = false; // hide the entire block since this is the currently the only setting
-                return;
-            }
-
-            // configure the pbx call origination features
-            var phoneTypeDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).Id;
-            dvpOriginateCallSource.DefinedTypeId = phoneTypeDefinedTypeId;
-
-            var preferredOriginationPhoneTypeId = preferences.GetValue( PersonPreferenceKey.ORIGINATE_CALL_SOURCE ).AsIntegerOrNull();
-            if ( preferredOriginationPhoneTypeId.HasValue )
-            {
-                dvpOriginateCallSource.SelectedValue = preferredOriginationPhoneTypeId.ToString();
             }
             else
             {
-                // use default preference
-                var defaultPhoneTypeId = pbxComponent.GetAttributeValue( "InternalPhoneType" );
-                dvpOriginateCallSource.SelectedValue = defaultPhoneTypeId.ToString();
+
+                // configure the pbx call origination features
+                var phoneTypeDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).Id;
+                dvpOriginateCallSource.DefinedTypeId = phoneTypeDefinedTypeId;
+
+                var preferredOriginationPhoneTypeId = preferences.GetValue( PersonPreferenceKey.ORIGINATE_CALL_SOURCE ).AsIntegerOrNull();
+                if ( preferredOriginationPhoneTypeId.HasValue )
+                {
+                    dvpOriginateCallSource.SelectedValue = preferredOriginationPhoneTypeId.ToString();
+                }
+                else
+                {
+                    // use default preference
+                    var defaultPhoneTypeId = pbxComponent.GetAttributeValue( "InternalPhoneType" );
+                    dvpOriginateCallSource.SelectedValue = defaultPhoneTypeId.ToString();
+                }
             }
+
+            ddlDefaultSmsPhoneNumber.SetValue( preferences.GetValue( PersonPreferenceKey.DEFAULT_SMS_PHONE_NUMBER ) );
+            tbEmailClosingPhrase.Text = preferences.GetValue( PersonPreferenceKey.EMAIL_CLOSING_PHRASE );
         }
 
         #endregion
