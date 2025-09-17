@@ -337,33 +337,33 @@ namespace Rock.Migrations
 
             // Add/Update Obsidian Block Type
             //   Name:AI Agent Detail
-            //   Category:Core > AI
+            //   Category:AI
             //   EntityType:Rock.Blocks.AI.AIAgentDetail
-            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Agent Detail", "Displays the details of a particular ai agent.", "Rock.Blocks.AI.AIAgentDetail", "Core > AI", "D898E9CE-FE9B-48F7-96BF-2D69DE3C8E7C" );
+            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Agent Detail", "Displays the details of a particular ai agent.", "Rock.Blocks.AI.AIAgentDetail", "AI", "D898E9CE-FE9B-48F7-96BF-2D69DE3C8E7C" );
 
             // Add/Update Obsidian Block Type
             //   Name:AI Agent List
-            //   Category:Core > AI
+            //   Category:AI
             //   EntityType:Rock.Blocks.AI.AIAgentList
-            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Agent List", "Displays a list of ai agents.", "Rock.Blocks.AI.AIAgentList", "Core > AI", "4831074F-7B99-404E-B842-776B74765DE5" );
+            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Agent List", "Displays a list of ai agents.", "Rock.Blocks.AI.AIAgentList", "AI", "4831074F-7B99-404E-B842-776B74765DE5" );
 
             // Add/Update Obsidian Block Type
             //   Name:AI Skill Detail
-            //   Category:Core > AI
+            //   Category:AI
             //   EntityType:Rock.Blocks.AI.AISkillDetail
-            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Skill Detail", "Displays the details of a particular ai skill.", "Rock.Blocks.AI.AISkillDetail", "Core > AI", "B8B8CEE9-C058-45D3-A1C7-647CAD96FD1E" );
+            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Skill Detail", "Displays the details of a particular ai skill.", "Rock.Blocks.AI.AISkillDetail", "AI", "B8B8CEE9-C058-45D3-A1C7-647CAD96FD1E" );
 
             // Add/Update Obsidian Block Type
             //   Name:AI Skill Function List
-            //   Category:Core > AI
+            //   Category:AI
             //   EntityType:Rock.Blocks.AI.AISkillFunctionList
-            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Skill Function List", "Displays a list of ai skill functions.", "Rock.Blocks.AI.AISkillFunctionList", "Core > AI", "1E257602-9C31-4F6C-A362-67912F06E807" );
+            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Skill Function List", "Displays a list of ai skill functions.", "Rock.Blocks.AI.AISkillFunctionList", "AI", "1E257602-9C31-4F6C-A362-67912F06E807" );
 
             // Add/Update Obsidian Block Type
             //   Name:AI Skill List
-            //   Category:Core > AI
+            //   Category:AI
             //   EntityType:Rock.Blocks.AI.AISkillList
-            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Skill List", "Displays a list of ai skills.", "Rock.Blocks.AI.AISkillList", "Core > AI", "39F5C953-0080-441F-A77C-D45676147F91" );
+            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Skill List", "Displays a list of ai skills.", "Rock.Blocks.AI.AISkillList", "AI", "39F5C953-0080-441F-A77C-D45676147F91" );
 
             #endregion
 
@@ -432,49 +432,49 @@ namespace Rock.Migrations
 
             // Attribute for BlockType
             //   BlockType: AI Agent List
-            //   Category: Core > AI
+            //   Category: AI
             //   Attribute: Detail Page
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "4831074F-7B99-404E-B842-776B74765DE5", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page", "DetailPage", "Detail Page", @"The page that will show the ai agent details.", 0, @"", "2E7CA3FC-13F0-4E0B-96F7-C3F84754210D" );
 
             // Attribute for BlockType
             //   BlockType: AI Agent List
-            //   Category: Core > AI
+            //   Category: AI
             //   Attribute: core.CustomActionsConfigs
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "4831074F-7B99-404E-B842-776B74765DE5", "9C204CD0-1233-41C5-818A-C5DA439445AA", "core.CustomActionsConfigs", "core.CustomActionsConfigs", "core.CustomActionsConfigs", @"", 0, @"", "6E9C1391-A6DB-4BD0-B612-E341C5F10C69" );
 
             // Attribute for BlockType
             //   BlockType: AI Agent List
-            //   Category: Core > AI
+            //   Category: AI
             //   Attribute: core.EnableDefaultWorkflowLauncher
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "4831074F-7B99-404E-B842-776B74765DE5", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "core.EnableDefaultWorkflowLauncher", "core.EnableDefaultWorkflowLauncher", "core.EnableDefaultWorkflowLauncher", @"", 0, @"True", "D7E41098-480B-49AA-9B57-A31827E36B99" );
 
             // Attribute for BlockType
             //   BlockType: AI Skill Function List
-            //   Category: Core > AI
+            //   Category: AI
             //   Attribute: core.CustomActionsConfigs
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "1E257602-9C31-4F6C-A362-67912F06E807", "9C204CD0-1233-41C5-818A-C5DA439445AA", "core.CustomActionsConfigs", "core.CustomActionsConfigs", "core.CustomActionsConfigs", @"", 0, @"", "F28EE03F-E97E-42A3-802B-E507514B812B" );
 
             // Attribute for BlockType
             //   BlockType: AI Skill Function List
-            //   Category: Core > AI
+            //   Category: AI
             //   Attribute: core.EnableDefaultWorkflowLauncher
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "1E257602-9C31-4F6C-A362-67912F06E807", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "core.EnableDefaultWorkflowLauncher", "core.EnableDefaultWorkflowLauncher", "core.EnableDefaultWorkflowLauncher", @"", 0, @"True", "5CF1DC60-C1B7-4E9E-AE9A-D6355882FF60" );
 
             // Attribute for BlockType
             //   BlockType: AI Skill List
-            //   Category: Core > AI
+            //   Category: AI
             //   Attribute: Detail Page
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "39F5C953-0080-441F-A77C-D45676147F91", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page", "DetailPage", "Detail Page", @"The page that will show the ai skill details.", 0, @"", "EA204DF2-5EDE-49B1-A3C7-6C2E52659BAD" );
 
             // Attribute for BlockType
             //   BlockType: AI Skill List
-            //   Category: Core > AI
+            //   Category: AI
             //   Attribute: core.CustomActionsConfigs
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "39F5C953-0080-441F-A77C-D45676147F91", "9C204CD0-1233-41C5-818A-C5DA439445AA", "core.CustomActionsConfigs", "core.CustomActionsConfigs", "core.CustomActionsConfigs", @"", 0, @"", "DADEEC8E-23A7-4B1D-AE10-2270200F36F0" );
 
             // Attribute for BlockType
             //   BlockType: AI Skill List
-            //   Category: Core > AI
+            //   Category: AI
             //   Attribute: core.EnableDefaultWorkflowLauncher
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "39F5C953-0080-441F-A77C-D45676147F91", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "core.EnableDefaultWorkflowLauncher", "core.EnableDefaultWorkflowLauncher", "core.EnableDefaultWorkflowLauncher", @"", 0, @"True", "D2F118FE-17FC-41BB-8CF3-9A6C03DC86D0" );
 
@@ -585,7 +585,7 @@ namespace Rock.Migrations
             // Add Block Attribute Value
             //   Block: AI Skill List
             //   BlockType: AI Skill List
-            //   Category: Core > AI
+            //   Category: AI
             //   Block Location: Page=AI Skills, Site=Rock RMS
             //   Attribute: Detail Page
             /*   Attribute Value: 6f89544f-50c0-42d6-b925-fb6e404b434c */
@@ -595,7 +595,7 @@ namespace Rock.Migrations
             // Add Block Attribute Value
             //   Block: AI Skill List
             //   BlockType: AI Skill List
-            //   Category: Core > AI
+            //   Category: AI
             //   Block Location: Page=AI Skills, Site=Rock RMS
             //   Attribute: core.CustomGridEnableStickyHeaders
             /*   Attribute Value: False */
@@ -605,7 +605,7 @@ namespace Rock.Migrations
             // Add Block Attribute Value
             //   Block: AI Skill List
             //   BlockType: AI Skill List
-            //   Category: Core > AI
+            //   Category: AI
             //   Block Location: Page=AI Skills, Site=Rock RMS
             //   Attribute: core.EnableDefaultWorkflowLauncher
             /*   Attribute Value: True */
@@ -615,7 +615,7 @@ namespace Rock.Migrations
             // Add Block Attribute Value
             //   Block: AI Agent List
             //   BlockType: AI Agent List
-            //   Category: Core > AI
+            //   Category: AI
             //   Block Location: Page=Agents, Site=Rock RMS
             //   Attribute: Detail Page
             /*   Attribute Value: c7bca1fb-b627-4a8c-8c9f-43ae69fa69fc */
@@ -625,7 +625,7 @@ namespace Rock.Migrations
             // Add Block Attribute Value
             //   Block: AI Agent List
             //   BlockType: AI Agent List
-            //   Category: Core > AI
+            //   Category: AI
             //   Block Location: Page=Agents, Site=Rock RMS
             //   Attribute: core.CustomGridEnableStickyHeaders
             /*   Attribute Value: False */
@@ -635,7 +635,7 @@ namespace Rock.Migrations
             // Add Block Attribute Value
             //   Block: AI Agent List
             //   BlockType: AI Agent List
-            //   Category: Core > AI
+            //   Category: AI
             //   Block Location: Page=Agents, Site=Rock RMS
             //   Attribute: core.EnableDefaultWorkflowLauncher
             /*   Attribute Value: True */
@@ -651,49 +651,49 @@ namespace Rock.Migrations
 
             // Attribute for BlockType
             //   BlockType: AI Skill List
-            //   Category: Core > AI
+            //   Category: AI
             //   Attribute: core.EnableDefaultWorkflowLauncher
             RockMigrationHelper.DeleteAttribute( "D2F118FE-17FC-41BB-8CF3-9A6C03DC86D0" );
 
             // Attribute for BlockType
             //   BlockType: AI Skill List
-            //   Category: Core > AI
+            //   Category: AI
             //   Attribute: core.CustomActionsConfigs
             RockMigrationHelper.DeleteAttribute( "DADEEC8E-23A7-4B1D-AE10-2270200F36F0" );
 
             // Attribute for BlockType
             //   BlockType: AI Skill List
-            //   Category: Core > AI
+            //   Category: AI
             //   Attribute: Detail Page
             RockMigrationHelper.DeleteAttribute( "EA204DF2-5EDE-49B1-A3C7-6C2E52659BAD" );
 
             // Attribute for BlockType
             //   BlockType: AI Skill Function List
-            //   Category: Core > AI
+            //   Category: AI
             //   Attribute: core.EnableDefaultWorkflowLauncher
             RockMigrationHelper.DeleteAttribute( "5CF1DC60-C1B7-4E9E-AE9A-D6355882FF60" );
 
             // Attribute for BlockType
             //   BlockType: AI Skill Function List
-            //   Category: Core > AI
+            //   Category: AI
             //   Attribute: core.CustomActionsConfigs
             RockMigrationHelper.DeleteAttribute( "F28EE03F-E97E-42A3-802B-E507514B812B" );
 
             // Attribute for BlockType
             //   BlockType: AI Agent List
-            //   Category: Core > AI
+            //   Category: AI
             //   Attribute: core.EnableDefaultWorkflowLauncher
             RockMigrationHelper.DeleteAttribute( "D7E41098-480B-49AA-9B57-A31827E36B99" );
 
             // Attribute for BlockType
             //   BlockType: AI Agent List
-            //   Category: Core > AI
+            //   Category: AI
             //   Attribute: core.CustomActionsConfigs
             RockMigrationHelper.DeleteAttribute( "6E9C1391-A6DB-4BD0-B612-E341C5F10C69" );
 
             // Attribute for BlockType
             //   BlockType: AI Agent List
-            //   Category: Core > AI
+            //   Category: AI
             //   Attribute: Detail Page
             RockMigrationHelper.DeleteAttribute( "2E7CA3FC-13F0-4E0B-96F7-C3F84754210D" );
 
@@ -742,35 +742,35 @@ namespace Rock.Migrations
 
             // Delete BlockType 
             //   Name: AI Skill List
-            //   Category: Core > AI
+            //   Category: AI
             //   Path: -
             //   EntityType: AI Skill List
             RockMigrationHelper.DeleteBlockType( "39F5C953-0080-441F-A77C-D45676147F91" );
 
             // Delete BlockType 
             //   Name: AI Skill Function List
-            //   Category: Core > AI
+            //   Category: AI
             //   Path: -
             //   EntityType: AI Skill Function List
             RockMigrationHelper.DeleteBlockType( "1E257602-9C31-4F6C-A362-67912F06E807" );
 
             // Delete BlockType 
             //   Name: AI Skill Detail
-            //   Category: Core > AI
+            //   Category: AI
             //   Path: -
             //   EntityType: AI Skill Detail
             RockMigrationHelper.DeleteBlockType( "B8B8CEE9-C058-45D3-A1C7-647CAD96FD1E" );
 
             // Delete BlockType 
             //   Name: AI Agent List
-            //   Category: Core > AI
+            //   Category: AI
             //   Path: -
             //   EntityType: AI Agent List
             RockMigrationHelper.DeleteBlockType( "4831074F-7B99-404E-B842-776B74765DE5" );
 
             // Delete BlockType 
             //   Name: AI Agent Detail
-            //   Category: Core > AI
+            //   Category: AI
             //   Path: -
             //   EntityType: AI Agent Detail
             RockMigrationHelper.DeleteBlockType( "D898E9CE-FE9B-48F7-96BF-2D69DE3C8E7C" );
