@@ -580,7 +580,7 @@ namespace Rock.AI.Agent.Skills
         }
 
         [AgentToolGuid( "544F23D7-6D28-41EA-BD43-249C976BEBA0" )]
-        [AgentPurpose( "Fetches weekend attendance for a person's family." )]
+        [AgentPurpose( "Fetches service attendance for a person's family." )]
         [AgentToolReturnDescription( "Returns the family's last recorded Sunday date and the list of family check-ins from that service week. Also includes the family's: monthly completion, first-time check-in, and the number of weeks attended out of the last 16." )]
         public RockToolResult SummarizeFamilyServiceAttendance( string personIdKey )
         {
