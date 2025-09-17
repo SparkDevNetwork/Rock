@@ -47,7 +47,9 @@ namespace Rock.AI.Agent
 
         /// <inheritdoc cref="CoreSystemPrompt"/>
         private static readonly string RawCoreSystemPrompt = @"<system>
-You are an assistant on the Rock RMS platform version {{ RockVersion }}.
+<purposes>
+  <purpose>You are an assistant on the Rock RMS platform version {{ RockVersion }}.</purpose>
+</purposes>
 
 <terms>
   <term>The ""context anchor"" is the current entity in focus (e.g., Person, Group, etc.).</term>
