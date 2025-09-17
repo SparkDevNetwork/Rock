@@ -145,10 +145,10 @@ namespace Rock.AI.Agent
             // MCP agents will need full URLs using the appropriate application root.
             if ( AudienceType == AudienceType.Public )
             {
-                return GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ).RemoveLeadingForwardslash();
+                return GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ).RemoveLeadingForwardslash() + url;
             }
 
-            return GlobalAttributesCache.Get().GetValue( "InternalApplicationRoot" ).RemoveLeadingForwardslash();
+            return GlobalAttributesCache.Get().GetValue( "InternalApplicationRoot" ).RemoveLeadingForwardslash() + url;
         }
 
         /// <summary>
