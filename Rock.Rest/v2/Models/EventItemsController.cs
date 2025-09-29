@@ -26,6 +26,10 @@ using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
 using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
 using IActionResult = System.Web.Http.IHttpActionResult;
 using RouteAttribute = System.Web.Http.RouteAttribute;
+#else
+using Microsoft.AspNetCore.Mvc;
+
+using RoutePrefixAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 #endif
 
 namespace Rock.Rest.v2.Models

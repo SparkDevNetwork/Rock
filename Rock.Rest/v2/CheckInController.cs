@@ -44,6 +44,10 @@ using HttpDeleteAttribute = System.Web.Http.HttpDeleteAttribute;
 using IActionResult = System.Web.Http.IHttpActionResult;
 using RouteAttribute = System.Web.Http.RouteAttribute;
 using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
+#else
+using Microsoft.AspNetCore.Mvc;
+
+using RoutePrefixAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 #endif
 
 namespace Rock.Rest.v2
@@ -580,9 +584,17 @@ namespace Rock.Rest.v2
         [ProducesResponse( HttpStatusCode.SwitchingProtocols )]
         [ProducesResponse( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "1b4b1d0d-a872-40f7-a49d-666092cf8816" )]
+#if WEBFORMS
         public IActionResult GetPrinterProxy( string deviceId, [FromQuery] string name = null )
+#else
+        public async Task<IActionResult> GetPrinterProxy( string deviceId, [FromQuery] string name = null )
+#endif
         {
+#if WEBFORMS
             if ( !System.Web.HttpContext.Current.IsWebSocketRequest )
+#else
+            if ( !HttpContext.WebSockets.IsWebSocketRequest )
+#endif
             {
                 return BadRequest( "This API may only be used with websocket connections." );
             }
@@ -603,6 +615,7 @@ namespace Rock.Rest.v2
                 return BadRequest( "Device not found." );
             }
 
+#if WEBFORMS
             System.Web.HttpContext.Current.AcceptWebSocketRequest( ctx =>
             {
                 var address = RockRequestContext.ClientInformation.IpAddress;
@@ -612,6 +625,15 @@ namespace Rock.Rest.v2
             } );
 
             return ResponseMessage( Request.CreateResponse( HttpStatusCode.SwitchingProtocols ) );
+#else
+            var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+            var address = RockRequestContext.ClientInformation.IpAddress;
+            var proxy = new CloudPrintSocket( webSocket, device.Id, name ?? device.Name, address );
+
+            await proxy.RunAsync( CancellationToken.None );
+
+            return BadRequest( "WebSocket connection was closed." );
+#endif
         }
 
         /// <summary>

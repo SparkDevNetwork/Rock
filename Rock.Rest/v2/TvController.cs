@@ -29,6 +29,10 @@ using System.Web;
 using System.Web.Http;
 #endif
 
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#endif
+
 using Newtonsoft.Json;
 
 using Rock;
@@ -49,6 +53,10 @@ using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
 using IActionResult = System.Web.Http.IHttpActionResult;
 using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
 using RouteAttribute = System.Web.Http.RouteAttribute;
+#else
+using Microsoft.AspNetCore.Mvc;
+
+using RoutePrefixAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 #endif
 
 namespace Rock.Rest.v2.Controllers
@@ -164,7 +172,11 @@ namespace Rock.Rest.v2.Controllers
             }
 
             // Get requested cache control from client (client trumps server. We'll use this to set the response header to help inform any CDNs
+#if WEBFORMS
             var cacheRequest = this.Request.GetHeader( "X-Rock-Tv-RequestedCacheControl" );
+#else
+            var cacheRequest = this.Request.Headers.TryGetValue( "X-Rock-Tv-RequestedCacheControl", out var cacheRequestValues ) ? cacheRequestValues.FirstOrDefault() : null;
+#endif
             if ( cacheRequest.IsNotNullOrWhiteSpace() )
             {
                 var cacheParts = cacheRequest.Split( ':' );
@@ -237,7 +249,11 @@ namespace Rock.Rest.v2.Controllers
                 mergeFields.Add( "IsDemoModeEnabled", RockRequestContext.GetHeader( "X-Rock-IsDemoModeEnabled" ) );
 
                 // Get device data
+#if WEBFORMS
                 var deviceData = this.Request.GetHeader( "X-Rock-DeviceData" );
+#else
+                var deviceData = this.Request.Headers.TryGetValue( "X-Rock-DeviceData", out var deviceDataValues ) ? deviceDataValues.FirstOrDefault() : null;
+#endif
 
                 if ( deviceData.IsNotNullOrWhiteSpace() )
                 {
@@ -278,7 +294,11 @@ namespace Rock.Rest.v2.Controllers
         public IActionResult PostInteractions( [FromBody] List<TvInteractionSession> sessions, Guid? personalDeviceGuid = null )
         {
             var person = GetPerson();
+#if WEBFORMS
             var ipAddress = System.Web.HttpContext.Current?.Request?.UserHostAddress;
+#else
+            var ipAddress = RockRequestContext.ClientInformation.IpAddress;
+#endif
 
             using ( var rockContext = new RockContext() )
             {
@@ -293,7 +313,11 @@ namespace Rock.Rest.v2.Controllers
                 // Check to see if we have a site and the API key is valid.
                 if ( TvHelper.GetCurrentApplicationSite() == null )
                 {
+#if WEBFORMS
                     return StatusCode( System.Net.HttpStatusCode.Forbidden );
+#else
+                    return StatusCode( ( int ) System.Net.HttpStatusCode.Forbidden );
+#endif
                 }
 
                 // Get the personal device identifier if they provided it's unique identifier.
@@ -481,7 +505,11 @@ namespace Rock.Rest.v2.Controllers
             var response = new HttpResponseMessage();
             var authCode = string.Empty;
 
+#if WEBFORMS
             var deviceData = JsonConvert.DeserializeObject<DeviceData>( this.Request.GetHeader( "X-Rock-DeviceData" ) );
+#else
+            var deviceData = JsonConvert.DeserializeObject<DeviceData>( this.Request.Headers["X-Rock-DeviceData"] );
+#endif
             var site = SiteCache.Get( siteId );
 
             var authGenerationCount = 0;
@@ -491,7 +519,11 @@ namespace Rock.Rest.v2.Controllers
             var remoteAuthenticationSessionService = new RemoteAuthenticationSessionService( rockContext );
 
             // Get client IP
+#if WEBFORMS
             var clientIp = WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper( HttpContext.Current?.Request ) );
+#else
+            var clientIp = RockRequestContext.ClientInformation.IpAddress;
+#endif
 
             var expireDateTime = RockDateTime.Now.AddMinutes( _codeReusePeriodInMinutes );
 
@@ -555,7 +587,11 @@ namespace Rock.Rest.v2.Controllers
             var loginPageReference = site.LoginPageReference;
             loginPageReference.Parameters.AddOrReplace( "AuthCode", authCode );
 
+#if REVIEW_WEBFORMS
             var qrData = HttpUtility.UrlEncode( $"{GlobalAttributesCache.Value( "PublicApplicationRoot" ).TrimEnd( '/' )}{loginPageReference.BuildUrl()}" );
+#else
+            var qrData = $"{GlobalAttributesCache.Value( "PublicApplicationRoot" ).TrimEnd( '/' )}{loginPageReference.BuildUrl()}".UrlEncode();
+#endif
             authReturn.AuthenticationUrlQrCode = $"{GlobalAttributesCache.Value( "PublicApplicationRoot" )}GetQRCode.ashx?data={qrData}&outputType=png";
 
             response.Content = new StringContent( authReturn.ToJson(), System.Text.Encoding.UTF8, "application/json" );
@@ -608,7 +644,11 @@ namespace Rock.Rest.v2.Controllers
             }
 
             // Get requested cache control from client (client trumps server. We'll use this to set the response header to help inform any CDNs
+#if WEBFORMS
             var cacheRequest = this.Request.GetHeader( "X-Rock-Tv-RequestedCacheControl" );
+#else
+            var cacheRequest = this.Request.Headers.TryGetValue( "X-Rock-Tv-RequestedCacheControl", out var cacheRequestValues ) ? cacheRequestValues.FirstOrDefault() : null;
+#endif
 
             if ( cacheRequest.IsNotNullOrWhiteSpace() )
             {
@@ -682,7 +722,11 @@ namespace Rock.Rest.v2.Controllers
                 mergeFields.Add( "IsDemoModeEnabled", RockRequestContext.GetHeader( "X-Rock-IsDemoModeEnabled" ) );
 
                 // Get device data
+#if WEBFORMS
                 var deviceData = this.Request.GetHeader( "X-Rock-DeviceData" );
+#else
+                var deviceData = this.Request.Headers.TryGetValue( "X-Rock-DeviceData", out var deviceDataValues ) ? deviceDataValues.FirstOrDefault() : null;
+#endif
 
                 if ( deviceData.IsNotNullOrWhiteSpace() )
                 {
@@ -735,13 +779,21 @@ namespace Rock.Rest.v2.Controllers
             var response = new HttpResponseMessage();
             var authCheckResponse = new AuthCodeCheckResponse();
 
+#if WEBFORMS
             var deviceData = JsonConvert.DeserializeObject<DeviceData>( this.Request.GetHeader( "X-Rock-DeviceData" ) );
+#else
+            var deviceData = JsonConvert.DeserializeObject<DeviceData>( this.Request.Headers["X-Rock-DeviceData"] );
+#endif
 
             var rockContext = new RockContext();
             var remoteAuthenticationSessionService = new RemoteAuthenticationSessionService( rockContext );
 
             // Get client Ip address
+#if WEBFORMS
             var clientIp = WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper( HttpContext.Current?.Request ) );
+#else
+            var clientIp = RockRequestContext.ClientInformation.IpAddress;
+#endif
 
             var expireDateTime = RockDateTime.Now.AddMinutes( _codeReusePeriodInMinutes );
 
@@ -763,7 +815,11 @@ namespace Rock.Rest.v2.Controllers
                 validatedSession.SessionEndDateTime = RockDateTime.Now;
                 rockContext.SaveChanges();
 
+#if REVIEW_WEBFORMS
                 authCheckResponse.CurrentPerson = TvHelper.GetTvPerson( validatedSession.AuthorizedPersonAlias.Person );
+#else
+                throw new NotImplementedException();
+#endif
 
                 // Obsolete property because of incorrect spelling.
 #pragma warning disable
@@ -818,14 +874,26 @@ namespace Rock.Rest.v2.Controllers
         private IActionResult GetCommonLaunchPacket()
         {
             // Read site Id from the request header
+#if WEBFORMS
             var siteId = this.Request.GetHeader( "X-Rock-App-Id" ).AsIntegerOrNull();
+#else
+            var siteId = this.Request.Headers.TryGetValue( "X-Rock-App-Id", out var siteIdValues ) ? siteIdValues.FirstOrDefault().AsIntegerOrNull() : null;
+#endif
 
             // Get device data from the request header
             // Get device data
+#if WEBFORMS
             var deviceData = JsonConvert.DeserializeObject<DeviceData>( this.Request.GetHeader( "X-Rock-DeviceData" ) );
+#else
+            var deviceData = JsonConvert.DeserializeObject<DeviceData>( this.Request.Headers["X-Rock-DeviceData"] );
+#endif
             if ( deviceData == null )
             {
+#if WEBFORMS
                 StatusCode( HttpStatusCode.InternalServerError );
+#else
+                StatusCode( ( int ) HttpStatusCode.InternalServerError );
+#endif
             }
 
             if ( !siteId.HasValue )
@@ -852,6 +920,7 @@ namespace Rock.Rest.v2.Controllers
 
                 if ( person != null )
                 {
+#if REVIEW_WEBFORMS
                     var principal = ControllerContext.Request.GetUserPrincipal();
 
                     launchPacket.CurrentPerson = TvHelper.GetTvPerson( person );
@@ -864,6 +933,9 @@ namespace Rock.Rest.v2.Controllers
                             ShouldSkipWritingHistoryLog = true
                         }
                     );
+#else
+                    throw new NotImplementedException();
+#endif
                 }
 
                 // Get or create the personal device.
@@ -936,7 +1008,11 @@ namespace Rock.Rest.v2.Controllers
             catch ( Exception )
             {
                 // Ooops...
+#if WEBFORMS
                 return StatusCode( HttpStatusCode.InternalServerError );
+#else
+                return StatusCode( ( int ) HttpStatusCode.InternalServerError );
+#endif
             }
         }
 
@@ -953,6 +1029,7 @@ namespace Rock.Rest.v2.Controllers
                 .Select( s => s[random.Next( s.Length )] ).ToArray() );
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the client ip.
         /// </summary>
@@ -982,6 +1059,7 @@ namespace Rock.Rest.v2.Controllers
                 return null;
             }
         }
+#endif
 
         #endregion
     }

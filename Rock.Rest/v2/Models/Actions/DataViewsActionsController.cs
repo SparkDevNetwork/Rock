@@ -19,6 +19,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#endif
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -34,6 +38,10 @@ using IActionResult = System.Web.Http.IHttpActionResult;
 using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
 using RouteAttribute = System.Web.Http.RouteAttribute;
 using HttpGetAttribute = System.Web.Http.HttpGetAttribute;
+#else
+using Microsoft.AspNetCore.Mvc;
+
+using RoutePrefixAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 #endif
 
 namespace Rock.Rest.v2.Models.Actions

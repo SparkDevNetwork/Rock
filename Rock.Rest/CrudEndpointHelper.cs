@@ -21,6 +21,9 @@ using System.Net;
 using System.Reflection;
 
 using Microsoft.AspNetCore.Mvc;
+#if NET5_0_OR_GREATER
+using Microsoft.AspNetCore.Mvc.Formatters;
+#endif
 
 using Rock.Attribute;
 using Rock.Data;
@@ -615,19 +618,25 @@ namespace Rock.Rest
                     // encode those since we wouldn't normally. This should not cause
                     // a problem for attribute value keys because those are not
                     // included in these responses.
+#if WEBFORMS
                     var formatter = Utility.ApiPickerJsonMediaTypeFormatter.CreateV2Formatter();
                     if ( formatter.SerializerSettings.ContractResolver is Newtonsoft.Json.Serialization.DefaultContractResolver defaultContractResolver )
                     {
                         defaultContractResolver.NamingStrategy.ProcessDictionaryKeys = true;
                     }
 
-#if NET6_0_OR_GREATER
+                    return new FormattedContentResult<EntitySearchResultsBag>( HttpStatusCode.OK, results, formatter, null, _controller );
+#else
+                    var formatter = new SystemTextJsonOutputFormatter( new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                        DictionaryKeyPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                    } );
+
                     return new OkObjectResult( results )
                     {
-                        Formatters = new[] { formatter }
+                        Formatters = new FormatterCollection<IOutputFormatter> { formatter }
                     };
-#else
-                    return new FormattedContentResult<EntitySearchResultsBag>( HttpStatusCode.OK, results, formatter, null, _controller );
 #endif
                 }
             }
@@ -675,19 +684,25 @@ namespace Rock.Rest
                 // encode those since we wouldn't normally. This should not cause
                 // a problem for attribute value keys because those are not
                 // included in these responses.
+#if WEBFORMS
                 var formatter = Utility.ApiPickerJsonMediaTypeFormatter.CreateV2Formatter();
                 if ( formatter.SerializerSettings.ContractResolver is Newtonsoft.Json.Serialization.DefaultContractResolver defaultContractResolver )
                 {
                     defaultContractResolver.NamingStrategy.ProcessDictionaryKeys = true;
                 }
 
-#if NET6_0_OR_GREATER
+                return new FormattedContentResult<EntitySearchResultsBag>( HttpStatusCode.OK, results, formatter, null, _controller );
+#else
+                var formatter = new SystemTextJsonOutputFormatter( new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                    DictionaryKeyPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                } );
+
                 return new OkObjectResult( results )
                 {
-                    Formatters = new[] { formatter }
+                    Formatters = new FormatterCollection<IOutputFormatter> { formatter }
                 };
-#else
-                return new FormattedContentResult<EntitySearchResultsBag>( HttpStatusCode.OK, results, formatter, null, _controller );
 #endif
             }
             catch ( System.Exception ex )

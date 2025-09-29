@@ -25,6 +25,7 @@
     <Compile Remove="Plugin\**\*.cs" />
     <Compile Remove="RealTime\AspNet\**\*.cs" />
     <Compile Remove="Web\UI\**\*.cs" />
+    <Compile Include="CheckIn\CheckInTemplateSettings.cs" />
     <Compile Include="Model\Core\PersonToken\PersonToken.WebForms.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Web\UI\ContextAttribute.cs" />

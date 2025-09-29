@@ -3141,7 +3141,7 @@ namespace Rock.Model
 #else
                 .ThenBy( m => Math.Abs( EF.Functions.DateDiffDay(
                     m.Spouse.Person.BirthDate ?? new DateTime( 1, 1, 1 ),
-                    m.MatchedPerson.BirthDate ?? new DateTime( 1, 1, 1 )
+                    m.MatchedPerson.Person.BirthDate ?? new DateTime( 1, 1, 1 )
                 ) ) )
 #endif
                 .ThenBy( m => m.Spouse.PersonId )

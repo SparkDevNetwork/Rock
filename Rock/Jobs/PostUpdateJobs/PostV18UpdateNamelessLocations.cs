@@ -48,7 +48,11 @@ namespace Rock.Jobs
 
             using ( var rockContext = new RockContext() )
             {
+#if REVIEW_WEBFORMS
                 rockContext.Database.CommandTimeout = commandTimeout;
+#else
+                rockContext.Database.SetCommandTimeout( commandTimeout );
+#endif
 
                 var locationService = new LocationService( rockContext );
                 var namelessLocations = locationService.Queryable()

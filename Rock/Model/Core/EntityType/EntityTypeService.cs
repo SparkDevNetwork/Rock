@@ -553,7 +553,9 @@ namespace Rock.Model
 
             if ( blockTypeDictionary.Any() )
             {
+#if REVIEW_WEBFORMS
                 BlockTypeService.StagePossibleMigrateWebFormsToObsidianBlock( blockTypeDictionary, rockContext );
+#endif
             }
         }
 

@@ -16,10 +16,7 @@
 //
 using System;
 using System.Data.SqlClient;
-using System.IdentityModel.Metadata;
 using System.Linq;
-
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 
 namespace Rock.Data
 {

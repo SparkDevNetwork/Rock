@@ -82,6 +82,66 @@ namespace Rock.Cms
 
             return dictionary;
         }
+#else
+        /// <summary>
+        /// Convert the request into a generic JSON object that can provide information
+        /// to the lava application.
+        /// </summary>
+        /// <param name="request">The RockRequestContext of the currently executing request.</param>
+        /// <returns>A dictionary that can be passed to Lava as the merge fields.</returns>
+        internal static Dictionary<string, object> RequestToDictionary( Rock.Net.RockRequestContext request )
+        {
+            var dictionary = request.GetCommonMergeFields();
+            var host = request.RequestUri.Host;
+            var proxySafeUri = request.RequestUri;
+
+            // Set the standard values to be used.
+            dictionary.Add( "RawUrl", proxySafeUri.AbsoluteUri );
+            dictionary.Add( "Method", request.HttpMethod );
+            dictionary.Add( "QueryString", request.QueryString.Cast<string>().ToDictionary( q => q, q => request.QueryString[q] ) );
+            dictionary.Add( "RemoteAddress", request.ClientInformation.IpAddress );
+            //dictionary.Add( "RemoteName", request.UserHostName );
+            dictionary.Add( "ServerName", host );
+            dictionary.Add( "Form",
+                request.Form.Cast<string>()
+                    .Where( f => !string.IsNullOrEmpty( f ) )
+                    .ToDictionary( f => f, f => request.Form[f] ) );
+
+            // Add the headers
+            var headers = request.GetHeaderNames()
+                .Where( h => !h.Equals( "Authorization", StringComparison.InvariantCultureIgnoreCase ) )
+                .Where( h => !h.Equals( "Cookie", StringComparison.InvariantCultureIgnoreCase ) )
+                .ToDictionary( h => h, h => request.GetHeader( h ).FirstOrDefault() );
+            dictionary.Add( "Headers", headers );
+
+            try
+            {
+                // Add the cookies. We need to check each cookie before adding in case there is more than one cookie with the same name.
+                var cookieDictionary = new Dictionary<string, HttpCookie>();
+
+                foreach ( var cookieName in request.GetCookieNames() )
+                {
+                    var cookieValue = request.GetCookieValue( cookieName );
+                    if ( cookieValue != null )
+                    {
+                        cookieDictionary[cookieName] = new HttpCookie { Name = cookieName, Value = cookieValue };
+                    }
+                }
+
+                dictionary.Add( "Cookies", cookieDictionary );
+            }
+            catch { }
+
+            return dictionary;
+        }
+
+        [Rock.Lava.LavaType]
+        private class HttpCookie
+        {
+            public string Name { get; set; }
+
+            public string Value { get; set; }
+        }
 #endif
     }
 }

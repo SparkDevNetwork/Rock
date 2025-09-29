@@ -27,6 +27,10 @@ using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
 using IActionResult = System.Web.Http.IHttpActionResult;
 using RouteAttribute = System.Web.Http.RouteAttribute;
 using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
+#else
+using Microsoft.AspNetCore.Mvc;
+
+using RoutePrefixAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 #endif
 
 namespace Rock.Rest.v2
@@ -49,6 +53,7 @@ namespace Rock.Rest.v2
         [SystemGuid.RestActionGuid( "7D1B2D15-E2F5-4159-AD84-AE7D9262750D" )]
         public async Task<IActionResult> Webhook()
         {
+#if REVIEW_WEBFORMS
             using ( var chatHelper = new ChatHelper() )
             {
                 var webhookValidationResult = await chatHelper.ValidateWebhookRequestAsync( Request );
@@ -63,6 +68,9 @@ namespace Rock.Rest.v2
             }
 
             return Ok();
+#else
+            throw new System.NotImplementedException();
+#endif
         }
     }
 }

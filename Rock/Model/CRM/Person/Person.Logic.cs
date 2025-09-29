@@ -1979,7 +1979,11 @@ namespace Rock.Model
         private void IndexBulkQueryInSegments( int segmentCount, int bulkChunkSize, bool isBusiness )
         {
             var rockContext = new RockContext();
+#if REVIEW_WEBFORMS
             rockContext.Database.CommandTimeout = 180; // Set a longer timeout for indexing operations
+#else
+            rockContext.Database.SetCommandTimeout( 180 ); // Set a longer timeout for indexing operations
+#endif
             var personService = new PersonService( rockContext );
 
             if ( isBusiness )

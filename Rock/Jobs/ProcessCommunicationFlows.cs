@@ -194,7 +194,11 @@ namespace Rock.Jobs
         private RockContext CreateRockContext()
         {
             var rockContext = new RockContext();
+#if REVIEW_WEBFORMS
             rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.CommandTimeoutSeconds ).AsIntegerOrNull() ?? 300;
+#else
+            rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.CommandTimeoutSeconds ).AsIntegerOrNull() ?? 300 );
+#endif
             return rockContext;
         }
 

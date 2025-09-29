@@ -88,11 +88,15 @@ namespace Rock.Jobs
                 var pSegmentsWithIntervalForRefresh = personalizationSegmentService.Queryable()
                     .Where( s => s.IsActive && s.PersistedScheduleIntervalMinutes.HasValue )
                     .Where( s => !s.PersistedLastRefreshDateTime.HasValue ||
+#if WEBFORMS
                         System.Data.Entity.SqlServer.SqlFunctions.DateAdd(
                             "mi",
                             s.PersistedScheduleIntervalMinutes.Value,
                             s.PersistedLastRefreshDateTime.Value
                         ) < currentDateTime )
+#else
+                    s.PersistedLastRefreshDateTime.Value.AddMinutes( s.PersistedScheduleIntervalMinutes.Value ) < currentDateTime )
+#endif
                     .Select( s => s.Id )
                     .ToList();
 

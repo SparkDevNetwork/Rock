@@ -205,7 +205,11 @@ namespace Rock.Model
                     .Queryable()
                     .Where( cfi =>
                         cfi.CommunicationFlowId == communicationFlow.Id
+#if WEBFORMS
                         && DbFunctions.DiffDays( cfi.StartDate, today ) == 0
+#else
+                        && EF.Functions.DateDiffDay( cfi.StartDate, today ) == 0
+#endif
                     )
                     .FirstOrDefault();
 

@@ -17,6 +17,9 @@
 
 using System;
 using System.Diagnostics;
+#if NET5_0_OR_GREATER
+using System.Linq;
+#endif
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -35,6 +38,11 @@ using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
 using IActionResult = System.Web.Http.IHttpActionResult;
 using RouteAttribute = System.Web.Http.RouteAttribute;
 using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
+#else
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+using RoutePrefixAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 #endif
 
 namespace Rock.Rest.v2
@@ -150,6 +158,10 @@ namespace Rock.Rest.v2
         {
             var context = ProcessEndpointRequest( applicationSlug, endpointSlug );
 
+#if NET5_0_OR_GREATER
+            return new LavaContentResult( context.EndpointResponse, context.LavaEndpoint );
+
+#else
             // Create response
             HttpResponseMessage responseMessage = new HttpResponseMessage( context.EndpointResponse.ResponseStatus );
             if ( context.EndpointResponse.Content != null )
@@ -167,6 +179,7 @@ namespace Rock.Rest.v2
 
             // Return results
             return ResponseMessage( responseMessage );
+#endif
         }
 
         /// <summary>
@@ -219,8 +232,13 @@ namespace Rock.Rest.v2
                 return true;
             }
 
+#if WEBFORMS
             if ( HttpContext.Current.Request.Headers[HeaderKeys.CrossSiteForgeryFlag] == null
                     || HttpContext.Current.Request.Headers[HeaderKeys.CrossSiteForgeryFlag].AsBoolean() != true )
+#else
+            if ( Request.Headers.ContainsKey( HeaderKeys.CrossSiteForgeryFlag ) == false
+                    || Request.Headers[HeaderKeys.CrossSiteForgeryFlag].FirstOrDefault().AsBoolean() != true )
+#endif
             {
                 context.EndpointResponse.ResponseStatus = HttpStatusCode.Unauthorized;
                 context.EndpointResponse.Message = "CSRF token is missing. Please ensure your request includes the appropriate security headers.";
@@ -266,7 +284,11 @@ namespace Rock.Rest.v2
             }
 
             // Get Lava Endpoint
+#if WEBFORMS
             context.LavaEndpoint = context.LavaApplication.GetEndpoint( context.EndpointSlug, LavaEndpoint.GetHttpMethodFromRequestMethod( Request.Method ) );
+#else
+            context.LavaEndpoint = context.LavaApplication.GetEndpoint( context.EndpointSlug, LavaEndpoint.GetHttpMethodFromString( Request.Method ) );
+#endif
 
             if ( context.LavaEndpoint == null || !context.LavaEndpoint.IsActive )
             {
@@ -284,7 +306,11 @@ namespace Rock.Rest.v2
         /// <param name="context"></param>
         private void MergeRequest( EndpointExecutionContext context )
         {
+#if WEBFORMS
             var mergeFields = LavaApplicationRequestHelpers.RequestToDictionary( HttpContext.Current.Request, context.CurrentPerson );
+#else
+            var mergeFields = LavaApplicationRequestHelpers.RequestToDictionary( RockRequestContext );
+#endif
             mergeFields.Add( "ConfigurationRigging", context.LavaApplication.ConfigurationRigging );
 
             var content = string.Empty;
@@ -298,12 +324,14 @@ namespace Rock.Rest.v2
             }
             catch ( Exception ) { }
 
+#if REVIEW_WEBFORMS
             // Check for a HTTP status code in the Lava
             if ( HttpContext.Current?.Response.StatusCode != 200 )
             {
                 content = $"Endpoint returned status of {HttpContext.Current?.Response.StatusCode}.";
                 context.EndpointResponse.ResponseStatus = ( HttpStatusCode ) HttpContext.Current?.Response.StatusCode;
             }
+#endif
 
             context.EndpointResponse.Content = content;
         }
@@ -396,6 +424,42 @@ namespace Rock.Rest.v2
 
             #endregion
         }
+
+#if NET5_0_OR_GREATER
+        private class LavaContentResult : IActionResult
+        {
+            private readonly int _statusCode;
+            private readonly string _content;
+            private readonly string _cacheHeader;
+
+            public LavaContentResult( EndpointResponse response, LavaEndpointCache endpoint )
+            {
+                _statusCode = ( int ) response.ResponseStatus;
+                _content = response.Content;
+                _cacheHeader = endpoint?.CacheControlHeader;
+            }
+
+            public async System.Threading.Tasks.Task ExecuteResultAsync( ActionContext context )
+            {
+                context.HttpContext.Response.StatusCode = _statusCode;
+
+                if ( _content != null )
+                {
+                    context.HttpContext.Response.ContentType = "text/html";
+                }
+
+                if ( _cacheHeader.IsNotNullOrWhiteSpace() )
+                {
+                    context.HttpContext.Response.Headers.Add( "Cache-Control", _cacheHeader );
+                }
+
+                if ( _content != null )
+                {
+                    await context.HttpContext.Response.WriteAsync( _content );
+                }
+            }
+        }
+#endif
 
         #endregion
     }

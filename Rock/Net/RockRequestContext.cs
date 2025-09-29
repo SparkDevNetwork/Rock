@@ -1025,6 +1025,15 @@ namespace Rock.Net
         }
 
         /// <summary>
+        /// Gets all header names from the request.
+        /// </summary>
+        /// <returns>A collection of strings.</returns>
+        internal virtual IEnumerable<string> GetHeaderNames()
+        {
+            return Headers.Keys;
+        }
+
+        /// <summary>
         /// Gets the values associated with the specified header.
         /// </summary>
         /// <param name="header">The header.</param>
@@ -1037,6 +1046,15 @@ namespace Rock.Net
             }
 
             return Headers[header];
+        }
+
+        /// <summary>
+        /// Gets all cookie names from the request.
+        /// </summary>
+        /// <returns>A collection of strings.</returns>
+        internal virtual IEnumerable<string> GetCookieNames()
+        {
+            return Cookies.Keys;
         }
 
         /// <summary>

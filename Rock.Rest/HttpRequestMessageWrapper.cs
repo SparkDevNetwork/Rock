@@ -26,6 +26,7 @@ using Rock.Net;
 
 namespace Rock.Rest
 {
+#if REVIEW_WEBFORMS
     /// <summary>
     /// A wrapper around HttpRequestMessage that makes it compatible with
     /// RockRequestContext.
@@ -187,4 +188,5 @@ namespace Rock.Rest
 
         #endregion
     }
+#endif
 }

@@ -23,6 +23,9 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Communication;
+#if REVIEW_NET5_0_OR_GREATER
+using Rock.Configuration;
+#endif
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -301,7 +304,11 @@ WHERE [RootPath] = '/Themes/KioskStark' AND IsSystem = 1
             // Map and delete block files.
             foreach ( var virtualPath in virtualPathsToDelete )
             {
+#if REVIEW_WEBFORMS
                 var fullPath = System.Web.Hosting.HostingEnvironment.MapPath( virtualPath );
+#else
+                var fullPath = RockApp.Current.MapPath( virtualPath );
+#endif
                 if ( File.Exists( fullPath ) )
                 {
                     File.Delete( fullPath );
@@ -310,7 +317,11 @@ WHERE [RootPath] = '/Themes/KioskStark' AND IsSystem = 1
             }
 
             // Delete the ~/Themes/KioskStark folder.
+#if REVIEW_WEBFORMS
             var themeFolderPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/Themes/KioskStark" );
+#else
+            var themeFolderPath = RockApp.Current.MapPath( "~/Themes/KioskStark" );
+#endif
             if ( Directory.Exists( themeFolderPath ) )
             {
                 Directory.Delete( themeFolderPath, recursive: true );
