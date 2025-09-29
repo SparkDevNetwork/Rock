@@ -42,6 +42,11 @@ namespace Rock.Model
                     }
                 }
 
+                if ( Entity.Name.IsNullOrWhiteSpace() )
+                {
+                    Entity.Description = Entity.ToString( true );
+                }
+
                 base.PreSave();
             }
 

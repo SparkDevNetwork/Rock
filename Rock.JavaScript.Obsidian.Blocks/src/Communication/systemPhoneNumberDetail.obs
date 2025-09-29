@@ -76,7 +76,9 @@
         "number",
         "mobileApplicationSite",
         "smsNotificationGroup",
-        "smsReceivedWorkflowType"
+        "smsReceivedWorkflowType",
+        "suppressSmsOptInOutAutoReplies",
+        "disableSmsOptInOutTracking"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(systemPhoneNumberEditBag, validProperties, invokeBlockAction), undefined, true);

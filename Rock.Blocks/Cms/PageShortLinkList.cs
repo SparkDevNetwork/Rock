@@ -23,12 +23,14 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Controls;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.PageShortLinkList;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -68,6 +70,8 @@ namespace Rock.Blocks.Cms
         private static class PreferenceKey
         {
             public const string FilterCreatedBy = "filter-created-by";
+            public const string FilterPerson = "filter-person";
+            public const string FilterCreatedDateRange = "filter-created-date-range";
         }
 
         #endregion Keys
@@ -79,13 +83,36 @@ namespace Rock.Blocks.Cms
         /// </summary>
         private readonly Lazy<List<AttributeCache>> _gridAttributes = new Lazy<List<AttributeCache>>( BuildGridAttributes );
 
+        private PersonPreferenceCollection _personPreferences;
+
         #endregion
 
         #region Properties
 
-        protected ListItemBag FilterCreatedBy => GetBlockPersonPreferences()
+        public PersonPreferenceCollection PersonPreferences
+        {
+            get
+            {
+                if ( _personPreferences == null )
+                {
+                    _personPreferences = this.GetBlockPersonPreferences();
+                }
+
+                return _personPreferences;
+            }
+        }
+
+        protected ListItemBag FilterCreatedBy => PersonPreferences
             .GetValue( PreferenceKey.FilterCreatedBy )
             .FromJsonOrNull<ListItemBag>();
+
+        protected ListItemBag FilterPerson => PersonPreferences
+            .GetValue( PreferenceKey.FilterPerson )
+            .FromJsonOrNull<ListItemBag>();
+
+        private SlidingDateRangeBag FilterCreatedDateRange => PersonPreferences
+            .GetValue( PreferenceKey.FilterCreatedDateRange )
+            .ToSlidingDateRangeBagOrNull();
 
         #endregion
 
@@ -94,6 +121,47 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
+            bool personPreferencesUpdated = false;
+            if ( FilterCreatedBy?.Value == null)
+            {
+                this.PersonPreferences.SetValue( PreferenceKey.FilterCreatedBy, new ListItemBag
+                {
+                    Text = "Selected Person",
+                    Value = "Selected Person"
+                }.ToCamelCaseJson( false, true ) );
+
+                personPreferencesUpdated = true;
+            }
+
+            if ( FilterPerson?.Value == null && ( FilterCreatedBy?.Value == "Selected Person" || FilterCreatedBy?.Value == null ) && RequestContext.CurrentPerson.PrimaryAliasGuid.HasValue )
+            {
+                this.PersonPreferences.SetValue( PreferenceKey.FilterPerson, new ListItemBag
+                {
+                    Text = RequestContext.CurrentPerson.FullName,
+                    Value = RequestContext.CurrentPerson.PrimaryAliasGuid.Value.ToString()
+                }.ToCamelCaseJson(false, true) );
+
+                personPreferencesUpdated = true;
+            }
+
+            if ( FilterCreatedDateRange == null )
+            {
+                var defaultSlidingDateRange = new SlidingDateRangeBag
+                {
+                    RangeType = SlidingDateRangeType.Last,
+                    TimeUnit = TimeUnitType.Day,
+                    TimeValue = 180
+                };
+
+                this.PersonPreferences.SetValue( PreferenceKey.FilterCreatedDateRange, defaultSlidingDateRange.ToDelimitedSlidingDateRangeOrNull() );
+                personPreferencesUpdated = true;
+            }
+
+            if ( personPreferencesUpdated == true )
+            {
+                this.PersonPreferences.Save();
+            }
+
             var box = new ListBlockBox<PageShortLinkListOptionsBag>();
             var builder = GetGridBuilder();
 
@@ -113,9 +181,21 @@ namespace Rock.Blocks.Cms
         /// <returns>The options that provide additional details to the block.</returns>
         private PageShortLinkListOptionsBag GetBoxOptions()
         {
+            var currentPerson = new ListItemBag();
+
+            if ( RequestContext.CurrentPerson.PrimaryAliasGuid.HasValue )
+            {
+                currentPerson = new ListItemBag
+                {
+                    Text = RequestContext.CurrentPerson.FullName,
+                    Value = RequestContext.CurrentPerson.PrimaryAliasGuid.Value.ToString()
+                };
+            }
+
             var options = new PageShortLinkListOptionsBag
             {
-                SiteItems = SiteCache.All().OrderBy( s => s.Name ).ToListItemBagList()
+                SiteItems = SiteCache.All().OrderBy( s => s.Name ).ToListItemBagList(),
+                CurrentPerson = currentPerson
             };
 
             return options;
@@ -163,7 +243,7 @@ namespace Rock.Blocks.Cms
 
             var pageShortLinkService = new PageShortLinkService( RockContext );
 
-            var pageShortLinkQueryable = pageShortLinkService.Queryable();
+            var pageShortLinkQueryable = FilterByCreatedDate( pageShortLinkService.Queryable() );
 
             var queryable = FilterByPerson( pageShortLinkQueryable ).GroupJoin(
                     interactionCounts,
@@ -257,7 +337,7 @@ namespace Rock.Blocks.Cms
         /// <returns></returns>
         private IQueryable<Model.PageShortLink> FilterByPerson( IQueryable<Model.PageShortLink> queryable )
         {
-            var createdBy = FilterCreatedBy?.Value.AsGuidOrNull();
+            var createdBy = FilterPerson?.Value.AsGuidOrNull();
             if ( createdBy.HasValue )
             {
                 queryable = queryable
@@ -266,6 +346,33 @@ namespace Rock.Blocks.Cms
                         c.CreatedByPersonAlias.Guid == createdBy.Value );
             }
          
+            return queryable;
+        }
+
+        /// <summary>
+        /// Filters the queryable by the Created Date
+        /// </summary>
+        /// <param name="queryable">The <see cref="Rock.Model.PageShortLink"/> queryable</param>
+        /// <returns></returns>
+        private IQueryable<Model.PageShortLink> FilterByCreatedDate( IQueryable<Model.PageShortLink> queryable )
+        {
+            // Default to the last 180 days if a null/invalid range was selected.
+            var defaultSlidingDateRange = new SlidingDateRangeBag
+            {
+                RangeType = SlidingDateRangeType.Last,
+                TimeUnit = TimeUnitType.Day,
+                TimeValue = 180
+            };
+
+            var dateRange = FilterCreatedDateRange.Validate( defaultSlidingDateRange ).ActualDateRange;
+            var dateTimeStart = dateRange.Start;
+            var dateTimeEnd = dateRange.End;
+
+            queryable = queryable
+                .Where( c =>
+                    c.CreatedDateTime >= dateTimeStart &&
+                    c.CreatedDateTime <= dateTimeEnd );
+
             return queryable;
         }
 

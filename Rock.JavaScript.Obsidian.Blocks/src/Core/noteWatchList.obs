@@ -4,6 +4,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Note Watch"
+          title="Note Watches"
           :entityTypeGuid="EntityType.NoteWatch"
           stickyHeader
           liveUpdates
@@ -21,7 +22,7 @@
         <PersonColumn name="watcher"
                       title="Watcher Person"
                       field="watcher"
-                      :filter="textValueFilter"
+                      :filter="pickExistingValueFilter"
                       :filterValue="getWatcherRowValue"
                       visiblePriority="xs" />
 
@@ -59,7 +60,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, PersonColumn, TextColumn, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, BooleanColumn, PersonColumn, TextColumn, textValueFilter, pickExistingValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { NoteWatchListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/NoteWatchList/noteWatchListOptionsBag";
@@ -97,7 +98,7 @@
 
     function getWatcherRowValue(row: Record<string, unknown>): string {
         const watcher = row["watcher"] as PersonFieldBag;
-        return `${watcher?.nickName} ${watcher.lastName}`;
+        return !watcher ? "" : `${watcher.nickName} ${watcher.lastName}`;
     }
 
     // #endregion

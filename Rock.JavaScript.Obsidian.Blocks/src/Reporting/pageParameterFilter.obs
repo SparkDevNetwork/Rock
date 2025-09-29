@@ -57,8 +57,8 @@
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
-    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
-    import { PageMessages, useBrowserBus } from "@Obsidian/Utility/browserBus";
+    import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { PageMessages } from "@Obsidian/Utility/browserBus";
     import { CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
     import { areEqual, newGuid } from "@Obsidian/Utility/guid";
     import { debounceAsync } from "@Obsidian/Utility/util";
@@ -70,7 +70,7 @@
     const config = useConfigurationValues<PageParameterFilterInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
     const reloadBlock = useReloadBlock();
-    const browserBus = useBrowserBus();
+    const browserBus = useBlockBrowserBus();
 
     let isStartingUp = true;
     let lastPublishedQueryString: string;

@@ -136,10 +136,13 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this ConnectionWorkflow target, ConnectionWorkflow source )
         {
             target.Id = source.Id;
+            target.AppliesToAgeClassification = source.AppliesToAgeClassification;
             target.ConnectionOpportunityId = source.ConnectionOpportunityId;
             target.ConnectionTypeId = source.ConnectionTypeId;
+            target.ExcludeDataViewId = source.ExcludeDataViewId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IncludeDataViewId = source.IncludeDataViewId;
             target.ManualTriggerFilterConnectionStatusId = source.ManualTriggerFilterConnectionStatusId;
             target.QualifierValue = source.QualifierValue;
             target.TriggerType = source.TriggerType;

@@ -148,23 +148,24 @@
 
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
+    import ConfigurePaymentPlanModal from "./configurePaymentPlanModal.partial.obs";
+    import { useConfigurePaymentPlanFeature } from "./paymentPlans.partial";
     import { GetPersistSessionArgs, CurrentRegistrationEntryState, use, RegistrationCostSummary } from "./utils.partial";
     import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
     import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
     import Loading from "@Obsidian/Controls/loading.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import { RockCurrency } from "@Obsidian/Utility/rockCurrency";
     import { ValidationRule } from "@Obsidian/ValidationRules";
     import { RegistrationEntryCostSummaryBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryCostSummaryBag";
-    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
-    import { RockCurrency } from "@Obsidian/Utility/rockCurrency";
     import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import ConfigurePaymentPlanModal from "./configurePaymentPlanModal.partial.obs";
-    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
-    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
-    import { useConfigurePaymentPlanFeature } from "./paymentPlans.partial";
 
     enum RegistrationCostSummaryType {
         Cost = 0,
@@ -285,15 +286,30 @@
         return toCurrencyOrNull(discountedTotal.value, currencyInfo.value) ?? "(invalid)";
     });
 
-    /** The min amount that must be paid today */
+    /**
+     * Calculates the minimum amount due today for event registration.
+     * Accounts for previous payments, line item minimums, and discounts
+     * to ensure we don't overcharge the registrant.
+     */
     const amountDueToday = computed<number>(() => {
         if (amountPreviouslyPaid.value) {
             return 0;
         }
 
-        let total = 0;
-        lineItems.value.forEach(li => total += (Math.min(li.minimumPaymentAmount, li.discountedCost)));
-        return total;
+        const lineItemEnumerable = Enumerable.from(lineItems.value);
+
+        // 1. If there are any line items with cost,
+        // sum their minimum payment amounts.
+        if (lineItemEnumerable.any(li => li.cost > 0)) {
+            const summedMinimumPaymentAmounts = lineItemEnumerable
+                .select(li => li.minimumPaymentAmount)
+                .sum(minAmount => minAmount);
+
+            // 2. Ensure the amount due is not greater than the discounted total.
+            return Math.min(summedMinimumPaymentAmounts, discountedTotal.value);
+        }
+
+        return 0;
     });
 
     /** The min amount that must be paid today as a formatted string */

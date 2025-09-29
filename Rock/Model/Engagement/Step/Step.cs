@@ -156,6 +156,24 @@ namespace Rock.Model
             private set { }
         }
 
+        /// <summary>
+        /// Gets or sets the related entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The related entity type identifier.
+        /// </value>
+        [DataMember]
+        public int? RelatedEntityTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the related entity identifier.
+        /// </summary>
+        /// <value>
+        /// The related entity identifier.
+        /// </value>
+        [DataMember]
+        public int? RelatedEntityId { get; set; }
+
         #endregion
 
         #region IOrdered
@@ -258,7 +276,7 @@ namespace Rock.Model
 
                 HasOptional( s => s.Campus ).WithMany().HasForeignKey( s => s.CampusId ).WillCascadeOnDelete( false );
                 HasOptional( s => s.StepStatus ).WithMany( ss => ss.Steps ).HasForeignKey( s => s.StepStatusId ).WillCascadeOnDelete( false );
-                HasOptional( s => s.StepProgramCompletion ).WithMany( ss => ss.Steps ).HasForeignKey( s => s.StepProgramCompletionId ).WillCascadeOnDelete( true );
+                HasOptional( s => s.StepProgramCompletion ).WithMany( ss => ss.Steps ).HasForeignKey( s => s.StepProgramCompletionId ).WillCascadeOnDelete( false );
 
                 // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
                 // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed

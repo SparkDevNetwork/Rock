@@ -21,8 +21,13 @@
 // </copyright>
 //
 
+import { CommunicationDetailPermissionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationDetailPermissionsBag";
+
 /** A bag that contains information about a communication to which the client should redirect. */
 export type CommunicationRedirectBag = {
     /** Gets or sets the URL of the communication to which the client should redirect. */
     communicationUrl?: string | null;
+
+    /** Gets or sets the permissions for this communication detail block. */
+    permissions?: CommunicationDetailPermissionsBag | null;
 };

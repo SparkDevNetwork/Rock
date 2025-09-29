@@ -879,7 +879,7 @@ namespace Rock.Rest
             }
 
             // Set a sitewide context cookie.
-            var cookieName = RockRequestContext.GetContextCookieName( false );
+            var cookieName = RockRequestContext.GetContextCookieName( null );
             var typeName = typeof( T ).FullName;
 
             var identifier =

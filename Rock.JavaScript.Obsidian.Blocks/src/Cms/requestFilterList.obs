@@ -3,6 +3,7 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
+          title="Request Filters"
           itemTerm="Request Filter"
           :entityTypeGuid="EntityType.RequestFilter"
           stickyHeader

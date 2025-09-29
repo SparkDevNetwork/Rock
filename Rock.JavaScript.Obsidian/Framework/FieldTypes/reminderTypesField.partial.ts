@@ -19,7 +19,6 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { binaryComparisonTypes, containsComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
-import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { FieldTypeBase } from "./fieldType";
 
 export const enum ConfigurationValueKey {

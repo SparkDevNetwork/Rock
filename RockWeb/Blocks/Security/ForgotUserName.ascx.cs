@@ -94,6 +94,7 @@ namespace RockWeb.Blocks.Security
         DefaultBooleanValue = false,
         Order = 6 )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.BlockTypeGuid( "02B3D7D1-23CE-4154-B602-F4A15B321757" )]
     public partial class ForgotUserName : Rock.Web.UI.RockBlock
     {

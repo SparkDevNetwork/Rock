@@ -40,5 +40,11 @@ namespace Rock.SystemKey
         /// The kiosk device will enable registration mode and allow editing families.
         /// </summary>
         public const string DEVICE_KIOSK_ALLOW_EDITING_FAMILIES = "core_device_KioskAllowEditingFamilies";
+
+        /// <summary>
+        /// The kiosk device will allow adding individuals to existing families,
+        /// regardless of the Allow Editing Families setting.
+        /// </summary>
+        public const string DEVICE_KIOSK_ALLOW_ADDING_INDIVIDUALS_TO_EXISTING_FAMILIES = "core_device_KioskAllowAddingIndividualsToExistingFamilies";
     }
 }

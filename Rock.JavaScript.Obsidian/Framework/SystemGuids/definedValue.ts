@@ -29,6 +29,10 @@ export const DefinedValue = {
     AttendanceSourceLegacyKiosk: "0B25A627-679B-4B73-AA84-305DEF24815A",
     /** The attendance record came from a mobile check-in. */
     AttendanceSourceMobile: "972E8841-A3C9-4DDD-BD24-A414C0290331",
+    /** The attendance record from from a proximity (bluetooth low energy) check-in. */
+    AttendanceSourceProximity: "799e6fa9-33d8-44aa-93dc-3dbaf25fe9f1",
+    /** The attendance record came from a physical token, such as NFC or QR Code scan. */
+    AttendanceSourceToken: "8059cc0a-bd93-4d35-9458-6e6dff2fa3e3",
     /** Benevolence Approved */
     BenevolenceApproved: "18D3A2DA-F2BA-49AE-83EB-7E60DCD18A3B",
     /** Benevolence Denied */
@@ -408,6 +412,12 @@ export const DefinedValue = {
     NoncashAssetStocksandbonds: "B29D7D89-357F-47F9-BE7B-52AFF3892007",
     /** Non-Cash Asset Type: Vehicles. */
     NoncashAssetVehicles: "C1DCBE74-88FE-4876-8943-5783499CBBE0",
+    /** The activation organizational objective. */
+    OrganizationalObjectiveTypeActivation: "283BC4AC-CCCD-4FCF-8C94-9848B6B5E734",
+    /** The discipleship organizational objective. */
+    OrganizationalObjectiveTypeDiscipleship: "9DFD8F1E-922E-420D-AE00-F640A2EFF405",
+    /** The outreach organizational objective. */
+    OrganizationalObjectiveTypeOutreach: "396B3980-EB66-446F-86B4-6C6E95FC74A7",
     /** The PBX CDR medium value */
     PbxCdrMediumValue: "B3904B57-62A2-57AC-43EA-94D4DEBA3D51",
     /** Person Connection Status - Attendee */

@@ -166,10 +166,10 @@
 						{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
 							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
-							<i class="fa fa-times"></i>
+							<i class="ti ti-x"></i>
 							</a>
 							<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
-							<i class="fa fa-pencil"></i>
+							<i class="ti ti-pencil"></i>
 							</a>
 						</div>
 						{% endif %}
@@ -233,10 +233,10 @@
 						{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
 							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
-							<i class="fa fa-times"></i>
+							<i class="ti ti-x"></i>
 							</a>
 							<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
-							<i class="fa fa-pencil"></i>
+							<i class="ti ti-pencil"></i>
 							</a>
 						</div>
 						{% endif %}
@@ -300,10 +300,10 @@
 						{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
 							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
-							<i class="fa fa-times"></i>
+							<i class="ti ti-x"></i>
 							</a>
 							<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
-							<i class="fa fa-pencil"></i>
+							<i class="ti ti-pencil"></i>
 							</a>
 						</div>
 						{% endif %}
@@ -328,27 +328,27 @@
 		<div class="pull-right margin-b-md">
 			{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 				<a href="#" onclick="{{ '' | Postback:'AddGroupMember' }}" class="btn btn-default btn-xs">
-					<i class="fa fa-plus"></i> Add Member
+					<i class="ti ti-plus"></i> Add Member
 				</a>
 			{% endif %}
 			{% if LinkedPages.CommunicationPage != null %}
 				{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 					<a href="#" onclick="{{ '' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
-						<i class="fa fa-envelope-o"></i> Email Roster
+						<i class="ti ti-mail"></i> Email Roster
 					</a>
 				{% endif %}
 			{% endif %}
             {% if ButtonVisibility.ShowEmailGroupLeadersButton == true %}
                 {% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
                     <a href="#" onclick="{{ '' | Postback:'EmailGroupLeaders' }}" class="btn btn-default btn-xs">
-                        <i class="fa fa-envelope-o"></i> Email Group Leaders
+                        <i class="ti ti-mail"></i> Email Group Leaders
                     </a>
                 {% endif %}
             {% endif %}
             {% if ButtonVisibility.ShowEmailRosterParentsButton == true %}
                 {% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
                     <a href="#" onclick="{{ '' | Postback:'EmailRosterParents' }}" class="btn btn-default btn-xs">
-                        <i class="fa fa-envelope-o"></i> Email Roster Parents
+                        <i class="ti ti-mail"></i> Email Roster Parents
                     </a>
                 {% endif %}
             {% endif %}

@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -39,6 +40,7 @@ namespace Rock.Blocks.Cms
     [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "06f055e8-d396-4ad6-b542-342ee5907d74" )]
     [Rock.SystemGuid.BlockTypeGuid( "6c9e7ebf-8f27-48ef-94c4-900ac3a2c167" )]
     [CustomizedGrid]
@@ -102,7 +104,9 @@ namespace Rock.Blocks.Cms
         protected override IQueryable<PersonalLink> GetListQueryable( RockContext rockContext )
         {
             int? sectionId = GetPersonalLinkSectionId();
-            var queryable = new PersonalLinkService( rockContext ).Queryable().Where( a => a.SectionId == sectionId );
+            var queryable = new PersonalLinkService( rockContext ).Queryable()
+                .Include( a => a.Section )
+                .Where( a => a.SectionId == sectionId );
 
             // Filter by: Name
             var name = GetBlockPersonPreferences().GetValue( UserPreferenceKey.Name );

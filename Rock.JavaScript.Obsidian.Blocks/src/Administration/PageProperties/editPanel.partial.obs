@@ -43,8 +43,8 @@
                     <CheckBox v-model="menuDisplayIcon"
                               label="Show Icon" />
 
-                    <TextBox v-model="iconCssClass"
-                             label="Icon CSS Class" />
+                    <IconPicker v-model="iconCssClass"
+                                label="Icon CSS Class" />
                 </div>
             </div>
             <div class="row">
@@ -200,6 +200,7 @@
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
     import InlineCheckbox from "./InlineCheckbox.partial.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";

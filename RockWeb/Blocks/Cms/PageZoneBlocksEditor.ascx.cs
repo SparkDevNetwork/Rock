@@ -78,19 +78,27 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            int pageId;
+            int? pageId;
             string zoneName;
 
             if ( !Page.IsPostBack )
             {
                 // Get the settings from the query string.
-                pageId = PageParameter( PageParameterKey.Page ).AsInteger();
+                pageId = PageParameter( PageParameterKey.Page ).AsIntegerOrNull();
+                if ( pageId == null )
+                {
+                    pageId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.Page ) );
+                }
                 zoneName = PageParameter( PageParameterKey.ZoneName );
             }
             else
             {
                 // Get the settings from the current page state.
-                pageId = hfPageId.Value.AsInteger();
+                pageId = hfPageId.Value.AsIntegerOrNull();
+                if ( pageId == null )
+                {
+                    pageId = Rock.Utility.IdHasher.Instance.GetId( hfPageId.Value );
+                }
                 zoneName = ddlZones.SelectedValue;
             }
 
@@ -207,11 +215,11 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="pageId">The page identifier.</param>
         /// <param name="zoneName">Name of the zone.</param>
-        private void ShowDetail( int pageId, string zoneName )
+        private void ShowDetail( int? pageId, string zoneName )
         {
             // Store the page reference and determine if it is valid.
             hfPageId.Value = pageId.ToString();
-            var page = PageCache.Get( pageId );
+            var page = PageCache.Get( pageId.Value );
 
             this.Visible = page != null;
 

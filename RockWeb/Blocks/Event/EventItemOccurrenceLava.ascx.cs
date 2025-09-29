@@ -233,7 +233,10 @@ namespace RockWeb.Blocks.Event
                 mergeFields.Add( "Event", eventItemOccurrence != null ? eventItemOccurrence.EventItem : null );
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
 
-                lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
+                // Enable Calendar Events and Event Scheduled Instance Lava commands
+                var enabledLavaCommands = "CalendarEvents,EventScheduledInstance";
+
+                lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields, enabledLavaCommands );
 
                 if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() )
                 {

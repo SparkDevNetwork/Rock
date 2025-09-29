@@ -46,6 +46,7 @@ namespace Rock.Blocks.Finance
         Description = "The page that will show the financial account details.",
         Key = AttributeKey.DetailPage )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "20cbcd56-e896-41de-ad82-0e3862d502b3" )]
     [Rock.SystemGuid.BlockTypeGuid( "57babd60-2a45-43ac-8ed3-b09af79c54ab" )]
     [CustomizedGrid]

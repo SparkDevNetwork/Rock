@@ -327,7 +327,7 @@
         	            {% unless ViewOnly %}
         	                <div class="row">
         	                    <div class="col-md-12 text-right">
-        	                        <a class="btn btn-default btn-sm btn-square" onclick="{{ familyMember.Person.Guid | Postback:'EditPerson' }}" title="Edit {{ familyMember.Person.FullName | Escape }}"><i class="fa fa-pencil"></i></a>
+        	                        <a class="btn btn-default btn-sm btn-square" onclick="{{ familyMember.Person.Guid | Postback:'EditPerson' }}" title="Edit {{ familyMember.Person.FullName | Escape }}"><i class="ti ti-edit"></i></a>
         	                    </div>
         	                </div>
         	            {% endunless %}

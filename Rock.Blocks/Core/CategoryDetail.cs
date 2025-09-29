@@ -72,6 +72,7 @@ namespace Rock.Blocks.Core
         Key = AttributeKey.ExcludeCategories )]
     #endregion
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "2889352c-52ba-45f6-8ee1-9afa61211582" )]
     [Rock.SystemGuid.BlockTypeGuid( "515dc5c2-4fbd-4eea-9d8e-a807409defde" )]
     public class CategoryDetail : RockEntityDetailBlockType<Category, CategoryBag>, IHasCustomActions

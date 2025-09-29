@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -134,9 +134,9 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_FLOW_INSTANCE_RECIPIENT = "F615AC08-8ACD-48F9-B42E-2F4CE02D4206";
 
         /// <summary>
-        /// The guid for the communication flow instance conversion history
+        /// The guid for the communication flow instance communication conversion
         /// </summary>
-        public const string COMMUNICATION_FLOW_INSTANCE_CONVERSION_HISTORY = "726B5B81-B4B2-4E74-9069-0409A3D19753";
+        public const string COMMUNICATION_FLOW_INSTANCE_COMMUNICATION_CONVERSION = "726B5B81-B4B2-4E74-9069-0409A3D19753";
 
         /// <summary>
         /// The guid for the email communication medium
@@ -738,6 +738,16 @@ namespace Rock.SystemGuid
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Finance.ScheduledTransactionList.
         /// </summary>
         public const string MOBILE_FINANCE_SCHEDULED_TRANSACTION_LIST_BLOCK_TYPE = "7698E529-6834-46B0-BC5A-D466A6BCE4F6";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Finance.FinancialBatchList.
+        /// </summary>
+        public const string MOBILE_FINANCE_FINANCIAL_BATCH_LIST_BLOCK_TYPE = "E7E18663-7EF9-454C-9C6E-F4A839DB60C8";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Finance.FinancialBatchDetail.
+        /// </summary>
+        public const string MOBILE_FINANCE_FINANCIAL_BATCH_DETAIL_BLOCK_TYPE = "14FE11A8-A4AA-43EF-9F36-354CE60240CA";
 
         /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Finance.TransactionDetail.

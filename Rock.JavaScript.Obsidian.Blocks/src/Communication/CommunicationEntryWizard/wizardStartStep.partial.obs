@@ -5,7 +5,7 @@
             <template #headerActions>
                 <div>
                     <HighlightLabel labelType="info">
-                        <template v-if="isFetchingRecipients"><i class="ti ti-rotate-2 ti-pulse"></i> Recipients</template>
+                        <template v-if="isFetchingRecipients"><i class="ti ti-rotate-clockwise-2 ti-pulse"></i> Recipients</template>
                         <template v-else>{{ recipientsLabel }}</template>
                     </HighlightLabel>
                 </div>
@@ -84,7 +84,7 @@
                                                     <RockButton btnSize="sm"
                                                                 :disabled="isFetchingRecipients"
                                                                 @click="isRecipientModalShown = true">
-                                                        <i v-if="isFetchingRecipients" class="ti ti-rotate-2 ti-pulse"></i>
+                                                        <i v-if="isFetchingRecipients" class="ti ti-rotate-clockwise-2 ti-pulse"></i>
                                                         <i v-else class="ti ti-eye"></i> View List
                                                     </RockButton>
                                                 </div>
@@ -100,18 +100,18 @@
                                     </div>
                                 </div>
 
-                                <div v-if="selectedCommunicationListGuidOrManualOrEmptyString !== manualRecipientList && personalizationSegments.length"
+                                <div v-if="selectedCommunicationListGuidOrManualOrEmptyString !== manualRecipientList && personalizationSegmentItems.length"
                                      class="row">
                                     <div class="col-sm-5">
                                         <ConditionalWell class="segments-section">
                                             <DropDownList v-model="personalizationSegmentIdsAsStrings"
                                                           enhanceForLongLists
-                                                          :items="personalizationSegments"
+                                                          :items="personalizationSegmentItems"
                                                           label="Select Segments"
                                                           :multiple="true" />
 
                                             <TransitionVerticalCollapse>
-                                                <div v-if="internalPersonalizationSegmentIds.length > 1">
+                                                <div v-if="internalPersonalizationSegments && internalPersonalizationSegments.length > 1">
                                                     <RadioButtonList v-model="segmentCriteriaAsString"
                                                                      :items="segmentCriteria"
                                                                      :horizontal="true"
@@ -144,14 +144,13 @@
                                                         <i class="ti ti-mail ti-2x"></i>
                                                         <h3>Email</h3>
                                                         <small>Send an email to everyone in your targeted segment.</small>
+                                                        <HighlightLabel labelType="info">
+                                                            <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-clockwise-2 ti-pulse"></i></template>
+                                                            <template v-else>Reachable Audience: {{ emailRecipientCount }}</template>
+                                                        </HighlightLabel>
+                                                        <i :class="internalCommunicationType === CommunicationType.Email ? 'ti ti-circle-dot' : 'ti ti-circle'"></i>
                                                     </div>
 
-                                                    <HighlightLabel labelType="info">
-                                                        <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-2 ti-pulse"></i></template>
-                                                        <template v-else>Reachable Audience: {{ emailRecipientCount }}</template>
-                                                    </HighlightLabel>
-
-                                                    <i :class="internalCommunicationType === CommunicationType.Email ? 'ti ti-circle-dot' : 'ti ti-circle'"></i>
                                                 </div>
 
                                                 <div v-if="allowedMediums.includes(CommunicationType.SMS)"
@@ -161,14 +160,13 @@
                                                         <i class="ti ti-device-mobile-message ti-2x"></i>
                                                         <h3>SMS</h3>
                                                         <small>Send a text message to your targeted segment.</small>
+                                                        <HighlightLabel labelType="info">
+                                                            <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-clockwise-2 ti-pulse"></i></template>
+                                                            <template v-else>Reachable Audience: {{ smsRecipientCount }}</template>
+                                                        </HighlightLabel>
+                                                        <i :class="internalCommunicationType === CommunicationType.SMS ? 'ti ti-circle-dot' : 'ti ti-circle'"></i>
                                                     </div>
 
-                                                    <HighlightLabel labelType="info">
-                                                        <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-2 ti-pulse"></i></template>
-                                                        <template v-else>Reachable Audience: {{ smsRecipientCount }}</template>
-                                                    </HighlightLabel>
-
-                                                    <i :class="internalCommunicationType === CommunicationType.SMS ? 'ti ti-circle-dot' : 'ti ti-circle'"></i>
                                                 </div>
 
                                                 <div v-if="allowedMediums.includes(CommunicationType.PushNotification)"
@@ -178,14 +176,13 @@
                                                         <i class="ti ti-bell ti-2x"></i>
                                                         <h3>Push Notifications</h3>
                                                         <small>Notify targeted segment via the church app.</small>
+                                                        <HighlightLabel labelType="info">
+                                                            <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-clockwise-2 ti-pulse"></i></template>
+                                                            <template v-else>Reachable Audience: {{ pushNotificationRecipientCount }}</template>
+                                                        </HighlightLabel>
+                                                        <i :class="internalCommunicationType === CommunicationType.PushNotification ? 'ti ti-circle-dot' : 'ti ti-circle'"></i>
                                                     </div>
 
-                                                    <HighlightLabel labelType="info">
-                                                        <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-2 ti-pulse"></i></template>
-                                                        <template v-else>Reachable Audience: {{ pushNotificationRecipientCount }}</template>
-                                                    </HighlightLabel>
-
-                                                    <i :class="internalCommunicationType === CommunicationType.PushNotification ? 'ti ti-circle-dot' : 'ti ti-circle'"></i>
                                                 </div>
 
                                                 <div v-if="allowedMediums.includes(CommunicationType.RecipientPreference)"
@@ -195,15 +192,14 @@
                                                         <i class="ti ti-user ti-2x"></i>
                                                         <h3>Personal Preference</h3>
                                                         <small>Notify targeted segment via person's preferred channel.</small>
+                                                        <HighlightLabel labelType="info">
+                                                            <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-clockwise-2 ti-pulse"></i></template>
+                                                            <template v-else>Reachable Audience: {{ personalPreferenceRecipientCount }}</template>
+                                                        </HighlightLabel>
+                                                        <i :class="internalCommunicationType === CommunicationType.RecipientPreference ? 'ti ti-circle-dot' : 'ti ti-circle'"></i>
                                                     </div>
-
-                                                    <HighlightLabel labelType="info">
-                                                        <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-2 ti-pulse"></i></template>
-                                                        <template v-else>Reachable Audience: {{ personalPreferenceRecipientCount }}</template>
-                                                    </HighlightLabel>
-
-                                                    <i :class="internalCommunicationType === CommunicationType.RecipientPreference ? 'ti ti-circle-dot' : 'ti ti-circle'"></i>
                                                 </div>
+
                                             </div>
                                         </div>
                                     </div>
@@ -269,26 +265,25 @@
 @import "/Styles/Blocks/Shared/Devices.css";
 
 .mediums-section {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 250px));
+    grid-template-rows: auto auto auto auto auto;
     gap: var(--spacing-large);
+
 }
 
 .medium {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    justify-content: space-between;
-    border: 1px solid gray;
-    border-radius: var(--border-radius-base);
-    padding: var(--spacing-medium);
-    cursor: pointer;
-    width: 230px;
-    height: 210px;
-
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 5;
     gap: var(--spacing-xsmall);
+
+    cursor: pointer;
+    padding: var(--spacing-medium);
+    text-align: center;
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-small);
+    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
 }
 
 .medium.selected {
@@ -297,10 +292,20 @@
 }
 
 .medium-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    display: grid;
+    grid-template-rows: subgrid;
     gap: var(--spacing-xsmall);
+    grid-row: span 5;
+}
+
+.medium-content .label {
+    margin-left: auto;
+    margin-right: auto;
+    width: fit-content;
+}
+
+.medium-content small {
+    color: var(--color-interface-strong);
 }
 
 .medium-content h3 {
@@ -308,7 +313,7 @@
 }
 
 .medium-content i {
-    color: var(--color-interface-strong);
+    color: var(--color-interface-stronger);
 }
 
 .medium .ti-circle-dot {
@@ -375,6 +380,7 @@
     import { splitCase } from "@Obsidian/Utility/stringUtils";
     import { isNullish } from "@Obsidian/Utility/util";
     import { CommunicationEntryWizardRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardRecipientBag";
+    import { Enumerable } from "@Obsidian/Utility/linq";
 
     const props = defineProps({
         allowedMediums: {
@@ -487,12 +493,16 @@
             required: true
         },
 
-        personalizationSegmentIds: {
-            type: Object as PropType<number[]>,
+        /**
+         * The selected personalization segments.
+         */
+        personalizationSegments: {
+            type: Object as PropType<ListItemBag[] | null | undefined>,
             required: true
         },
 
-        personalizationSegments: {
+        /** The available personalization segments to choose from. */
+        personalizationSegmentItems: {
             type: Object as PropType<ListItemBag[]>,
             required: true
         },
@@ -554,7 +564,7 @@
         (e: "update:futureSendDateTime", value: string | null | undefined): void;
         (e: "update:individualRecipientPersonAliasGuids", value: string[] | null | undefined): void;
         (e: "update:isBulkCommunication", value: boolean): void;
-        (e: "update:personalizationSegmentIds", value: number[]): void;
+        (e: "update:personalizationSegments", value: ListItemBag[] | null | undefined): void;
         (e: "update:recipients", value: CommunicationEntryWizardRecipientBag[]): void;
         (e: "update:segmentCriteria", value: SegmentCriteria): void;
     }>();
@@ -591,7 +601,7 @@
     const internalIndividualRecipientPersonAliasGuids = useVModelPassthrough(props, "individualRecipientPersonAliasGuids", emit);
     const internalIsBulkCommunication = useVModelPassthrough(props, "isBulkCommunication", emit);
     const internalRecipients = useVModelPassthrough(props, "recipients", emit);
-    const internalPersonalizationSegmentIds = useVModelPassthrough(props, "personalizationSegmentIds", emit);
+    const internalPersonalizationSegments = useVModelPassthrough(props, "personalizationSegments", emit);
     const internalSegmentCriteria = useVModelPassthrough(props, "segmentCriteria", emit);
     const selectedSendTimePreference = ref<SendTimePreference>(internalFutureSendDateTime.value ? "later" : "now");
     const selectedCommunicationListGuidOrManualOrEmptyString = ref<string>(
@@ -649,10 +659,20 @@
 
     const personalizationSegmentIdsAsStrings = computed<string[]>({
         get(): string[] {
-            return internalPersonalizationSegmentIds.value.map(p => `${p}`);
+            return Enumerable
+                .from(internalPersonalizationSegments.value ?? [])
+                .where(p => !!p.value)
+                .select(p => p.value!)
+                .toArray();
         },
         set(newValue: string[]) {
-            internalPersonalizationSegmentIds.value = newValue.map(v => parseInt(v)).filter(v => !Number.isNaN(v));
+            // From the list of selectable personalization segments,
+            // find the ones that match the selected IDs.
+            internalPersonalizationSegments.value = Enumerable
+                .from(props.personalizationSegmentItems)
+                .where(p => !!p.value)
+                .where(p => newValue.includes(p.value!))
+                .toArray();
         }
     });
 
@@ -758,7 +778,7 @@
     function onListGroupGuidUpdated(): void {
         if (selectedCommunicationListGuidOrManualOrEmptyString.value === manualRecipientList) {
             internalIndividualRecipientPersonAliasGuids.value = [];
-            internalPersonalizationSegmentIds.value = [];
+            internalPersonalizationSegments.value = [];
             emit("update:communicationListGroupGuid", null);
         }
         else {

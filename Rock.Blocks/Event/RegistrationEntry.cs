@@ -31,6 +31,7 @@ using Rock.ClientService.Finance.FinancialPersonSavedAccount.Options;
 using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.ElectronicSignature;
+using Rock.Enums.Reporting;
 using Rock.Field;
 using Rock.Financial;
 using Rock.Model;
@@ -41,6 +42,7 @@ using Rock.Utility;
 using Rock.ViewModels.Blocks.Event.RegistrationEntry;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Finance;
+using Rock.ViewModels.Reporting;
 using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -1764,7 +1766,7 @@ namespace Rock.Blocks.Event
                     paymentReductionAmount -= paymentPlanAmount;
                 }
             }
-            
+
             // Amount To Pay Now
             if ( paymentReductionAmount > 0m
                  && registrationArgs.AmountToPayNow > 0m
@@ -3173,7 +3175,7 @@ namespace Rock.Blocks.Event
             List<Action> postSaveActions )
         {
             // Force waitlist if specified by param, but allow waitlist if requested
-            isWaitlist |= (context.RegistrationSettings.IsWaitListEnabled && registrantInfo.IsOnWaitList);
+            isWaitlist |= ( context.RegistrationSettings.IsWaitListEnabled && registrantInfo.IsOnWaitList );
 
             var personService = new PersonService( rockContext );
             var registrationInstanceService = new RegistrationInstanceService( rockContext );
@@ -3759,7 +3761,14 @@ namespace Rock.Blocks.Event
             var formViewModels = new List<RegistrationEntryFormBag>();
             var allAttributeFields = formModels
                 .SelectMany( fm =>
-                    fm.Fields.Where( f => !f.IsInternal && f.Attribute?.IsActive == true )
+                    fm.Fields.Where( f =>
+                    {
+                        return !f.IsInternal
+                            && (
+                                f.Attribute?.IsActive == true
+                                || FieldVisibilityRules.IsFieldSupported( f.PersonFieldType )
+                            );
+                    } )
                 ).ToList();
 
             foreach ( var formModel in formModels )
@@ -3802,8 +3811,27 @@ namespace Rock.Blocks.Event
                                 return null;
                             }
 
-                            var fieldAttribute = AttributeCache.Get( comparedToField.AttributeId.Value );
-                            var ruleBag = FieldVisibilityRule.GetPublicRuleBag( fieldAttribute, vr.ComparisonType, vr.ComparedToValue );
+                            ViewModels.Reporting.FieldFilterRuleBag ruleBag;
+
+                            // At time of writing, Gender is the only non-attribute person field that can be part of a rule
+                            // as noted in Rock.Field.FieldVisibilityRules.GetSupportedFieldTypeCache
+                            if ( comparedToField.PersonFieldType == RegistrationPersonFieldType.Gender )
+                            {
+                                // Property Field
+                                ruleBag = new FieldFilterRuleBag
+                                {
+                                    ComparisonType = vr.ComparisonType,
+                                    Value = vr.ComparedToValue,
+                                    SourceType = FieldFilterSourceType.Property,
+                                    PropertyName = "Gender"
+                                };
+                            }
+                            else
+                            {
+                                // Attribute Field
+                                var fieldAttribute = AttributeCache.Get( comparedToField.AttributeId.Value );
+                                ruleBag = FieldVisibilityRule.GetPublicRuleBag( fieldAttribute, vr.ComparisonType, vr.ComparedToValue );
+                            }
 
                             return new RegistrationEntryVisibilityBag
                             {
@@ -4016,7 +4044,8 @@ namespace Rock.Blocks.Event
                 GatewayControl = isRedirectGateway ? null : new GatewayControlBag
                 {
                     FileUrl = financialGatewayComponent?.GetObsidianControlFileUrl( financialGateway ) ?? string.Empty,
-                    Settings = financialGatewayComponent?.GetObsidianControlSettings( financialGateway, new HostedPaymentInfoControlOptions {
+                    Settings = financialGatewayComponent?.GetObsidianControlSettings( financialGateway, new HostedPaymentInfoControlOptions
+                    {
                         EnableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean(),
                         EnableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean(),
                         EnableBillingAddressCollection = true
@@ -4665,7 +4694,7 @@ namespace Rock.Blocks.Event
             // Set the schedule information.
             scheduledTransaction.TransactionFrequencyValueId = paymentSchedule.TransactionFrequencyValue.Id;
             scheduledTransaction.StartDate = paymentSchedule.StartDate;
-            
+
             // Set the payment information.
             scheduledTransaction.Summary = context.Registration.GetSummary();
             if ( scheduledTransaction.FinancialPaymentDetail == null )
@@ -4673,7 +4702,7 @@ namespace Rock.Blocks.Event
                 scheduledTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();
             }
             scheduledTransaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext );
-            
+
             // Use the details from the gateway if it added one;
             // otherwise, create the details here.
             var transactionDetail = scheduledTransaction.ScheduledTransactionDetails.FirstOrDefault();
@@ -4758,7 +4787,7 @@ namespace Rock.Blocks.Event
                     {
                         viewModel.MessageHtml = "You have successfully completed this " + template.RegistrationTerm.ToLower();
                     }
-                    
+
                     if ( registration.RegistrationInstance.MaxAttendees.HasValue )
                     {
                         var context = GetContext( rockContext, out var errorMessage );
@@ -5269,7 +5298,7 @@ namespace Rock.Blocks.Event
                     .AsQueryable();
             }
         }
-             
+
         /// <summary>
         /// Sends notifications after the registration is saved
         /// </summary>

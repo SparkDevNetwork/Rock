@@ -14,12 +14,15 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.ServiceModel.Channels;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
+
+using Microsoft.Extensions.DependencyInjection;
 
 #if REVIEW_NET5_0_OR_GREATER
 using System.Collections.Generic;
@@ -29,6 +32,7 @@ using Microsoft.AspNetCore.Http;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Rest.Jwt;
 
 namespace Rock.Rest.Filters
@@ -117,6 +121,8 @@ namespace Rock.Rest.Filters
             var principal = System.Threading.Thread.CurrentPrincipal;
             if ( principal != null && principal.Identity != null && !string.IsNullOrWhiteSpace( principal.Identity.Name ) )
             {
+                // Don't call SetCurrentPerson here because it is already been
+                // set when the request first started.
                 actionContext.Request.SetUserPrincipal( principal );
                 return;
             }
@@ -151,6 +157,7 @@ namespace Rock.Rest.Filters
                                         var identity = new GenericIdentity( userLogin.UserName );
                                         principal = new GenericPrincipal( identity, null );
                                         actionContext.Request.SetUserPrincipal( principal );
+                                        SetRequestContextUser( actionContext, userLogin );
                                         return;
                                     }
                                 }
@@ -178,6 +185,7 @@ namespace Rock.Rest.Filters
                     var identity = new GenericIdentity( userLogin.UserName );
                     principal = new GenericPrincipal( identity, null );
                     actionContext.Request.SetUserPrincipal( principal );
+                    SetRequestContextUser( actionContext, userLogin );
                     return;
                 }
             }
@@ -192,6 +200,7 @@ namespace Rock.Rest.Filters
                     var identity = new GenericIdentity( userLogin.UserName );
                     principal = new GenericPrincipal( identity, null );
                     actionContext.Request.SetUserPrincipal( principal );
+                    SetRequestContextUser( actionContext, userLogin );
                     return;
                 }
 
@@ -225,6 +234,27 @@ namespace Rock.Rest.Filters
             }
 
             return hasValue;
+        }
+
+        /// <summary>
+        /// Sets the UserLogin for the RockRequestContext so that it is available
+        /// during the request. This is normally already set from the .ROCK cookie
+        /// but if the request if using the ?apikey or a JWT then it needs to
+        /// be set here.
+        /// </summary>
+        /// <param name="actionContext">The context that describes the API action request.</param>
+        /// <param name="user">The <see cref="UserLogin"/> of the authorized individual.</param>
+        private void SetRequestContextUser( HttpActionContext actionContext, UserLogin user )
+        {
+            if ( actionContext.Request.Properties.TryGetValue( "RockServiceProvider", out var objectProvider ) && objectProvider is IServiceProvider serviceProvider )
+            {
+                var accessor = serviceProvider.GetService<IRockRequestContextAccessor>();
+
+                if ( accessor?.RockRequestContext != null )
+                {
+                    accessor.RockRequestContext.CurrentUser = user;
+                }
+            }
         }
     }
 #endif

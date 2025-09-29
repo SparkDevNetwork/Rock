@@ -186,6 +186,8 @@
 
 .menu > .alert {
     margin-top: auto;
+    margin-right: var(--spacing-small);
+    margin-left: var(--spacing-small);
 }
 </style>
 

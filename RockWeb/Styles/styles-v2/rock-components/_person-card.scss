@@ -1,0 +1,60 @@
+//  PERSON CARD
+//  Used in Group Placement, etc.
+
+
+// =============================================================
+// Table of Content
+//  + Base Style
+// =============================================================
+
+// ======================== BASE STYLE ========================
+
+.person-card .details-container {
+    padding: 0 var(--spacing-xsmall) var(--spacing-xsmall) var(--spacing-xsmall);
+    font-size: var(--font-size-small);
+}
+
+.person-card .details-container .header {
+    font-weight: var(--font-weight-semibold);
+    margin-top: var(--spacing-xsmall);
+}
+
+.person-card .details-container dl {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    justify-content: space-between;
+    margin: 0;
+    row-gap: var(--spacing-xsmall);
+    padding: var(--spacing-small) 0;
+    border-bottom: 1px solid var(--color-interface-soft);
+}
+
+.person-card .details-container dl:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.person-card .details-container dt {
+    color: var(--color-interface-medium);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.person-card .details-container dd {
+    text-align: right;
+    color: var(--color-interface-stronger);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.person-card .details-container hr {
+    color: var(--color-interface-soft);
+    height: 1px;
+    width: 100%;
+}
+
+// ======================== END BASE STYLE ========================

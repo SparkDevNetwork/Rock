@@ -20,7 +20,8 @@
     color: #fff;
     text-align: center;
     vertical-align: bottom;
-    background-color: rgba(var(--color-base-primary), 0.8);
+    background-color: var(--color-primary);
+    opacity: 0.7;
 }
 .discchart li.discchart-midpoint {
     position: absolute;
@@ -29,7 +30,7 @@
     height: 70%;
     margin: 0;
     background-color: transparent;
-    border-top: 2px solid var(--color-danger);
+    border-top: 2px solid var(--color-danger-strong);
     border-radius: 0;
 }
 .discchart .discbar-label {
@@ -50,11 +51,11 @@
     display: block;
     font-size: 20px;
     line-height: 1em;
-    color: var(--text-color);
+    color: var(--color-interface-stronger);
     text-align: center;
     word-wrap: break-word;
     content: attr(title);
 }
 .discchart .discbar.discbar-primary {
-    background: var(--color-primary);
+    opacity: 1;
 }

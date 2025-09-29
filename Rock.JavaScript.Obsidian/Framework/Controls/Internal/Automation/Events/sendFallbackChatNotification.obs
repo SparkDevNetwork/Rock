@@ -12,7 +12,7 @@
         <div class="col-md-4">
             <DropDownList v-model="systemCommunication"
                           label="System Communication"
-                          help="The sytem communication to be sent as a fallback notification. Email and SMS are supported."
+                          help="The system communication to be sent as a fallback notification. Email and SMS are supported."
                           :items="systemCommunicationItems"
                           enhanceForLongLists
                           rules="required" />
@@ -21,14 +21,14 @@
         <div class="col-md-4">
             <NumberBox v-model="notificationSuppressionMinutes"
                        label="Notification Suppression Minutes"
-                       help="The number of minutes the system will suppress notifications if the recipient has already received a recent notification."
+                       help="The number of minutes to suppress notifications if the recipient has recently received one. Enter 0 to disable suppression and send a notification every time the event executes."
                        :minimumValue="0" />
         </div>
 
         <div class="col-md-4">
             <NumberBox v-model="deviceSeenWithinDays"
                        label="Device Seen Within Days"
-                       help="A Chat member will be excluded from fallback notifications if they have accessed Rock using a personal device within this number of days. Note that the same device must also currently have Rock notifications enabled."
+                       help="A Chat member will be excluded from fallback notifications if they have a personal device with notifications enabled. Specify how many days in the past Rock must have seen this device to consider it eligible for notifications. Enter 0 to ignore how long ago the device was last seen."
                        :minimumValue="0" />
         </div>
     </div>

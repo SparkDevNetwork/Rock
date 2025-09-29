@@ -1,5 +1,5 @@
 <template>
-    <Panel title="Saturation Spread" hasFullscreen>
+    <Panel title="Saturation Spread">
 
         <Loading :isLoading="props.isLoading">
 

@@ -58,6 +58,7 @@ namespace Rock.Blocks.Event
         IsRequired = false,
         Order = 2 )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "3842853c-75b2-4568-8397-2b9e4409fd44" )]
     [Rock.SystemGuid.BlockTypeGuid( "e804f6b4-e4c2-47e5-b1de-2147222bf3a2" )]
     public class RegistrationInstancePaymentList : RockEntityListBlockType<FinancialTransaction>

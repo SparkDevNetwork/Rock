@@ -32,5 +32,10 @@ namespace Rock.ViewModels.Blocks.Cms.PageShortLinkList
         /// The site items.
         /// </value>
         public List<ListItemBag> SiteItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets the current person as a ListItemBag used for the grid filter.
+        /// </summary>
+        public ListItemBag CurrentPerson { get; set; }
     }
 }

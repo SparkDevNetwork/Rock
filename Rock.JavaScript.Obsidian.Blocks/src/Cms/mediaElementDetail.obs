@@ -55,7 +55,7 @@
                         <div :class="{ 'col-md-6': defaultFileUrl || defaultThumbnailUrl }">
                             <div v-if="!showNoStatsMessage">
                                 <h5 class="mb-2">Rock Media Analytics</h5>
-                                <Kpi :value="engagementValue" label="Engagement" :tooltip="`The total minutes played divided by the length of the video times the total number of plays.`" iconCssClass="ti ti-building-broadcast" color="blue" isCard />
+                                <Kpi :value="engagementValue" label="Engagement" :tooltip="`The total minutes played divided by the length of the video times the total number of plays.`" iconCssClass="ti ti-building-broadcast-tower" color="blue" isCard />
                                 <Kpi :value="playCount" label="Plays" :tooltip="`This video was played ${playCount} times.`" iconCssClass="ti ti-player-play" color="green" isCard />
                                 <Kpi :value="minutesWatched" label="Minutes Watched" :tooltip="`A total of ${minutesWatched} minutes were watched.`" iconCssClass="ti ti-clock" color="orange" isCard />
                             </div>
@@ -95,7 +95,7 @@
                     <div v-if="!showNoStatsMessage" class="row">
                         <div class="col-md-12">
                             <h5>Individual Plays</h5>
-                            <div id="individualPlaysContainer">
+                            <div id="individualPlaysContainer" class="individual-plays-container">
                                 <div v-if="individualPlaysData && individualPlaysData.items.length > 0">
                                     <div v-for="(item, index) in individualPlaysData.items" :key="index" class="individual-play-row">
                                         <div class="individual-play-date">
@@ -482,7 +482,7 @@
             if (target && target.getAttribute("name") === "expander") {
                 let icon = target.querySelector(".ti-chevron-right");
                 if (icon) {
-                    icon.classList.add("fa-flip-horizontal");
+                    icon.classList.add("ti-flip-horizontal");
                 }
 
                 interaction.classList.add("expanded");
@@ -493,7 +493,7 @@
             if (interaction.querySelector(".ti-chevron-right")) {
                 let icon = interaction.querySelector(".ti-chevron-right");
                 if (icon) {
-                    icon.classList.remove("fa-flip-horizontal");
+                    icon.classList.remove("ti-flip-horizontal");
                 }
 
                 interaction.classList.remove("expanded");

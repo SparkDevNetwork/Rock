@@ -51,6 +51,7 @@ namespace Rock.Blocks.Cms
 
     #endregion Block Attributes
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "b49f5c5b-95d4-448d-8a82-be7661e4ff1d" )]
     [Rock.SystemGuid.BlockTypeGuid( "39b02b93-b1af-4f9b-a535-33f470d91106" )]
     [CustomizedGrid]

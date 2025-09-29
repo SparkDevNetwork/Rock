@@ -40,11 +40,6 @@ namespace Rock.Core.Automation.Events
         private readonly string _template;
 
         /// <summary>
-        /// The lava commands that are enabled for this template as a comma separated list.
-        /// </summary>
-        private readonly string _enabledLavaCommands;
-
-        /// <summary>
         /// The logger instance that will handle logging diagnostic messages.
         /// </summary>
         private readonly ILogger _logger;
@@ -58,13 +53,11 @@ namespace Rock.Core.Automation.Events
         /// </summary>
         /// <param name="automationEventId">The identifier of the automation event that will be executed.</param>
         /// <param name="template">The Lava template to be executed.</param>
-        /// <param name="enabledLavaCommands"> The Lava commands that are enabled for this template as a comma separated list.</param>
-        public LavaEventExecutor( int automationEventId, string template, string enabledLavaCommands )
+        public LavaEventExecutor( int automationEventId, string template )
         {
             _automationEventId = automationEventId;
             _logger = RockLogger.LoggerFactory.CreateLogger<LavaEventExecutor>();
             _template = template;
-            _enabledLavaCommands = enabledLavaCommands;
         }
 
         #endregion
@@ -81,7 +74,7 @@ namespace Rock.Core.Automation.Events
                 mergeFields[value.Key] = value.Value;
             }
 
-            var result = _template.ResolveMergeFields( mergeFields, enabledLavaCommands: _enabledLavaCommands );
+            var result = _template.ResolveMergeFields( mergeFields, enabledLavaCommands: "all" );
 
             _logger.LogDebug( "Lava template for event #{AutomationEventId} executed with result: {Result}", _automationEventId, result );
         }

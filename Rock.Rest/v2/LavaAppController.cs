@@ -23,8 +23,6 @@ using System.Text;
 using System.Web;
 using System.Web.Http;
 
-using Microsoft.AspNetCore.Mvc;
-
 using Rock.Cms;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -72,9 +70,9 @@ namespace Rock.Rest.v2
         [Route( "1/{applicationSlug}/{*endpointSlug?}" )]
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.OK )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
         [Rock.SystemGuid.RestActionGuid( "0d1184d4-20e4-4e23-a5eb-47cab3f59063" )]
         public IActionResult GetEndpoint( string applicationSlug, string endpointSlug )
         {
@@ -91,9 +89,9 @@ namespace Rock.Rest.v2
         [Route( "1/{applicationSlug}/{*endpointSlug?}" )]
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.OK )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
         [Rock.SystemGuid.RestActionGuid( "ec8b1359-82f6-48a8-bca2-2efdcfa7934d" )]
         public IActionResult HeadEndpoint( string applicationSlug, string endpointSlug )
         {
@@ -110,9 +108,9 @@ namespace Rock.Rest.v2
         [Route( "1/{applicationSlug}/{*endpointSlug?}" )]
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.OK )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
         [Rock.SystemGuid.RestActionGuid( "f3462fca-151f-4c1e-b4d3-eeb9e4e3f1d4" )]
         public IActionResult PostEndpoint( string applicationSlug, string endpointSlug )
         {
@@ -129,9 +127,9 @@ namespace Rock.Rest.v2
         [Route( "1/{applicationSlug}/{*endpointSlug?}" )]
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.OK )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
         [Rock.SystemGuid.RestActionGuid( "10ef48cd-9a38-426d-a9f3-7af442e8b713" )]
         public IActionResult PutEndpoint( string applicationSlug, string endpointSlug )
         {

@@ -21,7 +21,8 @@
 }
 
 // Optional heading
-.panel-heading {
+.panel-heading,
+.panel-header {
   padding: @panel-heading-padding;
   border-bottom: 1px solid transparent;
   .border-top-radius((@panel-border-radius - 1));
@@ -109,14 +110,16 @@
       }
     }
   }
-  > .panel-heading + .panel-collapse > .list-group {
+  > .panel-heading + .panel-collapse > .list-group,
+  > .panel-header + .panel-collapse > .list-group {
     .list-group-item:first-child {
       .border-top-radius(0);
     }
   }
 }
 // Collapse space between when there's no additional content.
-.panel-heading + .list-group {
+.panel-heading + .list-group,
+.panel-header + .list-group {
   .list-group-item:first-child {
     border-top-width: 0;
   }
@@ -256,7 +259,8 @@
     }
   }
 
-  .panel-heading {
+  .panel-heading,
+  .panel-header {
     border-bottom: 0;
 
     + .panel-collapse > .panel-body,

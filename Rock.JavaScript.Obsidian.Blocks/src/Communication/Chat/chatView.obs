@@ -78,11 +78,11 @@
     const birthDate = ref<DatePartsPickerValueBag>();
     let libraryObject: IRockStreamChatStatic | null = null;
     let libraryPromise: Promise<boolean> | null = null;
-    let reactComponentInstance: any | null = null;
+    let reactComponentInstance: unknown | null = null;
     const mountGuid = newGuid();
 
     const birthdateRules = computed((): string => {
-        return "required"
+        return "required";
     });
 
     onConfigurationValuesChanged(reloadBlock);
@@ -129,7 +129,8 @@
         // if everything's good, mount the chat
         if (!ageVerificationFailed.value && !ageVerificationRequired.value) {
             mountChat(streamChatLib, cfg, chatData);
-        } else {
+        }
+        else {
             suspense?.completeAsyncOperation(mountGuid);
         }
     });
@@ -140,7 +141,7 @@
         }
     });
 
-    async function submitBirthdate() {
+    async function submitBirthdate(): Promise<void> {
         if (!birthDate.value) {
             return;
         }
@@ -165,7 +166,8 @@
                 return null;
             }
             return result.data;
-        } catch (e) {
+        }
+        catch (e) {
             console.error("Error loading chat data:", e);
             return null;
         }
@@ -190,7 +192,7 @@
         lib: IRockStreamChatStatic,
         cfg: ChatViewConfigurationBag,
         data: ChatPersonDataBag
-    ) {
+    ): void {
         let reactions = cfg.reactions;
         console.log("Reactions:", reactions);
         reactComponentInstance = lib.mount("chat-container", {
@@ -211,10 +213,10 @@
 
     // types
     interface IRockStreamChatStatic {
-        mount(elementId: string, config: ChatComponentProps): unknown;
+        mount(elementId: string, config: IChatComponentProps): unknown;
         unmount(rootInstance: unknown): void;
     }
-    interface ChatComponentProps {
+    interface IChatComponentProps {
         primaryColor: string;
         apiKey: string;
         userId: string;

@@ -52,24 +52,6 @@ namespace Rock.Model
         public bool CanDelete( CommunicationFlowInstance item, out string errorMessage )
         {
             errorMessage = string.Empty;
-
-            if ( new Service<CommunicationFlowInstanceCommunication>( Context ).Queryable().Any( a => a.CommunicationFlowInstanceId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", CommunicationFlowInstance.FriendlyTypeName, CommunicationFlowInstanceCommunication.FriendlyTypeName );
-                return false;
-            }
-
-            if ( new Service<CommunicationFlowInstanceConversionHistory>( Context ).Queryable().Any( a => a.CommunicationFlowInstanceId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", CommunicationFlowInstance.FriendlyTypeName, CommunicationFlowInstanceConversionHistory.FriendlyTypeName );
-                return false;
-            }
-
-            if ( new Service<CommunicationFlowInstanceRecipient>( Context ).Queryable().Any( a => a.CommunicationFlowInstanceId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", CommunicationFlowInstance.FriendlyTypeName, CommunicationFlowInstanceRecipient.FriendlyTypeName );
-                return false;
-            }
             return true;
         }
     }
@@ -151,6 +133,8 @@ namespace Rock.Model
             target.CommunicationFlowId = source.CommunicationFlowId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IsConversionGoalTrackingCompleted = source.IsConversionGoalTrackingCompleted;
+            target.IsMessagingCompleted = source.IsMessagingCompleted;
             target.StartDate = source.StartDate;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

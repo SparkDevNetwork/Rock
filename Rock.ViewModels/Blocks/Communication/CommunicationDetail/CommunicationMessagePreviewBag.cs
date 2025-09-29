@@ -29,14 +29,14 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationDetail
     public class CommunicationMessagePreviewBag
     {
         /// <summary>
-        /// Gets or sets the name of the person who created this communication.
+        /// Gets or sets the name of the person who sent this communication.
         /// </summary>
-        public string CreatedByPersonName { get; set; }
+        public string SentByPersonName { get; set; }
 
         /// <summary>
-        /// Gets or sets the datetime this communication was created.
+        /// Gets or sets the datetime this communication was (or is being) sent.
         /// </summary>
-        public DateTime? CreatedDateTime { get; set; }
+        public DateTime? SendDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the person who approved this communication.

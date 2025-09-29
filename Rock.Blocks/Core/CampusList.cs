@@ -39,7 +39,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays a list of campuses." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -132,7 +132,7 @@ namespace Rock.Blocks.Core
         protected override IQueryable<Campus> GetListQueryable( RockContext rockContext )
         {
             return base.GetListQueryable( rockContext )
-                .Include( a => a.LeaderPersonAlias )
+                .Include( a => a.LeaderPersonAlias.Person )
                 .Include( a => a.CampusTypeValue )
                 .Include( a => a.CampusStatusValue );
         }

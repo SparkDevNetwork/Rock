@@ -44,7 +44,7 @@
 
                 <div class="panel-body">
                     <div class="row row-eq-height">
-                        <div class="col-md-3 filter-options">
+                        <div class="col-md-5 filter-options">
 
                             <Rock:GroupTypePicker ID="ddlAttendanceArea" runat="server" Label="Attendance Area" AutoPostBack="true" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" />
                             <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="false" />
@@ -110,7 +110,7 @@
                             <Rock:DataViewItemPicker ID="dvpDataView" runat="server" Label="Limit by Data View" Visible="false" />
 
                         </div>
-                        <div class="col-md-9">
+                        <div class="col-md-7">
 
                             <div class="row analysis-types">
                                 <div class="col-sm-8">

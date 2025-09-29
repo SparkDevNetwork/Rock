@@ -192,26 +192,92 @@ namespace Rock.Core.Automation.Events
 
                         recipientCommunicationPreferences.Add( recipientPerson.CommunicationPreference );
 
+                        var emailMediumType = ( int ) CommunicationType.Email;
+                        var smsMediumType = ( int ) CommunicationType.SMS;
+                        var pushMediumType = ( int ) CommunicationType.PushNotification;
+
                         var mediumType = Model.Communication.DetermineMediumEntityTypeId(
-                            ( int ) CommunicationType.Email,
-                            ( int ) CommunicationType.SMS,
-                            ( int ) CommunicationType.PushNotification,
+                            emailMediumType,
+                            smsMediumType,
+                            pushMediumType,
                             recipientCommunicationPreferences.ToArray()
                         );
 
                         try
                         {
-                            var sendResult = CommunicationHelper.SendMessage(
-                                recipientPerson,
-                                mediumType,
-                                systemCommunication,
-                                mergeFields
-                            );
+                            CreateMessageResult createMessageResult = null;
 
-                            sendMessageResult.Warnings.AddRange( sendResult.Warnings );
-                            sendMessageResult.Errors.AddRange( sendResult.Errors );
-                            sendMessageResult.Exceptions.AddRange( sendResult.Exceptions );
-                            sendMessageResult.MessagesSent += sendResult.MessagesSent;
+                            // A local function to help with the aggregation of per-message warnings and errors into the
+                            // outer send message[s] result.
+                            void AggregateWarningsAndErrors()
+                            {
+                                if ( createMessageResult == null )
+                                {
+                                    return;
+                                }
+
+                                sendMessageResult.Warnings.AddRange( createMessageResult.Warnings );
+                                sendMessageResult.Errors.AddRange( createMessageResult.Errors );
+                            }
+
+                            if ( mediumType == emailMediumType )
+                            {
+                                createMessageResult = CommunicationHelper.CreateEmailMessage(
+                                    recipientPerson,
+                                    mergeFields,
+                                    systemCommunication,
+                                    _logger
+                                );
+
+                                if ( createMessageResult == null || !( createMessageResult.Message is RockEmailMessage emailMessage ) )
+                                {
+                                    AggregateWarningsAndErrors();
+                                    continue;
+                                }
+
+                                // We need to ensure this email communication record is created as quickly as possible
+                                // so we don't accidentally send someone multiple, rapid fallback notifications in the
+                                // case of a busy chat channel. This is why we're not using the `CommunicationHelper
+                                // .SendMessage()` method here.
+                                emailMessage.CreateCommunicationRecordImmediately = true;
+
+                                if ( !emailMessage.Send( out var errorMessages ) )
+                                {
+                                    sendMessageResult.Errors.AddRange( errorMessages );
+                                    continue;
+                                }
+
+                                sendMessageResult.MessagesSent++;
+                            }
+                            else if ( mediumType == smsMediumType )
+                            {
+                                createMessageResult = CommunicationHelper.CreateSmsMessage(
+                                    recipientPerson,
+                                    mergeFields,
+                                    systemCommunication,
+                                    _logger
+                                );
+
+                                if ( createMessageResult == null || !( createMessageResult.Message is RockSMSMessage smsMessage ) )
+                                {
+                                    AggregateWarningsAndErrors();
+                                    continue;
+                                }
+
+                                // SMS communication records are created immediately by default, so we don't have to do
+                                // anything special for this to happen. However, if we need to get a handle on this
+                                // communication's ID within this method body in the future, we'll have to take a more
+                                // manual sending approach. Here's an example:
+                                // https://github.com/SparkDevNetwork/Rock/blob/92e7472ae66543baf43db3c834067a6a198b29e9/Rock/Jobs/SendLearningNotifications.cs#L740-L783
+                                // For now, the standard sending approach will suffice.
+                                if ( !smsMessage.Send( out var errorMessages ) )
+                                {
+                                    sendMessageResult.Errors.AddRange( errorMessages );
+                                    continue;
+                                }
+
+                                sendMessageResult.MessagesSent++;
+                            }
                         }
                         catch ( Exception ex )
                         {

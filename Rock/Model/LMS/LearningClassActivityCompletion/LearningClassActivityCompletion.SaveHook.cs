@@ -76,7 +76,13 @@ namespace Rock.Model
 
                 if ( HistoryChanges?.Any() == true )
                 {
-                    var caption = $"{Entity.Student.Person.FullName} - {Entity.LearningClassActivity.Name}";
+                    var caption = $"LearningClassActivityCompletion {this.Entity.Id}";
+
+                    if ( Entity.Student?.Person?.FullName != null && Entity.LearningClassActivity?.Name != null )
+                    {
+                        caption = $"{Entity.Student.Person.FullName} - {Entity.LearningClassActivity.Name}";
+                    }
+
                     HistoryService.SaveChanges(
                         this.RockContext,
                         typeof( LearningClassActivityCompletion ),
@@ -252,7 +258,7 @@ namespace Rock.Model
 
                 // Set the LearningParticipant current class grade values.
                 participant.LearningGradePercent = gradePercent;
-                participant.LearningGradingSystemScaleId = gradeScaleEarned.Id;
+                participant.LearningGradingSystemScaleId = gradeScaleEarned?.Id;
                 participant.LearningCompletionStatus = hasIncompleteAssignments || hasUngradedAssignments ? Enums.Lms.LearningCompletionStatus.Incomplete : currentGradePassFailStatus;
 
                 RockContext.SaveChanges();

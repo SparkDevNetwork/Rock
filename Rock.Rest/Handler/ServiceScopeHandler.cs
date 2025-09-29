@@ -26,7 +26,6 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Net;
 using Rock.Rest.Utility;
-using Rock.Utility.ExtensionMethods;
 
 namespace Rock.Rest.Handler
 {
@@ -59,8 +58,8 @@ namespace Rock.Rest.Handler
                 {
                     request.Properties["RockServiceProvider"] = scope.ServiceProvider;
 
-                    var responseContext = new RockMessageResponseContext();
                     var wrapper = new HttpRequestMessageWrapper( request );
+                    var responseContext = new RockMessageResponseContext( wrapper );
                     var user = UserLoginService.GetCurrentUser( false, rockContext );
                     var rockRequestContext = new RockRequestContext( wrapper, responseContext, user );
 

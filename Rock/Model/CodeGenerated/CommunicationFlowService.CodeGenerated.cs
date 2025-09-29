@@ -52,12 +52,6 @@ namespace Rock.Model
         public bool CanDelete( CommunicationFlow item, out string errorMessage )
         {
             errorMessage = string.Empty;
-
-            if ( new Service<CommunicationFlowInstance>( Context ).Queryable().Any( a => a.CommunicationFlowId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", CommunicationFlow.FriendlyTypeName, CommunicationFlowInstance.FriendlyTypeName );
-                return false;
-            }
             return true;
         }
     }
@@ -146,11 +140,13 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
+            target.IsConversionGoalTrackingClosed = source.IsConversionGoalTrackingClosed;
+            target.IsMessagingClosed = source.IsMessagingClosed;
             target.Name = source.Name;
+            target.PublicName = source.PublicName;
             target.ScheduleId = source.ScheduleId;
             target.TargetAudienceDataViewId = source.TargetAudienceDataViewId;
             target.TriggerType = source.TriggerType;
-            target.UnsubscribeMessage = source.UnsubscribeMessage;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

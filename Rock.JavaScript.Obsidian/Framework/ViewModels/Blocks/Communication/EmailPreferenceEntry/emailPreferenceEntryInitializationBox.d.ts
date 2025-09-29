@@ -21,27 +21,41 @@
 // </copyright>
 //
 
+import { EmailPreference } from "@Obsidian/Enums/Crm/emailPreference";
+import { CommunicationChannelBag } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/communicationChannelBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-/** The box that contains all the initialization information for the Email Preference Entry block. */
+/** The box that contains all the initialization information for the email preference entry block. */
 export type EmailPreferenceEntryInitializationBox = {
-    /** Gets or sets a value indicating whether [allow inactivating family]. */
-    allowInactivatingFamily: boolean;
+    /**
+     * Gets or sets the list of communication channels the person is able to manage within the "Available
+     * Communication Channels" section.
+     */
+    availableCommunicationChannels?: CommunicationChannelBag[] | null;
 
-    /** Gets or sets the email. */
-    email?: string | null;
+    /** Gets or sets the HTML for the "Available Communication Channels" section description. */
+    availableCommunicationChannelsDescriptionHtml?: string | null;
 
-    /** Gets or sets the email preference. */
-    emailPreference?: string | null;
+    /**
+     * Gets or sets the list of communication channels the person is able to manage within the "Current
+     * Communication Channels" section.
+     */
+    currentCommunicationChannels?: CommunicationChannelBag[] | null;
 
-    /** Gets or sets the type of the email preference update alert. */
-    emailPreferenceUpdateAlertType?: string | null;
+    /** Gets or sets the HTML for the "Current Communication Channels" section description. */
+    currentCommunicationChannelsDescriptionHtml?: string | null;
 
-    /** Gets or sets the email preference update message. */
-    emailPreferenceUpdateMessage?: string | null;
+    /** Gets or sets the person's email address. */
+    emailAddress?: string | null;
 
-    /** Gets or sets the emails allowed text. */
-    emailsAllowedText?: string | null;
+    /** Gets or sets the person's email preference. */
+    emailPreference: EmailPreference;
+
+    /** Gets or sets the email preference description to display to the person. */
+    emailPreferenceDescription?: string | null;
+
+    /** Gets or sets the email preference title to display to the person. */
+    emailPreferenceTitle?: string | null;
 
     /**
      * Gets or sets the error message. A non-empty value indicates that
@@ -49,42 +63,84 @@ export type EmailPreferenceEntryInitializationBox = {
      */
     errorMessage?: string | null;
 
-    /** Gets or sets the in active note. */
-    inActiveNote?: string | null;
+    /** Gets or sets the HTML for the header description to display to the person. */
+    headerDescriptionHtml?: string | null;
 
-    /** Gets or sets the in active reason. */
-    inActiveReason?: string | null;
+    /** Gets or sets the header title to display to the person. */
+    headerTitle?: string | null;
 
-    /** Gets or sets the in active reasons. */
-    inActiveReasons?: ListItemBag[] | null;
+    /** Gets or sets the inactive reasons the person may choose when removing themselves from church involvement. */
+    inactiveReasons?: ListItemBag[] | null;
+
+    /** Gets or sets whether the "Available Communication Channels" section is enabled. */
+    isAvailableCommunicationChannelsSectionEnabled: boolean;
+
+    /** Gets or sets whether the "Current Communication Channels" section is enabled. */
+    isCurrentCommunicationChannelsSectionEnabled: boolean;
+
+    /** Gets or sets whether the person is allowed to remove their whole family from church involvement. */
+    isDeactivatingFamilyEnabled: boolean;
+
+    /** Gets or sets whether the person has been removed from church involvement. */
+    isRemovedFromChurchInvolvement: boolean;
+
+    /** Gets or sets whether the person may remove themselves from church involvement. */
+    isRemoveInvolvementEnabled: boolean;
+
+    /** Gets or sets whether the block is currently operating in "Unsubscribe" mode. */
+    isUnsubscribeMode: boolean;
+
+    /** Gets or sets whether the person may update their contact info. */
+    isUpdateContactInfoEnabled: boolean;
+
+    /** Gets or sets the number of days used to calculate how many messages a person has received per current channel. */
+    messageCountWindowDays: number;
 
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
 
-    /** Gets or sets the no emails text. */
-    noEmailsText?: string | null;
+    /** Gets or sets the HTML for the "Opt-Out Options" section description. */
+    optOutOptionsDescriptionHtml?: string | null;
 
-    /** Gets or sets the no mass emails text. */
-    noMassEmailsText?: string | null;
+    /**
+     * Gets or sets the HTML for the header description to display to the person when they request to be removed
+     * from involvement.
+     */
+    removeInvolvementConfirmationDescriptionHtml?: string | null;
 
-    /** Gets or sets the not involved text. */
-    notInvolvedText?: string | null;
+    /** Gets or sets the header title to display to the person when they request to be removed from involvement. */
+    removeInvolvementConfirmationTitle?: string | null;
+
+    /** Gets or sets the remove involvement description to display to the person. */
+    removeInvolvementDescription?: string | null;
+
+    /** Gets or sets the remove involvement title to display to the person. */
+    removeInvolvementTitle?: string | null;
+
+    /**
+     * Gets or sets the HTML for the header description to display to the person when they've resubscribed after
+     * the block is initialized in "Unsubscribe" model.
+     */
+    resubscribedHeaderDescriptionHtml?: string | null;
+
+    /**
+     * Gets or sets the header title to display to the person when they've resubscribed after the block is
+     * initialized in "Unsubscribe" model.
+     */
+    resubscribedHeaderTitle?: string | null;
 
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;
 
-    /** Gets or sets the successfully unsubscribed text. */
-    successfullyUnsubscribedText?: string | null;
+    /** Gets or sets whether the header icon should be shown. */
+    showHeaderIcon: boolean;
 
-    /** Gets or sets the unsubscribe from list. */
-    unsubscribeFromList?: ListItemBag[] | null;
+    /**
+     * Gets or sets whether the person should be shown - and allowed to change - their communication preference
+     * for each current communication channel.
+     */
+    showMediumPreference: boolean;
 
-    /** Gets or sets the unsubscribe from list. */
-    unsubscribeFromListOptions?: ListItemBag[] | null;
-
-    /** Gets or sets the unsubscribe text. */
-    unsubscribeText?: string | null;
-
-    /** Gets or sets the update email address text. */
-    updateEmailAddressText?: string | null;
+    /** Gets or sets the communication channel that was unsubscribed from upon block initialization. */
+    unsubscribedFromChannel?: CommunicationChannelBag | null;
 };

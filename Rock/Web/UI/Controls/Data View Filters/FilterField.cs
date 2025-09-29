@@ -733,7 +733,7 @@ namespace Rock.Web.UI.Controls
 
             var iDelete = new HtmlGenericControl( "i" );
             lbDelete.Controls.Add( iDelete );
-            iDelete.AddCssClass( "ti ti-times" );
+            iDelete.AddCssClass( "ti ti-x" );
 
             cbIncludeFilter = new RockCheckBox();
             cbIncludeFilter.ContainerCssClass = "filterfield-checkbox";

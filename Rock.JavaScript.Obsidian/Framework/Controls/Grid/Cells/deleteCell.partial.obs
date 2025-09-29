@@ -55,7 +55,11 @@
             // Unless we have been requested to disable confirmation, show
             // a standard delete confirmation.
             if (props.column.props.disableConfirmation !== true) {
-                const result = await confirmDelete(props.grid.itemTerm);
+                let additionalMessage: string | undefined;
+                if (typeof props.column.props.additionalMessage === "function") {
+                    additionalMessage = props.column.props.additionalMessage(props.row) ?? undefined;
+                }
+                const result = await confirmDelete(props.grid.itemTerm, additionalMessage);
 
                 if (!result) {
                     return;

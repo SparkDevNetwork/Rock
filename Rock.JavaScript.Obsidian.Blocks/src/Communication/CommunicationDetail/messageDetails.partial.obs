@@ -2,23 +2,23 @@
 <template>
     <div v-if="messagePreview" class="communication-detail-message-details">
 
-        <ContentSection title="Details" icon="ti ti-list">
+        <ContentSection title="Details" icon="ti ti-list" disableCollapse>
             <div class="communication-detail-message-details-metadata">
                 <NotficationBox v-if="isFutureSend" :alertType="AlertType.Info" heading="Future Send">
                     This communication is scheduled to be sent {{ futureSendDateTimeElapsed }} <small>({{ futureSendDateTimeFormatted }})</small>.
                 </NotficationBox>
 
                 <div class="row d-flex flex-wrap">
-                    <div v-if="createdByPersonName" :class="infoItemCssClass">
+                    <div v-if="sentByPersonName" :class="infoItemCssClass">
                         <div :class="infoItemLabelCssClass">
-                            Created By:
+                            Sent By:
                         </div>
                         <div :class="infoItemValueCssClass">
-                            <span v-html="createdByPersonName || '&nbsp;'"></span>
-                            <span v-if="createdDateTimeElapsed"
-                                  :data-original-title="createdDateTimeTooltip"
+                            <span v-html="sentByPersonName || '&nbsp;'"></span>
+                            <span v-if="sendDateTimeElapsed"
+                                  :data-original-title="sendDateTimeTooltip"
                                   :ref="applyTooltip">
-                                ({{ createdDateTimeElapsed }})
+                                ({{ sendDateTimeElapsed }})
                             </span>
                         </div>
                     </div>
@@ -62,7 +62,7 @@
                             Subject:
                         </div>
                         <div :class="infoItemValueCssClass">
-                            <strong>{{ emailSubject }}</strong>
+                            {{ emailSubject }}
                         </div>
                     </div>
                     <div v-if="replyToEmail" :class="infoItemCssClass">
@@ -135,7 +135,7 @@
             </div>
         </ContentSection>
 
-        <ContentSection title="Preview" icon="ti ti-eye">
+        <ContentSection title="Preview" icon="ti ti-eye" disableCollapse>
 
             <EmailPreview v-if="isEmail" :message="messagePreview?.emailMessage ?? ''" />
 
@@ -182,7 +182,6 @@
     import PushNotificationMobilePreview from "@Obsidian/Controls/Internal/pushNotificationMobilePreview.obs";
     import SmsMobilePreview from "@Obsidian/Controls/Internal/smsMobilePreview.obs";
     import NotficationBox from "@Obsidian/Controls/notificationBox.obs";
-    import Panel from "@Obsidian/Controls/panel.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
     import { PushOpenActionDescription } from "@Obsidian/Enums/Blocks/Communication/CommunicationDetail/pushOpenAction";
@@ -209,7 +208,7 @@
 
     // #region Values
 
-    const createdByPersonName = ref(props.messagePreview?.createdByPersonName ?? "");
+    const sentByPersonName = ref(props.messagePreview?.sentByPersonName ?? "");
     const approvedByPersonName = ref(props.messagePreview?.approvedByPersonName ?? "");
 
     // #endregion Values
@@ -255,17 +254,17 @@
         return communicationDetail.value?.type === CommunicationType.PushNotification;
     });
 
-    const createdRockDateTime = computed((): RockDateTime | null => {
-        return RockDateTime.parseISO(props.messagePreview?.createdDateTime ?? "")
+    const sendRockDateTime = computed((): RockDateTime | null => {
+        return RockDateTime.parseISO(props.messagePreview?.sendDateTime ?? "")
             ?? null;
     });
 
-    const createdDateTimeElapsed = computed((): string => {
-        return createdRockDateTime.value?.humanizeElapsed() ?? "";
+    const sendDateTimeElapsed = computed((): string => {
+        return sendRockDateTime.value?.humanizeElapsed() ?? "";
     });
 
-    const createdDateTimeTooltip = computed((): string => {
-        return createdRockDateTime.value?.toASPString("g") ?? "";
+    const sendDateTimeTooltip = computed((): string => {
+        return sendRockDateTime.value?.toASPString("g") ?? "";
     });
 
     const approvedRockDateTime = computed((): RockDateTime | null => {
@@ -278,7 +277,7 @@
     });
 
     const approvedDateTimeTooltip = computed((): string => {
-        return createdRockDateTime.value?.toASPString("g") ?? "";
+        return sendRockDateTime.value?.toASPString("g") ?? "";
     });
 
     const fromName = computed((): string => {
@@ -391,33 +390,6 @@
         }
 
         return PushOpenActionDescription[props.messagePreview!.pushOpenAction!];
-    });
-
-    const infoItemsWithValuesCount = computed((): number => {
-        const items: string[] = [
-            // Shared items.
-            createdByPersonName.value,
-            approvedByPersonName.value,
-            fromName.value,
-            listName.value,
-
-            // Email items.
-            emailSubject.value,
-            replyToEmail.value,
-            ccEmails.value,
-            bccEmails.value,
-            emailAttachmentLinks.value.length ? "email attachments" : "",
-
-            // SMS items.
-            smsMessage.value,
-
-            // Push items.
-            pushTitle.value,
-            pushMessage.value,
-            pushOpenActionDescription.value
-        ];
-
-        return items.filter(i => !!i).length;
     });
 
     // #endregion Computed Values

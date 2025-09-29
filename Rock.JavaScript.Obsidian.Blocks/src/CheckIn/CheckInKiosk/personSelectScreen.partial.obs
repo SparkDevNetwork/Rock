@@ -70,6 +70,7 @@
     import { EditFamilyResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/editFamilyResponseBag";
     import { RegistrationPersonBag } from "@Obsidian/ViewModels/CheckIn/registrationPersonBag";
     import { confirm } from "@Obsidian/Utility/dialogs";
+    import { AdultsOrChildrenSelectionMode } from "@Obsidian/Enums/CheckIn/adultsOrChildrenSelectionMode";
 
     // This screen supports 3 distinct modes of operation depending on various
     // settings:
@@ -112,6 +113,7 @@
         (event: "next", session: CheckInSession): void;
         (event: "replaceSession", session: CheckInSession): void;
         (event: "editFamily", data: RegistrationScreenData): void;
+        (event: "addIndividual", data: RegistrationScreenData): void;
         (event: "updateActions", actions: KioskButton[]): void;
     }>();
 
@@ -207,6 +209,26 @@
      */
     function updateActions(): void {
         const actions: KioskButton[] = [];
+
+        if (props.configuration.kiosk?.allowAddingIndividualsToExistingFamilies !== AdultsOrChildrenSelectionMode.None) {
+            let buttonTitle = "Add Individual";
+
+            if (props.configuration.kiosk?.allowAddingIndividualsToExistingFamilies === AdultsOrChildrenSelectionMode.AdultsOnly) {
+                buttonTitle = "Add Adult";
+            }
+            else if (props.configuration.kiosk?.allowAddingIndividualsToExistingFamilies === AdultsOrChildrenSelectionMode.ChildrenOnly) {
+                buttonTitle = "Add Child";
+            }
+
+            actions.push({
+                type: "default",
+                title: buttonTitle,
+                key: "add-individual",
+                class: "add-individual-button",
+                disabled: false,
+                handler: onAddIndividualClick
+            });
+        }
 
         if (props.configuration.kiosk?.isEditingFamiliesEnabled) {
             actions.push({
@@ -415,6 +437,56 @@
                 };
 
                 emit("editFamily", registrationData);
+            }
+            else {
+                await alert(response.errorMessage || UnexpectedErrorMessage, cancellationTokenSource.token);
+            }
+        }
+        catch (error) {
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage, cancellationTokenSource.token);
+        }
+        finally {
+            isProcessing.value = false;
+        }
+    }
+
+    async function onAddIndividualClick(): Promise<void> {
+        if (!props.session.currentFamilyId || !props.session.configuration.template?.id) {
+            return;
+        }
+
+        try {
+            isProcessing.value = true;
+
+            const data = {
+                kioskId: props.configuration.kiosk?.id,
+                templateId: props.session.configuration.template.id
+            };
+
+            const response = await invokeBlockAction<EditFamilyResponseBag>("BeginAddIndividual", data);
+
+            if (response.isSuccess && response.data) {
+                const registrationData: RegistrationScreenData = {
+                    ...response.data,
+                    family: {
+                        bag: {
+                            id: props.session.currentFamilyId
+                        },
+                        validProperties: ["id"]
+                    },
+                    people: response.data.people
+                        ?.filter(p => p.bag)
+                        .map(p => ({
+                            bag: {
+                                ...p.bag as RegistrationPersonBag,
+                                guid: newGuid()
+                            },
+                            validProperties: p.validProperties ?? []
+                        })) ?? [],
+                    addIndividualMode: true
+                };
+
+                emit("addIndividual", registrationData);
             }
             else {
                 await alert(response.errorMessage || UnexpectedErrorMessage, cancellationTokenSource.token);

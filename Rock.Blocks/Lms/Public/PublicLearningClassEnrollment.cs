@@ -339,7 +339,7 @@ namespace Rock.Blocks.Lms
 ";
             public const string CompletionLavaTemplate = @"
 <div class=""completion-container d-flex flex-column justify-content-center my-5"">
-    <i class=""fa fa-check-circle fa-4x text-success text-center""></i>
+    <i class=""ti ti-circle-check ti-4x text-success text-center""></i>
     <h3 class=""completion-header text-center"">Successfully Enrolled!</h3>
     <div class=""completion-sub-header text-center"">
         You are now enrolled in this class.
@@ -349,7 +349,7 @@ namespace Rock.Blocks.Lms
 ";
             public const string EnrollmentErrorLavaTemplate = @"
 <div class=""error-container d-flex flex-column justify-content-center my-5"">
-    <i class=""fa fa-exclamation-triangle fa-4x text-danger text-center""></i>
+    <i class=""ti ti-alert-triangle ti-4x text-danger text-center""></i>
     <h3 class=""error-header text-center"">Cannot Enroll in Class</h3>
     <div class=""error-sub-header text-center"">
         {% case ErrorKey %}

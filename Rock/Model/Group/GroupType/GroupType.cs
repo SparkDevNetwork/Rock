@@ -44,7 +44,7 @@ namespace Rock.Model
     [CodeGenerateRest]
     [EnableAttributeQualification( nameof( Id ) )]
     [Rock.SystemGuid.EntityTypeGuid( "0DD30B04-01CF-4B38-8E83-BE661E2F7286" )]
-    public partial class GroupType : Model<GroupType>, IOrdered, ICacheable
+    public partial class GroupType : Model<GroupType>, IOrdered, ICacheable, IHasAdditionalSettings
     {
         #region Entity Properties
 
@@ -874,6 +874,10 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool AllowGroupSpecificRecordSource { get; set; }
+
+        /// <inheritdoc/>
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
 
         #endregion Entity Properties
 

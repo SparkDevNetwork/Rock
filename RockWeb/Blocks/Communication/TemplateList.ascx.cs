@@ -294,7 +294,7 @@ namespace RockWeb.Blocks.Communication
             {
                 int copyNumber = 0;
                 var copyName = "Copy of " + template.Name;
-                while ( service.Queryable().Any( a => a.Name == copyName ) )
+                while ( service.Queryable().Any( a => a.Name == copyName && a.UsageType == null ) ) // By default, exclude templates with a specified usage type (e.g., Communication Flows)
                 {
                     copyNumber++;
                     copyName = string.Format( "Copy({0}) of {1}", copyNumber, template.Name );
@@ -408,7 +408,8 @@ namespace RockWeb.Blocks.Communication
         private void BindGrid()
         {
             var rockContext = new RockContext();
-            var communicationTemplateQry = new CommunicationTemplateService( rockContext ).Queryable( "CreatedByPersonAlias.Person" );
+            var communicationTemplateQry = new CommunicationTemplateService( rockContext ).Queryable( "CreatedByPersonAlias.Person" )
+                .Where( c => c.UsageType == null ); // By default, exclude templates with a specified usage type (e.g., Communication Flows)
 
             if ( _canFilterCreatedBy )
             {

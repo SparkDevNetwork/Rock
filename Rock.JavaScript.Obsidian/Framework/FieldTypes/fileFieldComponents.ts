@@ -49,7 +49,8 @@ export const EditComponent = defineComponent({
             try {
                 const fileType = JSON.parse(props.configurationValues[ConfigurationValueKey.BinaryFileType] || "{}") as ListItemBag;
                 return fileType.value ?? "";
-            } catch {
+            }
+            catch {
                 return props.configurationValues[ConfigurationValueKey.BinaryFileType] ?? "";
             }
         });

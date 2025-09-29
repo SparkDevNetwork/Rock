@@ -24,8 +24,8 @@
                     </div>
                 </div>
 
-                <TextBox v-model="iconCssClass"
-                         label="Icon CSS Class" />
+                <IconPicker v-model="iconCssClass"
+                            label="Icon CSS Class" />
 
                 <ColorPicker v-model="color"
                              label="Color"
@@ -140,6 +140,7 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
     import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";

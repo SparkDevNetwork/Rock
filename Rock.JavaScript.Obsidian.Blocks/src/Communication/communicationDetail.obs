@@ -172,7 +172,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, Ref, ref } from "vue";
     import PersonalTemplateModal from "./CommunicationDetail/personalTemplateModal.partial.obs";
     import { TabItem } from "./CommunicationDetail/types.partial";
     import { provideCommunicationDetail, provideMediumFilter, provideSelectedTab } from "./CommunicationDetail/utils.partial";
@@ -234,6 +234,8 @@
         new URLSearchParams(window.location.search).get("tab")
         || TabItem.Analytics
     );
+
+    const permissions = ref(config?.permissions);
 
     const isDuplicating = ref(false);
     const isApproving = ref(false);
@@ -345,27 +347,27 @@
     });
 
     const canApprove = computed((): boolean => {
-        return !!config.permissions?.canApprove;
+        return !!permissions.value?.canApprove;
     });
 
     const canDeny = computed((): boolean => {
-        return !!config.permissions?.canDeny;
+        return !!permissions.value?.canDeny;
     });
 
     const canEdit = computed((): boolean => {
-        return !!config.permissions?.canEdit;
+        return !!permissions.value?.canEdit;
     });
 
     const canCancel = computed((): boolean => {
-        return !!config.permissions?.canCancel;
+        return !!permissions.value?.canCancel;
     });
 
     const canDuplicate = computed((): boolean => {
-        return !!config.permissions?.canDuplicate;
+        return !!permissions.value?.canDuplicate;
     });
 
     const canCreatePersonalTemplate = computed((): boolean => {
-        return !!config.permissions?.canCreatePersonalTemplate;
+        return !!permissions.value?.canCreatePersonalTemplate;
     });
 
     const showFooterSecondaryActions = computed((): boolean => {
@@ -375,7 +377,6 @@
                 || canDeny.value
                 || canEdit.value
                 || canCancel.value
-                || canDuplicate.value
                 || canCreatePersonalTemplate.value
             );
     });
@@ -406,10 +407,9 @@
 
         const result = await invokeBlockAction<CommunicationRedirectBag>("DuplicateCommunication");
 
-        isDuplicating.value = false;
-
         if (!result.isSuccess || !result.data?.communicationUrl) {
             await alert(result.errorMessage || "Unknown error while trying to duplicate communication.");
+            isDuplicating.value = false;
             return;
         }
 
@@ -429,16 +429,26 @@
      * Handles a communication action response.
      *
      * @param response The response to handle.
+     * @param actionRef The reactive value for the action being performed,
+     * causing all action buttons to currently be disabled.
      */
-    async function handleActionResponse(response: CommunicationActionResponseBag): Promise<void> {
+    async function handleActionResponse(response: CommunicationActionResponseBag, actionRef: Ref<boolean>): Promise<void> {
+        // Permissions might have changed as a result of this action.
+        permissions.value = response.permissions;
+
         if (response.outcomeMessage) {
             await alert(response.outcomeMessage);
         }
 
         if (response.redirectUrl) {
+            // Keep all action buttons disabled and redirect.
             window.location.href = makeUrlRedirectSafe(
                 response.redirectUrl
             );
+        }
+        else {
+            // Reenable any remaining, authorized action buttons.
+            actionRef.value = false;
         }
     }
 
@@ -454,14 +464,13 @@
 
         const result = await invokeBlockAction<CommunicationActionResponseBag>("ApproveCommunication");
 
-        isApproving.value = false;
-
         if (!result.isSuccess || !result.data) {
             await alert(result.errorMessage || "Unknown error while tring to approve communication.");
+            isApproving.value = false;
             return;
         }
 
-        await handleActionResponse(result.data);
+        await handleActionResponse(result.data, isApproving);
     }
 
     /**
@@ -476,14 +485,13 @@
 
         const result = await invokeBlockAction<CommunicationActionResponseBag>("DenyCommunication");
 
-        isDenying.value = false;
-
         if (!result.isSuccess || !result.data) {
             await alert(result.errorMessage || "Unknown error while tring to deny communication.");
+            isDenying.value = false;
             return;
         }
 
-        await handleActionResponse(result.data);
+        await handleActionResponse(result.data, isDenying);
     }
 
     /**
@@ -498,14 +506,13 @@
 
         const result = await invokeBlockAction<CommunicationActionResponseBag>("EditCommunication");
 
-        isEditing.value = false;
-
         if (!result.isSuccess || !result.data) {
             await alert(result.errorMessage || "Unknown error while trying to edit communication.");
+            isEditing.value = false;
             return;
         }
 
-        await handleActionResponse(result.data);
+        await handleActionResponse(result.data, isEditing);
     }
 
     /**
@@ -520,14 +527,13 @@
 
         const result = await invokeBlockAction<CommunicationActionResponseBag>("CancelCommunication");
 
-        isCancelling.value = false;
-
         if (!result.isSuccess || !result.data) {
             await alert(result.errorMessage || "Unknown error while trying to cancel communication.");
+            isCancelling.value = false;
             return;
         }
 
-        await handleActionResponse(result.data);
+        await handleActionResponse(result.data, isCancelling);
     }
 
     /**

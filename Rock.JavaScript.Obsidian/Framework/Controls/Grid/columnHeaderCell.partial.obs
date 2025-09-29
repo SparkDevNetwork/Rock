@@ -6,7 +6,7 @@
 
         <span v-if="isSorted" class="grid-sort-direction" :class="additionalSortClass" @click.prevent="onSortClick">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 21">
-                <path fill="var(--color-info)" d="M9.95 9.36H3.1a.53.53 0 0 1-.37-.9l3.42-3.43c.2-.2.55-.2.75 0l3.43 3.43c.33.33.1.9-.38.9Z" />
+                <path fill="var(--color-info-strong)" d="M9.95 9.36H3.1a.53.53 0 0 1-.37-.9l3.42-3.43c.2-.2.55-.2.75 0l3.43 3.43c.33.33.1.9-.38.9Z" />
                 <path fill="currentColor" style="opacity:.4;" d="M3.1 12.49h6.85c.47 0 .7.57.37.9L6.9 16.82c-.2.2-.54.2-.75 0l-3.42-3.43a.53.53 0 0 1 .37-.9Z" />
             </svg>
         </span>

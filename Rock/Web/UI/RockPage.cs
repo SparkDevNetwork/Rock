@@ -30,7 +30,6 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -860,7 +859,14 @@ namespace Rock.Web.UI
 
             if ( _pageCache != null )
             {
-                RequestContext.PrepareRequestForPage( _pageCache );
+                try
+                {
+                    RequestContext.PrepareRequestForPage( _pageCache );
+                }
+                catch
+                {
+                    /* Ignore any exceptions here and keep loading the page.  Earlier problems should have been logged by now. */
+                }
             }
 
             _showDebugTimings = this.PageParameter( "ShowDebugTimings" ).AsBoolean();
@@ -1224,8 +1230,16 @@ namespace Rock.Web.UI
                     if ( Site.EnablePersonalization )
                     {
                         Page.Trace.Warn( "Loading Personalization Data" );
-                        LoadPersonalizationSegments();
-                        LoadPersonalizationRequestFilters();
+                        try
+                        {
+                            LoadPersonalizationSegments();
+                            LoadPersonalizationRequestFilters();
+                        }
+                        catch ( Exception ex )
+                        {
+                            // Catch and log this exception, but don't stop the page from loading.
+                            ExceptionLogService.LogException( new Exception( "Error loading personalization data (segments and or request filters).", ex ) );
+                        }
                     }
 
                     // Set current models (context)
@@ -1849,10 +1863,11 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                     Page.Header.Controls.Add( new LiteralControl( "<meta name=\"robots\" content=\"noindex, nofollow\"/>" ) );
                 }
 
-                // Add response headers to request that the client tell us if they prefer dark mode
-                Response.Headers.Add( "Accept-CH", "Sec-CH-Prefers-Color-Scheme" );
+                // Add response headers to request that the client tell us if they prefer dark mode, and which platform version they are using
+                Response.Headers.Add( "Accept-CH", "Sec-CH-Prefers-Color-Scheme, Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version" );
                 Response.Headers.Add( "Vary", "Sec-CH-Prefers-Color-Scheme" );
-                Response.Headers.Add( "Critical-CH", "Sec-CH-Prefers-Color-Scheme" );
+                Response.Headers.Add( "Critical-CH", "Sec-CH-Prefers-Color-Scheme, Sec-CH-UA-Platform-Version" );
+                Response.Headers.Add( "Permissions-Policy", "ch-ua-platform-version=(self)" );
 
                 if ( _showDebugTimings )
                 {
@@ -2293,10 +2308,19 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
             var requestFilterIds = new List<int>();
             foreach ( var requestFilter in requestFilters )
             {
-                if ( requestFilter.RequestMeetsCriteria( this.Request, this.Site ) )
+                try
                 {
-                    requestFilterIds.Add( requestFilter.Id );
+                    if ( requestFilter.RequestMeetsCriteria( this.Request, this.Site ) )
+                    {
+                        requestFilterIds.Add( requestFilter.Id );
+                    }
                 }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( new Exception( $"Error processing personalization request filter: {requestFilter.Name ?? requestFilter.RequestFilterKey}.", ex ) );
+                    throw;
+                }
+
             }
 
             this.PersonalizationRequestFilterIds = requestFilterIds.ToArray();
@@ -2694,7 +2718,8 @@ Sys.Application.add_load(function () {
                     PostalCode = geolocation?.PostalCode,
                     Latitude = geolocation?.Latitude,
                     Longitude = geolocation?.Longitude,
-                    InteractionChannelCustom1 = Activity.Current?.TraceId.ToString()
+                    InteractionChannelCustom1 = Activity.Current?.TraceId.ToString(),
+                    UserAgentPlatformVersion = Request.UserAgentPlatformVersion()
                 };
 
                 // If we have a UTM cookie, add the information to the interaction.
@@ -3768,7 +3793,7 @@ Sys.Application.add_load(function () {
         /// and this request has not yet been prepared for a given page.</returns>
         public string GetContextCookieName( bool pageSpecific )
         {
-            return RequestContext?.GetContextCookieName( pageSpecific );
+            return RequestContext?.GetContextCookieName( pageSpecific ? RequestContext.Page : null );
         }
 
         /// <summary>

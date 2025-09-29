@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// A forward compatible class for the way ASP.Net Core will handle response
     /// type decorations.
     /// </summary>
+    [Obsolete( "Use the ProducesResponseAttribute from Rock.Rest instead." )] // Obsoleted in 18.0
     public class ProducesResponseTypeAttribute : Swashbuckle.Swagger.Annotations.SwaggerResponseAttribute
     {
         /// <summary>

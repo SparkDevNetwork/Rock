@@ -345,6 +345,18 @@
                     </div>
                 </div>
 
+                <div class="row">
+                    <div class="col-md-4">
+                        <Rock:RockRadioButtonList ID="rblAppliesToAgeClassification" runat="server" Label="Applies to Age Classification" RepeatDirection="Horizontal" Help="Restrict this workflow to requests for people of a certain age classification (All, Adults, Children)." />
+                    </div>
+                    <div class="col-md-4">
+                        <Rock:DataViewItemPicker ID="dvpIncludeDataView" runat="server" Label="Include Data View Filter" Help="Only show this workflow for requests where the person is included in this Data View. Leave blank for no filter." />
+                    </div>
+                    <div class="col-md-4">
+                        <Rock:DataViewItemPicker ID="dvpExcludeDataView" runat="server" Label="Exclude Data View Filter" Help="Hide this workflow for requests where the person is included in this Data View. Leave blank for no filter." />
+                    </div>
+                </div>
+
             </Content>
         </Rock:ModalDialog>
     </ContentTemplate>

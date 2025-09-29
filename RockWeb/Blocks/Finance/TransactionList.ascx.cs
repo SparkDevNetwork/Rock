@@ -156,6 +156,7 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.HideTransactionsInPendingBatches
         )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.BlockTypeGuid( "E04320BC-67C3-452D-9EF6-D74D8C177154" )]
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler, ICustomGridColumns
     {
@@ -840,9 +841,9 @@ namespace RockWeb.Blocks.Finance
             var lTransactionImage = e.Row.FindControl( "lTransactionImage" ) as Literal;
             if ( lTransactionImage != null && lTransactionImage.Visible )
             {
-                if ( _imageBinaryFileIdLookupByTransactionId.ContainsKey( txn.Id ) )
+                if ( _imageBinaryFileIdLookupByTransactionId.ContainsKey( txn.TransactionId ) )
                 {
-                    int? firstImageId = _imageBinaryFileIdLookupByTransactionId[txn.Id].FirstOrDefault();
+                    int? firstImageId = _imageBinaryFileIdLookupByTransactionId[txn.TransactionId].FirstOrDefault();
                     if ( firstImageId != null )
                     {
                         var options = new GetImageUrlOptions
@@ -1198,13 +1199,27 @@ namespace RockWeb.Blocks.Finance
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        foreach ( var txn in new FinancialTransactionService( rockContext )
-                            .Queryable( "AuthorizedPersonAlias.Person" )
-                            .Where( t => txnsSelected.Contains( t.Id ) )
-                            .ToList() )
+                        if ( hfTransactionViewMode.Value == "Transactions" )
                         {
-                            txn.AuthorizedPersonAliasId = personAliasId.Value;
+                            foreach ( var txn in new FinancialTransactionService( rockContext )
+                                .Queryable( "AuthorizedPersonAlias.Person" )
+                                .Where( t => txnsSelected.Contains( t.Id ) )
+                                .ToList() )
+                            {
+                                txn.AuthorizedPersonAliasId = personAliasId.Value;
+                            }
                         }
+                        else
+                        {
+                            foreach ( var txn in new FinancialTransactionService( rockContext )
+                                .Queryable( "AuthorizedPersonAlias.Person, TransactionDetails" )
+                                .Where( t => t.TransactionDetails.Any( d => txnsSelected.Contains( d.Id ) ) )
+                                .ToList() )
+                            {
+                                txn.AuthorizedPersonAliasId = personAliasId.Value;
+                            }
+                        }
+
                         rockContext.SaveChanges();
 
                         var acctAction = rblReassignBankAccounts.SelectedValue;
@@ -1609,6 +1624,25 @@ namespace RockWeb.Blocks.Finance
                 if ( hfTransactionViewMode.Value == "Transaction Details" )
                 {
                     gTransactions.RowItemText = "Transaction Detail";
+
+                    /*
+                        9/5/2025 - NA
+
+                        The "Show Merge Template" and "Enable Default Launch Workflow" features are being disabled, 
+                        but only for the "Transaction Details" mode. In this mode, the SelectedKeys values are set 
+                        automatically by the Grid's <SelectField> when a person checks a row's checkbox. The issue 
+                        is that these SelectedKeys correspond to the Ids of FinancialTransactionDetail records rather 
+                        than the FinancialTransaction itself, which leads to incorrect behavior.
+
+                        Attempting to adjust how SelectedKeys are assigned during this v17.5 alpha would be more risky 
+                        than simply disabling these two grid features. This should be addressed when the block is
+                        converted to NextGen.
+
+                        Reason: Temporary fix to avoid incorrect key usage in Transaction Details mode.
+                    */
+                    gTransactions.Actions.ShowMergeTemplate = false;
+                    gTransactions.EnableDefaultLaunchWorkflow = false;
+
                     var financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
                     var financialTransactionDetailQuery = financialTransactionDetailService.Queryable().AsNoTracking();
 
@@ -1692,6 +1726,9 @@ namespace RockWeb.Blocks.Finance
                 else
                 {
                     gTransactions.RowItemText = "Transactions";
+                    gTransactions.Actions.ShowMergeTemplate = true;
+                    gTransactions.EnableDefaultLaunchWorkflow = true;
+
                     var financialTransactionService = new FinancialTransactionService( rockContext );
                     var financialTransactionQuery = financialTransactionService.Queryable().AsNoTracking();
 
@@ -1733,6 +1770,7 @@ namespace RockWeb.Blocks.Finance
                         .Select( a => new FinancialTransactionRow
                         {
                             Id = a.Id,
+                            TransactionId = a.Id,
                             BatchId = a.BatchId,
                             TransactionTypeValueId = a.TransactionTypeValueId,
                             ScheduledTransactionId = a.ScheduledTransactionId,
@@ -2047,7 +2085,7 @@ namespace RockWeb.Blocks.Finance
 
                 if ( showImages )
                 {
-                    _imageBinaryFileIdLookupByTransactionId = new FinancialTransactionImageService( rockContext ).Queryable().Where( a => query.Any( q => q.Id == a.TransactionId ) )
+                    _imageBinaryFileIdLookupByTransactionId = new FinancialTransactionImageService( rockContext ).Queryable().Where( a => query.Any( q => q.TransactionId == a.TransactionId ) )
                         .Select( a => new { a.TransactionId, a.BinaryFileId, a.Order } )
                         .GroupBy( a => a.TransactionId )
                         .ToDictionary( k => k.Key, v => v.OrderBy( x => x.Order ).Select( x => x.BinaryFileId ).ToList() );
@@ -2063,9 +2101,10 @@ namespace RockWeb.Blocks.Finance
                     if ( hfTransactionViewMode.Value == "Transactions" )
                     {
                         gTransactions.EntityIdField = "Id";
+
                         var txns = new FinancialTransactionService( rockContext )
                             .Queryable().AsNoTracking()
-                            .Where( t => query.Select( q => q.Id ).Contains( t.Id ) )
+                            .Where( t => query.Select( q => q.Id ).Contains( t.Id ) ) // Note: In this case, q.Id is the FinancialTransaction.Id
                             .ToList();
                         txns.ForEach( t => gTransactions.ObjectList.Add( t.Id.ToString(), t ) );
                     }
@@ -2073,9 +2112,10 @@ namespace RockWeb.Blocks.Finance
                     {
                         // Ensure the EntityIdField is set to TransactionId so that the Workflow is created on the Financial Transaction Entity.
                         gTransactions.EntityIdField = "TransactionId";
+
                         var txns = new FinancialTransactionDetailService( rockContext )
                             .Queryable().AsNoTracking()
-                            .Where( t => query.Select( q => q.Id ).Contains( t.Id ) )
+                            .Where( t => query.Select( q => q.Id ).Contains( t.Id ) )  // Note: In this case, q.Id is the FinancialTransactionDetail.Id
                             .ToList();
                         txns.ForEach( t => gTransactions.ObjectList.Add( t.Id.ToString(), t ) );
                     }

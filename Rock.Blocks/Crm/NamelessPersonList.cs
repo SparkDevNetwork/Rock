@@ -37,16 +37,16 @@ namespace Rock.Blocks.Crm
     [Category( "CRM" )]
     [Description( "List unmatched phone numbers with an option to link to a person that has the same phone number." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
-    [Rock.SystemGuid.BlockTypeGuid( "6e9672e6-ee42-4aac-b0a9-b041c3b8368c" )]
-    [CustomizedGrid]
 
     #region Block Attributes
 
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "911EA779-AC00-4A93-B706-B6A642C727CB" )]
+    [Rock.SystemGuid.BlockTypeGuid( "6e9672e6-ee42-4aac-b0a9-b041c3b8368c" )]
+    [CustomizedGrid]
     public class NamelessPersonList : RockListBlockType<Person>
     {
         #region Keys

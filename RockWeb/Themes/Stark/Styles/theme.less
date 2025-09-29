@@ -191,6 +191,33 @@ footer {
   }
 }
 
+.panel-body .actions:last-of-type {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: ((@panel-body-padding/2) - 4px) @panel-body-padding;
+  margin: -@panel-body-padding;
+  margin-top: @panel-body-padding;
+  border-top: 1px solid #eee;
+
+  > * {
+    margin: 4px 8px 4px 0;
+  }
+
+  .footer-actions,
+  .footer-secondary-actions {
+    margin: 0;
+  }
+
+  .footer-actions > * {
+    margin: 4px 8px 4px 0;
+  }
+
+  .footer-secondary-actions > * {
+    margin: 0 0 0 4px;
+  }
+}
+
 
 // 4. Responsive Overrides
 // -------------------------

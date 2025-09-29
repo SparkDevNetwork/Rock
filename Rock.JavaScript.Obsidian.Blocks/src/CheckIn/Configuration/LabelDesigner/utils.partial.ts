@@ -89,7 +89,7 @@ export class Surface {
             return pos;
         }
 
-        function swapSize() {
+        function swapSize(): void {
             const a = width;
             width = height;
             height = a;

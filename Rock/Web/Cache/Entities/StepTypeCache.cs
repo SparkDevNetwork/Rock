@@ -17,6 +17,7 @@
 using System;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Engagement;
 using Rock.Model;
 
 namespace Rock.Web.Cache
@@ -118,6 +119,33 @@ namespace Rock.Web.Cache
         public string MergeTemplateDescriptor { get; private set; }
 
         /// <summary>
+        /// Gets or sets the engagement type for this step type.
+        /// </summary>
+        [DataMember]
+        public EngagementType? EngagementType { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the impact weight for this step type (1-5).
+        /// </summary>
+        [DataMember]
+        public int? ImpactWeight { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the organizational objective value ID for this step type.
+        /// </summary>
+        [DataMember]
+        public int? OrganizationalObjectiveValueId { get; private set; }
+
+        /// <summary>
+        /// Gets a <see cref="Rock.Web.Cache.DefinedValueCache"/> of the step type's organizational objective.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Web.Cache.DefinedValueCache"/> of the step type's organizational objective.
+        /// </value>
+        [DataMember]
+        public DefinedValueCache OrganizationalObjectiveValue => OrganizationalObjectiveValueId.HasValue ? DefinedValueCache.Get( OrganizationalObjectiveValueId.Value ) : null;
+
+        /// <summary>
         /// Gets a value indicating whether this instance is active.
         /// </summary>
         /// <value>
@@ -166,6 +194,9 @@ namespace Rock.Web.Cache
             CardLavaTemplate = sourceModel.CardLavaTemplate;
             MergeTemplateId = sourceModel.MergeTemplateId;
             MergeTemplateDescriptor = sourceModel.MergeTemplateDescriptor;
+            EngagementType = sourceModel.EngagementType;
+            ImpactWeight = sourceModel.ImpactWeight;
+            OrganizationalObjectiveValueId = sourceModel.OrganizationalObjectiveValueId;
             IsActive = sourceModel.IsActive;
         }
 

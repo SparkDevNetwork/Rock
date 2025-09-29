@@ -1,5 +1,5 @@
 <template>
-    <Panel v-if="config?.isVisible && isVisible" title="Giving Configuration">
+    <Panel v-if="config?.isVisible" title="Giving Configuration">
         <template #default class="panel-body">
             <!-- Add One-time Gift Button -->
             <div>
@@ -48,11 +48,11 @@
                                 </div>
                                 <div class="col-md-7 col-sm-12">
                                     <RockDropDownList
-                                                        v-model="selectedSavedAccount"
-                                                        label="Saved Account"
-                                                        :items="savedAccountOptions"
-                                                        placeholder="Select Saved Account"
-                                                        :disabled="savedAccountOptions.length === 0" />
+                                                      v-model="selectedSavedAccount"
+                                                      label="Saved Account"
+                                                      :items="savedAccountOptions"
+                                                      placeholder="Select Saved Account"
+                                                      :disabled="savedAccountOptions.length === 0" />
                                 </div>
                             </div>
                             <div>
@@ -243,49 +243,49 @@
 </template>
 
 <style scoped>
-    .panel-heading {
-        background-color: #f5f5f5;
-        padding: 10px;
-        border-bottom: 1px solid #ddd;
-    }
+.panel-heading {
+    background-color: #f5f5f5;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
 
-    .panel-title {
-        font-size: 1.25em;
-        margin: 0;
-    }
+.panel-title {
+    font-size: 1.25em;
+    margin: 0;
+}
 
-    .rollover-container-nested {
-        transition: background-color 0.3s;
-    }
+.rollover-container-nested {
+    transition: background-color 0.3s;
+}
 
-    .rollover-container-nested:hover {
-        background-color: #ffffff;
-    }
+.rollover-container-nested:hover {
+    background-color: #ffffff;
+}
 
-    .btn-link {
-        color: #007bff;
-        text-decoration: none;
-    }
+.btn-link {
+    color: #007bff;
+    text-decoration: none;
+}
 
-    .btn-link:hover {
-        color: #0056b3;
-        text-decoration: underline;
-    }
+.btn-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
 
-    .showinactive {
-        background-color: white;
-        border: none;
-        color: #006dcc;
-    }
+.showinactive {
+    background-color: white;
+    border: none;
+    color: #006dcc;
+}
 
-    .separator {
-        margin-top: 2px;
-        margin-bottom: 24px;
-        border: 0;
-        border-top: 1px solid #eee;
-        width: calc(100% + 40px);
-        margin-left: -20px;
-    }
+.separator {
+    margin-top: 2px;
+    margin-bottom: 24px;
+    border: 0;
+    border-top: 1px solid #eee;
+    width: calc(100% + 40px);
+    margin-left: -20px;
+}
 </style>
 
 <script setup lang="ts">
@@ -305,7 +305,6 @@
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { NavigationUrlKey, PageParameterKey } from "./types.partial";
-    import { useStore } from "@Obsidian/PageState";
     import { DateTimeFormat, RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     // #region Values
@@ -329,10 +328,6 @@
     // #endregion
 
     // #region Computed Values
-
-    const isVisible = computed((): boolean => {
-        return useStore().state.areSecondaryBlocksShown;
-    });
 
     const showInactiveText = computed(() => showInactive.value ? "Hide Inactive" : "Show Inactive");
 
@@ -457,7 +452,7 @@
     }
 
     async function loadPledges(): Promise<void> {
-    const result = await invokeBlockAction<FinancialPledgeBag[]>("GetPledges");
+        const result = await invokeBlockAction<FinancialPledgeBag[]>("GetPledges");
 
         if (result.isSuccess) {
             pledges.value = (result.data || []).map(pledge => {
@@ -616,5 +611,3 @@
 
     // #endregion
 </script>
-
-

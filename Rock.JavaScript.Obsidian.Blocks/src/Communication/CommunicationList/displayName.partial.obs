@@ -58,6 +58,7 @@
 
 .communication-list-display-name-cell-title {
     color: var(--color-interface-strong);
+    font-weight: var(--font-weight-semibold);
 }
 
 .communication-list-display-name-cell-counts,

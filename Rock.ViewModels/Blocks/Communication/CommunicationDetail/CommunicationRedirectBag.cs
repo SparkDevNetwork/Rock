@@ -23,6 +23,11 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationDetail
     public class CommunicationRedirectBag
     {
         /// <summary>
+        /// Gets or sets the permissions for this communication detail block.
+        /// </summary>
+        public CommunicationDetailPermissionsBag Permissions { get; set; }
+
+        /// <summary>
         /// Gets or sets the URL of the communication to which the client should redirect.
         /// </summary>
         public string CommunicationUrl { get; set; }

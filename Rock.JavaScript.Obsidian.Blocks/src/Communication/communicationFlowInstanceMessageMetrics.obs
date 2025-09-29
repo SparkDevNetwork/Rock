@@ -1,0 +1,236 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel :title="`Message Metrics: ${config.communicationFlowCommunication?.communicationFlowCommunicationName}`">
+        <div class="row">
+            <div v-if="config.isConversionGoalTrackingEnabled" class="col-md-3">
+                <ConversionRateKpi :selectedFlowInstanceCommunicationRecipientMetrics="selectedFlowInstanceCommunicationRecipientMetrics"
+                                   :uniquePersonCount="config.uniquePersonCount" />
+            </div>
+
+            <div class="col-md-3">
+                <OpenRateKpi :selectedFlowInstanceCommunicationRecipientMetrics="selectedFlowInstanceCommunicationRecipientMetrics" />
+            </div>
+
+            <div class="col-md-3">
+                <ClickThroughRateKpi :selectedFlowInstanceCommunicationRecipientMetrics="selectedFlowInstanceCommunicationRecipientMetrics" />
+            </div>
+
+            <div class="col-md-3">
+                <UnsubscribeRateKpi :selectedCommunicationFlowInstanceRecipientMetrics="selectedFlowInstanceCommunicationRecipientMetrics" />
+            </div>
+        </div>
+
+        <div class="row">
+            <template v-if="isInstanceVsAverageShown">
+                <div class="col-md-6">
+                    <MessagePerformanceOverTime :isConversionGoalTrackingEnabled="config.isConversionGoalTrackingEnabled"
+                                                :selectedCommunicationFlowInstanceRecipientMetrics="selectedFlowInstanceCommunicationRecipientMetrics"
+                                                :uniquePersonCount="config.uniquePersonCount" />
+                </div>
+
+                <div class="col-md-6">
+                    <MessageInstanceVsFlowAverage :allCommunicationFlowInstanceCommunications="config.communicationFlowCommunication?.communicationFlowInstanceCommunications ?? []"
+                                                  :allCommunicationFlowInstances="config.communicationFlowInstances ?? []"
+                                                  :allUniquePersonCount="config.uniquePersonCount"
+                                                  :isConversionGoalTrackingEnabled="config.isConversionGoalTrackingEnabled"
+                                                  :selectedCommunicationFlowInstanceRecipientMetrics="selectedFlowInstanceCommunicationRecipientMetrics" />
+                </div>
+            </template>
+
+            <template v-else>
+                <div class="col-md-12">
+                    <MessagePerformanceOverTime :isConversionGoalTrackingEnabled="config.isConversionGoalTrackingEnabled"
+                                                :selectedCommunicationFlowInstanceRecipientMetrics="selectedFlowInstanceCommunicationRecipientMetrics"
+                                                :uniquePersonCount="config.uniquePersonCount" />
+                </div>
+
+            </template>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="communication-flow-performance-disclaimer">* Our data suggests a correlation between messages and conversions but not direct causation.</div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="communication-flow-performance-updated-text">{{ dataLastUpdatedMessage }}</div>
+            </div>
+        </div>
+    </Panel>
+
+    <RecipientLogGrid :isConversionGoalTrackingEnabled="config.isConversionGoalTrackingEnabled"
+                      :recipientMetrics="selectedFlowInstanceCommunicationRecipientMetrics"
+                      @viewPerson="onViewPerson" />
+</template>
+
+<style scoped>
+.communication-flow-performance-disclaimer {
+    font-size: var(--font-size-xsmall);
+    color: var(--color-interface-medium);
+}
+
+.communication-flow-performance-updated-text {
+    font-size: var(--font-size-xsmall);
+    color: var(--color-interface-medium);
+    text-align: right;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import ClickThroughRateKpi from "./CommunicationFlowInstanceMessageMetrics/clickThroughRateKpi.partial.obs";
+    import ConversionRateKpi from "./CommunicationFlowInstanceMessageMetrics/conversionRateKpi.partial.obs";
+    import MessageInstanceVsFlowAverage from "./CommunicationFlowInstanceMessageMetrics/messageInstanceVsFlowAverage.partial.obs";
+    import MessagePerformanceOverTime from "./CommunicationFlowInstanceMessageMetrics/messagePerformanceOverTime.partial.obs";
+    import OpenRateKpi from "./CommunicationFlowInstanceMessageMetrics/openRateKpi.partial.obs";
+    import RecipientLogGrid from "./CommunicationFlowInstanceMessageMetrics/recipientLogGrid.partial.obs";
+    import UnsubscribeRateKpi from "./CommunicationFlowInstanceMessageMetrics/unsubscribeRateKpi.partial.obs";
+    import { RockDateTimeFormatter, provideRockDateTimeParser } from "./CommunicationFlowInstanceMessageMetrics/utils.partial";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { useStore } from "@Obsidian/PageState";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { CommunicationFlowInstanceCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceCommunicationBag";
+    import { InitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/initializationBox";
+    import { RecipientMetricsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/recipientMetricsBag";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceBag";
+    import { calculateSlidingDateRange, parseSlidingDateRangeString, SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+    import { isNullish } from "@Obsidian/Utility/util";
+
+    const config = useConfigurationValues<InitializationBox>();
+    const { getPageParameter } = useStore();
+    provideRockDateTimeParser();
+
+    // #region Computed Values
+
+    const selectedFlowInstanceCommunications = computed<CommunicationFlowInstanceCommunicationBag[]>(() => {
+        // Select the specific instance communication that matches the page parameter if set.
+        const selectedInstanceCommunicationKey = getPageParameter("CommunicationFlowInstanceCommunication");
+
+        if (selectedInstanceCommunicationKey) {
+            return Enumerable
+                .from(config.communicationFlowCommunication?.communicationFlowInstanceCommunications ?? [])
+                .where(ic => ic.communicationFlowInstanceCommunicationIdKey === selectedInstanceCommunicationKey)
+                .toArray();
+        }
+        else {
+            const selectedCommunicationFlowInstanceIdKeys = Enumerable
+                .from(selectedFlowInstances.value ?? [])
+                .select(cfi => cfi.communicationFlowInstanceIdKey)
+                .ofType<string>((k): k is string => !isNullish(k))
+                .distinct()
+                .toArray();
+            return Enumerable
+                .from(config.communicationFlowCommunication?.communicationFlowInstanceCommunications ?? [])
+                .where(cfic => selectedCommunicationFlowInstanceIdKeys.includes(cfic.communicationFlowInstanceIdKey ?? ""))
+                .toArray();
+        }
+    });
+
+    const selectedFlowInstanceCommunicationRecipientMetrics = computed<RecipientMetricsBag[]>(() => {
+        return Enumerable
+            .from(selectedFlowInstanceCommunications.value ?? [])
+            .selectMany(c => c.recipientMetrics ?? [])
+            .toArray();
+    });
+
+    const selectedFlowInstances = computed<CommunicationFlowInstanceBag[]>(() => {
+        // Select the specific instance that matches the page parameter if set.
+        const selectedCommunicationFlowInstanceIdKey = getPageParameter("CommunicationFlowInstance");
+
+        if (selectedCommunicationFlowInstanceIdKey) {
+            return Enumerable
+                .from(config.communicationFlowInstances ?? [])
+                .where(cfi => cfi.communicationFlowInstanceIdKey === selectedCommunicationFlowInstanceIdKey)
+                .toArray();
+        }
+        else {
+            let communicationFlowInstanceEnumerable = Enumerable
+                .from(config.communicationFlowInstances ?? []);
+
+            const communicationFlowInstanceStartDateLookup =
+                communicationFlowInstanceEnumerable
+                    .where(cfi => !isNullish(cfi.communicationFlowInstanceIdKey))
+                    .toDictionary(cfi => cfi.communicationFlowInstanceIdKey!, cfi => cfi.startDate ? RockDateTime.parseISO(cfi.startDate) : null);
+
+            const startDateRange = getStartDateRange();
+
+            if (startDateRange) {
+                const { start: startFilter, end: endFilter } = calculateSlidingDateRange(startDateRange);
+
+                if (!isNullish(startFilter)) {
+                    communicationFlowInstanceEnumerable = communicationFlowInstanceEnumerable
+                        .where(cfi => {
+                            const communicationFlowInstanceStartDate = communicationFlowInstanceStartDateLookup.get(cfi.communicationFlowInstanceIdKey ?? "");
+
+                            if (isNullish(communicationFlowInstanceStartDate)) {
+                                return false;
+                            }
+
+                            if (startFilter.isLaterThan(communicationFlowInstanceStartDate)) {
+                                return false;
+                            }
+
+                            return true;
+                        });
+                }
+
+                if (!isNullish(endFilter)) {
+                    communicationFlowInstanceEnumerable = communicationFlowInstanceEnumerable
+                        .where(cfi => {
+                            const communicationFlowInstanceStartDate = communicationFlowInstanceStartDateLookup.get(cfi.communicationFlowInstanceIdKey ?? "");
+
+                            return !isNullish(communicationFlowInstanceStartDate)
+                                && !endFilter.isEarlierThan(communicationFlowInstanceStartDate);
+                        });
+                }
+            }
+
+            return communicationFlowInstanceEnumerable.toArray();
+        }
+    });
+
+    const dataLastUpdatedMessage = computed<string>(() => {
+        return `Data Last Updated On:  ${RockDateTimeFormatter.format_JanDot_1_1970(RockDateTime.now())}`;
+    });
+
+    const isInstanceVsAverageShown = computed<boolean>(() => {
+        // Instance vs Average is only shown if there are multiple flow instance communications
+        // (multiple flow instances that have sent this communication).
+        return Enumerable
+            .from(config.communicationFlowCommunication?.communicationFlowInstanceCommunications ?? [])
+            .select(m => m.communicationFlowInstanceCommunicationIdKey)
+            .distinct()
+            .count() > 1;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onViewPerson(selectedRow: RecipientMetricsBag): void {
+        if (selectedRow.person?.idKey) {
+            window.location.href = `/Person/${selectedRow.person.idKey}`;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    function getStartDateRange(): SlidingDateRange | null {
+        const startDateRangePageParameter = getPageParameter("StartDateRange");
+
+        if (typeof startDateRangePageParameter === "string" && startDateRangePageParameter.length > 0) {
+            const startDateRange = parseSlidingDateRangeString(startDateRangePageParameter);
+            if (startDateRange) {
+                return startDateRange;
+            }
+        }
+
+        return null;
+    }
+
+    // #endregion Functions
+</script>

@@ -17,7 +17,8 @@
                         <span class="push-message-header-time text-muted">9:41&nbsp;AM</span>
                     </div>
                     <div class="push-message-text">
-                        {{ pushMessage }}
+                        <template v-if="!isLoading">{{ pushMessage }}</template>
+                        <LoadingIndicator v-else />
                     </div>
                 </div>
             </div>
@@ -103,10 +104,16 @@
 
 <script setup lang="ts">
     import { PropType } from "vue";
+    import LoadingIndicator from "../loadingIndicator.obs";
     import MobileBackground from "./MobilePreview/mobileBackground.partial.obs";
     import MobilePreview from "./MobilePreview/mobilePreview.partial.obs";
 
     defineProps({
+        isLoading: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         pushTitle: {
             type: String as PropType<string>,
             required: true

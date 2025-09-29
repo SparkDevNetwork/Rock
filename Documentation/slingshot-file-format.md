@@ -134,6 +134,8 @@ Example:
 Example:
 `HasChildcare,Has Childcare,Rock.Field.Types.BooleanFieldType,Small Group`
 
+> Note: The Category is the GroupType's name
+
 ## group-attributevalue.csv
 `GroupId,AttributeKey,AttributeValue`
 

@@ -45,6 +45,7 @@ namespace Rock.Blocks.Event
         Description = "The page that will show the event calendar item details.",
         Key = AttributeKey.DetailPage )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "ca712211-3076-48bd-9321-2b7cee1d5961" )]
     [Rock.SystemGuid.BlockTypeGuid( "20c68613-f253-4d2f-a465-62afbb01dcd6" )]
     [CustomizedGrid]

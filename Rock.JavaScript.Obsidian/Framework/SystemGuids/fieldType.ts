@@ -85,6 +85,8 @@ export const FieldType = {
     Color: "D747E6AE-C383-4E22-8846-71518E3DD06F",
     /** Color selector field type */
     ColorSelector: "B07070F6-B66E-4B83-8DA6-12CF3400A1EC",
+    /** Communication Flow field type */
+    CommunicationFlow: "DD16B493-2588-436A-8C99-8771206ED28D",
     /** Communication Preference field type */
     CommunicationPreferenceType: "507C28F2-8BC0-4909-A4FE-9C2B1149E2B2",
     /** Communication Template field type */

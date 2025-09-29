@@ -25,6 +25,9 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The additional configuration options for the Page Short Link List block. */
 export type PageShortLinkListOptionsBag = {
+    /** Gets or sets the current person as a ListItemBag used for the grid filter. */
+    currentPerson?: ListItemBag | null;
+
     /** Gets or sets a list of available sites for the site filter dropdown. */
     siteItems?: ListItemBag[] | null;
 };

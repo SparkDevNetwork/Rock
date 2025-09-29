@@ -109,6 +109,7 @@ namespace RockWeb.Blocks.Groups
 
     #endregion Block Attributes
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Navigation )]
     [Rock.SystemGuid.BlockTypeGuid( "1B172C33-8672-4C98-A995-8E123FF316BD" )]
     public partial class GroupListPersonalizedLava : RockBlock
     {

@@ -1,7 +1,7 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div v-if="isShown" :class="['text-center', isSmall ? '' : 'ti-2x']">
-        <i class="ti ti-rotate-2 ti-pulse"></i>
+        <i class="ti ti-rotate-clockwise-2 ti-pulse"></i>
     </div>
 </template>
 

@@ -47,6 +47,7 @@ namespace Rock.Blocks.Engagement
         Description = "The page that will show the achievement attempt details.",
         Key = AttributeKey.DetailPage )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "039c87ae-0835-4844-ac9b-a66ae1d19530" )]
     [Rock.SystemGuid.BlockTypeGuid( "b294c1b9-8368-422c-8054-9672c7f41477" )]
     [CustomizedGrid]
@@ -227,7 +228,7 @@ namespace Rock.Blocks.Engagement
 
             var queryable = subQueries.Any()
                 ? subQueries.Aggregate( ( a, b ) => a.Union( b ) )
-                : new List<AchieverAttemptItem>().AsQueryable();
+                : new List<AchieverAttemptItem>().AsQueryable().Include( a => a.AchievementAttempt.AchievementType );
 
             // Filter by Achiever Name
             if ( !FilterAchieverName.IsNullOrWhiteSpace() )

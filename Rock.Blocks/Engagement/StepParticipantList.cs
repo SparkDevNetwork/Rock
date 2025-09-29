@@ -26,12 +26,9 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
-using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.StepParticipantList;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 
 namespace Rock.Blocks.Engagement
 {
@@ -42,7 +39,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Steps" )]
     [Description( "Lists all the participants in a Step." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage(
         "Detail Page",
@@ -60,8 +57,11 @@ namespace Rock.Blocks.Engagement
         Description = "Should the note be displayed as a separate grid column (instead of displaying a note icon under person's name)?",
         IsRequired = false,
         Order = 3 )]
+
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "e7eb8f39-ae85-4f9c-8afb-18b3e3c6c570" )]
-    [Rock.SystemGuid.BlockTypeGuid( "272b2236-fccc-49b4-b914-20893f5e746d" )]
+    // Was [Rock.SystemGuid.BlockTypeGuid( "272b2236-fccc-49b4-b914-20893f5e746d" )]
+    [Rock.SystemGuid.BlockTypeGuid( "2E4A1578-145E-4052-9B56-1739F7366827" )]
     [CustomizedGrid]
     public class StepParticipantList : RockEntityListBlockType<Step>
     {
@@ -83,6 +83,7 @@ namespace Rock.Blocks.Engagement
         private static class PageParameterKey
         {
             public const string StepTypeId = "StepTypeId";
+            public const string StepProgramId = "ProgramId";
             public const string StepId = "StepId";
             public const string PersonId = "PersonId";
         }
@@ -184,7 +185,8 @@ namespace Rock.Blocks.Engagement
                 [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string>()
                 {
                     { PageParameterKey.StepId, "((Key))" },
-                    { PageParameterKey.StepTypeId, GetStepType()?.IdKey }
+                    { PageParameterKey.StepTypeId, GetStepType()?.IdKey },
+                    { PageParameterKey.StepProgramId, GetStepProgram()?.IdKey }
                 } )
             };
         }
@@ -203,6 +205,7 @@ namespace Rock.Blocks.Engagement
             var queryable = stepService.Queryable()
                 .Include( x => x.StepStatus )
                 .Include( x => x.PersonAlias.Person )
+                .Include( x => x.Campus )
                 .AsNoTracking()
                 .Where( x => x.StepTypeId == stepType.Id );
 
@@ -273,6 +276,15 @@ namespace Rock.Blocks.Engagement
             }
 
             return StepTypeCache.Get( PageParameter( PageParameterKey.StepTypeId ), !PageCache.Layout.Site.DisablePredictableIds );
+        }
+
+        /// <summary>
+        /// Gets the current step program.
+        /// </summary>
+        /// <returns></returns>
+        private StepProgramCache GetStepProgram()
+        {
+            return StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ), !PageCache.Layout.Site.DisablePredictableIds );
         }
 
         private List<StepStatus> GetStepTypeStatus( StepTypeCache stepType )

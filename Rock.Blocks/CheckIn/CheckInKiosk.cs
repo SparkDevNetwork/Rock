@@ -29,6 +29,7 @@ using Rock.CheckIn;
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Labels;
 using Rock.Data;
+using Rock.Enums.CheckIn;
 using Rock.Model;
 using Rock.RealTime;
 using Rock.RealTime.Topics;
@@ -753,6 +754,142 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             return response;
         }
 
+        /// <summary>
+        /// Begins the process of editing a new family. This loads all the
+        /// information about the family as well as information needed to paint
+        /// the UI screens for the current configuration.
+        /// </summary>
+        /// <param name="familyId">The encrypted identifier of the family to edit. This should be an empty string to add a new family.</param>
+        /// <param name="templateId">The encrypted identifier of the configuration template.</param>
+        /// <param name="kioskId">The encrypted identifier of the kiosk being used to edit a family.</param>
+        /// <param name="addIndividualOnly">If <c>true</c> then a single individual will be added to the family, no family edit operations allowed.</param>
+        /// <returns>An instance of <see cref="EditFamilyResponseBag"/> that describes the family and UI details.</returns>
+        private BlockActionResult GetEditFamilyResponseBag( string familyId, string templateId, string kioskId, bool addIndividualOnly )
+        {
+            Model.Group group = null;
+            var template = GroupTypeCache.GetByIdKey( templateId, RockContext )
+                ?.GetCheckInConfiguration( RockContext );
+            var kiosk = DeviceCache.GetByIdKey( kioskId, RockContext );
+
+            if ( familyId.IsNotNullOrWhiteSpace() )
+            {
+                group = new GroupService( RockContext ).GetQueryableByKey( familyId, false )
+                    .Include( g => g.Members.Select( gm => gm.Person ) )
+                    .FirstOrDefault();
+
+                if ( group == null )
+                {
+                    return ActionBadRequest( "Family not found." );
+                }
+
+                group.LoadAttributes( RockContext );
+                group.Members.Select( gm => gm.Person ).ToList().LoadAttributes( RockContext );
+            }
+            else
+            {
+                group = new Model.Group
+                {
+                    GroupTypeId = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), RockContext ).Id
+                };
+
+                group.LoadAttributes( RockContext );
+            }
+
+            if ( template == null )
+            {
+                return ActionBadRequest( "Check-in configuration template not found." );
+            }
+
+            if ( kiosk == null )
+            {
+                return ActionBadRequest( "Kiosk not found." );
+            }
+
+            if ( addIndividualOnly )
+            {
+                var addMode = kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_ADDING_INDIVIDUALS_TO_EXISTING_FAMILIES ).ConvertToEnum<AdultsOrChildrenSelectionMode>();
+
+                if ( addMode == AdultsOrChildrenSelectionMode.None )
+                {
+                    return ActionBadRequest( "This kiosk does not support individual registration." );
+                }
+            }
+            else if ( group.Id == 0 && !kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_ADDING_FAMILIES ).AsBoolean() )
+            {
+                return ActionBadRequest( "This kiosk does not support family registration." );
+            }
+            else if ( group.Id != 0 && !kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_EDITING_FAMILIES ).AsBoolean() )
+            {
+                return ActionBadRequest( "This kiosk does not support family registration." );
+            }
+
+            var canCheckInMembers = new CheckInDirector( RockContext )
+                .CreateSession( template )
+                .SearchProvider
+                .GetCanCheckInFamilyMembersQuery( group.IdKey )
+                .ToList();
+
+            var registration = new FamilyRegistration( RockContext, RequestContext.CurrentPerson, template );
+            var knownRelationshipsCache = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid(), RockContext ).Roles;
+            ListItemBag childRelationship = null;
+
+            if ( template.KnownRelationshipRoleGuids.Contains( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CHILD.AsGuid() ) )
+            {
+                var childRelationshipRole = knownRelationshipsCache
+                    .FirstOrDefault( r => r.Guid == SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CHILD.AsGuid() );
+
+                if ( childRelationshipRole != null )
+                {
+                    childRelationship = new ListItemBag
+                    {
+                        Value = childRelationshipRole.Guid.ToString(),
+                        Text = childRelationshipRole.Name
+                    };
+                }
+            }
+
+            var response = new EditFamilyResponseBag
+            {
+                Family = !addIndividualOnly ? registration.GetFamilyBag( group ) : null,
+                People = !addIndividualOnly ? registration.GetFamilyMemberBags( group, canCheckInMembers ) : null,
+                ForceSelectionOfKnownRelationshipType = template.ForceSelectionOfKnownRelationshipType,
+                IsAlternateIdFieldVisibleForAdults = template.IsAlternateIdFieldVisibleForAdults,
+                IsAlternateIdFieldVisibleForChildren = template.IsAlternateIdFieldVisibleForChildren,
+                IsSmsButtonVisible = template.IsSmsButtonVisible,
+                IsSmsButtonCheckedByDefault = template.IsSmsButtonCheckedByDefault,
+                IsCheckInAfterRegistrationAllowed = template.IsCheckInAfterRegistrationAllowed,
+                DisplayBirthdateForAdults = template.DisplayBirthdateForAdults,
+                DisplayBirthdateForChildren = template.DisplayBirthdateForChildren,
+                DisplayEthnicityForAdults = template.DisplayEthnicityForAdults,
+                DisplayEthnicityForChildren = template.DisplayEthnicityForChildren,
+                DisplayGradeForChildren = template.DisplayGradeForChildren,
+                GradeConfirmationAge = template.GradeConfirmationAge,
+                DisplayMobilePhoneForChildren = template.DisplayMobilePhoneForChildren,
+                DisplayRaceForAdults = template.DisplayRaceForAdults,
+                DisplayRaceForChildren = template.DisplayRaceForChildren,
+                DisplaySuffix = template.DisplaySuffix,
+                Suffixes = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid(), RockContext )
+                    ?.DefinedValues
+                    .OrderBy( dv => dv.Order )
+                    .ToListItemBagList(),
+                Relationships = template.KnownRelationshipRoleGuids
+                    .Select( guid => knownRelationshipsCache.FirstOrDefault( r => r.Guid == guid ) )
+                    .Where( gtr => gtr != null )
+                    .OrderBy( gtr => gtr.Order )
+                    .Select( gtr => new ListItemBag
+                    {
+                        Value = gtr.Guid.ToString(),
+                        Text = gtr.Name
+                    } )
+                    .ToList(),
+                ChildRelationship = childRelationship
+            };
+
+            PopulatePersonAttributeBags( response, template, group );
+
+            return ActionOk( response );
+        }
+
         #endregion
 
         #region Block Actions
@@ -1369,115 +1506,21 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         [BlockAction]
         public BlockActionResult EditFamily( string familyId, string templateId, string kioskId )
         {
-            Model.Group group = null;
-            var template = GroupTypeCache.GetByIdKey( templateId, RockContext )
-                ?.GetCheckInConfiguration( RockContext );
-            var kiosk = DeviceCache.GetByIdKey( kioskId, RockContext );
+            return GetEditFamilyResponseBag( familyId, templateId, kioskId, false );
+        }
 
-            if ( familyId.IsNotNullOrWhiteSpace() )
-            {
-                group = new GroupService( RockContext ).GetQueryableByKey( familyId, false )
-                    .Include( g => g.Members.Select( gm => gm.Person ) )
-                    .FirstOrDefault();
-
-                if ( group == null )
-                {
-                    return ActionBadRequest( "Family not found." );
-                }
-
-                group.LoadAttributes( RockContext );
-                group.Members.Select( gm => gm.Person ).ToList().LoadAttributes( RockContext );
-            }
-            else
-            {
-                group = new Model.Group
-                {
-                    GroupTypeId = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), RockContext ).Id
-                };
-
-                group.LoadAttributes( RockContext );
-            }
-
-            if ( template == null )
-            {
-                return ActionBadRequest( "Check-in configuration template not found." );
-            }
-
-            if ( kiosk == null )
-            {
-                return ActionBadRequest( "Kiosk not found." );
-            }
-
-            if ( group.Id == 0 && !kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_ADDING_FAMILIES ).AsBoolean() )
-            {
-                return ActionBadRequest( "This kiosk does not support family registration." );
-            }
-            else if ( group.Id != 0 && !kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_EDITING_FAMILIES ).AsBoolean() )
-            {
-                return ActionBadRequest( "This kiosk does not support family registration." );
-            }
-
-            var canCheckInMembers = new CheckInDirector( RockContext )
-                .CreateSession( template )
-                .SearchProvider
-                .GetCanCheckInFamilyMembersQuery( group.IdKey )
-                .ToList();
-
-            var registration = new FamilyRegistration( RockContext, RequestContext.CurrentPerson, template );
-            var knownRelationshipsCache = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid(), RockContext ).Roles;
-            ListItemBag childRelationship = null;
-
-            if ( template.KnownRelationshipRoleGuids.Contains( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CHILD.AsGuid() ) )
-            {
-                var childRelationshipRole = knownRelationshipsCache
-                    .FirstOrDefault( r => r.Guid == SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CHILD.AsGuid() );
-
-                if ( childRelationshipRole != null )
-                {
-                    childRelationship = new ListItemBag
-                    {
-                        Value = childRelationshipRole.Guid.ToString(),
-                        Text = childRelationshipRole.Name
-                    };
-                }
-            }
-
-            var response = new EditFamilyResponseBag
-            {
-                Family = registration.GetFamilyBag( group ),
-                People = group != null ? registration.GetFamilyMemberBags( group, canCheckInMembers ) : null,
-                IsAlternateIdFieldVisibleForAdults = template.IsAlternateIdFieldVisibleForAdults,
-                IsAlternateIdFieldVisibleForChildren = template.IsAlternateIdFieldVisibleForChildren,
-                IsSmsButtonVisible = template.IsSmsButtonVisible,
-                IsSmsButtonCheckedByDefault = template.IsSmsButtonCheckedByDefault,
-                IsCheckInAfterRegistrationAllowed = template.IsCheckInAfterRegistrationAllowed,
-                DisplayBirthdateForAdults = template.DisplayBirthdateForAdults,
-                DisplayBirthdateForChildren = template.DisplayBirthdateForChildren,
-                DisplayEthnicityForAdults = template.DisplayEthnicityForAdults,
-                DisplayEthnicityForChildren = template.DisplayEthnicityForChildren,
-                DisplayGradeForChildren = template.DisplayGradeForChildren,
-                DisplayRaceForAdults = template.DisplayRaceForAdults,
-                DisplayRaceForChildren = template.DisplayRaceForChildren,
-                Suffixes = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid(), RockContext )
-                    ?.DefinedValues
-                    .OrderBy( dv => dv.Order )
-                    .ToListItemBagList(),
-                Relationships = template.KnownRelationshipRoleGuids
-                    .Select( guid => knownRelationshipsCache.FirstOrDefault( r => r.Guid == guid ) )
-                    .Where( gtr => gtr != null )
-                    .OrderBy( gtr => gtr.Order )
-                    .Select( gtr => new ListItemBag
-                    {
-                        Value = gtr.Guid.ToString(),
-                        Text = gtr.Name
-                    } )
-                    .ToList(),
-                ChildRelationship = childRelationship
-            };
-
-            PopulatePersonAttributeBags( response, template, group );
-
-            return ActionOk( response );
+        /// <summary>
+        /// Begins the process of adding a single individual to an existing family.
+        /// This loads all the information needed to paint the UI screens for the
+        /// current configuration.
+        /// </summary>
+        /// <param name="templateId">The encrypted identifier of the configuration template.</param>
+        /// <param name="kioskId">The encrypted identifier of the kiosk being used to add the individual.</param>
+        /// <returns>An instance of <see cref="EditFamilyResponseBag"/> that describes the UI details.</returns>
+        [BlockAction]
+        public BlockActionResult BeginAddIndividual( string templateId, string kioskId )
+        {
+            return GetEditFamilyResponseBag( null, templateId, kioskId, true );
         }
 
         /// <summary>
@@ -1521,6 +1564,49 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             {
                 FamilyId = result.PrimaryFamily.IdKey,
                 IsCheckInAllowed = template.IsCheckInAfterRegistrationAllowed,
+                IsSuccess = result.IsSuccess,
+                ErrorMessage = result.ErrorMessage
+            };
+
+            return ActionOk( response );
+        }
+
+        /// <summary>
+        /// Adds a single individual to an existing family.
+        /// </summary>
+        /// <param name="options">The options that describe the request.</param>
+        /// <returns>An instance of <see cref="SaveFamilyResponseBag"/> that describes if the operation was successful or not.</returns>
+        [BlockAction]
+        public BlockActionResult AddIndividual( AddIndividualOptionsBag options )
+        {
+            var template = GroupTypeCache.GetByIdKey( options.TemplateId, RockContext )
+                ?.GetCheckInConfiguration( RockContext );
+            var kiosk = DeviceCache.GetByIdKey( options.KioskId, RockContext );
+
+            if ( template == null )
+            {
+                return ActionBadRequest( "Check-in configuration template not found." );
+            }
+
+            if ( kiosk == null )
+            {
+                return ActionBadRequest( "Kiosk not found." );
+            }
+
+            if ( options.FamilyId == null )
+            {
+                return ActionBadRequest( "Missing family identifier." );
+            }
+
+            var registration = new FamilyRegistration( RockContext, RequestContext.CurrentPerson, template );
+            var result = registration.AddIndividual( options.FamilyId, options.Person, kiosk.GetCampusId() );
+
+            registration.ProcessSaveResult( result );
+
+            var response = new SaveFamilyResponseBag
+            {
+                FamilyId = result.PrimaryFamily.IdKey,
+                IsCheckInAllowed = true,
                 IsSuccess = result.IsSuccess,
                 ErrorMessage = result.ErrorMessage
             };

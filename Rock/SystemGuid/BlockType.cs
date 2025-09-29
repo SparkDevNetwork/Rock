@@ -400,6 +400,16 @@ namespace Rock.SystemGuid
         public const string MOBILE_FINANCE_SCHEDULED_TRANSACTION_LIST = "CAFF9FD9-A5DD-472B-B303-A53D94183568";
 
         /// <summary>
+        /// The mobile financial batch list &gt; <see cref="Rock.Blocks.Types.Mobile.Finance.FinancialBatchList">Financial Batch List</see> block type.
+        /// </summary>
+        public const string MOBILE_FINANCE_FINANCIAL_BATCH_LIST = "516E7877-DC6C-4706-812B-2DAEE649AA01";
+
+        /// <summary>
+        /// The mobile financial batch detail &gt; <see cref="Rock.Blocks.Types.Mobile.Finance.FinancialBatchDetail">Financial Batch Detail</see> block type.
+        /// </summary>
+        public const string MOBILE_FINANCE_FINANCIAL_BATCH_DETAIL = "C8EF68BE-522E-49E0-9BE5-C971433765DE";
+
+        /// <summary>
         /// The mobile transaction detail &gt; <see cref="Rock.Blocks.Types.Mobile.Finance.TransactionDetail">Transaction Detail</see> block type.
         /// </summary>
         public const string MOBILE_FINANCE_TRANSACTION_DETAIL = "01A68151-30CC-4FBC-9FE5-2F20A2C1BB4F";

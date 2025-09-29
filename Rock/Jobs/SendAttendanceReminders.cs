@@ -432,6 +432,8 @@ namespace Rock.Jobs
                                     ( int ) CommunicationType.Email,
                                     ( int ) CommunicationType.SMS,
                                     ( int ) CommunicationType.PushNotification,
+                                    systemCommunication,
+                                    leader.Person,
                                     jobPreferredCommunicationType,
                                     leader.CommunicationPreference,
                                     leader.Person.CommunicationPreference );

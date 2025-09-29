@@ -24,6 +24,7 @@ using System.Reflection;
 using System.Threading;
 
 using Rock.Attribute;
+using Rock.Cms;
 using Rock.Data;
 using Rock.Enums.Cms;
 using Rock.Observability;
@@ -66,6 +67,11 @@ namespace Rock.Model
         {
             return Queryable().Where( t => t.Path == path );
         }
+
+        /// <summary>
+        /// Constant that holds the namespace of Roslyn compilied user controls.
+        /// </summary>
+        private const string ROSLYN_COMPILED_NAMESPACE = "ASP";
 
         /// <summary>
         /// Lock obj to make sure that we aren't compiling more than one BlockType at a time. This prevents
@@ -241,6 +247,12 @@ namespace Rock.Model
                             blockType.Category = Rock.Reflection.GetCategory( type ) ?? string.Empty;
                             blockType.Description = Rock.Reflection.GetDescription( type ) ?? string.Empty;
 
+                            var blockRoleAttribute = type.GetCustomAttribute<DefaultBlockRoleAttribute>( inherit: true );
+                            if ( blockRoleAttribute != null )
+                            {
+                                blockType.DefaultRole = blockRoleAttribute.DefaultRole;
+                            }
+
                             rockContext.SaveChanges();
 
                             // Update the attributes used by the block
@@ -267,6 +279,52 @@ namespace Rock.Model
         }
 
 #if REVIEW_WEBFORMS
+        /// <summary>
+        /// Finds legacy WebForms block types whose GUIDs match the supplied map and stages their conversion to Obsidian by
+        /// assigning the target <see cref="EntityType"/> and clearing the block's <c>Path</c>. Flushes the cache for each updated block.
+        ///
+        /// NOTE: It's the callers responsibility to save any changes to the blockTypeService.
+        /// </summary>
+        /// <param name="blocksTypesToCheck">Map of block type GUID to the target <see cref="EntityType"/> that will replace the legacy WebForms block type.</param>
+        /// <param name="rockContext">The database context used to query and update block types. The caller is responsible for calling <c>SaveChanges()</c> to persist changes.</param>
+        /// <remarks>
+        /// If a legacy WebForms block should remain (e.g., for a swap), please change its <c>[Rock.SystemGuid.BlockTypeGuid(...)]</c> to a new GUID.
+        /// This method stages updates only and does not call <c>SaveChanges()</c>.
+        /// </remarks>
+        /// 
+        internal static void StagePossibleMigrateWebFormsToObsidianBlock( Dictionary<Guid, EntityType> blocksTypesToCheck, RockContext rockContext )
+        {
+            var blockTypeService = new BlockTypeService( rockContext );
+            var webFormBlocksToMigrateToObsidian = blockTypeService.Queryable()
+                .Where( b => b.EntityTypeId == null && !string.IsNullOrEmpty( b.Path ) && blocksTypesToCheck.Keys.Contains( b.Guid ) )
+                .ToList();
+
+            using ( ObservabilityHelper.StartActivity( "ObsidianMigration: Migrating webforms blocks to Obsidian" ) )
+            {
+                foreach ( var block in webFormBlocksToMigrateToObsidian )
+                {
+                    var entityType = blocksTypesToCheck[block.Guid];
+
+                    // We need to use the entityType and not the entityType.Id because the entityType.Id
+                    // may not be set if the entityType was just added.
+                    block.EntityType = entityType;
+                    block.Path = null;
+
+                    // Look for older blocktypes that were formerly using that EntityId
+                    // and remove them.
+                    if ( entityType.Id != 0 )
+                    {
+                        var oldBlockTypes = blockTypeService.Queryable()
+                            .Where( b => b.Id != block.Id && b.EntityTypeId == entityType.Id );
+                        foreach ( var oldBlockType in oldBlockTypes )
+                        {
+                            blockTypeService.Delete( oldBlockType );
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Registers any block types that are not currently registered in Rock.
         /// </summary>
@@ -372,9 +430,35 @@ namespace Rock.Model
                             blockType.Description = Rock.Reflection.GetDescription( controlType ) ?? string.Empty;
 
                             var blockTypeGuidFromAttribute = blockCompiledType.GetCustomAttribute<Rock.SystemGuid.BlockTypeGuidAttribute>( inherit: false )?.Guid;
+
+                            /*
+                                9/5/2025 - N.A.
+
+                                In Web Site–style projects, Roslyn generates a runtime subclass (e.g., "ASP.*") 
+                                that inherits from the code-behind class (our WebForm user controls). When this 
+                                occurs, calling GetCustomAttribute(inherit: false) on this generated subclass 
+                                returns null.
+
+                                To address this, we inspect the *BaseType* for the BlockTypeGuid attribute so
+                                that attributes declared on code-behind classes are still recognized.
+
+                                Reason: Ensure attributes defined on code-behind classes are accessible 
+                                from generated subclasses.
+                            */
+                            if ( blockTypeGuidFromAttribute == null && blockCompiledType.Namespace == ROSLYN_COMPILED_NAMESPACE )
+                            {
+                                blockTypeGuidFromAttribute = blockCompiledType.BaseType.GetCustomAttribute<Rock.SystemGuid.BlockTypeGuidAttribute>( inherit: false )?.Guid;
+                            }
+
                             if ( blockTypeGuidFromAttribute != null && blockType.Guid != blockTypeGuidFromAttribute.Value )
                             {
                                 blockType.Guid = blockTypeGuidFromAttribute.Value;
+                            }
+
+                            var blockRoleAttribute = blockCompiledType.GetCustomAttribute<DefaultBlockRoleAttribute>( inherit: true );
+                            if ( blockRoleAttribute != null )
+                            {
+                                blockType.DefaultRole = blockRoleAttribute.DefaultRole;
                             }
 
                             rockContext.SaveChanges();

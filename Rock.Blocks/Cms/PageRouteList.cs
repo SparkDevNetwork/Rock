@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -118,7 +119,8 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override IQueryable<PageRoute> GetListQueryable( RockContext rockContext )
         {
-            return new PageRouteService( rockContext ).Queryable();
+            return new PageRouteService( rockContext ).Queryable()
+                .Include( p => p.Page.Layout.Site );
         }
 
         /// <inheritdoc/>

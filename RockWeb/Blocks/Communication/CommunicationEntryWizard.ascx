@@ -223,9 +223,9 @@
                     <%-- Recipient Summary Panel --%>
                     <asp:Panel ID="pnlIndividualRecipientSummary" runat="server" Visible="false" CssClass="margin-t-md">
                         <div class="position-relative flex-fill" style="min-height: 200px;">
-                            
+
                                 <asp:Literal ID="lRecipientSummary" runat="server" />
-                            
+
                         </div>
                     </asp:Panel>
 
@@ -381,7 +381,7 @@
                             <div id="emaileditor-designer" style="visibility:hidden;opacity: 0;">
                                 <iframe id="ifEmailDesigner" name="emaileditor-iframe" class="emaileditor-iframe js-emaileditor-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0"></iframe>
                             </div>
-                            <div id="emaileditor-properties" class="position-absolute top-0 right-0 bottom-0 overflow-auto">
+                            <div id="emaileditor-properties" class="position-absolute top-0 right-0 bottom-0">
                                     <div class="js-email-sendtest-inputs" style="display: none">
                                         <Rock:EmailBox ID="tbTestEmailAddress" runat="server" Label="Email" ValidationGroup="vgEmailEditorSendTest" Required="true" AllowMultiple="false" Help="This will temporarily change your email address during the test, but it will be changed back after the test is complete." />
                                         <asp:LinkButton ID="btnEmailSendTest" runat="server" CssClass="btn btn-xs btn-primary js-saveeditorhtml" Text="Send Test" CausesValidation="true" ValidationGroup="vgEmailEditorSendTest" OnClick="btnEmailSendTest_Click" />
@@ -495,7 +495,7 @@
                                                         ModalSaveButtonCssClass="js-singleselect aspNetDisabled"
                                                         ModalCssClass="js-AssetManager-modal"
                                                         ButtonTextTemplate="Select Asset"
-                                                        ModalTitle="Asset Manager" 
+                                                        ModalTitle="Asset Manager"
                                                         ShowSelectNoneButton="true">
                                                     </Rock:ItemFromBlockPicker>
                                                     </ContentTemplate>
@@ -1523,7 +1523,7 @@
                         </div>
                         <div class="panel-body">
                             <div>
-                                <span class="mr-1"><i class="ti ti-rotate-2 ti-spin"></i></span>
+                                <span class="mr-1"><i class="ti ti-rotate-clockwise-2 ti-spin"></i></span>
                                 <span id="_TaskActivityMessage">Working...</span>
                             </div>
                             <div id="_TaskActivityBar" class="mt-1 js-global-task-progress-long-running" style="display: none">

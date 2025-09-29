@@ -329,6 +329,7 @@ namespace Rock.WebStartup
             } );
             sc.AddSingleton<Core.Automation.AutomationTriggerContainer>();
             sc.AddSingleton<Core.Automation.AutomationEventContainer>();
+            sc.AddSingleton<MetadataHelper>();
 
             sc.AddScoped<RockContext>();
 

@@ -26,19 +26,29 @@ namespace Rock.SystemGuid
         #region Attendance
 
         /// <summary>
-        /// The attendance record came from a legacy kiosk.
-        /// </summary>
-        public const string ATTENDANCE_SOURCE_LEGACY_KIOSK = "0B25A627-679B-4B73-AA84-305DEF24815A";
-
-        /// <summary>
         /// The attendance record came from a kiosk.
         /// </summary>
         public const string ATTENDANCE_SOURCE_KIOSK = "9A21D7EB-BCB5-4466-B62F-70EC5008B6B9";
 
         /// <summary>
+        /// The attendance record came from a legacy kiosk.
+        /// </summary>
+        public const string ATTENDANCE_SOURCE_LEGACY_KIOSK = "0B25A627-679B-4B73-AA84-305DEF24815A";
+
+        /// <summary>
         /// The attendance record came from a mobile check-in.
         /// </summary>
         public const string ATTENDANCE_SOURCE_MOBILE = "972E8841-A3C9-4DDD-BD24-A414C0290331";
+
+        /// <summary>
+        /// The attendance record from from a proximity (bluetooth low energy) check-in.
+        /// </summary>
+        public const string ATTENDANCE_SOURCE_PROXIMITY = "799e6fa9-33d8-44aa-93dc-3dbaf25fe9f1";
+
+        /// <summary>
+        /// The attendance record came from a physical token, such as NFC or QR Code scan.
+        /// </summary>
+        public const string ATTENDANCE_SOURCE_TOKEN = "8059cc0a-bd93-4d35-9458-6e6dff2fa3e3";
 
         #endregion
 
@@ -1636,6 +1646,25 @@ namespace Rock.SystemGuid
         /// The default 'Wow' reaction for chat messages.
         /// </summary>
         public const string CHAT_REACTION_WOW = "304DF5A2-142E-494D-8EEE-D4DBE81B1579";
+
+        #endregion
+
+        #region Organizational Objective
+
+        /// <summary>
+        /// The outreach organizational objective.
+        /// </summary>
+        public const string ORGANIZATIONAL_OBJECTIVE_TYPE_OUTREACH = "396B3980-EB66-446F-86B4-6C6E95FC74A7";
+
+        /// <summary>
+        /// The discipleship organizational objective.
+        /// </summary>
+        public const string ORGANIZATIONAL_OBJECTIVE_TYPE_DISCIPLESHIP = "9DFD8F1E-922E-420D-AE00-F640A2EFF405";
+
+        /// <summary>
+        /// The activation organizational objective.
+        /// </summary>
+        public const string ORGANIZATIONAL_OBJECTIVE_TYPE_ACTIVATION = "283BC4AC-CCCD-4FCF-8C94-9848B6B5E734";
 
         #endregion
     }

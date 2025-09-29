@@ -423,12 +423,6 @@ namespace Rock.Blocks.Cms
                     return actionError;
                 }
 
-                // Ensure everything is valid before saving.
-                if ( !ValidatePageRoute( entity, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
                 entity.LoadAttributes( rockContext );
 
                 var box = new DetailBlockBox<PageRouteBag, PageRouteDetailOptionsBag>

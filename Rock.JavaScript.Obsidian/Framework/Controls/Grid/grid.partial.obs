@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="grid-obsidian styled-scroll" :class="{ 'grid-sticky': isStickyHeader, 'grid-light': light, 'grid-bordered': !light, 'grid-striped': !light, 'grid-hover': !light }">
-        <div class="grid-heading">
+        <div class="grid-header">
             <FilterHeaderRow v-if="!light && !hideFilterHeaderRow"
                              v-model:quickFilterValue="quickFilterValue"
                              :grid="gridState"
@@ -18,7 +18,7 @@
         <div class="grid-content-container"
              :class="{ 'grid-overflow': overflow, }">
 
-            <div class="grid-header-container"
+            <div class="grid-column-header-container"
                  :class="{ 'sticky-column-header': !overflow }">
                 <div v-if="$slots.gridHeaderPrepend"
                      class="grid-header-prepend">

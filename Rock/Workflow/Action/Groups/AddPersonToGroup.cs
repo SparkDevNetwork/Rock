@@ -36,15 +36,41 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Group Member Add" )]
 
-    [WorkflowAttribute( "Person", "Workflow attribute that contains the person to add to the group.", true, "", "", 0, AttributeKey.Person, 
-        new string[] { "Rock.Field.Types.PersonFieldType" })]
-    [WorkflowAttribute( "Group Member", "An optional GroupMember attribute to store the group member that is added.", false, "", "", 1, AttributeKey.GroupMember, 
-        new string[] { "Rock.Field.Types.GroupMemberFieldType" } )]
+    [WorkflowAttribute( "Person",
+        Description = "Workflow attribute that contains the person to add to the group.",
+        Key = AttributeKey.Person,
+        IsRequired = true,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" },
+        Order = 0 )]
 
     [GroupAndRoleFieldAttribute( "Group and Role", "Group/Role to add the person to. Leave role blank to use the default role for that group.", "Group", true, "", "", 1, AttributeKey.GroupAndRole )]
-    [EnumField( "Group Member Status", "The  status to set the user to in the group.", typeof( GroupMemberStatus ), true, "1", "", 2, AttributeKey.GroupMemberStatus )]
-    [BooleanField( "Update Existing", "If the selected person already belongs to the selected group, should their current role and status be updated to reflect the configured values above.", true, "", 3, AttributeKey.UpdateExisting )]
-    [BooleanField( "Ignore Group Member Requirements", "When enabled, group member requirements are bypassed, allowing the person to be added regardless of whether they meet the criteria.", false, "", 4, AttributeKey.IgnoreGroupMemberRequirements )]
+
+    [EnumField( "Group Member Status",
+        Description = "The status to set the user to in the group.",
+        Key = AttributeKey.GroupMemberStatus,
+        DefaultEnumValue = 1,
+        EnumSourceType = typeof( GroupMemberStatus ),
+        IsRequired = true,
+        Order = 2 )]
+
+    [BooleanField( "Update Existing",
+        Description = "If the selected person already belongs to the selected group, should their current role and status be updated to reflect the configured values above.",
+        Key = AttributeKey.UpdateExisting,
+        IsRequired = true,
+        Order = 3 )]
+
+    [BooleanField( "Ignore Group Member Requirements",
+        Description = "When enabled, group member requirements are bypassed, allowing the person to be added regardless of whether they meet the criteria.",
+        Key = AttributeKey.IgnoreGroupMemberRequirements,
+        IsRequired = false,
+        Order = 4 )]
+
+    [WorkflowAttribute( "Group Member",
+        Description = "An optional GroupMember attribute to store the group member that is added.",
+        Key = AttributeKey.GroupMember,
+        IsRequired = false,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.GroupMemberFieldType" },
+        Order = 6 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "DF0167A1-6928-4FBC-893B-5826A28AAC83")]
     public class AddPersonToGroup : ActionComponent

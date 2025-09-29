@@ -2,6 +2,7 @@
 <template>
     <ComponentPropertyPanelBase :componentElement="componentElement"
                                 :componentMigrationHelper="imageComponentHelper"
+                                :ltr="ltr"
                                 title="Image"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
@@ -208,6 +209,11 @@
         imageComponentBinaryFileTypeGuid: {
             type: String as PropType<Guid>,
             required: true
+        },
+
+        ltr: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 

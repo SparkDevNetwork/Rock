@@ -441,7 +441,7 @@ namespace Rock.Blocks.Lms
             {
                 var entityType = EntityTypeCache.Get( entity.LearningActivity.ActivityComponentId );
                 var component = LearningActivityContainer.GetComponent( entityType.Name );
-                var componentData = component.GetComponentSettings( entity, box.Bag.ComponentSettings, RockContext, RequestContext )
+                var componentData = component.GetComponentData( entity, box.Bag.ComponentSettings, RockContext, RequestContext )
                     ?? new Dictionary<string, string>();
 
                 entity.LearningActivity.ActivityComponentSettingsJson = componentData.ToJson();

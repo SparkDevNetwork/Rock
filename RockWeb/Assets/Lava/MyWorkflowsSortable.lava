@@ -49,7 +49,7 @@
               <span class='label label-info'>{{ action.Activity.Workflow.Status }}</span>
               {% endif %}
             </td>
-            <td><i class='fa-fw {{ action.Activity.Workflow.WorkflowType.IconCssClass }}'></i> {{ action.Activity.Workflow.WorkflowType.Name }}</td>
+            <td><i class='ti-fw {{ action.Activity.Workflow.WorkflowType.IconCssClass }}'></i> {{ action.Activity.Workflow.WorkflowType.Name }}</td>
             {% if showPriority %}
             <td>{{ workflowPriority }}</td>
             {% endif %}

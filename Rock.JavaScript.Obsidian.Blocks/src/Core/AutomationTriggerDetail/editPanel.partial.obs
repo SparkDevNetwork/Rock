@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ContentSectionWrapper :sidebar="false">
+    <ContentSectionContainer :sidebar="false">
         <ContentSection light>
             <ContentStack>
                 <div class="row">
@@ -41,13 +41,13 @@
                                   :executeRequest="onExecuteComponentRequest" />
             </ContentStack>
         </ContentSection>
-    </ContentSectionWrapper>
+    </ContentSectionContainer>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import ContentSectionWrapper from "@Obsidian/Controls/contentSectionWrapper.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";

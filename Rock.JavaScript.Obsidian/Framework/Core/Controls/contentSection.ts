@@ -16,7 +16,7 @@
 
 import { inject, provide, ref, Ref } from "vue";
 
-const sectionHolderKey = Symbol("contentSectionWrapperHolder");
+const sectionHolderKey = Symbol("contentSectionContainerHolder");
 
 /**
  * Interface for a content section. This provides access to details about the
@@ -43,39 +43,39 @@ export interface IContentSectionHolder {
 }
 
 /**
- * Interface for a content section wrapper. This is used to manage the collection
- * of content sections in a content section wrapper.
+ * Interface for a content section container. This is used to manage the collection
+ * of content sections in a content section container.
  *
  * This is an internal interface used by the content section components to manage
  * state. It is not intended for use outside of the content section components.
  */
-export interface IContentSectionWrapperHolder {
+export interface IContentSectionContainerHolder {
     addSection: (section: IContentSectionHolder) => void;
     removeSection: (section: IContentSectionHolder) => void;
 }
 
 /**
- * Provides a content section wrapper holder to child components.
+ * Provides a content section container holder to child components.
  *
  * This is an internal function used by the content section components to manage
  * state. It is not intended for use outside of the content section components.
  *
- * @param holder The content section wrapper holder to provide.
+ * @param holder The content section container holder to provide.
  */
-export function provideSectionWrapper(holder: IContentSectionWrapperHolder): void {
+export function provideSectionContainer(holder: IContentSectionContainerHolder): void {
     provide(sectionHolderKey, holder);
 }
 
 /**
- * Retrieves the content section wrapper holder from the current context.
+ * Retrieves the content section container holder from the current context.
  *
  * This is an internal function used by the content section components to manage
  * state. It is not intended for use outside of the content section components.
  *
- * @returns The content section wrapper holder, or a default implementation if not found.
+ * @returns The content section container holder, or a default implementation if not found.
  */
-export function useSectionWrapper(): IContentSectionWrapperHolder {
-    return inject(sectionHolderKey) as IContentSectionWrapperHolder
+export function useSectionContainer(): IContentSectionContainerHolder {
+    return inject(sectionHolderKey) as IContentSectionContainerHolder
         ?? {
         addSection: () => { },
         removeSection: () => { },
@@ -91,7 +91,7 @@ export function useSectionWrapper(): IContentSectionWrapperHolder {
  * @param title The title of the section.
  * @param icon The icon for the section, if any.
  *
- * @returns A new content section holder to be registered with the content section wrapper.
+ * @returns A new content section holder to be registered with the content section container.
  */
 export function createSection(title: Readonly<Ref<string | undefined>>, icon: Readonly<Ref<string | undefined>>): IContentSectionHolder {
     const isCollapsed = ref(false);

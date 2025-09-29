@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -104,6 +105,8 @@ namespace Rock.Blocks.CheckIn
                 // Check for existing attendance records.
                 //
                 var attendanceQry = attendanceService.Queryable()
+                    .Include( a => a.PersonAlias.Person )
+                    .Include( a => a.CreatedByPersonAlias.Person )
                     .Where( a =>
                         a.Occurrence.GroupId == groupId.Value &&
                         a.Occurrence.OccurrenceDate == attendanceDate.Value &&

@@ -336,6 +336,42 @@ namespace Rock.Tests.Integration.Workflow
             }
         }
 
+        [TestMethod]
+        [IsolatedTestDatabase]
+        public void NewPersonAndEmptySpouse_DoesNotCreateSpouse()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var personService = new PersonService( rockContext );
+                var personAliasService = new PersonAliasService( rockContext );
+                var config = PrepareTest( rockContext );
+
+                var personEntryValues = new PersonEntryValuesBag
+                {
+                    Person = new PersonBasicEditorBag
+                    {
+                        FirstName = "Test",
+                        LastName = "Person",
+                        Email = "test.person@rocksolidchurchdemo.com"
+                    },
+                    Spouse = new PersonBasicEditorBag()
+                };
+
+                var processor = new WorkflowPersonEntryProcessor( config.Action, rockContext );
+                var originalPersonCount = personService.Queryable().Count();
+
+                processor.SetFormPersonEntryValues( config.Form, null, personEntryValues, null, null );
+
+                var personAliasGuid = config.Action.Activity.Workflow.GetAttributeValue( config.PersonAttribute.Key ).AsGuidOrNull();
+                var spouseAliasGuid = config.Action.Activity.Workflow.GetAttributeValue( config.SpouseAttribute.Key ).AsGuidOrNull();
+                var newPersonCount = personService.Queryable().Count() - originalPersonCount;
+
+                Assert.That.IsNotNull( personAliasGuid, "Person alias should be non-null." );
+                Assert.That.IsNull( spouseAliasGuid, "Spouse alias should be null." );
+                Assert.That.AreEqual( 1, newPersonCount, "Number of new person records should be 1." );
+            }
+        }
+
         private static TestConfiguration PrepareTest( RockContext rockContext )
         {
             var attributeService = new AttributeService( rockContext );

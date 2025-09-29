@@ -45,6 +45,7 @@ namespace Rock.Blocks.Cms
         Description = "The page that will show the lava endpoint details.",
         Key = AttributeKey.DetailPage )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "B643984C-03C3-46E2-AA41-5E658DE79921" )]
     [Rock.SystemGuid.BlockTypeGuid( "3BA03384-027C-4EE8-B44E-5643D583686D" )]
     [CustomizedGrid]

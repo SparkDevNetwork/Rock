@@ -67,6 +67,8 @@
                                                  v-model="children"
                                                  :disabled="isSaving || isNavigating"
                                                  :lastName="adult1.lastName"
+                                                 :childLabel="childLabel"
+                                                 :adultLabel="adultLabel"
                                                  @addChild="onAddChild"
                                                  @removeChild="onRemoveChild" />
                     </Panel>
@@ -177,9 +179,9 @@
                                                      :disabled="isSaving || isNavigating"
                                                      :horizontal="true"
                                                      :items="[
-                                                         { text: 'Email', value: CommunicationPreference.Email.toString() },
-                                                         { text: 'SMS', value: CommunicationPreference.SMS.toString() }
-                                                     ]"
+                                                        { text: 'Email', value: CommunicationPreference.Email.toString() },
+                                                        { text: 'SMS', value: CommunicationPreference.SMS.toString() }
+                                                    ]"
                                                      label="Communication Preference"
                                                      :rules="config.adultCommunicationPreferenceField.isRequired ? adult1RequiredRules : ''" />
                                 </div>
@@ -374,9 +376,9 @@
                                                          :disabled="isSaving || isNavigating"
                                                          :horizontal="true"
                                                          :items="[
-                                                             { text: 'Email', value: CommunicationPreference.Email.toString() },
-                                                             { text: 'SMS', value: CommunicationPreference.SMS.toString() }
-                                                         ]"
+                                                            { text: 'Email', value: CommunicationPreference.Email.toString() },
+                                                            { text: 'SMS', value: CommunicationPreference.SMS.toString() }
+                                                        ]"
                                                          label="Communication Preference"
                                                          :rules="isAdult2Entered && config.adultCommunicationPreferenceField.isRequired ? adult2RequiredRules : ''" />
                                     </div>

@@ -20,6 +20,7 @@
         <Column name="person"
                 title="Name"
                 field="person"
+                :sortValue="row => getPersonFullName(row)"
                 :filter="pickExistingValueFilter"
                 :filterValue="getNameRowFilterValue"
                 :quickFilterValue="getNameRowFilterValue"
@@ -35,6 +36,8 @@
         <Column name="engagementMap"
                 title="Recent Engagement"
                 field="engagementMap"
+                :disableSort="true"
+                quickFilterValue="null"
                 visiblePriority="md"
                 width="12%">
 
@@ -49,6 +52,7 @@
                       title="Current Streak"
                       field="currentStreakCount"
                       :filter="numberValueFilter"
+                      :quickFilterValue="getCurrentStreakCountFilterValue"
                       visiblePriority="xs"
                       width="5%" />
 
@@ -56,6 +60,7 @@
                       title="Longest Streak"
                       field="longestStreakCount"
                       :filter="numberValueFilter"
+                      :quickFilterValue="getLongestStreakCountFilterValue"
                       visiblePriority="xs"
                       width="5%" />
 
@@ -63,6 +68,7 @@
                       title="Engagements"
                       field="engagementCount"
                       :filter="numberValueFilter"
+                      :quickFilterValue="getEngagementCountFilterValue"
                       visiblePriority="xs"
                       width="5%" />
 
@@ -72,6 +78,7 @@
                     headerClass="title-right"
                     itemClass="justify-content-end text-right"
                     :filter="dateValueFilter"
+                    :quickFilterValue="getEnrollmentDateFilterValue"
                     visiblePriority="xs"
                     width="5%" />
 
@@ -104,7 +111,6 @@
     import { computed, reactive, ref } from "vue";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { asBoolean } from "@Obsidian/Utility/booleanUtils";
-    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<ListBlockBox<StreakListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -123,7 +129,7 @@
     });
 
     const isVisible = computed((): boolean => {
-        return !!config.options?.streakTypeIdKey && useStore().state.areSecondaryBlocksShown;
+        return !!config.options?.streakTypeIdKey;
     });
 
     //#endregion
@@ -144,6 +150,10 @@
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
     }
+
+    const getPersonFullName = (row: Record<string, unknown>): string => {
+        return row["fullName"] as string;
+    };
 
     function getIsDeceasedRowClass(row: Record<string, unknown>): string {
         const isDeceased = asBoolean(row["isDeceased"]);
@@ -174,6 +184,49 @@
     */
     function getNameRowFilterValue(row: Record<string, unknown>): string {
         return row.fullName as string;
+    }
+
+    /**
+    * Gets the filter value text to use for the person column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getCurrentStreakCountFilterValue(row: Record<string, unknown>): string {
+        return row.currentStreakCount as string;
+    }
+
+    /**
+    * Gets the filter value text to use for the person column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getLongestStreakCountFilterValue(row: Record<string, unknown>): string {
+        return row.longestStreakCount as string;
+    }
+
+    /**
+    * Gets the filter value text to use for the person column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getEngagementCountFilterValue(row: Record<string, unknown>): string {
+        return row.engagementCount as string;
+    }
+
+    /**
+    * Gets the filter value text to use for the person column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getEnrollmentDateFilterValue(row: Record<string, unknown>): string {
+        const dateStr = row.enrollmentDate as string;
+        if (!dateStr) return "";
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return dateStr;
+        const mm = String(date.getMonth() + 1);
+        const dd = String(date.getDate());
+        const yyyy = date.getFullYear();
+        return `${mm}/${dd}/${yyyy}`;
     }
 
     // #endregion

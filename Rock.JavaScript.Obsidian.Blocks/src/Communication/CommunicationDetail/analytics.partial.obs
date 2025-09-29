@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div v-if="communicationDetail" class="communication-detail-analytics">
-        <ContentSection title="Delivery Breakdown" light>
+        <ContentSection title="Delivery Breakdown" light disableCollapse>
             <template v-if="mediumRecipientCountLabel" #headerActions>
                 <HighlightLabel labelType="primary">
                     {{ mediumRecipientCountLabel }}
@@ -25,11 +25,11 @@
             </NotificationBox>
 
             <template v-else>
-                <ContentSection title="Performance KPIs" light class="communication-detail-margin-top">
+                <ContentSection title="Performance KPIs" light disableCollapse class="communication-detail-margin-top">
                     <Kpis :kpis="analytics?.kpis" :showEmailMetrics="showEmailMetrics" />
                 </ContentSection>
 
-                <ContentSection title="Performance Chart" light class="communication-detail-margin-top">
+                <ContentSection title="Performance Chart" light disableCollapse class="communication-detail-margin-top">
                     <template #headerActions>
                         <Toggle v-model="isActivityFlowVisible"
                                 trueText="Flow"
@@ -47,7 +47,12 @@
                     </template>
                 </ContentSection>
 
-                <ContentSection v-if="totalLinksCount" title="Top Performing Links" light class="communication-detail-margin-top">
+                <ContentSection v-if="totalLinksCount"
+                                title="Top Performing Links"
+                                overflowText="See All Links"
+                                light
+                                disableCollapse
+                                class="communication-detail-margin-top">
                     <template v-if="totalLinksCountLabel" #headerActions>
                         <HighlightLabel>
                             {{ totalLinksCountLabel }}
@@ -66,7 +71,7 @@
                 <div class="communication-detail-gender-and-age-chart-sections row d-flex flex-wrap align-items-stretch">
 
                     <div class="communication-detail-gender-chart-section col-xs-12 col-md-6 communication-detail-margin-top">
-                        <ContentSection title="Unique Opens By Gender" light>
+                        <ContentSection title="Unique Opens By Gender" light disableCollapse>
                             <div class="communication-detail-gender-chart">
                                 <UniqueOpensByGender :chartDataPoints="analytics?.uniqueOpensByGender" />
                             </div>
@@ -74,7 +79,7 @@
                     </div>
 
                     <div class="communication-detail-age-chart-section col-xs-12 col-md-6 communication-detail-margin-top">
-                        <ContentSection title="Unique Opens By Age Range" light>
+                        <ContentSection title="Unique Opens By Age Range" light disableCollapse>
                             <div class="communication-detail-age-chart">
                                 <UniqueOpensByAgeRange :chartDataPoints="analytics?.uniqueOpensByAgeRange" />
                             </div>
@@ -83,7 +88,12 @@
 
                 </div>
 
-                <ContentSection v-if="totalClientsCount" title="Top Clients" light class="communication-detail-margin-top">
+                <ContentSection v-if="totalClientsCount"
+                                title="Top Clients"
+                                overflowText="See All Clients"
+                                light
+                                disableCollapse
+                                class="communication-detail-margin-top">
                     <template v-if="totalClientsCountLabel" #headerActions>
                         <HighlightLabel>
                             {{ totalClientsCountLabel }}
@@ -109,7 +119,7 @@
             </template>
         </template>
 
-        <ContentSection v-else title="Message Performance" light class="communication-detail-margin-top">
+        <ContentSection v-else title="Message Performance" light disableCollapse class="communication-detail-margin-top">
             <div class="communication-detail-no-metrics">
                 <i class="ti ti-alert-triangle ti-4x"></i>
                 <div class="no-metrics-to-show-message">

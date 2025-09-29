@@ -82,12 +82,12 @@
             {%- if ScheduleDate -%}
 
               <span class="text-muted small">
-                <i class="fa fa-calendar-alt"></i>
+                <i class="ti ti-calendar-month"></i>
                 {{ ScheduleDate | Date:"dddd MMMM d, yyyy " }}
               </span>
 
               <span class="text-muted small text-center">
-                <i class="fa fa-clock-o"></i>
+                <i class="ti ti-clock"></i>
                 {{ Schedule.Name }}
               </span>
             {%- else -%}
@@ -97,7 +97,7 @@
             {%- endif -%}
 
             <span class="text-muted small text-right">
-              <i class="fa fa-building-o"></i>
+              <i class="ti ti-building"></i>
               {{ Location.Name }}
             </span>
           </div>
@@ -119,9 +119,9 @@
                   {%- if scheduledIndividual.ScheduledAttendanceItemStatus == 'Confirmed' or  scheduledIndividual.CurrentlyCheckedIn  -%}
                     <div class="col-md-6 scheduled-individual mb-3">
                       {%- if scheduledIndividual.CurrentlyCheckedIn -%}
-                        <i class="fa fa-check-square-o fa-fw"></i>
+                        <i class="ti ti-square-check ti-fw"></i>
                       {%- else -%}
-                        <i class="fa fa-square-o fa-fw"></i>
+                        <i class="ti ti-square ti-fw"></i>
                       {%- endif -%}
                     {{ scheduledIndividual.Person.FullName }}
                     {%- if DisplayRole -%}

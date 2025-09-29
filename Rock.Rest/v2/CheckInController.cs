@@ -23,8 +23,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 using Rock.CheckIn.v2;
@@ -46,8 +44,6 @@ using HttpDeleteAttribute = System.Web.Http.HttpDeleteAttribute;
 using IActionResult = System.Web.Http.IHttpActionResult;
 using RouteAttribute = System.Web.Http.RouteAttribute;
 using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
-#else
-using RoutePrefixAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 #endif
 
 namespace Rock.Rest.v2
@@ -91,8 +87,8 @@ namespace Rock.Rest.v2
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( StatusCodes.Status200OK, Type = typeof( ConfigurationResponseBag ) )]
-        [ProducesResponseType( StatusCodes.Status400BadRequest )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( ConfigurationResponseBag ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "200dd82f-6532-4437-9ba4-a289408b0eb8" )]
         public IActionResult PostConfiguration( [FromBody] ConfigurationOptionsBag options )
         {
@@ -134,8 +130,8 @@ namespace Rock.Rest.v2
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( StatusCodes.Status200OK, Type = typeof( KioskStatusResponseBag ) )]
-        [ProducesResponseType( StatusCodes.Status400BadRequest )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( KioskStatusResponseBag ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "7fb87711-1ecf-49ca-90cb-3e2e1b02a933" )]
         public IActionResult PostKioskStatus( [FromBody] KioskStatusOptionsBag options )
         {
@@ -180,8 +176,8 @@ namespace Rock.Rest.v2
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( StatusCodes.Status200OK, Type = typeof( SearchForFamiliesResponseBag ) )]
-        [ProducesResponseType( StatusCodes.Status400BadRequest )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( SearchForFamiliesResponseBag ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "2c587733-0e08-4e93-8f2b-3e2518362768" )]
         public IActionResult PostSearchForFamilies( [FromBody] SearchForFamiliesOptionsBag options )
         {
@@ -239,8 +235,8 @@ namespace Rock.Rest.v2
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( StatusCodes.Status200OK, Type = typeof( FamilyMembersResponseBag ) )]
-        [ProducesResponseType( StatusCodes.Status400BadRequest )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( FamilyMembersResponseBag ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "2bd5afdf-da57-48bb-a6db-7dd9ad1ab8da" )]
         public IActionResult PostFamilyMembers( [FromBody] FamilyMembersOptionsBag options )
         {
@@ -301,8 +297,8 @@ namespace Rock.Rest.v2
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( StatusCodes.Status200OK, Type = typeof( AttendeeOpportunitiesResponseBag ) )]
-        [ProducesResponseType( StatusCodes.Status400BadRequest )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( AttendeeOpportunitiesResponseBag ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "6e77e23d-cccb-46b7-a8e9-95706bbb269a" )]
         public IActionResult PostAttendeeOpportunities( [FromBody] AttendeeOpportunitiesOptionsBag options )
         {
@@ -365,8 +361,8 @@ namespace Rock.Rest.v2
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( StatusCodes.Status200OK, Type = typeof( SaveAttendanceResponseBag ) )]
-        [ProducesResponseType( StatusCodes.Status400BadRequest )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( SaveAttendanceResponseBag ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "7ef059cb-99ba-4cf1-b7d5-3723eb320a99" )]
         public async Task<IActionResult> PostSaveAttendance( [FromBody] SaveAttendanceOptionsBag options )
         {
@@ -435,8 +431,8 @@ namespace Rock.Rest.v2
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( StatusCodes.Status200OK, Type = typeof( ConfirmAttendanceResponseBag ) )]
-        [ProducesResponseType( StatusCodes.Status400BadRequest )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( ConfirmAttendanceResponseBag ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "52070226-289b-442d-a8fe-a8323c0f922c" )]
         public async Task<IActionResult> PostConfirmAttendance( [FromBody] ConfirmAttendanceOptionsBag options )
         {
@@ -500,8 +496,8 @@ namespace Rock.Rest.v2
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( StatusCodes.Status200OK, Type = typeof( CheckoutResponseBag ) )]
-        [ProducesResponseType( StatusCodes.Status400BadRequest )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( CheckoutResponseBag ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "733be2ee-dec6-4f7f-92bd-df367c20543d" )]
         public async Task<IActionResult> PostCheckout( [FromBody] CheckoutOptionsBag options )
         {
@@ -552,8 +548,8 @@ namespace Rock.Rest.v2
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( StatusCodes.Status200OK )]
-        [ProducesResponseType( StatusCodes.Status400BadRequest )]
+        [ProducesResponse( HttpStatusCode.OK )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "f914ffc3-8587-493b-9c8a-ae196b5fe028" )]
         public IActionResult DeletePendingAttendance( Guid sessionGuid )
         {
@@ -581,22 +577,15 @@ namespace Rock.Rest.v2
         [HttpGet]
         [Route( "CloudPrint/{deviceId}" )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( StatusCodes.Status101SwitchingProtocols )]
-        [ProducesResponseType( StatusCodes.Status400BadRequest )]
+        [ProducesResponse( HttpStatusCode.SwitchingProtocols )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "1b4b1d0d-a872-40f7-a49d-666092cf8816" )]
         public IActionResult GetPrinterProxy( string deviceId, [FromQuery] string name = null )
         {
-#if NET6_0_OR_GREATER
-            if ( !Request.HttpContext.WebSockets.IsWebSocketRequest )
-            {
-                return BadRequest( "This API may only be used with websocket connections." );
-            }
-#else
             if ( !System.Web.HttpContext.Current.IsWebSocketRequest )
             {
                 return BadRequest( "This API may only be used with websocket connections." );
             }
-#endif
 
             DeviceCache device = null;
 
@@ -614,17 +603,6 @@ namespace Rock.Rest.v2
                 return BadRequest( "Device not found." );
             }
 
-#if NET6_0_OR_GREATER
-            Request.HttpContext.WebSockets.AcceptWebSocketAsync().ContinueWith( async t =>
-            {
-                var socket = await t;
-                var address = RockRequestContext.ClientInformation.IpAddress;
-                var proxy = new CloudPrintSocket( socket, device.Id, name ?? device.Name, address );
-                return proxy.RunAsync( CancellationToken.None );
-            } );
-
-            return StatusCode( StatusCodes.Status101SwitchingProtocols );
-#else
             System.Web.HttpContext.Current.AcceptWebSocketRequest( ctx =>
             {
                 var address = RockRequestContext.ClientInformation.IpAddress;
@@ -634,7 +612,6 @@ namespace Rock.Rest.v2
             } );
 
             return ResponseMessage( Request.CreateResponse( HttpStatusCode.SwitchingProtocols ) );
-#endif
         }
 
         /// <summary>
@@ -647,9 +624,9 @@ namespace Rock.Rest.v2
         [Route( "ProximityCheckIn" )]
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( StatusCodes.Status204NoContent )]
-        [ProducesResponseType( StatusCodes.Status400BadRequest )]
-        [ProducesResponseType( StatusCodes.Status401Unauthorized )]
+        [ProducesResponse( HttpStatusCode.NoContent )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "2e0e2704-8730-4949-b726-05401930b0e0" )]
         public IActionResult PostProximityCheckIn( [FromBody] ProximityCheckInOptionsBag proximity )
         {

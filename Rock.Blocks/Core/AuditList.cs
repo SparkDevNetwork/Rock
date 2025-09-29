@@ -81,10 +81,18 @@ namespace Rock.Blocks.Core
             var query = base.GetListQueryable( rockContext )
                 .AsNoTracking()
                 .Include( a => a.Details )
+                .Include( a => a.EntityType )
                 .Include( a => a.PersonAlias )
                 .Include( a => a.PersonAlias.Person );
 
             return query;
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<Audit> GetOrderedListQueryable( IQueryable<Audit> queryable, RockContext rockContext )
+        {
+            return queryable.AsNoTracking()
+                .OrderByDescending( q => q.Id );
         }
 
         /// <inheritdoc/>
@@ -139,6 +147,7 @@ namespace Rock.Blocks.Core
                         a.OriginalValue,
                         a.CurrentValue
                     })
+                    .OrderBy( d => d.Property )
                     .ToList();
 
                 if ( !auditDetails.Any() )

@@ -1,5 +1,5 @@
 /** The type to use for coloring and styling of the action. */
-export type MenuActionType = "default" | "danger";
+export type MenuActionType = "default" | "danger" | "info";
 
 /** A function that will be called in response to an action. */
 export type MenuActionCallback = (event: Event) => void | Promise<void>;

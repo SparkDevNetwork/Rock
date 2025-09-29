@@ -148,7 +148,7 @@ namespace Rock.Model
         public ExitConditionType ExitConditionType { get; set; }
 
         /// <summary>
-        /// Gets or sets the unsubscribe message (maximum 500 characters).
+        /// Gets or sets the public name (maximum 500 characters).
         /// </summary>
         /// <remarks>
         /// Displayed in the unsubscribe block when a recipient opts out of this Communication Flow.
@@ -156,7 +156,19 @@ namespace Rock.Model
         /// </remarks>
         [MaxLength( 500 )]
         [DataMember]
-        public string UnsubscribeMessage { get; set; }
+        public string PublicName { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether all flow instances are messaging-complete
+        /// and the flow schedule will not create any new instances.
+        /// </summary>
+        public bool IsMessagingClosed { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether conversion goal tracking is complete
+        /// for all instances in this flow and no future instances will be created.
+        /// </summary>
+        public bool IsConversionGoalTrackingClosed { get; set; }
 
         /// <inheritdoc />
         [DataMember]
@@ -305,6 +317,11 @@ namespace Rock.Model
         [RockInternal( "18.0" )]
         public class TookStepConversionGoalSettings
         {
+            /// <summary>
+            /// Gets or sets the unique identifier of the Step Program used by the Step Type for this conversion goal.
+            /// </summary>
+            public Guid StepProgramGuid { get; set; }
+
             /// <summary>
             /// Gets or sets the unique identifier of the Step Type used for this conversion goal.
             /// </summary>

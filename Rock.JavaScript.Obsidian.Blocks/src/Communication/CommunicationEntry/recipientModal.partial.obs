@@ -132,7 +132,7 @@
 .btn-remove:active {
     color: var(--color-primary);
     border: 1px solid var(--color-primary);
-    background-color: white;
+    background-color: var(--color-interface-softest);
 }
 </style>
 

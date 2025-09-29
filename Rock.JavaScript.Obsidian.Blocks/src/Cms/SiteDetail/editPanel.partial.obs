@@ -291,7 +291,7 @@
     const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
     const isActive = propertyRef(props.modelValue?.bag?.isActive ?? false, "IsActive");
     const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
-    const theme = propertyRef(props.modelValue?.bag?.theme ?? "Rock", "Theme");
+    const theme = propertyRef(props.modelValue?.bag?.theme ?? "RockNextGen", "Theme");
     const siteDomains = propertyRef(props.modelValue?.bag?.siteDomains ?? "", "SiteDomains");
     const errorPage = propertyRef(props.modelValue?.bag?.errorPage ?? "", "ErrorPage");
     const googleAnalyticsCode = propertyRef(props.modelValue?.bag?.googleAnalyticsCode ?? "", "GoogleAnalyticsCode");

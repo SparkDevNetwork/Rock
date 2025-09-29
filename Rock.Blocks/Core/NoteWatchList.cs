@@ -158,7 +158,7 @@ namespace Rock.Blocks.Core
 #else
             var qry = base.GetListQueryable( rockContext )
 #endif
-                .Include( a => a.WatcherPersonAlias )
+                .Include( a => a.WatcherPersonAlias.Person )
                 .Include( a => a.WatcherGroup )
                 .Include( a => a.NoteType )
                 .Include( a => a.EntityType );

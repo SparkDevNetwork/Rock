@@ -39,8 +39,9 @@ namespace Rock.Blocks.WebFarm
     [Category( "WebFarm" )]
     [Description( "Displays a list of web farm node logs." )]
     [IconCssClass( "ti ti-list" )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "57e8356d-6e59-4f5b-8db9-a274b7a0efd8" )]
     [Rock.SystemGuid.BlockTypeGuid( "6c824483-6624-460b-9dd8-e127b25ca65d" )]
     [CustomizedGrid]

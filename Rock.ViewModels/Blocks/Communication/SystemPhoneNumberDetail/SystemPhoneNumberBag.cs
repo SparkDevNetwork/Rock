@@ -81,5 +81,16 @@ namespace Rock.ViewModels.Blocks.Communication.SystemPhoneNumberDetail
         /// SMS message is received on this number.
         /// </summary>
         public ListItemBag SmsReceivedWorkflowType { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to prevent Rock from sending automatic SMS replies to opt-in or opt-out messages.
+        /// </summary>
+        public bool SuppressSmsOptInOutAutoReplies { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to prevent Rock from updating an individual's SMS status when they opt in or out of
+        /// receiving SMS messages.
+        /// </summary>
+        public bool DisableSmsOptInOutTracking { get; set; }
     }
 }

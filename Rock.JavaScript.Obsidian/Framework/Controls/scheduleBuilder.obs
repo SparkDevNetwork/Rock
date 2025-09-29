@@ -3,7 +3,7 @@
     <RockFormField :modelValue="internalValue" v-bind="standardProps" name="schedule-builder">
         <div class="control-wrapper">
             <div class="picker">
-                <a class="picker-label" href="#" :title="scheduleSummary" @click.prevent="onEditSchedule">
+                <a class="picker-label" :class="{ 'disabled': disabled }" href="#" :title="scheduleSummary" @click.prevent="onEditSchedule">
                     <i class="ti ti-calendar"></i>
                     Edit Schedule
                 </a>
@@ -240,6 +240,13 @@
 .recurrence-pattern-specific-date > ul:hover > li > a {
     display: initial;
 }
+
+.disabled {
+    pointer-events: none;
+    cursor: not-allowed;
+    opacity: 0.65;
+    box-shadow: none;
+}
 </style>
 
 <script setup lang="ts">
@@ -269,6 +276,12 @@
         modelValue: {
             type: String as PropType<string | null>,
             required: false
+        },
+
+        /** Whether the control is disabled. */
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         /** Whether to hide the start date/time fields. */
@@ -872,7 +885,9 @@
     // #region Event Handlers
 
     function onEditSchedule(): void {
-        isModalVisible.value = true;
+        if (!props.disabled) {
+            isModalVisible.value = true;
+        }
     }
 
     function onSaveSchedule(): void {

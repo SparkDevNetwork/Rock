@@ -90,19 +90,7 @@
 }
 
 .form-builder-detail {
-    --zone-border: #ebebeb;
-    --zone-configurable-border: #f5faff;
-    --zone-configurable-hover-border: #dfe0e1;
-    --zone-action-bg: #f5faff;
-    --zone-action-border: #dde7f2;
-    --zone-action-color: #89a1b9;
-    --zone-action-hover-color: #737475;
-    --zone-active-color: #c9eaf9;
-    --zone-active-action-color: #83bad3;
-    --zone-highlight-color: #ee7725;
-    --zone-highlight-action-text-color: #e4bda2;
     --flex-col-gutter: 30px;
-    --zone-border-radius: 6px;
 }
 
 .form-builder-detail .zone-body .configurable-zone > .zone-content-container > .zone-content {
@@ -131,10 +119,10 @@
 .form-builder-detail .configurable-zone > .zone-content-container {
     display: flex;
     flex-grow: 1;
-    background: #fff;
-    border: 2px dotted var(--zone-border);
-    border-right: 2px solid var(--zone-action-border);
-    border-radius: var(--zone-border-radius) 0 0 var(--zone-border-radius);
+    background: var(--color-interface-softest);
+    border: 2px dotted var(--color-interface-soft);
+    border-right: 2px solid var(--color-interface-soft);
+    border-radius: var(--rounded-small) 0 0 var(--rounded-small);
 }
 
 .form-builder-detail .configurable-zone > .zone-content-container > .zone-content {
@@ -155,22 +143,24 @@
     align-items: center;
     justify-content: center;
     width: 40px;
-    background-color: var(--zone-action-bg);
-    border: 2px solid var(--zone-action-border);
-    border-left: 0;
+    background-color: var(--color-interface-softer);
+    border: 2px solid var(--color-interface-soft);
+    border-left: transparent;
+    border-top-right-radius: var(--rounded-small);
+    border-bottom-right-radius: var(--rounded-small);
 }
 
 .form-builder-detail .configurable-zone.active > .zone-content-container {
-    border-color: var(--zone-active-color);
+    border-color: var(--color-info-tint);
 }
 
 .form-builder-detail .configurable-zone.active > .zone-actions {
-    background-color: var(--zone-active-color);
-    border-color: var(--zone-active-color);
+    background-color: var(--color-info-soft);
+    border-color: var(--color-info-tint);
 }
 
 .form-builder-detail .configurable-zone.highlight > .zone-content-container {
-    border-color: var(--zone-highlight-color);
+    border-color: var(--color-primary);
     border-right-style: dotted;
 }
 
@@ -194,13 +184,13 @@
     margin: 0 calc(.5 * var(--flex-col-gutter) + 40px) 12px calc(.5 * var(--flex-col-gutter));
 }
 
-.form-builder-detail .form-section .configurable-zone {
-    --zone-border: var(--zone-configurable-border);
+.form-builder-detail .form-section .configurable-zone:hover .zone-content-container {
+    border-right: transparent;
 }
 
 .form-builder-detail .form-section .configurable-zone > .zone-actions {
     border-style: dotted;
-    border-radius: 0 var(--zone-border-radius) var(--zone-border-radius) 0;
+    border-radius: 0 var(--rounded-small) var(--rounded-small) 0;
     opacity: 0;
     transition: opacity 116ms cubic-bezier(.2, .2, .38, .9), transform 116ms cubic-bezier(.2, .2, .38, .9);
     transform: scaleX(0);
@@ -208,24 +198,27 @@
 }
 
 .form-builder-detail .form-section .configurable-zone > .zone-content-container {
-    border-right: 2px dotted var(--zone-border);
+    border-right: 2px dotted var(--color-interface-soft);
 }
 
-.form-builder-detail .form-section .configurable-zone.active,
-.form-builder-detail .form-section .configurable-zone:hover {
-    --zone-border: var(--zone-configurable-hover-border);
+.form-builder-detail .form-section .configurable-zone.active > .zone-content-container {
+    border-right-color: var(--color-info-tint);
 }
 
-.form-builder-detail .form-section .configurable-zone.active > .zone-content-container,
 .form-builder-detail .form-section .configurable-zone:hover > .zone-content-container {
-    border-right-color: transparent;
+    border-right-color: var(--color-interface-soft);
 }
 
-.form-builder-detail .form-section .configurable-zone.active > .zone-actions,
 .form-builder-detail .form-section .configurable-zone:hover > .zone-actions {
     opacity: 1;
     transform: scaleX(1);
     transform-origin: 0% 0%;
+    border-style: solid;
+    border-left: 2px solid var(--color-interface-soft);
+}
+
+.form-builder-detail .form-section .configurable-zone.active > .zone-actions {
+    border-left-color: var(--color-info-tint);
 }
 
 .form-builder-detail .flex-col {
@@ -325,7 +318,7 @@
     min-width: 320px;
     max-width: 320px;
     overflow: hidden;
-    border-right: 1px solid #dfe0e1;
+    border-right: 1px solid var(--color-interface-soft);
 }
 
 .form-sidebar .panel-body {
@@ -342,13 +335,13 @@
     align-items: center;
     justify-content: center;
     width: 40px;
-    color: #fff;
+    color: var(--color-interface-softest);
     cursor: pointer;
-    background-color: #484848;
+    background-color: var(--color-interface-medium);
 }
 
 .sidebar-back:hover {
-    background-color: #3d3d3d;
+    background-color: var(--color-interface-strong);
 }
 
 .sidebar-header {
@@ -358,7 +351,7 @@
     align-items: stretch;
     font-size: 14px;
     font-weight: 600;
-    border-bottom: 1px solid #dfe0e1;
+    border-bottom: 1px solid var(--color-interface-soft);
 }
 
 .sidebar-header .title {
@@ -404,7 +397,7 @@
 }
 
 .sidebar-panels .panel-heading {
-    background: var(--theme-lightest);
+    background: var(--color-interface-softest);
     border-bottom: 0;
     transition: .1s background-color ease-in-out;
 }
@@ -414,15 +407,15 @@
 }
 
 .sidebar-panels .panel-heading:hover {
-    background: #fcfcfc;
+    background: var(--color-interface-softer);
 }
 
 .sidebar-panels .panel-heading:hover > .panel-aside {
-    color: var(--text-color);
+    color: var(--color-interface-strong);
 }
 
 .sidebar-panels .panel-heading:active {
-    background: #dfe0e1;
+    background: var(--color-interface-softer);
 }
 
 .form-template-item-list {
@@ -447,17 +440,17 @@
     z-index: 10;
     width: 100% !important;
     padding: 6px 4px;
-    color: var(--zone-action-color);
+    color: var(--color-interface-medium);
     text-align: center;
     cursor: pointer;
 }
 
 .zone-action:hover {
-    color: var(--zone-action-hover-color);
+    color: var(--color-interface-soft);
 }
 
 .configurable-zone.active .zone-action {
-    color: var(--zone-active-action-color);
+    color: var(--color-info-strong);
 }
 
 .zone-action.zone-action-delete:hover {
@@ -482,11 +475,11 @@
     display: flex;
     align-items: center;
     padding: 7px 6px;
-    font-size: 14px;
+    font-size: var(--font-size-small);
     font-weight: 600;
     cursor: grab;
-    background-color: #fff;
-    border: 1px solid #e1e1e1;
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
     border-left-width: 3px;
     border-radius: 3px;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .05);
@@ -517,7 +510,7 @@
 }
 
 .form-template-item.form-template-item-section {
-    border-left-color: #009ce3;
+    border-left-color: var(--color-info-strong);
 }
 </style>
 

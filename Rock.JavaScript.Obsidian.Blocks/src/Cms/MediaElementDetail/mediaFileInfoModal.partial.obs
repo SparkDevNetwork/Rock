@@ -78,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch, computed } from "vue";
+    import { PropType, ref, watch } from "vue";
     import Modal from "@Obsidian/Controls/modal.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
@@ -87,7 +87,6 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { MediaElementQualityDescription } from "@Obsidian/Enums/Cms/mediaElementQuality";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
 
     const props = defineProps({

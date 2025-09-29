@@ -104,7 +104,8 @@ namespace Rock.Blocks.Group
         protected override IQueryable<Rock.Model.Group> GetListQueryable( RockContext rockContext )
         {
             var queryable = new GroupService( rockContext ).GetArchived()
-                .Include( a => a.ArchivedByPersonAlias );
+                .Include( a => a.GroupType )
+                .Include( a => a.ArchivedByPersonAlias.Person );
 
             return queryable;
         }

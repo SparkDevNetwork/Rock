@@ -56,6 +56,9 @@ export type MediaFolderBag = {
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
+    /** Gets or sets a value indicating whether the media account allows manual entry. */
+    isAllowsManualEntry: boolean;
+
     /** Gets or sets a value indicating whether the content channel sync is enabled. */
     isContentChannelSyncEnabled: boolean;
 

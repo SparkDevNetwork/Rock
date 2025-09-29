@@ -91,7 +91,7 @@
                                 </div>
                             </td>
                             <td class="grid-thumbnail">
-                                <img :src="file.iconPath" style="object-fit: fill; height: 58px; width: 44px;">
+                                <img :src="file.iconPath">
                             </td>
                             <td class="grid-filename">
                                 <span v-show="shownFileRenameForm != file.key">{{ file.name }}</span>
@@ -194,10 +194,20 @@
 
 .assetmanager-files td.grid-selector {
     width: 50px;
+    > .control-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 }
 
 .assetmanager-files td.grid-thumbnail {
     width: 60px;
+    > img {
+        object-fit: fill;
+        height: 100%;
+        width: 100%;
+    }
 }
 
 .assetmanager-files td.grid-filename {

@@ -90,9 +90,13 @@
                                   label="Allow Publication?" />
                     </fieldset>
 
+                    <div class="captcha-container">
+                        <Captcha v-if="!config.disableCaptchaSupport" ref="captchaElement" validationTitle="Captcha" />
+                    </div>
+
                     <RockButton shortcutKey="s"
                                 btnType="primary"
-                                :disabled="isSaving || isNavigating"
+                                :disabled="isSaving || isNavigating || !isCaptchaComplete"
                                 type="submit">{{ saveButtonText }}</RockButton>
                 </RockForm>
                 <template v-else>
@@ -107,8 +111,14 @@
     </div>
 </template>
 
+<style scoped>
+.captcha-container {
+    margin-bottom: var(--spacing-small);
+}
+</style>
+
 <script setup lang="ts">
-    import { computed, nextTick, ref } from "vue";
+    import { computed, nextTick, onMounted, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
@@ -121,6 +131,7 @@
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
+    import Captcha from "@Obsidian/Controls/captcha.obs";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { PrayerRequestEntrySaveResponseBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestEntry/prayerRequestEntrySaveResponseBag";
     import { PrayerRequestEntrySaveRequestBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestEntry/prayerRequestEntrySaveRequestBag";
@@ -128,6 +139,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
 
     const config = useConfigurationValues<PrayerRequestEntryInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -159,6 +171,10 @@
     const attributeValues = ref<Record<string, string>>({});
     const campusTypeFilter = ref<string[] | undefined>(config.campusTypeFilter ?? undefined);
     const campusStatusFilter = ref<string[] | undefined>(config.campusStatusFilter ?? undefined);
+
+    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
+    const captchaToken = ref<string | undefined>();
+    const isCaptchaComplete = ref(false);
 
     //#endregion
 
@@ -196,6 +212,17 @@
     //#endregion
 
     //#region Functions
+
+    async function waitForCaptcha(): Promise<void> {
+        if (config.disableCaptchaSupport || !captchaElement.value) {
+            isCaptchaComplete.value = true;
+            return;
+        }
+
+        const token = await captchaElement.value.getToken();
+        isCaptchaComplete.value = !!token;
+        captchaToken.value = token;
+    }
 
     /**
      * Navigates to a URL.
@@ -258,7 +285,16 @@
                 attributeValues: attributeValues.value
             };
 
-            const result = await invokeBlockAction<PrayerRequestEntrySaveResponseBag>("Save", { bag });
+            const actionContext: BlockActionContextBag = {};
+            if (!config.disableCaptchaSupport && captchaElement.value) {
+                actionContext.captcha = captchaToken.value;
+            }
+
+            const result = await invokeBlockAction<PrayerRequestEntrySaveResponseBag>("Save", { bag }, actionContext);
+
+            if (!config.disableCaptchaSupport && captchaElement.value) {
+                captchaElement.value.refreshToken();
+            }
 
             if (!result?.isSuccess || !result.data) {
                 errors.value = [result.errorMessage || "An unexpected error occurred."];
@@ -285,4 +321,12 @@
     //#endregion
 
     onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        waitForCaptcha();
+    });
+
+    // #endregion Lifecycle Hooks
 </script>

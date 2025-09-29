@@ -388,7 +388,7 @@ export const CommunityMessage = (props: MessageContextValue) => {
                                     />
                                 )}
                                 <div className="rock-chat-message-send-failed-icon">
-                                    <i className='fa fa-exclamation-circle' />
+                                    <i className='ti ti-exclamation-circle' />
                                 </div>
                             </div>
                         </div>

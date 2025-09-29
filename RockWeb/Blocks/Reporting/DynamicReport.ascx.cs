@@ -40,10 +40,10 @@ namespace RockWeb.Blocks.Reporting
     [BooleanField( "Show 'Communications' action on grid", "", defaultValue: true, key: "ShowGridCommunicationsAction" )]
 
     // CustomSetting Dialog
-    [TextField( "ResultsIconCssClass", "Title for the results list.", false, "fa fa-list", "CustomSetting" )]
+    [TextField( "ResultsIconCssClass", "Title for the results list.", false, "ti ti-list", "CustomSetting" )]
     [TextField( "ResultsTitle", "Title for the results list.", false, "Results", "CustomSetting" )]
     [TextField( "FilterTitle", "Title for the results list.", false, "Filters", "CustomSetting" )]
-    [TextField( "FilterIconCssClass", "Title for the results list.", false, "fa fa-filter", "CustomSetting" )]
+    [TextField( "FilterIconCssClass", "Title for the results list.", false, "ti ti-filter", "CustomSetting" )]
     [TextField( "Report", "The report to use for this block", false, "", "CustomSetting" )]
 
     // NOTE: attribute names should have been called *DataFilter* not *DataField*, but probably can't change to keep backward compat :(

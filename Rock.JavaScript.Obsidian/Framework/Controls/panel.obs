@@ -7,7 +7,7 @@
 
         <div :class="panelClass" ref="panelElement" v-bind="$attrs" :tabIndex="panelTabIndex" @keydown="onPanelKeyDown">
 
-            <div v-if="hasTitle" :class="panelHeadingClass" @click="onPanelHeadingClick">
+            <div v-if="hasTitle" :class="panelHeaderClass" @click="onPanelHeaderClick">
                 <h1 class="panel-title">
                     <slot name="title" v-bind="{ title: title, titleIconCssClass: titleIconCssClass }">
                         <i v-if="titleIconCssClass" :class="titleIconCssClass"></i>
@@ -281,10 +281,24 @@
             default: ""
         },
 
-        /** The CSS class to add to the panel-heading element. */
-        panelHeadingCssClass: {
+        /** The CSS class to add to the panel-header element. */
+        panelHeaderCssClass: {
             type: String as PropType<string>,
             default: ""
+        },
+
+        /** Removes the borders of a panel. Only works with RockNextGen theme! */
+        isBorderlessPanel: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Removes the padding from the body of the panel.
+         */
+        hasNoBodyPadding: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -349,19 +363,31 @@
             classes.push("panel-worksurface");
         }
 
+        if (props.isBorderlessPanel) {
+            classes.push("borderless-panel");
+        }
+
+        if (props.hasNoBodyPadding) {
+            classes.push("panel-body-flush");
+        }
+
+        if (!isPanelOpen.value) {
+            classes.push("panel-collapsed");
+        }
+
         return classes;
     });
 
-    /** The CSS class names to be applied to the panel heading. */
-    const panelHeadingClass = computed((): string[] => {
-        const classes = ["panel-heading"];
+    /** The CSS class names to be applied to the panel header. */
+    const panelHeaderClass = computed((): string[] => {
+        const classes = ["panel-header"];
 
         if (props.hasCollapse) {
             classes.push("cursor-pointer");
         }
 
-        if (props.panelHeadingCssClass) {
-            classes.push(props.panelHeadingCssClass);
+        if (props.panelHeaderCssClass) {
+            classes.push(props.panelHeaderCssClass);
         }
 
         return classes;
@@ -423,7 +449,7 @@
     };
 
     /** Event handler when the panel heading is clicked. */
-    const onPanelHeadingClick = (event: Event): void => {
+    const onPanelHeaderClick = (event: Event): void => {
         // Ignore the click if it happened inside the panel actions or by the "expand" button being clicked.
         if (event.target && event.target instanceof HTMLElement && (event.target.closest(".panel-header-actions") || !event.target.parentElement)) {
             return;

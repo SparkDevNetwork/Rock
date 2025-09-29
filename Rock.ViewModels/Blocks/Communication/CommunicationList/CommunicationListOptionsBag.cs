@@ -23,9 +23,9 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationList
     public class CommunicationListOptionsBag
     {
         /// <summary>
-        /// Gets or sets whether to show the "created by" filter controls.
+        /// Gets or sets whether to show the "sent by" filter controls.
         /// </summary>
-        public bool ShowCreatedByFilter { get; set; }
+        public bool ShowSentByFilter { get; set; }
 
         /// <summary>
         /// Gets or sets whether an active email transport exists.

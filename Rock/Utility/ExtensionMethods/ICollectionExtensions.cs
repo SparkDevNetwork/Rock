@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Model;
 
 namespace Rock
@@ -27,15 +28,21 @@ namespace Rock
     public static partial class ExtensionMethods
     {
         /// <summary>
-        /// Gets the first SMS number from the phone numbers collection.
-        /// Returns empty string if none is found.
+        /// Gets the first number from the phone numbers collection that is SMS-enabled and has not been opted-out of
+        /// receiving SMS messages.
         /// </summary>
         /// <param name="phoneNumbers">The phone numbers.</param>
-        /// <returns></returns>
+        /// <returns>The first SMS number or <c>null</c> if one wasn't found.</returns>
         public static string GetFirstSmsNumber( this ICollection<PhoneNumber> phoneNumbers )
         {
-            var phoneNumber = phoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault();
-            return phoneNumber == null ? null : phoneNumber.ToSmsNumber();
+            var phoneNumber = phoneNumbers
+                ?.Where( p =>
+                    p.IsMessagingEnabled
+                    && !p.IsMessagingOptedOut
+                )
+                .FirstOrDefault();
+
+            return phoneNumber?.ToSmsNumber();
         }
 
         /// <summary>

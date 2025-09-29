@@ -283,6 +283,8 @@ function removeGrabbingStyles(): void {
  * @param event An object describing the event.
  */
 function onMouseDown(this: HTMLElement, event: MouseEvent): void {
+    // We need to track the element being scrolled, which comes in as "this".
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     hostElement = this;
 
     if (!shouldScroll(event)) {

@@ -21,14 +21,6 @@
     </fieldset>
 </template>
 
-<style scoped>
-:deep(.help-inline) {
-    font-size: 16px;
-    color: var(--color-interface-medium);
-    cursor: pointer;
-}
-</style>
-
 <script setup lang="ts">
     import { computed, PropType, ref, onMounted } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";

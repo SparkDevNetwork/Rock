@@ -682,21 +682,21 @@ namespace Rock.Model
                 return false;
             }
 
-            if ( new Service<CommunicationFlowInstanceConversionHistory>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            if ( new Service<CommunicationFlowInstanceCommunicationConversion>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, CommunicationFlowInstanceConversionHistory.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, CommunicationFlowInstanceCommunicationConversion.FriendlyTypeName );
                 return false;
             }
 
-            if ( new Service<CommunicationFlowInstanceConversionHistory>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            if ( new Service<CommunicationFlowInstanceCommunicationConversion>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, CommunicationFlowInstanceConversionHistory.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, CommunicationFlowInstanceCommunicationConversion.FriendlyTypeName );
                 return false;
             }
 
-            if ( new Service<CommunicationFlowInstanceConversionHistory>( Context ).Queryable().Any( a => a.PersonAliasId == item.Id ) )
+            if ( new Service<CommunicationFlowInstanceCommunicationConversion>( Context ).Queryable().Any( a => a.PersonAliasId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, CommunicationFlowInstanceConversionHistory.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, CommunicationFlowInstanceCommunicationConversion.FriendlyTypeName );
                 return false;
             }
 

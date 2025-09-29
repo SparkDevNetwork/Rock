@@ -220,6 +220,19 @@ namespace Rock.Web.UI.Controls
             set => ViewState[ViewStateKey.ShowPrePostHtml] = value;
         }
 
+        /// <summary>
+        /// <para>
+        /// Gets or sets a function that will be called to map the category
+        /// name to a different value.
+        /// </para>
+        /// <para>
+        /// <strong>This is an internal property that should not be used by plugins.
+        /// It must be set on every postback as it can't be tracked by ViewState.</strong>
+        /// </para>
+        /// </summary>
+        [RockInternal( "18.0", true )]
+        public Func<string, string> CategoryNameMapper { get; set; }
+
         #endregion Properties
 
         #region Overrides
@@ -412,8 +425,15 @@ namespace Rock.Web.UI.Controls
                             CategoryDescription = attributeCategory.Category?.Description,
                         };
 
+                        var categoryName = attributeCategory.CategoryName;
+
+                        if ( CategoryNameMapper != null )
+                        {
+                            categoryName = CategoryNameMapper( categoryName );
+                        }
+
                         Rock.Attribute.Helper.AddEditControlsForCategory(
-                            attributeCategory.CategoryName,
+                            categoryName,
                             item,
                             this,
                             this.ValidationGroup,
@@ -550,7 +570,8 @@ namespace Rock.Web.UI.Controls
                 {
                     ExcludedAttributes = this.ExcludedAttributes.ToList(),
                     NumberOfColumns = this.NumberOfColumns,
-                    ShowCategoryLabel = showCategoryLabel
+                    ShowCategoryLabel = showCategoryLabel,
+                    CategoryNameMapper = CategoryNameMapper
                 };
 
                 Rock.Attribute.Helper.AddDisplayControls( item, attributeCategories, this, attributeAddDisplayControlsOptions );

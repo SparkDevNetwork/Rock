@@ -30,9 +30,14 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
+
+using Fluid.Parser;
+
 using Humanizer;
 using Humanizer.Localisation;
+
 using Ical.Net;
+
 #if REVIEW_WEBFORMS
 using ImageResizer;
 #endif
@@ -40,6 +45,7 @@ using ImageResizer;
 using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
@@ -51,12 +57,14 @@ using Rock.Logging;
 using Rock.Model;
 using Rock.Net;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Utilities;
 using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+
 using UAParser;
 
 namespace Rock.Lava
@@ -1960,6 +1968,42 @@ namespace Rock.Lava
             return Rock.Lava.Filters.TemplateFilters.RandomNumber( input );
         }
 
+        /// <summary>
+        /// Converts a integer to a enum name
+        /// </summary>
+        /// <param name="input">The value to be converted to an enum name.</param>
+        /// <param name="enumTypeName">The full type name of the enum, such as 'Rock.Model.SiteType'.</param>
+        /// <returns>A string that represents the name of the enum value, or <c>null</c> if the parameters were not valid.</returns>
+        public static string AsEnum( object input, string enumTypeName )
+        {
+            if ( input == null || string.IsNullOrWhiteSpace( enumTypeName ) )
+            {
+                return null;
+            }
+
+            // Try to parse the input as an integer value
+            if ( !int.TryParse( input.ToString(), out int intValue ) )
+            {
+                return null;
+            }
+
+            var enumType = Reflection.GetEnumType( enumTypeName );
+
+            if ( enumType == null )
+            {
+                return null;
+            }
+
+            // Check if the enum defines the value
+            if ( Enum.IsDefined( enumType, intValue ) )
+            {
+                var enumValue = Enum.ToObject( enumType, intValue );
+                return enumValue.ToString();
+            }
+
+            return null;
+        }
+
         #endregion Number Filters
 
         #region Attribute Filters
@@ -1973,8 +2017,9 @@ namespace Rock.Lava
         /// <param name="input">The input.</param>
         /// <param name="attributeKey">The attribute key.</param>
         /// <param name="qualifier">The qualifier.</param>
+        /// <param name="securityEnabled">If true, security is enabled; if false, security checks are bypassed. Defaults to true.</param>
         /// <returns></returns>
-        public static object Attribute( ILavaRenderContext context, object input, string attributeKey, string qualifier = "" )
+        public static object Attribute( ILavaRenderContext context, object input, string attributeKey, string qualifier = "", bool securityEnabled = true )
         {
             Attribute.IHasAttributes item = null;
 
@@ -2089,7 +2134,7 @@ namespace Rock.Lava
             {
                 Person currentPerson = GetCurrentPerson( context );
 
-                if ( attribute.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                if ( !securityEnabled || attribute.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 {
                     // Check qualifier for 'Raw' if present, just return the raw unformatted value
                     if ( qualifier.Equals( "RawValue", StringComparison.OrdinalIgnoreCase ) )
@@ -2343,6 +2388,44 @@ namespace Rock.Lava
         #endregion Group Filters
 
         #region Misc Filters
+
+        /// <summary>
+        /// Updates a persisted dataset with the provided key.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="input"></param>
+        /// <param name="delayProcessingUntilComplete"></param>
+        /// <returns></returns>
+        public static string UpdatePersistedDataset( ILavaRenderContext context, object input, bool delayProcessingUntilComplete = false )
+        {
+            var dataSetKey = input.ToString();
+
+            if ( delayProcessingUntilComplete )
+            {
+                var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+                var service = new PersistedDatasetService( rockContext );
+
+                var dataset = service.Queryable().FirstOrDefault( d => d.AccessKey == dataSetKey );
+
+                if ( dataset == null )
+                {
+                    return $"Unable to find PersistedDataset with key {dataSetKey}";
+                }
+
+                dataset.UpdateResultData();
+                rockContext.SaveChanges();
+            }
+            else
+            {
+                var message = new Rock.Tasks.UpdatePersistedDataset.Message()
+                {
+                    AccessKey = dataSetKey
+                };
+                message.Send();
+            }
+
+            return string.Empty;
+        }
 
         /// <summary>
         /// Shows details about which Merge Fields are available
@@ -4381,6 +4464,113 @@ namespace Rock.Lava
 
             var helper = new StructuredContentHelper( content, userValues );
             return helper.Render();
+        }
+
+        /// <summary>
+        /// Uploads the input data into a binary file. This will normally create
+        /// a new binary file unless an existing binaryFileId is provided.
+        /// </summary>
+        /// <param name="input">The input object, this should either be a string or an array of bytes.</param>
+        /// <param name="binaryFileTypeId">The identifier of the binary file type to use when storing the file data. This may be an integer id, encrypted id, or unique identifier.</param>
+        /// <param name="filename">The name of the file.</param>
+        /// <param name="mimeType">The known mime type of the file. This will default to 'application/octet-stream' if not provided.</param>
+        /// <param name="format">The format of the input data, may be one of 'base64' or 'raw'. This will default to 'raw' if not provided.</param>
+        /// <param name="isTemporary">Determines if the binary file will be created as temporary. This will default ot 'false' if not provided.</param>
+        /// <param name="binaryFileId">The identifier of an existing binary file to update. This may be an integer id, encrypted id, or unique identifier.</param>
+        /// <returns>A <see cref="BinaryFile"/> instance or <c>null</c> if an error occurred.</returns>
+        public static BinaryFile UploadBinaryFile( object input, string binaryFileTypeId, string filename, string mimeType = null, string format = null, bool isTemporary = false, string binaryFileId = null )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var binaryFileService = new BinaryFileService( rockContext );
+                var binaryFileType = BinaryFileTypeCache.Get( binaryFileTypeId, true );
+
+                if ( binaryFileType == null )
+                {
+                    _logger.LogError( "The binary file type could not be found using the provided identifier ('{binaryFileTypeId}').", binaryFileTypeId );
+                    return null;
+                }
+
+                BinaryFile binaryFile;
+
+                if ( binaryFileId.IsNotNullOrWhiteSpace() )
+                {
+                    binaryFile = binaryFileService.Get( binaryFileId, true );
+
+                    if ( binaryFile == null )
+                    {
+                        _logger.LogError( "The binary file could not be found using the provided identifier ('{binaryFileId}').", binaryFileId );
+                        return null;
+                    }
+                }
+                else
+                {
+                    binaryFile = new BinaryFile();
+
+                    binaryFileService.Add( binaryFile );
+                }
+
+                if ( mimeType.IsNullOrWhiteSpace() )
+                {
+                    // Try to determine the mime type based on the file extension.
+                    if ( filename != null && filename.Contains( '.' ) )
+                    {
+                        var fileExtension = filename.Split( '.' ).Last().ToLower();
+
+                        if ( fileExtension == "png" )
+                        {
+                            mimeType = "image/png";
+                        }
+                        else if ( fileExtension == "jpg" || fileExtension == "jpeg" )
+                        {
+                            mimeType = "image/jpeg";
+                        }
+                        else if ( fileExtension == "pdf" )
+                        {
+                            mimeType = "application/pdf";
+                        }
+                    }
+
+                    // If we still don't have a mime type, default to
+                    // application/octet-stream.
+                    if ( mimeType.IsNullOrWhiteSpace() )
+                    {
+                        mimeType = "application/octet-stream";
+                    }
+                }
+
+                binaryFile.BinaryFileTypeId = binaryFileType.Id;
+                binaryFile.FileName = filename;
+                binaryFile.MimeType = mimeType;
+                binaryFile.IsTemporary = isTemporary;
+
+                var inputString = input.ToStringSafe();
+
+                if ( format == "base64" )
+                {
+                    try
+                    {
+                        var fileBytes = Convert.FromBase64String( inputString );
+                        binaryFile.FileSize = fileBytes.Length;
+                        binaryFile.ContentStream = new MemoryStream( fileBytes );
+                    }
+                    catch ( Exception ex )
+                    {
+                        _logger.LogError( ex, "An error occurred while converting the provided base64 string to a byte array." );
+                        return null;
+                    }
+                }
+                else
+                {
+                    var fileBytes = Encoding.UTF8.GetBytes( inputString );
+                    binaryFile.FileSize = fileBytes.Length;
+                    binaryFile.ContentStream = new MemoryStream( fileBytes );
+                }
+
+                rockContext.SaveChanges();
+
+                return binaryFile;
+            }
         }
 
         #endregion Misc Filters

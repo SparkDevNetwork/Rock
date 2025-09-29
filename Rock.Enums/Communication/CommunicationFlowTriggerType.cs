@@ -15,6 +15,9 @@
 // </copyright>
 //
 
+using System.ComponentModel;
+using System.Runtime.Serialization;
+
 namespace Rock.Enums.Communication
 {
     /// <summary>
@@ -30,11 +33,13 @@ namespace Rock.Enums.Communication
         /// <summary>
         /// The Communication Flow runs on demand, such as by a Workflow or manual event.
         /// </summary>
+        [Description( "On-Demand" )]
         OnDemand = 2,
 
         /// <summary>
         /// The Communication Flow is scheduled to run only once at a specific date and time.
         /// </summary>
+        [Description( "One-Time" )]
         OneTime = 3,
     }
 }

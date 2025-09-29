@@ -91,7 +91,8 @@
   border-color: @panel-section-border;
   box-shadow: none !important;
 
-  > .panel-heading {
+  > .panel-heading,
+  > .panel-header {
     position: relative;
     padding: 18px;
     background: @panel-section-heading-bg;
@@ -155,7 +156,8 @@
     padding: 0;
   }
 
-  .panel-heading {
+  .panel-heading,
+  .panel-header {
     h3 {
       float: left;
     }
@@ -730,7 +732,8 @@
   }
 
   // TODO: Add class activity-type-description
-  > .panel-heading > .filter-toggle > span {
+  > .panel-heading > .filter-toggle > span,
+  > .panel-header > .filter-toggle > span {
     margin-left: 36px;
     font-size: @font-size-small;
     line-height: 1.5;
@@ -757,7 +760,8 @@
     border-color: @brand-primary;
   }
 
-  > .panel-heading {
+  > .panel-heading,
+  > .panel-header {
     background: @gray-100 !important;
   }
 
@@ -800,7 +804,8 @@
       background-color: #fff;
     }
 
-    .panel-heading {
+    .panel-heading,
+    .panel-header {
       padding: 30px;
 
       a {
@@ -996,4 +1001,8 @@
   bottom: 0;
   display: flex;
   align-items: center;
+}
+
+body.hide-block-role-secondary .block-instance.block-role-secondary:not(.block-role-action-aware) {
+    display: none;
 }

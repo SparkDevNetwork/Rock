@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="grid-title-heading">
+    <div class="grid-title-header">
         <div class="grid-title">
             <template v-if="!isTitleHidden">{{ internalTitle }}</template>
             <template v-else>&nbsp;</template>

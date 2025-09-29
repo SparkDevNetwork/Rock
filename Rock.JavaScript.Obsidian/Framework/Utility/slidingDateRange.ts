@@ -19,7 +19,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { toNumber, toNumberOrNull } from "./numberUtils";
 import { SlidingDateRangeType as RangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
 import { TimeUnitType as TimeUnit } from "@Obsidian/Enums/Controls/timeUnitType";
-import { DateTimeFormat, DayOfWeek, RockDateTime } from "./rockDateTime";
+import { DayOfWeek, RockDateTime } from "./rockDateTime";
 
 // This file contains helper functions and tooling required to work with sliding
 // date ranges. A sliding date range is one that, generally, is anchored to whatever

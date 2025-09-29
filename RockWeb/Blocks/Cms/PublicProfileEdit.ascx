@@ -121,7 +121,7 @@
                                             <div class="controls">
                                                 <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
                                                 <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode")  %>' Number='<%# Eval("NumberFormatted")  %>' />
-                                                <Rock:RockCheckBox ID="cbSms" runat="server" Text="I would like to receive important text messages" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' ContainerCssClass="mb-0" CssClass="js-sms-number" Visible='<%# (int?)Eval("NumberTypeValueId") == Rock.Web.Cache.DefinedValueCache.GetId( new Guid(Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) ) %>' />
+                                                <Rock:RockCheckBox ID="cbSms" runat="server" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' ContainerCssClass="mb-0" CssClass="js-sms-number" Visible='<%# (int?)Eval("NumberTypeValueId") == Rock.Web.Cache.DefinedValueCache.GetId( new Guid(Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) ) %>' />
                                             </div>
                                         </div>
                                     </ItemTemplate>

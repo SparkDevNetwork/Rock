@@ -10,7 +10,7 @@
                 <div class="expander-panel-actions-wrapper ml-sm-auto">
                     <div class="example-toggle text-nowrap text-right d-none d-sm-block">
                         <i v-if="isCollapsed" class="ti ti-circle"></i>
-                        <i v-else class="ti ti-circle"></i>
+                        <i v-else class="ti ti-circle-check-filled"></i>
                         <span class="ml-1">Show Details</span>
                     </div>
 

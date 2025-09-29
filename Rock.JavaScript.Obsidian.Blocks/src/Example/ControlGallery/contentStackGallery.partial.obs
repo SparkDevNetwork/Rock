@@ -4,7 +4,7 @@
                       demoMode>
         <ContentStack :title="title"
                       :description="description"
-                      :sidebarPosition="rightSidebar ? 'right' : 'left'">
+                      :headerLocation="headerLocation">
             <TextBox v-for="index in fieldCount"
                      modelValue=""
                      :label="`${getNumberWord(index)} Field`" />
@@ -14,7 +14,7 @@
             <div class="automatic-layout">
                 <CheckBox label="Has Title" v-model="hasTitle" />
                 <CheckBox label="Has Description" v-model="hasDescription" />
-                <CheckBox label="Right Sidebar" v-model="rightSidebar" />
+                <DropDownList label="Header Location" v-model="headerLocation" :items="headerLocationItems" />
                 <NumberUpDown label="Field Count" v-model="fieldCount" :min="1" :max="10" />
             </div>
         </template>
@@ -24,17 +24,20 @@
 <script setup lang="ts">
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { computed, ref } from "vue";
     import { ComponentUsage, getNumberWord, getSfcControlImportPath } from "./common/utils.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const hasTitle = ref(true);
     const hasDescription = ref(true);
-    const rightSidebar = ref(false);
+    const headerLocation = ref<"left" | "right" | "top">("left");
     const fieldCount = ref(2);
 
+    const headerLocationItems: ListItemBag[] = ["left", "right", "top"].map(i => ({ value: i, text: i }));
 
     const title = computed((): string | undefined => {
         return hasTitle.value ? "Sample Content Stack" : undefined;
@@ -51,9 +54,7 @@
         usage.addAttribute("title", title.value);
         usage.addAttribute("description", description.value);
 
-        if (rightSidebar.value) {
-            usage.addAttribute("sidebarPosition", "right");
-        }
+        usage.addAttribute("headerLocation", headerLocation.value, "left");
 
         for (let fieldIndex = 1; fieldIndex <= fieldCount.value; fieldIndex++) {
             if (fieldIndex > 1) {

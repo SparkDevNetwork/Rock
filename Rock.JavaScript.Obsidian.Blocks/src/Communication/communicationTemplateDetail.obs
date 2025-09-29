@@ -413,6 +413,7 @@
     <Panel v-if="version === CommunicationTemplateVersion.Beta && isEmailBuilderShown"
            isFullscreen
            isFullscreenPageOnly
+           hasNoBodyPadding
            panelBodyCssClass="email-builder-panel-body"
            title="Email Builder">
         <template #default>
@@ -443,7 +444,6 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    padding: 0;
 }
 
 :deep(.email-builder-panel-body .actions) {
@@ -502,7 +502,7 @@
 
 .email-preview-selected {
     background-color: var(--color-interface-medium);
-    color: var(--color-interface-softest);
+    color: var(--base-interface-softest);
 }
 
 .email-actions {

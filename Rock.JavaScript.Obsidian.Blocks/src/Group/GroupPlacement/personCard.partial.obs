@@ -69,16 +69,20 @@
 <style scoped>
 .person-card {
     border: 1px solid var(--color-interface-soft);
-    border-left: 4px solid var(--color-interface-medium);
-    border-radius: 4px;
+    border-left: var(--spacing-tiny) solid var(--color-interface-medium);
+    border-radius: var(--rounded-xsmall);
     width: 100%;
     color: var(--color-interface-strong);
     cursor: grab;
     background-color: var(--color-interface-softest);
 }
 
+.person-card > .person-row > div + .dropdown > .btn-link {
+    color: var(--color-interface-medium) !important;
+}
+
 .person-row {
-    padding: 10px;
+    padding: var(--spacing-small);
 }
 
 .person-card.selected {
@@ -192,9 +196,9 @@
         if (props.isGenderHighlighting) {
             switch (gender) {
                 case Gender.Male:
-                    return "#1A8AE5";
+                    return "var(--base-gender-male)";
                 case Gender.Female:
-                    return "#DE69CE";
+                    return "var(--base-gender-female)";
                 case Gender.Unknown:
                 default:
                     return "var(--color-interface-medium)";

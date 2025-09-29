@@ -309,7 +309,7 @@
                                     AutoPostBack="true" OnCheckedChanged="cbSendAttendanceReminder_CheckedChanged"
                                     Help="Will enable the sending of automatic attendance reminders for all groups of this type." />
 
-                                <Rock:RockDropDownList ID="ddlAttendanceReminderCommunication" runat="server" Label="Attendance Reminder Communication Template"
+                                <Rock:RockDropDownList ID="ddlAttendanceReminderCommunication" runat="server" Label="Attendance Reminder Communication Template" EnhanceForLongLists="true"
                                     Help="The communication template to use for sending attendance reminders." />
 
                                 <Rock:NumberBox ID="nbAttendanceReminderOffsetMinutes" runat="server" Label="Attendance Reminder Start Offset Minutes"
@@ -615,6 +615,7 @@
                         <Rock:RockCheckBox ID="cbIsCheckInAllowed" runat="server" Label="Can Check In to Group" Help="Should individuals with this role be allowed to check in to this group? Note that this only applies if the 'Check-in Rule' is set to &quot;Already Enrolled In Group&quot; in your check-in configuration." />
                         <Rock:RockCheckBox ID="cbIsExcludedFromPeerNetwork" runat="server" Label="Exclude from Peer Network" Help="Should individuals with this role be excluded from the group's peer network?" />
                         <Rock:RockCheckBox ID="cbCanTakeAttendance" runat="server" Label="Can Take Attendance" Help="Should individuals with this role be allowed to take attendance for this group regardless of the group's security settings?" />
+                        <Rock:RockCheckBox ID="cbRoleIsPublic" runat="server" Label="Public" Help="A role that is not public will be hidden in some situations to help prevent leaking sensitive information." />
                     </div>
                     <div class="col-md-6">
                         <Rock:NumberBox ID="nbMinimumRequired" runat="server" NumberType="Integer" Label="Minimum Required" Help="The minimum number of people with this role that group should allow." />

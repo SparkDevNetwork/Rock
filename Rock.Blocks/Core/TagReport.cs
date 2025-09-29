@@ -42,6 +42,7 @@ namespace Rock.Blocks.Core
     [Description( "Block for viewing entities with a selected tag" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "a9017995-c914-4ee4-b1ba-a852d162bdd7" )]
     [Rock.SystemGuid.BlockTypeGuid( "f140b415-9bb3-4492-844e-5a529517a484" )]
     public class TagReport : RockListBlockType<TaggedItemListBag>

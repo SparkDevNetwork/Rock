@@ -328,6 +328,11 @@ namespace Rock.SystemGuid
         public const string PROCESS_REMINDERS = "3F697C80-4C33-4552-9038-D3470445EA40";
 
         /// <summary>
+        /// The <see cref="Rock.Jobs.UpdateEntityUsage"/> job configured to update Media Element usage.
+        /// </summary>
+        public const string UPDATE_MEDIA_ELEMENT_USAGE = "32d0cb70-d4ef-4ac2-8693-bfdfe9e5233e";
+
+        /// <summary>
         /// The <see cref="Rock.Jobs.UpdatePersistedAttributeValues">Update Persisted Attribute Values</see> job.
         /// </summary>
         public const string UPDATE_PERSISTED_ATTRIBUTE_VALUE = "A7DDA4B0-BA1D-49F1-8749-5E7A9876AE70";
@@ -419,9 +424,14 @@ namespace Rock.SystemGuid
         public const string SEND_LEARNING_ACTIVITY_NOTIFICATIONS = "0075859b-8dc3-4e95-9075-89198886fcb4";
 
         /// <summary>
-        /// The job for updating learning program completions. <see cref="Rock.Jobs.UpdateProgramCompletions"/>.
+        /// The job for updating learning program completions. <see cref="Rock.Jobs.UpdateLearningProgramCompletions"/>.
         /// </summary>
         public const string UPDATE_PROGRAM_COMPLETIONS = "4E805A88-C031-4BA0-BAD6-0A706E647870";
+
+        /// <summary>
+        /// The job for updating step program completions. <see cref="Rock.Jobs.UpdateStepProgramCompletions"/>.
+        /// </summary>
+        public const string UPDATE_STEP_PROGRAM_COMPLETIONS = "EB658FC8-3DA1-4CE0-86F6-0D3CA6F48AAE";
 
         /// <summary>
         /// The Job to run Post v17.0 Data Migrations to chop Block.
@@ -500,9 +510,19 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_173_UPDATE_ATTENDANCEOCCURRENCE_INDEX = "FFF8E02C-9FAA-4E23-99EE-4B008549F088";
 
         /// <summary>
+        /// The job to run Post v17.3 Data Migrations to update the Nameless Schedules.
+        /// </summary>
+        public const string DATA_MIGRATIONS_173_UPDATE_NAMELESS_SCHEDULES = "4C7CC0FC-12A7-4578-B9B1-FEF2732EB912";
+
+        /// <summary>
         /// The job to run Post v18.0 Data Migrations to update an existing index on the CommunicationRecipient table.
         /// </summary>
         public const string DATA_MIGRATIONS_180_UPDATE_COMMUNICATIONRECIPIENT_INDEX = "FE519BCE-CCB8-42B7-A14C-1620859F23E8";
+
+        /// <summary>
+        /// The job to run Post v18.0 Data Migrations to migrate existing eRA records from the History table to the Steps table.
+        /// </summary>
+        public const string DATA_MIGRATIONS_180_MIGRATE_ERA_DATA_TO_STEPS = "64CB888D-0F81-473B-B200-8FA38337DAED";
 
         /// <summary>
         /// The job to run Post v18.0 Data Migrations to delete the deprecated GroupLocationHistoricalSchedule table from the database.
@@ -515,8 +535,28 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_180_CHOP_OBSIDIAN_BLOCKS = "6BFCE2DE-5B38-4B71-8737-423AF51A39B1";
 
         /// <summary>
+        /// The Job to run Post v18.0 Data Migrations to swap Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_180_SWAP_OBSIDIAN_BLOCKS = "B3663D0F-6426-44BB-9C43-D9921A0974D3";
+
+        /// <summary>
         /// The job to run Post v18.0 Data Migrations to populate the newly-added [CommunicationRecipient].[DeliveredDateTime] field.
         /// </summary>
         public const string DATA_MIGRATIONS_180_POPULATE_COMMUNICATIONRECIPIENT_DELIVEREDDATETIME = "EF2CF0AC-7A83-4BEB-8824-41D3B5B8B832";
+
+        /// <summary>
+        /// The job to run Post v18.0 Data Migrations to Delete Self-Service Kiosk Site, Blocks, BlockTypes and KioskStark theme.
+        /// </summary>
+        public const string DATA_MIGRATIONS_180_DELETE_SELFSERVICE_KIOSK_SITE_AND_RELATED = "6696B495-3EB0-442B-8DAB-82E861B92B41";
+
+        /// <summary>
+        /// The job to run Post v18.0 Data Migrations to update the Nameless Locations.
+        /// </summary>
+        public const string DATA_MIGRATIONS_180_UPDATE_NAMELESS_LOCATIONS = "6C3EE640-A442-4F9C-92ED-23E353BA8509";
+
+        /// <summary>
+        /// The job for processing communication flows. <see cref="Rock.Jobs.ProcessCommunicationFlows"/>
+        /// </summary>
+        public const string PROCESS_COMMUNICATION_FLOWS = "8D79FB3B-F0B1-4B57-A8DA-EEE46B38A08B";
     }
 }

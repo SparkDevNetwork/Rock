@@ -38,14 +38,18 @@ export const EditComponent = defineComponent({
         // Watch for changes from the parent component and update the text editor.
         watch(() => props.modelValue, () => {
             const modelProp = JSON.parse(props.modelValue || "{}");
-
-            internalValue.value = {
-                assetStorageProviderId: modelProp?.AssetStorageProviderId,
-                key: modelProp?.Key,
-                iconPath: modelProp?.IconPath,
-                name: modelProp?.Name,
-                uri: modelProp?.Url
-            };
+            if (modelProp?.Key) {
+                internalValue.value = {
+                    assetStorageProviderId: modelProp?.AssetStorageProviderId,
+                    key: modelProp?.Key,
+                    iconPath: modelProp?.IconPath,
+                    name: modelProp?.Name,
+                    uri: modelProp?.Url
+                };
+            }
+            else {
+                internalValue.value = null;
+            }
         }, {
             immediate: true
         });

@@ -354,9 +354,75 @@ namespace Rock.CheckIn.v2
         }
 
         /// <summary>
+        /// Adds a single individual to an existing family.
+        /// </summary>
+        /// <param name="familyId">The identifier of the family to be updated.</param>
+        /// <param name="individual">The individual to be added to the family.</param>
+        /// <param name="defaultCampusId">The default campus to use when creating new families.</param>
+        /// <returns>An instance of <see cref="FamilyRegistrationSaveResult"/> that describes if the operation was successful or not.</returns>
+        public FamilyRegistrationSaveResult AddIndividual( string familyId, ValidPropertiesBox<RegistrationPersonBag> individual, int? defaultCampusId )
+        {
+            if ( !HasAllRequiredValues( null, new List<ValidPropertiesBox<RegistrationPersonBag>> { individual }, out var errorMessage ) )
+            {
+                return new FamilyRegistrationSaveResult
+                {
+                    ErrorMessage = errorMessage
+                };
+            }
+
+            var groupService = new GroupService( _rockContext );
+            var primaryFamily = groupService.GetInclude( familyId, g => g.Members.Select( gm => gm.Person ), false );
+            var adults = primaryFamily.Members
+                .Select( gm => gm.Person )
+                .Where( p => p.AgeClassification == AgeClassification.Adult )
+                .ToList();
+
+            if ( primaryFamily == null )
+            {
+                return new FamilyRegistrationSaveResult
+                {
+                    ErrorMessage = $"Family was not found."
+                };
+            }
+
+            try
+            {
+                var saveResult = new FamilyRegistrationSaveResult();
+
+                _rockContext.WrapTransaction( () =>
+                {
+                    var registrationPeople = new List<(ValidPropertiesBox<RegistrationPersonBag> RegistrationPerson, Person Person)>();
+
+                    // Loop through all people and add/update as needed.
+                    var person = CreateOrUpdatePerson( individual, ref primaryFamily, saveResult );
+
+                    registrationPeople.Add( (individual, person) );
+
+                    EnsurePeopleInPrimaryFamilyAreMembersOfGroup( primaryFamily, registrationPeople );
+                    EnsurePeopleNotInPrimaryFamilyHaveAFamily( registrationPeople, defaultCampusId, saveResult, adults );
+
+                    saveResult.PrimaryFamily = primaryFamily;
+                } );
+
+                saveResult.IsSuccess = true;
+
+                return saveResult;
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+
+                return new FamilyRegistrationSaveResult
+                {
+                    ErrorMessage = ex.Message
+                };
+            }
+        }
+
+        /// <summary>
         /// This handles any post-save tasks that should be performed. This
-        /// method should be called after the SaveRegistration method so that
-        /// all standard post-save processing can be performed.
+        /// method should be called after the SaveRegistration or AddIndividual
+        /// methods so that all standard post-save processing can be performed.
         /// </summary>
         /// <remarks>
         /// In rare cases, such as testing, we don't want these operations to be
@@ -596,16 +662,19 @@ namespace Rock.CheckIn.v2
         /// <returns><c>true</c> if all required properties are present; otherwise <c>false</c>.</returns>
         internal bool HasAllRequiredValues( ValidPropertiesBox<RegistrationFamilyBag> registrationFamily, List<ValidPropertiesBox<RegistrationPersonBag>> people, out string errorMessage )
         {
-            if ( !registrationFamily.IsValidProperty( nameof( registrationFamily.Bag.Id ) ) )
+            if ( registrationFamily != null )
             {
-                errorMessage = $"Family is missing required {nameof( registrationFamily.Bag.Id )} property.";
-                return false;
-            }
+                if ( !registrationFamily.IsValidProperty( nameof( registrationFamily.Bag.Id ) ) )
+                {
+                    errorMessage = $"Family is missing required {nameof( registrationFamily.Bag.Id )} property.";
+                    return false;
+                }
 
-            if ( !registrationFamily.IsValidProperty( nameof( registrationFamily.Bag.FamilyName ) ) )
-            {
-                errorMessage = $"Family is missing required {nameof( registrationFamily.Bag.FamilyName )} property.";
-                return false;
+                if ( !registrationFamily.IsValidProperty( nameof( registrationFamily.Bag.FamilyName ) ) )
+                {
+                    errorMessage = $"Family is missing required {nameof( registrationFamily.Bag.FamilyName )} property.";
+                    return false;
+                }
             }
 
             foreach ( var registrationPerson in people )
@@ -1253,6 +1322,7 @@ namespace Rock.CheckIn.v2
 
             var peopleInPrimaryFamily = people
                 .Where( p => p.RegistrationPerson.Bag.RelationshipToAdult == null
+                    || p.RegistrationPerson.Bag.RelationshipToAdult.Value.IsNullOrWhiteSpace()
                     || familyRelationshipGuids.Contains( p.RegistrationPerson.Bag.RelationshipToAdult.Value.AsGuid() ) );
 
             // Ensure that every person who is listed in the UI as being in the
@@ -1302,16 +1372,20 @@ namespace Rock.CheckIn.v2
         /// <param name="people">The people being registered in the kiosk.</param>
         /// <param name="defaultCampusId">The campus to set on any new families being created.</param>
         /// <param name="saveResult">Will be updated with any new <see cref="Group"/> objects that were created.</param>
-        internal void EnsurePeopleNotInPrimaryFamilyHaveAFamily( List<(ValidPropertiesBox<RegistrationPersonBag> RegistrationPerson, Person Person)> people, int? defaultCampusId, FamilyRegistrationSaveResult saveResult )
+        /// <param name="adultsInPrimaryFamily">Optional list of known adults in the family to use when adding known relationships. Leave <c>null</c> to automatically detect from <paramref name="people"/>.</param>
+        internal void EnsurePeopleNotInPrimaryFamilyHaveAFamily( List<(ValidPropertiesBox<RegistrationPersonBag> RegistrationPerson, Person Person)> people, int? defaultCampusId, FamilyRegistrationSaveResult saveResult, List<Person> adultsInPrimaryFamily = null )
         {
             var familyRelationshipGuids = _template.SameFamilyKnownRelationshipRoleGuids;
             var groupService = new GroupService( _rockContext );
             var groupMemberService = new GroupMemberService( _rockContext );
 
-            var adultsInPrimaryFamily = people
-                .Where( p => p.RegistrationPerson.Bag.IsAdult )
-                .Select( p => p.Person )
-                .ToList();
+            if ( adultsInPrimaryFamily == null )
+            {
+                adultsInPrimaryFamily = people
+                    .Where( p => p.RegistrationPerson.Bag.IsAdult )
+                    .Select( p => p.Person )
+                    .ToList();
+            }
 
             var peopleNotInPrimaryFamily = people
                 .Where( p => !familyRelationshipGuids.Contains( ( p.RegistrationPerson.Bag.RelationshipToAdult?.Value ).AsGuid() ) );

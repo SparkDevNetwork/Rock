@@ -125,7 +125,7 @@ namespace Rock.Blocks.Connection
 
     [BooleanField(
         "Disable Captcha Support",
-        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        Description = "If set to 'Yes' the CAPTCHA verification will be skipped. \n\nNote: If the CAPTCHA site key and/or secret key are not configured in the system settings, this option will be forced as 'Yes', even if 'No' is visually selected.",
         DefaultBooleanValue = false,
         Order = 11,
         Key = AttributeKey.DisableCaptchaSupport )]
@@ -134,7 +134,7 @@ namespace Rock.Blocks.Connection
 
     [Rock.SystemGuid.EntityTypeGuid( "A10BF374-F97E-49FA-955C-3B22A9F31787" )]
     [Rock.SystemGuid.BlockTypeGuid( "35D5EF65-0B0D-4E99-82B5-3F5FC2E0344F" )]
-    [ContextAware]
+    [ContextAware( typeof( Campus ) )]
     public class ConnectionOpportunitySignup : RockBlockType
     {
         #region Attribute Keys
@@ -182,7 +182,8 @@ namespace Rock.Blocks.Connection
 
             box.DisplayHomePhone = GetAttributeValue( AttributeKey.DisplayHomePhone ).AsBoolean();
             box.DisplayMobilePhone = GetAttributeValue( AttributeKey.DisplayMobilePhone ).AsBoolean();
-            box.DisableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+
+            box.DisableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
 
             var opportunity = GetConnectionOpportunity();
 
@@ -425,6 +426,7 @@ namespace Rock.Blocks.Connection
             }
         }
 
+
         #endregion Methods
 
         #region Block Actions
@@ -440,7 +442,8 @@ namespace Rock.Blocks.Connection
             var resultBag = new ConnectionOpportunitySignupResultBag();
             try
             {
-                var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+                bool disableCaptcha = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
+
                 if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
                 {
                     resultBag.ResultType = ConnectionOpportunitySignupResultType.CaptchaInvalid;
@@ -486,7 +489,7 @@ namespace Rock.Blocks.Connection
                     !( bag.FirstName.Equals( person.NickName, StringComparison.OrdinalIgnoreCase ) || bag.FirstName.Equals( person.FirstName, StringComparison.OrdinalIgnoreCase ) ) ||
                     !bag.Email.Equals( person.Email, StringComparison.OrdinalIgnoreCase ) )
                 {
-                    var personQuery = new PersonService.PersonMatchQuery( bag.FirstName, bag.LastName, bag.Email, bag.MobilePhone.Number );
+                    var personQuery = new PersonService.PersonMatchQuery( bag.FirstName, bag.LastName, bag.Email, bag.MobilePhone?.Number );
                     person = new PersonService( this.RockContext ).FindPerson( personQuery, true );
                 }
 
@@ -540,7 +543,7 @@ namespace Rock.Blocks.Connection
                     connectionRequest.SetPublicAttributeValues(
                         bag.AttributeValues,
                         currentPerson,
-                        attributeFilter: a => a.IsPublic
+                        enforceSecurity: false
                     );
                 }
 

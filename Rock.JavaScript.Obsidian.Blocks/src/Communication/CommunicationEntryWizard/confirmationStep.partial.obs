@@ -61,7 +61,7 @@
                             <hr />
 
                             <dl>
-                                <template v-if="selectedView === 'Email' && emailAttachmentNames">
+                                <template v-if="selectedView === View.Email && emailAttachmentNames">
                                     <dt>Attachments</dt>
                                     <dd>
                                         <template v-for="(emailAttachmentName, index) in emailAttachmentNames" :key="index">
@@ -71,7 +71,7 @@
                                     </dd>
                                 </template>
 
-                                <template v-if="selectedView === 'SMS' && smsAttachmentNames">
+                                <template v-if="selectedView === View.SMS && smsAttachmentNames">
                                     <dt>Attachments</dt>
                                     <dd>
                                         <template v-for="(smsAttachmentName, index) in smsAttachmentNames" :key="index">
@@ -86,7 +86,7 @@
                             </dl>
                         </div>
 
-                        <EmailPreview v-if="selectedView === 'Email'"
+                        <EmailPreview v-if="selectedView === View.Email"
                                       :bccEmails="bccEmails"
                                       :ccEmails="ccEmails"
                                       :fromAddress="fromAddress"
@@ -97,15 +97,15 @@
                                       :to="emailTo"
                                       class="col-xs-12 col-md-8" />
 
-                        <SmsMobilePreview v-else-if="selectedView === 'SMS'"
+                        <SmsMobilePreview v-else-if="selectedView === View.SMS"
                                           :class="['col-xs-12 col-md-8', breakpointHelper.breakpoint]"
                                           :smsFromNumberName="smsFromNumberName"
                                           :smsAttachmentLinks="smsAttachmentLinks"
-                                          :smsMessage="smsMessage" />
+                                          :smsMessage="smsMessagePreview" />
 
-                        <PushNotificationMobilePreview v-else-if="selectedView === 'Push'"
+                        <PushNotificationMobilePreview v-else-if="selectedView === View.Push"
                                                        :class="['col-xs-12 col-md-8', breakpointHelper.breakpoint]"
-                                                       :pushMessage="pushMessage"
+                                                       :pushMessage="pushMessagePreview"
                                                        :pushTitle="pushTitle" />
                     </div>
 
@@ -213,8 +213,8 @@ dl:not(.dl-horizontal) dt:first-child {
     import { computed, onMounted, PropType, ref, watch } from "vue";
     import EmailPreview from "./emailPreview.partial.obs";
     import LoadingOverlay from "./loadingOverlay.partial.obs";
-    import { BinaryFileAttachment, BlockActionCallbacks } from "./types.partial";
-    import { get, useBreakpointHelper } from "./utils.partial";
+    import { BinaryFileAttachment, BlockActionCallbacks, PreviewAsType } from "./types.partial";
+    import { useBreakpointHelper } from "./utils.partial";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import PushNotificationMobilePreview from "@Obsidian/Controls/Internal/pushNotificationMobilePreview.obs";
@@ -226,9 +226,15 @@ dl:not(.dl-horizontal) dt:first-child {
     import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import { Guid } from "@Obsidian/Types";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { Enumerable } from "@Obsidian/Utility/linq";
 
-    type View = "Email" | "SMS" | "Push";
+    enum View {
+        Email = "Email",
+        SMS = "SMS",
+        Push = "Push"
+    }
 
     const props = defineProps({
         allowedMediums: {
@@ -306,8 +312,33 @@ dl:not(.dl-horizontal) dt:first-child {
             required: true
         },
 
-        previewHtmlProcessor: {
-            type: Object as PropType<(previewHtml: string) => string | null | undefined | Promise<string | null | undefined>>,
+        previewAsPersonAlias: {
+            type: Object as PropType<ListItemBag | null | undefined>,
+            required: true
+        },
+
+        previewAsPersonalizationSegment: {
+            type: Object as PropType<ListItemBag | null | undefined>,
+            required: true
+        },
+
+        previewAsType: {
+            type: String as PropType<PreviewAsType>,
+            required: true
+        },
+
+        previewEmailProcessor: {
+            type: Object as PropType<(previewHtml: string, previewAsPersonGuid?: Guid | null | undefined, previewAsPersonalizationSegmentId?: number | null | undefined) => Promise<string | null | undefined>>,
+            required: true
+        },
+
+        previewPushProcessor: {
+            type: Object as PropType<(pushMessage: string, previewAsPersonGuid?: Guid | null | undefined, previewAsPersonalizationSegmentId?: number | null | undefined) => Promise<string | null | undefined>>,
+            required: true
+        },
+
+        previewSmsProcessor: {
+            type: Object as PropType<(smsMessage: string, previewAsPersonGuid?: Guid | null | undefined, previewAsPersonalizationSegmentId?: number | null | undefined) => Promise<string | null | undefined>>,
             required: true
         },
 
@@ -392,6 +423,8 @@ dl:not(.dl-horizontal) dt:first-child {
     const isSendModalShown = ref<boolean>(false);
     const isPreviewLoading = ref<boolean>(false);
     const messagePreview = ref<string>(props.message);
+    const pushMessagePreview = ref<string>(props.pushMessage);
+    const smsMessagePreview = ref<string>(props.smsMessage);
 
     // #endregion
 
@@ -401,36 +434,36 @@ dl:not(.dl-horizontal) dt:first-child {
         if (props.communicationType === CommunicationType.RecipientPreference) {
             return [
                 {
-                    value: get<View>("Email"),
-                    text: get<View>("Email")
+                    value: View.Email,
+                    text: View.Email
                 },
                 {
-                    value: get<View>("SMS"),
-                    text: get<View>("SMS")
+                    value: View.SMS,
+                    text: View.SMS
                 }
             ];
         }
         else if (props.communicationType === CommunicationType.Email) {
             return [
                 {
-                    value: get<View>("Email"),
-                    text: get<View>("Email")
+                    value: View.Email,
+                    text: View.Email
                 }
             ];
         }
         else if (props.communicationType === CommunicationType.SMS) {
             return [
                 {
-                    value: get<View>("SMS"),
-                    text: get<View>("SMS")
+                    value: View.SMS,
+                    text: View.SMS
                 }
             ];
         }
         else if (props.communicationType === CommunicationType.PushNotification) {
             return [
                 {
-                    value: get<View>("Push"),
-                    text: get<View>("Push")
+                    value: View.Push,
+                    text: View.Push
                 }
             ];
         }
@@ -473,20 +506,20 @@ dl:not(.dl-horizontal) dt:first-child {
     function getView(): View {
         switch (props.communicationType) {
             case CommunicationType.SMS:
-                return "SMS";
+                return View.SMS;
             case CommunicationType.PushNotification:
-                return "Push";
+                return View.Push;
             case CommunicationType.Email:
-                return "Email";
+                return View.Email;
             case CommunicationType.RecipientPreference:
                 if (props.allowedMediums.includes(CommunicationType.Email)) {
-                    return "Email";
+                    return View.Email;
                 }
                 else if (props.allowedMediums.includes(CommunicationType.SMS)) {
-                    return "SMS";
+                    return View.SMS;
                 }
                 else if (props.allowedMediums.includes(CommunicationType.PushNotification)) {
-                    return "Push";
+                    return View.Push;
                 }
 
                 break;
@@ -495,24 +528,59 @@ dl:not(.dl-horizontal) dt:first-child {
         }
 
         console.error("Communication type unknown. Displaying email preview.");
-        return "Email";
+        return View.Email;
     }
 
-    async function loadEmailPreviewIfNecessary(): Promise<void> {
-        if (viewItems.value.some((item => item.value === get<View>("Email")))) {
+    async function loadPreviewIfNecessary(): Promise<void> {
+        const viewsEnumerable = Enumerable.from(viewItems.value).select(vi => vi.value as View);
+        if (viewsEnumerable.any((v => v === View.Email))) {
             isPreviewLoading.value = true;
             try {
-                const result = props.previewHtmlProcessor(props.message);
-
-                if (isPromise(result)) {
-                    messagePreview.value = await result ?? props.message;
-                }
-                else {
-                    messagePreview.value = result ?? props.message;
-                }
+                const result = await props.previewEmailProcessor(
+                    props.message,
+                    props.previewAsType === PreviewAsType.Person ? props.previewAsPersonAlias?.value : null,
+                    props.previewAsType === PreviewAsType.Segment ? toNumberOrNull(props.previewAsPersonalizationSegment?.value) : null
+                );
+                messagePreview.value = result ?? props.message;
             }
             catch {
                 messagePreview.value = props.message;
+            }
+            finally {
+                isPreviewLoading.value = false;
+            }
+        }
+
+        if (viewsEnumerable.any((v => v === View.SMS))) {
+            isPreviewLoading.value = true;
+            try {
+                const result = await props.previewSmsProcessor(
+                    props.smsMessage,
+                    props.previewAsType === PreviewAsType.Person ? props.previewAsPersonAlias?.value : null,
+                    props.previewAsType === PreviewAsType.Segment ? toNumberOrNull(props.previewAsPersonalizationSegment?.value) : null
+                );
+                smsMessagePreview.value = result ?? props.smsMessage;
+            }
+            catch {
+                smsMessagePreview.value = props.smsMessage;
+            }
+            finally {
+                isPreviewLoading.value = false;
+            }
+        }
+
+        if (viewsEnumerable.any(v => v === View.Push)) {
+            isPreviewLoading.value = true;
+            try {
+                const result = await props.previewPushProcessor(
+                    props.pushMessage,
+                    props.previewAsType === PreviewAsType.Person ? props.previewAsPersonAlias?.value : null,
+                    props.previewAsType === PreviewAsType.Segment ? toNumberOrNull(props.previewAsPersonalizationSegment?.value) : null
+                );
+                pushMessagePreview.value = result ?? props.pushMessage;
+            }
+            catch {
+                pushMessagePreview.value = props.pushMessage;
             }
             finally {
                 isPreviewLoading.value = false;
@@ -576,8 +644,8 @@ dl:not(.dl-horizontal) dt:first-child {
 
     // #region Watchers
 
-    watch(() => props.message, async () => {
-        await loadEmailPreviewIfNecessary();
+    watch([() => props.message, () => props.smsMessage, () => props.pushMessage, selectedView], async () => {
+        await loadPreviewIfNecessary();
     });
 
     // #endregion Watchers
@@ -585,7 +653,7 @@ dl:not(.dl-horizontal) dt:first-child {
     // #region Hooks
 
     onMounted(async () => {
-        await loadEmailPreviewIfNecessary();
+        await loadPreviewIfNecessary();
     });
 
     // #endregion Hooks

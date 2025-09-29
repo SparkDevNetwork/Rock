@@ -88,7 +88,7 @@
         return valueBuilder.build();
     });
 
-    /** The values to display at half-width on the left side of the block. */
+    /** The values to display at half-width on the right side of the block. */
     const rightSideValues = computed((): ValueDetailListItem[] => {
         const valueBuilder = new ValueDetailListItemBuilder();
 
@@ -106,6 +106,14 @@
 
         if (props.modelValue.smsNotificationGroup?.text) {
             valueBuilder.addTextValue("SMS Notification Group", props.modelValue?.smsNotificationGroup.text);
+        }
+
+        if (props.modelValue.suppressSmsOptInOutAutoReplies) {
+            valueBuilder.addHtmlValue("Suppress Opt-In/Opt-Out Auto-Replies", `<i class="ti ti-check"></i>`);
+        }
+
+        if (props.modelValue.disableSmsOptInOutTracking) {
+            valueBuilder.addHtmlValue("Disable Opt-Out Tracking", `<i class="ti ti-check"></i>`);
         }
 
         return valueBuilder.build();

@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Event
         DefaultValue = Rock.SystemGuid.Page.REGISTRATION_INSTANCE_WAIT_LIST,
         Order = 0 )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Navigation )]
     [Rock.SystemGuid.BlockTypeGuid( "AF0740C9-BC60-434B-A360-EB70A7CEA108" )]
     public partial class RegistrationInstanceNavigation : RegistrationInstanceBlock, ISecondaryBlock
     {

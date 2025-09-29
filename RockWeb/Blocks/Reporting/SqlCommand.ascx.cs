@@ -17,6 +17,7 @@
 using System;
 using System.ComponentModel;
 using System.Data;
+using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -38,6 +39,13 @@ namespace RockWeb.Blocks.Reporting
     [Rock.SystemGuid.BlockTypeGuid( "89EAFE90-7082-4FF2-BC87-F50BFDB53298" )]
     public partial class SqlCommand : RockBlock
     {
+        private static readonly Regex BlockComments = new Regex( @"/\*.*?\*/", RegexOptions.Singleline | RegexOptions.Compiled );
+        private static readonly Regex LineComments = new Regex( @"--.*?$", RegexOptions.Multiline | RegexOptions.Compiled );
+        private static readonly Regex StringLiterals = new Regex( @"N?'(?:''|[^'])*'", RegexOptions.Compiled );
+        private static readonly Regex Disallowed = new Regex(
+            @"\b(INSERT|UPDATE|DELETE|MERGE|INTO|EXEC|EXECUTE|ALTER|DROP|TRUNCATE|CREATE|ATTACH|DETACH|RECONFIGURE|GRANT|REVOKE|DENY|DBCC|BACKUP|RESTORE|SAVE\s+TRAN|BEGIN\s+TRAN|COMMIT|ROLLBACK|KILL|USE|SET|OPENROWSET|OPENDATASOURCE|BULK)\b",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled );
+
         #region Control Methods
 
         /// <summary>
@@ -123,7 +131,8 @@ FROM
                         gReport.Visible = true;
 
                         var sw = System.Diagnostics.Stopwatch.StartNew();
-                        DataSet dataSet = DbService.GetDataSet( query, CommandType.Text, null, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
+
+                        DataSet dataSet = DbService.GetDataSetReadOnly( query, CommandType.Text, null, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
                         sw.Stop();
 
                         if ( dataSet.Tables.Count > 0 )
@@ -134,6 +143,16 @@ FROM
 
                             gReport.DataSource = GetSortedView( dataTable );
                             gReport.DataBind();
+                        }
+
+                        // If the cleaned string still had any Disallowed commands, let them know no updates can be performed
+                        string cleaned = StringLiterals.Replace( BlockComments.Replace( LineComments.Replace( query, string.Empty ), string.Empty ), string.Empty );
+                        if ( Disallowed.IsMatch( cleaned ) )
+                        {
+                            nbSuccess.Title = string.Format( "Command completed successfully in {0:N0}ms<br> ", sw.ElapsedMilliseconds );
+                            
+                            nbSuccess.Text = string.Format( "<b>Warning:</b> The query contained one or more SQL commands that modify data or database state, but no changes were made because the transaction was rolled back. To allow these commands to run, set <em>Selection Query</em> to No." );
+                            nbSuccess.Visible = true;
                         }
 
                         pQueryTime.InnerText = string.Format( "Query completed in {0:N0}ms", sw.ElapsedMilliseconds );

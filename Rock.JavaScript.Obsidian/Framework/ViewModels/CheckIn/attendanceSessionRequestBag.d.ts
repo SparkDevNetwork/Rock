@@ -66,4 +66,10 @@ export type AttendanceSessionRequestBag = {
 
     /** Gets or sets the term used when searching for families. */
     searchTerm?: string | null;
+
+    /**
+     * The identifier of the check-in source that will be used when creating
+     * the attendance records for this session.
+     */
+    sourceValueId?: string | null;
 };

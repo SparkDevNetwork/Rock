@@ -208,12 +208,12 @@ function() {
                     resultSb.Append( $"In group: {group.Name}" );
                     if ( location != null )
                     {
-                        resultSb.Append( $", assigned to location: {location.Name}" );
+                        resultSb.Append( $", assigned to location: {location.ToString( true )}" );
                     }
 
                     if ( groupLocationSchedules.Count() > 0 )
                     {
-                        resultSb.Append( $", and scheduled at: {groupLocationSchedules.Select( a => a.Name ).ToList().AsDelimited( ", " )}" );
+                        resultSb.Append( $", and scheduled at: {groupLocationSchedules.Select( a => a.ToFriendlyScheduleText( true ) ).ToList().AsDelimited( ", " )}" );
                     }
 
                     if ( groupMemberStatus.HasValue )
@@ -272,7 +272,6 @@ function() {
             var slidingDateRangePicker = new SlidingDateRangePicker();
             slidingDateRangePicker.Label = "Date Range";
             slidingDateRangePicker.ID = filterControl.ID + "_slidingDateRangePicker";
-            slidingDateRangePicker.EnabledSlidingDateRangeTypes = new[] { SlidingDateRangeType.Current, SlidingDateRangeType.Previous, SlidingDateRangeType.Last, SlidingDateRangeType.DateRange };
             slidingDateRangePicker.AddCssClass( "js-sliding-date-range" );
             filterControl.Controls.Add( slidingDateRangePicker );
 
@@ -322,7 +321,7 @@ function() {
                     .Where( gl => gl.GroupId == groupId )
                     .Select( gl => new ListItem
                     {
-                        Text = gl.Location.Name,
+                        Text = string.IsNullOrEmpty( gl.Location.Name ) ? gl.Location.Description : gl.Location.Name, // Nameless Locations have a friendly name in their Description.
                         Value = gl.Location.Id.ToString()
                     } )
                     .ToList();
@@ -360,12 +359,12 @@ function() {
                 var groupLocationSchedules = new GroupLocationService( new RockContext() ).Queryable()
                     .Where( gl => gl.GroupId == groupId && gl.LocationId == groupLocationId )
                     .SelectMany( gl => gl.Schedules )
-                    .Distinct()
                     .Select( s => new ListItem
                     {
-                        Text = s.Name,
+                        Text = string.IsNullOrEmpty( s.Name ) ? s.Description : s.Name, // Nameless Schedules have a friendly name in their Description.
                         Value = s.Guid.ToString()
                     } )
+                    .Distinct()
                     .ToList();
 
                 foreach ( var item in groupLocationSchedules )

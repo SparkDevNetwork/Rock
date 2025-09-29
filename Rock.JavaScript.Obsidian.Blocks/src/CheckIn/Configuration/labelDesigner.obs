@@ -73,6 +73,7 @@
     border: 1px solid black;
     background-color: white;
 }
+
 </style>
 
 <script setup lang="ts">

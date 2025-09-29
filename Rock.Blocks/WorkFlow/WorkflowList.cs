@@ -59,7 +59,7 @@ namespace Rock.Blocks.Workflow
     [Rock.SystemGuid.EntityTypeGuid( "1208bfdd-18cf-4539-b36b-9744b10d7635" )]
     [Rock.SystemGuid.BlockTypeGuid( "ea76c61f-aa94-4e8b-b105-1effc0fea59a" )]
     [CustomizedGrid]
-    public class WorkflowList : RockEntityListBlockType<Rock.Model.Workflow>
+    public class WorkflowList : RockEntityListBlockType<Rock.Model.Workflow>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -198,8 +198,9 @@ namespace Rock.Blocks.Workflow
                 var workflowService = new WorkflowService( rockContext );
 
                 workflows = workflowService
-                    .Queryable( "Activities.ActivityType,InitiatorPersonAlias.Person" ).AsNoTracking()
-                    .Where( w => w.WorkflowTypeId.Equals( workflowType.Id ) );
+	                .Queryable( "Activities.ActivityType,Activities.AssignedGroup.Members,Activities.AssignedPersonAlias.Person,Activities.Actions.ActionType,InitiatorPersonAlias.Person,WorkflowType" )
+	                .AsNoTracking()
+	                .Where( w => w.WorkflowTypeId.Equals( workflowType.Id ) );
 
                 // Activated Date Range Filter
                 if ( FilterActivatedDateRangeLowerValue.HasValue )
@@ -248,6 +249,7 @@ namespace Rock.Blocks.Workflow
                 .AddField( "isCompleted", a => a.CompletedDateTime.HasValue )
                 .AddField( "guid", a => a.Guid )
                 .AddField( "workflowTypeIdKey", a => a.WorkflowType.IdKey )
+                .AddField( "hasActiveEntryForm", a => a.HasActiveEntryForm( GetCurrentPerson() ) )
                 .AddAttributeFields( GetGridAttributes() );
         }
 
@@ -314,12 +316,35 @@ namespace Rock.Blocks.Workflow
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            var workflowType = GetWorkflowType();
+            WorkflowTypeCache workflowType = null;
+
+            var defaultGuid = GetAttributeValue( AttributeKey.DefaultWorkflowType ).AsGuidOrNull();
+            if ( defaultGuid.HasValue )
+            {
+                workflowType = WorkflowTypeCache.Get( defaultGuid.Value );
+            }
+            else
+            {
+                var workflowTypeId = pageReference.GetPageParameter( PageParameterKey.WorkflowTypeId );
+                if ( !string.IsNullOrWhiteSpace( workflowTypeId ) )
+                {
+                    workflowType = WorkflowTypeCache.Get( workflowTypeId, !PageCache.Layout.Site.DisablePredictableIds );
+                }
+            }
+
             var breadCrumbs = new List<IBreadCrumb>();
 
             if ( workflowType != null )
             {
-                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
+                var pageParameters = new Dictionary<string, string>();
+                var workflowTypeId = pageReference.GetPageParameter( PageParameterKey.WorkflowTypeId );
+
+                if ( !string.IsNullOrWhiteSpace( workflowTypeId ) )
+                {
+                    pageParameters.Add( PageParameterKey.WorkflowTypeId, workflowTypeId );
+                }
+
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
                 breadCrumbs.Add( new BreadCrumbLink( workflowType.Name, breadCrumbPageRef ) );
             }
 

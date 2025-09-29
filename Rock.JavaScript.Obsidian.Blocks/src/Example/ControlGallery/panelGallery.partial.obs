@@ -4,6 +4,7 @@
         <Panel v-model="value"
                v-model:isDrawerOpen="drawerValue"
                v-model:selectedTab="selectedTab"
+               :type="panelType"
                :hasCollapse="collapsibleValue"
                :hasZoom="hasZoom"
                :hasFullscreen="hasFullscreen"
@@ -123,13 +124,14 @@
         </Panel>
 
         <template #settings>
-            <div class="row">
-                <CheckBox formGroupClasses="col-sm-3" v-model="collapsibleValue" label="Collapsible" />
-                <CheckBox formGroupClasses="col-sm-3" v-model="value" label="Panel Open" />
-                <CheckBox formGroupClasses="col-sm-3" v-model="hasFullscreen" label="Has Fullscreen" />
-                <CheckBox formGroupClasses="col-sm-3" v-model="isFullscreenPageOnly" label="Page Only Fullscreen" />
-                <CheckBox formGroupClasses="col-sm-3" v-model="hasZoom" label="Has Zoom" />
-                <CheckBox formGroupClasses="col-sm-3" v-model="worksurfaceMode" label="Worksurface Mode" />
+            <div class="automatic-layout">
+                <DropDownList v-model="panelType" label="Type" :items="panelTypeItems" />
+                <CheckBox v-model="collapsibleValue" label="Collapsible" />
+                <CheckBox v-model="value" label="Panel Open" />
+                <CheckBox v-model="hasFullscreen" label="Has Fullscreen" />
+                <CheckBox v-model="isFullscreenPageOnly" label="Page Only Fullscreen" />
+                <CheckBox v-model="hasZoom" label="Has Zoom" />
+                <CheckBox v-model="worksurfaceMode" label="Worksurface Mode" />
             </div>
             <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" horizontal :repeatColumns="4" />
 
@@ -150,9 +152,11 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { getSfcControlImportPath } from "./common/utils.partial";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const simulateValues = ref<string[]>([]);
 
@@ -182,6 +186,10 @@
     const hasFullscreen = ref(false);
     const hasZoom = ref(false);
     const worksurfaceMode = ref(false);
+    const panelType = ref<"default" | "success" | "primary" | "info" | "warning" | "danger" | "block" | "widget">("default");
+    const panelTypeItems: ListItemBag[] = ["default", "success", "primary", "info", "warning", "danger", "block", "widget"]
+        .map(t => ({ value: t, text: t }));
+
     const simulateOptions = [
         {
             value: "drawer",
@@ -245,10 +253,6 @@
     const selectedTab = ref("Mathew");
     const tabs = computed((): string[] => {
         return simulateTabs.value ? ["Mathew", "Mark", "Luke", "John"] : [];
-    });
-
-    const panelWithSidebarHeight = computed((): string => {
-        return worksurfaceMode.value ? "400px" : "initial";
     });
 
     const exampleCode = `<Panel v-model="isExanded" v-model:isDrawerOpen="false" title="Panel Title" :hasCollapse="true" :hasFullscreen="false" :isFullscreenPageOnly="true" :headerSecondaryActions="false">

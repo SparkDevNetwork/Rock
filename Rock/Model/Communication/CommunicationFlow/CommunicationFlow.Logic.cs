@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.Collections;
+
 namespace Rock.Model
 {
     public partial class CommunicationFlow

@@ -19,16 +19,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 
-using Microsoft.AspNetCore.Mvc;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Rest.Models;
-
-
 
 #if WEBFORMS
 using System.Data.Entity;
@@ -60,10 +56,10 @@ namespace Rock.Rest.v2.Models.Actions
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE,  Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( bool ) )]
-        [ProducesResponseType( HttpStatusCode.BadRequest )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( bool ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "348856c3-478e-4da8-b7d9-e0f47d254376" )]
         public IActionResult GetContains( string id, string entityId )
         {
@@ -116,10 +112,10 @@ namespace Rock.Rest.v2.Models.Actions
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ItemIdentifierBag> ) )]
-        [ProducesResponseType( HttpStatusCode.BadRequest )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ItemIdentifierBag> ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "295c3416-34b2-4be7-bb4f-c0ee3c38b86c" )]
         public IActionResult GetContents( string id, [FromQuery] bool fullObjects = false )
         {

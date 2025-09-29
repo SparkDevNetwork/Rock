@@ -16,6 +16,8 @@
 //
 
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -81,6 +83,24 @@ namespace Rock.Model
         [DataMember]
         public virtual Communication Communication { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Communication Flow Instance Conversion Histories for this Communication Flow Instance Communication.
+        /// </summary>
+        [DataMember]
+        public virtual ICollection<CommunicationFlowInstanceCommunicationConversion> CommunicationFlowInstanceCommunicationConversions
+        {
+            get
+            {
+                return _communicationFlowInstanceConversionHistories ?? ( _communicationFlowInstanceConversionHistories = new Collection<CommunicationFlowInstanceCommunicationConversion>() );
+            }
+            set
+            {
+                _communicationFlowInstanceConversionHistories = value;
+            }
+        }
+
+        private ICollection<CommunicationFlowInstanceCommunicationConversion> _communicationFlowInstanceConversionHistories;
+
         #endregion Navigation Properties
     }
 
@@ -96,7 +116,7 @@ namespace Rock.Model
         /// </summary>
         public CommunicationFlowInstanceCommunicationConfiguration()
         {
-            this.HasRequired( c => c.CommunicationFlowInstance ).WithMany( i => i.CommunicationFlowInstanceCommunications ).HasForeignKey( c => c.CommunicationFlowInstanceId ).WillCascadeOnDelete( false );
+            this.HasRequired( c => c.CommunicationFlowInstance ).WithMany( i => i.CommunicationFlowInstanceCommunications ).HasForeignKey( c => c.CommunicationFlowInstanceId ).WillCascadeOnDelete( true );
             this.HasRequired( c => c.CommunicationFlowCommunication ).WithMany( i => i.CommunicationFlowInstanceCommunications ).HasForeignKey( c => c.CommunicationFlowCommunicationId ).WillCascadeOnDelete( false );
             this.HasRequired( c => c.Communication ).WithMany().HasForeignKey( c => c.CommunicationId ).WillCascadeOnDelete( false );
         }

@@ -109,6 +109,7 @@ namespace RockWeb.Blocks.Groups
 
     #endregion
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Navigation )]
     [Rock.SystemGuid.BlockTypeGuid( "2D26A2C4-62DC-4680-8219-A52EB2BC0F65" )]
     public partial class GroupTreeView : RockBlock
     {

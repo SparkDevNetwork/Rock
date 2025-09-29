@@ -23,6 +23,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Media;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Reporting.DataFilter.ContentChannelItem;
@@ -53,6 +54,7 @@ namespace Rock.Blocks.Cms
         Description = "The page that will show the media folder details.",
         Key = AttributeKey.DetailPage )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "af4fa9d1-c8e7-47a6-a522-d40a7370517c" )]
     [Rock.SystemGuid.BlockTypeGuid( "75133c37-547f-47fa-991c-6d957b2ea92d" )]
     [CustomizedGrid]
@@ -132,8 +134,28 @@ namespace Rock.Blocks.Cms
         private bool GetIsAddEnabled()
         {
             var entity = new MediaFolder();
+            var mediaAccountComponent = GetMediaAccountComponent();
 
-            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            bool canAddEditDelete = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            return canAddEditDelete && mediaAccountComponent != null && mediaAccountComponent.AllowsManualEntry;
+        }
+
+        /// <summary>
+        /// Gets the media account component.
+        /// </summary>
+        /// <returns></returns>
+        private MediaAccountComponent GetMediaAccountComponent()
+        {
+            var mediaAccount = GetMediaAccount();
+            var componentEntityTypeId = mediaAccount != null ? mediaAccount.ComponentEntityTypeId : ( int? ) null;
+
+            if ( componentEntityTypeId.HasValue )
+            {
+                var componentEntityType = EntityTypeCache.Get( componentEntityTypeId.Value );
+                return componentEntityType == null ? null : MediaAccountContainer.GetComponent( componentEntityType.Name );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -208,6 +230,12 @@ namespace Rock.Blocks.Cms
             }
 
             return items;
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<MediaFolderData> GetOrderedListQueryable( IQueryable<MediaFolderData> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( a => a.MediaFolder.Name );
         }
 
         /// <inheritdoc/>

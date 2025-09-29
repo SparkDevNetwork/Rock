@@ -17,6 +17,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock;
@@ -206,7 +207,10 @@ namespace Rock.Blocks.Core
         protected override IQueryable<PersonSignal> GetListQueryable( RockContext rockContext )
         {
             var personInView = this.RequestContext.GetContextEntity<Person>();
-            return base.GetListQueryable( rockContext ).Where( s => s.PersonId == personInView.Id );
+            return base.GetListQueryable( rockContext )
+                .Include( s => s.SignalType )
+                .Include( s => s.OwnerPersonAlias.Person )
+                .Where( s => s.PersonId == personInView.Id );
         }
 
         /// <inheritdoc/>

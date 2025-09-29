@@ -532,7 +532,7 @@
         scrollToTopAfterNextRender();
     }
 
-    const handlePageShow = (e: PageTransitionEvent) => {
+    const handlePageShow = (e: PageTransitionEvent): void => {
         const isBackForward = e.persisted || (window.performance?.getEntriesByType("navigation")[0] as PerformanceNavigationTiming)?.type === "back_forward";
         if (isBackForward) {
             reloadBlock();
