@@ -10,138 +10,149 @@
             <strong>Note</strong> Because this site is used by Rock, editing is restricted.
         </NotificationBox>
 
-        <div class="row">
-            <div class="col-md-6">
-                <TextBox v-model="name"
-                         :disabled="isSystem"
-                         label="Name"
-                         rules="required" />
+        <ContentSection icon="ti ti-icons"
+                        light>
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="name"
+                             :disabled="isSystem"
+                             label="Name"
+                             rules="required" />
+                </div>
+                <div class="col-md-6">
+                    <CheckBox v-model="isActive"
+                              label="Active" />
+                </div>
             </div>
-
-            <div class="col-md-6">
-                <CheckBox v-model="isActive"
-                          label="Active" />
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="description"
+                             :disabled="isSystem"
+                             label="Description"
+                             textMode="multiline" />
+                </div>
             </div>
-        </div>
-
-        <TextBox v-model="description"
-                 :disabled="isSystem"
-                 label="Description"
-                 textMode="multiline" />
-
-        <div class="row">
-
-            <div class="col-md-4">
+        </ContentSection>
+        <br />
+        <ContentSection title="General"
+                        icon="ti ti-settings">
+            <ContentStack title="Site Theming"
+                          description="Select the theme and upload branding assets for this site.">
                 <DropDownList v-model="theme"
                               label="Theme"
                               :disabled="isSystem"
                               help="The theme that should be used for the site. Themes contain specific layouts and css styling that controls how a site and its pages will look."
                               :items="themes" />
 
+                <ImageUploader v-model="favIconBinaryFile"
+                               label="Favicon"
+                               help="Upload a favicon (site icon). Recommended size: 192×192. Rock will generate all other required sizes."
+                               :uploadAsTemporary="true"
+                               uploadButtonText="Upload"
+                               :binaryFileTypeGuid="binaryFileTypeGuid"
+                               :showDeleteButton="true" />
+
+                <ImageUploader v-model="siteLogoBinaryFile"
+                               label="Logo"
+                               help="The site logo is used by certain themes to apply to the changes on the site. See the theme's documentation for information on sizing"
+                               :uploadAsTemporary="true"
+                               uploadButtonText="Upload"
+                               :showDeleteButton="true" />
+            </ContentStack>
+            <ContentStack>
+                <hr class="section-header-hr">
+            </ContentStack>
+            <ContentStack title="Site Settings"
+                          description="Define domains, analytics, and key options that control how this site operates.">
+                <TextBox v-model="siteDomains"
+                         label="Domain(s)"
+                         help="Enter one or more domains for this site (comma-separated or one per line). Rock uses these domains to match incoming requests to the correct site. If no page or route is specified, the site’s default page will be shown."
+                         textMode="multiline" />
+
+                <TextBox v-model="googleAnalyticsCode"
+                         label="Google Analytics Code"
+                         help="Provided Google Analytics code will track visits on all site pages." />
+
+                <InlineCheckBox v-model="enableVisitorTracking"
+                                label="Enable Visitor Tracking"
+                                help="Track anonymous visitor activity on the site." />
+
+                <InlineCheckBox v-model="requiresEncryption"
+                                label="Require Encryption"
+                                help="Always redirect site traffic to HTTPS for security." />
+
+                <InlineCheckBox v-model="enablePersonalization"
+                                label="Enable Personalization"
+                                help=" Personalize pages based on user activity." />
+
+                <InlineCheckBox v-model="enabledForShortening"
+                                label="Enable Shortlink Option"
+                                help="Allow this site (and its primary domain) to be available when creating shortlinks." />
+            </ContentStack>
+        </ContentSection>
+        <br />
+        <ContentSection title="Page Routing"
+                        icon="ti ti-sitemap"
+                        isCollapsed>
+            <ContentStack title="Main Pages"
+                          description="Define the key pages used for site navigation and interactions.">
+
                 <PagePicker v-model="defaultPage"
                             label="Default Page"
                             :multiple="false"
-                            help="The page and route that will be used whenever a specific page or page route is not provided."
+                            help="Page shown when no specific page or route is given."
                             promptForPageRoute
                             showSelectCurrentPage />
 
                 <PagePicker v-model="loginPage"
                             label="Login Page"
                             :multiple="false"
-                            help="The page users will be redirected to when they request a page that requires login."
+                            help="Page people see when accessing a page that requires login."
                             promptForPageRoute
                             showSelectCurrentPage />
 
                 <PagePicker v-model="changePasswordPage"
-                            label="Change Password Page"
+                            label="Password Reset Page"
                             :multiple="false"
-                            help="The page for changing a password for the site."
+                            help="Page where people change their password."
                             promptForPageRoute
                             showSelectCurrentPage />
 
                 <PagePicker v-model="communicationPage"
                             label="Communication Page"
                             :multiple="false"
-                            help="The page that user will be redirected to when creating a new communication."
+                            help="Page used when creating a new communication."
                             promptForPageRoute
                             showSelectCurrentPage />
 
                 <PagePicker v-model="registrationPage"
                             label="Group Registration Page"
                             :multiple="false"
-                            help="The page that user will be redirected to when they request to register for a group."
+                            help="Page shown when people register for a group."
                             promptForPageRoute
                             showSelectCurrentPage />
+            </ContentStack>
+            <ContentStack>
+                <hr class="section-header-hr">
+            </ContentStack>
+            <ContentStack title="Error Handling"
+                          description="Specify the pages used when errors occur or content isn’t found.">
+                <TextBox v-model="errorPage"
+                         label="Error Page"
+                         help="URL users see if a site error occurs." />
 
                 <PagePicker v-model="pageNotFoundPage"
                             label="404 Page"
                             :multiple="false"
-                            help="Page to use instead of the server's 404 message."
+                            help="Custom page shown when a page isn’t found (404 error)."
                             promptForPageRoute
                             showSelectCurrentPage />
-            </div>
-
-
-            <div class="col-md-6 col-md-offset-2">
-
-                <TextBox v-model="siteDomains"
-                         label="Domain(s)"
-                         help="A list of domains that are associated with this site (list can be either comma delimited or each on a separate line).
-                  These values are used by Rock to load the correct site whenever a specific page or route is not provided in the URL.
-                  Rock will determine the site to use by finding the first site with a domain value that is contained by the current request's hostname in the url.
-                  It will then display that site's default page."
-                         textMode="multiline" />
-
-                <TextBox v-model="errorPage"
-                         label="Error Page"
-                         help="The URL that user will be redirected to if an error occurs on site." />
-
-                <TextBox v-model="googleAnalyticsCode"
-                         label="Google Analytics Code"
-                         help="Optional Google Analytics Code. If specified, the Google Analytics script with this code will be added to every page rendered for this site." />
-
-                <CheckBox v-model="requiresEncryption"
-                          label="Require Encryption"
-                          help="Ensures that the site is loaded over SSL by redirecting to https." />
-
-                <CheckBox v-model="enabledForShortening"
-                          label="Enabled for Shortening"
-                          help="Should this site (and its first domain) be an available option when creating shortlinks?" />
-
-                <CheckBox v-model="enableVisitorTracking"
-                          label="Enable Visitor Tracking"
-                          help="Enable Visitor Tracking to keep track of how an anonymous visitor is interacting with the site." />
-
-                <CheckBox v-model="enablePersonalization"
-                          label="Enable Personalization"
-                          help="Enable Personalization to allow pages to be personalized based on how the user interacts with the site." />
-
-                <div class="row">
-                    <div class="col-md-4">
-                        <ImageUploader v-model="favIconBinaryFile"
-                                       label="Site Icon"
-                                       help="Commonly called a 'favicon', this image is used as a browser and app icon for your site. Recommended image size is 192x192. Rock will automatically create all the sizes required by various devices."
-                                       :uploadAsTemporary="true"
-                                       uploadButtonText="Upload"
-                                       :binaryFileTypeGuid="binaryFileTypeGuid"
-                                       :showDeleteButton="true" />
-                    </div>
-                    <div class="col-md-4">
-                        <ImageUploader v-model="siteLogoBinaryFile"
-                                       label="Site Logo"
-                                       help="The site logo is used by certain themes to apply to the changes on the site. See the theme's documentation for information on sizing"
-                                       :uploadAsTemporary="true"
-                                       uploadButtonText="Upload"
-                                       :showDeleteButton="true" />
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <Panel title="Page Attributes" hasCollapse>
+            </ContentStack>
+        </ContentSection>
+        <br />
+        <ContentSection title="Page Attributes"
+                        icon="ti ti-database"
+                        isCollapsed>
             <NotificationBox alertType="info">
                 Page Attributes apply to all of the pages of this site. Each page will have its own value for these attributes.
             </NotificationBox>
@@ -169,71 +180,78 @@
                 </template>
 
             </Modal>
-        </Panel>
+        </ContentSection>
+        <br />
+        <ContentSection title="Advanced Settings"
+                        icon="ti ti-adjustments-cog"
+                        isCollapsed>
+            <ContentStack title="Traffic"
+                          description="Configure how visitors are redirected and how their activity is logged.">
+                <InlineCheckBox v-model="enablePageViews"
+                                label="Track Page Views"
+                                help="Record page view events for analytics." />
 
-        <Panel title="Advanced Settings" hasCollapse>
-            <div class="row">
 
-                <div class="col-md-6">
-
-                    <CheckBox v-model="enableMobileRedirect"
-                              label="Enabled Mobile Redirect" />
-
-                    <div v-if="enableMobileRedirect">
-                        <PagePicker v-model="mobilePageComputed"
-                                    label="Mobile Page"
-                                    :multiple="false"
-                                    help="The page that users will be redirected to when accessing this site from a mobile device."
-                                    showSelectCurrentPage />
-
-                        <TextBox v-model="externalUrl"
-                                 label="External URL"
-                                 help="If users should be redirected to an external URL when accessing this site from a mobile device, enter the URL here." />
-
-                        <CheckBox v-model="redirectTablets"
-                                  label="Redirect Tablets" />
-                    </div>
-
-                    <CheckBox v-model="enablePageViews"
-                              label="Log Page Views" />
-
+                <ConditionalWell v-show="enablePageViews">
                     <NumberBox v-model="retentionDuration"
-                               v-if="enablePageViews"
-                               label="Page View Retention Period"
-                               help="The number of days to keep page views logged. Leave blank to keep page views logged indefinitely." />
+                               label="Page View Retention (Days)"
+                               help="How many days to retain page view logs. Leave blank to keep indefinitely." />
+                </ConditionalWell>
 
-                    <TextBox v-model="allowedFrameDomains"
-                             label="Allowed Frame Domain(s)"
-                             textMode="multiline"
-                             help="A list of domain values that are allowed to embed this site (via an iframe).  This list may be delimited with spaces or commas, or you may enter item per line.
-                      The value you enter here will be used for the &lt;source&gt; as described in [Content-Security-Policy frame-ancestors directive](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-ancestors#Syntax).
-                      Be sure to include your own server domain(s) in the list to prevent locking yourself out from modal use.
-                      If left blank, Rock will inject properties into the HTTP Header which modern web browsers will use to prevent site embedding and it will use a frame-ancestors value of 'self'." />
-                </div>
+                <InlineCheckBox v-model="enableMobileRedirect"
+                                label="Enable Mobile Redirect"
+                                help="Redirect visitors on mobile devices to a mobile page or external URL." />
 
-                <div class="col-md-6">
+                <ConditionalWell v-show="enableMobileRedirect">
+                    <PagePicker v-model="mobilePageComputed"
+                                label="Mobile Landing Page"
+                                :multiple="false"
+                                help="Page to show mobile visitors when redirect is enabled."
+                                showSelectCurrentPage />
 
-                    <CheckBox v-model="allowIndexing"
-                              label="Allow Indexing" />
+                    <TextBox v-model="externalUrl"
+                             label="Mobile Redirect URL"
+                             help="External URL to send mobile visitors to (overrides Mobile Page)." />
 
-                    <TextBox v-model="indexStartingLocation"
-                             label="Crawling Starting Location"
-                             help="Enables the Rock indexer for this site." />
+                    <InlineCheckBox v-model="redirectTablets"
+                                    label="Include Tablet Devices"
+                                    help="Redirect tablet users as well (in addition to phones)." />
+                </ConditionalWell>
 
-                    <CheckBox v-model="enableExclusiveRoutes"
-                              label="Enable Exclusive Routes"
-                              help="Enabling this feature will prevent other sites from using this sites routes and prevent routes from other sites from working on this site.
-                      This means the domain in the URL used with the route must match the site's configured Domain(s). If the route is configured as 'Is Global' then this setting is ignored." />
+                <InlineCheckBox v-model="allowIndexing"
+                                label="Allow Indexing"
+                                help="Controls whether search engines (like Google or Bing) can index this site’s pages." />
+            </ContentStack>
+            <ContentStack>
+                <hr class="section-header-hr">
+            </ContentStack>
+            <ContentStack title="Security and Indexing"
+                          description="Set rules for indexing, routing, and embedding.">
+                <TextBox v-model="allowedFrameDomains"
+                         label="Allowed Embed Domain(s)"
+                         textMode="multiline"
+                         help="Enter the domains allowed to embed this site in an iframe (comma-separated or one per line). Be sure to include your own domain(s) to avoid blocking modal use. These values are applied to the Content-Security-Policy frame-ancestors directive. If left blank, Rock sets the header to frame-ancestors 'self', which prevents embedding on other domains." />
 
-                    <CheckBox v-model="disablePredictableIds"
-                              label="Disable Predictable Ids"
-                              help="This should be disabled only with the knowledge that the site was created/built to handle this (rare)." />
+                <TextBox v-model="indexStartingLocation"
+                         label="Index Start Path"
+                         help="Start page or path for the Rock site indexer." />
 
-                </div>
-            </div>
+                <InlineCheckBox v-model="enableExclusiveRoutes"
+                                label="Restrict Routes to This Site"
+                                help="Limit routes so they only work on this site’s configured domain(s). Ignored for routes marked ‘Is Global’." />
 
-            <CodeEditor v-model="pageHeaderContent" label="Page Header Content" theme="rock" mode="text" :editorHeight="200" help="The content provided here will be added to each page's head section." />
-        </Panel>
+                <InlineCheckBox v-model="disablePredictableIds"
+                                label="Disable Predictable IDs"
+                                help="Replaces simple number IDs in URLs with secure, non-guessable values. This prevents someone from guessing other records by changing numbers (e.g., 112 → 113). Enable only if your site and blocks don’t depend on numeric IDs in the URL." />
+            </ContentStack>
+            <ContentStack>
+                <hr class="section-header-hr">
+            </ContentStack>
+            <ContentStack title="Page Header Content"
+                          description="Inject custom HTML, CSS, or scripts into the page header. This will be added to each page's head section.">
+                <CodeEditor v-model="pageHeaderContent" theme="rock" mode="text" :editorHeight="200" />
+            </ContentStack>
+        </ContentSection>
 
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
     </fieldset>
@@ -243,12 +261,12 @@
     import { PropType, reactive, ref, watch, computed } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
-    import Panel from "@Obsidian/Controls/panel.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
@@ -266,6 +284,9 @@
     import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
 
     const props = defineProps({
         modelValue: {

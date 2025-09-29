@@ -774,6 +774,7 @@
         updateRefValue(completionFlow, props.modelValue?.bag?.completionFlow?.toString() ?? defaultCompletionFlow);
         updateRefValue(defaultListView, props.modelValue?.bag?.defaultListView.toString() ?? "");
         updateRefValue(category, props.modelValue?.bag?.category);
+        updateRefValue(workflows, props.modelValue?.bag?.workflowTriggers ?? []);
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -793,6 +794,7 @@
         setPropertiesBoxValue(newValue, "statuses", stepStatuses.value);
         setPropertiesBoxValue(newValue, "completionFlow", toNumber(completionFlow.value ?? defaultCompletionFlow) as CompletionFlow);
         setPropertiesBoxValue(newValue, "defaultListView", toNumber(defaultListView.value));
+        setPropertiesBoxValue(newValue, "workflowTriggers", workflows.value);
 
         emit("update:modelValue", newValue);
     }, { deep: true });

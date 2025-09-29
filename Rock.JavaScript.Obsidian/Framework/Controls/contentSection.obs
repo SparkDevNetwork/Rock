@@ -101,11 +101,21 @@
         },
 
         /**
-         * A section can be collapsed by default. This will disable that so the
-         * section is always expanded.
+         * A section has the ability to be collapsed and re-opened.
+         * This will disable that so the section is always expanded.
          */
         disableCollapse: {
             type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Whether the section should be collapsed by default. This only applies
+         * if `disableCollapse` is false.
+         */
+        isCollapsed: {
+            type: Boolean as PropType<boolean>,
+            required: false,
             default: false
         },
 
@@ -119,12 +129,13 @@
     });
 
     // #region Values
+    const isCollapsed = ref(props.disableCollapse ? false : props.isCollapsed);
 
     const title = computed((): string | undefined => props.title);
     const icon = computed((): string | undefined => props.icon);
     const isOverflowCollapsed = ref(true);
 
-    const section = createSection(title, icon);
+    const section = createSection(title, icon, isCollapsed);
     const sectionContainer = useSectionContainer();
 
     // #endregion

@@ -806,7 +806,7 @@ Developer Note: Originally called "Person Select Template".
 
 ### Custom Header Text
 
-Description: Configure the heading text for each step of the check-in process.
+Description: Configure the header text for each step of the check-in process.
 
 #### Action Select Header Template
 

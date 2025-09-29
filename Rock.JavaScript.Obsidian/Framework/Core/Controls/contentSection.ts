@@ -93,8 +93,7 @@ export function useSectionContainer(): IContentSectionContainerHolder {
  *
  * @returns A new content section holder to be registered with the content section container.
  */
-export function createSection(title: Readonly<Ref<string | undefined>>, icon: Readonly<Ref<string | undefined>>): IContentSectionHolder {
-    const isCollapsed = ref(false);
+export function createSection(title: Readonly<Ref<string | undefined>>, icon: Readonly<Ref<string | undefined>>, isCollapsed: Readonly<Ref<boolean>>): IContentSectionHolder {
     const anchor = ref<string>();
 
     const holder: IContentSectionHolder = {

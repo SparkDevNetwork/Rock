@@ -11050,7 +11050,7 @@ ul.activeusers {
   padding: var(--spacing-medium) 0;
   margin: 0;
   background: var(--color-interface-softest);
-  border-bottom: 1px solid var(--color-interface-softer);
+  border-bottom: 1px solid var(--color-interface-soft);
 }
 .panel-block .treeview-actions {
   display: flex;
@@ -11123,7 +11123,7 @@ ul.activeusers {
   padding: var(--spacing-medium) 0;
   margin: 0;
   background: var(--color-interface-softest);
-  border-bottom: 1px solid var(--color-interface-softer);
+  border-bottom: 1px solid var(--color-interface-soft);
 }
 .panel-block .treeview-actions {
   display: flex;
@@ -11904,7 +11904,7 @@ ul.rocktree-children {
   padding: var(--spacing-xsmall) 0;
   background-color: var(--color-interface-softest);
   margin-bottom: var(--spacing-large);
-  border: 1px solid var(--color-interface-soft);
+  border-bottom: 1px solid var(--color-interface-soft);
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
 }
 .wizard:before, .wizard:after {
