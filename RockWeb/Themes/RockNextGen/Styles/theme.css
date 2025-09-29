@@ -13675,11 +13675,12 @@ ul.list-group-panel .list-group-item:last-child,
   margin-right: 36px;
 }
 .ant-select.ant-select-multiple.form-control .ant-select-selection-overflow {
+  padding-left: var(--spacing-medium);
   padding-right: var(--spacing-medium);
 }
 .ant-select.ant-select-multiple.form-control, .ant-select.ant-select-multiple.form-control .ant-select-selector {
-  height: initial !important;
-  min-height: 34px;
+  min-height: 38px;
+  padding: 0 0 !important;
 }
 
 .ant-select-clear {

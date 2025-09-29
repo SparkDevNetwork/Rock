@@ -123,7 +123,7 @@ namespace Rock.Blocks.Finance
             var options = new FinancialAccountListOptionsBag
             {
                 GridTitle = parentAccountId.HasValue ? "Child Accounts".FormatAsHtmlTitle() : "Accounts".FormatAsHtmlTitle(),
-                IsBlockVisible = (parentAccountId.HasValue && parentAccountId > 0) || topLevelOnly
+                IsBlockVisible = ( parentAccountId.HasValue && parentAccountId > 0 ) || topLevelOnly || !parentAccountId.HasValue
             };
 
             return options;
@@ -184,7 +184,7 @@ namespace Rock.Blocks.Finance
             {
                 accountQuery = accountQuery.Where( account => account.ParentAccountId == parentAccountId.Value );
             }
-            else if ( topLevelOnly )
+            else if ( topLevelOnly || !parentAccountId.HasValue )
             {
                 accountQuery = accountQuery.Where( account => account.ParentAccountId == null );
             }

@@ -3,8 +3,8 @@
 
 
 // =============================================================
-// Table of Content           
-//  + Base Style  
+// Table of Content
+//  + Base Style
 // =============================================================
 
 
@@ -68,14 +68,15 @@
 
   // Prevent text from flowing undernearth caret indicator.
   &.ant-select-multiple.form-control .ant-select-selection-overflow {
+    padding-left: var(--spacing-medium);
     padding-right: var(--spacing-medium);
   }
 
   // Allow control height to grow in multi-select mode.
   &.ant-select-multiple.form-control,
   &.ant-select-multiple.form-control .ant-select-selector {
-    height: initial !important;
-    min-height:   34px;
+    min-height:   38px;
+    padding: 0 0 !important;
   }
 }
 

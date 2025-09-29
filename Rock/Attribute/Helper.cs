@@ -2258,7 +2258,7 @@ INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]",
         /// <param name="configurationValues">The configuration values for the attribute.</param>
         private static int BulkUpdateInvalidatedPersistedValues( Rock.Model.Attribute attribute, Dictionary<string, string> configurationValues )
         {
-            var field = FieldTypeCache.Get( attribute.FieldType )?.Field;
+            var field = FieldTypeCache.Get( attribute.FieldTypeId )?.Field;
             var count = 0;
 
             // Field is kind of required...

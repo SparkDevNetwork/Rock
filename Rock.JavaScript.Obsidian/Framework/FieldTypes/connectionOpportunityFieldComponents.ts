@@ -117,7 +117,7 @@ export const ConfigurationComponent = defineComponent({
             // than the current value.
             newValue[ConfigurationValueKey.ConnectionTypeFilter] = JSON.stringify(connectionType) ?? "";
             newValue[ConfigurationValueKey.IncludeInactive] = asTrueOrFalseString(includeInactive.value);
-            newValue[ConfigurationValueKey.ClientValues] = props.modelValue[ConfigurationValueKey.ClientValues];
+            newValue[ConfigurationValueKey.ClientValues] = props.modelValue[ConfigurationValueKey.ClientValues] || "";
 
             // Compare the new value and the old value.
             const anyValueChanged = newValue[ConfigurationValueKey.ConnectionTypeFilter] !== (props.modelValue[ConfigurationValueKey.ConnectionTypeFilter])
@@ -164,8 +164,13 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(connectionTypeValue, () => maybeUpdateConfiguration(ConfigurationValueKey.ConnectionTypeFilter, connectionTypeValue.value));
-        watch(includeInactive, () => maybeUpdateConfiguration(ConfigurationValueKey.IncludeInactive, asTrueOrFalseString(connectionTypeValue.value)));
+        watch(connectionTypeValue, () => {
+            const connectionType = options.value?.find(o => o.value === connectionTypeValue.value);
+            const json = connectionType ? JSON.stringify(connectionType) : "";
+            maybeUpdateConfiguration(ConfigurationValueKey.ConnectionTypeFilter, json);
+        });
+
+        watch(includeInactive, () => maybeUpdateConfiguration(ConfigurationValueKey.IncludeInactive, asTrueOrFalseString(includeInactive.value)));
 
         return {
             connectionTypeValue,

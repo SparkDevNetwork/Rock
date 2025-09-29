@@ -78,26 +78,26 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            int? pageId;
+            string pageId;
             string zoneName;
 
             if ( !Page.IsPostBack )
             {
                 // Get the settings from the query string.
-                pageId = PageParameter( PageParameterKey.Page ).AsIntegerOrNull();
+                pageId = PageParameter( PageParameterKey.Page );
                 if ( pageId == null )
                 {
-                    pageId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.Page ) );
+                    pageId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.Page ) ).ToString();
                 }
                 zoneName = PageParameter( PageParameterKey.ZoneName );
             }
             else
             {
                 // Get the settings from the current page state.
-                pageId = hfPageId.Value.AsIntegerOrNull();
+                pageId = hfPageId.Value;
                 if ( pageId == null )
                 {
-                    pageId = Rock.Utility.IdHasher.Instance.GetId( hfPageId.Value );
+                    pageId = Rock.Utility.IdHasher.Instance.GetId( hfPageId.Value ).ToString();
                 }
                 zoneName = ddlZones.SelectedValue;
             }
@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Cms
                 var rockContext = new RockContext();
                 var blockService = new BlockService( rockContext );
                 var block = blockService.Get( blockId.Value );
-                var page = PageCache.Get( hfPageId.Value.AsInteger() );
+                var page = PageCache.Get(hfPageId.Value, true);
                 if ( block != null && page != null )
                 {
                     List<Block> zoneBlocks = null;
@@ -215,11 +215,11 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="pageId">The page identifier.</param>
         /// <param name="zoneName">Name of the zone.</param>
-        private void ShowDetail( int? pageId, string zoneName )
+        private void ShowDetail( string pageId, string zoneName )
         {
             // Store the page reference and determine if it is valid.
-            hfPageId.Value = pageId.ToString();
-            var page = PageCache.Get( pageId.Value );
+            hfPageId.Value = pageId;
+            var page = PageCache.Get( pageId, true );
 
             this.Visible = page != null;
 
@@ -246,8 +246,8 @@ namespace RockWeb.Blocks.Cms
         /// <param name="zoneName">Name of the zone.</param>
         private void ShowDetailForZone( string zoneName )
         {
-            int pageId = hfPageId.Value.AsInteger();
-            var page = PageCache.Get( pageId );
+            string pageId = hfPageId.Value;
+            var page = PageCache.Get( pageId, true );
 
             hlInvalidZoneWarning.Visible = _invalidPageZones != null && _invalidPageZones.Contains( zoneName );
 
@@ -319,14 +319,14 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         public void LoadDropDowns()
         {
-            int pageId = hfPageId.Value.AsInteger();
+            string pageId = hfPageId.Value;
 
             var selectedZoneValue = ddlZones.SelectedValue;
             var selectedMoveValue = ddlMoveToZoneList.SelectedValue;
             ddlZones.Items.Clear();
             ddlMoveToZoneList.Items.Clear();
 
-            var page = PageCache.Get( pageId );
+            var page = PageCache.Get( pageId, true ); ;
             if ( page != null )
             {
                 // get the valid zones from the Layout for this page
@@ -491,7 +491,7 @@ namespace RockWeb.Blocks.Cms
                 var customActionsBlock = ( IHasCustomActions ) Activator.CreateInstance( blockCompiledType );
                 var canEdit = BlockCache.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 var canAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
-                var page = PageCache.Get( hfPageId.Value.AsInteger() );
+                var page = PageCache.Get( hfPageId.Value, true );
 
                 var configActions = customActionsBlock.GetCustomActions( canEdit, canAdministrate );
 
@@ -623,7 +623,7 @@ namespace RockWeb.Blocks.Cms
 
                 if ( block != null )
                 {
-                    int? pageId = block.PageId;
+                    string pageId = block.PageId.ToString();
                     int? layoutId = block.LayoutId;
                     blockService.Delete( block );
                     rockContext.SaveChanges();
@@ -656,7 +656,7 @@ namespace RockWeb.Blocks.Cms
                     ddlMoveToZoneList.SetValue( block.Zone );
                     cblBlockMovePageLayoutOrSite.Items.Clear();
 
-                    var page = PageCache.Get( hfPageId.Value.AsInteger() );
+                    var page = PageCache.Get( hfPageId.Value, true );
 
                     var listItemPage = new ListItem();
                     listItemPage.Text = "Page: " + page.ToString();
@@ -743,7 +743,7 @@ namespace RockWeb.Blocks.Cms
         protected void btnAddBlock_Click( object sender, EventArgs e )
         {
             tbNewBlockName.Text = string.Empty;
-            var siteType = PageCache.Get( hfPageId.Value.AsInteger() ).Layout.Site.SiteType;
+            var siteType = PageCache.Get( hfPageId.Value, true ).Layout.Site.SiteType;
 
             // Load the block types
             using ( var rockContext = new RockContext() )
@@ -804,7 +804,7 @@ namespace RockWeb.Blocks.Cms
 
             rblAddBlockLocation.Items.Clear();
 
-            var page = PageCache.Get( hfPageId.Value.AsInteger() );
+            var page = PageCache.Get( hfPageId.Value, true );
 
             var listItemPage = new ListItem();
             listItemPage.Text = string.Format( "Page ({0})", page.ToString() );
@@ -840,7 +840,7 @@ namespace RockWeb.Blocks.Cms
             var blockService = new BlockService( rockContext );
             var block = blockService.Get( blockId );
 
-            var page = PageCache.Get( hfPageId.Value.AsInteger() );
+            var page = PageCache.Get( hfPageId.Value, true );
 
             if ( block != null )
             {
@@ -880,7 +880,7 @@ namespace RockWeb.Blocks.Cms
             {
                 BlockService blockService = new BlockService( rockContext );
 
-                var page = PageCache.Get( hfPageId.Value.AsInteger() );
+                var page = PageCache.Get(hfPageId.Value, true);
 
                 Block block = new Rock.Model.Block();
                 block.Zone = ddlZones.SelectedValue;
