@@ -3,6 +3,7 @@
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using Microsoft.EntityFrameworkCore.Update;
 
 namespace Rock.CoreShims
 {
@@ -14,8 +15,8 @@ namespace Rock.CoreShims
     /// </summary>
     public class RockSqlServerMigrationsSqlGenerator : SqlServerMigrationsSqlGenerator
     {
-        public RockSqlServerMigrationsSqlGenerator( MigrationsSqlGeneratorDependencies dependencies, IRelationalAnnotationProvider migrationsAnnotations )
-            : base( dependencies, migrationsAnnotations )
+        public RockSqlServerMigrationsSqlGenerator( MigrationsSqlGeneratorDependencies dependencies, ICommandBatchPreparer commandBatchPreparer )
+            : base( dependencies, commandBatchPreparer )
         {
         }
         protected override void Generate( SqlOperation operation, Microsoft.EntityFrameworkCore.Metadata.IModel model, MigrationCommandListBuilder builder )

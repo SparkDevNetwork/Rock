@@ -9,7 +9,7 @@ namespace RockWebCore
     {
         public async Task StartAsync( CancellationToken cancellationToken )
         {
-            await Rock.Bus.RockMessageBus.StartAsync();
+            //await Rock.Bus.RockMessageBus.StartAsync();
         }
 
         public Task StopAsync( CancellationToken cancellationToken )

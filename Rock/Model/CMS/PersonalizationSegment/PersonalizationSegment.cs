@@ -215,6 +215,13 @@ namespace Rock.Model
                     a.MapRightKey( "CategoryId" );
                     a.ToTable( "PersonalizationSegmentCategory" );
                 } );
+#else
+            Builder.HasMany( a => a.Categories )
+                .WithMany()
+                .UsingEntity( j =>
+                {
+                    j.ToTable( "PersonalizationSegmentCategory" );
+                } );
 #endif
         }
     }

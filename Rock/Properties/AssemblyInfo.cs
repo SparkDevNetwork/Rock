@@ -31,6 +31,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo( "Rock.Web2" )]
 [assembly: InternalsVisibleTo( "Rock.WebStartup" )]
 [assembly: InternalsVisibleTo( "Rock.AI.OpenAI" )]
+[assembly: InternalsVisibleTo( "RockWebCore" )]
 [assembly: InternalsVisibleTo( "DynamicProxyGenAssembly2" )] // Used by Moq
 
 // Register friendly logging category names.

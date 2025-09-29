@@ -135,6 +135,18 @@ namespace Rock.Data
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
 #if REVIEW_NET5_0_OR_GREATER
+            base.OnModelCreating( modelBuilder );
+
+            modelBuilder.Entity<Person>()
+                .HasOne( p => p.CreatedByPersonAlias )
+                .WithMany()
+                .HasForeignKey( p => p.CreatedByPersonAliasId );
+
+            modelBuilder.Entity<Person>()
+                .HasOne( p => p.ModifiedByPersonAlias )
+                .WithMany()
+                .HasForeignKey( p => p.ModifiedByPersonAliasId );
+
             // Fix for datetime2 => datetime issues. Default all DateTime property
             // types to be datetime.
             var dtList = Reflection.FindTypes( typeof( Rock.Data.IEntity ) )
@@ -260,6 +272,7 @@ namespace Rock.Data
         /// <param name="entityTypes">The types that need to be configured.</param>
         private void ConfigureEntityAttributes( DbModelBuilder modelBuilder, IEnumerable<Type> entityTypes )
         {
+#if REVIEW_WEBFORMS
             var genericEntityMethod = modelBuilder.GetType().GetMethod( "Entity" );
 
             foreach ( var entityType in entityTypes )
@@ -281,7 +294,6 @@ namespace Rock.Data
                         continue;
                     }
 
-#if REVIEW_WEBFORMS
                     // First configure the real entity so that the EntityAttributeValues
                     // navigation property works.
 
@@ -335,16 +347,13 @@ namespace Rock.Data
                     // .ToTable( "name" )
                     var toTableMethod = entityTypeConfiguration.GetType().GetMethod( "ToTable", new[] { typeof( string ) } );
                     toTableMethod.Invoke( entityTypeConfiguration, new object[] { $"AttributeValue_{entityTableName}" } );
-#else
-                    //modelBuilder.Entity<Campus>().HasMany( a => a.CampusAttributeValues ).WithOne().HasForeignKey( a => a.EntityId ).WillCascadeOnDelete( false );
-                    throw new NotImplementedException();
-#endif
                 }
                 catch ( Exception ex )
                 {
                     ExceptionLogService.LogException( new Exception( $"Exception occurred when configuring Entity Attributes for entity type {entityType.FullName}.", ex ), null );
                 }
             }
+#endif
         }
     }
 

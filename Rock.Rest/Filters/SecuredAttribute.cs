@@ -88,7 +88,11 @@ namespace Rock.Rest.Filters
 #endif
             Person person = null;
 
+#if REVIEW_NET5_0_OR_GREATER
+            if ( principal?.Identity?.Name != null )
+#else
             if ( principal != null && principal.Identity != null )
+#endif
             {
                 using ( var rockContext = new RockContext() )
                 {

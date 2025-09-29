@@ -91,15 +91,15 @@ namespace Rock.Model
         {
             get
             {
-                return _communicationFlowInstanceConversionHistories ?? ( _communicationFlowInstanceConversionHistories = new Collection<CommunicationFlowInstanceCommunicationConversion>() );
+                return _communicationFlowInstanceCommunicationConversions ?? ( _communicationFlowInstanceCommunicationConversions = new Collection<CommunicationFlowInstanceCommunicationConversion>() );
             }
             set
             {
-                _communicationFlowInstanceConversionHistories = value;
+                _communicationFlowInstanceCommunicationConversions = value;
             }
         }
 
-        private ICollection<CommunicationFlowInstanceCommunicationConversion> _communicationFlowInstanceConversionHistories;
+        private ICollection<CommunicationFlowInstanceCommunicationConversion> _communicationFlowInstanceCommunicationConversions;
 
         #endregion Navigation Properties
     }

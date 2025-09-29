@@ -52,7 +52,7 @@ namespace Rock.CoreShims
             return CreateProxy( context, entityType, constructorArguments );
         }
 
-        public virtual Type CreateProxyType( ProxiesOptionsExtension options, IEntityType entityType )
+        public virtual Type CreateProxyType( IEntityType entityType )
         {
             return _generator.ProxyBuilder.CreateClassProxyType( entityType.ClrType, GetInterfacesToProxy(), _proxyGenerationOptions );
         }

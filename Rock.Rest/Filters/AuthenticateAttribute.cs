@@ -39,7 +39,7 @@ namespace Rock.Rest.Filters
 {
 #if REVIEW_NET5_0_OR_GREATER
 #warning EFTODO: This needs more work, it is not a complete solution for AspNetCore yet.
-    public class AuthenticateAttribute : Microsoft.AspNetCore.Authorization.AuthorizeAttribute { }
+    public class AuthenticateAttribute : System.Attribute { }
 
     public class ApiKeyMiddleware
     {
