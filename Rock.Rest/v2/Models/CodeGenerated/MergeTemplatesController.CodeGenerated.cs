@@ -41,6 +41,10 @@ namespace Rock.Rest.v2.Models
     using HttpPutAttribute = System.Web.Http.HttpPutAttribute;
     using HttpPatchAttribute = System.Web.Http.HttpPatchAttribute;
     using HttpDeleteAttribute = System.Web.Http.HttpDeleteAttribute;
+#else
+    using Microsoft.AspNetCore.Mvc;
+
+    using RoutePrefixAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 #endif
 
     /// <summary>

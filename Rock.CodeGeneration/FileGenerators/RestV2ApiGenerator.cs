@@ -74,7 +74,9 @@ namespace Rock.CodeGeneration.FileGenerators
                 codeBuilder.AppendLine( $"    using {name} = {source};" );
             }
             codeBuilder.AppendLine( "#else" );
-            codeBuilder.AppendLine( $"    using RoutePrefixAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;" );
+            codeBuilder.AppendLine( "    using Microsoft.AspNetCore.Mvc;" );
+            codeBuilder.AppendLine();
+            codeBuilder.AppendLine( "    using RoutePrefixAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;" );
             codeBuilder.AppendLine( "#endif" );
             codeBuilder.AppendLine();
 

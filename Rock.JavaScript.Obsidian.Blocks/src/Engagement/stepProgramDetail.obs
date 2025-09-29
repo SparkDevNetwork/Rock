@@ -2,7 +2,8 @@
 <template>
     <ContextSlicer title="Filter By Campus"
                    class="campus-slicer"
-                   showCampus />
+                   showCampus
+                   v-if="panelMode === DetailPanelMode.View" />
 
     <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 

@@ -47,6 +47,7 @@
                             <DropDownList v-model="selectedStatusFilter"
                                           @update:modelValue="handleChartFilterChanged"
                                           label="Status"
+                                          :help="statusHelpText"
                                           grouped
                                           :items="statusOptions"
                                           :showBlankItem="false" />
@@ -450,6 +451,14 @@
 
             return `${selectedStatusBag?.text} from ${dateRangeText.value}`;
         }
+    });
+
+    const statusHelpText = computed(() => {
+        if (selectedStepProgramViewEnum.value === StepProgramView.Trends) {
+            return "Statuses that represent completion are grouped by the step <strong>Completion Date</strong>. All other statuses are grouped by the step <strong>Start Date</strong>.";
+        }
+
+        return "";
     });
 
     // #endregion
