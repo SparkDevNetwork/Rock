@@ -177,9 +177,7 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill.Mediums
 
             foreach ( var recipient in recipients )
             {
-                var recipientAddr = string.IsNullOrWhiteSpace( recipient.Email ) ? "" : " (" + recipient.Email + ")";
-
-                verificationText.AppendLine( "Recipient: " + recipient.FullName + recipientAddr );
+                verificationText.AppendLine( "Recipient: " + recipient.FullName );
             }
 
             verificationText.AppendLine();

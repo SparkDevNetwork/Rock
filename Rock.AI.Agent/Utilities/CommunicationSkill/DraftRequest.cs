@@ -12,6 +12,8 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill
         public Rock.Model.Person CurrentPerson { get; private set; }
         public List<Rock.Model.Person> Recipients { get; set; }
 
+        public string EmailClosingPhrase { get; private set; }  // Email may use
+
         public DraftRequest(
             AgentCommunicationType type,
             string subjectHint,
@@ -19,7 +21,8 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill
             string relevantData,
             string tone,
             Rock.Model.Person currentPerson,
-            List<Rock.Model.Person> recipients )
+            List<Rock.Model.Person> recipients,
+            string emailSignature )
         {
             Type = type;
             SubjectHint = subjectHint;
@@ -28,6 +31,7 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill
             Tone = tone;
             CurrentPerson = currentPerson;
             Recipients = recipients;
+            EmailClosingPhrase = emailSignature;
         }
     }
 }

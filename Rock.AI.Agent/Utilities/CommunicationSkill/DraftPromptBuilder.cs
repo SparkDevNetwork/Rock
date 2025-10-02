@@ -29,7 +29,13 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill
                 recipientsSection += $"- {recipient.FullName} ({recipient.Email})\r\n";
             }
 
-            return$@"You are an assistant that drafts professional, well-structured emails.
+            string emailSignatureSection = string.Empty;
+            if( request.EmailClosingPhrase.IsNotNullOrWhiteSpace() )
+            {
+                emailSignatureSection = $"- Finish the email with the following phrase: {request.EmailClosingPhrase}\r\n";
+            }
+
+            return $@"You are an assistant that drafts professional, well-structured emails.
 {recipientsSection}
 
 ### Context
@@ -43,6 +49,7 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill
 
 ### Requirements
 - Write a concise subject line (≤ 70 characters).
+{emailSignatureSection}
 - Greet the recipient by name. If multiple recipients, use a general greeting.
 - Match the requested tone.
 - Keep paragraphs short and easy to scan.

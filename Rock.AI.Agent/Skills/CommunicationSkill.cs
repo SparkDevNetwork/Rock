@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 using Rock.AI.Agent.Classes.Common;
+using Rock.AI.Agent.Classes.Entity;
 using Rock.AI.Agent.Classes.Skills.CommunicationSkill;
 using Rock.AI.Agent.Utilities.CommunicationSkill;
 using Rock.AI.Agent.Utilities.CommunicationSkill.Mediums;
@@ -30,7 +31,9 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Security;
 using Rock.SystemGuid;
+using Rock.SystemKey;
 using Rock.Tasks;
 using Rock.Web.Cache;
 
@@ -126,9 +129,160 @@ namespace Rock.AI.Agent.Skills
             return medium;
         }
 
+        /// <summary>
+        /// Gets the system phone numbers, optionally filtering to only SMS-enabled numbers.
+        /// </summary>
+        /// <param name="rockContext"></param>
+        /// <param name="smsEnabled"></param>
+        /// <returns></returns>
+        private List<SystemPhoneNumberResult> GetSystemPhoneNumbers( RockContext rockContext, bool? smsEnabled = null )
+        {
+            var spns = SystemPhoneNumberCache.All()
+                .Where( spn => spn.IsActive )
+                .Where( spn => !smsEnabled.HasValue || spn.IsSmsEnabled == smsEnabled.Value );
+
+            // Filter out based on security.
+            spns = spns.Where( spn => spn.IsAuthorized( Authorization.VIEW, AgentRequestContext.RockRequestContext.CurrentPerson ) ).ToList();
+
+            var spnResults = new List<SystemPhoneNumberResult>();
+            foreach ( var spn in spns )
+            {
+                var spnResult = new SystemPhoneNumberResult
+                {
+                    Id = spn.Id,
+                    Name = spn.Name,
+                    Description = spn.Description,
+                    Number = spn.Number,
+                    IsSmsEnabled = spn.IsSmsEnabled,
+                };
+
+                if ( spn.AssignedToPersonAliasId.HasValue )
+                {
+                    var person = new PersonAliasService( rockContext ).GetPerson( spn.AssignedToPersonAliasId.Value );
+
+                    if ( person != null )
+                    {
+                        spnResult.AssignedToPerson = new PersonResult
+                        {
+                            FirstName = person.FirstName,
+                            LastName = person.LastName,
+                            Id = person.Id,
+                        };
+                    }
+                }
+
+                spnResults.Add( spnResult );
+            }
+
+            return spnResults;
+        }
+
+        /// <summary>
+        /// Gets the current person's default SMS phone number, if any.
+        /// </summary>
+        /// <returns></returns>
+        private SystemPhoneNumberCache GetDefaultSmsPhoneNumber()
+        {
+            var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
+            if ( currentPerson == null )
+            {
+                return null;
+            }
+
+            var prefs = AgentRequestContext.RockRequestContext.GetGlobalPersonPreferences();
+            var savedId = prefs.GetValue( PersonPreferenceKey.DEFAULT_SMS_PHONE_NUMBER ).AsIntegerOrNull();
+
+            // If a saved default exists, use it—unless it's gone or inactive, then fall back.
+            if ( savedId.HasValue && savedId.Value > 0 )
+            {
+                var saved = SystemPhoneNumberCache.Get( savedId.Value );
+                if ( saved != null && saved.IsActive && saved.IsSmsEnabled )
+                {
+                    return saved;
+                }
+            }
+
+            // No valid saved default: pick the first active number assigned to this person.
+            var aliasId = currentPerson.PrimaryAliasId;
+            if ( !aliasId.HasValue )
+            {
+                return null;
+            }
+
+            var fallback = SystemPhoneNumberCache.All()
+                .Where( spn =>
+                    spn.IsActive
+                    && spn.AssignedToPersonAliasId == aliasId.Value
+                    && spn.IsSmsEnabled
+                )
+                .OrderByDescending( spn => spn.Id )
+                .FirstOrDefault();
+
+            return fallback;
+        }
+
         #endregion
 
         #region Skill Tools
+
+        /// <summary>
+        /// Updates the current person's default SMS phone number preference.
+        /// </summary>
+        /// <param name="numberIdKey"></param>
+        /// <returns></returns>
+        [AgentToolGuid( "56278E81-B81A-46CC-A529-E164DBE35AD3" )]
+        public RockToolResult UpdateCurrentPersonDefaultSmsPhoneNumber( string numberIdKey )
+        {
+            var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
+            if ( currentPerson == null )
+            {
+                return RockToolResult.Error( "The current person is not available. Ensure the agent is properly initialized." );
+            }
+
+            if ( numberIdKey.IsNullOrWhiteSpace() )
+            {
+                return RockToolResult.Error( "A numberIdKey is required to update the default SMS phone number." )
+                    .WithInstructions( "Ask the user to select one of their available SMS 'from' numbers." );
+            }
+
+            var spn = SystemPhoneNumberCache.Get( numberIdKey, false );
+            if ( spn == null || !spn.IsActive || !spn.IsSmsEnabled )
+            {
+                return RockToolResult.Error( "The provided numberIdKey does not correspond to a valid active SMS-enabled system phone number." )
+                    .WithInstructions( "Ask the user to select one of their available SMS 'from' numbers." );
+            }
+
+            var prefs = AgentRequestContext.RockRequestContext.GetGlobalPersonPreferences();
+            prefs.SetValue( PersonPreferenceKey.DEFAULT_SMS_PHONE_NUMBER, spn.Id.ToString() );
+            prefs.Save();
+
+            return RockToolResult.Success( $"The default SMS 'from' number has been updated to '{spn.Number}'." );
+        }
+
+        /// <summary>
+        /// Looks up system phone numbers, optionally filtering to only SMS-enabled numbers.
+        /// </summary>
+        /// <param name="smsEnabled"></param>
+        /// <returns></returns>
+        [AgentToolGuid( "FD3F160F-ABCA-4A18-B69F-0E21D61B6874" )]
+        public RockToolResult LookupSystemPhoneNumbers( bool? smsEnabled = null )
+        {
+            using var rockContext = _rockContextFactory.CreateRockContext();
+
+            var spnResults = GetSystemPhoneNumbers( rockContext, smsEnabled );
+
+            // Trim down for history
+            var trimmedSpns = spnResults.Select( spn => new KeyNameResult
+            {
+                Id = spn.Id,
+                Name = spn.Name
+            } );
+
+            var historyKey = smsEnabled.HasValue ? $"system-phone-numbers-sms-{smsEnabled.Value}" : "system-phone-numbers-all";
+
+            return RockToolResult.Success( spnResults )
+                .WithHistoryContent( trimmedSpns, historyKey );
+        }
 
         /// <summary>
         /// Drafts a communication (email/SMS/push) for a specified recipient.
@@ -158,6 +312,10 @@ namespace Rock.AI.Agent.Skills
                     string draftGuidance,
                     string tone = "warm",
 
+
+                    [Description("Only relevant to SMS. If omitted, the person's default sms phone number will be used.")]
+                    string fromNumberIdKey = "",
+
                     [Description("An optional parameter to update an existing draft as opposed to saving a new one.")]
                     string existingDraftIdKey = "" )
         {
@@ -180,14 +338,28 @@ namespace Rock.AI.Agent.Skills
                 }
 
                 int? fromNumberId = null;
+
                 if ( communicationType == AgentCommunicationType.Sms )
                 {
-                    fromNumberId = SystemPhoneNumberCache.All().Where( spn => spn.IsActive && spn.IsSmsEnabled ).Select( spn => spn.Id ).FirstOrDefault();
-
-                    if ( !fromNumberId.HasValue )
+                    if ( fromNumberIdKey.IsNotNullOrWhiteSpace() )
                     {
-                        return RockToolResult.Error( "No active SMS-enabled system phone number is configured. Unable to send SMS." )
-                            .WithInstructions( "Add and activate an SMS-enabled system phone number in Rock." );
+                        var fromNumber = SystemPhoneNumberCache.Get( fromNumberIdKey, false );
+                        if ( fromNumber == null || !fromNumber.IsActive || !fromNumber.IsSmsEnabled )
+                        {
+                            return RockToolResult.Error( "The provided fromNumberIdKey does not correspond to a valid active SMS-enabled system phone number." );
+                        }
+
+                        fromNumberId = fromNumber.Id;
+                    }
+                    else
+                    {
+                        fromNumberId = GetDefaultSmsPhoneNumber()?.Id;
+
+                        if ( !fromNumberId.HasValue )
+                        {
+                            return RockToolResult.Error( "No valid default SMS 'from' number could be determined for the current person. Please provide a fromNumberIdKey." )
+                                .WithInstructions( "Call the LookupSystemPhoneNumbers function, and prompt the user to pick from the list." );
+                        }
                     }
                 }
 
@@ -220,7 +392,14 @@ namespace Rock.AI.Agent.Skills
                     return RockToolResult.Error( recipientValidation );
                 }
 
-                var draftRequest = new DraftRequest( communicationType, subjectHint, draftGuidance, referenceData, tone, currentPerson, recipients );
+                string emailSignature = string.Empty;
+                if( communicationType == AgentCommunicationType.Email )
+                {
+                    var prefs = AgentRequestContext.RockRequestContext.GetGlobalPersonPreferences();
+                    emailSignature = prefs.GetValue( PersonPreferenceKey.EMAIL_CLOSING_PHRASE );
+                }
+
+                var draftRequest = new DraftRequest( communicationType, subjectHint, draftGuidance, referenceData, tone, currentPerson, recipients, emailSignature );
 
                 DraftResult draftResult;
                 try
@@ -287,6 +466,11 @@ namespace Rock.AI.Agent.Skills
             }
         }
 
+        /// <summary>
+        /// Sends a previously drafted communication.
+        /// </summary>
+        /// <param name="communicationIdKey"></param>
+        /// <returns></returns>
         [AgentToolGuid( "2BB35960-77C6-4EAD-9645-F0ACB0EF132B" )]
         public RockToolResult SendCommunication( string communicationIdKey )
         {
@@ -337,6 +521,20 @@ namespace Rock.AI.Agent.Skills
 
             var instructions = "The communication has been queued to be sent. The user can view the details of the communication via the reference url.";
 
+            // If the communication is SMS and came from a different number than the user's default, prompt the user
+            // to see if we should update their default.
+            if( communication.CommunicationType == CommunicationType.SMS )
+            {
+                // Get the from number of the communication.
+                var fromNumberId = communication.SmsFromSystemPhoneNumberId;
+                var userDefaultFromNumberId = GetDefaultSmsPhoneNumber()?.Id;
+
+                if ( !userDefaultFromNumberId.HasValue || fromNumberId != userDefaultFromNumberId.Value )
+                {
+                    instructions += "\r\nAsk the user if they would like to use this number as their default for future messages.";
+                }
+            }
+
             return RockToolResult.Success( new SendCommunicationResult
             {
                 CommunicationIdKey = communication.IdKey
@@ -346,6 +544,11 @@ namespace Rock.AI.Agent.Skills
             .WithReferenceRoute( AgentRequestContext.RockRequestContext, "Communication", $"/Communication/{communication.Id}", false );
         }
 
+        /// <summary>
+        /// Cancels and deletes a draft communication that has not yet been sent.
+        /// </summary>
+        /// <param name="communicationIdKey"></param>
+        /// <returns></returns>
         [AgentToolGuid( "8EC76EA6-83BE-4796-9B91-6B4A34C0C3AD" )]
         public RockToolResult CancelDraft( string communicationIdKey )
         {

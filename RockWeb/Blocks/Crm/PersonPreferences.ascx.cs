@@ -177,6 +177,9 @@ namespace RockWeb.Blocks.Crm
                 preferences.SetValue( PersonPreferenceKey.ORIGINATE_CALL_SOURCE, string.Empty );
             }
 
+            preferences.SetValue( PersonPreferenceKey.DEFAULT_SMS_PHONE_NUMBER, ddlDefaultSmsPhoneNumber.SelectedValue );
+            preferences.SetValue( PersonPreferenceKey.EMAIL_CLOSING_PHRASE, tbEmailClosingPhrase.Text );
+
             preferences.Save();
         }
     }
