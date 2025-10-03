@@ -44,7 +44,7 @@
         <TransitionVerticalCollapse>
             <div v-if="editSkill && !isSkillLoading">
                 <CheckBoxList v-model="editEnabledFunctions"
-                              label="Enabled Functions"
+                              label="Enabled Tools"
                               :items="editAvailableFunctions"
                               horizontal
                               :repeatColumns="3" />
