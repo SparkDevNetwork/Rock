@@ -30,8 +30,19 @@ namespace Rock.Enums.AI.Agent
     /// </remarks>
     public enum FunctionType
     {
+        /// <summary>
+        /// The tool is native C# code that will be executed.
+        /// </summary>
         ExecuteCode,
+
+        /// <summary>
+        /// The tool will use a Lava template to generate content.
+        /// </summary>
         ExecuteLava,
+
+        /// <summary>
+        /// The tool will use a semantic function to generate content.
+        /// </summary>
         AIPrompt
     }
 }
