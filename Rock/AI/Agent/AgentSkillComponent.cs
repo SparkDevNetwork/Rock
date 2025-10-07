@@ -17,12 +17,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Extension;
+using Rock.Field;
+using Rock.Field.Types;
 using Rock.Net;
 using Rock.Security;
 using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.AI.Agent
 {
@@ -101,7 +108,47 @@ namespace Rock.AI.Agent
         /// <returns>An instance of <see cref="DynamicComponentDefinitionBag"/> that describes how to render the UI.</returns>
         public virtual DynamicComponentDefinitionBag GetComponentDefinition( Dictionary<string, string> privateConfiguration, RockContext rockContext, RockRequestContext requestContext )
         {
-            return null;
+            var fieldTypeAttributes = GetConfigurationAttributes();
+            int order = 0;
+            var attributeBags = new List<PublicAttributeBag>();
+
+            // Build a list of all the field type attributes defined on this
+            // instance. These are transformed into a fake attribute so that
+            // the client can present them with standard logic.
+            foreach ( var fieldTypeAttribute in fieldTypeAttributes )
+            {
+                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
+                if ( fieldTypeCache == null || fieldTypeCache.Field == null )
+                {
+                    continue;
+                }
+
+                var configurationValues = fieldTypeAttribute.FieldConfigurationValues
+                    .ToDictionary( k => k.Key, k => k.Value.Value );
+
+                var bag = new PublicAttributeBag
+                {
+                    FieldTypeGuid = fieldTypeCache.ControlFieldTypeGuid,
+                    AttributeGuid = Guid.NewGuid(),
+                    Name = fieldTypeAttribute.Name,
+                    Order = order++,
+                    Key = fieldTypeAttribute.Key,
+                    IsRequired = fieldTypeAttribute.IsRequired,
+                    Description = fieldTypeAttribute.Description,
+                    ConfigurationValues = fieldTypeCache.Field.GetPublicConfigurationValues( configurationValues, ConfigurationValueUsage.Edit, null ),
+                };
+
+                attributeBags.Add( bag );
+            }
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Controls/Internal/AI/Skills/skillConfiguration.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    ["attributes"] = attributeBags.ToCamelCaseJson( false, true )
+                }
+            };
         }
 
         /// <summary>
@@ -130,7 +177,31 @@ namespace Rock.AI.Agent
         /// <returns>A dictionary of values that will be returned to the UI component.</returns>
         public virtual Dictionary<string, string> GetPublicConfiguration( Dictionary<string, string> privateConfiguration, RockContext rockContext, RockRequestContext requestContext )
         {
-            return privateConfiguration;
+            var fieldTypeAttributes = GetConfigurationAttributes();
+            var publicConfiguration = new Dictionary<string, string>();
+
+            // Convert the private configuration values into public ones for
+            // each of the field type attributes defined on this instance.
+            foreach ( var fieldTypeAttribute in fieldTypeAttributes )
+            {
+                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
+                if ( fieldTypeCache == null || fieldTypeCache.Field == null )
+                {
+                    continue;
+                }
+
+                if ( !privateConfiguration.TryGetValue( fieldTypeAttribute.Key, out var privateValue ) )
+                {
+                    privateValue = string.Empty;
+                }
+
+                var configurationValues = fieldTypeAttribute.FieldConfigurationValues
+                    .ToDictionary( k => k.Key, k => k.Value.Value );
+
+                publicConfiguration[fieldTypeAttribute.Key] = fieldTypeCache.Field.GetPublicEditValue( privateValue, configurationValues );
+            }
+
+            return publicConfiguration;
         }
 
         /// <summary>
@@ -144,7 +215,50 @@ namespace Rock.AI.Agent
         /// <returns>A dictionary of values that will be returned to the UI component.</returns>
         public virtual Dictionary<string, string> GetPrivateConfiguration( Dictionary<string, string> publicConfiguration, RockContext rockContext, RockRequestContext requestContext )
         {
-            return publicConfiguration;
+            var fieldTypeAttributes = GetConfigurationAttributes();
+            var privateConfiguration = new Dictionary<string, string>();
+
+            // Convert the public configuration values into private ones for
+            // each of the field type attributes defined on this instance.
+            foreach ( var fieldTypeAttribute in fieldTypeAttributes )
+            {
+                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
+                if ( fieldTypeCache == null || fieldTypeCache.Field == null )
+                {
+                    continue;
+                }
+
+                if ( !publicConfiguration.TryGetValue( fieldTypeAttribute.Key, out var publicValue ) )
+                {
+                    publicValue = string.Empty;
+                }
+
+                var configurationValues = fieldTypeAttribute.FieldConfigurationValues
+                    .ToDictionary( k => k.Key, k => k.Value.Value );
+
+                privateConfiguration[fieldTypeAttribute.Key] = fieldTypeCache.Field.GetPrivateEditValue( publicValue, configurationValues );
+            }
+
+            return privateConfiguration;
+        }
+
+        /// <summary>
+        /// Gets the field attributes that define the configuration for this
+        /// skill.
+        /// </summary>
+        /// <returns>A list of <see cref="FieldAttribute"/> instances.</returns>
+        private List<FieldAttribute> GetConfigurationAttributes()
+        {
+            return GetType()
+                .GetCustomAttributes( true )
+                .Where( a => typeof( FieldAttribute ).IsAssignableFrom( a.GetType() ) )
+                .Cast<FieldAttribute>()
+                .Where( fa => fa.FieldTypeClass != typeof( FileFieldType ).FullName
+                    && fa.FieldTypeClass != typeof( ImageFieldType ).FullName
+                    && fa.FieldTypeClass != typeof( BackgroundCheckFieldType ).FullName
+                    && fa.FieldTypeClass != typeof( StructureContentEditorFieldType ).FullName )
+                .OrderBy( a => a.Order )
+                .ToList();
         }
 
         #endregion

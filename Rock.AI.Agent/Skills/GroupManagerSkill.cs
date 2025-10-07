@@ -21,12 +21,12 @@ using System.Linq;
 
 using Microsoft.Extensions.Logging;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
 using Rock.Net;
 using Rock.SystemGuid;
-using Rock.ViewModels.Controls;
 using Rock.Web.Cache;
 
 using Group = Rock.Model.Group;
@@ -37,6 +37,12 @@ namespace Rock.AI.Agent.Skills
     [AgentPurpose( "Used for managing groups, such as adding or removing members, and getting group information." )]
     [AgentSkillGuid( "489e96d7-c66c-4683-b76b-92fbfda372f4" )]
     [EntityTypeGuid( "bed15fba-e033-4741-a894-e8ca6ca2b00a" )]
+    [GroupTypesField( "Group Types",
+        Description = "The group type that will be managed by this skill.",
+        IsRequired = true,
+        EnhancedSelection = true,
+        Key = ConfigurationKey.GroupTypes,
+        Order = 0 )]
     internal class GroupManagerSkill : AgentSkillComponent
     {
         private IRockContextFactory _rockContextFactory;
@@ -54,52 +60,6 @@ namespace Rock.AI.Agent.Skills
         {
             _rockContextFactory = rockContextFactory;
         }
-
-        #region Configuration
-
-        /// <inheritdoc/>
-        public override DynamicComponentDefinitionBag GetComponentDefinition( Dictionary<string, string> privateConfiguration, RockContext rockContext, RockRequestContext requestContext )
-        {
-            return new DynamicComponentDefinitionBag
-            {
-                Url = requestContext.ResolveRockUrl( "~/Obsidian/Controls/Internal/AI/Skills/groupManagerSkill.obs" ),
-                Options = new Dictionary<string, string>
-                {
-                    ["groupTypes"] = GroupTypeCache.All( rockContext )
-                        .OrderBy( gt => gt.Name )
-                        .ToListItemBagList()
-                        .ToCamelCaseJson( false, false )
-                },
-            };
-        }
-
-        /// <inheritdoc/>
-        public override Dictionary<string, string> GetPublicConfiguration( Dictionary<string, string> privateConfiguration, RockContext rockContext, RockRequestContext requestContext )
-        {
-            var publicConfiguration = new Dictionary<string, string>();
-
-            if ( privateConfiguration.TryGetValue( ConfigurationKey.GroupTypes, out var groupTypesString ) )
-            {
-                publicConfiguration[ConfigurationKey.GroupTypes] = groupTypesString;
-            }
-
-            return publicConfiguration;
-        }
-
-        /// <inheritdoc/>
-        public override Dictionary<string, string> GetPrivateConfiguration( Dictionary<string, string> publicConfiguration, RockContext rockContext, RockRequestContext requestContext )
-        {
-            var privateConfiguration = new Dictionary<string, string>();
-
-            if ( publicConfiguration.TryGetValue( ConfigurationKey.GroupTypes, out var groupTypesString ) )
-            {
-                privateConfiguration[ConfigurationKey.GroupTypes] = groupTypesString;
-            }
-
-            return privateConfiguration;
-        }
-
-        #endregion
 
         #region Skill Tools
 

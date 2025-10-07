@@ -1,0 +1,70 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <AttributeValuesContainer v-model="internalValue"
+                              :attributes="attributes"
+                              isEditMode />
+</template>
+
+<script setup lang="ts">
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { standardDynamicComponentProps, updateRefValue } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { ref, watch } from "vue";
+
+    const props = defineProps(standardDynamicComponentProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    // #region Values
+
+    const internalValue = ref<Record<string, string>>(convertEmptyValuesToStrings(props.modelValue));
+    const attributes = ref(parseAttributes(props.options));
+
+    // #endregion
+
+    // #region Functions
+
+    function convertEmptyValuesToStrings(value: Record<string, string | null | undefined>): Record<string, string> {
+        const newValue: Record<string, string> = {};
+
+        for (const key in value) {
+            newValue[key] = value[key] ?? "";
+        }
+
+        return newValue;
+    }
+
+    function parseAttributes(options: Record<string, string | null | undefined>): Record<string, PublicAttributeBag> {
+        const attributes = safeParseJson<PublicAttributeBag[]>(options?.attributes) ?? [];
+        const attributeDictionary: Record<string, PublicAttributeBag> = {};
+
+        for (const attr of attributes) {
+            if (attr.key) {
+                attributeDictionary[attr.key] = attr;
+            }
+        }
+
+        return attributeDictionary;
+    }
+
+    // #endregion
+
+    // #region Watches
+
+    watch(internalValue, () => {
+        emit("update:modelValue", internalValue.value);
+    });
+
+    watch(() => props.modelValue, (val) => {
+        updateRefValue(internalValue, convertEmptyValuesToStrings(val));
+    });
+
+    watch(() => props.options, () => {
+        attributes.value = parseAttributes(props.options);
+    });
+
+    // #endregion
+</script>
