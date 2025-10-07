@@ -355,6 +355,12 @@ namespace Rock.AI.Agent.Classes.Common
         {
             var virtualPath = context.ResolveRockUrl( url );
 
+            // If they gave us an absolute URL with a hostname, just return it.
+            if ( virtualPath.Contains( "://" ) )
+            {
+                return virtualPath;
+            }
+
             if ( context.RootUrlPath.IsNotNullOrWhiteSpace() )
             {
                 return $"{context.RootUrlPath}{virtualPath}";

@@ -21,7 +21,6 @@ using System.Runtime.CompilerServices;
 
 using Rock.AI.Agent;
 using Rock.AI.Agent.Classes.Common;
-using Rock.Net;
 
 namespace Rock.Lava
 {
@@ -133,7 +132,7 @@ namespace Rock.Lava
         /// <param name="keyOrDictionary">Either a string key name or a dictionary of keys and values.</param>
         /// <param name="value">If <paramref name="keyOrDictionary"/> is a string, this is the value to set for the specified key.</param>
         /// <returns>The <see cref="RockToolResult"/> object.</returns>
-        public static object AgentToolMetadata( ILavaRenderContext context, object input, object keyOrDictionary, string value = null )
+        public static object AgentToolMetadata( ILavaRenderContext context, object input, object keyOrDictionary, object value = null )
         {
             if ( !TryGetRockToolResult( context, input, out var rockToolResult ) )
             {
@@ -171,7 +170,7 @@ namespace Rock.Lava
         /// <param name="route">The route to the resource, such as '/person/123'.</param>
         /// <param name="secured">If false, the route will only be included if the current person has access to view the page. Defaults to true.</param>
         /// <returns>The <see cref="RockToolResult"/> object.</returns>
-        public static object AgentToolReferenceRoute( ILavaRenderContext context, object input, string text, string route, bool secured = true )
+        public static object AgentToolReferenceRoute( ILavaRenderContext context, object input, string text, string route, object secured = null )
         {
             if ( !TryGetRockToolResult( context, input, out var rockToolResult ) )
             {
@@ -183,7 +182,7 @@ namespace Rock.Lava
                 throw new LavaToolException( CreateAgentToolTemplateError( "The AgentToolReferenceRoute filter can only be used within the context of an AI Agent Tool." ) );
             }
 
-            return rockToolResult.WithReferenceRoute( agentContext.RockRequestContext, text, route, secured );
+            return rockToolResult.WithReferenceRoute( agentContext.RockRequestContext, text, route, secured.ToStringSafe().AsBoolean()  );
         }
 
         /// <summary>
