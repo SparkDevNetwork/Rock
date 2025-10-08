@@ -53,8 +53,8 @@ export const EntityType = {
     AiProvider: "945A994F-F15E-43AC-B503-A54BDE70F77F",
     /** The EntityType Guid for Rock.Model.AISkill  */
     AiSkill: "D953AB34-4AB6-47C6-857B-53044A99ED75",
-    /** The EntityType Guid for Rock.Model.AISkillFunction  */
-    AiSkillFunction: "357D2625-FDCA-41F8-AB8D-1CF2CE0ABEED",
+    /** The EntityType Guid for Rock.Model.AISkillTool  */
+    AiSkillTool: "357D2625-FDCA-41F8-AB8D-1CF2CE0ABEED",
     /** The EntityType Guid for Rock.Model.AnalyticsDimCampus  */
     AnalyticsDimCampus: "DCEB0575-1351-4CFF-BA4F-410BA2D638CB",
     /** The EntityType Guid for Rock.Model.AnalyticsDimFamilyCurrent  */

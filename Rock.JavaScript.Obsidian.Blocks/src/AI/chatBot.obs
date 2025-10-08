@@ -52,9 +52,9 @@
 
                         <span v-if="doesMessageHaveLogData(message)"
                               class="label label-info"
-                              title="Function Calls">
+                              title="Tool Calls">
                             <i class="ti ti-code"></i>
-                            {{ getDebugFunctionCalls(message).length }}
+                            {{ getDebugToolCalls(message).length }}
                         </span>
 
                         <span v-if="message.duration"
@@ -72,11 +72,11 @@
                     </div>
                 </div>
 
-                <div v-if="liveMessage && (liveMessage.function || liveMessage?.message)"
+                <div v-if="liveMessage && (liveMessage.tool || liveMessage?.message)"
                      class="message"
                      :class="getMessageClass(liveMessage)">
-                    <div v-if="liveMessage.function" class="message-preamble">
-                        {{ liveMessage.function }}
+                    <div v-if="liveMessage.tool" class="message-preamble">
+                        {{ liveMessage.tool }}
                         <span class="ti ti-loader fa fa-spin"></span>
                     </div>
 
@@ -140,36 +140,36 @@
            title="Message Debug Information"
            cancelText="Close">
         <TabbedBar v-model="messageDebugTab"
-                   :tabs="['Function Calls', 'Logs']" />
+                   :tabs="['Tool Calls', 'Logs']" />
 
-        <div v-if="messageDebugTab === 'Function Calls'" class="message-debug-function-calls">
-            <div v-if="getDebugFunctionCalls(debugMessage).length === 0" class="text-muted">
-                No function calls for this request.
+        <div v-if="messageDebugTab === 'Tool Calls'" class="message-debug-tool-calls">
+            <div v-if="getDebugToolCalls(debugMessage).length === 0" class="text-muted">
+                No tool calls for this request.
             </div>
 
-            <Panel v-for="func in getDebugFunctionCalls(debugMessage)"
+            <Panel v-for="func in getDebugToolCalls(debugMessage)"
                    :title="func.name"
                    :key="func.name"
                    hasCollapse>
                 <template #headerActions>
-                    <div class="function-labels">
+                    <div class="tool-labels">
                         <span v-if="!func.error" class="label label-success">Success</span>
                         <span v-else class="label label-danger">Failed</span>
                         <span class="label label-info">{{ func.duration }}</span>
                     </div>
                 </template>
 
-                <div class="function-args">
+                <div class="tool-args">
                     <h4>Arguments</h4>
                     <pre v-html="highlightJavaScript(func.args)"></pre>
                 </div>
 
-                <div v-if="!func.error" class="function-result">
+                <div v-if="!func.error" class="tool-result">
                     <h4>Result</h4>
                     <pre v-html="highlightJavaScript(func.result)"></pre>
                 </div>
 
-                <div v-if="func.error" class="function-error">
+                <div v-if="func.error" class="tool-error">
                     <h4>Error</h4>
                     <div>{{ func.error }}</div>
                 </div>
@@ -427,13 +427,13 @@
     max-height: calc(100vh - 300px);
 }
 
-.message-debug-function-calls {
+.message-debug-tool-calls {
     max-height: calc(100vh - 300px);
     margin-top: var(--spacing-medium);
     overflow-y: auto;
 }
 
-.function-labels {
+.tool-labels {
     display: flex;
     gap: var(--spacing-tiny);
     margin-right: var(--spacing-xsmall);
@@ -498,7 +498,7 @@
     type SendMessageResponseBag = {
         message?: ChatMessageBag | null;
 
-        function?: string | null;
+        tool?: string | null;
 
         logs?: ChatLogBag[] | null;
     };
@@ -518,7 +518,7 @@
     type ExtendedChatMessageBag = ChatMessageBag & {
         logs?: ChatLogBag[] | null;
 
-        function?: string | null;
+        tool?: string | null;
     };
 
     type ChatLogBag = {
@@ -543,7 +543,7 @@
         name?: string | null;
     };
 
-    type FunctionCall = {
+    type ToolCall = {
         name: string;
 
         args: string;
@@ -576,7 +576,7 @@
     const isDebugEnabled = ref(false);
     const isMessageDebugVisible = ref(false);
     const debugMessage = ref<ExtendedChatMessageBag | null>(null);
-    const messageDebugTab = ref<"Function Calls" | "Logs">("Function Calls");
+    const messageDebugTab = ref<"Tool Calls" | "Logs">("Tool Calls");
 
     // #endregion
 
@@ -662,12 +662,12 @@
         return logText;
     }
 
-    function getDebugFunctionCalls(message: ExtendedChatMessageBag | null): FunctionCall[] {
-        const functionInvokingRegExp = /^Function ([a-zA-Z0-9_-]+) invoking\.$/;
-        const functionArgumentsRegExp = /^Function ([a-zA-Z0-9_-]+) arguments: ([\s\S]+)$/;
-        const functionResultRegExp = /^Function ([a-zA-Z0-9_-]+) result: ([\s\S]+)$/;
-        const functionErrorRegExp = /^Function ([a-zA-Z0-9_-]+) failed. Error: ([\s\S]+)$/;
-        const functionCompletedRegExp = /^Function ([a-zA-Z0-9_-]+) completed. Duration: (.+)$/;
+    function getDebugToolCalls(message: ExtendedChatMessageBag | null): ToolCall[] {
+        const toolInvokingRegExp = /^Function ([a-zA-Z0-9_-]+) invoking\.$/;
+        const toolArgumentsRegExp = /^Function ([a-zA-Z0-9_-]+) arguments: ([\s\S]+)$/;
+        const toolResultRegExp = /^Function ([a-zA-Z0-9_-]+) result: ([\s\S]+)$/;
+        const toolErrorRegExp = /^Function ([a-zA-Z0-9_-]+) failed. Error: ([\s\S]+)$/;
+        const toolCompletedRegExp = /^Function ([a-zA-Z0-9_-]+) completed. Duration: (.+)$/;
 
         const logs = message?.logs?.map(l => l.message ?? "") ?? [];
 
@@ -675,14 +675,14 @@
             return [];
         }
 
-        const functions: FunctionCall[] = [];
-        let currentFunction: FunctionCall | null = null;
+        const tools: ToolCall[] = [];
+        let currentTool: ToolCall | null = null;
 
         for (const log of logs) {
-            if (currentFunction === null) {
-                const match = functionInvokingRegExp.exec(log);
+            if (currentTool === null) {
+                const match = toolInvokingRegExp.exec(log);
                 if (match) {
-                    currentFunction = {
+                    currentTool = {
                         name: match[1],
                         args: "{}",
                         result: "",
@@ -694,44 +694,44 @@
                 continue;
             }
 
-            // Look for the arguments for this function call.
-            let match = functionArgumentsRegExp.exec(log);
+            // Look for the arguments for this tool call.
+            let match = toolArgumentsRegExp.exec(log);
             if (match) {
-                currentFunction.args = match[2];
+                currentTool.args = match[2];
 
                 continue;
             }
 
-            // Look for the result of this function call.
-            match = functionResultRegExp.exec(log);
+            // Look for the result of this tool call.
+            match = toolResultRegExp.exec(log);
             if (match) {
-                currentFunction.result = match[2];
+                currentTool.result = match[2];
 
                 continue;
             }
 
-            // Look for an error for this function call.
-            match = functionErrorRegExp.exec(log);
+            // Look for an error for this tool call.
+            match = toolErrorRegExp.exec(log);
             if (match) {
-                currentFunction.error = match[2];
+                currentTool.error = match[2];
 
                 continue;
             }
 
-            // Look for the completion of this function call.
-            match = functionCompletedRegExp.exec(log);
+            // Look for the completion of this tool call.
+            match = toolCompletedRegExp.exec(log);
             if (match) {
-                currentFunction.duration = match[2];
+                currentTool.duration = match[2];
 
-                // Add the completed function call to the list.
-                functions.push(currentFunction);
-                currentFunction = null;
+                // Add the completed tool call to the list.
+                tools.push(currentTool);
+                currentTool = null;
 
                 continue;
             }
         }
 
-        return functions;
+        return tools;
     }
 
     function highlightJavaScript(code: string): string {
@@ -816,8 +816,8 @@
                         break;
                     }
 
-                    if (value.function) {
-                        liveMessage.value.function = value.function;
+                    if (value.tool) {
+                        liveMessage.value.tool = value.tool;
                         nextTick(() => messagesContainer.value?.scrollTo(0, messagesContainer.value.scrollHeight));
                     }
 
@@ -841,7 +841,7 @@
                         }
 
                         if (value.message.message) {
-                            liveMessage.value.function = undefined;
+                            liveMessage.value.tool = undefined;
                             liveMessage.value.message = `${liveMessage.value.message}${value.message.message}`;
                         }
 
@@ -978,7 +978,7 @@
 
     function onShowMessageDebug(message: ExtendedChatMessageBag): void {
         debugMessage.value = message;
-        messageDebugTab.value = "Function Calls";
+        messageDebugTab.value = "Tool Calls";
         isMessageDebugVisible.value = true;
     }
 

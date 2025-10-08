@@ -172,7 +172,7 @@ namespace Rock.Migrations
                 .Index( t => t.Guid, unique: true );
 
             CreateTable(
-                "dbo.AISkillFunction",
+                "dbo.AISkillTool",
                 c => new
                 {
                     Id = c.Int( nullable: false, identity: true ),
@@ -180,7 +180,7 @@ namespace Rock.Migrations
                     Name = c.String( nullable: false, maxLength: 100 ),
                     Description = c.String(),
                     UsageHint = c.String(),
-                    FunctionType = c.Int( nullable: false ),
+                    ToolType = c.Int( nullable: false ),
                     AdditionalSettingsJson = c.String(),
                     CreatedDateTime = c.DateTime(),
                     ModifiedDateTime = c.DateTime(),
@@ -240,16 +240,16 @@ namespace Rock.Migrations
             DropForeignKey( "dbo.AISkill", "ModifiedByPersonAliasId", "dbo.PersonAlias" );
             DropForeignKey( "dbo.AISkill", "CreatedByPersonAliasId", "dbo.PersonAlias" );
             DropForeignKey( "dbo.AISkill", "CodeEntityTypeId", "dbo.EntityType" );
-            DropForeignKey( "dbo.AISkillFunction", "ModifiedByPersonAliasId", "dbo.PersonAlias" );
-            DropForeignKey( "dbo.AISkillFunction", "CreatedByPersonAliasId", "dbo.PersonAlias" );
-            DropForeignKey( "dbo.AISkillFunction", "AISkillId", "dbo.AISkill" );
+            DropForeignKey( "dbo.AISkillTool", "ModifiedByPersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.AISkillTool", "CreatedByPersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.AISkillTool", "AISkillId", "dbo.AISkill" );
             DropForeignKey( "dbo.AIAgentSkill", "AIAgentId", "dbo.AIAgent" );
             DropIndex( "dbo.AIAgentSessionHistory", new[] { "Guid" } );
             DropIndex( "dbo.AIAgentSessionHistory", new[] { "AIAgentSessionId" } );
-            DropIndex( "dbo.AISkillFunction", new[] { "Guid" } );
-            DropIndex( "dbo.AISkillFunction", new[] { "ModifiedByPersonAliasId" } );
-            DropIndex( "dbo.AISkillFunction", new[] { "CreatedByPersonAliasId" } );
-            DropIndex( "dbo.AISkillFunction", new[] { "AISkillId" } );
+            DropIndex( "dbo.AISkillTool", new[] { "Guid" } );
+            DropIndex( "dbo.AISkillTool", new[] { "ModifiedByPersonAliasId" } );
+            DropIndex( "dbo.AISkillTool", new[] { "CreatedByPersonAliasId" } );
+            DropIndex( "dbo.AISkillTool", new[] { "AISkillId" } );
             DropIndex( "dbo.AISkill", new[] { "Guid" } );
             DropIndex( "dbo.AISkill", new[] { "ModifiedByPersonAliasId" } );
             DropIndex( "dbo.AISkill", new[] { "CreatedByPersonAliasId" } );
@@ -269,7 +269,7 @@ namespace Rock.Migrations
             DropIndex( "dbo.AIAgentSessionAnchor", new[] { "EntityTypeId" } );
             DropIndex( "dbo.AIAgentSessionAnchor", new[] { "AIAgentSessionId" } );
             DropTable( "dbo.AIAgentSessionHistory" );
-            DropTable( "dbo.AISkillFunction" );
+            DropTable( "dbo.AISkillTool" );
             DropTable( "dbo.AISkill" );
             DropTable( "dbo.AIAgentSkill" );
             DropTable( "dbo.AIAgent" );
@@ -328,8 +328,8 @@ namespace Rock.Migrations
             RockMigrationHelper.UpdateEntityType( "Rock.Blocks.AI.AISkillDetail", "AI Skill Detail", "Rock.Blocks.AI.AISkillDetail, Rock.Blocks, Version=18.0.6.0, Culture=neutral, PublicKeyToken=null", false, false, "A152A125-876C-4D0B-87B6-9A99CEC8DB51" );
 
             // Add/Update Obsidian Block Entity Type
-            //   EntityType:Rock.Blocks.AI.AISkillFunctionList
-            RockMigrationHelper.UpdateEntityType( "Rock.Blocks.AI.AISkillFunctionList", "AI Skill Function List", "Rock.Blocks.AI.AISkillFunctionList, Rock.Blocks, Version=18.0.6.0, Culture=neutral, PublicKeyToken=null", false, false, "FB397310-6BCB-49CD-9CCB-3506046CB14B" );
+            //   EntityType:Rock.Blocks.AI.AISkillToolList
+            RockMigrationHelper.UpdateEntityType( "Rock.Blocks.AI.AISkillToolList", "AI Skill Tool List", "Rock.Blocks.AI.AISkillToolList, Rock.Blocks, Version=18.0.6.0, Culture=neutral, PublicKeyToken=null", false, false, "FB397310-6BCB-49CD-9CCB-3506046CB14B" );
 
             // Add/Update Obsidian Block Entity Type
             //   EntityType:Rock.Blocks.AI.AISkillList
@@ -354,10 +354,10 @@ namespace Rock.Migrations
             RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Skill Detail", "Displays the details of a particular ai skill.", "Rock.Blocks.AI.AISkillDetail", "AI", "B8B8CEE9-C058-45D3-A1C7-647CAD96FD1E" );
 
             // Add/Update Obsidian Block Type
-            //   Name:AI Skill Function List
+            //   Name:AI Skill Tool List
             //   Category:AI
-            //   EntityType:Rock.Blocks.AI.AISkillFunctionList
-            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Skill Function List", "Displays a list of ai skill functions.", "Rock.Blocks.AI.AISkillFunctionList", "AI", "1E257602-9C31-4F6C-A362-67912F06E807" );
+            //   EntityType:Rock.Blocks.AI.AISkillToolList
+            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Skill Tool List", "Displays a list of AI skill tools.", "Rock.Blocks.AI.AISkillToolList", "AI", "1E257602-9C31-4F6C-A362-67912F06E807" );
 
             // Add/Update Obsidian Block Type
             //   Name:AI Skill List
@@ -398,11 +398,11 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlock( true, "C7BCA1FB-B627-4A8C-8C9F-43AE69FA69FC".AsGuid(), null, "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "D898E9CE-FE9B-48F7-96BF-2D69DE3C8E7C".AsGuid(), "AI Agent Detail", "Main", @"", @"", 0, "06095F93-031A-4ACA-9B05-BD3A0B714C16" );
 
             // Add Block 
-            //  Block Name: AI Skill Function List
+            //  Block Name: AI Skill Tool List
             //  Page Name: AI Skill Detail
             //  Layout: -
             //  Site: Rock RMS
-            RockMigrationHelper.AddBlock( true, "6F89544F-50C0-42D6-B925-FB6E404B434C".AsGuid(), null, "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "1E257602-9C31-4F6C-A362-67912F06E807".AsGuid(), "AI Skill Function List", "Main", @"", @"", 1, "2F2014B0-D7F4-4572-AED0-D9BBDB3699A1" );
+            RockMigrationHelper.AddBlock( true, "6F89544F-50C0-42D6-B925-FB6E404B434C".AsGuid(), null, "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "1E257602-9C31-4F6C-A362-67912F06E807".AsGuid(), "AI Skill Tool List", "Main", @"", @"", 1, "2F2014B0-D7F4-4572-AED0-D9BBDB3699A1" );
 
             // Add Block 
             //  Block Name: AI Skill Detail
@@ -423,7 +423,7 @@ namespace Rock.Migrations
             // Update Order for Page: AI Skill Detail,  Zone: Main,  Block: AI Skill Detail
             Sql( @"UPDATE [Block] SET [Order] = 0 WHERE [Guid] = 'DC3C8C25-B28D-4638-A553-3AE7D27BB68A'" );
 
-            // Update Order for Page: AI Skill Detail,  Zone: Main,  Block: AI Skill Function List
+            // Update Order for Page: AI Skill Detail,  Zone: Main,  Block: AI Skill Tool List
             Sql( @"UPDATE [Block] SET [Order] = 1 WHERE [Guid] = '2F2014B0-D7F4-4572-AED0-D9BBDB3699A1'" );
 
             #endregion
@@ -449,13 +449,13 @@ namespace Rock.Migrations
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "4831074F-7B99-404E-B842-776B74765DE5", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "core.EnableDefaultWorkflowLauncher", "core.EnableDefaultWorkflowLauncher", "core.EnableDefaultWorkflowLauncher", @"", 0, @"True", "D7E41098-480B-49AA-9B57-A31827E36B99" );
 
             // Attribute for BlockType
-            //   BlockType: AI Skill Function List
+            //   BlockType: AI Skill Tool List
             //   Category: AI
             //   Attribute: core.CustomActionsConfigs
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "1E257602-9C31-4F6C-A362-67912F06E807", "9C204CD0-1233-41C5-818A-C5DA439445AA", "core.CustomActionsConfigs", "core.CustomActionsConfigs", "core.CustomActionsConfigs", @"", 0, @"", "F28EE03F-E97E-42A3-802B-E507514B812B" );
 
             // Attribute for BlockType
-            //   BlockType: AI Skill Function List
+            //   BlockType: AI Skill Tool List
             //   Category: AI
             //   Attribute: core.EnableDefaultWorkflowLauncher
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "1E257602-9C31-4F6C-A362-67912F06E807", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "core.EnableDefaultWorkflowLauncher", "core.EnableDefaultWorkflowLauncher", "core.EnableDefaultWorkflowLauncher", @"", 0, @"True", "5CF1DC60-C1B7-4E9E-AE9A-D6355882FF60" );
@@ -668,13 +668,13 @@ namespace Rock.Migrations
             RockMigrationHelper.DeleteAttribute( "EA204DF2-5EDE-49B1-A3C7-6C2E52659BAD" );
 
             // Attribute for BlockType
-            //   BlockType: AI Skill Function List
+            //   BlockType: AI Skill Tool List
             //   Category: AI
             //   Attribute: core.EnableDefaultWorkflowLauncher
             RockMigrationHelper.DeleteAttribute( "5CF1DC60-C1B7-4E9E-AE9A-D6355882FF60" );
 
             // Attribute for BlockType
-            //   BlockType: AI Skill Function List
+            //   BlockType: AI Skill Tool List
             //   Category: AI
             //   Attribute: core.CustomActionsConfigs
             RockMigrationHelper.DeleteAttribute( "F28EE03F-E97E-42A3-802B-E507514B812B" );
@@ -712,7 +712,7 @@ namespace Rock.Migrations
             RockMigrationHelper.DeleteBlock( "4AC03044-6B6C-4C4C-8AFC-1A019BF23493" );
 
             // Remove Block
-            //  Name: AI Skill Function List, from Page: AI Skill Detail, Site: Rock RMS
+            //  Name: AI Skill Tool List, from Page: AI Skill Detail, Site: Rock RMS
             //  from Page: AI Skill Detail, Site: Rock RMS
             RockMigrationHelper.DeleteBlock( "2F2014B0-D7F4-4572-AED0-D9BBDB3699A1" );
 
@@ -748,10 +748,10 @@ namespace Rock.Migrations
             RockMigrationHelper.DeleteBlockType( "39F5C953-0080-441F-A77C-D45676147F91" );
 
             // Delete BlockType 
-            //   Name: AI Skill Function List
+            //   Name: AI Skill Tool List
             //   Category: AI
             //   Path: -
-            //   EntityType: AI Skill Function List
+            //   EntityType: AI Skill Tool List
             RockMigrationHelper.DeleteBlockType( "1E257602-9C31-4F6C-A362-67912F06E807" );
 
             // Delete BlockType 

@@ -28,8 +28,8 @@ namespace Rock.ViewModels.Blocks.AI.AISkillDetail
     {
         /// <summary>
         /// The entity type that represents the C# class that implements the
-        /// functions for this skill. If this is not null then the skill and
-        /// related functions should not allow editing beyond enabling or
+        /// tools for this skill. If this is not null then the skill and
+        /// related tools should not allow editing beyond enabling or
         /// disabling them.
         /// </summary>
         public ListItemBag CodeEntityType { get; set; }

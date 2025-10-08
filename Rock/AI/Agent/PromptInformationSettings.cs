@@ -22,7 +22,7 @@ using Rock.Enums.AI.Agent;
 namespace Rock.AI.Agent
 {
     /// <summary>
-    /// Settings for the prompt information used by <see cref="Model.AISkillFunction"/>.
+    /// Settings for the prompt information used by <see cref="Model.AISkillTool"/>.
     /// </summary>
     internal class PromptInformationSettings
     {

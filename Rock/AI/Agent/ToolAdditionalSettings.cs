@@ -18,7 +18,7 @@
 namespace Rock.AI.Agent
 {
     /// <summary>
-    /// The general additional settings that are defined on a <see cref="Model.AISkillFunction"/>.
+    /// The general additional settings that are defined on a <see cref="Model.AISkillTool"/>.
     /// </summary>
     internal class ToolAdditionalSettings
     {

@@ -41,7 +41,7 @@ namespace Rock.Enums.AI.Agent
         ExecuteLava,
 
         /// <summary>
-        /// The tool will use a semantic function to generate content.
+        /// The tool will use a semantic tool to generate content.
         /// </summary>
         AIPrompt
     }

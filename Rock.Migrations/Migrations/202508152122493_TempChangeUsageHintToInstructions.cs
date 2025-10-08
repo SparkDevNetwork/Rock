@@ -28,7 +28,7 @@ namespace Rock.Migrations
         {
             AddColumn( "dbo.AIAgent", "AudienceType", c => c.Int( nullable: false ) );
             RenameColumn( "dbo.AISkill", "UsageHint", "Instructions" );
-            RenameColumn( "dbo.AISkillFunction", "UsageHint", "Instructions" );
+            RenameColumn( "dbo.AISkillTool", "UsageHint", "Instructions" );
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            RenameColumn( "dbo.AISkillFunction", "Instructions", "UsageHint" );
+            RenameColumn( "dbo.AISkillTool", "Instructions", "UsageHint" );
             RenameColumn( "dbo.AISkill", "Instructions", "UsageHint" );
             DropColumn( "dbo.AIAgent", "AudienceType" );
         }

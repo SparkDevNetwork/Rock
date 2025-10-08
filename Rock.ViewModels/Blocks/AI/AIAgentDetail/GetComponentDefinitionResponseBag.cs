@@ -30,9 +30,9 @@ namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
     public class GetComponentDefinitionResponseBag
     {
         /// <summary>
-        /// The list of functions defined on the skill that can be enabled.
+        /// The list of tools defined on the skill that can be enabled.
         /// </summary>
-        public List<ListItemBag> AvailableFunctions { get; set; }
+        public List<ListItemBag> AvailableTools { get; set; }
 
         /// <summary>
         /// The current configuration values for the skill.

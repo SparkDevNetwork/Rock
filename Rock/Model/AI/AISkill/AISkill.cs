@@ -27,7 +27,7 @@ namespace Rock.Model
 {
     /// <summary>
     /// Represents an AI skill in Rock. The skill defines a set of related
-    /// functions that the AI agent can perform, such as answering questions,
+    /// tools that the AI agent can perform, such as answering questions,
     /// or performing data manipulation tasks.
     /// </summary>
     [RockDomain( "AI" )]
@@ -58,8 +58,8 @@ namespace Rock.Model
 
         /// <summary>
         /// The entity type identifier that represents the C# class that
-        /// implements the functions for this skill. If this is not null then
-        /// the skill and related functions should not allow editing beyond
+        /// implements the tools for this skill. If this is not null then
+        /// the skill and related tools should not allow editing beyond
         /// enabling or disabling them.
         /// </summary>
         [DataMember]
@@ -75,8 +75,8 @@ namespace Rock.Model
 
         /// <summary>
         /// The entity type that represents the C# class that implements the
-        /// functions for this skill. If this is not null then the skill and
-        /// related functions should not allow editing beyond enabling or
+        /// tools for this skill. If this is not null then the skill and
+        /// related tools should not allow editing beyond enabling or
         /// disabling them.
         /// </summary>
         [DataMember]
@@ -90,11 +90,11 @@ namespace Rock.Model
         public virtual ICollection<AIAgentSkill> AIAgentSkills { get; set; }
 
         /// <summary>
-        /// A collection containing the <see cref="AISkillFunction" /> entities
-        /// that represent the functions this skill has.
+        /// A collection containing the <see cref="AISkillTool" /> entities
+        /// that represent the tools this skill has.
         /// </summary>
         [DataMember]
-        public virtual ICollection<AISkillFunction> AISkillFunctions{ get; set; }
+        public virtual ICollection<AISkillTool> AISkillTools{ get; set; }
 
         #endregion
 

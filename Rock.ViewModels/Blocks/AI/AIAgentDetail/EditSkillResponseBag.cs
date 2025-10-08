@@ -33,9 +33,9 @@ namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
         public AgentSkillBag Skill { get; set; }
 
         /// <summary>
-        /// The functions that are available for the skill.
+        /// The tools that are available for the skill.
         /// </summary>
-        public List<ListItemBag> AvailableFunctions { get; set; }
+        public List<ListItemBag> AvailableTools { get; set; }
 
         /// <summary>
         /// The component definition for the skill that will be used to render

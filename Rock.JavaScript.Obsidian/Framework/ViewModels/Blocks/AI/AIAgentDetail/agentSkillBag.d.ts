@@ -34,8 +34,8 @@ export type AgentSkillBag = {
     /** The user-friendly description of the skill being used by the agent. */
     description?: string | null;
 
-    /** The list of functions that are enabled for the skill to use. */
-    enabledFunctions?: Guid[] | null;
+    /** The list of tools that are enabled for the skill to use. */
+    enabledTools?: Guid[] | null;
 
     /**
      * The unique identifier of the agent skill record that links the

@@ -43,9 +43,9 @@
 
         <TransitionVerticalCollapse>
             <div v-if="editSkill && !isSkillLoading">
-                <CheckBoxList v-model="editEnabledFunctions"
+                <CheckBoxList v-model="editEnabledTools"
                               label="Enabled Tools"
-                              :items="editAvailableFunctions"
+                              :items="editAvailableTools"
                               horizontal
                               :repeatColumns="3" />
 
@@ -117,8 +117,8 @@
     const isSkillLoading = ref(false);
     const editSkillBag = shallowRef<AgentSkillBag | null>(null);
     const editSkill = ref("");
-    const editAvailableFunctions = ref<ListItemBag[]>([]);
-    const editEnabledFunctions = ref<string[]>([]);
+    const editAvailableTools = ref<ListItemBag[]>([]);
+    const editEnabledTools = ref<string[]>([]);
 
     const editSkillComponentDefinition = ref<DynamicComponentDefinitionBag | null>(null);
     const editSkillComponentData = ref<Record<string, string>>({});
@@ -156,8 +156,8 @@
     async function onAddSkill(): Promise<void> {
         editSkill.value = "";
         editSkillBag.value = null;
-        editEnabledFunctions.value = [];
-        editAvailableFunctions.value = [];
+        editEnabledTools.value = [];
+        editAvailableTools.value = [];
         editSkillComponentDefinition.value = null;
         editSkillComponentData.value = {};
         isSkillModalOpen.value = true;
@@ -178,15 +178,15 @@
 
         editSkill.value = skill.skillGuid;
         editSkillBag.value = skill;
-        editAvailableFunctions.value = [];
+        editAvailableTools.value = [];
 
         const result = await invokeBlockAction<EditSkillResponseBag>("EditSkill", {
             agentSkillGuid: skill.guid
         });
 
         if (result.isSuccess && result.data) {
-            editEnabledFunctions.value = result.data.skill?.enabledFunctions ?? [];
-            editAvailableFunctions.value = result.data.availableFunctions ?? [];
+            editEnabledTools.value = result.data.skill?.enabledTools ?? [];
+            editAvailableTools.value = result.data.availableTools ?? [];
             editSkillComponentDefinition.value = result.data.componentDefinition ?? null;
             editSkillComponentData.value = result.data.skill?.configurationValues ?? {};
 
@@ -199,7 +199,7 @@
 
     /**
      * Called when the user changes the skill in the dropdown. This will load
-     * the skill and its functions so that the individual can configure it.
+     * the skill and its tools so that the individual can configure it.
      *
      * @param value The value of the skill that was selected.
      */
@@ -212,8 +212,8 @@
         isSkillLoading.value = true;
 
         editSkill.value = value;
-        editEnabledFunctions.value = [];
-        editAvailableFunctions.value = [];
+        editEnabledTools.value = [];
+        editAvailableTools.value = [];
         editSkillComponentDefinition.value = null;
         editSkillComponentData.value = {};
 
@@ -223,8 +223,8 @@
             });
 
             if (response.isSuccess && response.data) {
-                editAvailableFunctions.value = response.data.availableFunctions ?? [];
-                editEnabledFunctions.value = editAvailableFunctions.value.map(f => f.value!);
+                editAvailableTools.value = response.data.availableTools ?? [];
+                editEnabledTools.value = editAvailableTools.value.map(f => f.value!);
                 editSkillComponentDefinition.value = response.data.componentDefinition ?? null;
                 editSkillComponentData.value = response.data.configurationValues ?? {};
 
@@ -249,7 +249,7 @@
         const bag: AgentSkillBag = {
             ...editSkillBag.value,
             skillGuid: editSkill.value,
-            enabledFunctions: editEnabledFunctions.value,
+            enabledTools: editEnabledTools.value,
             configurationValues: editSkillComponentData.value,
         } as AgentSkillBag;
 

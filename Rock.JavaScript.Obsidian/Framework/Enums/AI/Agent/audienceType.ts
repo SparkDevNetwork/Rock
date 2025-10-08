@@ -23,7 +23,7 @@
 
 /**
  * The type of audience the agent is configured to serve. This gives a hint
- * to skills and functions about how to behave, such as disabling certain
+ * to skills and tools about how to behave, such as disabling certain
  * functionality that is not appropriate for the audience.
  */
 export const AudienceType = {
@@ -36,7 +36,7 @@ export const AudienceType = {
 
 /**
  * The type of audience the agent is configured to serve. This gives a hint
- * to skills and functions about how to behave, such as disabling certain
+ * to skills and tools about how to behave, such as disabling certain
  * functionality that is not appropriate for the audience.
  */
 export const AudienceTypeDescription: Record<number, string> = {
@@ -47,7 +47,7 @@ export const AudienceTypeDescription: Record<number, string> = {
 
 /**
  * The type of audience the agent is configured to serve. This gives a hint
- * to skills and functions about how to behave, such as disabling certain
+ * to skills and tools about how to behave, such as disabling certain
  * functionality that is not appropriate for the audience.
  */
 export type AudienceType = typeof AudienceType[keyof typeof AudienceType];

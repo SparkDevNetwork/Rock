@@ -83,7 +83,7 @@ export type AIAgentBag = {
 
     /**
      * Determines if system skills are excluded from this agent. These are
-     * standard skills and functions that would generally be considered
+     * standard skills and tools that would generally be considered
      * required for other skills to operate correctly.
      */
     isExcludingSystemSkills: boolean;

@@ -48,9 +48,9 @@ namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
         public string Description { get; set; }
 
         /// <summary>
-        /// The list of functions that are enabled for the skill to use.
+        /// The list of tools that are enabled for the skill to use.
         /// </summary>
-        public List<Guid> EnabledFunctions { get; set; }
+        public List<Guid> EnabledTools { get; set; }
 
         /// <summary>
         /// The configuration values for the skill.

@@ -22,6 +22,14 @@ namespace Rock.Enums.AI.Agent
     /// <summary>
     /// The type of functionality the agent is configured to provide.
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         <strong>This is an internal API</strong> that supports the Rock
+    ///         infrastructure and not subject to the same compatibility standards
+    ///         as public APIs. It may be changed or removed without notice in any
+    ///         release and should therefore not be directly used in any plug-ins.
+    ///     </para>
+    /// </remarks>
     public enum AgentType
     {
         /// <summary>
@@ -30,8 +38,8 @@ namespace Rock.Enums.AI.Agent
         Chat = 0,
 
         /// <summary>
-        /// The agent will act as an MCP server and provide function tools to
-        /// other AI clients.
+        /// The agent will act as an MCP server and provide tools to other AI
+        /// clients.
         /// </summary>
         [Description( "MCP" )]
         Mcp = 1,

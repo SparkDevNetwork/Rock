@@ -4,9 +4,12 @@
     /// Indicates the overall outcome of a tool call.
     /// </summary>
     /// <remarks>
-    /// Use <see cref="ToolStatus.Success"/> when items were found,
-    /// <see cref="ToolStatus.NoData"/> when the operation succeeded but returned no items,
-    /// and <see cref="ToolStatus.Error"/> when the operation failed.
+    ///     <para>
+    ///         <strong>This is an internal API</strong> that supports the Rock
+    ///         infrastructure and not subject to the same compatibility standards
+    ///         as public APIs. It may be changed or removed without notice in any
+    ///         release and should therefore not be directly used in any plug-ins.
+    ///     </para>
     /// </remarks>
     public enum ToolStatus
     {

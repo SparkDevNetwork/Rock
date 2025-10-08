@@ -8,6 +8,7 @@ using DocumentFormat.OpenXml.Wordprocessing;
 
 using Microsoft.Extensions.Logging;
 
+using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.Data;

@@ -65,7 +65,7 @@
                     <div class="col-md-6">
                         <CheckBox v-model="isExcludingSystemSkills"
                                   label="Exclude System Skills"
-                                  help="By default, a set of system skills and functions will be included in the agent. These provide critical functionality and should only be removed if you are sure you need to remove them." />
+                                  help="By default, a set of system skills and tools will be included in the agent. These provide critical functionality and should only be removed if you are sure you need to remove them." />
                     </div>
                 </div>
 
@@ -92,7 +92,7 @@
                     <div class="col-md-6">
                         <CheckBox v-model="isExcludingSystemSkills"
                                   label="Exclude System Skills"
-                                  help="By default, a set of system skills and functions will be included in the agent. These provide critical functionality and should only be removed if you are sure you need to remove them." />
+                                  help="By default, a set of system skills and tools will be included in the agent. These provide critical functionality and should only be removed if you are sure you need to remove them." />
                     </div>
                 </div>
             </Panel>

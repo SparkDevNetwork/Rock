@@ -30,7 +30,7 @@ namespace Rock.Migrations
             AlterColumn("dbo.AIAgentSession", "PersonAliasId", c => c.Int());
             CreateIndex("dbo.AIAgentSession", "PersonAliasId");
             DropColumn("dbo.AISkill", "Instructions");
-            DropColumn("dbo.AISkillFunction", "Instructions");
+            DropColumn("dbo.AISkillTool", "Instructions");
         }
         
         /// <summary>
@@ -38,7 +38,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            AddColumn("dbo.AISkillFunction", "Instructions", c => c.String());
+            AddColumn("dbo.AISkillTool", "Instructions", c => c.String());
             AddColumn("dbo.AISkill", "Instructions", c => c.String());
             DropIndex("dbo.AIAgentSession", new[] { "PersonAliasId" });
             AlterColumn("dbo.AIAgentSession", "PersonAliasId", c => c.Int(nullable: false));

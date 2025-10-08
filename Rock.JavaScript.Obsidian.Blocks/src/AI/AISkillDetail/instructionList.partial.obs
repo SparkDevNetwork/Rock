@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-    import AutoHeightTextBox from "../AISkillFunctionList/autoHeightTextBox.partial.obs";
+    import AutoHeightTextBox from "../AISkillToolList/autoHeightTextBox.partial.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import Grid, { Column, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { updateRefValue } from "@Obsidian/Utility/component";

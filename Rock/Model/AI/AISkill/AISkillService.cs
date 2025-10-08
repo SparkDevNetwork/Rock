@@ -21,6 +21,7 @@ using System.Linq;
 using System.Reflection;
 
 using Rock.AI.Agent;
+using Rock.AI.Agent.Annotations;
 using Rock.Data;
 using Rock.Observability;
 using Rock.SystemGuid;
@@ -159,7 +160,7 @@ namespace Rock.Model
                 rockContext.SaveChanges( new SaveChangesArgs { DisablePrePostProcessing = true } );
             }
 
-            AISkillFunctionService.RegisterFunctions( skill.Id, skillType, rockContext );
+            AISkillToolService.RegisterTools( skill.Id, skillType, rockContext );
         }
     }
 }

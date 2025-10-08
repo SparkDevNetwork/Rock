@@ -344,7 +344,6 @@ namespace Rock.WebStartup
             // Register functionality providers.
             sc.AddRockLogging();
             sc.AddSingleton<IChatProvider, StreamChatProvider>();
-            sc.AddChatAgent();
 
             // Register Light Containers.
             sc.AddSingleton( typeof( Extension.LightComponentLoader<> ), typeof( Extension.LightComponentLoader<> ) );
@@ -354,6 +353,22 @@ namespace Rock.WebStartup
 
             sc.AddScoped<RockContext>();
             sc.AddSingleton<IRockContextFactory, RockContextFactory>();
+
+            foreach ( var configurationType in Rock.Reflection.FindTypes( typeof( Plugin.IConfigureServices ) ) )
+            {
+                try
+                {
+                    var configurationInstance = Activator.CreateInstance( configurationType.Value ) as Plugin.IConfigureServices;
+                    configurationInstance.ConfigureServices( sc );
+
+                }
+                catch ( Exception ex )
+                {
+                    // We are too early in the startup to use any meaningful
+                    // logging. So just write it to the debug console for now.
+                    Debug.WriteLine( $"Error configuring services for {configurationType.Value.FullName}: {ex.Message}" );
+                }
+            }
 
             // If we are running under Visual Studio then turn on scope validation
             // to help catch misconfigurations.

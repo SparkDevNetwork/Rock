@@ -306,8 +306,8 @@ namespace Rock.Blocks.AI
             {
                 var settings = agentSkill.GetAdditionalSettings<AgentSkillSettings>();
 
-                bag.EnabledFunctions = agentSkill.AISkill
-                    .AISkillFunctions
+                bag.EnabledTools = agentSkill.AISkill
+                    .AISkillTools
                     .Select( f => f.Guid )
                     .Where( g => !settings.DisabledTools.Contains( g ) )
                     .ToList();
@@ -580,7 +580,7 @@ namespace Rock.Blocks.AI
             }
 
             response.Skill = GetSkillBag( agentSkill, true );
-            response.AvailableFunctions = agentSkill.AISkill.AISkillFunctions
+            response.AvailableTools = agentSkill.AISkill.AISkillTools
                 .ToListItemBagList();
 
             return ActionOk( response );
@@ -647,9 +647,9 @@ namespace Rock.Blocks.AI
             var settings = agentSkill.GetAdditionalSettings<AgentSkillSettings>();
 
             settings.DisabledTools = agentSkill.AISkill
-                .AISkillFunctions
+                .AISkillTools
                 .Select( f => f.Guid )
-                .Where( g => !bag.EnabledFunctions.Contains( g ) )
+                .Where( g => !bag.EnabledTools.Contains( g ) )
                 .ToList();
 
             if ( agentSkill.AISkill.CodeEntityTypeId.HasValue )
@@ -691,7 +691,7 @@ namespace Rock.Blocks.AI
                 response.ConfigurationValues = component?.GetPublicConfiguration( new Dictionary<string, string>(), RockContext, RequestContext );
             }
 
-            response.AvailableFunctions = skill.AISkillFunctions
+            response.AvailableTools = skill.AISkillTools
                 .ToListItemBagList();
 
             return ActionOk( response );

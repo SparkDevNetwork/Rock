@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock;
 using Rock.AI.Agent;
 using Rock.Attribute;
@@ -65,10 +67,10 @@ namespace Rock.Blocks.AI
         /// <summary>
         /// Initializes a new instance of the <see cref="ChatBot"/> class with the specified agent builder.
         /// </summary>
-        /// <param name="agentBuilder">The agent builder to use.</param>
-        public ChatBot( IChatAgentBuilder agentBuilder )
+        /// <param name="serviceProvider">The service provider to get services from.</param>
+        public ChatBot( IServiceProvider serviceProvider )
         {
-            _agentBuilder = agentBuilder;
+            _agentBuilder = serviceProvider.GetRequiredService<IChatAgentBuilder>();
         }
 
         #endregion
@@ -275,7 +277,7 @@ namespace Rock.Blocks.AI
                         {
                             yield return new SendMessageResponseBag
                             {
-                                Function = sfcc.Description
+                                Tool = sfcc.Description
                             };
                         }
 
@@ -680,9 +682,9 @@ namespace Rock.Blocks.AI
             public ChatMessageBag Message { get; set; }
 
             /// <summary>
-            /// The function that was called, if any.
+            /// The tool that was called, if any.
             /// </summary>
-            public string Function { get; set; }
+            public string Tool { get; set; }
 
             /// <summary>
             /// The debug logs that were collected during processing.

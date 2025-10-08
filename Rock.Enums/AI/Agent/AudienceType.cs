@@ -19,9 +19,17 @@ namespace Rock.Enums.AI.Agent
 {
     /// <summary>
     /// The type of audience the agent is configured to serve. This gives a hint
-    /// to skills and functions about how to behave, such as disabling certain
+    /// to skills and tools about how to behave, such as disabling certain
     /// functionality that is not appropriate for the audience.
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         <strong>This is an internal API</strong> that supports the Rock
+    ///         infrastructure and not subject to the same compatibility standards
+    ///         as public APIs. It may be changed or removed without notice in any
+    ///         release and should therefore not be directly used in any plug-ins.
+    ///     </para>
+    /// </remarks>
     public enum AudienceType
     {
         /// <summary>

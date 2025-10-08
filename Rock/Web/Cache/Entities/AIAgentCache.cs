@@ -123,7 +123,7 @@ namespace Rock.Web.Cache.Entities
         /// <returns>An instance of <see cref="SkillConfiguration"/> that represents the skill and tools, or <c>null</c> if the skill should not be used.</returns>
         private static SkillConfiguration GetSkillConfiguration( AISkillCache skill, AgentSkillSettings agentSkillSettings, Person currentPerson, bool isSecurityEnabled, RockContext rockContext )
         {
-            var tools = new AISkillFunctionService( rockContext )
+            var tools = new AISkillToolService( rockContext )
                 .Queryable()
                 .Where( f => f.AISkillId == skill.Id )
                 .ToList()
@@ -150,7 +150,7 @@ namespace Rock.Web.Cache.Entities
                     Preamble = additionalSettings.Preamble,
                     Instructions = instructions,
                     Role = ModelServiceRole.Default, // TODO: Fix this
-                    ToolType = tool.FunctionType,
+                    ToolType = tool.ToolType,
                     Prompt = prompt.Prompt ?? string.Empty,
                     EnableLavaPreRendering = prompt.PreRenderLava,
                     Parameters = prompt.PromptParameters,

@@ -22,6 +22,7 @@ using System.Text.Json.Serialization.Metadata;
 
 using Microsoft.Extensions.AI;
 
+using Rock.AI.Agent.Annotations;
 using Rock.Enums.AI.Agent;
 
 namespace Rock.AI.Agent

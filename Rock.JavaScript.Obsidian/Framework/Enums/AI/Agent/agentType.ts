@@ -27,8 +27,8 @@ export const AgentType = {
     Chat: 0,
 
     /**
-     * The agent will act as an MCP server and provide function tools to
-     * other AI clients.
+     * The agent will act as an MCP server and provide tools to other AI
+     * clients.
      */
     Mcp: 1
 } as const;

@@ -21,6 +21,7 @@ using System.Linq;
 
 using Microsoft.Extensions.Logging;
 
+using Rock.AI.Agent.Annotations;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Field.Types;

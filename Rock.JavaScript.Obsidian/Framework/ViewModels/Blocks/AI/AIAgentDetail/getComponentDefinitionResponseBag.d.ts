@@ -30,8 +30,8 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
  * UI when adding a skill to an AI agent.
  */
 export type GetComponentDefinitionResponseBag = {
-    /** The list of functions defined on the skill that can be enabled. */
-    availableFunctions?: ListItemBag[] | null;
+    /** The list of tools defined on the skill that can be enabled. */
+    availableTools?: ListItemBag[] | null;
 
     /**
      * The component definition that will be used to render the UI

@@ -22,6 +22,7 @@ using System.Linq;
 
 using Microsoft.Extensions.Logging;
 
+using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.Data;
@@ -130,7 +131,8 @@ namespace Rock.AI.Agent.Skills
         /// <param name="repeatAmount">The number of times to repeat (optional).</param>
         /// <returns>A <see cref="RockToolResult"/> indicating the success or failure of the operation.</returns>
         /// <remarks>
-        /// The user must be logged in to add a reminder. If <paramref name="repeatEveryXDays"/> is provided without <paramref name="repeatAmount"/>,        /// the reminder will repeat indefinitely every X days.
+        /// The user must be logged in to add a reminder. If <paramref name="repeatEveryXDays"/> is provided without <paramref name="repeatAmount"/>,
+        /// the reminder will repeat indefinitely every X days.
         /// </remarks>
         [AgentToolGuid( "AF90FA26-9A98-45EF-877C-6CF0EDE7035E" )]
         [AgentUsage( "Provide a repeatEveryXDays value with no repeatAmount to repeat indefinitely every X days. Provide both to repeat a specific number of times." )]

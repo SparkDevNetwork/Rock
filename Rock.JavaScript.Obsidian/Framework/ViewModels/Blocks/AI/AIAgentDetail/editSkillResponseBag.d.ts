@@ -27,8 +27,8 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The response bag for editing a skill in the AI Agent Detail block. */
 export type EditSkillResponseBag = {
-    /** The functions that are available for the skill. */
-    availableFunctions?: ListItemBag[] | null;
+    /** The tools that are available for the skill. */
+    availableTools?: ListItemBag[] | null;
 
     /**
      * The component definition for the skill that will be used to render

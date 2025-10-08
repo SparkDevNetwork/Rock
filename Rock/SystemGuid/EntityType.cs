@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -2107,9 +2107,9 @@ namespace Rock.SystemGuid
         public const string AI_SKILL = "D953AB34-4AB6-47C6-857B-53044A99ED75";
 
         /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Model.AISkillFunction"/> 
+        /// The EntityType Guid for <see cref="Rock.Model.AISkillTool"/> 
         /// </summary>
-        public const string AI_SKILL_FUNCTION = "357D2625-FDCA-41F8-AB8D-1CF2CE0ABEED";
+        public const string AI_SKILL_TOOL = "357D2625-FDCA-41F8-AB8D-1CF2CE0ABEED";
 
         /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.AIAgentSession"/> 

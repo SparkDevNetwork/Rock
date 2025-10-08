@@ -26,7 +26,7 @@ namespace Rock.Web.Cache.Entities
     /// <inheritdoc cref="AISkill"/>
     [Serializable]
     [DataContract]
-    public class AISkillCache : ModelCache<AISkillCache, AISkill>, IHasReadOnlyAdditionalSettings
+    internal class AISkillCache : ModelCache<AISkillCache, AISkill>, IHasReadOnlyAdditionalSettings
     {
         #region Entity Properties
 
