@@ -1,14 +1,14 @@
 ﻿namespace Rock.Enums.AI.Agent
 {
     /// <summary>
-    /// Indicates the overall outcome of a lookup operation.
+    /// Indicates the overall outcome of a tool call.
     /// </summary>
     /// <remarks>
-    /// Use <see cref="FunctionStatus.Success"/> when items were found,
-    /// <see cref="FunctionStatus.NoData"/> when the operation succeeded but returned no items,
-    /// and <see cref="FunctionStatus.Error"/> when the operation failed.
+    /// Use <see cref="ToolStatus.Success"/> when items were found,
+    /// <see cref="ToolStatus.NoData"/> when the operation succeeded but returned no items,
+    /// and <see cref="ToolStatus.Error"/> when the operation failed.
     /// </remarks>
-    public enum FunctionStatus
+    public enum ToolStatus
     {
         /// <summary>
         /// The lookup executed successfully and returned one or more items.

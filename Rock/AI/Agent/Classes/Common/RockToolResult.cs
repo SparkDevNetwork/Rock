@@ -12,7 +12,7 @@ using Rock.Web.Cache;
 namespace Rock.AI.Agent.Classes.Common
 {
     /// <summary>
-    /// Represents a standardized envelope for function results returned by agent skills and kernel functions.
+    /// Represents a standardized envelope for tool results returned by agent skills and kernel tools.
     /// Provides a clean JSON shape and a simple builder-style API for attaching metadata and guidance.
     /// </summary>
     /// <remarks>
@@ -25,13 +25,13 @@ namespace Rock.AI.Agent.Classes.Common
         #region Properties
 
         /// <summary>
-        /// Gets the overall outcome for the function call.
+        /// Gets the overall outcome for the tool call.
         /// </summary>
         [JsonInclude]
-        internal FunctionStatus Status { get; private set; }
+        internal ToolStatus Status { get; private set; }
 
         /// <summary>
-        /// Gets the error messages when <see cref="Status"/> is <see cref="FunctionStatus.Error"/>;
+        /// Gets the error messages when <see cref="Status"/> is <see cref="ToolStatus.Error"/>;
         /// otherwise <c>null</c> or an empty list.
         /// </summary>
         [JsonInclude, JsonIgnore( Condition = JsonIgnoreCondition.WhenWritingNull )]
@@ -44,7 +44,7 @@ namespace Rock.AI.Agent.Classes.Common
         internal string Instructions { get; private set; }
 
         /// <summary>
-        /// Gets arbitrary content that should be added to chat history but not serialized in the function result payload.
+        /// Gets arbitrary content that should be added to chat history but not serialized in the tool result payload.
         /// </summary>
         [JsonIgnore]
         internal object HistoryContent { get; private set; }
@@ -95,7 +95,7 @@ namespace Rock.AI.Agent.Classes.Common
         #region Factory Methods
 
         /// <summary>
-        /// Creates a <see cref="FunctionStatus.Success"/> result wrapping the specified payload.
+        /// Creates a <see cref="ToolStatus.Success"/> result wrapping the specified payload.
         /// If <paramref name="payload"/> implements <see cref="IEnumerable"/> (and is not a <see cref="string"/>)
         /// then it will be assigned to <see cref="Results"/>; otherwise to <see cref="Content"/>.
         /// </summary>
@@ -103,7 +103,7 @@ namespace Rock.AI.Agent.Classes.Common
         /// <returns>A new <see cref="RockToolResult"/> instance.</returns>
         public static RockToolResult Success( object payload )
         {
-            var result = new RockToolResult { Status = FunctionStatus.Success };
+            var result = new RockToolResult { Status = ToolStatus.Success };
 
             SetContent( result, payload );
 
@@ -114,49 +114,49 @@ namespace Rock.AI.Agent.Classes.Common
         }
 
         /// <summary>
-        /// Creates a <see cref="FunctionStatus.Success"/> result with no payload.
+        /// Creates a <see cref="ToolStatus.Success"/> result with no payload.
         /// </summary>
         /// <returns>A new <see cref="RockToolResult"/> instance.</returns>
         public static RockToolResult Success()
         {
             return new RockToolResult
             {
-                Status = FunctionStatus.Success,
+                Status = ToolStatus.Success,
                 HistoryContent = string.Empty
             };
         }
 
         /// <summary>
-        /// Creates a <see cref="FunctionStatus.NoData"/> result with no payload.
+        /// Creates a <see cref="ToolStatus.NoData"/> result with no payload.
         /// </summary>
         /// <returns>A new <see cref="RockToolResult"/> instance.</returns>
         public static RockToolResult NoData() =>
             new RockToolResult
             {
-                Status = FunctionStatus.NoData,
+                Status = ToolStatus.NoData,
             };
 
         /// <summary>
-        /// Creates a <see cref="FunctionStatus.Error"/> result with a single error message.
+        /// Creates a <see cref="ToolStatus.Error"/> result with a single error message.
         /// </summary>
         /// <param name="message">The error message. If <c>null</c> or whitespace, an empty string is added.</param>
         /// <returns>A new <see cref="RockToolResult"/> instance.</returns>
         public static RockToolResult Error( string message ) =>
             new RockToolResult
             {
-                Status = FunctionStatus.Error,
+                Status = ToolStatus.Error,
                 ErrorMessages = new List<string> { message ?? string.Empty },
             };
 
         /// <summary>
-        /// Creates a <see cref="FunctionStatus.Error"/> result with one or more error messages.
+        /// Creates a <see cref="ToolStatus.Error"/> result with one or more error messages.
         /// </summary>
         /// <param name="messages">The collection of error messages.</param>
         /// <returns>A new <see cref="RockToolResult"/> instance.</returns>
         public static RockToolResult Error( IEnumerable<string> messages ) =>
             new RockToolResult
             {
-                Status = FunctionStatus.Error,
+                Status = ToolStatus.Error,
                 ErrorMessages = ( messages ?? Enumerable.Empty<string>() ).Select( m => m ?? string.Empty ).ToList()
             };
 

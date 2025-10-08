@@ -678,7 +678,7 @@ namespace Rock.AI.Agent
         }
 
         /// <inheritdoc/>
-        public async Task<object> InvokeFunctionAsync( string skillKey, string functionKey, IDictionary<string, object> arguments, CancellationToken cancellationToken )
+        public async Task<object> InvokeToolAsync( string skillKey, string functionKey, IDictionary<string, object> arguments, CancellationToken cancellationToken )
         {
             KernelArguments args;
 
@@ -939,7 +939,7 @@ namespace Rock.AI.Agent
                         }
                     }
 
-                    items.Add( new StreamingFunctionCallContent( functionCallContent.CallId, functionCallContent.Name, preamble ) );
+                    items.Add( new StreamingToolCallContent( functionCallContent.CallId, functionCallContent.Name, preamble ) );
                 }
             }
 

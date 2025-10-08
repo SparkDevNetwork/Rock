@@ -69,7 +69,7 @@ namespace Rock.Model
         /// model.
         /// </summary>
         [DataMember]
-        public FunctionType FunctionType { get; set; }
+        public ToolType FunctionType { get; set; }
 
         /// <inheritdoc/>
         [DataMember]

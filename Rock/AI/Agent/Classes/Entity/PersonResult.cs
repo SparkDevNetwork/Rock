@@ -19,10 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-using AngleSharp.Text;
-
 using Rock.AI.Agent.Classes.Common;
-using Rock.Enums.AI.Agent;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -89,7 +86,7 @@ namespace Rock.AI.Agent.Classes.Entity
         #region Common Properties
         
         /// <summary>
-        /// Gets or sets the stable identifier for the person's primary family (used by functions; avoid showing to end users).
+        /// Gets or sets the stable identifier for the person's primary family (used by tools; avoid showing to end users).
         /// </summary>
         public string PrimaryFamilyIdKey { get; set; }
 

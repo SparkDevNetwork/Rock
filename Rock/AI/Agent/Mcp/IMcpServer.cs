@@ -40,7 +40,7 @@ namespace Rock.AI.Agent.Mcp
         /// parsing the request body and executing the appropriate action based
         /// on the request type.
         /// </summary>
-        /// <param name="agent">The agent that will be used to process any function calls.</param>
+        /// <param name="agent">The agent that will be used to process any tool calls.</param>
         /// <param name="request">The details about the request from the MCP client.</param>
         /// <param name="cancellationToken">A token that indicates if the request should be cancelled.</param>
         /// <returns>The content to return to the MCP client. If null or empty then a 202 response should be returned instead.</returns>

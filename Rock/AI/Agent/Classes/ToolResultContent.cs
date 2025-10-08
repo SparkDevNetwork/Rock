@@ -5,7 +5,7 @@ using Rock.AI.Agent.Classes.Common;
 namespace Rock.AI.Agent.Classes
 {
     /// <summary>
-    /// Represents the result of a function call.
+    /// Represents the result of a tool call.
     /// </summary>
     internal sealed class ToolResultContent
     {
@@ -16,15 +16,15 @@ namespace Rock.AI.Agent.Classes
         public string PluginName { get; }
 
         [JsonIgnore( Condition = JsonIgnoreCondition.WhenWritingNull )]
-        public string FunctionName { get; }
+        public string ToolName { get; }
 
         [JsonIgnore( Condition = JsonIgnoreCondition.WhenWritingNull )]
         public HistoryContentBag Result { get; }
 
         [JsonConstructor]
-        public ToolResultContent( string functionName = null, string pluginName = null, string callId = null, HistoryContentBag result = null )
+        public ToolResultContent( string toolName = null, string pluginName = null, string callId = null, HistoryContentBag result = null )
         {
-            FunctionName = functionName;
+            ToolName = toolName;
             PluginName = pluginName;
             CallId = callId;
             Result = result;

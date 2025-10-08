@@ -41,9 +41,5 @@ namespace Rock.AI.Agent
                 // The prompt returned something that wasn't a string.
             }
         }
-
-        private PromptResult()
-        {
-        }
     }
 }

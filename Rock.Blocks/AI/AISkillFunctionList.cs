@@ -241,7 +241,7 @@ namespace Rock.Blocks.AI
                 entity = new AISkillFunction
                 {
                     AISkillId = GetSkillId( null ),
-                    FunctionType = FunctionType.ExecuteLava
+                    FunctionType = ToolType.ExecuteLava
                 };
 
                 entityService.Add( entity );
@@ -292,13 +292,13 @@ namespace Rock.Blocks.AI
             }
 
             // Do not allow modifying any C# based functions or skills.
-            if ( entity.FunctionType == FunctionType.ExecuteCode || skill == null || skill.CodeEntityTypeId.HasValue )
+            if ( entity.FunctionType == ToolType.ExecuteCode || skill == null || skill.CodeEntityTypeId.HasValue )
             {
                 return false;
             }
 
             // Do not allow changing type to ExecuteCode.
-            if ( box.IsValidProperty( nameof( box.Bag.FunctionType ) ) && box.Bag.FunctionType != FunctionType.ExecuteCode )
+            if ( box.IsValidProperty( nameof( box.Bag.FunctionType ) ) && box.Bag.FunctionType != ToolType.ExecuteCode )
             {
                 entity.FunctionType = box.Bag.FunctionType;
             }

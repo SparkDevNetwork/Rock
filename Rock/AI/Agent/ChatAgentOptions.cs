@@ -33,7 +33,7 @@ namespace Rock.AI.Agent
         /// <summary>
         /// When creating a new chat agent, this option can be used to specify
         /// that security should be checked on the current person for the
-        /// active request. This only filters out skills and functions. It will
+        /// active request. This only filters out skills and tools. It will
         /// not check permissions for the agent itself.
         /// </summary>
         public bool IsSecurityEnabled { get; set; }

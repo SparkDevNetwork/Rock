@@ -17,7 +17,7 @@
 
 using Rock.Enums.AI.Agent;
 
-namespace Rock.AI.Agent
+namespace Rock.AI.Agent.Mcp
 {
     /// <summary>
     /// Additional settings for <see cref="Model.AIAgent"/>. These provide
@@ -28,7 +28,7 @@ namespace Rock.AI.Agent
     {
         /// <summary>
         /// Determines if system skills are excluded from this agent. These are
-        /// standard skills and functions that would generally be considered
+        /// standard skills and tools that would generally be considered
         /// required for other skills to operate correctly.
         /// </summary>
         public bool IsExcludingSystemSkills { get; set; }

@@ -74,17 +74,17 @@ namespace Rock.AI.Agent
         public ToolInstructionSettings Instructions { get; set; } = new ToolInstructionSettings();
 
         /// <summary>
-        /// The type of tool. <see cref="FunctionType.ExecuteCode"/> is not a
+        /// The type of tool. <see cref="ToolType.ExecuteCode"/> is not a
         /// valid value and intances with this value will be ignored.
         /// </summary>
-        public FunctionType FunctionType { get; set; } = FunctionType.AIPrompt;
+        public ToolType ToolType { get; set; } = ToolType.AIPrompt;
 
         /// <summary>
         /// The role helps the agent determine what AI model to use.
         /// </summary>
         /// <remarks>
-        /// This is only valid when <see cref="FunctionType"/> is set to
-        /// <see cref="FunctionType.AIPrompt"/>.
+        /// This is only valid when <see cref="ToolType"/> is set to
+        /// <see cref="ToolType.AIPrompt"/>.
         /// </remarks>
         public ModelServiceRole Role { get; set; }
 
@@ -94,8 +94,8 @@ namespace Rock.AI.Agent
         public string Prompt { get; set; } = string.Empty;
 
         /// <summary>
-        /// The parameters defined on the function. This is only valid when
-        /// <see cref="FunctionType"/> is <see cref="FunctionType.ExecuteLava"/>.
+        /// The parameters defined on the tool. This is only valid when
+        /// <see cref="ToolType"/> is <see cref="ToolType.ExecuteLava"/>.
         /// </summary>
         public List<ParameterSchema> Parameters { get; set; } = new List<ParameterSchema>();
 
@@ -114,8 +114,8 @@ namespace Rock.AI.Agent
         /// Default is 0.7. 
         /// </summary>
         /// <remarks>
-        /// This is only valid when <see cref="FunctionType"/> is set to
-        /// <see cref="FunctionType.AIPrompt"/>.
+        /// This is only valid when <see cref="ToolType"/> is set to
+        /// <see cref="ToolType.AIPrompt"/>.
         /// </remarks>
         public double? Temperature { get; set; } = 0.7;
 
@@ -126,8 +126,8 @@ namespace Rock.AI.Agent
         /// Use 10–50 tokens for short answers, 100–300 for summaries, and 700+ for creative writing.
         /// </summary>
         /// <remarks>
-        /// This is only valid when <see cref="FunctionType"/> is set to
-        /// <see cref="FunctionType.AIPrompt"/>.
+        /// This is only valid when <see cref="ToolType"/> is set to
+        /// <see cref="ToolType.AIPrompt"/>.
         /// </remarks>
         public int? MaxTokens { get; set; }
     }

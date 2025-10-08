@@ -22,6 +22,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.AI.Agent;
+using Rock.AI.Agent.Mcp;
 using Rock.Data;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
@@ -132,7 +133,7 @@ namespace Rock.Web.Cache.Entities
 
             foreach ( var tool in tools )
             {
-                if ( agentSkillSettings.DisabledFunctions?.Contains( tool.Guid ) == true )
+                if ( agentSkillSettings.DisabledTools?.Contains( tool.Guid ) == true )
                 {
                     continue;
                 }
@@ -149,7 +150,7 @@ namespace Rock.Web.Cache.Entities
                     Preamble = additionalSettings.Preamble,
                     Instructions = instructions,
                     Role = ModelServiceRole.Default, // TODO: Fix this
-                    FunctionType = tool.FunctionType,
+                    ToolType = tool.FunctionType,
                     Prompt = prompt.Prompt ?? string.Empty,
                     EnableLavaPreRendering = prompt.PreRenderLava,
                     Parameters = prompt.PromptParameters,

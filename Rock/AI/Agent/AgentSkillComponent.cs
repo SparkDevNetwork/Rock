@@ -59,7 +59,7 @@ namespace Rock.AI.Agent
         /// <summary>
         /// The context for this chat agent request. This will be null except
         /// when the skill is being executed as part of a chat. Meaning any
-        /// method that is not a kernel function will not have a context.
+        /// method that is not a tool will not have a context.
         /// </summary>
         protected AgentRequestContext AgentRequestContext { get; private set; }
 
@@ -86,13 +86,12 @@ namespace Rock.AI.Agent
         }
 
         /// <summary>
-        /// Gets the semantic functions that should be registered with this
-        /// skill. A semantic function does not execute code. Instead it
-        /// provides a prompt that can be used by an AI model to feed back
-        /// into itself and generate a response based on the prompt.
+        /// Gets the dynamic tools that should be registered with this skill.
+        /// Only <see cref="Enums.AI.Agent.ToolType.AIPrompt"/> tools are
+        /// supported.
         /// </summary>
-        /// <returns>A collection of <see cref="AgentTool"/> objects that represent the semantic functions.</returns>
-        public virtual IReadOnlyCollection<AgentTool> GetSemanticFunctions() => Array.Empty<AgentTool>();
+        /// <returns>A collection of <see cref="AgentTool"/> objects that represent the dynamic tools.</returns>
+        public virtual IReadOnlyCollection<AgentTool> GetDymanicTools() => Array.Empty<AgentTool>();
 
         #endregion
 

@@ -63,11 +63,11 @@ namespace Rock.AI.Agent
 
         /// <summary>
         /// Gets the prompt execution settings for a specific role for use with
-        /// a function call.
+        /// a tool call.
         /// </summary>
-        /// <param name="function">The agent function to be executed.</param>
-        /// <returns>The execution settings that should be used for the function.</returns>
-        public abstract PromptExecutionSettings GetFunctionPromptExecutionSettingsForRole( AgentTool function );
+        /// <param name="tool">The agent tool to be executed.</param>
+        /// <returns>The execution settings that should be used for the tool.</returns>
+        public abstract PromptExecutionSettings GetToolPromptExecutionSettingsForRole( AgentTool tool );
 
         /// <summary>
         /// Gets the prompt execution settings for a chat completion.

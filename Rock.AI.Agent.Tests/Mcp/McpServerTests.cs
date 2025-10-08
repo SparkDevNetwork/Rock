@@ -225,7 +225,7 @@ namespace Rock.AI.Agent.Tests.Mcp
                 .WithFunction( new AgentTool
                 {
                     Name = "TestTool",
-                    FunctionType = FunctionType.ExecuteLava
+                    ToolType = ToolType.ExecuteLava
                 } )
                 .Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/list\", \"params\":{}}" ), _serializerOptions );
@@ -430,25 +430,25 @@ namespace Rock.AI.Agent.Tests.Mcp
                 {
                     Guid = new Guid("7dd480ca-a1d3-445c-9064-b75748deb6e3" ),
                     Name = "String Tool",
-                    FunctionType = FunctionType.ExecuteCode
+                    ToolType = ToolType.ExecuteCode
                 },
                 new AgentTool
                 {
                     Guid = new Guid( "e4802a5e-6d6c-450e-abb0-dab0f65cab0e" ),
                     Name = "Structured Tool",
-                    FunctionType = FunctionType.ExecuteCode
+                    ToolType = ToolType.ExecuteCode
                 },
                 new AgentTool
                 {
                     Guid = new Guid( "9ace29b2-a1fa-497a-9743-6daf076b5181" ),
                     Name = "Enum To String",
-                    FunctionType = FunctionType.ExecuteCode
+                    ToolType = ToolType.ExecuteCode
                 },
                 new AgentTool
                 {
                     Guid = new Guid( "dd15667a-4caf-4f77-b73d-b2648bbd933a" ),
                     Name = "Echo",
-                    FunctionType = FunctionType.ExecuteCode
+                    ToolType = ToolType.ExecuteCode
                 }
             };
 

@@ -24,6 +24,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Rock;
 using Rock.AI.Agent;
+using Rock.AI.Agent.Mcp;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -308,7 +309,7 @@ namespace Rock.Blocks.AI
                 bag.EnabledFunctions = agentSkill.AISkill
                     .AISkillFunctions
                     .Select( f => f.Guid )
-                    .Where( g => !settings.DisabledFunctions.Contains( g ) )
+                    .Where( g => !settings.DisabledTools.Contains( g ) )
                     .ToList();
 
                 if ( agentSkill.AISkill.CodeEntityTypeId.HasValue )
@@ -645,7 +646,7 @@ namespace Rock.Blocks.AI
 
             var settings = agentSkill.GetAdditionalSettings<AgentSkillSettings>();
 
-            settings.DisabledFunctions = agentSkill.AISkill
+            settings.DisabledTools = agentSkill.AISkill
                 .AISkillFunctions
                 .Select( f => f.Guid )
                 .Where( g => !bag.EnabledFunctions.Contains( g ) )

@@ -27,9 +27,9 @@ namespace Rock.AI.Agent
     internal class PromptInformationSettings
     {
         /// <summary>
-        /// If the function is an <see cref="FunctionType.AIPrompt"/>
-        /// and this is enabled, then the <see cref="Prompt"/> will be parsed by Lava before
-        /// being sent to the langauge model.
+        /// If the tool is an <see cref="ToolType.AIPrompt"/> and this is
+        /// enabled, then the <see cref="Prompt"/> will be parsed by Lava
+        /// before being sent to the langauge model.
         /// </summary>
         public bool PreRenderLava { get; set; }
 

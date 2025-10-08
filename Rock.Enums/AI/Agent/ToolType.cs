@@ -18,7 +18,7 @@
 namespace Rock.Enums.AI.Agent
 {
     /// <summary>
-    /// Defines the type of function that can be executed by an AI agent.
+    /// Defines the type of tool that can be executed by an AI agent.
     /// </summary>
     /// <remarks>
     ///     <para>
@@ -28,7 +28,7 @@ namespace Rock.Enums.AI.Agent
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    public enum FunctionType
+    public enum ToolType
     {
         /// <summary>
         /// The tool is native C# code that will be executed.

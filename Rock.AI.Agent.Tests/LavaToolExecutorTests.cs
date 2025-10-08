@@ -15,7 +15,7 @@ using Rock.Tests.Shared;
 namespace Rock.AI.Agent.Tests;
 
 [TestClass]
-public class LavaToolFunctionTests
+public class LavaToolExecutorTests
 {
     #region AddParametersToMergeFields Tests
 
@@ -29,7 +29,7 @@ public class LavaToolFunctionTests
             ["UnknownProperty"] = "Some Value"
         };
 
-        LavaToolFunction.AddParametersToMergeFields( mergeFields, parameters, args );
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
 
         Assert.AreEqual( 0, mergeFields.Count );
     }
@@ -48,7 +48,7 @@ public class LavaToolFunctionTests
         };
         var args = new KernelArguments();
 
-        LavaToolFunction.AddParametersToMergeFields( mergeFields, parameters, args );
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
 
         Assert.IsNull( mergeFields["MissingParameter"] );
     }
@@ -71,7 +71,7 @@ public class LavaToolFunctionTests
             ["PersonIds"] = new List<int> { 1, 2, 3 }
         };
 
-        LavaToolFunction.AddParametersToMergeFields( mergeFields, parameters, args );
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
 
         var result = mergeFields["PersonIds"];
 
@@ -97,7 +97,7 @@ public class LavaToolFunctionTests
             ["PersonId"] = 42
         };
 
-        LavaToolFunction.AddParametersToMergeFields( mergeFields, parameters, args );
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
 
         var result = mergeFields["PersonId"];
 
@@ -113,7 +113,7 @@ public class LavaToolFunctionTests
     {
         var expectedValue = new List<string> { "Hello", "World" };
 
-        var result = LavaToolFunction.ConvertValueToCollection( expectedValue, ParameterSchemaDataType.String );
+        var result = LavaToolExecutor.ConvertValueToCollection( expectedValue, ParameterSchemaDataType.String );
 
         CollectionAssert.AreEqual( expectedValue, result );
     }
@@ -123,7 +123,7 @@ public class LavaToolFunctionTests
     {
         var expectedValue = new List<string> { "10", "20" };
 
-        var result = LavaToolFunction.ConvertValueToCollection( new[] { 10, 20 }, ParameterSchemaDataType.String );
+        var result = LavaToolExecutor.ConvertValueToCollection( new[] { 10, 20 }, ParameterSchemaDataType.String );
 
         CollectionAssert.AreEqual( expectedValue, result );
     }
@@ -133,7 +133,7 @@ public class LavaToolFunctionTests
     {
         var expectedValue = new List<string> { "Hello" };
 
-        var result = LavaToolFunction.ConvertValueToCollection( "Hello", ParameterSchemaDataType.String );
+        var result = LavaToolExecutor.ConvertValueToCollection( "Hello", ParameterSchemaDataType.String );
 
         CollectionAssert.AreEqual( expectedValue, result );
     }
@@ -143,7 +143,7 @@ public class LavaToolFunctionTests
     {
         var expectedValue = new List<string> { "10" };
 
-        var result = LavaToolFunction.ConvertValueToCollection( 10, ParameterSchemaDataType.String );
+        var result = LavaToolExecutor.ConvertValueToCollection( 10, ParameterSchemaDataType.String );
 
         CollectionAssert.AreEqual( expectedValue, result );
     }
@@ -153,7 +153,7 @@ public class LavaToolFunctionTests
     {
         var expectedValue = new List<string> { "10", "20" };
 
-        var result = LavaToolFunction.ConvertValueToCollection( "[10, 20]", ParameterSchemaDataType.String );
+        var result = LavaToolExecutor.ConvertValueToCollection( "[10, 20]", ParameterSchemaDataType.String );
 
         CollectionAssert.AreEqual( expectedValue, result );
     }
@@ -161,7 +161,7 @@ public class LavaToolFunctionTests
     [TestMethod]
     public void ConvertValueToCollection_JsonNullAsStringCollection_ReturnsEmptyStringCollection()
     {
-        var result = LavaToolFunction.ConvertValueToCollection( "null", ParameterSchemaDataType.String );
+        var result = LavaToolExecutor.ConvertValueToCollection( "null", ParameterSchemaDataType.String );
 
         Assert.That.Empty( result );
     }
@@ -175,7 +175,7 @@ public class LavaToolFunctionTests
     {
         var expectedValue = "Hello World!";
 
-        var result = LavaToolFunction.ConvertValueToType( expectedValue, ParameterSchemaDataType.String );
+        var result = LavaToolExecutor.ConvertValueToType( expectedValue, ParameterSchemaDataType.String );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -185,7 +185,7 @@ public class LavaToolFunctionTests
     {
         var expectedValue = "42";
 
-        var result = LavaToolFunction.ConvertValueToType( 42, ParameterSchemaDataType.String );
+        var result = LavaToolExecutor.ConvertValueToType( 42, ParameterSchemaDataType.String );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -195,7 +195,7 @@ public class LavaToolFunctionTests
     {
         var expectedValue = "True";
 
-        var result = LavaToolFunction.ConvertValueToType( true, ParameterSchemaDataType.String );
+        var result = LavaToolExecutor.ConvertValueToType( true, ParameterSchemaDataType.String );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -203,7 +203,7 @@ public class LavaToolFunctionTests
     [TestMethod]
     public void ConvertValueToType_NullAsString_ReturnsNull()
     {
-        var result = LavaToolFunction.ConvertValueToType( null, ParameterSchemaDataType.String );
+        var result = LavaToolExecutor.ConvertValueToType( null, ParameterSchemaDataType.String );
 
         Assert.IsNull( result );
     }
@@ -213,7 +213,7 @@ public class LavaToolFunctionTests
     {
         var expectedValue = 42;
 
-        var result = LavaToolFunction.ConvertValueToType( 42, ParameterSchemaDataType.Number );
+        var result = LavaToolExecutor.ConvertValueToType( 42, ParameterSchemaDataType.Number );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -223,7 +223,7 @@ public class LavaToolFunctionTests
     {
         var expectedValue = 42.0;
 
-        var result = LavaToolFunction.ConvertValueToType( 42.0, ParameterSchemaDataType.Number );
+        var result = LavaToolExecutor.ConvertValueToType( 42.0, ParameterSchemaDataType.Number );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -233,7 +233,7 @@ public class LavaToolFunctionTests
     {
         var expectedValue = 42.0;
 
-        var result = LavaToolFunction.ConvertValueToType( "42", ParameterSchemaDataType.Number );
+        var result = LavaToolExecutor.ConvertValueToType( "42", ParameterSchemaDataType.Number );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -241,7 +241,7 @@ public class LavaToolFunctionTests
     [TestMethod]
     public void ConvertValueToType_NullAsNumber_ReturnsNull()
     {
-        var result = LavaToolFunction.ConvertValueToType( null, ParameterSchemaDataType.Number );
+        var result = LavaToolExecutor.ConvertValueToType( null, ParameterSchemaDataType.Number );
 
         Assert.IsNull( result );
     }
@@ -251,7 +251,7 @@ public class LavaToolFunctionTests
     {
         var expectedValue = true;
 
-        var result = LavaToolFunction.ConvertValueToType( true, ParameterSchemaDataType.Boolean );
+        var result = LavaToolExecutor.ConvertValueToType( true, ParameterSchemaDataType.Boolean );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -261,7 +261,7 @@ public class LavaToolFunctionTests
     {
         var expectedValue = true;
 
-        var result = LavaToolFunction.ConvertValueToType( 1, ParameterSchemaDataType.Boolean );
+        var result = LavaToolExecutor.ConvertValueToType( 1, ParameterSchemaDataType.Boolean );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -271,7 +271,7 @@ public class LavaToolFunctionTests
     {
         var expectedValue = true;
 
-        var result = LavaToolFunction.ConvertValueToType( "True", ParameterSchemaDataType.Boolean );
+        var result = LavaToolExecutor.ConvertValueToType( "True", ParameterSchemaDataType.Boolean );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -279,7 +279,7 @@ public class LavaToolFunctionTests
     [TestMethod]
     public void ConvertValueToType_NullAsBoolean_ReturnsNull()
     {
-        var result = LavaToolFunction.ConvertValueToType( null, ParameterSchemaDataType.Boolean );
+        var result = LavaToolExecutor.ConvertValueToType( null, ParameterSchemaDataType.Boolean );
 
         Assert.IsNull( result );
     }
@@ -287,7 +287,7 @@ public class LavaToolFunctionTests
     [TestMethod]
     public void ConvertValueToType_NullAsDate_ReturnsNull()
     {
-        var result = LavaToolFunction.ConvertValueToType( null, ParameterSchemaDataType.Date );
+        var result = LavaToolExecutor.ConvertValueToType( null, ParameterSchemaDataType.Date );
 
         Assert.IsNull( result );
     }
@@ -297,7 +297,7 @@ public class LavaToolFunctionTests
     {
         var expectedValue = new DateTime( 2025, 7, 30 );
 
-        var result = LavaToolFunction.ConvertValueToType( "2025-07-30", ParameterSchemaDataType.Date );
+        var result = LavaToolExecutor.ConvertValueToType( "2025-07-30", ParameterSchemaDataType.Date );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -307,7 +307,7 @@ public class LavaToolFunctionTests
     {
         var expectedValue = "today";
 
-        var result = LavaToolFunction.ConvertValueToType( "today", ParameterSchemaDataType.Date );
+        var result = LavaToolExecutor.ConvertValueToType( "today", ParameterSchemaDataType.Date );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -315,7 +315,7 @@ public class LavaToolFunctionTests
     [TestMethod]
     public void ConvertValueToType_NullAsDateTime_ReturnsNull()
     {
-        var result = LavaToolFunction.ConvertValueToType( null, ParameterSchemaDataType.DateTime );
+        var result = LavaToolExecutor.ConvertValueToType( null, ParameterSchemaDataType.DateTime );
 
         Assert.IsNull( result );
     }
@@ -325,7 +325,7 @@ public class LavaToolFunctionTests
     {
         var expectedValue = new DateTime( 2025, 7, 30, 18, 23, 12 );
 
-        var result = LavaToolFunction.ConvertValueToType( "2025-07-30T18:23:12", ParameterSchemaDataType.DateTime );
+        var result = LavaToolExecutor.ConvertValueToType( "2025-07-30T18:23:12", ParameterSchemaDataType.DateTime );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -335,7 +335,7 @@ public class LavaToolFunctionTests
     {
         var expectedValue = "today at noon";
 
-        var result = LavaToolFunction.ConvertValueToType( "today at noon", ParameterSchemaDataType.DateTime );
+        var result = LavaToolExecutor.ConvertValueToType( "today at noon", ParameterSchemaDataType.DateTime );
 
         Assert.AreEqual( expectedValue, result );
     }
@@ -343,7 +343,7 @@ public class LavaToolFunctionTests
     [TestMethod]
     public void ConvertValueToType_StringAsUnknown_ReturnsNull()
     {
-        var result = LavaToolFunction.ConvertValueToType( "Hello World!", ( ParameterSchemaDataType ) 999 );
+        var result = LavaToolExecutor.ConvertValueToType( "Hello World!", ( ParameterSchemaDataType ) 999 );
 
         Assert.IsNull( result );
     }
@@ -353,7 +353,7 @@ public class LavaToolFunctionTests
     #region ExecuteLava Tests
 
     [TestMethod]
-    public void ExecuteLava_ValidFunction_ReturnsExpectedResult()
+    public void ExecuteLava_ValidTool_ReturnsExpectedResult()
     {
         var rockRequestContextMock = new Mock<RockRequestContext>();
 
@@ -363,7 +363,7 @@ public class LavaToolFunctionTests
 
         var requestContext = new AgentRequestContext( rockRequestContextMock.Object, null );
 
-        var function = new AgentTool
+        var tool = new AgentTool
         {
             Prompt = "Hello, {{ Name }}!",
             Parameters =
@@ -387,8 +387,8 @@ public class LavaToolFunctionTests
         {
             LavaService.SetCurrentEngine( new FluidEngine() );
 
-            var proxyFunction = new LavaToolFunction( requestContext, rockRequestContextMock.Object );
-            var result = proxyFunction.ExecuteLava( function, args );
+            var executor = new LavaToolExecutor( requestContext, rockRequestContextMock.Object );
+            var result = executor.ExecuteLava( tool, args );
 
             Assert.AreEqual( "Hello, Alisha!", result.Content );
         }

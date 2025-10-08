@@ -121,7 +121,7 @@ public class UtilitySkillTests : MockDatabaseTestsBase
                 Purposes = ["Determines a date range from a natural language string."],
                 Usages = ["Use for extracting a start and end date from a user's query."]
             },
-            FunctionType = FunctionType.ExecuteLava,
+            ToolType = ToolType.ExecuteLava,
             Prompt = "{% output %}{{ query }}{% endoutput %}{\r\n  \"StartDate\": \"2025-07-01T00:00:00\",\r\n  \"EndDate\": \"2025-07-31T00:00:00\"\r\n}",
             Parameters = new List<ParameterSchema>
             {
@@ -150,7 +150,7 @@ public class UtilitySkillTests : MockDatabaseTestsBase
             {
                 Purposes = ["Returns the current system date/time as an ISO string."]
             },
-            FunctionType = FunctionType.ExecuteLava,
+            ToolType = ToolType.ExecuteLava,
             // Outputs the current date for testing (could be fixed or dynamic for a real test)
             Prompt = "{% output %}2025-07-30T12:00:00{% endoutput %}2025-07-30T12:00:00",
             Parameters = new List<ParameterSchema>(), // No parameters for "get current date/time"

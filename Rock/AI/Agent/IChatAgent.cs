@@ -16,7 +16,6 @@
 //
 
 using System.Collections.Generic;
-using System.ServiceModel.Channels;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -123,15 +122,15 @@ namespace Rock.AI.Agent
         IAsyncEnumerable<StreamingChatMessageResponse> GetStreamingChatMessageResponsesAsync( CancellationToken cancellationToken = default );
 
         /// <summary>
-        /// Invokes a specific function on the chat agent. This is primarily
-        /// used by the MCP server to handle function calls from the client.
+        /// Invokes a specific tool on the chat agent. This is primarily
+        /// used by the MCP server to handle tool calls from the client.
         /// </summary>
         /// <param name="skillKey">A string that matches the <see cref="SkillConfiguration.Key"/> value of a registered skill.</param>
-        /// <param name="functionKey">A string that matches the <see cref="AgentTool.Key"/> value of a registered function in the skill.</param>
-        /// <param name="arguments">The arguments to pass to the function.</param>
+        /// <param name="toolKey">A string that matches the <see cref="AgentTool.Key"/> value of a registered tool in the skill.</param>
+        /// <param name="arguments">The arguments to pass to the tool.</param>
         /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
-        /// <returns>The value returned from the function invocation.</returns>
-        Task<object> InvokeFunctionAsync( string skillKey, string functionKey, IDictionary<string, object> arguments, CancellationToken cancellationToken = default );
+        /// <returns>The value returned from the tool invocation.</returns>
+        Task<object> InvokeToolAsync( string skillKey, string toolKey, IDictionary<string, object> arguments, CancellationToken cancellationToken = default );
 
         /// <summary>
         /// Asynchronously invokes a prompt with the specified arguments and returns the result.

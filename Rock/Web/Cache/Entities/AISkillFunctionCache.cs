@@ -45,7 +45,7 @@ namespace Rock.Web.Cache.Entities
 
         /// <inheritdoc cref="AISkillFunction.FunctionType"/>
         [DataMember]
-        public FunctionType FunctionType { get; private set; }
+        public ToolType FunctionType { get; private set; }
 
         /// <inheritdoc/>
         [DataMember]

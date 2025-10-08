@@ -275,7 +275,7 @@ namespace Rock.AI.Agent
                 }
 
                 // Register dynamic functions
-                var virtualFunctions = GetVirtualSkillFunctions( skill.GetSemanticFunctions(), kernelServiceProvider, serializerOptions );
+                var virtualFunctions = GetVirtualSkillFunctions( skill.GetDymanicTools().Where( t => t.ToolType == ToolType.AIPrompt ).ToList(), kernelServiceProvider, serializerOptions );
                 pluginFunctions.AddRange( virtualFunctions );
 
                 if ( pluginFunctions.Count == 0 )
@@ -340,7 +340,7 @@ namespace Rock.AI.Agent
 
             foreach ( var function in functions )
             {
-                if ( function.FunctionType == FunctionType.AIPrompt )
+                if ( function.ToolType == ToolType.AIPrompt )
                 {
                     var prompt = function.Prompt;
 
@@ -353,7 +353,7 @@ namespace Rock.AI.Agent
                         promptTemplate: prompt,
                         functionName: function.Key,
                         description: InstructionFormatter.FormatInstructions( function.Instructions ),
-                        executionSettings: _agentConfiguration.Provider.GetFunctionPromptExecutionSettingsForRole( function ),
+                        executionSettings: _agentConfiguration.Provider.GetToolPromptExecutionSettingsForRole( function ),
                         jsonSerializerOptions: serializerOptions,
                         loggerFactory: _loggerFactory
                     );
@@ -361,10 +361,10 @@ namespace Rock.AI.Agent
                     pluginFunctions[function.Key] = semanticFunction;
                 }
 
-                else if ( function.FunctionType == FunctionType.ExecuteLava )
+                else if ( function.ToolType == ToolType.ExecuteLava )
                 {
                     var parameters = function.Parameters.Select( schemaBuilder.BuildKernelParameterMetadata ).ToList();
-                    var proxySkill = new LavaToolFunction( kernelServiceProvider.GetRequiredService<AgentRequestContext>(), requestContext );
+                    var proxySkill = new LavaToolExecutor( kernelServiceProvider.GetRequiredService<AgentRequestContext>(), requestContext );
 
                     var proxyFunction = KernelFunctionFactory.CreateFromMethod(
                         method: ( Func<KernelArguments, RockToolResult> ) ( args => proxySkill.ExecuteLava( function, args ) ),

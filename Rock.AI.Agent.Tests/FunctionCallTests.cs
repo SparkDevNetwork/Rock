@@ -70,7 +70,7 @@ public class FunctionCallTests : BaseFunctionCallTests
                 Purposes = ["This function searches the database for people, groups, content channels that match the query from the user."],
                 Usages = ["This function must be called if the user is trying to search for an entity. Do not attempt to infer the data from previous messages."]
             },
-            FunctionType = FunctionType.ExecuteLava,
+            ToolType = ToolType.ExecuteLava,
             Prompt = "{% output %}{{ searchTerm }}{% endoutput %}No Results Found.",
             Parameters = parameters,
             Temperature = 0,
@@ -140,7 +140,7 @@ public class FunctionCallTests : BaseFunctionCallTests
                 Purposes = ["This function searches the database for people, groups, content channels that match the query from the user."],
                 Usages = ["This function must be called if the user is trying to search for an entity. Do not attempt to infer the data from previous messages."]
             },
-            FunctionType = FunctionType.ExecuteLava,
+            ToolType = ToolType.ExecuteLava,
             Prompt = "{% output %}{{ searchTerm }}/{{ firstName }}/{{ lastName }}/{{ groupName }}{% endoutput %}No Results Found.",
             Parameters = parameters,
             Temperature = 0,
@@ -220,7 +220,7 @@ public class FunctionCallTests : BaseFunctionCallTests
                 Purposes = ["This function searches the database for people, groups, content channels that match the query from the user."],
                 Usages = ["This function must be called if the user is trying to search for an entity. Do not attempt to infer the data from previous messages."]
             },
-            FunctionType = FunctionType.ExecuteLava,
+            ToolType = ToolType.ExecuteLava,
             Prompt = "{% output %}{{ searchTerm }}/{{ firstName }}/{{ lastName }}/{{ groupName }}/{{ entityTypes | Join:',' }}{% endoutput %}No Results Found.",
             Parameters = parameters,
             Temperature = 0,
@@ -299,7 +299,7 @@ public class FunctionCallTests : BaseFunctionCallTests
                 Purposes = ["This function searches the database for people, groups, content channels that match the query from the user."],
                 Usages = ["This function must be called if the user is trying to search for an entity. Do not attempt to infer the data from previous messages."]
             },
-            FunctionType = FunctionType.ExecuteLava,
+            ToolType = ToolType.ExecuteLava,
             Prompt = "{% output %}{{ searchTerm }}/{{ firstName }}/{{ lastName }}/{{ groupName }}/{{ entityTypes }}{% endoutput %}No Results Found.",
             Parameters = parameters,
             Temperature = 0,

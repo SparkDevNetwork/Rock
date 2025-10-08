@@ -269,7 +269,7 @@ namespace Rock.Blocks.AI
                 {
                     internalLogs.Add( new ChatDebugLog( "Internal", Microsoft.Extensions.Logging.LogLevel.Trace, $"Recieved content chunk '{response.Content}'." ) );
 
-                    if ( response.Items != null && response.Items.Any() && response.Items[0] is StreamingFunctionCallContent sfcc )
+                    if ( response.Items != null && response.Items.Any() && response.Items[0] is StreamingToolCallContent sfcc )
                     {
                         if ( sfcc.Description.IsNotNullOrWhiteSpace() )
                         {

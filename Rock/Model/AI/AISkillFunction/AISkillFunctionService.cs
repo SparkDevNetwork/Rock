@@ -68,11 +68,11 @@ namespace Rock.Model
                 return;
             }
 
-            var semanticTools = instance.GetSemanticFunctions();
+            var promptTools = instance.GetDymanicTools().Where( t => t.ToolType == ToolType.AIPrompt );
 
-            foreach ( var semanticTool in semanticTools )
+            foreach ( var semanticTool in promptTools )
             {
-                RegisterSemanticTool( skillId, semanticTool, existingTools, rockContext );
+                RegisterDynamicTool( skillId, semanticTool, existingTools, rockContext );
             }
         }
 
@@ -125,7 +125,7 @@ namespace Rock.Model
                 tool.AISkillId = skillId;
                 tool.Name = name;
                 tool.Description = description;
-                tool.FunctionType = FunctionType.ExecuteCode;
+                tool.FunctionType = ToolType.ExecuteCode;
 
                 new AISkillFunctionService( rockContext ).Add( tool );
 
@@ -151,9 +151,9 @@ namespace Rock.Model
                     needSave = true;
                 }
 
-                if ( tool.FunctionType != FunctionType.ExecuteCode )
+                if ( tool.FunctionType != ToolType.ExecuteCode )
                 {
-                    tool.FunctionType = FunctionType.ExecuteCode;
+                    tool.FunctionType = ToolType.ExecuteCode;
                     needSave = true;
                 }
             }
@@ -232,7 +232,7 @@ namespace Rock.Model
         /// <param name="semanticTool">The semantic tool to register.</param>
         /// <param name="existingTools">The existing tools in the database for this skill.</param>
         /// <param name="rockContext">The context to use when saving changes to the database.</param>
-        private static void RegisterSemanticTool( int skillId, AgentTool semanticTool, List<AISkillFunction> existingTools, RockContext rockContext )
+        private static void RegisterDynamicTool( int skillId, AgentTool semanticTool, List<AISkillFunction> existingTools, RockContext rockContext )
         {
             if ( semanticTool.Guid == Guid.Empty )
             {
@@ -253,7 +253,7 @@ namespace Rock.Model
                 tool.AISkillId = skillId;
                 tool.Name = name;
                 tool.Description = description;
-                tool.FunctionType = semanticTool.FunctionType;
+                tool.FunctionType = semanticTool.ToolType;
 
                 new AISkillFunctionService( rockContext ).Add( tool );
 
@@ -279,9 +279,9 @@ namespace Rock.Model
                     needSave = true;
                 }
 
-                if ( tool.FunctionType != semanticTool.FunctionType )
+                if ( tool.FunctionType != semanticTool.ToolType )
                 {
-                    tool.FunctionType = semanticTool.FunctionType;
+                    tool.FunctionType = semanticTool.ToolType;
                     needSave = true;
                 }
             }

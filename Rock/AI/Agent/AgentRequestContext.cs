@@ -190,30 +190,30 @@ namespace Rock.AI.Agent
             var serializerOptions = AgentSerializerOptions.GetOptions( AgentType, AudienceType );
             var toolResultContent = JsonSerializer.Deserialize<ToolResultContent>( toolResultContentJson, serializerOptions );
 
-            var functionCallContent = new FunctionCallContent(
-                functionName: toolResultContent.FunctionName,
+            var callContent = new FunctionCallContent(
+                functionName: toolResultContent.ToolName,
                 pluginName: toolResultContent.PluginName,
                 id: toolResultContent.CallId
             );
 
-            var functionResultContent = new FunctionResultContent(
-                functionCall: functionCallContent,
+            var resultContent = new FunctionResultContent(
+                functionCall: callContent,
                 result: toolResultContent.Result );
 
             // First, add the assistant message describing the tool invocation.
-            var functionCallContentArray = new ChatMessageContentItemCollection()
+            var callContentArray = new ChatMessageContentItemCollection()
             {
-                functionCallContent
+                callContent
             };
-            var invocationMessageContent = new ChatMessageContent( SKAuthorRole.Assistant, functionCallContentArray );
+            var invocationMessageContent = new ChatMessageContent( SKAuthorRole.Assistant, callContentArray );
             _chatMessages.Add( invocationMessageContent );
 
             // Then add the resulting message to the tool role.
-            var functionResultContentArray = new ChatMessageContentItemCollection()
+            var resultContentArray = new ChatMessageContentItemCollection()
             {
-                functionResultContent
+                resultContent
             };
-            var toolResultMessageContent = new ChatMessageContent( SKAuthorRole.Tool, functionResultContentArray );
+            var toolResultMessageContent = new ChatMessageContent( SKAuthorRole.Tool, resultContentArray );
             _chatMessages.Add( toolResultMessageContent );
 
             // Reset chat history.

@@ -191,7 +191,7 @@ namespace Rock.AI.Agent.Providers
         }
 
         /// <inheritdoc/>
-        public override PromptExecutionSettings GetFunctionPromptExecutionSettingsForRole( AgentTool function )
+        public override PromptExecutionSettings GetToolPromptExecutionSettingsForRole( AgentTool function )
         {
             return new OpenAIPromptExecutionSettings
             {

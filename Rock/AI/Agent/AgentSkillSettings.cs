@@ -26,12 +26,12 @@ namespace Rock.AI.Agent
     internal class AgentSkillSettings
     {
         /// <summary>
-        /// The list of functions that are disabled for this skill. The UI will
-        /// show the enabled functions, but we store as the list of disabled
-        /// ones so that when a new function is added, it will automatically be
+        /// The list of tools that are disabled for this skill. The UI will
+        /// show the enabled tools, but we store as the list of disabled
+        /// ones so that when a new tool is added, it will automatically be
         /// included in the agent.
         /// </summary>
-        public List<Guid> DisabledFunctions { get; set; } = new List<Guid>();
+        public List<Guid> DisabledTools { get; set; } = new List<Guid>();
 
         /// <summary>
         /// The configuration values of the skill. When a skill is attached to

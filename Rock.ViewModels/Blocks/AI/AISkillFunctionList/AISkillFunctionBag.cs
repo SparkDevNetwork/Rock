@@ -37,7 +37,7 @@ namespace Rock.ViewModels.Blocks.AI.AISkillFunctionList
         /// how the function will be configured and executed in the language
         /// model.
         /// </summary>
-        public FunctionType FunctionType { get; set; }
+        public ToolType FunctionType { get; set; }
 
         /// <summary>
         /// The instructions that provide context about when and how this

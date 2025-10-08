@@ -18,10 +18,10 @@
 namespace Rock.AI.Agent
 {
     /// <summary>
-    /// A streaming content item that contains information about a function
+    /// A streaming content item that contains information about a tool
     /// that will be called.
     /// </summary>
-    internal class StreamingFunctionCallContent : StreamingAgentContent
+    internal class StreamingToolCallContent : StreamingAgentContent
     {
         /// <summary>
         /// The unique call identifier.
@@ -29,22 +29,22 @@ namespace Rock.AI.Agent
         public string CallId { get; }
 
         /// <summary>
-        /// The internal name of the function.
+        /// The internal name of the tool.
         /// </summary>
         public string Name { get; }
 
         /// <summary>
-        /// The text that describes the function call and what it is doing.
+        /// The text that describes the tool call and what it is doing.
         /// </summary>
         public string Description { get; }
 
         /// <summary>
-        /// Creates a new instance of <see cref="StreamingFunctionCallContent"/>.
+        /// Creates a new instance of <see cref="StreamingToolCallContent"/>.
         /// </summary>
         /// <param name="callId">The unique call identifier.</param>
-        /// <param name="name">The internal name of the function.</param>
-        /// <param name="description">The text that describes the function call and what it is doing.</param>
-        public StreamingFunctionCallContent( string callId, string name, string description )
+        /// <param name="name">The internal name of the tool.</param>
+        /// <param name="description">The text that describes the tool call and what it is doing.</param>
+        public StreamingToolCallContent( string callId, string name, string description )
         {
             CallId = callId;
             Name = name;

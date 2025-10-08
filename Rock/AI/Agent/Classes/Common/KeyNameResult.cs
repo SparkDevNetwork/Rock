@@ -7,7 +7,7 @@ namespace Rock.AI.Agent.Classes.Common
     /// For example: { name: "John Doe", key: "" }.
     /// </summary>
     /// <remarks>
-    /// Use the key for function calls and internal lookups; prefer the name for user-facing text.
+    /// Use the key for tool calls and internal lookups; prefer the name for user-facing text.
     /// </remarks>
     public class KeyNameResult
     {
@@ -18,7 +18,7 @@ namespace Rock.AI.Agent.Classes.Common
         public string Name { get; set; }
 
         /// <summary>
-        /// Stable identifier for the entity (used by functions; avoid showing to end users unless requested).
+        /// Stable identifier for the entity (used by tools; avoid showing to end users unless requested).
         /// </summary>
         public string IdKey
         {
