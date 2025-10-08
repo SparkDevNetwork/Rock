@@ -14,16 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Text.Json.Serialization;
 
 namespace Rock.AI.Agent.Classes.Entity
 {
     /// <summary>
     /// POCO result for attributes.
     /// </summary>
-    public class AttributeResult : EntityResultBase
+    internal class AttributeResult : EntityResultBase
     {
-
         /// <summary>
         /// The attribute name.
         /// </summary>

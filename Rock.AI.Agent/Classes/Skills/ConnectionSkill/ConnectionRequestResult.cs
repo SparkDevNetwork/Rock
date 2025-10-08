@@ -28,7 +28,7 @@ namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
     /// POCO result for a note.
     /// </summary>
     [ExcludeFromCodeCoverage]
-    public class ConnectionRequestResult : EntityResultBase
+    internal class ConnectionRequestResult : EntityResultBase
     {
         /// <summary>
         /// Gets or sets the connection opportunity that the connection request is associated with.

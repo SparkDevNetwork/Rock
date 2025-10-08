@@ -20,7 +20,7 @@ namespace Rock.AI.Agent.Classes.Entity
     /// <summary>
     /// POCO result for a group member.
     /// </summary>
-    public class GroupTypeResult : EntityResultBase
+    internal class GroupTypeResult : EntityResultBase
     {
         /// <summary>
         /// The name of the group.

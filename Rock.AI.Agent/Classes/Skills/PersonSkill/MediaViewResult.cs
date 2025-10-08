@@ -24,7 +24,7 @@ namespace Rock.AI.Agent.Classes.Skills.PersonSkill
     /// Lightweight result model for a person's page-visit aggregate.
     /// </summary>
     [ExcludeFromCodeCoverage]
-    public class MediaViewResult
+    internal class MediaViewResult
     {
         /// <summary>
         /// The identifier of the media view record.

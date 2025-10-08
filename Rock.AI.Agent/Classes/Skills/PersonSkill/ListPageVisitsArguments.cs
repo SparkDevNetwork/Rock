@@ -22,7 +22,7 @@ namespace Rock.AI.Agent.Classes.Skills.PersonSkill
     /// <summary>
     /// Arguments for listing a person's page visits.
     /// </summary>
-    public class ListPageVisitsArguments
+    internal class ListPageVisitsArguments
     {
         /// <summary>
         /// Optional earliest date to include (inclusive). Set to <c>null</c> to leave the start unbounded.

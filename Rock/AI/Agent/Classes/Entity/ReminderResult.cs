@@ -27,7 +27,7 @@ namespace Rock.AI.Agent.Classes.Entity
     /// <remarks>
     /// This class contains details about a reminder, including its completion status, renewal settings, associated entity, and type.
     /// </remarks>
-    public class ReminderResult : EntityResultBase 
+    internal class ReminderResult : EntityResultBase 
     {
         /// <summary>
         /// Gets or sets a value indicating whether the reminder is complete.

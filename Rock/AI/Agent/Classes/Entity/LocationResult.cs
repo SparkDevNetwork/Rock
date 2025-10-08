@@ -22,7 +22,7 @@ namespace Rock.AI.Agent.Classes.Entity
     /// <summary>
     /// POCO result for a location.
     /// </summary>
-    public class LocationResult : EntityResultBase
+    internal class LocationResult : EntityResultBase
     {
         /// <summary>
         /// Gets or sets the type of the location (e.g., Home, Work, Campus).

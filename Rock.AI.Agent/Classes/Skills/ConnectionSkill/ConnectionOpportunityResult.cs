@@ -20,12 +20,13 @@ using Rock.AI.Agent.Classes.Entity;
 
 namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
 {
-    public class ConnectionOpportunityResult : EntityResultBase
+    internal class ConnectionOpportunityResult : EntityResultBase
     {
         /// <summary>
         /// The name of the connection type.
         /// </summary>
         public string Name { get; set; }
+
         /// <summary>
         /// The description of the connection type.
         /// </summary>

@@ -29,7 +29,7 @@ namespace Rock.AI.Agent.Classes.Entity
     /// A common POCO for storing information about a person. Apply only the properties that are needed for the specific use case.
     /// Null properties will not be serialized.
     /// </summary>
-    public class PersonResult : EntityResultBase
+    internal class PersonResult : EntityResultBase
     {
         #region Private Variables
         private AgentRequestContext _context;

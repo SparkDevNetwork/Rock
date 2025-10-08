@@ -19,14 +19,13 @@ using System.Collections.Generic;
 
 namespace Rock.AI.Agent.Classes.Skills.PersonSkill
 {
-
     /// <summary>
     /// Represents a summarized view of family service attendance.
     /// </summary>
     /// <remarks>
     /// This class contains details about family attendance, including check-ins, summaries, and attendance statistics.
     /// </remarks>
-    public class SummarizedFamilyServiceAttendanceResult
+    internal class SummarizedFamilyServiceAttendanceResult
     {
         /// <summary>
         /// Gets or sets the Sunday date for the attendance summary.
@@ -68,5 +67,4 @@ namespace Rock.AI.Agent.Classes.Skills.PersonSkill
         /// </value>
         public int WeeksAttendedLast16Weeks { get; set; }
     }
-
 }

@@ -22,7 +22,7 @@ namespace Rock.AI.Agent.Classes.Skills.PersonSkill
     /// <summary>
     /// Lightweight result model for a person's page-visit aggregate.
     /// </summary>
-    public class PageVisitResult
+    internal class PageVisitResult
     {
         [JsonIgnore]
         internal int SiteId { get; set; }

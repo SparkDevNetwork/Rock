@@ -26,7 +26,7 @@ namespace Rock.AI.Agent.Classes.Entity
     /// <remarks>
     /// This class contains details about a reminder type, including its name, description, associated entity type, and notification settings.
     /// </remarks>
-    public class ReminderTypeResult : EntityResultBase 
+    internal class ReminderTypeResult : EntityResultBase 
     {
         /// <summary>
         /// Gets or sets the name of the reminder type.

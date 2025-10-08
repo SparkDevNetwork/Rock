@@ -15,14 +15,12 @@
 // </copyright>
 //
 
-using System;
-
 namespace Rock.AI.Agent.Classes.Entity
 {
     /// <summary>
     /// POCO result for campus schedule information.
     /// </summary>
-    public class CampusScheduleResult
+    internal class CampusScheduleResult
     {
         /// <summary>
         /// The name of the schedule.

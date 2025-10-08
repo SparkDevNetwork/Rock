@@ -27,7 +27,7 @@ namespace Rock.AI.Agent.Classes.Skills.PersonSkill
     /// <remarks>
     /// This class contains information about the check-in, including the date, location, schedule, and associated person.
     /// </remarks>
-    public class FamilyMemberCheckInResult
+    internal class FamilyMemberCheckInResult
     {
         /// <summary>
         /// Gets or sets the date of the check-in.
@@ -92,6 +92,5 @@ namespace Rock.AI.Agent.Classes.Skills.PersonSkill
         /// The root-level group associated with the check-in.
         /// </value>
         public KeyNameResult RootLevelGroup { get; set; }
-
     }
 }

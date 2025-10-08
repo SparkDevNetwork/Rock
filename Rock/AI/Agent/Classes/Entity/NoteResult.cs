@@ -15,16 +15,12 @@
 // </copyright>
 //
 
-using Nest;
-
-using Rock.AI.Agent.Classes.Common;
-
 namespace Rock.AI.Agent.Classes.Entity
 {
     /// <summary>
     /// POCO result for a note.
     /// </summary>
-    public class NoteResult : EntityResultBase
+    internal class NoteResult : EntityResultBase
     {
         /// <summary>
         /// Gets or sets the type of note.

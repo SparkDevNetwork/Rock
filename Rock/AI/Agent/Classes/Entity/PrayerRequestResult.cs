@@ -23,7 +23,7 @@ namespace Rock.AI.Agent.Classes.Entity
     /// <summary>
     /// POCO result for a note.
     /// </summary>
-    public class PrayerRequestResult : EntityResultBase
+    internal class PrayerRequestResult : EntityResultBase
     {
         /// <summary>
         /// Gets or sets the category of the prayer request.

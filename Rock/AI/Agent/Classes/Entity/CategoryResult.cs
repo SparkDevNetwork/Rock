@@ -22,7 +22,7 @@ namespace Rock.AI.Agent.Classes.Entity
     /// <summary>
     /// POCO result for a category.
     /// </summary>
-    public class CategoryResult : EntityResultBase
+    internal class CategoryResult : EntityResultBase
     {
         /// <summary>
         /// The category name.

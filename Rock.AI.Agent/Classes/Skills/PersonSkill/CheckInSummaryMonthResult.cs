@@ -22,7 +22,7 @@ namespace Rock.AI.Agent.Classes.Skills.PersonSkill
     /// <remarks>
     /// This class contains details about the month, year, and the completion percentage of check-ins for that period.
     /// </remarks>
-    public class CheckInSummaryMonthResult
+    internal class CheckInSummaryMonthResult
     {
         /// <summary>
         /// Gets or sets the name of the month.

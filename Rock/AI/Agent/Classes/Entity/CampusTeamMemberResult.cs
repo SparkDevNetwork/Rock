@@ -15,16 +15,12 @@
 // </copyright>
 //
 
-using System;
-
-using Rock.AI.Agent.Classes.Entity;
-
 namespace Rock.AI.Agent.Classes.Entity
 {
     /// <summary>
     /// POCO result for campus team member information.
     /// </summary>
-    public class CampusTeamMemberResult
+    internal class CampusTeamMemberResult
     {
         /// <summary>
         /// The role of the team member.

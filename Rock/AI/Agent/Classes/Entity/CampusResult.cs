@@ -23,7 +23,7 @@ namespace Rock.AI.Agent.Classes.Entity
     /// <summary>
     /// Represents a campus, including identity, type/status, location, service times, and custom attributes.
     /// </summary>
-    public class CampusResult : EntityResultBase
+    internal class CampusResult : EntityResultBase
     {
         /// <summary>
         /// The name of the campus.

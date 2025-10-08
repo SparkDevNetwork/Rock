@@ -15,14 +15,12 @@
 // </copyright>
 //
 
-using Rock.AI.Agent.Classes.Common;
-
 namespace Rock.AI.Agent.Classes.Entity
 {
     /// <summary>
     /// POCO result for a group member.
     /// </summary>
-    public class GroupResult : EntityResultBase
+    internal class GroupResult : EntityResultBase
     {
         /// <summary>
         /// The name of the group.

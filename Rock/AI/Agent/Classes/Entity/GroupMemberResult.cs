@@ -22,7 +22,7 @@ namespace Rock.AI.Agent.Classes.Entity
     /// <summary>
     /// POCO result for a group member.
     /// </summary>
-    public class GroupMemberResult : EntityResultBase
+    internal class GroupMemberResult : EntityResultBase
     {
         /// <summary>
         /// The person in the group.

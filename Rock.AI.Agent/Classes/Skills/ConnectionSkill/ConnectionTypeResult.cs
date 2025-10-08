@@ -21,7 +21,7 @@ using Rock.AI.Agent.Classes.Entity;
 
 namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
 {
-    public class ConnectionTypeResult : EntityResultBase
+    internal class ConnectionTypeResult : EntityResultBase
     {
         /// <summary>
         /// The name of the connection type.

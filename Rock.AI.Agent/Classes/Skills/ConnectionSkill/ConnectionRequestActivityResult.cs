@@ -23,7 +23,7 @@ namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
     /// <summary>
     /// POCO result for a note.
     /// </summary>
-    public class ConnectionRequestActivityResult : EntityResultBase
+    internal class ConnectionRequestActivityResult : EntityResultBase
     {
         /// <summary>
         /// Gets or sets the note text.

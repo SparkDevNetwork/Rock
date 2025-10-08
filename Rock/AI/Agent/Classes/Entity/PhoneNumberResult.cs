@@ -21,7 +21,7 @@ namespace Rock.AI.Agent.Classes.Entity
     /// <summary>
     /// Result model for a person's profile.
     /// </summary>
-    public class PhoneNumberResult : EntityResultBase
+    internal class PhoneNumberResult : EntityResultBase
     {
         /// <summary>
         /// The phone number value.

@@ -18,8 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-using DocumentFormat.OpenXml.Spreadsheet;
-
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -29,7 +27,7 @@ namespace Rock.AI.Agent.Classes.Entity
     /// <summary>
     /// Result model for a person's profile.
     /// </summary>
-    public class EntityResultBase
+    internal class EntityResultBase
     {
         /// <summary>
         /// The phone number id. This will not be show in the JSON output.
@@ -117,6 +115,5 @@ namespace Rock.AI.Agent.Classes.Entity
         }
 
         #endregion
-
     }
 }
