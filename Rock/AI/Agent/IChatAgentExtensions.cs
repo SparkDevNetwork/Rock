@@ -31,7 +31,7 @@ namespace Rock.AI.Agent
     /// implementations without having to implement all the various overloads.
     /// </remarks>
     [RockInternal( "18.0" )]
-    public static class IChatAgentExtensions
+    internal static class IChatAgentExtensions
     {
         /// <summary>
         /// Starts a new session in the database without associating it with

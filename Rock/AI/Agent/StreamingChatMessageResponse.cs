@@ -26,7 +26,7 @@ namespace Rock.AI.Agent
     /// response as well as other diagnostic data.
     /// </summary>
     [RockInternal( "18.0" )]
-    public class StreamingChatMessageResponse
+    internal class StreamingChatMessageResponse
     {
         #region Properties
 

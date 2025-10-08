@@ -21,7 +21,7 @@ namespace Rock.AI.Agent
     /// Represents token usage metrics for an AI agent operation, including input, output, and total token counts.
     /// Useful for tracking resource consumption and billing for AI requests.
     /// </summary>
-    public class UsageMetric
+    internal class UsageMetric
     {
         /// <summary>
         /// Gets or sets the number of input tokens (prompt tokens) consumed by the operation.

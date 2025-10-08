@@ -33,7 +33,7 @@ namespace Rock.AI.Agent.Mcp
     /// </para>
     /// </summary>
     [RockInternal( "18.0" )]
-    public interface IMcpServer
+    internal interface IMcpServer
     {
         /// <summary>
         /// Handles a request to the MCP server. This method is responsible for

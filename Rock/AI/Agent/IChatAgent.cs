@@ -38,7 +38,7 @@ namespace Rock.AI.Agent
     /// </para>
     /// </summary>
     [RockInternal( "18.0" )]
-    public interface IChatAgent
+    internal interface IChatAgent
     {
         #region Properties
 

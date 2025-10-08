@@ -24,7 +24,7 @@ namespace Rock.AI.Agent
     /// Contains any debug information that was generated during the processing
     /// of a chat agent message.
     /// </summary>
-    public class ChatMessageDebug
+    internal class ChatMessageDebug
     {
         /// <summary>
         /// The collected log information from the chat agent. This will never

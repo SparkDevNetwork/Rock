@@ -24,7 +24,7 @@ namespace Rock.AI.Agent
     /// <summary>
     /// A single log entry from a chat agent request.
     /// </summary>
-    public class ChatDebugLog
+    internal class ChatDebugLog
     {
         #region Properties
 

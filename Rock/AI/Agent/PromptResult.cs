@@ -23,7 +23,7 @@ namespace Rock.AI.Agent
     /// Represents the result of a prompt to the AI model.
     /// Returned from <see cref="IChatAgent.InvokePromptAsync(string, System.Collections.Generic.IDictionary{string, object}, System.Threading.CancellationToken)"/>.
     /// </summary>
-    public class PromptResult
+    internal class PromptResult
     {
         /// <summary>
         /// The text response from the AI model.

@@ -23,7 +23,7 @@ namespace Rock.AI.Agent
     /// The options that can be used when building a new chat agent.
     /// </summary>
     [RockInternal( "18.0" )]
-    public class ChatAgentOptions
+    internal class ChatAgentOptions
     {
         /// <summary>
         /// Enables additional debug information to be made available.

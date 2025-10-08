@@ -27,7 +27,7 @@ namespace Rock.AI.Agent
     /// properties may be added in the future.
     /// </para>
     /// </summary>
-    public interface IChatAgentBuilder
+    internal interface IChatAgentBuilder
     {
         /// <summary>
         /// Builds and returns an <see cref="IChatAgent"/> instance for the specified agent ID.

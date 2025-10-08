@@ -39,7 +39,7 @@ namespace Rock.AI.Agent
     /// responses and any other details that should be sent to the LLM.
     /// </summary>
     [LavaType]
-    public class AgentRequestContext
+    internal class AgentRequestContext
     {
         #region Fields
 

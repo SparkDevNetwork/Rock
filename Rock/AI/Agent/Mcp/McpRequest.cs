@@ -22,7 +22,7 @@ namespace Rock.AI.Agent.Mcp
     /// <summary>
     /// The details of a request to the MCP server.
     /// </summary>
-    public class McpRequest
+    internal class McpRequest
     {
         /// <summary>
         /// The content of the request from the MCP client.

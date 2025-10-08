@@ -47,7 +47,7 @@ namespace Rock.Rest.v2
     /// </summary>
     [RoutePrefix( "api/v2/mcp" )]
     [SystemGuid.RestControllerGuid( "0a73df31-46d0-41e2-a0f6-0a762b97fd07" )]
-    public class McpController : ApiControllerBase
+    internal class McpController : ApiControllerBase
     {
         private readonly IMcpServer _mcpServer;
 

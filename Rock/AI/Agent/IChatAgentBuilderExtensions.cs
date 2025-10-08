@@ -25,7 +25,7 @@ namespace Rock.AI.Agent
     /// by the interface.
     /// </summary>
     [RockInternal( "18.0" )]
-    public static class IChatAgentBuilderExtensions
+    internal static class IChatAgentBuilderExtensions
     {
         /// <summary>
         /// Builds and returns an <see cref="IChatAgent"/> instance for the specified agent ID.
