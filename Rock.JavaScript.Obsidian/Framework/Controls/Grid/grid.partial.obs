@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="grid-obsidian styled-scroll" :class="{ 'grid-sticky': isStickyHeader, 'grid-light': light, 'grid-bordered': !light, 'grid-striped': !light, 'grid-hover': !light }">
-        <div class="grid-heading">
+        <div class="grid-header">
             <FilterHeaderRow v-if="!light && !hideFilterHeaderRow"
                              v-model:quickFilterValue="quickFilterValue"
                              :grid="gridState"
@@ -18,7 +18,7 @@
         <div class="grid-content-container"
              :class="{ 'grid-overflow': overflow, }">
 
-            <div class="grid-header-container"
+            <div class="grid-column-header-container"
                  :class="{ 'sticky-column-header': !overflow }">
                 <div v-if="$slots.gridHeaderPrepend"
                      class="grid-header-prepend">
@@ -554,6 +554,16 @@
         },
 
         /**
+         * When a delegate is provided, allows the consumer to override
+         * the selected keys, such as when using row exclusion logic,
+         * needing to force certain keys to always be selected, etc.
+         */
+        selectedKeysOverride: {
+            type: Function as PropType<(selectedKeys: string[]) => string[]>,
+            default: undefined
+        },
+
+        /**
          * When `true`, forces page size to 50 and disables virtual scrolling.
          *
          * TEMPORARY: This is a temporary workaround for a virtual scrolling
@@ -602,6 +612,7 @@
     const visibleColumnDefinitions = shallowRef<ReadonlyArray<ColumnDefinition>>([]);
     const dragOptions = ref<IDragSourceOptions | undefined>();
     const isRowSelectionInProgress = ref(false);
+    const isGridStateSelectedKeysOverrideSet = ref(false);
 
     const rootPreferences = usePersonPreferences().blockPreferences;
     const gridPreferences = getPrefixedPreferences();
@@ -1785,6 +1796,18 @@
      * Update the UI to reflect the selection count.
      */
     function onSelectedKeysChanged(): void {
+        if (props.selectedKeysOverride !== undefined) {
+            // Clear override flag and skip to avoid recursion
+            if (isGridStateSelectedKeysOverrideSet.value) {
+                isGridStateSelectedKeysOverrideSet.value = false;
+                return;
+            }
+            else { // Set override and apply it to avoid recursion
+                isGridStateSelectedKeysOverrideSet.value = true;
+                gridState.selectedKeys = props.selectedKeysOverride(gridState.selectedKeys);
+            }
+        }
+
         selectedRowCount.value = gridState.selectedKeys.length;
 
         emit("selectedKeysChanged", gridState);

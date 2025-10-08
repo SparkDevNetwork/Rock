@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -41,6 +42,7 @@ namespace Rock.Blocks.BulkImport
     [DisplayName( "Bulk Import" )]
     [Category( "Bulk Import" )]
     [Description( "Block to import Slingshot files into Rock using BulkImport" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [IntegerField(
         "Person Record Import Batch Size",
@@ -290,12 +292,13 @@ namespace Rock.Blocks.BulkImport
         [BlockAction]
         public BlockActionResult CheckForeignSystemKey( string foreignSystemKey )
         {
-            if ( string.IsNullOrWhiteSpace( foreignSystemKey ) )
+            var tableList = new List<string>();
+
+            if ( !string.IsNullOrWhiteSpace( foreignSystemKey ) )
             {
-                return ActionBadRequest( "Foreign system key is required." );
+                tableList = Rock.Slingshot.BulkImporter.TablesThatHaveForeignSystemKey( foreignSystemKey );
             }
 
-            var tableList = Rock.Slingshot.BulkImporter.TablesThatHaveForeignSystemKey( foreignSystemKey );
             var foreignSystemKeyList = BulkImporter.UsedForeignSystemKeys();
 
             var result = new

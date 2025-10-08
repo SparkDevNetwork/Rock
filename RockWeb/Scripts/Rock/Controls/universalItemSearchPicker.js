@@ -7,6 +7,7 @@
         var UniversalItemSearchPicker = function (options) {
             this.controlId = options.controlId;
             this.restUrl = options.restUrl;
+            this.context = options.context;
             this.areDetailsAlwaysVisible = options.areDetailsAlwaysVisible;
             this.iScroll = null;
             this.$pickerControl = $('#' + this.controlId);
@@ -16,6 +17,7 @@
         UniversalItemSearchPicker.prototype.initializeEventHandlers = function () {
             var controlId = this.controlId;
             var restUrl = this.restUrl;
+            var context = this.context;
             var areDetailsAlwaysVisible = this.areDetailsAlwaysVisible;
 
             var $pickerControl = this.$pickerControl;
@@ -51,6 +53,7 @@
                     }
 
                     var searchBag = {
+                        context: context,
                         value: search.value,
                         isInactiveIncluded: $searchFieldIncludeInactive && $searchFieldIncludeInactive.is(":checked") == true
                     };

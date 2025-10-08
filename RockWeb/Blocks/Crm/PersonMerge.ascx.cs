@@ -1587,7 +1587,19 @@ namespace RockWeb.Blocks.Crm
             var showWarning = conflictingHiddenProperties.Any();
             nbPermissionNotice.Visible = showWarning;
 
-            var conflictingGroupMemberProperties = MergeData.GroupMemberProperties.Where( p => p.Values.Select( v => v.Value ).Distinct().Count() > 1 || !p.Values.Any( v => v.PersonId == MergeData.PrimaryPersonId ) ).ToList();
+            /*
+                10/6/2025 - MSE
+
+                A conflict should only be flagged when merge candidates have different
+                values for an attribute, within the same group.
+
+                Do not flag conflicts for the attribute when:
+                1) Candidates are in different groups (even if the attribute key matches across those groups).
+                2) Candidates have matching values for the attribute within the same group.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/6473
+            */
+            var conflictingGroupMemberProperties = MergeData.GroupMemberProperties.Where( p => p.Values.Select( v => v.Value ).Distinct().Count() > 1 ).ToList();
 
             nbGroupMemberAttributeConflict.Visible = conflictingGroupMemberProperties.Count > 0;
             if ( conflictingGroupMemberProperties.Count > 0 )
@@ -2461,7 +2473,8 @@ AND Attendance.Id != @FirstTimeRecordId
                         var hasViewPermission = attribute.Value.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson )
                                                 || grantPermissionForAllAttributes;
 
-                        AddGroupMemberProperty( "gm_attr_" + attribute.Key, attribute.Value.Name, groupMember, value, formattedValue, hasViewPermission, selected: false, attribute: attribute.Value );
+                        var theKey = $"gm_{groupMember.GroupId}_attr_{attribute.Key}";
+                        AddGroupMemberProperty( theKey, attribute.Value.Name, groupMember, value, formattedValue, hasViewPermission, selected: false, attribute: attribute.Value );
                     }
                 }
             }

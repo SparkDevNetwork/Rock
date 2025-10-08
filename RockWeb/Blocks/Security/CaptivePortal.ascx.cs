@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Security
 
     #region Block Settings
     [TextField(
-        name: "MAC Address Paramameter",
+        name: "MAC Address Parameter",
         description: "The query string parameter used for the MAC Address",
         defaultValue: "client_mac",
         order: 0,
@@ -541,7 +541,7 @@ namespace RockWeb.Blocks.Security
             var recordTypeValue = DefinedValueCache.Get( GetAttributeValue( "NewPersonRecordType" ).AsGuid() ) ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() );
             var recordStatusValue = DefinedValueCache.Get( GetAttributeValue( "NewPersonRecordStatus" ).AsGuid() ) ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
             var connectionStatusValue = DefinedValueCache.Get( GetAttributeValue( "NewPersonConnectionStatus" ).AsGuid() ) ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() );
-            
+
             var person = new Person
             {
                 FirstName = tbFirstName.Text,

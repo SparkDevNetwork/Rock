@@ -6,7 +6,7 @@
     }
 
     .setter-toggle {
-        padding-top: 15px; 
+        padding-top: 15px;
         padding-bottom: 15px;
     }
 </style>
@@ -16,9 +16,9 @@
         <div class="setter js-setter">
             <div class="setter-content pull-left">
                 <div class="setter-state js-setter-state">
-                    <asp:Literal ID="lCurrentSelections" runat="server" /> 
+                    <asp:Literal ID="lCurrentSelections" runat="server" />
                 </div>
-            
+
                 <div class="setter-options js-setter-options" style="display: none;">
                     <!-- campus picker -->
                     <ul class="nav navbar-nav contextsetter contextsetter-campus">
@@ -26,7 +26,7 @@
 
                             <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
                                 <asp:Literal ID="lCurrentCampusSelection" runat="server" />
-                                <b class="ti ti-caret-down"></b>
+                                <b class="ti ti-caret-down-filled"></b>
                             </a>
 
                             <ul class="dropdown-menu">
@@ -47,7 +47,7 @@
 
                             <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
                                 <asp:Literal ID="lCurrentScheduleSelection" runat="server" />
-                                <b class="ti ti-caret-down"></b>
+                                <b class="ti ti-caret-down-filled"></b>
                             </a>
 
                             <ul class="dropdown-menu">

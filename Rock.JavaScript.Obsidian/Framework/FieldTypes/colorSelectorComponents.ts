@@ -16,7 +16,7 @@
 //
 import { computed, defineComponent, ref, watch } from "vue";
 import { ConfigurationValueKey } from "./colorSelectorField.types.partial";
-import { deserializeAllowMultiple, deserializeColors, deserializeValue, serializeValue } from "./colorSelectorField.utils.partial";
+import { deserializeColors, deserializeValue, serializeValue } from "./colorSelectorField.utils.partial";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import ColorSelector from "@Obsidian/Controls/colorSelector.obs";
 import ListItems from "@Obsidian/Controls/listItems.obs";
@@ -57,7 +57,6 @@ export const ConfigurationComponent = defineComponent({
 
         // Define the properties that will hold the current selections with current config values.
         const colors = ref<string>("[]");
-        const allowMultiple = ref<boolean>(false);
 
         //#endregion
 

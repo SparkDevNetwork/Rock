@@ -63,6 +63,7 @@ namespace RockWeb.Blocks.Steps
 
     #endregion Block Attributes
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.BlockTypeGuid( "8D78BC55-6E67-40AB-B453-994D69503838" )]
     public partial class StepEntry : RockBlock
     {
@@ -829,24 +830,43 @@ namespace RockWeb.Blocks.Steps
         {
             var page = GetAttributeValue( AttributeKey.SuccessPage );
             var parameters = new Dictionary<string, string>();
-            var stepTypeIdParam = PageParameter( ParameterKey.StepTypeId ).AsIntegerOrNull();
+            var stepTypeIdParam = PageParameter( ParameterKey.StepTypeId );
             var personIdParam = PageParameter( ParameterKey.PersonId ).AsIntegerOrNull();
             var personKey = PageParameter( ParameterKey.Person );
 
             // Going forward, we'd like to use page parameters with this new naming convention (Person),
             // but we still have to support the original convention (PersonId).
+            StepType stepType = null;
+
             if ( personKey.IsNotNullOrWhiteSpace() )
             {
                 parameters.Add( ParameterKey.Person, personKey );
             }
-            // Fall-back logic:
             else if ( personIdParam.HasValue )
             {
                 parameters.Add( ParameterKey.PersonId, personIdParam.Value.ToString() );
             }
-            else if ( stepTypeIdParam.HasValue )
+            else if ( stepTypeIdParam.IsNotNullOrWhiteSpace() )
             {
-                parameters.Add( ParameterKey.StepTypeId, stepTypeIdParam.Value.ToString() );
+                parameters.Add( ParameterKey.StepTypeId, stepTypeIdParam );
+            }
+            else
+            {
+                stepType = GetStepType();
+                if ( stepType != null )
+                {
+                    parameters.Add( ParameterKey.StepTypeId, stepType.IdKey );
+                }
+            }
+
+            if ( stepType == null )
+            {
+                stepType = GetStepType();
+            }
+            
+            if ( stepType != null )
+            {
+                parameters.Add( "ProgramId", stepType.StepProgramId.ToString() );
             }
 
             if ( page.IsNullOrWhiteSpace() )
@@ -871,13 +891,13 @@ namespace RockWeb.Blocks.Steps
         {
             if ( _step == null )
             {
-                var stepId = PageParameter( ParameterKey.StepId ).AsIntegerOrNull();
+                var stepId = PageParameter( ParameterKey.StepId );
 
-                if ( stepId.HasValue )
+                if ( stepId.IsNotNullOrWhiteSpace() )
                 {
                     var rockContext = GetRockContext();
                     var service = new StepService( rockContext );
-                    _step = service.Get( stepId.Value );
+                    _step = service.Get( stepId, !PageCache.Layout.Site.DisablePredictableIds );
                 }
 
                 if ( _step != null )
@@ -906,17 +926,22 @@ namespace RockWeb.Blocks.Steps
                 }
                 else
                 {
-                    var stepTypeId = GetAttributeValue( AttributeKey.StepType ).AsIntegerOrNull() ??
-                        PageParameter( ParameterKey.StepTypeId ).AsIntegerOrNull();
+                    var stepTypeId = GetAttributeValue( AttributeKey.StepType ).AsIntegerOrNull();
+                    var stepTypeKeyParam = PageParameter( ParameterKey.StepTypeId );
+
+                    var rockContext = GetRockContext();
+                    var service = new StepTypeService( rockContext );
 
                     if ( stepTypeId.HasValue )
                     {
-                        var rockContext = GetRockContext();
-                        var service = new StepTypeService( rockContext );
-
                         _stepType = service.Queryable()
                             .AsNoTracking()
                             .FirstOrDefault( st => st.Id == stepTypeId.Value && st.IsActive );
+                    }
+                    else if ( stepTypeKeyParam.IsNotNullOrWhiteSpace() )
+                    {
+                        var key = service.Get( stepTypeKeyParam, !PageCache.Layout.Site.DisablePredictableIds );
+                        _stepType = key != null && key.IsActive ? key : null;
                     }
                 }
             }

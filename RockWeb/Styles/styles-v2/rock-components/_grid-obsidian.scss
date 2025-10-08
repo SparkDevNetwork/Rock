@@ -17,75 +17,90 @@
 
 .grid-obsidian.grid-bordered {
     border: 1px solid var(--color-interface-soft);
-    border-radius: 4px;
+    border-radius: var(--rounded-medium);
 }
 
-.grid-heading {
+.grid-header {
     background: var(--color-interface-softest);
-    border-radius: 4px 4px 0 0;
+    border-radius: var(--rounded-medium) var(--rounded-medium) 0 0;
     z-index: 1;
 }
 
-.grid-obsidian.grid-sticky > .grid-heading {
+.grid-obsidian.grid-sticky > .grid-header {
     position: sticky;
     top: var(--sticky-element-offset);
 }
 
-.grid-obsidian.grid-sticky .sticky-column-header {
+.grid-obsidian .grid-content-container .grid-column-header-container.sticky-column-header {
     position: sticky;
-    top: calc(var(--sticky-element-offset) + 56px);
     z-index: 1;
+    background-color: var(--color-interface-softest);
 }
 
-.grid-obsidian > .grid-heading > .grid-title-heading {
+.grid-obsidian .grid-header-prepend {
+    border-bottom: 1px solid var(--color-interface-soft);
+
+    > * {
+        padding: var(--spacing-medium);
+    }
+}
+
+.grid-obsidian.grid-sticky .sticky-column-header {
+    position: sticky;
+    top: calc(var(--sticky-element-offset) + 57px);
+    z-index: 1;
+    background-color: var(--color-interface-softest);
+}
+
+.grid-obsidian > .grid-header > .grid-title-header {
     display: flex;
     flex-wrap: wrap;
     border-bottom: 1px solid var(--color-interface-soft);
     align-items: center;
-    font-size: 18px;
+    font-size: var(--font-size-h5);
 }
 
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-title {
+.grid-obsidian > .grid-header > .grid-title-header > .grid-title {
     flex-grow: 1;
     font-size: var(--font-size-h5);
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
     line-height: 1;
-    padding-left: 24px;
+    padding-left: var(--spacing-large);
 }
 
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-badges {
+.grid-obsidian > .grid-header > .grid-title-header > .grid-badges {
     height: 56px;
     display: flex;
     align-items: center;
 }
 
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions {
+.grid-obsidian > .grid-header > .grid-title-header > .grid-actions {
     background-color: initial;
     text-align: initial;
 }
 
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action {
+.grid-obsidian > .grid-header > .grid-title-header > .grid-actions .btn-grid-action {
     width: 56px;
     height: 56px;
     margin: 0;
     border-radius: 0;
 }
 
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action.active {
+.grid-obsidian > .grid-header > .grid-title-header > .grid-actions .btn-grid-action.active {
     background-color: var(--color-interface-soft);
     color: var(--color-interface-stronger);
 }
 
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action.btn-add {
+.grid-obsidian > .grid-header > .grid-title-header > .grid-actions .btn-grid-action.btn-add {
     color: var(--color-info-strong);
     font-size: 115%;
 }
 
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action.btn-add:hover {
+.grid-obsidian > .grid-header > .grid-title-header > .grid-actions .btn-grid-action.btn-add:hover {
     color: var(--color-info-strong);
 }
 
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action:hover {
+.grid-obsidian > .grid-header > .grid-title-header > .grid-actions .btn-grid-action:hover {
     background-color: var(--color-interface-soft);
 }
 
@@ -95,11 +110,11 @@
     margin-top: 0;
 }
 
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter {
+.grid-obsidian > .grid-header > .grid-title-header > .grid-quick-filter {
     display: flex;
 }
 
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search {
+.grid-obsidian > .grid-header > .grid-title-header > .grid-quick-filter > .grid-quick-filter-search {
     width: 0;
     overflow: hidden;
     transition: width 0.3s ease;
@@ -107,18 +122,26 @@
     align-items: stretch;
 }
 
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter.active > .grid-quick-filter-search {
+.grid-obsidian > .grid-header > .grid-title-header > .grid-quick-filter.active > .grid-quick-filter-search {
     width: 240px;
 }
 
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter.active > .btn-grid-action {
+.grid-obsidian > .grid-header > .grid-title-header > .grid-quick-filter.active > .grid-quick-filter-search > form {
+    width: 100%;
+}
+
+.grid-obsidian > .grid-header > .grid-title-header > .grid-quick-filter.active > .btn-grid-action {
     background-color: var(--color-interface-soft);
     color: var(--color-interface-stronger);
 }
 
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search > .control-wrapper {
+.grid-obsidian > .grid-header > .grid-title-header > .grid-quick-filter > .grid-quick-filter-search > .control-wrapper,
+.grid-obsidian > .grid-header > .grid-title-header > .grid-quick-filter > .grid-quick-filter-search > form > .control-wrapper,
+.grid-obsidian > .grid-header > .grid-title-header > .grid-quick-filter > .grid-quick-filter-search > form > .control-wrapper > div,
+.grid-obsidian > .grid-header > .grid-title-header > .grid-quick-filter > .grid-quick-filter-search > form > .control-wrapper > div > .form-control {
     width: 100%;
     height: 100%;
+    border-radius: 0;
 }
 
 .grid-quick-filter-search > .control-wrapper > div {
@@ -129,13 +152,13 @@
     align-items: center;
 }
 
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search > .control-wrapper .form-control {
+.grid-obsidian > .grid-header > .grid-title-header > .grid-quick-filter > .grid-quick-filter-search > .control-wrapper .form-control {
     height: 100%;
     width: 100%;
     border-radius: 0;
 }
 
-.grid-column-heading {
+.grid-column-header-row {
     display: flex;
     font-weight: 500;
     color: var(--color-interface-strong);
@@ -196,16 +219,16 @@
     border: 0;
     text-align: center;
     background-color: transparent;
-    margin-left: 4px;
+    margin-left: var(--spacing-tiny);
     width: 26px;
     height: 24px;
-    border-radius: 4px;
+    border-radius: var(--rounded-xsmall);
     color: var(--color-interface-medium);
     opacity: 0;
     transition: opacity 250ms, color 250ms;
 }
 
-.grid-column-heading:hover .btn-grid-column-filter {
+.grid-column-header-row:hover .btn-grid-column-filter {
     opacity: 0.5;
 }
 
@@ -242,8 +265,8 @@
     background-color: var(--color-interface-softest);
     border: 1px solid var(--color-interface-soft);
     border-radius: 0;
-    border-bottom-right-radius: 6px;
-    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: var(--rounded-small);
+    border-bottom-left-radius: var(--rounded-small);
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
     cursor: initial;
     font-weight: initial;
@@ -263,15 +286,15 @@
 .grid-filter-popup-container .grid-filter-popup > .actions {
     display: flex;
     border-top: 1px solid var(--color-interface-soft);
-    background-color: #fcfcfc;
-    padding: 8px;
-    gap: 8px;
+    background-color: var(--color-interface-softest);
+    padding: var(--spacing-xsmall);
+    gap: var(--spacing-xsmall);
 }
 
 .grid-filter-popup-container .grid-filter-popup .alert {
     border-top: 0;
     box-shadow: none;
-    padding: 8px;
+    padding: var(--spacing-xsmall);
 }
 
 .grid-row {
@@ -284,11 +307,11 @@
     cursor: pointer;
 }
 
-.grid-striped .grid-row.grid-row-even {
+.grid-striped .grid-row.grid-row-even .grid-cell {
     background-color: var(--color-interface-softer);
 }
 
-.grid-hover .grid-row:hover {
+.grid-hover .grid-row:hover .grid-cell {
     background-color: var(--color-info-soft);
 }
 
@@ -314,14 +337,25 @@
     flex-wrap: wrap;
 }
 
+.grid-cell > .label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.grid-cell > .label:empty {
+    display: none;
+}
+
 .grid-select-field {
     min-width: 60px;
 }
 
 .grid-obsidian .grid-select-field:first-child {
     align-items: center;
-    padding-right: calc(var(--table-cell-padding-x) / 2);
-    flex: 0 0 calc(var(--table-cell-padding-x) + 20px) !important;
+    justify-content: center;
+    padding: var(--spacing-medium) 0 var(--spacing-medium) var(--spacing-medium);
 }
 
 .grid-obsidian .grid-columncommand {
@@ -347,13 +381,13 @@
 .grid-footing {
     color: var(--color-interface-strongest);
     background-color: var(--color-interface-softest);
-    border-radius: 0 0 4px 4px;
+    border-radius: 0 0 var(--spacing-xsmall) var(--spacing-xsmall);
     overflow: hidden;
 }
 
 .grid-paging-footer {
     display: flex;
-    padding: 8px var(--table-cell-padding-x);
+    padding: var(--spacing-xsmall) var(--table-cell-padding-x);
     align-items: center;
 }
 
@@ -362,9 +396,9 @@
     display: flex;
     justify-content: start;
     align-items: center;
-    font-size: 14px;
+    font-size: var(--font-size-small);
     line-height: 16px;
-    gap: 8px;
+    gap: var(--spacing-xsmall);
 }
 
 .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-sizes .form-control {
@@ -388,8 +422,8 @@
     justify-content: center;
     border: 1px solid var(--color-interface-soft);
     background-color: transparent;
-    padding: 8px 12px;
-    font-size: 14px;
+    padding: var(--spacing-xsmall) var(--spacing-small);
+    font-size: var(--font-size-small);
     line-height: 16px;
     min-width: 2.75em;
 }
@@ -421,11 +455,17 @@
 
 .grid-obsidian .grid-cell .highlight-detail {
     color: var(--color-interface-medium);
-    font-size: 14px;
+    font-size: var(--font-size-small);
 }
 
 .grid-obsidian .grid-cell .highlight-title {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
+}
+
+.grid-obsidian .grid-cell-boolean,
+.grid-obsidian .grid-column-header-boolean {
+    text-align: center;
+    justify-content: center;
 }
 
 .grid-obsidian .grid-cell-number,
@@ -436,13 +476,65 @@
   justify-content: right;
 }
 
-@media (max-width: 767px) {
-    .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > .page-num {
-        display: none;
+.grid-obsidian {
+    .grid-row:has(.table-empty) {
+        border-bottom: 1px solid var(--color-interface-soft);
+        border-bottom-left-radius: var(--rounded-small);
+        border-bottom-right-radius: var(--rounded-small);
+
+        &:hover {
+            background-color: transparent;
+        }
+
+        .grid-row:has(.table-empty) .grid-cell {
+            border-bottom: none;
+            border-bottom-left-radius: var(--rounded-small);
+
+            &:hover {
+                background-color: transparent;
+            }
+        }
+
+        .grid-hover .grid-row:hover:has(.table-empty) .grid-cell {
+            background-color: transparent;
+        }
+        // If there is no footer content, round the bottom corners of the last row
+        &:has(.grid-footing:empty) .grid-row {
+            border-bottom-left-radius: var(--rounded-medium);
+            border-bottom-right-radius: var(--rounded-medium);
+
+            .grid-cell {
+                border-bottom: none;
+            }
+
+            .grid-cell:first-child,
+            .grid-cell:last-child {
+                border-bottom-left-radius: var(--rounded-medium);
+                border-bottom-right-radius: var(--rounded-medium);
+            }
+        }
+    }
+    // If there is a footer, but the last row is empty, don't round the bottom corners of the last row
+    &:has(.grid-footing) .grid-row:has(.table-empty) {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+
+        .grid-cell {
+            border-bottom: none;
+            &:hover {
+                background-color: transparent;
+            }
+        }
+    }
+
+    @media (max-width: 767px) {
+        .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > .page-num {
+            display: none;
+        }
     }
 }
 
-@media (max-width:992px) {
+@media (max-width:$screen-medium) {
     .grid-obsidian.grid-sticky .sticky-column-header {
         top: calc(var(--sticky-element-offset) + 114px);
     }

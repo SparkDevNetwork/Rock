@@ -34,6 +34,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo( "DynamicProxyGenAssembly2" )] // Used by Moq
 
 // Register friendly logging category names.
+[assembly: Rock.Logging.RockLoggingCategory( "Rock" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Jobs" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Bus" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Communication" )]

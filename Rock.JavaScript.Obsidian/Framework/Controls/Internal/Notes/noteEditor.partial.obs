@@ -79,7 +79,7 @@
 .note-editor .noteentry-control :deep(.note-text),
 .note-editor .noteentry-control :deep(.note-text:focus) {
     border: none;
-    border-bottom: 1px solid #d2d2d2;
+    border-bottom: 1px solid var(--color-interface-soft);
     box-shadow: none;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;

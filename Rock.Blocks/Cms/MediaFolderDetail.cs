@@ -23,6 +23,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Media;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
@@ -206,6 +207,7 @@ namespace Rock.Blocks.Cms
                 MediaAccount = entity.MediaAccount.ToListItemBag(),
                 Description = entity.Description,
                 IsContentChannelSyncEnabled = entity.IsContentChannelSyncEnabled,
+                IsAllowsManualEntry = DoesMediaAccountComponentAllowManualEntry( entity ),
                 IsPublic = entity.IsPublic,
                 ContentChannelItemAttributes = entity.MediaElements.ToListItemBagList(),
                 Name = entity.Name,
@@ -479,6 +481,32 @@ namespace Rock.Blocks.Cms
                     AdditionalParameters = additionalParameters
                 };
             }
+        }
+
+        /// <summary>
+        /// Determines whether manual entry is allowed for the media account component associated with the given media folder.
+        /// </summary>
+        /// <param name="mediaFolder">The media folder containing the media account information.</param>
+        /// <returns>
+        ///   <c>true</c> if the associated media account component allows manual entry or if no component is found; otherwise, <c>false</c>.
+        /// </returns>
+        private bool DoesMediaAccountComponentAllowManualEntry( MediaFolder mediaFolder )
+        {
+            var componentEntityTypeId = mediaFolder != null && mediaFolder.MediaAccount != null
+                ? mediaFolder.MediaAccount.ComponentEntityTypeId
+                : ( int? ) null;
+
+            if ( componentEntityTypeId.HasValue )
+            {
+                var componentEntityType = EntityTypeCache.Get( componentEntityTypeId.Value );
+                if ( componentEntityType != null )
+                {
+                    var mediaAccountComponent = MediaAccountContainer.GetComponent( componentEntityType.Name );
+                    return mediaAccountComponent.AllowsManualEntry;
+                }
+            }
+
+            return true;
         }
 
         #endregion

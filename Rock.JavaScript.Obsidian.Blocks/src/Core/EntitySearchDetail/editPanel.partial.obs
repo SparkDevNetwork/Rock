@@ -68,7 +68,7 @@
             </div>
         </div>
 
-        <div class="d-flex justify-content-end">
+        <div class="d-flex justify-content-end mb-2">
             <a href="https://community.rockrms.com/developer/dynamic-linq-syntax" target="_blank"><small>Syntax Guide</small></a>
         </div>
 

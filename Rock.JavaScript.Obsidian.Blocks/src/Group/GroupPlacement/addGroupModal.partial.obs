@@ -29,7 +29,7 @@
                     <TextBox v-model="groupName" label="Name" rules="required" />
                 </div>
                 <div class="col-md-6">
-                    <CampusPicker v-model="groupCampus" label="Campus" />
+                    <CampusPicker v-model="groupCampus" label="Campus" showBlankItem />
                 </div>
             </div>
             <div class="row">

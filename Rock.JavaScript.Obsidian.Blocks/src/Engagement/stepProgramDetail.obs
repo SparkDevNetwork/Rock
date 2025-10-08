@@ -1,143 +1,91 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
+    <ContextSlicer title="Filter By Campus"
+                   class="campus-slicer"
+                   showCampus
+                   v-if="panelMode === DetailPanelMode.View" />
+
     <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
     <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
-    <RockForm v-if="!blockError" v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
-        <Panel type="block" :title="panelName" :headerSecondaryActions="blockLabels">
-            <template #headerActions>
-                <span v-if="categoryName" class="label label-info mr-1">{{ categoryName }}</span>
-                <span v-if="!stepProgramViewBag?.isActive" class="label label-danger">Inactive</span>
-            </template>
-            <template #default>
-                <ViewPanel v-if="panelMode == DetailPanelMode.View"
-                           :modelValue="stepProgramViewBag"
-                           :options="options" />
-                <EditPanel v-if="panelMode === DetailPanelMode.Add || panelMode === DetailPanelMode.Edit"
-                           v-model="stepProgramEditBag"
-                           :isEditable="isEditable"
-                           :options="options"
-                           :onPropertyChanged="onPropertyChanged" />
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :labels="blockLabels"
+                 :entityKey="entityKey"
+                 :entityTypeGuid="EntityType.StepProgram"
+                 entityTypeName="StepProgram"
+                 :isAuditHidden="false"
+                 :isBadgesVisible="true"
+                 :isDeleteVisible="isDeletable"
+                 :isEditVisible="isEditable"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="isSecurityHidden"
+                 :isFullScreenVisible="false"
+                 additionalDeleteMessage="All associated Step Types and Step Participants will also be deleted!"
+                 @cancelEdit="onCancelEdit"
+                 @delete="onDelete"
+                 @edit="onEdit"
+                 @save="onSave">
+        <template #view>
+            <ViewPanel :modelValue="stepProgramViewBag" :options="options" />
+        </template>
 
-                <Modal v-model="showAuditDetailsModal" title="Audit Details">
-                    <AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
-                </Modal>
-            </template>
-            <template #footerActions>
-                <div v-if="panelMode === DetailPanelMode.Edit || panelMode === DetailPanelMode.Add">
-                    <RockButton v-if="isEditable"
-                                :btnSize="BtnSize.Default"
-                                :btnType="BtnType.Primary"
-                                @click="onStartSubmitForm">
-                        Save
-                    </RockButton>
-                    <RockButton v-if="isEditable"
-                                :btnSize="BtnSize.Default"
-                                :btnType="BtnType.Link"
-                                @click="onCancelEdit">
-                        Cancel
-                    </RockButton>
-                </div>
-
-                <div v-if="panelMode === DetailPanelMode.View && isEditable">
-                    <RockButton :btnSize="BtnSize.Default"
-                                :btnType="BtnType.Primary"
-                                @click="onEdit">
-                        Edit
-                    </RockButton>
-                    <RockButton :btnSize="BtnSize.Default"
-                                :btnType="BtnType.Link"
-                                @click="onDelete">
-                        Delete
-                    </RockButton>
-                </div>
-            </template>
-            <template #footerSecondaryActions>
-                <RockButton v-if="panelMode === DetailPanelMode.View"
-                            :btnSize="BtnSize.Small"
-                            :btnType="BtnType.Default"
-                            @click="onStepFlowClick">
-                    <i class="ti ti-chart-dots-3"></i> Step Flow
-                </RockButton>
-                <RockButton v-if="panelMode === DetailPanelMode.View && stepProgramViewBag?.canAdministrate"
-                            :btnSize="BtnSize.Small"
-                            :btnType="BtnType.Default"
-                            @click="onSecurityClick">
-                    <i class="ti ti-lock"></i>
-                </RockButton>
-            </template>
-        </Panel>
-    </RockForm>
+        <template #edit>
+            <EditPanel v-model="stepProgramEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
+        </template>
+    </DetailBlock>
 </template>
 
+<style scoped>
+.campus-slicer {
+    margin-bottom: var(--spacing-large);
+}
+</style>
+
 <script setup lang="ts">
-    import { computed, ref, watch } from "vue";
+    import { computed, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Panel from "@Obsidian/Controls/panel.obs";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./StepProgramDetail/editPanel.partial.obs";
     import ViewPanel from "./StepProgramDetail/viewPanel.partial.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
-    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
-    import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
-    import Modal from "@Obsidian/Controls/modal.obs";
-    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import ContextSlicer from "@Obsidian/Controls/contextSlicer.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock, useEntityDetailBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./StepProgramDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { StepProgramBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/stepProgramBag";
     import { StepProgramDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/stepProgramDetailOptionsBag";
-    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
-    import { confirmDelete, showSecurity } from "@Obsidian/Utility/dialogs";
-    import { Guid } from "@Obsidian/Types";
-    import { useStore } from "@Obsidian/PageState";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
-    const store = useStore();
-
     // #region Values
 
     const blockError = ref("");
     const errorMessage = ref("");
 
     const stepProgramViewBag = ref(config.entity);
-    const stepProgramEditBag = ref<StepProgramBag>({} as StepProgramBag);
-    const submitForm = ref(false);
-    const resetKey = ref("");
-    const showAuditDetailsModal = ref(false);
-    const entityTypeGuid: Guid = EntityType.StepProgram;
+    const stepProgramEditBag = ref<ValidPropertiesBox<StepProgramBag>>({
+        bag: {} as StepProgramBag
+    });
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "category",
-        "description",
-        "iconCssClass",
-        "isActive",
-        "name",
-        "defaultListView",
-        "statuses",
-        "workflowTriggers"
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(stepProgramEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: stepProgramEditBag
+    });
 
     // #endregion
 
     // #region Computed Values
 
-    const categoryName = computed((): string => {
-        return stepProgramViewBag.value?.category?.text ?? "";
+    const isSecurityHidden = computed((): boolean => {
+        return stepProgramViewBag.value?.canAdministrate !== true;
     });
 
     /**
@@ -158,21 +106,36 @@
      * Additional labels to display in the block panel.
      */
     const blockLabels = computed((): PanelAction[] | undefined => {
-        const actions: PanelAction[] = [];
+        const labels: PanelAction[] = [];
 
-        if (stepProgramViewBag?.value?.idKey) {
-            actions.push({
-                type: "default",
-                title: "Audit Details",
-                handler: onAuditClick
+        if (panelMode.value !== DetailPanelMode.View) {
+            return undefined;
+        }
+
+        if (stepProgramViewBag.value?.isActive === true) {
+            labels.push({
+                iconCssClass: "ti ti-bulb-filled",
+                title: "Active",
+                type: "success"
+            });
+        }
+        else {
+            labels.push({
+                iconCssClass: "ti ti-bulb",
+                title: "Inactive",
+                type: "danger"
             });
         }
 
-        return actions;
+        return labels;
     });
 
     const isEditable = computed((): boolean => {
         return config.isEditable === true;
+    });
+
+    const isDeletable = computed((): boolean => {
+        return stepProgramViewBag.value?.isDeletable ?? false;
     });
 
     const options = computed((): StepProgramDetailOptionsBag => {
@@ -183,31 +146,22 @@
 
     // #region Event Handlers
 
-    const onAuditClick = (): void => {
-        showAuditDetailsModal.value = true;
-    };
-
-    const onSecurityClick = (): void => {
-        if (stepProgramViewBag.value?.idKey) {
-            showSecurity(entityTypeGuid, stepProgramViewBag.value.idKey, "Step Program");
-        }
-    };
-
     /**
      * Event handler for the Cancel button being clicked while in Edit mode.
      * Handles redirect to parent page if creating a new entity.
      *
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
-    async function onCancelEdit(): Promise<void> {
-        if (!stepProgramEditBag.value?.idKey) {
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (!stepProgramEditBag.value.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-                window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.ParentPage]);
+                return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
+
+            return false;
         }
-        else {
-            panelMode.value = DetailPanelMode.View;
-        }
+
+        return true;
     }
 
     /**
@@ -216,22 +170,20 @@
      *
      * @returns false if it should stay on the page; or a string containing a redirect URL.
      */
-    async function onDelete(): Promise<void> {
+    async function onDelete(): Promise<false | string> {
         errorMessage.value = "";
-
-        if (!await confirmDelete("Step Program", "All associated Step Types and Step Participants will also be deleted!")) {
-            return;
-        }
 
         const result = await invokeBlockAction<string>("Delete", {
             key: stepProgramViewBag.value?.idKey
         });
 
         if (result.isSuccess && result.data) {
-            window.location.href = makeUrlRedirectSafe(result.data);
+            return result.data;
         }
         else {
             errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete step program.";
+
+            return false;
         }
     }
 
@@ -241,32 +193,22 @@
      *
      * @returns true if the panel should enter edit mode; otherwise false.
      */
-    async function onEdit(): Promise<void> {
-        const result = await invokeBlockAction<DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag>>("Edit", {
+    async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<ValidPropertiesBox<StepProgramBag>>("Edit", {
             key: stepProgramViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            stepProgramEditBag.value = result.data.entity;
-            panelMode.value = DetailPanelMode.Edit;
-        }
-    }
+        if (result.isSuccess && result.data && result.data.bag) {
+            stepProgramEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
 
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
+            return true;
         }
-
-        refreshAttributesDebounce();
+        else {
+            return false;
+        }
     }
 
     /**
@@ -275,48 +217,30 @@
      *
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
-    async function onSave(): Promise<void> {
+    async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag> = {
-            entity: stepProgramEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<StepProgramBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<StepProgramBag> | string>("Save", {
+            box: stepProgramEditBag.value
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                stepProgramViewBag.value = result.data;
-                panelMode.value = DetailPanelMode.View;
+                stepProgramViewBag.value = result.data.bag;
+
+                return true;
             }
             else if (result.statusCode === 201 && typeof result.data === "string") {
-                window.location.href = makeUrlRedirectSafe(result.data);
+                return result.data;
             }
         }
-        else {
 
-            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save step program.";
-        }
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save step program.";
 
+        return false;
     }
 
-    const onStartSubmitForm = (): void => {
-        submitForm.value = true;
-    };
-
-    const onStepFlowClick = (): void => {
-        if (stepProgramViewBag.value?.stepFlowPageUrl) {
-            window.location.href = makeUrlRedirectSafe(stepProgramViewBag.value?.stepFlowPageUrl);
-        }
-    };
-
     // #endregion
-
-    provideSecurityGrant(securityGrant);
 
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
@@ -326,23 +250,11 @@
         blockError.value = "The specified step program could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        stepProgramEditBag.value = config.entity;
+        stepProgramEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 
     // #region Watchers
-
-    // This is a workaround to ensure the "Secondary Blocks" (ISecondaryBlocks) are shown when the panel is in view mode and not in edit mode.
-    // We will want to remove this once we have a better solution for showing/hiding secondary block.
-    // See: https://app.asana.com/1/20866866924293/project/1198840255983422/task/1205960087046095?focus=true
-    watch(panelMode, () => {
-        if (panelMode.value === DetailPanelMode.View) {
-            store.setAreSecondaryBlocksShown(true);
-        }
-        else {
-            store.setAreSecondaryBlocksShown(false);
-        }
-    }, { immediate: true });
 
     // #endregion
 

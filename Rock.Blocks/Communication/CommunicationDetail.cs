@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 
 using Rock.Attribute;
 using Rock.Constants;
@@ -28,6 +29,7 @@ using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.Security.SecurityGrantRules;
+using Rock.Tasks;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Communication.CommunicationDetail;
 using Rock.ViewModels.Controls;
@@ -44,6 +46,7 @@ namespace Rock.Blocks.Communication
     /// <summary>
     /// Used for displaying details of an existing communication that has already been created.
     /// </summary>
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Communication Detail" )]
     [Category( "Communication" )]
@@ -651,12 +654,30 @@ namespace Rock.Blocks.Communication
 
                 RockContext.SaveChanges();
 
-                outcomeMessage = $"The {CommunicationFriendlyName} has been approved.";
+                var outcomeMessageSb = new StringBuilder( $"The {CommunicationFriendlyName} has been approved" );
+
+                if ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value <= RockDateTime.Now )
+                {
+                    // Go ahead and send the communication.
+                    var processSendCommunicationMsg = new ProcessSendCommunication.Message
+                    {
+                        CommunicationId = communication.Id,
+                    };
+
+                    processSendCommunicationMsg.Send();
+
+                    outcomeMessageSb.Append( " and queued for sending" );
+                }
+
+                outcomeMessage = $"{outcomeMessageSb}.";
             }
             else
             {
                 outcomeMessage = $"This {CommunicationFriendlyName} is already {communication.Status.ConvertToString()}.";
             }
+
+            // Immediately disable all actions since we plan to redirect.
+            var permissions = new CommunicationDetailPermissionsBag();
 
             // Redirect back to the same page so we can refresh all of the communication details.
             var pageParams = GetPageParamsForReload( communication.Id );
@@ -665,6 +686,7 @@ namespace Rock.Blocks.Communication
                 new CommunicationActionResponseBag
                 {
                     OutcomeMessage = outcomeMessage,
+                    Permissions = permissions,
                     RedirectUrl = this.GetCurrentPageUrl( pageParams )
                 }
             );
@@ -705,6 +727,9 @@ namespace Rock.Blocks.Communication
                 outcomeMessage = $"This {CommunicationFriendlyName} is already {communication.Status.ConvertToString()}.";
             }
 
+            // Immediately disable all actions since we plan to redirect.
+            var permissions = new CommunicationDetailPermissionsBag();
+
             // Redirect back to the same page so we can refresh all of the communication details.
             var pageParams = GetPageParamsForReload( communication.Id );
             pageParams.Remove( PageParameterKey.Tab );
@@ -713,6 +738,7 @@ namespace Rock.Blocks.Communication
                 new CommunicationActionResponseBag
                 {
                     OutcomeMessage = outcomeMessage,
+                    Permissions = permissions,
                     RedirectUrl = this.GetCurrentPageUrl( pageParams )
                 }
             );
@@ -740,8 +766,13 @@ namespace Rock.Blocks.Communication
             string outcomeMessage = null;
             string redirectUrl = null;
 
+            CommunicationDetailPermissionsBag permissions;
+
             if ( communication.Status == CommunicationStatus.PendingApproval )
             {
+                // Immediately disable all actions since we plan to redirect.
+                permissions = new CommunicationDetailPermissionsBag();
+
                 // Redirect back to the same page with the Edit parameter.
                 var pageParams = GetPageParamsForReload( communication.Id );
                 pageParams.AddOrReplace( PageParameterKey.Edit, "true" );
@@ -751,6 +782,9 @@ namespace Rock.Blocks.Communication
             }
             else
             {
+                // Refresh permissions in case something has changed.
+                permissions = GetPermissions( communication );
+
                 outcomeMessage = $"Sorry, this {CommunicationFriendlyName} is not able to be edited.";
             }
 
@@ -758,6 +792,7 @@ namespace Rock.Blocks.Communication
                 new CommunicationActionResponseBag
                 {
                     OutcomeMessage = outcomeMessage,
+                    Permissions = permissions,
                     RedirectUrl = redirectUrl
                 }
             );
@@ -836,6 +871,9 @@ namespace Rock.Blocks.Communication
                 outcomeMessage = $"This {CommunicationFriendlyName} has already been cancelled.";
             }
 
+            // Immediately disable all actions since we plan to redirect.
+            var permissions = new CommunicationDetailPermissionsBag();
+
             // Redirect back to the same page so we can refresh all of the communication details.
             var pageParams = GetPageParamsForReload( communication.Id );
 
@@ -848,6 +886,7 @@ namespace Rock.Blocks.Communication
                 new CommunicationActionResponseBag
                 {
                     OutcomeMessage = outcomeMessage,
+                    Permissions = permissions,
                     RedirectUrl = this.GetCurrentPageUrl( pageParams )
                 }
             );
@@ -884,6 +923,9 @@ namespace Rock.Blocks.Communication
                 return ActionInternalServerError( $"Unable to duplicate the {CommunicationFriendlyName}." );
             }
 
+            // Immediately disable all actions since we plan to redirect.
+            var permissions = new CommunicationDetailPermissionsBag();
+
             // Redirect to the new communication.
             var pageParams = GetPageParamsForReload( newCommunicationId.Value );
             pageParams.Remove( PageParameterKey.Tab );
@@ -891,6 +933,7 @@ namespace Rock.Blocks.Communication
             return ActionOk(
                 new CommunicationRedirectBag
                 {
+                    Permissions = permissions,
                     CommunicationUrl = this.GetCurrentPageUrl( pageParams )
                 }
             );
@@ -1093,10 +1136,10 @@ namespace Rock.Blocks.Communication
                         .Select( f => f.CommunicationFlowInstance.CommunicationFlow.Name )
                         .FirstOrDefault(),
 
-                    CreatedByPersonNickName = c.CreatedByPersonAlias != null ? c.CreatedByPersonAlias.Person.NickName : string.Empty,
-                    CreatedByPersonLastName = c.CreatedByPersonAlias != null ? c.CreatedByPersonAlias.Person.LastName : string.Empty,
-                    CreatedByPersonSuffixValueId = c.CreatedByPersonAlias != null ? c.CreatedByPersonAlias.Person.SuffixValueId : null,
-                    CreatedByPersonRecordTypeValueId = c.CreatedByPersonAlias != null ? c.CreatedByPersonAlias.Person.RecordTypeValueId : null,
+                    SenderPersonNickName = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person.NickName : string.Empty,
+                    SenderPersonLastName = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person.LastName : string.Empty,
+                    SenderPersonSuffixValueId = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person.SuffixValueId : null,
+                    SenderPersonRecordTypeValueId = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person.RecordTypeValueId : null,
 
                     ReviewerPersonNickName = c.ReviewerPersonAlias != null ? c.ReviewerPersonAlias.Person.NickName : string.Empty,
                     ReviewerPersonLastName = c.ReviewerPersonAlias != null ? c.ReviewerPersonAlias.Person.LastName : string.Empty,
@@ -1175,10 +1218,10 @@ namespace Rock.Blocks.Communication
                     var communicationInfo = new CommunicationInfo
                     {
                         Communication = a.Communication,
-                        CreatedByPersonNickName = a.CreatedByPersonNickName,
-                        CreatedByPersonLastName = a.CreatedByPersonLastName,
-                        CreatedByPersonSuffixValueId = a.CreatedByPersonSuffixValueId,
-                        CreatedByPersonRecordTypeValueId = a.CreatedByPersonRecordTypeValueId,
+                        SenderPersonNickName = a.SenderPersonNickName,
+                        SenderPersonLastName = a.SenderPersonLastName,
+                        SenderPersonSuffixValueId = a.SenderPersonSuffixValueId,
+                        SenderPersonRecordTypeValueId = a.SenderPersonRecordTypeValueId,
                         ReviewerPersonNickName = a.ReviewerPersonNickName,
                         ReviewerPersonLastName = a.ReviewerPersonLastName,
                         ReviewerPersonSuffixValueId = a.ReviewerPersonSuffixValueId,
@@ -2134,23 +2177,20 @@ namespace Rock.Blocks.Communication
         private List<CommunicationLinkAnalyticsBag> GetAllLinksAnalytics( int deliveredRecipientCount, GroupedInteractions groupedInteractions )
         {
             // The top performing link is the one that has the highest count of total clicks (EXCLUDING unsubscribe clicks).
-            // Start by grouping the interactions by URL and assigning the click counts & click-through rates.
-            var uniqueClicksCountByUrl = groupedInteractions.UniqueClicks
+            var topLinkTotalClicksCount = 0;
+            var allLinksAnalytics = groupedInteractions.AllClicks
                 .Where( c =>
                     c.InteractionData.IsNotNullOrWhiteSpace()
-                    && !c.InteractionData.Contains( "/Unsubscribe/" )
+                    && c.InteractionData.IndexOf( "/unsubscribe/", StringComparison.OrdinalIgnoreCase ) < 0
                 )
-                .GroupBy( c => c.InteractionData )
-                .ToDictionary( g => g.Key, g => g.Count() );
-
-            var topLinkTotalClicksCount = 0;
-
-            var allLinksAnalytics = groupedInteractions.AllClicks
-                .Where( c => uniqueClicksCountByUrl.ContainsKey( c.InteractionData ) )
-                .GroupBy( c => c.InteractionData )
+                .GroupBy( c => c.InteractionData, StringComparer.OrdinalIgnoreCase )
                 .Select( g =>
                 {
-                    var uniqueClicksCount = uniqueClicksCountByUrl[g.Key];
+                    if ( !groupedInteractions.UniqueClicksByLinkCount.TryGetValue( g.Key, out var uniqueClicksCount ) )
+                    {
+                        uniqueClicksCount = 0;
+                    }
+
                     var clickThroughRate = deliveredRecipientCount > 0
                         ? Math.Round( uniqueClicksCount / ( decimal ) deliveredRecipientCount * 100, 1, MidpointRounding.AwayFromZero )
                         : 0;
@@ -2204,11 +2244,11 @@ namespace Rock.Blocks.Communication
                 return null;
             }
 
-            var createdByPersonName = Person.FormatFullName(
-                communicationInfo.CreatedByPersonNickName,
-                communicationInfo.CreatedByPersonLastName,
-                communicationInfo.CreatedByPersonSuffixValueId,
-                communicationInfo.CreatedByPersonRecordTypeValueId
+            var sentByPersonName = Person.FormatFullName(
+                communicationInfo.SenderPersonNickName,
+                communicationInfo.SenderPersonLastName,
+                communicationInfo.SenderPersonSuffixValueId,
+                communicationInfo.SenderPersonRecordTypeValueId
             );
 
             var approvedByByPersonName = Person.FormatFullName(
@@ -2220,8 +2260,8 @@ namespace Rock.Blocks.Communication
 
             return new CommunicationMessagePreviewBag
             {
-                CreatedByPersonName = createdByPersonName,
-                CreatedDateTime = communication.CreatedDateTime,
+                SentByPersonName = sentByPersonName,
+                SendDateTime = communication.SendDateTime,
                 ApprovedByPersonName = approvedByByPersonName,
                 ApprovedDateTime = communication.ReviewedDateTime,
                 FromPersonName = communication.FromName,
@@ -2403,7 +2443,7 @@ namespace Rock.Blocks.Communication
                 },
                 new ListItemBag
                 {
-                    Text = "Is Deceased",
+                    Text = "Deceased",
                     Value = PersonPropertyName.IsDeceased
                 }
             };
@@ -2515,24 +2555,24 @@ namespace Rock.Blocks.Communication
             public Rock.Model.Communication Communication { get; set; }
 
             /// <summary>
-            /// Gets or sets the nickname of the person who created this communication.
+            /// Gets or sets the nickname of the person who sent this communication.
             /// </summary>
-            public string CreatedByPersonNickName { get; set; }
+            public string SenderPersonNickName { get; set; }
 
             /// <summary>
-            /// Gets or sets the last name of the person who created this communication.
+            /// Gets or sets the last name of the person who sent this communication.
             /// </summary>
-            public string CreatedByPersonLastName { get; set; }
+            public string SenderPersonLastName { get; set; }
 
             /// <summary>
-            /// Gets or sets the suffix <see cref="DefinedValue"/> identifier of the person who created this communication.
+            /// Gets or sets the suffix <see cref="DefinedValue"/> identifier of the person who sent this communication.
             /// </summary>
-            public int? CreatedByPersonSuffixValueId { get; set; }
+            public int? SenderPersonSuffixValueId { get; set; }
 
             /// <summary>
-            /// Gets or sets the record type <see cref="DefinedValue"/> identifier of the person who created this communication.
+            /// Gets or sets the record type <see cref="DefinedValue"/> identifier of the person who sent this communication.
             /// </summary>
-            public int? CreatedByPersonRecordTypeValueId { get; set; }
+            public int? SenderPersonRecordTypeValueId { get; set; }
 
             /// <summary>
             /// Gets or sets the nickname of the person who reviewed this communication.
@@ -2710,56 +2750,78 @@ namespace Rock.Blocks.Communication
         private class GroupedInteractions
         {
             /// <summary>
-            /// Gets or sets the complete list of <see cref="InteractionInfo"/>s that represent "Opened" interactions.
+            /// Gets the complete list of <see cref="InteractionInfo"/>s that represent "Opened" interactions.
             /// </summary>
-            public List<InteractionInfo> AllOpens { get; private set; }
+            public List<InteractionInfo> AllOpens { get; }
 
             /// <summary>
-            /// Gets or sets the complete list of <see cref="InteractionInfo"/>s that represent "Opened" interactions,
+            /// Gets the complete list of <see cref="InteractionInfo"/>s that represent "Opened" interactions,
             /// grouped by <see cref="CommunicationRecipient"/> identifier.
             /// </summary>
-            public Dictionary<int, List<InteractionInfo>> AllOpensByRecipientId { get; private set; }
+            public Dictionary<int, List<InteractionInfo>> AllOpensByRecipientId { get; }
 
             /// <summary>
-            /// Gets or sets the complete list of <see cref="InteractionInfo"/>s that represent "Click" interactions.
+            /// Gets the complete list of <see cref="InteractionInfo"/>s that represent "Click" interactions.
             /// </summary>
-            public List<InteractionInfo> AllClicks { get; private set; }
+            public List<InteractionInfo> AllClicks { get; }
 
             /// <summary>
-            /// Gets or sets the complete list of <see cref="InteractionInfo"/>s that represent "Click" interactions,
-            /// grouped by <see cref="CommunicationRecipient"/> identifier.
+            /// Gets the complete list of <see cref="InteractionInfo"/>s that represent "Click" interactions, grouped by
+            /// <see cref="CommunicationRecipient"/> identifier.
             /// </summary>
-            public Dictionary<int, List<InteractionInfo>> AllClicksByRecipientId { get; private set; }
+            public Dictionary<int, List<InteractionInfo>> AllClicksByRecipientId { get; }
 
             /// <summary>
-            /// Gets or sets the list of unique, first "Opened" <see cref="InteractionInfo"/>s (at most one per recipient).
+            /// Gets the list of unique, first "Opened" <see cref="InteractionInfo"/>s (at most one per recipient).
             /// </summary>
-            public List<InteractionInfo> UniqueOpens { get; private set; }
+            /// <remarks>
+            /// This represents each recipient's first "Opened" interaction; as in, the first time (of possibly many)
+            /// they opened the communication.
+            /// </remarks>
+            public List<InteractionInfo> UniqueOpens { get; }
 
             /// <summary>
-            /// Gets or sets the list of unique, first "Click" <see cref="InteractionInfo"/>s (at most one per recipient).
+            /// Gets the list of unique, first "Click" <see cref="InteractionInfo"/>s (at most one per recipient).
             /// </summary>
-            public List<InteractionInfo> UniqueClicks { get; private set; }
+            /// <remarks>
+            /// This represents each recipient's first click interaction; as in, the first link they chose to click on
+            /// after opening the communication.
+            /// </remarks>
+            public List<InteractionInfo> UniqueClicks { get; }
+
+            /// <summary>
+            /// Gets the list of unique, first "Click" <see cref="InteractionInfo"/>s grouped by link (at most one per
+            /// recipient, per link).
+            /// </summary>
+            /// <remarks>
+            /// This represents each recipient's first click interaction PER link contained within the communication.
+            /// </remarks>
+            public Dictionary<string, List<InteractionInfo>> UniqueClicksByLink { get; }
 
             /// <summary>
             /// Gets the total count of "Opened" interactions.
             /// </summary>
-            public int TotalOpensCount => AllOpens.Count;
+            public int TotalOpensCount { get; }
 
             /// <summary>
             /// Gets the total count of "Click" interactions.
             /// </summary>
-            public int TotalClicksCount => AllClicks.Count;
+            public int TotalClicksCount { get; }
 
             /// <summary>
             /// Gets the count of recipients who had at least one "Opened" interaction.
             /// </summary>
-            public int UniqueOpensCount => UniqueOpens.Count;
+            public int UniqueOpensCount { get; }
 
             /// <summary>
             /// Gets the count of recipients who had at least one "Click" interaction.
             /// </summary>
-            public int UniqueClicksCount => UniqueClicks.Count;
+            public int UniqueClicksCount { get; }
+
+            /// <summary>
+            /// Gets the count of recipients who had at least one "Click" interaction PER link.
+            /// </summary>
+            public Dictionary<string, int> UniqueClicksByLinkCount { get; }
 
             /// <summary>
             /// Initializes a new instance of the <see cref="GroupedInteractions"/> class.
@@ -2788,8 +2850,8 @@ namespace Rock.Blocks.Communication
                         g => g.OrderBy( i => i.InteractionDateTime ).First()    // The first "Click" interaction for this recipient.
                     );
 
-                var recipientIdsWithOpens = uniqueOpensByRecipient.Keys;
-                var recipientIdsWithClicks = uniqueClicksByRecipient.Keys;
+                var recipientIdsWithOpens = uniqueOpensByRecipient.Keys.ToHashSet();
+                var recipientIdsWithClicks = uniqueClicksByRecipient.Keys.ToHashSet();
 
                 // When grouping by opens, include unique click interactions whose recipient does NOT have a corresponding
                 // open interaction. This is to capture the scenario where an email is viewed without loading the image
@@ -2806,6 +2868,8 @@ namespace Rock.Blocks.Communication
                     .OrderBy( i => i.InteractionDateTime )
                     .ToList();
 
+                TotalOpensCount = AllOpens.Count;
+
                 AllOpensByRecipientId = AllOpens
                     .GroupBy( i => i.CommunicationRecipientId.Value )
                     .ToDictionary(
@@ -2817,6 +2881,8 @@ namespace Rock.Blocks.Communication
                     .OrderBy( i => i.InteractionDateTime )
                     .ToList();
 
+                TotalClicksCount = AllClicks.Count;
+
                 AllClicksByRecipientId = AllClicks
                     .GroupBy( i => i.CommunicationRecipientId.Value )
                     .ToDictionary(
@@ -2824,17 +2890,46 @@ namespace Rock.Blocks.Communication
                         g => g.OrderBy( i => i.InteractionDateTime ).ToList()
                     );
 
-                // Merge [and reorder] the inferred opens in with the unique actual opens.
+                // Merge [and reorder] the inferred opens in with the actual first opens.
                 UniqueOpens = uniqueOpensByRecipient
                     .Select( kvp => kvp.Value )
                     .Union( inferredOpens )
                     .OrderBy( i => i.InteractionDateTime )
                     .ToList();
 
+                UniqueOpensCount = UniqueOpens.Count;
+
                 UniqueClicks = uniqueClicksByRecipient
                     .Select( kvp => kvp.Value )
                     .OrderBy( i => i.InteractionDateTime )
                     .ToList();
+
+                UniqueClicksCount = UniqueClicks.Count;
+
+                UniqueClicksByLink = AllClicks
+                    .Where( i => i.InteractionData.IsNotNullOrWhiteSpace() )
+                    // Find each recipient's first click per link.
+                    .GroupBy( i => new
+                    {
+                        Link = i.InteractionData,
+                        RecipientId = i.CommunicationRecipientId.Value
+                    } )
+                    .Select( g => g.OrderBy( i => i.InteractionDateTime ).First() )
+                    // [Re]Group by link.
+                    .GroupBy( i => i.InteractionData, StringComparer.OrdinalIgnoreCase )
+                    // Return each link's first clicks, ordered by click date time.
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.OrderBy( i => i.InteractionDateTime ).ToList(),
+                        StringComparer.OrdinalIgnoreCase
+                    );
+
+                UniqueClicksByLinkCount = UniqueClicksByLink
+                    .ToDictionary(
+                        kvp => kvp.Key,
+                        kvp => kvp.Value.Count,
+                        StringComparer.OrdinalIgnoreCase
+                    );
             }
         }
 

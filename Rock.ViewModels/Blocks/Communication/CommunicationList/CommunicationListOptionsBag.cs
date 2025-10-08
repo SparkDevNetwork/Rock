@@ -15,6 +15,10 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Communication.CommunicationList
 {
     /// <summary>
@@ -23,9 +27,9 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationList
     public class CommunicationListOptionsBag
     {
         /// <summary>
-        /// Gets or sets whether to show the "created by" filter controls.
+        /// Gets or sets whether to show the "sent by" filter controls.
         /// </summary>
-        public bool ShowCreatedByFilter { get; set; }
+        public bool ShowSentByFilter { get; set; }
 
         /// <summary>
         /// Gets or sets whether an active email transport exists.
@@ -41,5 +45,11 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationList
         /// Gets or sets whether an active push transport exists.
         /// </summary>
         public bool HasActivePushTransport { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of communication topic defined value items - both active and inactive - that the
+        /// individual can filter by.
+        /// </summary>
+        public List<ListItemBag> TopicItems { get; set; }
     }
 }

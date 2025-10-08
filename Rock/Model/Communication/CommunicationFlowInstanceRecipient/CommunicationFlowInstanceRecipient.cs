@@ -58,6 +58,12 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public CommunicationFlowInstanceRecipientStatus Status { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the inactive reason for this Communication Flow Instance Recipient.
+        /// </summary>
+        [DataMember]
+        public CommunicationFlowInstanceRecipientInactiveReason? InactiveReason { get; set; }
 
         /// <summary>
         /// Gets or sets the identifier of the Communication Recipient that was unsubscribed.
@@ -67,12 +73,6 @@ namespace Rock.Model
         /// </remarks>
         [DataMember]
         public int? UnsubscribeCommunicationRecipientId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the unsubscribe scope for this Communication Flow Instance Recipient.
-        /// </summary>
-        [DataMember]
-        public CommunicationFlowInstanceRecipientUnsubscribeScope? UnsubscribeScope { get; set; }
 
         #endregion Entity Properties
 
@@ -99,6 +99,12 @@ namespace Rock.Model
         [DataMember]
         public virtual CommunicationRecipient UnsubscribeCommunicationRecipient { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the conversion goal was pre-met for this recipient when the instance was created.
+        /// </summary>
+        [DataMember]
+        public bool WasConversionGoalPreMet { get; set; }
+
         #endregion Navigation Properties
     }
 
@@ -114,7 +120,7 @@ namespace Rock.Model
         /// </summary>
         public CommunicationFlowInstanceRecipientConfiguration()
         {
-            this.HasRequired( c => c.CommunicationFlowInstance ).WithMany( i => i.CommunicationFlowInstanceRecipients ).HasForeignKey( c => c.CommunicationFlowInstanceId ).WillCascadeOnDelete( false );
+            this.HasRequired( c => c.CommunicationFlowInstance ).WithMany( i => i.CommunicationFlowInstanceRecipients ).HasForeignKey( c => c.CommunicationFlowInstanceId ).WillCascadeOnDelete( true );
             this.HasRequired( c => c.RecipientPersonAlias ).WithMany().HasForeignKey( c => c.RecipientPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.UnsubscribeCommunicationRecipient ).WithMany().HasForeignKey( c => c.UnsubscribeCommunicationRecipientId ).WillCascadeOnDelete( false );
         }

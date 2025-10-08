@@ -1,0 +1,908 @@
+<template>
+    <div class="chart-container" :style="`height: ${height}; width: ${width};`">
+        <Chart :data="chartData" :options="chartOptions" type="line" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import Chart from "./chart.obs";
+    import { LabelDateFormat, LegendAlign, LegendPosition, LineSeries, LineStyle, TooltipCallback } from "@Obsidian/Core/Controls/chart";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
+    import { Chart as ChartJs, ChartData, ChartOptions, Color, LegendItem, ScriptableContext, TooltipItem, TooltipLabelStyle } from "@Obsidian/Libs/chart";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
+
+    const defaultLegendIsHidden = false;
+    const defaultLegendPosition = LegendPosition.Bottom;
+    const defaultLegendAlign = LegendAlign.Center;
+
+    const props = defineProps({
+        /**
+         * The category axis label.
+         */
+        categoryLabel: {
+            type: String as PropType<string | undefined>
+        },
+
+        /**
+         * The maximum number of ticks to show on the category axis.
+         */
+        categoryMaxTickCount: {
+            type: Number as PropType<number | undefined>
+        },
+
+        /**
+         * Whether to show the category axis grid lines. Hidden by default.
+         */
+        categoryShowGridLines: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * The CSS style string to set the height of the line chart component.
+         * - Accepts any valid CSS height value (e.g., "400px", "50vh") or undefined.
+         * - Value defaults to "100%" if undefined.
+         */
+        height: {
+            type: String as PropType<string | undefined>,
+            default: "100%"
+        },
+
+        /**
+         * Whether the legend is hidden.
+         */
+        hideLegend: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * The format to use for the date labels.
+         *
+         * When set, `labels` is treated as an array of ISO date strings.
+         */
+        labelDateFormat: {
+            type: String as PropType<LabelDateFormat | undefined>
+        },
+
+        /**
+         * When supplying date strings, they MUST be in ISO format and you MUST set `labelDateFormat`.
+         */
+        labels: {
+            type: Array as PropType<string[]>,
+            required: true
+        },
+
+        /**
+         * The alignment of the legend in the chart.
+         */
+        legendAlign: {
+            type: Object as PropType<LegendAlign | null | undefined>
+        },
+
+        /**
+         * The position of the legend in the chart.
+         */
+        legendPosition: {
+            type: Object as PropType<LegendPosition | undefined>
+        },
+
+        /**
+         * Whether the chart has linear connections between data points.
+         *
+         * The per series property, `props.data[n].isLinear`, overrides this setting.
+         */
+        linear: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * The line style to use for the chart.
+         *
+         * The per series property, `props.data[n].lineStyle`, overrides this setting.
+         */
+        lineStyle: {
+            type: String as PropType<LineStyle | undefined>
+        },
+
+        /**
+         * The series data to display in the chart.
+         */
+        series: {
+            type: Array as PropType<LineSeries[]>,
+            required: true
+        },
+
+        /**
+         * Whether the chart has stacked lines.
+         */
+        stack: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * The title of the chart.
+         */
+        title: {
+            type: String as PropType<string | undefined>
+        },
+
+        /**
+         * The tooltip formatter function.
+         */
+        tooltip: {
+            type: Function as PropType<TooltipCallback | undefined>
+        },
+
+        /**
+         * The tooltip title formatter function.
+         */
+        tooltipTitle: {
+            type: Function as PropType<TooltipCallback | undefined>
+        },
+
+        /**
+         * The type of data represented in the chart.
+         *
+         * For "percent", the data MUST be in decimal form (e.g., 0.1 for 10%).
+         */
+        type: {
+            type: String as PropType<"number" | "percent">,
+            default: "number"
+        },
+
+        /**
+         * Whether the chart has unfilled areas.
+         *
+         * The per series property, `props.data[n].isUnfilled`, overrides this setting.
+         */
+        unfilled: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * Whether to hide the value axis grid lines. Shown by default.
+         */
+        valueHideGridLines: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * The value axis label.
+         */
+        valueLabel: {
+            type: String as PropType<string | undefined>
+        },
+
+        /**
+         * The maximum number of ticks to show on the value axis.
+         */
+        valueMaxTickCount: {
+            type: Number as PropType<number | undefined>
+        },
+
+        /**
+         * The number of decimal places to display for values.
+         * Applies to both axis tick labels and tooltips.
+         */
+        valuePrecision: {
+            type: Number as PropType<number | undefined>
+        },
+
+        /**
+         * The minimum value to display in the value axis if there is nothing lower.
+         *
+         * This is useful for controlling the starting point of the value axis.
+         * The actual minimum value will be used if there is a lower value present.
+         */
+        valueSuggestedMin: {
+            type: Number as PropType<number | undefined>
+        },
+
+        /**
+         * The maximum value to display in the value axis if there is nothing higher.
+         *
+         * This is useful for controlling the ending point of the value axis.
+         * The actual maximum value will be used if there is a higher value present.
+         */
+        valueSuggestedMax: {
+            type: Number as PropType<number | undefined>
+        },
+
+        /**
+         * The number of ticks to show on the value axis.
+         *
+         * This overrides `valueMaxTickCount`.
+         */
+        valueTickCount: {
+            type: Number as PropType<number | undefined>
+        },
+
+        /**
+         * The CSS style string to set the width of the line chart component.
+         * - Accepts any valid CSS width value (e.g., "600px", "100%") or undefined.
+         * - Value defaults to "100%" if undefined.
+         */
+        width: {
+            type: String as PropType<string | undefined>,
+            default: "100%"
+        },
+    });
+
+    const dottedLineDotSize = 2;
+    const hoverPointRadius = 4.5;
+    const hoverPointBorderWidth = 2;
+    // Make the tooltip arrow point to the outside of the hovered point
+    // instead of the center of the point.
+    const tooltipArrowOffset = hoverPointRadius + hoverPointBorderWidth;
+
+    // #region Computed Values
+
+    const internalValueSuggestedMin = computed<number | undefined>(() => {
+        // Use the supplied valueSuggestedMin if present,
+        // otherwise default to 0.0 (0%) for percent charts (based on min value).
+        if (!isNullish(props.valueSuggestedMin)) {
+            return props.valueSuggestedMin;
+        }
+
+        if (props.type === "percent") {
+            const min = Enumerable.from(props.series)
+                .selectMany(s => s.data)
+                .min(d => d ?? 0);
+
+            if (!min || min > 0) {
+                // Min is nullish, 0, or greater than 0, so return 0.0 (0%).
+                return 0;
+            }
+
+            // Convert the decimal value, 0.11, to an integer percentage, 11.
+            const minInteger = Math.floor(min * 100);
+
+            // Get the next 10s digit.
+            const nextTens = Math.floor(minInteger / 10) * 10;
+
+            // Convert back to a decimal.
+            return nextTens / 100;
+        }
+    });
+
+    const internalValueSuggestedMax = computed<number | undefined>(() => {
+        // Use the supplied valueSuggestedMax if present,
+        // otherwise default to the next highest 10s digit for percent charts,
+        // (e.g., 0.7 for 70% if the highest value is 0.67).
+        if (!isNullish(props.valueSuggestedMax)) {
+            return clamp(props.valueSuggestedMax, 0);
+        }
+
+        if (props.type === "percent") {
+            const max = Enumerable.from(props.series)
+                .selectMany(s => s.data)
+                .max(d => d ?? 0);
+
+            if (!max) {
+                // Max is nullish or 0, so return 1.0 (100%).
+                return 1;
+            }
+
+            // Convert the decimal value, 0.11, to an integer percentage, 11.
+            const maxInteger = Math.ceil(max * 100);
+
+            // Get the next 10s digit.
+            const nextTens = Math.ceil(maxInteger / 10) * 10;
+
+            // Convert back to a decimal.
+            return nextTens / 100;
+        }
+    });
+
+    const internalLabelDateFormat = computed<"day" | "week" | "month" | "year" | undefined>(() => {
+        if (!props.labelDateFormat) {
+            // No label date format specified,
+            // so assume the labels are categorical, not date strings.
+            return;
+        }
+
+        if (props.labelDateFormat !== LabelDateFormat.Auto) {
+            return props.labelDateFormat;
+        }
+
+        // Use the date unit to determine the label format.
+        const uniqueRockDateTimes = Enumerable
+            .from(props.labels ?? [])
+            .select(label => RockDateTime.parseISO(label))
+            .ofType<RockDateTime>((rockDateTime): rockDateTime is RockDateTime => !isNullish(rockDateTime))
+            .select(rockDateTime => rockDateTime.date)
+            .distinctBy(rockDateTime => rockDateTime.toMilliseconds())
+            .toArray();
+
+        // If there are more than two years then use years.
+        const uniqueYears = Enumerable
+            .from(uniqueRockDateTimes)
+            .select(r => r.year)
+            .distinct()
+            .count();
+
+        if (uniqueYears > 2) {
+            return "year";
+        }
+
+        // If there are more than four unique year+month combinations then use months.
+        const uniqueYearAndMonths = Enumerable
+            .from(uniqueRockDateTimes)
+            .select(r => `${r.year}+${r.month}`)
+            .distinct()
+            .count();
+
+        if (uniqueYearAndMonths > 4) {
+            return "month";
+        }
+
+        // If there are between one and four unique year+month combinations then use weeks.
+        if (uniqueYearAndMonths >= 1) {
+            return "week";
+        }
+
+        return "day";
+    });
+
+    const internalLabels = computed<string[]>(() => {
+        if (!internalLabelDateFormat.value) {
+            // No date format specified, so return the original labels.
+            return props.labels;
+        }
+
+        // Map the original labels to their formatted date strings
+        // without timezone so luxon can parse them correctly.
+        return Enumerable
+            .from(props.labels)
+            .select(label => {
+                const rockDateTime = RockDateTime.parseISO(label);
+
+                if (!rockDateTime) {
+                    // label is not a valid ISO date string so return it without modification.
+                    console.warn(`Invalid ISO date string: ${label}`);
+                    return label;
+                }
+                else {
+                    return rockDateTime.toASPString("yyyy-MM-ddTHH:mm:ss");
+                }
+            })
+            .toArray();
+    });
+
+    const chartData = computed<ChartData<"line">>(() => {
+        return {
+            labels: internalLabels.value,
+            datasets: props.series.map((series, index) => {
+                const seriesColor = series.color ?? getCategoricalColor(index + 1);
+                const isUnfilled = series.isUnfilled ?? props.unfilled;
+                const isLinear = series.isLinear ?? props.linear;
+                const lineStyle = series.lineStyle ?? props.lineStyle;
+
+                return {
+                    label: series.label,
+                    data: series.data,
+
+                    // Line color.
+                    borderColor: seriesColor,
+
+                    // Fill with a gradient by default (only shown when fill is true).
+                    // For a stacked line chart, use a solid background color.
+                    fill: isUnfilled !== true,
+
+                    backgroundColor:
+                        props.stack ? seriesColor
+                            : isUnfilled !== true
+                                ? (ctx: ScriptableContext<"line">) => getGradientFillColor(ctx, seriesColor)
+                                : seriesColor,
+
+                    // Use dotted, dashed, or solid line styles.
+                    // For dotted, also set the border width to the same size as the dot to give a circular appearance.
+                    // For stacked, filled, solid lines, use thin lines.
+                    borderDash:
+                        lineStyle === LineStyle.Dotted ? [dottedLineDotSize, dottedLineDotSize]
+                            : lineStyle === LineStyle.Dashed ? [5, 3]
+                                : undefined,
+                    borderWidth:
+                        lineStyle === LineStyle.Dotted ? dottedLineDotSize
+                            : (props.stack && !isUnfilled && (!lineStyle || lineStyle === LineStyle.Solid)) ? 1
+                                : 3,
+
+                    // Make the line segments between points curved or straight.
+                    //tension: isLinear !== true ? 1 : 0,
+                    cubicInterpolationMode: !isLinear ? "monotone" : "default",
+
+                    // To make points visible only on hover,
+                    // set the colors to "transparent" and the hover colors to the series color.
+                    // This is the way as going the `options.elements.point.radius: 0` route
+                    // causes hovered points to be clipped when they are min or max values.
+                    pointBackgroundColor: Enumerable.from(series.data).where(d => typeof d === "number").count() > 1 ? "transparent" : seriesColor,
+                    pointBorderColor: Enumerable.from(series.data).where(d => typeof d === "number").count() > 1 ? "transparent" : seriesColor,
+                    pointHoverBackgroundColor: getCssVar("--color-interface-softest"),
+                    pointHoverBorderColor: seriesColor,
+                    pointHoverBorderWidth: hoverPointBorderWidth,
+                    pointHoverRadius: hoverPointRadius
+                };
+            })
+        };
+    });
+
+    const chartOptions = computed<ChartOptions<"line">>(() => {
+        return {
+            // Allow the chart to change size with the parent container.
+            responsive: true,
+            maintainAspectRatio: false,
+
+            // Make it easier to interact and hover over points by using the nearest point mode.
+            interaction: {
+                // `mode: "nearest"` finds the nearest point to the X and Y coordinates of the cursor.
+                // Use `mode: "index"` when using a stacked line chart so all points nearest to the X coordinate are selected.
+                mode: props.stack ? "index" : "nearest",
+                // `intersect: false` means hover will occur on the nearest point.
+                // `true` means hover will occur only when the cursor is directly over a point.
+                intersect: false
+            },
+
+            plugins: {
+                legend: {
+                    align: props.legendAlign ?? defaultLegendAlign,
+                    display: !((props.hideLegend ?? defaultLegendIsHidden) === true),
+
+                    labels: {
+                        font: {
+                            family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                            size: parseInt(getCssVar("--font-size-small")) || undefined,
+                            weight: getCssVar("--font-weight-semibold")
+                        },
+
+                        generateLabels: (chart) => {
+                            const data = chart.data;
+                            if (!data || !data.datasets) {
+                                return [];
+                            }
+
+                            return Enumerable
+                                .from(data.datasets)
+                                .withIndex()
+                                .select<LegendItem>(([dataset, index]) => {
+                                    return {
+                                        text: dataset.label ?? "",
+                                        pointStyle: "line",
+                                        strokeStyle: dataset.borderColor as Color,
+                                        hidden: !chart.isDatasetVisible(index),
+                                        datasetIndex: index,
+                                        lineWidth: 4, // Line thickness
+                                        fontColor: getCssVar("--color-interface-strong"),
+                                        lineCap: "round"
+                                    };
+                                })
+                                .toArray();
+                        },
+
+                        // `usePointStyle: true` removes the boxes next to each legend item
+                        // and uses "points" instead. Control the "point" shape inside the
+                        // `generateLabels` callback.
+                        usePointStyle: true
+                    },
+
+                    position: props.legendPosition ?? defaultLegendPosition
+                },
+
+                title: {
+                    color: getCssVar("--color-interface-strong"),
+                    display: !!props.title,
+
+                    font: {
+                        family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                        size: parseInt(getCssVar("--font-size-small")) || undefined,
+                        weight: getCssVar("--font-weight-semibold")
+                    },
+
+                    text: props.title ?? undefined
+                },
+
+                tooltip: {
+                    backgroundColor: getCssVar("--color-interface-softest"),
+
+                    bodyColor: getCssVar("--color-interface-stronger"),
+
+                    bodyFont: {
+                        family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                        size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
+                        weight: getCssVar("--font-weight-regular")
+                    },
+
+                    borderColor: getCssVar("--color-interface-soft"),
+                    borderWidth: 1,
+
+                    // Adjust the colored box sizing next to the tooltip text (color is defined in `callbacks.labelColor`).
+                    boxHeight: parseInt(getCssVar("--font-size-regular")) || undefined,
+                    boxPadding: parseInt(getCssVar("--spacing-tiny")) || undefined,
+                    boxWidth: parseInt(getCssVar("--font-size-regular")) || undefined,
+
+                    callbacks: {
+                        title: props.tooltipTitle
+                            ? (tooltipItems: TooltipItem<"line">[]) => {
+                                return Enumerable
+                                    .from(tooltipItems)
+                                    .select(tooltipItem => {
+                                        // There are 3 versions of the label.
+                                        // 1. The raw label (from prop.labels)
+                                        // 2. The formatted label (from the category axis; using the options.scales.x.ticks.callback formatter)
+                                        // 3. Unpredictable formatted label (from internal chart library formatting via `context.label`; unpredictable so don't use)
+                                        const rawLabel = props.labels[tooltipItem.dataIndex];
+
+                                        return props.tooltipTitle?.({
+                                            label: rawLabel,
+                                            formattedLabel: getFormattedLabel(tooltipItem.chart, tooltipItem.chart.data, tooltipItem.dataIndex) ?? rawLabel,
+                                            value: tooltipItem.raw as number | null,
+                                            formattedValue: getFormattedValue(tooltipItem.chart, tooltipItem.parsed.y, tooltipItem.dataIndex) ?? (tooltipItem.formattedValue || tooltipItem.parsed.y.toString()),
+                                            seriesLabel: tooltipItem.dataset.label ?? ""
+                                        });
+                                    })
+                                    .ofType((t): t is string => typeof t === "string")
+                                    .distinct()
+                                    .toArray();
+                            }
+                            : internalLabelDateFormat.value
+                                ? (tooltipItems: TooltipItem<"line">[]) => {
+                                    return Enumerable
+                                        .from(tooltipItems)
+                                        .select(tooltipItem => getFormattedLabel(tooltipItem.chart, tooltipItem.chart.data, tooltipItem.dataIndex))
+                                        .ofType((t): t is string => typeof t === "string")
+                                        .distinct()
+                                        .toArray();
+                                }
+                                : undefined,
+
+                        // Override the default tooltip using the following hierarchy:
+                        // 1. props.tooltip, use provided tooltip
+                        // 2. props.type === "percent", use percent-formatted tooltip
+                        // 3. use default
+                        label:
+                            // Use the provided tooltip callback if present.
+                            props.tooltip ? (context) => {
+                                // There are 3 versions of the label.
+                                // 1. The raw label (from prop.labels)
+                                // 2. The formatted label (from the category axis; using the options.scales.x.ticks.callback formatter)
+                                // 3. Unpredictable formatted label (from internal chart library formatting via `context.label`; unpredictable so don't use)
+                                const rawLabel = props.labels[context.dataIndex];
+
+                                return props.tooltip?.({
+                                    label: rawLabel,
+                                    formattedLabel: getFormattedLabel(context.chart, context.chart.data, context.dataIndex) ?? rawLabel,
+                                    value: context.raw as number | null,
+                                    formattedValue: getFormattedValue(context.chart, context.parsed.y, context.dataIndex) ?? (context.formattedValue || context.parsed.y.toString()),
+                                    seriesLabel: context.dataset.label ?? ""
+                                }) ?? "";
+                            }
+
+                                // Format as a percentage if the chart type is "percent".
+                                : props.type === "percent" ? (context) => {
+                                    let label = context.dataset.label ?? "";
+
+                                    if (label) {
+                                        label += ": ";
+                                    }
+
+                                    const y = context.parsed.y;
+                                    if (!isNullish(y)) {
+                                        const maximumFractionDigits = clamp(props.valuePrecision, 0, 20) ?? 2;
+                                        label += y.toLocaleString(
+                                            undefined,
+                                            { style: "percent", maximumFractionDigits }
+                                        );
+                                    }
+
+                                    return label;
+                                }
+
+                                    // Format as a number if the chart type is "number" and a precision is specified.
+                                    : props.type === "number" && !isNullish(props.valuePrecision) ? (context) => {
+                                        let label = context.dataset.label ?? "";
+
+                                        if (label) {
+                                            label += ": ";
+                                        }
+
+                                        const y = context.parsed.y;
+                                        if (!isNullish(y)) {
+                                            const maximumFractionDigits = clamp(props.valuePrecision, 0, 20) ?? 2;
+                                            label += y.toLocaleString(
+                                                undefined,
+                                                { maximumFractionDigits }
+                                            );
+                                        }
+
+                                        return label;
+                                    }
+
+                                        // Otherwise, use the default label.
+                                        : undefined,
+
+                        labelColor: (context): TooltipLabelStyle => {
+                            return {
+                                backgroundColor: context.dataset.borderColor as Color,
+                                borderColor: "transparent",
+                                borderWidth: 0
+                            };
+                        }
+                    },
+
+                    // Move the tooltip arrow outside the point so it doesn't cover the point.
+                    caretPadding: tooltipArrowOffset,
+
+                    cornerRadius: parseInt(getCssVar("--rounded-small")) || undefined,
+
+                    // Remove the little white box around the tooltip boxes.
+                    multiKeyBackground: "transparent",
+
+                    // Remove colored box preceding the value.
+                    //displayColors: false,
+
+                    padding: parseInt(getCssVar("--spacing-xsmall")) || undefined,
+
+                    titleColor: getCssVar("--color-interface-stronger"),
+
+                    titleFont: {
+                        family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                        size: parseInt(getCssVar("--font-size-small")) || undefined,
+                        weight: getCssVar("--font-weight-semibold")
+                    },
+                }
+            },
+
+            scales: {
+                x: {
+                    border: {
+                        color: getCssVar("--color-interface-soft")
+                    },
+
+                    grid: {
+                        color: getCssVar("--color-interface-soft"),
+                        // Hide category axis grid lines by default
+                        display: props.categoryShowGridLines === true
+                    },
+
+                    ticks: {
+                        autoSkip: true,
+                        autoSkipPadding: 10,
+                        color: getCssVar("--color-interface-strong"),
+
+                        font: {
+                            family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                            size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
+                            weight: getCssVar("--font-weight-regular")
+                        },
+
+                        maxRotation: 45,
+                        maxTicksLimit: clamp(props.categoryMaxTickCount, 0)
+                    },
+
+                    time: internalLabelDateFormat.value
+                        ? {
+                            unit: internalLabelDateFormat.value,
+                            minUnit: internalLabelDateFormat.value,
+
+                            displayFormats: {
+                                day: "M/d/yy",
+                                week: "MMM d, yyyy",
+                                month: "MMM yyyy",
+                                year: "yyyy"
+                            }
+                        }
+                        : undefined,
+
+                    title: {
+                        color: getCssVar("--color-interface-strong"),
+                        display: !!props.categoryLabel,
+
+                        font: {
+                            family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                            size: parseInt(getCssVar("--font-size-small")) || undefined,
+                            weight: getCssVar("--font-weight-semibold")
+                        },
+
+                        text: props.categoryLabel ?? undefined
+                    },
+
+                    type: internalLabelDateFormat.value ? "timeseries" : "category"
+                },
+
+                y: {
+                    beginAtZero: internalValueSuggestedMin.value === 0,
+
+                    border: {
+                        color: getCssVar("--color-interface-soft")
+                    },
+
+                    grid: {
+                        color: getCssVar("--color-interface-soft"),
+                        display: props.valueHideGridLines !== true
+                    },
+
+                    stacked: props.stack,
+
+                    // Use `suggestedMin` and `suggestedMax` instead of `min` and `max`
+                    // so points that are close to the edges are not cropped.
+                    // min: props.min ?? undefined,
+                    // max: props.max ?? undefined,
+                    suggestedMin: internalValueSuggestedMin.value ?? undefined,
+                    suggestedMax: internalValueSuggestedMax.value ?? undefined,
+
+                    ticks: {
+                        callback:
+                            // Format as a percentage if the chart type is "percent".
+                            props.type === "percent" ? (tickValue) => {
+                                if (typeof tickValue !== "number") {
+                                    tickValue = Number(tickValue);
+                                }
+
+                                if (isNaN(tickValue)) {
+                                    // If it's not a number, return the original value.
+                                    return `${tickValue}`;
+                                }
+                                else {
+                                    const maximumFractionDigits = clamp(props.valuePrecision, 0, 20) ?? 0;
+                                    return tickValue.toLocaleString(
+                                        undefined,
+                                        { style: "percent", maximumFractionDigits }
+                                    );
+                                }
+                            }
+
+                                // Format as a number if the chart type is "number" and a precision is specified.
+                                : props.type === "number" && !isNullish(props.valuePrecision)
+                                    ? (tickValue) => {
+                                        if (typeof tickValue !== "number") {
+                                            tickValue = Number(tickValue);
+                                        }
+
+                                        if (isNaN(tickValue)) {
+                                            // If it's not a number, return the original value.
+                                            return `${tickValue}`;
+                                        }
+                                        else {
+                                            return tickValue.toLocaleString(
+                                                undefined,
+                                                { maximumFractionDigits: clamp(props.valuePrecision, 0, 20) }
+                                            );
+                                        }
+                                    }
+
+                                    // Otherwise, use the default formatter.
+                                    : undefined,
+
+                        color: getCssVar("--color-interface-strong"),
+                        count: clamp(props.valueTickCount, 0),
+
+                        font: {
+                            family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                            size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
+                            weight: getCssVar("--font-weight-regular")
+                        },
+
+                        maxTicksLimit: clamp(props.valueMaxTickCount, 0),
+
+                        precision: clamp(props.valuePrecision, 0, 20) // The max precision is unknown but it seems to work as high as 20
+                    },
+
+                    title: {
+                        color: getCssVar("--color-interface-strong"),
+                        display: !!props.valueLabel,
+
+                        font: {
+                            family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                            size: parseInt(getCssVar("--font-size-small")) || undefined,
+                            weight: getCssVar("--font-weight-semibold")
+                        },
+
+                        text: props.valueLabel ?? undefined
+                    },
+                }
+            }
+        };
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    const fillColorCache = new Map<string, CanvasGradient>();
+
+    function getFillColorCacheKey(color: string, chartAreaTop: number, chartAreaBottom: number): string {
+        return `${color}-${chartAreaTop}-${chartAreaBottom}`;
+    }
+
+    function getGradientFillColor(ctx: ScriptableContext<"line">, color: string): CanvasGradient {
+        const top = ctx.chart.chartArea?.top ?? 0;
+        const bottom = ctx.chart.chartArea?.bottom ?? 0;
+        const cacheKey = getFillColorCacheKey(color, top, bottom);
+        if (fillColorCache.has(cacheKey)) {
+            return fillColorCache.get(cacheKey)!;
+        }
+
+        const rockColor = new RockColor(color);
+
+        const gradient = ctx.chart.ctx.createLinearGradient(0, top, 0, bottom);
+
+        rockColor.alpha = 0.5;
+        gradient.addColorStop(0, rockColor.toHex());
+
+        rockColor.alpha = 0;
+        gradient.addColorStop(1, rockColor.toHex());
+
+        fillColorCache.set(cacheKey, gradient);
+
+        return gradient;
+    }
+
+    const cssVarValueCache = new Map<string, string>();
+
+    function getCssVar(varName: string): string {
+        if (cssVarValueCache.has(varName)) {
+            return cssVarValueCache.get(varName)!;
+        }
+
+        const value = getCssVariableValue(varName);
+
+        if (value) {
+            // Only cache if there is a value.
+            cssVarValueCache.set(varName, value);
+        }
+
+        return value;
+    }
+
+    function getCategoricalColor(num: number): string {
+        // There are only 8 categorical colors so cycle through them.
+        num = num > 0 ? ((num - 1) % 8) + 1 : 1;
+        return getCssVar(`--color-categorical-${num}`);
+    }
+
+    /**
+     * Clamps a value between an inclusive minimum and maximum value.
+     * @param value The value to clamp.
+     * @param min The minimum value.
+     * @param max The maximum value.
+     * @returns The clamped value.
+     */
+    function clamp(value: number | undefined, min: number = Number.MIN_SAFE_INTEGER, max: number = Number.MAX_SAFE_INTEGER): number | undefined {
+        return isNullish(value) ? undefined : Math.min(Math.max(value, min), max);
+    }
+
+    function getFormattedLabel(chart: ChartJs, data: ChartData, labelIndex: number): string | undefined {
+        const time = chart.options.scales?.x?.["time"];
+
+        if (!time) {
+            return props.labels[labelIndex];
+        }
+
+        const unit = time.unit ?? "day";
+        const format = time.displayFormats[unit] ?? "MMM d, yyyy";
+
+        // If the ticks have `autoSkip: true`, the label may be undefined above.
+        // In that case, try to format the value manually using the date adapter.
+        const adapter = chart.scales.x?.["_adapter"];
+        const ms = adapter?.parse(data.labels?.[labelIndex]);
+        return adapter?.format(ms, format);
+    }
+
+    function getFormattedValue(chart: ChartJs, value: number, dataIndex: number): string | undefined {
+        // Simply use same formatter configured in our y scale callback.
+        const callback = chartOptions.value.scales?.y?.ticks?.callback;
+
+        if (!callback) {
+            return;
+        }
+
+        const scale = chart.scales.y;
+        const ticks = scale.ticks;
+
+        return callback.call(scale, value, dataIndex, ticks) as string | undefined;
+    }
+
+    // #endregion Functions
+</script>

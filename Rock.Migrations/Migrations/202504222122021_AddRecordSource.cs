@@ -312,10 +312,12 @@ namespace Rock.Migrations
                 guid: "A914A16B-CBF0-4906-81BF-E2602777ADEA"
             );
 
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddBlockTypeAttributeToCategoryIfNotAlreadyAdded(
                 blockTypeAttributeGuid: "A914A16B-CBF0-4906-81BF-E2602777ADEA",
                 categoryName: "Features"
             );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute(
                 blockTypeGuid: "2A71FDA2-5204-418F-858E-693A1F4E9A49", // Register (Mobile)
@@ -365,10 +367,12 @@ namespace Rock.Migrations
                 guid: "332F8C78-00B3-4D05-B545-53BD07A12591"
             );
 
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddBlockTypeAttributeToCategoryIfNotAlreadyAdded(
                 blockTypeAttributeGuid: "332F8C78-00B3-4D05-B545-53BD07A12591",
                 categoryName: "Person Options"
             );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute(
                 blockTypeGuid: "4CCC45A5-4AB9-4A36-BF8D-A6E316790004", // UtilityPaymentEntry (Legacy)

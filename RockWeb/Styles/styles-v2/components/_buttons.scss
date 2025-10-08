@@ -3,11 +3,11 @@
 
 
 // =============================================================
-// Table of Content           
-//  + Base Style         
-//  + Outline     
-//  + Alternate Style    
-//  + Button Size     
+// Table of Content
+//  + Base Style
+//  + Outline
+//  + Alternate Style
+//  + Button Size
 // =============================================================
 
 
@@ -15,6 +15,7 @@
 .btn {
   display:              inline-block;
   margin-bottom:        0; // For input.btn
+  align-content: center;
   font-weight:          var(--font-weight-medium);
   text-align:           center;
   white-space:          nowrap;
@@ -32,12 +33,12 @@
      -moz-user-select:  none;
       -ms-user-select:  none; // IE10+
           user-select:  none;
-  
+
 
   &:hover,
   &:focus,
   &.focus {
-    color:            var(--color-interface-medium);   
+    color:            var(--color-interface-medium);
     text-decoration:  none;
   }
 
@@ -198,7 +199,8 @@
   border-radius: 999px;
 }
 
-.btn-overflow {
+.btn-overflow,
+.dropdown > .btn-link.btn-overflow {
   color:    var(--color-interface-medium);
   &:hover,
   &:focus {
@@ -219,7 +221,7 @@
   color:            var(--color-interface-strong);
   background-color: var(--color-interface-softest);
   border-color:     var(--color-interface-soft);
- 
+
   &:focus,
   &.focus {
     color:            var(--color-interface-stronger);
@@ -238,7 +240,7 @@
     background-color: var(--color-interface-softer);
     border-color:     var(--color-interface-soft);
     background-image: none;
- 
+
     &:hover,
     &:focus,
     &.focus {
@@ -257,7 +259,7 @@
       border-color:       var(--color-interface-soft);
     }
   }
- 
+
   .badge {
     color:            var(--color-interface-softest);
     background-color: var(--color-interface-soft);
@@ -283,7 +285,7 @@
   }
   &:active,
   &.active,
-  .open > .dropdown-toggle & {    
+  .open > .dropdown-toggle & {
       color:            var(--base-interface-softest);
       background-color: var(--color-primary);         // TODO change when primary hover is available.
       border-color:     var(--color-interface-softest);
@@ -294,7 +296,7 @@
       &.focus {
         color:            var(--base-interface-softest);
         background-color: var(--color-primary-shade);
-        border-color:     var(--color-primary-shade); 
+        border-color:     var(--color-primary-shade);
       }
   }
 
@@ -310,7 +312,7 @@
   }
 
   .badge {
-      color:            var(--color-primary);
+      color:            var(--base-interface-softest);
       background-color: var(--color-primary);
   }
 
@@ -322,25 +324,25 @@
 }
 
 .btn.btn-success {
-  color:              var(--color-interface-softest);
+  color:              var(--base-interface-softest);
   background-color:   var(--color-success-strong);
   border-color:       var(--color-success-strong);
 
   &:focus,
   &.focus {
-      color:            var(--color-interface-softest);
+      color:            var(--base-interface-softest);
       background-color: var(--color-success-strong);
       border-color:     var(--color-success-strong);
   }
   &:hover {
-      color:            var(--color-interface-softest);
+      color:            var(--base-interface-softest);
       background-color: var(--color-success-shade);
       border-color:     var(--color-success-shade);
   }
-  &:active, 
+  &:active,
   &.active,
   .open > .dropdown-toggle & {
-      color:            var(--color-interface-softest);
+      color:            var(--base-interface-softest);
       background-color: var(--color-interface-softest);
       border-color:     var(--color-success-strong);
       background-image: none;
@@ -348,7 +350,7 @@
       &:hover,
       &:focus,
       &.focus {
-        color:            var(--color-interface-softest);
+        color:            var(--base-interface-softest);
         background-color: var(--color-success-shade);
         border-color:     var(--color-success-shade);
       }
@@ -396,7 +398,7 @@
   .open > .dropdown-toggle & {
       color:            var(--base-interface-softest);
       background-color: var(--color-info-strong);
-      border-color:     var(--color-info-strong); 
+      border-color:     var(--color-info-strong);
       background-image: none;
 
       &:hover,
@@ -682,7 +684,7 @@
 
 .btn-square {
   width: 38px; // TODO Hard coded width
-  padding: 6px 0; // Need to hard code to match the numberincrement button height of the other element next it (LocationList) 
+  padding: 6px 0; // Need to hard code to match the numberincrement button height of the other element next it (LocationList)
 
   &.btn-xs {
     width: 26px;
@@ -731,7 +733,7 @@
 }
 
 .btn-label {
-  padding:      5px 5px 4px; // TODO Doesn't use variable 
+  padding:      5px 5px 4px; // TODO Doesn't use variable
   margin-top:   -1px;
   font-size:    var(--font-size-xsmall);
   line-height:  var(--line-height-tight);
@@ -752,18 +754,18 @@
   color:              var(--color-interface-softest);
   background-color:   transparent;
   border-color:       var(--color-interface-softest); // TODO: darken by 5% when available
-  
+
   &:hover {
     color:            var(--color-interface-stronger);
     background-color: var(--color-interface-softest);
     border-color:     var(--color-interface-softest);
   }
-  
+
   &:focus,
   &.focus {
     box-shadow:       0 0 0 3.2px fade(var(--color-interface-softest), 50%); // TODO: this uses fade, which is a Sass function
   }
-  
+
   &.disabled {
     opacity:          0.5;
   }
@@ -773,18 +775,18 @@
   color:              var(--color-primary);
   background-color:   transparent;
   border-color:       var(--color-primary); // TODO: darken by 5% when available
-  
+
   &:hover {
     color:            var(--color-primary);
     background-color: var(--color-primary-soft);
     border-color:     var(--color-primary);
   }
-  
+
   &:focus,
   &.focus {
     box-shadow:       0 0 0 3.2px fade(var(--color-primary), 50%); // TODO: this uses fade, which is a Sass function
   }
-  
+
   &.disabled {
     opacity:          0.5;
   }
@@ -794,18 +796,18 @@
   color:              var(--color-success-strong);
   background-color:   transparent;
   border-color:       var(--color-success-strong); // TODO: darken by 5% when available
-  
+
   &:hover {
     color:            var(--color-interface-softest);
     background-color: var(--color-success-strong);
     border-color:     var(--color-success-strong);
   }
-  
+
   &:focus,
   &.focus {
     box-shadow:       0 0 0 3.2px fade(var(--color-success-strong), 50%); // TODO: this uses fade, which is a Sass function
   }
-  
+
   &.disabled {
     opacity:          0.5;
   }
@@ -815,18 +817,18 @@
   color:              var(--color-info-strong);
   background-color:   transparent;
   border-color:       var(--color-info-strong); // TODO: darken by 5% when available
-  
+
   &:hover {
     color:            var(--color-interface-softest);
     background-color: var(--color-info-strong);
     border-color:     var(--color-info-strong);
   }
-  
+
   &:focus,
   &.focus {
     box-shadow:       0 0 0 3.2px fade(var(--color-info-strong), 50%); // TODO: this uses fade, which is a Sass function
   }
-  
+
   &.disabled {
     opacity:          0.5;
   }
@@ -836,18 +838,18 @@
   color:              var(--color-warning-strong);
   background-color:   transparent;
   border-color:       var(--color-warning-strong); // TODO: darken by 5% when available
-  
+
   &:hover {
     color:            var(--color-interface-softest);
     background-color: var(--color-warning-strong);
     border-color:     var(--color-warning-strong);
   }
-  
+
   &:focus,
   &.focus {
     box-shadow:       0 0 0 3.2px fade(var(--color-warning-strong), 50%); // TODO: this uses fade, which is a Sass function
   }
-  
+
   &.disabled {
     opacity:          0.5;
   }
@@ -866,7 +868,7 @@
 .btn-sm{
   padding:        var(--spacing-xsmall) 12px; // Need to hard code for to match the bottom left button of the `Learning Program Detail` bLock
   font-size:      var(--font-size-small);
-  line-height:    16px; // Need to hard code if match the button size with the search bar 
+  line-height:    16px; // Need to hard code if match the button size with the search bar
   border-radius:  var(--rounded-small);
 }
 
@@ -982,22 +984,39 @@ input[type="button"] {
 
   transition: .15s ease-in-out,box-shadow .15s ease-in-out;
 
+  --size: 32px;
+  position: relative;
+  width: var(--size);
+  height: var(--size);
+  margin: 0 0 0 var(--spacing-small);
+  font-size: calc(var(--size) * 0.5);
+  transition: .15s ease-in-out,box-shadow .15s ease-in-out;
+
   @media (max-width: $screen-small) {
     font-size: 1em;
     padding: 6px;
   }
 
+    @media (min-width: $screen-small) {
+    --size: 40px;
+    padding: 20px;
+  }
+
   &:hover {
     color: var(--color-interface-stronger);
   }
-  
+
   &:focus {
     color: var(--color-interface-stronger);
   }
-  
+
   &:focus:active {
     color: var(--color-primary);
-    box-shadow: var(--input-focus-box-shadow) 
+    box-shadow: var(--input-focus-box-shadow)
+  }
+
+  .ti.theme-mode-icon:before {
+    content: "\f23a"; // Default to light mode icon
   }
 }
 

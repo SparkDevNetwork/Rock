@@ -575,5 +575,10 @@ namespace Rock.SystemGuid
         /// Guid for the types of Record Sources (such as external website, event registration, etc.)
         /// </summary>
         public const string RECORD_SOURCE_TYPE = "B8F781C5-6690-4E5E-8BCE-75CC62DB0EBB";
+
+        /// <summary>
+        /// Guid for the types of Organizational Objectives (such as Outreach, Discipleship, Activation)
+        /// </summary>
+        public const string ORGANIZATIONAL_OBJECTIVE_TYPE = "47448937-1993-4064-95F9-18BB35E1F45B";
     }
 }

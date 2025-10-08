@@ -21,8 +21,10 @@
 // </copyright>
 //
 
+import { CompletionFlow } from "@Obsidian/Enums/Engagement/completionFlow";
 import { StepProgramWorkflowTriggerBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/stepProgramWorkflowTriggerBag";
 import { StepStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/stepStatusBag";
+import { SankeyDiagramSettingsBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramSettingsBag";
 import { SlidingDateRangeBag } from "@Obsidian/ViewModels/Controls/slidingDateRangeBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
@@ -45,6 +47,9 @@ export type StepProgramBag = {
     /** Gets or sets the chart data. */
     chartData?: string | null;
 
+    /** Gets or sets the Completion Flow of the Step Program. */
+    completionFlow?: CompletionFlow | null;
+
     /** Gets or sets the default date range. */
     defaultDateRange?: SlidingDateRangeBag | null;
 
@@ -53,6 +58,18 @@ export type StepProgramBag = {
 
     /** Gets or sets a description of the program. */
     description?: string | null;
+
+    /** Gets or sets the error message. */
+    errorMessage?: string | null;
+
+    /** Gets or sets the value indicating whter the current program contains steps with Engagement Type settings configured. */
+    hasEngagementTypeSteps: boolean;
+
+    /** Gets or sets the value indicating whter the current program contains steps with Impact Adjustment settings configured. */
+    hasImpactAdjustedStepTypes: boolean;
+
+    /** Gets or sets the value indicating whter the current program contains steps with Organization Objective settings configured. */
+    hasOrganizationObjectiveSteps: boolean;
 
     /** Gets or sets the icon CSS class. */
     iconCssClass?: string | null;
@@ -63,26 +80,35 @@ export type StepProgramBag = {
     /** Gets or sets a flag indicating if this item is active or not. */
     isActive: boolean;
 
+    /** Gets or sets a value indicating wheter the Step Program can be deleted. */
+    isDeletable: boolean;
+
     /** Gets or sets the kpi. */
     kpi?: string | null;
 
     /** Gets or sets the name of the program. This property is required. */
     name?: string | null;
 
-    /** Gets or sets a value indicating whether [show chart]. */
-    showChart: boolean;
-
     /** Gets or sets the statuses. */
     statuses?: StepStatusBag[] | null;
 
+    /** Gets or sets the Status filter options */
+    statusFilterOptions?: ListItemBag[] | null;
+
     /** Gets or sets the status options. */
     statusOptions?: ListItemBag[] | null;
+
+    /** Gets or sets the Sep Flow Configuration settings used to display the Step Flow diagram. */
+    stepFlowConfigurationBag?: SankeyDiagramSettingsBag | null;
 
     /** Gets or sets the step flow page URL. */
     stepFlowPageUrl?: string | null;
 
     /** Gets or sets the step program attributes. */
     stepProgramAttributes?: PublicEditableAttributeBag[] | null;
+
+    /** Gets or sets a list of ListItemBags for the Step Type dropdown list filter on the Step Flow view. */
+    stepTypes?: ListItemBag[] | null;
 
     /** Gets or sets the workflow triggers. */
     workflowTriggers?: StepProgramWorkflowTriggerBag[] | null;

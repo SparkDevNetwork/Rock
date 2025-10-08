@@ -55,8 +55,7 @@
     import { areEqual } from "@Obsidian/Utility/guid";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
 
-    type ActionAnswer = ExperienceAnswerBag & {
-    };
+    type ActionAnswer = ExperienceAnswerBag;
 
     const props = defineProps({
         /** The identifier of the occurrence we have joined. */

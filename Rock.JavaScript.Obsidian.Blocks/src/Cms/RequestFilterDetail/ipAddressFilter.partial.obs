@@ -1,0 +1,158 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :data="gridData"
+          light
+          keyField="guid"
+          itemTerm="IP Address"
+          @addItem="onAdd">
+        <TextColumn name="beginningAddress" title="Beginning Address" field="beginningIPAddress" />
+        <TextColumn name="endingAddress" title="Ending Address" field="endingIPAddress" />
+        <TextColumn name="matchType" title="Match Type" field="matchTypeName" />
+        <EditColumn @click="onEdit" />
+        <DeleteColumn @click="onDelete" />
+    </Grid>
+
+    <Modal v-model="isModalVisible"
+           :title="`${isEditing ? 'Edit' : 'Add'} IP Address Filter`"
+           saveText="Save"
+           cancelText="Cancel"
+           :onSave="onSave">
+        <div class="row form-row d-flex flex-wrap align-items-center">
+            <div class="col flex-grow-0">
+                <div class="form-group">
+                    <span class="text-nowrap">Where the client IP is</span>
+                </div>
+            </div>
+            <div class="col-auto">
+                <div class="form-group">
+                    <ButtonGroup :modelValue="theFilter.matchType?.toString() ?? '0'"
+                                 @update:modelValue="val => theFilter.matchType = Number(val)"
+                                 :items="matchTypeOptions" />
+                </div>
+            </div>
+            <div class="col col-xs-12 col-sm">
+                <div class="form-group">
+                    <TextBox :modelValue="theFilter.beginningIPAddress ?? ''"
+                             @update:modelValue="val => theFilter.beginningIPAddress = val"
+                             rules="required"
+                             validationTitle="Beginning IP Address" />
+                </div>
+            </div>
+            <div class="col col-xs-12 col-sm">
+                <div class="form-group">
+                    <TextBox :modelValue="theFilter.endingIPAddress ?? ''"
+                             @update:modelValue="val => theFilter.endingIPAddress = val"
+                             rules="required"
+                             validationTitle="Ending IP Address" />
+                </div>
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import Grid, { EditColumn, DeleteColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import type { IIpAddressRequestFilter } from "./types.partial";
+    import { IPAddressRequestFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/RequestFilterDetail/ipAddressRequestFilterBag";
+
+    type StandardListItemBag = {
+        [P in keyof Pick<ListItemBag, "text" | "value">]-?: NonNullable<ListItemBag[P]>;
+    };
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<IIpAddressRequestFilter>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: IIpAddressRequestFilter): void
+    }>();
+
+    // #region Values
+
+    const theFilter = ref<IPAddressRequestFilterBag>({} as IPAddressRequestFilterBag);
+
+    const matchTypeOptions = ref<StandardListItemBag[]>([
+        { value: "0", text: "In Range" },
+        { value: "1", text: "Not In Range" }
+    ]);
+
+    const isModalVisible = ref(false);
+    const isEditing = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const gridData = computed(() => {
+        const filters = props.modelValue.ipAddressRequestFilters ?? [];
+        const rows = filters.map(f => ({
+            guid: f.guid,
+            beginningIPAddress: f.beginningIPAddress ?? "",
+            endingIPAddress: f.endingIPAddress ?? "",
+            matchTypeName: Number(f.matchType) === 0 ? "In Range" : "Not In Range"
+        }));
+        return { rows };
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function onAdd(): void {
+        theFilter.value = { guid: newGuid(), beginningIPAddress: "", endingIPAddress: "", matchType: 0 };
+        isModalVisible.value = true;
+        isEditing.value = false;
+    }
+
+    function onEdit(guid: string): void {
+        const row = props.modelValue.ipAddressRequestFilters?.find(x => x.guid === guid);
+        if (!row) return;
+        theFilter.value = {
+            guid: row.guid,
+            beginningIPAddress: row.beginningIPAddress,
+            endingIPAddress: row.endingIPAddress,
+            matchType: row.matchType
+        };
+        isModalVisible.value = true;
+        isEditing.value = true;
+    }
+
+    function onDelete(guid: string): void {
+        const filters = (props.modelValue.ipAddressRequestFilters ?? []).filter(f => f.guid !== guid);
+        emit("update:modelValue", {
+            ...props.modelValue,
+            ipAddressRequestFilters: filters
+        });
+    }
+
+    function onSave(): void {
+        const filters = [...props.modelValue.ipAddressRequestFilters ?? []];
+        const idx = filters.findIndex(f => f.guid === theFilter.value.guid);
+        const item = {
+            guid: theFilter.value.guid,
+            beginningIPAddress: theFilter.value.beginningIPAddress,
+            endingIPAddress: theFilter.value.endingIPAddress,
+            matchType: theFilter.value.matchType ?? 0
+        } as IPAddressRequestFilterBag;
+
+        if (idx >= 0) filters.splice(idx, 1, item); else filters.push(item);
+
+        emit("update:modelValue", {
+            ...props.modelValue,
+            ipAddressRequestFilters: filters
+        });
+
+        isModalVisible.value = false;
+    }
+
+    // #endregion Functions
+</script>

@@ -30,10 +30,9 @@
                              :disabled="!isEditable" />
             </div>
             <div class="col-md-6">
-                <TextBox v-model="signalIconCssClass"
-                         label="Icon CSS Class"
-                         :maxLength="100"
-                         :disabled="!isEditable" />
+                <IconPicker v-model="signalIconCssClass"
+                            label="Icon CSS Class"
+                            :disabled="!isEditable" />
             </div>
         </div>
 
@@ -46,6 +45,7 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
     import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";

@@ -632,6 +632,7 @@ namespace Rock.Blocks.Tv
         <field id=""rockLoginSuccessPageGuid"" type=""string"" />
         <field id=""rockLogoutSuccessPageGuid"" type=""string"" />
         <field id=""rockWatchMap"" type=""string"" />
+        <field id=""rockIsLive"" type=""bool"" value=""false"" />
     </interface>
 </component>
 ###COMPONENT>Rock:FocusGroup###

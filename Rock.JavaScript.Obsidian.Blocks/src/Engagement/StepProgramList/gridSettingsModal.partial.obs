@@ -9,12 +9,7 @@
         <div class="row">
             <div class="col-md-4">
                 <DropDownList v-model="active" :items="activeStatus"
-                         label="Active" />
-            </div>
-
-            <div class="col-md-4">
-                <DropDownList v-model="category" :items="categories"
-                              label="Category" />
+                              label="Active" />
             </div>
         </div>
     </Modal>
@@ -39,10 +34,6 @@
             type: Boolean as PropType<boolean>,
             required: true
         },
-        categories: {
-            type: Array as PropType<ListItemBag[]>,
-            required: true
-        },
     });
 
     const emit = defineEmits<{
@@ -50,8 +41,6 @@
         (e: "update:visible", value: boolean): void;
         (e: "close"): void;
     }>();
-
-    const categories = ref<ListItemBag[]>([]);
 
     const activeStatus: ListItemBag[] = [
         {
@@ -65,13 +54,11 @@
     ];
 
     const active = ref(props.modelValue.active ?? "");
-    const category = ref(props.modelValue.category ?? "");
     const isVisible = useVModelPassthrough(props, "visible", emit);
 
     function onSave(): void {
         const value: GridSettingsOptions = {
             active: active.value,
-            category: category.value,
         };
 
         if (!deepEqual(value, props.modelValue, true)) {
@@ -81,13 +68,8 @@
         isVisible.value = false;
     }
 
-    watch(() => props.categories, (newCategories) => {
-        categories.value = newCategories ?? [];
-    }, { immediate: true });
-
     watch(() => props.modelValue, () => {
         active.value = props.modelValue.active ?? "";
-        category.value = props.modelValue.category ?? "";
     });
 
     watch(isVisible, () => {

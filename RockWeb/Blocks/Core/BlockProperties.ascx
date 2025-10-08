@@ -13,7 +13,7 @@
                     <asp:Repeater ID="rptProperties" runat="server" >
                         <ItemTemplate >
                             <li class='<%# GetTabClass(Container.DataItem) %>'>
-                                <asp:LinkButton ID="lbProperty" runat="server" Text='<%# Container.DataItem %>' OnClick="lbProperty_Click" CausesValidation="false">
+                                <asp:LinkButton ID="lbProperty" runat="server" Text='<%# GetTabName(Container.DataItem) %>' CommandArgument="<%# Container.DataItem %>" OnClick="lbProperty_Click" ValidationGroup="<%# BlockValidationGroup %>" CausesValidation="true">
                                 </asp:LinkButton> 
                             </li>
                         </ItemTemplate>
@@ -34,8 +34,26 @@
                         <Rock:AttributeValuesContainer ID="avcMobileAttributes" runat="server" ShowCategoryLabel="false" />
                     </asp:Panel>
 
+                    <asp:Placeholder ID="phTabAttributes" runat="server"></asp:Placeholder>
+
                     <asp:Panel ID="pnlAdvancedSettings" runat="server" Visible="false" >
-                        <Rock:RockTextBox ID="tbCssClass" runat="server" Label="CSS Class" Help="An optional CSS class to include with this block's containing div" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbCssClass" runat="server" Label="CSS Class" Help="An optional CSS class to include with this block's containing div" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <Rock:RockDropDownList ID="ddlBlockRole" runat="server" Label="Role" Help="The role determines how the block is being used on the page. If not set, the default from the block type will be used.">
+                                    <asp:ListItem Value="" Text="" />
+                                    <asp:ListItem Value="0" Text="System" />
+                                    <asp:ListItem Value="1" Text="Navigation" />
+                                    <asp:ListItem Value="2" Text="Content" />
+                                    <asp:ListItem Value="3" Text="Primary" />
+                                    <asp:ListItem Value="4" Text="Secondary" />
+                                </Rock:RockDropDownList>
+                            </div>
+                        </div>
+
                         <Rock:CodeEditor ID="cePreHtml" runat="server" Label="Pre-HTML" Help="HTML Content to render before the block <span class='tip tip-lava'></span>." EditorMode="Lava" EditorTheme="Rock" EditorHeight="400" />
                         <Rock:CodeEditor ID="cePostHtml" runat="server" Label="Post-HTML" Help="HTML Content to render after the block <span class='tip tip-lava'></span>." EditorMode="Lava" EditorTheme="Rock" EditorHeight="400" />
                         <Rock:RockTextBox ID="tbCacheDuration" runat="server"  Label="Output Cache Duration (seconds)" Help="Number of seconds to cache the output of this block.  If a value is entered here, this block will only process data when the cache expires." />

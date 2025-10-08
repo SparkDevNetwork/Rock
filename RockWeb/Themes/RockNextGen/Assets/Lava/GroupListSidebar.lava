@@ -19,7 +19,7 @@
 
     {% capture isLeaderIcon -%}
     {% if group.IsLeader -%}
-    <i class='fa fa-asterisk'></i>
+    <i class='ti ti-asterisk'></i>
     {% endif -%}
     {% endcapture -%}
 

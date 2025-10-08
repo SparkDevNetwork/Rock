@@ -1,19 +1,19 @@
 
 // Rock Obsidian - used to obsidian component and block (Rock Component)
 
-/** 
+/**
 *   NOTE:
 *
-*   The `--initial-block-height` value is dynamically 
+*   The `--initial-block-height` value is dynamically
 *   set by a RockBlockType.cs file.
 **/
 
 
 // =============================================================
-// Table of Content           
+// Table of Content
 //  + Block Style
 //  + Panel Style
-//  + rockslide 
+//  + rockslide
 // =============================================================
 
 
@@ -60,7 +60,8 @@
   display:              flex;
   flex-direction:       column;
 
-  > .panel-heading {
+  > .panel-heading,
+  > .panel-header {
     display:            flex;
     align-items:        center;
     min-height:         48px;
@@ -70,6 +71,10 @@
     > .panel-title {
       flex-grow:        1;
       padding:          0 var(--spacing-large);
+
+      .label {
+        margin-left:   var(--spacing-xsmall);
+      }
     }
 
     > .panel-aside {
@@ -101,7 +106,7 @@
 
       > .action {
         padding-right:  var(--spacing-medium);
-        margin:         2px;
+        margin:         0px;
         color:          var(--color-interface-strong);
         transition:     color .2s, background-color .2s, border-radius .2s;
 
@@ -152,7 +157,8 @@
   margin:       0;
 
   &,
-  > .panel-heading {
+  > .panel-heading,
+  > .panel-header {
     border-radius: 0;
   }
 }

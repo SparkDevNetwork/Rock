@@ -132,6 +132,7 @@ namespace Rock.Blocks.Core
 
     #endregion
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "33566B2B-D74F-4148-B962-1897D418C6DF" )]
     [Rock.SystemGuid.BlockTypeGuid( "D87B84DC-7AD9-42A2-B18D-88B7E71DADA8" )]
     public class Notes : RockBlockType
@@ -280,8 +281,12 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult SaveNote( SaveNoteRequestBag request )
         {
-            var noteClientService = new NoteClientService( RockContext, RequestContext.CurrentPerson );
             var contextEntity = GetContextEntity();
+            var noteClientService = new NoteClientService( RockContext, RequestContext.CurrentPerson )
+            {
+                AllowBackdatedNotes = GetAttributeValue( AttributeKey.AllowBackdatedNotes ).AsBoolean(),
+                AllowedNoteTypes = GetConfiguredNoteTypes( contextEntity.TypeId )
+            };
 
             if ( contextEntity == null )
             {

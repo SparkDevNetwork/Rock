@@ -336,6 +336,14 @@ namespace Rock.WebStartup
             {
                 WebRootPath = AppDomain.CurrentDomain.BaseDirectory
             } );
+            sc.AddSingleton<Core.Automation.AutomationTriggerContainer>();
+            sc.AddSingleton<Core.Automation.AutomationEventContainer>();
+            sc.AddSingleton<MetadataHelper>();
+
+            sc.AddScoped<RockContext>();
+
+            sc.AddRockLogging();
+
             // Register the class to initialize for InitializationSettings. This
             // is transient so that we always get the current values from the
             // source.

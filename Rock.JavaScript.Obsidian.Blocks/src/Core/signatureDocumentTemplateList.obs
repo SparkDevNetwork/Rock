@@ -1,7 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid v-if="isVisible"
-          :definition="config.gridDefinition ?? undefined"
+    <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Document Template"
@@ -54,13 +53,10 @@
     import { SignatureDocumentTemplateListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentTemplateList/signatureDocumentTemplateListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./SignatureDocumentTemplateList/types.partial";
-    import { computed, reactive, ref } from "vue";
-    import { useStore } from "@Obsidian/PageState";
+    import { reactive, ref } from "vue";
 
     const config = useConfigurationValues<ListBlockBox<SignatureDocumentTemplateListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const store = useStore();
-
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
@@ -69,10 +65,6 @@
     // #endregion
 
     // #region Computed Values
-
-    const isVisible = computed((): boolean => {
-        return store.state.areSecondaryBlocksShown;
-    });
 
     // #endregion
 

@@ -1,0 +1,159 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :data="gridData"
+          light
+          keyField="guid"
+          itemTerm="Browser"
+          @addItem="onAdd">
+        <TextColumn name="family" title="Family" field="familyName" />
+        <TextColumn name="comparison" title="Comparison" field="comparisonName" />
+        <TextColumn name="majorVersion" title="Major Version" field="majorVersion" />
+        <EditColumn @click="onEdit" />
+        <DeleteColumn @click="onDelete" />
+    </Grid>
+
+    <Modal v-model="isModalVisible"
+           :title="`${isEditing ? 'Edit' : 'Add'} Browser Filter`"
+           saveText="Save"
+           cancelText="Cancel"
+           :onSave="onSave">
+        <div class="row form-row d-flex flex-wrap align-items-center">
+            <div class="col col flex-grow-0">
+                <div class="form-group">
+                    <span class="text-nowrap">Where</span>
+                </div>
+            </div>
+            <div class="col flex-grow-0">
+                <div class="form-group">
+                    <DropDownList :modelValue="theFilter.browserFamily?.toString() ?? ''"
+                                  @update:modelValue="val => theFilter.browserFamily = Number(val)"
+                                  :items="browserFamilies"
+                                  class="input-width-lg"
+                                  :showBlankItem="false" />
+                </div>
+            </div>
+            <div class="col flex-grow-0">
+                <div class="form-group">
+                    <span class="text-nowrap">version</span>
+                </div>
+            </div>
+            <div class="col flex-grow-0">
+                <div class="form-group">
+                    <DropDownList :modelValue="theFilter.versionComparisonType?.toString() ?? ''"
+                                  @update:modelValue="val => theFilter.versionComparisonType = Number(val)"
+                                  :items="comparisonTypes"
+                                  class="input-width-lg"
+                                  :showBlankItem="false" />
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group">
+                    <NumberBox v-model="theFilter.majorVersion" rules="required" validationTitle="Major Version" :maxLength="9" />
+                </div>
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import Grid, { EditColumn, DeleteColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { getComparisonName, numericComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
+    import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/comparisonTypeOptions";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import type { IBrowserRequestFilter } from "./types.partial";
+    import { BrowserFamilyDescription } from "@Obsidian/Enums/Cms/Personalization/PersonalizationRequestFilters/browserFamily";
+    import { BrowserRequestFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/RequestFilterDetail/browserRequestFilterBag";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<IBrowserRequestFilter>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: IBrowserRequestFilter): void
+    }>();
+
+    // #region Values
+
+    const theFilter = ref<BrowserRequestFilterBag>({} as BrowserRequestFilterBag);
+
+    const browserFamilies = enumToListItemBag(BrowserFamilyDescription);
+
+    const excludedComparisonValues = [ComparisonType.IsBlank, ComparisonType.IsNotBlank].map(v => v.toString());
+    const comparisonTypes = (getFilteredComparisonTypeOptions(numericComparisonTypes))
+        .filter(ct => !excludedComparisonValues.includes(ct.value ?? ""));
+
+    const isModalVisible = ref(false);
+    const isEditing = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const gridData = computed(() => {
+        const filters = props.modelValue.browserRequestFilters ?? [];
+        const rows = filters.map(f => ({
+            guid: f.guid,
+            familyName: BrowserFamilyDescription[f.browserFamily ?? 0] ?? "",
+            comparisonName: getComparisonName(Number(f.versionComparisonType ?? 0)),
+            majorVersion: f.majorVersion ?? 0
+        }));
+        return { rows };
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function onAdd(): void {
+        theFilter.value = { guid: newGuid(), browserFamily: 0, versionComparisonType: 1, majorVersion: 0 };
+        isModalVisible.value = true;
+        isEditing.value = false;
+    }
+
+    function onEdit(guid: string): void {
+        const row = props.modelValue.browserRequestFilters?.find(x => x.guid === guid);
+        if (!row) return;
+        theFilter.value = { guid: row.guid, browserFamily: row.browserFamily, versionComparisonType: row.versionComparisonType, majorVersion: row.majorVersion };
+        isModalVisible.value = true;
+        isEditing.value = true;
+    }
+
+    function onDelete(guid: string): void {
+        const filters = (props.modelValue.browserRequestFilters ?? []).filter(f => f.guid !== guid);
+        emit("update:modelValue", {
+            ...props.modelValue,
+            browserRequestFilters: filters
+        });
+    }
+
+    function onSave(): void {
+        const filters = [...props.modelValue.browserRequestFilters ?? []];
+        const idx = filters.findIndex(f => f.guid === theFilter.value.guid);
+        const item = {
+            guid: theFilter.value.guid,
+            browserFamily: theFilter.value.browserFamily ?? 0,
+            versionComparisonType: theFilter.value.versionComparisonType ?? 0,
+            majorVersion: theFilter.value.majorVersion ?? 0
+        } as BrowserRequestFilterBag;
+
+        if (idx >= 0) filters.splice(idx, 1, item); else filters.push(item);
+
+        emit("update:modelValue", {
+            ...props.modelValue,
+            browserRequestFilters: filters
+        });
+
+        isModalVisible.value = false;
+    }
+
+    // #endregion Functions
+</script>

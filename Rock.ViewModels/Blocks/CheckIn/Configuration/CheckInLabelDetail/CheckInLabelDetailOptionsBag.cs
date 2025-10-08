@@ -18,6 +18,7 @@
 using System.Collections.Generic;
 
 using Rock.ViewModels.Reporting;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInLabelDetail
 {
@@ -50,5 +51,10 @@ namespace Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInLabelDetail
         /// The filter sources available when editing a person location label.
         /// </summary>
         public List<FieldFilterSourceBag> PersonLocationLabelFilterSources { get; set; }
+
+        /// <summary>
+        /// The available printers to use when viewing and printing a preview.
+        /// </summary>
+        public List<ListItemBag> Printers { get; set; }
     }
 }

@@ -4,9 +4,10 @@
 
 
 // =============================================================
-// Table of Content           
+// Table of Content
 //  + Group Viewer - styles for the group viewer block.
 //  + Group Scheduler v2 - styles for the Obsidian group scheduler block.
+//  + Group Schedule Status Board v2
 // =============================================================
 
 
@@ -38,6 +39,14 @@
   }
 }
 // ====================== END GROUP VIEWER ======================
+
+// ====================== GROUP MAP ======================
+
+.group-map .panel-body > .form-inline > .pull-left > .form-group > .checkbox:first-child {
+  padding-left:            0;
+}
+
+// ====================== END GROUP MAP ======================
 
 
 // ======================== GROUP SCHEDULER ========================
@@ -127,6 +136,7 @@
 
   .card-sched {
     margin-bottom:       var(--spacing-small);
+    overflow:            visible;
 
     .location {
       margin-bottom:     var(--spacing-medium);
@@ -233,6 +243,14 @@
     left:                0;
     border-radius:       50px;
     box-shadow:          none;
+
+    &.bg-danger {
+      background-color: var(--color-danger-strong) !important;
+    }
+    &.bg-success {
+      background-color: var(--color-success-strong) !important;
+    }
+
   }
 
   .avatar {
@@ -346,3 +364,48 @@
   }
 }
 // ====================== END GROUP SCHEDULER ======================
+
+// ====================== GROUP SCHEDULE STATUS BOARD ======================
+
+.schedule-status-board {
+  & th.location {
+    background: var(--color-interface-softest);
+    border-right: var(--color-interface-soft);
+  }
+  & td.schedule-location {
+    border-left: 1px solid var(--color-interface-soft);
+  }
+}
+
+.schedule-status-board-header {
+  position: sticky;
+  inset-block-start: 0; /* "top" */
+  z-index: 1;
+
+  tr {
+    th {
+    background: var(--color-interface-softest);
+    border-bottom-color: transparent !important;
+    box-shadow: inset 0 -1px 0 var(--color-interface-medium) !important; // Emulate bottom-border for position sticky
+    }
+  }
+}
+
+.location-scheduled-list {
+  & .person {
+  background: var(--color-interface-softest);
+}
+
+  & .person.pending {
+    color: var(--color-interface-medium);
+  }
+
+  & .slot {
+    border-bottom: 1px solid var(--color-interface-soft);
+  }
+
+}
+
+
+
+// ====================== END GROUP SCHEDULE STATUS BOARD ======================

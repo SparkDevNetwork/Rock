@@ -190,6 +190,7 @@ namespace Rock.Blocks.Core
         {
             var queryable = new TagService( new RockContext() ).Queryable()
                 .Include( a => a.EntityType )
+                .Include( a => a.TaggedItems )
                 .Include( a => a.OwnerPersonAlias );
 
             var categoryGuid = FilterCategory.AsGuidOrNull();

@@ -39,7 +39,7 @@
 
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" Help="The Font Awesome icon class to use when displaying check-in of this check-in type." />
+                                <Rock:RockTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" Help="The icon class to use when displaying check-in of this check-in type." />
                             </div>
                         </div>
 
@@ -97,7 +97,17 @@
                                         Help="Should people be prevented from checking into a specifice service time (schedule) more than once?" />
 
                                     <Rock:RockCheckBox ID="cbEnableProximityCheckIn" runat="server" Label="Enable Proximity Check-in"
-                                        Help="Makes this check-in configuration and all areas and groups available for proximity check-in with a native Rock Mobile application." />
+                                        Help="Makes this check-in configuration and all areas and groups available for proximity check-in with a native Rock Mobile application."
+                                        OnCheckedChanged="cbEnableProximityCheckIn_CheckedChanged"
+                                        AutoPostBack="true" />
+
+                                    <div class="well well-conditional" id="proximityAttendanceConfiguration" runat="server">
+                                     <Rock:CodeEditor ID="ceCheckInNotificationTemplate" runat="server" Label="Notification Lava Template"
+                                        Help="The lava template that will be parsed to deliver a push notification when a person checks in through proximity attendance."
+                                        EditorMode="Lava"
+                                        Rows="3" />
+                                    </div>
+
                                 </div>
                             </div>
 
@@ -194,10 +204,12 @@
                                     <Rock:RockCheckBox ID="cbRegistrationSmsEnabledByDefault" runat="server" Label="Set the SMS Enabled for the phone number by default" />
                                     <Rock:RockCheckBox ID="cbEnableCheckInAfterRegistration" runat="server" Label="Enable Check-in After Registration" Help="This determines if the family should continue on the check-in path after being registered, or if they should be directed to a different kiosk after registration (take them back to search )." />
                                     <Rock:RockListBox ID="lbKnownRelationshipTypes" runat="server" Label="Known Relationship Types" Help="The known relationships to display in the child's 'Relationship to Adult' field." />
+                                    <Rock:RockCheckBox ID="cbRegistrationForceSelectionOfKnownRelationshipType" runat="server" Label="Force Selection of Known Relationship Type" Help="Requires the individual to select a relationship type from the list. 'Child' will not be preselected automatically." />
                                     <Rock:RockListBox ID="lbSameFamilyKnownRelationshipTypes" runat="server" Label="Same Family Known Relationship Types" Help="Of the known relationships defined above which should be used to place the child in the family with the adults." />
                                     <Rock:RockListBox ID="lbCanCheckInKnownRelationshipTypes" runat="server" Label="Can Check-in Known Relationship Types" Help="The known relationships that will place the child in a separate family with a 'Can Check-in' relationship back to the person." />
                                     <Rock:WorkflowTypePicker ID="wftpRegistrationAddFamilyWorkflowTypes" runat="server" AllowMultiSelect="true" Label="New Family Workflow Types" Help="The workflow types that should be launched when a family is added." />
                                     <Rock:WorkflowTypePicker ID="wftpRegistrationAddPersonWorkflowTypes" runat="server" AllowMultiSelect="true" Label="New Person Workflow Types" Help="The workflow types that should be launched when a person is added to a family." />
+                                    <Rock:NumberBox ID="nbRegistrationGradeConfirmationAge" runat="server" Label="Grade Confirmation Age" Help="Sets the age when the grade confirmation dialog appears while adding or editing a child. Use decimals for partial years (e.g., 5.5). Only applies if grade is optional. Leave blank to disable the dialog." NumberType="Double" MinimumValue="0" />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockListBox ID="lbRegistrationRequiredAttributesForAdults" runat="server" Label="Required Attributes for Adults" />
@@ -213,6 +225,8 @@
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplayEthnicityOnAdults" runat="server" Label="Display Ethnicity on Adults" Help="How should ethnicity be displayed for adults?" />
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplayRaceOnChildren" runat="server" Label="Display Race on Children" Help="How should race be displayed for children?" />
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplayEthnicityOnChildren" runat="server" Label="Display Ethnicity on Children" Help="How should ethnicity be displayed for children?" />
+                                    <Rock:RockDropDownList ID="ddlRegistrationDisplayMobilePhoneOnChildren" runat="server" Label="Display Mobile Phone on Children" Help="How should Mobile Phone be displayed for children?" />
+                                    <Rock:RockDropDownList ID="ddlRegistrationDisplaySuffix" runat="server" Label="Display Suffix" Help="Show or hide the suffix field when editing an individual." />
                                 </div>
                             </div>
                         </Rock:PanelWidget>

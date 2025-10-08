@@ -4,6 +4,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Audit"
+          title="Audit Records"
           :entityTypeGuid="EntityType.Audit"
           stickyHeader
           liveUpdates
@@ -14,7 +15,7 @@
                     field="auditType"
                     :filter="pickExistingValueFilter"
                     visiblePriority="xs"
-                    width="2%" />
+                    width="1%" />
 
         <TextColumn name="entityType"
                     title="Entity Type"
@@ -48,14 +49,19 @@
                       title="Properties Updated"
                       field="properties"
                       :filter="numberValueFilter"
+                      headerClass="text-right"
+                      itemClass="justify-content-end text-right"
                       visiblePriority="xs"
-                      width="5%" />
+                      width="1%" />
 
         <DateTimeColumn name="dateTime"
                         title="When"
                         field="dateTime"
+                        :filter="dateValueFilter"
+                        headerClass="text-right"
+                        itemClass="justify-content-end text-right"
                         visiblePriority="xs"
-                        width="10%" />
+                        width="5%" />
 
         <PersonColumn name="person"
                       title="Who"
@@ -77,7 +83,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { textValueFilter, numberValueFilter, PersonColumn, NumberColumn, TextColumn, DateTimeColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { textValueFilter, numberValueFilter, PersonColumn, NumberColumn, TextColumn, DateTimeColumn, pickExistingValueFilter, dateValueFilter } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { AuditDetail } from "./AuditList/types.partial";

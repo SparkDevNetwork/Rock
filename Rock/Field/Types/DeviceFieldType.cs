@@ -56,7 +56,8 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         protected sealed override List<ListItemBag> GetListItems( Dictionary<string, string> privateConfigurationValues )
         {
-            var deviceTypeGuid = privateConfigurationValues.GetValueOrNull( AttributeKey.DeviceType ).FromJsonOrNull<ListItemBag>()?.Value.AsGuidOrNull();
+            var deviceTypeGuid = privateConfigurationValues.GetValueOrNull( AttributeKey.DeviceType )?.AsGuid();
+
             var deviceTypeId = deviceTypeGuid.HasValue
                 ? DefinedValueCache.GetId( deviceTypeGuid.Value )
                 : null;

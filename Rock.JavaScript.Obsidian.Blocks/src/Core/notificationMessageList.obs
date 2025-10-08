@@ -19,9 +19,9 @@
                                           :showBlankItem="false" />
 
                             <DropDownList label="Status"
-                                           v-model="showReadFilter"
-                                           :items="showReadFilterItems"
-                                           :showBlankItem="false" />
+                                          v-model="showReadFilter"
+                                          :items="showReadFilterItems"
+                                          :showBlankItem="false" />
 
                             <SlidingDateRangePicker label="Date Range"
                                                     v-model="dateRangeFilter" />
@@ -250,6 +250,11 @@
             }
         }
         disableUpdate = false;
+
+        // Temporary fix to force the reminder/notification counts to update
+        // on next page load. In the future this will be replaced with a browser
+        // bus message to cause an immediate update.
+        localStorage.removeItem("Rock.Core.ReminderLinks.Counts");
 
         visibleMessages.value = getFilteredMessages();
     }

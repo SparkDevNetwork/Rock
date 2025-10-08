@@ -85,8 +85,8 @@ export type CommunicationEntryWizardCommunicationBag = {
     /** Gets or sets the email message. */
     message?: string | null;
 
-    /** Gets or sets the personalization segment identifiers that communication recipients must satisfy. */
-    personalizationSegmentIds?: number[] | null;
+    /** Gets or sets the personalization segments that communication recipients must satisfy. */
+    personalizationSegments?: ListItemBag[] | null;
 
     /** Gets or sets the push data. */
     pushData?: CommunicationEntryWizardPushNotificationOptionsBag | null;

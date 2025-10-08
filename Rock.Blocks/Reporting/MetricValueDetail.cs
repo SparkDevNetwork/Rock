@@ -42,7 +42,7 @@ namespace Rock.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Displays the details of a particular metric value." )]
     [IconCssClass( "ti ti-question-mark" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "af69aa1a-3eee-4f25-8014-1a02ba82ac32" )]
     [Rock.SystemGuid.BlockTypeGuid( "b52e7cae-c5cc-41cb-a5ec-1cf027074a2c" )]

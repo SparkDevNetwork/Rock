@@ -110,45 +110,64 @@ namespace Rock.CheckIn.v2.Labels
             var messages = new List<string>();
             var printerHasCutter = printerDevice.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_HAS_CUTTER ).AsBoolean();
 
-            for ( int labelIndex = 0; labelIndex < labels.Count; labelIndex++ )
+            var labelContents = labels
+                .Select( ( label, index ) =>
+                {
+                    if ( printerHasCutter )
+                    {
+                        return AmendWithCutCommands( label.Data, index == labels.Count - 1 );
+                    }
+                    else
+                    {
+                        return label.Data;
+                    }
+                } )
+                .ToList();
+
+            if ( printerDevice.ProxyDeviceId.HasValue )
             {
                 try
                 {
-                    var labelContent = labels[labelIndex].Data;
+                    var proxy = CloudPrintSocket.GetBestProxyForDevice( printerDevice.ProxyDeviceId.Value );
 
-                    if ( printerHasCutter )
+                    if ( proxy != null )
                     {
-                        labelContent = AmendWithCutCommands( labelContent, labelIndex == labels.Count - 1 );
-                    }
+                        var message = await proxy.PrintAsync( printerDevice, labelContents, cancellationToken );
 
-                    if ( printerDevice.ProxyDeviceId.HasValue )
-                    {
-                        var proxy = CloudPrintSocket.GetBestProxyForDevice( printerDevice.ProxyDeviceId.Value );
-
-                        if ( proxy != null )
+                        if ( message.IsNotNullOrWhiteSpace() )
                         {
-                            var message = await proxy.PrintAsync( printerDevice, labelContent, cancellationToken );
-
-                            if ( message.IsNotNullOrWhiteSpace() )
-                            {
-                                messages.Add( message );
-                            }
-                        }
-                        else
-                        {
-                            var response = await CloudPrintLabelMessage.RequestAsync( printerDevice.ProxyDeviceId.Value, printerDevice.Id, labelContent, cancellationToken );
-
-                            if ( response.Message.IsNotNullOrWhiteSpace() )
-                            {
-                                messages.Add( response.Message );
-                            }
+                            messages.Add( message );
                         }
                     }
                     else
                     {
-                        using ( var socket = await OpenSocketAsync( printerDevice.IPAddress, cancellationToken ) )
+                        var response = await CloudPrintLabelMessage.RequestAsync( printerDevice.ProxyDeviceId.Value, printerDevice.Id, labelContents, cancellationToken );
+
+                        if ( response.Message.IsNotNullOrWhiteSpace() )
                         {
-                            using ( var ns = new NetworkStream( socket ) )
+                            messages.Add( response.Message );
+                        }
+                    }
+                }
+                catch ( TaskCanceledException )
+                {
+                    return new List<string> { "Timed out waiting for labels to print." };
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                    return new List<string> { $"Unable to print label: {ex.Message}" };
+                }
+            }
+            else
+            {
+                try
+                {
+                    using ( var socket = await OpenSocketAsync( printerDevice.IPAddress, cancellationToken ) )
+                    {
+                        using ( var ns = new NetworkStream( socket ) )
+                        {
+                            foreach ( var labelContent in labelContents )
                             {
                                 await ns.WriteAsync( labelContent, 0, labelContent.Length, cancellationToken );
                             }

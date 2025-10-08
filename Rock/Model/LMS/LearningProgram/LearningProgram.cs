@@ -212,6 +212,15 @@ namespace Rock.Model
         [DataMember]
         public int? DefaultLearningGradingSystemId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether public security should be enforced for this program.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if public security should be enforced; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnforcePublicSecurity { get; set; } = false;
+
         #endregion
 
         #region Navigation Properties

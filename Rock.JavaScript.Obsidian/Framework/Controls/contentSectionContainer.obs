@@ -1,0 +1,76 @@
+<template>
+    <div class="contentsection-container"
+         :class="additionalSectionContainerClasses">
+        <div class="contentsection-list">
+            <slot />
+        </div>
+
+        <ContentSectionNav v-if="showSidebar"
+                           :sections="sections" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import ContentSectionNav from "@Obsidian/Controls/Internal/contentSectionNav.obs";
+    import { IContentSectionHolder, IContentSectionContainerHolder, provideSectionContainer } from "@Obsidian/Core/Controls/contentSection";
+    import { computed, PropType, shallowRef } from "vue";
+
+    const props = defineProps({
+        /**
+         * Determines the visibility of the sidebar. If not provided, it will
+         * default to automatically showing the sidebar if there are multiple
+         * sections.
+         */
+        sidebar: {
+            type: Boolean as PropType<boolean | undefined>,
+            default: undefined
+        },
+
+        /**
+         * The position of the sidebar. This can be either "left" or "right".
+         */
+        sidebarPosition: {
+            type: String as PropType<"left" | "right">,
+            default: "right"
+        },
+    });
+
+    // #region Values
+
+    let nextSectionId = 1;
+    const sections = shallowRef<IContentSectionHolder[]>([]);
+
+    const container: IContentSectionContainerHolder = {
+        addSection(section) {
+            section.anchor.value = `section-${nextSectionId++}`;
+
+            sections.value = [...sections.value, section];
+        },
+        removeSection(section) {
+            sections.value = sections.value.filter(s => s !== section);
+        }
+    };
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** Determines whether the sidebar should be currently shown. */
+    const showSidebar = computed((): boolean => {
+        return props.sidebar ?? sections.value.length > 1;
+    });
+
+    /**
+     * Returns additional classes to apply to the section container based on the
+     * configured settings of the component.
+     */
+    const additionalSectionContainerClasses = computed((): string[] => {
+        return [
+            props.sidebarPosition === "right" ? "contentsection-nav-right" : "contentsection-nav-left"
+        ];
+    });
+
+    // #endregion
+
+    provideSectionContainer(container);
+</script>

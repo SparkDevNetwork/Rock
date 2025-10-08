@@ -1,0 +1,167 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :data="gridData"
+          light
+          keyField="guid"
+          itemTerm="Geolocation"
+          @addItem="onAdd">
+        <TextColumn name="locationComponent" title="Location Component" field="locationComponent" />
+        <TextColumn name="matchType" title="Match Type" field="comparisonName" />
+        <TextColumn name="value" title="Value" field="value" />
+        <EditColumn @click="onEdit" />
+        <DeleteColumn @click="onDelete" />
+    </Grid>
+
+    <Modal v-model="isModalVisible"
+           :title="`${isEditing ? 'Edit' : 'Add'} Geolocation Filter`"
+           saveText="Save"
+           cancelText="Cancel"
+           :onSave="onSave">
+        <div class="row form-row d-flex flex-wrap align-items-center">
+            <div class="col flex-grow-0">
+                <div class="form-group">
+                    <span class="text-nowrap">Where</span>
+                </div>
+            </div>
+            <div class="col flex-grow-0">
+                <div class="form-group">
+                    <DropDownList :modelValue="theFilter.locationComponent?.toString() ?? ''"
+                                  @update:modelValue="val => theFilter.locationComponent = Number(val)"
+                                  :items="locationComponents"
+                                  class="input-width-lg"
+                                  :showBlankItem="false" />
+                </div>
+            </div>
+            <div class="col flex-grow-0">
+                <div class="form-group">
+                    <span class="text-nowrap">is</span>
+                </div>
+            </div>
+            <div class="col flex-grow-0">
+                <div class="form-group">
+                    <DropDownList :modelValue="theFilter.comparisonType?.toString() ?? ''"
+                                  @update:modelValue="val => theFilter.comparisonType = Number(val)"
+                                  :items="comparisonTypes"
+                                  class="input-width-lg"
+                                  :showBlankItem="false" />
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group">
+                    <TextBox :modelValue="theFilter.value ?? ''"
+                             @update:modelValue="val => theFilter.value = val"
+                             rules="required"
+                             validationTitle="Value" />
+                </div>
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import Grid, { EditColumn, DeleteColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { getComparisonName, stringComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
+    import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/comparisonTypeOptions";
+    import type { IGeolocationRequestFilter } from "./types.partial";
+    import { GeolocationLocationComponentDescription } from "@Obsidian/Enums/Cms/Personalization/PersonalizationRequestFilters/geolocationLocationComponent";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { GeolocationRequestFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/RequestFilterDetail/geolocationRequestFilterBag";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<IGeolocationRequestFilter>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: IGeolocationRequestFilter): void
+    }>();
+
+    // #region Values
+
+    const theFilter = ref<GeolocationRequestFilterBag>({} as GeolocationRequestFilterBag);
+
+    const locationComponents = enumToListItemBag(GeolocationLocationComponentDescription);
+
+    const excludedComparisonValues = [ComparisonType.IsBlank, ComparisonType.IsNotBlank].map(v => v.toString());
+    const comparisonTypes = (getFilteredComparisonTypeOptions(stringComparisonTypes))
+        .filter(ct => !excludedComparisonValues.includes(ct.value ?? ""));
+
+    const isModalVisible = ref(false);
+    const isEditing = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const gridData = computed(() => {
+        const filters = props.modelValue.geolocationRequestFilters ?? [];
+        const rows = filters.map(f => ({
+            guid: f.guid,
+            locationComponent: GeolocationLocationComponentDescription[f.locationComponent ?? 0] ?? "",
+            comparisonName: getComparisonName(Number(f.comparisonType ?? 0)),
+            value: f.value ?? ""
+        }));
+        return { rows };
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function onAdd(): void {
+        theFilter.value = { guid: newGuid(), locationComponent: 0, comparisonType: 1, value: "" };
+        isModalVisible.value = true;
+        isEditing.value = false;
+    }
+
+    function onEdit(guid: string): void {
+        const row = props.modelValue.geolocationRequestFilters?.find(x => x.guid === guid);
+        if (!row) return;
+        theFilter.value = {
+            guid: row.guid,
+            locationComponent: row.locationComponent,
+            comparisonType: row.comparisonType,
+            value: row.value
+        };
+        isModalVisible.value = true;
+        isEditing.value = true;
+    }
+
+    function onDelete(guid: string): void {
+        const filters = (props.modelValue.geolocationRequestFilters ?? []).filter(f => f.guid !== guid);
+        emit("update:modelValue", {
+            ...props.modelValue,
+            geolocationRequestFilters: filters
+        });
+    }
+
+    function onSave(): void {
+        const filters = [...props.modelValue.geolocationRequestFilters ?? []];
+        const idx = filters.findIndex(f => f.guid === theFilter.value.guid);
+        const item = {
+            guid: theFilter.value.guid,
+            locationComponent: theFilter.value.locationComponent ?? 0,
+            comparisonType: theFilter.value.comparisonType ?? 0,
+            value: theFilter.value.value
+        } as GeolocationRequestFilterBag;
+
+        if (idx >= 0) filters.splice(idx, 1, item); else filters.push(item);
+
+        emit("update:modelValue", {
+            ...props.modelValue,
+            geolocationRequestFilters: filters
+        });
+
+        isModalVisible.value = false;
+    }
+
+    // #endregion Functions
+</script>

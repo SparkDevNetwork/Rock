@@ -1,7 +1,12 @@
-.main-content:has(.profile-content) {
+.main-content:has(.profile-content, .person-profile) {
   max-width: 100%;
   padding: 0 !important;
   margin: 0 !important;
+}
+
+// When there is profile content, reduce the margin on the footer
+.main-content:has(.profile-content, .person-profile) .main-footer:has(.html-content) {
+  margin: var(--spacing-large) var(--spacing-large) var(--spacing-small);
 }
 
 .profile-nav {
@@ -26,13 +31,8 @@
     > a {
       padding: var(--spacing-xsmall) var(--spacing-small);
       font-weight: var(--font-weight-semibold);
-      color: var(--color-interface-strong);
       white-space: nowrap;
-      background: var(--color-interface-softest);
-
-      &:hover {
-        background: var(--color-interface-softer);
-      }
+      background-color: var(--color-interface-softer);
     }
   }
 
@@ -40,8 +40,8 @@
     a,
     a:hover,
     a:focus {
-      color: var(--color-interface-softest);
-      background-color: var(--color-primary);
+      color: var(--color-primary);
+      background-color: var(--color-primary-soft);
     }
   }
 
@@ -84,7 +84,7 @@
     min-height: 102px;
     background: var(--color-interface-softest);
     border: 1px solid var(--color-interface-soft);
-    border-radius: var(--rounded-normal);
+    border-radius: var(--rounded-small);
     box-shadow: 0 1px 3px rgba(0,0,0,.1);
   }
 
@@ -93,6 +93,7 @@
     margin-bottom: 0;
     background: transparent;
     border: 0 !important;
+    overflow: visible;
   }
 }
 .card-badge-top {
@@ -288,6 +289,8 @@
     align-items: center;
     padding: var(--spacing-small) var(--spacing-xsmall) var(--spacing-small) var(--spacing-medium);
     font-weight: var(--font-weight-semibold);
+    border-top-left-radius: var(--rounded-small);
+    border-top-right-radius: var(--rounded-small);
 
     .card-title {
         margin: 0 auto 0 0;
@@ -316,13 +319,13 @@
       font-size:    var(--font-size-xsmall);
       font-weight:  var(--font-weight-semibold);
       color:      var(--color-interface-strong);
-      background: #e9ecef;
+      background: var(--color-interface-softer);
   }
-  
+
   .bio-data {
   z-index: 1010;
   }
-  
+
   .card-section {
       padding: var(--spacing-medium);
 
@@ -330,7 +333,7 @@
           border-top: 1px solid var(--color-interface-soft);
       }
   }
-  
+
   .card-body {
       padding: var(--spacing-medium);
   }
@@ -367,7 +370,8 @@
 }
 
 .profile-notes .notes {
-  .panel-noteadd-visible .panel-heading {
+  .panel-noteadd-visible .panel-heading,
+  .panel-noteadd-visible .panel-header {
     display: none;
   }
 
@@ -673,11 +677,11 @@ background: currentColor;
   color: inherit;
 }
 
-.rockbadge-assessment .fa-stack-1x {
+.rockbadge-assessment .ti-stacked-1x {
   color: var(--color-interface-softest) !important;
 }
 
-.rockbadge-assessment .fa-stack-2x {
+.rockbadge-assessment .ti-stacked-2x {
   color: currentColor !important;
 }
 

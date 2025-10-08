@@ -368,9 +368,9 @@ namespace Rock.Jobs
 
         private class JobSummary
         {
-            public const string SUCCESS_ICON = "<i class='ti ti-circle text-success'></i> ";
-            public const string WARNING_ICON = "<i class='ti ti-circle text-warning'></i> ";
-            public const string ERROR_ICON = "<i class='ti ti-circle text-error'></i> ";
+            public const string SUCCESS_ICON = "<i class='ti ti-circle-filled text-success'></i> ";
+            public const string WARNING_ICON = "<i class='ti ti-circle-filled text-warning'></i> ";
+            public const string ERROR_ICON = "<i class='ti ti-circle-filled text-error'></i> ";
 
             public JobSummary()
             {

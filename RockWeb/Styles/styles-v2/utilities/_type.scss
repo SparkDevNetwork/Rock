@@ -19,7 +19,7 @@ h1, h2, h3, h4, h5, h6,
   .small {
     font-weight: 400;
     line-height: 1;
-    color: var(--color-interface-soft);
+    color: var(--color-interface-medium);
   }
 }
 
@@ -173,7 +173,7 @@ mark,
   a &:focus {
     background-color: color-mix(in srgb, var(--color-info-soft) 100%, #000 15%);
   }
-  
+
 }
 .bg-warning {
   background-color: var(--color-warning-soft);

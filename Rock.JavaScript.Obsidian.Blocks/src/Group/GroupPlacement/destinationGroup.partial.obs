@@ -53,7 +53,7 @@
                   :key=role.idKey>
             <div v-if="role.idKey"
                  class="panel-inline">
-                <div class="panel-heading">
+                <div class="panel-heading panel-heading-bottom">
                     <h1 class="panel-title d-inline-block mr-2">
                         {{ pluralize(role.name ?? "") }}
                     </h1>
@@ -158,58 +158,10 @@
 </template>
 
 <style scoped>
+
 :deep(.panel.panel-block) {
     height: 100%;
-    margin-bottom: 24px;
-}
-
-.gender-section {
-    grid-column: 1 / -1;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.loading-section {
-    grid-column: 1 / -1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.gender-section .group-role-wrapper {
-    padding: 0;
-    padding-top: 12px;
-}
-
-.gender-highlight-label {
-    font-size: var(--font-size-small);
-    font-weight: var(--font-weight-semibold);
-}
-
-.male-label {
-    background-color: #E8F3FC;
-    color: #1A8AE5;
-}
-
-.female-label {
-    background-color: #FCE8FA;
-    color: #DE69C3;
-}
-
-.unknown-label {
-    background-color: var(--color-interface-soft);
-    color: var(--color-interface-strong);
-}
-
-.empty-drop-zone {
-    width: 100%;
-    grid-column: 1 / -1;
-    display: flex;
-    justify-content: center;
-    padding: 0.5rem;
-    border: 1px dashed var(--color-interface-soft);
-    color: var(--color-interface-soft);
+    margin-bottom: var(--spacing-large);
 }
 
 .panel-inline {
@@ -221,97 +173,25 @@
 }
 
 .panel-inline .panel-heading {
-    padding: 8px 16px;
-    /* background-color: rgba(245, 245, 245, 0.8); */
+    padding: var(--spacing-xsmall) var(--spacing-medium);
     background-color: var(--color-interface-softer);
-    border: 1px solid var(--color-interface-soft);
+    border-top: 1px solid var(--color-interface-soft);
     border-radius: 0;
 }
 
+.panel-body > .panel-inline:first-of-type > .panel-heading {
+    border-top: none;
+}
+
+.panel-inline .panel-heading.panel-heading-bottom {
+    border-bottom: 1px solid var(--color-interface-soft);
+}
+
 .panel-inline .panel-title {
-    font-size: 14px;
-    font-weight: 600
-}
-
-.panel-drawer + .group-role-members .panel-heading,
-.group-role-members:first-child .panel-heading {
-    border-top: 0
-}
-
-.placement-capacity-label {
-    border-radius: 100px;
-}
-
-.role-count {
     font-size: var(--font-size-small);
-    font-weight: var(--font-weight-regular);
-    color: var(--color-interface-medium);
+    font-weight: var(--font-weight-semibold);
 }
 
-.role-count.over-under-role-capacity {
-    color: var(--color-danger);
-}
-
-.male-badge {
-    background-color: #1A8AE5 !important;
-}
-
-.female-badge {
-    background-color: #DE69CE !important;
-}
-
-.unknown-badge {
-    background-color: var(--color-interface-soft) !important;
-    color: var(--color-interface-stronger) !important;
-}
-
-.status-over {
-    background-color: #d4442e !important;
-}
-
-.status-at {
-    background-color: #ee7624 !important;
-}
-
-.status-near {
-    background-color: #ffc870 !important;
-    color: black;
-}
-
-.status-under {
-    background-color: #16c98d !important;
-}
-
-.group-role-wrapper {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: 1fr;
-    padding: 16px;
-}
-
-@media (min-width: 1024px) {
-    .group-role-wrapper {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (min-width: 1440px) {
-    .group-role-wrapper {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-@media (min-width: 1800px) {
-    .group-role-wrapper {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
-@media (min-width: 2000px) {
-    .group-role-wrapper {
-        grid-template-columns: repeat(5, 1fr);
-    }
-}
 </style>
 
 <script setup lang="ts">

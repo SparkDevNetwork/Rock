@@ -237,6 +237,9 @@ namespace Rock.Blocks.Communication
         /// <summary>
         /// Validates that the target value is not an empty <see cref="Guid"/>.
         /// </summary>
+        /// <remarks>
+        /// If invalid, <paramref name="validationResult"/> is set to an unsuccessful result with the error message "(Friendly Name | Field) is required."
+        /// </remarks>
         /// <param name="validationContext">The validation context.</param>
         /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
         /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>

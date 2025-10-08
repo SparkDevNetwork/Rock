@@ -45,11 +45,10 @@
                 </div>
 
                 <%-- Persistence Schedule Settings --%>
+                <h5>Persistence Schedule</h5>
                 <asp:UpdatePanel runat="server" UpdateMode="Conditional" class="panel panel-waterfall">
                     <ContentTemplate>
-                        <div class="panel-heading">
-                            <h3 class="panel-title">Persistence Schedule</h3>
-                        </div>
+                        <div class="panel-heading" style="display: none"></div>
                         <asp:Panel runat="server" ID="pnlPersistenceSchedule" class="panel-body">
                             <div class="row">
                                 <div class="col-xs-12 col-md-3 show-divider">

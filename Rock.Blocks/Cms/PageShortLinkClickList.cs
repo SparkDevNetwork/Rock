@@ -39,6 +39,7 @@ namespace Rock.Blocks.Cms
     [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "aa860dc7-d590-4d0e-bbb3-16990f2cd680" )]
     [Rock.SystemGuid.BlockTypeGuid( "e44cac85-346f-41a4-884b-a6fb5fc64de1" )]
     [CustomizedGrid]
@@ -104,9 +105,9 @@ namespace Rock.Blocks.Cms
                 .AddTextField( "id", a => a.Id.ToString() )
                 .AddDateTimeField( "interactionDateTime", a => a.InteractionDateTime )
                 .AddPersonField( "person", a => a.PersonAlias?.Person )
-                .AddTextField( "application", a => a.InteractionSession.DeviceType.Application )
-                .AddTextField( "clientType", a => a.InteractionSession.DeviceType.ClientType )
-                .AddTextField( "operatingSystem", a => a.InteractionSession.DeviceType.OperatingSystem )
+                .AddTextField( "application", a => a.InteractionSession?.DeviceType?.Application )
+                .AddTextField( "clientType", a => a.InteractionSession?.DeviceType?.ClientType )
+                .AddTextField( "operatingSystem", a => a.InteractionSession?.DeviceType?.OperatingSystem )
                 .AddTextField( "source", a => GetUtmSourceName(a.SourceValueId) );
         }
 

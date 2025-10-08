@@ -46,6 +46,7 @@ namespace Rock.Blocks.Finance
         Description = "The page that will show the financial account details.",
         Key = AttributeKey.DetailPage )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "20cbcd56-e896-41de-ad82-0e3862d502b3" )]
     [Rock.SystemGuid.BlockTypeGuid( "57babd60-2a45-43ac-8ed3-b09af79c54ab" )]
     [CustomizedGrid]
@@ -122,7 +123,7 @@ namespace Rock.Blocks.Finance
             var options = new FinancialAccountListOptionsBag
             {
                 GridTitle = parentAccountId.HasValue ? "Child Accounts".FormatAsHtmlTitle() : "Accounts".FormatAsHtmlTitle(),
-                IsBlockVisible = (parentAccountId.HasValue && parentAccountId > 0) || topLevelOnly
+                IsBlockVisible = ( parentAccountId.HasValue && parentAccountId > 0 ) || topLevelOnly || !parentAccountId.HasValue
             };
 
             return options;
@@ -183,7 +184,7 @@ namespace Rock.Blocks.Finance
             {
                 accountQuery = accountQuery.Where( account => account.ParentAccountId == parentAccountId.Value );
             }
-            else if ( topLevelOnly )
+            else if ( topLevelOnly || !parentAccountId.HasValue )
             {
                 accountQuery = accountQuery.Where( account => account.ParentAccountId == null );
             }

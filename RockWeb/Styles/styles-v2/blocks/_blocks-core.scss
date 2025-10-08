@@ -1,22 +1,34 @@
-/*
-  Used to manage styles for specific blocks.
-
-  1. Notes - block to display, add, edit, delete notes
-  2. Schedule Builder - block for building schedules
-  3. Workflow - styles for workflow blocks
-  4. Electronic Signatures
-
-*/
-
-
-//  BLOCK CORE STYLE
+//  BLOCK CORE STYLES
 
 
 // =============================================================
-// Table of Content           
-//  + 
-//  + 
+// Table of Contents
+//  + Page Header - styles for page header blocks
+//  + Notes - block to display, add, edit, delete notes
+//  + Schedule Builder - block for building schedules
+//  + Workflow - styles for workflow blocks
+//  + Electronic Signatures
+//  + Rapid Attendance
 // =============================================================
+
+// ======================== PAGE HEADER ========================
+
+.rock-top-header .rock-bookmark.active.has-reminders > .indicator-bottom {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background-color: var(--color-primary);
+  width: 8px;
+  height: 8px;
+  border-radius: var(--rounded-xsmall);
+}
+
+.rock-top-header .rock-bookmark:hover {
+  border: 1px solid var(--color-interface-medium);
+}
+
+
+// ======================== END PAGE HEADER ========================
 
 
 .rock-fullscreen-toggle {
@@ -44,10 +56,9 @@
   }
 
   &::before {
-    font-family:    'FontAwesome';
-    font-weight:    var(--font-weight-black);
+    font-family:    'tabler-icons';
     text-align:     center;
-    content:        "\f065";
+    content:        "\eaea";
   }
 
   .is-fullscreen & {
@@ -100,7 +111,8 @@
   border-color:   var(--color-interface-softer);
   box-shadow:     none !important;
 
-  > .panel-heading {
+  > .panel-heading,
+  > .panel-header {
     position:         relative;
     padding:          18px;
     background:       var(--color-interface-softer);
@@ -171,7 +183,8 @@
 .panel-note {
   border: 1px solid var(--color-interface-soft);
 
-  & > .panel-heading {
+  & > .panel-heading,
+  & > .panel-header {
     color:            var(--color-interface-strongest);
     background-color: var(--color-interface-softest);
     border-color:     var(--color-interface-soft);
@@ -193,7 +206,8 @@
     padding: 0;
   }
 
-  .panel-heading {
+  .panel-heading,
+  .panel-header {
     h3 {
       float:    left;
     }
@@ -641,13 +655,21 @@
   padding:        0;
   border:         1px solid var(--color-interface-soft);
   border-bottom:  0;
+
+  .note-btn-group > .note-btn {
+    border-radius: 0;
+  }
+
+  .note-btn-group > .note-btn.btn-codeview {
+    border-top-left-radius: var(--rounded-small);
+  }
 }
 
 .note-btn {
   padding:        5px 10px 7px;
   background:     var(--color-interface-softest);
   border:         0;
-  border-radius:  0;
+  border-radius:  var(--rounded-small);
   box-shadow:     none;
 
   &:hover,
@@ -660,7 +682,7 @@
   &.active,
   &.active:focus,
   &.active:hover {
-    background: #cbeefa;
+    background: var(--color-info-strong);
   }
 
   &.btn-primary {
@@ -810,11 +832,11 @@
     width:            24px;
     height:           24px;
     margin-right:     var(--spacing-small);
-    font-family:      'FontAwesome';
-    font-size:        var(--font-size-xsmall);
+    font-family:      'tabler-icons';
+    font-size:        var(--font-size-medium);
     font-weight:      var(--font-weight-black);
     color:            var(--color-info-strong); // WAS TEXT-MUTED
-    content:          "\f1b3";
+    content:          "\f9ad";
     background:       fade(var(--color-info-strong), 20%);
     border-radius:    20px;
   }
@@ -846,7 +868,8 @@
   }
 
   // TODO: Add class activity-type-description
-  > .panel-heading > .filter-toggle > span {
+  > .panel-heading > .filter-toggle > span,
+  > .panel-header > .filter-toggle > span {
     margin-left:    36px;
     font-size:      var(--font-size-xsmall);
     line-height:    var(--line-height-normal);
@@ -873,15 +896,17 @@
     border-color: var(--color-primary);
   }
 
-  > .panel-heading {
+  > .panel-heading,
+  > .panel-header {
     background:   var(--color-interface-softer) !important;
   }
 
   .workflow-action-name::before {
     margin-right: var(--spacing-xsmall);
-    font-family:  'FontAwesome';
+    font-family:  'tabler-icons';
     font-weight:  var(--font-weight-black);
-    content:      "\f1b2";
+    color: var(--color-interface-medium);
+    content:      "\10021";
   }
 
   .criteria-exists {
@@ -912,11 +937,12 @@
     margin-bottom:      30px;
     border-color:       var(--color-interface-soft);
 
-    & > .panel-heading {
+    & > .panel-heading,
+    & > .panel-header {
       color:            var(--color-interface-strongest);
       background-color: var(--color-interface-softer);
       border-color:     var(--color-interface-softer);
-  
+
       + .panel-collapse > .panel-body {
         border-top-color: var(--color-interface-soft);
       }
@@ -934,7 +960,8 @@
       background-color: var(--color-interface-softest);
     }
 
-    .panel-heading {
+    .panel-heading,
+    .panel-header {
       padding: 30px;
 
       a {
@@ -1032,7 +1059,7 @@
   &.active {
     color:        var(--color-interface-softest) !important;
     background:   var(--color-primary) !important;
-    border-color: var(--color-primary) !important; // TODO darken by 5% when available 
+    border-color: var(--color-primary) !important; // TODO darken by 5% when available
   }
 }
 
@@ -1131,6 +1158,36 @@
   display:      flex;
   align-items:  center;
 }
+
+body.hide-block-role-secondary .block-instance.block-role-secondary:not(.block-role-action-aware) {
+    display: none;
+}
+
 // ====================== END ELECTRONIC SIGNATURE ======================
+
+// ====================== RAPID ATTENDANCE ======================
+
+.rapid-attendance-entry .mh-300 {
+  min-height: 300px;
+}
+
+.family-select-item {
+  margin-bottom: var(--spacing-small);
+  color: var(--color-interface-strong);
+  border: 1px solid var(--color-interface-softest);
+}
+
+.family-select-item.active {
+  border-color: var(--color-primary);
+}
+
+.family-select-item a {
+  display: block;
+  padding: 15px 18px;
+  color: var(--color-interface-strong) !important;
+}
+
+
+// ====================== END RAPID ATTENDANCE ======================
 
 

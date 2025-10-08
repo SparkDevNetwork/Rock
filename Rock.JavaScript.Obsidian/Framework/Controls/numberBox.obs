@@ -17,6 +17,7 @@
                            :class="inputClasses"
                            v-bind="field"
                            inputmode="decimal"
+                           :maxlength="maxLength ?? undefined"
                            :placeholder="placeholder"
                            :step="internalStep"
                            :min="minimumValue"
@@ -67,6 +68,11 @@
         inputClasses: {
             type: String as PropType<string>,
             default: ""
+        },
+        /** The maximum number of characters allowed to be entered. */
+        maxLength: {
+            type: Number as PropType<number | null>,
+            default: null
         },
         inputGroupClasses: {
             type: String as PropType<string>,

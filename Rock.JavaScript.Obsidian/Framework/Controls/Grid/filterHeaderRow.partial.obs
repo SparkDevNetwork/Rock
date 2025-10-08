@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="grid-title-heading">
+    <div class="grid-title-header">
         <div class="grid-title">
             <template v-if="!isTitleHidden">{{ internalTitle }}</template>
             <template v-else>&nbsp;</template>
@@ -14,7 +14,7 @@
         </div>
 
         <!-- This causes a break on extra small and small devices. -->
-        <div style="height: 0; border-bottom: 1px solid #dfe0e1; flex-basis: 100%;" class="d-md-none grid-header-separator"></div>
+        <div style="height: 0; border-bottom: 1px solid var(--color-interface-soft); flex-basis: 100%;" class="d-md-none grid-header-separator"></div>
         <div class="flex-grow-1 d-md-none grid-header-fill" style="min-width: 1px;"></div>
 
         <div class="grid-quick-filter grid-actions" v-if="isSearchVisible" :class="{ 'active': isSearchExpanded }">

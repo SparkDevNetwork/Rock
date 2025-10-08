@@ -4,75 +4,56 @@
 
     <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
-    <Panel if="!blockError" :title="panelName">
-        <template #headerActions>
-            <span v-if="businessDetailViewBag?.recordStatus?.value" :class="statusClass">{{ status }}</span>
-            <div v-if="showActions" :class="customActionClass" style="position: relative;">
-                <button type="button" class="btn btn-default" data-toggle="dropdown" aria-expanded="false" @click="onActionContextDropdownClick">
-                    Actions <i class="ti ti-caret-down"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-right" v-html="customActions">
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :labels="blockLabels"
+                 :entityKey="entityKey"
+                 :isAuditHidden="false"
+                 :isBadgesVisible="false"
+                 :isDeleteVisible="false"
+                 :isEditVisible="isEditable"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
+                 :headerSecondaryActions="secondaryActions"
+                 @cancelEdit="onCancelEdit"
+                 @edit="onEdit"
+                 @save="onSave">
 
-                </ul>
-            </div>
-        </template>
-
-        <template v-if="panelMode == DetailPanelMode.View && showBadges" #subheaderRight>
-            <BadgeList :entityTypeGuid="EntityType.Person" :entityKey="entityKey" :badgeTypeGuids="badgeTypeGuids" />
-        </template>
-
-        <template v-if="panelMode === DetailPanelMode.View">
+        <template #view>
             <ViewPanel :modelValue="businessDetailViewBag" :options="options" />
         </template>
 
-        <template v-else>
-            <RockForm v-model:submit="submitForm" @submit="onSave">
-                <EditPanel v-model="businessDetailEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
-            </RockForm>
+        <template #edit>
+            <EditPanel v-model="businessDetailEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
         </template>
 
-        <template #footerActions>
-            <RockButton v-if="panelMode === DetailPanelMode.View"
-                        :btnSize="BtnSize.Default"
-                        :btnType="BtnType.Primary"
-                        @click="onEdit">Edit</RockButton>
-            <RockButton v-if="panelMode === DetailPanelMode.Edit || panelMode === DetailPanelMode.Add"
-                        :btnSize="BtnSize.Default"
-                        :btnType="BtnType.Primary"
-                        :isLoading="isSaving"
-                        @click="onSaveClick">
-                Save
-            </RockButton>
-            <RockButton v-if="panelMode === DetailPanelMode.Edit || panelMode === DetailPanelMode.Add"
-                        btnType="link"
-                        @click="onCancelEdit"
-                        autoDisable>Cancel</RockButton>
-        </template>
-    </Panel>
+    </DetailBlock>
+
 </template>
+<style>
+.divider {
+    border-top: 1px solid #eee;
+    width: 100%;
+}
+</style>
 
 <script setup lang="ts">
-    import { computed, ref, onMounted } from "vue";
+    import { computed, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
-    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import EditPanel from "./BusinessDetail/editPanel.partial.obs";
     import ViewPanel from "./BusinessDetail/viewPanel.partial.obs";
-    import Panel from "@Obsidian/Controls/panel.obs";
-    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./BusinessDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { BusinessDetailBag } from "@Obsidian/ViewModels/Blocks/Finance/BusinessDetail/businessDetailBag";
     import { BusinessDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/BusinessDetail/businessDetailOptionsBag";
-    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
-    import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import BadgeList from "@Obsidian/Controls/badgeList.obs";
-    import { useStore } from "@Obsidian/PageState";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 
     const config = useConfigurationValues<DetailBlockBox<BusinessDetailBag, BusinessDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -81,11 +62,8 @@
 
     const blockError = ref("");
     const errorMessage = ref("");
-    const isSaving = ref(false);
-    const submitForm = ref(false);
-    const customActionClassList = ref(["action", "panel-action-context", "clickable"]);
-    const store = useStore();
 
+    const isSaving = ref(false);
     const businessDetailViewBag = ref(config.entity);
     const businessDetailEditBag = ref<ValidPropertiesBox<BusinessDetailBag>>({
         bag: {} as BusinessDetailBag
@@ -93,6 +71,58 @@
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
     const customActions = businessDetailViewBag.value?.customActions;
+
+    const secondaryActions = computed((): PanelAction[] | undefined => {
+        const actions: PanelAction[] = [];
+
+        if (!customActions) {
+            return actions;
+        }
+
+        actions.push({
+            title: "",
+            type: "default",
+            disabled: true,
+            iconCssClass: "ti ti-separator divider"
+        });
+
+        // Parse once (string is static).
+        const list = parseCustomActions(customActions);
+        list.forEach(({ href, text }) => {
+            const { classes, withtext } = parseIconAndText(text);
+
+            if (href) {
+                actions.push({
+                    title: withtext,
+                    type: "link",
+                    iconCssClass: classes,
+                    handler: () => {
+                        window.location = (href) as (string & Location);
+                    }
+                });
+            }
+            else if (!withtext) {
+                actions.push({
+                    title: "",
+                    type: "default",
+                    disabled: true,
+                    iconCssClass: "ti ti-separator divider"
+                });
+            }
+            else {
+                actions.push({
+                    title: text,
+                    type: "default",
+                    handler: () => {
+                        window.location = (href) as (string & Location);
+                    }
+                });
+
+            }
+        });
+
+        return actions;
+    });
 
     const baseBlock = useEntityDetailBlock({
         blockConfig: config,
@@ -115,36 +145,47 @@
         }
     });
 
-    const statusClass = computed((): string => {
+    /**
+     * Additional labels to display in the block panel.
+     */
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        const labels: PanelAction[] = [];
+
+        if (panelMode.value !== DetailPanelMode.View) {
+            return undefined;
+        }
+
         if (businessDetailViewBag.value?.recordStatus?.value?.toUpperCase() == DefinedValue.PersonRecordStatusPending) {
-            return "label label-warning";
+            labels.push({
+                iconCssClass: "ti ti-bulb-filled",
+                title: "Pending",
+                type: "warning"
+            });
         }
         else if (businessDetailViewBag.value?.recordStatus?.value?.toUpperCase() == DefinedValue.PersonRecordStatusInactive) {
-            return "label label-danger";
+            labels.push({
+                iconCssClass: "ti ti-bulb-filled",
+                title: "Inactive",
+                type: "danger"
+            });
         }
         else {
-            return "label label-success";
+            labels.push({
+                iconCssClass: "ti ti-bulb-filled",
+                title: "Active",
+                type: "success"
+            });
         }
+
+        return labels;
     });
 
-    const status = computed((): string => {
-        if (businessDetailViewBag.value?.recordStatus?.value?.toUpperCase() == DefinedValue.PersonRecordStatusPending) {
-            return "Pending";
-        }
-        else if (businessDetailViewBag.value?.recordStatus?.value?.toUpperCase() == DefinedValue.PersonRecordStatusInactive) {
-            return "Inactive";
-        }
-        else {
-            return "Active";
-        }
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
     });
 
     const options = computed((): BusinessDetailOptionsBag => {
         return config.options ?? {} as BusinessDetailOptionsBag;
-    });
-
-    const showActions = computed((): boolean => {
-        return customActions !== null && panelMode.value === DetailPanelMode.View;
     });
 
     /**
@@ -154,31 +195,85 @@
         return businessDetailViewBag.value?.idKey ?? "";
     });
 
-    const badgeTypeGuids = computed((): string[] => {
-        return businessDetailViewBag.value?.badgeTypeGuids ?? [];
-    });
+    // #endregion
 
-    const showBadges = computed((): boolean => {
-        const badgeTypeGuids = businessDetailViewBag.value?.badgeTypeGuids ?? [];
-        return badgeTypeGuids.length > 0;
-    });
+    // #region Custom Functions
+    interface IActionEntry {
+        href: string;
+        text: string;
+    }
 
-    const customActionClass = computed((): string => {
-        return customActionClassList.value.join(" ");
-    });
+    /**
+    * parseCustomActions: DOM-parse anchors from an HTML snippet and return a
+    * text-sorted list.
+    * Why: DOM parsing is robust vs regex and safely normalizes whitespace/entities.
+    */
+    function parseCustomActions(customActions: string | null | undefined): IActionEntry[] {
+        if (!customActions || !customActions.trim()) {
+            return [];
+        }
+        if (typeof document === "undefined") {
+            throw new Error("parseCustomActions requires a browser DOM (document is undefined).");
+        }
 
+        const tpl = document.createElement("template");
+        tpl.innerHTML = customActions;
+
+        const items: IActionEntry[] = [];
+        const lis = Array.from(tpl.content.querySelectorAll<HTMLLIElement>("li"));
+
+        for (const li of lis) {
+            const isSeparator = li.getAttribute("role") === "separator" || li.classList.contains("divider");
+            if (isSeparator) {
+                items.push({ href: "", text: li.outerHTML.trim() });
+                continue;
+            }
+
+            const a = li.querySelector<HTMLAnchorElement>("a[href]");
+            if (a) {
+                const href = (a.getAttribute("href") ?? "").trim();
+                const text = a.innerHTML.trim(); // preserves <i> etc.
+                if (text) items.push({ href, text });
+                continue;
+            }
+
+            // Fallback: keep whole <li> markup as text when no <a> exists
+            const fallback = li.outerHTML.trim();
+            if (fallback) items.push({ href: "", text: fallback });
+        }
+
+        return items;
+    }
+
+    interface IIconParts {
+        classes: string;
+        withtext: string;
+    }
+
+    function parseIconAndText(input: string | null | undefined): IIconParts {
+        if (!input || !input.trim()) {
+            return { classes: "", withtext: "" };
+        }
+
+        if (typeof document === "undefined") {
+            throw new Error("parseIconAndText requires a browser DOM (document is undefined).");
+        }
+
+        const tpl = document.createElement("template");
+        tpl.innerHTML = input;
+
+        const icon = tpl.content.querySelector("i");
+        const classes = (icon?.getAttribute("class") ?? "").trim();
+
+        if (icon) icon.remove(); // leave only content after </i>
+
+        const withtext = (tpl.content.textContent ?? "").replace(/\s+/g, " ").trim();
+        return { classes, withtext };
+    }
 
     // #endregion
 
     // #region Event Handlers
-
-    /**
-    * Event handler for the Save button being clicked.
-    * Alerts the form to begin validation and submit form if no errors are found
-    */
-    const onSaveClick = (): void => {
-        submitForm.value = true;
-    };
 
     /**
      * Event handler for the Cancel button being clicked while in Edit mode.
@@ -186,16 +281,16 @@
      *
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
-    async function onCancelEdit(): Promise<void> {
+    async function onCancelEdit(): Promise<boolean | string> {
         if (!businessDetailEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-                window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.ParentPage]);
+                return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
+
+            return false;
         }
-        else {
-            store.setAreSecondaryBlocksShown(true);
-            panelMode.value = DetailPanelMode.View;
-        }
+
+        return true;
     }
 
     /**
@@ -204,7 +299,7 @@
      *
      * @returns true if the panel should enter edit mode; otherwise false.
      */
-    async function onEdit(): Promise<void> {
+    async function onEdit(): Promise<boolean> {
         const result = await invokeBlockAction<ValidPropertiesBox<BusinessDetailBag>>("Edit", {
             key: businessDetailViewBag.value?.idKey
         });
@@ -215,8 +310,10 @@
                 validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
             };
 
-            panelMode.value = DetailPanelMode.Edit;
-            store.setAreSecondaryBlocksShown(false);
+            return true;
+        }
+        else {
+            return false;
         }
     }
 
@@ -224,7 +321,7 @@
      * Event handler for the panel's Save event. Send the data to the server
      * to be saved and then leave edit mode or redirect to target page.
      */
-    async function onSave(): Promise<void> {
+    async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
         isSaving.value = true;
 
@@ -237,34 +334,18 @@
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
                 businessDetailViewBag.value = result.data.bag;
-                store.setAreSecondaryBlocksShown(true);
-                panelMode.value = DetailPanelMode.View;
+
+                return true;
             }
             else if (result.statusCode === 201 && typeof result.data === "string") {
-                window.location.href = makeUrlRedirectSafe(result.data);
+                return result.data;
             }
         }
-        else {
-            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save Business.";
-        }
 
-        submitForm.value = false;
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save Business.";
+
+        return false;
     }
-
-    /**
-     * Event Handler for the Custom actions dropdown click. Toggles between opening and closing the dropdown list.
-     */
-    function onActionContextDropdownClick(event: MouseEvent): void {
-        event.stopPropagation();
-        if (!customActionClassList.value.includes("open")) {
-            customActionClassList.value.push("open");
-        }
-        else {
-            customActionClassList.value = customActionClassList.value.filter(c => c !== "open");
-        }
-    }
-
-    // #endregion
 
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
@@ -277,15 +358,6 @@
         businessDetailEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
-
-    onMounted(() => {
-        if (config.entity?.idKey) {
-            store.setAreSecondaryBlocksShown(true);
-        }
-        else {
-            store.setAreSecondaryBlocksShown(false);
-        }
-    });
 
     onConfigurationValuesChanged(useReloadBlock());
 

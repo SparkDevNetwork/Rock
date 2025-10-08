@@ -133,13 +133,10 @@ namespace Rock.Blocks.Finance
 
         private static class BlockAttributeDescription
         {
-            public const string AdditionalCustomActions = @"
-Additional custom actions (will be displayed after the list of workflow actions). Any instance of '{0}' will be replaced with the current business's id.
-Because the contents of this setting will be rendered inside a &lt;ul&gt; element, it is recommended to use an 
+            public const string AdditionalCustomActions = @"Additional custom actions (will be displayed after the list of workflow actions). Any instance of '{0}' will be replaced with the current business's id.
+Because the contents of this setting will be rendered inside a menu element, it is recommended to use an 
 &lt;li&gt; element for each available action.  Example:
-<pre>
-    &lt;li&gt;&lt;a href='~/WorkflowEntry/4?PersonId={0}' tabindex='0'&gt;Fourth Action&lt;/a&gt;&lt;/li&gt;
-</pre>";
+<code>&lt;li&gt;&lt;a href='~/WorkflowEntry/4?PersonId={0}' tabindex='0'&gt;Fourth Action&lt;/a&gt;&lt;/li&gt;</code>";
         }
 
         private static class ListSource

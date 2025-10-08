@@ -30,15 +30,15 @@ import EntityTagList from "@Obsidian/Controls/tagList.obs";
 import RockButton from "@Obsidian/Controls/rockButton.obs";
 import RockForm from "@Obsidian/Controls/rockForm.obs";
 import RockSuspense from "@Obsidian/Controls/rockSuspense.obs";
-import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { alert, confirmDelete, showSecurity } from "@Obsidian/Utility/dialogs";
 import { useHttp } from "@Obsidian/Utility/http";
 import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 import { splitCase } from "@Obsidian/Utility/stringUtils";
 import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
-import { useBlockBrowserBus, useEntityTypeGuid, useEntityTypeName } from "@Obsidian/Utility/block";
+import { hideBlockRole, showBlockRole, useBlockBrowserBus, useEntityTypeGuid, useEntityTypeName } from "@Obsidian/Utility/block";
 import { BlockMessages } from "@Obsidian/Utility/browserBus";
+import { BlockRole } from "@Obsidian/Enums/Cms/blockRole";
 
 /** Provides a pattern for entity detail blocks. */
 export default defineComponent({
@@ -274,7 +274,7 @@ export default defineComponent({
         // #region Values
 
         const http = useHttp();
-        const internalMode = useVModelPassthrough(props, "mode", emit);
+        const internalMode = ref(props.mode);
         const isEditModeLoading = ref(false);
         const isEntityFollowed = ref<boolean | null>(null);
         const showAuditDetailsModal = ref(false);
@@ -583,6 +583,8 @@ export default defineComponent({
 
             internalMode.value = DetailPanelMode.View;
             browserBus.publish(BlockMessages.EndEdit);
+
+            await showBlockRole(BlockRole.Secondary);
         };
 
         /**
@@ -615,6 +617,8 @@ export default defineComponent({
             // fully loaded and ready to display.
             editModeReadyCompletionSource = new PromiseCompletionSource();
             await editModeReadyCompletionSource.promise;
+
+            await hideBlockRole(BlockRole.Secondary);
 
             // Perform the final switch into edit mode.
             browserBus.publish(BlockMessages.BeginEdit);
@@ -685,6 +689,8 @@ export default defineComponent({
 
                 internalMode.value = DetailPanelMode.View;
                 browserBus.publish(BlockMessages.EndEdit);
+
+                await showBlockRole(BlockRole.Secondary);
             }
             finally {
                 if (formSubmissionSource !== null) {
@@ -700,7 +706,7 @@ export default defineComponent({
          */
         const onDeleteClick = async (): Promise<void> => {
             if (props.onDelete) {
-                if (!await confirmDelete(entityTypeName.value, props.additionalDeleteMessage ?? "")) {
+                if (!await confirmDelete(splitCase(entityTypeName.value), props.additionalDeleteMessage ?? "")) {
                     return;
                 }
 
@@ -768,6 +774,34 @@ export default defineComponent({
 
         // #endregion
 
+        watch(() => props.mode, () => {
+            if (props.mode === internalMode.value) {
+                return;
+            }
+
+            const wasEditMode = isEditMode.value;
+            internalMode.value = props.mode;
+            const newEditMode = isEditMode.value;
+
+            // If the edit mode state changed then we need to either hide or
+            // show the secondary blocks. This is rare but can happen if the
+            // parent component decides to manually change the mode.
+            if (wasEditMode != newEditMode) {
+                if (newEditMode) {
+                    hideBlockRole(BlockRole.Secondary);
+                }
+                else {
+                    showBlockRole(BlockRole.Secondary);
+                }
+            }
+        });
+
+        watch(internalMode, () => {
+            if (props.mode !== internalMode.value) {
+                emit("update:mode", internalMode.value);
+            }
+        });
+
         // Watch for the isFollowVisible value to change, and if we haven't loaded
         // the initial followed state yet then begin loading it.
         watch(() => props.isFollowVisible, () => {
@@ -785,6 +819,12 @@ export default defineComponent({
             isPanelVisible.value = false;
 
             onEditClick();
+        }
+        else if (isEditMode.value) {
+            // If we are not in auto-edit mode but just starting in edit mode,
+            // then make sure secondary blocks are hidden. This is usually the
+            // case when adding a new entity.
+            hideBlockRole(BlockRole.Secondary);
         }
 
         return {

@@ -48,13 +48,6 @@ namespace Rock.ViewModels.Blocks.Cms.LogSettings
         public bool IsLocalLoggingEnabled { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether Rock will write logs to the
-        /// Observability framework.
-        /// </summary>
-        /// <value><c>true</c> if Rock will write logs to the Observability framework; otherwise, <c>false</c>.</value>
-        public bool IsObservabilityLoggingEnabled { get; set; }
-
-        /// <summary>
         /// Gets or sets the advanced settings as a JSON object that conforms
         /// to the standard Microsoft logging syntax. The root object should be
         /// the "Logging" node - meaning "LogLevel" should be one of the keys

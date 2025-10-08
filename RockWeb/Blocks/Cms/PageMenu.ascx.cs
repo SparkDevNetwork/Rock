@@ -96,6 +96,8 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.IncludePageList )]
 
     #endregion
+
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Navigation )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.PAGE_MENU )]
     public partial class PageMenu : RockBlock, ISecondaryBlock
     {

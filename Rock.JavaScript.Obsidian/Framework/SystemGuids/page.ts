@@ -711,6 +711,8 @@ export const Page = {
      * ParentPage: Internal Homepage
      */
     Finance: "7BEB7569-C485-40A0-A609-B0678F6F7240",
+    /** Gets the Finance Reports page guid */
+    FinanceReports: "8D5917F1-4E0E-4F18-8815-62EFBF808995",
     /**
      * The financial account search guid
      * ParentPage: Internal Homepage &gt; Finance &gt; Administration

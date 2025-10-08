@@ -71,16 +71,18 @@
             valueBuilder.addTextValue("Account", props.modelValue.mediaAccount.text ?? "");
         }
 
-        if (props.modelValue.contentChannel?.value) {
-            valueBuilder.addTextValue("Content Channel", props.modelValue.contentChannel.text ?? "");
-        }
+        if (props.modelValue.isContentChannelSyncEnabled) {
+            if (props.modelValue.contentChannel?.value) {
+                valueBuilder.addTextValue("Content Channel", props.modelValue.contentChannel.text ?? "");
+            }
 
-        if (props.modelValue.contentChannelAttribute?.value) {
-            valueBuilder.addTextValue("Content Channel Attribute", props.modelValue.contentChannelAttribute.text ?? "");
-        }
+            if (props.modelValue.contentChannelAttribute?.value) {
+                valueBuilder.addTextValue("Content Channel Attribute", props.modelValue.contentChannelAttribute.text ?? "");
+            }
 
-        if (props.modelValue.contentChannelItemStatus) {
-            valueBuilder.addTextValue("Content Channel Item Status", props.modelValue.contentChannelItemStatus ?? "");
+            if (props.modelValue.contentChannelItemStatus) {
+                valueBuilder.addTextValue("Content Channel Item Status", props.modelValue.contentChannelItemStatus ?? "");
+            }
         }
 
         if (props.modelValue.workflowType?.text) {

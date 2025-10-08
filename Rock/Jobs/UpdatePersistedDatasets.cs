@@ -158,12 +158,12 @@ namespace Rock.Jobs
             }
 
             var resultMessage = new StringBuilder();
-            resultMessage.AppendLine( $"<i class='ti ti-circle text-success'></i> {updatedDatasetCount} Updated" );
+            resultMessage.AppendLine( $"<i class='ti ti-circle-filled text-success'></i> {updatedDatasetCount} Updated" );
 
             // If there are warnings, concatenate them into the final result.
             if ( warnings.Any() )
             {
-                resultMessage.AppendLine( $"<i class='ti ti-circle text-warning'></i> {warnings.Count} Warning{( warnings.Count == 1 ? "" : "s" )}. Run manually or see exception log for details." );
+                resultMessage.AppendLine( $"<i class='ti ti-circle-filled text-warning'></i> {warnings.Count} Warning{( warnings.Count == 1 ? "" : "s" )}. Run manually or see exception log for details." );
                 resultMessage.AppendLine(string.Join( "<br>", warnings ));
             }
             this.Result = resultMessage.ToString();
@@ -171,7 +171,7 @@ namespace Rock.Jobs
 
         private string FormatStatusMessage( string action, string datasetName, string statusType )
         {
-            return $"<i class='ti ti-circle text-{statusType}'></i> {action}: {datasetName}";
+            return $"<i class='ti ti-circle-filled text-{statusType}'></i> {action}: {datasetName}";
         }
     }
 }

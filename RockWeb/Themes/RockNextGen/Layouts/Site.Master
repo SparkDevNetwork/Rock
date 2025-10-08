@@ -66,40 +66,9 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
     <asp:ContentPlaceHolder ID="css" runat="server" />
 
 	<!-- Included CSS Files -->
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
 	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
 
-    <script src="<%# ResolveRockUrl("~~/Assets/Scripts/theme.js", true) %>"></script>
-
-  <script>
-
-            let attributeName = "theme"
-            var htmlElement = document.documentElement;
-
-            const states = ["light", "dark", "system"];
-            let currentStateIndex;
-
-            const value = localStorage.getItem(attributeName);
-            if (value != null) {
-                htmlElement.setAttribute(attributeName, value);
-                currentStateIndex = states.indexOf(value);
-            } else {
-                currentStateIndex = 2;
-            };
-      document.addEventListener("DOMContentLoaded", function () {
-          const button = document.getElementById("themeSwitchButton");
-
-          button.addEventListener("click", () => {
-
-              currentStateIndex = (currentStateIndex + 1) % states.length;
-
-              localStorage.setItem(attributeName, states[currentStateIndex]);
-
-              const value = localStorage.getItem(attributeName);
-              htmlElement.setAttribute(attributeName, value);
-          });
-      });
-  </script>
+    <script src="<%# ResolveRockUrl("~~/Assets/Scripts/theme.js", true) %>"></script> 
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
@@ -121,9 +90,6 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
 
                 <div id="fixed-header" class="header-content" role="navigation">
                     <div class="navbar-zone-login"><Rock:Zone Name="Login" runat="server" /></div>
-                    <div>
-                        <button id="themeSwitchButton" class="theme-toggle" type="button"><i id="theme-icon" class="ti theme-mode-icon"></i></button>
-                    </div>
                     <div class="navbar-zone-header"><Rock:Zone Name="Header" runat="server" /></div>
 
                     <!-- Page Title -->
@@ -161,26 +127,11 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
         <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
 		        <ProgressTemplate>
                 <div class="updateprogress-status">
-                    <div class="grid-loader">
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
+                    <div class="updateprogress-loader">
+                        <svg viewBox="0 0 135 140" xmlns="http://www.w3.org/2000/svg" fill="CurrentColor"><rect y="10" width="15" height="120" rx="6"><animate attributeName="height" begin="0.5s" dur="1s" values="120;110;100;90;80;70;60;50;40;140;120" calcMode="linear" repeatCount="indefinite"/><animate attributeName="y" begin="0.5s" dur="1s" values="10;15;20;25;30;35;40;45;50;0;10" calcMode="linear" repeatCount="indefinite"/></rect><rect x="30" y="10" width="15" height="120" rx="6"><animate attributeName="height" begin="0.25s" dur="1s" values="120;110;100;90;80;70;60;50;40;140;120" calcMode="linear" repeatCount="indefinite"/><animate attributeName="y" begin="0.25s" dur="1s" values="10;15;20;25;30;35;40;45;50;0;10" calcMode="linear" repeatCount="indefinite"/></rect><rect x="60" width="15" height="140" rx="6"><animate attributeName="height" begin="0s" dur="1s" values="120;110;100;90;80;70;60;50;40;140;120" calcMode="linear" repeatCount="indefinite"/><animate attributeName="y" begin="0s" dur="1s" values="10;15;20;25;30;35;40;45;50;0;10" calcMode="linear" repeatCount="indefinite"/></rect><rect x="90" y="10" width="15" height="120" rx="6"><animate attributeName="height" begin="0.25s" dur="1s" values="120;110;100;90;80;70;60;50;40;140;120" calcMode="linear" repeatCount="indefinite"/><animate attributeName="y" begin="0.25s" dur="1s" values="10;15;20;25;30;35;40;45;50;0;10" calcMode="linear" repeatCount="indefinite"/></rect><rect x="120" y="10" width="15" height="120" rx="6"><animate attributeName="height" begin="0.5s" dur="1s" values="120;110;100;90;80;70;60;50;40;140;120" calcMode="linear" repeatCount="indefinite"/><animate attributeName="y" begin="0.5s" dur="1s" values="10;15;20;25;30;35;40;45;50;0;10" calcMode="linear" repeatCount="indefinite"/></rect></svg>        
                     </div>
                 </div>
-                    <div class="updateprogress-bg modal-backdrop"></div>
+                <div class="updateprogress-bg modal-backdrop"></div>
 		        </ProgressTemplate>
         </asp:UpdateProgress>
     </form>

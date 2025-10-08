@@ -44,6 +44,7 @@ namespace Rock.Blocks.Lms
         Description = "The page that will show the learning grading system scale details.",
         Key = AttributeKey.DetailPage )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "fb5a07b0-ca85-460e-8700-2e57ae5194c8" )]
     [Rock.SystemGuid.BlockTypeGuid( "27390ed3-57b2-42ef-a212-f8b29851f9ba" )]
     [CustomizedGrid]

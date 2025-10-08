@@ -41,6 +41,7 @@ namespace Rock.Blocks.Event
     [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "10f4d211-fc60-40d5-b96b-6b9fcbdbefac" )]
     [Rock.SystemGuid.BlockTypeGuid( "dbcfb477-0553-4bae-bac9-2aec38e1da37" )]
     [CustomizedGrid]
@@ -107,7 +108,7 @@ namespace Rock.Blocks.Event
             {
                 registrationFees = new RegistrationRegistrantFeeService( rockContext ).Queryable()
                     .Include( a => a.RegistrationRegistrant.Registration )
-                    .Include( a => a.RegistrationRegistrant.PersonAlias )
+                    .Include( a => a.RegistrationRegistrant.PersonAlias.Person )
                     .Include( a => a.RegistrationTemplateFee )
                     .Include( a => a.RegistrationTemplateFeeItem )
                     .Where( a => a.RegistrationRegistrant.Registration.RegistrationInstanceId == instanceId );

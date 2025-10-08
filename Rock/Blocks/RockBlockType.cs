@@ -543,7 +543,8 @@ Obsidian.onReady(() => {{
                 ConfigurationValues = configurationValues,
                 CustomConfigurationActions = configActions,
                 Preferences = blockPreferences,
-                ReloadMode = reloadModeAttribute?.ReloadMode ?? Enums.Cms.BlockReloadMode.None
+                ReloadMode = reloadModeAttribute?.ReloadMode ?? Enums.Cms.BlockReloadMode.None,
+                Role = BlockCache.Role ?? BlockCache.BlockType?.DefaultRole ?? Enums.Cms.BlockRole.Content,
             };
         }
 

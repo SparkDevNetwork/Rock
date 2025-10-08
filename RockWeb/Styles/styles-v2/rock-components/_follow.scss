@@ -3,19 +3,21 @@
 
 
 // =============================================================
-// Table of Content           
-//  + Base Style                
+// Table of Content
+//  + Base Style
 // =============================================================
 
 
 // ======================== BASE STYLE ========================
 
-.panel .panel-heading.panel-follow {
+.panel .panel-heading.panel-follow,
+.panel .panel-header.panel-follow {
   position:       relative;
   padding-right:  60px;
 }
 
-.panel .panel-heading.panel-follow-fullscreen {
+.panel .panel-heading.panel-follow-fullscreen,
+.panel .panel-header.panel-follow-fullscreen {
   position:       relative;
   padding-right:  110px;
 }
@@ -35,12 +37,12 @@
   transition:   color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 
   &::before {
-    font-family:  $font-face;
-    content:      "\f005"; // TODO hard coded Font Awesome
+    font-family:  'tabler-icons';
+    content:      "\f6a6"; // TODO hard coded Font Awesome
   }
 
   &.following {
-    color:            var(--color-interface-softest);
+    color:            #fff;
     background-color: var(--color-primary);
     opacity:          1;
   }

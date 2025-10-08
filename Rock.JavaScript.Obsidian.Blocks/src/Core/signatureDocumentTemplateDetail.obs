@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, onMounted, ref } from "vue";
+    import { computed, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
@@ -47,12 +47,10 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { SignatureDocumentTemplateBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentTemplateDetail/signatureDocumentTemplateBag";
     import { SignatureDocumentTemplateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentTemplateDetail/signatureDocumentTemplateDetailOptionsBag";
-    import { useStore } from "@Obsidian/PageState";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<SignatureDocumentTemplateBag, SignatureDocumentTemplateDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const store = useStore();
 
     // #region Values
 
@@ -76,10 +74,6 @@
     // #endregion
 
     // #region Computed Values
-
-    const canAdministrate = computed((): boolean => {
-        return signatureDocumentTemplateViewBag.value?.canAdministrate === true;
-    });
 
     /**
      * The entity name to display in the block panel.
@@ -251,14 +245,5 @@
     }
 
     onConfigurationValuesChanged(useReloadBlock());
-
-    onMounted(() => {
-        if (config.entity?.idKey) {
-            store.setAreSecondaryBlocksShown(true);
-        }
-        else {
-            store.setAreSecondaryBlocksShown(false);
-        }
-    });
 
 </script>

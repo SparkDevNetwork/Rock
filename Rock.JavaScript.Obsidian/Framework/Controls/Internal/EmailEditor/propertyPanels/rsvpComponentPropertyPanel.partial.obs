@@ -2,6 +2,7 @@
 <template>
     <ComponentPropertyPanelBase :componentElement="componentElement"
                                 :componentMigrationHelper="rsvpComponentHelper"
+                                :ltr="ltr"
                                 title="RSVP"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
@@ -243,6 +244,11 @@
         componentElement: {
             type: Object as PropType<HTMLElement>,
             required: true
+        },
+
+        ltr: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         recipientPersonIds: {

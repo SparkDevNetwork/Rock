@@ -48,9 +48,9 @@
 
         <div class="row">
             <div class="col-md-6">
-                <TextBox v-model="achievementIconCssClass"
-                         label="Icon CSS Class"
-                         help="The font awesome icon class to use for this achievement." />
+                <IconPicker v-model="achievementIconCssClass"
+                            label="Icon CSS Class"
+                            help="The font awesome icon class to use for this achievement." />
             </div>
 
             <div class="col-md-3">
@@ -199,6 +199,7 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";

@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, onMounted, ref } from "vue";
+    import { computed, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
@@ -47,12 +47,10 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { EventCalendarBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventCalendarBag";
     import { EventCalendarDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventCalendarDetailOptionsBag";
-    import { useStore } from "@Obsidian/PageState";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<EventCalendarBag, EventCalendarDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const store = useStore();
 
     // #region Values
 
@@ -173,7 +171,6 @@
 
             return false;
         }
-        store.setAreSecondaryBlocksShown(true);
         return true;
     }
 
@@ -216,7 +213,6 @@
                 bag: result.data.bag,
                 validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
             };
-            store.setAreSecondaryBlocksShown(false);
             return true;
         }
         else {
@@ -266,13 +262,4 @@
         eventCalendarEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
-
-    onMounted(() => {
-        if (config.entity?.idKey) {
-            store.setAreSecondaryBlocksShown(true);
-        }
-        else {
-            store.setAreSecondaryBlocksShown(false);
-        }
-    });
 </script>

@@ -2,9 +2,10 @@
 <template>
     <fieldset>
         <div class="row">
-            <div class="col-sm-4 col-md-2">
-                <LocationItemPicker label="Location"
+            <div class="col-md-3">
+                <LocationItemPicker label="Exclusion Location"
                                     v-model="location"
+                                    help="The location of the streak records you want to set exclusions on. Leave blank to match records with no location."
                                     :multiple="false" />
             </div>
         </div>

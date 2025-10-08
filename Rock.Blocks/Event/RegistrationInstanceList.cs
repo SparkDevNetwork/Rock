@@ -45,7 +45,8 @@ namespace Rock.Blocks.Event
     [LinkedPage( "Detail Page",
         Description = "The page that will show the registration instance details.",
         Key = AttributeKey.DetailPage )]
-        
+
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "5cc98267-2b3c-45ef-9055-31db629d579b" )]
     [Rock.SystemGuid.BlockTypeGuid( "051f65ad-9301-4d41-bd5e-d4e93f4dc438" )]
     [CustomizedGrid]

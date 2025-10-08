@@ -164,6 +164,8 @@ export const DefinedType = {
     MotivatorThemeType: "354715FA-564A-420A-8324-0411988AE7AB",
     /** Motivator Type */
     MotivatorType: "1DFF1804-0055-491E-9559-54EA3F8F89D1",
+    /** Guid for the types of Organizational Objectives (such as Outreach, Discipleship, Activation) */
+    OrganizationalObjectiveType: "47448937-1993-4064-95F9-18BB35E1F45B",
     /** List of different types of relationships and individual could have in their Peer Network. */
     PeerNetworkRelationshipType: "F2E8E639-F16D-489D-AAFB-BE0133531E41",
     /** Guid for the types of possible check-in system ability levels (such as Infant, Crawler, etc.) */

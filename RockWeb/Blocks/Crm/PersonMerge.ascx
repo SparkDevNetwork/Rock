@@ -154,6 +154,10 @@
                 visibility: collapse;
                 background-color: var(--color-interface-softer);
             }
+
+            .merge-field-cell {
+                max-width: 150px;
+            }
         </style>
 
     </ContentTemplate>

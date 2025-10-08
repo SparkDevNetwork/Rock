@@ -767,6 +767,11 @@ namespace Rock.Blocks.Cms
                 return actionError;
             }
 
+            if ( entity.IsSystem )
+            {
+                return ActionBadRequest( "System sites cannot be deleted." );
+            }
+
             var pageService = new PageService( RockContext );
             var layoutService = new LayoutService( RockContext );
 

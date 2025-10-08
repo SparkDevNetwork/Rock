@@ -18,8 +18,6 @@
 using System.Net;
 using System.Threading.Tasks;
 
-using Microsoft.AspNetCore.Mvc;
-
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.Sync;
 using Rock.Transactions;
@@ -47,7 +45,7 @@ namespace Rock.Rest.v2
         /// <returns>A status code indicating the result of the request.</returns>
         [HttpPost]
         [Route( "Webhook" )]
-        [ProducesResponseType( HttpStatusCode.OK )]
+        [ProducesResponse( HttpStatusCode.OK )]
         [SystemGuid.RestActionGuid( "7D1B2D15-E2F5-4159-AD84-AE7D9262750D" )]
         public async Task<IActionResult> Webhook()
         {

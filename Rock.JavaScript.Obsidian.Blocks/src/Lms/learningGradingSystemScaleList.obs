@@ -2,7 +2,6 @@
 <template>
     <Grid
           v-if="hasLoadedData"
-          :class="visibleCssClass"
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
@@ -51,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-    import { useBlockBrowserBus, onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { numberValueFilter, textValueFilter, AttributeColumns, BooleanColumn, NumberColumn, Column, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
@@ -59,8 +58,7 @@
     import { LearningGradingSystemScaleListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningGradingSystemScaleList/learningGradingSystemScaleListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./LearningGradingSystemScaleList/types.partial";
-    import { onMounted, reactive, ref } from "vue";
-    import { BlockMessages } from "@Obsidian/Utility/browserBus";
+    import { reactive, ref } from "vue";
 
     const config = useConfigurationValues<ListBlockBox<LearningGradingSystemScaleListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -68,28 +66,10 @@
 
     // #region Values
 
-    const learningGradingSystemId = config.options?.learningGradingSystemIdKey ?? "0";
-
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
-    // Use the browser bus to listen for changes to edit mode for any blocks on the page.
-    const browserBus = useBlockBrowserBus();
     const hasLoadedData = ref(false);
-    const visibleCssClass = ref(learningGradingSystemId === "0" ? "hidden" : "show");
-
-    // When another block on the page begins editing hide this block.
-    browserBus.subscribe(BlockMessages.BeginEdit, () => {
-        visibleCssClass.value = "hidden";
-    });
-
-    // When another block begins editing show this block.
-    browserBus.subscribe(BlockMessages.EndEdit, () => {
-        visibleCssClass.value = "show";
-        if (!hasLoadedData.value) {
-            gridDataSource.value = loadGridData();
-        }
-    });
 
     // #endregion
 
@@ -187,15 +167,5 @@
 
     // #endregion
 
-    onMounted(() => {
-        // Because the grid may be hidden when a primary block is hidden
-        // only load the grid data if visible. Additionally we need to
-        // give time for the autoEdit of detail blocks to emit browserBus events.
-        setTimeout(() => {
-            if (visibleCssClass.value === "show") {
-                gridDataSource.value = loadGridData();
-            }
-        }, 250);
-    });
-
+    gridDataSource.value = loadGridData();
 </script>

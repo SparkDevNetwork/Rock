@@ -58,9 +58,9 @@ namespace RockWeb.Blocks.Reporting
 		        </div>
 		        {% assign icon = '' %}
 		        {% case session.InteractionSession.DeviceType.ClientType %}
-			        {% when 'Desktop' %}{% assign icon = 'fa-desktop' %}
-			        {% when 'Tablet' %}{% assign icon = 'fa-tablet' %}
-			        {% when 'Mobile' %}{% assign icon = 'fa-mobile-phone' %}
+			        {% when 'Desktop' %}{% assign icon = 'ti-device-desktop' %}
+			        {% when 'Tablet' %}{% assign icon = 'ti-device-ipad' %}
+			        {% when 'Mobile' %}{% assign icon = 'ti-device-mobile' %}
 			        {% else %}{% assign icon = '' %}
 		        {% endcase %}
 		        {% if icon != '' %}
@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Reporting
                             <small>{{ session.InteractionSession.DeviceType.Application }} <br>
                             {{ session.InteractionSession.DeviceType.OperatingSystem }} </small>
                         </div>
-                        <i class='fa {{ icon }} fa-2x pull-left d-none d-sm-block margin-l-sm'></i>
+                        <i class='ti {{ icon }} ti-2x pull-left d-none d-sm-block margin-l-sm'></i>
                     </div>
                 {% endif %}
 	        </header>

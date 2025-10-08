@@ -1,0 +1,249 @@
+// Display Card Control - styling for Custom Select control.
+
+// =============================================================
+// Table of Content
+//  + Base Style
+//  + Display Card Add Button
+//  + Display Card Container
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+
+.displaycard {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-large);
+    align-items: center;
+    padding: var(--spacing-large);
+    background-color: var(--color-interface-softest);
+    border-radius: var(--rounded-xsmall);
+    border: 1px solid var(--color-interface-soft);
+    transition: background-color .15s ease-in-out;
+
+    /* May need to revisit this if a mobile version of the UI is needed */
+    min-width: v-bind(minWidth);
+}
+
+/* Only show hover state if the item is clickable. */
+.displaycard.clickable.is-hovering {
+    background-color: var(--color-info-soft);
+}
+
+.displaycard-badge {
+    /* Prevent the badge from shrinking. */
+    flex: 0 auto;
+}
+
+.displaycard-heading-icon .label {
+    padding: var(--spacing-small);
+    font-size: 100%;
+}
+
+.displaycard-heading-icon i {
+    font-size: var(--font-size-h4);
+}
+
+.displaycard-heading {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-medium);
+    flex: 1 1 0;
+    overflow: hidden;
+
+    /* The icon+title+desc container needs a min width;
+       otherwise, it'll shrink until it's hidden
+       before the aside shrinks. */
+    min-width: v-bind(iconTitleAndDescMinWidth);
+}
+
+.displaycard-heading-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-tiny);
+    overflow: hidden;
+}
+
+.displaycard-heading-text-title {
+    margin: 0;
+    /* line-height: var(--line-height-compact) (line-height: 1.055) clips the bottom of "g" and "y"
+       for small text, so making a little larger. */
+    line-height: 1.2;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.displaycard-heading-text-description,
+.displaycard-heading-text-description > * {
+    font-size: var(--font-size-small);
+    /* line-height: var(--line-height-tight) (line-height: 1.1) clips the bottom of "g" and "y"
+       for small text, so making a little larger. */
+    line-height: 1.2;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    color: var(--color-interface-medium);
+}
+
+.displaycard-aside {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    flex: 0 1 auto;
+    white-space: nowrap;
+    color: var(--color-interface-medium);
+
+    /* Force min-width of 0 so the aside can shrink properly. */
+    min-width: 0;
+}
+
+.displaycard-aside small {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.displaycard-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-tiny);
+    flex: 0 auto;
+}
+
+.displaycard-primary-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-tiny);
+}
+
+.displaycard-secondary-actions .btn-link.btn-overflow {
+    color: var(--color-interface-medium);
+}
+
+@media (max-width: 767px) {
+
+    /*Allow display card to stack content on smaller screens*/
+
+    .displaycard {
+        flex-direction: column;
+        height: auto;
+        min-width: 100%;
+    }
+
+    .displaycard-heading {
+        flex-direction: column;
+        align-items: center;
+        height: auto;
+        min-width: 0;
+    }
+
+    .displaycard-heading,
+    .displaycard-heading-text {
+        min-width: 0;
+        width: 100%;
+        overflow: visible;
+        text-align: center;
+    }
+
+    .displaycard-heading-text-title,
+    .displaycard-heading-text-description,
+    .displaycard-heading-text-description > * {
+        white-space: normal;
+        /* Allow wrapping */
+        text-overflow: unset;
+        /* Remove ellipsis */
+        overflow: visible;
+        /* Show all content */
+    }
+
+    .displaycard-aside {
+        justify-content: flex-start;
+        height: auto;
+    }
+
+    .displaycard-actions {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+// ======================== END BASE STYLE ========================
+
+
+
+// ======================== DISPLAY CARD ADD BUTTON ========================
+
+.displaycard-add-button {
+    white-space: nowrap;
+}
+
+.displaycard-add-button-trigger {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+    padding: var(--spacing-large);
+    background-color: var(--color-interface-softest);
+    border-radius: var(--rounded-xsmall);
+    border: 1px dashed var(--color-info-strong);
+    cursor: pointer;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    color: var(--color-info-strong);
+    font-weight: var(--font-weight-semibold);
+    white-space: nowrap;
+}
+
+.displaycard-add-button-trigger:hover,
+.displaycard-add-button-trigger.btn-default:focus,
+.dropdown.open .displaycard-add-button-trigger {
+    background-color: var(--color-info-soft);
+    color: var(--color-info-strong);
+    text-decoration: none;
+}
+
+.displaycard-add-button .dropdown-menu {
+    left: 50%;
+    right: 50%;
+    transform: translate(-50%, calc(0px - var(--spacing-medium)));
+}
+
+// ======================== END DISPLAY CARD ADD BUTTON ========================
+
+
+
+// ======================== DISPLAY CARD CONTAINER ========================
+
+.displaycard-connector {
+    width: 2px;
+    height: var(--spacing-medium);
+    background-color: var(--color-interface-soft);
+    margin: 0 auto;
+    position: relative;
+}
+
+.displaycard-connector-tip::after {
+    content: "";
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 8px;
+    height: 8px;
+    border-bottom: 2px solid var(--color-interface-soft);
+    border-right: 2px solid var(--color-interface-soft);
+    background: transparent;
+}
+
+.displaycard-connector-transparent,
+.displaycard-connector-transparent::after {
+    border-color: transparent;
+    background-color: transparent;
+}
+
+// ======================== END DISPLAY CARD CONTAINER ========================

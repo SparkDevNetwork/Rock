@@ -4,7 +4,7 @@
 
 
 // =============================================================
-// Table of Content           
+// Table of Content
 //  + Base Style
 //  + Tag input
 //  + Tag list
@@ -171,6 +171,7 @@
     height: 22px;
     font-size: 0.7em;
     line-height: 22px;
+    margin-left: var(--spacing-tiny);
   }
 
   .tag-wrap {
@@ -210,7 +211,7 @@
         background: rgba(0,0,0,0.05);
       }
 
-      > .ant-select-selector { 
+      > .ant-select-selector {
         border: 0px;
         padding: 0px;
         height: 22px;
@@ -239,6 +240,7 @@
 
 .tag-letterlist {
   color:              var(--color-interface-stronger);
+  margin-bottom:      var(--spacing-xsmall);
 
   li {
     margin-right:     var(--spacing-medium);

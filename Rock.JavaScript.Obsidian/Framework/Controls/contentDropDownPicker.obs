@@ -13,7 +13,7 @@
                             <button type="button" role="button" aria-label="Clear selection" class="btn picker-select-none" v-if="showClear && !disabled" @click.prevent.stop="onAction('clear')">
                                 <i class="ti ti-x"></i>
                             </button>
-                            <b class="ti ti-caret-down"></b>
+                            <b class="ti ti-caret-down-filled"></b>
                         </a>
 
                         <!-- This helps trigger the resize when embedded in auto-resizing controls such as modals. -->

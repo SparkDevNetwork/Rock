@@ -1311,27 +1311,35 @@ namespace Rock.Model
                     var group = GroupCache.Get( item.GroupId );
                     var person = new PersonService( rockContext ).Get( item.PersonId );
 
-                    var bag = new GroupMemberUpdatedMessageBag
-                    {
-                        GroupIdKey = group.IdKey,
-                        GroupTypeIdKey = Rock.Utility.IdHasher.Instance.GetHash( group.GroupTypeId ),
-                        GroupGuid = group.Guid,
-                        GroupMemberId = item.Id,
-                        GroupMemberIdKey = Rock.Utility.IdHasher.Instance.GetHash( item.Id ),
-                        GroupMemberGuid = item.Guid,
-                        GroupRoleIdKey = Rock.Utility.IdHasher.Instance.GetHash( item.GroupRoleId ),
-                        Person = new ViewModels.Blocks.Group.GroupPlacement.PersonBag
-                        {
-                            PersonIdKey = person.IdKey,
-                            FirstName = person.FirstName,
-                            LastName = person.LastName,
-                            NickName = person.NickName,
-                            Gender = person.Gender,
-                            PhotoUrl = $"{publicApplicationRoot}{person.PhotoUrl.TrimStart( '~', '/' )}"
-                        },
-                    };
+					// If the person no longer exists (due to a merge), skip.
+					if ( group == null || person == null )
+					{
+						return null;
+					}
 
-                    return bag;
+					var bag = new GroupMemberUpdatedMessageBag
+					{
+						GroupIdKey = group.IdKey,
+						GroupTypeIdKey = Rock.Utility.IdHasher.Instance.GetHash( group.GroupTypeId ),
+						GroupGuid = group.Guid,
+						GroupMemberId = item.Id,
+						GroupMemberIdKey = Rock.Utility.IdHasher.Instance.GetHash( item.Id ),
+						GroupMemberGuid = item.Guid,
+						GroupRoleIdKey = Rock.Utility.IdHasher.Instance.GetHash( item.GroupRoleId ),
+						Person = new ViewModels.Blocks.Group.GroupPlacement.PersonBag
+						{   
+							PersonIdKey = person.IdKey,
+							FirstName = person.FirstName,
+							LastName = person.LastName,
+							NickName = person.NickName,
+							Gender = person.Gender,
+							PhotoUrl = string.IsNullOrWhiteSpace( person.PhotoUrl )
+								? string.Empty
+								: $"{publicApplicationRoot}{person.PhotoUrl.TrimStart( '~', '/' )}"
+                        },
+					};
+
+					return bag;
                 } )
                 .Where( bag => bag != null )
                 .ToList();

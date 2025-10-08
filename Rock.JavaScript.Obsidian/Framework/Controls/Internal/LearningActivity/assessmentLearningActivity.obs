@@ -452,6 +452,9 @@
     function onItemTypeChanged(item: AssessmentItem, value: string | string[]): void {
         if (typeof value === "string") {
             item.type = Number(value) as AssessmentItemType;
+
+            multiFieldWeightStateKey.value = newGuid();
+            updateWeightErrorState();
         }
     }
 

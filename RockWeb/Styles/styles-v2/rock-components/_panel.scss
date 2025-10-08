@@ -4,7 +4,7 @@
 
 
 // =============================================================
-// Table of Content           
+// Table of Content
 //  + Panel Parent
 //  + Panel with Sidebar
 // =============================================================
@@ -20,7 +20,8 @@
     margin-bottom:  0;
     border:         0;
 
-    .panel-heading {
+    .panel-heading,
+    .panel-header {
       display:      none;
     }
   }
@@ -56,7 +57,8 @@
   }
   /* Remove background and borders for main panel headers. */
   .panel-block {
-    > .panel-heading, > .panel-sub-header {
+    > .panel-heading > .panel-sub-header,
+    > .panel-header > .panel-sub-header {
       border-bottom:    0;
       background-color: var(--color-interface-softest);
     }
@@ -103,6 +105,10 @@
   }
 }
 
+.panel .panel-body .actions + .alert {
+  margin-top: var(--spacing-small);
+};
+
 // Moved from theme.less
 .panel-block {
   position:           relative;
@@ -112,7 +118,8 @@
   flex-direction:     column;
   min-width:          0;
 
-  > .panel-heading {
+  > .panel-heading,
+  > .panel-header {
     border-bottom:    1px solid var(--color-interface-softer);
   }
 
@@ -139,7 +146,7 @@
     padding:        var(--spacing-medium) 0;
     margin:         0;
     background:     var(--color-interface-softest);
-    border-bottom:  1px solid var(--color-interface-softer);
+    border-bottom:  1px solid var(--color-interface-soft);
   }
 
 
@@ -177,7 +184,8 @@
   flex-direction:     column;
   min-width:          0;
 
-  > .panel-heading {
+  > .panel-heading,
+  > .panel-header {
     border-bottom:        1px solid var(--color-interface-soft);
     background-color:     var(--color-interface-softest);
     // border-bottom-color:  var(--color-interface-soft);
@@ -189,6 +197,16 @@
       overflow:           hidden;
       text-overflow:      ellipsis;
       white-space:        nowrap;
+      line-height:        var(--line-height-normal);
+
+      .label {
+        margin-left:     var(--spacing-xsmall);
+      }
+    }
+
+    // When there is only a label in the actions, add a bit more margin
+    > .panel-header-actions:has(div:only-child) {
+      margin-right: var(--spacing-medium);
     }
   }
 
@@ -215,7 +233,7 @@
     padding:        var(--spacing-medium) 0;
     margin:         0;
     background:     var(--color-interface-softest);
-    border-bottom:  1px solid var(--color-interface-softer);
+    border-bottom:  1px solid var(--color-interface-soft);
   }
 
 
@@ -246,7 +264,8 @@
 .panel-block,
 .panel-section,
 .panel-note {
-  > .panel-heading {
+  > .panel-heading,
+  > .panel-header {
     display:                  -ms-flexbox;
     display:                  flex;
     align-content:            center;

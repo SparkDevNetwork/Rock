@@ -6,6 +6,7 @@
     3. Lava Debug - Used to style the lava debug panel
     4. Social Tools - Used for showing social media links
     5. Media Element
+    6. Asset Manager - Used for managing media assets
 */
 
 
@@ -108,7 +109,8 @@
     background-color: lighten(@state-info-bg, 3%);
     border: 0;
 
-    .panel-heading {
+    .panel-heading,
+    .panel-header {
       color: @state-info-text;
       cursor: pointer;
       background-color: darken(@state-info-bg, 3%);
@@ -217,7 +219,8 @@
       border-color: #ddd;
       box-shadow: none;
 
-      > .panel-heading {
+      > .panel-heading,
+      > .panel-header {
         padding: 0 0 15px;
         margin-bottom: 15px;
         background: none;
@@ -413,5 +416,16 @@
     a {
       border-bottom: none;
     }
+  }
+}
+
+// 5. Asset Manager
+// -------------------------
+
+.actions.assetmanager-actions {
+  margin-bottom: var(--spacing-xsmall);
+
+  & > .pull-left {
+    margin-right: var(--spacing-xsmall);
   }
 }

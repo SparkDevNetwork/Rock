@@ -126,12 +126,10 @@
     import { computed, reactive, ref, watch } from "vue";
     import GridSettingsModal from "./EventCalendarItemList/gridSettingsModal.partial.obs";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<ListBlockBox<EventCalendarItemListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const preferences = usePersonPreferences().blockPreferences;
-    const store = useStore();
 
     // #region Values
 
@@ -148,7 +146,7 @@
     // #region Computed Values
 
     const isVisible = computed((): boolean => {
-        return !!config.options?.eventCalendarIdKey && store.state.areSecondaryBlocksShown;
+        return !!config.options?.eventCalendarIdKey;
     });
 
     /** `true` if the grid settings is performing any filtering. */

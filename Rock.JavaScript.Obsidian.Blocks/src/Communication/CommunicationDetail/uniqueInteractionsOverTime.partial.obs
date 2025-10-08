@@ -196,9 +196,12 @@
     });
 
     const yMax = computed((): number => {
-        return maxPercentage.value > 50
-            ? 100
-            : 50;
+        const maxWithPadding = maxPercentage.value + 10;
+        if (maxWithPadding < 50) {
+            return 50;
+        }
+
+        return maxWithPadding;
     });
 
     const chartOptions = computed((): ChartOptions => {

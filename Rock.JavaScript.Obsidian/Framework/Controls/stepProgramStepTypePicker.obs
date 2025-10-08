@@ -4,19 +4,23 @@
         <StepProgramPicker
                            v-if="!defaultStepProgramGuid"
                            v-model="internalProgramValue"
+                           :enhanceForLongLists="enhanceForLongLists"
                            label="Step Program"
                            :multiple="false"
                            :disabled="disabled"
+                           :rules="rules"
                            showBlankItem
                            formGroupClasses="mt-0"
                            :displayStyle="PickerDisplayStyle.Condensed" />
         <StepTypePicker
                         v-if="stepProgramGuid"
                         v-model="internalValue"
+                        :enhanceForLongLists="enhanceForLongLists"
                         label="Step Type"
                         :stepProgramGuid="stepProgramGuid"
                         :multiple="false"
                         :disabled="disabled"
+                        :rules="rules"
                         showBlankItem
                         :displayStyle="PickerDisplayStyle.Condensed" />
     </RockFormField>
@@ -32,6 +36,7 @@
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import { Guid } from "@Obsidian/Types";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
 
     const props = defineProps({
         modelValue: {
@@ -52,6 +57,17 @@
 
         disabled: {
             type: Boolean,
+            default: false
+        },
+
+        rules: {
+            type: [Array, Object, String] as PropType<ValidationRule | ValidationRule[]>,
+            default: ""
+        },
+
+        /** Enhance the picker for dealing with long lists by providing a search mechanism. */
+        enhanceForLongLists: {
+            type: Boolean as PropType<boolean>,
             default: false
         }
     });

@@ -6,7 +6,8 @@
     <Panel v-else
            type="block"
            panelBodyCssClass="overflow-hidden"
-           class="styled-scroll">
+           class="styled-scroll"
+           :isFullscreen="isFullscreen">
         <template #title>
             <div class="d-flex align-items-center gap-3">
                 <span v-if="!isNullOrWhiteSpace(box.backPageUrl)" class="clickable text-sm" @click="onBack">
@@ -71,6 +72,12 @@
                             @click="openPlacementConfigSettings">
                     <i class="ti ti-settings"></i>
                 </RockButton>
+                <RockButton :btnType="BtnType.Default"
+                            :btnSize="BtnSize.Small"
+                            :isSquare="true"
+                            @click="toggleFullScreen">
+                    <i class="ti ti-maximize"></i>
+                </RockButton>
             </div>
         </template>
 
@@ -81,8 +88,10 @@
             <div class="col-xs-5 col-md-4 col-lg-3 p-0 h-100 helper-height">
                 <Panel type="default"
                        title="People To Place"
+                       panelHeadingCssClass="placement-panel"
                        panelBodyCssClass="h-100 overflow-hidden"
                        :isDrawerOpen="isPersonFilterDrawerOpen"
+                       isBorderlessPanel
                        @update:isDrawerOpen="isPersonFilterDrawerOpen = !isPersonFilterDrawerOpen">
                     <template #headerActions>
                         <RockButton :btnType="BtnType.Default"
@@ -139,7 +148,7 @@
                         <div class="w-100 p-2 pb-0">
                             <div class="d-flex justify-content-start">
                                 <HighlightLabel v-if="sourcePerson" labelType="custom" customClass="source-person-label">
-                                    {{ sourcePerson.firstName }} {{ sourcePerson.lastName }} <i class="ti ti-x cursor-pointer" @click="removeSourcePerson"></i>
+                                    {{ sourcePerson.nickName }} {{ sourcePerson.lastName }} <i class="ti ti-x cursor-pointer" @click="removeSourcePerson"></i>
                                 </HighlightLabel>
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
@@ -199,6 +208,7 @@
                        title="Destination Groups"
                        panelBodyCssClass="h-100 overflow-hidden"
                        :isDrawerOpen="isGroupFilterDrawerOpen"
+                       isBorderlessPanel
                        @update:isDrawerOpen="isGroupFilterDrawerOpen = !isGroupFilterDrawerOpen">
                     <template #headerActions>
                         <div class="d-flex gap-1">
@@ -331,11 +341,12 @@
     padding: 0;
     background-color: var(--color-interface-softer);
     min-height: unset;
+    border: none;
 }
 
 :deep(.panel-default>.panel-heading) {
     background-color: var(--color-interface-softest);
-    border-color: var(--color-interface-softer);
+    border-color: var(--color-interface-soft);
     color: var(--color-interface-stronger);
 }
 
@@ -490,6 +501,7 @@
     gap: 0.25rem;
     padding: 6px 12px;
     color: var(--color-interface-medium);
+    border-bottom: 1px solid var(--color-interface-soft);
     font-size: var(--font-size-small);
     font-weight: var(--font-weight-semibold);
 }
@@ -623,6 +635,7 @@
     const isPersonCardHovered = ref<boolean>(false);
     const isPersonFilterDrawerOpen = ref<boolean>(false);
     const isGroupFilterDrawerOpen = ref<boolean>(false);
+    const isFullscreen = ref<boolean>(false);
 
     // #endregion
 
@@ -859,7 +872,7 @@
         return [...people].sort((a, b) => {
             switch (currentSortOrder.value) {
                 case SortTypes.SortByFirstName: {
-                    const firstNameComparison = (a.firstName ?? "").localeCompare(b.firstName ?? "");
+                    const firstNameComparison = (a.nickName ?? "").localeCompare(b.nickName ?? "");
                     if (firstNameComparison !== 0) {
                         return firstNameComparison;
                     }
@@ -871,7 +884,7 @@
                     if (lastNameComparison !== 0) {
                         return lastNameComparison;
                     }
-                    return (a.firstName ?? "").localeCompare(b.firstName ?? "");
+                    return (a.nickName ?? "").localeCompare(b.nickName ?? "");
                 }
 
                 case SortTypes.SortByDateAddedAsc: {
@@ -1422,6 +1435,13 @@
      */
     function toggleCardExpansion(): void {
         arePersonCardsExpanded.value = !arePersonCardsExpanded.value;
+    }
+
+    /**
+     * Toggles full screen mode.
+     */
+    function toggleFullScreen(): void {
+        isFullscreen.value = !isFullscreen.value;
     }
 
     /**

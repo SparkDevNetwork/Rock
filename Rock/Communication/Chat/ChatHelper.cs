@@ -716,6 +716,20 @@ namespace Rock.Communication.Chat
         #region Synchronization: From Rock To Chat Provider
 
         /// <summary>
+        /// Tries to throttle API requests - helping to proactively avoid rate limiting - by inserting a delay for the
+        /// number of milliseconds specified in <paramref name="apiThrottleMs"/>.
+        /// </summary>
+        /// <param name="apiThrottleMs">The number of milliseconds to delay.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        internal static async Task TryThrottleApiRequestsAsync( int apiThrottleMs )
+        {
+            if ( apiThrottleMs > 0 )
+            {
+                await Task.Delay( apiThrottleMs );
+            }
+        }
+
+        /// <summary>
         /// Ensures app-level roles, permission grants and other settings are in place within the external chat system.
         /// </summary>
         /// <returns>
@@ -1425,12 +1439,20 @@ namespace Rock.Communication.Chat
                         }
                     }
 
+                    var shouldThrottle = queryableKeysToAvoidGroupMemberSync.Count > 1;
+                    var groupMemberSyncIndex = 0;
+
                     // Do we have any groups whose group members should be synced to channel members?
                     foreach ( var queryableKey in queryableKeysToTriggerGroupMemberSync )
                     {
                         if ( queryableKeysToAvoidGroupMemberSync.Contains( queryableKey ) )
                         {
                             continue;
+                        }
+
+                        if ( shouldThrottle && groupMemberSyncIndex++ > 0 )
+                        {
+                            await TryThrottleApiRequestsAsync( syncConfig.ApiThrottleMs );
                         }
 
                         // Try to sync the group members.
@@ -1947,7 +1969,8 @@ namespace Rock.Communication.Chat
                         var rockChatUserKeys = ( personService ?? new PersonService( RockContext ) )
                             .GetActiveRockChatUserKeys( deletePersonIds );
 
-                        // Just in case any people don't have a chat user key, let's at least log them.
+                        // Just in case any people don't have a chat user key, let's at least debug-log them. This often
+                        // represents pending or inactive members that have never been synced to the external chat system.
                         // Subbing "user" for "person" here, as this can get logged in the UI.
                         var membersWithoutChatPersonKeys = deleteMembers
                             .Where( c => !rockChatUserKeys.Any( r => r.PersonId == c.PersonId ) )
@@ -1956,7 +1979,7 @@ namespace Rock.Communication.Chat
                         if ( membersWithoutChatPersonKeys.Any() )
                         {
                             var deleteMembersStructuredLog = "{@MembersWithoutChatPersonKeys}";
-                            Logger.LogWarning( $"{logMessagePrefix}: Unable to delete chat channel members in the external chat system, as matching chat person keys could not be found in Rock. {structuredLog} {deleteMembersStructuredLog}", syncCommands, groupSyncConfig, membersWithoutChatPersonKeys );
+                            Logger.LogDebug( $"{logMessagePrefix}: Unable to delete chat channel members in the external chat system, as matching chat person keys could not be found in Rock. {structuredLog} {deleteMembersStructuredLog}", syncCommands, groupSyncConfig, membersWithoutChatPersonKeys );
                         }
 
                         // Filter down to members that we're sure have keys.
@@ -2085,8 +2108,16 @@ namespace Rock.Communication.Chat
                     // Don't let individual channel failures cause all to fail.
                     var perChannelExceptions = new List<Exception>();
 
+                    var shouldThrottle = perChannelCommands.Count > 1;
+                    var commandIndex = 0;
+
                     foreach ( var command in perChannelCommands )
                     {
+                        if ( shouldThrottle && commandIndex++ > 0 )
+                        {
+                            await TryThrottleApiRequestsAsync( groupSyncConfig.ApiThrottleMs );
+                        }
+
                         // Get the existing members.
                         var getChatChannelMembersResult = await ChatProvider.GetChatChannelMembersAsync(
                             command.ChatChannelTypeKey,
@@ -3802,9 +3833,10 @@ namespace Rock.Communication.Chat
             // every message sent within the channel).
             var now = RockDateTime.Now;
             DateTime? suppressOnOrAfterDateTime = null;
-            if ( config.NotificationSuppressionMinutes > 0 )
+            var notificationSuppressionMinutes = Math.Abs( config.NotificationSuppressionMinutes );
+            if ( notificationSuppressionMinutes > 0 )
             {
-                suppressOnOrAfterDateTime = now.AddMinutes( -config.NotificationSuppressionMinutes );
+                suppressOnOrAfterDateTime = now.AddMinutes( -notificationSuppressionMinutes );
             }
 
             var personService = new PersonService( RockContext );
@@ -3855,14 +3887,26 @@ namespace Rock.Communication.Chat
             //  1) Don't have a personal device.
             //  2) Don't have any active personal devices with notifications enabled that have been seen within the
             //     required number of days in the past.
-            DateTime deviceSeenOnOrAfterDateTime = now.AddDays( -config.DeviceSeenWithinDays );
+
+            // The UI allows an administrator to define a day count of zero, indicating that a device isn't required to
+            // have "been seen".
+            DateTime? deviceSeenOnOrAfterDateTime = null;
+            var deviceSeenWithinDays = Math.Abs( config.DeviceSeenWithinDays );
+            if ( deviceSeenWithinDays > 0 )
+            {
+                deviceSeenOnOrAfterDateTime = now.AddDays( -deviceSeenWithinDays );
+            }
+
             var personIdsWithEnabledDeviceQry = new PersonalDeviceService( RockContext )
                 .Queryable()
                 .Where( pd =>
                     pd.IsActive
                     && pd.NotificationsEnabled
                     && !string.IsNullOrEmpty( pd.DeviceRegistrationId ) // Only mobile devices should have this value defined.
-                    && pd.LastSeenDateTime >= deviceSeenOnOrAfterDateTime
+                    && (
+                        !deviceSeenOnOrAfterDateTime.HasValue
+                        || pd.LastSeenDateTime >= deviceSeenOnOrAfterDateTime
+                    )
                 )
                 .Select( pd => pd.PersonAlias.PersonId )
                 .Distinct();
@@ -3874,7 +3918,7 @@ namespace Rock.Communication.Chat
 
             if ( !suppressOnOrAfterDateTime.HasValue )
             {
-                // If a suppression window wasn't provided, we'll send a notification for every message to all people.
+                // If a suppression window was NOT provided, we'll simply get all people qualified by the rules above.
                 fallbackNotificationPeople = fallbackNotificationPersonQry
                     .Select( p => new RockChatFallbackNotificationPerson
                     {
@@ -3885,8 +3929,8 @@ namespace Rock.Communication.Chat
             }
             else
             {
-                // Query the datetime (if any) each recipient was last sent a fallback notification, restricted to the
-                // suppression window.
+                // If a suppression window WAS provided, get each qualified person along with the datetime (if any)
+                // they were last sent a fallback notification within the suppression window.
                 var lastNotifiedQry = new CommunicationRecipientService( RockContext )
                     .Queryable()
                     .Where( cr =>
@@ -3902,7 +3946,7 @@ namespace Rock.Communication.Chat
                     } );
 
                 // [Left Outer] Join the two queries.
-                // (Include people who haven't already received a notification within the suppression window.)
+                // (Also include people who have NOT already received a notification within the suppression window.)
                 fallbackNotificationPeople = fallbackNotificationPersonQry
                     .GroupJoin(
                         lastNotifiedQry,
@@ -3924,70 +3968,70 @@ namespace Rock.Communication.Chat
                         }
                     )
                     .ToList(); // Materialize the query so we can perform the remaining logic in memory.
+            }
 
-                if ( !fallbackNotificationPeople.Any( p => p.LastNotifiedRockDateTime.HasValue ) || !anyEventChannelMembers )
-                {
-                    // Either:
-                    //  1) None of the people have already received a notification within the suppression window.
-                    //  2) The caller did not provide any event channel members to compare against.
-                    //
-                    // We'll notify only those people who have not been sent a notification within the suppression window.
-                    fallbackNotificationPeople = fallbackNotificationPeople
-                        .Where( p => !p.LastNotifiedRockDateTime.HasValue )
-                        .ToList();
-                }
-                else
-                {
-                    // Further refine the recipient list according to the following:
-                    //  1) If they haven't already been notified within the suppression window, notify them.
-                    //  2) If they HAVE already been notified within the suppression window, try to find a matching
-                    //     channel member and qualify them for another notification according to the rules below.
+            if ( !anyEventChannelMembers )
+            {
+                // The caller of this method did not provide any event channel members to compare against. We'll notify
+                // only those people who have not been sent a notification within the suppression window (which might be
+                // all people if a suppression window was NOT provided for us to compare against).
+                fallbackNotificationPeople = fallbackNotificationPeople
+                    .Where( p => !p.LastNotifiedRockDateTime.HasValue )
+                    .ToList();
+            }
+            else
+            {
+                // Further refine the recipient list by considering the last datetime they've read the chat channel.
+                // In order to find a given person's last read datetime among the provided channel members,
+                // we'll need to get the mappings between Rock person ID and external chat user key.
+                var personIds = fallbackNotificationPeople.Select( p => p.RecipientPerson.Id ).ToList();
+                var rockChatUserKeys = personService.GetActiveRockChatUserKeys( personIds );
 
-                    // In order to find a given recipient's last read datetime among the provided channel members,
-                    // we'll need to get the mapping between Rock person IDs and external chat user keys.
-                    var personIds = fallbackNotificationPeople.Select( p => p.RecipientPerson.Id ).ToList();
-                    var rockChatUserKeys = personService.GetActiveRockChatUserKeys( personIds );
-
-                    fallbackNotificationPeople = fallbackNotificationPeople
-                        .Where( p =>
+                fallbackNotificationPeople = fallbackNotificationPeople
+                    .Where( p =>
+                    {
+                        var rockChatUserKey = rockChatUserKeys.FirstOrDefault( k => k.PersonId == p.RecipientPerson.Id );
+                        if ( rockChatUserKey == null )
                         {
-                            if ( !p.LastNotifiedRockDateTime.HasValue )
-                            {
-                                // They haven't been notified within the suppression window: notify them.
-                                return true;
-                            }
+                            // Unable to find a chat user key mapped to this person ID. We'll treat Rock as the system
+                            // of truth and NOT notify them in this case. This will probably never happen.
+                            return false;
+                        }
 
-                            // At this point, since we know we've already notified this person within the suppression
-                            // window, we'll ONLY re-notify them if we find a matching channel member who fully
-                            // qualifies below.
+                        var eventChannelMember = config.EventChannelMembers.FirstOrDefault( m => m.ChatPersonKey == rockChatUserKey.ChatUserKey );
+                        if ( eventChannelMember?.LastReadAtRockDateTime == null )
+                        {
+                            // Unable to find a channel member's last read datetime mapped to this person ID.
+                            // Notify them only if they haven't already been notified within the suppression window.
+                            return !p.LastNotifiedRockDateTime.HasValue;
+                        }
 
-                            var rockChatUserKey = rockChatUserKeys.FirstOrDefault( k => k.PersonId == p.RecipientPerson.Id );
-                            if ( rockChatUserKey == null )
-                            {
-                                // Unable to find a chat user key mapped to this person ID.
-                                return false;
-                            }
+                        // We've successfully matched the Rock person with the external chat system channel member.
+                        // Do NOT notify them if they're already caught up: that is, their last read datetime for the
+                        // channel is on or after the datetime the message event took place. This means they probably
+                        // have the chat web view open and immediately saw the message in their browser.
+                        if ( eventChannelMember.LastReadAtRockDateTime >= config.EventRockDateTime )
+                        {
+                            return false;
+                        }
 
-                            var eventChannelMember = config.EventChannelMembers.FirstOrDefault( m => m.ChatPersonKey == rockChatUserKey.ChatUserKey );
-                            if ( eventChannelMember?.LastReadAtRockDateTime == null )
-                            {
-                                // Unable to find a channel member's last read datetime mapped to this person ID.
-                                return false;
-                            }
+                        // Notify them if they're not caught up and haven't been sent any notifications within the
+                        // suppression window.
+                        if ( !p.LastNotifiedRockDateTime.HasValue )
+                        {
+                            return true;
+                        }
 
-                            // We found a mapping between the person ID and the provided list of channel members.
-                            // Notify them only if they haven’t already caught up: that is,
-                            //  1) They HAVE read the channel since their last notification, BUT
-                            //  2) They HAVEN'T read the channel since this message event took place.
-                            return eventChannelMember.LastReadAtRockDateTime > p.LastNotifiedRockDateTime
-                                && eventChannelMember.LastReadAtRockDateTime < config.EventRockDateTime;
-                        } )
-                        .ToList();
-                }
+                        // Finally, notify them if both are true:
+                        //  1) They HAVE read the channel since their last fallback notification was sent, BUT
+                        //  2) They HAVEN'T read the channel since this latest message event took place.
+                        return eventChannelMember.LastReadAtRockDateTime > p.LastNotifiedRockDateTime;
+                    } )
+                    .ToList();
             }
 
             return fallbackNotificationPeople
-                .GroupBy( p => p.RecipientPerson.Id ) // Ensure we have only one instance per person.
+                .GroupBy( p => p.RecipientPerson.Id ) // Ensure we send only one notification per person.
                 .Select( g => g
                     .OrderByDescending( p => p.GroupMemberCommunicationPreference.HasValue )
                     .First()

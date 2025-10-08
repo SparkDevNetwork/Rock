@@ -19,6 +19,7 @@
                 <ComponentPropertyPanel v-if="internalSelectedComponentElement"
                                         :componentElement="internalSelectedComponentElement"
                                         :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
+                                        :ltr="ltr"
                                         :mergeFields="mergeFields"
                                         :recipientPersonIds="recipientPersonIds"
                                         :shortLinkCheckToken="shortLinkCheckToken"

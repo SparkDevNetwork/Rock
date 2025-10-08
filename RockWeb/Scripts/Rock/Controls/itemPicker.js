@@ -23,6 +23,7 @@
                         categorySelection: this.options.allowCategorySelection,
                         categoryPrefix: this.options.categoryPrefix,
                         restUrl: this.options.restUrl,
+                        context: this.options.context,
                         restParams: this.options.restParams,
                         expandedIds: this.options.expandedIds,
                         expandedCategoryIds: this.options.expandedCategoryIds,
@@ -102,6 +103,7 @@
 
                     treeOptions.getNodes = (parentId, parentNode, selectedIds, toExpandIds) => {
                         const req = {
+                            context: treeOptions.context
                         };
 
                         if (!parentId) {

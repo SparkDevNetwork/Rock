@@ -22,6 +22,7 @@
     <PackageReference Include="Antlr" Version="3.5.0.2" />
     <PackageReference Include="AWSSDK.Core" Version="3.3.25.4" />
     <PackageReference Include="AWSSDK.S3" Version="3.3.21.1" />
+    <PackageReference Include="Azure.AI.DocumentIntelligence" Version="1.0.0" />
     <PackageReference Include="Azure.Core" Version="1.44.1" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.20.0" />
     <PackageReference Include="BCrypt-Official" Version="0.1.109" />
@@ -63,6 +64,7 @@
     <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="5.2.1" />
     <PackageReference Include="Microsoft.Net.Http.Headers" Version="2.2.0" />
     <PackageReference Include="Microsoft.Owin" Version="4.2.2" />
+    <PackageReference Include="Microsoft.Owin.Cors" Version="4.2.2" />
     <PackageReference Include="Microsoft.Owin.Host.SystemWeb" Version="3.0.1" />
     <PackageReference Include="Microsoft.Owin.Security" Version="4.0.0" />
     <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.60.0" />
@@ -95,7 +97,7 @@
     <PackageReference Include="System.Threading.Channels" Version="8.0.0" />
     <PackageReference Include="TimeZoneConverter" Version="6.0.1" />
     <PackageReference Include="Twilio" Version="5.1.0" />
-    <PackageReference Include="UAParser" Version="3.1.44" />
+    <PackageReference Include="UAParser" Version="3.1.47" />
     <PackageReference Include="xxHashSharp" Version="1.0.0" />
     <PackageReference Include="Z.EntityFramework.Plus.EF6" Version="1.8.6" />
   </ItemGroup>

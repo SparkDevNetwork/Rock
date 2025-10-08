@@ -235,5 +235,24 @@ namespace Rock
 
             return HttpUtility.UrlDecode( searchQuery );
         }
+
+        /// <summary>
+        /// Returns the Sec-CH-UA-Platform-Version from the request headers if they exist without the quotes.
+        /// See https://learn.microsoft.com/en-us/microsoft-edge/web-platform/how-to-detect-win11
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        internal static string UserAgentPlatformVersion( this HttpRequest request )
+        {
+            var platformVersionHeader = request?.Headers?["Sec-CH-UA-Platform-Version"];
+            if ( string.IsNullOrWhiteSpace( platformVersionHeader ) )
+            {
+                return string.Empty;
+            }
+            else
+            {
+                return platformVersionHeader.Trim( '"' );
+            }
+        }
     }
 }

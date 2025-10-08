@@ -246,6 +246,14 @@ namespace Rock.Blocks.Prayer
         Order = 24,
         Key = AttributeKey.Workflow )]
 
+    [BooleanField(
+        "Disable Captcha Support",
+        Description = "If set to 'Yes' the CAPTCHA verification will be skipped. \n\nNote: If the CAPTCHA site key and/or secret key are not configured in the system settings, this option will be forced as 'Yes', even if 'No' is visually selected.",
+        DefaultBooleanValue = false,
+        Category = AttributeCategory.Features,
+        Order = 25,
+        Key = AttributeKey.DisableCaptchaSupport )]
+
     #endregion
 
     [ContextAware( typeof( Person ) )]
@@ -303,6 +311,7 @@ namespace Rock.Blocks.Prayer
 
             public const string SaveSuccessText = "SaveSuccessText";
             public const string Workflow = "Workflow";
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
         }
 
         private static class MergeFieldKey
@@ -470,6 +479,12 @@ namespace Rock.Blocks.Prayer
         [BlockAction( "Save" )]
         public BlockActionResult Save( PrayerRequestEntrySaveRequestBag bag )
         {
+            bool disableCaptcha = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
+            if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
+            {
+                return ActionBadRequest( "CAPTCHA verification failed. Please try again." );
+            }
+
             if ( !IsValid( bag, out var errors ) )
             {
                 return ActionOk( new PrayerRequestEntrySaveResponseBag
@@ -741,7 +756,8 @@ namespace Rock.Blocks.Prayer
                 IsUrgentShown = this.IsUrgentShown,
                 ParentPageUrl = this.IsPageRedirectedToParentOnSave ? this.GetParentPageUrl() : null,
                 DefaultRequest = this.RequestPageParameter,
-                IsMobilePhoneShown = this.IsPersonMatchingEnabled
+                IsMobilePhoneShown = this.IsPersonMatchingEnabled,
+                DisableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() )
             };
 
             // Load the categories. The Category drop down will not be shown if they are not loaded.
@@ -764,7 +780,7 @@ namespace Rock.Blocks.Prayer
 
                 if ( !defaultCategoryGuid.IsEmpty() )
                 {
-                    box.DefaultCategoryGuid = box.Categories.Select( c => c.Value.AsGuid() ).FirstOrDefault( c => c == defaultCategoryGuid ); 
+                    box.DefaultCategoryGuid = box.Categories.Select( c => c.Value.AsGuid() ).FirstOrDefault( c => c == defaultCategoryGuid );
                 }
             }
 

@@ -1,0 +1,32 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="displaycard-add-button">
+        <DropDownMenu v-if="actions?.length" anchorButtonCssClass="displaycard-add-button-trigger"
+                      :items="actions ?? []"
+                      @click.stop><i class="ti ti-circle-plus"></i> {{ addText }}</DropDownMenu>
+
+        <RockButton v-else
+                    class="displaycard-add-button-trigger">
+            <i class="ti ti-circle-plus-filled"></i> {{ addText }}
+        </RockButton>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import DropDownMenu from "./dropDownMenu.obs";
+    import RockButton from "./rockButton.obs";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+
+    defineProps({
+        actions: {
+            type: Array as PropType<MenuAction[] | null | undefined>,
+            required: false
+        },
+
+        addText: {
+            type: String as PropType<string>,
+            default: "Add"
+        }
+    });
+</script>

@@ -119,11 +119,8 @@ namespace Rock.Blocks.Reporting
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = GetInitializationBox( RockContext, ChartTypeKey.BarChart );
-                return box;
-            }
+            var box = GetInitializationBox( RockContext, ChartTypeKey.BarChart );
+            return box;
         }
 
         /// <summary>

@@ -91,6 +91,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
     #endregion Block Attributes
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.BlockTypeGuid( "D70A59DC-16BE-43BE-9880-59598FA7A94C" )]
     public partial class AttributeValues : PersonBlock
     {

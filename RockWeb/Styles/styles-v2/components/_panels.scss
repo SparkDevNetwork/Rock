@@ -4,8 +4,9 @@
 
 
 // =============================================================
-// Table of Content           
+// Table of Content
 //  + Base Style
+//  + Panel Collapsed
 //  + Panel list group
 //  + Table panel
 //  + Accordion panel
@@ -46,8 +47,8 @@
   padding: var(--spacing-medium);
   &:before,
   &:after {
-    display: table; 
-    content: " "; 
+    display: table;
+    content: " ";
   }
   &:after {
     clear: both;
@@ -62,22 +63,24 @@
 }
 
 // PANEL HEADING
-.panel-heading {
-  padding:                  14px 18px; 
+.panel-heading,
+.panel-header {
+  padding:                  14px 18px;
   border-bottom:            1px solid transparent;
-  border-top-left-radius:   var(--rounded-medium);  
+  border-top-left-radius:   var(--rounded-medium);
   border-top-right-radius:  var(--rounded-medium);
   > .dropdown .dropdown-toggle {
     color: inherit;
   }
 }
 
-// PANEL TITLE 
+// PANEL TITLE
 .panel-title {
   margin-top:     0;
   margin-bottom:  0;
   font-size:      calc(var(--font-size-regular) * 1.125);
   color:          inherit;
+  line-height:    var(--line-height-normal);
 
   > a,
   > small,
@@ -92,13 +95,79 @@
 .panel-footer {
   padding:                      var(--spacing-xsmall) var(--spacing-medium);
   border-top:                   1px solid var(--color-interface-soft);
-  border-bottom-right-radius:   3px;  
+  border-bottom-right-radius:   3px;
   border-bottom-left-radius:    3px;
   color:              var(--color-interface-stronger);
   background-color:   var(--color-interface-softer);
 }
 // =================== END BASE STYLE ===================
 
+// ===================== PANEL COLLAPSED =====================
+.panel {
+  // When a panel is in a collapsed state
+  &.panel-collapsed {
+    .panel-heading,
+    .panel-header,
+    .panel-sub-header,
+    .panel-action-help {
+      border-radius: var(--rounded-medium);
+      border-bottom: none;
+    }
+    .panel-drawer,
+    .tabbed-bar {
+      border-radius: var(--rounded-medium);
+    }
+    .panel-drawer > .drawer-pull {
+      border-bottom: none;
+    }
+    .panel-heading + .panel-help,
+    .panel-header + .panel-help {
+      border-top: 1px solid var(--color-interface-soft);
+    }
+    .panel-help + .tabbed-bar {
+      border-top: 1px solid var(--color-interface-soft);
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+  }
+  &.panel-note:not(:has(.note-new)) {
+    .panel-heading,
+    .panel-header {
+      border-bottom: none;
+      border-radius: var(--rounded-medium);
+    }
+  }
+
+  // If a panel is collapsed and has a tabbed bar, drawer, or sub-header, the border should stay.
+  &.panel-collapsed:has(.tabbed-bar) .panel-heading,
+  &.panel-collapsed:has(.panel-drawer) .panel-heading,
+  &.panel-collapsed:has(.panel-sub-header) .panel-heading,
+  &.panel-collapsed:has(.tabbed-bar) .panel-header,
+  &.panel-collapsed:has(.panel-drawer) .panel-header,
+  &.panel-collapsed:has(.panel-sub-header) .panel-header {
+    border-bottom: 1px solid var(--color-interface-soft);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  // Remove heading bottom border if collapsed state only has help-content.
+  &.panel-collapsed:has(.panel-heading + .panel-help) .panel-heading,
+  &.panel-collapsed:has(.panel-header + .panel-help) .panel-header {
+    border-bottom: none;
+  }
+
+  &.panel-collapsed:has(.tabbed-bar) .panel-drawer > .drawer-pull,
+  &.panel-collapsed:has(.tabbed-bar) .panel-sub-header,
+  &.panel-collapsed:has(.panel-drawer) .panel-sub-header,
+  &.panel-collapsed:has(.panel-help) .panel-sub-header,
+  &.panel-collapsed:has(.panel-drawer) .panel-help {
+    border-bottom: 1px solid var(--color-interface-soft);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top: none;
+  }
+
+}
 
 // ===================== PANEL LIST GROUPS =====================
 .panel {
@@ -115,7 +184,7 @@
     &:first-child {
       .list-group-item:first-child {
         border-top:               0;
-        border-top-left-radius:   3px;  
+        border-top-left-radius:   3px;
         border-top-right-radius:  3px;
       }
     }
@@ -124,12 +193,13 @@
     &:last-child {
       .list-group-item:last-child {
         border-bottom:              0;
-        border-bottom-right-radius: 3px;  
+        border-bottom-right-radius: 3px;
         border-bottom-left-radius:  3px;
       }
     }
   }
-  > .panel-heading + .panel-collapse > .list-group {
+  > .panel-heading + .panel-collapse > .list-group,
+  > .panel-header + .panel-collapse > .list-group {
     .list-group-item:first-child {
       border-top-left-radius:   0;
       border-top-right-radius:  0;
@@ -137,7 +207,8 @@
   }
 }
 
-.panel-heading + .list-group {
+.panel-heading + .list-group,
+.panel-header + .list-group {
   .list-group-item:first-child {
     border-top-width: 0;
   }
@@ -146,6 +217,13 @@
 .list-group + .panel-footer {
   border-top-width:   0;
 }
+
+ul.activeusers {
+    list-style: none;
+    margin-left: 0px;
+    padding-left: 0px;
+}
+
 // =================== END PANEL LIST GROUP ===================
 
 
@@ -165,22 +243,22 @@
   // Add border top radius for first one
   > .table:first-child,
   > .table-responsive:first-child > .table:first-child {
-      border-top-left-radius:       3px;  
+      border-top-left-radius:       3px;
       border-top-right-radius:      3px;
 
     > thead:first-child,
     > tbody:first-child {
       > tr:first-child {
-        border-top-left-radius:     3px;  
+        border-top-left-radius:     3px;
         border-top-right-radius:    3px;
 
         td:first-child,
         th:first-child {
-          border-top-left-radius:   3px;  
+          border-top-left-radius:   3px;
         }
         td:last-child,
         th:last-child {
-          border-top-right-radius:  3px; 
+          border-top-right-radius:  3px;
         }
       }
     }
@@ -189,22 +267,22 @@
   // Add border bottom radius for last one
   > .table:last-child,
   > .table-responsive:last-child > .table:last-child {
-    border-bottom-right-radius:       3px;  
+    border-bottom-right-radius:       3px;
     border-bottom-left-radius:        3px;
 
     > tbody:last-child,
     > tfoot:last-child {
       > tr:last-child {
-        border-bottom-right-radius:   3px; 
+        border-bottom-right-radius:   3px;
         border-bottom-left-radius:    3px;
 
         td:first-child,
         th:first-child {
-          border-bottom-left-radius:  3px; 
+          border-bottom-left-radius:  var(--rounded-medium);
         }
         td:last-child,
         th:last-child {
-          border-bottom-right-radius: 3px; 
+          border-bottom-right-radius: var(--rounded-medium);
         }
       }
     }
@@ -278,7 +356,8 @@
     }
   }
 
-  .panel-heading {
+  .panel-heading,
+  .panel-header {
     border-bottom: 0;
 
     + .panel-collapse > .panel-body,
@@ -299,10 +378,10 @@
 
 // ===================== ALTERNATIVE STYLE =====================
 .panel-default {
-  overflow: clip;
   border-color:         var(--color-interface-soft);
 
-& > .panel-heading {
+& > .panel-heading,
+& > .panel-header {
   color:                var(--color-interface-stronger);
   background-color:     var(--color-interface-softest);
   border-color:         var(--color-interface-soft);
@@ -325,7 +404,8 @@
 .panel-primary {
   border-color:         var(--color-primary);
 
-  & > .panel-heading {
+  & > .panel-heading,
+  & > .panel-header {
     color:              var(--color-interface-softest);
     background-color:   var(--color-primary);
     border-color:       var(--color-primary);
@@ -346,15 +426,16 @@
 }
 
 .panel-success {          // TODO Color is hard coded needs to change
-  border-color:         #cce0c1;    
+  border-color:         var(--color-success-strong);
 
-  & > .panel-heading {
+  & > .panel-heading,
+  & > .panel-header {
     color:              var(--color-success-strong);
     background-color:   var(--color-success-soft);
-    border-color:       #cce0c1;
+    border-color:       var(--color-success-strong);
 
     + .panel-collapse > .panel-body {
-      border-top-color: #cce0c1;
+      border-top-color: var(--color-success-strong);
     }
     .badge {
       color:            var(--color-success-soft);
@@ -363,21 +444,22 @@
   }
   & > .panel-footer {
     + .panel-collapse > .panel-body {
-      border-bottom-color: #cce0c1;
+      border-bottom-color: var(--color-success-strong);
     }
   }
 }
 
 .panel-info {             // TODO Color is hard coded needs to change
-  border-color:         #c2e0ec;
+  border-color:         var(--color-info-strong);
 
-  & > .panel-heading {
+  & > .panel-heading,
+  & > .panel-header {
     color:                var(--color-info-strong);
     background-color:     var(--color-info-soft);
-    border-color:       #c2e0ec;
+    border-color:       var(--color-info-strong);
 
     + .panel-collapse > .panel-body {
-      border-top-color: #c2e0ec;
+      border-top-color: var(--color-info-strong);
     }
     .badge {
       color:                var(--color-info-soft);
@@ -386,45 +468,47 @@
   }
   & > .panel-footer {
     + .panel-collapse > .panel-body {
-      border-bottom-color:#c2e0ec;
+      border-bottom-color: var(--color-info-strong);
     }
   }
 }
 
 .panel-warning {          // TODO Color is hard coded needs to change
-  border-color: #f6eec2;
+  border-color: var(--color-warning-strong);
 
-& > .panel-heading {
-  color: var(--color-warning-storng);
+& > .panel-heading,
+& > .panel-header {
+  color: var(--color-warning-strong);
   background-color: var(--color-warning-soft);
-  border-color: #f6eec2;
+  border-color: var(--color-warning-strong);
 
   + .panel-collapse > .panel-body {
-    border-top-color: #f6eec2;
+    border-top-color: var(--color-warning-strong);
   }
   .badge {
     color: var(--color-warning-soft);
-    background-color: var(--color-warning-storng);
+    background-color: var(--color-warning-strong);
   }
 }
 & > .panel-footer {
   + .panel-collapse > .panel-body {
-    border-bottom-color: #f6eec2;
+    border-bottom-color: var(--color-warning-strong);
   }
 }
 }
 
 .panel-danger {           // TODO Color is hard coded needs to change
   // .panel-variant(@panel-danger-border; @panel-danger-text; @panel-danger-heading-bg; @panel-danger-border);
-  border-color:       #e9c9c8;
+  border-color:       var(--color-danger-strong);
 
-& > .panel-heading {
+& > .panel-heading,
+& > .panel-header {
   color:                var(--color-danger-strong);
   background-color:     var(--color-danger-soft);
-  border-color:       #e9c9c8;
+  border-color:       var(--color-danger-strong);
 
   + .panel-collapse > .panel-body {
-    border-top-color: #e9c9c8;
+    border-top-color: var(--color-danger-strong);
   }
   .badge {
     color: var(--color-danger-soft);
@@ -433,7 +517,7 @@
 }
 & > .panel-footer {
   + .panel-collapse > .panel-body {
-    border-bottom-color: #e9c9c8;
+    border-bottom-color: var(--color-danger-strong);
   }
 }
 }
@@ -451,60 +535,70 @@
 
 // ======================= PANEL TOOLBAR =======================
 .panel-toolbar {
-  padding:        var(--spacing-xsmall) var(--spacing-medium);
-  font-size:      var(--font-size-xsmall);
-  border-bottom:  1px solid var(--color-interface-soft);
-  display:        flex;
-  flex-wrap:      wrap;
-  align-items:    center;
-  justify-content: space-between;
+    padding: var(--spacing-xsmall) var(--spacing-medium);
+    font-size: var(--font-size-xsmall);
+    border-bottom: 1px solid var(--color-interface-soft);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
 
-  @media (min-width: $screen-small) {
-    flex-wrap:    nowrap;
-  }
-
-  .btn-tool,
-  .picker .picker-label {
-    padding:      1px var(--spacing-tiny);
-    color:        var(--color-interface-medium);
-    font-size:    var(--font-size-xsmall);
-    font-weight:  var(--font-weight-semibold);
-    line-height:  24px;
-    color:        var(--color-interface-medium);
-    background:   transparent;
-    border:       1px solid transparent;
-
-    &:focus,
-    &:hover,
-    &:active,
-    &.active {
-      background: var(--color-interface-soft);
+    @media (min-width: $screen-small) {
+        flex-wrap: nowrap;
     }
-  }
 
-  .picker-select-none {
-    margin:       1px 0 0 2px;
-  }
+    .btn-tool,
+    .picker .picker-label {
+        padding: 1px var(--spacing-tiny);
+        color: var(--color-interface-medium);
+        font-size: var(--font-size-xsmall);
+        font-weight: var(--font-weight-semibold);
+        line-height: 24px;
+        color: var(--color-interface-medium);
+        background: transparent;
+        border: 1px solid transparent;
 
-  .nav-pills {
-    margin:       6px var(--spacing-xsmall);
-
-    > li {
-      margin-top:     6px;
-      margin-bottom:  6px;
+        &:focus,
+        &:hover,
+        &:active,
+        &.active {
+            background: var(--color-interface-soft);
+        }
     }
-  }
 
-  .slidingdaterange-select,
-  .slidingdaterange-number,
-  .slidingdaterange-daterange .input-group {
-    margin-bottom:    0;
-  }
+    .picker-select-none {
+        margin: 1px 0 0 2px;
+    }
 
-  &.panel-toolbar-right {
-    justify-content:  flex-end;
-    gap:              var(--spacing-tiny) 30px;
-  }
+    .nav-pills {
+        margin: 6px var(--spacing-xsmall);
+
+        > li {
+            margin-top: 6px;
+            margin-bottom: 6px;
+
+            & > a {
+                background-color: var(--color-interface-softer);
+                color: var(--color-interface-strong);
+                font-weight: var(--font-weight-medium);
+            }
+
+            & > a:hover {
+                color: var(--color-primary);
+            }
+        }
+    }
+
+    .slidingdaterange-select,
+    .slidingdaterange-number,
+    .slidingdaterange-daterange .input-group {
+        margin-bottom: 0;
+    }
+
+    &.panel-toolbar-right {
+        justify-content: flex-end;
+        gap: var(--spacing-tiny) 30px;
+    }
 }
 
 .panel-toolbar-border {
@@ -533,7 +627,8 @@
   // .panel-variant(@panel-widget-border; @panel-widget-text; @panel-widget-heading-bg; @panel-widget-heading-border;);
   border-color:     var(--color-interface-soft);
 
-  & > .panel-heading {
+  & > .panel-heading,
+  & > .panel-header {
     color:              var(--color-interface-strongest);
     background-color:   var(--color-interface-softer);
     border-color:       var(--color-info-soft);
@@ -555,7 +650,8 @@
     overflow: hidden;
   }
 
-  .panel-heading {
+  .panel-heading,
+  .panel-header {
     border: 0;
 
     .checkbox {
@@ -574,6 +670,10 @@
     small {
       color:          var(--color-interface-strong);
     }
+
+    .btn-link {
+      color: var(--color-interface-medium);
+    }
   }
 
   > .panel-body {
@@ -588,7 +688,8 @@
   // .panel-variant(@panel-border; @panel-heading-text-color; var(--color-interface-softer); @panel-heading-border;);
   border-color:             var(--color-interface-soft);
 
-  & > .panel-heading {
+  & > .panel-heading,
+  & > .panel-header {
     color:                  var(--color-interface-stronger);
     background-color:       var(--color-interface-softest);
     border-color:           var(--color-interface-soft);
@@ -612,7 +713,8 @@
     display:      none;
   }
 
-  .panel-heading {
+  .panel-heading,
+  .panel-header {
     display:      flex;
     align-items:  center;
     flex-wrap:    wrap;
@@ -704,7 +806,8 @@
   border-color:     var(--color-interface-soft);
 
   // .panel-variant(@panel-border; @panel-heading-text-color; var(--color-interface-softer); @panel-heading-border;);
-  & > .panel-heading {
+  & > .panel-heading,
+  & > .panel-header {
     color:                  var(--color-interface-stronger);
     background-color:       var(--color-interface-softer);
     border-color:           var(--color-interface-softer);
@@ -724,10 +827,11 @@
   }
     background-color:       var(--color-interface-softest);
 
-  > .panel-heading {
+  > .panel-heading,
+  > .panel-header {
     &:before,
     &:after {
-      display:  table; 
+      display:  table;
       content:  " ";
     }
     &:after {
@@ -791,7 +895,8 @@
 .panel-waterfall {
   border-color:             var(--color-interface-softer);
 
-  & > .panel-heading {
+  & > .panel-heading,
+  & > .panel-header {
     color:                  var(--color-info-strong);
     background-color:       transparent;
     border-color:           transparent;
@@ -814,7 +919,8 @@
   box-shadow: none !important;
   overflow: hidden;
 
-  .panel-heading {
+  .panel-heading,
+  .panel-header {
     padding-bottom: var(--spacing-xsmall);
 
     + .panel-body {
@@ -990,6 +1096,39 @@
     overflow: hidden auto;
 }
 
+// .panel-scrollable-content:has(.grid-obsidian) {
+//   border: none;
+// }
+
+// // If there's a non-light grid make the panel body take up the full height and remove padding
+// .panel-body:has(.grid-obsidian:not(.grid-light)) {
+//   overflow: hidden auto;
+//   flex-grow: 1;
+//   padding: 0;
+// }
+
+// // Keep padding when there's a content section with a light grid
+// .panel-body:has(.contentsection-container) {
+//   padding: var(--spacing-medium);
+// }
+
+// .panel-worksurface .panel-scrollable-content:has(.grid-obsidian) {
+//   overflow: visible;
+//   flex-grow: 0;
+// }
+
+// .panel-scrollable-content:has(.grid-obsidian) .grid-heading {
+//   position: sticky;
+//   top: 0;
+//   overflow: hidden;
+// }
+
+// .panel-scrollable-content:has(.grid-obsidian) .grid-header-container {
+//   position: sticky;
+//   top: 57px;
+//   z-index: 1;
+// }
+
 .paneleditor-label {
   float: left;
 }
@@ -1002,11 +1141,12 @@
 }
 
 // copy from _rock_core.less, some of the nested class I join with the bootstrap panel class.
-.panel { 
-  .panel-heading {
+.panel {
+  .panel-heading,
+  .panel-header {
 
     .panel-header-actions {
-      margin-right: 1rem !important;
+      margin-right: var(--spacing-xsmall);
     }
 
     .panel-title {
@@ -1060,21 +1200,21 @@
     display:      flex;
     flex-wrap:    wrap;
     margin:       calc(var(--spacing-medium) * -1);
-  
+
     > .form-group {
       flex:           1 1 100%;
       border-bottom:  1px solid var(--color-interface-soft);
-  
+
       &:first-child {
         border-left: 0;
       }
-  
+
       @media (min-width: $screen-small) {
         flex:         1 1 auto;
         border-left:  1px solid var(--color-interface-soft);
       }
     }
-  
+
     .control-label {
       position:     absolute;
       z-index:      30;
@@ -1084,13 +1224,13 @@
       color:        var(--color-interface-strong);
       pointer-events: none;
     }
-  
+
     .btn,
     .btn-group,
     .dropdown-menu {
       width: 100%;
     }
-  
+
     .btn {
       display:          flex;
       justify-content:  space-between;
@@ -1110,9 +1250,11 @@
 // ======================= PANEL FOOTER CONTENT =======================
 
 .panel-footer-content {
-    padding: var(--spacing-medium);
-    background: var(--color-interface-softer);
-    border-top: 1px solid var(--color-interface-soft);
+  padding: var(--spacing-medium);
+  background: var(--color-interface-softer);
+  border-top: 1px solid var(--color-interface-soft);
+  border-bottom-left-radius: var(--rounded-medium);
+  border-bottom-right-radius: var(--rounded-medium);
 }
 
 .panel-sidebar-footer-content {
@@ -1120,3 +1262,11 @@
 }
 
 // ===================== END PANEL FOOTER CONTENT =====================
+
+// ===================== PANEL HELP =====================
+
+.help-content {
+  padding: var(--spacing-tiny) var(--spacing-medium);
+}
+
+// ===================== END PANEL HELP =====================

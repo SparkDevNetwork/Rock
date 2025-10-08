@@ -7,6 +7,9 @@
 
 <style scoped>
 .communication-detail-medium-cell {
+    width: 100%;
+    display: flex;
+    justify-content: center;
     color: var(--color-info-strong);
 }
 </style>

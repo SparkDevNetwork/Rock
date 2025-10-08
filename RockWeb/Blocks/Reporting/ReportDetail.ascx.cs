@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Reporting
                 var reportId = GetReportId();
                 if ( reportId.HasValue )
                 {
-                    ShowDetail( reportId.Value, PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull() );
+                    ShowDetail( reportId.Value, GetIdFromPageParameter( PageParameterKey.ParentCategoryId ) );
                 }
                 else
                 {
@@ -847,13 +847,13 @@ namespace RockWeb.Blocks.Reporting
 
             if ( reportId == 0 )
             {
-                // If not, check if we are editing a new copy of an existing Report.
-                reportId = PageParameter( PageParameterKey.ReportId ).AsInteger();
+                // If it's 0, check if we were editing an about-to-be-created "copy" of an existing Report; so we return back to viewing that one.
+                reportId = GetIdFromPageParameter( PageParameterKey.ReportId ).ToIntSafe();
             }
 
             if ( reportId == 0 )
             {
-                int? parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
+                int? parentCategoryId = GetIdFromPageParameter( PageParameterKey.ParentCategoryId );
                 if ( parentCategoryId.HasValue )
                 {
                     // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
@@ -863,13 +863,13 @@ namespace RockWeb.Blocks.Reporting
                 }
                 else
                 {
-                    // Cancelling on Add.  Return to Grid
+                    // Canceling on Add.  Return to Grid
                     NavigateToParentPage();
                 }
             }
             else
             {
-                // Cancelling on Edit.  Return to Details
+                // Canceling on Edit.  Return to Details
                 ReportService serviceReadOnly = new ReportService( new RockContextReadOnly() );
                 Report itemReadOnly = serviceReadOnly.Get( reportId );
                 ShowReadonlyDetails( itemReadOnly );
@@ -887,7 +887,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         public int? GetReportId()
         {
-            int? reportId = PageParameter( PageParameterKey.ReportId ).AsIntegerOrNull();
+            int? reportId = GetIdFromPageParameter( PageParameterKey.ReportId );
             var reportGuid = GetAttributeValue( AttributeKey.Report ).AsGuidOrNull();
 
             if ( reportGuid.HasValue )
@@ -900,6 +900,18 @@ namespace RockWeb.Blocks.Reporting
             }
 
             return reportId;
+        }
+
+        private int? GetIdFromPageParameter( string pageParameterKey )
+        {
+            var id = PageParameter( pageParameterKey ).AsIntegerOrNull();
+
+            // See if it's an IdKey...
+            if ( id == null )
+            {
+                id = Rock.Utility.IdHasher.Instance.GetId( PageParameter( pageParameterKey ) );
+            }
+            return id;
         }
 
         /// <summary>
@@ -1295,7 +1307,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( report.Id == default( int ) )
             {
-                dataViewId = PageParameter( PageParameterKey.DataViewId ).AsIntegerOrNull();
+                dataViewId = GetIdFromPageParameter( PageParameterKey.DataViewId );
                 if ( dataViewId.HasValue )
                 {
                     var dataView = new DataViewService( rockContext ).Get( dataViewId.Value );

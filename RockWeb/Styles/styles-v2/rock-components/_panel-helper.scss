@@ -3,9 +3,9 @@
 
 
 // =============================================================
-// Table of Content           
-//  + Base Style  
-//  + Panel sidebar              
+// Table of Content
+//  + Base Style
+//  + Panel sidebar
 // =============================================================
 
 
@@ -21,7 +21,8 @@
     margin-bottom:  0;
     border:         0;
 
-    .panel-heading {
+    .panel-heading,
+    .panel-header {
       display:      none;
     }
   }
@@ -60,12 +61,13 @@
 
   /* Remove background and borders for main panel headers. */
   .panel-block {
-    > .panel-heading, > .panel-sub-header {
+    > .panel-heading, > .panel-sub-header,
+    > .panel-header, > .panel-sub-header {
       border-bottom:      0;
       background-color:   var(--color-interface-softest);
     }
   }
-  
+
   /* The footer spans all 4 columns of the 2nd row. */
   .sidebar-footer {
     grid-column:      1 e("/") span 4;

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -140,6 +141,19 @@ namespace Rock.Workflow.Action
             String comment = action.GetWorkflowAttributeValue( GetAttributeValue( action, "ConnectionCommentAttribute" ).AsGuid() );
 
             var connectionRequestService = new ConnectionRequestService( rockContext );
+
+            // Check if the person already has an active connection request for this opportunity
+            var existingRequest = connectionRequestService.Queryable().AsNoTracking()
+                .Where( r => r.PersonAliasId == personAlias.Id && 
+                            r.ConnectionOpportunityId == opportunity.Id &&
+                            ( r.ConnectionState == ConnectionState.Active || r.ConnectionState == ConnectionState.FutureFollowUp ) )
+                .FirstOrDefault();
+
+            if ( existingRequest != null )
+            {
+                errorMessages.Add( "This person already has an active connection request for the selected opportunity. A new request cannot be created." );
+                return false;
+            }
 
             var connectionRequest = new ConnectionRequest();
             connectionRequest.PersonAliasId = personAlias.Id;

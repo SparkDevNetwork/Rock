@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Cms.StructuredContent;
 using Rock.Communication;
 using Rock.Constants;
 using Rock.Data;
@@ -228,8 +229,16 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.CommunicationMode ),
                 () => entity.CommunicationMode = box.Bag.CommunicationMode );
 
-            box.IfValidProperty( nameof( box.Bag.Description ),
-                () => entity.Description = box.Bag.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ), () =>
+            {
+                if ( entity.CommunicationMode != Enums.Lms.CommunicationMode.SMS )
+                {
+                    new StructuredContentHelper( box.Bag.Description )
+                        .DetectAndApplyDatabaseChanges( entity.Description, RockContext );
+                }
+
+                entity.Description = box.Bag.Description;
+            } );
 
             if ( box.Bag.PublishDateTime.HasValue )
             {

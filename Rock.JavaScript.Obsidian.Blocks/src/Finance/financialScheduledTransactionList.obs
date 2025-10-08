@@ -134,7 +134,7 @@
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { FinancialScheduledTransactionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialScheduledTransactionList/financialScheduledTransactionListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { AccountAmount, GridSettingsOptions, NavigationUrlKey, PreferenceKey, Row } from "./FinancialScheduledTransactionList/types.partial";
+    import { AccountAmount, GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./FinancialScheduledTransactionList/types.partial";
     import { computed, reactive, ref, watch } from "vue";
     import GridSettingsModal from "./FinancialScheduledTransactionList/gridSettingsModal.partial.obs";
     import { toCurrencyOrNull, toNumberOrNull } from "@Obsidian/Utility/numberUtils";

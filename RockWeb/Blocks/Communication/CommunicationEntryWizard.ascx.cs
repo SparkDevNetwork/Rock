@@ -30,6 +30,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Cms.StructuredContent;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Lava;
@@ -99,7 +100,7 @@ namespace RockWeb.Blocks.Communication
 
     [BooleanField( "Send When Approved",
         Key = AttributeKey.SendWhenApproved,
-        Description = "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?",
+        Description = @"When enabled, the block will send the communication immediately if it matches the approval criteria. If this is set to false, the block will not send the email and instead will defer the sending to the next run of the ""Send Communications"" job.",
         DefaultBooleanValue = true,
         Order = 7 )]
 
@@ -1799,7 +1800,7 @@ function onTaskCompleted( resultData )
             var templateQuery = new CommunicationTemplateService( rockContext )
                 .Queryable()
                 .AsNoTracking()
-                .Where( a => a.IsActive );
+                .Where( a => a.IsActive && a.UsageType == null ); // By default, exclude templates with a specified usage type (e.g., Communication Flows)
 
             int? categoryId = cpCommunicationTemplate.SelectedValue.AsIntegerOrNull();
             if ( categoryId.HasValue && categoryId > 0 )
@@ -4178,6 +4179,10 @@ function onTaskCompleted( resultData )
                 communication.PushMessage = settings.Details.PushMessage;
                 communication.PushOpenAction = settings.Details.PushOpenAction;
                 communication.PushOpenMessage = settings.Details.PushOpenMessage;
+
+                new StructuredContentHelper( settings.Details.PushOpenMessageJson )
+                    .DetectAndApplyDatabaseChanges( communication.PushOpenMessageJson, rockContext );
+
                 communication.PushOpenMessageJson = settings.Details.PushOpenMessageJson;
                 communication.PushTitle = settings.Details.PushTitle;
 

@@ -68,7 +68,7 @@
 }
 
 .config-bar {
-  font-size:    var(--font-size-regular);
+  font-size:    var(--font-size-h5);
   line-height:  var(--line-height-normal);
 
   &,
@@ -140,7 +140,7 @@
   transition:   .5s;
 
   a.btn {
-    font-size: var(--font-size-regular);
+    font-size: var(--font-size-h5);
   }
 
   > span {

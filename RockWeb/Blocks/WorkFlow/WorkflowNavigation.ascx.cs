@@ -169,7 +169,7 @@ namespace RockWeb.Blocks.WorkFlow
             divHeadingTitle.Controls.Add( headingTitle );
 
             var panelNavigation = new HtmlGenericControl( "i" );
-            panelNavigation.AddCssClass( "fa panel-navigation pull-right" );
+            panelNavigation.AddCssClass( "ti panel-navigation pull-right" );
             divHeadingTitle.Controls.Add( panelNavigation );
 
             if ( !string.IsNullOrWhiteSpace( category.IconCssClass ) )

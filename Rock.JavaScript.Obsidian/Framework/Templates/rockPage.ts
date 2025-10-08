@@ -30,8 +30,7 @@ import { BasicSuspenseProvider, provideSuspense } from "@Obsidian/Utility/suspen
 import { alert } from "@Obsidian/Utility/dialogs";
 import { HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
 import { doApiCall, doStreamingApiCall, provideHttp } from "@Obsidian/Utility/http";
-import { createInvokeBlockAction, createInvokeStreamingBlockAction, provideBlockBrowserBus, provideBlockGuid, provideBlockTypeGuid } from "@Obsidian/Utility/block";
-import { useBrowserBus } from "@Obsidian/Utility/browserBus";
+import { createInvokeBlockAction, createInvokeStreamingBlockAction, provideBlockGuid, provideBlockTypeGuid } from "@Obsidian/Utility/block";
 import { safeParseJson } from "@Obsidian/Utility/stringUtils";
 import { Guid } from "@Obsidian/Types";
 
@@ -194,6 +193,8 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
 
                 isLoaded = true;
 
+                let loadingTimeout = 0;
+
                 if (rootElement.classList.contains("obsidian-block-has-placeholder")) {
                     wrapperElement.style.padding = "1px 0px";
                     const realHeight = wrapperElement.getBoundingClientRect().height - 2;
@@ -205,6 +206,7 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
                         rootElement.style.height = "";
                         rootElement.classList.remove("obsidian-block-has-placeholder");
                     }, 200);
+                    loadingTimeout = 201;
                 }
 
                 rootElement.classList.remove("obsidian-block-loading");
@@ -216,7 +218,9 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
                     pendingCount--;
                     document.body.setAttribute("data-obsidian-pending-blocks", pendingCount.toString());
                     if (pendingCount === 0) {
-                        document.body.classList.remove("obsidian-loading");
+                        setTimeout(() => {
+                            document.body.classList.remove("obsidian-loading");
+                        }, loadingTimeout);
                     }
                 }
             };
@@ -598,7 +602,6 @@ export async function showCustomBlockAction(actionFileUrl: string, pageGuid: str
             provide("invokeStreamingBlockAction", invokeStreamingBlockAction);
             provideBlockGuid(blockGuid);
             provideBlockTypeGuid(blockTypeGuid);
-            provideBlockBrowserBus(useBrowserBus({ block: blockGuid, blockType: blockTypeGuid }));
 
             return {
                 actionComponent,

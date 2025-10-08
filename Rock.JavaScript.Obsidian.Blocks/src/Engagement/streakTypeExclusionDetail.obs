@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, onMounted, ref } from "vue";
+    import { computed, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
@@ -47,7 +47,6 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { StreakTypeExclusionBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeExclusionDetail/streakTypeExclusionBag";
     import { StreakTypeExclusionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeExclusionDetail/streakTypeExclusionDetailOptionsBag";
-    import { useStore } from "@Obsidian/PageState";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<StreakTypeExclusionBag, StreakTypeExclusionDetailOptionsBag>>();
@@ -57,8 +56,6 @@
 
     const blockError = ref("");
     const errorMessage = ref("");
-    const store = useStore();
-
     const streakTypeExclusionViewBag = ref(config.entity);
     const streakTypeExclusionEditBag = ref<ValidPropertiesBox<StreakTypeExclusionBag>>({
         bag: {} as StreakTypeExclusionBag
@@ -243,14 +240,5 @@
     }
 
     onConfigurationValuesChanged(useReloadBlock());
-
-    onMounted(() => {
-        if (config.entity?.idKey) {
-            store.setAreSecondaryBlocksShown(true);
-        }
-        else {
-            store.setAreSecondaryBlocksShown(false);
-        }
-    });
 
 </script>

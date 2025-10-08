@@ -182,7 +182,7 @@ namespace Rock.Blocks.Engagement
             return new GridBuilder<StreakTypeExclusion>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
-                .AddTextField( "location", a => a.Location?.Name ?? " -- " );
+                .AddTextField( "location", a => a.Location?.Name ?? "No Location" );
         }
 
         /// <summary>

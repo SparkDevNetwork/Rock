@@ -97,6 +97,7 @@ namespace Rock.Blocks.Cms
         IsRequired = false,
         Key = AttributeKey.ContentChannel )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "5597badd-bb0e-4bcd-be1f-5acf230cf428" )]
     [Rock.SystemGuid.BlockTypeGuid( "93dc73c4-545d-40b9-bfea-1cec04c07eb1" )]
     [CustomizedGrid]

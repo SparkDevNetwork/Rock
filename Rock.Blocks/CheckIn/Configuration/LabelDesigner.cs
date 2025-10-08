@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.CheckIn.v2;
@@ -93,6 +95,13 @@ namespace Rock.Blocks.CheckIn.Configuration
                 .ThenBy( s => s.Property?.Title ?? s.Attribute?.Name )
                 .ToList();
 
+            var printerDeviceTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_PRINTER.AsGuid(), RockContext )?.Id;
+            var printers = DeviceCache.All( RockContext )
+                .Where( d => d.DeviceTypeValueId == printerDeviceTypeValueId
+                    && d.IPAddress.IsNotNullOrWhiteSpace() )
+                .OrderBy( d => d.Name )
+                .ToListItemBagList();
+
             var returnUrl = this.GetParentPageUrl( new Dictionary<string, string>
             {
                 [PageParameterKey.CheckInLabelId] = label.IdKey
@@ -108,7 +117,8 @@ namespace Rock.Blocks.CheckIn.Configuration
                 DataSources = dataSources,
                 FilterSources = filterSources,
                 Icons = GetIconList(),
-                ReturnUrl = returnUrl
+                ReturnUrl = returnUrl,
+                Printers = printers,
             };
         }
 
@@ -241,6 +251,58 @@ namespace Rock.Blocks.CheckIn.Configuration
             {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Prints the label content to the specified printer. This is used by
+        /// multiple check-in related blocks to preview and print labels.
+        /// </summary>
+        /// <param name="checkInLabel">The label being printed.</param>
+        /// <param name="printerKey">The unique identifier of the printer.</param>
+        /// <param name="content">The raw ZPL content to print.</param>
+        /// <param name="rockContext">The database context when loading additional data.</param>
+        /// <returns>A <see cref="Task"/> that contains the block action result.</returns>
+        internal static async Task<BlockActionResult> PrintPreviewLabelAsync( CheckInLabel checkInLabel, string printerKey, string content, RockContext rockContext )
+        {
+            if ( content.IsNullOrWhiteSpace() )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.BadRequest )
+                {
+                    Error = "Invalid data provided."
+                };
+            }
+
+            var printer = DeviceCache.Get( printerKey.AsGuid(), rockContext );
+
+            if ( printer == null || printer.IPAddress.IsNullOrWhiteSpace() )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.BadRequest )
+                {
+                    Error = "Printer was not found or was not valid."
+                };
+            }
+
+            var printProvider = new LabelPrintProvider();
+            var renderedLabel = new RenderedLabel
+            {
+                LabelId = checkInLabel.IdKey,
+                LabelName = checkInLabel.Name,
+                PrintFrom = PrintFrom.Server,
+                PrintTo = printer,
+                Data = System.Text.Encoding.UTF8.GetBytes( content ),
+            };
+
+            var errors = await printProvider.PrintLabelsAsync( new[] { renderedLabel }, new CancellationTokenSource( 5000 ).Token );
+
+            if ( !errors.Any() )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.OK );
+            }
+
+            return new BlockActionResult( System.Net.HttpStatusCode.BadRequest )
+            {
+                Error = string.Join( " ", errors )
+            };
         }
 
         #endregion
@@ -443,6 +505,38 @@ namespace Rock.Blocks.CheckIn.Configuration
                     Duration = sw.ElapsedMilliseconds
                 } );
             }
+        }
+
+        /// <summary>
+        /// Print the preview content to the specified printer.
+        /// </summary>
+        /// <param name="key">The key that identifies the label to preview.</param>
+        /// <param name="content">The content of the label to be printed.</param>
+        /// <param name="printerKey">The encoded identifier of the printer to send the content to.</param>
+        /// <returns>The result of the operation.</returns>
+        [BlockAction]
+        public async Task<BlockActionResult> PrintPreview( string key, string content, string printerKey )
+        {
+            var entityService = new CheckInLabelService( RockContext );
+            var checkInLabel = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( checkInLabel == null )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.BadRequest )
+                {
+                    Error = $"{CheckInLabel.FriendlyTypeName} not found."
+                };
+            }
+
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.BadRequest )
+                {
+                    Error = $"Not authorized to edit ${CheckInLabel.FriendlyTypeName}."
+                };
+            }
+
+            return await PrintPreviewLabelAsync( checkInLabel, printerKey, content, RockContext );
         }
 
         #endregion

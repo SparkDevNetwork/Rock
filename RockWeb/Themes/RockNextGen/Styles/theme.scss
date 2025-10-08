@@ -1,10 +1,9 @@
-
 @import "../../../Styles/summernote/summernote.min.css";
 @import "../../../Styles/styles-v2/sass-variable";
-@import "../../../Styles/styles-v2/core.css";
+@import "../../../Styles/styles-v2/core";
 
 // @import "../../../Styles/style-v2/icons/fontawesome-icon.css";
-// @import "../../../Styles/style-v2/icons/fontawesome-regular.css"; 
+// @import "../../../Styles/style-v2/icons/fontawesome-regular.css";
 // @import "../../../Styles/style-v2/icons/fontawesome-solid.css";
 // @import "../../../Styles/style-v2/icons/tabler-icon.css";
 :root {
@@ -30,11 +29,12 @@ body.navbar-side-open {
 }
 
 .full-work-surface {
+  height: 100%;
   padding: var(--spacing-medium);
 }
 
 .header-content {
-  
+
   #page-content {
     min-height: 600px;
   }
@@ -42,15 +42,20 @@ body.navbar-side-open {
   .page-title-display {
     color: var(--color-interface-stronger);
     // Maybe a good idea to hardcode so that when people change the spacing it will not break the header
-    margin-left: 80px;
+    margin-left: var(--spacing-huge);
+    margin-right: var(--spacing-large);
+    min-width: 100px;
 
     .page-icon {
       display: none;
     }
 
+    .page-title {
+      width: 100%;
+    }
+
     .breadcrumb {
       padding: 0;
-      margin-top: var(--spacing-tiny);
       font-size: var(--font-size-xsmall);
 
       a:hover {
@@ -62,16 +67,21 @@ body.navbar-side-open {
       }
 
       > li + li::before {
-        font-family: FontAwesome;
+        font-family: 'tabler-icons';
         font-size: 80%;
         font-weight: 900;
-        content: "\f054";
+        content: "\ea61";
       }
     }
     .title {
       font-size: 24px;
       font-weight: 700;
       margin: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 100%;
+      line-height: var(--line-height-normal);
     }
   }
   @media (max-width: ($screen-large)) {
@@ -179,6 +189,10 @@ body.navbar-side-open {
   @media (min-width: $screen-small) {
       margin-left: 88px;
   }
+}
+
+#content-wrapper:has(.full-work-surface) {
+    height: 100%;
 }
 
 @media (max-width: ($screen-small - 1)) {
@@ -534,11 +548,6 @@ $navbar-element-height: 40px;
 
 }
 
-.nav-pills > li > a {
-  color: var(--color-interface-strong);
-  background-color: var(--color-interface-softer);
-}
-
 // Side Nav
 .navbar-static-side {
   --nav-childpages-bg: var(--navbarside-background-color);
@@ -575,7 +584,7 @@ $navbar-element-height: 40px;
     .nav-item-top {
       display: flex;
       align-items: center;
-      justify-content: flex-start; 
+      justify-content: flex-start;
       padding: 18px 12px;
       font-size: 18px;
       margin-top: 0;
@@ -726,7 +735,7 @@ $navbar-element-height: 40px;
         color: var(--color-interface-softer);
 
         @media (min-width: $screen-xsmall) {
-          color: var(--color-interface-strong)          
+          color: var(--color-interface-strong)
         }
 
         i {
@@ -823,7 +832,7 @@ $navbar-element-height: 40px;
       &:last-child {
         border: 0;
       }
-  
+
       &.current {
         background-color: #ffffff30;
         border-radius:    var(--rounded-medium) var(--rounded-medium) var(--rounded-medium) var(--rounded-medium);
@@ -932,7 +941,7 @@ $navbar-element-height: 40px;
   }
 }
 
-// Hamburger 
+// Hamburger
 $hamburger-width: 18px;
 $hamburger-height: 2px;
 $hamburger-spacing: 4px;
@@ -1008,11 +1017,11 @@ a.rock-bookmark {
   border: 1px solid var(--color-interface-soft);
   border-radius: 999px;
   transition: .15s ease-in-out,box-shadow .15s ease-in-out;
-  
+
   &:hover {
     color: var(--color-interface-stronger);
   }
-  
+
   &:focus {
     box-shadow: var(--input-focus-box-shadow) !important;
     i {
@@ -1135,7 +1144,7 @@ a.rock-bookmark {
   display: flex;
   align-items: center;
   border-radius: var(--rounded-medium);
-  
+
   .pull-left {
     margin-right: auto;
   }
@@ -1332,14 +1341,21 @@ a.rock-bookmark {
 #splash {
   display: flex;
   justify-content: center;
-  align-items: center;;
+  align-items: center;
   height: 100vh;
+
+  &.obsidian-loading #content {
+    visibility: hidden;
+    opacity: 0;
+  }
 
   #content {
     position: relative;
     display: grid;
     grid-template-columns: 10fr 8fr;
     align-items: center;
+    transition: opacity .2s ease;
+    opacity: 1;
 
     background-color: var(--color-interface-softest);
     padding: var(--spacing-large);
@@ -1351,13 +1367,13 @@ a.rock-bookmark {
     min-height: 500px;
 
     @media (max-width: $screen-medium) {
-      margin-top: 10vh;
+      margin: 2vh 0;
       grid-template-columns: 1fr;
-      grid-template-rows: 8fr 10fr;
+      grid-template-rows: 4fr 10fr;
       gap: 0;
-      
-      min-width: 480px;
-      width: 80vw;
+
+      min-width: 380px;
+      width: 90vw;
     }
   }
 
@@ -1371,10 +1387,10 @@ a.rock-bookmark {
     border-radius: var(--rounded-large);
     background-color: var(--color-primary);
 
-    height: -webkit-fill-available;
-    width: -webkit-fill-available;
-    grid-column: 1 / 2;  
-    grid-row: 1 / 2; 
+    height: 100%;
+    width: 100%;
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
 
     z-index: 1001;
     animation: slide-left 1.3s ease-in-out forwards;
@@ -1391,7 +1407,7 @@ a.rock-bookmark {
     justify-content: center;
 
     grid-column: 2 / 3;
-    grid-row: 1 / 2; 
+    grid-row: 1 / 2;
 
     @media (max-width: $screen-medium) {
       display: block;
@@ -1413,7 +1429,7 @@ a.rock-bookmark {
     background-size: 200px;
     fill: var(--color-interface-softest);
     background-image: var(--logo-image);
-    
+
     @media (max-width: $screen-medium) {
       background-size: 120px;
     }
@@ -1428,6 +1444,9 @@ a.rock-bookmark {
   .checkbox {
     // Override the normal check box margin.
     margin-bottom: var(--spacing-medium);
+  }
+  @media screen and (max-width: $screen-medium) {
+    height: 100%;
   }
 }
 
@@ -1457,4 +1476,9 @@ a.rock-bookmark {
 .rock-top-header .navbar-zone-header  .zone-content {
   flex-direction: row-reverse;
   justify-content: flex-start;
+}
+
+.borderless-panel {
+  border: none;
+  border-radius: 0;
 }

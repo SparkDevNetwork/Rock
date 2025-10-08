@@ -54,6 +54,7 @@ namespace Rock.Blocks.Core
         DefaultBooleanValue = false,
         Order = 1 )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "259b6074-eefa-4638-a7ed-c2169f450bee" )]
     [Rock.SystemGuid.BlockTypeGuid( "b6a17e77-e53d-4c96-bcb2-643123b8160c" )]
     [CustomizedGrid]
@@ -148,7 +149,9 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<Schedule> GetListQueryable( RockContext rockContext )
         {
-            var queryable = new ScheduleService( rockContext ).Queryable().Where( a => !string.IsNullOrEmpty( a.Name ) );
+            var queryable = new ScheduleService( rockContext ).Queryable()
+                .Include( a => a.Category )
+                .Where( a => !string.IsNullOrEmpty( a.Name ) );
 
             if ( this.GetAttributeValue(AttributeKey.FilterCategoryFromQueryString).AsBoolean() )
             {

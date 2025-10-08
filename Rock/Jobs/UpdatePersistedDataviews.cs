@@ -197,12 +197,12 @@ namespace Rock.Jobs
 
             StringBuilder results = new StringBuilder();
             // Format the result message
-            results.AppendLine( $"<i class='ti ti-circle text-success'></i> Updated {updatedDataViewCount} {"dataview".PluralizeIf( updatedDataViewCount != 1 )}" );
+            results.AppendLine( $"<i class='ti ti-circle-filled text-success'></i> Updated {updatedDataViewCount} {"dataview".PluralizeIf( updatedDataViewCount != 1 )}" );
 
             if ( failedDataViews.Any() )
             {
                 var topTwenty = failedDataViews.Take( 20 ).ToList();
-                results.Append( $"<i class='ti ti-circle text-warning'></i> Skipped: {failedDataViews.Count} dataviews due to encountered errors:" );
+                results.Append( $"<i class='ti ti-circle-filled text-warning'></i> Skipped: {failedDataViews.Count} dataviews due to encountered errors:" );
                 results.Append( "<ul>" );
                 topTwenty.ForEach( e => results.Append( $"<li>{e}</li>" ) );
                 results.Append( "</ul>" );

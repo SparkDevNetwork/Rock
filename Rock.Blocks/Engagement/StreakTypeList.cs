@@ -47,7 +47,7 @@ namespace Rock.Blocks.Engagement
     [Rock.SystemGuid.EntityTypeGuid( "fb234106-94fd-4206-aa85-4377f1d2c512" )]
     [Rock.SystemGuid.BlockTypeGuid( "6f0f3ad2-4989-4f50-b394-0de3c7af35ad" )]
     [CustomizedGrid]
-    public class StreakTypeList : RockEntityListBlockType<StreakType>
+    public class StreakTypeList : RockListBlockType<StreakTypeList.StreakTypeWithEnrollment>
     {
         #region Keys
 
@@ -133,49 +133,75 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<StreakType> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<StreakTypeWithEnrollment> GetListQueryable( RockContext rockContext )
         {
             // Don't use the streak type cache here since the users will expect to see the instant changes to this
             // query when they add, edit, etc
-            var queryable = new StreakTypeService( rockContext ).Queryable().AsNoTracking();
+            var streakTypeService = new StreakTypeService( rockContext );
+            var streakTypeQueryable = streakTypeService.Queryable().AsNoTracking();
 
             // Filter by: Active
             switch ( FilterActiveStatus )
             {
                 case "Active":
-                    return queryable.Where( s => s.IsActive );
+                    streakTypeQueryable = streakTypeQueryable.Where( s => s.IsActive );
+                    break;
                 case "Inactive":
-                    return queryable.Where( s => !s.IsActive );
-                default:
-                    return queryable;
+                    streakTypeQueryable = streakTypeQueryable.Where( s => !s.IsActive );
+                    break;
             }
+
+            var streakQueryable = new StreakService( rockContext ).Queryable().AsNoTracking();
+
+            var enrollmentCountsQueryable = streakQueryable
+                .GroupBy( s => s.StreakTypeId )
+                .Select( g => new { StreakTypeId = g.Key, Count = g.Count() } );
+
+            var queryable = streakTypeQueryable
+                .GroupJoin(
+                    enrollmentCountsQueryable,
+                    st => st.Id,
+                    ec => ec.StreakTypeId,
+                    ( st, ecs ) => new { StreakType = st, EnrollmentCounts = ecs }
+                )
+                .SelectMany(
+                    x => x.EnrollmentCounts.DefaultIfEmpty(),
+                    ( x, ec ) => new StreakTypeWithEnrollment
+                    {
+                        StreakType = x.StreakType,
+                        EnrollmentCount = ec != null ? ec.Count : 0
+                    }
+                );
+            return queryable;
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<StreakType> GetOrderedListQueryable( IQueryable<StreakType> queryable, RockContext rockContext )
+        protected override IQueryable<StreakTypeWithEnrollment> GetOrderedListQueryable( IQueryable<StreakTypeWithEnrollment> queryable, RockContext rockContext )
         {
-            return queryable.OrderBy( s => s.Id );
+            return queryable.OrderBy( s => s.StreakType.Id );
         }
 
         /// <inheritdoc/>
-        protected override List<StreakType> GetListItems( IQueryable<StreakType> queryable, RockContext rockContext )
+        protected override List<StreakTypeWithEnrollment> GetListItems( IQueryable<StreakTypeWithEnrollment> queryable, RockContext rockContext )
         {
-            var items = queryable.ToList();
-            return items.Where( s => s.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ).ToList();
+            return queryable
+                .ToList()
+                .Where( s => s.StreakType.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
+                .ToList();
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<StreakType> GetGridBuilder()
+        protected override GridBuilder<StreakTypeWithEnrollment> GetGridBuilder()
         {
-            return new GridBuilder<StreakType>()
+            return new GridBuilder<StreakTypeWithEnrollment>()
                 .WithBlock( this )
-                .AddTextField( "idKey", a => a.IdKey )
-                .AddTextField( "name", a => a.Name )
-                .AddField( "isActive", a => a.IsActive )
-                .AddTextField( "occurrenceFrequency", a => a.OccurrenceFrequency.ToString() )
-                .AddDateTimeField( "startDate", a => a.StartDate )
-                .AddField( "enrollmentCount", a => a.Streaks.Count )
-                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
+                .AddTextField( "idKey", a => a.StreakType.IdKey )
+                .AddTextField( "name", a => a.StreakType.Name )
+                .AddField( "isActive", a => a.StreakType.IsActive )
+                .AddTextField( "occurrenceFrequency", a => a.StreakType.OccurrenceFrequency.ToString() )
+                .AddDateTimeField( "startDate", a => a.StreakType.StartDate )
+                .AddField( "enrollmentCount", a => a.EnrollmentCount )
+                .AddField( "isSecurityDisabled", a => !a.StreakType.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
         }
 
         #endregion
@@ -215,6 +241,17 @@ namespace Rock.Blocks.Engagement
 
                 return ActionOk();
             }
+        }
+
+        #endregion
+
+        #region Helper Classes
+
+        public class StreakTypeWithEnrollment
+        {
+            public StreakType StreakType { get; set; }
+
+            public int EnrollmentCount { get; set; }
         }
 
         #endregion

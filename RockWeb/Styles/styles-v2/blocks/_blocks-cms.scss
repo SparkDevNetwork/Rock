@@ -4,12 +4,15 @@
 
 
 // =============================================================
-// Table of Content           
+// Table of Content
 //  + HTML Content - block to edit HTML on a page
 //  + My Account - Used on external sites for setting person details
 //  + Lava Debug - Used to style the lava debug panel
 //  + Social Tools - Used for showing social media links
 //  + Media Element
+//  + Asset Manager - Used for managing media assets
+//  + Control Gallery
+//  + SMS Pipeline - Used for managing SMS communications
 // =============================================================
 
 
@@ -113,7 +116,8 @@
     background-color:   var(--color-info-soft);
     border:             0;
 
-    .panel-heading {
+    .panel-heading,
+    .panel-header {
       color:            var(--color-info-strong);
       cursor:           pointer;
       background-color: var(--color-info-soft);
@@ -218,7 +222,8 @@
       border-color:     var(--color-interface-soft);
       box-shadow:       none;
 
-      > .panel-heading {
+      > .panel-heading
+      > .panel-header {
         padding:        0 0 var(--spacing-medium);
         margin-bottom:  var(--spacing-medium);
         background:     none;
@@ -416,4 +421,290 @@
     }
   }
 }
+
+.individual-plays-container {
+
+  .individual-play-row .individual-play-date,
+  .individual-play-row .individual-play-person-location {
+    color: var(--color-interface-medium);
+  }
+
+  .individual-play-person-detail {
+    color: var(--color-interface-strong);
+  }
+
+  .individual-play-row .individual-play-bar {
+    background-color: var(--color-interface-softer);
+    border: var(--color-interface-soft) 1px solid;
+  }
+
+  .individual-play-row .individual-play-chart {
+    background: var(--color-interface-soft);
+  }
+
+  .individual-play-interaction {
+    background: var(--color-interface-softest);
+
+    .individual-play-interaction-session {
+      color: var(--color-interface-strong);
+    }
+  }
+
+  .individual-play-row .individual-play-bar {
+    background-color: var(--color-interface-softest);
+  }
+
+}
+
+
+
+
 // ================== END MEDIA ELEMENT ==================
+
+// ================== START ASSET MANAGER ==================
+
+.actions.assetmanager-actions {
+  margin-bottom: var(--spacing-xsmall);
+
+  & > .pull-left {
+    margin-right: var(--spacing-xsmall);
+  }
+}
+
+// ================== END ASSET MANAGER ==================
+
+
+// ================== START CONTROL GALLERY ==================
+
+/* Pretty printing styles. Used with prettify.js. */
+
+/* SPAN elements with the classes below are added by prettyprint. */
+.pln { color: var(--color-interface-stronger) }  /* plain text */
+
+@media screen {
+  .str { color: #0000ff }  /* string content */
+  .kwd { color: #2f6f9f }  /* a keyword */
+  .com { color: #999 }  /* a comment */
+  .typ { color: #2f6f9f }  /* a type name */
+  .lit { color: #066 }  /* a literal value */
+  /* punctuation, lisp open bracket, lisp close bracket */
+  .pun, .opn, .clo { color: #2f6f9f }
+  .tag { color: #2f6f9f }  /* a markup tag name */
+  .atn { color: #4f9fcf }  /* a markup attribute name */
+  .atv { color: #d44950 }  /* a markup attribute value */
+  .dec, .var { color: #606 }  /* a declaration; a variable name */
+  .fun { color: red }  /* a function name */
+}
+
+/* Use higher contrast and text-weight for printable form. */
+@media print, projection {
+  .str { color: #060 }
+  .kwd { color: #800000; font-weight: bold }
+  .com { color: #600; font-style: italic }
+  .typ { color: #404; font-weight: bold }
+  .lit { color: #044 }
+  .pun, .opn, .clo { color: #440 }
+  .tag { color: #006; font-weight: bold }
+  .atn { color: #404 }
+  .atv { color: #060 }
+}
+
+/* Put a border around prettyprinted code snippets. */
+pre.prettyprint {
+    padding: 9px 14px;
+    margin-top: 14px;
+    background-color: var(--color-interface-softer);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-xsmall);
+}
+
+/* Specify class=linenums on a pre to get line numbering */
+ol.linenums { margin-top: 0; margin-bottom: 0 } /* IE indents via margin-left */
+li.L0,
+li.L1,
+li.L2,
+li.L3,
+li.L5,
+li.L6,
+li.L7,
+li.L8 { list-style-type: none }
+/* Alternate shading for lines */
+li.L1,
+li.L3,
+li.L5,
+li.L7,
+li.L9 { background: var(--color-interface-softer) }
+
+.r-example {
+    position: relative;
+    padding: 45px 15px 15px;
+    margin: 0 -15px 15px;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    /* border-style: solid;
+    border-width: 1px;
+    border-color: #ddd;
+    border-radius: 4px 4px 0 0;
+    -webkit-box-shadow: none;
+    box-shadow: none; */
+}
+.r-example:after {
+    content: "Example";
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    font-size: var(--font-size-xsmall);
+    font-weight: bold;
+    color: var(--color-interface-soft);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+// ================== END CONTROL GALLERY ==================
+
+// ======================== SMS PIPELINE ========================
+
+.sms-action-components {
+  background: var(--color-interface-softest);
+  .component {
+    border-radius: var(--rounded-small);
+  }
+}
+
+.sms-actions-container {
+  padding: 20px 50px !important;
+  counter-reset: section;
+}
+
+.sms-actions-container .component {
+  display: none;
+}
+
+.sms-actions-container .component.gu-transit {
+  display: block;
+}
+
+.sms-action {
+  --connector-size: 28px;
+  position: relative;
+  max-width: 500px;
+  padding: 20px var(--spacing-medium);
+  margin: 0 auto 20px;
+  font-size: 21px;
+  cursor: pointer;
+  background-color: var(--color-interface-softer);
+  border-radius: var(--rounded-small);
+  box-shadow: 0 2px 4px 0 rgba(0,0,0,.3);
+}
+
+.sms-action::after {
+  position: absolute;
+  top: 20px;
+  left: calc((var(--connector-size) + 12px) * -1);
+  display: block;
+  width: var(--connector-size);
+  height: var(--connector-size);
+  color: var(--color-interface-softest);
+  text-align: center;
+  content: counter(section);
+  counter-increment: section;
+  background-color: var(--color-interface-strong);
+  border: 2px solid var(--color-interface-strongest);
+  border-radius: 50%;
+}
+
+.sms-action::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--connector-size) * -1);
+  width: 2px;
+  height: calc(100% + 20px);
+  margin-left: 1px;
+  content: "";
+  background: var(--color-interface-soft);
+}
+
+.sms-action.inactive {
+  color: rgba(45,46,49,.5);
+  background-color: var(--color-interface-soft);
+}
+
+.sms-action.inactive::after {
+  display: none;
+}
+
+.sms-action:first-child::before {
+  top: 20px;
+}
+
+.sms-action:last-child::before {
+  height: calc(100% - var(--connector-size));
+}
+
+.sms-action.editing {
+  box-shadow: 0 0 0 4px var(--color-primary);
+}
+
+.sms-action .reorder {
+  cursor: grab;
+}
+
+.sms-action > .fa {
+  width: 30px;
+  padding-right: 2px;
+  color: var(--color-interface-medium);
+  text-align: center;
+}
+
+.sms-pipeline-detail .sms-heading {
+  max-width: 500px;
+  padding: 20px var(--spacing-medium);
+  margin: 0 auto 20px;
+  font-size: 21px;
+  text-align: center;
+  cursor: pointer;
+  background-color: var(--color-interface-softest);
+  border-radius: var(--rounded-small);
+  box-shadow: 0 2px 4px 0 rgba(0,0,0,.3);
+  border: 1px solid var(--color-interface-soft);
+}
+
+.sms-pipeline-detail .drag-container {
+  height: 100%;
+}
+
+.sms-pipeline-detail .drag-container-empty::after {
+  display: block;
+  max-width: 500px;
+  height: 200px;
+  padding: 80px 0;
+  margin: 0 auto 20px;
+  font-size: 20px;
+  text-align: center;
+  content: "Drag and Drop Here";
+  border: 3px dashed rgba(0,0,0,.2);
+}
+
+/* Replace 18px with panel-body-padding */
+.sms-pipeline-detail h4 {
+  padding: var(--spacing-small) 18px;
+  margin: 1px -18px var(--spacing-medium);
+  font-size: var(--font-size-h5);
+  font-weight: 500;
+  background: var(--color-interface-softest);
+  border-top: 1px solid var(--color-interface-softer);
+}
+
+.sms-pipeline-detail .component.gu-transit {
+  max-width: 500px;
+  padding: 20px 0;
+  margin: 0 auto 20px;
+  font-size: 20px;
+  text-align: center;
+  list-style: none;
+  border: 3px solid rgba(0,0,0,.2);
+}
+
+// ======================== END SMS PIPELINE ========================

@@ -2,6 +2,7 @@
 <template>
     <ComponentPropertyPanelBase :componentElement="componentElement"
                                 :componentMigrationHelper="videoComponentHelper"
+                                :ltr="ltr"
                                 title="Video"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
@@ -85,6 +86,11 @@
         componentElement: {
             type: Object as PropType<HTMLElement>,
             required: true
+        },
+
+        ltr: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         videoProviderNames: {

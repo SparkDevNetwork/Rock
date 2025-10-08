@@ -200,7 +200,6 @@
     * @param row The row to be filtered.
     */
     function getRunDurationRowFilterValue(row: Record<string, unknown>): string {
-        const durationSeconds = row.durationSeconds as string;
         return row.durationSeconds as string ?? "";
     }
 

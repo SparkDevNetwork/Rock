@@ -20,8 +20,6 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
-using Microsoft.AspNetCore.Mvc;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -73,11 +71,11 @@ namespace Rock.Rest.v2.Models.Actions
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( LaunchWorkflowResponseBag ), Description = "Returned when the request specifies that the workflow should be awaited." )]
-        [ProducesResponseType( HttpStatusCode.NoContent, Description = "Returned when the workflow is launched in the background." )]
-        [ProducesResponseType( HttpStatusCode.BadRequest )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( LaunchWorkflowResponseBag ), Description = "Returned when the request specifies that the workflow should be awaited." )]
+        [ProducesResponse( HttpStatusCode.NoContent, Description = "Returned when the workflow is launched in the background." )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "44fbcc9f-f6fa-43ff-adef-c7be0fb196fa" )]
         public IActionResult PostLaunch( string workflowTypeId, [FromBody] LaunchWorkflowOptionsBag request )
         {

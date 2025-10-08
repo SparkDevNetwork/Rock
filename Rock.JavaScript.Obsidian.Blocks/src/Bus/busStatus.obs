@@ -76,7 +76,7 @@
      *
      * @returns {void}
      */
-    function onConfigureTransports() {
+    function onConfigureTransports(): void {
         const url = config.navigationUrls?.[NavigationUrlKey.TransportSelectPage];
         if (url) {
             window.location.href = url;

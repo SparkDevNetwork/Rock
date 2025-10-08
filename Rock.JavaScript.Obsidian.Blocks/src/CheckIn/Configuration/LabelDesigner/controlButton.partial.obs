@@ -10,6 +10,7 @@
     width: 100px;
     height: 100px;
     border: 2px solid var(--color-interface-soft);
+    border-radius: var(--rounded-small);
     color: var(--color-interface-stronger);
     display: flex;
     flex-direction: column;
@@ -21,7 +22,9 @@
 }
 
 .icon-button:hover {
-    background-color: var(--color-interface-softest);
+    background-color: var(--color-interface-softer);
+    border-color: var(--color-primary);
+
 }
 
 .icon-button .icon {

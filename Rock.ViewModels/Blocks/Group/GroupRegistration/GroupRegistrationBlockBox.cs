@@ -111,5 +111,10 @@ namespace Rock.ViewModels.Blocks.Group.GroupRegistration
         /// Gets or sets a value indicating whether the field is required.
         /// </summary>
         public bool SmsIsShowAllAdults { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to disable captcha support for the block.
+        /// </summary>
+        public bool DisableCaptchaSupport { get; set; }
     }
 }

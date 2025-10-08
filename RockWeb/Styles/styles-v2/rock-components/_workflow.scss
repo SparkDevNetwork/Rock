@@ -2,7 +2,8 @@
   position: relative;
   margin: 0 0 8px;
 
-  > .panel-heading {
+  > .panel-heading,
+  > .panel-header {
     background: var(--color-interface-softest);
     border-bottom: 0;
 

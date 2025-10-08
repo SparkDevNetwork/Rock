@@ -23,11 +23,15 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Controls;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.NoteWatchList;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Core.Grid;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Core
@@ -62,7 +66,7 @@ namespace Rock.Blocks.Core
     [Rock.SystemGuid.EntityTypeGuid( "8fdb4340-bdde-4797-b173-ea456a825b2a" )]
     [Rock.SystemGuid.BlockTypeGuid( "ed4cd6ae-ed86-4607-a252-f15971e4f2e3" )]
     [CustomizedGrid]
-    public class NoteWatchList : RockEntityListBlockType<NoteWatch>
+    public class NoteWatchList : RockListBlockType<NoteWatchList.NoteWatchRow>
     {
         #region Keys
 
@@ -78,7 +82,44 @@ namespace Rock.Blocks.Core
             public const string DetailPage = "DetailPage";
         }
 
+        private static class PreferenceKey
+        {
+            public const string FilterCreatedDateRange = "filter-created-date-range";
+        }
+
         #endregion Keys
+
+        #region Fields
+
+        /// <summary>
+        /// The NoteWatch attributes that are configured to show on the grid.
+        /// </summary>
+        private readonly Lazy<List<AttributeCache>> _gridAttributes = new Lazy<List<AttributeCache>>( BuildGridAttributes );
+
+        private PersonPreferenceCollection _personPreferences;
+
+        #endregion
+
+        #region Properties
+
+        public PersonPreferenceCollection PersonPreferences
+        {
+            get
+            {
+                if ( _personPreferences == null )
+                {
+                    _personPreferences = this.GetBlockPersonPreferences();
+                }
+
+                return _personPreferences;
+            }
+        }
+
+        private SlidingDateRangeBag FilterCreatedDateRange => PersonPreferences
+            .GetValue( PreferenceKey.FilterCreatedDateRange )
+            .ToSlidingDateRangeBagOrNull();
+
+        #endregion
 
         #region Methods
 
@@ -87,6 +128,19 @@ namespace Rock.Blocks.Core
         {
             var box = new ListBlockBox<NoteWatchListOptionsBag>();
             var builder = GetGridBuilder();
+
+            if ( FilterCreatedDateRange == null )
+            {
+                var defaultSlidingDateRange = new SlidingDateRangeBag
+                {
+                    RangeType = SlidingDateRangeType.Last,
+                    TimeUnit = TimeUnitType.Month,
+                    TimeValue = 6
+                };
+
+                this.PersonPreferences.SetValue( PreferenceKey.FilterCreatedDateRange, defaultSlidingDateRange.ToDelimitedSlidingDateRangeOrNull() );
+                this.PersonPreferences.Save();
+            }
 
             box.IsAddEnabled = GetIsAddEnabled();
             box.IsDeleteEnabled = true;
@@ -133,16 +187,15 @@ namespace Rock.Blocks.Core
             };
         }
 
-        private string FormatEntityType( EntityType entityType, int? entityId )
+        private string FormatEntityType( int? entityTypeId, string entityTypeName, int? entityId )
         {
-            var entityTypeName = entityType?.FriendlyName ?? "Unknown";
-            if ( entityId.HasValue && entityType != null )
+            if ( entityId.HasValue && entityTypeId.HasValue )
             {
                 var rockContext = new RockContext();
-                var entity = new EntityTypeService( rockContext ).GetEntity( entityType.Id, entityId.Value );
+                var entity = new EntityTypeService( rockContext ).GetEntity( entityTypeId.Value, entityId.Value );
                 if ( entity != null )
                 {
-                    var entityName = entity.ToString(); 
+                    var entityName = entity.ToString();
                     return $"{entityTypeName} ({entityName})";
                 }
             }
@@ -151,13 +204,11 @@ namespace Rock.Blocks.Core
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<NoteWatch> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<NoteWatchRow> GetListQueryable( RockContext rockContext )
         {
-            var qry = base.GetListQueryable( rockContext )
-                .Include( a => a.WatcherPersonAlias )
-                .Include( a => a.WatcherGroup )
-                .Include( a => a.NoteType )
-                .Include( a => a.EntityType );
+            var qry = new NoteWatchService( rockContext ).Queryable().AsNoTracking();
+
+            qry = FilterByCreatedDate( qry );
 
             Guid? blockEntityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull();
             Guid? blockNoteTypeGuid = GetAttributeValue( AttributeKey.NoteType ).AsGuidOrNull();
@@ -196,28 +247,129 @@ namespace Rock.Blocks.Core
             // Add null check for the data source
             if ( qry != null )
             {
-                return qry;
+                return qry.Select( n => new NoteWatchRow
+                {
+                    NoteWatch = n,
+                    NoteTypeName = n.NoteType != null ? n.NoteType.Name : string.Empty,
+                    EntityTypeName = n.EntityType != null ? n.EntityType.FriendlyName : "Unknown",
+                    WatcherGroupName = n.WatcherGroup != null ? n.WatcherGroup.Name : string.Empty,
+                    PersonProjection = new PersonProjection
+                    {
+                        NickName = n.WatcherPersonAlias.Person.NickName,
+                        LastName = n.WatcherPersonAlias.Person.LastName,
+                        PhotoId = n.WatcherPersonAlias.Person.PhotoId,
+                        Age = n.WatcherPersonAlias.Person.Age,
+                        Gender = n.WatcherPersonAlias.Person.Gender,
+                        RecordTypeValueId = n.WatcherPersonAlias.Person.RecordTypeValueId,
+                        AgeClassification = n.WatcherPersonAlias.Person.AgeClassification,
+                        ConnectionStatusValueId = n.WatcherPersonAlias.Person.ConnectionStatusValueId,
+                        Id = n.WatcherPersonAlias.Person.Id,
+                    }
+                } );
             }
             else
             {
-                return Enumerable.Empty<NoteWatch>().AsQueryable();
+                return Enumerable.Empty<NoteWatchRow>().AsQueryable();
             }
         }
 
-        /// <inheritdoc/>
-        protected override GridBuilder<NoteWatch> GetGridBuilder()
+        protected override List<NoteWatchRow> GetListItems( IQueryable<NoteWatchRow> queryable, RockContext rockContext )
         {
-            return new GridBuilder<NoteWatch>()
+            var noteWatches = queryable.ToList();
+
+            foreach ( var noteWatch in noteWatches )
+            {
+                if ( noteWatch.PersonProjection.Id.HasValue )
+                {
+                    noteWatch.Person = new PersonFieldBag
+                    {
+                        IdKey = IdHasher.Instance.GetHash( noteWatch.PersonProjection.Id.Value ),
+                        NickName = noteWatch.PersonProjection.NickName,
+                        LastName = noteWatch.PersonProjection.LastName,
+                    };
+
+                    var initials = $"{noteWatch.Person.NickName.Truncate( 1, false )}{noteWatch.Person.LastName.Truncate( 1, false )}";
+                    noteWatch.Person.PhotoUrl = Rock.Model.Person.GetPersonPhotoUrl(
+                        initials,
+                        noteWatch.PersonProjection.PhotoId,
+                        noteWatch.PersonProjection.Age,
+                        noteWatch.PersonProjection.Gender ?? Gender.Unknown,
+                        noteWatch.PersonProjection.RecordTypeValueId,
+                        noteWatch.PersonProjection.AgeClassification
+                    );
+
+                    if ( noteWatch.PersonProjection.ConnectionStatusValueId.HasValue )
+                    {
+                        var connectionStatusValue = DefinedValueCache.Get( noteWatch.PersonProjection.ConnectionStatusValueId.Value );
+                        if ( connectionStatusValue != null )
+                        {
+                            noteWatch.Person.ConnectionStatus = connectionStatusValue.Value;
+                        }
+                    }
+                }
+            }
+
+            return noteWatches;
+        }
+
+        /// <inheritdoc/>
+        protected override GridBuilder<NoteWatchRow> GetGridBuilder()
+        {
+            return new GridBuilder<NoteWatchRow>()
                 .WithBlock( this )
-                .AddField( "id", a => a.Id )
-                .AddTextField( "idKey", a => a.IdKey )
-                .AddField( "isWatching", a => a.IsWatching )
-                .AddPersonField( "watcher", a => a.WatcherPersonAlias?.Person )
-                .AddTextField( "watcherGroup", a => a.WatcherGroup?.Name )
-                .AddTextField( "noteType", a => a.NoteType?.Name )
-                .AddTextField("entityType", a => FormatEntityType(a.EntityType, a.EntityId))
-                .AddField( "allowOverride", a => a.AllowOverride )
-                .AddAttributeFields( GetGridAttributes() );
+                .AddField( "id", a => a.NoteWatch.Id )
+                .AddTextField( "idKey", a => a.NoteWatch.IdKey )
+                .AddField( "isWatching", a => a.NoteWatch.IsWatching )
+                .AddField( "watcher", a => a.Person )
+                .AddTextField( "watcherGroup", a => a.WatcherGroupName )
+                .AddTextField( "noteType", a => a.NoteTypeName )
+                .AddTextField("entityType", a => FormatEntityType( a.NoteWatch.EntityTypeId, a.EntityTypeName, a.NoteWatch.EntityId ))
+                .AddField( "allowOverride", a => a.NoteWatch.AllowOverride )
+                .AddAttributeFieldsFrom( a => a.NoteWatch, _gridAttributes.Value );
+        }
+
+        /// <summary>
+        /// Builds the list of grid attributes that should be included on the Grid.
+        /// </summary>
+        /// <remarks>
+        /// The default implementation returns only attributes that are not qualified.
+        /// </remarks>
+        /// <returns>A list of <see cref="AttributeCache"/> objects.</returns>
+        private static List<AttributeCache> BuildGridAttributes()
+        {
+            var entityTypeId = EntityTypeCache.Get<NoteWatch>( false )?.Id;
+            if ( entityTypeId.HasValue )
+            {
+                return AttributeCache.GetOrderedGridAttributes( entityTypeId.Value, string.Empty, string.Empty );
+            }
+            return new List<AttributeCache>();
+        }
+
+        /// <summary>
+        /// Filters the queryable by the Created Date
+        /// </summary>
+        /// <param name="queryable">The <see cref="NoteWatch"/> queryable</param>
+        /// <returns></returns>
+        private IQueryable<NoteWatch> FilterByCreatedDate( IQueryable<NoteWatch> queryable )
+        {
+            // Default to the last 180 days if a null/invalid range was selected.
+            var defaultSlidingDateRange = new SlidingDateRangeBag
+            {
+                RangeType = SlidingDateRangeType.Last,
+                TimeUnit = TimeUnitType.Month,
+                TimeValue = 6
+            };
+
+            var dateRange = FilterCreatedDateRange.Validate( defaultSlidingDateRange ).ActualDateRange;
+            var dateTimeStart = dateRange.Start;
+            var dateTimeEnd = dateRange.End;
+
+            queryable = queryable
+                .Where( c =>
+                    c.CreatedDateTime >= dateTimeStart &&
+                    c.CreatedDateTime <= dateTimeEnd );
+
+            return queryable;
         }
 
         #endregion
@@ -254,6 +406,46 @@ namespace Rock.Blocks.Core
             RockContext.SaveChanges();
 
             return ActionOk();
+        }
+
+        #endregion
+
+        #region Helper Classes
+
+        public class NoteWatchRow
+        {
+            public NoteWatch NoteWatch { get; set; }
+
+            public string NoteTypeName { get; set; }
+
+            public string EntityTypeName { get; set; }
+
+            public string WatcherGroupName { get; set; }
+
+            public PersonProjection PersonProjection { get; set; }
+
+            public PersonFieldBag Person { get; set; }
+        }
+
+        public class PersonProjection
+        {
+            public string NickName { get; set; }
+
+            public string LastName { get; set; }
+
+            public int? PhotoId { get; set; }
+
+            public int? Age { get; set; }
+
+            public Gender? Gender { get; set; }
+
+            public int? RecordTypeValueId { get; set; }
+
+            public AgeClassification? AgeClassification { get; set; }
+
+            public int? ConnectionStatusValueId { get; set; }
+
+            public int? Id { get; set; }
         }
 
         #endregion

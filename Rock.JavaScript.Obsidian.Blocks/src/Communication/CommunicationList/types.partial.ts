@@ -26,7 +26,7 @@ export const enum NavigationUrlKey {
 }
 
 export const enum PreferenceKey {
-    FilterCreatedBy = "filter-created-by",
+    FilterSentBy = "filter-sent-by",
     FilterCommunicationTypes = "filter-communication-types",
     FilterHideDrafts = "filter-hide-drafts",
     FilterSendDateRange = "filter-send-date-range",
@@ -38,11 +38,11 @@ export const enum PreferenceKey {
 }
 
 export type GridSettingsOptions = {
-    createdBy?: ListItemBag;
+    sentBy?: ListItemBag;
     hideDrafts: boolean;
     slidingDateRange: SlidingDateRange | null;
     recipientCountRange?: NumberRangeModelValue;
-    topic?: ListItemBag | null;
+    topic: string;
     name: string;
     content: string;
 };
@@ -59,6 +59,7 @@ export type Row = {
     failedCount: number;
     unsubscribedCount: number;
     topic?: string | null;
+    createdDateTime?: string | null;
     sendDateTime?: string | null;
     futureSendDateTime?: string | null;
     sentByPersonFullName?: string | null;

@@ -3,10 +3,10 @@
 
 
 // =============================================================
-// Table of Content           
-//  + Base Style  
+// Table of Content
+//  + Base Style
 //  + Rock Tree
-//  + Preview Tree            
+//  + Preview Tree
 // =============================================================
 
 
@@ -75,6 +75,7 @@
   margin:         0;
   background:     var(--color-interface-softest);
   border-bottom:  1px solid var(--color-interface-soft);
+  height:         100%;
   //box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
 
@@ -196,7 +197,7 @@ ul.rocktree-children {
     color:          var(--color-interface-stronger);
 
     &::before {
-      background:   var(--color-interface-soft) !important;
+      background:   var(--color-info-soft) !important;
     }
   }
 

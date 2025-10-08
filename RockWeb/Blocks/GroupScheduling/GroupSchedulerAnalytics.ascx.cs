@@ -257,13 +257,23 @@ var dnutChart = new Chart(dnutCtx, {{
         responsive: true,
         legend: {{
             position: 'right',
-            fullWidth: true
+            fullWidth: true,
+            labels: {{
+                fontColor: getComputedStyle(document.documentElement)
+                            .getPropertyValue('--color-interface-strongest').trim()
+            }}
         }},
         cutoutPercentage: 75,
         animation: {{
-			animateScale: true,
-			animateRotate: true
-		}}
+            animateScale: true,
+            animateRotate: true
+        }},
+        tooltips: {{
+            bodyFontColor: getComputedStyle(document.documentElement)
+                            .getPropertyValue('--color-interface-strongest').trim(),
+            titleFontColor: getComputedStyle(document.documentElement)
+                            .getPropertyValue('--color-interface-strongest').trim()
+        }}
     }}
 }});",
                 doughnutChartCanvas.ClientID,
@@ -324,15 +334,42 @@ var barChart = new Chart(barCtx, {{
     }},
 
     options: {{
+        legend: {{
+            labels: {{
+                fontColor: getComputedStyle(document.documentElement)
+                            .getPropertyValue('--color-interface-strongest').trim()
+            }}
+        }},
         scales: {{
-			xAxes: [{{
-				stacked: true,
-			}}],
-			yAxes: [{{
-                {10}
-				stacked: true
-			}}]
-		}}
+            xAxes: [{{
+                stacked: true,
+                gridLines: {{
+                    color: getComputedStyle(document.documentElement)
+                            .getPropertyValue('--color-interface-soft').trim(),
+                    zeroLineColor: getComputedStyle(document.documentElement)
+                            .getPropertyValue('--color-interface-medium').trim(),
+                    drawBorder: false
+                }},
+                ticks: {{
+                    fontColor: getComputedStyle(document.documentElement)
+                            .getPropertyValue('--color-interface-strong').trim()
+                }}
+            }}],
+            yAxes: [{{
+                stacked: true,
+                gridLines: {{
+                    color: getComputedStyle(document.documentElement)
+                            .getPropertyValue('--color-interface-soft').trim(),
+                    zeroLineColor: getComputedStyle(document.documentElement)
+                            .getPropertyValue('--color-interface-medium').trim(),
+                    drawBorder: false
+                }},
+                ticks: {{
+                    fontColor: getComputedStyle(document.documentElement)
+                            .getPropertyValue('--color-interface-strong').trim()
+                }}
+            }}]
+        }}
     }}
 }});",
             barChartCanvas.ClientID,

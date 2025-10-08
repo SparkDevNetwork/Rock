@@ -356,7 +356,6 @@ namespace Rock.Model
 
                 foreach ( var oldEntityType in reflectedEntityTypesThatNoLongerExist )
                 {
-
                     Type foundType = null;
                     // if this isn't one of the EntityTypes that we self-register,
                     // see if it was manually registered first (with EntityTypeCache.Get(Type type, bool createIfNotExists))
@@ -484,6 +483,17 @@ namespace Rock.Model
                     }
                 }
 
+                // Obsidian chop/swap?
+                // Now we need to take all the EntityTypes that are still in the system (new and existing)
+                // and check if any are taking over an existing webforms block's blocktype for conversion to Obsidian.
+                var combinedNewAndExistingEntityTypes = new List<EntityType>(
+                    reflectedEntityTypesThatStillExist.Count + entityTypesFromReflection.Count
+                );
+                combinedNewAndExistingEntityTypes.AddRange( reflectedEntityTypesThatStillExist );
+                combinedNewAndExistingEntityTypes.AddRange( entityTypesFromReflection.Values );
+                CheckAndStageObsidianBlockConversion( reflectedTypeLookupByName, combinedNewAndExistingEntityTypes, rockContext );
+
+                // Lastly, save all the modified entitytypes and the potential block type changes (from Obsidian conversion).
                 try
                 {
                     rockContext.SaveChanges();
@@ -507,6 +517,41 @@ namespace Rock.Model
                 {
                     EntityTypeCache.Get( entityTypeModel );
                 }
+            }
+        }
+
+        /// <summary>
+        /// Scans the provided <paramref name="entityTypes"/> for types marked with
+        /// <see cref="Rock.SystemGuid.BlockTypeGuidAttribute"/>. For each discovered GUID, stages a possible migration
+        /// of any matching legacy WebForms block type so it can be converted to an Obsidian block type.
+        ///
+        /// NOTE: It's the responsiblity of the caller to call SaveChanges on the rockContext to save changes to the database.
+        /// </summary>
+        /// <param name="reflectedTypeLookupByName">Lookup of entity type name to reflected <see cref="Type"/> used to inspect attributes.</param>
+        /// <param name="entityTypes">The entity types to inspect for <see cref="Rock.SystemGuid.BlockTypeGuidAttribute"/> values.</param>
+        /// <param name="rockContext">The database context used during staging. The caller is responsible for invoking <c>SaveChanges()</c> to persist changes.</param>
+        /// <remarks>
+        /// This method only stages conversions; it does not persist changes to the database.
+        /// </remarks>
+        private static void CheckAndStageObsidianBlockConversion( Dictionary<string, Type> reflectedTypeLookupByName, List<EntityType> entityTypes, RockContext rockContext )
+        {
+            // Pseudo-code:
+            //    1. Get all the EntityType's BlockTypeAttribute Guids
+            //    2. Call BlockTypeService's StageMigrateWebFormsToObsidianBlock method passing the list there to migrate
+            var blockTypeDictionary = new Dictionary<Guid, EntityType>();
+            foreach ( var entityType in entityTypes )
+            {
+                var reflectedType = reflectedTypeLookupByName.GetValueOrNull( entityType.Name );
+                var blockTypeGuidFromAttribute = reflectedType.GetCustomAttribute<Rock.SystemGuid.BlockTypeGuidAttribute>( inherit: false )?.Guid;
+                if ( blockTypeGuidFromAttribute != null )
+                {
+                    blockTypeDictionary.AddOrReplace( blockTypeGuidFromAttribute.Value, entityType );
+                }
+            }
+
+            if ( blockTypeDictionary.Any() )
+            {
+                BlockTypeService.StagePossibleMigrateWebFormsToObsidianBlock( blockTypeDictionary, rockContext );
             }
         }
 

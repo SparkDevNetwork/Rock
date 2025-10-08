@@ -53,6 +53,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
 
+            if ( new Service<CommunicationFlowInstanceCommunicationConversion>( Context ).Queryable().Any( a => a.CommunicationRecipientId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", CommunicationRecipient.FriendlyTypeName, CommunicationFlowInstanceCommunicationConversion.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<CommunicationFlowInstanceRecipient>( Context ).Queryable().Any( a => a.UnsubscribeCommunicationRecipientId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", CommunicationRecipient.FriendlyTypeName, CommunicationFlowInstanceRecipient.FriendlyTypeName );

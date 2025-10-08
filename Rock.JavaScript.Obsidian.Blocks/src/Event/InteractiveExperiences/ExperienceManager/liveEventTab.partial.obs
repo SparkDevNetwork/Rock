@@ -70,7 +70,8 @@
 }
 
 .experience-actions-panel {
-    background-color: var(--panel-heading-bg);
+    background-color: var(--color-interface-softest);
+    border: none;
 }
 
 .preview-panel {

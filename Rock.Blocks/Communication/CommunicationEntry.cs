@@ -94,7 +94,7 @@ namespace Rock.Blocks.Communication
 
     [BooleanField( "Send When Approved",
         Key = AttributeKey.SendWhenApproved,
-        Description = "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?",
+        Description = @"When enabled, the block will send the communication immediately if it matches the approval criteria. If this is set to false, the block will not send the email and instead will defer the sending to the next run of the ""Send Communications"" job.",
         DefaultBooleanValue = true,
         Order = 6 )]
 
@@ -1591,7 +1591,7 @@ namespace Rock.Blocks.Communication
 
             foreach ( var template in new CommunicationTemplateService( rockContext )
                 .Queryable().AsNoTracking()
-                .Where( a => a.IsActive )
+                .Where( a => a.IsActive && a.UsageType == null ) // By default, exclude templates with a specified usage type (e.g., Communication Flows)
                 .OrderBy( t => t.Name ) )
             {
                 if ( template == null || !template.IsAuthorized( Authorization.VIEW, currentPerson ) )
@@ -1633,12 +1633,20 @@ namespace Rock.Blocks.Communication
         {
             var securityGrant = new Rock.Security.SecurityGrant();
 
-            if ( EnableAssetManager )
-            {
-                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
-                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
-                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
-            }
+            /*
+                9/18/2025 - JMH
+
+                Always add the security grant rules for Asset and File Manager, even if the EnableAssetManager setting is turned off.
+                Previously, these rules were only added when the toolbar button for the Asset Manager was shown.
+                But the File Browser and Image Browser also rely on these same security grants to work correctly,
+                so they broke when the rules were skipped. The setting now only controls the visibility of the toolbar button.
+
+                Reason: File Browser and Image Browser require these grants to function correctly, even if the Asset Manager button is hidden.
+                https://github.com/SparkDevNetwork/Rock/issues/6447
+            */
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
 
             return securityGrant.ToToken();
         }
@@ -1789,6 +1797,9 @@ namespace Rock.Blocks.Communication
             {
                 recipient.MediumEntityTypeId = medium?.EntityType?.Id;
             }
+
+            new StructuredContentHelper( bag.PushOpenMessageJson )
+                .DetectAndApplyDatabaseChanges( communication.PushOpenMessageJson, rockContext );
 
             // Copy the communication data in the request to the Communication object.
             CommunicationDetails.Copy( new CommunicationDetailsAdapter( bag, rockContext ), communication );

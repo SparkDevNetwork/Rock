@@ -117,7 +117,9 @@ namespace Rock.Blocks.Crm
         /// <inheritdoc/>
         protected override IQueryable<Model.Badge> GetListQueryable( RockContext rockContext )
         {
-            return base.GetListQueryable( rockContext );
+            return base.GetListQueryable( rockContext )
+                .Include( b => b.EntityType )
+                .Include( b => b.BadgeComponentEntityType );
         }
 
         /// <inheritdoc/>

@@ -262,11 +262,12 @@ namespace Rock.Transactions
             // only one that will directly touch the dictionary.
             var queueGroups = new Dictionary<Type, (ConcurrentQueue<ITransaction> Queue, Task Task)>();
 
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
             // Just keep running until we are asked to stop.
             while ( !cancellationToken.IsCancellationRequested )
             {
-                var sw = System.Diagnostics.Stopwatch.StartNew();
-
+                sw.Restart();
                 try
                 {
                     ProcessFastQueueCycle( queueGroups );

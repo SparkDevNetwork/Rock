@@ -1,14 +1,15 @@
-//TABLE STYLE 
+//TABLE STYLE
 
 
 // =============================================================
-// Table of Content           
+// Table of Content
 //  + Base Style
 //  + Alternative Style
 //  + Responsive Table
 //  + Table Grid
 //  + Table States
 //  + Print Style (Obsidian)
+//  + Misc
 // =============================================================
 
 
@@ -41,7 +42,7 @@ caption {
 }
 
 th {
-  text-align: left; 
+  text-align: left;
 }
 
 .table {
@@ -76,6 +77,8 @@ th {
     }
   }
 
+
+
   tbody > tr > td {
     color: var(--color-interface-strong);
   }
@@ -108,14 +111,14 @@ th {
     &:hover a:not(.btn)::after {
       opacity: 1;
     }
-  
+
     // sorting
     &.descending a:not(.btn)::after {
       color:    var(--color-interface-stronger);
       content:  '\f0dd';
       opacity:  1;
     }
-  
+
     &.ascending a:not(.btn)::after {
       color:    var(--color-interface-stronger);
       content:  '\f0de';
@@ -148,7 +151,7 @@ th {
   &.table-light > thead > tr > th {
     color:              var(--color-interface-stronger);;
     background-color:   transparent;
-    border-color:       var(--color-interface-strong); //Lighten the ui stronger by 40% when aviable;
+    border-color:       var(--color-interface-soft);
   }
 
   // Nesting
@@ -159,7 +162,7 @@ th {
   & .color-field {
     width:            4px;
     padding:          0;
-  
+
     & + th {
       border-left-width: 0;
     }
@@ -258,6 +261,11 @@ td.wrap-contents {
   }
 }
 
+// Table - No Borders
+.table-no-border {
+  overflow-x: auto;
+}
+
 // Core Table
 .table-wrapper {
   .btn-toolbar {
@@ -331,7 +339,7 @@ td.wrap-contents {
   &.active:hover > td,
   &:hover > .active,
   &.active:hover > th {
-    background-color: var(--color-interface-softer); // TODO darken by 5% 
+    background-color: var(--color-interface-softer); // TODO darken by 5%
   }
 }
 
@@ -556,7 +564,7 @@ tr.row-highlight {
   margin-bottom: var(--spacing-medium);
 
   .grid-table {
-    border: 1px solid var(--color-interface-softer);
+    border: 1px solid var(--color-interface-soft);
   }
 
   .grid-table.table-light {
@@ -580,11 +588,11 @@ tr.row-highlight {
 
   tfoot > tr:last-child {
     td:first-child {
-      border-bottom-left-radius:    var(--rounded-small);
+      border-bottom-left-radius:    var(--rounded-medium);
     }
 
     td:last-child {
-      border-bottom-right-radius:   var(--rounded-small);
+      border-bottom-right-radius:   var(--rounded-medium);
     }
   }
 }
@@ -593,24 +601,24 @@ tr.row-highlight {
   color:              var(--color-interface-strong);
   background-color:   transparent;
   border-color:       transparent;
-  
+
   &:focus,
   &.focus {
     color:            var(--color-interface-softest);
     background-color: var(--color-danger-soft); // TODO darken by 10% when available
     border-color:     var(--color-danger-stronger);
   }
-  
+
   &:hover {
     color:            var(--color-interface-softest);
     background-color: var(--color-danger-soft); // TODO darken by 10% when available
     border-color:     var(--color-danger-stronger);
   }
-  
+
   &:active,
   &.active,
   .open > .dropdown-toggle & {
-    color:            var(--color-interface-softest); 
+    color:            var(--color-interface-softest);
     background-color: var(--color-danger-soft); // TODO this uses darken, which is a Less function
     background-image: none;
     border-color:     var(--color-danger-stronger);
@@ -623,7 +631,7 @@ tr.row-highlight {
       border-color:     var(--color-danger-stronger);
     }
   }
-  
+
   &.disabled,
   &[disabled],
   fieldset[disabled] & {
@@ -634,7 +642,7 @@ tr.row-highlight {
       border-color:     var(--color-interface-soft);
     }
   }
-  
+
   .badge {
     color:            var(--color-interface-softest);
     background-color: var(--color-interface-stronger);
@@ -738,7 +746,7 @@ tr.row-highlight {
   .grid-filter-entry,
   .grid-filter-overview fieldset {
     padding:        var(--spacing-medium);
-    padding-top:    37px;   // TODO this is hard coded 
+    padding-top:    37px;   // TODO this is hard coded
     border-bottom:  1px solid var(--color-interface-soft); // TODO darken softer by 10%
   }
 
@@ -788,6 +796,11 @@ tr.row-highlight {
         border-color:     transparent;
       }
 
+      > a:hover {
+        background-color: var(--color-interface-softer);
+
+      }
+
       &.disabled > a {
         cursor: default;
       }
@@ -830,7 +843,7 @@ td.grid-col-actions {
   .btn {
     margin-left:      var(--spacing-xsmall);
   }
-  
+
   &:hover {
     color:            var(--color-interface-strong);
   }
@@ -840,9 +853,9 @@ td.grid-col-actions {
   }
 
   .btn-grid-action {
-    padding:          5px 7px; // Need to hard coded so that the action btn in the group scheduler takes more space, for the "filter options" button to fit in 
+    padding:          5px 7px; // Need to hard coded so that the action btn in the group scheduler takes more space, for the "filter options" button to fit in
     margin:           0 0 0 2px;
-    font-size:        var(--font-size-regular);
+    font-size:        20px;
     border:           0;
     box-shadow:       none;
     transition:       color 250ms;
@@ -854,11 +867,21 @@ td.grid-col-actions {
   .btn-grid-custom-action {
     margin-bottom: var(--spacing-xsmall);
   }
+
 }
+
+.grid-actions:has(.btn-grid-custom-action) {
+    padding-top: var(--spacing-xsmall) !important;
+    border-bottom-left-radius: var(--rounded-medium);
+    border-bottom-right-radius: var(--rounded-medium);
+  }
 
 td.grid-actions {
   padding: 0 !important;
   font-size: 1em;
+  .form-control {
+    border-bottom-left-radius: var(--rounded-medium); // If there's a dropdown in the action column, make sure the corners are rounded
+  }
 }
 
 // If the grid has a filter, make sure there's space for the filter toggle
@@ -1105,3 +1128,17 @@ td.grid-actions {
   }
 }
 // ===================== END PRINT STYLES (OBSIDIAN) =====================
+
+// ======================= MISC =======================
+
+table tbody tr td .required-indicator::after {
+  margin-left: var(--spacing-tiny);
+  background-color: var(--color-danger-strong);
+  width: 6px;
+  height: 6px;
+  display: inline-block;
+  border-radius: 50%;
+  content: "";
+  position: relative;
+  transform: translateY(-30%);
+}

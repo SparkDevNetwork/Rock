@@ -12,7 +12,7 @@
                         <Rock:HighlightLabel ID="hlStatus" runat="server" />
 
                         <asp:Panel ID="pnlActionWrapper" runat="server" CssClass="js-button-dropdownlist panel-options pull-right dropdown-right btn-group">
-                            <button type="button" class="btn btn-default dropdown-toggle js-buttondropdown-btn-select" data-toggle="dropdown">Actions <i class="ti ti-caret-down"></i></button>
+                            <button type="button" class="btn btn-default dropdown-toggle js-buttondropdown-btn-select" data-toggle="dropdown">Actions <i class="ti ti-caret-down-filled"></i></button>
                             <ul class="dropdown-menu">
                                 <asp:Literal ID="lActions" runat="server" />
                             </ul>

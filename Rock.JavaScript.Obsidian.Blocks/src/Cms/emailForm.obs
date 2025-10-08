@@ -1,0 +1,158 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="config.errorMessage || errorMessage" alertType="danger" v-html="config.errorMessage || errorMessage"></div>
+
+    <template v-else-if="showSuccess">
+        <div v-html="responseHtml"></div>
+    </template>
+
+    <template v-else>
+        <form ref="formElement" @submit.prevent="onSubmit" enctype="multipart/form-data">
+            <div v-html="config.content"></div>
+
+            <Captcha v-if="!config.disableCaptchaSupport" ref="captchaElement" validationTitle="Captcha" />
+
+            <div :class="config.submitButtonWrapCssClass">
+                <RockButton type="submit" :btnType="BtnType.Primary" btnSize="sm" :disabled="!isCaptchaComplete" :class="config.submitButtonCssClass">{{ config.submitButtonText ?? "Submit" }}</RockButton>
+            </div>
+        </form>
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { onMounted, ref } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import Captcha from "@Obsidian/Controls/captcha.obs";
+    import { uploadBinaryFile } from "@Obsidian/Utility/http";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { EmailFormBag } from "@Obsidian/ViewModels/Blocks/Cms/EmailForm/emailFormBag";
+    import { NavigationUrlKey } from "./EmailForm/types.partial";
+    import { EmailFormRequestBag } from "@Obsidian/ViewModels/Blocks/Cms/EmailForm/emailFormRequestBag";
+    import { EmailFormResponseBag } from "@Obsidian/ViewModels/Blocks/Cms/EmailForm/emailFormResponseBag";
+    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
+    import { Guid } from "@Obsidian/Types";
+
+    // #region Values
+
+    const config = useConfigurationValues<EmailFormBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+
+    const formElement = ref<HTMLFormElement | null>(null);
+    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
+    const captchaToken = ref<string | undefined>();
+    const isCaptchaComplete = ref(false);
+
+    const showSuccess = ref(false);
+    const responseHtml = ref("");
+    const errorMessage = ref("");
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Used to keep the submit button disabled until CAPTCHA is validated.
+     */
+    async function waitForCaptcha(): Promise<void> {
+        if (config.disableCaptchaSupport || !captchaElement.value) {
+            isCaptchaComplete.value = true;
+            return;
+        }
+
+        const token = await captchaElement.value.getToken();
+        isCaptchaComplete.value = !!token;
+        captchaToken.value = token;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Handles form submission by validating CAPTCHA, collecting non-file fields,
+     * uploading file attachments, and invoking the SendEmail block action.
+     * On success, navigates to the response page or displays the response HTML.
+     */
+    async function onSubmit(): Promise<void> {
+        errorMessage.value = "";
+
+        const actionContext: BlockActionContextBag = {};
+        if (!config.disableCaptchaSupport && captchaElement.value) {
+            actionContext.captcha = captchaToken.value;
+        }
+
+        if (!formElement.value) {
+            errorMessage.value = "Form not found.";
+            return;
+        }
+
+        const formData = new FormData(formElement.value);
+        const formFields: Record<string, string> = {};
+        const attachmentGuids: Guid[] = [];
+        const binaryFileTypeGuid = BinaryFiletype.Default;
+        const excludedFieldNames = ["cf-turnstile-response", "captchaContent", "g-recaptcha-response"];
+
+        for (const [name, value] of formData.entries()) {
+            if (value instanceof File && value.size > 0) {
+                try {
+                    const result = await uploadBinaryFile(value, binaryFileTypeGuid, { isTemporary: false, progress: () => { } });
+                    if (result?.value) {
+                        attachmentGuids.push(result.value as Guid);
+                    }
+                    else {
+                        errorMessage.value = "Failed to attach one or more files.";
+                        return;
+                    }
+                }
+                catch (err) {
+                    console.error("Upload failed:", err);
+                    errorMessage.value = "An unexpected error occurred during file upload.";
+                    return;
+                }
+            }
+            else if (typeof value === "string" && !name.startsWith("_") && !excludedFieldNames.includes(name)) {
+                formFields[name] = formFields[name] ? `${formFields[name]},${value}` : value;
+            }
+        }
+
+        const requestBag: EmailFormRequestBag = {
+            formFields,
+            attachmentGuids
+        };
+
+        const result = await invokeBlockAction<EmailFormResponseBag>("SendEmail", { bag: requestBag }, actionContext);
+
+        if (!config.disableCaptchaSupport && captchaElement.value) {
+            captchaElement.value.refreshToken();
+        }
+
+        if (result.isError || !result.isSuccess) {
+            errorMessage.value = result.errorMessage || "An error occurred while processing your request.";
+        }
+        else if (result.data) {
+            const responsePageUrl = config.navigationUrls?.[NavigationUrlKey.ResponsePage];
+            if (responsePageUrl) {
+                window.location.href = responsePageUrl;
+            }
+            else {
+                responseHtml.value = result.data.responseHtml || "";
+                showSuccess.value = true;
+            }
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        waitForCaptcha();
+    });
+
+    // #endregion Lifecycle Hooks
+
+    onConfigurationValuesChanged(reloadBlock);
+</script>

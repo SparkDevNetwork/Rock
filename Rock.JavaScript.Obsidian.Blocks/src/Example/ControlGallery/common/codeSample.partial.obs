@@ -30,7 +30,6 @@
     right: -0.5rem;
     bottom: -0.3rem;
     left: -0.5rem;
-    background: linear-gradient(to left, #f5f5f4, #f5f5f4 80%, #f5f5f500);
     z-index: -1;
 }
 

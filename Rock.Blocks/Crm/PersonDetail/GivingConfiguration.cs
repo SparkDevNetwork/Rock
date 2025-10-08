@@ -85,6 +85,7 @@ namespace Rock.Blocks.Crm.PersonDetail
 
     #endregion
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "6B977F51-4B33-44F3-A6FF-89FCC9D1AE08" )]
     [Rock.SystemGuid.BlockTypeGuid( "BBA3A660-9A8B-4707-A553-D314C21B0A12" )]
     public partial class GivingConfiguration : RockBlockType

@@ -36,13 +36,14 @@
 
 .flow-node-diagram-container .flow-tooltip {
     position: absolute;
-    background: #fff;
+    background: var(--color-interface-softest);
     max-width: 260px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 8px;
-    font-size: 14px;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .05)
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-xsmall);
+    padding: var(--spacing-xsmall);
+    font-size: var(--font-size-small);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .05);
+    color: var(--color-interface-strong);
 }
 
 .flow-node-diagram-container svg {

@@ -91,7 +91,10 @@ namespace Rock.Field.Types
                         Guid = cr.Guid.ToString()
                     } );
 
-                    return new ListItemBag() { Text = connectionRequest.Person?.FullName, Value = connectionRequest.Guid }.ToCamelCaseJson( false, true );
+                    if ( connectionRequest != null )
+                    {
+                        return new ListItemBag() { Text = connectionRequest.Person?.FullName, Value = connectionRequest.Guid }.ToCamelCaseJson( false, true );
+                    }
                 }
             }
 

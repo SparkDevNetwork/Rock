@@ -1,6 +1,6 @@
 ﻿<style>
 .rock-timeline {
-  background-color: var(--panel-bg);
+  background-color: var(--color-interface-softest);
 }
 
 .timeline-container {
@@ -19,7 +19,7 @@
 
   /* this is the vertical line */
   content: "";
-  background: var(--wizard-item-bar-color);
+  background: var(--color-interface-soft);
 }
 
 @media only screen and (min-width: 1170px) {
@@ -46,7 +46,7 @@
 .break > span {
   display: inline-block;
   padding: 5px 0 10px;
-  background: #fff;
+  background: var(--color-interface-softest);
 }
 
 .timeline-block {
@@ -80,11 +80,11 @@
   width: 35px;
   height: 35px;
   overflow: hidden;
-  color: var(--wizard-item-icon-color);
-  background: var(--wizard-item-icon-bg);
-  border: 1px solid var(--wizard-item-bar-color);
+  color: var(--color-interface-strong);
+  background: var(--color-interface-softer);
+  border: 1px solid var(--color-interface-soft);
   border-radius: 50%;
-  box-shadow: 0 -4px 0 1px var(--panel-bg);
+  box-shadow: 0 -4px 0 1px var(--color-interface-softest);
 }
 
 @media only screen and (min-width: 1170px) {
@@ -97,8 +97,8 @@
 .timeline-content {
   position: relative;
   margin-left: 47px;
-  color: rgb(103, 126, 140);
-  background: #fff;
+  color: var(--color-interface-strong);
+  background: var(--color-interface-softest);
 }
 
 .timeline-content::after {
@@ -113,14 +113,14 @@
   display: block;
   font-size: 20px;
   line-height: 1;
-  color: rgb(44, 64, 76);
+  color: var(--color-interface-strong);
 }
 
 .timeline-date {
   display: block;
   margin: 1px 0 0;
   font-size: 12px;
-  color: rgb(103, 126, 140);
+  color: var(--color-interface-medium);
 }
 
 .timeline-details {
@@ -149,7 +149,7 @@
     right: 100%;
     left: auto;
     border-color: transparent;
-    border-right-color: #fff;
+    border-right-color: var(--color-interface-softest);
   }
 }
 
@@ -244,15 +244,15 @@
                     <div class="timeline-icon">
                     {%- case historySummaryListByEntityTypeAndVerb.Verb -%}
                         {%- when 'ADD' -%}
-                        <i class="fa fa-users"></i>
+                        <i class="ti ti-users"></i>
                         {%- when 'ADDEDTOGROUP' -%}
-                        <i class="fa fa-user-plus"></i>
+                        <i class="ti ti-user-plus"></i>
                         {%- when 'REMOVEDFROMGROUP' -%}
-                        <i class="fa fa-user-times"></i>
+                        <i class="ti ti-user-x"></i>
                         {%- when 'MODIFY' -%}
-                        <i class="fa fa-pencil-alt"></i>
+                        <i class="ti ti-pencil"></i>
                         {%- else -%}
-                        <i class="fa fa-calendar"></i>
+                        <i class="ti ti-calendar"></i>
                     {%- endcase -%}
                     </div>
 
@@ -375,7 +375,7 @@
                                                 {%- capture timelineAction -%}
                                                     {%- assign historyValueName = history.ValueName | Downcase | Replace:'location location','location' -%}
                                                     {%- if sameValues and historyValueName == prevHistoryValueName -%}
-                                                        <span class='history-verb' title='{{ historySummary.CreatedDateTime }}'>and </span> 
+                                                        <span class='history-verb' title='{{ historySummary.CreatedDateTime }}'>and </span>
                                                         {%- if history.NewValue -%}
                                                             {%- assign historyNewValueSize = history.NewValue | Size -%}
                                                             <span class='history-oldvalue'><a {% if historyNewValueSize > 80 -%}tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="Full {{ historyValueName }}" data-content="{{ history.NewValue | StripNewlines }}"{%- endif -%}>{{ history.NewValue | Trim | Truncate:80,'...' }}</a></span>

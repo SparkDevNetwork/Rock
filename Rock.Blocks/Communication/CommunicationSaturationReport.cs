@@ -47,21 +47,21 @@ namespace Rock.Blocks.Communication
 
     [IntegerField( "Email Bucket Ratio",
         Key = AttributeKey.EmailBucketRatio,
-        Description = "This ratio determines the number of days each x-axis bucket represents on the chart. A value of 10 means that for every 10 days in the date range, 1 day is added to the bucket size.",
+        Description = "This ratio determines the number of days each x-axis bucket represents on the chart. A value of 10 means that for every 10 days in the date range, 1 message is added to the bucket size.",
         IsRequired = false,
         DefaultValue = "10",
         Order = 1 )]
 
     [IntegerField( "SMS Bucket Ratio",
         Key = AttributeKey.SmsBucketRatio,
-        Description = "This ratio determines the number of days each x-axis bucket represents on the chart. A value of 10 means that for every 10 days in the date range, 1 day is added to the bucket size.",
+        Description = "This ratio determines the number of days each x-axis bucket represents on the chart. A value of 10 means that for every 10 days in the date range, 1 message is added to the bucket size.",
         IsRequired = false,
         DefaultValue = "20",
         Order = 2 )]
 
     [IntegerField( "Push Notifications Bucket Ratio",
         Key = AttributeKey.PushNotificationBucketRatio,
-        Description = "This ratio determines the number of days each x-axis bucket represents on the chart. A value of 10 means that for every 10 days in the date range, 1 day is added to the bucket size.",
+        Description = "This ratio determines the number of days each x-axis bucket represents on the chart. A value of 10 means that for every 10 days in the date range, 1 message is added to the bucket size.",
         IsRequired = false,
         DefaultValue = "20",
         Order = 3 )]
@@ -259,6 +259,8 @@ namespace Rock.Blocks.Communication
             var filters = new ComputedFilters( GetFilterOptions(), BlockCache );
 
             // Get the queryable and make sure it is ordered correctly.
+            var startDate = filters.StartDate.Value.Date;
+            var endDate = filters.EndDate.Value.Date;
             var recipientsQry = new CommunicationRecipientService( rockContext )
                 .Queryable().AsNoTracking()
                 // Filter out nameless, anonymous, deceased, and inactive people
@@ -267,8 +269,8 @@ namespace Rock.Blocks.Communication
                     && cr.PersonAlias.Person.Guid != anonymousVisitorGuid
                     && cr.PersonAlias.Person.RecordStatusValueId == activeRecordStatusValueId
                     && cr.PersonAlias.Person.AgeClassification == AgeClassification.Adult
-                    && cr.Communication.SendDateTime >= filters.StartDate
-                    && cr.Communication.SendDateTime < filters.EndDate
+                    && cr.Communication.SendDateTime >= startDate
+                    && cr.Communication.SendDateTime < endDate
                     && filters.CommunicationType.Contains( cr.Communication.CommunicationType )
                 );
 

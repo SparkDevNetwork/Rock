@@ -117,6 +117,8 @@ export const Category = {
     SchedulePersistedDatasets: "7D152006-C47D-47E6-BF0B-09C3C2D0AE84",
     /** Gets the DataView Persisted Schedule category guid */
     SchedulePersistedDataviews: "EEC7A935-BEF2-4450-9CBF-B85CEC6F7FEA",
+    /** Gets the Personalization Segment Schedules category guid */
+    SchedulePersonalizationSegments: "568A8E6C-DD49-4AC8-84BB-799099EFD9C6",
     /** Gets the Service Times schedule category guid */
     ScheduleServiceTimes: "4FECC91B-83F9-4269-AE03-A006F401C47E",
     /** The system communication Form Builder Category guid. */

@@ -18,17 +18,19 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.Chart;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Engagement;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.StepProgramDetail;
+using Rock.ViewModels.Blocks.Engagement.Steps;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web;
@@ -51,12 +53,6 @@ namespace Rock.Blocks.Engagement
 
     #region Block Attributes
 
-    [BooleanField
-        ( "Show Chart",
-          Key = AttributeKey.ShowChart,
-          DefaultValue = "true",
-          Order = 0 )]
-
     [SlidingDateRangeField
         ( "Default Chart Date Range",
           Key = AttributeKey.SlidingDateRange,
@@ -73,11 +69,19 @@ namespace Rock.Blocks.Engagement
         Description = "The Lava used to render the Key Performance Indicators bar. <span class='tip tip-lava'></span>",
         Order = 2 )]
 
+    [BooleanField
+        ( "Enable List View Display Options",
+          Key = AttributeKey.EnableListViewDisplayOptions,
+          Description = "Allows selecting a display mode of Grid or Cards.",
+          DefaultValue = "false",
+          Order = 3 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "7260278e-efb7-4b98-a862-15bf0a40ba2e" )]
-    [Rock.SystemGuid.BlockTypeGuid( "e2f965d1-7419-4062-9568-08613bb696e3" )]
-    public class StepProgramDetail : RockDetailBlockType, IBreadCrumbBlock
+    // Was [Rock.SystemGuid.BlockTypeGuid( "e2f965d1-7419-4062-9568-08613bb696e3" )]
+    [Rock.SystemGuid.BlockTypeGuid( "CF372F6E-7131-4FF7-8BCD-6053DBB67D34" )]
+    public class StepProgramDetail : RockEntityDetailBlockType<StepProgram, StepProgramBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -93,9 +97,9 @@ namespace Rock.Blocks.Engagement
 
         private static class AttributeKey
         {
-            public const string ShowChart = "Show Chart";
             public const string SlidingDateRange = "SlidingDateRange";
             public const string KpiLava = "KpiLava";
+            public const string EnableListViewDisplayOptions = "EnableListViewDisplayOptions";
         }
 
         private static class DefaultValue
@@ -105,60 +109,55 @@ namespace Rock.Blocks.Engagement
             /// </summary>
             public const string KpiLava =
 @"{[kpis style:'card' iconbackground:'true']}
-  [[ kpi icon:'fa-user' value:'{{IndividualsCompleting | Format:'N0'}}' label:'Individuals Completing Program' color:'blue-700']][[ endkpi ]]
-  [[ kpi icon:'fa-calendar' value:'{{AvgDaysToComplete | Format:'N0'}}' label:'Average Days to Complete Program' color:'green-600']][[ endkpi ]]
-  [[ kpi icon:'fa-map-marker' value:'{{StepsStarted | Format:'N0'}}' label:'Steps Started' color:'#FF385C']][[ endkpi ]]
-  [[ kpi icon:'fa-check-square' value:'{{StepsCompleted | Format:'N0'}}' label:'Steps Completed' color:'indigo-700']][[ endkpi ]]
+  [[ kpi icon:'ti ti-user' value:'{{IndividualsCompleting | Format:'N0'}}' label:'Individuals Completing Program' color:'blue-700']][[ endkpi ]]
+  [[ kpi icon:'ti ti-calendar' value:'{{AvgDaysToComplete | Format:'N0'}}' label:'Average Days to Complete Program' color:'gray-700']][[ endkpi ]]
+  [[ kpi icon:'ti ti-stairs' value:'{{StepsStarted | Format:'N0'}}' label:'Steps Started' color:'orange-700']][[ endkpi ]]
+  [[ kpi icon:'ti ti-circle-check' value:'{{StepsCompleted | Format:'N0'}}' label:'Steps Completed' color:'green-700']][[ endkpi ]]
 {[endkpis]}";
         }
 
         #endregion Keys
+
+        private int currentColorIndex = 0;
+        private readonly string[] defaultColors = { "#ea5545", "#f46a9b", "#ef9b20", "#edbf33", "#ede15b", "#bdcf32", "#87bc45", "#27aeef", "#b33dc6" };
 
         #region Methods
 
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            var key = pageReference.GetPageParameter( PageParameterKey.StepProgramId );
+            var pageParameters = new Dictionary<string, string>();
+
+            var name = new StepProgramService( RockContext )
+                .GetSelect( key, mf => mf.Name );
+
+            if ( name != null )
             {
-                var key = pageReference.GetPageParameter( PageParameterKey.StepProgramId );
-                var pageParameters = new Dictionary<string, string>();
-
-                var name = new StepProgramService( rockContext )
-                    .GetSelect( key, mf => mf.Name );
-
-                if ( name != null )
-                {
-                    pageParameters.Add( PageParameterKey.StepProgramId, key );
-                }
-
-                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
-                var breadCrumb = new BreadCrumbLink( name ?? "New Step Program", breadCrumbPageRef );
-
-                return new BreadCrumbResult
-                {
-                    BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
-                };
+                pageParameters.Add( PageParameterKey.StepProgramId, key );
             }
+
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+            var breadCrumb = new BreadCrumbLink( name ?? "New Step Program", breadCrumbPageRef );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
+            };
         }
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag>();
+            var box = new DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag>();
 
-                var entity = GetInitialEntity( rockContext );
+            SetBoxInitialEntityState( box );
 
-                SetBoxInitialEntityState( box, rockContext, entity );
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions();
+            box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<StepProgram>();
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions();
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<StepProgram>();
-
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -177,7 +176,10 @@ namespace Rock.Blocks.Engagement
                     new ListItemBag() { Text = "Step Completed", Value = StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete.ToString() },
                     new ListItemBag() { Text = "Status Changed", Value = StepWorkflowTrigger.WorkflowTriggerCondition.StatusChanged.ToString() },
                     new ListItemBag() { Text = "Manual", Value = StepWorkflowTrigger.WorkflowTriggerCondition.Manual.ToString() }
-                }
+                },
+
+                AreViewDisplayOptionsVisible = GetAttributeValue( AttributeKey.EnableListViewDisplayOptions ).AsBoolean(),
+                IsReOrderColumnVisible = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
             };
 
             return options;
@@ -191,7 +193,7 @@ namespace Rock.Blocks.Engagement
         /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the StepProgram is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateStepProgram( StepProgram stepProgram, RockContext rockContext, out string errorMessage )
+        private bool ValidateStepProgram( StepProgram stepProgram, out string errorMessage )
         {
             errorMessage = null;
 
@@ -203,10 +205,10 @@ namespace Rock.Blocks.Engagement
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="entity">The rock entity.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag> box, RockContext rockContext, StepProgram entity )
+        private void SetBoxInitialEntityState( DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag> box )
         {
+            var entity = GetInitialEntity();
+
             if ( entity == null )
             {
                 box.ErrorMessage = $"The {StepProgram.FriendlyTypeName} was not found.";
@@ -216,7 +218,7 @@ namespace Rock.Blocks.Engagement
             var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
@@ -224,7 +226,6 @@ namespace Rock.Blocks.Engagement
                 if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
@@ -237,14 +238,17 @@ namespace Rock.Blocks.Engagement
                 if ( box.IsEditable )
                 {
                     box.Entity = GetEntityBagForEdit( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( StepProgram.FriendlyTypeName );
                 }
             }
+
+            PrepareDetailBox( box, entity );
         }
+
+        #region Get Entity Bag Methods
 
         /// <summary>
         /// Gets the entity bag that is common between both view and edit modes.
@@ -267,16 +271,22 @@ namespace Rock.Blocks.Engagement
                 IsActive = entity.IsActive,
                 Name = entity.Name,
                 DefaultListView = entity.DefaultListView.ConvertToInt(),
-                CanAdministrate = entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson )
+                CanAdministrate = entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ),
+                CompletionFlow = entity.Id > 0 ? ( CompletionFlow? ) entity.CompletionFlow : null,
+                IsDeletable = !entity.IsSystem,
+                StatusFilterOptions = GetStepStatuses( entity.Id )
+                    .Select( s => new ListItemBag
+                    {
+                        Value = s.Guid.ToString(),
+                        Text = s.Name,
+                        Category = "Statuses"
+                    } )
+                    .ToList()
             };
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="StepProgramBag"/> that represents the entity.</returns>
-        private StepProgramBag GetEntityBagForView( StepProgram entity )
+        /// <inheritdoc/>
+        protected override StepProgramBag GetEntityBagForView( StepProgram entity )
         {
             if ( entity == null )
             {
@@ -289,35 +299,41 @@ namespace Rock.Blocks.Engagement
 
             var defaultDateRange = GetAttributeValue( AttributeKey.SlidingDateRange );
 
-            bag.ShowChart = ShowActivitySummary( entity );
-            bag.Kpi = GetKpi( defaultDateRange, entity );
             bag.DefaultDateRange = GetSlidingDateRangeBag( defaultDateRange );
             bag.StepFlowPageUrl = RequestContext.ResolveRockUrl( $"~/steps/program/{entity.Id}/flow" );
 
-            var showActivitySummary = ShowActivitySummary( entity );
-
-            if ( showActivitySummary )
+            var kpi = GetKpi( defaultDateRange, entity.Id, out string errorMessage );
+            if ( kpi.IsNullOrWhiteSpace() )
             {
-                // Get chart data and set visibility of related elements.
-                var chartFactory = GetChartJsFactory( defaultDateRange , entity);
-
-                if ( chartFactory.HasData )
-                {
-                    var args = GetChartArgs();
-                    // Add client script to construct the chart.
-                    bag.ChartData = chartFactory.GetChartDataJson( args );
-                }
+                bag.ErrorMessage = errorMessage;
+                return bag;
             }
+
+            bag.Kpi = kpi;
+
+            bag.StepFlowConfigurationBag = GetStepFlowConfigBag( entity );
+
+            bag.StepTypes = entity.StepTypes.ToListItemBagList();
+
+            // Query used to help determine what measure filters should be displayed
+            var programStepsQuery = new StepService( RockContext ).Queryable()
+                .Where( s => s.StepType.StepProgramId == entity.Id )
+                .Select( s => new
+                {
+                    s.StepType.ImpactWeight,
+                    s.StepType.OrganizationalObjectiveValueId,
+                    s.StepType.EngagementType
+                } );
+
+            bag.HasImpactAdjustedStepTypes = programStepsQuery.Any( x => x.ImpactWeight.HasValue );
+            bag.HasOrganizationObjectiveSteps = programStepsQuery.Any( x => x.OrganizationalObjectiveValueId != null );
+            bag.HasEngagementTypeSteps = programStepsQuery.Any( x => x.EngagementType.HasValue && x.EngagementType != EngagementType.None );
 
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="StepProgramBag"/> that represents the entity.</returns>
-        private StepProgramBag GetEntityBagForEdit( StepProgram entity )
+        /// <inheritdoc/>
+        protected override StepProgramBag GetEntityBagForEdit( StepProgram entity )
         {
             if ( entity == null )
             {
@@ -325,20 +341,20 @@ namespace Rock.Blocks.Engagement
             }
 
             var bag = GetCommonEntityBag( entity );
-            var rockContext = new RockContext();
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
-            bag.StepProgramAttributes = GetStepTypeAttributes( rockContext, entity.Id.ToString() ).ConvertAll( e => PublicAttributeHelper.GetPublicEditableAttribute( e ) );
+            bag.StepProgramAttributes = GetStepTypeAttributes( entity.Id.ToString() ).ConvertAll( e => PublicAttributeHelper.GetPublicEditableAttribute( e ) );
 
-            bag.Statuses = entity.StepStatuses.Select( s => new StepStatusBag()
+            bag.Statuses = GetStepStatuses( entity.Id ).Select( s => new StepStatusBag()
             {
                 Guid = s.Guid,
                 Id = s.Id,
                 IsActive = s.IsActive,
                 IsCompleteStatus = s.IsCompleteStatus,
                 Name = s.Name,
-                StatusColor = s.StatusColor
+                StatusColor = s.StatusColor,
+                IsSystem = s.IsSystem
             } ).ToList();
 
             bag.WorkflowTriggers = entity.StepWorkflowTriggers
@@ -349,24 +365,25 @@ namespace Rock.Blocks.Engagement
                     Guid = wt.Guid,
                     WorkflowTrigger = GetTriggerType( wt.TriggerType, wt.TypeQualifier ),
                     WorkflowType = wt.WorkflowType.ToListItemBag(),
-                    PrimaryQualifier = GetStepStatuses( entity ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).FromStatusId )?.Guid.ToString(),
-                    SecondaryQualifier = GetStepStatuses( entity ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).ToStatusId )?.Guid.ToString(),
+                    PrimaryQualifier = GetStepStatuses( entity.Id ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).FromStatusId )?.Guid.ToString(),
+                    SecondaryQualifier = GetStepStatuses( entity.Id ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).ToStatusId )?.Guid.ToString(),
                 } ).ToList();
 
-            bag.StatusOptions = new StepStatusService( rockContext ).Queryable().Where( s => s.StepProgramId == entity.Id ).AsEnumerable().ToListItemBagList();
+            bag.StatusOptions = new StepStatusService( RockContext ).Queryable().Where( s => s.StepProgramId == entity.Id ).AsEnumerable().ToListItemBagList();
 
             return bag;
         }
 
+        #endregion Get Entity Bag Methods
+
         /// <summary>
         /// Gets the StepType's attributes.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="stepProgramId">The Step Program identifier qualifier value.</param>
         /// <returns></returns>
-        private static List<Model.Attribute> GetStepTypeAttributes( RockContext rockContext, string stepProgramId )
+        private List<Model.Attribute> GetStepTypeAttributes( string stepProgramId )
         {
-            return new AttributeService( rockContext ).GetByEntityTypeId( new StepType().TypeId, true ).AsQueryable()
+            return new AttributeService( RockContext ).GetByEntityTypeId( new StepType().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "StepProgramId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( stepProgramId ) )
@@ -383,9 +400,8 @@ namespace Rock.Blocks.Engagement
         /// <returns></returns>
         private ListItemBag GetTriggerType( StepWorkflowTrigger.WorkflowTriggerCondition condition, string typeQualifier )
         {
-            var rockContext = new RockContext();
             var qualifierSettings = new StepWorkflowTrigger.StatusChangeTriggerSettings( typeQualifier );
-            var text = new StepWorkflowTriggerService( rockContext ).GetTriggerSettingsDescription( condition, qualifierSettings );
+            var text = new StepWorkflowTriggerService( RockContext ).GetTriggerSettingsDescription( condition, qualifierSettings );
             var value = condition.ToStringSafe();
 
             return new ListItemBag() { Text = text, Value = value };
@@ -395,75 +411,94 @@ namespace Rock.Blocks.Engagement
         /// Gets all the available step statuses.
         /// </summary>
         /// <returns></returns>
-        private List<StepStatus> GetStepStatuses( StepProgram entity )
+        private List<StepStatus> GetStepStatuses( int stepProgramId )
         {
-            var rockContext = new RockContext();
-            var stepProgramId = entity.Id;
-
-            return new StepStatusService( rockContext )
+            return new StepStatusService( RockContext )
                 .Queryable()
                 .Where( s => s.StepProgramId == stepProgramId )
+                .OrderBy( s => s.Order )
+                .ThenBy( s => s.Name )
                 .ToList();
         }
 
         /// <summary>
-        /// Updates the entity from the data in the save box.
+        /// Converts the delimited SlidingDateRange attribute value to a <see cref="SlidingDateRangeBag"/> for the UI.
         /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( StepProgram entity, DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag> box, RockContext rockContext )
+        /// <param name="defaultDateRange"></param>
+        /// <returns></returns>
+        private SlidingDateRangeBag GetSlidingDateRangeBag( string defaultDateRange )
+        {
+            var dateRangeBag = new SlidingDateRangeBag() { RangeType = Enums.Controls.SlidingDateRangeType.Current, TimeUnit = Enums.Controls.TimeUnitType.Year };
+
+            if ( defaultDateRange.IsNullOrWhiteSpace() )
+            {
+                return dateRangeBag;
+            }
+
+            string[] splitValues = ( defaultDateRange ?? string.Empty ).Split( '|' );
+
+            if ( splitValues.Length == 5 )
+            {
+                dateRangeBag.RangeType = splitValues[0].ConvertToEnum<Enums.Controls.SlidingDateRangeType>();
+                dateRangeBag.TimeValue = splitValues[1].AsIntegerOrNull() ?? 1;
+                dateRangeBag.TimeUnit = splitValues[2].ConvertToEnumOrNull<Enums.Controls.TimeUnitType>() ?? Enums.Controls.TimeUnitType.Year;
+                dateRangeBag.LowerDate = splitValues[3].AsDateTime();
+                dateRangeBag.UpperDate = splitValues[4].AsDateTime();
+            }
+
+            return dateRangeBag;
+        }
+
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( StepProgram entity, ValidPropertiesBox<StepProgramBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.Category ),
-                () => entity.CategoryId = box.Entity.Category.GetEntityId<Category>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.Category ),
+                () => entity.CategoryId = box.Bag.Category.GetEntityId<Category>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.IconCssClass ),
-                () => entity.IconCssClass = box.Entity.IconCssClass );
+            box.IfValidProperty( nameof( box.Bag.IconCssClass ),
+                () => entity.IconCssClass = box.Bag.IconCssClass );
 
-            box.IfValidProperty( nameof( box.Entity.IsActive ),
-                () => entity.IsActive = box.Entity.IsActive );
+            box.IfValidProperty( nameof( box.Bag.IsActive ),
+                () => entity.IsActive = box.Bag.IsActive );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.DefaultListView ),
-                () => entity.DefaultListView = ( StepProgram.ViewMode ) box.Entity.DefaultListView );
+            box.IfValidProperty( nameof( box.Bag.DefaultListView ),
+                () => entity.DefaultListView = ( StepProgram.ViewMode ) box.Bag.DefaultListView );
 
-            box.IfValidProperty( nameof( box.Entity.Statuses ),
-                () => SaveStatuses( box.Entity, entity, rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.Statuses ),
+                () => SaveStatuses( box.Bag, entity, RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.WorkflowTriggers ),
-                () => SaveWorkflowTriggers( box.Entity, entity, rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.WorkflowTriggers ),
+                () => SaveWorkflowTriggers( box.Bag, entity, RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.CompletionFlow ),
+                () => entity.CompletionFlow = box.Bag.CompletionFlow.Value );
+
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="StepProgram"/> to be viewed or edited on the page.</returns>
-        private StepProgram GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override StepProgram GetInitialEntity()
         {
-            return GetInitialEntity<StepProgram, StepProgramService>( rockContext, PageParameterKey.StepProgramId );
+            return GetInitialEntity<StepProgram, StepProgramService>( RockContext, PageParameterKey.StepProgramId );
         }
 
         /// <summary>
@@ -479,46 +514,9 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        protected override bool TryGetEntityForEditAction( string idKey, out StepProgram entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( StepProgram entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out StepProgram entity, out BlockActionResult error )
-        {
-            var entityService = new StepProgramService( rockContext );
+            var entityService = new StepProgramService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -557,11 +555,10 @@ namespace Rock.Blocks.Engagement
         /// <param name="qualifierColumn"></param>
         /// <param name="qualifierValue"></param>
         /// <param name="viewStateAttributes"></param>
-        /// <param name="rockContext"></param>
-        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<PublicEditableAttributeBag> viewStateAttributes, RockContext rockContext )
+        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<PublicEditableAttributeBag> viewStateAttributes )
         {
             // Get the existing attributes for this entity type and qualifier value
-            var attributeService = new AttributeService( rockContext );
+            var attributeService = new AttributeService( RockContext );
             var attributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true ).ToList();
 
             // Delete any of those attributes that were removed in the UI
@@ -569,463 +566,14 @@ namespace Rock.Blocks.Engagement
             foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
             {
                 attributeService.Delete( attr );
-                rockContext.SaveChanges();
+                RockContext.SaveChanges();
             }
 
             // Update the Attributes that were assigned in the UI
             foreach ( var attributeState in viewStateAttributes )
             {
-                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
+                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, RockContext );
             }
-        }
-
-        /// <summary>
-        /// Gets the kpi HTML.
-        /// </summary>
-        private string GetKpi( string delimitedDateRange, StepProgram stepProgram )
-        {
-            var template = GetAttributeValue( AttributeKey.KpiLava );
-
-            if ( template.IsNullOrWhiteSpace() || stepProgram == null )
-            {
-                return string.Empty;
-            }
-
-            var startedQuery = GetStartedStepQuery( delimitedDateRange, stepProgram );
-            var completedStepQuery = GetCompletedStepQuery( delimitedDateRange, stepProgram );
-            var completedPrograms = GetCompletedProgramQuery( delimitedDateRange, stepProgram ).ToList();
-
-            var individualsCompleting = completedPrograms.Count;
-            var stepsStarted = startedQuery.Count();
-            var stepsCompleted = completedStepQuery.Count();
-
-            var daysToCompleteList = completedPrograms
-                .Where( sps => sps.CompletedDateTime.HasValue && sps.StartedDateTime.HasValue )
-                .Select( sps => ( sps.CompletedDateTime.Value - sps.StartedDateTime.Value ).Days );
-
-            var avgDaysToComplete = daysToCompleteList.Any() ? ( int ) daysToCompleteList.Average() : 0;
-
-            return template.ResolveMergeFields( new Dictionary<string, object>
-            {
-                { "IndividualsCompleting", individualsCompleting },
-                { "AvgDaysToComplete", avgDaysToComplete },
-                { "StepsStarted", stepsStarted },
-                { "StepsCompleted", stepsCompleted },
-                { "StepType", stepProgram }
-            } );
-        }
-
-        /// <summary>
-        /// Gets the completed step query.
-        /// </summary>
-        /// <returns></returns>
-        private IQueryable<Step> GetStepsCompletedQuery( string delimitedDateRange, StepProgram stepProgram )
-        {
-            var rockContext = new RockContext();
-            var stepService = new StepService( rockContext );
-            var stepProgramId = stepProgram.Id;
-
-            var query = stepService.Queryable()
-                .AsNoTracking()
-                .Where( x =>
-                    x.StepType.StepProgramId == stepProgramId &&
-                    x.StepType.IsActive &&
-                    x.CompletedDateKey != null );
-
-            var campusContext = this.RequestContext.GetContextEntity<Campus>();
-            if ( campusContext != null )
-            {
-                query = query.Where( s => s.CampusId == campusContext.Id );
-            }
-
-            // Apply date range
-            var reportPeriod = new TimePeriod( delimitedDateRange );
-            var dateRange = reportPeriod.GetDateRange();
-            var startDate = dateRange.Start;
-            var endDate = dateRange.End;
-
-            if ( startDate != null )
-            {
-                var startDateKey = startDate.Value.ToDateKey();
-                query = query.Where( x => x.CompletedDateKey >= startDateKey );
-            }
-
-            if ( endDate != null )
-            {
-                var compareDateKey = endDate.Value.ToDateKey();
-                query = query.Where( x => x.CompletedDateKey <= compareDateKey );
-            }
-
-            return query;
-        }
-
-        /// <summary>
-        /// Gets the active step type ids.
-        /// </summary>
-        /// <returns></returns>
-        private IEnumerable<int> GetActiveStepTypeIds( StepProgram stepProgram )
-        {
-            var stepProgramId = stepProgram.Id;
-            var stepProgramCache = StepProgramCache.Get( stepProgramId );
-
-            if ( stepProgramCache == null )
-            {
-                return new List<int>();
-            }
-
-            var stepTypeIds = stepProgramCache.StepTypes.Where( st => st.IsActive ).Select( st => st.Id );
-            return stepTypeIds;
-        }
-
-        /// <summary>
-        /// Gets the completed step query.
-        /// </summary>
-        /// <returns></returns>
-        private IQueryable<Step> GetCompletedStepQuery( string delimitedDateRange, StepProgram stepProgram )
-        {
-            var stepTypeIds = GetActiveStepTypeIds( stepProgram );
-
-            if ( stepTypeIds == null )
-            {
-                return null;
-            }
-
-            var rockContext = new RockContext();
-            var stepService = new StepService( rockContext );
-
-            var query = stepService.Queryable()
-                .AsNoTracking()
-                .Where( x =>
-                    stepTypeIds.Contains( x.StepTypeId ) &&
-                    x.CompletedDateKey != null );
-
-            var campusContext =  RequestContext.GetContextEntity<Campus>();
-            if ( campusContext != null )
-            {
-                query = query.Where( s => s.CampusId == campusContext.Id );
-            }
-
-            // Apply date range
-            var reportPeriod = new TimePeriod( delimitedDateRange );
-            var dateRange = reportPeriod.GetDateRange();
-            var startDate = dateRange.Start;
-            var endDate = dateRange.End;
-
-            if ( startDate != null )
-            {
-                var startDateKey = startDate.Value.ToDateKey();
-                query = query.Where( x => x.CompletedDateKey >= startDateKey );
-            }
-
-            if ( endDate != null )
-            {
-                var compareDateKey = endDate.Value.ToDateKey();
-                query = query.Where( x => x.CompletedDateKey <= compareDateKey );
-            }
-
-            return query;
-        }
-
-        /// <summary>
-        /// Gets the completed step program query.
-        /// </summary>
-        /// <returns></returns>
-        private IQueryable<StepProgramService.PersonStepProgramViewModel> GetCompletedProgramQuery( string delimitedDateRange, StepProgram stepProgram )
-        {
-            var stepProgramId = stepProgram.Id;
-            var rockContext = new RockContext();
-            var service = new StepProgramService( rockContext );
-            var query = service.GetPersonCompletingProgramQuery( stepProgramId );
-
-            if ( query == null )
-            {
-                return null;
-            }
-
-            // Apply date range
-            var reportPeriod = new TimePeriod( delimitedDateRange );
-            var dateRange = reportPeriod.GetDateRange();
-            var startDate = dateRange.Start;
-            var endDate = dateRange.End;
-
-            if ( startDate != null )
-            {
-                query = query.Where( x => x.CompletedDateTime >= startDate.Value );
-            }
-
-            if ( endDate != null )
-            {
-                var compareDate = endDate.Value.AddDays( 1 );
-                query = query.Where( x => x.CompletedDateTime < compareDate );
-            }
-
-            var campusContext = RequestContext.GetContextEntity<Campus>();
-            if ( campusContext != null )
-            {
-                query = query.Where( s => s.CampusId == campusContext.Id );
-            }
-
-            return query;
-        }
-
-        /// <summary>
-        /// Gets the completed step query.
-        /// </summary>
-        /// <returns></returns>
-        private IQueryable<Step> GetStartedStepQuery( string delimitedDateRange, StepProgram stepProgram )
-        {
-            var stepTypeIds = GetActiveStepTypeIds( stepProgram );
-
-            if ( stepTypeIds == null )
-            {
-                return null;
-            }
-
-            var rockContext = new RockContext();
-            var stepService = new StepService( rockContext );
-
-            var query = stepService.Queryable()
-                .AsNoTracking()
-                .Where( x =>
-                    stepTypeIds.Contains( x.StepTypeId ) &&
-                    x.StartDateKey != null );
-
-            var campusContext = RequestContext.GetContextEntity<Campus>();
-            if ( campusContext != null )
-            {
-                query = query.Where( s => s.CampusId == campusContext.Id );
-            }
-
-            // Apply date range
-            var reportPeriod = new TimePeriod( delimitedDateRange );
-            var dateRange = reportPeriod.GetDateRange();
-            var startDate = dateRange.Start;
-            var endDate = dateRange.End;
-
-            if ( startDate != null )
-            {
-                var startDateKey = startDate.Value.ToDateKey();
-                query = query.Where( x => x.StartDateKey >= startDateKey );
-            }
-
-            if ( endDate != null )
-            {
-                var compareDateKey = endDate.Value.ToDateKey();
-                query = query.Where( x => x.StartDateKey <= compareDateKey );
-            }
-
-            return query;
-        }
-
-        /// <summary>
-        /// Returns true if the block should display the Activity Summary chart.
-        /// </summary>
-        /// <returns></returns>
-        private bool ShowActivitySummary (StepProgram stepProgram )
-        {
-            // Set the visibility of the Activity Summary chart.
-            var showActivitySummary = GetAttributeValue( AttributeKey.ShowChart ).AsBoolean( true );
-            var stepProgramId = stepProgram.Id;
-
-            if ( showActivitySummary )
-            {
-                // If the Step Type does not have any activity, hide the Activity Summary.
-                var rockContext = new RockContext();
-                var stepService = new StepService( rockContext );
-                var stepsQuery = stepService.Queryable()
-                    .AsNoTracking()
-                    .Where( x => x.StepType.StepProgramId == stepProgramId
-                        && x.StepType.IsActive
-                        && x.CompletedDateKey.HasValue );
-
-                showActivitySummary = stepsQuery.Any();
-            }
-
-            return showActivitySummary;
-        }
-
-        /// <summary>
-        /// Gets a configured factory that creates the data required for the chart.
-        /// </summary>
-        /// <returns></returns>
-        public ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( string delimitedDateRange, StepProgram stepProgram )
-        {
-            var reportPeriod = new TimePeriod( delimitedDateRange );
-            var dateRange = reportPeriod.GetDateRange();
-            var startDate = dateRange.Start;
-            var endDate = dateRange.End;
-            StepProgram program = stepProgram;
-
-            // Get all of the completed Steps associated with the current program, grouped by Step Type.
-            var stepsCompletedQuery = GetStepsCompletedQuery( delimitedDateRange, stepProgram );
-
-            if ( startDate.HasValue )
-            {
-                startDate = startDate.Value.Date;
-                var startDateKey = startDate.ToDateKey();
-                stepsCompletedQuery = stepsCompletedQuery.Where( x => x.CompletedDateKey.Value >= startDateKey );
-            }
-
-            if ( endDate != null )
-            {
-                var compareDateKey = endDate.Value.ToDateKey();
-                stepsCompletedQuery = stepsCompletedQuery.Where( x => x.CompletedDateKey.Value <= compareDateKey );
-            }
-
-            List<StepTypeActivityDataPoint> stepTypeDataPoints;
-
-            // Get the Data Points, scaled according to the currently selected range.
-            ChartJsTimeSeriesTimeScaleSpecifier chartTimeScale;
-
-            if ( reportPeriod.TimeUnit == TimePeriodUnitSpecifier.Year )
-            {
-                // Group by Month
-                chartTimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Month;
-
-                stepTypeDataPoints = stepsCompletedQuery
-                    .GroupBy( x => new
-                    {
-                        MonthKey = x.CompletedDateKey.Value / 100,
-                        DatasetName = x.StepType.Name,
-                        SortKey1 = x.StepType.Order,
-                        SortKey2 = x.StepTypeId
-                    } )
-                    .Select( x => new
-                    {
-                        x.Key,
-                        Count = x.Count()
-                    } )
-                    .ToList()
-                    .Select( x =>
-                    {
-                        // Add 1 for the first day of the month
-                        var dateKey = ( x.Key.MonthKey * 100 ) + 1;
-
-                        return new StepTypeActivityDataPoint
-                        {
-                            StepTypeName = x.Key.DatasetName,
-                            DateTime = dateKey.GetDateKeyDate(),
-                            SortKey1 = x.Key.SortKey1,
-                            SortKey2 = x.Key.SortKey2,
-                            CompletedCount = x.Count
-                        };
-                    } )
-                    .OrderBy( x => x.SortKey1 )
-                    .ThenBy( x => x.SortKey2 )
-                    .ToList();
-            }
-            else
-            {
-                // Group by Day
-                chartTimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Day;
-
-                stepTypeDataPoints = stepsCompletedQuery
-                    .GroupBy( x => new
-                    {
-                        DateKey = x.CompletedDateKey.Value,
-                        DatasetName = x.StepType.Name,
-                        SortKey1 = x.StepType.Order,
-                        SortKey2 = x.StepTypeId
-                    } )
-                    .Select( x => new
-                    {
-                        x.Key,
-                        Count = x.Count()
-                    } )
-                    .ToList()
-                    .Select( x => new StepTypeActivityDataPoint
-                    {
-                        StepTypeName = x.Key.DatasetName,
-                        DateTime = x.Key.DateKey.GetDateKeyDate(),
-                        SortKey1 = x.Key.SortKey1,
-                        SortKey2 = x.Key.SortKey2,
-                        CompletedCount = x.Count
-                    } )
-                    .OrderBy( x => x.SortKey1 )
-                    .ThenBy( x => x.SortKey2 )
-                    .ToList();
-            }
-
-            var stepTypeDatasets = stepTypeDataPoints
-                .OrderBy( x => x.SortKey1 ).ThenBy( x => x.SortKey2 )
-                .Select( x => x.StepTypeName )
-                .Distinct()
-                .ToList();
-
-            var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>();
-
-            factory.TimeScale = chartTimeScale;
-            factory.StartDateTime = startDate;
-            factory.EndDateTime = endDate;
-            factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.StackedLine;
-
-            foreach ( var stepTypeDataset in stepTypeDatasets )
-            {
-                var dataset = new ChartJsTimeSeriesDataset();
-
-                // Set Line Color to Step Type Highlight Color.
-                var step = program.StepTypes.FirstOrDefault( x => x.Name == stepTypeDataset );
-
-                if ( step != null )
-                {
-                    dataset.BorderColor = step.HighlightColor;
-                }
-
-                dataset.Name = stepTypeDataset;
-
-                dataset.DataPoints = stepTypeDataPoints
-                                        .Where( x => x.StepTypeName == stepTypeDataset )
-                                        .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.DateTime, Value = x.CompletedCount } )
-                                        .Cast<IChartJsTimeSeriesDataPoint>()
-                                        .ToList();
-
-                factory.Datasets.Add( dataset );
-            }
-
-            return factory;
-        }
-
-        /// <summary>
-        /// Gets the arguments for creating the Chart.
-        /// </summary>
-        /// <returns></returns>
-        private static ChartJsTimeSeriesDataFactory.GetJsonArgs GetChartArgs()
-        {
-            return new ChartJsTimeSeriesDataFactory.GetJsonArgs
-            {
-                DisplayLegend = false,
-                LineTension = 0.4m,
-                MaintainAspectRatio = false,
-                SizeToFitContainerWidth = true
-            };
-        }
-
-        /// <summary>
-        /// Converts the delimited SlidingDateRange attribute value to a <see cref="SlidingDateRangeBag"/> for the UI.
-        /// </summary>
-        /// <param name="defaultDateRange"></param>
-        /// <returns></returns>
-        private SlidingDateRangeBag GetSlidingDateRangeBag( string defaultDateRange )
-        {
-            var dateRangeBag = new SlidingDateRangeBag() { RangeType = Enums.Controls.SlidingDateRangeType.Current, TimeUnit = Enums.Controls.TimeUnitType.Year };
-
-            if ( defaultDateRange.IsNullOrWhiteSpace() )
-            {
-                return dateRangeBag;
-            }
-
-            string[] splitValues = ( defaultDateRange ?? string.Empty ).Split( '|' );
-
-            if ( splitValues.Length == 5 )
-            {
-                dateRangeBag.RangeType = splitValues[0].ConvertToEnum<Enums.Controls.SlidingDateRangeType>();
-                dateRangeBag.TimeValue = splitValues[1].AsIntegerOrNull() ?? 1;
-                dateRangeBag.TimeUnit = splitValues[2].ConvertToEnumOrNull<Enums.Controls.TimeUnitType>() ?? Enums.Controls.TimeUnitType.Year;
-                dateRangeBag.LowerDate = splitValues[3].AsDateTime();
-                dateRangeBag.UpperDate = splitValues[4].AsDateTime();
-            }
-
-            return dateRangeBag;
         }
 
         /// <summary>
@@ -1129,9 +677,1518 @@ namespace Rock.Blocks.Engagement
             }
         }
 
-        #endregion
+        #region Step Program View Helper Methods
+
+        #region KPI Methods
+
+        /// <summary>
+        /// Gets the kpi HTML.
+        /// </summary>
+        private string GetKpi( string delimitedDateRange, int? stepProgramId, out string errorMessage )
+        {
+            var template = GetAttributeValue( AttributeKey.KpiLava );
+
+            if ( !stepProgramId.HasValue )
+            {
+                errorMessage = "The specified Step Program was not found.";
+                return null;
+            }
+
+            var stepProgram = StepProgramCache.Get( stepProgramId.Value );
+            var startedQuery = GetStartedStepQuery( delimitedDateRange, stepProgramId.Value );
+            var completedStepQuery = GetCompletedStepQuery( delimitedDateRange, stepProgramId.Value );
+            var completedPrograms = GetCompletedProgramQuery( delimitedDateRange, stepProgramId.Value ).ToList();
+
+            var individualsCompleting = completedPrograms.Count;
+            var stepsStarted = startedQuery.Count();
+            var stepsCompleted = completedStepQuery.Count();
+
+            var daysToCompleteList = completedPrograms
+                .Where( sps => sps.CompletedDateTime.HasValue && sps.StartedDateTime.HasValue )
+                .Select( sps => ( sps.CompletedDateTime.Value - sps.StartedDateTime.Value ).Days );
+
+            var avgDaysToComplete = daysToCompleteList.Any() ? ( int ) daysToCompleteList.Average() : 0;
+
+            errorMessage = string.Empty;
+            return template.ResolveMergeFields( new Dictionary<string, object>
+            {
+                { "IndividualsCompleting", individualsCompleting },
+                { "AvgDaysToComplete", avgDaysToComplete },
+                { "StepsStarted", stepsStarted },
+                { "StepsCompleted", stepsCompleted },
+                { "StepProgram", stepProgram }
+            } );
+        }
+
+        /// <summary>
+        /// Gets the active step type ids.
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerable<int> GetActiveStepTypeIds( int stepProgramId )
+        {
+            var stepProgramCache = StepProgramCache.Get( stepProgramId );
+
+            if ( stepProgramCache == null )
+            {
+                return new List<int>();
+            }
+
+            var stepTypeIds = stepProgramCache.StepTypes.Where( st => st.IsActive ).Select( st => st.Id );
+            return stepTypeIds;
+        }
+
+        /// <summary>
+        /// Gets the completed step query.
+        /// </summary>
+        /// <returns></returns>
+        private IQueryable<Step> GetStartedStepQuery( string delimitedDateRange, int stepProgramId )
+        {
+            var stepTypeIds = GetActiveStepTypeIds( stepProgramId );
+
+            if ( stepTypeIds == null )
+            {
+                return null;
+            }
+
+            var stepService = new StepService( RockContext );
+
+            var query = stepService.Queryable()
+                .AsNoTracking()
+                .Where( x =>
+                    stepTypeIds.Contains( x.StepTypeId ) &&
+                    x.StartDateKey != null );
+
+            var campusContext = RequestContext.GetContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                query = query.Where( s => s.CampusId == campusContext.Id );
+            }
+
+            // Apply date range
+            var reportPeriod = new TimePeriod( delimitedDateRange );
+            var dateRange = reportPeriod.GetDateRange();
+            var startDate = dateRange.Start;
+            var endDate = dateRange.End;
+
+            if ( startDate != null )
+            {
+                var startDateKey = startDate.Value.ToDateKey();
+                query = query.Where( x => x.StartDateKey >= startDateKey );
+            }
+
+            if ( endDate != null )
+            {
+                var compareDateKey = endDate.Value.ToDateKey();
+                query = query.Where( x => x.StartDateKey <= compareDateKey );
+            }
+
+            return query;
+        }
+
+        /// <summary>
+        /// Gets the completed step query.
+        /// </summary>
+        /// <returns></returns>
+        private IQueryable<Step> GetCompletedStepQuery( string delimitedDateRange, int stepProgramId )
+        {
+            var stepTypeIds = GetActiveStepTypeIds( stepProgramId );
+
+            if ( stepTypeIds == null )
+            {
+                return null;
+            }
+
+            var stepService = new StepService( RockContext );
+
+            var query = stepService.Queryable()
+                .AsNoTracking()
+                .Where( x =>
+                    stepTypeIds.Contains( x.StepTypeId ) &&
+                    x.CompletedDateKey != null );
+
+            var campusContext = RequestContext.GetContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                query = query.Where( s => s.CampusId == campusContext.Id );
+            }
+
+            // Apply date range
+            var reportPeriod = new TimePeriod( delimitedDateRange );
+            var dateRange = reportPeriod.GetDateRange();
+            var startDate = dateRange.Start;
+            var endDate = dateRange.End;
+
+            if ( startDate != null )
+            {
+                var startDateKey = startDate.Value.ToDateKey();
+                query = query.Where( x => x.CompletedDateKey >= startDateKey );
+            }
+
+            if ( endDate != null )
+            {
+                var compareDateKey = endDate.Value.ToDateKey();
+                query = query.Where( x => x.CompletedDateKey <= compareDateKey );
+            }
+
+            return query;
+        }
+
+        /// <summary>
+        /// Gets the completed step program query.
+        /// </summary>
+        /// <returns></returns>
+        private IQueryable<StepProgramService.PersonStepProgramViewModel> GetCompletedProgramQuery( string delimitedDateRange, int stepProgramId )
+        {
+            var service = new StepProgramService( RockContext );
+            var query = service.GetPersonCompletingProgramQuery( stepProgramId );
+
+            if ( query == null )
+            {
+                return null;
+            }
+
+            // Apply date range
+            var reportPeriod = new TimePeriod( delimitedDateRange );
+            var dateRange = reportPeriod.GetDateRange();
+            var startDate = dateRange.Start;
+            var endDate = dateRange.End;
+
+            if ( startDate != null )
+            {
+                query = query.Where( x => x.CompletedDateTime >= startDate.Value );
+            }
+
+            if ( endDate != null )
+            {
+                var compareDate = endDate.Value.AddDays( 1 );
+                query = query.Where( x => x.CompletedDateTime < compareDate );
+            }
+
+            var campusContext = RequestContext.GetContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                query = query.Where( s => s.CampusId == campusContext.Id );
+            }
+
+            return query;
+        }
+
+        #endregion KPI Methods
+
+        #region Chart Methods
+
+        /// <summary>
+        /// Filters the provided steps by the given status filter and returns the matching query.
+        /// </summary>
+        /// <param name="selectedStatusFilter">The status filter value (e.g. "All", "AllComplete", "AllIncomplete", or a status GUID).</param>
+        /// <param name="stepsQuery">The queryable collection of steps to filter.</param>
+        /// <param name="isCompletionOnly">Outputs whether the filter represents only completed statuses.</param>
+        /// <returns>A filtered IQueryable of steps based on the selected status filter.</returns>
+        private IQueryable<Step> GetStepsFilteredByStatus( string selectedStatusFilter, IQueryable<Step> stepsQuery, out bool isCompletionOnly )
+        {
+            switch ( selectedStatusFilter )
+            {
+                case "All":
+                    isCompletionOnly = false;
+                    return stepsQuery;
+                case "AllComplete":
+                    isCompletionOnly = true;
+                    return stepsQuery.Where( s => s.StepStatus.IsCompleteStatus );
+                case "AllIncomplete":
+                    isCompletionOnly = false;
+                    return stepsQuery.Where( s => !s.StepStatus.IsCompleteStatus );
+            }
+
+            if ( Guid.TryParse( selectedStatusFilter, out Guid statusGuid ) )
+            {
+                isCompletionOnly = new StepStatusService( RockContext ).Get( statusGuid ).IsCompleteStatus;
+                return stepsQuery.Where( s => s.StepStatus.Guid == statusGuid );
+            }
+
+            // If we reach here, no valid filter was provided, return all steps.
+            isCompletionOnly = false;
+            return stepsQuery;
+        }
+
+        /// <summary>
+        /// Retrieves the campus from the current request context, if available.
+        /// </summary>
+        /// <returns>The selected campus as a CampusCache object, or null if none is found.</returns>
+        private CampusCache GetSelectedCampusFromContext()
+        {
+            var campusContext = RequestContext.GetContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                return CampusCache.Get( campusContext.Id );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Builds chart data showing step program completions within the given date range and view type.
+        /// </summary>
+        /// <param name="stepProgram">The step program to report completions for.</param>
+        /// <param name="timeUnitHelper">Helper value for grouping data by time intervals.</param>
+        /// <param name="startDate">The start date of the reporting range.</param>
+        /// <param name="endDate">The end date of the reporting range.</param>
+        /// <param name="selectedProgramView">The type of chart view to generate (Trends, Totals, or Campuses).</param>
+        /// <returns>A ChartDataBag containing the requested completion data, or null if no view matches.</returns>
+        private ChartDataBag GetChartForStepProgramCompletions( StepProgramCache stepProgram, int timeUnitHelper, DateTime startDate, DateTime endDate, StepProgramView selectedProgramView )
+        {
+            var qry = new StepProgramCompletionService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Include( spc => spc.Campus )
+                .Select( spc => new StepProgramCompletionProjection
+                {
+                    DateKey = spc.EndDateKey,
+                    StepProgramId = spc.StepProgramId,
+                    CampusId = spc.CampusId,
+                    CampusIsActive = spc.Campus.IsActive,
+                    CampusGuid = spc.Campus.Guid,
+                    CampusName = spc.Campus.Name,
+                    CampusOrder = spc.Campus.Order
+                } )
+                .Where( spc => spc.StepProgramId == stepProgram.Id
+                    && spc.DateKey.HasValue );
+
+
+            var startDateKey = startDate.ToDateKey();
+            var endDateKey = endDate.ToDateKey();
+
+            qry = qry.Where( x => x.DateKey >= startDateKey && x.DateKey <= endDateKey );
+
+            var selectedCampus = GetSelectedCampusFromContext();
+
+            if ( selectedCampus != null && selectedProgramView != StepProgramView.Campuses )
+            {
+                qry = qry.Where( x => x.CampusId == selectedCampus.Id );
+            }
+
+            switch ( selectedProgramView )
+            {
+                case StepProgramView.Trends:
+                    return GetStepProgramCompletionTrends( timeUnitHelper, qry, startDate, endDate );
+                case StepProgramView.Totals:
+                    return GetStepProgramCompletionTotals( qry );
+                case StepProgramView.Campuses:
+                    return GetStepProgramCompletionCampuses( qry, selectedCampus?.Name );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Builds chart data for steps in a program within the given date range, filtered by status and view type.
+        /// </summary>
+        /// <param name="stepProgram">The step program to report on.</param>
+        /// <param name="timeUnitHelper">Helper value for grouping data by time intervals.</param>
+        /// <param name="startDate">The start date of the reporting range.</param>
+        /// <param name="endDate">The end date of the reporting range.</param>
+        /// <param name="selectedMeasure">The measure to use for charting (e.g., counts or impact).</param>
+        /// <param name="statusFilter">A filter for step status (All, Complete, Incomplete, or status GUID).</param>
+        /// <param name="selectedProgramView">The type of chart view to generate (Trends, Totals, or Campuses).</param>
+        /// <returns>A ChartDataBag containing the requested step data, or null if no view matches.</returns>
+        private ChartDataBag GetChartForSteps( StepProgramCache stepProgram, int timeUnitHelper, DateTime startDate, DateTime endDate, StepChartMeasure selectedMeasure, string statusFilter, StepProgramView selectedProgramView )
+        {
+            var stepService = new StepService( RockContext );
+            var query = stepService.Queryable()
+                .AsNoTracking()
+                .Include( x => x.StepType )
+                .Include( x => x.Campus )
+                .Where( x =>
+                    x.StepType.StepProgramId == stepProgram.Id
+                    && x.StepType.IsActive );
+
+            var selectedCampus = GetSelectedCampusFromContext();
+
+            if ( selectedCampus != null && selectedProgramView != StepProgramView.Campuses )
+            {
+                query = query.Where( x => x.CampusId == selectedCampus.Id );
+            }
+
+            query = GetStepsFilteredByStatus( statusFilter, query, out bool isCompletionOnly );
+
+            var stepProjectionQry = query.Select( s => new StepProjection
+            {
+                DateKey = isCompletionOnly ? s.CompletedDateKey : s.StartDateKey,
+                CampusId = s.CampusId,
+                CampusGuid = s.Campus.Guid,
+                CampusIsActive = s.Campus.IsActive,
+                CampusName = s.Campus.Name,
+                CampusOrder = s.Campus.Order,
+                AvgCampusAttendance = s.Campus.AverageWeekendAttendance,
+                EngagementType = s.StepType.EngagementType,
+                OrganizationObjective = s.StepType.OrganizationalObjectiveValue,
+                StepTypeId = s.StepTypeId,
+                StepTypeName = s.StepType.Name,
+                StepTypeOrder = s.StepType.Order,
+                ImpactWeight = s.StepType.ImpactWeight,
+                HighlightColor = s.StepType.HighlightColor
+            } )
+                .Where( s => s.DateKey.HasValue );
+
+            var startDateKey = startDate.ToDateKey();
+            var endDateKey = endDate.ToDateKey();
+
+            stepProjectionQry = stepProjectionQry.Where( x => x.DateKey >= startDateKey && x.DateKey <= endDateKey );
+
+            switch ( selectedProgramView )
+            {
+                case StepProgramView.Trends:
+                    return GetStepTrendsByMeasure( selectedMeasure, stepProjectionQry, timeUnitHelper, startDate, endDate );
+                case StepProgramView.Totals:
+                    return GetStepTotalsByMeasure( selectedMeasure, stepProjectionQry );
+                case StepProgramView.Campuses:
+                    return GetStepCampusesByMeasure( selectedMeasure, stepProjectionQry, selectedCampus );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Generates a list of dates between the start and end dates based on the specified time unit.
+        /// </summary>
+        /// <param name="timeUnitHelper">The time unit for stepping through dates (1 = daily, 100 = monthly, 10000 = yearly).</param>
+        /// <param name="startDate">The starting date of the range.</param>
+        /// <param name="endDate">The ending date of the range.</param>
+        /// <returns>A list of DateTime values within the specified range.</returns>
+        private List<DateTime> GetAllDateTimesWithinFilter( int timeUnitHelper, DateTime startDate, DateTime endDate )
+        {
+            var allDateTimes = new List<DateTime>();
+            var cursor = startDate;
+
+            while ( cursor <= endDate )
+            {
+                allDateTimes.Add( cursor );
+
+                switch ( timeUnitHelper )
+                {
+                    case 1:
+                        cursor = cursor.AddDays( 1 );
+                        break;
+
+                    case 100:
+                        cursor = cursor.AddMonths( 1 );
+                        break;
+
+                    case 10000:
+                        cursor = cursor.AddYears( 1 );
+                        break;
+
+                    default:
+                        cursor = cursor.AddDays( 1 );
+                        break;
+                }
+            }
+
+            return allDateTimes;
+        }
+
+        #region Trends Chart Methods
+
+        /// <summary>
+        /// Builds trend chart data for steps based on the selected measure within a date range.
+        /// </summary>
+        /// <param name="selectedMeasure">The measure to chart (e.g., Steps, Impact, Totals, Objectives, or EngagementType).</param>
+        /// <param name="qry">The step projection query to aggregate.</param>
+        /// <param name="timeUnitHelper">The time unit for grouping data (1 = daily, 100 = monthly, 10000 = yearly).</param>
+        /// <param name="startDate">The start date of the reporting range.</param>
+        /// <param name="endDate">The end date of the reporting range.</param>
+        /// <returns>A ChartDataBag with series data for the selected measure, or null if no match.</returns>
+        private ChartDataBag GetStepTrendsByMeasure( StepChartMeasure selectedMeasure, IQueryable<StepProjection> qry, int timeUnitHelper, DateTime startDate, DateTime endDate )
+        {
+            qry = qry.Select( s => new StepProjection
+            {
+                DateKey = s.DateKey.HasValue ? s.DateKey / timeUnitHelper : null,
+                CampusId = s.CampusId,
+                CampusGuid = s.CampusGuid,
+                CampusIsActive = s.CampusIsActive,
+                CampusName = s.CampusName,
+                CampusOrder = s.CampusOrder,
+                AvgCampusAttendance = s.AvgCampusAttendance,
+                EngagementType = s.EngagementType,
+                OrganizationObjective = s.OrganizationObjective,
+                StepTypeId = s.StepTypeId,
+                StepTypeName = s.StepTypeName,
+                StepTypeOrder = s.StepTypeOrder,
+                ImpactWeight = s.ImpactWeight,
+                HighlightColor = s.HighlightColor
+            } );
+
+            var allDates = GetAllDateTimesWithinFilter( timeUnitHelper, startDate, endDate );
+            var chartData = new ChartDataBag();
+
+            switch ( selectedMeasure )
+            {
+                case StepChartMeasure.Steps:
+                    var stepsData = qry.GroupBy( s => new { DateKey = s.DateKey.Value, s.StepTypeId, s.StepTypeName, s.StepTypeOrder, s.HighlightColor } )
+                        .Select( g => new
+                        {
+                            g.Key.DateKey,
+                            g.Key.StepTypeId,
+                            g.Key.StepTypeName,
+                            g.Key.StepTypeOrder,
+                            g.Key.HighlightColor,
+                            Count = ( double ) g.Count()
+                        } )
+                        .ToList();
+
+                    var stepsLookup = stepsData.ToDictionary( d => (d.DateKey, d.StepTypeId), d => d.Count );
+
+                    chartData = new ChartDataBag
+                    {
+                        DateLabels = allDates,
+                        Series = stepsData.Select( d => new
+                        {
+                            d.StepTypeId,
+                            d.StepTypeName,
+                            d.HighlightColor,
+                            d.StepTypeOrder
+                        } )
+                            .DistinctBy( d => d.StepTypeId )
+                            .OrderBy( d => d.StepTypeOrder )
+                            .ThenBy( d => d.StepTypeName )
+                            .Select( stepType => new SeriesBag
+                            {
+                                Label = stepType.StepTypeName,
+                                Data = allDates.Select( date => stepsLookup.TryGetValue( (date.ToDateKey() / timeUnitHelper, stepType.StepTypeId), out var count ) ? count : 0 ).ToList(),
+                                Color = stepType.HighlightColor.IsNullOrWhiteSpace() ? null : stepType.HighlightColor
+                            } )
+                            .ToList()
+                    };
+
+                    return chartData;
+
+                case StepChartMeasure.ImpactAdjustedSteps:
+                    var impactStepsData = qry.Where( s => s.ImpactWeight.HasValue )
+                        .GroupBy( s => new { DateKey = s.DateKey.Value, s.StepTypeId, s.StepTypeName, s.StepTypeOrder, ImpactWeight = s.ImpactWeight.Value, s.HighlightColor } )
+                        .Select( g => new
+                        {
+                            g.Key.DateKey,
+                            g.Key.StepTypeId,
+                            g.Key.StepTypeName,
+                            g.Key.StepTypeOrder,
+                            g.Key.HighlightColor,
+                            Count = ( double ) g.Count() * g.Key.ImpactWeight
+                        } )
+                        .ToList();
+
+                    var impactStepsLookup = impactStepsData.ToDictionary( d => (d.DateKey, d.StepTypeId), d => d.Count );
+
+                    chartData = new ChartDataBag
+                    {
+                        DateLabels = allDates,
+                        Series = impactStepsData.Select( d => new
+                        {
+                            d.StepTypeId,
+                            d.StepTypeName,
+                            d.HighlightColor,
+                            d.StepTypeOrder
+                        } )
+                            .DistinctBy( d => d.StepTypeId )
+                            .OrderBy( d => d.StepTypeOrder )
+                            .ThenBy( d => d.StepTypeName )
+                            .Select( stepType => new SeriesBag
+                            {
+                                Label = stepType.StepTypeName,
+                                Data = allDates.Select( date => impactStepsLookup.TryGetValue( (date.ToDateKey() / timeUnitHelper, stepType.StepTypeId), out var count ) ? count : 0 ).ToList(),
+                                Color = stepType.HighlightColor
+                            } )
+                            .ToList()
+                    };
+
+                    return chartData;
+
+                case StepChartMeasure.TotalSteps:
+                    var totalStepsData = qry.GroupBy( s => s.DateKey.Value )
+                        .Select( g => new
+                        {
+                            DateKey = g.Key,
+                            Count = ( double ) g.Count()
+                        } )
+                        .ToDictionary( g => g.DateKey, g => g.Count );
+
+                    chartData = new ChartDataBag
+                    {
+                        DateLabels = allDates,
+                        Series = new List<SeriesBag>
+                        {
+                            new SeriesBag
+                            {
+                                Label = "Steps",
+                                Data = allDates.Select( date => totalStepsData.TryGetValue( date.ToDateKey() / timeUnitHelper, out var count ) ? count : 0 ).ToList()
+                            }
+                        }
+                    };
+
+                    return chartData;
+
+                case StepChartMeasure.TotalStepAdjustedImpact:
+                    // Step 1: per-type, per-date weighted counts
+                    var impactStepsPartialData = qry.Where( s => s.ImpactWeight.HasValue )
+                        .GroupBy( s => new { DateKey = s.DateKey.Value, s.ImpactWeight } )
+                        .Select( g => new
+                        {
+                            g.Key.DateKey,
+                            WeightedCount = g.Count() * g.Key.ImpactWeight.Value
+                        } )
+                        .ToList();
+
+                    // Step 2: per-date totals by summing the per-type counts
+                    var totalImpactSteps = impactStepsPartialData
+                        .GroupBy( d => d.DateKey )
+                        .Select( g => new
+                        {
+                            DateKey = g.Key,
+                            Total = ( double ) g.Sum( x => x.WeightedCount )
+                        } )
+                        .ToList();
+
+                    chartData = new ChartDataBag
+                    {
+                        DateLabels = allDates,
+                        Series = new List<SeriesBag>
+                        {
+                            new SeriesBag
+                            {
+                                Label = "Total Impact Steps",
+                                Data = allDates.Select(date => totalImpactSteps.FirstOrDefault( t => t.DateKey == date.ToDateKey() / timeUnitHelper )?.Total ?? 0).ToList(),
+                            }
+                        }
+                    };
+
+                    return chartData;
+
+                case StepChartMeasure.OrganizationObjective:
+                    var orgObjectiveStepsData = qry.Where( s => s.OrganizationObjective != null && s.OrganizationObjective.Value != null )
+                        .GroupBy( s => new { DateKey = s.DateKey.Value, OrganizationObjectiveValue = s.OrganizationObjective.Value } )
+                        .Select( g => new
+                        {
+                            g.Key.DateKey,
+                            g.Key.OrganizationObjectiveValue,
+                            Count = ( double ) g.Count()
+                        } )
+                        .ToList();
+
+                    var orgObjectiveStepsLookup = orgObjectiveStepsData.ToDictionary( d => (d.DateKey, d.OrganizationObjectiveValue), d => d.Count );
+
+                    chartData = new ChartDataBag
+                    {
+                        DateLabels = allDates,
+                        Series = orgObjectiveStepsData.Select( d => d.OrganizationObjectiveValue )
+                            .Distinct()
+                            .Select( organizationObjective => new SeriesBag
+                            {
+                                Label = organizationObjective,
+                                Data = allDates.Select( date => orgObjectiveStepsLookup.TryGetValue( (date.ToDateKey() / timeUnitHelper, organizationObjective), out var count ) ? count : 0 ).ToList()
+                            } )
+                            .ToList()
+                    };
+
+                    return chartData;
+
+                case StepChartMeasure.EngagementType:
+                    var engagementStepsData = qry.Where( s => s.EngagementType.HasValue && s.EngagementType.Value != EngagementType.None )
+                        .GroupBy( s => new { DateKey = s.DateKey.Value, EngagementType = s.EngagementType.Value.ToString() } )
+                        .Select( g => new
+                        {
+                            g.Key.DateKey,
+                            g.Key.EngagementType,
+                            Count = ( double ) g.Count()
+                        } )
+                        .ToList();
+
+                    var engagementStepsLookup = engagementStepsData.ToDictionary( d => (d.DateKey, d.EngagementType), d => d.Count );
+
+                    chartData = new ChartDataBag
+                    {
+                        DateLabels = allDates,
+                        Series = engagementStepsData.Select( d => d.EngagementType )
+                            .Distinct()
+                            .Select( engagementType => new SeriesBag
+                            {
+                                Label = engagementType,
+                                Data = allDates.Select( date => engagementStepsLookup.TryGetValue( (date.ToDateKey() / timeUnitHelper, engagementType), out var count ) ? count : 0 ).ToList()
+                            } )
+                            .ToList()
+                    };
+
+                    return chartData;
+
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Builds trend chart data showing step program completions over the given date range.
+        /// </summary>
+        /// <param name="timeUnitHelper">The time unit for grouping data (1 = daily, 100 = monthly, 10000 = yearly).</param>
+        /// <param name="qry">The step program completion query to aggregate.</param>
+        /// <param name="startDate">The start date of the reporting range.</param>
+        /// <param name="endDate">The end date of the reporting range.</param>
+        /// <returns>A ChartDataBag with time-based completion data.</returns>
+        private ChartDataBag GetStepProgramCompletionTrends( int timeUnitHelper, IQueryable<StepProgramCompletionProjection> qry, DateTime startDate, DateTime endDate )
+        {
+            var stepProgramCompletionData = qry.GroupBy( spc => spc.DateKey.Value / timeUnitHelper )
+                .Select( g => new
+                {
+                    DateKey = g.Key,
+                    Count = ( double ) g.Count()
+                } )
+            .ToList();
+
+            var allDates = GetAllDateTimesWithinFilter( timeUnitHelper, startDate, endDate );
+
+            var stepProgramCompletionsLookup = stepProgramCompletionData.ToDictionary( d => d.DateKey, d => d.Count );
+
+            var chartData = new ChartDataBag
+            {
+                DateLabels = allDates,
+                Series = new List<SeriesBag>
+                {
+                    new SeriesBag
+                    {
+                        Label = "Individual Program Completions",
+                        Data = allDates.Select( date => stepProgramCompletionsLookup.TryGetValue( date.ToDateKey() / timeUnitHelper, out var count ) ? count : 0 ).ToList()
+                    }
+                }
+            };
+
+            return chartData;
+        }
+
+        #endregion Trends Chart Methods
+
+        #region Totals Chart Methods
+
+        /// <summary>
+        /// Builds total chart data for steps based on the selected measure.
+        /// </summary>
+        /// <param name="selectedMeasure">The measure to chart (e.g., Steps, Impact, Totals, Objectives, or EngagementType).</param>
+        /// <param name="qry">The step projection query to aggregate.</param>
+        /// <returns>A ChartDataBag with aggregated totals for the selected measure.</returns>
+        private ChartDataBag GetStepTotalsByMeasure( StepChartMeasure selectedMeasure, IQueryable<StepProjection> qry )
+        {
+            var stringLabels = new List<string>();
+            var chartData = new ChartDataBag();
+
+            switch ( selectedMeasure )
+            {
+                case StepChartMeasure.Steps:
+                    var stepsData = qry.GroupBy( s => new { s.StepTypeId, s.StepTypeName, s.StepTypeOrder } )
+                        .Select( g => new
+                        {
+                            g.Key.StepTypeId,
+                            g.Key.StepTypeName,
+                            g.Key.StepTypeOrder,
+                            Count = ( double ) g.Count()
+                        } )
+                        .ToList();
+
+                    var orderedSteps = stepsData
+                        .DistinctBy( d => d.StepTypeId )
+                        .OrderBy( d => d.StepTypeOrder )
+                        .ThenBy( d => d.StepTypeName )
+                        .ToList();
+
+                    stringLabels = orderedSteps
+                        .Select( d => d.StepTypeName )
+                        .ToList();
+
+                    var stepsLookup = stepsData.ToDictionary( d => d.StepTypeId, d => d.Count );
+
+                    chartData = new ChartDataBag
+                    {
+                        StringLabels = stringLabels,
+                        Series = new List<SeriesBag>
+                        {
+                            new SeriesBag
+                            {
+                                Label = "Steps",
+                                Data = orderedSteps.Select( d => stepsLookup.TryGetValue( d.StepTypeId, out var count) ? count : 0 ).ToList()
+                            }
+                        }
+                    };
+
+                    return chartData;
+
+                case StepChartMeasure.ImpactAdjustedSteps:
+                    var impactStepsData = qry.Where( s => s.ImpactWeight.HasValue )
+                        .GroupBy( s => new { s.StepTypeId, s.StepTypeName, s.StepTypeOrder, ImpactWeight = s.ImpactWeight.Value, s.HighlightColor } )
+                        .Select( g => new
+                        {
+                            g.Key.StepTypeId,
+                            g.Key.StepTypeName,
+                            g.Key.StepTypeOrder,
+                            g.Key.HighlightColor,
+                            Count = ( double ) g.Count() * g.Key.ImpactWeight
+                        } )
+                        .ToList();
+
+                    var orderedImpactSteps = impactStepsData
+                        .DistinctBy( d => d.StepTypeId )
+                        .OrderBy( d => d.StepTypeOrder )
+                        .ThenBy( d => d.StepTypeName )
+                        .ToList();
+
+                    stringLabels = orderedImpactSteps
+                        .Select( d => d.StepTypeName )
+                        .ToList();
+
+                    var impactStepsLookup = impactStepsData.ToDictionary( d => d.StepTypeId, d => d.Count );
+
+                    chartData = new ChartDataBag
+                    {
+                        StringLabels = stringLabels,
+                        Series = new List<SeriesBag>
+                        {
+                            new SeriesBag
+                            {
+                                Label = "Impact-Adjusted Steps",
+                                Data = orderedImpactSteps.Select( d => impactStepsLookup.TryGetValue( d.StepTypeId, out var count) ? count : 0 ).ToList()
+                            }
+                        }
+                    };
+
+                    return chartData;
+
+                case StepChartMeasure.TotalSteps:
+                    var totalStepsCount = qry.Count();
+
+                    chartData = new ChartDataBag
+                    {
+                        StringLabels = new List<string> { "Total Steps" },
+                        Series = new List<SeriesBag>
+                        {
+                            new SeriesBag
+                            {
+                                Label = "Total Steps",
+                                Data = new List<double> { totalStepsCount }
+                            }
+                        }
+                    };
+
+                    return chartData;
+
+                case StepChartMeasure.TotalStepAdjustedImpact:
+                    var totalStepAdjustedImpact = qry
+                        .Where( s => s.ImpactWeight.HasValue )
+                        .Sum( s => s.ImpactWeight );
+
+                    chartData = new ChartDataBag
+                    {
+                        StringLabels = new List<string> { "Step-Adjusted Impact" },
+                        Series = new List<SeriesBag>
+                        {
+                            new SeriesBag
+                            {
+                                Label = "Step-Adjusted Impact",
+                                Data = new List<double> { totalStepAdjustedImpact ?? 0 }
+                            }
+                        }
+                    };
+
+                    return chartData;
+
+                case StepChartMeasure.OrganizationObjective:
+                    var orgObjectiveStepsData = qry.Where( s => s.OrganizationObjective != null && s.OrganizationObjective.Value != null )
+                        .GroupBy( s => new { OrganizationObjectiveValue = s.OrganizationObjective.Value } )
+                        .Select( g => new
+                        {
+                            g.Key.OrganizationObjectiveValue,
+                            Count = ( double ) g.Count()
+                        } )
+                        .ToList();
+
+                    stringLabels = orgObjectiveStepsData
+                        .Select( d => d.OrganizationObjectiveValue )
+                        .Distinct()
+                        .OrderBy( n => n )
+                        .ToList();
+
+                    var orgObjectiveStepsLookup = orgObjectiveStepsData.ToDictionary( d => d.OrganizationObjectiveValue, d => d.Count );
+
+                    chartData = new ChartDataBag
+                    {
+                        StringLabels = stringLabels,
+                        Series = new List<SeriesBag>
+                        {
+                            new SeriesBag
+                            {
+                                Label = "Organization Objective Steps",
+                                Data = stringLabels.Select( name => orgObjectiveStepsLookup.TryGetValue(name, out var count) ? count : 0).ToList()
+                            }
+                        }
+                    };
+
+                    return chartData;
+
+                case StepChartMeasure.EngagementType:
+                    var engagementStepsData = qry.Where( s => s.EngagementType.HasValue && s.EngagementType.Value != EngagementType.None )
+                        .GroupBy( s => new { EngagementType = s.EngagementType.Value.ToString() } )
+                        .Select( g => new
+                        {
+                            g.Key.EngagementType,
+                            Count = ( double ) g.Count()
+                        } )
+                        .ToList();
+
+                    stringLabels = engagementStepsData
+                        .Select( d => d.EngagementType )
+                        .Distinct()
+                        .OrderBy( n => n )
+                        .ToList();
+
+                    var engagementStepsLookup = engagementStepsData.ToDictionary( d => d.EngagementType, d => d.Count );
+
+                    chartData = new ChartDataBag
+                    {
+                        StringLabels = stringLabels,
+                        Series = new List<SeriesBag>
+                        {
+                            new SeriesBag
+                            {
+                                Label = "Engagement Type Steps",
+                                Data = stringLabels.Select( name => engagementStepsLookup.TryGetValue(name, out var count) ? count : 0).ToList()
+                            }
+                        }
+                    };
+
+                    return chartData;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Builds total chart data for step program completions.
+        /// </summary>
+        /// <param name="qry">The step program completion query to aggregate.</param>
+        /// <returns>A ChartDataBag containing the total number of completions.</returns>
+        private ChartDataBag GetStepProgramCompletionTotals( IQueryable<StepProgramCompletionProjection> qry )
+        {
+            var stepProgramCompletionCount = qry.Count();
+
+            var chartData = new ChartDataBag
+            {
+                StringLabels = new List<string> { "Individual Program Completions" },
+                Series = new List<SeriesBag>
+                {
+                    new SeriesBag
+                    {
+                        Label = "Individual Program Completions",
+                        Data = new List<double> { stepProgramCompletionCount }
+                    }
+                }
+            };
+
+            return chartData;
+        }
+
+        #endregion Totals Chart Methods
+
+        #region Campus Chart Methods
+
+        /// <summary>
+        /// Builds campus-level chart data for steps based on the selected measure.
+        /// </summary>
+        /// <param name="selectedMeasure">The measure to chart (e.g., Steps, Impact, Totals, Objectives, EngagementType, or Attendance ratios).</param>
+        /// <param name="qry">The step projection query to aggregate.</param>
+        /// <param name="selectedCampus">The campus to emphasize in the chart, or null for all campuses.</param>
+        /// <returns>A ChartDataBag with campus-based series data for the selected measure.</returns>
+        private ChartDataBag GetStepCampusesByMeasure( StepChartMeasure selectedMeasure, IQueryable<StepProjection> qry, CampusCache selectedCampus )
+        {
+            var campusLabels = new List<ListItemBag>();
+            var chartData = new ChartDataBag();
+            bool isCampusSelected = selectedCampus != null;
+            var selectedCampusGuidString = isCampusSelected ? selectedCampus.Guid.ToString() : string.Empty;
+
+            // Filter out null campus.
+            qry = qry.Where( s => s.CampusId.HasValue && s.CampusIsActive == true );
+
+            switch ( selectedMeasure )
+            {
+                case StepChartMeasure.Steps:
+                    var stepsData = qry.GroupBy( s => new { s.CampusGuid, s.CampusName, s.CampusOrder, s.StepTypeId, s.StepTypeName, s.StepTypeOrder, s.HighlightColor } )
+                        .Select( g => new
+                        {
+                            g.Key.CampusGuid,
+                            g.Key.CampusName,
+                            g.Key.CampusOrder,
+                            g.Key.StepTypeId,
+                            g.Key.StepTypeName,
+                            g.Key.StepTypeOrder,
+                            g.Key.HighlightColor,
+                            Count = ( double ) g.Count()
+                        } )
+                        .ToList();
+
+                    campusLabels = stepsData
+                        .DistinctBy( d => d.CampusGuid )
+                        .OrderBy( d => d.CampusOrder )
+                        .ThenBy( d => d.CampusName )
+                        .Select( d => new ListItemBag
+                        {
+                            Text = d.CampusName,
+                            Value = d.CampusGuid.ToString()
+                        } )
+                        .ToList();
+
+                    var stepsLookup = stepsData.ToDictionary( d => (d.CampusGuid.ToString(), d.StepTypeId), d => d.Count );
+
+                    chartData = new ChartDataBag
+                    {
+                        CampusLabels = campusLabels,
+                        Series = stepsData.Select( d => new
+                        {
+                            d.StepTypeId,
+                            d.StepTypeName,
+                            d.StepTypeOrder,
+                            d.HighlightColor
+                        } )
+                            .DistinctBy( d => d.StepTypeId )
+                            .OrderBy( d => d.StepTypeOrder )
+                            .ThenBy( d => d.StepTypeName )
+                            .Select( stepType => new SeriesBag
+                            {
+                                Label = stepType.StepTypeName,
+                                Data = campusLabels.Select( campusBag => stepsLookup.TryGetValue( (campusBag.Value, stepType.StepTypeId), out var count ) ? count : 0 ).ToList(),
+                                Color = stepType.HighlightColor,
+                                Opacity = campusLabels.Select( campusBag => !isCampusSelected || campusBag.Value == selectedCampusGuidString ? 1 : 0.25 ).ToList()
+                            } )
+                            .ToList()
+                    };
+
+                    return chartData;
+
+                case StepChartMeasure.ImpactAdjustedSteps:
+                    var impactStepsData = qry.Where( s => s.ImpactWeight.HasValue )
+                        .GroupBy( s => new { s.CampusGuid, s.CampusName, s.CampusOrder, s.StepTypeId, s.StepTypeName, s.StepTypeOrder, ImpactWeight = s.ImpactWeight.Value, s.HighlightColor } )
+                        .Select( g => new
+                        {
+                            g.Key.CampusGuid,
+                            g.Key.CampusName,
+                            g.Key.CampusOrder,
+                            g.Key.StepTypeId,
+                            g.Key.StepTypeName,
+                            g.Key.StepTypeOrder,
+                            g.Key.HighlightColor,
+                            Count = ( double ) g.Count() * g.Key.ImpactWeight
+                        } )
+                        .ToList();
+
+                    campusLabels = impactStepsData
+                        .DistinctBy( d => d.CampusGuid )
+                        .OrderBy( d => d.CampusOrder )
+                        .ThenBy( d => d.CampusName )
+                        .Select( d => new ListItemBag
+                        {
+                            Text = d.CampusName,
+                            Value = d.CampusGuid.ToString()
+                        } )
+                        .ToList();
+
+                    var impactStepsLookup = impactStepsData.ToDictionary( d => (d.CampusGuid.ToString(), d.StepTypeId), d => d.Count );
+
+                    chartData = new ChartDataBag
+                    {
+                        CampusLabels = campusLabels,
+                        Series = impactStepsData.Select( d => new
+                        {
+                            d.StepTypeId,
+                            d.StepTypeName,
+                            d.StepTypeOrder,
+                            d.HighlightColor
+                        } )
+                            .DistinctBy( d => d.StepTypeId )
+                            .OrderBy( d => d.StepTypeOrder )
+                            .ThenBy( d => d.StepTypeOrder )
+                            .Select( stepType => new SeriesBag
+                            {
+                                Label = stepType.StepTypeName,
+                                Data = campusLabels.Select( campusBag => impactStepsLookup.TryGetValue( (campusBag.Value, stepType.StepTypeId), out var count ) ? count : 0 ).ToList(),
+                                Color = stepType.HighlightColor,
+                                Opacity = campusLabels.Select( campusBag => !isCampusSelected || campusBag.Value == selectedCampusGuidString ? 1 : 0.25 ).ToList()
+                            } )
+                            .ToList()
+                    };
+
+                    return chartData;
+
+                case StepChartMeasure.TotalSteps:
+                    var totalStepsData = qry.GroupBy( s => new { s.CampusGuid, s.CampusName, s.CampusOrder } )
+                        .Select( g => new
+                        {
+                            g.Key.CampusGuid,
+                            g.Key.CampusName,
+                            g.Key.CampusOrder,
+                            Count = ( double ) g.Count()
+                        } )
+                        .ToList();
+
+                    campusLabels = totalStepsData
+                        .DistinctBy( d => d.CampusGuid )
+                        .OrderBy( d => d.CampusOrder )
+                        .ThenBy( d => d.CampusName )
+                        .Select( d => new ListItemBag
+                        {
+                            Text = d.CampusName,
+                            Value = d.CampusGuid.ToString()
+                        } )
+                        .ToList();
+
+                    var totalStepsLookup = totalStepsData.ToDictionary( d => d.CampusGuid.ToString(), d => d.Count );
+
+                    chartData = new ChartDataBag
+                    {
+                        CampusLabels = campusLabels,
+                        Series = new List<SeriesBag>
+                        {
+                            new SeriesBag
+                            {
+                                Label = "Total Steps",
+                                Data = campusLabels.Select( campusBag => totalStepsLookup.TryGetValue( campusBag.Value , out var count ) ? count : 0 ).ToList(),
+                                Opacity = campusLabels.Select( campusBag => !isCampusSelected || campusBag.Value == selectedCampusGuidString ? 1 : 0.25 ).ToList()
+                            }
+                        }
+                    };
+
+                    return chartData;
+
+                case StepChartMeasure.TotalStepAdjustedImpact:
+                    var impactStepsPartialData = qry.Where( s => s.ImpactWeight.HasValue )
+                        .GroupBy( s => new { s.CampusGuid, s.CampusName, s.CampusOrder, s.ImpactWeight } )
+                        .Select( g => new
+                        {
+                            g.Key.CampusGuid,
+                            g.Key.CampusName,
+                            g.Key.CampusOrder,
+                            WeightedCount = g.Count() * g.Key.ImpactWeight.Value
+                        } )
+                        .ToList();
+
+                    var totalImpactSteps = impactStepsPartialData
+                        .GroupBy( d => new { d.CampusGuid, d.CampusName, d.CampusOrder } )
+                        .Select( g => new
+                        {
+                            g.Key.CampusGuid,
+                            g.Key.CampusName,
+                            g.Key.CampusOrder,
+                            Total = ( double ) g.Sum( x => x.WeightedCount )
+                        } )
+                        .ToList();
+
+                    campusLabels = totalImpactSteps
+                        .DistinctBy( d => d.CampusGuid )
+                        .OrderBy( d => d.CampusOrder )
+                        .ThenBy( d => d.CampusName )
+                        .Select( d => new ListItemBag
+                        {
+                            Text = d.CampusName,
+                            Value = d.CampusGuid.ToString()
+                        } )
+                        .ToList();
+
+                    chartData = new ChartDataBag
+                    {
+                        CampusLabels = campusLabels,
+                        Series = new List<SeriesBag>
+                        {
+                            new SeriesBag
+                            {
+                                Label = "Total Impact Steps",
+                                Data = campusLabels.Select( campus => totalImpactSteps.FirstOrDefault( t => t.CampusGuid.ToString() == campus.Value )?.Total ?? 0 ).ToList(),
+                                Opacity = campusLabels.Select( campusBag => !isCampusSelected || campusBag.Value == selectedCampusGuidString ? 1 : 0.25 ).ToList()
+                            }
+                        }
+                    };
+
+                    return chartData;
+
+                case StepChartMeasure.OrganizationObjective:
+                    var orgObjectiveStepsData = qry.Where( s => s.OrganizationObjective != null && s.OrganizationObjective.Value != null )
+                        .GroupBy( s => new { s.CampusGuid, s.CampusName, s.CampusOrder, OrganizationObjectiveValue = s.OrganizationObjective.Value } )
+                        .Select( g => new
+                        {
+                            g.Key.CampusGuid,
+                            g.Key.CampusName,
+                            g.Key.CampusOrder,
+                            g.Key.OrganizationObjectiveValue,
+                            Count = ( double ) g.Count()
+                        } )
+                        .ToList();
+
+                    campusLabels = orgObjectiveStepsData
+                        .DistinctBy( d => d.CampusGuid )
+                        .OrderBy( d => d.CampusOrder )
+                        .ThenBy( d => d.CampusName )
+                        .Select( d => new ListItemBag
+                        {
+                            Text = d.CampusName,
+                            Value = d.CampusGuid.ToString()
+                        } )
+                        .ToList();
+
+                    var orgObjectiveStepsLookup = orgObjectiveStepsData.ToDictionary( d => (d.CampusGuid.ToString(), d.OrganizationObjectiveValue), d => d.Count );
+
+                    chartData = new ChartDataBag
+                    {
+                        CampusLabels = campusLabels,
+                        Series = orgObjectiveStepsData.Select( d => d.OrganizationObjectiveValue )
+                            .Distinct()
+                            .Select( organizationObjective => new SeriesBag
+                            {
+                                Label = organizationObjective,
+                                Data = campusLabels.Select( campusBag => orgObjectiveStepsLookup.TryGetValue( (campusBag.Value, organizationObjective), out var count ) ? count : 0 ).ToList(),
+                                Opacity = campusLabels.Select( campusBag => !isCampusSelected || campusBag.Value == selectedCampusGuidString ? 1 : 0.25 ).ToList()
+                            } )
+                            .ToList()
+                    };
+
+                    return chartData;
+
+                case StepChartMeasure.EngagementType:
+                    var engagementStepsData = qry.Where( s => s.EngagementType.HasValue && s.EngagementType.Value != EngagementType.None )
+                        .GroupBy( s => new { s.CampusGuid, s.CampusName, s.CampusOrder, EngagementType = s.EngagementType.Value.ToString() } )
+                        .Select( g => new
+                        {
+                            g.Key.CampusGuid,
+                            g.Key.CampusName,
+                            g.Key.CampusOrder,
+                            g.Key.EngagementType,
+                            Count = ( double ) g.Count()
+                        } )
+                        .ToList();
+
+                    campusLabels = engagementStepsData
+                        .DistinctBy( d => d.CampusGuid )
+                        .OrderBy( d => d.CampusOrder )
+                        .ThenBy( d => d.CampusName )
+                        .Select( d => new ListItemBag
+                        {
+                            Text = d.CampusName,
+                            Value = d.CampusGuid.ToString()
+                        } )
+                        .ToList();
+
+                    var engagementStepsLookup = engagementStepsData.ToDictionary( d => (d.CampusGuid.ToString(), d.EngagementType), d => d.Count );
+
+                    chartData = new ChartDataBag
+                    {
+                        CampusLabels = campusLabels,
+                        Series = engagementStepsData.Select( d => d.EngagementType )
+                            .Distinct()
+                            .Select( engagementType => new SeriesBag
+                            {
+                                Label = engagementType,
+                                Data = campusLabels.Select( campusBag => engagementStepsLookup.TryGetValue( (campusBag.Value, engagementType), out var count ) ? count : 0 ).ToList(),
+                                Opacity = campusLabels.Select( campusBag => !isCampusSelected || campusBag.Value == selectedCampusGuidString ? 1 : 0.25 ).ToList()
+                            } )
+                            .ToList()
+                    };
+
+                    return chartData;
+
+                case StepChartMeasure.AvgTotalStepsPerWeekendAttendee:
+                    var avgTotalStepPerWeekendAttendeesData = qry.Where( s => s.AvgCampusAttendance.HasValue )
+                    .GroupBy( s => new { s.CampusGuid, s.CampusName, s.CampusOrder, AvgCampusAttendance = s.AvgCampusAttendance.Value } )
+                    .Select( g => new
+                    {
+                        g.Key.CampusGuid,
+                        g.Key.CampusName,
+                        g.Key.CampusOrder,
+                        Count = Math.Round( ( double ) g.Count() / g.Key.AvgCampusAttendance, 0 )
+                    } )
+                    .ToList();
+
+                    campusLabels = avgTotalStepPerWeekendAttendeesData
+                        .DistinctBy( d => d.CampusGuid )
+                        .OrderBy( d => d.CampusOrder )
+                        .ThenBy( d => d.CampusName )
+                        .Select( d => new ListItemBag
+                        {
+                            Text = d.CampusName,
+                            Value = d.CampusGuid.ToString()
+                        } ).ToList();
+
+                    var avgStepPerAttendeeLookup = avgTotalStepPerWeekendAttendeesData.ToDictionary( d => d.CampusGuid.ToString(), d => d.Count );
+
+                    chartData = new ChartDataBag
+                    {
+                        CampusLabels = campusLabels,
+                        Series = new List<SeriesBag>
+                        {
+                            new SeriesBag
+                            {
+                                Label = "Average Total Steps Per Weekend Attendee",
+                                Data = campusLabels.Select( campusBag => avgStepPerAttendeeLookup.TryGetValue( campusBag.Value, out var count) ? count : 0 ).ToList(),
+                                Opacity = campusLabels.Select( campusBag => !isCampusSelected || campusBag.Value == selectedCampusGuidString ? 1 : 0.25 ).ToList()
+                            }
+                        }
+                    };
+
+                    return chartData;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Builds campus-level chart data for step program completions.
+        /// </summary>
+        /// <param name="qry">The step program completion query to aggregate.</param>
+        /// <param name="selectedCampusName">The campus name to emphasize in the chart, or null/empty for all campuses.</param>
+        /// <returns>A ChartDataBag with campus-based completion data.</returns>
+        private ChartDataBag GetStepProgramCompletionCampuses( IQueryable<StepProgramCompletionProjection> qry, string selectedCampusName )
+        {
+            bool isCampusSelected = selectedCampusName.IsNotNullOrWhiteSpace();
+
+            // Filter out null campus
+            qry = qry.Where( s => s.CampusId.HasValue && s.CampusIsActive == true );
+
+            var stepProgramCompletionData = qry.GroupBy( spc => new { spc.CampusGuid, spc.CampusName, spc.CampusOrder } )
+                .Select( g => new
+                {
+                    g.Key.CampusGuid,
+                    g.Key.CampusName,
+                    g.Key.CampusOrder,
+                    Count = ( double ) g.Count()
+                } )
+            .ToList();
+
+            var campusLabels = stepProgramCompletionData
+                .DistinctBy( d => d.CampusGuid )
+                .OrderBy( d => d.CampusOrder )
+                .ThenBy( d => d.CampusName )
+                .Select( d => new ListItemBag
+                {
+                    Text = d.CampusName,
+                    Value = d.CampusGuid.ToString()
+                } )
+                .ToList();
+
+            var stepProgramCompletionsLookup = stepProgramCompletionData.ToDictionary( d => d.CampusName, d => d.Count );
+
+            var chartData = new ChartDataBag
+            {
+                CampusLabels = campusLabels,
+                Series = new List<SeriesBag>
+                {
+                    new SeriesBag
+                    {
+                        Label = "Individual Program Completions",
+                        Data = campusLabels.Select( campusBag => stepProgramCompletionsLookup.TryGetValue(campusBag.Text, out var count) ? count : 0).ToList(),
+                        Opacity = campusLabels.Select( campusBag => !isCampusSelected || campusBag.Text == selectedCampusName ? 1 : 0.25 ).ToList()
+                    }
+                }
+            };
+
+            return chartData;
+        }
+
+        #endregion Campus Chart Methods
+
+        #endregion Chart Methods
+
+        #region Step Flow Methods
+
+        /// <summary>
+        /// Builds the Sankey diagram configuration for a step program, including legend HTML and colors.
+        /// </summary>
+        /// <param name="stepProgram">The step program whose steps are used to generate the configuration.</param>
+        /// <returns>A SankeyDiagramSettingsBag containing the flow legend and settings.</returns>
+        private SankeyDiagramSettingsBag GetStepFlowConfigBag( StepProgram stepProgram )
+        {
+            var lavaNodes = new List<Object>();
+            int order = 0;
+
+            foreach ( StepType step in stepProgram.StepTypes )
+            {
+                lavaNodes.Add( new
+                {
+                    Key = ++order,
+                    StepName = step.Name,
+                    Color = step.HighlightColor.IsNotNullOrWhiteSpace() ? step.HighlightColor : GetNextDefaultColor()
+                } );
+            }
+
+            // The default value
+            string lavaTemplate = "<div class=\"flow-legend\">\n" +
+            "{% for stepItem in Steps %}\n" +
+            "    <div class=\"flow-key\">\n" +
+            "        <span class=\"color\" style=\"background-color:{{stepItem.Color}};\"></span>\n" +
+            "        <span class=\"step-text\">{{stepItem.StepName}}</span>\n" +
+            "    </div>\n" +
+            "{% endfor %}\n" +
+            "</div>";
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+            mergeFields.Add( "Steps", lavaNodes );
+            var legendHtml = lavaTemplate.ResolveMergeFields( mergeFields );
+
+            return new SankeyDiagramSettingsBag
+            {
+                LegendHtml = legendHtml
+            };
+        }
+
+        /// <summary>
+        /// Builds an HTML tooltip string describing the flow between two step types.
+        /// </summary>
+        /// <param name="source">The source step type.</param>
+        /// <param name="target">The target step type.</param>
+        /// <param name="units">The number of steps taken between source and target.</param>
+        /// <param name="days">The average number of days between steps, or null if unknown.</param>
+        /// <returns>An HTML-formatted tooltip string.</returns>
+        private string BuildTooltip( StepTypeCache source, StepTypeCache target, int units, int? days )
+        {
+            string sourceName = source?.Name ?? "Unknown Source";
+            string targetName = target?.Name ?? "Unknown Target";
+            string dayString = days.HasValue ? days.Value.ToString() : "Unknown";
+
+            return $"<p><strong>{sourceName} > {targetName}</strong></p>" +
+                $"Steps Taken: {units}<br/>" +
+                $"Avg Days Between Steps: {dayString}";
+        }
+
+        /// <summary>
+        /// Retrieves the next default color in sequence, cycling back when the list ends.
+        /// </summary>
+        /// <returns>A hex color string from the default color list.</returns>
+        private string GetNextDefaultColor()
+
+        {
+            if ( currentColorIndex >= defaultColors.Length )
+            {
+                currentColorIndex = 0;
+            }
+
+            return defaultColors[currentColorIndex++];
+        }
+
+        /// <summary>
+        /// Get the parameters dictionary for sending in to the DB query
+        /// </summary>
+        /// <param name="maxLevels">The maximum number of levels for any one person to complete</param>
+        /// <param name="dateRangeStartDate">Filter dataset to only include steps that took place after this date.</param>
+        /// <param name="dateRangeEndDate">Filter dataset to only include steps that took place before this date.</param>
+        /// <returns></returns>
+        private Dictionary<string, object> GetStepFlowParameters( int maxLevels, SlidingDateRangeBag date, List<int> startingStepTypeIds )
+        {
+            var parameters = new Dictionary<string, object>();
+
+            // Generate a date range from the SlidingDateRangePicker's value
+            var testRange = new SlidingDateRangePicker
+            {
+                SlidingDateRangeMode = ( SlidingDateRangePicker.SlidingDateRangeType ) ( int ) date.RangeType,
+                TimeUnit = ( SlidingDateRangePicker.TimeUnitType ) ( int ) ( date.TimeUnit ?? 0 ),
+                NumberOfTimeUnits = date.TimeValue ?? 1,
+                DateRangeModeStart = date.LowerDate?.DateTime,
+                DateRangeModeEnd = date.UpperDate?.DateTime
+            };
+
+            var dateRange = testRange.SelectedDateRange;
+
+            parameters.Add( "StartingStepTypeIds", startingStepTypeIds.ConvertToEntityIdListParameter( "StartingStepTypeIds" ) );
+
+            if ( dateRange.Start != null )
+            {
+                parameters.Add( "DateRangeStartDate", dateRange.Start );
+            }
+            else
+            {
+                parameters.Add( "DateRangeStartDate", DBNull.Value );
+            }
+
+            if ( dateRange.End != null )
+            {
+                parameters.Add( "DateRangeEndDate", dateRange.End );
+            }
+            else
+            {
+                parameters.Add( "DateRangeEndDate", DBNull.Value );
+            }
+
+            if ( maxLevels > 0 )
+            {
+                parameters.Add( "MaxLevels", maxLevels );
+            }
+
+            var campusContext = RequestContext.GetContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                parameters.Add( "CampusId", campusContext.Id );
+            }
+            else
+            {
+                parameters.Add( "CampusId", DBNull.Value );
+            }
+
+            parameters.Add( "StepProgramId", StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ), !PageCache.Layout.Site.DisablePredictableIds ).Id );
+            parameters.Add( "DataViewId", DBNull.Value );
+
+            return parameters;
+        }
+
+        #endregion Step Flow Methods
+
+        #endregion Step Program View Helper Methods
+
+        #endregion Methods
 
         #region Block Actions
+
+        /// <summary>
+        /// Changes the ordered position of a single step status.
+        /// </summary>
+        /// <param name="key">The identifier of the step status that will be moved.</param>
+        /// <param name="beforeKey">The identifier of the step status it will be placed before.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult ReorderStepStatus( string key, string beforeKey )
+        {
+            var stepProgram = StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ), !PageCache.Layout.Site.DisablePredictableIds );
+            if ( stepProgram == null )
+            {
+                return ActionBadRequest( "Step program not found." );
+            }
+
+            var items = GetStepStatuses( stepProgram.Id );
+
+            if ( !items.ReorderEntity( key, beforeKey ) )
+            {
+                return ActionBadRequest( "Invalid reorder attempt." );
+            }
+
+            RockContext.SaveChanges();
+            return ActionOk();
+        }
+
+        /// <summary>
+        /// Changes the ordered position of a single step type attribute.
+        /// </summary>
+        /// <param name="key">The identifier of the step type attribute that will be moved.</param>
+        /// <param name="beforeKey">The identifier of the step type attribute it will be placed before.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult ReorderStepTypeAttribute( string key, string beforeKey )
+        {
+            var stepProgram = StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ), !PageCache.Layout.Site.DisablePredictableIds );
+            if ( stepProgram == null )
+            {
+                return ActionBadRequest( "Step program not found." );
+            }
+
+            var items = GetStepTypeAttributes( stepProgram.Id.ToString() );
+
+            if ( !items.ReorderEntity( key, beforeKey ) )
+            {
+                return ActionBadRequest( "Invalid reorder attempt." );
+            }
+
+            RockContext.SaveChanges();
+            return ActionOk();
+        }
 
         /// <summary>
         /// Gets the box that will contain all the information needed to begin
@@ -1142,22 +2199,25 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var box = new DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag>
+            {
+                Entity = GetEntityBagForEdit( entity )
+            };
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<StepProgramBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -1166,80 +2226,83 @@ namespace Rock.Blocks.Engagement
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<StepProgramBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new StepProgramService( RockContext );
+
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                var entityService = new StepProgramService( rockContext );
-
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateStepProgram( entity, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                var isNew = entity.Id == 0;
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
-                } );
-
-                SaveAttributes( new StepType().TypeId, "StepProgramId", entity.Id.ToString(), box.Entity.StepProgramAttributes, rockContext );
-
-                entity = entityService.Get( entity.Id );
-
-                if ( entity == null )
-                {
-                    return ActionBadRequest( "This record is no longer valid, please reload your data." );
-                }
-
-                var currentPerson = GetCurrentPerson();
-
-                if ( !entity.IsAuthorized( Authorization.VIEW, currentPerson ) )
-                {
-                    entity.AllowPerson( Authorization.VIEW, currentPerson, rockContext );
-                }
-
-                if ( !entity.IsAuthorized( Authorization.EDIT, currentPerson ) )
-                {
-                    entity.AllowPerson( Authorization.EDIT, currentPerson, rockContext );
-                }
-
-                if ( !entity.IsAuthorized( Authorization.MANAGE_STEPS, currentPerson ) )
-                {
-                    entity.AllowPerson( Authorization.MANAGE_STEPS, currentPerson, rockContext );
-                }
-
-                if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, currentPerson ) )
-                {
-                    entity.AllowPerson( Authorization.ADMINISTRATE, currentPerson, rockContext );
-                }
-
-                if ( isNew )
-                {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.StepProgramId] = entity.IdKey
-                    } ) );
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                return ActionOk( GetEntityBagForView( entity ) );
+                return actionError;
             }
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateStepProgram( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            var isNew = entity.Id == 0;
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                entity.SaveAttributeValues( RockContext );
+            } );
+
+            SaveAttributes( new StepType().TypeId, "StepProgramId", entity.Id.ToString(), box.Bag.StepProgramAttributes );
+
+            entity = entityService.Get( entity.Id );
+
+            if ( entity == null )
+            {
+                return ActionBadRequest( "This record is no longer valid, please reload your data." );
+            }
+
+            var currentPerson = GetCurrentPerson();
+
+            if ( !entity.IsAuthorized( Authorization.VIEW, currentPerson ) )
+            {
+                entity.AllowPerson( Authorization.VIEW, currentPerson, RockContext );
+            }
+
+            if ( !entity.IsAuthorized( Authorization.EDIT, currentPerson ) )
+            {
+                entity.AllowPerson( Authorization.EDIT, currentPerson, RockContext );
+            }
+
+            if ( !entity.IsAuthorized( Authorization.MANAGE_STEPS, currentPerson ) )
+            {
+                entity.AllowPerson( Authorization.MANAGE_STEPS, currentPerson, RockContext );
+            }
+
+            if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, currentPerson ) )
+            {
+                entity.AllowPerson( Authorization.ADMINISTRATE, currentPerson, RockContext );
+            }
+
+            if ( isNew )
+            {
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.StepProgramId] = entity.IdKey
+                } ) );
+            }
+
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForView( entity );
+
+            return ActionOk( new ValidPropertiesBox<StepProgramBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -1250,103 +2313,51 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new StepProgramService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new StepProgramService( rockContext );
+                return actionError;
+            }
 
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
+            if ( !entity.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
+            {
+                return ActionBadRequest( "You are not authorized to delete this item." );
+            }
+
+            if ( entity.IsSystem )
+            {
+                return ActionBadRequest( "You cannot delete a system Step Program." );
+            }
+
+            string errorMessage = null;
+            RockContext.WrapTransaction( () =>
+            {
+                var stepTypes = entity.StepTypes.ToList();
+                var stepTypeService = new StepTypeService( RockContext );
+
+                foreach ( var stepType in stepTypes )
                 {
-                    return actionError;
-                }
-
-                if ( !entity.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
-                {
-                    return ActionBadRequest( "You are not authorized to delete this item." );
-                }
-
-                string errorMessage = null;
-                rockContext.WrapTransaction( () =>
-                {
-                    var stepTypes = entity.StepTypes.ToList();
-                    var stepTypeService = new StepTypeService( rockContext );
-
-                    foreach ( var stepType in stepTypes )
-                    {
-                        if ( !stepTypeService.CanDelete( stepType, out errorMessage ) )
-                        {
-                            return;
-                        }
-
-                        stepTypeService.Delete( stepType );
-                    }
-
-                    rockContext.SaveChanges();
-
-                    if ( !entityService.CanDelete( entity, out errorMessage ) )
+                    if ( !stepTypeService.CanDelete( stepType, out errorMessage ) )
                     {
                         return;
                     }
 
-                    entityService.Delete( entity );
-                    rockContext.SaveChanges();
-                } );
-
-                return string.IsNullOrWhiteSpace( errorMessage ) ? ActionOk( this.GetParentPageUrl() ) : ActionBadRequest( errorMessage );
-            }
-        }
-
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
+                    stepTypeService.Delete( stepType );
                 }
 
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
+                RockContext.SaveChanges();
+
+                if ( !entityService.CanDelete( entity, out errorMessage ) )
                 {
-                    return ActionBadRequest( "Invalid data." );
+                    return;
                 }
 
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
+                entityService.Delete( entity );
+                RockContext.SaveChanges();
+            } );
 
-                var refreshedBox = new DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
-            }
+            return string.IsNullOrWhiteSpace( errorMessage ) ? ActionOk( this.GetParentPageUrl() ) : ActionBadRequest( errorMessage );
         }
 
         /// <summary>
@@ -1355,60 +2366,185 @@ namespace Rock.Blocks.Engagement
         /// <param name="dateRange"></param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult RefreshChart( string dateRange , StepProgram stepProgram )
+        public BlockActionResult GetChartData( DateTimeOffset startDateTime, DateTimeOffset endDateTime, StepProgramView selectedProgramView, StepChartMeasure selectedMeasure, string selectedStatusFilter )
         {
-            var showActivitySummary = ShowActivitySummary( stepProgram );
-            var chartDataJson = string.Empty;
+            var stepProgram = StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ), !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( showActivitySummary )
+            if ( stepProgram == null )
             {
-                // Get chart data and set visibility of related elements.
-                var chartFactory = GetChartJsFactory( dateRange, stepProgram );
+                return ActionBadRequest( "Could not find the specified Step Program" );
+            }
 
-                if ( chartFactory.HasData )
+            DateTime startDate = startDateTime.ToOrganizationDateTime();
+            DateTime endDate = endDateTime.ToOrganizationDateTime();
+            double totalDays = ( endDate - startDate ).TotalDays;
+
+            int timeUnitHelper;
+            string timeUnit;
+            ChartDataBag chartDataBag;
+
+            // More than 3 years
+            if ( totalDays > 365 * 3 )
+            {
+                // Group by Year
+                timeUnitHelper = 10000;
+                timeUnit = "year";
+            }
+            // More than 3 months
+            else if ( totalDays > 90 )
+            {
+                // Group by Month
+                timeUnitHelper = 100;
+                timeUnit = "month";
+            }
+            else
+            {
+                // Group by Day
+                timeUnitHelper = 1;
+                timeUnit = "day";
+            }
+
+            if ( selectedMeasure == StepChartMeasure.ProgramCompletions )
+            {
+                chartDataBag = GetChartForStepProgramCompletions( stepProgram, timeUnitHelper, startDate, endDate, selectedProgramView );
+            }
+            else
+            {
+                chartDataBag = GetChartForSteps( stepProgram, timeUnitHelper, startDate, endDate, selectedMeasure, selectedStatusFilter, selectedProgramView );
+            }
+
+            if ( chartDataBag == null )
+            {
+                return ActionBadRequest( "An error occurred while fetching chart data" );
+            }
+
+            chartDataBag.TimeUnit = timeUnit;
+
+            return ActionOk( chartDataBag );
+        }
+
+        [BlockAction]
+        public BlockActionResult GetKPIData( string dateRange )
+        {
+            var stepProgram = StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ), !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( !stepProgram.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "You are not authorized to view this Step Program." );
+            }
+
+            var kpi = GetKpi( dateRange, stepProgram.Id, out string errorMessage );
+            if ( kpi.IsNullOrWhiteSpace() )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            return ActionOk( kpi );
+        }
+
+        [BlockAction]
+        public BlockActionResult GetStepFlowData( SlidingDateRangeBag dateRange, int maxLevels, List<Guid> startingStepTypes )
+        {
+            List<StepTypeCache> stepTypes = StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ), !PageCache.Layout.Site.DisablePredictableIds ).StepTypes;
+            var nodeResults = new List<SankeyDiagramNodeBag>();
+            List<int> startingStepTypeIds = new List<int>();
+            int order = 0;
+
+            foreach ( StepTypeCache stepType in stepTypes )
+            {
+                nodeResults.Add( new SankeyDiagramNodeBag
                 {
-                    var args = GetChartArgs();
-                    // Add client script to construct the chart.
-                    chartDataJson = chartFactory.GetChartDataJson( args );
+                    Id = stepType.Id,
+                    Order = ++order,
+                    Name = stepType.Name,
+                    Color = stepType.HighlightColor.IsNotNullOrWhiteSpace() ? stepType.HighlightColor : GetNextDefaultColor()
+                } );
+
+                if ( startingStepTypes.Contains( stepType.Guid ) )
+                {
+                    startingStepTypeIds.Add( stepType.Id );
                 }
             }
 
-            var kpi = GetKpi( dateRange, stepProgram );
+            var parameters = GetStepFlowParameters( maxLevels, dateRange, startingStepTypeIds );
+            var flowEdgeData = new DbService( new RockContext() ).GetDataTableFromSqlCommand( "spSteps_StepFlow", System.Data.CommandType.StoredProcedure, parameters );
+            var flowEdgeResults = new List<SankeyDiagramEdgeBag>();
 
-            return ActionOk( new StepProgramBag() { ChartData = chartDataJson, Kpi = kpi, ShowChart = showActivitySummary } );
+            foreach ( DataRow flowEdgeRow in flowEdgeData.Rows )
+            {
+                int level = flowEdgeRow["Level"].ToIntSafe();
+                int units = flowEdgeRow["StepCount"].ToIntSafe();
+                int sourceId = flowEdgeRow["SourceStepTypeId"].ToIntSafe();
+                int targetId = flowEdgeRow["TargetStepTypeId"].ToIntSafe();
+
+                var source = stepTypes.FirstOrDefault( stepType => stepType.Id == sourceId );
+                var target = stepTypes.FirstOrDefault( stepType => stepType.Id == targetId );
+
+                flowEdgeResults.Add( new SankeyDiagramEdgeBag
+                {
+                    TargetId = targetId,
+                    SourceId = sourceId,
+                    Level = level,
+                    Units = units,
+                    Tooltip = level > 1 ? BuildTooltip( source, target, units, flowEdgeRow["AvgNumberOfDaysBetweenSteps"].ToIntSafe() ) : ""
+                } );
+            }
+
+            return ActionOk( new StepFlowGetDataBag
+            {
+                Edges = flowEdgeResults,
+                Nodes = nodeResults
+            } );
         }
 
         #endregion
 
-        /// <summary>
-        /// A single data point in the result set of a Steps Activity query.
-        /// </summary>
-        private class StepTypeActivityDataPoint
+        private class StepProgramCompletionProjection
         {
-            /// <summary>
-            /// The name of the Step Type to which this Step activity relates.
-            /// </summary>
+            public int? DateKey { get; set; }
+
+            public int StepProgramId { get; set; }
+
+            public int? CampusId { get; set; }
+
+            public Guid CampusGuid { get; set; }
+
+            public bool? CampusIsActive { get; set; }
+
+            public int CampusOrder { get; set; }
+
+            public string CampusName { get; set; }
+        }
+
+        private class StepProjection
+        {
+            public int? DateKey { get; set; }
+
+            public int? CampusId { get; set; }
+
+            public Guid CampusGuid { get; set; }
+
+            public bool? CampusIsActive { get; set; }
+
+            public int CampusOrder { get; set; }
+
+            public string CampusName { get; set; }
+
+            public int? AvgCampusAttendance { get; set; }
+
+            public EngagementType? EngagementType { get; set; }
+
+            public DefinedValue OrganizationObjective { get; set; }
+
+            public int StepTypeId { get; set; }
+
             public string StepTypeName { get; set; }
 
-            /// <summary>
-            /// The date and time represented by this data point.
-            /// </summary>
-            public DateTime DateTime { get; set; }
+            public int StepTypeOrder { get; set; }
 
-            /// <summary>
-            /// The number of completions represented by this data point.
-            /// </summary>
-            public int CompletedCount { get; set; }
+            public int? ImpactWeight { get; set; }
 
-            /// <summary>
-            /// A value used to sort the datapoint within the set of values for this Step Type.
-            /// </summary>
-            public int SortKey1 { get; set; }
-
-            /// <summary>
-            /// A value used to sort the datapoint within the set of values for this Step Type.
-            /// </summary>
-            public int SortKey2 { get; set; }
+            public string HighlightColor { get; set; }
         }
     }
 }

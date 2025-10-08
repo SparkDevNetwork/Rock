@@ -1,0 +1,108 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <NotificationBox v-if="errorMessage"
+                         alertType="warning">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <div class="row">
+            <div class="col-md-6">
+                <SlidingDateRangePicker v-model="createdDateRange"
+                                        label="Created Date Range"
+                                        :isRangeClearable="false"
+                                        rules="required" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { calculateSlidingDateRange, RangeType, SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+    import { TimeUnitType } from "@Obsidian/Enums/Controls/timeUnitType";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const defaultCreatedDateRange = {
+        rangeType: RangeType.Last,
+        timeUnit: TimeUnitType.Month,
+        timeValue: 6
+    } as SlidingDateRange;
+
+    const errorMessage = ref();
+    const createdDateRange = ref<SlidingDateRange>(props.modelValue.createdDateRange ?? defaultCreatedDateRange);
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    function onSave(): void {
+        const dates = calculateSlidingDateRange(createdDateRange.value);
+
+        if (!dates.start || !dates.end) {
+            errorMessage.value = "Please select a valid date range.";
+            return;
+        }
+
+        errorMessage.value = "";
+        const value: GridSettingsOptions = {
+            createdDateRange: createdDateRange.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        createdDateRange.value = props.modelValue.createdDateRange ?? defaultCreatedDateRange;
+    });
+
+    watch(createdDateRange, () => {
+        if (!isNullOrWhiteSpace(errorMessage.value)) {
+            const dates = calculateSlidingDateRange(createdDateRange.value);
+
+            if (dates.start && dates.end) {
+                errorMessage.value = "";
+            }
+        }
+    });
+
+    watch(isVisible, () => {
+        errorMessage.value = "";
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

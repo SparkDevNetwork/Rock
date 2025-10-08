@@ -133,10 +133,11 @@ namespace Rock.Model
             target.CommunicationFlowInstanceId = source.CommunicationFlowInstanceId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.InactiveReason = source.InactiveReason;
             target.RecipientPersonAliasId = source.RecipientPersonAliasId;
             target.Status = source.Status;
             target.UnsubscribeCommunicationRecipientId = source.UnsubscribeCommunicationRecipientId;
-            target.UnsubscribeScope = source.UnsubscribeScope;
+            target.WasConversionGoalPreMet = source.WasConversionGoalPreMet;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -36,7 +36,6 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { useStore } from "@Obsidian/PageState";
 
     const box = useConfigurationValues<StreakMapEditorBag>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -66,7 +65,7 @@
     // #region Computed Values
 
     const isBlockVisible = computed((): boolean => {
-        return useStore().state.areSecondaryBlocksShown && !isPanelHidden.value;
+        return !isPanelHidden.value;
     });
 
     // #endregion

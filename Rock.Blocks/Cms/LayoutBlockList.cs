@@ -41,6 +41,7 @@ namespace Rock.Blocks.Cms
     [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "9cf1aa10-24e4-4530-a345-57da4cfe9595" )]
     [Rock.SystemGuid.BlockTypeGuid( "ea8be085-d420-4d1b-a538-2c0d4d116e0a" )]
     [CustomizedGrid]

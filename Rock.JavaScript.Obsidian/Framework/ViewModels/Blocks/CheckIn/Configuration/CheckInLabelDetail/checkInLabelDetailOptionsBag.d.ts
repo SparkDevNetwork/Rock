@@ -22,6 +22,7 @@
 //
 
 import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The configuration options for the Check-in Label Detail block. */
 export type CheckInLabelDetailOptionsBag = {
@@ -39,4 +40,7 @@ export type CheckInLabelDetailOptionsBag = {
 
     /** The filter sources available when editing a person location label. */
     personLocationLabelFilterSources?: FieldFilterSourceBag[] | null;
+
+    /** The available printers to use when viewing and printing a preview. */
+    printers?: ListItemBag[] | null;
 };

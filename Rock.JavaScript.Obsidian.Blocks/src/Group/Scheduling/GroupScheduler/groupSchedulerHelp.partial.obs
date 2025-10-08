@@ -62,12 +62,5 @@
 
     // #region Functions
 
-    /**
-     * Hides this help panel.
-     */
-    function hide(): void {
-        isVisible.value = false;
-    }
-
     // #endregion
 </script>

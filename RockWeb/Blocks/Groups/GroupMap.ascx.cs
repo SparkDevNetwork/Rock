@@ -214,12 +214,13 @@ namespace RockWeb.Blocks.Groups
                         <style>
                             #map_wrapper {{
                                 height: {0}px;
+                                margin-top: var(--spacing-medium);
                             }}
 
                             #map_canvas {{
                                 width: 100%;
                                 height: 100%;
-                                border-radius: var(--border-radius-base);
+                                border-radius: var(--rounded-small);
                             }}
                         </style>";
 
@@ -423,7 +424,7 @@ namespace RockWeb.Blocks.Groups
                             this.position = position;
                             this.marker_element.position = position;
                         }}
-                    }}                    
+                    }}
                 }}
 
 

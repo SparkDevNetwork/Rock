@@ -1,4 +1,164 @@
-// This file is being imported by rock-core.less
+// This file is being imported by core.scss
+
+.tox.tox-tinymce-inline .tox-editor-header {
+    border: none;
+}
+
+.tox-tinymce {
+    border: var(--color-interface-soft) 1px solid !important;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-radius: 0 !important;
+    border-top-left-radius: var(--rounded-xsmall) !important;
+    border-top-right-radius: var(--rounded-xsmall) !important;
+    border-bottom-color: transparent !important;
+
+  &.note-editor .note-toolbar {
+    border: 0 !important;
+  }
+}
+
+.tox-editor-container {
+  background-color: var(--color-interface-softest) !important;
+}
+
+.tox-tinymce-inline .tox-editor-container {
+  border-radius: var(--rounded-xsmall) !important;
+}
+
+.note-editor:has(.tox.tox-tinymce) {
+  border: 0 !important;
+  &:focus-within {
+    border: var(--focus-state-border) !important;
+    border-radius: var(--rounded-tiny) !important;
+  }
+}
+
+.tox:not(.tox-tinymce-inline) .tox-editor-header,
+.tox.tox-tinymce-inline .tox-editor-header {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.tox .tox-toolbar {
+  background-color: transparent !important;
+  background-image: repeating-linear-gradient(var(--color-interface-soft) 0 1px,transparent 1px 39px) !important;
+}
+
+.tox .note-editor-container {
+    position: relative;
+    border: 1px solid var(--input-border);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+}
+
+.tox .note-editor-container:focus,
+.tox .note-editor-container.focused,
+.tox .note-editor-container:focus-within {
+    border-color: var(--focus-state-border-color);
+    border: var(--focus-state-border);
+    box-shadow: var(--focus-state-shadow);
+}
+
+.tox .note-editor .note-toolbar {
+    padding: 0;
+    border: none;
+    box-shadow: none;
+}
+
+.note-toolbar:has(.tox.tox-tinymce-inline) {
+    border: none !important;
+}
+
+.codeeditor-header {
+    display: none;
+}
+
+.code-editor-container pre {
+    border-radius: 0;
+}
+
+.note-editing-area-overlay {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background-color: transparent;
+}
+
+.note-statusbar {
+    background-color: var(--color-interface-softer);
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    border: 1px solid var(--color-interface-soft);
+}
+
+.note-icon-bar {
+    border-top: 1px solid var(--color-interface-soft);
+    margin: 1px auto;
+    width: 20px;
+}
+
+// Toolbar Buttons
+
+.tox .tox-tbtn {
+  color: var(--color-interface-stronger) !important;
+}
+
+.tox .tox-tbtn svg {
+  fill: var(--color-interface-strong) !important;
+}
+
+.tox .tox-tbtn__select-chevron svg {
+  fill: var(--color-interface-medium) !important;
+}
+
+.tox .tox-tbtn--bespoke {
+  background: var(--color-interface-softer) !important;
+  .tox-tbtn__select-label {
+    color: var(--color-interface-strong) !important;
+  }
+}
+
+.tox .tox-tbtn--disabled .tox-tbtn:not(.tox-tbtn--enabled) {
+  opacity: 0.5 !important;
+}
+
+// Toolbar Dropdowns
+
+.tox .tox-menu {
+  background-color: var(--color-interface-softer) !important;
+}
+
+.tox .tox-collection--list .tox-collection__item--active {
+  background-color: var(--color-interface-soft) !important;
+  color: var(--color-interface-strong) !important;
+}
+
+.tox .tox-collection--list .tox-collection__item--enabled {
+  background-color: var(--color-interface-soft) !important;
+  color: var(--color-interface-strong) !important;
+}
+
+.tox .tox-collection__item {
+  color: var(--color-interface-stronger) !important;
+}
+
+.tox .tox-collection__item:hover {
+  background-color: var(--color-interface-soft) !important;
+}
+
+.tox .tox-collection__item-accessory {
+  color: var(--color-interface-strong) !important;
+}
+
+// Override the default background color for the TinyMCE iframe
+.tox .tox-edit-area__iframe {
+  background-color: var(--color-interface-softest) !important;
+}
+
 
 .tox .tox-dialog__footer .tox-dialog__footer-end .tox-button {
   display: inline-block;
@@ -76,4 +236,15 @@
 
 .tox .tox-dialog-wrap .tox-dialog-wrap__backdrop {
   background: rgba(94, 94, 94, 0.6);
+}
+
+.tox .tox-tbtn--disabled .tox-tbtn--enabled svg {
+  fill: var(--color-interface-strong) !important;
+}
+
+.tox .tox-tbtn--disabled, .tox .tox-tbtn--disabled:hover {
+  background-attachment: local !important;
+  background-position: center top 40px !important;
+  background-size: calc(100% - 22px) calc(100% - 41px) !important;
+  background-repeat: no-repeat !important;
 }

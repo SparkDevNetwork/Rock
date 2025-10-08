@@ -14,12 +14,13 @@
 // limitations under the License.
 // </copyright//
 
-using System.Web.Http;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.IO;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -29,8 +30,6 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.LayoutList;
 using Rock.Web.Cache;
 using Rock;
-using Rock.Web;
-using System;
 using Rock.SystemGuid;
 
 namespace Rock.Blocks.Cms
@@ -44,6 +43,8 @@ namespace Rock.Blocks.Cms
     [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes(Model.SiteType.Web)]
     [LinkedPage( "Detail Page", Description = "The page that will show the layout details.", Key = AttributeKey.DetailPage )]
+
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "6e1d987d-de38-4440-b54f-717c102795fe" )]
     [Rock.SystemGuid.BlockTypeGuid( "6a10a280-65b8-4988-96b2-974fcd80604b" )]
     [CustomizedGrid]

@@ -42,7 +42,7 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./RestKeyDetail/editPanel.partial.obs";
     import ViewPanel from "./RestKeyDetail/viewPanel.partial.obs";
-    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./RestKeyDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { RestKeyBag } from "@Obsidian/ViewModels/Blocks/Security/RestKeyDetail/restKeyBag";

@@ -92,7 +92,7 @@
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock, hideBlockRole, showBlockRole } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./AchievementTypeDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { AchievementTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementTypeDetail/achievementTypeBag";
@@ -101,6 +101,7 @@
     import { confirmDelete } from "@Obsidian/Utility/dialogs";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { BlockRole } from "@Obsidian/Enums/Cms/blockRole";
 
     const config = useConfigurationValues<DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -242,6 +243,7 @@
         else {
             panelMode.value = DetailPanelMode.View;
         }
+        await showBlockRole(BlockRole.Secondary);
     }
 
     /**
@@ -286,6 +288,7 @@
                 validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
             };
             panelMode.value = DetailPanelMode.Edit;
+            await hideBlockRole(BlockRole.Secondary);
         }
     }
 
@@ -307,6 +310,7 @@
             if (result.statusCode === 200 && typeof result.data === "object") {
                 achievementTypeViewBag.value = result.data.bag;
                 panelMode.value = DetailPanelMode.View;
+                await showBlockRole(BlockRole.Secondary);
             }
             else if (result.statusCode === 201 && typeof result.data === "string") {
                 window.location.href = makeUrlRedirectSafe(result.data);

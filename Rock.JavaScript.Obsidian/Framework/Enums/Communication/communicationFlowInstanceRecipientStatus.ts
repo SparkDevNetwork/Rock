@@ -26,15 +26,15 @@ export const CommunicationFlowInstanceRecipientStatus = {
     /** The recipient is still active to receive communications in the communication flow instance. */
     Active: 1,
 
-    /** The recipient has unsubscribed from the communication flow instance and will no longer receive communications. */
-    Unsubscribe: 2
+    /** The recipient is inactive and will no longer receive communications in the communication flow instance. */
+    Inactive: 2
 } as const;
 
 /** The recipient status in a Communication Flow Instance. */
 export const CommunicationFlowInstanceRecipientStatusDescription: Record<number, string> = {
     1: "Active",
 
-    2: "Unsubscribe"
+    2: "Inactive"
 };
 
 /** The recipient status in a Communication Flow Instance. */

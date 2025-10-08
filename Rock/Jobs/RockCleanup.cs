@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.IO;
@@ -28,9 +29,11 @@ using System.Text;
 using Humanizer;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Core;
 using Rock.Data;
 using Rock.Logging;
@@ -349,6 +352,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord() );
 
+            RunCleanupTask( "orphaned entity metadata", () => RemoveOrphanedEntityMetadata() );
+
             RunCleanupTask( "update campus tithe metric", () => UpdateCampusTitheMetric() );
 
             RunCleanupTask( "update campus average weekly attendance", () => UpdateCampusAverageWeekendAttendance() );
@@ -377,7 +382,7 @@ namespace Rock.Jobs
 
             if ( rockCleanupJobResultList.Any( a => a.HasException ) )
             {
-                jobSummaryBuilder.AppendLine( "\n<i class='ti ti-circle text-warning'></i> Some jobs have errors. See exception log for details." );
+                jobSummaryBuilder.AppendLine( "\n<i class='ti ti-circle-filled text-warning'></i> Some jobs have errors. See exception log for details." );
             }
 
             this.Result = jobSummaryBuilder.ToString();
@@ -474,11 +479,11 @@ namespace Rock.Jobs
         {
             if ( result.HasException )
             {
-                return $"<i class='ti ti-circle text-danger'></i> {result.Title} ({result.Elapsed.TotalMilliseconds:N0}ms)";
+                return $"<i class='ti ti-circle-filled text-danger'></i> {result.Title} ({result.Elapsed.TotalMilliseconds:N0}ms)";
             }
             else
             {
-                var icon = "<i class='ti ti-circle text-success'></i>";
+                var icon = "<i class='ti ti-circle-filled text-success'></i>";
                 var title = result.Title.PluralizeIf( result.RowsAffected != 1 ).ApplyCase( LetterCasing.Title );
                 return $"{icon} {result.RowsAffected} {title} ({result.Elapsed.TotalMilliseconds:N0}ms)";
             }
@@ -2662,7 +2667,7 @@ SELECT @@ROWCOUNT
             // Set the NextDateTime to null for any Event Occurrences that are inactive because:
             // 1. the parent Event Item is inactive; or
             // 2. the Event Occurrence Schedule is inactive.
-            var inactiveScheduleIdList = scheduleService.Queryable().Where( x => !x.IsActive ).Select( x => x.Id ).ToList();
+            var inactiveScheduleIdList = scheduleService.Queryable().Where( x => !x.IsActive ).Select( x => x.Id );
 
             var inactiveOccurrences = eventOccurrenceService.Queryable()
                 .Where( x => x.NextStartDateTime != null
@@ -2678,12 +2683,10 @@ SELECT @@ROWCOUNT
             rockContext.SaveChanges( new SaveChangesArgs { DisablePrePostProcessing = true } );
 
             // Set the NextDateTime for all Event Occurrences with an active schedule.
-            var activeScheduleIdList = scheduleService.Queryable().Where( x => x.IsActive ).Select( x => x.Id ).ToList();
-
             var activeOccurrences = eventOccurrenceService.Queryable()
                 .Include( x => x.Schedule )
                 .Where( x => x.EventItem.IsActive
-                    && x.ScheduleId != null && !inactiveScheduleIdList.Contains( x.ScheduleId.Value ) );
+                    && x.ScheduleId != null && x.Schedule.IsActive );
 
             foreach ( var activeOccurrence in activeOccurrences )
             {
@@ -2897,6 +2900,55 @@ WHERE [ModifiedByPersonAliasId] IS NOT NULL
             }
 
             return deleteCount;
+        }
+
+        /// <summary>
+        /// Removes the orphaned entity metadata whose entity records have been
+        /// deleted.
+        /// </summary>
+        /// <returns>The number of records deleted.</returns>
+        private int RemoveOrphanedEntityMetadata()
+        {
+            var helper = RockApp.Current.GetRequiredService<MetadataHelper>();
+            var recordsDeleted = 0;
+            List<EntityTypeCache> entityTypes;
+
+            using ( var rockContext = CreateRockContext() )
+            {
+                entityTypes = rockContext.Set<EntityMetadata>()
+                    .Select( m => m.EntityTypeId )
+                    .Distinct()
+                    .ToList()
+                    .Select( id => EntityTypeCache.Get( id, rockContext ) )
+                    .Where( et => et != null )
+                    .ToList();
+
+                foreach ( var cachedType in entityTypes )
+                {
+                    var entityType = cachedType.GetEntityType();
+                    var compiledType = cachedType?.GetEntityType();
+
+                    if ( entityType == null || !typeof( IEntity ).IsAssignableFrom( entityType ) || compiledType == null )
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        var entityTableName = compiledType.GetCustomAttribute<TableAttribute>()?.Name;
+                        if ( entityTableName.IsNotNullOrWhiteSpace() )
+                        {
+                            recordsDeleted += helper.DeleteOrphanedEntityValues( cachedType.Id, entityTableName, batchAmount, rockContext );
+                        }
+                    }
+                    catch ( Exception ex )
+                    {
+                        Logger.LogError( ex, "Error occurred trying to remove orphaned entity metadata for entity type '{entityTypeName}'.", cachedType.Name );
+                    }
+                }
+            }
+
+            return recordsDeleted;
         }
 
         private int UpdateCampusAverageWeekendAttendance()

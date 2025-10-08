@@ -507,7 +507,7 @@
                     </div>
                     <div class="col-md-3">
                         <Rock:RockCheckBox ID="cbCommonValue" runat="server" Label="Common Value" Visible="false" ValidationGroup="Field"
-                            Help="When registering more than one person, should the value of this attribute default to the value entered for first person registered?" />
+                            Help="When multiple people are being registered, this option uses the value entered for the first person to automatically fill the same field for each additional registrant." />
                         <Rock:RockCheckBox ID="cbShowOnGrid" runat="server" Label="Show on Grid" Visible="false" ValidationGroup="Field"
                             Help="Should this value be displayed on the list of registrants? Note: Some person fields cannot be shown in grids, and group member attributes are only shown in group member lists." />
                     </div>

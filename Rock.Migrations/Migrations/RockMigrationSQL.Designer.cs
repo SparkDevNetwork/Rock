@@ -1826,6 +1826,26 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        This stored procedure returns the data needed to create a Step Flow 
+        ///        chart for a provided Step Program. It supports filtering on date 
+        ///        ranges, data views, campuses, and an optional list of starting 
+        ///        step type IDs via a table-valued parameter.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        * Level - The step level. 1 = Steps that were a person&apos;s first step, 2 = The second steps, etc.
+        ///        * SourceStepTypeId - The last step taken before the current o [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202509152345443_AddStepAnalytics_spSteps_StepFlow {
+            get {
+                return ResourceManager.GetString("_202509152345443_AddStepAnalytics_spSteps_StepFlow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] lms_header_min {

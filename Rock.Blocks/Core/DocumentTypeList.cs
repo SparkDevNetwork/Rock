@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -116,7 +117,9 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<DocumentType> GetListQueryable( RockContext rockContext )
         {
-            return base.GetListQueryable( rockContext );
+            return base.GetListQueryable( rockContext )
+                .Include( d => d.BinaryFileType )
+                .Include( d => d.EntityType );
         }
 
         /// <inheritdoc/>

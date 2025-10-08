@@ -63,9 +63,6 @@
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    const lastRefreshDate = new Date(persistedDatasetViewBag.value?.lastRefreshDateTime ?? "Never");
-    const formattedDate = lastRefreshDate ? new Date(lastRefreshDate).toLocaleDateString("en-US") : "Never";
-
     // The properties that are being edited in the UI. This is used to
     // inform the server which incoming values have valid data in them.
     const validProperties = [

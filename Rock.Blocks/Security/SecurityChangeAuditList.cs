@@ -16,7 +16,9 @@
 //
 
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -42,6 +44,28 @@ namespace Rock.Blocks.Security
     [CustomizedGrid]
     public class SecurityChangeAuditList : RockEntityListBlockType<AuthAuditLog>
     {
+        #region Keys
+        private static class PreferenceKey
+        {
+            public const string FilterDaysBack = "filter-days-back";
+        }
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the number of days back to include in the results. A value of
+        /// 0 means no filtering.
+        /// </summary>
+        /// <value>
+        /// The number of days back to include in the results.
+        /// </value>
+        protected int FilterDaysBack => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterDaysBack )
+            .AsIntegerOrNull() ?? 180;
+
+        #endregion
+
         #region Methods
 
         /// <inheritdoc/>
@@ -73,7 +97,27 @@ namespace Rock.Blocks.Security
         /// <inheritdoc/>
         protected override IQueryable<AuthAuditLog> GetListQueryable( RockContext rockContext )
         {
-            return new AuthAuditLogService( rockContext ).Queryable();
+            var queryable = new AuthAuditLogService( rockContext )
+                .Queryable()
+                .Include( a => a.Group )
+                .Include( a => a.ChangeByPersonAlias.Person )
+                .Include( a => a.PersonAlias.Person )
+                .AsNoTracking();
+
+            return FilterByChangeDateRange( queryable );
+        }
+
+        private IQueryable<AuthAuditLog> FilterByChangeDateRange( IQueryable<AuthAuditLog> queryable )
+        {
+            var filterDaysBack = FilterDaysBack;
+            if ( filterDaysBack > 0 )
+            {
+                var filterDate = RockDateTime.Today.AddDays( -filterDaysBack );
+
+                queryable = queryable.Where( a => a.ChangeDateTime >= filterDate );
+            }
+
+            return queryable;
         }
 
         /// <inheritdoc/>
@@ -89,9 +133,9 @@ namespace Rock.Blocks.Security
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddDateTimeField( "changeDateTime", a => a.ChangeDateTime )
-                .AddTextField( "entityType", a => a.EntityType?.FriendlyName )
+                .AddTextField( "entityType", a => GetEntityTypeFriendlyName( a.EntityTypeId) )
                 .AddField( "entityId", a => a.EntityId )
-                .AddPersonField( "changeBy", a => a.ChangeByPersonAlias?.Person )
+                .AddTextField( "changeBy", a => a.ChangeByPersonAlias?.Person?.FullName )
                 .AddTextField( "action", a => a.Action )
                 .AddTextField( "preAllowOrDeny", a => a.PreAllowOrDeny )
                 .AddTextField( "postAllowOrDeny", a => a.PostAllowOrDeny )
@@ -101,6 +145,11 @@ namespace Rock.Blocks.Security
                 .AddField( "preOrder", a => a.PreOrder )
                 .AddField( "postOrder", a => a.PostOrder )
                 .AddField( "change", a => ( int ) a.ChangeType );
+        }
+
+        private string GetEntityTypeFriendlyName( int entityTypeId )
+        {
+            return EntityTypeCache.Get( entityTypeId ).FriendlyName ?? string.Empty;
         }
 
         #endregion

@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { getUniqueCssSelector } from "./dom";
+import { getUniqueCssSelector, isElement } from "./dom";
 import { getFullscreenElement, isFullscreen } from "./fullscreen";
 
 // NOTE: Do not make this public yet. This is essentially temporary and
@@ -141,11 +141,11 @@ export function tooltip(node: Element | Element[], options?: TooltipOptions): vo
 
     applyTooltip(getContainer());
 
-    $(document).on("click", ".tooltip", function(e: Event) {
+    $(document).on("click", ".tooltip", function (e: Event) {
         e.stopPropagation();
     });
 
-    $node?.on("mouseleave", function(this: Element) {
+    $node?.on("mouseleave", function (this: Element) {
         if (!$(this).data("tooltip-pinned")) {
             $node?.tooltip("hide");
         }
@@ -202,4 +202,15 @@ export function resetTooltip(node: Element | Element[], options?: TooltipOptions
             res();
         }, 151);
     });
+}
+
+/**
+ * Applies a tooltip to an element. The element should have an `data-original-title` attribute containing the tooltip text.
+ *
+ * Typical use, `:ref="applyTooltip"`
+ */
+export function applyTooltip(el: unknown, options?: TooltipOptions): void {
+    if (isElement(el)) {
+        tooltip(el, options);
+    }
 }

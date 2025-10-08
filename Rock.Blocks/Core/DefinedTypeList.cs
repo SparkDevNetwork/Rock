@@ -119,7 +119,7 @@ namespace Rock.Blocks.Core
         private DefinedTypeListOptionsBag GetBoxOptions()
         {
             var options = new DefinedTypeListOptionsBag();
-            options.ShowCategoryColumn = GetAttributeValue( AttributeKey.Categories ).IsNullOrWhiteSpace();
+            options.ShowCategoryColumn = GetAttributeValue( AttributeKey.Categories ).IsNotNullOrWhiteSpace();
             return options;
         }
 

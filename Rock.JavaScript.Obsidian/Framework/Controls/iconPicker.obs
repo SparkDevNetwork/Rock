@@ -97,9 +97,10 @@
 .selected-icon :deep(svg),
 .selected-icon i {
     height: 16px;
-    width: 16px;
+    width: auto;
     margin: 4px auto;
     flex: 0 1 auto;
+    fill: var(--color-interface-stronger);
 }
 
 .selected-icon i {

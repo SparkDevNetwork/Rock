@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Cms;
+using Rock.Configuration;
 using Rock.Enums.Cms;
 using Rock.Tests.Shared;
 
@@ -96,11 +98,11 @@ namespace Rock.Tests.Cms
 
             var content = builder.Build( string.Empty );
 
-            Assert.That.IsEmpty( content );
+            Assert.That.DoesNotContain( "@import", content );
         }
 
         [TestMethod]
-        public void AddImport_WithNullValue_DoesNotEmitVariable()
+        public void AddImport_WithNullValue_DoesNotEmitImport()
         {
             var builder = new ThemeOverrideBuilder( "TestTheme", new Dictionary<string, string>() );
 
@@ -108,21 +110,24 @@ namespace Rock.Tests.Cms
 
             var content = builder.Build( string.Empty );
 
-            Assert.That.IsEmpty( content );
+            Assert.That.DoesNotContain( "@import", content );
         }
 
         [TestMethod]
         public void AddImport_WithValue_EmitsImport()
         {
-            var expectedUrl = "on.css";
-            var expectedContent = $"@import url('{expectedUrl}');";
-            var builder = new ThemeOverrideBuilder( "TestTheme", new Dictionary<string, string>() );
+            using ( TestHelper.CreateScopedRockApp() )
+            {
+                var expectedUrl = "on.css";
+                var expectedContent = $"@import url('{expectedUrl}');";
+                var builder = new ThemeOverrideBuilder( "TestTheme", new Dictionary<string, string>() );
 
-            builder.AddImport( expectedUrl );
+                builder.AddImport( expectedUrl );
 
-            var content = builder.Build( string.Empty );
+                var content = builder.Build( string.Empty );
 
-            Assert.That.Contains( content, expectedContent );
+                Assert.That.Contains( content, expectedContent );
+            }
         }
 
         [TestMethod]
@@ -162,7 +167,7 @@ namespace Rock.Tests.Cms
 
             var content = builder.Build( string.Empty );
 
-            Assert.That.IsEmpty( content );
+            Assert.That.AreEqual( $"@charset \"UTF-8\";{Environment.NewLine}", content );
         }
 
         [TestMethod]
@@ -390,7 +395,7 @@ namespace Rock.Tests.Cms
 
             var content = builder.Build( string.Empty );
 
-            Assert.That.IsEmpty( content );
+            Assert.That.DoesNotContain( ":root {", content );
         }
 
         [TestMethod]
@@ -410,9 +415,13 @@ namespace Rock.Tests.Cms
         {
             using ( TestHelper.CreateScopedRockApp() )
             {
-                var expectedContent = $@"{ThemeOverrideBuilder.TopOverrideStartMarker}
+                var tablerPath = RockApp.Current.MapPath( "~/Styles/styles-v2/icons/tabler-icon.css" );
+                var tablerHash = System.IO.File.ReadAllText( tablerPath ).XxHash();
+
+                var expectedContent = $@"@charset ""UTF-8"";
+{ThemeOverrideBuilder.TopOverrideStartMarker}
 @import url('on.css');
-@import url('/Styles/styles-v2/icons/tabler-icon.css');
+@import url('/Styles/styles-v2/icons/tabler-icon.css?v={tablerHash}');
 {ThemeOverrideBuilder.TopOverrideEndMarker}
 
 

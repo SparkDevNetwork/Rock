@@ -44,6 +44,7 @@ namespace Rock.Blocks.Communication
     /// <summary>
     /// Lists the status of all previously created communications.
     /// </summary>
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Communication List" )]
     [Category( "Communication" )]
@@ -86,7 +87,7 @@ namespace Rock.Blocks.Communication
 
         private static class PersonPreferenceKey
         {
-            public const string FilterCreatedBy = "filter-created-by";
+            public const string FilterSentBy = "filter-sent-by";
             public const string FilterCommunicationTypes = "filter-communication-types";
             public const string FilterHideDrafts = "filter-hide-drafts";
             public const string FilterSendDateRange = "filter-send-date-range";
@@ -124,10 +125,10 @@ namespace Rock.Blocks.Communication
         private PersonPreferenceCollection BlockPersonPreferences => this.GetBlockPersonPreferences();
 
         /// <summary>
-        /// Gets the unique identifier of the "created by" <see cref="PersonAlias"/> by whom to filter the results.
+        /// Gets the unique identifier of the "sent by" <see cref="PersonAlias"/> by whom to filter the results.
         /// </summary>
-        private Guid? FilterCreatedByPersonAliasGuid => BlockPersonPreferences
-            .GetValue( PersonPreferenceKey.FilterCreatedBy )
+        private Guid? FilterSentByPersonAliasGuid => BlockPersonPreferences
+            .GetValue( PersonPreferenceKey.FilterSentBy )
             .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
 
         /// <summary>
@@ -146,7 +147,7 @@ namespace Rock.Blocks.Communication
         /// </summary>
         private bool FilterHideDrafts => BlockPersonPreferences
             .GetValue( PersonPreferenceKey.FilterHideDrafts )
-            .AsBoolean();
+            .AsBoolean( true );
 
         /// <summary>
         /// Gets the send date range by which to filter the results.
@@ -174,7 +175,7 @@ namespace Rock.Blocks.Communication
         /// </summary>
         private Guid? FilterTopicValueGuid => BlockPersonPreferences
             .GetValue( PersonPreferenceKey.FilterTopic )
-            .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
+            .AsGuidOrNull();
 
         /// <summary>
         /// Gets the name by which to filter the results.
@@ -233,10 +234,6 @@ namespace Rock.Blocks.Communication
             var sendDateTimeStart = sendDateRange.Start;
             var sendDateTimeEnd = sendDateRange.End;
 
-            var daysBetween = ( sendDateTimeStart.HasValue && sendDateTimeEnd.HasValue )
-                ? ( int? ) ( sendDateTimeEnd.Value.Date - sendDateTimeStart.Value.Date ).TotalDays
-                : null;
-
             var sqlParams = new List<SqlParameter>
             {
                 new SqlParameter( SqlParamKey.SendDateTimeStart, sendDateTimeStart.Value ),
@@ -246,78 +243,108 @@ namespace Rock.Blocks.Communication
             };
 
             var senderPersonAliasGuid = CanApprove
-                ? FilterCreatedByPersonAliasGuid        // Show the communications created by the selected person or all communication if no person is selected.
+                ? FilterSentByPersonAliasGuid           // Show the communications sent by the selected person or all communication if no person is selected.
                 : GetCurrentPerson().PrimaryAliasGuid;  // Only show the current person's communications.
 
             if ( senderPersonAliasGuid.HasValue )
             {
-                // We'll join against the corresponding person ID to ensure we included merged person records.
+                // We'll join against the corresponding person ID to ensure we include merged person records.
                 sqlSb.AppendLine( $@"DECLARE @SenderPersonId INT = (SELECT TOP 1 [PersonId] FROM [PersonAlias] WHERE [Guid] = {SqlParamKey.SenderPersonAliasGuid});" );
                 sqlParams.Add( new SqlParameter( SqlParamKey.SenderPersonAliasGuid, senderPersonAliasGuid.Value ) );
             }
 
             // Build a dynamic SQL query to project only the needed data into a custom POCO.
             sqlSb.AppendLine( $@"
-;WITH CommunicationAggregate AS (
-    SELECT c.[Id] AS [CommunicationId]
-        , c.[CommunicationTemplateId]
-        , c.[SystemCommunicationId]
-        , c.[CommunicationType] AS [Type]
-        , CASE
-            WHEN c.[Name] IS NOT NULL AND c.[Name] <> '' THEN c.[Name]
-            WHEN c.[Subject] IS NOT NULL AND c.[Subject] <> '' THEN c.[Subject]
-            ELSE c.[PushTitle]
-          END AS [Name]
-        , c.[Summary]
-        , c.[Status]
-        , c.[CommunicationTopicValueId] AS [TopicValueId]
-        , c.[SendDateTime]
-        , c.[FutureSendDateTime]
-        , c.[SenderPersonAliasId]
-        , c.[ReviewedDateTime]
-        , c.[ReviewerPersonAliasId]
+SELECT counts.*
+    , c.[CommunicationTemplateId]
+    , c.[SystemCommunicationId]
+    , c.[CommunicationType] AS [Type]
+    , CASE
+        WHEN c.[Name] IS NOT NULL AND c.[Name] <> '' THEN c.[Name]
+        WHEN c.[Subject] IS NOT NULL AND c.[Subject] <> '' THEN c.[Subject]
+        ELSE c.[PushTitle]
+      END AS [Name]
+    , CASE
+        WHEN c.[CommunicationType] = {CommunicationType.SMS.ConvertToInt()} THEN [SMSMessage]
+        WHEN c.[CommunicationType] = {CommunicationType.PushNotification.ConvertToInt()} THEN [PushMessage]
+        ELSE c.[Summary]
+      END AS [Summary]
+    , c.[Status]
+    , CASE
+
+        /* Runtime status value of `Sent (6)`: No Pending Recipients. */
+        WHEN c.[Status] = {CommunicationStatus.Approved.ConvertToInt()}
+            AND counts.[PendingCount] = 0
+        THEN 6
+
+        /* Runtime status value of `Sending (5)`: Some Pending + Some Non-Pending Recipients. */
+        WHEN c.[Status] = {CommunicationStatus.Approved.ConvertToInt()}
+            AND counts.[PendingCount] > 0
+            AND counts.[RecipientCount] > counts.[PendingCount]
+        THEN 5
+
+        /* All other cases; use actual status value. */
+        ELSE c.[Status]
+
+      END AS [InferredStatus]
+    , c.[CommunicationTopicValueId] AS [TopicValueId]
+    , c.[CreatedDateTime]
+    , c.[SendDateTime]
+    , c.[FutureSendDateTime]
+    , COALESCE(c.[SendDateTime], c.[FutureSendDateTime], c.[CreatedDateTime]) AS [InferredSendDateTime]
+    , c.[ReviewedDateTime]
+    , pSender.[NickName] AS [SenderPersonNickName]
+    , pSender.[LastName] AS [SenderPersonLastName]
+    , pSender.[SuffixValueId] AS [SenderPersonSuffixValueId]
+    , pSender.[RecordTypeValueId] AS [SenderRecordTypeValueId]
+    , pReviewer.[Id] AS [ReviewerPersonId]
+    , pReviewer.[NickName] AS [ReviewerPersonNickName]
+    , pReviewer.[LastName] AS [ReviewerPersonLastName]
+    , pReviewer.[SuffixValueId] AS [ReviewerPersonSuffixValueId]
+    , pReviewer.[RecordTypeValueId] AS [ReviewerRecordTypeValueId]
+FROM (
+    SELECT
+        c.[Id] AS [CommunicationId]
+        , pSender.[Id] AS [SenderPersonId]
         , COUNT(cr.[Id]) AS [RecipientCount]
-        , ISNULL(SUM(CASE WHEN cr.[Status] = {CommunicationRecipientStatus.Pending.ConvertToInt()} THEN 1 END),0) AS [PendingCount]
-        , ISNULL(SUM(CASE WHEN cr.[Status] IN ({CommunicationRecipientStatus.Delivered.ConvertToInt()}, {CommunicationRecipientStatus.Opened.ConvertToInt()}) THEN 1 END), 0) AS [DeliveredCount]
-        , ISNULL(SUM(CASE WHEN cr.[Status] = {CommunicationRecipientStatus.Opened.ConvertToInt()} THEN 1 END), 0) AS [OpenedCount]
-        , ISNULL(SUM(CASE WHEN cr.[Status] = {CommunicationRecipientStatus.Failed.ConvertToInt()} THEN 1 END), 0) AS [FailedCount]
-        , ISNULL(SUM(CASE WHEN cr.[UnsubscribeDateTime] IS NOT NULL THEN 1 END), 0) AS [UnsubscribedCount]
-        , CASE
-            WHEN c.[Status] = {CommunicationStatus.Draft.ConvertToInt()}
-                AND c.[SendDateTime] IS NULL
-                AND c.[FutureSendDateTime] IS NULL
-            THEN 1
-            ELSE 0
-          END AS [IsDraftWithoutSendDate]
-    FROM [Communication] c
-    LEFT OUTER JOIN [CommunicationRecipient] cr ON cr.[CommunicationId] = c.[Id]
+        , SUM(CASE WHEN cr.[Status] = {CommunicationRecipientStatus.Pending.ConvertToInt()} THEN 1 ELSE 0 END) AS [PendingCount]
+        , SUM(CASE WHEN cr.[Status] IN ({CommunicationRecipientStatus.Delivered.ConvertToInt()}, {CommunicationRecipientStatus.Opened.ConvertToInt()}) THEN 1 ELSE 0 END) AS [DeliveredCount]
+        , SUM(CASE WHEN cr.[Status] = {CommunicationRecipientStatus.Opened.ConvertToInt()} THEN 1 ELSE 0 END) AS [OpenedCount]
+        , SUM(CASE WHEN cr.[Status] = {CommunicationRecipientStatus.Failed.ConvertToInt()} THEN 1 ELSE 0 END) AS [FailedCount]
+        , SUM(CASE WHEN cr.[UnsubscribeDateTime] IS NOT NULL THEN 1 ELSE 0 END) AS [UnsubscribedCount]
+    FROM [CommunicationRecipient] cr
+    INNER JOIN [Communication] c ON c.[Id] = cr.[CommunicationId]
     LEFT OUTER JOIN [PersonAlias] paSender ON paSender.[Id] = c.[SenderPersonAliasId]
     LEFT OUTER JOIN [Person] pSender ON pSender.[Id] = paSender.[PersonId]
     LEFT OUTER JOIN [DefinedValue] dvTopic ON dvTopic.[Id] = c.[CommunicationTopicValueId]
-    WHERE c.[Status] <> 0" ); // Always ignore Transient records.
+    WHERE" );
 
             if ( FilterHideDrafts )
             {
-                sqlSb.AppendLine( $@"        AND c.[Status] <> {CommunicationStatus.Draft.ConvertToInt()}
-        AND COALESCE(c.[SendDateTime], c.[FutureSendDateTime]) >= {SqlParamKey.SendDateTimeStart}
-        AND COALESCE(c.[SendDateTime], c.[FutureSendDateTime]) < {SqlParamKey.SendDateTimeEnd}" );
+                sqlSb.AppendLine( $"        c.[Status] NOT IN ({CommunicationStatus.Transient.ConvertToInt()}, {CommunicationStatus.Draft.ConvertToInt()})" );
             }
             else
             {
-                sqlSb.AppendLine( $@"        AND (
-            (
-                /* Drafts might be missing both a [SendDateTime] and [FutureSendDateTime]. */
-                c.[Status] = {CommunicationStatus.Draft.ConvertToInt()}
-                AND c.[SendDateTime] IS NULL
-                AND c.[FutureSendDateTime] IS NULL
+                sqlSb.AppendLine( $"        c.[Status] <> {CommunicationStatus.Transient.ConvertToInt()}" );
+            }
+
+            sqlSb.AppendLine( $@"        AND ((
+                c.[SendDateTime] IS NOT NULL
+                AND c.[SendDateTime] >= @SendDateTimeStart
+                AND c.[SendDateTime] < @SendDateTimeEnd
             )
             OR (
-                /* If a [SendDateTime] or [FutureSendDateTime] is provided, it must fall within the filtered range, even for drafts. */
-                COALESCE(c.[SendDateTime], c.[FutureSendDateTime]) >= {SqlParamKey.SendDateTimeStart}
-                AND COALESCE(c.[SendDateTime], c.[FutureSendDateTime]) < {SqlParamKey.SendDateTimeEnd}
+                c.[SendDateTime] IS NULL
+                AND [FutureSendDateTime] IS NOT NULL
+                AND [FutureSendDateTime] >= @SendDateTimeStart
+                AND [FutureSendDateTime] < @SendDateTimeEnd
             )
-        )" );
-            }
+            OR (
+                c.[SendDateTime] IS NULL
+                AND [FutureSendDateTime] IS NULL
+                AND c.[CreatedDateTime] >= @SendDateTimeStart
+                AND c.[CreatedDateTime] < @SendDateTimeEnd
+            ))" );
 
             if ( senderPersonAliasGuid.HasValue )
             {
@@ -337,85 +364,54 @@ namespace Rock.Blocks.Communication
 
             if ( FilterName.IsNotNullOrWhiteSpace() )
             {
-                sqlSb.AppendLine( $"        AND c.[Name] LIKE '%' + {SqlParamKey.Name} + '%'" );
+                sqlSb.AppendLine( $@"        AND (
+            c.[Name] LIKE '%' + @Name + '%'
+            OR c.[Subject] LIKE '%' + @Name + '%'
+            OR c.[PushTitle] LIKE '%' + @Name + '%'
+        )" );
                 sqlParams.Add( new SqlParameter( SqlParamKey.Name, FilterName ) );
             }
 
             if ( FilterContent.IsNotNullOrWhiteSpace() )
             {
                 sqlSb.AppendLine( $@"        AND (
-            c.[Message] LIKE '%' + {SqlParamKey.Content} + '%'
-            OR c.[SMSMessage] LIKE '%' + {SqlParamKey.Content} + '%'
-            OR c.[PushMessage] LIKE '%' + {SqlParamKey.Content} + '%'
+            c.[Message] LIKE '%' + @Content + '%'
+            OR c.[SMSMessage] LIKE '%' + @Content + '%'
+            OR c.[PushMessage] LIKE '%' + @Content + '%'
         )" );
                 sqlParams.Add( new SqlParameter( SqlParamKey.Content, FilterContent ) );
             }
 
-            sqlSb.Append( $@"    GROUP BY c.[Id]
-        , c.[CommunicationTemplateId]
-        , c.[SystemCommunicationId]
-        , c.[CommunicationType]
-        , c.[Subject]
-        , c.[PushTitle]
-        , c.[Name]
-        , c.[Summary]
-        , c.[Status]
-        , c.[CommunicationTopicValueId]
-        , c.[SendDateTime]
-        , c.[FutureSendDateTime]
-        , c.[SenderPersonAliasId]
-        , c.[ReviewedDateTime]
-        , c.[ReviewerPersonAliasId]
-    HAVING
-        (
-            @RecipientCountLower IS NULL
-            OR COUNT(cr.[Id]) >= @RecipientCountLower
-        )
-        AND (
-            @RecipientCountUpper IS NULL
-            OR COUNT(cr.[Id]) <= @RecipientCountUpper
-        )
-)
-SELECT ca.*
-    , CASE
-
-        /* Runtime status value of `Sent (6)`: No Pending Recipients. */
-        WHEN ca.[Status] = {CommunicationStatus.Approved.ConvertToInt()}
-            AND ca.[PendingCount] = 0
-        THEN 6
-
-        /* Runtime status value of `Sending (5)`: Some Pending + Some Non-Pending Recipients. */
-        WHEN ca.[Status] = {CommunicationStatus.Approved.ConvertToInt()}
-            AND ca.[PendingCount] > 0
-            AND ca.[RecipientCount] > ca.[PendingCount]
-        THEN 5
-
-        /* All other cases; use actual status value. */
-        ELSE ca.[Status]
-
-      END AS [InferredStatus]
-    , pSender.[Id] AS [SenderPersonId]
-    , pSender.[NickName] AS [SenderPersonNickName]
-    , pSender.[LastName] AS [SenderPersonLastName]
-    , pSender.[SuffixValueId] AS [SenderPersonSuffixValueId]
-    , pSender.[RecordTypeValueId] AS [SenderRecordTypeValueId]
-    , pReviewer.[Id] AS [ReviewerPersonId]
-    , pReviewer.[NickName] AS [ReviewerPersonNickName]
-    , pReviewer.[LastName] AS [ReviewerPersonLastName]
-    , pReviewer.[SuffixValueId] AS [ReviewerPersonSuffixValueId]
-    , pReviewer.[RecordTypeValueId] AS [ReviewerRecordTypeValueId]
-FROM CommunicationAggregate ca
-LEFT OUTER JOIN [PersonAlias] paSender ON paSender.[Id] = ca.[SenderPersonAliasId]
+            sqlSb.AppendLine( $@"    GROUP BY c.[Id]
+        , pSender.[Id]
+) AS counts
+INNER JOIN [Communication] c ON c.[Id] = counts.[CommunicationId]
+LEFT OUTER JOIN [PersonAlias] paSender ON paSender.[Id] = c.[SenderPersonAliasId]
 LEFT OUTER JOIN [Person] pSender ON pSender.[Id] = paSender.[PersonId]
-LEFT OUTER JOIN [PersonAlias] paReviewer ON paReviewer.[Id] = ca.[ReviewerPersonAliasId]
+LEFT OUTER JOIN [PersonAlias] paReviewer ON paReviewer.[Id] = c.[ReviewerPersonAliasId]
 LEFT OUTER JOIN [Person] pReviewer ON pReviewer.[Id] = paReviewer.[PersonId]
-ORDER BY ca.[IsDraftWithoutSendDate] DESC
-    , CASE WHEN ca.[IsDraftWithoutSendDate] = 1 THEN ca.[CommunicationId] ELSE NULL END DESC
-    , COALESCE(ca.[SendDateTime], ca.[FutureSendDateTime]) DESC;" );
+WHERE (@RecipientCountLower IS NULL OR counts.[RecipientCount] >= @RecipientCountLower)
+    AND (@RecipientCountUpper IS NULL OR counts.[RecipientCount] <= @RecipientCountUpper);" );
 
             var communicationRows = RockContext.Database
                 .SqlQuery<CommunicationRow>( sqlSb.ToString(), sqlParams.ToArray() )
                 .ToList();
+
+            // Apply default sort.
+            if ( !FilterHideDrafts )
+            {
+                // Always put drafts at the top.
+                communicationRows = communicationRows
+                    .OrderByDescending( r => r.InferredStatus == InferredCommunicationStatus.Draft )
+                    .ThenByDescending( r => r.InferredSendDateTime )
+                    .ToList();
+            }
+            else
+            {
+                communicationRows = communicationRows
+                    .OrderByDescending( r => r.InferredSendDateTime )
+                    .ToList();
+            }
 
             // Limit to only communications the current person is authorized to view. Communication security is based on
             // CommunicationTemplate and/or SystemCommunication.
@@ -510,12 +506,19 @@ ORDER BY ca.[IsDraftWithoutSendDate] DESC
         /// <returns>The options that provide additional details to the block.</returns>
         private CommunicationListOptionsBag GetBoxOptions()
         {
+            var topicItems = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_TOPIC )
+                .DefinedValues
+                .OrderBy( dv => dv.Order )
+                .ThenBy( dv => dv.Value )
+                .ToListItemBagList();
+
             var options = new CommunicationListOptionsBag
             {
-                ShowCreatedByFilter = CanApprove,
+                ShowSentByFilter = CanApprove,
                 HasActiveEmailTransport = MediumContainer.HasActiveEmailTransport(),
                 HasActiveSmsTransport = MediumContainer.HasActiveSmsTransport(),
-                HasActivePushTransport = MediumContainer.HasActivePushTransport()
+                HasActivePushTransport = MediumContainer.HasActivePushTransport(),
+                TopicItems = topicItems
             };
 
             return options;
@@ -568,6 +571,7 @@ ORDER BY ca.[IsDraftWithoutSendDate] DESC
 
                     return DefinedValueCache.Get( a.TopicValueId.Value )?.Value;
                 } )
+                .AddDateTimeField( "createdDateTime", a => a.CreatedDateTime )
                 .AddDateTimeField( "sendDateTime", a => a.SendDateTime )
                 .AddDateTimeField( "futureSendDateTime", a => a.FutureSendDateTime )
                 .AddPersonField( "sentByPerson", a =>
@@ -646,11 +650,21 @@ ORDER BY ca.[IsDraftWithoutSendDate] DESC
             /// <inheritdoc cref="Rock.Model.Communication.CommunicationTopicValueId"/>
             public int? TopicValueId { get; set; }
 
+            /// <summary>
+            /// Gets or sets the <see cref="Rock.Model.Communication"/>'s created datetime.
+            /// </summary>
+            public DateTime? CreatedDateTime { get; set; }
+
             /// <inheritdoc cref="Rock.Model.Communication.SendDateTime"/>
             public DateTime? SendDateTime { get; set; }
 
             /// <inheritdoc cref="Rock.Model.Communication.FutureSendDateTime"/>
             public DateTime? FutureSendDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the <see cref="Rock.Model.Communication"/>'s inferred send datetime.
+            /// </summary>
+            public DateTime? InferredSendDateTime { get; set; }
 
             /// <inheritdoc cref="Rock.Model.Communication.ReviewedDateTime"/>
             public DateTime? ReviewedDateTime { get; set; }

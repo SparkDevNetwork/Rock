@@ -614,6 +614,7 @@ namespace Rock.Blocks.Reporting
                 Reason: Ensure no-longer-valid previous selections are cleared when filters depend on each other.
              */
 
+            var filterTextValues = new Dictionary<string, string>();
             bool wasFilterValueCleared;
             var loopCount = 0;
 
@@ -661,17 +662,39 @@ namespace Rock.Blocks.Reporting
                         continue;
                     }
 
-                    if ( privateFilterValue.IsNotNullOrWhiteSpace() && filterAttribute.ConfigurationValues?.ContainsKey( "values" ) == true )
+                    if ( privateFilterValue.IsNotNullOrWhiteSpace() && filterAttribute.ConfigurationValues != null )
                     {
-                        // Ensure the current private value is valid according to the filter configuration's available values.
-                        var configuredValues = Rock.Field.Helper.GetConfiguredValues( filterAttribute.ConfigurationValues );
-                        if ( !configuredValues.ContainsKey( privateFilterValue ) )
+                        // The idea here is that each field type knows how to perform basic validation of its own value
+                        // when calling it's `GetTextValue()` method. If an empty string is returned, we can assume the
+                        // current private value is no longer valid. Furthermore, if the text value has changed since
+                        // the last iteration of this loop, we need to once again re-evaluate all of the filters, as
+                        // other filters might depend on this value for building their own available values.
+                        var currentTextValue = filterAttribute.FieldType
+                            ?.Field
+                            ?.GetTextValue( privateFilterValue, filterAttribute.ConfigurationValues );
+
+                        if ( currentTextValue.IsNullOrWhiteSpace() )
                         {
-                            // The current private value is not valid; clear it.
+                            // The private filter value is no longer valid.
+                            wasFilterValueCleared = true;
+                        }
+                        else if ( !filterTextValues.TryGetValue( filterKey, out var lastTextValue ) )
+                        {
+                            // The private filter value appears to be valid.
+                            filterTextValues.Add( filterKey, currentTextValue );
+                        }
+                        else if ( currentTextValue != lastTextValue )
+                        {
+                            // The private filter value has changed since the last iteration of this loop.
+                            wasFilterValueCleared = true;
+                        }
+
+                        if ( wasFilterValueCleared )
+                        {
+                            filterTextValues.Remove( filterKey );
+
                             privateFilterValue = string.Empty;
                             privateFilterValues.AddOrReplace( filterKey, privateFilterValue );
-
-                            wasFilterValueCleared = true;
                         }
                     }
 

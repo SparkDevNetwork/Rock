@@ -301,9 +301,7 @@ namespace RockWeb.Blocks.Mobile
             var rockContext = new RockContext();
             var site = new SiteService( rockContext ).Get( siteId );
 
-            //
             // Make sure the site exists.
-            //
             if ( site == null )
             {
                 nbError.Text = "That mobile application does not exist.";
@@ -312,9 +310,7 @@ namespace RockWeb.Blocks.Mobile
                 return;
             }
 
-            //
             // Ensure user is authorized to view mobile sites.
-            //
             if ( !IsUserAuthorized( Authorization.VIEW ) )
             {
                 nbError.Text = Rock.Constants.EditModeMessage.NotAuthorizedToView( "mobile application" );
@@ -323,9 +319,7 @@ namespace RockWeb.Blocks.Mobile
                 return;
             }
 
-            //
             // Ensure this is a mobile site.
-            //
             if ( site.SiteType != SiteType.Mobile )
             {
                 nbError.Text = "This block only supports mobile sites.";
@@ -334,9 +328,7 @@ namespace RockWeb.Blocks.Mobile
                 return;
             }
 
-            //
             // Set the UI fields for the standard values.
-            //
             hfSiteId.Value = site.Id.ToString();
             ltAppName.Text = site.Name.EncodeHtml();
             ltDescription.Text = site.Description.EncodeHtml();
@@ -358,9 +350,7 @@ namespace RockWeb.Blocks.Mobile
             imgAppPreview.ImageUrl = FileUrlHelper.GetImageUrl( site.ThumbnailBinaryFileId );
             pnlPreviewImage.Visible = site.ThumbnailBinaryFileId.HasValue;
 
-            //
             // Set the UI fields for the additional details.
-            //
             var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
             var fields = new List<KeyValuePair<string, string>>();
 
@@ -441,9 +431,7 @@ namespace RockWeb.Blocks.Mobile
             var site = new SiteService( rockContext ).Get( siteId );
             AdditionalSiteSettings additionalSettings;
 
-            //
             // Ensure user can edit the mobile site.
-            //
             if ( !IsUserAuthorized( Authorization.EDIT ) )
             {
                 nbError.Text = Rock.Constants.EditModeMessage.NotAuthorizedToEdit( "mobile application" );
@@ -452,9 +440,7 @@ namespace RockWeb.Blocks.Mobile
                 return;
             }
 
-            //
             // If we are generating a new site, set the initial values.
-            //
             if ( site == null )
             {
                 site = new Site
@@ -467,9 +453,7 @@ namespace RockWeb.Blocks.Mobile
                 };
             }
 
-            //
             // Decode our additional site settings.
-            //
             if ( site.AdditionalSettings != null )
             {
                 additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
@@ -493,9 +477,8 @@ namespace RockWeb.Blocks.Mobile
             }
 
             pnlDeepLinkSettings.Visible = isDeepLinkingEnabled;
-            //
+
             // Set basic UI fields.
-            //
             tbEditName.Text = site.Name;
             cbEditActive.Checked = site.IsActive;
             tbEditDescription.Text = site.Description;
@@ -772,51 +755,6 @@ namespace RockWeb.Blocks.Mobile
             rockContext.SaveChanges();
 
             return userLogin.Id;
-        }
-
-        /// <summary>
-        /// Parses the color and returns a hex string.
-        /// </summary>
-        /// <param name="color">The color.</param>
-        /// <returns></returns>
-        [Obsolete( "Xamarin supports all of the color formatting that our color picker provides, so we don't need to include this." )]
-        [RockObsolete( "1.14.1" )]
-        private string ParseColor( string color )
-        {
-            //
-            // Match on rgb(r,g,b) format.
-            //
-            var match = Regex.Match( color, "rgb *\\( *([0-9]+) *, *([0-9]+) *, *([0-9]+) *\\)" );
-            if ( match.Success )
-            {
-                int red = match.Groups[1].Value.AsInteger();
-                int green = match.Groups[2].Value.AsInteger();
-                int blue = match.Groups[3].Value.AsInteger();
-                return string.Format( "#{0:x2}{1:x2}{2:x2}", red, green, blue );
-            }
-
-            //
-            // Match on rgba(r,g,b,a) format.
-            //
-            match = Regex.Match( color, "rgba *\\( *([0-9]+) *, *([0-9]+) *, *([0-9]+) *, *([\\.0-9]+) *\\)" );
-            if ( match.Success )
-            {
-                int red = match.Groups[1].Value.AsInteger();
-                int green = match.Groups[2].Value.AsInteger();
-                int blue = match.Groups[3].Value.AsInteger();
-                return string.Format( "#{0:x2}{1:x2}{2:x2}", red, green, blue );
-            }
-
-            //
-            // Match on #rrggbb format.
-            //
-            match = Regex.Match( color, "#([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})" );
-            if ( match.Success )
-            {
-                return match.Value;
-            }
-
-            return null;
         }
 
         /// <summary>

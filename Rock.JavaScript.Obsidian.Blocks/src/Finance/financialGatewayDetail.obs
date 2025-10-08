@@ -75,10 +75,6 @@
 
     // #region Computed Values
 
-    const isAuditHidden = computed((): boolean => {
-        return !financialGatewayViewBag.value?.idKey;
-    });
-
     /**
      * The entity name to display in the block panel.
      */

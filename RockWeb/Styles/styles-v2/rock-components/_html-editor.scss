@@ -12,7 +12,8 @@
   border-color:       var(--color-primary);   // TODO lighten by 35% when available
 }
 
-.note-editor.panel-default > .panel-heading {
+.note-editor.panel-default > .panel-heading,
+.note-editor.panel-default > .panel-header {
   background-color:   var(--color-interface-softest);
 }
 
@@ -138,7 +139,7 @@ iframe.file-browser {
   border-radius:  var(--rounded-small);
 
   @media (min-width: $screen-medium) {
-    background:   var(--color-interface-softer); // TODO lighten by 7% when available 
+    background:   var(--color-interface-softer); // TODO lighten by 7% when available
   }
 
   @media (min-width: $screen-large) {

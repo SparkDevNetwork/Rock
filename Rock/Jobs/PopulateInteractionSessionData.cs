@@ -183,7 +183,7 @@ namespace Rock.Jobs
             // Print error messages
             foreach ( var error in _errors )
             {
-                jobResult.OutputMessages.Add( $"<i class='ti ti-circle text-danger'></i> {error}" );
+                jobResult.OutputMessages.Add( $"<i class='ti ti-circle-filled text-danger'></i> {error}" );
             }
 
             // Log caught exceptions
@@ -343,7 +343,7 @@ namespace Rock.Jobs
 
             Rock.Web.SystemSettings.SetValue( SystemSetting.POPULATE_INTERACTION_SESSION_DATA_JOB_SETTINGS, settings.ToJson() );
 
-            return $"<i class='ti ti-circle text-success'></i> Updated Interaction Count And Session Duration for {totalRecordsProcessed} {"interaction session".PluralizeIf( totalRecordsProcessed != 1 )} in {Math.Round( stopwatch.Elapsed.TotalSeconds, 2 )} secs.";
+            return $"<i class='ti ti-circle-filled text-success'></i> Updated Interaction Count And Session Duration for {totalRecordsProcessed} {"interaction session".PluralizeIf( totalRecordsProcessed != 1 )} in {Math.Round( stopwatch.Elapsed.TotalSeconds, 2 )} secs.";
         }
 
         /// <summary>
@@ -439,13 +439,13 @@ namespace Rock.Jobs
 
                 sw.Stop();
 
-                return $"<i class='ti ti-circle text-success'></i> Updated Missing Interaction Entity References for {recordCount} {"record".PluralizeIf( recordCount != 1 )} in {Math.Round( sw.Elapsed.TotalSeconds, 2 )} secs.";
+                return $"<i class='ti ti-circle-filled text-success'></i> Updated Missing Interaction Entity References for {recordCount} {"record".PluralizeIf( recordCount != 1 )} in {Math.Round( sw.Elapsed.TotalSeconds, 2 )} secs.";
             }
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex );
 
-                return $"<i class='ti ti-circle text-danger'></i> Error in Updating Missing Interaction Entity References: {ex.Message.EncodeHtml()}";
+                return $"<i class='ti ti-circle-filled text-danger'></i> Error in Updating Missing Interaction Entity References: {ex.Message.EncodeHtml()}";
             }
         }
 

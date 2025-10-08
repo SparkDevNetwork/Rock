@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using Rock.Enums.Engagement;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using System.Collections.Generic;
@@ -85,6 +86,14 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         public List<StepStatusBag> Statuses { get; set; }
 
         /// <summary>
+        /// Gets or sets the Status filter options
+        /// </summary>
+        /// <value>
+        /// The status List Item Bags
+        /// </value>
+        public List<ListItemBag> StatusFilterOptions { get; set; }
+
+        /// <summary>
         /// Gets or sets the chart data.
         /// </summary>
         /// <value>
@@ -99,14 +108,6 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         /// The kpi.
         /// </value>
         public string Kpi { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [show chart].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [show chart]; otherwise, <c>false</c>.
-        /// </value>
-        public bool ShowChart { get; set; }
 
         /// <summary>
         /// Gets or sets the default date range.
@@ -139,5 +140,45 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         /// The status options.
         /// </value>
         public List<ListItemBag> StatusOptions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Completion Flow of the Step Program.
+        /// </summary>
+        public CompletionFlow? CompletionFlow { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating wheter the Step Program can be deleted.
+        /// </summary>
+        public bool IsDeletable { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Sep Flow Configuration settings used to display the Step Flow diagram.
+        /// </summary>
+        public SankeyDiagramSettingsBag StepFlowConfigurationBag { get; set; }
+
+        /// <summary>
+        /// Gets or sets a list of ListItemBags for the Step Type dropdown list filter on the Step Flow view.
+        /// </summary>
+        public List<ListItemBag> StepTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value indicating whter the current program contains steps with Impact Adjustment settings configured.
+        /// </summary>
+        public bool HasImpactAdjustedStepTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value indicating whter the current program contains steps with Organization Objective settings configured.
+        /// </summary>
+        public bool HasOrganizationObjectiveSteps { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value indicating whter the current program contains steps with Engagement Type settings configured.
+        /// </summary>
+        public bool HasEngagementTypeSteps { get; set; }
+
+        /// <summary>
+        /// Gets or sets the error message.
+        /// </summary>
+        public string ErrorMessage { get; set; }
     }
 }

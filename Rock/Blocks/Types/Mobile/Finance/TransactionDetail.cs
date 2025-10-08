@@ -17,11 +17,15 @@
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Finance.TransactionDetail;
+using Rock.Common.Mobile.ViewModel;
 using Rock.Lava;
 using Rock.Mobile;
 using Rock.Model;
+using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Finance
@@ -34,6 +38,17 @@ namespace Rock.Blocks.Types.Mobile.Finance
     [Description( "The Transaction Detail block." )]
     [IconCssClass( "ti ti-receipt" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
+
+    #region Block Attributes
+
+    [MobileNavigationActionField( "Post Delete Action",
+        Description = "The navigation action to perform when the delete button is pressed.",
+        IsRequired = false,
+        DefaultValue = MobileNavigationActionFieldAttribute.PopSinglePageValue,
+        Key = AttributeKey.PostDeleteAction,
+        Order = 0 )]
+
+    #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_FINANCE_TRANSACTION_DETAIL_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_FINANCE_TRANSACTION_DETAIL )]
@@ -52,6 +67,16 @@ namespace Rock.Blocks.Types.Mobile.Finance
             public const string Transaction = "Transaction";
         }
 
+        /// <summary>
+        /// The keys for the attributes used in the TransactionDetail block.
+        /// </summary>
+        public static class AttributeKey
+        {
+            /// <summary>
+            /// The key for the post cancel action attribute.
+            /// </summary>
+            public const string PostDeleteAction = "PostDeleteAction";
+        }
         #endregion
 
         #region Methods
@@ -115,11 +140,31 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 accountNumberMasked = accountNumberMasked.Substring( accountNumberMasked.Length - 5 );
             }
 
+            // Determine if the delete button should be enabled based on the batch status.
+            var isDeleteEnable = true;
+            if ( financialTransaction.BatchId.HasValue )
+            {
+                FinancialBatchService financialBatchService = new FinancialBatchService( RockContext );
+                FinancialBatch batch = financialBatchService.Get( financialTransaction.BatchId.Value );
+
+                if ( batch.Status == BatchStatus.Closed )
+                {
+                    isDeleteEnable = false;
+                }
+            }
+
+            var primaryImage = financialTransaction.Images
+                        .OrderBy( i => i.Order )
+                        .FirstOrDefault();
+            //var publicUrl = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
+
             return new TransactionDetailResponseBag
             {
+                ImageSource = primaryImage != null ? FileUrlHelper.GetImageUrl( primaryImage.BinaryFileId ) : "",
                 TotalAmount = financialTransaction.TotalAmount.FormatAsCurrency(),
                 Details = transactionDetailList,
                 DateTime = financialTransaction.TransactionDateTime?.ToString( @"MMM dd, yyyy" ) ?? "Unknown Date",
+                IsDeleteEnable = isDeleteEnable,
                 AccountNumberMasked = accountNumberMasked,
                 PaymentMethodType = financialPaymentDetail.CurrencyAndCreditCardType,
                 PaymentMethodImage = MobileHelper.BuildPublicApplicationRootUrl( creditCardTypeImage )
@@ -152,6 +197,48 @@ namespace Rock.Blocks.Types.Mobile.Finance
             }
 
             return ActionOk( GetTransactionDetailResponseBag( financialTransaction ) );
+        }
+
+        /// <summary>
+        /// Deletes a financial transaction based on the transaction identifier provided in the page parameters.
+        /// </summary>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult Delete()
+        {
+            var transactionId = PageParameter( PageParameterKeys.Transaction );
+
+            if ( transactionId.IsNullOrWhiteSpace() )
+            {
+                return ActionBadRequest( "You must pass in a transaction identifier." );
+            }
+
+            var financialTransactionService = new FinancialTransactionService( RockContext );
+            var financialTransaction = financialTransactionService.Get( transactionId );
+
+            if ( !financialTransaction.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "You are not authorized to delete this transaction." );
+            }
+
+            financialTransactionService.Delete( financialTransaction );
+
+            RockContext.SaveChanges();
+
+            return ActionOk( $"Transaction with ID:{transactionId} has been successfully deleted." );
+        }
+
+        #endregion
+
+        #region IRockMobileBlockType Implementation
+
+        /// <inheritdoc/>
+        public override object GetMobileConfigurationValues()
+        {
+            return new Rock.Common.Mobile.Blocks.Finance.TransactionDetail.Configuration
+            {
+                PostDeleteAction = GetAttributeValue( AttributeKey.PostDeleteAction ).FromJsonOrNull<MobileNavigationActionViewModel>() ?? new MobileNavigationActionViewModel(),
+            };
         }
 
         #endregion

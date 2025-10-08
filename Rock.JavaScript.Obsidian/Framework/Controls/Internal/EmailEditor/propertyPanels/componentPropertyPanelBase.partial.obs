@@ -7,7 +7,7 @@
                         :isSquare="true"
                         title="Back"
                         @click="$emit('complete')">
-                <i class="ti ti-chevron-right"></i>
+                <i :class="ltr ? 'ti ti-chevron-left' : 'ti ti-chevron-right'"></i>
             </RockButton>
         </template>
 
@@ -93,6 +93,11 @@
 
         componentMigrationHelper: {
             type: Object as PropType<ComponentMigrationHelper | null | undefined>,
+        },
+
+        ltr: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 

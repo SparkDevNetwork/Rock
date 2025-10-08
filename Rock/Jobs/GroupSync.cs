@@ -102,7 +102,7 @@ namespace Rock.Jobs
             var groupsChangedCount = result.GroupIdsChanged.Count();
 
             var resultSb = new StringBuilder();
-            var circleSuccess = "<i class='ti ti-circle text-success'></i>";
+            var circleSuccess = "<i class='ti ti-circle-filled text-success'></i>";
             resultSb.AppendLine( $"{circleSuccess} {groupsSyncedCount} {"group".PluralizeIf( groupsSyncedCount != 1 ).Titleize()} Synced{( groupsSyncedCount > 0 ? $" ({result.GroupIdsSynced.AsDelimited( ", " )})" : string.Empty )}" );
             resultSb.AppendLine( $"{circleSuccess} {groupsChangedCount} {"group".PluralizeIf( groupsChangedCount != 1 ).Titleize()} Changed{( groupsChangedCount > 0 ? $" ({result.GroupIdsChanged.AsDelimited( ", " )})" : string.Empty )}" );
 
@@ -112,7 +112,7 @@ namespace Rock.Jobs
                 resultSb.AppendLine( $"{circleSuccess} {result.AddedMemberCount} {"person".PluralizeIf( result.AddedMemberCount != 1 ).Titleize()} Added" );
             }
 
-            var circleWarning = "<i class='ti ti-circle text-warning'></i>";
+            var circleWarning = "<i class='ti ti-circle-filled text-warning'></i>";
             if ( result.NotAddedMemberCount > 0 )
             {
                 resultSb.AppendLine( $"{circleWarning} {result.NotAddedMemberCount} {"person".PluralizeIf( result.NotAddedMemberCount != 1 ).Titleize()} Could Not be Added" );

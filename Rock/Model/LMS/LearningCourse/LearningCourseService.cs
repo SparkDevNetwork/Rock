@@ -301,7 +301,6 @@ namespace Rock.Model
         /// <returns>An enumerable of PublicLearningCourseBag.</returns>
         public List<PublicLearningCourseBag> GetPublicCourses( int programId, int? personId, bool publicOnly = true, DateTime? semesterStartFrom = null, DateTime? semesterStartTo = null )
         {
-            var now = RockDateTime.Now;
             var rockContext = ( RockContext ) Context;
             var studentRoleGuid = SystemGuid.GroupRole.GROUPROLE_LMS_CLASS_STUDENT.AsGuid();
             var facilitatorRoleGuid = SystemGuid.GroupRole.GROUPROLE_LMS_CLASS_FACILITATOR.AsGuid();
@@ -346,7 +345,7 @@ namespace Rock.Model
 
             var unmetPrerequisiteTypes = new List<RequirementType> { RequirementType.Prerequisite, RequirementType.Equivalent };
 
-            var courses = Queryable()
+            var courseQuery = Queryable()
                 .AsNoTracking()
                 .Include( c => c.ImageBinaryFile )
                 .Include( c => c.LearningProgram )
@@ -359,8 +358,24 @@ namespace Rock.Model
                 .Where( c =>
                     c.IsActive
                     && c.LearningProgramId == programId
-                    && ( c.IsPublic || !publicOnly ) )
-                .ToList()
+                    && ( c.IsPublic || !publicOnly ) );
+
+            bool enforceSecurity = new LearningProgramService( rockContext ).GetNoTracking( programId )?.EnforcePublicSecurity ?? false;
+            var currentPerson = personId.HasValue ? new PersonService( rockContext ).GetNoTracking( personId.Value ) : null;
+
+            var participantCourseIds = new HashSet<int>();
+
+            if ( personId.HasValue && enforceSecurity )
+            {
+                participantCourseIds = new LearningClassService( rockContext )
+                    .GetStudentClasses( personId.Value )
+                    .Where( c => c.LearningCourse.LearningProgramId == programId )
+                    .Select( c => c.LearningCourseId )
+                    .ToHashSet();
+            }
+
+            var courses = courseQuery.ToList()
+                .Where( c => !enforceSecurity || c.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) || participantCourseIds.Contains( c.Id ) )
                 .OrderBy( c => c.Order )
                 .Select( c => new PublicLearningCourseBag
                 {
@@ -460,7 +475,7 @@ namespace Rock.Model
                 }
             }
 
-            return courses.ToList();
+            return courses;
         }
 
         /// <summary>

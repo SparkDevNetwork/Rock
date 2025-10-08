@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Crm
                         <div style=""min-height: 120px;"">
                             <h3 class=""margin-v-none"">
                                 {% if item.DeviceIconCssClass != '' %}
-                                    <i class=""fa {{ item.DeviceIconCssClass }}""></i>
+                                    <i class=""ti {{ item.DeviceIconCssClass }}""></i>
                                 {% endif %}
                                 {% if item.PersonalDevice.NotificationsEnabled == true %}
                                     <i class=""ti ti-message""></i>

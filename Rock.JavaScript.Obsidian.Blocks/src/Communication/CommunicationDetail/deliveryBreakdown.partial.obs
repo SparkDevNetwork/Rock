@@ -84,20 +84,20 @@
 
 .communication-detail-delivery-breakdown-bar-delivered,
 .communication-detail-delivery-breakdown-legend-delivered > div {
-    color: var(--color-success-strong);
-    background: var(--color-success-soft);
+    color: var(--base-interface-softest);
+    background: var(--color-success-strong);
 }
 
 .communication-detail-delivery-breakdown-bar-failed,
 .communication-detail-delivery-breakdown-legend-failed > div {
-    color: var(--color-danger-strong);
-    background: var(--color-danger-soft);
+    color: var(--base-interface-softest);
+    background: var(--color-danger-strong);
 }
 
 .communication-detail-delivery-breakdown-bar-cancelled,
 .communication-detail-delivery-breakdown-legend-cancelled > div {
-    color: var(--color-warning-strong);
-    background: var(--color-warning-soft);
+    color: var(--base-interface-softest);
+    background: var(--color-warning-strong);
 }
 
 .communication-detail-delivery-breakdown-legend {

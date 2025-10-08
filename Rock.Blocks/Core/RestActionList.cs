@@ -138,6 +138,7 @@ namespace Rock.Blocks.Core
             int controllerId = Rock.Utility.IdHasher.Instance.GetId( controllerIdParam ) ?? controllerIdParam.AsInteger();
 
             var query = new RestActionService( rockContext ).Queryable()
+                .Include( a => a.Controller )
                 .Where( a => a.ControllerId == controllerId )
                 .OrderBy( a => a.Method )
                 .AsNoTracking();

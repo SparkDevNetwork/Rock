@@ -146,8 +146,51 @@ namespace Rock.CheckIn.v2
 
             var printMessage = new CloudPrintMessagePrint
             {
-                Address = printer.IPAddress
+                Address = printer.IPAddress,
+                Count = 1
             };
+
+            return await SendMessageAsync<string>( printMessage, data, cancellationToken );
+        }
+
+        /// <summary>
+        /// Sends the data to the printer by way of the proxied connection.
+        /// </summary>
+        /// <param name="printer">The device that represents the printer.</param>
+        /// <param name="labels">The label data to be printed.</param>
+        /// <param name="cancellationToken">A token that indicates if the print operation should be aborted.</param>
+        /// <returns>A string that represents any error message returned by the proxy.</returns>
+        public async Task<string> PrintAsync( DeviceCache printer, List<byte[]> labels, CancellationToken cancellationToken = default )
+        {
+            if ( labels.Count == 0 )
+            {
+                return null;
+            }
+            else if ( labels.Count == 1 )
+            {
+                return await PrintAsync( printer, labels[0], cancellationToken );
+            }
+
+            Interlocked.Add( ref _labelCount, labels.Count );
+
+            var printMessage = new CloudPrintMessagePrint
+            {
+                Address = printer.IPAddress,
+                Count = labels.Count
+            };
+
+            // Merge all the label data into a single byte array that will be
+            // sent to the printer. Since we only support ZPL right now we
+            // know the printer can handle multiple labels in a single stream.
+            var totalLength = labels.Sum( l => l.Length );
+            var data = new byte[totalLength];
+            int offset = 0;
+
+            foreach ( var label in labels )
+            {
+                Buffer.BlockCopy( label, 0, data, offset, label.Length );
+                offset += label.Length;
+            }
 
             return await SendMessageAsync<string>( printMessage, data, cancellationToken );
         }

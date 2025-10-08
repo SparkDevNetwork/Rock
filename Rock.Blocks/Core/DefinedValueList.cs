@@ -46,6 +46,7 @@ namespace Rock.Blocks.Core
         IsRequired = false,
         Key = AttributeKey.DefinedType )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "710916bd-4bc1-4d05-b088-381394351b53" )]
     [Rock.SystemGuid.BlockTypeGuid( "f431f950-f007-493e-81c8-16559fe4c0f0" )]
     [CustomizedGrid]
@@ -119,8 +120,12 @@ namespace Rock.Blocks.Core
             }
 
             var entity = GetDefinedType();
-            var attributes = AttributeCache.GetByEntityTypeQualifier( new DefinedValue().TypeId, "DefinedTypeId", entity.Id.ToString(), true );
-            securityGrant.AddRulesForAttributes( attributes );
+
+            if ( entity != null )
+            {
+                var attributes = AttributeCache.GetByEntityTypeQualifier( new DefinedValue().TypeId, "DefinedTypeId", entity.Id.ToString(), true );
+                securityGrant.AddRulesForAttributes( attributes );
+            }
 
             return securityGrant.ToToken();
         }

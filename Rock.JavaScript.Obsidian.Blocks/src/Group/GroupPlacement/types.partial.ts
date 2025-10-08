@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { nextTick } from "vue";
 import { tooltip } from "@Obsidian/Utility/tooltip";

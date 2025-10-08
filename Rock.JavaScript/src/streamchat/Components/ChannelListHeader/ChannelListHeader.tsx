@@ -70,13 +70,13 @@ const ChannelListHeader: React.FC<ChannelListHeaderProps> = ({
             ? [
                 {
                     key: "search",
-                    iconClass: "fa fa-search",
+                    iconClass: "ti ti-search",
                     action: onSearch,
                     ariaLabel: "Search",
                 },
                 {
                     key: "newMessage",
-                    iconClass: "fa fa-pencil",
+                    iconClass: "ti ti-edit",
                     action: onNewMessage,
                     ariaLabel: "New DM",
                 },
@@ -84,7 +84,7 @@ const ChannelListHeader: React.FC<ChannelListHeaderProps> = ({
             : [
                 {
                     key: "newMessage",
-                    iconClass: "fa fa-pencil",
+                    iconClass: "ti ti-edit",
                     action: onNewMessage,
                     ariaLabel: "New DM",
                 },

@@ -477,7 +477,7 @@ namespace Rock.Web.UI.Controls
                 _pnlPickerMenu.Controls.AddAt( 0, ModePanel );
             }
 
-            _btnPickerLabel.InnerHtml = string.Format( "<i class='ti ti-map-pin'></i><span>{0}</span><b class='ti ti-caret-down'></b>", this.AddressSummaryText );
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='ti ti-map-pin'></i><span>{0}</span><b class='ti ti-caret-down-filled'></b>", this.AddressSummaryText );
 
             base.Render( writer );
         }
@@ -598,7 +598,7 @@ namespace Rock.Web.UI.Controls
 
             this.Location = location;
 
-            _btnPickerLabel.InnerHtml = string.Format( "<i class='ti ti-map-pin'></i><span>{0}</span><b class='ti ti-caret-down'></b>", this.AddressSummaryText );
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='ti ti-map-pin'></i><span>{0}</span><b class='ti ti-caret-down-filled'></b>", this.AddressSummaryText );
 
             ShowDropDown = false;
 
@@ -616,7 +616,7 @@ namespace Rock.Web.UI.Controls
         protected void _btnSelectNone_ServerClick( object sender, EventArgs e )
         {
             Location = null;
-            _btnPickerLabel.InnerHtml = string.Format( "<i class='ti ti-map-pin'></i><span>{0}</span><b class='ti ti-caret-down'></b>", string.Empty );
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='ti ti-map-pin'></i><span>{0}</span><b class='ti ti-caret-down-filled'></b>", string.Empty );
         }
 
         /// <summary>

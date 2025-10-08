@@ -1,7 +1,7 @@
 // Pickers - used to pick complex data types (Rock Component)
 
 // =============================================================
-// Table of Content           
+// Table of Content
 //  + Base Style
 //  + Campus Account Amount Picker
 // =============================================================
@@ -12,13 +12,13 @@
   display:      flex;
   gap:          6px;
   align-items:  center;
-  flex-direction: column;
+  flex-direction: row;
 }
 
 .picker {
   @media (min-width: $screen-small) {
     position:     relative;
-    width:        250px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
+    width:        100%;
     max-width:    100%;
   }
 
@@ -191,7 +191,7 @@
     margin:           var(--spacing-xsmall) calc(var(--spacing-xsmall)* -1) calc(var(--spacing-xsmall) * -1) calc(var(--spacing-xsmall) * -1);
     font-size:        var(--font-size-small);
     background-color: var(--color-interface-softest);
-    border-top:       1px solid var(--color-interface-softer);
+    border-top:       1px solid var(--color-interface-soft);
     border-radius:    0 0 var(--rounded-small) var(--rounded-small);
     gap:              0 var(--spacing-tiny);
 

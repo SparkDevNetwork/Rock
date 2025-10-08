@@ -3,8 +3,8 @@
     <!-- This grid is (not) here simply to force the CSS to load in. -->
     <Grid v-if="false" />
     <div class="grid-obsidian grid-sticky grid-striped grid-bordered grid-hover">
-        <div class="grid-heading">
-            <div class="grid-title-heading">
+        <div class="grid-header">
+            <div class="grid-title-header">
                 <div class="grid-title">Schedule Builder</div>
                 <div class="grid-badges mr-3">
                     <RockButton class="mr-3" @click="showCloneScheduleModal = true">Clone Schedule</RockButton>
@@ -48,7 +48,7 @@
                     <NotificationBox alertType="warning" heading="Warning: ">No schedules found. Consider <a class="alert-link" href="/Schedules">adding a schedule</a> or a different schedule category.</NotificationBox>
                 </div>
             </div>
-            <div class="grid-column-heading">
+            <div class="grid-column-header-row">
                 <div class="grid-column-header" style="flex: 1 1 20%">
                     <div class="grid-column-title">
                         Group

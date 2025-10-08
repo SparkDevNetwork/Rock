@@ -35,11 +35,10 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { ChartData, ChartOptions, ChartEvent, LegendElement, LegendItem, Chart, ChartType, ChartTypeRegistry, ChartConfiguration, AnnotationPluginOptions } from "@Obsidian/Libs/chart";
+    import { ChartData, ChartOptions, LegendItem, Chart, ChartType, ChartTypeRegistry, ChartConfiguration, AnnotationPluginOptions } from "@Obsidian/Libs/chart";
     import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
     import { TithingOverviewInitializationBox } from "@Obsidian/ViewModels/Blocks/Reporting/TithingOverview/tithingOverviewInitializationBox";
-    import { ChartTypeValue, ChartTypeKey, CampusAgeRangeKey } from "./TithingOverview/types.partial";
-    import { TithingOverviewToolTipBag } from "@Obsidian/ViewModels/Blocks/Reporting/TithingOverview/tithingOverviewToolTipBag";
+    import { ChartTypeValue, ChartTypeKey } from "./TithingOverview/types.partial";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
 
@@ -69,6 +68,10 @@
     const canvasElement = shallowRef<HTMLCanvasElement | null>(null);
     let chart: Chart<keyof ChartTypeRegistry, number[]> | null = null;
 
+    // Colors pulled from CSS variables so dark mode is supported
+    const textColor = getComputedStyle(document.documentElement).getPropertyValue("--color-interface-strongest").trim() || "#0a0a0a";
+    const gridColor = getComputedStyle(document.documentElement).getPropertyValue("--color-interface-soft").trim() || "#D9D9E3";
+
     const options = ref<ChartOptions>({
         responsive: true,
         maintainAspectRatio: false,
@@ -91,7 +94,7 @@
                 display: true,
                 title: {
                     display: true,
-                    color: "black",
+                    color: textColor,
                     text: "Campus Age",
                     position: "start",
                     font: {
@@ -99,6 +102,7 @@
                     }
                 },
                 labels: {
+                    color: textColor,
                     generateLabels: generateLegendLabels
                 }
             },
@@ -142,6 +146,7 @@
         scales: {
             y: {
                 ticks: {
+                    color: textColor,
                     callback: function (label, _index, _labels) {
                         const number = Number(label);
                         if (number) {
@@ -153,6 +158,12 @@
                     },
                     stepSize: 1
                 },
+                grid: {
+                    color: gridColor
+                },
+                border: {
+                    color: gridColor
+                },
                 stacked: false,
                 beginAtZero: true,
 
@@ -163,6 +174,7 @@
             },
             x: {
                 ticks: {
+                    color: textColor,
                     callback: function (val, _index, _labels) {
                         const numberValue = val as number;
                         const label = this.getLabelForValue(numberValue);
@@ -182,11 +194,17 @@
                             return label;
                         }
                     },
-                    showLabelBackdrop: true,
+                    showLabelBackdrop: false,
                     font: {
                         size: 16,
                         weight: "bold"
                     }
+                },
+                grid: {
+                    color: gridColor
+                },
+                border: {
+                    color: gridColor
                 }
             }
         },
@@ -359,77 +377,6 @@
         }
 
         return legendItems;
-    }
-
-    /**
-     * Handles the legend click event by toggling the visibility of bars/lines in the chart that match the selected legend.
-     * @param e The ChartEvent
-     * @param legendItem The selected LegendItem
-     * @param legend The LegendElement
-     */
-    function legendClickHandler(e: ChartEvent, legendItem: LegendItem, legend: LegendElement<ChartType>): void {
-        const chart = legend.chart as Chart;
-        const labels = chart.data.labels as string[];
-        const legendLabel = legendItem.text as CampusAgeRangeKey;
-
-        if (chartType.value === ChartTypeKey.BarChart) {
-            // Filter datasets based on campus age range
-            for (const key in toolTipData.value) {
-                const data = toolTipData.value[key] as TithingOverviewToolTipBag;
-                const campusAge = data.campusAge;
-                const index = labels.findIndex(d => d === data.campus || d === data.campusShortCode);
-                // The legendLabel in bar mode is a range of ages, if the campus's age falls within the selected range
-                // select that dataset for hiding.
-                if (campusAgeInRange(campusAge, legendLabel) || data.campusShortCode === legendLabel || data.campus === legendLabel) {
-                    if (chart.isDatasetVisible(index)) {
-                        chart.hide(index);
-                        legendItem.hidden = true;
-                    }
-                    else {
-                        chart.show(index);
-                        legendItem.hidden = false;
-                    }
-                }
-            }
-        }
-        else {
-            // For line charts, directly filter by label
-            const datasets = chart.data.datasets;
-            const index = datasets.findIndex(d => d.label === legendLabel);
-            if (chart.isDatasetVisible(index)) {
-                chart.hide(index);
-                legendItem.hidden = true;
-            }
-            else {
-                chart.show(index);
-                legendItem.hidden = false;
-            }
-        }
-    }
-
-    /**
-     * Checks if the campus age is within the specified range.
-     */
-    function campusAgeInRange(age: number | null | undefined, range: CampusAgeRangeKey): boolean {
-
-        if (age == null || age == undefined) {
-            return range == CampusAgeRangeKey.Unknown ? true : false;
-        }
-
-        switch (range) {
-            case CampusAgeRangeKey.ZeroToTwo:
-                return age >= 0 && age <= 2;
-            case CampusAgeRangeKey.ThreeToSix:
-                return age >= 3 && age <= 6;
-            case CampusAgeRangeKey.SevenToEleven:
-                return age >= 7 && age <= 11;
-            case CampusAgeRangeKey.ElevenPlus:
-                return age >= 11;
-            case CampusAgeRangeKey.Unknown:
-                return age == null || age == undefined;
-            default:
-                return false;
-        }
     }
 
     /**

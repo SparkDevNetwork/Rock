@@ -25,6 +25,8 @@ namespace Rock.Tests.Shared.TestFramework
         {
             var rockContextMock = new Mock<RockContext>( MockBehavior.Strict, "invalidConnectionString" );
 
+            rockContextMock.Setup( m => m.ToString() ).Returns( "Mock RockContext" );
+
             // Ignore any call to dispose.
             rockContextMock.Protected().Setup( "Dispose", ItExpr.IsAny<bool>() );
 

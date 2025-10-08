@@ -50,29 +50,35 @@
                      :filter="pickExistingValueFilter"
                      visiblePriority="sm" />
 
-        <TextColumn name="knownIndividualsCount"
-                    title="Known Individuals"
-                    field="knownIndividualsCount"
-                    :filter="textValueFilter"
-                    visiblePriority="sm">
+        <NumberColumn name="knownIndividualsCount"
+                      title="Known Individuals"
+                      field="knownIndividualsCount"
+                      :filter="numberValueFilter"
+                      visiblePriority="sm">
             <template #format="{ row }">
-                <div class="flex-grow-1 text-right">
-                    {{ row.knownIndividualsCount }}
+                <div v-if="row.knownIndividualsCount >= 0" class="flex-grow-1 text-right">
+                    {{ row.knownIndividualsCount.toLocaleString() }}
+                </div>
+                <div v-else class="flex-grow-1 text-right text-muted">
+                    Loading...
                 </div>
             </template>
-        </TextColumn>
+        </NumberColumn>
 
-        <TextColumn name="anonymousIndividualsCount"
-                    title="Anonymous Individuals"
-                    field="anonymousIndividualsCount"
-                    :filter="textValueFilter"
-                    visiblePriority="sm">
+        <NumberColumn name="anonymousIndividualsCount"
+                      title="Anonymous Individuals"
+                      field="anonymousIndividualsCount"
+                      :filter="numberValueFilter"
+                      visiblePriority="sm">
             <template #format="{ row }">
-                <div class="flex-grow-1 text-right">
-                    {{ row.anonymousIndividualsCount }}
+                <div v-if="row.anonymousIndividualsCount >= 0" class="flex-grow-1 text-right">
+                    {{ row.anonymousIndividualsCount.toLocaleString() }}
+                </div>
+                <div v-else class="flex-grow-1 text-right text-muted">
+                    Loading...
                 </div>
             </template>
-        </TextColumn>
+        </NumberColumn>
 
         <TextColumn name="persistedScheduleInfo"
                     title="Persisted Schedule"
@@ -84,7 +90,10 @@
                       title="Time To Update (ms)"
                       field="timeToUpdateDurationMilliseconds"
                       :filter="numberValueFilter"
-                      visiblePriority="lg" />
+                      visiblePriority="sm"
+                      headerClass="text-right"
+                      itemClass="justify-content-end text-right"
+                      width="5%" />
 
         <BooleanColumn name="isActive"
                        title="Active"
@@ -98,6 +107,8 @@
                       @click="onSegmentClick"
                       visiblePriority="xs" />
 
+        <SecurityColumn />
+
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 </template>
@@ -105,7 +116,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, numberValueFilter, NumberColumn, TextColumn, textValueFilter, DeleteColumn, ButtonColumn, pickExistingValueFilter, booleanValueFilter, LabelColumn } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, numberValueFilter, NumberColumn, TextColumn, SecurityColumn, textValueFilter, DeleteColumn, ButtonColumn, pickExistingValueFilter, booleanValueFilter, LabelColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PersonalizationSegmentListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalizationSegmentList/personalizationSegmentListOptionsBag";

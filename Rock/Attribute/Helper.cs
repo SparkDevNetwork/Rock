@@ -2253,7 +2253,7 @@ INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]",
         /// <param name="configurationValues">The configuration values for the attribute.</param>
         private static int BulkUpdateInvalidatedPersistedValues( Rock.Model.Attribute attribute, Dictionary<string, string> configurationValues )
         {
-            var field = FieldTypeCache.Get( attribute.FieldType )?.Field;
+            var field = FieldTypeCache.Get( attribute.FieldTypeId )?.Field;
             var count = 0;
 
             // Field is kind of required...
@@ -3280,6 +3280,11 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
 
                     string categoryName = attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty;
 
+                    if ( attributeAddDisplayControlsOptions.CategoryNameMapper != null )
+                    {
+                        categoryName = attributeAddDisplayControlsOptions.CategoryNameMapper( categoryName );
+                    }
+
                     header.InnerText = string.IsNullOrWhiteSpace( categoryName ) ? item.GetType().GetFriendlyTypeName() + " Attributes" : categoryName.Trim();
                     parentControl.Controls.Add( header );
                 }
@@ -3692,5 +3697,13 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         ///   The attribute category description.
         /// </value>
         public string CategoryDescription { get; set; }
+
+        /// <summary>
+        /// A function that will be called before a category name is displayed
+        /// to allow for custom changes to the name. This is only used by the
+        /// BlockProperties block to deal with the logic to allow an attribute
+        /// category to be named "Tab^Category" for display on custom tabs.
+        /// </summary>
+        internal Func<string, string> CategoryNameMapper { get; set; }
     }
 }

@@ -444,7 +444,9 @@ WHERE [Guid] = '9CF1AA10-24E4-4530-A345-57DA4CFE9595';
                 },
                 migrationStrategy: "Chop",
                 jobGuid: SystemGuid.ServiceJob.DATA_MIGRATIONS_171_CHOP_OBSIDIAN_BLOCKS,
-                blockAttributeKeysToIgnore: new Dictionary<string, string> { } );
+                blockAttributeKeysToIgnore: new Dictionary<string, string> {
+                { "BD548744-DC6D-4870-9FED-BB9EA24E709B", "PersonProfilePage" }, // Person Following List ( Follow )
+            } );
         }
 
         #endregion

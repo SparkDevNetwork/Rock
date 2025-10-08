@@ -187,8 +187,8 @@ export const EntityType = {
     CommunicationFlowInstance: "7B487D88-0667-4AFF-BC6C-1FC8482392C8",
     /** The guid for the communication flow instance communication */
     CommunicationFlowInstanceCommunication: "FC2D426E-07E4-4803-BCB6-09CB43031856",
-    /** The guid for the communication flow instance conversion history */
-    CommunicationFlowInstanceConversionHistory: "726B5B81-B4B2-4E74-9069-0409A3D19753",
+    /** The guid for the communication flow instance communication conversion */
+    CommunicationFlowInstanceCommunicationConversion: "726B5B81-B4B2-4E74-9069-0409A3D19753",
     /** The guid for the communication flow instance recipient */
     CommunicationFlowInstanceRecipient: "F615AC08-8ACD-48F9-B42E-2F4CE02D4206",
     /** The guid for the email communication medium */
@@ -553,6 +553,10 @@ export const EntityType = {
     MobileEventsPrayerSessionBlockType: "BCAF9B7B-2ADE-496B-9303-150F495851FC",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Events.PrayerSessionSetup */
     MobileEventsPrayerSessionSetupBlockType: "51431866-FF92-433C-8B0F-0F6BBAD9BCE7",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Finance.FinancialBatchDetail. */
+    MobileFinanceFinancialBatchDetailBlockType: "14FE11A8-A4AA-43EF-9F36-354CE60240CA",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Finance.FinancialBatchList. */
+    MobileFinanceFinancialBatchListBlockType: "E7E18663-7EF9-454C-9C6E-F4A839DB60C8",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Finance.ScheduledTransactionList. */
     MobileFinanceScheduledTransactionListBlockType: "7698E529-6834-46B0-BC5A-D466A6BCE4F6",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Finance.TransactionDetail. */

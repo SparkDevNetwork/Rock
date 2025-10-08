@@ -111,7 +111,7 @@ namespace Rock.Jobs
             }
             else
             {
-                this.Result = $"<i class='ti ti-circle text-success'></i> {remindersSentMsg}";
+                this.Result = $"<i class='ti ti-circle-filled text-success'></i> {remindersSentMsg}";
             }
         }
 
@@ -395,11 +395,11 @@ namespace Rock.Jobs
                 var icon = string.Empty;
                 if ( messageGroupLabel == "error" )
                 {
-                    icon = "<i class='ti ti-circle text-danger'></i> ";
+                    icon = "<i class='ti ti-circle-filled text-danger'></i> ";
                 }
                 else if ( messageGroupLabel == "warning" )
                 {
-                    icon = "<i class='ti ti-circle text-warning'></i> ";
+                    icon = "<i class='ti ti-circle-filled text-warning'></i> ";
                 }
 
                 sb.AppendLine();

@@ -384,7 +384,14 @@ namespace Rock.Jobs
                 newBlockPreferences.Add( newBlockPersonPreference );
                 var newBlockPersonPreferenceKeyPrefix = PersonPreferenceService.GetPreferencePrefix( blockEntityType.GetEntityType(), newBlockPersonPreference.EntityId.ToIntSafe() );
                 var oldBlockPersonPreferenceKeyPrefix = PersonPreferenceService.GetPreferencePrefix( blockEntityType.GetEntityType(), oldBlockPersonPreference.EntityId.ToIntSafe() );
-                newBlockPersonPreference.Key = $"{newBlockPersonPreferenceKeyPrefix}{oldBlockPersonPreference.Key.Substring( oldBlockPersonPreferenceKeyPrefix.Length )}";
+                if ( oldBlockPersonPreference.Key.Contains( oldBlockPersonPreferenceKeyPrefix ) && oldBlockPersonPreference.Key.Length > oldBlockPersonPreferenceKeyPrefix.Length )
+                {
+                    newBlockPersonPreference.Key = $"{newBlockPersonPreferenceKeyPrefix}{oldBlockPersonPreference.Key.Substring( oldBlockPersonPreferenceKeyPrefix.Length )}";
+                }
+                else
+                {
+                    newBlockPersonPreference.Key = $"{newBlockPersonPreferenceKeyPrefix}{oldBlockPersonPreference.Key}";
+                }
             }
 
             personPreferenceService.AddRange( newBlockPreferences );

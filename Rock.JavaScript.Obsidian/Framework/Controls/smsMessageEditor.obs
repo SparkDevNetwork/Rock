@@ -120,7 +120,7 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, computed, onMounted, onUnmounted, ref, watch, watchEffect } from "vue";
+    import { PropType, computed, onMounted, onUnmounted, ref, watch } from "vue";
     import MergeFieldPlugin from "./NoteEditor/mergeFieldPlugin.partial.obs";
     import EmojisPlugin from "./NoteEditor/emojisPlugin.partial.obs";
     import ShortLinkPlugin from "./NoteEditor/shortLinkPlugin.partial.obs";
@@ -330,9 +330,10 @@
     // #region Watchers
 
     // Update the editor content when the model value changes externally.
-    watchEffect(() => {
+    watch([tinyMceInstance, isEditorShown, internalValue], () => {
         if (tinyMceInstance.value && !isEditorShown.value && tinyMceValue.value !== internalValue.value) {
-            tinyMceInstance.value.setContent(internalValue.value);
+            // Replace new lines with <br /> so the editor displays line breaks correctly.
+            tinyMceInstance.value.setContent(internalValue.value.replace(/\r\n/g, "<br />").replace(/\n/g, "<br />"), { format: "text" });
 
             // Get the new content from the editor after setting it
             // just in case it gets manipulated by plugins.
@@ -442,7 +443,8 @@
                         if (tinyMceInstance.value) {
                             // Set the initial value.
                             if (tinyMceValue.value !== internalValue.value) {
-                                tinyMceInstance.value.setContent(internalValue.value);
+                                // Replace new lines with <br /> so the editor displays line breaks correctly.
+                                tinyMceInstance.value.setContent(internalValue.value.replace(/\r\n/g, "<br />").replace(/\n/g, "<br />"), { format: "text" });
 
                                 // Get the new content from the editor after setting it
                                 // just in case it gets manipulated by plugins.

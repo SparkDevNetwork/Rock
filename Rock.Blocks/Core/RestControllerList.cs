@@ -110,9 +110,19 @@ namespace Rock.Blocks.Core
         {
             var service = new RestControllerService( rockContext );
 
-            var qry = service.Queryable().OrderBy( c => c.Name ).AsNoTracking();
+            var qry = service.Queryable().Include( r => r.Actions ).OrderBy( c => c.Name ).AsNoTracking();
 
             return qry;
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<RestController> GetOrderedListQueryable( IQueryable<RestController> queryable, RockContext rockContext )
+        {
+            return queryable.AsNoTracking()
+                .ToList()
+                .OrderBy( c => c.Name )
+                .ThenBy( c => c.GetMetadata()?.Version ?? 1 )
+                .AsQueryable();
         }
 
         /// <inheritdoc/>

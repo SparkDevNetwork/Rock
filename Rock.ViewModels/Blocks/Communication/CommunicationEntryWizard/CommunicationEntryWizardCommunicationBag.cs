@@ -103,9 +103,9 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         public SegmentCriteria SegmentCriteria { get; set; }
 
         /// <summary>
-        /// Gets or sets the personalization segment identifiers that communication recipients must satisfy.
+        /// Gets or sets the personalization segments that communication recipients must satisfy.
         /// </summary>
-        public List<int> PersonalizationSegmentIds { get; set; }
+        public List<ListItemBag> PersonalizationSegments { get; set; }
 
         /// <summary>
         /// Gets or sets whether to exclude duplicate recipient addresses from receiving this communication.

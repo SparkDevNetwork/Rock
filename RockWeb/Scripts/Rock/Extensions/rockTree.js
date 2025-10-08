@@ -7,7 +7,7 @@
         this.$el = $(element);
         this.options = options;
         this.selectedNodes = [];
-       
+
         // Create an object-based event aggregator (not DOM-based)
         // for internal eventing
         this.events = $({});
@@ -264,7 +264,7 @@
                             currentId = currentId.toString().replace(/(^')|('$)/g, '');
 
                             var currentNode = _findNodeById(currentId, self.nodes);
-                            
+
                             while (currentNode === null && toExpandParentItems.length > 0) {
                                 // if we can't find it, try the next one until we find one or run out of expanded ids
                                 currentId = toExpandParentItems.shift();
@@ -456,7 +456,7 @@
             // via the $el to notify the DOM
             this.events.trigger('nodes:dataBound', [parentNode]);
             this.$el.trigger('rockTree:dataBound', [parentNode]);
-            
+
             return nodeArray;
         },
 
@@ -467,7 +467,7 @@
                 $ul = $('<ul/>'),
                 renderNode = function ($list, node, parentId) {
                     var hasChildren = false;
-                                        
+
                     if (node.hasChildren) {
 
                         hasChildren = true;
@@ -583,7 +583,7 @@
             $.each(this.nodes, function (index, node) {
                 renderNode($ul, node);
             });
-                        
+
             this.$el.trigger('rockTree:rendered');
         },
 
@@ -877,7 +877,7 @@
         categorySelection: true,
         categoryPrefix: '',
         showSelectChildren: false,
-        loadingHtml: '<span class="rocktree-loading"><i class="ti ti-rotate-2 ti-spin"></i></span>',
+        loadingHtml: '<span class="rocktree-loading"><i class="ti ti-rotate-clockwise-2 ti-spin"></i></span>',
         iconClasses: {
             branchOpen: 'ti ti-fw ti-chevron-down',
             branchClosed: 'ti ti-fw ti-chevron-right',

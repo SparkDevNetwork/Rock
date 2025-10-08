@@ -134,6 +134,11 @@
 </template>
 
 <style scoped>
+
+.communication-detail-analytics {
+    padding-top: var(--spacing-medium);
+}
+
 .communication-detail-margin-top {
     margin-top: var(--spacing-large);
 }

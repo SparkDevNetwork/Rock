@@ -42,11 +42,11 @@ class ProxyStatus
         }
     }
 
-    public void AddLabel()
+    public void AddLabels( int count )
     {
         lock ( _lock )
         {
-            TotalPrinted += 1;
+            TotalPrinted += count;
         }
     }
 }

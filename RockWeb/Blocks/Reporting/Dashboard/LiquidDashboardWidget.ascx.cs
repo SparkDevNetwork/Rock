@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             </p>
         </div>
         <div class='col-md-6'>
-            <i class='{{ metric.IconCssClass }} fa-5x'></i>
+            <i class='{{ metric.IconCssClass }} ti-5x'></i>
         </div>
     </div>
 {% endfor %}

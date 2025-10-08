@@ -448,6 +448,11 @@
             case "Escape":
                 onInputBlur();
                 break;
+            case "Enter":
+                onInputBlur();
+                // Prevent form submission when enter is pressed in the control.
+                e.preventDefault();
+                break;
             case "Tab":
                 if (highlightedUnit.value == null) {
                     break;
@@ -489,6 +494,11 @@
         switch (e.key) {
             case "Escape":
                 showPickerWidget.value = false;
+                break;
+            case "Enter":
+                onInputBlur();
+                // Prevent form submission when enter is pressed in the control.
+                e.preventDefault();
                 break;
             case "Tab":
                 if ((e.shiftKey && segmentName == "hour") || (!e.shiftKey && segmentName == "meridiem")) {
@@ -559,7 +569,6 @@
 
     /** Listen for clicks outside the widget to close it */
     function onClickOutsideWidget(e: MouseEvent | TouchEvent): void {
-
         if (!widgetEl.value || !showPickerWidget.value) {
             // Widget isn't showing. Skip
             return;

@@ -864,7 +864,7 @@ namespace RockWeb.Blocks.Cms
                 Location currentAddress = new Location();
                 acAddress.Required = true;
                 acAddress.GetValues( currentAddress );
-                lPreviousAddress.Text = string.Format( "<strong>Previous Address</strong><br />{0}", currentAddress.FormattedHtmlAddress );
+                lPreviousAddress.Text = string.Format( "&nbsp;<strong>(Previous)</strong><br />{0}", currentAddress.FormattedHtmlAddress );
 
                 acAddress.Street1 = string.Empty;
                 acAddress.Street2 = string.Empty;

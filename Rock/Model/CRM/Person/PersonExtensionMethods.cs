@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -88,7 +90,7 @@ namespace Rock.Model
             // Get the most recent location for the primary family, preferring a mapped location if it exists.
             return person.PrimaryFamily.GroupLocations
             .Where( l => l.GroupLocationTypeValueId == homeAddressDv.Id )
-            .OrderByDescending( l => l.IsMappedLocation ? 1 : 0 )
+            .OrderByDescending( l => l.IsMappedLocation ? 1 : 0 ) // why Mapped Location vs Mailing Location??
             .ThenByDescending( l => l.Id )
             .Select( l => l.Location )
             .FirstOrDefault();
@@ -100,7 +102,16 @@ namespace Rock.Model
         /// <param name="personQuery">The person query.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static Dictionary<int, Location> GetHomeLocations( this IQueryable<Person> personQuery, RockContext rockContext )
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "17.2" )]
+        internal static Dictionary<int, Location> GetHomeLocations( this IQueryable<Person> personQuery, RockContext rockContext )
         {
             var homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
             if ( !homeAddressGuid.HasValue )
@@ -114,15 +125,60 @@ namespace Rock.Model
                 return null;
             }
 
-            var primaryFamilyLookup = personQuery.ToDictionary( p => p.Id, p => p.PrimaryFamilyId );
-            var primaryFamilyIds = primaryFamilyLookup.Where( p => p.Value != null ).Select( p => p.Value.Value ).Distinct().ToList();
+            var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            var groupTypeFamilyId = familyGroupType.Id;
 
-            // Get the most recent location for the primary family, preferring a mapped location if it exists.
-            var homeLocations = new GroupLocationService( rockContext ).Queryable().AsNoTracking()
-                .Where( gl => primaryFamilyIds.Contains( gl.GroupId ) && gl.GroupLocationTypeValueId == homeAddressDv.Id )
-                .OrderByDescending( gl => gl.IsMappedLocation ? 1 : 0 )
-                .ThenByDescending( gl => gl.Id )
-                .GroupBy( gl => gl.GroupId ).ToDictionary( a => a.Key, a => a.FirstOrDefault()?.Location );
+            // Only pull the fields we need. This stays server-side and does not enumerate personQuery here.
+            var personPrimaryFamilies = personQuery
+                .Select( p => new { p.Id, p.PrimaryFamilyId } )
+                .Where( p => p.PrimaryFamilyId.HasValue );
+
+            var grouplocationQuery = new GroupLocationService( rockContext ).Queryable().AsNoTracking()
+                .Where( gl => gl.GroupLocationTypeValueId == homeAddressDv.Id );
+
+            var locationQuery = new LocationService( rockContext ).Queryable().AsNoTracking()
+                .Select( l => new { l.Id, l.Street1, l.Street2, l.City, l.State, l.PostalCode, l.Country } );
+
+            // Now join the person, their primary family (GroupId), their home GroupLocation, and take the Location (with minimal columns)
+            var bestHomePerPerson = personPrimaryFamilies
+                .Join( grouplocationQuery,
+                    p => p.PrimaryFamilyId.Value,
+                    gl => gl.GroupId,
+                    ( p, gl ) => new { p.Id, gl.LocationId, gl.IsMappedLocation, GroupLocationId = gl.Id } )
+                .Join( locationQuery,
+                    personWithLocation => personWithLocation.LocationId,
+                    l => l.Id,
+                    ( personWithLocation, l ) => new
+                    {
+                        PersonId = personWithLocation.Id,
+                        personWithLocation.IsMappedLocation,
+                        personWithLocation.GroupLocationId,
+                        l.Street1,
+                        l.Street2,
+                        l.City,
+                        l.State,
+                        l.PostalCode,
+                        l.Country
+                    } )
+                // Prefer mapped locations (why?), then newest record.
+                .OrderByDescending( personWithLocation => personWithLocation.IsMappedLocation ? 1 : 0 )
+                .ThenByDescending( personWithLocation => personWithLocation.GroupLocationId )
+                .GroupBy( personWithLocation => personWithLocation.PersonId )
+                .Select( g => g.FirstOrDefault() )
+                .ToList();
+
+            // Build detached Location values so downstream reads don't trigger lazy loading.
+            var homeLocations = bestHomePerPerson.ToDictionary(
+                x => x.PersonId,
+                x => new Location
+                {
+                    Street1 = x.Street1,
+                    Street2 = x.Street2,
+                    City = x.City,
+                    State = x.State,
+                    PostalCode = x.PostalCode,
+                    Country = x.Country
+                } );
 
             return homeLocations;
         }
@@ -303,7 +359,16 @@ namespace Rock.Model
         /// <param name="personQuery">The person query.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static Dictionary<int, List<PersonPreviousName>> GetPreviousNames( this IQueryable<Person> personQuery, RockContext rockContext )
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "17.2" )]
+        internal static Dictionary<int, List<PersonPreviousName>> GetPreviousNames( this IQueryable<Person> personQuery, RockContext rockContext )
         {
             var previousNamesLookup = new PersonService( rockContext ).GetPreviousNames( personQuery )
                 .GroupBy( pn => pn.PersonAlias.PersonId )
@@ -337,14 +402,23 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the <see cref="Person" /> entity of the spouse for the provided people, indexed by the person identifier.
+        /// Gets the full name of spouse for the provided people, indexed by the person's (not spouse) identifier.
         /// </summary>
         /// <param name="personQuery">The person query.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static Dictionary<int, Person> GetSpouses( this IQueryable<Person> personQuery, RockContext rockContext )
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "17.2" )]
+        internal static Dictionary<int, string> GetSpousesFullName( this IQueryable<Person> personQuery, RockContext rockContext )
         {
-            return new PersonService( rockContext ).GetSpouses( personQuery );
+            return new PersonService( rockContext ).GetSpousesFullName( personQuery );
         }
 
         /// <summary>

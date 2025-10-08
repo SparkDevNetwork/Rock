@@ -490,12 +490,29 @@ namespace Rock.Blocks.Mobile.CheckIn
                     PerformedByPersonId = RequestContext.CurrentPerson?.IdKey
                 };
 
+                // If there was a provided attendance source, use that.
+                if ( options.Session.SourceValueId.IsNotNullOrWhiteSpace() )
+                {
+                    var attendanceSource = DefinedValueCache.Get( options.Session.SourceValueId, false )?.Id;
+
+                    if ( attendanceSource.HasValue )
+                    {
+                        session.AttendanceSourceValueId = attendanceSource.Value;
+                    }
+                }
+
+                // Default to mobile attendance if not specified.
+                if ( !session.AttendanceSourceValueId.HasValue )
+                {
+                    session.AttendanceSourceValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.ATTENDANCE_SOURCE_MOBILE.AsGuid(), RockContext )?.Id;
+                }
+
                 var result = session.SaveAttendance( sessionRequest, options.Requests, kiosk, RequestContext.ClientInformation.IpAddress );
 
                 if ( !options.Session.IsPending )
                 {
                     var cts = new CancellationTokenSource( 5000 );
-                    await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, null, null, new LabelPrintProvider(), cts.Token );
+                    await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, null, new LabelPrintProvider(), cts.Token );
                 }
 
                 return ActionOk( new MobileCheckInResultBag

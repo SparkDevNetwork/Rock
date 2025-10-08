@@ -74,7 +74,7 @@ namespace RockWeb.Blocks.Core
 
                 $('.js-releasenote').on('click', function (event) {
                     var $top = $(event.target).closest('.releasenotes');
-                    $top.find('i').toggleClass('ti-caret-up').toggleClass('ti-caret-down');
+                    $top.find('i').toggleClass('ti-caret-up').toggleClass('ti-caret-down-filled');
                     $top.find('.releasenotes-body').slideToggle(500);
                 });
             ";

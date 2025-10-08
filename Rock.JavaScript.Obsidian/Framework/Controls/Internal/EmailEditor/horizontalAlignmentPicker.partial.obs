@@ -59,11 +59,11 @@
 svg {
     height: 16px;
     width: 16px;
-    fill: var(--theme-black);
+    fill: var(--color-interface-strong);
 }
 
 .btn-primary svg {
-    fill: var(--theme-white);
+    fill: var(--color-interface-softer);
 }
 </style>
 

@@ -146,6 +146,7 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.IsCompleteStatus = source.IsCompleteStatus;
+            target.IsSystem = source.IsSystem;
             target.Name = source.Name;
             target.Order = source.Order;
             target.StatusColor = source.StatusColor;

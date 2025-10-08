@@ -45,7 +45,7 @@ namespace Rock.CheckIn.v2
                 return;
             }
 
-            var message = await proxy.PrintAsync( printer, context.Message.Data );
+            var message = await proxy.PrintAsync( printer, context.Message.Labels );
 
             var response = new CloudPrintLabelMessage.Response
             {

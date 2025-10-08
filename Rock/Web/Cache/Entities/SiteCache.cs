@@ -528,6 +528,15 @@ namespace Rock.Web.Cache
         [DataMember]
         public string ThumbnailFileUrl { get; private set; }
 
+        /// <summary>
+        /// The list of domain names that this site is configured to respond to.
+        /// </summary>
+        /// <remarks>
+        /// DSH: This is internal because I don't know if we want to expose it or not.
+        /// </remarks>
+        [DataMember]
+        internal IReadOnlyList<string> SiteDomainNames { get; private set; }
+
         #endregion
 
         #region Public Methods
@@ -597,7 +606,8 @@ namespace Rock.Web.Cache
             EnableVisitorTracking = site.EnableVisitorTracking;
             EnablePersonalization = site.EnablePersonalization;
 
-            foreach ( var domain in site.SiteDomains.Select( d => d.Domain ).ToList() )
+            SiteDomainNames = site.SiteDomains.Select( d => d.Domain ).ToList();
+            foreach ( var domain in SiteDomainNames )
             {
                 _siteDomains.AddOrUpdate( domain, site.Id, ( k, v ) => site.Id );
             }

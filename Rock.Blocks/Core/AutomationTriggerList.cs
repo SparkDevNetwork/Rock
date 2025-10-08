@@ -142,7 +142,6 @@ namespace Rock.Blocks.Core
                     return et.FriendlyName ?? string.Empty;
                 } )
                 .AddTextField( "description", a => a.Description )
-                .AddField( "count", a => 0 )
                 .AddField( "isActive", a => a.IsActive );
         }
 

@@ -135,7 +135,7 @@ namespace Rock
             if ( ( Start.HasValue && Start.Value != Start.Value.Date ) || (
                 humanReadableEnd.HasValue &&
                 humanReadableEnd.Value != humanReadableEnd.Value.Date &&
-                humanReadableEnd.Value.AddSeconds( 1 ).AddDays( -1 ) != humanReadableEnd.Value.Date ) )
+                humanReadableEnd.Value.AddMilliseconds( 1 ).AddDays( -1 ) != humanReadableEnd.Value.Date ) )
             {
                 // one of the dates is not midnight (or the second before midnight), so show as a date time
                 autoFormat = dateTimeFormat;
@@ -166,7 +166,12 @@ namespace Rock
                 }
                 else
                 {
-                    return string.Format( "{0} to {1}", Start.Value.ToString( autoFormat ), humanReadableEnd.Value.ToString( autoFormat ) );
+                    if ( autoFormat == dateTimeFormat )
+                    {
+                        return string.Format( "{0} to {1}", Start.Value.ToString( autoFormat ), humanReadableEnd.Value.ToString( autoFormat ) );
+                    }
+
+                    return string.Format( "{0} through {1}", Start.Value.ToString( autoFormat ), humanReadableEnd.Value.ToString( autoFormat ) );
                 }
             }
 
