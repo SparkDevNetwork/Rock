@@ -4,6 +4,7 @@ using System.Text.Json.Nodes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.AI.Agent;
+using Rock.AI.Agent.Annotations;
 using Rock.Enums.AI.Agent;
 
 namespace Rock.Tests.AI.Agent
