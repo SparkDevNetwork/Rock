@@ -331,6 +331,7 @@ namespace Rock.WebStartup
             sc.AddSingleton<IInitializationSettings, WebFormsInitializationSettings>();
             sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
             sc.AddSingleton<IHostingSettings, HostingSettings>();
+            sc.AddSingleton<IChatProvider, StreamChatProvider>();
             sc.AddSingleton<IRockRequestContextAccessor, RockRequestContextAccessor>();
             sc.AddSingleton<IWebHostEnvironment>( provider => new Utility.WebHostEnvironment
             {
