@@ -5,6 +5,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Signature Document"
+          title="Electronic Signature Documents"
           :entityTypeGuid="EntityType.SignatureDocument"
           stickyHeader
           liveUpdates

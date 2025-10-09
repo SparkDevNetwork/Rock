@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+
+using Rock.Attribute;
 using Rock.Communication.SmsActions;
 using Rock.Data;
 using Rock.Transactions;
@@ -27,6 +29,89 @@ namespace Rock.Model
 {
     public partial class SmsActionService
     {
+        #region Fields
+
+        /// <summary>
+        /// The list of keywords indicating an individual wants to opt out of receiving messages.
+        /// </summary>
+        private static readonly Lazy<HashSet<string>> _optOutKeywords = new Lazy<HashSet<string>>( () =>
+        {
+            return new HashSet<string>
+            {
+                "STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT", "REVOKE", "OPTOUT"
+            };
+        } );
+
+        /// <summary>
+        /// The list of keywords indicating an individual wants to opt into receiving messages.
+        /// </summary>
+        private static readonly Lazy<HashSet<string>> _optInKeywords = new Lazy<HashSet<string>>( () =>
+        {
+            return new HashSet<string>
+            {
+                "START", "YES", "UNSTOP"
+            };
+        } );
+
+        #endregion Fields
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the list of keywords indicating an individual wants to opt out of receiving messages.
+        /// </summary>
+        /// <remarks>
+        /// This is an internal API that supports the Rock infrastructure and not
+        /// subject to the same compatibility standards as public APIs. It may be
+        /// changed or removed without notice in any release. You should only use
+        /// it directly in your code with extreme caution and knowing that doing so
+        /// can result in application failures when updating to a new Rock release.
+        /// </remarks>
+        [RockInternal( "17.3" )]
+        public static HashSet<string> OptOutKeywords => _optOutKeywords.Value;
+
+        /// <summary>
+        /// Gets the list of keywords indicating an individual wants to opt into receiving messages.
+        /// </summary>
+        /// <remarks>
+        /// This is an internal API that supports the Rock infrastructure and not
+        /// subject to the same compatibility standards as public APIs. It may be
+        /// changed or removed without notice in any release. You should only use
+        /// it directly in your code with extreme caution and knowing that doing so
+        /// can result in application failures when updating to a new Rock release.
+        /// </remarks>
+        [RockInternal( "17.3" )]
+        public static HashSet<string> OptInKeywords => _optInKeywords.Value;
+
+        /// <summary>
+        /// Gets the organization name to be used in response messages.
+        /// </summary>
+        private static string OrganizationName
+        {
+            get
+            {
+                var orgName = GlobalAttributesCache.Value( Rock.SystemKey.GlobalAttributeKey.ORGANIZATION_ABBREVATION );
+                if ( orgName.IsNullOrWhiteSpace() )
+                {
+                    orgName = GlobalAttributesCache.Value( Rock.SystemKey.GlobalAttributeKey.ORGANIZATION_NAME );
+                }
+
+                return orgName;
+            }
+        }
+
+        /// <summary>
+        /// Gets the organization phone number to be used in response messages.
+        /// </summary>
+        private static string OrganizationPhone => GlobalAttributesCache.Value( Rock.SystemKey.GlobalAttributeKey.ORGANIZATION_PHONE );
+
+        /// <summary>
+        /// Gets the organization email to be used in response messages.
+        /// </summary>
+        private static string OrganizationEmail => GlobalAttributesCache.Value( Rock.SystemKey.GlobalAttributeKey.ORGANIZATION_EMAIL );
+
+        #endregion Properties
+
         /// <summary>
         /// Processes the incoming message.
         /// </summary>
@@ -81,6 +166,18 @@ namespace Rock.Model
         {
             if ( IsOptOutMessage( message.Message ) )
             {
+                /*
+                    8/13/2025 - JPH
+
+                    This will be removed in Rock v18.0 when settings are added to fine-tune opt-out behavior.
+
+                    Reason: Prevent default opt-out responses from non-short code system phone numbers.
+                */
+                if ( message.ToNumber != null && message.ToNumber.Trim().StartsWith( "+" ) )
+                {
+                    return null;
+                }
+
                 var optOutResponse = ProcessOptOut( message );
                 if ( optOutResponse != null )
                 {
@@ -89,6 +186,18 @@ namespace Rock.Model
             }
             else if ( IsOptInMessage( message.Message ) )
             {
+                /*
+                    8/13/2025 - JPH
+
+                    This will be removed in Rock v18.0 when settings are added to fine-tune opt-in behavior.
+
+                    Reason: Prevent default opt-in responses from non-short code system phone numbers.
+                */
+                if ( message.ToNumber != null && message.ToNumber.Trim().StartsWith( "+" ) )
+                {
+                    return null;
+                }
+
                 var optInResponse = ProcessOptIn( message );
                 if ( optInResponse != null )
                 {
@@ -308,12 +417,7 @@ namespace Rock.Model
         /// <returns></returns>
         private static bool IsOptOutMessage( string messageBody )
         {
-            List<string> optOutKeywords = new List<string>
-            {
-                "STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT"
-            };
-
-            foreach ( var keyword in optOutKeywords )
+            foreach ( var keyword in OptOutKeywords )
             {
                 if ( string.Equals( messageBody.Trim(), keyword, StringComparison.OrdinalIgnoreCase ) )
                 {
@@ -355,6 +459,16 @@ namespace Rock.Model
                 return null;
             }
 
+            var contactMethods = new[] { OrganizationPhone, OrganizationEmail }
+                .Where( m => m.IsNotNullOrWhiteSpace() )
+                .ToArray();
+
+            var optOutContactMethods = contactMethods.Any()
+                ? $" at {contactMethods.JoinStringsWithRepeatAndFinalDelimiterWithMaxLength( ", ", " or ", null )}"
+                : string.Empty;
+
+            var optedOutMessage = $"You are unsubscribed from {OrganizationName} messages. No more messages will be sent. Reply HELP for help or contact us{optOutContactMethods}.";
+
             return new List<SmsActionOutcome>
             {
                 new SmsActionOutcome
@@ -367,7 +481,7 @@ namespace Rock.Model
                     {
                         ToNumber = cleanedNumber,
                         FromNumber = message.ToNumber,
-                        Message = "You have been unsubscribed from LCBC Updates & Alerts. No more messages will be sent. Reply HELP for help."
+                        Message = optedOutMessage
                     }
                 }
             };
@@ -380,12 +494,7 @@ namespace Rock.Model
         /// <returns></returns>
         private static bool IsOptInMessage( string messageBody )
         {
-            List<string> optInKeywords = new List<string>
-            {
-                "START", "YES", "UNSTOP"
-            };
-
-            foreach ( var keyword in optInKeywords )
+            foreach ( var keyword in OptInKeywords )
             {
                 if ( string.Equals( messageBody.Trim(), keyword, StringComparison.OrdinalIgnoreCase ) )
                 {
@@ -411,13 +520,10 @@ namespace Rock.Model
 
                 foreach ( var phoneNumber in phoneNumbers )
                 {
-                    if ( !phoneNumber.IsMessagingEnabled )
-                    {
-                        phoneNumber.IsMessagingEnabled = true;
-                        phoneNumber.IsMessagingOptedOut = false;
-                        phoneNumber.MessagingOptedOutDateTime = null;
-                        isPhoneUpdated = true;
-                    }
+                    phoneNumber.IsMessagingEnabled = true;
+                    phoneNumber.IsMessagingOptedOut = false;
+                    phoneNumber.MessagingOptedOutDateTime = null;
+                    isPhoneUpdated = true;
                 }
 
                 rockContext.SaveChanges();
@@ -428,6 +534,8 @@ namespace Rock.Model
                 // If we didn't do anything, don't return a response.
                 return null;
             }
+
+            var optedInMessage = $"You are now subscribed to {OrganizationName} messages. Message and data rates may apply. Reply STOP to unsubscribe or HELP for help.";
 
             return new List<SmsActionOutcome>
             {
@@ -441,7 +549,7 @@ namespace Rock.Model
                     {
                         ToNumber = cleanedNumber,
                         FromNumber = message.ToNumber,
-                        Message = "You have opted in to messages."
+                        Message = optedInMessage
                     }
                 }
             };

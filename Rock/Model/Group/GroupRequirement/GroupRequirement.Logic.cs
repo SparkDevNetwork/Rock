@@ -176,7 +176,7 @@ namespace Rock.Model
                         var result = personWithRequirementsList.Select( a =>
                         {
                             GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
-                            
+
                             // Get the nullable group member requirement ID based on the PersonId, GroupRequirementId, GroupId, and GroupRoleId.
                             int? groupMemberRequirementId = groupMemberRequirementService.GetIdByPersonIdRequirementIdGroupIdGroupRoleId( a.PersonId, this.Id, groupId, groupRoleId );
                             var personGroupRequirementStatus = new PersonGroupRequirementStatus
@@ -288,6 +288,7 @@ namespace Rock.Model
                                 warningPersonIds = warningTableResult.Rows.OfType<System.Data.DataRow>().Select( r => Convert.ToInt32( r[0] ) );
                             }
                         }
+                        GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
 
                         var result = personQryIdList.Select( a =>
                         {
@@ -302,12 +303,13 @@ namespace Rock.Model
                             {
                                 PersonId = a,
                                 GroupRequirement = this,
+                                GroupMemberRequirementId = groupMemberRequirementService.GetIdByPersonIdRequirementIdGroupIdGroupRoleId( a, this.Id, groupId, groupRoleId ),
                                 MeetsGroupRequirement = personIds.Contains( a )
-                                      ? ( ( warningPersonIds != null && warningPersonIds.Contains( a ) )
+                                    ? ( ( warningPersonIds != null && warningPersonIds.Contains( a ) )
                                           ? MeetsGroupRequirement.MeetsWithWarning
                                           : MeetsGroupRequirement.Meets
-                                          )
-                                      : isRequirementDue ? MeetsGroupRequirement.NotMet : MeetsGroupRequirement.MeetsWithWarning,
+                                      )
+                                    : isRequirementDue ? MeetsGroupRequirement.NotMet : MeetsGroupRequirement.MeetsWithWarning,
                             };
                             return personGroupRequirementStatus;
                         } );

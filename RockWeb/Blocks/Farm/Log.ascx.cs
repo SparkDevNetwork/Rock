@@ -30,7 +30,7 @@ using Rock.WebFarm;
 namespace RockWeb.Blocks.Farm
 {
     [DisplayName( "Log" )]
-    [Category( "Farm" )]
+    [Category( "WebFarm" )]
     [Description( "Shows a list of Web Farm logs." )]
 
     [Rock.SystemGuid.BlockTypeGuid( "63ADDB5A-75D6-4E86-A031-98B3451C49A3" )]

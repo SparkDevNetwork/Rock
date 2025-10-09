@@ -246,6 +246,7 @@
     <Compile Include="Core\AI\AIProviderTests.cs" />
     <Compile Include="Core\Workflow\Action\BackgroundCheckRequestTests.cs" />
     <Compile Include="Core\Model\DataModelEmailFieldValidationTests.cs" />
+    <Compile Include="Model\FinancialAccountServiceTests.cs" />
     <Compile Include="Reporting\ExpressionHelperTests.cs" />
     <Compile Include="Crm\Notes\SendNoteUpdateNotificationsJobTests.cs" />
     <Compile Include="Security\RockSigningCredentialsTests.cs" />
@@ -412,6 +413,7 @@
     <Compile Include="Web\Cache\RateLimiterCacheTests.cs" />
     <Compile Include="Web\Utilities\RockUpdateHelperTests.cs" />
     <Compile Include="Core\Workflow\Action\WorkflowActionReminderAddTests.cs" />
+    <Compile Include="Workflow\WorkflowPersonEntryProcessorTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

@@ -172,10 +172,15 @@ $(document).ready(function() {
         {
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( PageParameterKey.DataViewId );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                string dataViewId = PageParameter( PageParameterKey.DataViewId ).AsIntegerOrNull()?.ToString() ?? string.Empty;
+                if ( string.IsNullOrEmpty( dataViewId ) )
                 {
-                    ShowDetail( itemId.AsInteger(), PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull() );
+                    dataViewId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.DataViewId ) ).ToStringSafe();
+                }
+
+                if ( !string.IsNullOrWhiteSpace( dataViewId ) )
+                {
+                    ShowDetail( dataViewId.AsInteger(), PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull() );
                 }
                 else
                 {
@@ -476,8 +481,12 @@ $(document).ready(function() {
 
             if ( dataViewId == 0 )
             {
-                // If not, check if we are editing a new copy of an existing Data View.
-                dataViewId = PageParameter( PageParameterKey.DataViewId ).AsInteger();
+                // If it's 0, check if we were editing an about-to-be-created "copy" of an existing Data View; so we return back to viewing that one.
+                dataViewId = PageParameter( PageParameterKey.DataViewId ).ToIntSafe();
+                if ( dataViewId == 0 )
+                {
+                    dataViewId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.DataViewId ) ).ToIntSafe();
+                }
             }
 
             if ( dataViewId == 0 )
@@ -657,15 +666,6 @@ $(document).ready(function() {
             }
 
             ddlTransform.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
-        }
-
-        /// <summary>
-        /// Shows the detail.
-        /// </summary>
-        /// <param name="dataViewId">The data view identifier.</param>
-        public void ShowDetail( int dataViewId )
-        {
-            ShowDetail( dataViewId, null );
         }
 
         /// <summary>

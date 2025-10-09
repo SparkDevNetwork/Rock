@@ -306,7 +306,7 @@
                                     AutoPostBack="true" OnCheckedChanged="cbSendAttendanceReminder_CheckedChanged"
                                     Help="Will enable the sending of automatic attendance reminders for all groups of this type." />
 
-                                <Rock:RockDropDownList ID="ddlAttendanceReminderCommunication" runat="server" Label="Attendance Reminder Communication Template"
+                                <Rock:RockDropDownList ID="ddlAttendanceReminderCommunication" runat="server" Label="Attendance Reminder Communication Template" EnhanceForLongLists="true"
                                     Help="The communication template to use for sending attendance reminders." />
 
                                 <Rock:NumberBox ID="nbAttendanceReminderOffsetMinutes" runat="server" Label="Attendance Reminder Start Offset Minutes"

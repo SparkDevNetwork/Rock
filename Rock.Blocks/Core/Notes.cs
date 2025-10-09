@@ -280,8 +280,12 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult SaveNote( SaveNoteRequestBag request )
         {
-            var noteClientService = new NoteClientService( RockContext, RequestContext.CurrentPerson );
             var contextEntity = GetContextEntity();
+            var noteClientService = new NoteClientService( RockContext, RequestContext.CurrentPerson )
+            {
+                AllowBackdatedNotes = GetAttributeValue( AttributeKey.AllowBackdatedNotes ).AsBoolean(),
+                AllowedNoteTypes = GetConfiguredNoteTypes( contextEntity.TypeId )
+            };
 
             if ( contextEntity == null )
             {

@@ -1938,8 +1938,10 @@ namespace Rock.Model
         /// </summary>
         public void BulkIndexDocuments()
         {
-            IndexPeopleThreaded();
-            IndexPeopleThreaded( true );
+            // Index all people
+            IndexPeopleRecords( false );
+            // Index all businesses
+            IndexPeopleRecords( true );
         }
 
         private IOrderedQueryable<Person> GetPersonIndexQuery( PersonService personService )
@@ -1955,78 +1957,39 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Indexes People utilizing multiple threads to process the indexed documents and send them to the IndexContainer.
+        /// Indexes People  process the indexed documents and send them to the IndexContainer.
         /// </summary>
         /// <param name="isBusiness">Flag indicating whether the records in the query should be indexed as businesses.</param>
-        private void IndexPeopleThreaded( bool isBusiness = false )
-        {
-            RockContext rockContext = new RockContext();
-            var personService = new PersonService( rockContext );
-
-            IOrderedQueryable<Person> personQuery;
-            if ( isBusiness )
-            {
-                personQuery = GetBusinessIndexQuery( personService );
-            }
-            else
-            {
-                personQuery = GetPersonIndexQuery( personService );
-            }
-
+        private void IndexPeopleRecords( bool isBusiness = false )
+        {            
             var bulkChunkSize = 1000;
-            var threadCount = 4;
-            var peopleCount = personQuery.Count();
-
-            if ( peopleCount < bulkChunkSize * threadCount )
-            {
-                threadCount = 1; // Don't bother threading a query this small.
-            }
-
-            var peoplePerThread = peopleCount / threadCount;
-            var peopleRemainder = peopleCount % threadCount;
-            var peopleProcessed = 0;
-
-            // Split query into evenly sized chunks and dispatch a new task/thread for each chunk.
-            var indexTasks = new List<Task>();
-            for ( int i = 1; i <= threadCount; i++ )
-            {
-                var peopleOffset = peopleProcessed;
-                var peopleToProcess = peoplePerThread;
-                if ( i == threadCount )
-                {
-                    peopleToProcess += peopleRemainder;
-                }
-
-                indexTasks.Add( Task.Factory.StartNew( () => IndexChunkedQuery( peopleOffset, peopleToProcess, bulkChunkSize, isBusiness ) ) );
-
-                peopleProcessed += peopleToProcess;
-            }
-
-            // Wait for all the threads to complete.
-            Task.WaitAll( indexTasks.ToArray() );
+            var segmentCount = 8;
+            IndexBulkQueryInSegments( segmentCount, bulkChunkSize, isBusiness );
         }
 
         /// <summary>
-        /// Called by <see cref="IndexPeopleThreaded( bool )"/> to process individual chunks of a query in a single thread.
+        /// Called by <see cref="IndexPeopleRecords( bool )"/> to process all matching records in a single thread,
+        /// batching them into fixed-size chunks for indexing.  Processes a very large person query in N disjoint
+        /// segments to limit memory usage. Segments are selected via modulo on Person.Id to avoid Skip/Take on
+        /// huge sets.
         /// </summary>
-        /// <param name="peopleProcessed">The number of people processed (used as the offest for the beggining of the query chunk for this thread).</param>
-        /// <param name="peopleToProcess">The number of people to process (the size of the chunk).</param>
-        /// <param name="bulkChunkSize">The number of documents to send to the IndexContainer at a time.</param>
-        /// <param name="isBusiness">Flag indicating whether the records in the query should be indexed as businesses.</param>
-        private void IndexChunkedQuery( int peopleProcessed, int peopleToProcess, int bulkChunkSize, bool isBusiness )
+        /// <param name="segmentCount">Number of modulo-based segments (e.g., 8) to split the query into.</param>
+        /// <param name="bulkChunkSize">The maximum number of documents to send to the index in a single batch operation.</param>
+        /// <param name="isBusiness">If <c>true</c>, indexes business records instead of person records.</param>
+        private void IndexBulkQueryInSegments( int segmentCount, int bulkChunkSize, bool isBusiness )
         {
             var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = 180; // Set a longer timeout for indexing operations
             var personService = new PersonService( rockContext );
 
             if ( isBusiness )
             {
                 var businessQuery = GetBusinessIndexQuery( personService );
-                var chunkedBusinessQuery = businessQuery.Skip( peopleProcessed ).Take( peopleToProcess );
 
                 var recordCounter = 0;
                 var businessIndexes = new List<IndexModelBase>();
 
-                foreach ( var business in chunkedBusinessQuery )
+                foreach ( var business in businessQuery )
                 {
                     recordCounter++;
 
@@ -2047,17 +2010,21 @@ namespace Rock.Model
             }
             else
             {
-                var personQuery = GetPersonIndexQuery( personService );
-                var chunkedPersonQuery = personQuery.Skip( peopleProcessed ).Take( peopleToProcess );
+                var basePersonQuery = GetPersonIndexQuery( personService );
 
-                var personIndexes = PersonIndex.LoadByModelBulk( chunkedPersonQuery, rockContext );
-                var indexOperationCount = ( personIndexes.Count + bulkChunkSize - 1 ) / bulkChunkSize;
-                for ( int i = 0; i < indexOperationCount; i++ )
+                for ( int shard = 0; shard < segmentCount; shard++ )
                 {
-                    var startIndex = ( i * bulkChunkSize );
-                    var limit = Math.Min( bulkChunkSize, personIndexes.Count - startIndex );
-                    var bulkIndexes = personIndexes.GetRange( startIndex, limit );
-                    IndexContainer.IndexDocuments( bulkIndexes );
+                    var shardQuery = basePersonQuery.Where( p => ( p.Id % segmentCount ) == shard );
+
+                    var personIndexes = PersonIndex.LoadByModelBulk( shardQuery, rockContext );
+                    var indexOperationCount = ( personIndexes.Count + bulkChunkSize - 1 ) / bulkChunkSize;
+                    for ( int i = 0; i < indexOperationCount; i++ )
+                    {
+                        var startIndex = ( i * bulkChunkSize );
+                        var limit = Math.Min( bulkChunkSize, personIndexes.Count - startIndex );
+                        var bulkIndexes = personIndexes.GetRange( startIndex, limit );
+                        IndexContainer.IndexDocuments( bulkIndexes );
+                    }
                 }
             }
         }

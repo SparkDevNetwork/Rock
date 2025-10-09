@@ -71,11 +71,11 @@ namespace Rock.Blocks.Communication
 
             if ( addresses.Count < 100 )
             {
-                return ActionBadRequest( "A minimum of 100 unique records with valid addresses are required in order to return NCOA move data from the USPS when your file is processed." );
+                return ActionBadRequest( $"A minimum of 100 unique records with valid addresses are required in order to return NCOA move data from the USPS when your file is processed. Your data view results have only {addresses.Count} valid people-address records." );
             }
 
             bag.Addresses = addresses;
-            bag.SuccessMessage = "Now go to <a style=\"color:#006dcc;text-decoration:none;border:0;\" href=\"https://app.truencoa.com/\">TrueNCOA</a> to upload the file there.  When they are finshed processing, you can import their results in Step 2.";
+            bag.SuccessMessage = "Now go to <a style=\"color:#006dcc;text-decoration:none;border:0;\" href=\"https://app.truencoa.com/\">TrueNCOA</a> to upload the file there. Be sure to follow the instructions in the <i>Rock Admin Hero Guide</i>. When they are finished processing, you can import their results in Step 2.";
 
             sparkDataConfig = Ncoa.GetSettings();
             sparkDataConfig.NcoaSettings.PersonDataViewId = DataViewCache.Get( dataViewValue ).Id;
@@ -99,6 +99,21 @@ namespace Rock.Blocks.Communication
                     var inactiveReason = DefinedValueCache.Get( bag.InactiveReason.Value.AsGuid() );
                     var binaryFileService = new BinaryFileService( rockContext );
                     var binaryFile = binaryFileService.Get( bag.NcoaFileUploadReference.Value );
+                    if ( binaryFile == null )
+                    {
+                        return ActionBadRequest( "Your uploaded file could not be found. Please clear the \"TrueNCOA Results\" file and re-upload it." );
+                    }
+
+                    if ( binaryFile.FileName.Trim().ToLower().EndsWith( ".zip" ) )
+                    {
+                        return ActionBadRequest( "Please unzip the .csv results file before attempting to import." );
+                    }
+
+                    if ( binaryFile.MimeType != "text/csv" && binaryFile.MimeType != "text/plain" )
+                    {
+                        return ActionBadRequest( "Please upload a plain text .csv results file before attempting to import." );
+                    }
+
                     var stringContnet = binaryFile.ContentsToString();
 
                     ncoaService.NcoaRecordBuilder( stringContnet, out List<NcoaReturnRecord> ncoaReturnRecords );

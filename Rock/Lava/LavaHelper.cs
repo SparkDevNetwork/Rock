@@ -25,6 +25,8 @@ using System.Web;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+using OpenXmlPowerTools;
+
 using Rock.Communication.Chat;
 using Rock.Data;
 using Rock.Model;
@@ -468,45 +470,95 @@ namespace Rock.Lava
         /// <returns></returns>
         public static IDataViewDefinition GetDataViewDefinitionFromInputParameter( object input, RockContext rockContext )
         {
-            IDataViewDefinition dataView = null;
+            /*  Test Lava for all options
+                {% assign dataViewAsInt = 10 %}
+                {% assign dataViewAsStringInt = dataViewAsInt | AsString %}
+                {% assign dataViewAsIdKey = dataViewAsInt | ToIdHash %}
+
+                {% dataview id:'{{ dataViewAsInt }}' %}
+                    {% assign dataViewAsGuid = dataview.Guid %}
+                    {% assign dataViewAsStringInt = dataViewAsGuid | AsString %}
+                    {% assign dataViewName = dataview.Name %}
+    
+                    As DataView: {{ CurrentPerson | IsInDataView:dataview }} ({{ dataview }})<br>
+                {% enddataview %}
+
+                As Int: {{ CurrentPerson | IsInDataView:dataViewAsInt }} ({{ dataViewAsInt }})<br>
+                As String Int: {{ CurrentPerson | IsInDataView:dataViewAsStringInt }} ({{ dataViewAsStringInt }})<br>
+                <br>
+                As IdKey: {{ CurrentPerson | IsInDataView:dataViewAsIdKey }} ({{ dataViewAsIdKey }})<br>
+                <br>
+                As Guid: {{ CurrentPerson | IsInDataView:dataViewAsGuid }} ({{ dataViewAsGuid }})<br>
+                As String Guid: {{ CurrentPerson | IsInDataView:dataViewAsStringInt }} ({{ dataViewAsStringInt }})<br>
+                <br>
+                As Name: {{ CurrentPerson | IsInDataView:dataViewName }} ({{ dataViewName }})<br>
+            */
 
             // Parse the input object for a dataView.
             if ( input is IDataViewDefinition dv )
             {
-                dataView = dv;
+                return dv;
             }
-            else if ( input is string s )
+
+            // Retrieve by type int
+            if ( input is int i )
             {
-                var inputAsGuid = s.AsGuidOrNull();
-                if ( inputAsGuid != null )
-                {
-                    // If the input is a Guid, retrieve the corresponding DataView.
-                    dataView = DataViewCache.Get( inputAsGuid.Value );
-                }
-                else
-                {
-                    var inputAsInt = s.AsIntegerOrNull();
-                    if ( inputAsInt != null )
-                    {
-                        // If the input is an integer, retrieve the corresponding dataView.
-                        dataView = DataViewCache.Get( inputAsInt.Value );
-                    }
-                    else
-                    {
-                        // If the input is a string, retrieve by name.
-                        var dataViewService = new DataViewService( rockContext );
-
-                        var inputAsString = s.ToStringSafe().Trim();
-                        var dataViewId = dataViewService.Queryable()
-                            .Where( d => d.Name != null && d.Name.Equals( inputAsString ) )
-                            .Select( d => d.Id )
-                            .FirstOrDefault();
-
-                        dataView = DataViewCache.Get( dataViewId );
-                    }
-                }
+                return DataViewCache.Get( i );
             }
-            return dataView;
+
+            // Retrieve by type guid
+            if ( input is Guid g )
+            {
+                return DataViewCache.Get( g );
+            }
+
+            // If it's not string we're run out of types
+            if ( !(input is string) )
+            {
+                return null;
+            }
+
+            //
+            // String Logic
+            //
+
+            var inputAsString = input.ToStringSafe().Trim();
+
+            // Check if input is a string of a Guid
+            var inputAsGuid = inputAsString.AsGuidOrNull();
+            if ( inputAsGuid != null )
+            {
+                return DataViewCache.Get( inputAsGuid.Value );
+            }
+
+            // Check if input is a string of an int
+            var inputAsInt = inputAsString.AsIntegerOrNull();
+            if ( inputAsInt != null )
+            {
+                return DataViewCache.Get( inputAsInt.Value );
+            }
+
+            // Check if input is an IdKey
+            var dataView = DataViewCache.GetByIdKey( inputAsString );
+            if ( dataView != null )
+            {
+                return dataView;
+            }
+
+            // If the input is a string, retrieve by name.
+            var dataViewService = new DataViewService( rockContext );
+            var dataViewId = dataViewService.Queryable()
+                .Where( d => d.Name != null && d.Name.Equals( inputAsString ) )
+                .Select( d => d.Id )
+                .FirstOrDefault();
+
+            if ( dataViewId != 0 )
+            {
+                return DataViewCache.Get( dataViewId );
+            }
+            
+            // Ran out of options...
+            return null;
         }
 
         /// <summary>

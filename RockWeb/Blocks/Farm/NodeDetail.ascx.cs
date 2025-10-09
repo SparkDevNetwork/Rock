@@ -30,7 +30,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Farm
 {
     [DisplayName( "Web Farm Node Detail" )]
-    [Category( "Farm" )]
+    [Category( "WebFarm" )]
     [Description( "Displays the details of the Web Farm Node." )]
 
     [IntegerField(

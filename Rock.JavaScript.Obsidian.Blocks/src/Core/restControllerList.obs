@@ -4,6 +4,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Rest Controller"
+          title="REST Controller List"
           :entityTypeGuid="EntityType.RestController"
           stickyHeader
           liveUpdates

@@ -28,8 +28,9 @@ using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Group.GroupTypeList;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+
+using static Rock.Blocks.Group.GroupTypeList;
 
 namespace Rock.Blocks.Group
 {
@@ -49,7 +50,7 @@ namespace Rock.Blocks.Group
     [Rock.SystemGuid.EntityTypeGuid( "562ed873-bd66-4287-ae9f-d7c43fecd7a8" )]
     [Rock.SystemGuid.BlockTypeGuid( "8885f47d-9262-48b0-b969-9bee003370eb" )]
     [CustomizedGrid]
-    public class GroupTypeList : RockEntityListBlockType<GroupType>
+    public class GroupTypeList : RockListBlockType<GroupTypeWithGroupCounts>
     {
         #region Keys
 
@@ -123,29 +124,38 @@ namespace Rock.Blocks.Group
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<GroupType> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<GroupTypeWithGroupCounts> GetListQueryable( RockContext rockContext )
         {
-            return new GroupTypeService( rockContext ).Queryable();
+            return new GroupTypeService( rockContext )
+                .Queryable()
+                .Include( gt => gt.GroupTypePurposeValue.Value )
+                //.AsNoTracking() <-- Don't use this because the list is Re-Orderable and doing this will break that functionality.
+                .Select( a => new GroupTypeWithGroupCounts
+                {
+                    GroupType = a,
+                    GroupsCount = a.Groups.Count(),
+                    GroupTypePurpose = a.GroupTypePurposeValue.Value
+                } );
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<GroupType> GetOrderedListQueryable( IQueryable<GroupType> queryable, RockContext rockContext )
+        protected override IQueryable<GroupTypeWithGroupCounts> GetOrderedListQueryable( IQueryable<GroupTypeWithGroupCounts> queryable, RockContext rockContext )
         {
-            return queryable.OrderBy( g => g.Order ).ThenBy( g => g.Name );
+            return queryable.OrderBy( b => b.GroupType.Order ).ThenBy( b => b.GroupType.Name );
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<GroupType> GetGridBuilder()
+        protected override GridBuilder<GroupTypeWithGroupCounts> GetGridBuilder()
         {
-            return new GridBuilder<GroupType>()
+            return new GridBuilder<GroupTypeWithGroupCounts>()
                 .WithBlock( this )
-                .AddTextField( "idKey", a => a.IdKey )
-                .AddTextField( "purpose", a => a.GroupTypePurposeValue?.Value )
-                .AddField( "groupsCount", a => a.Groups.Count )
-                .AddTextField( "name", a => a.Name )
-                .AddField( "showInNavigation", a => a.ShowInNavigation )
-                .AddField( "isSystem", a => a.IsSystem )
-                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
+                .AddTextField( "idKey", a => a.GroupType.IdKey )
+                .AddTextField( "purpose", a => a.GroupTypePurpose )
+                .AddField( "groupsCount", a => a.GroupsCount )
+                .AddTextField( "name", a => a.GroupType.Name )
+                .AddField( "showInNavigation", a => a.GroupType.ShowInNavigation )
+                .AddField( "isSystem", a => a.GroupType.IsSystem )
+                .AddField( "isSecurityDisabled", a => !a.GroupType.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
         }
 
         #endregion
@@ -170,7 +180,8 @@ namespace Rock.Blocks.Group
                 // Get the entities from the database.
                 var items = GetListItems( qry, rockContext );
 
-                if ( !items.ReorderEntity( key, beforeKey ) )
+                var groupTypes = items.Select( i => i.GroupType ).ToList();
+                if ( !groupTypes.ReorderEntity( key, beforeKey ) )
                 {
                     return ActionBadRequest( "Invalid reorder attempt." );
                 }
@@ -217,6 +228,19 @@ namespace Rock.Blocks.Group
 
                 return ActionOk();
             }
+        }
+
+        #endregion
+        #region Support Classes
+
+        /// <summary>
+        /// The temporary data format to use when building the results for the grid.
+        /// </summary>
+        public class GroupTypeWithGroupCounts
+        {
+            public Rock.Model.GroupType GroupType { get; set; }
+            public int GroupsCount { get; set; }
+            public string GroupTypePurpose { get; set; }
         }
 
         #endregion

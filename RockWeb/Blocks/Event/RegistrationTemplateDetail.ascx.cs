@@ -1247,327 +1247,334 @@ The logged-in person's information will be used to complete the registrar inform
                 // Save the entity field changes to the registration template.
                 try
                 {
-                    if ( registrationTemplate.Id.Equals( 0 ) )
+
+                    // Everything below should be part of a single save transaction,
+                    // if anything fails to save, then the whole thing needs to be
+                    // rolled back.
+                    rockContext.WrapTransaction( () =>
                     {
-                        registrationTemplateService.Add( registrationTemplate );
-                    }
-
-                    rockContext.SaveChanges();
-
-                    var attributeService = new AttributeService( rockContext );
-                    var registrationTemplateFormService = new RegistrationTemplateFormService( rockContext );
-                    var registrationTemplateFormFieldService = new RegistrationTemplateFormFieldService( rockContext );
-                    var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
-                    var registrationTemplateFeeService = new RegistrationTemplateFeeService( rockContext );
-                    var registrationTemplateFeeItemService = new RegistrationTemplateFeeItemService( rockContext );
-                    var registrationRegistrantFeeService = new RegistrationRegistrantFeeService( rockContext );
-                    var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( rockContext );
-
-                    var groupService = new GroupService( rockContext );
-
-                    // delete forms that aren't assigned in the UI anymore
-                    var formUiGuids = FormState.Select( f => f.Guid ).ToList();
-                    foreach ( var form in registrationTemplateFormService
-                        .Queryable()
-                        .Where( f =>
-                            f.RegistrationTemplateId == registrationTemplate.Id
-                            && !formUiGuids.Contains( f.Guid ) ) )
-                    {
-                        foreach ( var formField in form.Fields.ToList() )
+                        if ( registrationTemplate.Id.Equals( 0 ) )
                         {
-                            form.Fields.Remove( formField );
+                            registrationTemplateService.Add( registrationTemplate );
+                        }
+
+                        rockContext.SaveChanges();
+
+                        var attributeService = new AttributeService( rockContext );
+                        var registrationTemplateFormService = new RegistrationTemplateFormService( rockContext );
+                        var registrationTemplateFormFieldService = new RegistrationTemplateFormFieldService( rockContext );
+                        var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
+                        var registrationTemplateFeeService = new RegistrationTemplateFeeService( rockContext );
+                        var registrationTemplateFeeItemService = new RegistrationTemplateFeeItemService( rockContext );
+                        var registrationRegistrantFeeService = new RegistrationRegistrantFeeService( rockContext );
+                        var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( rockContext );
+
+                        var groupService = new GroupService( rockContext );
+
+                        // delete forms that aren't assigned in the UI anymore
+                        var formUiGuids = FormState.Select( f => f.Guid ).ToList();
+                        foreach ( var form in registrationTemplateFormService
+                            .Queryable()
+                            .Where( f =>
+                                f.RegistrationTemplateId == registrationTemplate.Id
+                                && !formUiGuids.Contains( f.Guid ) ) )
+                        {
+                            foreach ( var formField in form.Fields.ToList() )
+                            {
+                                form.Fields.Remove( formField );
+                                registrationTemplateFormFieldService.Delete( formField );
+                            }
+
+                            registrationTemplateFormService.Delete( form );
+                        }
+
+                        // delete fields that aren't assigned in the UI anymore
+                        var fieldUiGuids = FormFieldsState.SelectMany( a => a.Value ).Select( f => f.Guid ).ToList();
+                        foreach ( var formField in registrationTemplateFormFieldService
+                            .Queryable()
+                            .Where( a =>
+                                formUiGuids.Contains( a.RegistrationTemplateForm.Guid )
+                                && !fieldUiGuids.Contains( a.Guid ) ) )
+                        {
                             registrationTemplateFormFieldService.Delete( formField );
                         }
 
-                        registrationTemplateFormService.Delete( form );
-                    }
-
-                    // delete fields that aren't assigned in the UI anymore
-                    var fieldUiGuids = FormFieldsState.SelectMany( a => a.Value ).Select( f => f.Guid ).ToList();
-                    foreach ( var formField in registrationTemplateFormFieldService
-                        .Queryable()
-                        .Where( a =>
-                            formUiGuids.Contains( a.RegistrationTemplateForm.Guid )
-                            && !fieldUiGuids.Contains( a.Guid ) ) )
-                    {
-                        registrationTemplateFormFieldService.Delete( formField );
-                    }
-
-                    // delete discounts that aren't assigned in the UI anymore
-                    var discountUiGuids = DiscountState.Select( u => u.Guid ).ToList();
-                    foreach ( var discount in registrationTemplateDiscountService
-                        .Queryable()
-                        .Where( d =>
-                            d.RegistrationTemplateId == registrationTemplate.Id
-                            && !discountUiGuids.Contains( d.Guid ) ) )
-                    {
-                        registrationTemplateDiscountService.Delete( discount );
-                    }
-
-                    // delete fees that aren't assigned in the UI anymore
-                    var feeUiGuids = FeeState.Select( u => u.Guid ).ToList();
-                    var deletedfees = registrationTemplateFeeService
-                        .Queryable()
-                        .Where( d =>
-                            d.RegistrationTemplateId == registrationTemplate.Id
-                            && !feeUiGuids.Contains( d.Guid ) )
-                        .ToList();
-
-                    var deletedFeeIds = deletedfees.Select( f => f.Id ).ToList();
-                    foreach ( var registrantFee in registrationRegistrantFeeService
-                        .Queryable()
-                        .Where( f => deletedFeeIds.Contains( f.RegistrationTemplateFeeId ) )
-                        .ToList() )
-                    {
-                        registrationRegistrantFeeService.Delete( registrantFee );
-                    }
-
-                    foreach ( var fee in deletedfees )
-                    {
-                        registrationTemplateFeeService.Delete( fee );
-                    }
-
-                    // delete placements that aren't assigned in the UI anymore
-                    var registrationTemplatePlacementGuids = RegistrationTemplatePlacementState.Select( u => u.Guid ).ToList();
-                    var deletedRegistrationTemplatePlacements = registrationTemplatePlacementService
-                        .Queryable()
-                        .Where( d =>
-                            d.RegistrationTemplateId == registrationTemplate.Id
-                            && !registrationTemplatePlacementGuids.Contains( d.Guid ) )
-                        .ToList();
-
-                    foreach ( var deletedRegistrationTemplatePlacement in deletedRegistrationTemplatePlacements )
-                    {
-                        registrationTemplatePlacementService.Delete( deletedRegistrationTemplatePlacement );
-                    }
-
-                    var registrationRegistrantEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.RegistrationRegistrant ) ).Id;
-                    var registrationRegistrantAttributeQualifierColumn = "RegistrationTemplateId";
-                    var registrationRegistrantAttributeQualifierValue = registrationTemplate.Id.ToString();
-                    var registrantAttributesUI = FormFieldsState
-                        .SelectMany( s =>
-                            s.Value.Where( a =>
-                                a.FieldSource == RegistrationFieldSource.RegistrantAttribute
-                                && a.Attribute != null ) )
-                        .Select( f => f.Attribute )
-                        .ToList();
-                    var selectedAttributeGuids = registrantAttributesUI.Select( a => a.Guid );
-
-                    // Delete the registrant attributes that were removed from the UI
-                    var registrantAttributesDB = attributeService.GetByEntityTypeQualifier( registrationRegistrantEntityTypeId, registrationRegistrantAttributeQualifierColumn, registrationRegistrantAttributeQualifierValue, true );
-                    foreach ( var attr in registrantAttributesDB.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ).ToList() )
-                    {
-                        var canDeleteAttribute = true;
-                        foreach ( var form in registrationTemplate.Forms )
+                        // delete discounts that aren't assigned in the UI anymore
+                        var discountUiGuids = DiscountState.Select( u => u.Guid ).ToList();
+                        foreach ( var discount in registrationTemplateDiscountService
+                            .Queryable()
+                            .Where( d =>
+                                d.RegistrationTemplateId == registrationTemplate.Id
+                                && !discountUiGuids.Contains( d.Guid ) ) )
                         {
-                            // make sure other RegistrationTemplates aren't using this AttributeId (which could happen due to an old bug)
-                            var formFieldsFromOtherRegistrationTemplatesUsingAttribute = registrationTemplateFormFieldService.Queryable().Where( a => a.AttributeId.Value == attr.Id && a.RegistrationTemplateForm.RegistrationTemplateId != registrationTemplate.Id ).Any();
-                            if ( formFieldsFromOtherRegistrationTemplatesUsingAttribute )
+                            registrationTemplateDiscountService.Delete( discount );
+                        }
+
+                        // delete fees that aren't assigned in the UI anymore
+                        var feeUiGuids = FeeState.Select( u => u.Guid ).ToList();
+                        var deletedfees = registrationTemplateFeeService
+                            .Queryable()
+                            .Where( d =>
+                                d.RegistrationTemplateId == registrationTemplate.Id
+                                && !feeUiGuids.Contains( d.Guid ) )
+                            .ToList();
+
+                        var deletedFeeIds = deletedfees.Select( f => f.Id ).ToList();
+                        foreach ( var registrantFee in registrationRegistrantFeeService
+                            .Queryable()
+                            .Where( f => deletedFeeIds.Contains( f.RegistrationTemplateFeeId ) )
+                            .ToList() )
+                        {
+                            registrationRegistrantFeeService.Delete( registrantFee );
+                        }
+
+                        foreach ( var fee in deletedfees )
+                        {
+                            registrationTemplateFeeService.Delete( fee );
+                        }
+
+                        // delete placements that aren't assigned in the UI anymore
+                        var registrationTemplatePlacementGuids = RegistrationTemplatePlacementState.Select( u => u.Guid ).ToList();
+                        var deletedRegistrationTemplatePlacements = registrationTemplatePlacementService
+                            .Queryable()
+                            .Where( d =>
+                                d.RegistrationTemplateId == registrationTemplate.Id
+                                && !registrationTemplatePlacementGuids.Contains( d.Guid ) )
+                            .ToList();
+
+                        foreach ( var deletedRegistrationTemplatePlacement in deletedRegistrationTemplatePlacements )
+                        {
+                            registrationTemplatePlacementService.Delete( deletedRegistrationTemplatePlacement );
+                        }
+
+                        var registrationRegistrantEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.RegistrationRegistrant ) ).Id;
+                        var registrationRegistrantAttributeQualifierColumn = "RegistrationTemplateId";
+                        var registrationRegistrantAttributeQualifierValue = registrationTemplate.Id.ToString();
+                        var registrantAttributesUI = FormFieldsState
+                            .SelectMany( s =>
+                                s.Value.Where( a =>
+                                    a.FieldSource == RegistrationFieldSource.RegistrantAttribute
+                                    && a.Attribute != null ) )
+                            .Select( f => f.Attribute )
+                            .ToList();
+                        var selectedAttributeGuids = registrantAttributesUI.Select( a => a.Guid );
+
+                        // Delete the registrant attributes that were removed from the UI
+                        var registrantAttributesDB = attributeService.GetByEntityTypeQualifier( registrationRegistrantEntityTypeId, registrationRegistrantAttributeQualifierColumn, registrationRegistrantAttributeQualifierValue, true );
+                        foreach ( var attr in registrantAttributesDB.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ).ToList() )
+                        {
+                            var canDeleteAttribute = true;
+                            foreach ( var form in registrationTemplate.Forms )
                             {
-                                canDeleteAttribute = false;
+                                // make sure other RegistrationTemplates aren't using this AttributeId (which could happen due to an old bug)
+                                var formFieldsFromOtherRegistrationTemplatesUsingAttribute = registrationTemplateFormFieldService.Queryable().Where( a => a.AttributeId.Value == attr.Id && a.RegistrationTemplateForm.RegistrationTemplateId != registrationTemplate.Id ).Any();
+                                if ( formFieldsFromOtherRegistrationTemplatesUsingAttribute )
+                                {
+                                    canDeleteAttribute = false;
+                                }
+                            }
+
+                            if ( canDeleteAttribute )
+                            {
+                                attributeService.Delete( attr );
                             }
                         }
 
-                        if ( canDeleteAttribute )
+                        rockContext.SaveChanges();
+
+                        // Save all of the registrant attributes still in the UI
+                        foreach ( var attr in registrantAttributesUI )
                         {
-                            attributeService.Delete( attr );
-                        }
-                    }
-
-                    rockContext.SaveChanges();
-
-                    // Save all of the registrant attributes still in the UI
-                    foreach ( var attr in registrantAttributesUI )
-                    {
-                        Helper.SaveAttributeEdits( attr, registrationRegistrantEntityTypeId, registrationRegistrantAttributeQualifierColumn, registrationRegistrantAttributeQualifierValue, rockContext );
-                    }
-
-                    // add/updated forms/fields
-                    foreach ( var formUi in FormState )
-                    {
-                        var form = registrationTemplate.Forms.FirstOrDefault( f => f.Guid.Equals( formUi.Guid ) );
-                        if ( form == null )
-                        {
-                            form = new RegistrationTemplateForm
-                            {
-                                Guid = formUi.Guid
-                            };
-                            registrationTemplate.Forms.Add( form );
+                            Helper.SaveAttributeEdits( attr, registrationRegistrantEntityTypeId, registrationRegistrantAttributeQualifierColumn, registrationRegistrantAttributeQualifierValue, rockContext );
                         }
 
-                        form.Name = formUi.Name;
-                        form.Order = formUi.Order;
-
-                        if ( FormFieldsState.ContainsKey( form.Guid ) )
+                        // add/updated forms/fields
+                        foreach ( var formUi in FormState )
                         {
-                            foreach ( var formFieldUI in FormFieldsState[form.Guid] )
+                            var form = registrationTemplate.Forms.FirstOrDefault( f => f.Guid.Equals( formUi.Guid ) );
+                            if ( form == null )
                             {
-                                var formField = form.Fields.FirstOrDefault( a => a.Guid.Equals( formFieldUI.Guid ) );
-                                if ( formField == null )
+                                form = new RegistrationTemplateForm
                                 {
-                                    formField = new RegistrationTemplateFormField
-                                    {
-                                        Guid = formFieldUI.Guid
-                                    };
-                                    form.Fields.Add( formField );
-                                }
+                                    Guid = formUi.Guid
+                                };
+                                registrationTemplate.Forms.Add( form );
+                            }
 
-                                formField.AttributeId = formFieldUI.AttributeId;
-                                if ( !formField.AttributeId.HasValue
-                                     && formFieldUI.FieldSource == RegistrationFieldSource.RegistrantAttribute
-                                     && formFieldUI.Attribute != null )
+                            form.Name = formUi.Name;
+                            form.Order = formUi.Order;
+
+                            if ( FormFieldsState.ContainsKey( form.Guid ) )
+                            {
+                                foreach ( var formFieldUI in FormFieldsState[form.Guid] )
                                 {
-                                    var attr = AttributeCache.Get( formFieldUI.Attribute.Guid, rockContext );
-                                    if ( attr != null )
+                                    var formField = form.Fields.FirstOrDefault( a => a.Guid.Equals( formFieldUI.Guid ) );
+                                    if ( formField == null )
                                     {
-                                        formField.AttributeId = attr.Id;
+                                        formField = new RegistrationTemplateFormField
+                                        {
+                                            Guid = formFieldUI.Guid
+                                        };
+                                        form.Fields.Add( formField );
                                     }
+
+                                    formField.AttributeId = formFieldUI.AttributeId;
+                                    if ( !formField.AttributeId.HasValue
+                                         && formFieldUI.FieldSource == RegistrationFieldSource.RegistrantAttribute
+                                         && formFieldUI.Attribute != null )
+                                    {
+                                        var attr = AttributeCache.Get( formFieldUI.Attribute.Guid, rockContext );
+                                        if ( attr != null )
+                                        {
+                                            formField.AttributeId = attr.Id;
+                                        }
+                                    }
+
+                                    formField.FieldSource = formFieldUI.FieldSource;
+                                    formField.PersonFieldType = formFieldUI.PersonFieldType;
+                                    formField.IsInternal = formFieldUI.IsInternal;
+                                    formField.IsSharedValue = formFieldUI.IsSharedValue;
+                                    formField.ShowCurrentValue = formFieldUI.ShowCurrentValue;
+                                    formField.PreText = formFieldUI.PreText;
+                                    formField.PostText = formFieldUI.PostText;
+                                    formField.IsGridField = formFieldUI.IsGridField;
+                                    formField.IsRequired = formFieldUI.IsRequired;
+                                    formField.IsLockedIfValuesExist = formFieldUI.IsLockedIfValuesExist;
+                                    formField.Order = formFieldUI.Order;
+                                    formField.ShowOnWaitlist = formFieldUI.ShowOnWaitlist;
+                                    formField.FieldVisibilityRules = formFieldUI.FieldVisibilityRules;
                                 }
-
-                                formField.FieldSource = formFieldUI.FieldSource;
-                                formField.PersonFieldType = formFieldUI.PersonFieldType;
-                                formField.IsInternal = formFieldUI.IsInternal;
-                                formField.IsSharedValue = formFieldUI.IsSharedValue;
-                                formField.ShowCurrentValue = formFieldUI.ShowCurrentValue;
-                                formField.PreText = formFieldUI.PreText;
-                                formField.PostText = formFieldUI.PostText;
-                                formField.IsGridField = formFieldUI.IsGridField;
-                                formField.IsRequired = formFieldUI.IsRequired;
-                                formField.IsLockedIfValuesExist = formFieldUI.IsLockedIfValuesExist;
-                                formField.Order = formFieldUI.Order;
-                                formField.ShowOnWaitlist = formFieldUI.ShowOnWaitlist;
-                                formField.FieldVisibilityRules = formFieldUI.FieldVisibilityRules;
-                            }
-                        }
-                    }
-
-                    // add/updated discounts
-                    foreach ( var discountUI in DiscountState )
-                    {
-                        var discount = registrationTemplate.Discounts.FirstOrDefault( a => a.Guid.Equals( discountUI.Guid ) );
-                        if ( discount == null )
-                        {
-                            discount = new RegistrationTemplateDiscount
-                            {
-                                Guid = discountUI.Guid
-                            };
-                            registrationTemplate.Discounts.Add( discount );
-                        }
-
-                        discount.Code = discountUI.Code;
-                        discount.DiscountPercentage = discountUI.DiscountPercentage;
-                        discount.DiscountAmount = discountUI.DiscountAmount;
-                        discount.Order = discountUI.Order;
-                        discount.MaxUsage = discountUI.MaxUsage;
-                        discount.MaxRegistrants = discountUI.MaxRegistrants;
-                        discount.MinRegistrants = discountUI.MinRegistrants;
-                        discount.StartDate = discountUI.StartDate;
-                        discount.EndDate = discountUI.EndDate;
-                        discount.AutoApplyDiscount = discountUI.AutoApplyDiscount;
-                    }
-
-                    // add/updated fees
-                    foreach ( var feeUI in FeeState )
-                    {
-                        var fee = registrationTemplate.Fees.FirstOrDefault( a => a.Guid.Equals( feeUI.Guid ) );
-                        if ( fee == null )
-                        {
-                            fee = new RegistrationTemplateFee
-                            {
-                                Guid = feeUI.Guid
-                            };
-                            registrationTemplate.Fees.Add( fee );
-                        }
-
-                        fee.Name = feeUI.Name;
-                        fee.FeeType = feeUI.FeeType;
-
-                        // delete any feeItems no longer defined
-                        foreach ( var deletedFeeItem in fee.FeeItems.ToList().Where( a => !feeUI.FeeItems.Any( x => x.Guid == a.Guid ) ) )
-                        {
-                            registrationTemplateFeeItemService.Delete( deletedFeeItem );
-                        }
-
-                        // add any new feeItems
-                        foreach ( var newFeeItem in feeUI.FeeItems.ToList().Where( a => !fee.FeeItems.Any( x => x.Guid == a.Guid ) ) )
-                        {
-                            newFeeItem.RegistrationTemplateFee = fee;
-                            newFeeItem.RegistrationTemplateFeeId = fee.Id;
-                            registrationTemplateFeeItemService.Add( newFeeItem );
-                        }
-
-                        // update feeItems to match
-                        foreach ( var feeItem in fee.FeeItems )
-                        {
-                            var feeItemUI = feeUI.FeeItems.FirstOrDefault( x => x.Guid == feeItem.Guid );
-                            if ( feeItemUI != null )
-                            {
-                                feeItem.Order = feeItemUI.Order;
-                                feeItem.Name = feeItemUI.Name;
-                                feeItem.Cost = feeItemUI.Cost;
-                                feeItem.MaximumUsageCount = feeItemUI.MaximumUsageCount;
                             }
                         }
 
-                        fee.DiscountApplies = feeUI.DiscountApplies;
-                        fee.AllowMultiple = feeUI.AllowMultiple;
-                        fee.Order = feeUI.Order;
-                        fee.IsActive = feeUI.IsActive;
-                        fee.IsRequired = feeUI.IsRequired;
-                        fee.HideWhenNoneRemaining = feeUI.HideWhenNoneRemaining;
-                    }
-
-                    // Add/Update Registration Placements
-                    foreach ( var registrationTemplatePlacementUI in RegistrationTemplatePlacementState )
-                    {
-                        var registrationTemplatePlacement = registrationTemplate.Placements.FirstOrDefault( a => a.Guid.Equals( registrationTemplatePlacementUI.Guid ) );
-                        if ( registrationTemplatePlacement == null )
+                        // add/updated discounts
+                        foreach ( var discountUI in DiscountState )
                         {
-                            registrationTemplatePlacement = new RegistrationTemplatePlacement
+                            var discount = registrationTemplate.Discounts.FirstOrDefault( a => a.Guid.Equals( discountUI.Guid ) );
+                            if ( discount == null )
                             {
-                                Guid = registrationTemplatePlacementUI.Guid
-                            };
-                            registrationTemplate.Placements.Add( registrationTemplatePlacement );
+                                discount = new RegistrationTemplateDiscount
+                                {
+                                    Guid = discountUI.Guid
+                                };
+                                registrationTemplate.Discounts.Add( discount );
+                            }
+
+                            discount.Code = discountUI.Code;
+                            discount.DiscountPercentage = discountUI.DiscountPercentage;
+                            discount.DiscountAmount = discountUI.DiscountAmount;
+                            discount.Order = discountUI.Order;
+                            discount.MaxUsage = discountUI.MaxUsage;
+                            discount.MaxRegistrants = discountUI.MaxRegistrants;
+                            discount.MinRegistrants = discountUI.MinRegistrants;
+                            discount.StartDate = discountUI.StartDate;
+                            discount.EndDate = discountUI.EndDate;
+                            discount.AutoApplyDiscount = discountUI.AutoApplyDiscount;
                         }
 
-                        registrationTemplatePlacement.Name = registrationTemplatePlacementUI.Name;
-                        registrationTemplatePlacement.GroupTypeId = registrationTemplatePlacementUI.GroupTypeId;
-                        registrationTemplatePlacement.IconCssClass = registrationTemplatePlacementUI.IconCssClass;
-                        registrationTemplatePlacement.Order = registrationTemplatePlacementUI.Order;
-                        registrationTemplatePlacement.AllowMultiplePlacements = registrationTemplatePlacementUI.AllowMultiplePlacements;
-
-                        var sharedPlacementGroupIds = RegistrationTemplatePlacementGuidGroupIdsState.GetValueOrNull( registrationTemplatePlacement.Guid ) ?? new List<int>();
-                        var sharedPlacementGroups = groupService.GetByIds( sharedPlacementGroupIds ).ToList();
-                        if ( registrationTemplatePlacement.Id == 0 )
+                        // add/updated fees
+                        foreach ( var feeUI in FeeState )
                         {
-                            rockContext.SaveChanges();
+                            var fee = registrationTemplate.Fees.FirstOrDefault( a => a.Guid.Equals( feeUI.Guid ) );
+                            if ( fee == null )
+                            {
+                                fee = new RegistrationTemplateFee
+                                {
+                                    Guid = feeUI.Guid
+                                };
+                                registrationTemplate.Fees.Add( fee );
+                            }
+
+                            fee.Name = feeUI.Name;
+                            fee.FeeType = feeUI.FeeType;
+
+                            // delete any feeItems no longer defined
+                            foreach ( var deletedFeeItem in fee.FeeItems.ToList().Where( a => !feeUI.FeeItems.Any( x => x.Guid == a.Guid ) ) )
+                            {
+                                registrationTemplateFeeItemService.Delete( deletedFeeItem );
+                            }
+
+                            // add any new feeItems
+                            foreach ( var newFeeItem in feeUI.FeeItems.ToList().Where( a => !fee.FeeItems.Any( x => x.Guid == a.Guid ) ) )
+                            {
+                                newFeeItem.RegistrationTemplateFee = fee;
+                                newFeeItem.RegistrationTemplateFeeId = fee.Id;
+                                registrationTemplateFeeItemService.Add( newFeeItem );
+                            }
+
+                            // update feeItems to match
+                            foreach ( var feeItem in fee.FeeItems )
+                            {
+                                var feeItemUI = feeUI.FeeItems.FirstOrDefault( x => x.Guid == feeItem.Guid );
+                                if ( feeItemUI != null )
+                                {
+                                    feeItem.Order = feeItemUI.Order;
+                                    feeItem.Name = feeItemUI.Name;
+                                    feeItem.Cost = feeItemUI.Cost;
+                                    feeItem.MaximumUsageCount = feeItemUI.MaximumUsageCount;
+                                }
+                            }
+
+                            fee.DiscountApplies = feeUI.DiscountApplies;
+                            fee.AllowMultiple = feeUI.AllowMultiple;
+                            fee.Order = feeUI.Order;
+                            fee.IsActive = feeUI.IsActive;
+                            fee.IsRequired = feeUI.IsRequired;
+                            fee.HideWhenNoneRemaining = feeUI.HideWhenNoneRemaining;
                         }
 
-                        registrationTemplatePlacementService.SetRegistrationTemplatePlacementPlacementGroups( registrationTemplatePlacement, sharedPlacementGroups );
-                    }
+                        // Add/Update Registration Placements
+                        foreach ( var registrationTemplatePlacementUI in RegistrationTemplatePlacementState )
+                        {
+                            var registrationTemplatePlacement = registrationTemplate.Placements.FirstOrDefault( a => a.Guid.Equals( registrationTemplatePlacementUI.Guid ) );
+                            if ( registrationTemplatePlacement == null )
+                            {
+                                registrationTemplatePlacement = new RegistrationTemplatePlacement
+                                {
+                                    Guid = registrationTemplatePlacementUI.Guid
+                                };
+                                registrationTemplate.Placements.Add( registrationTemplatePlacement );
+                            }
 
-                    registrationTemplate.ModifiedByPersonAliasId = CurrentPersonAliasId;
-                    registrationTemplate.ModifiedDateTime = RockDateTime.Now;
+                            registrationTemplatePlacement.Name = registrationTemplatePlacementUI.Name;
+                            registrationTemplatePlacement.GroupTypeId = registrationTemplatePlacementUI.GroupTypeId;
+                            registrationTemplatePlacement.IconCssClass = registrationTemplatePlacementUI.IconCssClass;
+                            registrationTemplatePlacement.Order = registrationTemplatePlacementUI.Order;
+                            registrationTemplatePlacement.AllowMultiplePlacements = registrationTemplatePlacementUI.AllowMultiplePlacements;
 
-                    rockContext.SaveChanges();
+                            var sharedPlacementGroupIds = RegistrationTemplatePlacementGuidGroupIdsState.GetValueOrNull( registrationTemplatePlacement.Guid ) ?? new List<int>();
+                            var sharedPlacementGroups = groupService.GetByIds( sharedPlacementGroupIds ).ToList();
+                            if ( registrationTemplatePlacement.Id == 0 )
+                            {
+                                rockContext.SaveChanges();
+                            }
 
-                    SaveAttributes( new Registration().TypeId, "RegistrationTemplateId", registrationTemplate.Id.ToString(), RegistrationAttributesState, rockContext );
+                            registrationTemplatePlacementService.SetRegistrationTemplatePlacementPlacementGroups( registrationTemplatePlacement, sharedPlacementGroups );
+                        }
 
-                    // If this is a new template, give the current user and the Registration Administrators role administrative
-                    // rights to this template, and staff, and staff like roles edit rights
-                    if ( newTemplate )
-                    {
-                        registrationTemplate.AllowPerson( Authorization.ADMINISTRATE, CurrentPerson, rockContext );
+                        registrationTemplate.ModifiedByPersonAliasId = CurrentPersonAliasId;
+                        registrationTemplate.ModifiedDateTime = RockDateTime.Now;
 
-                        var registrationAdmins = groupService.Get( Rock.SystemGuid.Group.GROUP_EVENT_REGISTRATION_ADMINISTRATORS.AsGuid() );
-                        registrationTemplate.AllowSecurityRole( Authorization.ADMINISTRATE, registrationAdmins, rockContext );
+                        rockContext.SaveChanges();
 
-                        var staffLikeUsers = groupService.Get( Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS.AsGuid() );
-                        registrationTemplate.AllowSecurityRole( Authorization.EDIT, staffLikeUsers, rockContext );
+                        SaveAttributes( new Registration().TypeId, "RegistrationTemplateId", registrationTemplate.Id.ToString(), RegistrationAttributesState, rockContext );
 
-                        var staffUsers = groupService.Get( Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS.AsGuid() );
-                        registrationTemplate.AllowSecurityRole( Authorization.EDIT, staffUsers, rockContext );
-                    }
+                        // If this is a new template, give the current user and the Registration Administrators role administrative
+                        // rights to this template, and staff, and staff like roles edit rights
+                        if ( newTemplate )
+                        {
+                            registrationTemplate.AllowPerson( Authorization.ADMINISTRATE, CurrentPerson, rockContext );
+
+                            var registrationAdmins = groupService.Get( Rock.SystemGuid.Group.GROUP_EVENT_REGISTRATION_ADMINISTRATORS.AsGuid() );
+                            registrationTemplate.AllowSecurityRole( Authorization.ADMINISTRATE, registrationAdmins, rockContext );
+
+                            var staffLikeUsers = groupService.Get( Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS.AsGuid() );
+                            registrationTemplate.AllowSecurityRole( Authorization.EDIT, staffLikeUsers, rockContext );
+
+                            var staffUsers = groupService.Get( Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS.AsGuid() );
+                            registrationTemplate.AllowSecurityRole( Authorization.EDIT, staffUsers, rockContext );
+                        }
+                    } );
 
                     var qryParams = new Dictionary<string, string>
                     {

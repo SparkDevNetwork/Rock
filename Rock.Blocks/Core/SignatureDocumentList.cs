@@ -34,6 +34,7 @@ using Rock.ViewModels.Blocks.Core.SignatureDocumentList;
 using Rock.Web.Cache;
 using Person = Rock.Model.Person;
 using Rock.Web.UI.Controls;
+using Rock.Utility;
 
 namespace Rock.Blocks.Core
 {
@@ -113,7 +114,7 @@ namespace Rock.Blocks.Core
             {
                 options.ShowDocumentType = false;
 
-                int? documentTypeId = PageParameter( PageParameterKey.SignatureDocumentTemplateId ).AsIntegerOrNull();
+                var documentTypeId = GetDocumentTypeIdFromPageParameter();
                 if ( documentTypeId.HasValue && documentTypeId.Value != 0 )
                 {
                     // Following the same logic as the Signature Document Detail to hide the Block if the Current Person is not authorized to view.
@@ -127,7 +128,6 @@ namespace Rock.Blocks.Core
                 }
             }
 
-
             return options;
         }
 
@@ -138,6 +138,12 @@ namespace Rock.Blocks.Core
         private bool GetIsDeleteEnabled()
         {
             return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+        }
+
+        private int? GetDocumentTypeIdFromPageParameter()
+        {
+            var documentTypeParam = PageParameter( PageParameterKey.SignatureDocumentTemplateId );
+            return IdHasher.Instance.GetId( documentTypeParam ) ?? documentTypeParam.AsIntegerOrNull();
         }
 
         /// <summary>
@@ -164,10 +170,11 @@ namespace Rock.Blocks.Core
         protected override IQueryable<SignatureDocument> GetListQueryable( RockContext rockContext )
         {
             var qry = base.GetListQueryable( rockContext )
-                .Include( a => a.AppliesToPersonAlias )
-                .Include( a => a.AssignedToPersonAlias )
-                .Include( a => a.SignedByPersonAlias )
-                .Include( a => a.SignatureDocumentTemplate );
+                .Include( a => a.AppliesToPersonAlias.Person )
+                .Include( a => a.AssignedToPersonAlias.Person )
+                .Include( a => a.SignedByPersonAlias.Person )
+                .Include( a => a.SignatureDocumentTemplate )
+                .Include( a => a.BinaryFile );
 
             // in case this is used as a Person Block, set the TargetPerson 
             Person targetPerson = this.RequestContext.GetContextEntity<Person>();
@@ -181,9 +188,8 @@ namespace Rock.Blocks.Core
             }
             else
             {
-                string key = PageParameter( PageParameterKey.SignatureDocumentTemplateId );
-                int? documentTypeId = new SignatureDocumentTemplateService( rockContext ).GetSelect( key, s => s.Id );
-                if ( documentTypeId.HasValue && documentTypeId.Value != 0 )
+                int? documentTypeId = GetDocumentTypeIdFromPageParameter();
+                if ( documentTypeId.HasValue )
                 {
                     qry = qry.Where( d =>
                         d.SignatureDocumentTemplateId == documentTypeId.Value );

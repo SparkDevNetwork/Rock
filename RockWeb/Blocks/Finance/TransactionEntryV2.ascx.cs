@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// Version 2 of the Transaction Entry Block
     /// </summary>
-    [DisplayName( "Transaction Entry (V2)" )]
+    [DisplayName( "Transaction Entry" )]
     [Category( "Finance" )]
     [Description( "Creates a new financial transaction or scheduled transaction." )]
 

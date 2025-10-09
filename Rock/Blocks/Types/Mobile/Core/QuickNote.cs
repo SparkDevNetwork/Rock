@@ -130,7 +130,7 @@ namespace Rock.Blocks.Types.Mobile.Core
 
                 AddQuickNote( NoteType.Value, options.NoteText, rockContext );
 
-                return new BlockActionResult( System.Net.HttpStatusCode.OK );
+                return ActionOk();
             }
         }
 

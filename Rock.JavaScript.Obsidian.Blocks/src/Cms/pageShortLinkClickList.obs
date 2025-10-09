@@ -6,6 +6,7 @@
           :entityTypeGuid="EntityType.Interaction"
           keyField="idKey"
           itemTerm="Clicks"
+          title="Clicks"
           stickyHeader
           liveUpdates
           :showLaunchWorkflow="false">

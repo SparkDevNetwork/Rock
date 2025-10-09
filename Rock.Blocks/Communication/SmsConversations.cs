@@ -14,6 +14,7 @@ using Rock.Enums.Core;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Communication.SmsConversations;
 using Rock.ViewModels.Controls;
@@ -100,6 +101,13 @@ namespace Rock.Blocks.Communication
         DefaultIntegerValue = 180,
         Order = 9 )]
 
+    [BooleanField( "Allow Unrestricted Uploads",
+        Description = "If true, anyone with access to send messages can upload images or files. Otherwise, it'll use the permissions set for Communication Attachment binary file type.",
+        IsRequired = false,
+        DefaultValue = "True",
+        Key = AttributeKey.AllowUnrestrictedUploads,
+        Order = 10 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "71944E38-A578-40B7-882F-A25CCBE9D408" )]
@@ -119,6 +127,7 @@ namespace Rock.Blocks.Communication
             public const string PersonInfoLavaTemplate = "PersonInfoLavaTemplate";
             public const string NoteTypes = "NoteTypes";
             public const string DatabaseTimeoutSeconds = "DatabaseTimeoutSeconds";
+            public const string AllowUnrestrictedUploads = "AllowUnrestrictedUploads";
         }
 
         private static class PreferenceKey
@@ -187,6 +196,7 @@ namespace Rock.Blocks.Communication
             box.Snippets = GetSnippetBags();
             box.IsNewMessageButtonVisible = GetAttributeValue( AttributeKey.EnableSmsSend ).AsBoolean();
             box.CanEditOrAdministrate = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
+            box.SecurityGrantToken = GetSecurityGrantToken();
 
             if ( box.SystemPhoneNumbers.Count == 0 )
             {
@@ -336,6 +346,25 @@ namespace Rock.Blocks.Communication
                     SnippetVisibility = s.OwnerPersonAliasId.HasValue ? "Personal" : "Shared"
                 } )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Gets the security grant token that will be used by UI controls on
+        /// this block to ensure they have the proper permissions.
+        /// </summary>
+        /// <returns>A string that represents the security grant token.</string>
+        private string GetSecurityGrantToken()
+        {
+            var securityGrant = new Rock.Security.SecurityGrant();
+
+            if ( GetAttributeValue( AttributeKey.AllowUnrestrictedUploads ).AsBoolean() )
+            {
+                // Enable uploading communication attachments without the normal permission restrictions
+                BinaryFileType binaryFileType = new BinaryFileTypeService( new RockContext() ).Get( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT.AsGuid() );
+                securityGrant.AddRule( new EntitySecurityGrantRule( binaryFileType.TypeId, binaryFileType.Id, Authorization.EDIT ) );
+            }
+
+            return securityGrant.ToToken();
         }
 
         /// <summary>

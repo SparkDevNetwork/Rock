@@ -1,0 +1,182 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.errorMessage || errorMessage" alertType="danger">
+        {{ config.errorMessage || errorMessage }}
+    </NotificationBox>
+
+    <template v-else-if="isSuccess">
+        <NotificationBox alertType="success" v-html="responseMessage" />
+    </template>
+
+    <template v-else>
+        <RockForm @submit="onSubmit">
+            <div class="row">
+                <div class="col-md-6">
+                    <FirstNameTextBox v-model="firstName"
+                                      label="First Name"
+                                      :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
+                </div>
+                <div class="col-md-6">
+                    <TextBox v-model="lastName" label="Last Name" rules="required" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <EmailBox v-model="email" label="Email" rules="required" />
+                </div>
+                <div class="col-md-6" v-if="config.campuses && config.campuses.length > 1">
+                    <DropDownList v-model="selectedCampusId" label="Campus" :items="config.campuses" rules="required" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div v-if="config.displayHomePhone" class="col-md-6">
+                    <PhoneNumberBoxWithSms v-model="homePhone" label="Home Phone" :hideSms="true" />
+                </div>
+                <div v-if="config.displayMobilePhone" class="col-md-6">
+                    <PhoneNumberBoxWithSms v-model="mobilePhone" label="Mobile Phone" :hideSms="true" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <AttributeValuesContainer v-if="attributes != null" v-model="attributeValues" :attributes="attributes" isEditMode />
+                </div>
+            </div>
+
+            <TextBox v-model="comments" :label="commentFieldLabel" textMode="multiline" :rows="3" />
+
+            <div class="captcha-container">
+                <Captcha v-if="!config.disableCaptchaSupport" ref="captchaElement" validationTitle="Captcha" />
+            </div>
+
+            <RockButton v-if="isCaptchaComplete" btnType="primary" type="submit">Connect</RockButton>
+        </RockForm>
+    </template>
+</template>
+
+<style scoped>
+.captcha-container {
+    margin-bottom: 1rem;
+}
+</style>
+
+<script setup lang="ts">
+    import { ref, onMounted } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import PhoneNumberBoxWithSms from "@Obsidian/Controls/phoneNumberBoxWithSms.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import Captcha from "@Obsidian/Controls/captcha.obs";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ConnectionOpportunitySignupInitializationBox } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionOpportunitySignup/connectionOpportunitySignupInitializationBox";
+    import { ConnectionOpportunitySignupRequestBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionOpportunitySignup/connectionOpportunitySignupRequestBag";
+    import { ConnectionOpportunitySignupResultBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionOpportunitySignup/connectionOpportunitySignupResultBag";
+    import { PhoneNumberBoxWithSmsControlBag } from "@Obsidian/ViewModels/Controls/phoneNumberBoxWithSmsControlBag";
+    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
+    import { ConnectionOpportunitySignupResultType } from "@Obsidian/Enums/Blocks/Connection/ConnectionOpportunitySignup/connectionOpportunitySignupResultType";
+
+    // #region Values
+
+    const config = useConfigurationValues<ConnectionOpportunitySignupInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const firstName = ref(config.firstName ?? "");
+    const lastName = ref(config.lastName ?? "");
+    const email = ref(config.email ?? "");
+    const homePhone = ref<PhoneNumberBoxWithSmsControlBag | undefined>(config.homePhone ?? undefined);
+    const mobilePhone = ref<PhoneNumberBoxWithSmsControlBag | undefined>(config.mobilePhone ?? undefined);
+    const selectedCampusId = ref(config.selectedCampusId?.toString() ?? "");
+    const attributes = ref(config.attributes ?? {});
+    const commentFieldLabel = config.commentFieldLabel ?? "Comments";
+
+    const isSuccess = ref(false);
+    const errorMessage = ref("");
+    const responseMessage = ref("");
+    const attributeValues = ref<Record<string, string>>({});
+    const comments = ref("");
+
+    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
+    const captchaToken = ref<string | undefined>();
+    const isCaptchaComplete = ref(false);
+
+    // #endregion Values
+
+    // #region Functions
+
+    async function waitForCaptcha(): Promise<void> {
+        if (config.disableCaptchaSupport || !captchaElement.value) {
+            isCaptchaComplete.value = true;
+            return;
+        }
+
+        const token = await captchaElement.value.getToken();
+        isCaptchaComplete.value = !!token;
+        captchaToken.value = token;
+    }
+
+    /**
+     * Handles the form submission for the connection opportunity signup.
+     * Gathers form data, handles captcha, and invokes the block action.
+     *
+     * @returns {Promise<void>} A promise that resolves when the submission is complete.
+     */
+    async function onSubmit(): Promise<void> {
+        errorMessage.value = "";
+
+        const requestBag: ConnectionOpportunitySignupRequestBag = {
+            firstName: firstName.value,
+            lastName: lastName.value,
+            email: email.value,
+            homePhone: homePhone.value,
+            mobilePhone: mobilePhone.value,
+            campusId: selectedCampusId.value ? Number(selectedCampusId.value) : null,
+            comments: comments.value,
+            attributeValues: attributeValues.value
+        };
+        const actionContext: BlockActionContextBag = {};
+        if (!config.disableCaptchaSupport && captchaElement.value) {
+            actionContext.captcha = captchaToken.value;
+            captchaElement.value.refreshToken();
+        }
+        const result = await invokeBlockAction<ConnectionOpportunitySignupResultBag>("Signup", { bag: requestBag }, actionContext);
+
+        if (result.isError) {
+            errorMessage.value = result.errorMessage || "An error occurred while processing your request.";
+            return;
+        }
+
+        switch (result.data?.resultType) {
+            // Successful signup
+            case ConnectionOpportunitySignupResultType.Success:
+                responseMessage.value = result.data.responseMessage || "";
+                isSuccess.value = true;
+                break;
+
+            case ConnectionOpportunitySignupResultType.CaptchaInvalid:
+            case ConnectionOpportunitySignupResultType.InvalidRequest:
+            case ConnectionOpportunitySignupResultType.OpportunityNotFound:
+            case ConnectionOpportunitySignupResultType.InvalidConnectionRequest:
+            case ConnectionOpportunitySignupResultType.UnknownError:
+            default:
+                errorMessage.value = result.data?.responseMessage || "An unknown error occurred, please try again.";
+                break;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        waitForCaptcha();
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

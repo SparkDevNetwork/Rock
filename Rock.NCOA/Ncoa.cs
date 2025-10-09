@@ -204,8 +204,18 @@ namespace Rock.NCOA
 
             try
             {
-                var ncoaHistoryList = ncoaReturnRecords.Select( r => r.ToNcoaHistory() ).ToList();
+                var ncoaHistoryList = ncoaReturnRecords
+                    // Filter out invalid records that are missing ALL person and family identifiers.
+                    // Filter out records that don't have a LocationId too.
+                    // This can happen if someone attempts to upload a invalid .csv file.
+                    .Where( r=> r.InputPersonAliasId != null && r.InputIndividualId != null && r.InputFamilyId != null && r.InputLocationId != null )
+                    .Select( r => r.ToNcoaHistory() ).ToList();
                 FilterDuplicateLocations( ncoaHistoryList );
+
+                if ( ncoaHistoryList.Count == 0 )
+                {
+                    return ("", "<b>No valid records were found in the import file.</b> Please check that the values were mapped correctly in TrueNCOA, following the instructions in the <i>Rock Admin Hero Guide</i>.");
+                }
 
                 ncoaHistoryList.ForEach( r => {
                     r.OriginalStreet1 = NormalizeInput( r.OriginalStreet1 );

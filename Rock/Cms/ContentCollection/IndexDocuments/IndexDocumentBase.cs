@@ -387,12 +387,21 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
             {
                 sourceModel.LoadAttributes();
             }
+            
+            var additionalSettings = source.AdditionalSettings.FromJsonOrNull<ContentCollectionSourceAdditionalSettingsBag>();
+            var attributeGuidsToIndex = additionalSettings?.AttributeGuids ?? new List<Guid>();
 
             foreach ( var attributeValue in sourceModel.AttributeValues )
             {
                 var key = MakeAttributeKeySafe( attributeValue.Key );
 
                 if ( !sourceModel.Attributes.TryGetValue( attributeValue.Key, out var attribute ) )
+                {
+                    continue;
+                }
+
+                // Only process attributes that are specifically selected for indexing
+                if ( !attributeGuidsToIndex.Contains( attribute.Guid ) )
                 {
                     continue;
                 }

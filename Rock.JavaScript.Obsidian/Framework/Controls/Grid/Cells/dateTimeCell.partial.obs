@@ -12,7 +12,11 @@
 
     const formattedValue = computed(() => {
         if (props.column.field) {
-            return RockDateTime.parseISO(props.row[props.column.field] as string)?.toASPString("g") ?? "";
+            let formatter = "g";
+            if (props.column.props.showSeconds === true) {
+                formatter = "G";
+            }
+            return RockDateTime.parseISO(props.row[props.column.field] as string)?.toASPString(formatter) ?? "";
         }
         else {
             return "";

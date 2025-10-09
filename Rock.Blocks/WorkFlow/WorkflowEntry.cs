@@ -568,6 +568,7 @@ namespace Rock.Blocks.Workflow
             Guid? lastActionTypeGuid = null;
             WorkflowAction lastAction = null;
             IEntity entity = null;
+            var processedMultipleInteractiveActions = false;
 
             if ( workflow.Id == 0 )
             {
@@ -595,6 +596,15 @@ namespace Rock.Blocks.Workflow
                 if ( action.Guid == lastAction?.Guid )
                 {
                     return CreateErrorMessage( workflow, workflow.WorkflowTypeCache, "Invalid action", "We detected an invalid action state that prevents further processing." );
+                }
+
+                // If lastAction is not null and we get to this point then that
+                // means we have processed at least one interactive action
+                // already. Mark that we have processed multiple interactive
+                // actions so we know to save later on.
+                if ( lastAction != null )
+                {
+                    processedMultipleInteractiveActions = true;
                 }
 
                 // Check if we have a previous interactive action result that
@@ -671,6 +681,14 @@ namespace Rock.Blocks.Workflow
             else if ( lastActionTypeGuid.HasValue && actionTypeGuid.HasValue && lastActionTypeGuid != actionTypeGuid )
             {
                 // If we have multiple interactive actions then we must persist.
+                // This only catches the case where the two actions are different
+                // types. It will not catch two back to back entry forms. This
+                // check may not even be needed since we now have the check that
+                // comes next.
+                new WorkflowService( RockContext ).PersistImmediately( lastAction );
+            }
+            else if ( processedMultipleInteractiveActions )
+            {
                 new WorkflowService( RockContext ).PersistImmediately( lastAction );
             }
 

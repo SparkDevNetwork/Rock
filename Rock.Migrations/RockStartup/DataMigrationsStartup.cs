@@ -109,6 +109,7 @@ namespace Rock.Migrations.RockStartup
             SystemGuid.ServiceJob.DATA_MIGRATIONS_171_ADD_COMMUNICATIONRECIPIENT_INDEX.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_171_POPULATE_ATTENDANCE_ROOT_GROUP_TYPE.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_171_CHOP_OBSIDIAN_BLOCKS.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_173_UPDATE_ATTENDANCEOCCURRENCE_INDEX.AsGuid(),
         };
 
 
@@ -120,6 +121,7 @@ namespace Rock.Migrations.RockStartup
             SystemGuid.ServiceJob.DATA_MIGRATIONS_122_INTERACTION_PERSONAL_DEVICE_ID.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_133_ADD_INTERACTION_SESSION_INTERACTION_SESSION_LOCATION_ID_INDEX.AsGuid(),
             SystemGuid.ServiceJob.POST_170_UPDATE_HISTORY_ENTITYTYPEID_INDEX.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_173_UPDATE_NAMELESS_SCHEDULES.AsGuid(),
         };
 
         /// <summary>

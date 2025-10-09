@@ -684,7 +684,7 @@
 </style>
 
 <script setup lang="ts">
-    import { onConfigurationValuesChanged, setPropertiesBoxValue, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, setPropertiesBoxValue, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { SmsConversationsInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/SmsConversations/smsConversationsInitializationBox";
     import { CommunicationMessageFilter, CommunicationMessageFilterDescription } from "@Obsidian/Enums/Communication/communicationMessageFilter";
     import { SmsConversationsSaveNoteBag } from "@Obsidian/ViewModels/Blocks/Communication/SmsConversations/smsConversationsSaveNoteBag";
@@ -725,6 +725,8 @@
 
     const box = useConfigurationValues<SmsConversationsInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(box.securityGrantToken);
+    provideSecurityGrant(securityGrant);
     const preferences = usePersonPreferences().blockPreferences;
     const messageFilterItems = enumToListItemBag(CommunicationMessageFilterDescription);
     var realTimeTopic: ITopic<IConversationParticipantTopic>;

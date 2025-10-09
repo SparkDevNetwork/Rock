@@ -839,7 +839,13 @@ namespace Rock.Model
 
             if ( relationshipRoleIds.Count == 1 )
             {
-                relationshipMemberQry = relationshipMemberQry.Where( m => m.GroupRoleId == relationshipRoleIds[0] );
+                // We can't pass 'relationshipRoleIds[0]' into the LINQ expression
+                // because it will try to evaluate at execution time instead of
+                // compile time, meaning we get a SQL error about not knowing how
+                // to call the 'getItem(index)' method.
+                var singleRoleId = relationshipRoleIds[0];
+
+                relationshipMemberQry = relationshipMemberQry.Where( m => m.GroupRoleId == singleRoleId );
             }
             else
             {

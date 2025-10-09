@@ -7,10 +7,10 @@
         <template #default="{ btnSize, disabled, itemButtonType, toggleValue: selectValue }">
             <RockButton :disabled="disabled"
                         :btnSize="btnSize"
-                        :btnType="itemButtonType('1.2')"
+                        :btnType="itemButtonType(LineHeights.tight.value)"
                         class="btn-line-height"
-                        title="Tight"
-                        @click="selectValue('1.2')">
+                        :title="LineHeights.tight.title"
+                        @click="selectValue(LineHeights.tight.value)">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 25 12" fill="none">
                     <line y1="1" x2="25" y2="1" />
                     <line y1="6" x2="25" y2="6" />
@@ -20,10 +20,10 @@
 
             <RockButton :disabled="disabled"
                         :btnSize="btnSize"
-                        :btnType="itemButtonType('1.5')"
+                        :btnType="itemButtonType(LineHeights.normal.value)"
                         class="btn-line-height"
-                        title="Normal"
-                        @click="selectValue('1.5')">
+                        :title="LineHeights.normal.title"
+                        @click="selectValue(LineHeights.normal.value)">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 25 14" fill="none">
                     <line y1="1" x2="25" y2="1" />
                     <line y1="7" x2="25" y2="7" />
@@ -33,10 +33,10 @@
 
             <RockButton :disabled="disabled"
                         :btnSize="btnSize"
-                        :btnType="itemButtonType('1.8')"
+                        :btnType="itemButtonType(LineHeights.loose.value)"
                         class="btn-line-height"
-                        title="Loose"
-                        @click="selectValue('1.8')">
+                        :title="LineHeights.loose.title"
+                        @click="selectValue(LineHeights.loose.value)">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 25 16" fill="none">
                     <line y1="1" x2="25" y2="1" />
                     <line y1="8" x2="25" y2="8" />
@@ -46,10 +46,10 @@
 
             <RockButton :disabled="disabled"
                         :btnSize="btnSize"
-                        :btnType="itemButtonType('2')"
+                        :btnType="itemButtonType(LineHeights.veryLoose.value)"
                         class="btn-line-height"
-                        title="Very Loose"
-                        @click="selectValue('2')">
+                        :title="LineHeights.veryLoose.title"
+                        @click="selectValue(LineHeights.veryLoose.value)">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 25 18" fill="none">
                     <line y1="1" x2="25" y2="1" />
                     <line y1="9" x2="25" y2="9" />
@@ -88,6 +88,7 @@ svg {
     import ClearStyleButton from "./clearStyleButton.partial.obs";
     import SingleSelectButtonGroup from "./singleSelectButtonGroup.partial.obs";
     import { ValueProvider } from "./types.partial";
+    import { LineHeights } from "./utils.partial";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import { isNullish } from "@Obsidian/Utility/util";

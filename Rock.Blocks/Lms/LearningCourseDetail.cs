@@ -577,7 +577,11 @@ namespace Rock.Blocks.Lms
                 entity.LearningProgramId = learningProgramId;
             }
 
-            RockContext.SaveChanges();
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                entity.SaveAttributeValues( RockContext );
+            } );
 
             // Ensure navigation properties will work now.
             entity = entityService.GetCourseWithRequirements( entity.Id );

@@ -93,7 +93,7 @@
 
         const email = props.modelValue?.email ?? "";
         if (email) {
-            valueBuilder.addHtmlValue("Email", `<a hRockLabel ref="mailto:${email}">${email}</a>`);
+            valueBuilder.addHtmlValue("Email", `<a href="mailto:${email}">${email}</a>`);
         }
 
         if (props.modelValue?.campus?.text) {

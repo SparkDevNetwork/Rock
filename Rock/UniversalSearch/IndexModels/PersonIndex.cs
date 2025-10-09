@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels.Attributes;
@@ -304,16 +305,28 @@ namespace Rock.UniversalSearch.IndexModels
         }
 
         /// <summary>
-        /// Loads the indexable documents from a list of models.
+        /// Loads a collection of <see cref="PersonIndex"/> objects from a bulk set of <see cref="Person"/> entities.
         /// </summary>
         /// <param name="personQuery">The person query.</param>
         /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        public static List<PersonIndex> LoadByModelBulk( IQueryable<Person> personQuery, RockContext rockContext )
+        /// <returns>
+        /// A <see cref="List{PersonIndex}"/> containing indexable representations of the people in <paramref name="personQuery"/>.
+        /// Returns an empty list if no matching people are found.
+        /// </returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "17.2" )]
+        public static List<PersonIndex> LoadByModelBulk( IQueryable<Person> personQuery, RockContext rockContext)
         {
             // Includes to avoid lazy loading.
             personQuery = personQuery
-                .Include( p => p.PrimaryFamily.GroupLocations )
+                //.Include( p => p.PrimaryFamily.GroupLocations )
                 .Include( p => p.PhoneNumbers );
 
             var personIndexes = new List<PersonIndex>();
@@ -331,7 +344,7 @@ namespace Rock.UniversalSearch.IndexModels
             // Bulk queries to avoid spawning new queries for each Person record.
             var homeLocations = personQuery.GetHomeLocations( rockContext );
             var previousNames = personQuery.GetPreviousNames( rockContext );
-            var spouses = personQuery.GetSpouses( rockContext );
+            var spouses = personQuery.GetSpousesFullName( rockContext );
 
             foreach ( Person person in people )
             {
@@ -387,7 +400,7 @@ namespace Rock.UniversalSearch.IndexModels
                     // get spouse
                     if ( spouses.ContainsKey( person.Id ) && spouses[person.Id] != null )
                     {
-                        personIndex.Spouse = spouses[person.Id].FullName;
+                        personIndex.Spouse = spouses[person.Id];
                     }
 
                     foreach ( var rawKey in person.Attributes.Keys )
@@ -417,6 +430,5 @@ namespace Rock.UniversalSearch.IndexModels
 
             return personIndexes;
         }
-
     }
 }

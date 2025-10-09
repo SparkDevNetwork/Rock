@@ -409,11 +409,10 @@ namespace Rock.Model
         /// </summary>
         /// <param name="point"></param>
         /// <param name="groupTypeId"></param>
-        /// <param name="maxResults"></param>
         /// <param name="returnOnlyClosestLocationPerGroup"></param>
         /// <param name="maxDistance"></param>
         /// <returns></returns>
-        public IQueryable<GroupLocation> GetNearestGroups( DbGeography point, int groupTypeId, int maxResults = 10, bool returnOnlyClosestLocationPerGroup = true, int? maxDistance = null )
+        public IQueryable<GroupLocation> GetNearestGroups( DbGeography point, int groupTypeId, bool returnOnlyClosestLocationPerGroup = true, int? maxDistance = null )
         {
             var rockContext = ( RockContext ) this.Context;
             var personService = new PersonService( rockContext );
@@ -440,8 +439,7 @@ namespace Rock.Model
                 if( returnOnlyClosestLocationPerGroup == false )
                 { 
                     return groupLocation
-                            .OrderBy( gl => gl.Location.GeoPoint.Distance( point ) )
-                            .Take( maxResults );
+                            .OrderBy( gl => gl.Location.GeoPoint.Distance( point ) );
                 }
 
                 // Return just the closest location
@@ -450,8 +448,7 @@ namespace Rock.Model
                     .Select( g => g.OrderBy( x => x.Location.GeoPoint.Distance( point ) ).FirstOrDefault() );
 
                 return closestLocationPerGroup
-                        .OrderBy( gl => gl.Location.GeoPoint.Distance( point ) )
-                        .Take( maxResults );
+                        .OrderBy( gl => gl.Location.GeoPoint.Distance( point ) );
             }
 
             return null;

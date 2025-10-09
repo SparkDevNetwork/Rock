@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -35,6 +36,8 @@ namespace Rock.Web.UI
         private RockBlock _rockBlock = null;
         private List<Control> _adminControls = new List<Control>();
         private static readonly string LegacyBlockTypeSuffix = "(Legacy)";
+        private string _preHtmlContent = string.Empty;
+        private string _postHtmlContent = string.Empty;
 
         #endregion
 
@@ -72,6 +75,35 @@ namespace Rock.Web.UI
             Controls.Add( _rockBlock );
         }
 
+        protected override void OnPreRender( EventArgs e )
+        {
+            var blockCache = _rockBlock.BlockCache;
+            var appRoot = _rockBlock.ResolveRockUrl( "~/" );
+            var themeRoot = _rockBlock.ResolveRockUrl( "~~/" );
+
+            if ( _rockBlock.Visible )
+            {
+                if ( !string.IsNullOrWhiteSpace( blockCache.PreHtml ) )
+                {
+                    _preHtmlContent = blockCache.PreHtml.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+                }
+
+                if ( !string.IsNullOrWhiteSpace( blockCache.PostHtml ) )
+                {
+                    _postHtmlContent = blockCache.PostHtml.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+                }
+
+                if ( _preHtmlContent.IsLavaTemplate() || _postHtmlContent.IsLavaTemplate() )
+                {
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( _rockBlock.RockPage );
+                    _preHtmlContent = _preHtmlContent.ResolveMergeFields( mergeFields, "All" );
+                    _postHtmlContent = _postHtmlContent.ResolveMergeFields( mergeFields, "All" );
+                }
+            }
+
+            base.OnPreRender( e );
+        }
+
         /// <summary>
         /// Writes the <see cref="T:System.Web.UI.WebControls.CompositeControl" /> content to the specified <see cref="T:System.Web.UI.HtmlTextWriter" /> object, for display on the client.
         /// </summary>
@@ -80,30 +112,8 @@ namespace Rock.Web.UI
         {
             var blockCache = _rockBlock.BlockCache;
 
-            string preHtml = string.Empty;
-            string postHtml = string.Empty;
             string appRoot = _rockBlock.ResolveRockUrl( "~/" );
             string themeRoot = _rockBlock.ResolveRockUrl( "~~/" );
-
-            if ( _rockBlock.Visible )
-            {
-                if ( !string.IsNullOrWhiteSpace( blockCache.PreHtml ) )
-                {
-                    preHtml = blockCache.PreHtml.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
-                }
-
-                if ( !string.IsNullOrWhiteSpace( blockCache.PostHtml ) )
-                {
-                    postHtml = blockCache.PostHtml.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
-                }
-
-                if ( preHtml.IsLavaTemplate() || postHtml.IsLavaTemplate() )
-                {
-                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( _rockBlock.RockPage );
-                    preHtml = preHtml.ResolveMergeFields( mergeFields, "All" );
-                    postHtml = postHtml.ResolveMergeFields( mergeFields, "All" );
-                }
-            }
 
             StringBuilder sbOutput = null;
             StringWriter swOutput = null;
@@ -129,7 +139,7 @@ namespace Rock.Web.UI
                 ( string.IsNullOrWhiteSpace( blockCache.CssClass ) ? string.Empty : " " + blockCache.CssClass.Trim() ) +
                 ( _rockBlock.UserCanEdit || _rockBlock.UserCanAdministrate ? " can-configure " : string.Empty );
 
-            writer.Write( preHtml );
+            writer.Write( _preHtmlContent );
             writer.AddAttribute( HtmlTextWriterAttribute.Id, string.Format( "bid_{0}", blockCache.Id ) );
             writer.AddAttribute( "data-zone-location", blockCache.BlockLocation.ToString() );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, blockInstanceCss );
@@ -140,7 +150,7 @@ namespace Rock.Web.UI
 
             if ( blockCache.OutputCacheDuration > 0 )
             {
-                twOutput.Write( preHtml );
+                twOutput.Write( _preHtmlContent );
                 twOutput.AddAttribute( HtmlTextWriterAttribute.Id, string.Format( "bid_{0}", blockCache.Id ) );
                 twOutput.AddAttribute( "data-zone-location", blockCache.BlockLocation.ToString() );
                 twOutput.AddAttribute( HtmlTextWriterAttribute.Class, blockInstanceCss );
@@ -183,7 +193,7 @@ namespace Rock.Web.UI
 
             writer.RenderEndTag();  // block-content
             writer.RenderEndTag();  // block-instance
-            writer.Write( postHtml );
+            writer.Write( _postHtmlContent );
 
             if ( blockCache.OutputCacheDuration > 0 )
             {
@@ -191,11 +201,11 @@ namespace Rock.Web.UI
 
                 twOutput.RenderEndTag();  // block-content
                 twOutput.RenderEndTag();  // block-instance
-                twOutput.Write( postHtml );
+                twOutput.Write( _postHtmlContent );
 
                 var expiration  = RockDateTime.Now.AddSeconds( blockCache.OutputCacheDuration );
-                string _blockCacheKey = string.Format( "Rock:BlockOutput:{0}", blockCache.Id );
-                RockCache.AddOrUpdate( _blockCacheKey, sbOutput.ToString(), expiration );
+                string blockCacheKey = string.Format( "Rock:BlockOutput:{0}", blockCache.Id );
+                RockCache.AddOrUpdate( blockCacheKey, sbOutput.ToString(), expiration );
             }
         }
     }
