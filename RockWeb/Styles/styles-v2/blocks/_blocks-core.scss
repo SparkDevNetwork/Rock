@@ -9,6 +9,7 @@
 //  + Workflow - styles for workflow blocks
 //  + Electronic Signatures
 //  + Rapid Attendance
+//  + Reminder List
 // =============================================================
 
 // ======================== PAGE HEADER ========================
@@ -1191,3 +1192,14 @@ body.hide-block-role-secondary .block-instance.block-role-secondary:not(.block-r
 // ====================== END RAPID ATTENDANCE ======================
 
 
+// ====================== REMINDER LIST ======================
+
+.reminder-list a.success-on-hover {
+  color: var(--color-interface-strong);
+  transition: 0.2s color;
+  &:hover {
+    color: var(--color-success-strong);
+  }
+}
+
+// ====================== END REMINDER LIST ======================

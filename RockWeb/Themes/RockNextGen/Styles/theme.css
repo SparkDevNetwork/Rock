@@ -7167,7 +7167,6 @@ table tbody tr td .required-indicator::after {
 .input-group-addon:first-child,
 .input-group-btn:first-child > .btn,
 .input-group-btn:first-child > .btn-group > .btn,
-.input-group-btn:first-child > .dropdown-toggle,
 .input-group-btn:last-child > .dropdown-toggle:nth-last-child(n+3),
 .input-group-btn:last-child > .btn:not(:last-child):not(.dropdown-toggle),
 .input-group-btn:last-child > .btn-group:not(:last-child) > .btn {
@@ -7175,6 +7174,12 @@ table tbody tr td .required-indicator::after {
   border-bottom-right-radius: 0;
   padding-top: 0;
   padding-bottom: 0;
+}
+
+.input-group-btn:first-child > .dropdown-toggle {
+  height: 100%;
+  padding-top: var(--spacing-tiny);
+  padding-bottom: var(--spacing-tiny);
 }
 
 .input-group-addon:first-child {
@@ -19172,6 +19177,12 @@ iframe.file-browser {
   background-color: transparent;
 }
 
+@media (max-width: 480px) {
+  .displaycard {
+    padding: var(--spacing-medium);
+    gap: var(--spacing-medium);
+  }
+}
 .contentsection {
   border-radius: var(--rounded-large);
   height: auto;
@@ -19495,6 +19506,14 @@ contentsection-body-overflow {
 @media (max-width: 767px) {
   .contentsection-container .contentsection-nav {
     display: none;
+  }
+}
+@media (max-width: 480px) {
+  .contentsection-body {
+    padding: var(--spacing-medium);
+  }
+  .contentsection-list {
+    gap: var(--spacing-large);
   }
 }
 .contentstack {
@@ -20955,6 +20974,14 @@ body.hide-block-role-secondary .block-instance.block-role-secondary:not(.block-r
   display: block;
   padding: 15px 18px;
   color: var(--color-interface-strong) !important;
+}
+
+.reminder-list a.success-on-hover {
+  color: var(--color-interface-strong);
+  transition: 0.2s color;
+}
+.reminder-list a.success-on-hover:hover {
+  color: var(--color-success-strong);
 }
 
 .group-location-map {
