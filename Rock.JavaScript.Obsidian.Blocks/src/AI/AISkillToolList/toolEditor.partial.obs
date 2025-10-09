@@ -1,5 +1,5 @@
 <template>
-    <ContentSectionWrapper :sidebar="false">
+    <ContentSectionContainer :sidebar="false">
         <ContentSection light>
             <ContentStack>
                 <div class="row">
@@ -102,14 +102,14 @@
                 </div>
             </ContentStack>
         </ContentSection>
-    </ContentSectionWrapper>
+    </ContentSectionContainer>
 </template>
 
 <script setup lang="ts">
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
-    import ContentSectionWrapper from "@Obsidian/Controls/contentSectionWrapper.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import InstructionList from "./instructionList.partial.obs";
