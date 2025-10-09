@@ -8,6 +8,9 @@
           :entityTypeGuid="EntityType.Audit"
           stickyHeader
           liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="onGridSettingsClick"
           @selectItem="onShowAuditDetails">
 
         <TextColumn name="auditType"
@@ -73,6 +76,8 @@
     </Grid>
 
     <AuditDetailsModal :modelValue="auditDetails" />
+
+    <GridSettingsModal v-model="gridSettings" v-model:visible="isGridSettingsVisible" />
 </template>
 <style>
 .wrap-text {
@@ -81,19 +86,22 @@
 </style>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { textValueFilter, numberValueFilter, PersonColumn, NumberColumn, TextColumn, DateTimeColumn, pickExistingValueFilter, dateValueFilter } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { AuditDetail } from "./AuditList/types.partial";
+    import { AuditDetail, GridSettingsOptions, PreferenceKey } from "./AuditList/types.partial";
     import { AuditListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AuditList/auditListOptionsBag";
-    import { reactive, ref } from "vue";
+    import { computed, reactive, ref, watch } from "vue";
     import AuditDetailsModal from "./AuditList/auditDetailsModal.partial.obs";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import GridSettingsModal from "./AuditList/gridSettingsModal.partial.obs";
 
     const config = useConfigurationValues<ListBlockBox<AuditListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
@@ -101,9 +109,17 @@
     let gridData: GridDataBag | undefined;
     const auditDetails = ref<AuditDetail[]>([]);
 
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        createdDateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterCreatedDateRange))
+    });
+
     // #endregion
 
     // #region Computed Values
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => !!gridSettings.value.createdDateRange);
 
     // #endregion
 
@@ -160,6 +176,23 @@
     }
 
     // #endregion
+
+    /**
+    * Called when the grid setting icon is clicked, displays the block filters.
+    */
+    function onGridSettingsClick(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterCreatedDateRange, gridSettings.value.createdDateRange ? slidingDateRangeToString(gridSettings.value.createdDateRange) : "");
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
 
     gridDataSource.value = loadGridData();
 </script>

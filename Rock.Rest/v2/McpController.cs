@@ -75,11 +75,11 @@ namespace Rock.Rest.v2
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK )]
-        [ProducesResponseType( HttpStatusCode.Accepted )]
-        [ProducesResponseType( HttpStatusCode.BadRequest )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.OK )]
+        [ProducesResponse( HttpStatusCode.Accepted )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "2c6194af-095a-42fa-9288-27e8b3494231" )]
         public async Task<IActionResult> PostMcp( string slug, CancellationToken cancellationToken )
         {

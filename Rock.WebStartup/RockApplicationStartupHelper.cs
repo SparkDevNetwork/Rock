@@ -102,10 +102,10 @@ namespace Rock.WebStartup
         {
             LogStartupMessage( "Application Starting" );
 
+            AppDomain.CurrentDomain.AssemblyResolve += AppDomain_AssemblyResolve;
+
             InitializeRockApp();
             Rock.JsonExtensions.ReferenceEqualityComparer = new Rock.Utility.EntityReferenceEqualityComparer();
-
-            AppDomain.CurrentDomain.AssemblyResolve += AppDomain_AssemblyResolve;
 
             // Indicate to always log to file during initialization.
             ExceptionLogService.AlwaysLogToFile = true;
@@ -346,9 +346,6 @@ namespace Rock.WebStartup
             // is transient so that we always get the current values from the
             // source.
             sc.AddTransient<InitializationSettings, WebFormsInitializationSettings>();
-
-            // Register functionality providers.
-            sc.AddSingleton<IChatProvider, StreamChatProvider>();
 
             // Register Light Containers.
             sc.AddSingleton( typeof( Extension.LightComponentLoader<> ), typeof( Extension.LightComponentLoader<> ) );

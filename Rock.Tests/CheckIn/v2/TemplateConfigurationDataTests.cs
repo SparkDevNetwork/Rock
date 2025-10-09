@@ -503,6 +503,30 @@ namespace Rock.Tests.CheckIn.v2
         }
 
         [TestMethod]
+        public void Constructor_WithNotificationTemplate_InitializesProperty()
+        {
+            var expectedValue = "You've been checked in.";
+            var rockContextMock = GetRockContextMock();
+            rockContextMock.SetupDbSet<GroupType>();
+
+            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+
+            var settings = new CheckInTemplateSettings
+            {
+                ProximityAttendanceNotificationTemplate = expectedValue
+            };
+
+            groupType.Object.SetAdditionalSettings( settings );
+
+            var groupTypeCache = new GroupTypeCache();
+            groupTypeCache.SetFromEntity( groupType.Object );
+
+            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+
+            Assert.AreEqual( expectedValue, instance.ProximityAttendanceNotificationTemplate );
+        }
+
+        [TestMethod]
         public void DeclaredType_HasExpectedPropertyCount()
         {
             // This is a simple test to help us know when new properties are

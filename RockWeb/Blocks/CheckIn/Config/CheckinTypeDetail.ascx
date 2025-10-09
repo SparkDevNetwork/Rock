@@ -102,7 +102,7 @@
                                         AutoPostBack="true" />
 
                                     <div class="well well-conditional" id="proximityAttendanceConfiguration" runat="server">
-                                     <Rock:CodeEditor ID="ceCheckInNotificationTemplate" runat="server" Label="Notification Lava Template"
+                                     <Rock:CodeEditor ID="ceCheckInNotificationTemplate" runat="server" Label="Notification Template"
                                         Help="The lava template that will be parsed to deliver a push notification when a person checks in through proximity attendance."
                                         EditorMode="Lava"
                                         Rows="3" />

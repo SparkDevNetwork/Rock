@@ -411,6 +411,18 @@ select.form-control {
   // .form-group {
   //   margin-top:   var(--spacing-medium)
   // }
+
+  .control-label {
+    margin-bottom:  var(--spacing-tiny);
+    font-size:      var(--font-size-small);
+    line-height:    18px;
+  }
+
+  .control-label-sm {
+      display:    block;
+      font-size:  var(--font-size-xsmall);
+      color:      var(--color-interface-medium);
+  }
 }
 
 .help-block {
@@ -536,7 +548,7 @@ a.help {
 }
 
 a.help i {
-  font-size: 15px;
+  font-size: var(--font-size-small);
 }
 
 a.warning {

@@ -261,6 +261,7 @@ namespace Rock.CheckIn.v2
         /// </summary>
         /// <param name="beacon">The beacon that describes where the person should be checked in.</param>
         /// <param name="now">The current date and time to use for calculations.</param>
+        /// <param name="configurationGroupType">The group type to use when searching for a check-in option.</param>
         /// <returns>The check-in options that was found.</returns>
         private CheckInOption GetBestCheckInOption( ProximityBeaconBag beacon, DateTime now, GroupTypeCache configurationGroupType )
         {

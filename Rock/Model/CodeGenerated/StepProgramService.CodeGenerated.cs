@@ -143,6 +143,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.CategoryId = source.CategoryId;
+            target.CompletionFlow = source.CompletionFlow;
             target.DefaultListView = source.DefaultListView;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;

@@ -12,26 +12,6 @@
 //  + Reminder List
 // =============================================================
 
-// ======================== PAGE HEADER ========================
-
-.rock-top-header .rock-bookmark.active.has-reminders > .indicator-bottom {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  background-color: var(--color-primary);
-  width: 8px;
-  height: 8px;
-  border-radius: var(--rounded-xsmall);
-}
-
-.rock-top-header .rock-bookmark:hover {
-  border: 1px solid var(--color-interface-medium);
-}
-
-
-// ======================== END PAGE HEADER ========================
-
-
 .rock-fullscreen-toggle {
   position:         absolute;
   top:              0;

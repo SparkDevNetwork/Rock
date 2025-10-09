@@ -287,6 +287,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// The gateways that are supported in Rock Mobile.
         /// </summary>
         [Obsolete( "We now have a setting to pick the gateway. This is invalid since there may be more than one MyWell gateway." )]
+        [RockObsolete( "18.0" )]
         private static class MobileSupportedGateway
         {
             public const string MyWell = "C55F91AC-07F6-484B-B2FF-6EE7D82D7E93";

@@ -2,18 +2,6 @@
 /* TYPOGRAPHY Utilities */
 
 
-.control-label {
-    margin-bottom:  var(--spacing-tiny);
-    font-size:      var(--font-size-small);
-    line-height:    18px;
-}
-  
-.control-label-sm {
-    display:    block;
-    font-size:  var(--font-size-xsmall);
-    color:      var(--color-interface-medium);
-}
-
 .text-hide {
     font:               0/0 a;
     color:              transparent;
@@ -95,35 +83,35 @@ h6.condensed {
     color: var(--color-primary);
     a &:hover,
     a &:focus {
-    color: var(--color-primary); // TODO Darken by 10% 
+    color: var(--color-primary); // TODO Darken by 10%
     }
 }
 .text-success {
     color: var(--color-success-strong);
     a &:hover,
     a &:focus {
-    color: var(--color-success-strong); // TODO Darken by 10% 
+    color: var(--color-success-strong); // TODO Darken by 10%
     }
 }
 .text-info {
     color: var(--color-info-strong);
     a &:hover,
     a &:focus {
-    color: var(--color-info-strong); // TODO Darken by 10% 
+    color: var(--color-info-strong); // TODO Darken by 10%
     }
 }
 .text-warning {
     color: var(--color-warning-strong);
     a &:hover,
     a &:focus {
-    color: var(--color-warning-strong); // TODO Darken by 10% 
+    color: var(--color-warning-strong); // TODO Darken by 10%
     }
 }
 .text-danger {
     color: var(--color-danger-strong);
     a &:hover,
     a &:focus {
-    color: var(--color-danger-strong); // TODO Darken by 10% 
+    color: var(--color-danger-strong); // TODO Darken by 10%
     }
 }
 
@@ -160,7 +148,7 @@ dd {
     padding-left: 0;
     list-style: none;
     margin-left: -5px;
-  
+
     > li {
       display: inline-block;
       padding-right: 5px;
@@ -173,7 +161,7 @@ blockquote {
     margin: 0 0 var(--spacing-large);
     font-size: var(--font-size-small);
     border-left: 5px solid var(--color-interface-softer);
-  
+
     p,
     ul,
     ol {
@@ -181,7 +169,7 @@ blockquote {
         margin-bottom: 0;
       }
     }
-  
+
     // Note: Deprecated small and .small as of v3.1.0
     // Context: https://github.com/twbs/bootstrap/issues/11660
     footer,
@@ -191,7 +179,7 @@ blockquote {
       font-size: 80%; // back to default font-size
       line-height: var(--line-height-normal);
       color: var(--color-interface-medium);
-  
+
       &:before {
         content: "\2014 \00A0"; // em dash, nbsp
       }

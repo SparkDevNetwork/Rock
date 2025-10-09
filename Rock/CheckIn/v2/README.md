@@ -678,7 +678,7 @@ Mode: Trailblazer
 
 Help: Makes this check-in configuration and all areas and groups available for proximity check-in with a native Rock Mobile application.
 
-#### Check-in Notification Template
+#### Notification Template
 
 Type: Text Input
 Depends On: Enable Proximity Check-in == True

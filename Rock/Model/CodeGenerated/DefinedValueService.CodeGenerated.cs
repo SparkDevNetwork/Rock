@@ -415,6 +415,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<StepType>( Context ).Queryable().Any( a => a.OrganizationalObjectiveValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, StepType.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<Theme>( Context ).Queryable().Any( a => a.PurposeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Theme.FriendlyTypeName );
