@@ -293,7 +293,7 @@ namespace Rock.WebStartup
             Rock.Transactions.RockQueue.StartFastQueue();
             ShowDebugTimingMessage( "Rock Fast Queue" );
 
-            // Start the Automation system.
+            // Register all the AI skills into the database.
             LogStartupMessage( "Registering AI Skills" );
             AISkillService.RegisterSkills();
             ShowDebugTimingMessage( "AI Skills" );
@@ -336,8 +336,6 @@ namespace Rock.WebStartup
             {
                 WebRootPath = AppDomain.CurrentDomain.BaseDirectory
             } );
-            sc.AddSingleton<Core.Automation.AutomationTriggerContainer>();
-            sc.AddSingleton<Core.Automation.AutomationEventContainer>();
             sc.AddSingleton<MetadataHelper>();
 
             sc.AddScoped<RockContext>();
@@ -350,7 +348,6 @@ namespace Rock.WebStartup
             sc.AddTransient<InitializationSettings, WebFormsInitializationSettings>();
 
             // Register functionality providers.
-            sc.AddRockLogging();
             sc.AddSingleton<IChatProvider, StreamChatProvider>();
 
             // Register Light Containers.
@@ -359,7 +356,6 @@ namespace Rock.WebStartup
             sc.AddScoped<Core.Automation.AutomationEventContainer>();
             sc.AddScoped<AI.Agent.AgentSkillContainer>();
 
-            sc.AddScoped<RockContext>();
             sc.AddSingleton<IRockContextFactory, RockContextFactory>();
 
             foreach ( var configurationType in Rock.Reflection.FindTypes( typeof( Plugin.IConfigureServices ) ) )

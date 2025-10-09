@@ -33,7 +33,7 @@ namespace Rock.Web.Cache.Entities
     /// <inheritdoc cref="AIAgent"/>
     [Serializable]
     [DataContract]
-    public class AIAgentCache : ModelCache<AIAgentCache, AIAgent>, IHasReadOnlyAdditionalSettings
+    internal class AIAgentCache : ModelCache<AIAgentCache, AIAgent>, IHasReadOnlyAdditionalSettings
     {
         #region Entity Properties
 

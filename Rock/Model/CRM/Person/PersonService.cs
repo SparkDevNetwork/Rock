@@ -24,8 +24,6 @@ using System.Linq;
 using System.Text;
 using System.Web.UI.WebControls;
 
-using FCM.Net;
-
 using Rock;
 using Rock.Attribute;
 using Rock.BulkExport;
@@ -1777,9 +1775,9 @@ namespace Rock.Model
         /// <summary>
         /// Get's a list of person records that match a full name using name similarity search (SoundEx)
         /// </summary>
-        /// <param name="fullName"></param>
-        /// <param name="includeDeceased"></param>
-        /// <returns></returns>
+        /// <param name="fullName">The full name of the people to search for.</param>
+        /// <param name="includeDeceased">If <c>true</c> then people marked as deceased will be included in the results.</param>
+        /// <returns>A queryable of the people that have similar names to <paramref name="fullName"/>.</returns>
         public IQueryable<Person> GetSimilarPersons( string fullName, bool includeDeceased = false )
         {
             var splitName = SplitFullName( fullName );
