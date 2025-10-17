@@ -81,19 +81,27 @@ namespace Rock.AI.Agent.Classes.Entity
         /// </summary>
         [JsonIgnore]
         public Guid? MaritalStatusGuid { get; set; }
-        #endregion
-
-        #region Common Properties
-        
-        /// <summary>
-        /// Gets or sets the stable identifier for the person's primary family (used by tools; avoid showing to end users).
-        /// </summary>
-        public string PrimaryFamilyIdKey { get; set; }
 
         /// <summary>
         /// Determines if the internal profile should be included in the return.
         /// </summary>
+        [JsonIgnore]
         public bool IncludePublicProfile { get; set; }
+
+        /// <summary>
+        /// Determines if the avatar URL should be included in the return.
+        /// </summary>
+        [JsonIgnore]
+        public bool IncludeAvatarUrl { get; set; } = true;
+
+        #endregion
+
+        #region Common Properties
+
+        /// <summary>
+        /// Gets or sets the stable identifier for the person's primary family (used by tools; avoid showing to end users).
+        /// </summary>
+        public string PrimaryFamilyIdKey { get; set; }
 
         /// <summary>
         /// The URL to the person's internal profile.
@@ -157,6 +165,11 @@ namespace Rock.AI.Agent.Classes.Entity
         {
             get
             {
+                if ( !IncludeAvatarUrl )
+                {
+                    return null;
+                }
+
                 var initials = FirstName.Left( 1 ) + LastName.Left( 1 );
                 var url = Person.GetPersonPhotoUrl(
                     initials,
