@@ -99,6 +99,15 @@ namespace Rock.Blocks.AI
                 };
             }
 
+            var provider = AgentProviderContainer.GetActiveComponent();
+            if( provider == null )
+            {
+                return new Dictionary<string, object>
+                {
+                    ["error"] = "The AI Agent Provider is not configured. Please contact your system administrator."
+                };
+            }
+
             // Find the recent sessions.
             var sessions = GetRecentSessions( agentCache.Id );
 
