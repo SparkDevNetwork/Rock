@@ -5,6 +5,7 @@ using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
