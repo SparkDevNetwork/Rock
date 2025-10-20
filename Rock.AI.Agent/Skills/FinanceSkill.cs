@@ -90,25 +90,81 @@ namespace Rock.AI.Agent.Skills
         public RockToolResult LookupFinancialAccounts()
         {
             using var rockContext = _rockContextFactory.CreateRockContext();
-            var accounts = new FinancialAccountService( rockContext )
-                .Queryable()
-                .Where( a => a.IsActive )
-                .OrderBy( a => a.Name )
-                .Select( a => new FinancialAccountResult
-                {
-                    Id = a.Id,
-                    Name = a.Name,
-                    Description = a.Description
-                } )
-                .ToList();
 
-            var trimmedForHistory = accounts.Select( a => new KeyNameResult
+            // Load all top-level active accounts.
+            var topLevelAccounts = FinancialAccountCache
+                .All()
+                .Where( a => a.IsActive && a.ParentAccountId == null );
+
+            // Build hierarchical tree.
+            var parentAccountResults = new List<FinancialAccountResult>();
+
+            foreach( var acct in topLevelAccounts )
             {
-                Id = a.Id,
-                Name = a.Name
-            } ).ToList();
+                var result = new FinancialAccountResult
+                {
+                    Id = acct.Id,
+                    IsTaxDeductible = acct.IsTaxDeductible,
+                    Name = acct.PublicName,
+                    PublicDescription = acct.PublicDescription,
+                };
 
-            return RockToolResult.Success( accounts )
+                var childAccts = acct.GetDescendentFinancialAccounts()
+                    .Where( childAcct => childAcct.IsActive );
+
+                foreach ( var childAcct in childAccts )
+                {
+                    if( result.Children.Any( c => c.Id == childAcct.Id ) )
+                    {
+                        continue;
+                    }
+
+                    result.Children.Add( new FinancialAccountResult
+                    {
+                        Id = childAcct.Id,
+                        IsTaxDeductible = childAcct.IsTaxDeductible,
+                        Name = childAcct.PublicName,
+                        PublicDescription = childAcct.PublicDescription,
+                        ParentAccountIdKey = IdHasher.Instance.GetHash( childAcct.ParentAccountId ?? 0 )
+                    } );
+                }
+
+                parentAccountResults.Add( result );
+            }
+
+            // Flatten the tree for history (a single list of all accounts + children).
+            if ( !parentAccountResults.Any() )
+            {
+                return RockToolResult.NoData();
+            }
+
+            var trimmedForHistory = new List<object>();
+
+            foreach ( var parent in parentAccountResults )
+            {
+                trimmedForHistory.Add( new
+                {
+                    parent.IdKey,
+                    parent.Name,
+                    parent.IsTaxDeductible,
+                    parent.PublicDescription,
+                    parent.ParentAccountIdKey
+                } );
+
+                foreach ( var child in parent.Children )
+                {
+                    trimmedForHistory.Add( new
+                    {
+                        child.IdKey,
+                        child.Name,
+                        child.IsTaxDeductible,
+                        child.PublicDescription,
+                        child.ParentAccountIdKey
+                    } );
+                }
+            }
+
+            return RockToolResult.Success( parentAccountResults )
                 .WithHistoryContent( trimmedForHistory, "financial-accounts" );
         }
 
@@ -118,10 +174,9 @@ namespace Rock.AI.Agent.Skills
         /// fund (account) and payment method (currency type). When a *ValueIdKey argument equals "lookup" an
         /// instructional error is returned containing selectable values instead of analytics.
         /// </summary>
-
         /// <param name="personIdKey">Optional Person IdKey to restrict to transactions authorized by that person.</param>
         /// <param name="campusIdKey">Optional Campus (Batch Campus) IdKey.</param>
-        /// <param name="accountIdKey">Optional Account/Fund IdKey. When supplied only amounts contributed to this fund are counted in statistics.</param>
+        /// <param name="accountIdKeys">Optional Account/Fund IdKey. When supplied only amounts contributed to this fund are counted in statistics.</param>
         /// <param name="paymentMethodTypeValueIdKey">Optional currency / tender defined value IdKey or the literal "lookup".</param>
         /// <param name="startDate">Inclusive start date filter.</param>
         /// <param name="endDate">Inclusive end date filter.</param>
@@ -133,7 +188,7 @@ namespace Rock.AI.Agent.Skills
         public RockToolResult SummarizeFinancialTransactions(
             string personIdKey = null,
             string campusIdKey = null,
-            string accountIdKey = null,
+            List<string> accountIdKeys = null,
             string paymentMethodTypeValueIdKey = null,
             DateTime? startDate = null,
             DateTime? endDate = null )
@@ -148,11 +203,41 @@ namespace Rock.AI.Agent.Skills
                     .WithInstructions( "Use the following data to determine the proper IdKey for the tool." );
             }
 
-            // Decode IdKeys
+            // Decode IdKeys.
             var personId = personIdKey.IsNotNullOrWhiteSpace() ? IdHasher.Instance.GetId( personIdKey ) : null;
             var campusId = campusIdKey.IsNotNullOrWhiteSpace() ? IdHasher.Instance.GetId( campusIdKey ) : null;
-            var accountId = accountIdKey.IsNotNullOrWhiteSpace() ? IdHasher.Instance.GetId( accountIdKey ) : null;
             var paymentMethodTypeId = paymentMethodTypeValueIdKey.IsNotNullOrWhiteSpace() ? IdHasher.Instance.GetId( paymentMethodTypeValueIdKey ) : null;
+
+            // Decode multiple account ids (ignore invalid keys).
+            var accountIds = accountIdKeys?.Where( k => k.IsNotNullOrWhiteSpace() )
+                .Select( k => IdHasher.Instance.GetId( k ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .Distinct()
+                .ToList() ?? new List<int>();
+
+            // We also want to include child accounts of any specified parent accounts.
+            var originalAccountIds = accountIds.ToList();
+
+            foreach ( var acctId in originalAccountIds )
+            {
+                var acct = FinancialAccountCache.Get( acctId, rockContext );
+
+                if( acct == null )
+                {
+                    continue;
+                }
+
+                var children = acct.GetDescendentFinancialAccountIds();
+
+                foreach ( var childId in children )
+                {
+                    if ( !accountIds.Contains( childId ) )
+                    {
+                        accountIds.Add( childId );
+                    }
+                }
+            }
 
             var options = new FinancialTransactionQueryOptions
             {
@@ -167,7 +252,9 @@ namespace Rock.AI.Agent.Skills
             var baseQry = GetFinancialTransactionsQueryable( rockContext, options )
                 .AsNoTracking();
 
-            // Project per-transaction, with detail amount filtered by AccountId if provided.
+            var hasAccountFilter = accountIds?.Any() == true;
+
+            // Project per-transaction, with detail amount filtered by provided account ids if any.
             var txAggQry = baseQry.Select( t => new
             {
                 t.Id,
@@ -176,24 +263,24 @@ namespace Rock.AI.Agent.Skills
                 CurrencyType = t.FinancialPaymentDetail.CurrencyTypeValue != null
                     ? t.FinancialPaymentDetail.CurrencyTypeValue.Value
                     : "Unknown",
-
-                AmountFiltered = t.TransactionDetails
-                    .Where( d => !accountId.HasValue || d.AccountId == accountId.Value )
-                    .Select( d => ( decimal? ) d.Amount )
-                    .Sum() ?? 0m
+                AmountFiltered = ( hasAccountFilter
+                    ? t.TransactionDetails
+                        .Where( d => accountIds.Contains( d.AccountId ) )
+                        .Select( d => ( decimal? ) d.Amount )
+                        .Sum()
+                    : t.TransactionDetails
+                        .Select( d => ( decimal? ) d.Amount )
+                        .Sum() ) ?? 0m
             } );
 
             // Materialize once for stats and currency breakdown.
             var txAgg = txAggQry.ToList();
 
-            // Effective set for stats:
-            // - If filtering by account, only include transactions that actually contributed (> 0).
-            // - Otherwise include all.
-            var effectiveAmounts = ( accountId.HasValue
+            // Effective set for stats: if filtering by accounts only include transactions that contributed (>0), else all.
+            var effectiveAmounts = ( hasAccountFilter
                 ? txAgg.Where( x => x.AmountFiltered > 0m )
                 : txAgg ).Select( x => x.AmountFiltered ).ToList();
 
-            // Totals over the *effective* set so mean/median/stddev are consistent.
             var uniqueTransactionCount = effectiveAmounts.Count;
             var totalAmount = effectiveAmounts.Sum();
             decimal averageAmount = 0m, medianAmount = 0m, stdDeviationAmount = 0m;
@@ -201,21 +288,17 @@ namespace Rock.AI.Agent.Skills
             if ( uniqueTransactionCount > 0 )
             {
                 averageAmount = decimal.Round( effectiveAmounts.Average(), 2 );
-
                 var ordered = effectiveAmounts.OrderBy( a => a ).ToList();
                 var mid = ordered.Count / 2;
-
                 medianAmount = ordered.Count % 2 == 1
                     ? ordered[mid]
                     : decimal.Round( ( ordered[mid - 1] + ordered[mid] ) / 2m, 2 );
-
-                // Population standard deviation (σ). Swap denominator to (n-1) for sample s if desired.
                 var meanD = ( double ) averageAmount;
                 var variance = ordered.Sum( a => Math.Pow( ( double ) a - meanD, 2 ) ) / ordered.Count;
                 stdDeviationAmount = ( decimal ) Math.Round( Math.Sqrt( variance ), 2 );
             }
 
-            // Fund (account) rollup at the detail level; honor AccountId if supplied.
+            // Fund (account) rollup detail level honoring multi-account filter if provided.
             var detailProj = baseQry
                 .SelectMany( t => t.TransactionDetails.Select( d => new
                 {
@@ -224,8 +307,7 @@ namespace Rock.AI.Agent.Skills
                     AccountName = d.Account != null ? d.Account.Name : "Unknown",
                     Amount = ( decimal? ) d.Amount ?? 0m
                 } ) )
-                .Where( x => x.AccountId != null
-                    && ( !accountId.HasValue || x.AccountId == accountId.Value ) );
+                .Where( x => x.AccountId != null && ( !hasAccountFilter || accountIds.Contains( x.AccountId.Value ) ) );
 
             var fundRows = detailProj
                 .GroupBy( x => new { x.AccountId, x.AccountName } )
@@ -249,7 +331,7 @@ namespace Rock.AI.Agent.Skills
                 UniqueTransactionCount = fr.UniqueTransactionCount
             } ).ToList();
 
-            // Currency/tender breakdown — count only transactions that *contributed* (>0) to avoid zeros noise.
+            // Currency/tender breakdown — count only contributing (>0) transactions.
             var currencyTypeRows = txAgg
                 .GroupBy( x => new { x.CurrencyTypeId, x.CurrencyType } )
                 .Select( g => new
@@ -383,7 +465,6 @@ namespace Rock.AI.Agent.Skills
                         .Select( td => new FinancialAccountTransactionSummaryResult
                         {
                             Amount = td.Amount,
-                            Id = td.Id,                 // keep if you want the detail Id
                             Name = td.Account.Name
                         } )
                         .ToList()
