@@ -172,6 +172,8 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             public NameValueCollection QueryString => throw new NotImplementedException();
 
+            public IDictionary<string, object> RouteData => throw new NotImplementedException();
+
             public NameValueCollection Headers { get; } = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
 
             public IDictionary<string, string> Cookies => throw new NotImplementedException();

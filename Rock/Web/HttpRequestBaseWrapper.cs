@@ -39,6 +39,9 @@ namespace Rock.Web
         public NameValueCollection QueryString { get; }
 
         /// <inheritdoc/>
+        public IDictionary<string, object> RouteData { get; }
+
+        /// <inheritdoc/>
         public NameValueCollection Headers { get; }
 
         /// <inheritdoc/>
@@ -70,6 +73,12 @@ namespace Rock.Web
             foreach ( string key in request.QueryString.Keys )
             {
                 QueryString[key] = request.QueryString[key];
+            }
+
+            RouteData = new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase );
+            foreach ( var kvp in request.RequestContext.RouteData.Values )
+            {
+                RouteData.Add( kvp.Key, kvp.Value );
             }
 
             Headers = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
