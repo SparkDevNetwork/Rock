@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+
+<html>
+<head runat="server">
+    <meta charset="utf-8">
+    <title></title>
+
+    <!-- Set the viewport width to device width for mobile disabling zooming -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <script src="{{ '~/Scripts/Bundles/RockJQueryLatest' | ResolveRockUrl }}"></script>
+
+    <!-- Included CSS Files -->
+	<link rel="stylesheet" href="{{ '~~/Styles/theme.css' | ResolveRockUrl | FingerprintUrl }}"/>
+
+</head>
+<body id="splash" class="is-booting">
+
+    <div id="content" class="login-form-container">
+        <div class="logo-background">
+            <div id="logo"></div>
+        </div>
+
+        <div id="content-box" class="clearfix">
+            <Rock:Zone Name="Main" runat="server" />
+        </div>
+    </div>
+
+</body>
+</html>

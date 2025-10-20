@@ -23,12 +23,15 @@ using System.Web;
 using System.Web.Compilation;
 using System.Web.Routing;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Rock.Bus.Message;
 using Rock.Cms.Utm;
+using Rock.Configuration;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Net;
 using Rock.Tasks;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -350,6 +353,19 @@ namespace Rock.Web
                 
                 try
                 {
+                    if ( requestContext.HttpContext.Request.QueryString["engine"] == "lava" )
+                    {
+                        var requestWrapper = new HttpRequestBaseWrapper( requestContext.HttpContext.Request );
+                        var responseWrapper = new HttpResponseBaseWrapper( requestContext.HttpContext.Response );
+                        var user = UserLoginService.GetCurrentUser( false );
+                        var rockRequestContext = new RockRequestContext( requestWrapper, responseWrapper, user );
+                        var filePath = requestContext.HttpContext.Server.MapPath( layoutPath ).Replace( ".aspx", ".lava" );
+
+                        rockRequestContext.PrepareRequestForPage( page );
+
+                        return new LavaLayoutPage( filePath, routeId, parms, rockRequestContext );
+                    }
+
                     return CreateRockPage( page, layoutPath, routeId, parms, routeHttpRequest );
                 }
                 catch ( System.Web.HttpException )
