@@ -99,7 +99,7 @@ namespace Rock.AI.Agent.Skills
             // Build hierarchical tree.
             var parentAccountResults = new List<FinancialAccountResult>();
 
-            foreach( var acct in topLevelAccounts )
+            foreach ( var acct in topLevelAccounts )
             {
                 var result = new FinancialAccountResult
                 {
@@ -107,6 +107,11 @@ namespace Rock.AI.Agent.Skills
                     IsTaxDeductible = acct.IsTaxDeductible,
                     Name = acct.PublicName,
                     PublicDescription = acct.PublicDescription,
+                    Campus = acct.CampusId.HasValue ? new CampusResult
+                    {
+                        Id = acct.CampusId.Value,
+                        Name = acct.Campus.Name
+                    } : null
                 };
 
                 var childAccts = acct.GetDescendentFinancialAccounts()
@@ -114,7 +119,7 @@ namespace Rock.AI.Agent.Skills
 
                 foreach ( var childAcct in childAccts )
                 {
-                    if( result.Children.Any( c => c.Id == childAcct.Id ) )
+                    if ( result.Children.Any( c => c.Id == childAcct.Id ) )
                     {
                         continue;
                     }
@@ -125,7 +130,12 @@ namespace Rock.AI.Agent.Skills
                         IsTaxDeductible = childAcct.IsTaxDeductible,
                         Name = childAcct.PublicName,
                         PublicDescription = childAcct.PublicDescription,
-                        ParentAccountIdKey = IdHasher.Instance.GetHash( childAcct.ParentAccountId ?? 0 )
+                        ParentAccountIdKey = IdHasher.Instance.GetHash( childAcct.ParentAccountId ?? 0 ),
+                        Campus = childAcct.CampusId.HasValue ? new CampusResult
+                        {
+                            Id = childAcct.CampusId.Value,
+                            Name = childAcct.Campus.Name
+                        } : null
                     } );
                 }
 
@@ -148,7 +158,6 @@ namespace Rock.AI.Agent.Skills
                     parent.Name,
                     parent.IsTaxDeductible,
                     parent.PublicDescription,
-                    parent.ParentAccountIdKey
                 } );
 
                 foreach ( var child in parent.Children )
@@ -166,6 +175,115 @@ namespace Rock.AI.Agent.Skills
 
             return RockToolResult.Success( parentAccountResults )
                 .WithHistoryContent( trimmedForHistory, "financial-accounts" );
+        }
+
+        private List<FinancialAccountCache> GetFinancialAccountsForQuery( List<string> originalAccountIds, string campusId, RockContext rockContext )
+        {
+            // The filtering for accounts will be handled as such:
+            // A. If no accounts are specified, but a campus is specified, find all accounts for that campus. 
+            // B. If accounts are specified, and no campus is specified, find all parent accounts. If a parent account has `Uses Campus Child Accounts` enabled, include all child accounts.
+            // C. If both accounts and campus are specified, find all parent accounts. If a parent account has `Uses Campus Child Accounts` enabled, include only child accounts for the specified campus.
+            if ( campusId.IsNullOrWhiteSpace() && !originalAccountIds.Any() )
+            {
+                return new List<FinancialAccountCache>();
+            }
+
+            var results = new List<FinancialAccountCache>();
+
+            // Case A: No accounts specified, campus specified.
+            if ( !originalAccountIds.Any() && campusId.IsNotNullOrWhiteSpace() )
+            {
+                var campusIntId = IdHasher.Instance.GetId( campusId );
+
+                results = FinancialAccountCache.All()
+                    .Where( a => a.IsActive && a.CampusId.HasValue && a.CampusId.Value == campusIntId )
+                    .ToList();
+            }
+            // Case B: Accounts specified, no campus specified.
+            else if ( originalAccountIds.Any() && campusId.IsNullOrWhiteSpace() )
+            {
+                // Decode multiple account ids (ignore invalid keys).
+                var accountIds = originalAccountIds.Where( k => k.IsNotNullOrWhiteSpace() )
+                    .Select( k => IdHasher.Instance.GetId( k ) )
+                    .Where( id => id.HasValue )
+                    .Select( id => id.Value )
+                    .Distinct()
+                    .ToList();
+
+                var accounts = new List<FinancialAccountCache>();
+
+                foreach ( var acctId in accountIds )
+                {
+                    var acct = FinancialAccountCache.Get( acctId, rockContext );
+                    if ( acct == null )
+                    {
+                        continue;
+                    }
+                    accounts.Add( acct );
+
+                    // Only include child accounts if Uses Campus Child Accounts is enabled.
+                    if ( acct.UsesCampusChildAccounts )
+                    {
+                        var children = acct.ChildAccounts;
+
+                        foreach ( var child in children )
+                        {
+                            var childAcct = FinancialAccountCache.Get( child.Id, rockContext );
+                            if ( childAcct != null && !accounts.Any( a => a.Id == childAcct.Id ) )
+                            {
+                                accounts.Add( childAcct );
+                            }
+                        }
+                    }
+                }
+
+                results = accounts;
+            }
+            // Case C: Both accounts and campus specified.
+            else
+            {
+                var campusIntId = IdHasher.Instance.GetId( campusId );
+
+                // Decode multiple account ids (ignore invalid keys).
+                var accountIds = originalAccountIds.Where( k => k.IsNotNullOrWhiteSpace() )
+                    .Select( k => IdHasher.Instance.GetId( k ) )
+                    .Where( id => id.HasValue )
+                    .Select( id => id.Value )
+                    .Distinct()
+                    .ToList();
+
+                var accounts = new List<FinancialAccountCache>();
+
+                foreach ( var acctId in accountIds )
+                {
+                    var acct = FinancialAccountCache.Get( acctId, rockContext );
+                    if ( acct == null )
+                    {
+                        continue;
+                    }
+                    accounts.Add( acct );
+                    // Only include child accounts for the specified campus if Uses Campus Child Accounts is enabled.
+                    if ( acct.UsesCampusChildAccounts )
+                    {
+                        var children = acct.ChildAccounts
+                            .Where( ca => ca.CampusId.HasValue && ca.CampusId.Value == campusIntId );
+
+                        foreach ( var child in children )
+                        {
+                            var childAcct = FinancialAccountCache.Get( child.Id, rockContext );
+
+                            if ( childAcct != null && !accounts.Any( a => a.Id == childAcct.Id ) )
+                            {
+                                accounts.Add( childAcct );
+                            }
+                        }
+                    }
+                }
+
+                results = accounts;
+            }
+
+            return results;
         }
 
         /// <summary>
@@ -208,41 +326,11 @@ namespace Rock.AI.Agent.Skills
             var campusId = campusIdKey.IsNotNullOrWhiteSpace() ? IdHasher.Instance.GetId( campusIdKey ) : null;
             var paymentMethodTypeId = paymentMethodTypeValueIdKey.IsNotNullOrWhiteSpace() ? IdHasher.Instance.GetId( paymentMethodTypeValueIdKey ) : null;
 
-            // Decode multiple account ids (ignore invalid keys).
-            var accountIds = accountIdKeys?.Where( k => k.IsNotNullOrWhiteSpace() )
-                .Select( k => IdHasher.Instance.GetId( k ) )
-                .Where( id => id.HasValue )
-                .Select( id => id.Value )
-                .Distinct()
-                .ToList() ?? new List<int>();
-
-            // We also want to include child accounts of any specified parent accounts.
-            var originalAccountIds = accountIds.ToList();
-
-            foreach ( var acctId in originalAccountIds )
-            {
-                var acct = FinancialAccountCache.Get( acctId, rockContext );
-
-                if( acct == null )
-                {
-                    continue;
-                }
-
-                var children = acct.GetDescendentFinancialAccountIds();
-
-                foreach ( var childId in children )
-                {
-                    if ( !accountIds.Contains( childId ) )
-                    {
-                        accountIds.Add( childId );
-                    }
-                }
-            }
 
             var options = new FinancialTransactionQueryOptions
             {
                 PersonId = personId,
-                BatchCampusId = campusId,
+                //BatchCampusId = campusId,
                 PaymentMethodTypeId = paymentMethodTypeId,
                 StartDate = startDate,
                 EndDate = endDate
@@ -251,6 +339,20 @@ namespace Rock.AI.Agent.Skills
             // Base transaction scope (no AccountId filter here on purpose).
             var baseQry = GetFinancialTransactionsQueryable( rockContext, options )
                 .AsNoTracking();
+
+            List<int> accountIds = null;
+            if ( accountIdKeys?.Any() ?? false || campusIdKey.IsNotNullOrWhiteSpace() )
+            {
+                accountIds = GetFinancialAccountsForQuery( accountIdKeys ?? new List<string>(), campusIdKey, rockContext )
+                    .Select( a => a.Id )
+                    .ToList();
+
+                if ( !accountIds.Any() )
+                {
+                    return RockToolResult.NoData()
+                        .WithInstructions( "No active financial accounts matched the supplied accountIdKeys and/or campusIdKey." );
+                }
+            }
 
             var hasAccountFilter = accountIds?.Any() == true;
 
@@ -373,10 +475,17 @@ namespace Rock.AI.Agent.Skills
         /// Lists individual financial transactions matching the supplied filters (at least one is required).
         /// Use this only when raw transaction data is explicitly needed; prefer the summarize tool for
         /// general analytical questions.
+        ///
+        /// When <paramref name="accountIdKeys"/> and/or <paramref name="campusIdKey"/> are provided, only
+        /// transactions that contribute (>0) to the resolved set of accounts are returned, and the per-row
+        /// TotalAmount/Accounts reflect only those contributing details (same behavior as summarize).
         /// </summary>
         /// <param name="personIdKey">Optional person IdKey.</param>
         /// <param name="campusIdKey">Optional campus (batch campus) IdKey.</param>
-        /// <param name="accountIdKey">Optional account/fund IdKey (not directly filtered here to avoid excluding multi-fund transactions).</param>
+        /// <param name="accountIdKeys">
+        /// Optional list of Account/Fund IdKeys. If supplied (or if only campusIdKey is supplied),
+        /// the account set is resolved via GetFinancialAccountsForQuery and only contributions to that set are included.
+        /// </param>
         /// <param name="paymentMethodTypeValueIdKey">Optional payment method type IdKey.</param>
         /// <param name="startDate">Optional inclusive start date.</param>
         /// <param name="endDate">Optional inclusive end date.</param>
@@ -386,7 +495,7 @@ namespace Rock.AI.Agent.Skills
         public RockToolResult ListFinancialTransactions(
             string personIdKey = null,
             string campusIdKey = null,
-            string accountIdKey = null,
+            List<string> accountIdKeys = null,
             string paymentMethodTypeValueIdKey = null,
             DateTime? startDate = null,
             DateTime? endDate = null,
@@ -395,7 +504,7 @@ namespace Rock.AI.Agent.Skills
             // Require at least one filter, or punt to summarize tool.
             if ( personIdKey.IsNullOrWhiteSpace()
                 && campusIdKey.IsNullOrWhiteSpace()
-                && accountIdKey.IsNullOrWhiteSpace()
+                && ( accountIdKeys == null || !accountIdKeys.Any() )
                 && paymentMethodTypeValueIdKey.IsNullOrWhiteSpace()
                 && !startDate.HasValue
                 && !endDate.HasValue )
@@ -408,20 +517,34 @@ namespace Rock.AI.Agent.Skills
 
             var personId = personIdKey.IsNotNullOrWhiteSpace() ? IdHasher.Instance.GetId( personIdKey ) : null;
             var campusId = campusIdKey.IsNotNullOrWhiteSpace() ? IdHasher.Instance.GetId( campusIdKey ) : null;
-            var accountId = accountIdKey.IsNotNullOrWhiteSpace() ? IdHasher.Instance.GetId( accountIdKey ) : null;
             var paymentMethodTypeId = paymentMethodTypeValueIdKey.IsNotNullOrWhiteSpace() ? IdHasher.Instance.GetId( paymentMethodTypeValueIdKey ) : null;
 
             var options = new FinancialTransactionQueryOptions
             {
                 PersonId = personId,
-                BatchCampusId = campusId,
-                // AccountId intentionally not applied to avoid excluding multi-fund transactions.
+                // BatchCampusId = campusId,
                 PaymentMethodTypeId = paymentMethodTypeId,
                 StartDate = startDate,
                 EndDate = endDate
             };
 
-            // --- Paging (offset with N+1 lookahead) ---
+            List<int> accountIds = null;
+            if ( ( accountIdKeys?.Any() ?? false ) || campusIdKey.IsNotNullOrWhiteSpace() )
+            {
+                accountIds = GetFinancialAccountsForQuery( accountIdKeys ?? new List<string>(), campusIdKey, rockContext )
+                    .Select( a => a.Id )
+                    .ToList();
+
+                if ( !accountIds.Any() )
+                {
+                    return RockToolResult.NoData()
+                        .WithInstructions( "No active financial accounts matched the supplied accountIdKeys and/or campusIdKey." );
+                }
+            }
+
+            var hasAccountFilter = accountIds?.Any() == true;
+
+            // Paging (offset with N+1 lookahead) 
             var pgNumber = Math.Max( 1, pageNumber );
             const int basePageSize = 50;
             var offset = ( pgNumber - 1 ) * basePageSize;
@@ -430,11 +553,13 @@ namespace Rock.AI.Agent.Skills
             // Base query + deterministic ordering (date desc, then id desc)
             var baseQry = GetFinancialTransactionsQueryable( rockContext, options )
                 .Include( t => t.AuthorizedPersonAlias.Person )
-                .Include( t => t.TransactionDetails );
+                .Include( t => t.TransactionDetails.Select( d => d.Account ) );
 
-            if ( accountId.HasValue )
+            // If we have an account filter, only return transactions that actually contribute (>0)
+            // to one of the filtered accounts (mirror Summarize's "effective" set).
+            if ( hasAccountFilter )
             {
-                baseQry = baseQry.Where( t => t.TransactionDetails.Any( d => d.AccountId == accountId.Value ) );
+                baseQry = baseQry.Where( t => t.TransactionDetails.Any( d => accountIds.Contains( d.AccountId ) ) );
             }
 
             baseQry = baseQry.OrderByDescending( t => t.TransactionDateTime )
@@ -454,14 +579,16 @@ namespace Rock.AI.Agent.Skills
                 },
                 TransactionDateTime = ft.TransactionDateTime,
 
+                // Only sum details that match the resolved account set (if any)
                 TotalAmount =
                     ft.TransactionDetails
-                        .Where( d => !accountId.HasValue || d.AccountId == accountId.Value )
+                        .Where( d => !hasAccountFilter || accountIds.Contains( d.AccountId ) )
                         .Sum( d => ( decimal? ) d.Amount ) ?? 0m,
 
+                // And only list those matching account details
                 Accounts =
                     ft.TransactionDetails
-                        .Where( td => !accountId.HasValue || td.AccountId == accountId.Value )
+                        .Where( td => !hasAccountFilter || accountIds.Contains( td.AccountId ) )
                         .Select( td => new FinancialAccountTransactionSummaryResult
                         {
                             Amount = td.Amount,
@@ -487,7 +614,7 @@ namespace Rock.AI.Agent.Skills
                     {
                         { "personIdKey", personIdKey },
                         { "campusIdKey", campusIdKey },
-                        { "accountIdKey", accountIdKey },
+                        { "accountIdKeys", accountIdKeys },
                         { "paymentMethodTypeValueIdKey", paymentMethodTypeValueIdKey },
                         { "startDate", startDate },
                         { "endDate", endDate }
@@ -505,8 +632,7 @@ namespace Rock.AI.Agent.Skills
                     .WithMetadata( meta );
             }
 
-            // Create a super trimmed down version for
-            // the history content.
+            // Trimmed history content (unchanged)
             var trimmedForHistory = rows.Select( r => new
             {
                 r.Id,
@@ -521,11 +647,11 @@ namespace Rock.AI.Agent.Skills
                 PageNumber = pgNumber
             } ).ToList();
 
-            // Use the filters to create a hash key for history content.
+            // History key should include all accountIdKeys to keep variants distinct
             var historyKey = string.Concat(
                 personIdKey,
                 campusIdKey,
-                accountIdKey,
+                accountIdKeys == null ? null : string.Join( "|", accountIdKeys ),
                 paymentMethodTypeValueIdKey,
                 startDate?.ToString( "o" ),
                 endDate?.ToString( "o" ) ).XxHash();
