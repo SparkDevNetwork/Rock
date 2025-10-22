@@ -71,7 +71,8 @@ namespace Rock.AI.Agent.Skills
             var baseQry = GetFinancialTransactionsQueryable( rockContext, options )
                 .AsNoTracking();
 
-            List<int> accountIds = null;
+            List<int> accountIds = new List<int>();
+
             if ( accountIdKeys?.Any() ?? false || campusIdKey.IsNotNullOrWhiteSpace() )
             {
                 accountIds = GetFinancialAccountsForQuery( accountIdKeys ?? new List<string>(), campusIdKey, rockContext )

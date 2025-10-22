@@ -72,7 +72,7 @@ namespace Rock.AI.Agent.Skills
                 EndDate = endDate
             };
 
-            List<int> accountIds = null;
+            List<int> accountIds = new List<int>();
             if ( ( accountIdKeys?.Any() ?? false ) || campusIdKey.IsNotNullOrWhiteSpace() )
             {
                 accountIds = GetFinancialAccountsForQuery( accountIdKeys ?? new List<string>(), campusIdKey, rockContext )
