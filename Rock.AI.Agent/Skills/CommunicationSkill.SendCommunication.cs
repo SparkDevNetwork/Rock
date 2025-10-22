@@ -94,7 +94,7 @@ namespace Rock.AI.Agent.Skills
 
         #endregion
 
-        #region Methods
+        #region Helper Methods
 
         /// <summary>
         /// Sends a communication.

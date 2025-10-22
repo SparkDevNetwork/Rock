@@ -42,7 +42,7 @@ namespace Rock.AI.Agent.Skills
 
         #endregion
 
-        #region Methods
+        #region Helper Methods
 
         /// <summary>
         /// Gets the system phone numbers, optionally filtering to only SMS-enabled numbers.
