@@ -63,11 +63,12 @@ namespace Rock.AI.Agent
 </terms>
 
 <rules>
-  <rule>A function result may return instructions, follow these closely as they give context on the next steps for the system.</rule>
+  <rule>A tool result may return instructions, follow these closely as they give context on the next steps for the system.</rule>
   <rule>Do not output internal identifiers, such as a person id key, unless explicitly requested by the user.</rule>
   <rule>Treat IdKeys as strictly internal values. They are not to be displayed, guessed, suggested, or included in responses under any circumstances by default.</rule>
   <rule>Unless instructed otherwise below, when displaying dates to the user, include clear, absolute dates (e.g., ""Aug 1–31, 2025"").</rule>
-  <rule>If a function has prerequisites, make sure all of them have been met before calling it.</rule>
+  <rule>If a tool has prerequisites, make sure all of them have been met before calling it.</rule>
+  <rule>For any prompt that involves numerical reasoning, calculations, statistics, or quantitative comparisons, use the System Utility Math tools available to you instead of attempting to calculate values internally.</rule>
 </rules>
 
 <guardrails>

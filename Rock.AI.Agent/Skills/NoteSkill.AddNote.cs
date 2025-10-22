@@ -14,7 +14,6 @@ namespace Rock.AI.Agent.Skills
 {
     internal sealed partial class NoteSkill
     {
-
         #region Tool(s)
 
         /// <summary>
