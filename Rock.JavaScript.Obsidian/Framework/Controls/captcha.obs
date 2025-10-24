@@ -1,39 +1,80 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField v-bind="fieldProps" :rules="computedRules" name="captchaContent" :modelValue="internalValue">
+    <RockFormField v-bind="fieldProps"
+                   :disableLabel="internalDisableLabel"
+                   :validationTitle="internalValidationTitle"
+                   :rules="computedRules"
+                   name="captchaContent"
+                   :modelValue="internalValue">
         <div class="control-wrapper">
-            <div :id="turnstileBoxId"></div>
+            <div :id="capBoxId" ref="host"></div>
         </div>
     </RockFormField>
 </template>
 
-<script setup lang="ts">
-    import { PropType, computed, onMounted, onUnmounted, ref, } from "vue";
-    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
-    import { useHttp } from "@Obsidian/Utility/http";
-    import { ValidationResult, containsRequiredRule, normalizeRules } from "@Obsidian/ValidationRules";
-    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-    import { CaptchaControlConfigurationBag } from "@Obsidian/ViewModels/Rest/Controls/captchaControlConfigurationBag";
-    import { CaptchaControlTokenValidateTokenResultBag } from "@Obsidian/ViewModels/Rest/Controls/captchaControlTokenValidateTokenResultBag";
-    import { CaptchaControlValidateTokenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/captchaControlValidateTokenOptionsBag";
-    import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
-    import { newGuid } from "@Obsidian/Utility/guid";
-    import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
+<style scoped>
+:deep(cap-widget) {
+    --cap-background: var(--color-interface-softest);
+    --cap-border-radius: var(--rounded-small);
+    --cap-border-color: var(--color-interface-soft);
+    --cap-widget-padding: var(--spacing-medium);
+    --cap-color: var(--color-interface-strong);
+    --cap-widget-width: 200px;
+    --cap-checkbox-background: var(--color-interface-softest);
+    --cap-checkbox-border: 1px solid var(--color-interface-soft);
+    --cap-checkbox-border-radius: var(--rounded-xsmall);
+    --cap-checkbox-margin: var(--spacing-large);
+    --cap-spinner-background-color: var(--color-interface-soft);
+    --cap-spinner-color: var(--color-primary);
+    --cap-spinner-thickness: 6px;
+    --cap-gap: var(--spacing-medium);
+    --cap-font: var(--font-family-body);
+    --cap-checkbox-size: 20px;
+}
+</style>
 
-    interface ITurnstile {
-        render(elementQuery: string, options: unknown): string;
-        reset(widgetId: string): void;
-        remove(widgetId: string): void;
-    }
+<script setup lang="ts">
+    import { PropType, computed, onMounted, onUnmounted, ref, nextTick, watch } from "vue";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import { CaptchaMode } from "@Obsidian/Enums/Security/captchaMode";
+    import Cap, { CapWidget } from "@Obsidian/Libs/capjs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import http from "@Obsidian/Utility/http";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
+    import { containsRequiredRule, normalizeRules } from "@Obsidian/ValidationRules";
+    import { CaptchaConfigurationBag } from "@Obsidian/ViewModels/Rest/Controls/captchaConfigurationBag";
+    import { CaptchaInitializeResultBag } from "@Obsidian/ViewModels/Rest/Controls/captchaInitializeResultBag";
+    import { CaptchaValidateTokenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/captchaValidateTokenOptionsBag";
+    import { CaptchaValidateTokenResultBag } from "@Obsidian/ViewModels/Rest/Controls/captchaValidateTokenResultBag";
+    import { CaptchaVerifyOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/captchaVerifyOptionsBag";
+    import { CaptchaVerifyResultBag } from "@Obsidian/ViewModels/Rest/Controls/captchaVerifyResultBag";
 
     const props = defineProps({
         /**
-         * If enabled, then validation with the server will be performed. This
-         * only validates the token, it does not provide a secure way to submit
-         * data and know it is not from a bot. When the validation has completed
-         * the `tokenValidated` event will be emitted.
+         * If enabled, performs a server-side validation of the token and emits `tokenValidated`.
+         * Same semantics as the old component.
          */
         performValidation: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Optional hint for worker count. 0 = let widget decide.
+         */
+        workerCount: {
+            type: Number as PropType<number>,
+            default: 0
+        },
+
+        /**
+         * Determines whether this control is being used as a field type.
+         *
+         * This affects the validation behavior, specifically around the "required" rule.
+         */
+        isFieldType: {
             type: Boolean as PropType<boolean>,
             default: false
         },
@@ -42,7 +83,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "tokenValidated", isValid: boolean): void
+        (e: "tokenValidated", isValid: boolean): void;
     }>();
 
     defineExpose({
@@ -51,41 +92,98 @@
         validateToken
     });
 
+    const widgetEl = ref<CapWidget | null>(null);
+
+    let disposed = false;
+
+    /** Mirrors old API: a one-shot promise that resolves when a fresh token is available. */
+    let tokenPromiseSource = new PromiseCompletionSource<string | undefined>();
+
+    function freezeProp(target: unknown, propertyName: string, value: unknown): void {
+        Object.defineProperty(target, propertyName, {
+            get: () => value,
+            set: undefined,
+            configurable: false,
+            enumerable: true
+        });
+    }
+
+    // Reroute the Cap endpoints to Rock.
+    if (!window.CAP_CUSTOM_FETCH) {
+        freezeProp(window, "CAP_CUSTOM_FETCH", async function (url, options): Promise<Response> {
+            if (typeof url === "string") {
+                if (url.endsWith("/challenge")) {
+                    return await challenge();
+                }
+                else if (url.endsWith("/redeem")) {
+                    const json = options?.body?.toString();
+                    return await redeem(json ? JSON.parse(json) : undefined);
+                }
+            }
+
+            // Fallback to default fetch (should not happen).
+            return fetch(url, options);
+        });
+    }
+
     // #region Values
 
     const fieldProps = useStandardRockFormFieldProps(props);
     const internalValue = ref("");
-    const http = useHttp();
-    const widgetId = ref("");
-    const turnstileBoxId = `turnstile-box-${newGuid()}`;
-    let turnstile: ITurnstile | undefined;
+    const capBoxId = `cap-box-${newGuid()}`;
+    const host = ref<HTMLElement | null>(null);
+    const mode = ref<CaptchaMode>(CaptchaMode.Visible);
 
-    let captchaPromiseSource = new PromiseCompletionSource<string | undefined>();
+    // #endregion Values
 
-    // #endregion
+    // #region Computed Values
 
-    // #region Computed
+    const internalDisableLabel = computed<boolean>(() => {
+        return fieldProps.disableLabel // explicitly disabled
+            || !fieldProps.label // no label to show
+            || mode.value !== CaptchaMode.Visible; // not visible mode
+    });
+
+    const internalValidationTitle = computed<string | undefined>(() => {
+        return fieldProps.label ? undefined : "Captcha";
+    });
 
     const computedRules = computed(() => {
         const rules = normalizeRules(props.rules);
 
         if (containsRequiredRule(rules)) {
-            rules.push(requiredValidator);
+            const isCaptchaDisabled = mode.value === CaptchaMode.Disabled;
+            const isFieldType = props.isFieldType;
+            const isCaptchaInvisibleAndNotFieldType = mode.value === CaptchaMode.Invisible && !isFieldType;
+
+            if (isCaptchaDisabled || isCaptchaInvisibleAndNotFieldType) {
+                // If disabled, remove required rule (it cannot be satisfied).
+                return Enumerable.from(rules)
+                    .where(r => r !== "required")
+                    .toArray();
+            }
+            else if (isFieldType) {
+                // Add a validator that ensure that the token is valid.
+            }
         }
 
         return rules;
     });
 
-    // #endregion
+    const shadowRoot = computed<ShadowRoot | null>(() => {
+        return widgetEl.value?.shadowRoot ?? null;
+    });
+
+    // #endregion Computed Values
 
     // #region Functions
 
     /**
      * Get the control configuration from the server.
      */
-    async function getConfiguration(): Promise<CaptchaControlConfigurationBag | undefined> {
+    async function getConfiguration(): Promise<CaptchaConfigurationBag | undefined> {
         try {
-            const result = await http.post<CaptchaControlConfigurationBag>("/api/v2/Controls/CaptchaControlGetConfiguration");
+            const result = await http.post<CaptchaConfigurationBag>("/api/v2/Controls/CaptchaGetConfiguration");
 
             if (result.isSuccess && result.data) {
                 return result.data;
@@ -99,130 +197,261 @@
         }
     }
 
-    /**
-     * Get validate the token with the server. This function is not currently
-     * used but is being left behind for later use by the captcha field type.
-     */
-    async function validateToken(token: string): Promise<CaptchaControlTokenValidateTokenResultBag | undefined> {
-        const options: CaptchaControlValidateTokenOptionsBag = {
-            token: token
-        };
+    async function challenge(): Promise<Response> {
+        const result = await http.post<CaptchaInitializeResultBag>("/api/v2/Controls/CaptchaInitialize", undefined);
 
-        try {
-            const result = await http.post<CaptchaControlTokenValidateTokenResultBag>("/api/v2/Controls/CaptchaControlValidateToken", undefined, options);
-
-            if (result.isSuccess && result.data) {
-                return result.data;
-            }
-            else {
-                console.error(result.errorMessage ?? "Unknown error while validating token.");
-            }
+        if (result.isSuccess && result.data?.pow?.challengeToken) {
+            // Format the challenge as expected by Cap.js
+            const challenge = {
+                c: result.data.pow.challengeCount,
+                s: result.data.pow.challengeSize,
+                d: result.data.pow.challengeDifficulty
+            };
+            return Response.json({ challenge, token: result.data.pow.challengeToken });
         }
-        catch (error) {
-            console.error("Unknown error while validating token.");
-        }
-    }
-
-    /**
-     * Gets a promise that will be resolved once the token becomes available.
-     * The returned token can only be used once, so if you need to make another
-     * call to validate the token you should call `refreshToken()` after calling
-     * this method.
-     */
-    function getToken(): Promise<string | undefined> {
-        return captchaPromiseSource.promise;
-    }
-
-    /**
-     * Begins refreshing the token so it can be used again.
-     */
-    function refreshToken(): void {
-        if (widgetId.value && turnstile) {
-            captchaPromiseSource.resolve(undefined);
-            captchaPromiseSource = new PromiseCompletionSource<string | undefined>();
-            internalValue.value = "";
-            turnstile.reset(widgetId.value);
-        }
-    }
-
-    /**
-    * Renders the captcha control in the selected element after the turnstile script has been injected.
-    */
-    function renderCaptchaControl(siteKey: string): void {
-        if (turnstile) {
-            widgetId.value = turnstile.render(`#${turnstileBoxId}`, {
-                sitekey: siteKey,
-                "callback": callback,
-                "error-callback": errorCallback,
-                "expired-callback": expiredCallback
+        else {
+            return Response.json(result.errorMessage, {
+                status: 400,
+                statusText: "Bad Request"
             });
         }
     }
 
-    /**
-     * Callback function invoked upon success of the challenge. The callback is passed a token that can be validated.
-     */
-    async function callback(response: string): Promise<void> {
-        if (props.performValidation) {
-            const result = await validateToken(response);
+    type CapJsRedeemRequest = {
+        token: string;
+        solutions: number[];
+    };
 
-            emit("tokenValidated", result?.isTokenValid ?? false);
-            internalValue.value = result?.isTokenValid ? response : "";
+    function isRedeemRequest(data: unknown): data is CapJsRedeemRequest {
+        if (data && typeof data === "object") {
+            const d = data as CapJsRedeemRequest;
+            return typeof d.token === "string" && Array.isArray(d.solutions) && d.solutions.every(v => typeof v === "number");
+        }
+
+        return false;
+    }
+
+    async function redeem(data: unknown): Promise<Response> {
+        if (!isRedeemRequest(data)) {
+            return Response.json("Invalid request", {
+                status: 400,
+                statusText: "Bad Request"
+            });
+        }
+
+        const options: CaptchaVerifyOptionsBag = {
+            powOptions: {
+                challengeSolutions: data.solutions,
+                challengeToken: data.token
+            }
+        };
+
+        const result = await http.post<CaptchaVerifyResultBag>("/api/v2/Controls/CaptchaVerify", undefined, options);
+
+        if (result.isSuccess && result.data) {
+            const resp = {
+                success: result.data.isVerified,
+                token: result.data.token ?? "",
+                message: result.data.error ?? "",
+                expires: result.data.expires
+            };
+
+            return Response.json(resp);
         }
         else {
-            captchaPromiseSource.resolve(response);
-            internalValue.value = response;
+            return Response.json(result.errorMessage, {
+                status: 400,
+                statusText: "Bad Request"
+            });
         }
     }
 
-    /**
-     * Callback function invoked when there is an error (e.g. network error or the challenge failed).
-     * The callback is passed a error code detailing the nature of the error https://developers.cloudflare.com/turnstile/reference/client-side-errors/
-     */
-    function errorCallback(error: string): void {
-        console.error("Captcha challenge failed.", error);
+    // Renders the Cap widget; falls back to invisible mode if custom elements are not supported.
+    async function renderCapControl(): Promise<void> {
+        const config = await getConfiguration();
+
+        if (!config) {
+            console.error("Captcha configuration is missing or invalid.");
+            return;
+        }
+
+        mode.value = config.captchaMode;
+
         internalValue.value = "";
-        captchaPromiseSource.reject("Captcha challenge failed.");
-    }
 
-    /**
-    * Callback function invoked when the token expires and does not reset the widget.
-    */
-    function expiredCallback(): void {
-        refreshToken();
-    }
-
-    /**
-     * Ensures that the Captcha was solved and verified successfully.
-     */
-    function requiredValidator(value: unknown): ValidationResult {
-        const invalidMessage = "is required";
-
-        if (!value) {
-            return invalidMessage;
+        if (mode.value === CaptchaMode.Disabled) {
+            return;
         }
 
-        return true;
+        // Prefer web component (<cap-widget>) when available.
+        if (supportsCustomElements() && mode.value === CaptchaMode.Visible) {
+            widgetEl.value = document.createElement("cap-widget") as CapWidget;
+            widgetEl.value.setAttribute("data-cap-api-endpoint", "/"); // This is temporary
+            if (props.workerCount > 0) {
+                widgetEl.value.setAttribute("data-cap-worker-count", String(props.workerCount));
+            }
+
+            widgetEl.value.addEventListener("solve", async (e: CustomEvent) => {
+                if (disposed) return;
+                const token = e?.detail?.token as string | undefined;
+                await handleSolvedToken(token);
+            });
+
+            widgetEl.value.addEventListener("error", (_e: CustomEvent) => {
+                if (disposed) return;
+                handleError("Captcha challenge failed.");
+            });
+
+            if (host.value) {
+                host.value.appendChild(widgetEl.value);
+            }
+
+            return;
+        }
+
+        // Invisible mode fallback (older Safari/Edge without customElements)
+        try {
+            const cap = new Cap({
+                "data-cap-worker-count": props.workerCount > 0 ? `${props.workerCount}` : undefined,
+            });
+            const token = await cap.solve();
+            if (!disposed) {
+                await handleSolvedToken(token.token);
+            }
+        }
+        catch {
+            if (!disposed) {
+                handleError("Captcha challenge failed.");
+            }
+        }
     }
 
-    // #endregion
+    /**
+     * Returns a promise that resolves to a captcha token.
+     * If a token was already solved during the current lifecycle, the cached token is
+     * returned immediately. Otherwise it waits until the widget produces a fresh token.
+     */
+    function getToken(): Promise<string | undefined> {
+        if (mode.value === CaptchaMode.Disabled) {
+            // If disabled, always return empty string (do not return `undefined`).
+            return Promise.resolve("");
+        }
+
+        return tokenPromiseSource.promise;
+    }
+
+    /** Refreshes the token so it can be used again (mirrors the old reset behavior). */
+    function refreshToken(): void {
+        // Complete the previous one-shot promise and start a new one.
+        tokenPromiseSource.resolve(undefined);
+        tokenPromiseSource = new PromiseCompletionSource<string | undefined>();
+        internalValue.value = "";
+
+        // Re-render (web component) or re-solve (invisible mode).
+        if (widgetEl.value && widgetEl.value.parentElement) {
+            const parent = widgetEl.value.parentElement;
+            parent.removeChild(widgetEl.value);
+            widgetEl.value = null;
+            // re-create widget nextTick to ensure clean DOM state
+            nextTick(() => renderCapControl());
+        }
+        else {
+            // If we were in invisible mode, simply re-run render (which re-solves).
+            renderCapControl();
+        }
+    }
+
+    /** Server-side validation helper (kept for parity with old component). */
+    async function validateToken(token: string): Promise<CaptchaValidateTokenResultBag | undefined> {
+        try {
+            const options: CaptchaValidateTokenOptionsBag = {
+                token
+            };
+
+            const result = await http.post<CaptchaValidateTokenResultBag>(`/api/v2/Controls/CaptchaValidateToken`, undefined, options);
+
+            if (result?.isSuccess && result.data) {
+                return result.data;
+            }
+            else {
+                return {
+                    isTokenValid: false
+                };
+            }
+        }
+        catch {
+            return { isTokenValid: false };
+        }
+    }
+
+    async function handleSolvedToken(token?: string): Promise<void> {
+        if (!token) {
+            handleError("Missing token.");
+            return;
+        }
+
+        if (props.performValidation) {
+            const result = await validateToken(token);
+            const isTokenValid = !!result?.isTokenValid;
+
+            emit("tokenValidated", isTokenValid);
+
+            if (isTokenValid) {
+                internalValue.value = token;
+                tokenPromiseSource.resolve(token);
+            }
+            else {
+                internalValue.value = "";
+                // Reject the current promise and start a new one. No need to cache the error.
+                tokenPromiseSource.reject("Token invalid.");
+                tokenPromiseSource = new PromiseCompletionSource<string | undefined>();
+            }
+        }
+        else {
+            internalValue.value = token;
+            tokenPromiseSource.resolve(token);
+        }
+    }
+
+    function handleError(msg: string): void {
+        console.error(msg);
+        internalValue.value = "";
+
+        // Reject the current promise and start a new one. No need to cache the error.
+        tokenPromiseSource.reject(msg);
+        tokenPromiseSource = new PromiseCompletionSource<string | undefined>();
+    }
+
+    function supportsCustomElements(): boolean {
+        return typeof window.customElements !== "undefined";
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(shadowRoot, (newVal) => {
+        // Remove the attribution link.
+        if (newVal) {
+            newVal.querySelector("[part='attribution']")?.remove();
+        }
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
 
     onMounted(async () => {
-        const config = await getConfiguration();
-        if (config?.siteKey) {
-            await loadJavaScriptAsync("https://challenges.cloudflare.com/turnstile/v0/api.js", () => !!window["turnstile"]);
-            turnstile = window["turnstile"];
-            renderCaptchaControl(config.siteKey);
-        }
-        else {
-            // If captcha is not enabled globally then resolve to an empty string.
-            captchaPromiseSource.resolve("");
-        }
+        await renderCapControl();
     });
 
     onUnmounted(() => {
-        if (widgetId.value && turnstile) {
-            turnstile.remove(widgetId.value);
+        disposed = true;
+        if (widgetEl.value && widgetEl.value.parentElement) {
+            widgetEl.value.parentElement.removeChild(widgetEl.value);
         }
+        widgetEl.value = null;
     });
+
+    // #endregion Hooks
 </script>

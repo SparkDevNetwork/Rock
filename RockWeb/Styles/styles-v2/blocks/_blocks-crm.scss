@@ -698,7 +698,7 @@ span.field-value {
 
 // ======================== FLUID BOX ========================
 #fluidbox-overlay {
-  background:     var(--color-interface-strongest);
+  background:     rgba(10, 10, 10, 0.5); // Hardcoded color with opacity to keep it consistent with JS implementation
 }
 // ====================== END FLUID BOX ======================
 
@@ -916,22 +916,6 @@ tr.inactive {
   }
 }
 // ====================== END EDIT PERSON ======================
-
-// ======================== CONNECTION REQUEST ========================
-
-.connection-request-board .modal-open .modal-body .panel-body .photo > img {
-  width: 100%;
-}
-
-.connection-request-board .modal-open .modal-body .nav-tabs {
-  margin-top: var(--spacing-medium);
-}
-
-.connection-request-board .modal-open .grid-table .grid-select-cell p:empty {
-  display: none;
-}
-
-// ======================== END CONNECTION REQUEST ========================
 
 // ====================== PEOPLE MERGE ======================
 

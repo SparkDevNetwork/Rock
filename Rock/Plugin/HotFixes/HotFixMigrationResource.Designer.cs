@@ -973,5 +973,29 @@ namespace Rock.Plugin.HotFixes {
                 return ResourceManager.GetString("_250_AddDuplicateCommunicationRecipientHandling_spCommunicationRecipientDetails", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        Synchronizes the pending recipients of a communication with the current, active members of its list group,
+        ///        respecting scheduled send cutoffs, recipient/person communication preferences, and optional personalization
+        ///        segment filters.
+        ///    &lt;/summary&gt;
+        ///    &lt;params&gt;
+        ///        &lt;param name=&quot;@CommunicationId&quot; type=&quot;INT&quot; required=&quot;true&quot;&gt;
+        ///            The Id of the [Communication] to synchronize.
+        ///        &lt;/param&gt;
+        ///    &lt;/params&gt;
+        ///    &lt;examples&gt;
+        ///        &lt;code&gt;
+        ///      [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _262_ImproveCommunicationPrepPerformance_spCommunication_SynchronizeListRecipients {
+            get {
+                return ResourceManager.GetString("_262_ImproveCommunicationPrepPerformance_spCommunication_SynchronizeListRecipient" +
+                        "s", resourceCulture);
+            }
+        }
     }
 }

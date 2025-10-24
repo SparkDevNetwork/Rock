@@ -247,4 +247,7 @@
   <data name="_250_AddDuplicateCommunicationRecipientHandling_spCommunicationRecipientDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>250_AddDuplicateCommunicationRecipientHandling_spCommunicationRecipientDetails.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_262_ImproveCommunicationPrepPerformance_spCommunication_SynchronizeListRecipients" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>262_ImproveCommunicationPrepPerformance_spCommunication_SynchronizeListRecipients.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

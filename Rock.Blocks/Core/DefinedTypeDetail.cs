@@ -51,7 +51,8 @@ namespace Rock.Blocks.Core
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "bcd79456-ebd5-4a2f-94e5-c7387b0ea4b7" )]
-    [Rock.SystemGuid.BlockTypeGuid( "73fd23b4-fa3a-49ea-b271-ffb228c6a49e" )]
+    // Was [Rock.SystemGuid.BlockTypeGuid( "73fd23b4-fa3a-49ea-b271-ffb228c6a49e" )]
+    [Rock.SystemGuid.BlockTypeGuid( "08C35F15-9AF7-468F-9D50-CDFD3D21220C" )]
     public class DefinedTypeDetail : RockEntityDetailBlockType<DefinedType, DefinedTypeBag>
     {
         #region Keys

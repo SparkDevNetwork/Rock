@@ -29,11 +29,14 @@
                 </ul>
             </div>
 
-            <Captcha v-if="!disableCaptchaSupport" ref="captchaElement" />
+            <Captcha v-if="!disableCaptchaSupport"
+                     ref="captchaElement"
+                     rules="required" />
 
             <NotificationBox v-if="submitErrorMessage" alertType="danger">{{ submitErrorMessage }}</NotificationBox>
 
             <div class="actions text-right">
+
                 <RockButton v-if="viewModel.allowRegistrationUpdates" class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading" autoDisable>
                     Previous
                 </RockButton>
@@ -197,35 +200,40 @@
 
     /** User clicked the "finish" button */
     async function onNext(): Promise<void> {
-        loading.value = true;
+        try {
+            loading.value = true;
 
-        if (isMakingPayment.value) {
-            // Use the gateway for payment.
-            await persistSession(true);
+            if (isMakingPayment.value) {
+                // Use the gateway for payment.
+                await persistSession(true);
 
-            if (viewModel.value.isRedirectGateway) {
-                const redirectUrl = await getPaymentRedirect();
+                if (viewModel.value.isRedirectGateway) {
+                    const redirectUrl = await getPaymentRedirect();
 
-                if (redirectUrl) {
-                    location.href = redirectUrl;
+                    if (redirectUrl) {
+                        location.href = redirectUrl;
+                    }
+                    else {
+                        // Error is shown by getPaymentRedirect method
+                        loading.value = false;
+                    }
                 }
                 else {
-                    // Error is shown by getPaymentRedirect method
                     loading.value = false;
+                    emit("next");
                 }
             }
             else {
+                const success = await submit();
                 loading.value = false;
-                emit("next");
+
+                if (success) {
+                    emit("next");
+                }
             }
         }
-        else {
-            const success = await submit();
+        catch {
             loading.value = false;
-
-            if (success) {
-                emit("next");
-            }
         }
     }
 
@@ -236,8 +244,15 @@
         const actionContext: BlockActionContextBag = {};
 
         if (captchaElement.value) {
-            actionContext.captcha = await captchaElement.value.getToken();
-            captchaElement.value.refreshToken();
+            try {
+                // Retrieve existing token if previously solved or await a new one.
+                actionContext.captcha = await captchaElement.value.getToken();
+                // Do not immediately refresh; allow reuse of the token in this submission cycle.
+            }
+            catch {
+                // If an error occurs refresh the captcha for another attempt.
+                captchaElement.value.refreshToken();
+            }
         }
 
         const result = await invokeBlockAction<RegistrationEntrySuccessBag>("SubmitRegistration", {

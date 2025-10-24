@@ -192,6 +192,7 @@ namespace Rock.Lava
             // Parameters declared on child elements can be referenced in the shortcode template as <childElementName>.<paramName>.
 
             string residualMarkup = string.Empty;
+            var keysToCleanup = new List<string>();
 
             if ( parms["processchilditems"].ToString().AsBoolean() )
             {
@@ -209,6 +210,7 @@ namespace Rock.Lava
                 // Add the collections of child to the set of parameters that will be passed to the shortcode template.
                 foreach ( var item in childElements )
                 {
+                    keysToCleanup.Add( item.Key );
                     parms.AddOrReplace( item.Key, item.Value );
                 }
             }
@@ -275,6 +277,13 @@ namespace Rock.Lava
                 }
             }
 
+            // This is a partial fix for issue #6470. Due to variable leakage between
+            // shortcode executions, some shortcodes were failing if you used multiple
+            // instances of the same shortcode on a page with different parameters.
+            // In the future we will fix the EnterChildScope() implementation to
+            // completely isolate the merge fields of the child scope from the parent.
+            var savedMergeFields = SaveOriginalMergeFields( context, keysToCleanup );
+
             // Render the shortcode template in a child scope that includes the shortcode parameters.
             context.EnterChildScope();
 
@@ -305,6 +314,8 @@ namespace Rock.Lava
             {
                 context.ExitChildScope();
             }
+
+            RestoreOriginalMergeFields( context, savedMergeFields );
 
             // Reset the original parameters in the context
             context.SetMergeField( "blockContent", originalBlockContent );
@@ -503,5 +514,39 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// Saves the current merge field values for the specified keys.
+        /// </summary>
+        /// <param name="context">The lava context to get the values from.</param>
+        /// <param name="keys">The keys whose values will be returned.</param>
+        /// <returns>A dictionary of keys and values that can be later restored.</returns>
+        private Dictionary<string, object> SaveOriginalMergeFields( ILavaRenderContext context, IEnumerable<string> keys )
+        {
+            var saved = new Dictionary<string, object>();
+
+            foreach ( var key in keys )
+            {
+                saved[key] = context.GetMergeField( key, null );
+            }
+
+            return saved;
+        }
+
+        /// <summary>
+        /// Restores the saved merge fields to the specified context. This
+        /// is used to make a best effor to reset the context to its original
+        /// state after rendering a shortcode. The shortcode will have modified
+        /// the merge fields in order to pass the parameters to the shortcode
+        /// template. We attempt to undo that.
+        /// </summary>
+        /// <param name="context">The lava context to restore the values on.</param>
+        /// <param name="savedMergeFields">The saved merge fields.</param>
+        private void RestoreOriginalMergeFields( ILavaRenderContext context, Dictionary<string, object> savedMergeFields )
+        {
+            foreach ( var kvp in savedMergeFields )
+            {
+                context.SetMergeField( kvp.Key, kvp.Value );
+            }
+        }
     }
 }

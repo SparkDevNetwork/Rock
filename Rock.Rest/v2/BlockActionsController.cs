@@ -37,6 +37,10 @@ using Rock.Utility.CaptchaApi;
 using Rock.ViewModels.Blocks;
 using Rock.Web.Cache;
 using Rock.Security;
+using Rock.ViewModels.Rest.Controls;
+using Rock.Configuration;
+
+
 
 
 #if WEBFORMS
@@ -313,10 +317,7 @@ namespace Rock.Rest.v2
                                 */
                                 if ( actionContext?.Captcha != null )
                                 {
-                                    var api = new CloudflareApi();
-                                    var ipAddress = rockBlock.RequestContext.ClientInformation.IpAddress;
-
-                                    rockBlock.RequestContext.IsCaptchaValid = await api.IsTurnstileTokenValidAsync( actionContext.Captcha, ipAddress );
+                                    rockBlock.RequestContext.IsCaptchaValid = await RockApp.Current.GetRequiredService<ICaptchaProvider>().IsTokenValidAsync( actionContext.Captcha );
                                 }
                             }
                             else

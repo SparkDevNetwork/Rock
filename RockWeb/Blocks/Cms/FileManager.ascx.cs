@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Cms
         )]
 
     #endregion Block Attributes
-    [Rock.SystemGuid.BlockTypeGuid( "BA327D25-BD8A-4B67-B04C-17B499DDA4B6" )]
+    [Rock.SystemGuid.BlockTypeGuid( "5EC30776-F12F-4F03-8B79-C0C819D97CCD" )]
     public partial class FileManager : RockBlock
     {
         #region Attribute Keys

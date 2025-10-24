@@ -37,10 +37,11 @@ namespace Rock.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Lists Person Merge Requests" )]
     [IconCssClass( "ti ti-list" )]
-    //[SupportedSiteTypes( SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [SystemGuid.EntityTypeGuid( "9c1a70f8-3177-49c9-97c6-ac3e52fc36b1" )]
-    [SystemGuid.BlockTypeGuid( "b2cf80f1-5588-46d5-8198-8c5816290e98" )]
+    // Was [SystemGuid.BlockTypeGuid( "b2cf80f1-5588-46d5-8198-8c5816290e98" )]
+    [Rock.SystemGuid.BlockTypeGuid( "4CBFB5FC-0174-489A-8B95-90BB8FAA2144" )]
     [CustomizedGrid]
     public class PersonMergeRequestList : RockListBlockType<PersonMergeRequestList.RequestData>
     {

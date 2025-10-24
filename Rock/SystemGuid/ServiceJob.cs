@@ -563,5 +563,10 @@ namespace Rock.SystemGuid
         /// The job to run Post v18.0 Data Migrations to update the Manage My Account Page block setting for the recently-chopped Email Preference Entry block.
         /// </summary>
         public const string DATA_MIGRATIONS_180_UPDATE_EMAIL_PREFERENCE_ENTRY_BLOCK_MANAGE_MY_ACCOUNT_PAGE = "7319E385-8068-43FE-9085-6F9A21F5972B";
+
+        /// <summary>
+        /// The job to run Post v18.1 Data Migrations to add a new index to the FinancialBatch table.
+        /// </summary>
+        public const string DATA_MIGRATIONS_181_ADD_FINANCIALBATCH_INDEX = "EA5D69D8-8ABB-42CD-A664-48F6BC5E2C7F";
     }
 }

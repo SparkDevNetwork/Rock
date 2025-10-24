@@ -562,29 +562,51 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             var lbCopy = e.Item.FindControl( "lbCopy" ) as LinkButton;
             var lbDelete = e.Item.FindControl( "lbDelete" ) as LinkButton;
 
-            if ( lbBuilder != null )
+            var formResult = e.Item.DataItem as FormResult;
+            if ( formResult != null )
             {
-                lbBuilder.Enabled = _isAuthorizedToEdit;
-            }
+                var workflowType = WorkflowTypeCache.Get( formResult.Id );
+                bool canEdit = false;
+                if ( workflowType != null )
+                {
+                    // If WorkflowType has an explicit rule for EDIT, use it. Otherwise, fall back to Category security.
+                    var wfAuth = Authorization.AuthorizedForEntity( workflowType, Authorization.EDIT, CurrentPerson, false );
+                    if ( wfAuth.HasValue )
+                    {
+                        canEdit = wfAuth.Value;
+                    }
+                    else
+                    {
+                        var category = workflowType.CategoryId.HasValue ? CategoryCache.Get( workflowType.CategoryId.Value ) : null;
+                        canEdit = category != null && category.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                    }
+                }
 
-            if ( lbCommunications != null )
-            {
-                lbCommunications.Enabled = _isAuthorizedToEdit;
-            }
 
-            if ( lbSettings != null )
-            {
-                lbSettings.Enabled = _isAuthorizedToEdit;
-            }
+                if ( lbBuilder != null )
+                {
+                    lbBuilder.Enabled = canEdit;
+                }
 
-            if ( lbCopy != null )
-            {
-                lbCopy.Visible = _isAuthorizedToEdit;
-            }
+                if ( lbCommunications != null )
+                {
+                    lbCommunications.Enabled = canEdit;
+                }
 
-            if ( lbDelete != null )
-            {
-                lbDelete.Visible = _isAuthorizedToEdit;
+                if ( lbSettings != null )
+                {
+                    lbSettings.Enabled = canEdit;
+                }
+
+                if ( lbCopy != null )
+                {
+                    lbCopy.Visible = canEdit;
+                }
+
+                if ( lbDelete != null )
+                {
+                    lbDelete.Visible = canEdit;
+                }
             }
         }
 
@@ -818,7 +840,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                     break;
             }
 
-            var workflowTypes = workflowTypeQry.ToList();
+            var workflowTypes = workflowTypeQry.ToList().Where( a => a.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
+
             var formResults = new List<FormResult>();
             foreach ( var workflowType in workflowTypes )
             {
@@ -929,6 +952,12 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             var workflowType = workflowTypeService.Get( workflowTypeId );
             if ( workflowType != null )
             {
+                if ( !workflowType.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                {
+                    mdDeleteWarning.Show( "You are not authorized to copy this workflow type.", ModalAlertType.Information );
+                    return;
+                }
+
                 var existingActivityTypes = workflowType.ActivityTypes.OrderBy( a => a.Order ).ToList();
 
                 // Load the state objects for the source workflow type
@@ -1257,8 +1286,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 };
 
                 var pageReference = route != null ? new PageReference( page.Id, route.Id, parameters ) : new PageReference( page.Guid.ToString(), parameters );
-                
-                return GetFullUrl( page, pageReference.BuildUrl() ); 
+
+                return GetFullUrl( page, pageReference.BuildUrl() );
             }
 
             string GetFullUrl( PageCache pageCache, string relativeUrl )
@@ -1269,7 +1298,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 var site = SiteCache.Get( pageCache.SiteId );
                 var uri = new Uri( site.DefaultDomainUri, relativeUrl );
 
-                return uri.AbsoluteUri; 
+                return uri.AbsoluteUri;
             }
 
             gPages.DataSource = filteredPages.Select( page => new

@@ -38,6 +38,8 @@ namespace Rock.Build.Tasks
 
         private List<string> _excluded = new List<string>();
 
+        private Random _rng = new Random();
+
         /// <inheritdoc/>
         public override bool Execute()
         {
@@ -100,6 +102,11 @@ namespace Rock.Build.Tasks
                 return;
             }
 
+            if ( HasRefreshFile( destFile ) )
+            {
+                return;
+            }
+
             var relativeDestination = destFile;
 
 #if NET6_0_OR_GREATER
@@ -109,7 +116,20 @@ namespace Rock.Build.Tasks
             Log.LogMessage( MessageImportance.High, $"  {relativeSource} => {relativeDestination}" );
 
             Directory.CreateDirectory( Path.GetDirectoryName( destFile ) );
-            File.Copy( sourceFile, destFile, true );
+
+            for ( int retries = 0; retries < 5; retries++ )
+            {
+                try
+                {
+                    File.Copy( sourceFile, destFile, true );
+                }
+                catch ( IOException )
+                {
+                    // Sleep between 100 and 350ms before retrying. The random
+                    // value helps keep two processes from colliding repeatedly.
+                    System.Threading.Thread.Sleep( 100 + _rng.Next( 250 ) );
+                }
+            }
         }
 
         /// <summary>
@@ -139,6 +159,20 @@ namespace Rock.Build.Tasks
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Checks if the destination file has a .refresh file next to it. This
+        /// indicates that the file should not be overwritten because it is a
+        /// direct NuGet reference.
+        /// </summary>
+        /// <param name="destinationFile"></param>
+        /// <returns></returns>
+        private static bool HasRefreshFile( string destinationFile )
+        {
+            var refreshFile = destinationFile + ".refresh";
+
+            return File.Exists( refreshFile );
         }
     }
 }

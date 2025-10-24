@@ -48,7 +48,8 @@ namespace Rock.Blocks.Core
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "710916bd-4bc1-4d05-b088-381394351b53" )]
-    [Rock.SystemGuid.BlockTypeGuid( "f431f950-f007-493e-81c8-16559fe4c0f0" )]
+    // Was [Rock.SystemGuid.BlockTypeGuid( "f431f950-f007-493e-81c8-16559fe4c0f0" )]
+    [Rock.SystemGuid.BlockTypeGuid( "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE" )]
     [CustomizedGrid]
     public class DefinedValueList : RockEntityListBlockType<DefinedValue>
     {

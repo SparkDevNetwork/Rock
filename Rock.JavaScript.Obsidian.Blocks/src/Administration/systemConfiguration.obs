@@ -113,14 +113,10 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <TextBox v-model="captchaSiteKey"
-                                 label="Captcha Site Key"
-                                 help="The Captcha site key." />
-                    </div>
-                    <div class="col-md-6">
-                        <TextBox v-model="captchaSecretKey"
-                                 label="Captcha Secret Key"
-                                 help="The Captcha secret key." />
+                        <DropDownList v-model="captchaModeAsString"
+                                      label="Captcha Mode"
+                                      :items="captchaModes"
+                                      :help="captchaModeHelpText" />
                     </div>
                 </div>
 
@@ -385,15 +381,22 @@
     import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
     import { FeatureFlags, FeatureFlagsDescription } from "@Obsidian/Enums/Observability/featureFlags";
     import { TraceLevel, TraceLevelDescription } from "@Obsidian/Enums/Observability/traceLevel";
+    import { CaptchaMode, CaptchaModeDescription } from "@Obsidian/Enums/Security/captchaMode";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 
     const config = useConfigurationValues<SystemConfigurationInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
+    const captchaModeHelpText: string = `Defines how CAPTCHA is applied to supported forms:<br><br>
+<strong>Visible:</strong> Displays a CAPTCHA that individuals must complete manually.<br>
+<strong>Invisible:</strong> Executes CAPTCHA automatically without showing a control.<br>
+<strong>Disabled:</strong> Disables CAPTCHA completely; no validation is run.`;
 
     // #region Values
 
     const endpointProtocols = ref<ListItemBag[]>(config.observabilityEndpointProtocols ?? []);
     const timeZones = ref<ListItemBag[]>(config.timeZones ?? []);
     const countries = ref<ListItemBag[]>(config.countries ?? []);
+    const captchaModes = enumToListItemBag(CaptchaModeDescription);
 
     // General Configuration
     const enableMultipleTimeZoneSupport = ref(config.generalConfigurationBag?.isMultipleTimeZoneSupportEnabled ?? false);
@@ -418,8 +421,7 @@
     // UI Settings
     const personRaceLabel = ref(config.uiSettingsConfigurationBag?.raceLabel ?? "");
     const personEthnicityLabel = ref(config.uiSettingsConfigurationBag?.ethnicityLabel ?? "");
-    const captchaSiteKey = ref(config.uiSettingsConfigurationBag?.captchaSiteKey ?? "");
-    const captchaSecretKey = ref(config.uiSettingsConfigurationBag?.captchaSecretKey ?? "");
+    const captchaModeAsString = ref(`${config.uiSettingsConfigurationBag?.captchaMode ?? CaptchaMode.Visible}`);
     const smsOptInMessage = ref(config.uiSettingsConfigurationBag?.smsOptInMessage ?? "");
     const enableDefaultAddressStateSelection = ref(config.uiSettingsConfigurationBag?.enableDefaultAddressStateSelection ?? false);
 
@@ -565,8 +567,7 @@
             isSavingUiSettingsForm.value = true;
 
             const bag: UiSettingsConfigurationBag = {
-                captchaSecretKey: captchaSecretKey.value,
-                captchaSiteKey: captchaSiteKey.value,
+                captchaMode: <CaptchaMode>(toNumberOrNull(captchaModeAsString.value) ?? CaptchaMode.Visible),
                 enableDefaultAddressStateSelection: enableDefaultAddressStateSelection.value,
                 ethnicityLabel: personEthnicityLabel.value,
                 raceLabel: personRaceLabel.value,

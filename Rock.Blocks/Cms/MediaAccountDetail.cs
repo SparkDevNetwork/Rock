@@ -48,7 +48,8 @@ namespace Rock.Blocks.Cms
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "704fa615-60eb-4fd2-99ed-6b5ae0879145" )]
-    [Rock.SystemGuid.BlockTypeGuid( "a63f0145-d323-4b6e-ad21-bcda1f1d8d5d" )]
+    // Was [Rock.SystemGuid.BlockTypeGuid( "a63f0145-d323-4b6e-ad21-bcda1f1d8d5d" )]
+    [Rock.SystemGuid.BlockTypeGuid( "0361FFC9-F32F-4C97-98BD-9DFE5F4A777E" )]
     public class MediaAccountDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys

@@ -23,6 +23,7 @@
     import { PropType, ref, watch } from "vue";
     import { ScheduleTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
     import TreeItemPicker from "./treeItemPicker.obs";
+    import { Guid } from "@Obsidian/Types";
 
     const props = defineProps({
         modelValue: {
@@ -38,6 +39,12 @@
         showOnlyPublic: {
             type: Boolean,
             default: false
+        },
+
+        /** Optional array of category GUIDs to filter schedules. When provided, only schedules within these categories will be displayed. */
+        includeCategoryGuids: {
+            type: Array as PropType<Guid[] | null>,
+            default: null
         },
     });
 
@@ -57,6 +64,7 @@
         const provider = new ScheduleTreeItemProvider();
         provider.includeInactive = includeInactive.value;
         provider.includePublicOnly = props.showOnlyPublic;
+        provider.includeCategoryGuids = props.includeCategoryGuids;
         provider.securityGrantToken = securityGrantToken.value;
 
         itemProvider.value = provider;
@@ -68,7 +76,7 @@
 
     // #region Watchers
 
-    watch([includeInactive, () => props.showOnlyPublic], refreshItemProvider);
+    watch([includeInactive, () => props.showOnlyPublic, () => props.includeCategoryGuids], refreshItemProvider);
 
     // Keep security token up to date, but don't need refetch data
     watch(securityGrantToken, () => {

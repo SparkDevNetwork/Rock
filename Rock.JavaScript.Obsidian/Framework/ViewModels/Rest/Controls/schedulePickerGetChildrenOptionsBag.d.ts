@@ -28,6 +28,12 @@ import { Guid } from "@Obsidian/Types";
  * the RegistrationTemplatePicker control.
  */
 export type SchedulePickerGetChildrenOptionsBag = {
+    /**
+     * The category unique identifier to filter schedules by.
+     * If null then schedules from all categories are included.
+     */
+    includeCategoryGuids?: Guid[] | null;
+
     /** Whether to include schedules marked as inactive in the results. */
     includeInactiveItems: boolean;
 

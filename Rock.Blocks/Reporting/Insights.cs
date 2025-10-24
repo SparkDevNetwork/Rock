@@ -124,7 +124,8 @@ namespace Rock.Blocks.Reporting
     #endregion Block Attributes
 
     [SystemGuid.EntityTypeGuid( "6739DD77-A510-4826-8263-2C2E53D31DF9" )]
-    [SystemGuid.BlockTypeGuid( "551DB463-A013-476C-A619-57CC234DC410" )]
+    // Was [SystemGuid.BlockTypeGuid( "551DB463-A013-476C-A619-57CC234DC410" )]
+    [Rock.SystemGuid.BlockTypeGuid( "B215F5FA-410C-4674-8C47-43DC40AF9F67" )]
     public class Insights : RockBlockType
     {
         #region Fields

@@ -3,101 +3,320 @@
     window.Rock = window.Rock || {};
     Rock.controls = Rock.controls || {};
 
-    // Cloudflare Turnstile docs:
-    // https://developers.cloudflare.com/turnstile/get-started/client-side-rendering/
-
     Rock.controls.captcha = (function () {
-        // Keep track of the last-rendered Turnstile widget ID for each Rock Captcha
-        // control, so we can manage multiple Turnstile widgets per page.
-        var turnstileIds = {};
+
+        // #region Constants
+
+        const CaptchaMode = Object.freeze({
+            Visible: 0,
+            Invisible: 1,
+            Disabled: 2
+        });
 
         /**
-         * Gets whether the Turnstile module is ready.
-         * 
-         * @returns Whether the Turnstile module is ready.
+         * A map of RockCaptcha controls keyed by their control IDs.
+         * @type {Object.<string, RockCaptcha>}
          */
-        function isTurnstileReady() {
-            return typeof turnstile !== 'undefined';
+        const captchaControls = {};
+
+        // #endregion Constants
+
+        // #region Types
+
+        /**
+         * @typedef CaptchaConfigurationBag
+         * @property {CaptchaMode} captchaMode
+         */
+
+        /**
+         * @typedef CaptchaInitializeResultBag
+         * @property {(CaptchaProofOfWorkChallengeBag | null | undefined)} pow Might be null
+         */
+
+        /**
+         * @typedef CaptchaProofOfWorkChallengeBag
+         * @property {number} challengeCount
+         * @property {number} challengeDifficulty
+         * @property {number} challengeSize
+         * @property {string} challengeToken
+         */
+
+        /**
+         * @typedef CaptchaVerifyOptionsBag
+         * @property {CaptchaProofOfWorkVerifyOptionsBag} powOptions Might be null
+         */
+
+        /**
+         * @typedef CaptchaProofOfWorkVerifyOptionsBag
+         * @property {string} challengeToken
+         * @property {number[]} challengeSolutions
+         */
+
+        /**
+         * @typedef CaptchaVerifyResultBag
+         * @property {boolean} isVerified
+         * @property {string} error Can be null
+         * @property {number} expires Can be null
+         * @property {string} token Can be null 
+         */
+
+        /**
+         * @typedef InitializeConfig
+         * @property {string} id The ID for the CAPTCHA control.
+         * @property {string} postBackScript The postback script when a CAPTCHA token has been verified.
+         */
+
+        /**
+         * The RockCaptcha initialization options.
+         * @typedef RockCaptchaInitOptions
+         * @property {string} controlId The control ID for the element (without leading #).
+         * @property {number} captchaMode The CAPTCHA mode.
+         * @property {string} postBackScript The script to run when the CAPTCHA token is resolved.
+         */
+
+        /**
+         * The Api initialization options.
+         * @typedef ApiInitOptions
+         * @property {string} baseUrl The base URL for API requests.
+         */
+
+        /**
+         * @typedef SolveChallengeOptions
+         * @property {string[]} solutions
+         * @property {string} token
+         */
+
+        /**
+         * @typedef CapChallengeResult
+         * @property {CapChallenge} challenge Might be null
+         * @property {string} token Might be null
+         */
+
+        /**
+         * @typedef CapChallenge
+         * @property {number} c
+         * @property {number} s
+         * @property {number} d
+         */
+
+        /**
+         * @typedef CapRedeemOptions
+         * @property {number[]} solutions
+         * @property {string} token
+         */
+
+        /**
+         * @typedef CapRedeemResult
+         * @property {boolean} success
+         * @property {string} message Might be null
+         * @property {number} expires Might be null
+         * @property {string} token Might be null
+         */
+
+        /**
+         * Creates a new instance of the RockCaptcha class.
+         * @param {RockCaptchaInitOptions} options
+         */
+        function RockCaptcha(options) {
+            if (!options.controlId) {
+                throw "`controlId` is required.";
+            }
+
+            // Set properties.
+            /** @type {string} */
+            this.controlId = options.controlId;
+
+            /** @type {CaptchaMode} */
+            this.captchaMode = options.captchaMode;
+
+            /** @type {string} */
+            this.postBackScript = options.postBackScript;
+
+            /** @type {string} */
+            this.captchaToken = ""; // initialize with an empty CATCHA token.
+
+            /** @type {HTMLElement | null} Can be null */
+            this.widgetEl = null; // initialize the widget element to null.
+
+            /** @type {boolean} */
+            this.disposed = false;
+
+            // Set JQuery selectors.
+            /** @type {JQuery<HTMLElement>} */
+            this.$controlSelector = $("#" + this.controlId);
+
+            /** @type {JQuery<HTMLElement>} */
+            this.$hfToken = $("#" + this.controlId + '_hfToken');
         }
 
-        /**
-         * Tries to render a Turnstile widget for a given Rock Captcha control instance.
-         * 
-         * @param {any} config The configuration info for this Rock Captcha control instance.
-         */
-        function tryRenderTurnstile(config) {
-            if (!isTurnstileReady()) {
+        RockCaptcha.prototype.render = async function () {
+            const areCustomElementsSupported = typeof window.customElements !== "undefined";
+
+            if (areCustomElementsSupported && this.captchaMode === CaptchaMode.Visible) {
+                this.widgetEl = document.createElement("cap-widget");
+                this.widgetEl.setAttribute("data-cap-api-endpoint", "/"); // This is a required attribute for the library but the endpoint will be overridden later.
+
+                // Styles
+                this.widgetEl.style.setProperty("--cap-background", "var(--color-interface-softest)");
+                this.widgetEl.style.setProperty("--cap-border-radius", "var(--rounded-small)");
+                this.widgetEl.style.setProperty("--cap-border-color", "var(--color-interface-soft)");
+                this.widgetEl.style.setProperty("--cap-widget-padding", "var(--spacing-medium)");
+                this.widgetEl.style.setProperty("--cap-color", "var(--color-interface-strong)");
+                this.widgetEl.style.setProperty("--cap-widget-width", "200px");
+                this.widgetEl.style.setProperty("--cap-checkbox-background", "var(--color-interface-softest)");
+                this.widgetEl.style.setProperty("--cap-checkbox-border", "1px solid var(--color-interface-soft)");
+                this.widgetEl.style.setProperty("--cap-checkbox-border-radius", "var(--rounded-xsmall)");
+                this.widgetEl.style.setProperty("--cap-checkbox-margin", "var(--spacing-large)");
+                this.widgetEl.style.setProperty("--cap-spinner-background-color", "var(--color-interface-soft)");
+                this.widgetEl.style.setProperty("--cap-spinner-color", "var(--color-primary)");
+                this.widgetEl.style.setProperty("--cap-spinner-thickness", "6px");
+                this.widgetEl.style.setProperty("--cap-gap", "var(--spacing-medium)");
+                this.widgetEl.style.setProperty("--cap-font", "var(--font-family-body)");
+                this.widgetEl.style.setProperty("--cap-checkbox-size", "20px");
+
+                this.widgetEl.addEventListener("solve", async (e) => {
+                    if (this.disposed) {
+                        return;
+                    }
+
+                    const token = e && e.detail && e.detail.token ? e.detail.token : undefined;
+
+                    this.handleSolvedToken(token);
+                });
+
+                this.widgetEl.addEventListener("error", (_e) => {
+                    if (this.disposed) {
+                        return;
+                    }
+
+                    this.handleError("Captcha challenge failed.");
+                });
+
+                const host = this.$controlSelector[0];
+                if (host) {
+                    host.appendChild(this.widgetEl);
+
+                    setTimeout(() => {
+                        if (this.widgetEl && this.widgetEl.shadowRoot) {
+                            const attribution = this.widgetEl.shadowRoot.querySelector('[part="attribution"]');
+                            if (attribution) {
+                                attribution.remove();
+                            }
+                        }
+                    })
+                }
+
                 return;
             }
 
-            // Remove any previous widget for this Rock Captcha control to prevent
-            // Turnstile from logging warnings/errors to the console.
-            tryRemoveTurnstile(config.id);
-
-            // Keep track of the last-rendered Turnstile widget's ID, as we'll
-            // need to intstruct the Turnstile library not to track it anymore
-            // (and we'll create a new one) for each request. Note that once the
-            // challenge has been solved, it's up to the Rock block or parent
-            // control to dictate that a Turnstile should no longer be rendered,
-            // so our job here is to simply keep rendering a new widget on every
-            // request, regardless of whether this is a full or partial postback.
-            var turnstileId = turnstile.render('#' + config.id, {
-                siteKey: config.key,
-                callback: function (token) {
-                    var $hfToken = $('#' + config.id + '_hfToken');
-                    $hfToken.val(token);
-
-                    if (token) {
-                        // Allow time for the success animation to be displayed.
-                        setTimeout(function () {
-                            if (config.postBackScript) {
-                                window.location = "javascript:" + config.postBackScript;
-                            }
-                        }, 750);
-                    }
-                },
-                'error-callback': function (errorCode) {
-                    if (errorCode === '300030') {
-                        // This can happen if a Turnstile widget was loaded into
-                        // the DOM and is no longer available (i.e. after a
-                        // partial postback results in the Rock Captcha
-                        // control no longer being visible).
-                        tryRemoveTurnstile(config.id);
-
-                        // Return true to prevent Turnstile from repeatedly logging to the console.
-                        // https://developers.cloudflare.com/turnstile/troubleshooting/client-side-errors/#error-handling
-                        return true;
-
-                        // However, there is an issue where an already-queued
-                        // `.reset()` invocation will fail and still log an
-                        // error to the console; hopefully this scenario is
-                        // not common.
-                        // https://community.cloudflare.com/t/window-turnstile-remove-with-retry-set-to-auto-doesnt-cleartimeout/525530
-                    }
+            // Invisible mode fallback (older Safari/Edge without customElements)
+            try {
+                const cap = new Cap();
+                const token = await cap.solve();
+                if (!this.disposed) {
+                    await this.handleSolvedToken(token.token);
                 }
-            });
+            }
+            catch {
+                if (!this.disposed) {
+                    this.handleError("Captcha challenge failed.");
+                }
+            }
+        };
 
-            turnstileIds[config.id] = turnstileId;
+        /**
+         * Handles processing a CAPTCHA token after it is solved.
+         * @param {string} token
+         */
+        RockCaptcha.prototype.handleSolvedToken = async function (token) {
+            this.captchaToken = token;
+            this.$hfToken.val(token);
+
+            if (this.postBackScript) {
+                window.location = "javascript:" + this.postBackScript;
+            }
+        };
+
+        /**
+         * Handles an error.
+         * @param {string} msg
+         */
+        RockCaptcha.prototype.handleError = function (msg) {
+            console.error(msg);
+            this.captchaToken = "";
+        };
+
+        /**
+          * Creates a new instance of the Api class.
+          * @param {ApiInitOptions} options
+          */
+        function Api(options) {
+            this.baseUrl = options.baseUrl;
         }
 
         /**
-         * Tries to remove a Turnstile widget for the provided Rock Captcha control ID.
-         * 
-         * @param {any} rockCaptchaId The Rock Captcha control ID.
+         * Gets the CAPTCHA configuration.
+         * @returns {Promise<CaptchaConfigurationBag>}
          */
-        function tryRemoveTurnstile(rockCaptchaId) {
-            // Try to find this Rock Captcha control's last-rendered Turnstile widget.
-            var turnstileId = turnstileIds[rockCaptchaId];
-            if (turnstileId) {
-                // Inform the Turnstile library that the old Turnstile widget
-                // should no longer be tracked.
-                turnstile.remove(turnstileId);
-                delete turnstileIds[rockCaptchaId];
+        Api.prototype.getConfiguration = async function () {
+            return await Promise.resolve($.post({
+                url: this.baseUrl + 'api/v2/Controls/CaptchaGetConfiguration'
+            }));
+        };
+
+        /**
+         * Initializes the CAPTCHA.
+         * @returns {Promise<CaptchaInitializeResultBag>}
+         */
+        Api.prototype.initialize = async function () {
+            return await Promise.resolve($.post({
+                url: this.baseUrl + 'api/v2/Controls/CaptchaInitialize'
+            }));
+        };
+
+        /**
+         * Verifies the CAPTCHA.
+         * @param {CaptchaVerifyOptionsBag} options
+         * @returns {Promise<CaptchaVerifyResultBag>}
+         */
+        Api.prototype.verify = async function (options) {
+            return await Promise.resolve($.post({
+                url: this.baseUrl + 'api/v2/Controls/CaptchaVerify',
+                data: options
+            }));
+        };
+
+        // #endregion Types
+
+        /**
+         * Gets whether the Cap module is ready.
+         * 
+         * @returns Whether the Cap module is ready.
+         */
+        function isCapReady() {
+            return typeof Cap !== 'undefined';
+        }
+
+        const api = new Api({
+            baseUrl: '/'
+        });
+
+        async function loadCap() {
+            if (typeof window.Cap !== "undefined") {
+                return;
+            }
+            else {
+                $.ajaxSetup({ cache: true });
+                return await Promise.resolve($.getScript("https://cdn.jsdelivr.net/npm/@cap.js/widget@0.1.30"));
             }
         }
 
         var exports = {
-            initialize: function (config) {
+            /**
+             * Initializes a new RockCaptcha instance.
+             * @param {InitializeConfig} config
+             */
+            initialize: async function (config) {
                 if (!config) {
                     return;
                 }
@@ -106,30 +325,100 @@
                     throw 'id is required';
                 }
 
-                if (!config.key) {
-                    throw 'key is required';
+                function freezeProp(target, propertyName, value) {
+                    Object.defineProperty(target, propertyName, {
+                        get: () => value,
+                        set: undefined,
+                        configurable: false,
+                        enumerable: true
+                    });
                 }
 
-                // Ensure Cloudflare's Turnstile script is added to the page.
-                if (!$('#rockCloudflareTurnstile').length && !isTurnstileReady()) {
-                    // By default, jQuery adds a cache-busting parameter on dynamically-added scripts.
-                    // Set `cache: true` to avoid this, and ensure we only load the script once.
-                    $.ajaxSetup({ cache: true });
-                    $.getScript('https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit')
-                        .done(function () {
-                            tryRenderTurnstile(config);
-                        })
-                        .fail(function () {
-                            console.error("Unable to load Captcha library.");
-                        });
+                // Override the fetch function used by Cap to route requests via the Rock captcha API.
+                if (!window.CAP_CUSTOM_FETCH) {
+                    freezeProp(window, "CAP_CUSTOM_FETCH", async function (url, options) {
+                        if (typeof url === "string") {
+                            if (url.endsWith("/challenge")) {
+                                const result = await api.initialize();
 
-                    return;
+                                // Format the challenge as expected by Cap.js
+
+                                /** @type {CapChallengeResult} */
+                                const capResult = {
+                                    challenge: null,
+                                    token: null
+                                };
+
+                                if (result && result.pow) {
+                                    capResult.token = result.pow.challengeToken;
+                                    capResult.challenge = {
+                                        c: result.pow.challengeCount,
+                                        s: result.pow.challengeSize,
+                                        d: result.pow.challengeDifficulty
+                                    };
+                                }
+
+                                return Response.json(capResult);
+                            }
+                            else if (url.endsWith("/redeem")) {
+                                /** @type {CapRedeemOptions} */
+                                const capRedeemOptions = options && options.body ? JSON.parse(options.body.toString()) : null;
+
+                                /** @type {CaptchaVerifyOptionsBag} */
+                                const verifyOptions = {
+                                    powOptions: null
+                                };
+
+                                if (capRedeemOptions) {
+                                    verifyOptions.powOptions = {
+                                        challengeSolutions: capRedeemOptions.solutions,
+                                        challengeToken: capRedeemOptions.token
+                                    };
+                                }
+
+                                const result = await api.verify(verifyOptions);
+
+                                /** @type {CapRedeemResult} */
+                                const capResult = {
+                                    success: false,
+                                    expires: null,
+                                    message: "An error occurred",
+                                    token: null
+                                };
+
+                                if (result) {
+                                    capResult.success = result.isVerified;
+                                    capResult.message = result.error;
+                                    capResult.expires = result.expires;
+                                    capResult.token = result.token;
+                                };
+
+                                return Response.json(capResult);
+                            }
+                        }
+
+                        return fetch(url, options);
+                    });
                 }
 
-                // The Turnstile script was already added by the C# control;
-                // just wait for the DOM to finish loading.
-                $(document).ready(function () {
-                    tryRenderTurnstile(config);
+                let rockCaptcha = captchaControls[config.id];
+                if (!rockCaptcha) {
+                    await loadCap();
+                    const captchaConfig = await api.getConfiguration();
+
+                    rockCaptcha = new RockCaptcha({
+                        api: api,
+                        captchaMode: captchaConfig.captchaMode,
+                        controlId: config.id,
+                        postBackScript: config.postBackScript
+                    });
+
+                    // Store a ref to the new control so it can be managed later.
+                    captchaControls[config.id] = rockCaptcha;
+                }
+
+                $(document).ready(async function () {
+                    await captchaControls[config.id].render();
                 });
             },
             clientValidate: function (validator, args) {
@@ -139,10 +428,10 @@
                 var rockCaptchaId = $validator.data('captcha-id');
                 var $formGroup = $('#' + rockCaptchaId).closest('.form-group');
 
-                if (isRequired && isTurnstileReady()) {
+                if (isRequired && isCapReady()) {
                     // Get this validator control's related Rock Captcha control ID and
                     // try to find the underlying Turnstile widget.
-                    var turnstileId = turnstileIds[rockCaptchaId];
+                    var turnstileId = captchaIds[rockCaptchaId];
                     if (turnstileId) {
                         var turnstileResponse = turnstile.getResponse(turnstileId);
                     }

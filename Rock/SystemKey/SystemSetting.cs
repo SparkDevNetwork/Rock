@@ -327,6 +327,11 @@ namespace Rock.SystemKey
         public const string CAPTCHA_SECRET_KEY = "core_CaptchaSecretKey";
 
         /// <summary>
+        /// The Captcha mode.
+        /// </summary>
+        public const string CAPTCHA_MODE = "core_CaptchaMode";
+
+        /// <summary>
         /// The protocol to use for sending telemetry for observability.
         /// </summary>
         public const string OBSERVABILITY_ENDPOINT_PROTOCOL = "core_ObservabilityEndpointProtocol";

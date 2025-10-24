@@ -1,0 +1,380 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :data="gridData"
+          light
+          keyField="guid"
+          itemTerm="filter"
+          @addItem="onAdd">
+        <TextColumn name="description" title="Description" field="description" />
+        <EditColumn @click="onEdit" />
+        <DeleteColumn @click="onDelete" />
+    </Grid>
+
+    <div class="d-flex justify-content-end">
+        <Toggle v-model="filterExpressionType"
+                trueText="All"
+                falseText="Any"
+                :btnSize="BtnSize.ExtraSmall"
+                onButtonActiveCssClass="btn-info"
+                offButtonActiveCssClass="btn-info" />
+    </div>
+
+    <Modal
+           v-model="isModalVisible"
+           :title="`${isEditing ? 'Edit' : 'Add'} Page View Filter`"
+           saveText="Save"
+           cancelText="Cancel"
+           :onSave="onSave">
+        <section class="row form-row d-flex flex-wrap align-items-center form-group">
+            <div class="col flex-grow-0">
+                <div class="form-group">
+                    <DropDownList
+                                  :modelValue="theFilter.comparisonType?.toString() ?? ''"
+                                  @update:modelValue="val => theFilter.comparisonType = Number(val)"
+                                  :items="comparisonTypes"
+                                  class="input-width-xl"
+                                  :showBlankItem="false" />
+                </div>
+            </div>
+            <div class="col flex-grow-0">
+                <div class="form-group">
+                    <NumberBox
+                               v-model="theFilter.comparisonValue"
+                               class="input-width-sm" />
+                </div>
+            </div>
+            <div class="col flex-sm-grow-0">
+                <div class="form-group">
+                    <span class="text-nowrap">page views on the</span>
+                </div>
+            </div>
+            <div class="w-100 d-sm-none"></div>
+            <div class="col">
+                <div class="form-group">
+                    <DropDownList
+                                  :modelValue="theFilter.siteGuids ?? []"
+                                  @update:modelValue="val => theFilter.siteGuids = Array.isArray(val) ? val : []"
+                                  :items="sites"
+                                  :showBlankItem="false"
+                                  multiple
+                                  validationTitle="Site"
+                                  rules="required" />
+                </div>
+            </div>
+            <div class="col flex-grow-0">
+                <div class="form-group"><span>site(s)</span></div>
+            </div>
+        </section>
+        <section class="row form-row d-flex flex-wrap align-items-center">
+            <div class="col flex-grow-0">
+                <div class="form-group">
+                    <span class="text-nowrap">In the following date range</span>
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group">
+                    <SlidingDateRangePicker v-model="slidingDateRange" previewLocation="Right" />
+                </div>
+            </div>
+        </section>
+        <section class="row form-row d-flex flex-wrap align-items-center">
+            <div class="col flex-grow-0">
+                <div class="form-group">
+                    <span class="text-nowrap">optionally limited to the following pages</span>
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group">
+                    <PagePicker v-model="pagePickerValue" :multiple="true" showSelectCurrentPage />
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group margin-l-md">
+                    <InlineCheckbox label="Include descendant pages" v-model="theFilter.includeChildPages" />
+                </div>
+            </div>
+        </section>
+        <div class="row form-row">
+            <RockButton :btnSize="BtnSize.Small" :btnType="BtnType.Link" @click="toggleAdvancedOptions">Show Advanced Options</RockButton>
+        </div>
+
+        <section v-if="showAdvancedOptions" class="margin-t-md">
+            <div v-for="(field, idx) in advancedOptions" :key="idx" class="row form-row d-flex flex-wrap align-items-center">
+                <div class="col flex-sm-grow-0">
+                    <div class="form-group">
+                        <span class="text-nowrap">{{ idx === 0 ? 'where the' : 'and the' }} {{ field.label }}</span>
+                    </div>
+                </div>
+                <div class="col flex-grow-0">
+                    <div class="form-group">
+                        <DropDownList
+                                      :modelValue="theFilter[field.comparisonType]?.toString() ?? ''"
+                                      @update:modelValue="val => theFilter[field.comparisonType] = Number(val)"
+                                      :items="advancedOptionsComparisonTypes"
+                                      :showBlankItem="false"
+                                      class="input-width-xl" />
+                    </div>
+                </div>
+                <div class="col flex-grow-0">
+                    <div class="form-group">
+                        <TextBox v-model="theFilter[field.comparisonValue]" class="input-width-xxl" />
+                    </div>
+                </div>
+            </div>
+        </section>
+    </Modal>
+
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import Grid, { EditColumn, DeleteColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import InlineCheckbox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { numericComparisonTypes, stringComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
+    import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/comparisonTypeOptions";
+    import { PageViewSegmentFilter } from "./types.partial";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { slidingDateRangeToString, parseSlidingDateRangeString, SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+    import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
+    import { PageViewSegmentFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalizationSegmentDetail/pageViewSegmentFilterBag";
+    import { FilterDescriptionResultBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalizationSegmentDetail/filterDescriptionResultBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<PageViewSegmentFilter>,
+            required: true
+        },
+
+        sites: {
+            type: Array as PropType<ListItemBag[] | null>
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: PageViewSegmentFilter): void
+    }>();
+
+    function createDefaultFilter(): PageViewSegmentFilterBag {
+        return {
+            guid: newGuid(),
+            comparisonType: ComparisonType.EqualTo,
+            comparisonValue: 0,
+            siteGuids: [],
+            pageGuids: [],
+            slidingDateRangeDelimitedValues: "",
+            pageUrlComparisonType: ComparisonType.StartsWith,
+            pageUrlComparisonValue: "",
+            pageReferrerComparisonType: ComparisonType.StartsWith,
+            pageReferrerComparisonValue: "",
+            sourceComparisonType: ComparisonType.StartsWith,
+            sourceComparisonValue: "",
+            mediumComparisonType: ComparisonType.StartsWith,
+            mediumComparisonValue: "",
+            campaignComparisonType: ComparisonType.StartsWith,
+            campaignComparisonValue: "",
+            contentComparisonType: ComparisonType.StartsWith,
+            contentComparisonValue: "",
+            termComparisonType: ComparisonType.StartsWith,
+            termComparisonValue: "",
+            includeChildPages: false
+        };
+    }
+
+    // #region Values
+
+    const theFilter = ref<PageViewSegmentFilterBag>(createDefaultFilter());
+
+    const comparisonTypes = getFilteredComparisonTypeOptions(numericComparisonTypes);
+    const advancedOptionsComparisonTypes = getFilteredComparisonTypeOptions(stringComparisonTypes);
+    const sites = ref(props.sites ?? []);
+    const isModalVisible = ref(false);
+    const isEditing = ref(false);
+    const showAdvancedOptions = ref(false);
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const advancedOptions = ([
+        { label: "URL", comparisonType: "pageUrlComparisonType", comparisonValue: "pageUrlComparisonValue" },
+        { label: "Referrer", comparisonType: "pageReferrerComparisonType", comparisonValue: "pageReferrerComparisonValue" },
+        { label: "Source", comparisonType: "sourceComparisonType", comparisonValue: "sourceComparisonValue" },
+        { label: "Medium", comparisonType: "mediumComparisonType", comparisonValue: "mediumComparisonValue" },
+        { label: "Campaign", comparisonType: "campaignComparisonType", comparisonValue: "campaignComparisonValue" },
+        { label: "Content", comparisonType: "contentComparisonType", comparisonValue: "contentComparisonValue" },
+        { label: "Term", comparisonType: "termComparisonType", comparisonValue: "termComparisonValue" }
+    ]);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const gridData = computed(() => {
+        const filters = props.modelValue.pageViewSegmentFilters ?? [];
+        const rows = filters.map(f => ({
+            guid: f.guid,
+            description: f.description ?? "",
+        }));
+        return { rows };
+    });
+
+    const filterExpressionType = computed<boolean>({
+        get() {
+            return (props.modelValue.pageViewFilterExpressionType ?? FilterExpressionType.GroupAny) === FilterExpressionType.GroupAll;
+        },
+        set(value: boolean) {
+            emit("update:modelValue", {
+                ...props.modelValue,
+                pageViewFilterExpressionType: value ? FilterExpressionType.GroupAll : FilterExpressionType.GroupAny
+            });
+        }
+    });
+
+    const slidingDateRange = computed<SlidingDateRange | null>({
+        get() {
+            const delimited = theFilter.value.slidingDateRangeDelimitedValues;
+            if (!delimited) {
+                return null;
+            }
+            return parseSlidingDateRangeString(delimited);
+        },
+        set(newVal: SlidingDateRange | null) {
+            if (newVal) {
+                theFilter.value.slidingDateRangeDelimitedValues = slidingDateRangeToString(newVal);
+            }
+            else {
+                theFilter.value.slidingDateRangeDelimitedValues = "";
+            }
+        }
+    });
+
+    const pagePickerValue = computed<PageRouteValueBag[]>({
+        get() {
+            return (theFilter.value.pageGuids ?? []).map(page => ({
+                page,
+                route: null
+            }));
+        },
+        set(newVal: PageRouteValueBag[]) {
+            theFilter.value.pageGuids = newVal
+                .filter(item => item.page?.value)
+                .map(item => item.page!);
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function toggleAdvancedOptions(): void {
+        showAdvancedOptions.value = !showAdvancedOptions.value;
+    }
+
+    function onAdd(): void {
+        theFilter.value = createDefaultFilter();
+        isModalVisible.value = true;
+        isEditing.value = false;
+    }
+
+    function onEdit(guid: string): void {
+        const row = props.modelValue.pageViewSegmentFilters?.find(x => x.guid === guid);
+        if (!row) return;
+        theFilter.value = {
+            guid,
+            comparisonType: row.comparisonType ?? ComparisonType.EqualTo,
+            comparisonValue: row.comparisonValue ?? 0,
+            siteGuids: row.siteGuids ?? [],
+            pageGuids: row.pageGuids ?? [],
+            slidingDateRangeDelimitedValues: row.slidingDateRangeDelimitedValues ?? "",
+            pageUrlComparisonType: row.pageUrlComparisonType ?? ComparisonType.StartsWith,
+            pageUrlComparisonValue: row.pageUrlComparisonValue ?? "",
+            pageReferrerComparisonType: row.pageReferrerComparisonType ?? ComparisonType.StartsWith,
+            pageReferrerComparisonValue: row.pageReferrerComparisonValue ?? "",
+            sourceComparisonType: row.sourceComparisonType ?? ComparisonType.StartsWith,
+            sourceComparisonValue: row.sourceComparisonValue ?? "",
+            mediumComparisonType: row.mediumComparisonType ?? ComparisonType.StartsWith,
+            mediumComparisonValue: row.mediumComparisonValue ?? "",
+            campaignComparisonType: row.campaignComparisonType ?? ComparisonType.StartsWith,
+            campaignComparisonValue: row.campaignComparisonValue ?? "",
+            contentComparisonType: row.contentComparisonType ?? ComparisonType.StartsWith,
+            contentComparisonValue: row.contentComparisonValue ?? "",
+            termComparisonType: row.termComparisonType ?? ComparisonType.StartsWith,
+            termComparisonValue: row.termComparisonValue ?? "",
+            includeChildPages: row.includeChildPages ?? false
+        };
+        isModalVisible.value = true;
+        isEditing.value = true;
+    }
+
+    function onDelete(guid: string): void {
+        const filters = (props.modelValue.pageViewSegmentFilters ?? []).filter(f => f.guid !== guid);
+        emit("update:modelValue", {
+            ...props.modelValue,
+            pageViewSegmentFilters: filters
+        });
+    }
+
+    async function onSave(): Promise<void> {
+        const filters = [...props.modelValue.pageViewSegmentFilters ?? []];
+        const idx = filters.findIndex(f => f.guid === theFilter.value.guid);
+
+        const result = await invokeBlockAction<FilterDescriptionResultBag>("GetPageViewFilterDescription", { filterBag: theFilter.value });
+
+        if (result.isSuccess && result.data?.description) {
+            theFilter.value.description = result.data.description;
+        }
+
+        const item = {
+            guid: theFilter.value.guid,
+            comparisonType: theFilter.value.comparisonType ?? 0,
+            comparisonValue: theFilter.value.comparisonValue ?? 0,
+            siteGuids: theFilter.value.siteGuids ?? [],
+            pageGuids: theFilter.value.pageGuids ?? [],
+            slidingDateRangeDelimitedValues: theFilter.value.slidingDateRangeDelimitedValues ?? "",
+            pageUrlComparisonType: theFilter.value.pageUrlComparisonType ?? 0,
+            pageUrlComparisonValue: theFilter.value.pageUrlComparisonValue ?? "",
+            pageReferrerComparisonType: theFilter.value.pageReferrerComparisonType ?? 0,
+            pageReferrerComparisonValue: theFilter.value.pageReferrerComparisonValue ?? "",
+            sourceComparisonType: theFilter.value.sourceComparisonType ?? 0,
+            sourceComparisonValue: theFilter.value.sourceComparisonValue ?? "",
+            mediumComparisonType: theFilter.value.mediumComparisonType ?? 0,
+            mediumComparisonValue: theFilter.value.mediumComparisonValue ?? "",
+            campaignComparisonType: theFilter.value.campaignComparisonType ?? 0,
+            campaignComparisonValue: theFilter.value.campaignComparisonValue ?? "",
+            contentComparisonType: theFilter.value.contentComparisonType ?? 0,
+            contentComparisonValue: theFilter.value.contentComparisonValue ?? "",
+            termComparisonType: theFilter.value.termComparisonType ?? 0,
+            termComparisonValue: theFilter.value.termComparisonValue ?? "",
+            includeChildPages: theFilter.value.includeChildPages ?? false,
+            description: theFilter.value.description ?? ""
+        };
+
+        if (idx >= 0) {
+            filters.splice(idx, 1, item);
+        }
+        else {
+            filters.push(item);
+        }
+
+        emit("update:modelValue", {
+            ...props.modelValue,
+            pageViewSegmentFilters: filters
+        });
+
+        isModalVisible.value = false;
+    }
+
+    // #endregion Functions
+</script>

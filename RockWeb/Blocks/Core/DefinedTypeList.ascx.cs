@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Core
         IsRequired = false,
         Key = AttributeKey.Categories )]
 
-    [Rock.SystemGuid.BlockTypeGuid( "5470C9C4-09C1-439F-AA56-3524047497EE" )]
+    [Rock.SystemGuid.BlockTypeGuid( "D2C026ED-32F9-4D8F-A904-7ABBA5364D64" )]
     public partial class DefinedTypeList : RockBlock, ICustomGridColumns
     {
         public static class AttributeKey

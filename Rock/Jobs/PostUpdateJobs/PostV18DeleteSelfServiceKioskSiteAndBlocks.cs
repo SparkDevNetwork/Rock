@@ -216,7 +216,7 @@ WHERE [Route] = 'kiosk'
     WHERE [Guid] = 'AB045324-60A4-4972-8936-7B319FF5D2CE' -- Self-Service Kiosk Homepage
   );
 
--- Step 3.0: Clear out the 'Default' Pages for the Self-Service Kiosk (Preview) site
+-- Step 3.0a: Clear out the 'Default' Pages for the Self-Service Kiosk (Preview) site
 UPDATE [Site]
 SET [DefaultPageId] = NULL
     ,[DefaultPageRouteId] = NULL
@@ -233,7 +233,86 @@ SET [DefaultPageId] = NULL
     ,[ChangePasswordPageRouteId] = NULL
 WHERE [Id] = @SiteId
 
--- Step 3.1: Delete orphaned Pages (with no Blocks remaining)
+-- Step 3.0b: Handle cross-site page references. Null the PageIds if they are pages which belong to the site being deleted
+UPDATE [s]
+SET
+    -- PageId-based columns
+    [DefaultPageId] = CASE
+        WHEN EXISTS (SELECT 1 FROM [Page] [p] WHERE [p].[Id] = [s].[DefaultPageId] AND [p].[SiteId] = @SiteId)
+            THEN NULL ELSE [s].[DefaultPageId] END,
+    [LoginPageId] = CASE
+        WHEN EXISTS (SELECT 1 FROM [Page] [p] WHERE [p].[Id] = [s].[LoginPageId] AND [p].[SiteId] = @SiteId)
+            THEN NULL ELSE [s].[LoginPageId] END,
+    [RegistrationPageId] = CASE
+        WHEN EXISTS (SELECT 1 FROM [Page] [p] WHERE [p].[Id] = [s].[RegistrationPageId] AND [p].[SiteId] = @SiteId)
+            THEN NULL ELSE [s].[RegistrationPageId] END,
+    [PageNotFoundPageId] = CASE
+        WHEN EXISTS (SELECT 1 FROM [Page] [p] WHERE [p].[Id] = [s].[PageNotFoundPageId] AND [p].[SiteId] = @SiteId)
+            THEN NULL ELSE [s].[PageNotFoundPageId] END,
+    [CommunicationPageId] = CASE
+        WHEN EXISTS (SELECT 1 FROM [Page] [p] WHERE [p].[Id] = [s].[CommunicationPageId] AND [p].[SiteId] = @SiteId)
+            THEN NULL ELSE [s].[CommunicationPageId] END,
+    [MobilePageId] = CASE
+        WHEN EXISTS (SELECT 1 FROM [Page] [p] WHERE [p].[Id] = [s].[MobilePageId] AND [p].[SiteId] = @SiteId)
+            THEN NULL ELSE [s].[MobilePageId] END,
+    [ChangePasswordPageId] = CASE
+        WHEN EXISTS (SELECT 1 FROM [Page] [p] WHERE [p].[Id] = [s].[ChangePasswordPageId] AND [p].[SiteId] = @SiteId)
+            THEN NULL ELSE [s].[ChangePasswordPageId] END,
+
+    -- PageRouteId-based columns
+    [DefaultPageRouteId] = CASE
+        WHEN EXISTS (
+            SELECT 1
+            FROM [PageRoute] [pr]
+            JOIN [Page] [p] ON [p].[Id] = [pr].[PageId]
+            WHERE [pr].[Id] = [s].[DefaultPageRouteId] AND [p].[SiteId] = @SiteId
+        ) THEN NULL ELSE [s].[DefaultPageRouteId] END,
+    [LoginPageRouteId] = CASE
+        WHEN EXISTS (
+            SELECT 1
+            FROM [PageRoute] [pr]
+            JOIN [Page] [p] ON [p].[Id] = [pr].[PageId]
+            WHERE [pr].[Id] = [s].[LoginPageRouteId] AND [p].[SiteId] = @SiteId
+        ) THEN NULL ELSE [s].[LoginPageRouteId] END,
+    [RegistrationPageRouteId] = CASE
+        WHEN EXISTS (
+            SELECT 1
+            FROM [PageRoute] [pr]
+            JOIN [Page] [p] ON [p].[Id] = [pr].[PageId]
+            WHERE [pr].[Id] = [s].[RegistrationPageRouteId] AND [p].[SiteId] = @SiteId
+        ) THEN NULL ELSE [s].[RegistrationPageRouteId] END,
+    [PageNotFoundPageRouteId] = CASE
+        WHEN EXISTS (
+            SELECT 1
+            FROM [PageRoute] [pr]
+            JOIN [Page] [p] ON [p].[Id] = [pr].[PageId]
+            WHERE [pr].[Id] = [s].[PageNotFoundPageRouteId] AND [p].[SiteId] = @SiteId
+        ) THEN NULL ELSE [s].[PageNotFoundPageRouteId] END,
+    [CommunicationPageRouteId] = CASE
+        WHEN EXISTS (
+            SELECT 1
+            FROM [PageRoute] [pr]
+            JOIN [Page] [p] ON [p].[Id] = [pr].[PageId]
+            WHERE [pr].[Id] = [s].[CommunicationPageRouteId] AND [p].[SiteId] = @SiteId
+        ) THEN NULL ELSE [s].[CommunicationPageRouteId] END,
+    [ChangePasswordPageRouteId] = CASE
+        WHEN EXISTS (
+            SELECT 1
+            FROM [PageRoute] [pr]
+            JOIN [Page] [p] ON [p].[Id] = [pr].[PageId]
+            WHERE [pr].[Id] = [s].[ChangePasswordPageRouteId] AND [p].[SiteId] = @SiteId
+        ) THEN NULL ELSE [s].[ChangePasswordPageRouteId] END
+FROM [Site] AS [s]
+WHERE [s].[Id] <> @SiteId; -- exclude the site being deleted
+
+-- Step 3.1a: Handle cross-site children.  Null any ParentPageId that are pages which belong to the site being deleted
+UPDATE c
+SET c.[ParentPageId] = NULL
+FROM [Page] c
+JOIN [Page] p ON p.Id = c.[ParentPageId]
+WHERE p.[SiteId] = @SiteId AND c.[SiteId] <> @SiteId;
+
+-- Step 3.1b: Delete orphaned Pages (with no Blocks remaining)
 DELETE FROM [Page]
 WHERE [Id] IN (
 	SELECT p.[Id]

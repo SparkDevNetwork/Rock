@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Data.Entity;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -27,6 +28,9 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+using Microsoft.Extensions.DependencyInjection;
 
 using Rock.Attribute;
 using Rock.Badge;
@@ -36,6 +40,7 @@ using Rock.Communication;
 using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Cms;
 using Rock.Enums.Communication;
 using Rock.Enums.Controls;
 using Rock.Extension;
@@ -51,6 +56,7 @@ using Rock.Security;
 using Rock.Security.SecurityGrantRules;
 using Rock.Storage;
 using Rock.Storage.AssetStorage;
+using Rock.SystemKey;
 using Rock.Utility;
 using Rock.Utility.CaptchaApi;
 using Rock.ViewModels.Controls;
@@ -2592,16 +2598,87 @@ namespace Rock.Rest.v2
         /// Gets the configuration data to use when rendering the Captcha control.
         /// </summary>
         [HttpPost]
-        [Route( "CaptchaControlGetConfiguration" )]
+        [Route( "CaptchaGetConfiguration" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Authorization.EXECUTE_READ, Authorization.EXECUTE_WRITE, Authorization.EXECUTE_UNRESTRICTED_READ, Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( CaptchaConfigurationBag ) )]
+        [Rock.SystemGuid.RestActionGuid( "A3DC31DC-F568-417A-8E52-F48151D9F2DB" )]
+        public IActionResult CaptchaGetConfiguration()
+        {
+            var mode = SystemSettings.GetValue( SystemSetting.CAPTCHA_MODE )
+                .ConvertToEnum<CaptchaMode>( CaptchaMode.Visible );
+
+            var bag = new CaptchaConfigurationBag()
+            {
+                CaptchaMode = mode
+            };
+
+            return Ok( bag );
+        }
+
+        /// <summary>
+        /// Initializes a new CAPTCHA.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="IActionResult"/> containing a <see cref="CaptchaInitializeResultBag"/> with the CAPTCHA details.
+        /// </returns>
+        [HttpPost]
+        [Route( "CaptchaInitialize" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Authorization.EXECUTE_READ, Authorization.EXECUTE_WRITE, Authorization.EXECUTE_UNRESTRICTED_READ, Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( CaptchaInitializeResultBag ) )]
+        [Rock.SystemGuid.RestActionGuid( "93A2FD36-AEB1-4D95-95C6-668415754238" )]
+        public async Task<IActionResult> CaptchaInitialize()
+        {
+            var result = await RockApp.Current.GetRequiredService<ICaptchaProvider>().InitializeAsync();
+
+            var bag = new CaptchaInitializeResultBag
+            {
+                Pow = result.Pow == null ? null :
+                    new CaptchaInitializeProofOfWorkBag
+                    {
+                        ChallengeToken = result.Pow.ChallengeToken,
+                        ChallengeCount = result.Pow.ChallengeCount,
+                        ChallengeDifficulty = result.Pow.ChallengeDifficulty,
+                        ChallengeSize = result.Pow.ChallengeSize
+                    }
+            };
+
+            return Ok( bag );
+        }
+
+        /// <summary>
+        /// Verifies the CAPTCHA using the provided options and returns the verification result.
+        /// </summary>
+        /// <param name="options">The options containing the CAPTCHA details to be verified.</param>
+        /// <returns>
+        /// An <see cref="IActionResult"/> containing a <see cref="CaptchaVerifyResultBag"/> with the verification
+        /// status, any error messages, expiration time, and a token if verification is successful.
+        /// </returns>
+        [HttpPost]
+        [Route( "CaptchaVerify" )]
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponse( HttpStatusCode.OK, Type = typeof( CaptchaControlConfigurationBag ) )]
-        [Rock.SystemGuid.RestActionGuid( "9e066058-13d9-4b4d-8457-07ba8e2cacd3" )]
-        public IActionResult CaptchaControlGetConfiguration()
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( CaptchaVerifyResultBag ) )]
+        [Rock.SystemGuid.RestActionGuid( "5B81F7C9-461C-4F70-AD04-F2DE203F5763" )]
+        public async Task<IActionResult> CaptchaVerify( [FromBody] CaptchaVerifyOptionsBag options )
         {
-            var bag = new CaptchaControlConfigurationBag()
+            var result = await RockApp.Current.GetRequiredService<ICaptchaProvider>().VerifyAsync( new CaptchaVerifyOptions
             {
-                SiteKey = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.CAPTCHA_SITE_KEY )
+                PowOptions = options?.PowOptions == null ? null :
+                    new CaptchaVerifyProofOfWorkOptions
+                    {
+                        ChallengeToken = options.PowOptions.ChallengeToken,
+                        ChallengeSolutions = options.PowOptions.ChallengeSolutions
+                    }
+            } );
+
+            var bag = new CaptchaVerifyResultBag
+            {
+                IsVerified = result.IsVerified,
+                Error = result.Error,
+                Expires = result.Expires,
+                Token = result.Token
             };
 
             return Ok( bag );
@@ -2612,18 +2689,16 @@ namespace Rock.Rest.v2
         /// </summary>
         /// <param name="options">The options that contain the information to be validated.</param>
         [HttpPost]
-        [Route( "CaptchaControlValidateToken" )]
+        [Route( "CaptchaValidateToken" )]
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponse( HttpStatusCode.OK, Type = typeof( CaptchaControlTokenValidateTokenResultBag ) )]
-        [Rock.SystemGuid.RestActionGuid( "8f373592-d745-4d69-944a-729e15c3f941" )]
-        public IActionResult CaptchaControlValidateToken( [FromBody] CaptchaControlValidateTokenOptionsBag options )
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( CaptchaValidateTokenResultBag ) )]
+        [Rock.SystemGuid.RestActionGuid( "3D1EF07D-169A-4394-8871-BCB139818EB5" )]
+        public async Task<IActionResult> CaptchaValidateToken( [FromBody] CaptchaValidateTokenOptionsBag options )
         {
-            var api = new CloudflareApi();
+            var isTokenValid = await RockApp.Current.GetRequiredService<ICaptchaProvider>().IsTokenValidAsync( options.Token );
 
-            var isTokenValid = api.IsTurnstileTokenValid( options.Token );
-
-            var result = new CaptchaControlTokenValidateTokenResultBag()
+            var result = new CaptchaValidateTokenResultBag()
             {
                 IsTokenValid = isTokenValid
             };
@@ -9642,7 +9717,8 @@ namespace Rock.Rest.v2
                     IncludeInactiveItems = options.IncludeInactiveItems,
                     DefaultIconCssClass = "ti ti-list-numbers",
                     LazyLoad = true,
-                    SecurityGrant = grant
+                    SecurityGrant = grant,
+                    IncludeCategoryGuids = options.IncludeCategoryGuids
                 };
 
                 if ( options.includePublicItemsOnly )

@@ -25,8 +25,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Linq;
+
 using Rock.Attribute;
 using Rock.Configuration;
+using Rock.Enums.Cms;
 using Rock.Enums.Observability;
 using Rock.Model;
 using Rock.Observability;
@@ -157,8 +159,8 @@ namespace Rock.Blocks.Administration
         {
             return new UiSettingsConfigurationBag()
             {
-                CaptchaSecretKey = Rock.Web.SystemSettings.GetValue( SystemSetting.CAPTCHA_SECRET_KEY ),
-                CaptchaSiteKey = Rock.Web.SystemSettings.GetValue( SystemSetting.CAPTCHA_SITE_KEY ),
+                CaptchaMode = Rock.Web.SystemSettings.GetValue( SystemSetting.CAPTCHA_MODE ).ConvertToEnum<CaptchaMode>( CaptchaMode.Visible ),
+
                 EthnicityLabel = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_ETHNICITY_LABEL ),
                 RaceLabel = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_RACE_LABEL ),
                 SmsOptInMessage = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL ),
@@ -608,12 +610,8 @@ namespace Rock.Blocks.Administration
             Rock.Web.SystemSettings.SetValue( SystemSetting.PERSON_RACE_LABEL, bag.RaceLabel );
             Rock.Web.SystemSettings.SetValue( SystemSetting.PERSON_ETHNICITY_LABEL, bag.EthnicityLabel );
 
-            // Save Captcha keys
-            Rock.Web.SystemSettings.SetValue( SystemSetting.CAPTCHA_SITE_KEY, bag.CaptchaSiteKey );
-            Rock.Web.SystemSettings.SetValue( SystemSetting.CAPTCHA_SECRET_KEY, bag.CaptchaSecretKey );
-
+            Rock.Web.SystemSettings.SetValue( SystemSetting.CAPTCHA_MODE, bag.CaptchaMode.ConvertToInt().ToString() );
             Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL, bag.SmsOptInMessage );
-
             Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ENABLE_DEFAULT_ADDRESS_STATE_SELECTION, bag.EnableDefaultAddressStateSelection.ToString() );
 
             return ActionOk( GetSuccessResponseBag( "Settings saved successfully." ) );

@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <ContentSectionContainer sidebar>
-        <ContentSection title="Initialization" icon="ti ti-layout" :disableCollapse="true">
+        <ContentSection :disableCollapse="true">
             <ContentStack>
                 <div class="row">
                     <div class="col-md-6">

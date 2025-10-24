@@ -123,7 +123,23 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 var formBuilderEntityTypeId = EntityTypeCache.Get( typeof( Rock.Workflow.Action.FormBuilder ) ).Id;
                 var workflowType = new WorkflowTypeService( RockContext ).Get( workflowTypeId.Value );
 
-                if ( workflowType != null && workflowType.IsFormBuilder && workflowType.Category.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                // If WorkflowType has an explicit rule for EDIT, use it. Otherwise, fall back to Category security.
+                bool canEdit = false;
+                if ( workflowType != null )
+                {
+                    var wfAuth = Authorization.AuthorizedForEntity( workflowType, Authorization.EDIT, RequestContext.CurrentPerson, false );
+                    if ( wfAuth.HasValue )
+                    {
+                        canEdit = wfAuth.Value;
+                    }
+                    else
+                    {
+                        var category = workflowType.CategoryId.HasValue ? CategoryCache.Get( workflowType.CategoryId.Value ) : null;
+                        canEdit = category != null && category.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+                    }
+                }
+
+                if ( workflowType != null && workflowType.IsFormBuilder && canEdit )
                 {
                     var actionForm = workflowType.ActivityTypes
                         .SelectMany( a => a.ActionTypes )

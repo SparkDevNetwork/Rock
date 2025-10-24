@@ -1821,7 +1821,7 @@ INNER JOIN [GroupMember] GMN ON GMN.[GroupId] = GMO.[GroupId]
 		)
 WHERE GMO.[PersonId] = @OldId
 	AND (
-		(
+		    (
 			-- old person' group member status is Active but new person's status is not, so delete the new person's groupmember record so that we can set the old record to the new person id
 			gmn.GroupMemberStatus != @GroupMemberStatusActive
 			AND gmo.GroupMemberStatus = @GroupMemberStatusActive
@@ -1832,7 +1832,121 @@ WHERE GMO.[PersonId] = @OldId
 			AND gmo.GroupMemberStatus = @GroupMemberStatusPending
 			)
 		)
+/*
+    10/20/2025 - N.A.
 
+    Handles LearningClassActivityCompletion records for a student. Since a student cannot have multiple completion records for the 
+    same class and activity, we need to remove duplicates when they exist.
+
+    The removal priority is ranked as follows:
+    1) Prefer completed records over non-completed ones (student-submitted).
+    2) Prefer completed records over non-completed ones (facilitator-graded).
+    3) Prefer records with higher points earned.
+    4) Prefer newer records based on CreatedDateTime.
+
+    Reason: Ensure only one valid completion record exists per student per activity, retaining the highest ranked entry.
+*/
+
+-- Move any LearningClassActivityCompletion records for the @LessActiveGroupMembersIdsToDelete to the surviving Student/GroupMember
+DECLARE @Map TABLE (fromId INT PRIMARY KEY, toId INT NOT NULL);
+
+-- Case 1: new (less-active) -> old (survivor) for early-delete list
+INSERT INTO @Map (fromId, toId)
+SELECT
+    GMN.[Id],
+    GMO.[Id]
+FROM [GroupMember] AS GMO
+INNER JOIN [GroupTypeRole] AS GTR ON GTR.[Id] = GMO.[GroupRoleId]
+INNER JOIN [GroupMember] AS GMN ON GMN.[GroupId] = GMO.[GroupId]
+    AND (GTR.[MaxCount] <= 1 OR GMN.[GroupRoleId] = GMO.[GroupRoleId])
+    AND GMN.[PersonId] = @NewId
+WHERE GMO.[PersonId] = @OldId
+    AND GMN.[Id] IN (SELECT [Id] FROM @LessActiveGroupMembersIdsToDelete);
+
+-- Case 2: old -> new for the “already existed with new id” scenario
+INSERT INTO @Map (fromId, toId)
+SELECT
+    GMO.[Id],
+    GMN.[Id]
+FROM [GroupMember] AS GMO
+INNER JOIN [GroupTypeRole] AS GTR ON GTR.[Id] = GMO.[GroupRoleId]
+INNER JOIN [GroupMember] AS GMN ON GMN.[GroupId] = GMO.[GroupId]
+    AND (GTR.[MaxCount] <= 1 OR GMN.[GroupRoleId] = GMO.[GroupRoleId])
+    AND GMN.[PersonId] = @NewId
+WHERE GMO.[PersonId] = @OldId
+    AND NOT EXISTS (SELECT 1 FROM @Map m WHERE m.fromId = GMO.[Id]); -- avoid dup inserts
+
+-- Create a CTE for the student's LearningClassActivityCompletion records per LearningClassActivity
+-- ranked by completion, points earned, created date.  We'll use this later when
+-- deciding which ones (if any) need to be deleted to avoid duplicate activity completion records
+-- for one student in the class.
+;WITH LCAC_ALL AS (
+    SELECT
+        L.[Id],
+        L.[StudentId],
+        L.[LearningClassActivityId],
+        L.[IsStudentCompleted],
+        L.[IsFacilitatorCompleted],
+        L.[PointsEarned],
+        L.[CreatedDateTime],
+        TargetStudentId = COALESCE(M.toId, L.StudentId),
+        IsFrom = CASE WHEN M.fromId IS NULL THEN 0 ELSE 1 END
+    FROM [LearningClassActivityCompletion] AS L
+    LEFT JOIN @Map AS M ON L.[StudentId] = M.[fromId]
+    WHERE L.[StudentId] IN (SELECT fromId FROM @Map)
+       OR L.[StudentId] IN (SELECT toId   FROM @Map)
+),
+Ranked AS (
+    SELECT
+        *,
+        rn_keep = ROW_NUMBER() OVER (
+            PARTITION BY TargetStudentId, LearningClassActivityId
+            ORDER BY
+                CASE WHEN IsStudentCompleted = 1 THEN 1 ELSE 0 END DESC,
+                CASE WHEN IsFacilitatorCompleted = 1 THEN 1 ELSE 0 END DESC,
+                COALESCE(PointsEarned, -2147483648) DESC,
+                COALESCE(CreatedDateTime, '1900-01-01') DESC,
+                IsFrom ASC
+        )
+    FROM LCAC_ALL
+)
+
+-- 1) Now, delete would-be duplicates (all but best)
+DELETE L
+FROM [LearningClassActivityCompletion] AS L
+INNER JOIN Ranked AS R ON R.[Id] = L.[Id]
+WHERE R.rn_keep > 1;
+
+-- 2) Move remaining LCAC rows to survivor
+UPDATE L
+SET L.[StudentId] = M.[toId]
+FROM [LearningClassActivityCompletion] AS L
+INNER JOIN @Map AS M ON L.[StudentId] = M.[fromId];
+
+/*
+ * Handle LearningParticipant records.
+ * Move LearningParticipant to survivor then drop source
+ * (LCAC moves had to be done first to satisfy FK to LP)
+ */
+-- If a LearningParticipant already exists for the surviving group member participant, drop the source to avoid PK collision.
+DELETE LP
+FROM [LearningParticipant] AS LP
+INNER JOIN @Map AS M ON LP.[Id] = M.[fromId]
+WHERE EXISTS (
+    SELECT 1
+    FROM [LearningParticipant] AS LP2
+    WHERE LP2.[Id] = M.[toId]
+);
+
+-- Otherwise, rewrite the primary key to the survivor's GroupMember.Id.
+UPDATE LP
+SET LP.[Id] = M.[toId]
+FROM [LearningParticipant] AS LP
+JOIN @Map AS M ON LP.[Id] = M.[fromId]
+
+/*
+ * Handle RegistrationRegistrant records
+ */
 -- NULL out RegistrationRegistrant Records for the @LessActiveGroupMembersIdsToDelete
 UPDATE [RegistrationRegistrant]
 SET [GroupMemberId] = NULL
@@ -1841,6 +1955,9 @@ WHERE [GroupMemberId] IN (
 		FROM @LessActiveGroupMembersIdsToDelete
 		)
 
+/*
+ * Handle GroupMemberAssignment records
+ */
 -- Delete the GroupMemberAssignment Records for the @LessActiveGroupMembersIdsToDelete
 DELETE FROM [GroupMemberAssignment]
 WHERE [GroupMemberId] IN (
@@ -1879,6 +1996,9 @@ WHERE GMO.[PersonId] = @OldId
 	AND GMN.[Id] IS NULL
 	and GMO.Id NOT IN (SELECT [Id] FROM @GroupMembersIdsToArchive)
 
+/*
+ * Handle RegistrationRegistrant records
+ */
 -- Update any registrant groups that point to a group member about to be deleted 
 UPDATE [RegistrationRegistrant]
 SET [GroupMemberId] = NULL 
@@ -1888,7 +2008,9 @@ WHERE [GroupMemberId] IN (
 	WHERE [PersonId] = @OldId
 )
 
-
+/*
+ * Handle GroupMemberAssignment records
+ */
 -- Delete any Group Assignments that point to a group member about to be deleted
 DELETE FROM [GroupMemberAssignment]
 WHERE [GroupMemberId] IN (
@@ -1896,7 +2018,6 @@ WHERE [GroupMemberId] IN (
 	FROM [GroupMember]
 	WHERE [PersonId] = @OldId
 )
-
 
 -- If there is GroupMemberHistory, we can't delete, so add any other GroupMemberIds for the old PersonId to our @GroupMembersIdsToArchive list
 INSERT INTO @GroupMembersIdsToArchive 

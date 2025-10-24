@@ -41,23 +41,12 @@ namespace Rock.Field.Types
     {
         #region Configuration
 
-        private const string NOTIFICATION_WARNING_PROPERTY_KEY = "notificationWarning";
+        //private const string NOTIFICATION_WARNING_PROPERTY_KEY = "notificationWarning";
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
-
-            if ( usage == ConfigurationValueUsage.Configure )
-            {
-                var siteKey = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SITE_KEY );
-                var secretKey = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SECRET_KEY );
-
-                if ( siteKey.IsNullOrWhiteSpace() || secretKey.IsNullOrWhiteSpace() )
-                {
-                    publicConfigurationValues[NOTIFICATION_WARNING_PROPERTY_KEY] = "Captcha site key or secret key have not been configured yet. Captcha will not work until both keys are set.";
-                }
-            }
 
             return publicConfigurationValues;
         }
@@ -133,19 +122,6 @@ namespace Rock.Field.Types
                 Text = "The user will be prompted to complete verify they are human each time this field is displayed in edit mode."
             };
             controls.Add( infoBox );
-
-            var siteKey = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SITE_KEY );
-            var secretKey = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SECRET_KEY );
-
-            if ( siteKey.IsNullOrWhiteSpace() || secretKey.IsNullOrWhiteSpace() )
-            {
-                var nokeysBox = new NotificationBox
-                {
-                    NotificationBoxType = NotificationBoxType.Warning,
-                    Text = "Captcha site key or secret key have not been configured yet. Captcha will not work until both keys are set."
-                };
-                controls.Add( nokeysBox );
-            }
 
             return controls;
         }

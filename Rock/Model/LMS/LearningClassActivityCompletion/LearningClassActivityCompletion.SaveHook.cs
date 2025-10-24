@@ -270,13 +270,7 @@ namespace Rock.Model
                 // then launch that workflow before the Course completion workflow (if any).
                 if ( ActivityCompletionWorkflowToLaunch != null )
                 {
-                    var workflowAttributes = new Dictionary<string, string>
-                    {
-                        {"Entity", Entity.ToJson()},
-                        {"Student", participant.ToJson()}
-                    };
-
-                    participant.LaunchWorkflow( ActivityCompletionWorkflowToLaunch.Id, ActivityCompletionWorkflowToLaunch.Name, workflowAttributes, currentPersonAliasId );
+                    Entity.LaunchWorkflow( ActivityCompletionWorkflowToLaunch.Id, ActivityCompletionWorkflowToLaunch.Name, null, currentPersonAliasId );
                 }
 
                 // Launch the Course Completion workflow (if any).

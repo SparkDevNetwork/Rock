@@ -1,0 +1,288 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :data="gridData"
+          light
+          keyField="guid"
+          itemTerm="filter"
+          @addItem="onAdd">
+        <TextColumn name="interactionChannelName" title="Channel" field="interactionChannelName" />
+        <TextColumn name="interactionComponentName" title="Component" field="interactionComponentName" />
+        <TextColumn name="operation" title="Operation" field="operation" />
+        <TextColumn name="comparisonText" title="Quantity" field="comparisonText" />
+        <TextColumn name="dateRangeText" title="Date Range" field="dateRangeText" />
+        <EditColumn @click="onEdit" />
+        <DeleteColumn @click="onDelete" />
+    </Grid>
+
+    <div class="d-flex justify-content-end">
+        <Toggle v-model="filterExpressionType"
+                trueText="All"
+                falseText="Any"
+                :btnSize="BtnSize.ExtraSmall"
+                onButtonActiveCssClass="btn-info"
+                offButtonActiveCssClass="btn-info" />
+    </div>
+
+    <Modal
+           v-model="isModalVisible"
+           :title="`${isEditing ? 'Edit' : 'Add'} Interaction Filter`"
+           saveText="Save"
+           cancelText="Cancel"
+           :onSave="onSave">
+        <section class="row form-row d-flex flex-wrap align-items-center form-group">
+            <div class="col flex-grow-0">
+                <div class="form-group">
+                    <DropDownList
+                                  :modelValue="theFilter.comparisonType?.toString() ?? ''"
+                                  @update:modelValue="val => theFilter.comparisonType = Number(val)"
+                                  :items="comparisonTypes"
+                                  class="input-width-xl"
+                                  :showBlankItem="false" />
+                </div>
+            </div>
+            <div class="col flex-grow-0">
+                <div class="form-group">
+                    <NumberBox
+                               v-model="theFilter.comparisonValue"
+                               class="input-width-sm" />
+                </div>
+            </div>
+            <div class="col flex-sm-grow-0">
+                <div class="form-group">
+                    <span class="text-nowrap">interactions in the channel/component</span>
+                </div>
+            </div>
+        </section>
+        <section>
+            <div class="row form-row">
+                <InteractionChannelPicker v-model="theFilter.interactionChannel" label="Channel" rules="required" />
+            </div>
+            <div class="row form-row">
+                <InteractionComponentPicker v-model="theFilter.interactionComponent" :interactionChannelGuid="theFilter.interactionChannel?.value ?? ''" label="Component" :showBlankItem="true" />
+            </div>
+            <div class="row form-row">
+                <DropDownList
+                              :modelValue="theFilter.operation ? theFilter.operation.split(',').map(s => s.trim()).filter(s => s) : []"
+                              @update:modelValue="val => theFilter.operation = Array.isArray(val) && val.length > 0 ? val.join(',') : ''"
+                              label="Operation" multiple
+                              :items="operationOptions"
+                              :showBlankItem="true"
+                              help="Select the type of interaction operation to filter by." />
+            </div>
+        </section>
+        <section class="row form-row d-flex flex-wrap align-items-center">
+            <div class="col flex-grow-0">
+                <div class="form-group">
+                    <span class="text-nowrap">In the following date range</span>
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group">
+                    <SlidingDateRangePicker v-model="slidingDateRange" previewLocation="Right" />
+                </div>
+            </div>
+        </section>
+    </Modal>
+
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import Grid, { EditColumn, DeleteColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker.obs";
+    import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { numericComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
+    import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/comparisonTypeOptions";
+    import { getComparisonName } from "@Obsidian/Core/Reporting/comparisonType";
+    import { InteractionSegmentFilter } from "./types.partial";
+    import { slidingDateRangeToString, parseSlidingDateRangeString, SlidingDateRange, RangeType, calculateSlidingDateRange, getTimeUnitText, getRangeTypeText } from "@Obsidian/Utility/slidingDateRange";
+    import { DateTimeFormat } from "@Obsidian/Utility/rockDateTime";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { InteractionSegmentFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalizationSegmentDetail/interactionSegmentFilterBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<InteractionSegmentFilter>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: InteractionSegmentFilter): void
+    }>();
+
+    function createDefaultFilter(): InteractionSegmentFilterBag {
+        return {
+            guid: newGuid(),
+            comparisonType: 1,
+            comparisonValue: 0,
+            interactionChannel: null,
+            interactionComponent: null,
+            operation: "",
+            slidingDateRangeDelimitedValues: ""
+        };
+    }
+
+    // #region Values
+
+    const theFilter = ref<InteractionSegmentFilterBag>(createDefaultFilter());
+
+    const comparisonTypes = getFilteredComparisonTypeOptions(numericComparisonTypes);
+    const isModalVisible = ref(false);
+    const isEditing = ref(false);
+
+    const operationOptions = ref<ListItemBag[]>([
+        { value: "View", text: "View" },
+        { value: "Opened", text: "Opened" },
+        { value: "Click", text: "Click" },
+        { value: "Prayed", text: "Prayed" },
+        { value: "Form Viewed", text: "Form Viewed" },
+        { value: "Form Completed", text: "Form Completed" },
+        { value: "Complete", text: "Complete" },
+        { value: "Incomplete", text: "Incomplete" },
+        { value: "Watch", text: "Watch" },
+        { value: "Present", text: "Present" },
+    ]);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const gridData = computed(() => {
+        const filters = props.modelValue.interactionSegmentFilters ?? [];
+        const rows = filters.map(f => ({
+            guid: f.guid,
+            interactionChannelName: f.interactionChannel?.text ?? "",
+            interactionComponentName: f.interactionComponent ? (f.interactionComponent.text ?? "") : "",
+            operation: f.operation || "",
+            comparisonText: `${getComparisonName(f.comparisonType)} ${f.comparisonValue}`,
+            dateRangeText: formatDelimitedValues(f.slidingDateRangeDelimitedValues ?? "")
+        }));
+        return { rows };
+    });
+
+    const filterExpressionType = computed<boolean>({
+        get() {
+            return (props.modelValue.interactionFilterExpressionType ?? FilterExpressionType.GroupAny) === FilterExpressionType.GroupAll;
+        },
+        set(value: boolean) {
+            emit("update:modelValue", {
+                ...props.modelValue,
+                interactionFilterExpressionType: value ? FilterExpressionType.GroupAll : FilterExpressionType.GroupAny
+            });
+        }
+    });
+
+    const slidingDateRange = computed<SlidingDateRange | null>({
+        get() {
+            const delimited = theFilter.value.slidingDateRangeDelimitedValues;
+            if (!delimited) {
+                return null;
+            }
+            return parseSlidingDateRangeString(delimited);
+        },
+        set(newVal: SlidingDateRange | null) {
+            if (newVal) {
+                theFilter.value.slidingDateRangeDelimitedValues = slidingDateRangeToString(newVal);
+            }
+            else {
+                theFilter.value.slidingDateRangeDelimitedValues = "";
+            }
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function formatDelimitedValues(value: string): string {
+        if (!value) {
+            return "";
+        }
+        const range = parseSlidingDateRangeString(value);
+        if (!range) {
+            return "";
+        }
+        if (range.rangeType === RangeType.DateRange) {
+            const { start, end } = calculateSlidingDateRange(range);
+            const startText = start ? start.toLocaleString(DateTimeFormat.DateShort) : "";
+            const endText = end ? end.toLocaleString(DateTimeFormat.DateShort) : "";
+            return (startText && endText) ? `${startText} to ${endText}` : (startText || endText);
+        }
+        if (range.rangeType === RangeType.Current) {
+            return `Current ${getTimeUnitText(range.timeUnit!)}`;
+        }
+        const count = range.timeValue ?? 1;
+        return `${getRangeTypeText(range.rangeType)} ${count} ${pluralize(getTimeUnitText(range.timeUnit!), count)}`;
+    }
+
+    function onAdd(): void {
+        theFilter.value = createDefaultFilter();
+        isModalVisible.value = true;
+        isEditing.value = false;
+    }
+
+    function onEdit(guid: string): void {
+        const row = props.modelValue.interactionSegmentFilters?.find(x => x.guid === guid);
+        if (!row) return;
+        theFilter.value = {
+            guid,
+            comparisonType: row.comparisonType ?? 1,
+            comparisonValue: row.comparisonValue ?? 0,
+            interactionChannel: row.interactionChannel ?? null,
+            interactionComponent: row.interactionComponent ?? null,
+            operation: row.operation ?? "",
+            slidingDateRangeDelimitedValues: row.slidingDateRangeDelimitedValues ?? ""
+        };
+        isModalVisible.value = true;
+        isEditing.value = true;
+    }
+
+    function onDelete(guid: string): void {
+        const filters = (props.modelValue.interactionSegmentFilters ?? []).filter(f => f.guid !== guid);
+        emit("update:modelValue", {
+            ...props.modelValue,
+            interactionSegmentFilters: filters
+        });
+    }
+
+    function onSave(): void {
+        const filters = [...props.modelValue.interactionSegmentFilters ?? []];
+        const idx = filters.findIndex(f => f.guid === theFilter.value.guid);
+
+        const item = {
+            guid: theFilter.value.guid,
+            comparisonType: theFilter.value.comparisonType ?? 0,
+            comparisonValue: theFilter.value.comparisonValue ?? 0,
+            interactionChannel: theFilter.value.interactionChannel ?? null,
+            interactionComponent: theFilter.value.interactionComponent ?? null,
+            operation: theFilter.value.operation,
+            slidingDateRangeDelimitedValues: theFilter.value.slidingDateRangeDelimitedValues ?? ""
+        };
+
+        if (idx >= 0) {
+            filters.splice(idx, 1, item);
+        }
+        else {
+            filters.push(item);
+        }
+
+        emit("update:modelValue", {
+            ...props.modelValue,
+            interactionSegmentFilters: filters
+        });
+
+        isModalVisible.value = false;
+    }
+
+    // #endregion Functions
+</script>

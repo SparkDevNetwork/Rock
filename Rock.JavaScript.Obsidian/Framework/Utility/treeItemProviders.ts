@@ -865,6 +865,9 @@ export class ScheduleTreeItemProvider implements ITreeItemProvider {
     /** Whether to exclude private schedules in the results. */
     public includePublicOnly: boolean = false;
 
+    /** The category GUIDs to filter schedules by. */
+    public includeCategoryGuids: Guid[] | null = null;
+
     /**
      * Gets the child items from the server.
      *
@@ -877,6 +880,7 @@ export class ScheduleTreeItemProvider implements ITreeItemProvider {
             parentGuid,
             includeInactiveItems: this.includeInactive,
             includePublicItemsOnly: this.includePublicOnly,
+            includeCategoryGuids: this.includeCategoryGuids,
             securityGrantToken: this.securityGrantToken,
         };
         const url = "/api/v2/Controls/SchedulePickerGetChildren";

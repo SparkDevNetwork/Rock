@@ -21,13 +21,12 @@
 // </copyright>
 //
 
+import { CaptchaMode } from "@Obsidian/Enums/Cms/captchaMode";
+
 /** Contains the Ui Settings configuration details. */
 export type UiSettingsConfigurationBag = {
-    /** Gets or sets the captcha secret key. */
-    captchaSecretKey?: string | null;
-
-    /** Gets or sets the captcha site key. */
-    captchaSiteKey?: string | null;
+    /** Gets or sets the captcha mode. */
+    captchaMode: CaptchaMode;
 
     /** Gets or sets the value indicating whether or not default address state selection is enabled. */
     enableDefaultAddressStateSelection: boolean;

@@ -222,8 +222,10 @@ ul.rocktree-children {
     display:          inline-block;
     margin-left:      var(--spacing-xsmall);
     font-size:        var(--font-size-xsmall);
-    background-color: var(--color-interface-medium);
-    border-radius:    var(--rounded-tiny);
+    background-color: var(--color-interface-soft);
+    border-radius:    var(--rounded-small);
+    color:            var(--color-interface-strong);
+    padding:          var(--spacing-tiny) var(--spacing-xsmall);
   }
 }
 // ====================== END ROCK TREE ======================

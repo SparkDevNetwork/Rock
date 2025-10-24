@@ -41,7 +41,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays a list of defined types." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the defined type details.",
@@ -56,7 +56,8 @@ namespace Rock.Blocks.Core
         Key = AttributeKey.Categories )]
 
     [Rock.SystemGuid.EntityTypeGuid( "6508dcc1-ada8-4299-9147-dc37095c2aff" )]
-    [Rock.SystemGuid.BlockTypeGuid( "7faf32d3-c577-462a-bc0b-d34de3316a5b" )]
+    // Was [Rock.SystemGuid.BlockTypeGuid( "7faf32d3-c577-462a-bc0b-d34de3316a5b" )]
+    [Rock.SystemGuid.BlockTypeGuid( "5470C9C4-09C1-439F-AA56-3524047497EE" )]
     [CustomizedGrid]
     public class DefinedTypeList : RockEntityListBlockType<DefinedType>
     {

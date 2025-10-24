@@ -29,6 +29,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Observability;
 using Rock.Utility;
 using Rock.Web.Cache;
 
@@ -188,35 +189,41 @@ namespace Rock.Jobs
                 throw new Exception( "One or more exceptions occurred sending communications..." + Environment.NewLine + exceptionMsgs.AsDelimited( Environment.NewLine ) );
             }
 
-            // check for communications that have not been sent but are past the expire date. Mark them as failed and set a warning.
-            var expireDateTimeEndWindow = RockDateTime.Now.AddDays( 0 - expirationDays );
-
-            // limit the query to only look a week prior to the window to avoid performance issue (it could be slow to query at ALL the communication recipient before the expire date, as there could several years worth )
-            var expireDateTimeBeginWindow = expireDateTimeEndWindow.AddDays( -7 );
-
-            startDateTime = RockDateTime.Now;
-            stopWatch = Stopwatch.StartNew();
-            using ( var rockContext = new RockContext() )
+            using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Send Communications Job > Update Expired Recipients Status to 'Failed'" ) )
             {
-                var qryExpiredRecipients = new CommunicationRecipientService( rockContext ).Queryable()
-                    .Where( cr =>
-                        cr.Communication.Status == CommunicationStatus.Approved &&
-                        cr.Status == CommunicationRecipientStatus.Pending &&
-                        (
-                            ( !cr.Communication.FutureSendDateTime.HasValue && cr.Communication.ReviewedDateTime.HasValue && cr.Communication.ReviewedDateTime < expireDateTimeEndWindow && cr.Communication.ReviewedDateTime > expireDateTimeBeginWindow )
-                            || ( cr.Communication.FutureSendDateTime.HasValue && cr.Communication.FutureSendDateTime < expireDateTimeEndWindow && cr.Communication.FutureSendDateTime > expireDateTimeBeginWindow )
-                        ) );
+                // check for communications that have not been sent but are past the expire date. Mark them as failed and set a warning.
+                var expireDateTimeEndWindow = RockDateTime.Now.AddDays( 0 - expirationDays );
 
-                rockContext.BulkUpdate( qryExpiredRecipients, c => new CommunicationRecipient { Status = CommunicationRecipientStatus.Failed, StatusNote = "Communication was not sent before the expire window (possibly due to delayed approval)." } );
+                // limit the query to only look a week prior to the window to avoid performance issue (it could be slow to query at ALL the communication recipient before the expire date, as there could several years worth )
+                var expireDateTimeBeginWindow = expireDateTimeEndWindow.AddDays( -7 );
+
+                startDateTime = RockDateTime.Now;
+                stopWatch = Stopwatch.StartNew();
+                using ( var rockContext = new RockContext() )
+                {
+                    var qryExpiredRecipients = new CommunicationRecipientService( rockContext ).Queryable()
+                        .Where( cr =>
+                            cr.Communication.Status == CommunicationStatus.Approved &&
+                            cr.Status == CommunicationRecipientStatus.Pending &&
+                            (
+                                ( !cr.Communication.FutureSendDateTime.HasValue && cr.Communication.ReviewedDateTime.HasValue && cr.Communication.ReviewedDateTime < expireDateTimeEndWindow && cr.Communication.ReviewedDateTime > expireDateTimeBeginWindow )
+                                || ( cr.Communication.FutureSendDateTime.HasValue && cr.Communication.FutureSendDateTime < expireDateTimeEndWindow && cr.Communication.FutureSendDateTime > expireDateTimeBeginWindow )
+                            ) );
+
+                    rockContext.BulkUpdate( qryExpiredRecipients, c => new CommunicationRecipient { Status = CommunicationRecipientStatus.Failed, StatusNote = "Communication was not sent before the expire window (possibly due to delayed approval)." } );
+                }
+
+                Log( LogLevel.Information, @"Updated expired communication recipients' status to ""Failed"".", startDateTime, stopWatch.ElapsedMilliseconds );
             }
 
-            Log( LogLevel.Information, @"Updated expired communication recipients' status to ""Failed"".", startDateTime, stopWatch.ElapsedMilliseconds );
-
-            var statusMessage = SendEmailMetricsReminders();
-
-            if ( statusMessage.IsNotNullOrWhiteSpace() )
+            using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Send Communications Job > Send Email Metrics Reminders" ) )
             {
-                this.Result += Environment.NewLine + statusMessage;
+                var statusMessage = SendEmailMetricsReminders();
+
+                if ( statusMessage.IsNotNullOrWhiteSpace() )
+                {
+                    this.Result += Environment.NewLine + statusMessage;
+                }
             }
         }
 

@@ -41,14 +41,15 @@ namespace Rock.Blocks.Group
     [Category( "Group" )]
     [Description( "Displays a list of group types." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the group type details.",
         Key = AttributeKey.DetailPage )]
 
     [Rock.SystemGuid.EntityTypeGuid( "562ed873-bd66-4287-ae9f-d7c43fecd7a8" )]
-    [Rock.SystemGuid.BlockTypeGuid( "8885f47d-9262-48b0-b969-9bee003370eb" )]
+    // Was [Rock.SystemGuid.BlockTypeGuid( "8885f47d-9262-48b0-b969-9bee003370eb" )]
+    [Rock.SystemGuid.BlockTypeGuid( "80306BB1-FE4B-436F-AC7A-691CF0BC0F5E" )]
     [CustomizedGrid]
     public class GroupTypeList : RockListBlockType<GroupTypeWithGroupCounts>
     {

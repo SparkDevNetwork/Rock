@@ -50,7 +50,7 @@ namespace Rock.Model
                      && Entity.IsArchived == false
                      && Entity.GroupMemberStatus != GroupMemberStatus.Inactive )
                 {
-                    // Bypass Group Member requirement check when group member is unarchived; instead, we'll show "does not meet" symbol in group member list.
+                    // Bypass Group Member requirement check (i.e. IsValidGroupMember()) when group member is unarchived; instead "does not meet" symbol should show in group member list.
                     var previousIsArchived = this.State == EntityContextState.Modified && OriginalValues[nameof( GroupMember.IsArchived )].ToStringSafe().AsBoolean();
                     if ( !previousIsArchived )
                     {

@@ -37,6 +37,8 @@
             <div class="panel-body">
                 <%-- List Selection --%>
                 <asp:Panel ID="pnlListSelection" CssClass="js-navigation-panel h-100 d-flex flex-column" runat="server">
+                    <Rock:NotificationBox ID="nbUpgradeMessage" runat="server" NotificationBoxType="Warning" Title="You're Using the Legacy Communication Wizard" Visible="false" />
+
                     <div class="panel-fill-body position-relative flex-fill styled-scroll">
                         <div class="position-absolute inset-0 overflow-auto">
                             <div class="panel-body">
