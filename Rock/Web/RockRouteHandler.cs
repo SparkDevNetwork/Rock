@@ -361,7 +361,7 @@ namespace Rock.Web
 
                         rockRequestContext.PrepareRequestForPage( page );
 
-                        return new LavaLayoutPage( filePath, routeId, parms, rockRequestContext );
+                        return LavaLayoutPage.FromFile( filePath, routeId, parms, rockRequestContext );
                     }
 
                     return CreateRockPage( page, layoutPath, routeId, parms, routeHttpRequest );
