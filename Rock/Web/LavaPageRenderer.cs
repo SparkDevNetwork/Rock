@@ -18,11 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 
 using AngleSharp;
 using AngleSharp.Dom;
@@ -36,6 +34,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Rock.Blocks;
 using Rock.Configuration;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Net;
 using Rock.Security;
@@ -45,69 +44,53 @@ using Rock.Web.Cache;
 
 namespace Rock.Web
 {
-    internal class LavaLayoutPage : HttpTaskAsyncHandler
+    internal class LavaPageRenderer
     {
         private const string LegacyBlockTypeSuffix = "(Legacy)";
 
         private readonly string _layoutTemplate;
 
-        private readonly int _routeId;
-
-        private readonly Dictionary<string, string> _routeParameters;
+        private readonly ILavaEngine _engine;
 
         private readonly RockRequestContext _rockRequestContext;
 
         private readonly HtmlParser _htmlParser;
 
-        private readonly Func<string, string> _loadFile;
-
-        private LavaLayoutPage( string layoutText, Func<string, string> loadFile, int routeId, Dictionary<string, string> parms, RockRequestContext rockRequestContext )
+        public LavaPageRenderer( string layoutText, ILavaEngine engine, RockRequestContext rockRequestContext )
         {
             _layoutTemplate = layoutText;
-            _loadFile = loadFile;
-            _routeId = routeId;
-            _routeParameters = parms;
+            _engine = engine;
             _rockRequestContext = rockRequestContext;
 
             _htmlParser = new HtmlParser( new HtmlParserOptions() );
         }
 
-        [ExcludeFromCodeCoverage]
-        public static LavaLayoutPage FromFile( string filename, int routeId, Dictionary<string, string> parms, RockRequestContext rockRequestContext )
-        {
-            return new LavaLayoutPage( File.ReadAllText( filename ), fn => File.ReadAllText( RockApp.Current.MapPath( fn ) ), routeId, parms, rockRequestContext );
-        }
-
-        public static LavaLayoutPage FromText( string layoutText, Func<string, string> loadFile, int routeId, Dictionary<string, string> parms, RockRequestContext rockRequestContext )
-        {
-            return new LavaLayoutPage( layoutText, loadFile, routeId, parms, rockRequestContext );
-        }
-
-        [ExcludeFromCodeCoverage]
-        public override async Task ProcessRequestAsync( HttpContext context )
-        {
-            var internalAccessor = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>() as RockRequestContextAccessor;
-
-            if ( internalAccessor != null )
-            {
-                internalAccessor.RockRequestContext = _rockRequestContext;
-            }
-
-            context.Response.Write( await RenderLayoutAsync() );
-
-            if ( internalAccessor != null )
-            {
-                internalAccessor.RockRequestContext = null;
-            }
-        }
-
-        internal async Task<string> RenderLayoutAsync()
+        internal async Task<string> RenderAsync()
         {
             var mergeFields = _rockRequestContext.GetCommonMergeFields();
 
             mergeFields.Add( "Page", _rockRequestContext.Page );
 
-            var html = _layoutTemplate.ResolveMergeFields( mergeFields );
+            var context = _engine.NewRenderContext();
+
+            foreach ( var kvp in mergeFields )
+            {
+                if ( kvp.Key.StartsWith( LavaHelper.InternalMergeFieldPrefix ) )
+                {
+                    context.SetInternalField( kvp.Key, kvp.Value );
+                }
+                else
+                {
+                    context.SetMergeField( kvp.Key, kvp.Value );
+                }
+            }
+
+            context.SetEnabledCommands( "", "," );
+
+            var parameters = LavaRenderParameters.WithContext( context );
+            var result = _engine.RenderTemplate( _layoutTemplate, parameters );
+
+            var html = result.Text;
 
             var document = await _htmlParser.ParseDocumentAsync( html, CancellationToken.None );
             var zoneElements = document.QuerySelectorAll( "Rock\\:Zone" );
@@ -190,7 +173,12 @@ namespace Rock.Web
 
         private async Task RenderBlocksAsync( IHtmlDocument document, IHtmlCollection<IElement> zones )
         {
-            var pageBlocks = _rockRequestContext.Page.Blocks;
+            var pageBlocks = _rockRequestContext.Page?.Blocks;
+
+            if ( pageBlocks == null )
+            {
+                return;
+            }
 
             foreach ( var block in pageBlocks )
             {
@@ -413,7 +401,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
             str.Append( ( block.Role ?? block.BlockType?.DefaultRole ).ToStringSafe().ToLower() );
 
             if ( block.CssClass.IsNotNullOrWhiteSpace() )
-                            {
+            {
                 str.Append( " " );
                 str.Append( block.CssClass.Trim() );
             }

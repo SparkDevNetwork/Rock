@@ -23,6 +23,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -95,7 +96,7 @@ namespace Rock.Web.Cache
                     {
                         if ( _attributeIds == null )
                         {
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 _attributeIds = new AttributeService( rockContext )
                                     .Queryable().AsNoTracking()
@@ -181,7 +182,7 @@ namespace Rock.Web.Cache
                 return GetValue( key, attributeCache, rockContext );
             }
 
-            using ( var myRockContext = new RockContext() )
+            using ( var myRockContext = RockApp.Current.CreateRockContext() )
             {
                 return GetValue( key, attributeCache, myRockContext );
             }

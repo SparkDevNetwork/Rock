@@ -269,6 +269,7 @@ namespace Rock.Net
             RootUrlPath = string.Empty;
             HttpMethod = null;
             Form = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
+            Response = new NullRockResponseContext();
         }
 
         /// <summary>

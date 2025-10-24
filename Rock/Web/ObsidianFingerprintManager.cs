@@ -60,6 +60,11 @@ namespace Rock.Web
             InitializeFingerprint();
         }
 
+        internal ObsidianFingerprintManager( long fingerprint )
+        {
+            _fingerprint = fingerprint;
+        }
+
         #endregion
 
         #region Methods
