@@ -342,6 +342,7 @@ namespace Rock.WebStartup
             } );
             sc.AddSingleton<MetadataHelper>();
             sc.AddSingleton<ObsidianFingerprintManager>();
+            sc.AddSingleton<ILavaEngineFactory, LavaEngineFactory>();
 
             sc.AddScoped<RockContext>();
 
@@ -1216,18 +1217,9 @@ WHERE [PQ].[row_number] = 1
         /// </summary>
         private static void InitializeLava()
         {
-            // Get the Lava Engine configuration settings.
-            Type engineType = null;
-
-            // The Fluid Engine is the default engine for Rock v17 and above.
-            engineType = typeof( FluidEngine );
-
             InitializeLavaEngines();
 
-            if ( engineType != null )
-            {
-                InitializeGlobalLavaEngineInstance( engineType );
-            }
+            InitializeGlobalLavaEngineInstance();
         }
 
         private static void InitializeLavaEngines()
@@ -1235,11 +1227,7 @@ WHERE [PQ].[row_number] = 1
             // Register the Fluid Engine factory.
             LavaService.RegisterEngine( ( engineServiceType, options ) =>
             {
-                var fluidEngine = new FluidEngine();
-
-                InitializeLavaEngineInstance( fluidEngine, options as LavaEngineConfigurationOptions );
-
-                return fluidEngine;
+                return RockApp.Current.GetRequiredService<ILavaEngineFactory>().CreateEngine( options as LavaEngineConfigurationOptions );
             } );
         }
 
@@ -1262,187 +1250,22 @@ WHERE [PQ].[row_number] = 1
         /// <summary>
         /// Initialize the global Lava Engine instance.
         /// </summary>
-        /// <param name="engineType"></param>
-        private static void InitializeGlobalLavaEngineInstance( Type engineType )
+        private static void InitializeGlobalLavaEngineInstance()
         {
             // Initialize the Lava engine.
             var options = GetDefaultEngineConfiguration();
 
-            LavaService.SetCurrentEngine( engineType, options );
+            LavaService.SetCurrentEngine( typeof( ILavaEngine ), options );
 
             // Subscribe to exception notifications from the Lava Engine.
             var engine = LavaService.GetCurrentEngine();
 
             engine.ExceptionEncountered += Engine_ExceptionEncountered;
-
-            InitializeLavaEngineInstance( engine, options );
-        }
-
-        /// <summary>
-        /// Initialize a specific Lava Engine instance.
-        /// </summary>
-        /// <param name="engine"></param>
-        /// <param name="options"></param>
-        private static void InitializeLavaEngineInstance( ILavaEngine engine, LavaEngineConfigurationOptions options )
-        {
-            options = options ?? GetDefaultEngineConfiguration();
-
-            InitializeLavaFilters( engine );
-            InitializeLavaTags( engine );
-            InitializeLavaBlocks( engine );
-
-            if ( options.InitializeDynamicShortcodes )
-            {
-                InitializeLavaShortcodes( engine );
-            }
-
-            InitializeLavaSafeTypes( engine );
-
-            engine.Initialize( options );
         }
 
         private static void Engine_ExceptionEncountered( object sender, LavaEngineExceptionEventArgs e )
         {
             ExceptionLogService.LogException( e.Exception, System.Web.HttpContext.Current );
-        }
-
-        private static void InitializeLavaFilters( ILavaEngine engine )
-        {
-            // Register the common Rock.Lava filters first, then overwrite with the engine-specific filters.
-            engine.RegisterFilters( typeof( Rock.Lava.Filters.TemplateFilters ) );
-            engine.RegisterFilters( typeof( Rock.Lava.LavaFilters ) );
-        }
-
-        private static void InitializeLavaShortcodes( ILavaEngine engine )
-        {
-            // Register shortcodes defined in the codebase.
-            try
-            {
-                var shortcodeTypes = Rock.Reflection.FindTypes( typeof( ILavaShortcode ) ).Select( a => a.Value ).ToList();
-
-                foreach ( var shortcodeType in shortcodeTypes )
-                {
-                    // Create an instance of the shortcode to get the registration name.
-                    var instance = Activator.CreateInstance( shortcodeType ) as ILavaShortcode;
-
-                    var name = instance.SourceElementName;
-
-                    if ( string.IsNullOrWhiteSpace( name ) )
-                    {
-                        name = shortcodeType.Name;
-                    }
-
-                    // Register the shortcode with a factory method to create a new instance of the shortcode from the System.Type defined in the codebase.
-                    engine.RegisterShortcode( name, ( shortcodeName ) =>
-                    {
-                        var shortcode = Activator.CreateInstance( shortcodeType ) as ILavaShortcode;
-
-                        return shortcode;
-                    } );
-                }
-            }
-            catch ( Exception ex )
-            {
-                ExceptionLogService.LogException( ex, null );
-            }
-
-            // Register shortcodes defined in the current database.
-            var shortCodes = LavaShortcodeCache.All();
-
-            foreach ( var shortcode in shortCodes )
-            {
-                // Register the shortcode with the current Lava Engine.
-                // The provider is responsible for retrieving the shortcode definition from the data store and managing the web-based shortcode cache.
-                WebsiteLavaShortcodeProvider.RegisterShortcode( engine, shortcode.TagName );
-            }
-        }
-
-        private static void InitializeLavaTags( ILavaEngine engine )
-        {
-            // Get all tags and call OnStartup methods
-            try
-            {
-                var elementTypes = Rock.Reflection.FindTypes( typeof( ILavaTag ) ).Select( a => a.Value ).ToList();
-
-                foreach ( var elementType in elementTypes )
-                {
-                    var instance = Activator.CreateInstance( elementType ) as ILavaTag;
-
-                    var name = instance.SourceElementName;
-
-                    if ( string.IsNullOrWhiteSpace( name ) )
-                    {
-                        name = elementType.Name;
-                    }
-
-                    engine.RegisterTag( name, ( tagName ) =>
-                    {
-                        var tag = Activator.CreateInstance( elementType ) as ILavaTag;
-                        return tag;
-                    } );
-
-                    try
-                    {
-                        instance.OnStartup( engine );
-                    }
-                    catch ( Exception ex )
-                    {
-                        var lavaException = new Exception( string.Format( "Lava component initialization failure. Startup failed for Lava Tag \"{0}\".", elementType.FullName ), ex );
-
-                        ExceptionLogService.LogException( lavaException, null );
-                    }
-                }
-            }
-            catch ( Exception ex )
-            {
-                ExceptionLogService.LogException( ex, null );
-            }
-        }
-
-        private static void InitializeLavaBlocks( ILavaEngine engine )
-        {
-            // Get all blocks and call OnStartup methods
-            try
-            {
-                var blockTypes = Rock.Reflection.FindTypes( typeof( ILavaBlock ) ).Select( a => a.Value ).ToList();
-
-                foreach ( var blockType in blockTypes )
-                {
-                    var blockInstance = Activator.CreateInstance( blockType ) as ILavaBlock;
-
-                    engine.RegisterBlock( blockInstance.SourceElementName, ( blockName ) =>
-                    {
-                        return Activator.CreateInstance( blockType ) as ILavaBlock;
-                    } );
-
-                    try
-                    {
-                        blockInstance.OnStartup( engine );
-                    }
-                    catch ( Exception ex )
-                    {
-                        ExceptionLogService.LogException( ex, null );
-                    }
-
-                }
-            }
-            catch ( Exception ex )
-            {
-                ExceptionLogService.LogException( ex, null );
-            }
-        }
-
-        /// <summary>
-        /// Initializes the lava safe types on the engine. This takes care
-        /// of special types that we don't have direct access to so we can't
-        /// add the proper interfaces to them.
-        /// </summary>
-        /// <param name="engine">The engine.</param>
-        private static void InitializeLavaSafeTypes( ILavaEngine engine )
-        {
-            engine.RegisterSafeType( typeof( Common.Mobile.DeviceData ) );
-            engine.RegisterSafeType( typeof( Utility.RockColor ) );
-            engine.RegisterSafeType( typeof( Utilities.ColorPair ) );
         }
 
         #endregion

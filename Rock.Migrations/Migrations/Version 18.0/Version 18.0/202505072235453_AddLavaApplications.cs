@@ -834,60 +834,73 @@ WHERE [Guid] = '8af769e9-972c-4f40-8344-89ff4b07fcbd'
 
         private void PluginCleanupUp()
         {
-            // Delete PluginMigration values.
-            Sql( "DELETE FROM [PluginMigration] WHERE [PluginAssemblyName] = 'tech.triumph.Lava.Helix'" );
+            /*
+             * Daniel Hazelbaker - 2025-10-24
+             * 
+             * This code has been commented out in version 19.0. Because Rock
+             * requires that all updates run in order, the 18.0 migrations
+             * (including this one) must have executed before we go past.
+             * 
+             * We have decided to comment this out now so there is no confusion
+             * later when it comes time to squash migrations. This code is no
+             * longer required. New installs don't need it, and existing
+             * installs will have already run it by the the squash happens.
+             */
 
-            // Delete the things that won't cause a restart first.
-            try
-            {
-                // Delete the ~/Plugin files.
-                var path = HostingEnvironment.MapPath( "~/Plugins/tech_triumph/LavaHelix" );
+            //// Delete PluginMigration values.
+            //Sql( "DELETE FROM [PluginMigration] WHERE [PluginAssemblyName] = 'tech.triumph.Lava.Helix'" );
 
-                if ( Directory.Exists( path ) )
-                {
-                    Directory.Delete( path, true );
-                }
+            //// Delete the things that won't cause a restart first.
+            //try
+            //{
+            //    // Delete the ~/Plugin files.
+            //    var path = HostingEnvironment.MapPath( "~/Plugins/tech_triumph/LavaHelix" );
 
-                // Remove the plugin from the installed plugins list.
-                var packageFile = HostingEnvironment.MapPath( "~/App_Data/InstalledStorePackages.json" );
+            //    if ( Directory.Exists( path ) )
+            //    {
+            //        Directory.Delete( path, true );
+            //    }
 
-                if ( File.Exists( packageFile ) )
-                {
-                    var json = File.ReadAllText( packageFile );
-                    var installedPackages = json.FromJsonOrNull<List<InstalledPackage>>();
+            //    // Remove the plugin from the installed plugins list.
+            //    var packageFile = HostingEnvironment.MapPath( "~/App_Data/InstalledStorePackages.json" );
 
-                    if ( installedPackages != null )
-                    {
-                        // PackageId 208 == Helix Plugin
-                        installedPackages = installedPackages.Where( p => p.PackageId != 209 ).ToList();
-                        File.WriteAllText( packageFile, installedPackages.ToJson() );
-                    }
-                }
-            }
-            catch ( Exception ex )
-            {
-                System.Diagnostics.Debug.WriteLine( $"Error during Helix cleanup: {ex.Message}" );
-            }
+            //    if ( File.Exists( packageFile ) )
+            //    {
+            //        var json = File.ReadAllText( packageFile );
+            //        var installedPackages = json.FromJsonOrNull<List<InstalledPackage>>();
 
-            // Delete old files from ~/Bin directory. tech.triumph.Lava.Helix.dll, tech.triumph.Lava.Helix.pdb
-            try
-            {
-                var path = HostingEnvironment.MapPath( "~/Bin/tech.triumph.Lava.Helix.dll" );
-                if ( File.Exists( path ) )
-                {
-                    File.Delete( path );
-                }
+            //        if ( installedPackages != null )
+            //        {
+            //            // PackageId 208 == Helix Plugin
+            //            installedPackages = installedPackages.Where( p => p.PackageId != 209 ).ToList();
+            //            File.WriteAllText( packageFile, installedPackages.ToJson() );
+            //        }
+            //    }
+            //}
+            //catch ( Exception ex )
+            //{
+            //    System.Diagnostics.Debug.WriteLine( $"Error during Helix cleanup: {ex.Message}" );
+            //}
 
-                path = HostingEnvironment.MapPath( "~/Bin/tech.triumph.Lava.Helix.pdb" );
-                if ( File.Exists( path ) )
-                {
-                    File.Delete( path );
-                }
-            }
-            catch ( Exception ex )
-            {
-                System.Diagnostics.Debug.WriteLine( $"Error during Helix cleanup: {ex.Message}" );
-            }
+            //// Delete old files from ~/Bin directory. tech.triumph.Lava.Helix.dll, tech.triumph.Lava.Helix.pdb
+            //try
+            //{
+            //    var path = HostingEnvironment.MapPath( "~/Bin/tech.triumph.Lava.Helix.dll" );
+            //    if ( File.Exists( path ) )
+            //    {
+            //        File.Delete( path );
+            //    }
+
+            //    path = HostingEnvironment.MapPath( "~/Bin/tech.triumph.Lava.Helix.pdb" );
+            //    if ( File.Exists( path ) )
+            //    {
+            //        File.Delete( path );
+            //    }
+            //}
+            //catch ( Exception ex )
+            //{
+            //    System.Diagnostics.Debug.WriteLine( $"Error during Helix cleanup: {ex.Message}" );
+            //}
         }
 
         private void PluginCleanupDown()
