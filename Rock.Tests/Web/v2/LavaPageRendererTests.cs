@@ -25,7 +25,7 @@ using Rock.Web.v2;
 namespace Rock.Tests.Web.v2
 {
     [TestClass]
-    public class LavaLayoutPageTests
+    public class LavaPageRendererTests
     {
         [TestMethod]
         public async Task AddCssLinkFilter_AddsLinkTag()
