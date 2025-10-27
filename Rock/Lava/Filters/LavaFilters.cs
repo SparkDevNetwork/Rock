@@ -58,6 +58,7 @@ using Rock.Security;
 using Rock.Tasks;
 using Rock.Utilities;
 using Rock.Utility;
+using Rock.Utility.ExtensionMethods;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -3351,12 +3352,16 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string AddScriptLink( ILavaRenderContext context, string input, bool fingerprintLink = false )
         {
-            var page = HttpContext.Current?.Handler as RockPage;
-
-            if ( page != null )
+            if ( HttpContext.Current?.Handler is RockPage page )
             {
                 RockPage.AddScriptLink( page, ResolveRockUrl( context, input ), fingerprintLink );
+
+                return string.Empty;
             }
+
+            var requestContext = context.GetRockRequestContext();
+
+            requestContext?.Response.AddScriptLinkToHead( ResolveRockUrl( context, input ), fingerprintLink );
 
             return string.Empty;
         }
@@ -3370,12 +3375,16 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string AddCssLink( ILavaRenderContext context, string input, bool fingerprintLink = false )
         {
-            var page = HttpContext.Current?.Handler as RockPage;
-
-            if ( page != null )
+            if ( HttpContext.Current?.Handler is RockPage page )
             {
                 RockPage.AddCSSLink( page, ResolveRockUrl( context, input ), fingerprintLink );
+
+                return string.Empty;
             }
+
+            var requestContext = context.GetRockRequestContext();
+
+            requestContext?.Response.AddCssLink( ResolveRockUrl( context, input ), fingerprintLink );
 
             return string.Empty;
         }

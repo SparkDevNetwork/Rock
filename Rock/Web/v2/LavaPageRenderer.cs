@@ -31,6 +31,7 @@ using AngleSharp.Text;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Rock;
 using Rock.Blocks;
 using Rock.Configuration;
 using Rock.Data;
@@ -42,7 +43,7 @@ using Rock.Utility.ExtensionMethods;
 using Rock.ViewModels.Crm;
 using Rock.Web.Cache;
 
-namespace Rock.Web
+namespace Rock.Web.v2
 {
     internal class LavaPageRenderer
     {
@@ -99,12 +100,12 @@ namespace Rock.Web
 
             InjectObsidian( document );
 
-            if ( _rockRequestContext.Response is HttpResponseBaseWrapper responseWrapper )
+            if ( _rockRequestContext.Response is RockResponseBase responseBase )
             {
                 var headElement = document.QuerySelector( "head" );
                 var bodyElement = document.QuerySelector( "body" );
 
-                foreach ( var responseElement in responseWrapper.GetHtmlElements() )
+                foreach ( var responseElement in responseBase.GetHtmlElements() )
                 {
                     var element = document.CreateElement( responseElement.Name );
 

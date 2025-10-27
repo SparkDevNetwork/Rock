@@ -34,6 +34,7 @@ using Rock.Tasks;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.v2;
 
 namespace Rock.Web
 {
@@ -354,14 +355,14 @@ namespace Rock.Web
                     if ( requestContext.HttpContext.Request.QueryString["engine"] == "lava" )
                     {
                         var requestWrapper = new HttpRequestBaseWrapper( requestContext.HttpContext.Request );
-                        var responseWrapper = new HttpResponseBaseWrapper( requestContext.HttpContext.Response );
+                        var responseWrapper = new RockResponseBase();
                         var user = UserLoginService.GetCurrentUser( false );
                         var rockRequestContext = new RockRequestContext( requestWrapper, responseWrapper, user );
                         var filePath = requestContext.HttpContext.Server.MapPath( layoutPath ).Replace( ".aspx", ".lava" );
 
                         rockRequestContext.PrepareRequestForPage( page );
 
-                        return new LavaPage( filePath, rockRequestContext );
+                        return new LavaPageHandler( filePath, rockRequestContext );
                     }
 
                     return CreateRockPage( page, layoutPath, routeId, parms, routeHttpRequest );

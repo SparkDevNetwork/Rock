@@ -25,16 +25,16 @@ using Rock.Configuration;
 using Rock.Lava;
 using Rock.Net;
 
-namespace Rock.Web
+namespace Rock.Web.v2
 {
     [ExcludeFromCodeCoverage]
-    internal class LavaPage : HttpTaskAsyncHandler
+    internal class LavaPageHandler : HttpTaskAsyncHandler
     {
         private readonly RockRequestContext _rockRequestContext;
 
         private readonly LavaPageRenderer _renderer;
 
-        public LavaPage( string filename, RockRequestContext rockRequestContext )
+        public LavaPageHandler( string filename, RockRequestContext rockRequestContext )
         {
             _renderer = new LavaPageRenderer( File.ReadAllText( filename ), LavaService.GetCurrentEngine(), rockRequestContext );
             _rockRequestContext = rockRequestContext;

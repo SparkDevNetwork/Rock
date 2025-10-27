@@ -258,6 +258,15 @@ namespace Rock.Net
         /// Initializes an empty instance of the <see cref="RockRequestContext"/> class.
         /// </summary>
         internal RockRequestContext()
+            : this( new NullRockResponseContext() )
+        {
+        }
+
+        /// <summary>
+        /// Initializes an empty instance of the <see cref="RockRequestContext"/> class.
+        /// </summary>
+        /// <param name="response">The response object to use for this request.</param>
+        internal RockRequestContext( IRockResponseContext response )
         {
             PageParameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
             SiteContextEntities = new Dictionary<Type, Lazy<IEntity>>();
@@ -269,7 +278,7 @@ namespace Rock.Net
             RootUrlPath = string.Empty;
             HttpMethod = null;
             Form = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
-            Response = new NullRockResponseContext();
+            Response = response;
         }
 
         /// <summary>

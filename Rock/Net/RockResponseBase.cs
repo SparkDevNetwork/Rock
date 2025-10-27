@@ -18,20 +18,20 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Web;
 
+using Rock;
 using Rock.Enums.Net;
-using Rock.Net;
+using Rock.Web;
 
-namespace Rock.Web
+namespace Rock.Net
 {
-    class HttpResponseBaseWrapper : IRockResponseContext
+    internal class RockResponseBase : IRockResponseContext
     {
         private readonly ConcurrentDictionary<string, ResponseHtmlElement> _htmlElements = new ConcurrentDictionary<string, ResponseHtmlElement>();
 
         private int _elementOrder = 0;
 
-        public HttpResponseBaseWrapper( HttpResponseBase response )
+        public RockResponseBase()
         {
         }
 
@@ -109,14 +109,5 @@ namespace Rock.Web
         }
 
         #endregion
-
-        public class ResponseHtmlElement
-        {
-            public int Order { get; set; }
-            public string Name { get; set; }
-            public string Content { get; set; }
-            public Dictionary<string, string> Attributes { get; set; }
-            public ResponseElementLocation Location { get; set; }
-        }
     }
 }

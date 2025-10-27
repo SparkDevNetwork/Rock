@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using AngleSharp.Html.Parser;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
@@ -13,32 +15,83 @@ using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Net;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
-using Rock.Web;
+using Rock.Web.v2;
 using Rock.Web.Cache;
+using Rock.Web;
 
-namespace Rock.Tests.Web
+namespace Rock.Tests.Web.v2
 {
     [TestClass]
     public class LavaLayoutPageTests
     {
         [TestMethod]
-        public async Task SimpleTest()
+        public async Task BasicLavaFilters_AreAvailable()
         {
             using ( TestHelper.CreateScopedRockApp( ConfigureLava ) )
             {
                 var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
                 var engine = factory.CreateEngine( new LavaEngineConfigurationOptions {  InitializeDynamicShortcodes = false } );
-                var requestContext = new Net.RockRequestContext();
+                var requestContext = new Net.RockRequestContext( new RockResponseBase() );
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
-                var renderer = new LavaPageRenderer( "{{ 1 | Plus:2 }}", engine, requestContext );
-
+                var renderer = new LavaPageRenderer( "<span id=\"test-marker\">{{ 1 | Plus:2 }}</span>", engine, requestContext );
 
                 var output = await renderer.RenderAsync();
 
-                Assert.AreEqual( "<html><head></head><body class=\"obsidian-loading\">3</body></html>", output );
+                Assert.Contains( "<span id=\"test-marker\">3</span>", output );
+            }
+        }
+
+        [TestMethod]
+        public async Task AddCssLinkFilter_AddsLinkTag()
+        {
+            using ( TestHelper.CreateScopedRockApp( ConfigureLava ) )
+            {
+                var expectedUrl = "https://localhost/testmarker.min.css";
+
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var requestContext = new Net.RockRequestContext( new RockResponseBase() );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( $"{{{{ '{expectedUrl}' | AddCssLink }}}}", engine, requestContext );
+
+                var output = await renderer.RenderAsync();
+
+                var link = new HtmlParser()
+                    .ParseDocument( output )
+                    .QuerySelectorAll( "link" )
+                    .SingleOrDefault( l => l.GetAttribute( "href" ) == expectedUrl );
+
+                Assert.IsNotNull( link, "Link tag not found." );
+            }
+        }
+
+        [TestMethod]
+        public async Task AddScriptLinkFilter_AddsScriptTag()
+        {
+            using ( TestHelper.CreateScopedRockApp( ConfigureLava ) )
+            {
+                var expectedUrl = "https://localhost/testmarker.min.js";
+
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var requestContext = new Net.RockRequestContext( new RockResponseBase() );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( $"{{{{ '{expectedUrl}' | AddScriptLink }}}}", engine, requestContext );
+
+                var output = await renderer.RenderAsync();
+
+                var link = new HtmlParser()
+                    .ParseDocument( output )
+                    .QuerySelectorAll( "script" )
+                    .SingleOrDefault( l => l.GetAttribute( "src" ) == expectedUrl );
+
+                Assert.IsNotNull( link, "Link tag not found." );
             }
         }
 
