@@ -18,6 +18,8 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Text.Encodings.Web;
+using System.Threading.Tasks;
+
 using Fluid.Values;
 
 namespace Rock.Lava.Fluid
@@ -81,11 +83,13 @@ namespace Rock.Lava.Fluid
             return Enum.GetName( _enum.GetType(), _enum );
         }
 
-        public override void WriteTo( TextWriter writer, TextEncoder encoder, CultureInfo cultureInfo )
+        public override ValueTask WriteToAsync( TextWriter writer, TextEncoder encoder, CultureInfo cultureInfo )
         {
             AssertWriteToParameters( writer, encoder, cultureInfo );
 
             writer.Write( _enum.ToString() );
+
+            return default;
         }
 
         public override object ToObjectValue()
