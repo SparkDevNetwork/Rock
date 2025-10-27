@@ -129,7 +129,7 @@ namespace Rock.Web.v2
                 }
             }
 
-            return document.ToHtml( new ZoneHtmlFormatter() );
+            return document.ToHtml( new LavaPageHtmlFormatter() );
         }
 
         private async Task RenderBlocksAsync( IHtmlDocument document, IHtmlCollection<IElement> zones )
