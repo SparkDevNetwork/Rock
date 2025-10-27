@@ -73,7 +73,7 @@
                         <FontPropertyGroup :element="document.body"
                                            :styleSheetMode="{
                                                styleCssClass: RockStylesCssClass,
-                                               rulesetCssSelector: GlobalStylesCssSelectors.globalTextStyling
+                                               rulesetCssSelector: `.${GlobalCssClasses.fontGlobal}`
                                            }" />
                     </Accordion>
 
@@ -82,27 +82,27 @@
                         <FontPropertyGroup :element="document.body"
                                            :styleSheetMode="{
                                                styleCssClass: RockStylesCssClass,
-                                               rulesetCssSelector: GlobalStylesCssSelectors.heading1TextStyling
+                                               rulesetCssSelector: `.${GlobalCssClasses.fontHeading1}`
                                            }" />
 
                         <PaddingProperty label="Margin"
                                          :element="document.body"
                                          :styleSheetMode="{
                                              styleCssClass: RockStylesCssClass,
-                                             rulesetCssSelector: GlobalStylesCssSelectors.heading1Margin
+                                             rulesetCssSelector: `.${GlobalCssClasses.marginHeading1}`
                                          }" />
 
                         <PaddingProperty label="Padding"
                                          :element="document.body"
                                          :styleSheetMode="{
                                              styleCssClass: RockStylesCssClass,
-                                             rulesetCssSelector: GlobalStylesCssSelectors.heading1Padding
+                                             rulesetCssSelector: `.${GlobalCssClasses.paddingHeading1}`
                                          }" />
 
                         <BorderPropertyGroup :element="document.body"
                                              :styleSheetMode="{
                                                  styleCssClass: RockStylesCssClass,
-                                                 rulesetCssSelector: GlobalStylesCssSelectors.heading1BorderStyling
+                                                 rulesetCssSelector: `.${GlobalCssClasses.borderHeading1}`
                                              }" />
                     </Accordion>
 
@@ -111,27 +111,27 @@
                         <FontPropertyGroup :element="document.body"
                                            :styleSheetMode="{
                                                styleCssClass: RockStylesCssClass,
-                                               rulesetCssSelector: GlobalStylesCssSelectors.heading2TextStyling
+                                               rulesetCssSelector: `.${GlobalCssClasses.fontHeading2}`
                                            }" />
 
                         <PaddingProperty label="Margin"
                                          :element="document.body"
                                          :styleSheetMode="{
                                              styleCssClass: RockStylesCssClass,
-                                             rulesetCssSelector: GlobalStylesCssSelectors.heading2Margin
+                                             rulesetCssSelector: `.${GlobalCssClasses.marginHeading2}`
                                          }" />
 
                         <PaddingProperty label="Padding"
                                          :element="document.body"
                                          :styleSheetMode="{
                                              styleCssClass: RockStylesCssClass,
-                                             rulesetCssSelector: GlobalStylesCssSelectors.heading2Padding
+                                             rulesetCssSelector: `.${GlobalCssClasses.paddingHeading2}`
                                          }" />
 
                         <BorderPropertyGroup :element="document.body"
                                              :styleSheetMode="{
                                                  styleCssClass: RockStylesCssClass,
-                                                 rulesetCssSelector: GlobalStylesCssSelectors.heading2BorderStyling
+                                                 rulesetCssSelector: `.${GlobalCssClasses.borderHeading2}`
                                              }" />
                     </Accordion>
 
@@ -140,27 +140,27 @@
                         <FontPropertyGroup :element="document.body"
                                            :styleSheetMode="{
                                                styleCssClass: RockStylesCssClass,
-                                               rulesetCssSelector: GlobalStylesCssSelectors.heading3TextStyling
+                                               rulesetCssSelector: `.${GlobalCssClasses.fontHeading3}`
                                            }" />
 
                         <PaddingProperty label="Margin"
                                          :element="document.body"
                                          :styleSheetMode="{
                                              styleCssClass: RockStylesCssClass,
-                                             rulesetCssSelector: GlobalStylesCssSelectors.heading3Margin
+                                             rulesetCssSelector: `.${GlobalCssClasses.marginHeading3}`
                                          }" />
 
                         <PaddingProperty label="Padding"
                                          :element="document.body"
                                          :styleSheetMode="{
                                              styleCssClass: RockStylesCssClass,
-                                             rulesetCssSelector: GlobalStylesCssSelectors.heading3Padding
+                                             rulesetCssSelector: `.${GlobalCssClasses.paddingHeading3}`
                                          }" />
 
                         <BorderPropertyGroup :element="document.body"
                                              :styleSheetMode="{
                                                  styleCssClass: RockStylesCssClass,
-                                                 rulesetCssSelector: GlobalStylesCssSelectors.heading3BorderStyling
+                                                 rulesetCssSelector: `.${GlobalCssClasses.borderHeading3}`
                                              }" />
                     </Accordion>
 
@@ -169,17 +169,14 @@
                         <FontPropertyGroup :element="document.body"
                                            :styleSheetMode="{
                                                styleCssClass: RockStylesCssClass,
-                                               rulesetCssSelector: GlobalStylesCssSelectors.paragraphTextStyling
-                                           }"
-                                           :visibilityOptions="{
-                                               isJustifyTextHidden: true
+                                               rulesetCssSelector: `.${GlobalCssClasses.fontParagraph}`
                                            }" />
 
                         <PaddingProperty label="Margin"
                                          :element="document.body"
                                          :styleSheetMode="{
                                              styleCssClass: RockStylesCssClass,
-                                             rulesetCssSelector: GlobalStylesCssSelectors.paragraphMargin
+                                             rulesetCssSelector: `.${GlobalCssClasses.marginParagraph}`
                                          }" />
                     </Accordion>
                 </AccordionGroup>
@@ -313,6 +310,7 @@
     } from "../providers.partial";
     import {
         EmailWrapperCssClass,
+        GlobalCssClasses,
         GlobalStylesCssSelectors,
         RockStylesCssClass
     } from "../utils.partial";

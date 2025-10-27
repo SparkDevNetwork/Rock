@@ -97,6 +97,15 @@ export default defineComponent({
         columnType: {
             type: String as PropType<string>,
             default: "dateTime"
-        }
+        },
+
+        /**
+         * Normally the column will does not display the seconds (ss).
+         * If this is set to `true` then it will show the seconds as well.
+         */
+        showSeconds: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
     }
 });

@@ -303,6 +303,8 @@ namespace Rock.Jobs
                         ( int ) CommunicationType.Email,
                         ( int ) CommunicationType.SMS,
                         ( int ) CommunicationType.PushNotification,
+                        systemCommunication,
+                        person,
                         jobCommunicationPreference,
                         recipient.GroupMember.CommunicationPreference,
                         recipient.Person.CommunicationPreference );

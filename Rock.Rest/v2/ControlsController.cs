@@ -2622,11 +2622,21 @@ namespace Rock.Rest.v2
 
                 var accountsList = accountsQry.AsNoTracking().ToList();
 
-                string accountHeaderTemplate = options.AccountHeaderTemplate;
-                if ( accountHeaderTemplate.IsNullOrWhiteSpace() )
-                {
-                    accountHeaderTemplate = "{{ Account.PublicName }}";
-                }
+                /*
+                    9/29/2025 - N.A.
+
+                    Do not remove these commented lines. They are intentionally left for context and future use.
+                    Additional background can be found in the linked task.
+                    https://app.asana.com/1/20866866924293/project/1161428632613857/task/1211497216322166?focus=true
+
+                    Reason: Preserved for reference per team decision. See Asana task for details.
+                */
+                //string accountHeaderTemplate = options.AccountHeaderTemplate;
+                //if ( accountHeaderTemplate.IsNullOrWhiteSpace() )
+                //{
+                //    accountHeaderTemplate = "{{ Account.PublicName }}";
+                //}
+                string accountHeaderTemplate = "{{ Account.PublicName }}";
 
                 if ( options.OrderBySelectableAccountsIndex )
                 {

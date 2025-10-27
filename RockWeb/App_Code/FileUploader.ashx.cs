@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Security.Principal;
@@ -59,6 +58,7 @@ namespace RockWeb
             public const string IsTemporary = "IsTemporary";
             public const string ParentEntityTypeId = "ParentEntityTypeId";
             public const string ParentEntityId = "ParentEntityId";
+            public const string SecurityGrantToken = "SecurityGrantToken";
         }
 
         #endregion Constants
@@ -314,12 +314,14 @@ namespace RockWeb
             RockContext rockContext = new RockContext();
             BinaryFileType binaryFileType = new BinaryFileTypeService( rockContext ).Get( fileTypeGuid );
 
+            var grant = SecurityGrant.FromToken( context.Request.QueryString[ParameterKey.SecurityGrantToken] );
+
             if ( binaryFileType == null )
             {
                 throw new Rock.Web.FileUploadException( "Binary file type must be specified.", System.Net.HttpStatusCode.Forbidden );
             }
 
-            if ( !binaryFileType.AllowAnonymous && !binaryFileType.IsAuthorized( Authorization.EDIT, currentPerson ) )
+            if ( !binaryFileType.AllowAnonymous && !binaryFileType.IsAuthorized( Authorization.EDIT, currentPerson ) && grant?.IsAccessGranted( binaryFileType, Authorization.EDIT ) == false )
             {
                 throw new Rock.Web.FileUploadException( "Not authorized to upload this type of file.", System.Net.HttpStatusCode.Forbidden );
             }
@@ -348,8 +350,8 @@ namespace RockWeb
                         if ( binaryFileType.MaxHeight.HasValue && binaryFileType.MaxHeight > 0 && image.Height > binaryFileType.MaxHeight.Value )
                         {
                             throw new Rock.Web.FileUploadException(
-                               $"The maximum height for file type \"{binaryFileType.Name}\" is {binaryFileType.MaxHeight.Value} pixels", System.Net.HttpStatusCode.Forbidden
-                               );
+                                $"The maximum height for file type \"{binaryFileType.Name}\" is {binaryFileType.MaxHeight.Value} pixels", System.Net.HttpStatusCode.Forbidden
+                                );
                         }
                     }
                 }
@@ -487,7 +489,7 @@ namespace RockWeb
             scrubbedFileName = Regex.Replace( scrubbedFileName, "[" + Regex.Escape( string.Concat( Path.GetInvalidFileNameChars() ) ) + "]", string.Empty, RegexOptions.CultureInvariant );
 
             /*
-	            3/17/2020 - JME 
+	            3/17/2020 - JME
 	            And remove spaces, I did not add the removal of spaces to the scrub as the scrub logic
                 has existed for a while and is used in other places that may not want that. We can move
                 this to the scrub should we desire in the future.

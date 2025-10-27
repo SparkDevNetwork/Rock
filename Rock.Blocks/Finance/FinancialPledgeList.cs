@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.FinancialPledgeList;
 using Rock.Web.Cache;
@@ -78,7 +79,7 @@ namespace Rock.Blocks.Finance
 
     [BooleanField( "Show Account Summary",
         Key = AttributeKey.ShowAccountSummary,
-        Description = "Should the account summary be displayed at the bottom of the list?",
+        Description = "When enabled, the account summary be displayed at the bottom of the list. NOTE: The summary will not display if 'Hide Amount' is enabled.",
         DefaultBooleanValue = true,
         Order = 5 )]
 
@@ -171,6 +172,8 @@ namespace Rock.Blocks.Finance
         /// <returns>The options that provide additional details to the block.</returns>
         private FinancialPledgeListOptionsBag GetBoxOptions()
         {
+            var currencyInfo = new RockCurrencyCodeInfo();
+
             var options = new FinancialPledgeListOptionsBag()
             {
                 ShowAccountColumn = GetAttributeValue( AttributeKey.ShowAccountColumn ).AsBoolean(),
@@ -178,8 +181,15 @@ namespace Rock.Blocks.Finance
                 ShowGroupColumn = GetAttributeValue( AttributeKey.ShowGroupColumn ).AsBoolean(),
                 LimitPledgesToCurrentPerson = GetAttributeValue( AttributeKey.LimitPledgesToCurrentPerson ).AsBoolean(),
                 ShowAccountSummary = GetAttributeValue( AttributeKey.ShowAccountSummary ).AsBoolean(),
-                HideAmount = GetAttributeValue( AttributeKey.HideAmount ).AsBoolean()
+                HideAmount = GetAttributeValue( AttributeKey.HideAmount ).AsBoolean(),
+                CurrencyInfo = new ViewModels.Utility.CurrencyInfoBag
+                {
+                    Symbol = currencyInfo.Symbol,
+                    DecimalPlaces = currencyInfo.DecimalPlaces,
+                    SymbolLocation = currencyInfo.SymbolLocation
+                }
             };
+
             return options;
         }
 
@@ -208,7 +218,7 @@ namespace Rock.Blocks.Finance
         protected override IQueryable<FinancialPledge> GetListQueryable( RockContext rockContext )
         {
             var query = base.GetListQueryable( rockContext )
-                .Include( a => a.PersonAlias )
+                .Include( a => a.PersonAlias.Person )
                 .Include( a => a.Account )
                 .Include( a => a.PledgeFrequencyValue )
                 .Include( a => a.Group );

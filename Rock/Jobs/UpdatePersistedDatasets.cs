@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 
+using Rock.Constants;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -52,51 +53,99 @@ namespace Rock.Jobs
         public override void Execute()
         {
             var warnings = new List<string>();
-            List<PersistedDataset> datasetsToBeUpdated;
             int updatedDatasetCount = 0;
 
-            using ( var rockContext = new RockContext() )
-            {
-                var currentDateTime = RockDateTime.Now;
+            var currentDateTime = RockDateTime.Now;
 
-                // Fetch datasets that are active, not expired, and include their associated schedules
-                var persistedDatasetQuery = new PersistedDatasetService( rockContext )
-                    .Queryable( "PersistedSchedule" )
-                    .Where( a => a.IsActive &&
-                          ( a.ExpireDateTime == null || a.ExpireDateTime > currentDateTime ) &&
-                          ( !a.RefreshIntervalMinutes.HasValue || a.LastRefreshDateTime == null || DbFunctions.AddMinutes( a.LastRefreshDateTime.Value, a.RefreshIntervalMinutes.Value ) < currentDateTime ) );
+            /*
+                 7/23/2025 - NA
 
-                datasetsToBeUpdated = persistedDatasetQuery.ToList()
-                    .Where( dataset =>
+                 Avoid loading all PersistedDatasets into memory, as some organizations store ResultData
+                 exceeding 100 MB. Instead, we first query only for datasets that are active, not expired,
+                 and have either a refresh interval or a schedule.  Full dataset objects are loaded later
+                 only if they require an update.
+
+                 Reason: Prevent excessive memory usage by deferring loading of large dataset objects.
+            */
+            var persistedDatasetQuery = new PersistedDatasetService( new RockContext() )
+                .Queryable()
+                .AsNoTracking()
+                .Where(
+                    a => a.IsActive &&
+                    ( a.ExpireDateTime == null || a.ExpireDateTime > currentDateTime ) &&
+                    (
+                        // Either the refresh interval is valid and elapsed
+                        ( a.RefreshIntervalMinutes.HasValue &&
+                            ( a.LastRefreshDateTime == null ||
+                            DbFunctions.AddMinutes( a.LastRefreshDateTime.Value, a.RefreshIntervalMinutes.Value ) < currentDateTime ) )
+                        ||
+                        // Or it has a schedule
+                        a.PersistedScheduleId != null
+                    )
+                )
+                .Select( a => new
+                {
+                    a.Name, // useful when debugging
+                    a.Id,
+                    a.LastRefreshDateTime,
+                    a.RefreshIntervalMinutes,
+                    a.PersistedScheduleId,
+                } )
+                .ToList();
+
+            // Now, we can check the schedule (for those that are Schedule based)...
+            var datasetsToBeUpdated = persistedDatasetQuery
+                .Where( dataset =>
+                {
+                    // Apply schedule-based logic only if the dataset is associated with a schedule
+                    if ( dataset.PersistedScheduleId.HasValue )
                     {
-                        // Apply schedule-based logic only if the dataset is associated with a schedule
-                        if ( dataset.PersistedScheduleId.HasValue )
+                        var schedule = new ScheduleService( new RockContext() ).Get( dataset.PersistedScheduleId.Value );
+                        var beginDateTime = dataset.LastRefreshDateTime ?? schedule.GetFirstStartDateTime();
+                        if ( !beginDateTime.HasValue )
                         {
-                            var schedule = new ScheduleService( rockContext ).Get( dataset.PersistedScheduleId.Value );
-                            var beginDateTime = dataset.LastRefreshDateTime ?? schedule.GetFirstStartDateTime();
-                            if ( !beginDateTime.HasValue )
-                            {
-                                return false;
-                            }
-
-                            var nextStartDateTimes = schedule.GetScheduledStartTimes( beginDateTime.Value, currentDateTime );
-                            return nextStartDateTimes.Any() && nextStartDateTimes.First() <= currentDateTime;
+                            return false;
                         }
 
-                        // If not associated with a schedule, it's already included in the initial query
-                        return true;
-                    } )
-                    .ToList();
+                        var nextStartDateTimes = schedule.GetScheduledStartTimes( beginDateTime.Value, currentDateTime );
+                        return nextStartDateTimes.Any() && nextStartDateTimes.First() <= currentDateTime;
+                    }
 
-                foreach ( var persistedDataset in datasetsToBeUpdated )
+                    // If not associated with a schedule, it must have a refresh interval that has elapsed
+                    return true;
+                } )
+                .ToList();
+
+            foreach ( var untrackedPersistedDataset in datasetsToBeUpdated )
+            {
+                using ( var rockContext = new RockContext() )
                 {
-                    var name = persistedDataset.Name;
+                    // Get the full persisted dataset object to update
+                    var persistedDatasetService = new PersistedDatasetService( rockContext );
+                    var persistedDatasetToUpdate = persistedDatasetService.Get( untrackedPersistedDataset.Id );
+
+                    // Would only happen if it was JUST deleted in another thread.
+                    if ( persistedDatasetToUpdate == null )
+                    {
+                        continue;
+                    }
+
+                    var name = persistedDatasetToUpdate.Name;
                     this.UpdateLastStatusMessage( FormatStatusMessage( "Updating...", name, "info" ) );
                     try
                     {
-                        persistedDataset.UpdateResultData();
-                        this.UpdateLastStatusMessage( FormatStatusMessage( "Update", name, "success" ) );
-                        updatedDatasetCount++;
+                        var updateResult = persistedDatasetToUpdate.UpdateResultData();
+                        if ( updateResult.IsSuccess )
+                        {
+                            this.UpdateLastStatusMessage( FormatStatusMessage( "Update", name, "success" ) );
+                            updatedDatasetCount++;
+                            rockContext.SaveChanges();
+                        }
+                        else
+                        {
+                            warnings.Add( $"{name} ({persistedDatasetToUpdate.Id})" );
+                            this.UpdateLastStatusMessage( FormatStatusMessage( "Warning", name, "warning" ) );
+                        }
                     }
                     catch ( Exception ex )
                     {
@@ -105,19 +154,16 @@ namespace Rock.Jobs
                         ExceptionLogService.LogException( ex, null );
                         this.UpdateLastStatusMessage( FormatStatusMessage( "Warning", name, "warning" ) );
                     }
-                    finally
-                    {
-                        rockContext.SaveChanges();
-                    }
                 }
             }
 
             var resultMessage = new StringBuilder();
-            resultMessage.AppendLine( $"<i class='fa fa-circle text-success'></i> Updated {updatedDatasetCount} dataset{( updatedDatasetCount == 1 ? "" : "s" )}" );
+            resultMessage.AppendLine( $"<i class='fa fa-circle text-success'></i> {updatedDatasetCount} Updated" );
 
             // If there are warnings, concatenate them into the final result.
             if ( warnings.Any() )
             {
+                resultMessage.AppendLine( $"<i class='fa fa-circle text-warning'></i> {warnings.Count} Warning{( warnings.Count == 1 ? "" : "s" )}. Run manually or see exception log for details." );
                 resultMessage.AppendLine(string.Join( "<br>", warnings ));
             }
             this.Result = resultMessage.ToString();

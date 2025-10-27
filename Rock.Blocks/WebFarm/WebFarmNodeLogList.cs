@@ -125,7 +125,12 @@ namespace Rock.Blocks.WebFarm
                 query = query.Where( l => l.EventDateTime < dateRange.End.Value );
             }
 
-            return query.OrderByDescending( l => l.EventDateTime );
+            return query;
+        }
+
+        protected override IQueryable<WebFarmNodeLog> GetOrderedListQueryable( IQueryable<WebFarmNodeLog> queryable, RockContext rockContext )
+        {
+            return queryable.OrderByDescending( l => l.EventDateTime );
         }
 
         /// <inheritdoc/>

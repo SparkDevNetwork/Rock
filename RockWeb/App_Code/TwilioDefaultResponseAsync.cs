@@ -207,7 +207,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
                 }
                 else
                 {
-                    Rock.Model.ExceptionLogService.LogException( "No recipient was found with the specified MessageSid value!" );
+                    _logger.LogInformation( $"No recipient was found in Rock with UniqueMessageId matching the specified MessageSid from Twilio: {messageSid}" );
                 }
             }
         }

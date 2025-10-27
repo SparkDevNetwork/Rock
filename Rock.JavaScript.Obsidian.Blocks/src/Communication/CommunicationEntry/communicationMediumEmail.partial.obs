@@ -191,6 +191,8 @@
                         :enableAssetManager="config.enableAssetManager"
                         :help="`${config.isLavaEnabled ? '<span class=\'tip tip-lava\'></span> ' : ''}<span class='tip tip-html'>`"
                         label="Message"
+                        :encryptedDocumentRootFolder="mediumOptions.encryptedDocumentFolderRoot ?? undefined"
+                        :encryptedImageRootFolder="mediumOptions.encryptedImageFolderRoot ?? undefined"
                         :mergeFields="messageMergeFields" />
 
             <div class="actions">

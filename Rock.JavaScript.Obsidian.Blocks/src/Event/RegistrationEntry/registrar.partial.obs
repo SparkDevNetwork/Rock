@@ -20,7 +20,11 @@
         <template v-else>
             <div class="row">
                 <div class="col-md-6 col-sm-6">
-                    <TextBox label="First Name" rules="required" :modelValue="registrar.nickName ?? ''" @update:modelValue="registrar.nickName = $event" tabIndex="1" />
+                    <FirstNameTextBox label="First Name"
+                                      :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']"
+                                      :modelValue="registrar.nickName ?? ''"
+                                      @update:baseModelValue="registrar.nickName = $event"
+                                      tabIndex="1" />
                 </div>
                 <div class="col-md-6 col-sm-6">
                     <TextBox label="Last Name" rules="required" :modelValue="registrar.lastName ?? ''" @update:modelValue="registrar.lastName = $event" tabIndex="2" />
@@ -53,6 +57,7 @@
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
     import { RegistrantsSameFamily } from "@Obsidian/Enums/Event/registrantsSameFamily";
     import { RegistrarOption } from "@Obsidian/Enums/Event/registrarOption";
     import { useStore } from "@Obsidian/PageState";

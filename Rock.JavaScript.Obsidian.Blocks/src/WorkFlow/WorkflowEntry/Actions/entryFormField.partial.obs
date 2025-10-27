@@ -11,7 +11,7 @@
                    isEditMode
                    @update:modelValue="onValueUpdated" />
         <div v-else class="form-group static-control">
-            <RockLabel v-if="field.attribute?.name"
+            <RockLabel v-if="field.attribute?.name && !field.isLabelHidden"
                        :help="field.attribute?.description ?? undefined">
                 {{ field.attribute?.name }}
             </RockLabel>

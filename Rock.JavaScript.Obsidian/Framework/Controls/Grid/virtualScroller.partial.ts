@@ -180,12 +180,6 @@ export default class VirtualScroller {
 
         this.options.uniqueIds = uniqueIds;
 
-        if (uniqueIds.length > this.options.visibleCount) {
-            // Increase the visible count to show more rows
-            // when the page size is increased.
-            this.options.visibleCount = uniqueIds.length;
-        }
-
         this.handleScroll(this.offset);
     }
 

@@ -1,0 +1,179 @@
+//
+// Structured Editor.
+// This contains styles for both the Structured Editor control itself as well
+// as any rendered to HTML content.
+//
+// --------------------------------------------------
+
+.structuredcontent-attachment {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-medium);
+  border: 1px solid var(--color-interface-soft);
+  border-radius: var(--rounded-medium);
+  background-color: var(--color-interface-softer);
+  margin-bottom: var(--spacing-small);
+}
+
+// EditorJS automatically adds its own margin to the block.
+.cdx-block .structuredcontent-attachment {
+    margin-bottom: 0;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileicon {
+  position: relative;
+  margin-right: var(--spacing-small);
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-background {
+  background-color: var(--color-interface-medium);
+  width: 30px;
+  height: 30px;
+  margin-right: 0;
+  border-radius: var(--rounded-xsmall);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-mask-box-image: none;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: inherit;
+  text-transform: uppercase;
+  line-height: 1em;
+  color: #fff;
+  padding: 0;
+  border-radius: var(--rounded-xsmall);
+  font-size: 10px;
+  font-weight: bold;
+  box-shadow: none;
+  font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="png"],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="jpg"],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="jpeg"],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="gif"],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="svg"],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="pdf"] {
+  background-color: #aa2284;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="doc"],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="docx"],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="ppt"],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="pptx"],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="xls"],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="xlsx"],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="rtf"],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="txt"] {
+  background-color: #1483e9;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="htm"],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="html"] {
+  background-color: #2988f0;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="mp3"],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="mp4"],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="m4v"] {
+  background-color: #f676a6;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="zip"],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="rar"] {
+  background-color: #4f566f;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="json"],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title="csv"] {
+  background-color: #11ae3d;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileinfo {
+  display: grid;
+  grid-gap: 0;
+  margin: auto 0;
+  flex-grow: 2;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileinfo-title {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  outline: none;
+  max-width: 90%;
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5em;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileinfo-title:empty::before {
+  content: 'File title';
+  color: var(--color-interface-medium);
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileinfo-size {
+  color: var(--color-interface-medium);
+  font-size: var(--font-size-xsmall);
+  line-height: 1em;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileinfo-size::after {
+  content: attr(data-size);
+  margin-left: 0.2em;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-download {
+  display: flex;
+  align-items: center;
+  background: initial;
+  padding: var(--spacing-tiny);
+  border-radius: var(--rounded-xsmall);
+  margin: auto 0 auto auto;
+  transition: background-color 0.3s;
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-download:hover {
+  background: var(--color-interface-soft);
+}
+
+// The button shown when no file has been selected.
+.structuredcontent-attachment .structuredcontent-attachment-upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-interface-strongest);
+  border-radius: var(--rouneded-small);
+  font-weight: var(--font-weight-medium);
+  margin: auto;
+
+  svg {
+    margin-top: 0;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+// Hide all the UI controls during uploading.
+.structuredcontent-attachment.structuredcontent-attachment-loading .structuredcontent-attachment-fileicon,
+.structuredcontent-attachment.structuredcontent-attachment-loading .structuredcontent-attachment-fileinfo,
+.structuredcontent-attachment.structuredcontent-attachment-loading .structuredcontent-attachment-download,
+.structuredcontent-attachment.structuredcontent-attachment-loading .structuredcontent-attachment-upload {
+  display: none;
+}

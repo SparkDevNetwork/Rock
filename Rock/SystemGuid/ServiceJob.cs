@@ -493,5 +493,15 @@ namespace Rock.SystemGuid
         /// The Job to run Post v17.1 Data Migrations to chop Block.
         /// </summary>
         public const string DATA_MIGRATIONS_171_CHOP_OBSIDIAN_BLOCKS = "C5AE8BF4-C83C-4695-9233-1B1D5D2801D7";
+
+        /// <summary>
+        /// The job to run Post v17.3 Data Migrations to remove a redundant index on the AttendanceOccurrence table.
+        /// </summary>
+        public const string DATA_MIGRATIONS_173_UPDATE_ATTENDANCEOCCURRENCE_INDEX = "FFF8E02C-9FAA-4E23-99EE-4B008549F088";
+
+        /// <summary>
+        /// The job to run Post v17.3 Data Migrations to update the Nameless Schedules.
+        /// </summary>
+        public const string DATA_MIGRATIONS_173_UPDATE_NAMELESS_SCHEDULES = "4C7CC0FC-12A7-4578-B9B1-FEF2732EB912";
     }
 }

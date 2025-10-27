@@ -246,6 +246,19 @@ namespace Rock.Blocks.Prayer
                     box.Entity.AllowComments = GetAttributeValue( AttributeKey.DefaultAllowCommentsChecked ).AsBooleanOrNull() ?? true;
                     box.Entity.IsPublic = GetAttributeValue( AttributeKey.DefaultToPublic ).AsBoolean();
 
+                    /*
+                        7/15/2025 - MSE
+
+                        We now set `IsUrgent` to false by default to prevent it from being null when saving a Prayer Request.
+                        This ensures consistent sorting in blocks and Lava when urgency is used as a sort field.
+
+                        We chose not to create a migration to update existing null values to false.
+
+                        Reason: Null `IsUrgent` values caused Prayer Requests to sort incorrectly.
+                        https://github.com/SparkDevNetwork/Rock/issues/6373
+                    */
+                    box.Entity.IsUrgent = false;
+
                     // Check for PersonId page 
                     var personId = RequestContext.PageParameterAsId( PageParameterKey.PersonId );
                     if ( personId > 0 )
@@ -637,10 +650,18 @@ namespace Rock.Blocks.Prayer
                     return actionError;
                 }
 
+                var wasApproved = entity.IsApproved ?? false;
+
                 // Update the entity instance from the information in the bag.
                 if ( !UpdateEntityFromBox( entity, box, rockContext ) )
                 {
                     return ActionBadRequest( "Invalid data." );
+                }
+
+                if (entity.IsApproved == true && !wasApproved)
+                {
+                    entity.ApprovedOnDateTime = RockDateTime.Now;
+                    entity.ApprovedByPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
                 }
 
                 // Ensure everything is valid before saving.

@@ -51,10 +51,23 @@ namespace Rock.Migrations
             //   Attribute: Update Page for Gateways
             /*   Attribute Value: d360b64f-1267-4518-95cd-99cd5ab87d88 */
             RockMigrationHelper.AddBlockAttributeValue("E7BB8795-6444-4E65-A773-D227BF40924F","98FE689B-DCBC-4E29-9269-A96FE8066C50","D360B64F-1267-4518-95CD-99CD5AB87D88");
-			
-			
-			// Need update to change parent page of EditScheduledTransaction page to the new ScheduledTransation page
-			Sql( @"
+
+
+            // NOTE:  This was added in 17.3 when the ScheduledTransaction block was swapped with it's V2 version
+            // *for new installs only*.  Databases that existed prior 17.3 will not have this attribute value set.
+            // 
+            // Add Block Attribute Value
+            //   Block: Scheduled Transaction View
+            //   BlockType: Scheduled Transaction View
+            //   Category: Finance
+            //   Block Location: Page=Scheduled Transaction, Site=Rock RMS
+            //   Attribute: Update Page for Hosted Gateways
+            /*   Attribute Value: d360b64f-1267-4518-95cd-99cd5ab87d88 */
+            RockMigrationHelper.AddBlockAttributeValue( "E7BB8795-6444-4E65-A773-D227BF40924F", "0C612E1C-8205-40A2-8F83-801E5816B2F2", "D360B64F-1267-4518-95CD-99CD5AB87D88" );
+
+
+            // Need update to change parent page of EditScheduledTransaction page to the new ScheduledTransation page
+            Sql( @"
 			UPDATE [dbo].[Page]
 			SET [ParentPageId] = (SELECT [Id] FROM [Page] WHERE [Guid] = '581D99DD-AA5B-40AF-B7CB-F915A4EA2BD9')
 			WHERE [Guid] = 'D360B64F-1267-4518-95CD-99CD5AB87D88'" );

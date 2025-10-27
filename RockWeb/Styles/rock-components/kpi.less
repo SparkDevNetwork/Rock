@@ -45,7 +45,7 @@
   display: flex;
   flex-basis: 100%;
   flex-grow: 1;
-  align-items: center;
+  align-items: stretch;
   margin: 0 8px 16px;
   overflow-y: hidden;
   font-size: 26px;
@@ -112,7 +112,6 @@
   justify-content: center;
   // min-width: 50px;
   max-width: 35%;
-  height: 100%;
   font-size: 32px;
   vertical-align: top;
 
@@ -121,16 +120,12 @@
   }
 
   .has-icon-bg & {
-    display: block;
     width: max-content;
     margin-left: 0;
 
     .kpi-content {
       position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
+      inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;

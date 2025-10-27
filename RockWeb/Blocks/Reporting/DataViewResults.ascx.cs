@@ -123,7 +123,11 @@ namespace RockWeb.Blocks.Reporting
         {
             if ( !Page.IsPostBack )
             {
-                var dataViewId = this.PageParameter( PageParameterKey.DataViewId ).AsIntegerOrNull();
+                var dataViewId = PageParameter( PageParameterKey.DataViewId ).AsIntegerOrNull();
+                if ( dataViewId == null )
+                {
+                    dataViewId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.DataViewId ) ).ToIntSafe();
+                }
                 hfDataViewId.Value = dataViewId.ToString();
                 BindGrid();
             }

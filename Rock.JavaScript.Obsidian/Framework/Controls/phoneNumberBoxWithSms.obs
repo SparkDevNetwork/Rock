@@ -2,7 +2,6 @@
 <template>
     <RockFormField :modelValue="number"
                    v-bind="formFieldProps"
-                   @change="onChange"
                    formGroupClasses="rock-phonenumber-box"
                    :rules="rules"
                    name="phonenumberbox">
@@ -33,7 +32,7 @@
     import { PhoneNumberBoxWithSmsControlBag } from "@Obsidian/ViewModels/Controls/phoneNumberBoxWithSmsControlBag";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import { normalizeRules } from "@Obsidian/ValidationRules";
-    import { getPhoneNumberAndSmsConfiguration, formatPhoneNumber, stripPhoneNumber } from "@Obsidian/Utility/phone";
+    import { getPhoneNumberConfiguration, getPhoneNumberAndSmsConfiguration, formatPhoneNumber, stripPhoneNumber } from "@Obsidian/Utility/phone";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import RockFormField from "./rockFormField.obs";
     import InputGroupDropDown from "./inputGroupDropDown.obs";
@@ -51,7 +50,7 @@
             default: ""
         },
 
-        /** When this is enabled, the SMS option will be hidden regardless of server settings. */
+        /** When this is enabled, the SMS option will be hidden. */
         hideSms: {
             type: Boolean as PropType<boolean>,
             default: false
@@ -142,7 +141,9 @@
     /** Retrieve the country code data, validation data, and formatting data from the server */
     async function loadConfiguration(): Promise<void> {
         try {
-            const result = await getPhoneNumberAndSmsConfiguration();
+            const result = (showSmsOptIn && !props.hideSms)
+                ? await getPhoneNumberAndSmsConfiguration()
+                : await getPhoneNumberConfiguration();
 
             if (result) {
                 configuration.value = result;
@@ -161,17 +162,13 @@
 
     // #region Event Handlers
 
-    function onChange(): void {
-        number.value = formatPhoneNumber(number.value);
-    }
-
     // #endregion
 
     // #region Watchers
     watch(() => props.modelValue, () => {
         autoSyncModelValue = false;
         countryCode.value = props.modelValue?.countryCode ?? "";
-        number.value = formatPhoneNumber(stripPhoneNumber(props.modelValue?.number ?? ""), configuredRules.value);
+        number.value = props.modelValue?.number ?? "";
         isMessagingEnabled.value = props.modelValue?.isMessagingEnabled ?? false;
         autoSyncModelValue = true;
     }, { immediate: true });

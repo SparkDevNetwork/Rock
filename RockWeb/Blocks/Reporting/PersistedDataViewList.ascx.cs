@@ -66,7 +66,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private static class PageParameterKey
         {
-            public const string PersistedDataViewId = "PersistedDataViewId";
+            public const string DataViewId = "DataViewId";
         }
 
         #endregion PageParameterKey
@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gList_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.PersistedDataViewId, e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.DataViewId, e.RowKeyId );
         }
 
         #endregion

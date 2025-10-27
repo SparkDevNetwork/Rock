@@ -126,10 +126,22 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                definedTypeId = PageParameter( "DefinedTypeId" ).AsInteger();
+                definedTypeId = GetIdFromPageParameter( "DefinedTypeId" ).ToIntSafe();
             }
 
             return definedTypeId;
+        }
+
+        private int? GetIdFromPageParameter(string pageParameterKey )
+        {
+            var id = PageParameter( pageParameterKey ).AsIntegerOrNull();
+
+            // See if it's an IdKey...
+            if ( id == null )
+            {
+                id = Rock.Utility.IdHasher.Instance.GetId( PageParameter( pageParameterKey ) );
+            }
+            return id;
         }
 
         /// <summary>

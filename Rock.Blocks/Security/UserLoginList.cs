@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -27,7 +28,6 @@ using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Security.UserLoginList;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -100,6 +100,7 @@ namespace Rock.Blocks.Security
 
             var personId = RequestContext.GetContextEntity<Person>()?.Id;
             var queryable = new UserLoginService( rockContext ).Queryable()
+                .Include( l => l.Person )
                 .Where( l => !personId.HasValue || l.PersonId == personId.Value );
 
             return queryable;
@@ -315,7 +316,7 @@ namespace Rock.Blocks.Security
 
                 if ( !entity.PersonId.HasValue )
                 {
-                    return ActionBadRequest("No person selected, or the person you are editing has no person Id.");
+                    return ActionBadRequest( "No person selected, or the person you are editing has no person Id." );
                 }
 
                 entityService.Add( entity );

@@ -15,14 +15,14 @@
                     field="name"
                     :filter="textValueFilter"
                     visiblePriority="xs"
-                    width="20%"/>
+                    width="20%" />
 
         <TextColumn name="deviceType"
                     title="Device Type"
                     field="deviceType"
                     :filter="pickExistingValueFilter"
                     visiblePriority="xs"
-                    width="20%"/>
+                    width="20%" />
 
         <TextColumn name="kioskType"
                     title="Kiosk Type"
@@ -35,7 +35,7 @@
                     field="ipAddress"
                     :filter="textValueFilter"
                     visiblePriority="xs"
-                    width="15%"/>
+                    width="15%" />
 
         <TextColumn name="printTo"
                     title="Print To"
@@ -54,13 +54,14 @@
                     field="printerDevice"
                     :filter="pickExistingValueFilter"
                     visiblePriority="xs"
-                    width="15%"/>
+                    width="15%" />
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
                        visiblePriority="xs"
-                       width="5%"/>
+                       :filter="booleanValueFilter"
+                       width="5%" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
@@ -69,7 +70,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, pickExistingValueFilter, booleanValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { DeviceListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/DeviceList/deviceListOptionsBag";

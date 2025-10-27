@@ -100,7 +100,7 @@ namespace Rock.Blocks.Reporting
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string> { ["PersistedDataViewId"] = "((Key))", ["autoEdit"] = "true", ["returnUrl"] = this.GetCurrentPageUrl() } )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string> { ["DataViewId"] = "((Key))", ["returnUrl"] = this.GetCurrentPageUrl() } )
             };
         }
 

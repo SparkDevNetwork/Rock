@@ -22,8 +22,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using CsvHelper;
+
 using Microsoft.AspNet.SignalR;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -110,7 +113,7 @@ namespace RockWeb.Blocks.BulkImport
         {
             get
             {
-                return $"CSVImport_BlockId:{ this.BlockId }_SessionId:{ Session.SessionID }";
+                return $"CSVImport_BlockId:{this.BlockId}_SessionId:{Session.SessionID}";
             }
         }
 
@@ -142,7 +145,7 @@ namespace RockWeb.Blocks.BulkImport
                 }
                 catch ( Exception )
                 {
-                    nbPageError.Text = "Error Loading Page. Try Closing all files and reload the page.";
+                    nbPageError.Text = "Error loading page. Try closing all files and reload the page.";
                     nbPageError.Visible = true;
                     pnlLandingPage.Visible = false;
                 }
@@ -153,7 +156,7 @@ namespace RockWeb.Blocks.BulkImport
         protected override void OnLoad( EventArgs e )
         {
             propertiesMapping = ( Dictionary<string, string> ) ViewState[ViewStateKey.PropertiesMapping] ?? new Dictionary<string, string>();
-            
+
             if ( !Page.IsPostBack )
             {
                 ListItem peopleDataTypeItem = new ListItem( "People" );
@@ -186,7 +189,7 @@ namespace RockWeb.Blocks.BulkImport
                 Guid gradeGUID = Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid();
                 var gradeAbbreviations = DefinedTypeCache.Get( gradeGUID ).DefinedValues.Take( 50 ).Select( a => a.AttributeValues["Abbreviation"]?.Value )
                     .Where( a => !string.IsNullOrWhiteSpace( a ) ).ToList();
-                lgrade.Text = $"({ gradeAbbreviations.AsDelimited( ", " ) })";
+                lgrade.Text = $"({gradeAbbreviations.AsDelimited( ", " )})";
 
                 var emailPreferenceNames = Enum.GetNames( typeof( Slingshot.Core.Model.EmailPreference ) ).Take( 50 ).ToList();
                 lemailPreferenceList.Text = $"({emailPreferenceNames.AsDelimited( ", " )})";
@@ -279,7 +282,7 @@ namespace RockWeb.Blocks.BulkImport
             }
             catch ( Exception )
             {
-                nbPageError.Text = "Error Loading Page. Try Closing all files and reload the page.";
+                nbPageError.Text = "Error loading page. Try closing all files and reload the page.";
                 nbPageError.Visible = true;
                 pnlLandingPage.Visible = false;
                 pnlFieldMappingPage.Visible = false;
@@ -323,6 +326,8 @@ namespace RockWeb.Blocks.BulkImport
             {
                 try
                 {
+                    // wait a little so the browser can render and start listening to events
+                    Task.Delay( 2000 ).Wait();
                     csvSlingshotImporter.CreateIntermediateCSVFiles( this.propertiesMapping, UploadedCSVOnLineRead );
                     csvSlingshotImporter.DoImport();
                     csvSlingshotImporter.AddPersonCSVImportErrorNotes();

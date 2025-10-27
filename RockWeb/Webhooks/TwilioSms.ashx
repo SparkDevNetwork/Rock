@@ -125,7 +125,7 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
                         .Where( pn => pn.FullNumber == cleanNumber )
                         .ToList();
 
-                    foreach( var phoneNumber in phoneNumbers)
+                    foreach ( var phoneNumber in phoneNumbers )
                     {
                         phoneNumber.IsMessagingEnabled = false;
                         phoneNumber.IsMessagingOptedOut = true;
@@ -141,7 +141,7 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
                         .Where( pn => pn.FullNumber == cleanNumber )
                         .ToList();
 
-                    foreach( var phoneNumber in phoneNumbers)
+                    foreach ( var phoneNumber in phoneNumbers )
                     {
                         phoneNumber.IsMessagingEnabled = true;
                         phoneNumber.IsMessagingOptedOut = false;
@@ -170,7 +170,7 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
                             imageGuid = Guid.NewGuid();
 
                             var httpWebRequest = ( HttpWebRequest ) HttpWebRequest.Create( imageUrl );
-                            httpWebRequest.Headers["Authorization"] = "Basic " + Convert.ToBase64String(Encoding.Default.GetBytes(accountSid + ":" + authToken));
+                            httpWebRequest.Headers["Authorization"] = "Basic " + Convert.ToBase64String( Encoding.Default.GetBytes( accountSid + ":" + authToken ) );
 
                             var httpWebResponse = ( HttpWebResponse ) httpWebRequest.GetResponse();
 
@@ -217,16 +217,11 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
         return null;
     }
 
-    private bool IsOptOutMessage(string messageBody)
+    private bool IsOptOutMessage( string messageBody )
     {
-        List<string> optOutKeywords = new List<string>
+        foreach ( var keyword in SmsActionService.OptOutKeywords )
         {
-            "STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT"
-        };
-
-        foreach (var keyword in optOutKeywords)
-        {
-            if (string.Equals(messageBody.Trim(), keyword, StringComparison.OrdinalIgnoreCase))
+            if ( string.Equals( messageBody.Trim(), keyword, StringComparison.OrdinalIgnoreCase ) )
             {
                 return true;
             }
@@ -235,16 +230,11 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
         return false;
     }
 
-    private bool IsOptInMessage(string messageBody)
+    private bool IsOptInMessage( string messageBody )
     {
-        List<string> optInKeywords = new List<string>
+        foreach ( var keyword in SmsActionService.OptInKeywords )
         {
-            "START", "YES", "UNSTOP"
-        };
-
-        foreach (var keyword in optInKeywords)
-        {
-            if (string.Equals(messageBody.Trim(), keyword, StringComparison.OrdinalIgnoreCase))
+            if ( string.Equals( messageBody.Trim(), keyword, StringComparison.OrdinalIgnoreCase ) )
             {
                 return true;
             }

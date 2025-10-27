@@ -1,0 +1,678 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System;
+
+namespace Rock.Plugin.HotFixes
+{
+    /// <summary>
+    /// Plug-in migration
+    /// </summary>
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 261, "17.4" )]
+    public class MigrationRollupsForV17_4_0 : Migration
+    {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            FixMissingDefaultCacheControlHeaderSettingsOnBinaryFileTypes();
+            JPH_UpdatePeerNetworkLavaTemplates_20250812_Up();
+            AddStructuredEditorAttachmentToolUp();
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            JPH_UpdatePeerNetworkLavaTemplates_20250812_Down();
+            AddStructuredEditorAttachmentToolDown();
+        }
+
+        #region NA: (data migration) Fix Missing Default CacheControlHeaderSettings on BinaryFileTypes
+
+        private void FixMissingDefaultCacheControlHeaderSettingsOnBinaryFileTypes()
+        {
+            Sql( @"
+-- Fix missing default cache control header settings on BinaryFileTypes
+UPDATE [BinaryFileType] SET [CacheControlHeaderSettings] = '{""RockCacheablityType"":0,""MaxAge"":null,""SharedMaxAge"":null}' WHERE [CacheControlHeaderSettings] IS NULL
+" );
+        }
+
+        #endregion
+
+        #region JPH: Update Peer Network Lava Templates to use FromIdHash Lava Filter (cherry-picked back from develop)
+
+        /// <summary>
+        /// JPH: Update Peer Network Lava templates 20250812 - Up.
+        /// </summary>
+        private void JPH_UpdatePeerNetworkLavaTemplates_20250812_Up()
+        {
+            #region Update Person Profile > Peer Network Block
+
+            // Delete all old templates tied to this block (to account for possible versioning).
+            Sql( "DELETE FROM [HtmlContent] WHERE [BlockId] = (SELECT TOP 1 [Id] FROM [Block] WHERE [Guid] = '6094C135-10E2-4AF4-A46B-1FC6D073A854');" );
+
+            RockMigrationHelper.UpdateHtmlContentBlock( "6094C135-10E2-4AF4-A46B-1FC6D073A854", @"/-
+    IMPORTANT
+    Do not change this Lava template as it will be updated in future releases as we
+    continue to innovate on this feature. These updates will wipe out your changes.
+-/
+
+{% assign personId = 'Global' | PageParameter:'PersonId' | FromIdHash %}
+{% assign displayCount = 20 %}
+
+{% sql %}
+
+    SELECT
+        tp.[NickName] + ' ' + tp.[LastName] AS [TargetName]
+        , tp.[Id] AS [TargetPersonId]
+        , CAST( ROUND( SUM(pn.[RelationshipScore]), 0 ) AS INT ) AS [RelationshipScore]
+        , SUM( pn.[RelationshipScore] ) - SUM( pn.[RelationshipScoreLastUpdateValue] ) AS [PointDifference]
+    FROM [PeerNetwork] pn
+        INNER JOIN [Person] tp ON tp.[Id] = pn.[TargetPersonId]
+    WHERE [SourcePersonId] = {{ personId }}
+    GROUP BY tp.[NickName]
+        , tp.[LastName]
+        , tp.[Id]
+    ORDER BY [RelationshipScore] DESC
+        , tp.[LastName]
+        , tp.[NickName];
+
+{% endsql %}
+
+<div class=""card card-profile card-peer-network panel-widget"">
+
+    <div class=""card-header"">
+        <span class=""card-title"">Peer Network</span>
+
+        <div class=""panel-labels"">
+            <a href=""/person/{{ personId }}/peer-graph""><span class=""label label-default"">Peer Graph</span></a>
+        </div>
+    </div>
+
+    <div class=""card-section"">
+
+            {% for peer in results limit:displayCount %}
+                <div class=""row"">
+                    <div class=""col-xs-8"">
+                        <a href=""/person/{{ peer.TargetPersonId }}"">
+                            {{ peer.TargetName }}
+                        </a>
+                    </div>
+                    <div class=""col-xs-2"">{{ peer.RelationshipScore }}</div>
+                    <div class=""col-xs-2"">
+                        {% if peer.PointDifference > 0 %}
+                            <i class=""fa fa-arrow-up text-success""></i>
+                        {% elseif peer.PointDifference < 0 %}
+                            <i class=""fa fa-arrow-down text-danger""></i>
+                        {% else %}
+                            <i class=""fa fa-minus text-muted""></i>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+
+            {% assign resultCount = results | Size %}
+            {% if resultCount > displayCount %}
+                {% assign moreCount = resultCount | Minus:displayCount %}
+                <div class=""row mt-2"">
+                    <div class=""col-xs-8"">
+                        <a href=""/person/{{ personId }}/peer-graph""><small>(and {{ moreCount | Format:'#,##0' }} more)</small></a>
+                    </div>
+                </div>
+            {% endif %}
+
+    </div>
+</div>", "879C5623-3A45-4D6F-9759-F9A294D7425B" );
+
+            #endregion Update Person Profile > Peer Network Block
+
+            #region Update Peer Network > Peer Map Block
+
+            // Delete all old templates tied to this block (to account for possible versioning).
+            Sql( "DELETE FROM [HtmlContent] WHERE [BlockId] = (SELECT TOP 1 [Id] FROM [Block] WHERE [Guid] = 'D2D0FF94-1816-4B43-A49D-104CC42A5DC3');" );
+
+            RockMigrationHelper.UpdateHtmlContentBlock( "D2D0FF94-1816-4B43-A49D-104CC42A5DC3", @"/-
+    IMPORTANT
+    Do not change this Lava template as it will be updated in future releases as we
+    continue to innovate on this feature. These updates will wipe out your changes.
+-/
+
+{% assign personId = 'Global' | PageParameter:'PersonId' | FromIdHash %}
+
+{% sql %}
+
+    SELECT
+        tp.[NickName] + ' ' + tp.[LastName] AS [TargetName]
+        , tp.[Id] AS [TargetPersonId]
+        , CAST( ROUND( SUM(pn.[RelationshipScore]), 0 ) AS INT ) AS [RelationshipScore]
+        , MAX(pn.[RelationshipTrend]) AS [RelationshipTrend]
+        , pn.[RelationshipTypeValueId]
+        , pn.[RelatedEntityId]
+        , pn.[Caption]
+    FROM [PeerNetwork] pn
+        INNER JOIN [Person] tp ON tp.[Id] = pn.[TargetPersonId]
+    WHERE [SourcePersonId] = {{ personId }}
+    GROUP BY tp.[NickName]
+        , tp.[LastName]
+        , tp.[Id]
+        , pn.[RelationshipTypeValueId]
+        , pn.[RelatedEntityId]
+        , pn.[Caption];
+
+{% endsql %}
+
+<div class=""card card-profile card-peer-map panel-widget"">
+
+    <div class=""card-header"">
+        <span class=""card-title"">Peer Map</span>
+    </div>
+
+    <div class=""card-section p-0"">
+        <div style=""height: 800px"">
+            {[ networkgraph height:'100%' minimumnodesize:'10' highlightcolor:'#bababa' ]}
+
+                {% assign followingConnectionsValueId = '84E0360E-0828-E5A5-4BCC-F3113BE338A1' | GuidToId:'DefinedValue' %}
+                {% assign following = results | Where:'RelationshipTypeValueId', followingConnectionsValueId %}
+
+                [[ node id:'F-MASTER' label:'Following' color:'#36cf8c' ]][[ endnode ]]
+
+                {% for followed in following %}
+                    [[ node id:'F-{{ followed.TargetPersonId }}' label:'{{ followed.TargetName }}' color:'#88ebc0' size:'10' ]][[ endnode ]]
+                    [[ edge source:'F-MASTER' target:'F-{{ followed.TargetPersonId }}' color:'#c4c4c4' ]][[ endedge ]]
+                {% endfor %}
+
+                {% assign groupConnectionsValueId = 'CB51DC46-FBDB-43DA-B7F3-60E7C6E70F40' | GuidToId:'DefinedValue' %}
+                {% assign groups = results | Where:'RelationshipTypeValueId', groupConnectionsValueId | GroupBy:'RelatedEntityId' %}
+
+                {% for group in groups %}
+                    {% assign parts = group | PropertyToKeyValue %}
+
+                    {% assign groupName = parts.Value | First | Property:'Caption' %}
+                    [[ node id:'G-{{ parts.Key }}' label:""{{ groupName }}"" color:'#4e9fd9' ]][[ endnode ]]
+
+                    {% for member in parts.Value %}
+                        [[ node id:'GM-{{ parts.Key }}-{{ member.TargetPersonId }}' label:'{{ member.TargetName }}' color:'#a6d5f7' ]][[ endnode ]]
+
+                        [[ edge source:'GM-{{ parts.Key }}-{{ member.TargetPersonId }}' target:'G-{{ parts.Key }}' color:'#c4c4c4' ]][[ endedge ]]
+                    {% endfor %}
+
+                {% endfor %}
+
+            {[ endnetworkgraph ]}
+        </div>
+    </div>
+</div>", "A311EB92-5BB5-407D-AF6C-74BC9FB9FA64" );
+
+            #endregion Update Peer Network > Peer Map Block
+
+            #region Update Peer Network > Peer List Block
+
+            // Delete all old templates tied to this block (to account for possible versioning).
+            Sql( "DELETE FROM [HtmlContent] WHERE [BlockId] = (SELECT TOP 1 [Id] FROM [Block] WHERE [Guid] = '46775056-3ADF-43CD-809A-88EE3378C039');" );
+
+            RockMigrationHelper.UpdateHtmlContentBlock( "46775056-3ADF-43CD-809A-88EE3378C039", @"/-
+    IMPORTANT
+    Do not change this Lava template as it will be updated in future releases as we
+    continue to innovate on this feature. These updates will wipe out your changes.
+-/
+
+{% assign personId = 'Global' | PageParameter:'PersonId' | FromIdHash %}
+
+{% sql %}
+
+    SELECT
+        tp.[NickName] + ' ' + tp.[LastName] AS [TargetName]
+        , tp.[Id] AS [TargetPersonId]
+        , CAST( ROUND( SUM(pn.[RelationshipScore]), 0 ) AS INT ) AS [RelationshipScore]
+        , SUM( pn.[RelationshipScore] ) - SUM( pn.[RelationshipScoreLastUpdateValue] ) AS [PointDifference]
+    FROM [PeerNetwork] pn
+        INNER JOIN [Person] tp ON tp.[Id] = pn.[TargetPersonId]
+    WHERE [SourcePersonId] = {{ personId }}
+    GROUP BY tp.[NickName]
+        , tp.[LastName]
+        , tp.[Id]
+    ORDER BY [RelationshipScore] DESC
+        , tp.[LastName]
+        , tp.[NickName];
+
+{% endsql %}
+
+<div class=""card card-profile card-peer-network panel-widget"">
+
+    <div class=""card-header"">
+        <span class=""card-title"">Full Peer Network</span>
+    </div>
+
+    <div class=""card-section"">
+        <div class=""row"">
+            {% for peer in results %}
+                <div class=""col-xs-8"">
+                    <a href=""/person/{{ peer.TargetPersonId }}"">
+                        {{ peer.TargetName }}
+                    </a>
+                </div>
+                <div class=""col-xs-2"">{{ peer.RelationshipScore }}</div>
+                <div class=""col-xs-2"">
+                    {% if peer.PointDifference > 0 %}
+                        <i class=""fa fa-arrow-up text-success""></i>
+                    {% elseif peer.PointDifference < 0 %}
+                        <i class=""fa fa-arrow-down text-danger""></i>
+                    {% else %}
+                        <i class=""fa fa-minus text-muted""></i>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>", "0A35B353-E14E-4B9C-8E0C-7E7D0863A67B" );
+
+            #endregion Update Peer Network > Peer List Block
+        }
+
+        /// <summary>
+        /// JPH: Update Peer Network Lava templates 20250812 - Down.
+        /// </summary>
+        private void JPH_UpdatePeerNetworkLavaTemplates_20250812_Down()
+        {
+            #region Revert Person Profile > Peer Network Block
+
+            // Delete all old templates tied to this block (to account for possible versioning).
+            Sql( "DELETE FROM [HtmlContent] WHERE [BlockId] = (SELECT TOP 1 [Id] FROM [Block] WHERE [Guid] = '6094C135-10E2-4AF4-A46B-1FC6D073A854');" );
+
+            RockMigrationHelper.UpdateHtmlContentBlock( "6094C135-10E2-4AF4-A46B-1FC6D073A854", @"/-
+    IMPORTANT
+    Do not change this Lava template as it will be updated in future releases as we
+    continue to innovate on this feature. These updates will wipe out your changes.
+-/
+
+{% assign personId = 'Global' | PageParameter:'PersonId' %}
+{% assign displayCount = 20 %}
+
+{% sql %}
+
+    SELECT
+        tp.[NickName] + ' ' + tp.[LastName] AS [TargetName]
+        , tp.[Id] AS [TargetPersonId]
+        , CAST( ROUND( SUM(pn.[RelationshipScore]), 0 ) AS INT ) AS [RelationshipScore]
+        , SUM( pn.[RelationshipScore] ) - SUM( pn.[RelationshipScoreLastUpdateValue] ) AS [PointDifference]
+    FROM [PeerNetwork] pn
+        INNER JOIN [Person] tp ON tp.[Id] = pn.[TargetPersonId]
+    WHERE [SourcePersonId] = {{ personId }}
+    GROUP BY tp.[NickName]
+        , tp.[LastName]
+        , tp.[Id]
+    ORDER BY [RelationshipScore] DESC
+        , tp.[LastName]
+        , tp.[NickName];
+
+{% endsql %}
+
+<div class=""card card-profile card-peer-network panel-widget"">
+
+    <div class=""card-header"">
+        <span class=""card-title"">Peer Network</span>
+
+        <div class=""panel-labels"">
+            <a href=""/person/{{ personId }}/peer-graph""><span class=""label label-default"">Peer Graph</span></a>
+        </div>
+    </div>
+
+    <div class=""card-section"">
+
+            {% for peer in results limit:displayCount %}
+                <div class=""row"">
+                    <div class=""col-xs-8"">
+                        <a href=""/person/{{ peer.TargetPersonId }}"">
+                            {{ peer.TargetName }}
+                        </a>
+                    </div>
+                    <div class=""col-xs-2"">{{ peer.RelationshipScore }}</div>
+                    <div class=""col-xs-2"">
+                        {% if peer.PointDifference > 0 %}
+                            <i class=""fa fa-arrow-up text-success""></i>
+                        {% elseif peer.PointDifference < 0 %}
+                            <i class=""fa fa-arrow-down text-danger""></i>
+                        {% else %}
+                            <i class=""fa fa-minus text-muted""></i>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+
+            {% assign resultCount = results | Size %}
+            {% if resultCount > displayCount %}
+                {% assign moreCount = resultCount | Minus:displayCount %}
+                <div class=""row mt-2"">
+                    <div class=""col-xs-8"">
+                        <a href=""/person/{{ personId }}/peer-graph""><small>(and {{ moreCount | Format:'#,##0' }} more)</small></a>
+                    </div>
+                </div>
+            {% endif %}
+
+    </div>
+</div>", "879C5623-3A45-4D6F-9759-F9A294D7425B" );
+
+            #endregion Revert Person Profile > Peer Network Block
+
+            #region Revert Peer Network > Peer Map Block
+
+            // Delete all old templates tied to this block (to account for possible versioning).
+            Sql( "DELETE FROM [HtmlContent] WHERE [BlockId] = (SELECT TOP 1 [Id] FROM [Block] WHERE [Guid] = 'D2D0FF94-1816-4B43-A49D-104CC42A5DC3');" );
+
+            RockMigrationHelper.UpdateHtmlContentBlock( "D2D0FF94-1816-4B43-A49D-104CC42A5DC3", @"/-
+    IMPORTANT
+    Do not change this Lava template as it will be updated in future releases as we
+    continue to innovate on this feature. These updates will wipe out your changes.
+-/
+
+{% assign personId = 'Global' | PageParameter:'PersonId' %}
+
+{% sql %}
+
+    SELECT
+        tp.[NickName] + ' ' + tp.[LastName] AS [TargetName]
+        , tp.[Id] AS [TargetPersonId]
+        , CAST( ROUND( SUM(pn.[RelationshipScore]), 0 ) AS INT ) AS [RelationshipScore]
+        , MAX(pn.[RelationshipTrend]) AS [RelationshipTrend]
+        , pn.[RelationshipTypeValueId]
+        , pn.[RelatedEntityId]
+        , pn.[Caption]
+    FROM [PeerNetwork] pn
+        INNER JOIN [Person] tp ON tp.[Id] = pn.[TargetPersonId]
+    WHERE [SourcePersonId] = {{ personId }}
+    GROUP BY tp.[NickName]
+        , tp.[LastName]
+        , tp.[Id]
+        , pn.[RelationshipTypeValueId]
+        , pn.[RelatedEntityId]
+        , pn.[Caption];
+
+{% endsql %}
+
+<div class=""card card-profile card-peer-map panel-widget"">
+
+    <div class=""card-header"">
+        <span class=""card-title"">Peer Map</span>
+    </div>
+
+    <div class=""card-section p-0"">
+        <div style=""height: 800px"">
+            {[ networkgraph height:'100%' minimumnodesize:'10' highlightcolor:'#bababa' ]}
+
+                {% assign followingConnectionsValueId = '84E0360E-0828-E5A5-4BCC-F3113BE338A1' | GuidToId:'DefinedValue' %}
+                {% assign following = results | Where:'RelationshipTypeValueId', followingConnectionsValueId %}
+
+                [[ node id:'F-MASTER' label:'Following' color:'#36cf8c' ]][[ endnode ]]
+
+                {% for followed in following %}
+                    [[ node id:'F-{{ followed.TargetPersonId }}' label:'{{ followed.TargetName }}' color:'#88ebc0' size:'10' ]][[ endnode ]]
+                    [[ edge source:'F-MASTER' target:'F-{{ followed.TargetPersonId }}' color:'#c4c4c4' ]][[ endedge ]]
+                {% endfor %}
+
+                {% assign groupConnectionsValueId = 'CB51DC46-FBDB-43DA-B7F3-60E7C6E70F40' | GuidToId:'DefinedValue' %}
+                {% assign groups = results | Where:'RelationshipTypeValueId', groupConnectionsValueId | GroupBy:'RelatedEntityId' %}
+
+                {% for group in groups %}
+                    {% assign parts = group | PropertyToKeyValue %}
+
+                    {% assign groupName = parts.Value | First | Property:'Caption' %}
+                    [[ node id:'G-{{ parts.Key }}' label:""{{ groupName }}"" color:'#4e9fd9' ]][[ endnode ]]
+
+                    {% for member in parts.Value %}
+                        [[ node id:'GM-{{ parts.Key }}-{{ member.TargetPersonId }}' label:'{{ member.TargetName }}' color:'#a6d5f7' ]][[ endnode ]]
+
+                        [[ edge source:'GM-{{ parts.Key }}-{{ member.TargetPersonId }}' target:'G-{{ parts.Key }}' color:'#c4c4c4' ]][[ endedge ]]
+                    {% endfor %}
+
+                {% endfor %}
+
+            {[ endnetworkgraph ]}
+        </div>
+    </div>
+</div>", "A311EB92-5BB5-407D-AF6C-74BC9FB9FA64" );
+
+            #endregion Revert Peer Network > Peer Map Block
+
+            #region Revert Peer Network > Peer List Block
+
+            // Delete all old templates tied to this block (to account for possible versioning).
+            Sql( "DELETE FROM [HtmlContent] WHERE [BlockId] = (SELECT TOP 1 [Id] FROM [Block] WHERE [Guid] = '46775056-3ADF-43CD-809A-88EE3378C039');" );
+
+            RockMigrationHelper.UpdateHtmlContentBlock( "46775056-3ADF-43CD-809A-88EE3378C039", @"/-
+    IMPORTANT
+    Do not change this Lava template as it will be updated in future releases as we
+    continue to innovate on this feature. These updates will wipe out your changes.
+-/
+
+{% assign personId = 'Global' | PageParameter:'PersonId' %}
+
+{% sql %}
+
+    SELECT
+        tp.[NickName] + ' ' + tp.[LastName] AS [TargetName]
+        , tp.[Id] AS [TargetPersonId]
+        , CAST( ROUND( SUM(pn.[RelationshipScore]), 0 ) AS INT ) AS [RelationshipScore]
+        , SUM( pn.[RelationshipScore] ) - SUM( pn.[RelationshipScoreLastUpdateValue] ) AS [PointDifference]
+    FROM [PeerNetwork] pn
+        INNER JOIN [Person] tp ON tp.[Id] = pn.[TargetPersonId]
+    WHERE [SourcePersonId] = {{ personId }}
+    GROUP BY tp.[NickName]
+        , tp.[LastName]
+        , tp.[Id]
+    ORDER BY [RelationshipScore] DESC
+        , tp.[LastName]
+        , tp.[NickName];
+
+{% endsql %}
+
+<div class=""card card-profile card-peer-network panel-widget"">
+
+    <div class=""card-header"">
+        <span class=""card-title"">Full Peer Network</span>
+    </div>
+
+    <div class=""card-section"">
+        <div class=""row"">
+            {% for peer in results %}
+                <div class=""col-xs-8"">
+                    <a href=""/person/{{ peer.TargetPersonId }}"">
+                        {{ peer.TargetName }}
+                    </a>
+                </div>
+                <div class=""col-xs-2"">{{ peer.RelationshipScore }}</div>
+                <div class=""col-xs-2"">
+                    {% if peer.PointDifference > 0 %}
+                        <i class=""fa fa-arrow-up text-success""></i>
+                    {% elseif peer.PointDifference < 0 %}
+                        <i class=""fa fa-arrow-down text-danger""></i>
+                    {% else %}
+                        <i class=""fa fa-minus text-muted""></i>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>", "0A35B353-E14E-4B9C-8E0C-7E7D0863A67B" );
+
+            #endregion Revert Peer Network > Peer List Block
+        }
+
+        #endregion
+
+        #region DH: Add Structured Editor Attachment Tool
+
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public void AddStructuredEditorAttachmentToolUp()
+        {
+            RockMigrationHelper.UpdateDefinedValue(
+                definedTypeGuid: SystemGuid.DefinedType.STRUCTURED_CONTENT_EDITOR_TOOLS,
+                value: "Default",
+                description: @"{
+    header: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.Header,
+        inlineToolbar: ['link'],
+        config: {
+            placeholder: 'Header'
+        },
+        shortcut: 'CMD+SHIFT+H'
+    },
+    image: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.RockImage,
+        inlineToolbar: ['link'],
+    },
+    attachment: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.Attachment,
+    },
+    list: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.NestedList,
+        inlineToolbar: true,
+        shortcut: 'CMD+SHIFT+L'
+    },
+    checklist: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.Checklist,
+        inlineToolbar: true,
+    },
+    quote: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.Quote,
+        inlineToolbar: true,
+        config: {
+            quotePlaceholder: 'Enter a quote',
+            captionPlaceholder: 'Quote\'s author',
+        },
+        shortcut: 'CMD+SHIFT+O'
+    },
+    alert: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.Alert,
+        inlineToolbar: ['bold', 'italic'],
+        config: {
+            alertTypes: ['info', 'success', 'warning', 'danger']
+        }
+    },
+    warning: Rock.UI.StructuredContentEditor.EditorTools.Warning,
+    marker: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.Marker,
+        shortcut: 'CMD+SHIFT+M'
+    },
+    code: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.Code,
+        shortcut: 'CMD+SHIFT+C'
+    },
+    raw: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.Raw
+    },
+    delimiter: Rock.UI.StructuredContentEditor.EditorTools.Delimiter,
+    inlineCode: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.InlineCode,
+        shortcut: 'CMD+SHIFT+C'
+    },
+    embed: Rock.UI.StructuredContentEditor.EditorTools.Embed,
+    table: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.Table,
+        config: {
+            defaultHeadings: true
+        },
+        inlineToolbar: true,
+        shortcut: 'CMD+ALT+T'
+    }
+}",
+                guid: SystemGuid.DefinedValue.STRUCTURE_CONTENT_EDITOR_DEFAULT );
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public void AddStructuredEditorAttachmentToolDown()
+        {
+            RockMigrationHelper.UpdateDefinedValue(
+                definedTypeGuid: SystemGuid.DefinedType.STRUCTURED_CONTENT_EDITOR_TOOLS,
+                value: "Default",
+                description: @"{
+    header: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.Header,
+        inlineToolbar: ['link'],
+        config: {
+            placeholder: 'Header'
+        },
+        shortcut: 'CMD+SHIFT+H'
+    },
+    image: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.RockImage,
+        inlineToolbar: ['link'],
+    },
+    list: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.NestedList,
+        inlineToolbar: true,
+        shortcut: 'CMD+SHIFT+L'
+    },
+    checklist: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.Checklist,
+        inlineToolbar: true,
+    },
+    quote: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.Quote,
+        inlineToolbar: true,
+        config: {
+            quotePlaceholder: 'Enter a quote',
+            captionPlaceholder: 'Quote\'s author',
+        },
+        shortcut: 'CMD+SHIFT+O'
+    },
+    alert: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.Alert,
+        inlineToolbar: ['bold', 'italic'],
+        config: {
+            alertTypes: ['info', 'success', 'warning', 'danger']
+        }
+    },
+    warning: Rock.UI.StructuredContentEditor.EditorTools.Warning,
+    marker: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.Marker,
+        shortcut: 'CMD+SHIFT+M'
+    },
+    code: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.Code,
+        shortcut: 'CMD+SHIFT+C'
+    },
+    raw: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.Raw
+    },
+    delimiter: Rock.UI.StructuredContentEditor.EditorTools.Delimiter,
+    inlineCode: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.InlineCode,
+        shortcut: 'CMD+SHIFT+C'
+    },
+    embed: Rock.UI.StructuredContentEditor.EditorTools.Embed,
+    table: {
+        class: Rock.UI.StructuredContentEditor.EditorTools.Table,
+        config: {
+            defaultHeadings: true
+        },
+        inlineToolbar: true,
+        shortcut: 'CMD+ALT+T'
+    }
+}",
+                guid: SystemGuid.DefinedValue.STRUCTURE_CONTENT_EDITOR_DEFAULT );
+        }
+
+        #endregion
+    }
+}

@@ -724,6 +724,10 @@
     <Compile Include="Cms\RestControllerMetadata.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\AlertData.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\AlertRenderer.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\AttachmentChangeHandler.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\AttachmentData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\AttachmentDataFile.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\AttachmentRenderer.cs" />
     <Compile Include="Cms\StructuredContent\IStructuredContentBlockLavaRenderer.cs" />
     <Compile Include="Communication\Chat\DTO\ChatUserAuthentication.cs" />
     <Compile Include="Communication\Chat\DTO\RockChatGroup.cs" />
@@ -785,8 +789,10 @@
     <Compile Include="Communication\Chat\ChatConfiguration.cs" />
     <Compile Include="Field\Types\DeviceFieldType.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171PopulateAttendanceRootGroupType.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV173UpdateAttendanceOccurrenceIndex.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171UpdateCommunicationRecipientIndex.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171AddCommunicationRecipientIndex.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV173UpdateNamelessSchedules.cs" />
     <Compile Include="Jobs\RunLava.cs" />
     <Compile Include="Model\CRM\UserLogin\UpdateLastLoginArgs.cs" />
     <Compile Include="Data\AttributeValueExpressionVisitor.cs" />
@@ -1819,8 +1825,14 @@
     <Compile Include="Plugin\HotFixes\253_UpdateLavaChartShortcode.cs" />
     <Compile Include="Plugin\HotFixes\252_MigrationRollupsForV17_2_0.cs" />
     <Compile Include="Plugin\HotFixes\251_MigrationRollupsForV17_1.cs" />
+    <Compile Include="Plugin\HotFixes\256_UpdateLearningNotificationCommunication.cs" />
     <Compile Include="Plugin\HotFixes\255_MigrationRollupsForV17_2_1.cs" />
     <Compile Include="Plugin\HotFixes\254_UpdateGoogleMapShortcode.cs" />
+    <Compile Include="Plugin\HotFixes\258_MigrationRollupsForV17_3_0.cs" />
+    <Compile Include="Plugin\HotFixes\257_UpdateContentChannelInteractionComponentEntityTypeId.cs" />
+    <Compile Include="Plugin\HotFixes\261_MigrationRollupsForV17_4_0.cs" />
+    <Compile Include="Plugin\HotFixes\260_MigrationRollupsForV17_3_1.cs" />
+    <Compile Include="Plugin\HotFixes\259_MigrateTransactionBlocksFor17_3.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -1847,6 +1859,7 @@
     <Compile Include="RealTime\Topics\InteractiveExperienceParticipantTopic.cs" />
     <Compile Include="RealTime\Topics\ITestCommunicationTransport.cs" />
     <Compile Include="RealTime\Topics\TestCommunicationTransportTopic.cs" />
+    <Compile Include="Reporting\DataFilter\Person\GroupLocationScheduleFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\StreakDataViewFilter.cs" />
     <Compile Include="Reporting\FieldFilterPublicConverter.cs" />
     <Compile Include="Reporting\FieldFilterExpressionBuilder.cs" />

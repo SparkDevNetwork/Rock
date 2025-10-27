@@ -130,6 +130,7 @@
     <Compile Include="Cms\LogSettings.cs" />
     <Compile Include="Communication\SmsConversations.cs" />
     <Compile Include="Communication\CommunicationTemplateDetail.cs" />
+    <Compile Include="Connection\ConnectionOpportunitySignup.cs" />
     <Compile Include="Core\PersonSuggestionList.cs" />
     <Compile Include="Cms\PageSearch.cs" />
     <Compile Include="Core\DocumentTypeList.cs" />

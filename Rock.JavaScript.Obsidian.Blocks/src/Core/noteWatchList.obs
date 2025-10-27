@@ -4,6 +4,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Note Watch"
+          title="Note Watches"
           :entityTypeGuid="EntityType.NoteWatch"
           stickyHeader
           liveUpdates

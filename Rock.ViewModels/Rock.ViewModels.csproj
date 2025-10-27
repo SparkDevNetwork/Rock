@@ -121,6 +121,7 @@
     <Compile Include="Blocks\Cms\MediaElementDetail\MediaElementDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaElementList\MediaElementListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaFolderList\MediaFolderListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\PersistedDatasetList\PersistedDatasetListBag.cs" />
     <Compile Include="Blocks\Cms\PersonalizationSegmentList\PersonalizationSegmentListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\Chat\ChatConfiguration\ChatConfigurationBag.cs" />
     <Compile Include="Blocks\Communication\Chat\ChatConfiguration\ChatConfigurationInitializationBox.cs" />
@@ -156,6 +157,9 @@
     <Compile Include="Blocks\Communication\CommunicationTemplateDetail\CommunicationTemplateDetailCommunicationTemplateBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationTemplateDetail\CommunicationTemplateDetailGetPreviewMessageRequestBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationTemplateDetail\CommunicationTemplateDetailInitializationBox.cs" />
+    <Compile Include="Blocks\Connection\ConnectionOpportunitySignup\ConnectionOpportunitySignupInitializationBox.cs" />
+    <Compile Include="Blocks\Connection\ConnectionOpportunitySignup\ConnectionOpportunitySignupRequestBag.cs" />
+    <Compile Include="Blocks\Connection\ConnectionOpportunitySignup\ConnectionOpportunitySignupResultBag.cs" />
     <Compile Include="Blocks\Core\PersonSuggestionList\PersonSuggestionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageSearch\PageSearchPageBag.cs" />
     <Compile Include="Blocks\Cms\PageSearch\PageSearchBag.cs" />

@@ -64,6 +64,7 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\CreateDatabase\NewInstallationGivingBlockReplacementAsOf17_3.cs" />
     <Compile Include="Migrations\Version 17.0\Version 17.1\202504071505457_AddBluetoothBeaconIdentifiers.cs" />
     <Compile Include="Migrations\Version 17.0\Version 17.1\202504071505457_AddBluetoothBeaconIdentifiers.Designer.cs">
       <DependentUpon>202504071505457_AddBluetoothBeaconIdentifiers.cs</DependentUpon>

@@ -261,6 +261,12 @@ namespace Rock.Blocks.Crm
         }
 
         /// <inheritdoc/>
+        protected override IQueryable<Person> GetOrderedListQueryable( IQueryable<Person> queryable, RockContext rockContext )
+        {
+            return queryable.OrderByDescending( a => a.CreatedDateTime );
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<Person> GetGridBuilder()
         {
             return new GridBuilder<Person>()

@@ -48,7 +48,6 @@ using Rock.Transactions;
 using Rock.Utility;
 using Rock.ViewModels.Crm;
 using Rock.Web.Cache;
-using Rock.Web.HttpModules;
 using Rock.Web.UI.Controls;
 
 using Page = System.Web.UI.Page;
@@ -119,7 +118,7 @@ namespace Rock.Web.UI
         /// The currently running Rock version.
         /// </summary>
         private static string _rockVersion = "";
-        
+
         /// <summary>
         /// A list of blocks (their paths) that will force the obsidian libraries to be loaded.
         /// This is particularly useful when a block has a settings dialog that is dependent on
@@ -128,6 +127,9 @@ namespace Rock.Web.UI
         private static readonly List<string> _blocksToForceObsidianLoad = new List<string>
         {
             "~/Blocks/Cms/PageZoneBlocksEditor.ascx",
+            "~/Blocks/Reporting/ReportDetail.ascx",
+            "~/Blocks/Reporting/DataViewDetail.ascx",
+            "~/Blocks/Reporting/DynamicReport.ascx",
             "~/Blocks/Mobile/MobilePageDetail.ascx"
         };
 
@@ -2336,7 +2338,8 @@ Obsidian.onReady(() => {{
             {
                 Authorization.SignOut();
                 UserLoginService.UpdateLastLogin(
-                    new UpdateLastLoginArgs {
+                    new UpdateLastLoginArgs
+                    {
                         UserName = impersonatedByUser.UserName,
                         ShouldSkipWritingHistoryLog = true
                     }
@@ -2387,12 +2390,24 @@ Obsidian.onReady(() => {{
                 Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( impersonatedPersonKeyParam, true, this.PageId );
                 if ( impersonatedPerson != null )
                 {
-                    // Is the impersonated person the same as the person who's already logged in?
-                    // If so, don't ruin their existing session... just return true.
-                    if ( CurrentUser != null && impersonatedPerson.Id == CurrentUser.PersonId )
-                    {
-                        return true;
-                    }
+                    /*
+                        7/9/2025 - MSE
+
+                        Previously, if the PersonId matched the current individual, we would skip re-authentication even if the token in the URL
+                        differed from the current authentication ticket.
+                        This would cause the token in the authentication ticket and the URL to become out of sync,
+                        leading to runtime errors.
+
+                        Now, if the tokens differ (even for the same PersonId), we always force a sign-out and re-authenticate with the new token.
+
+                        Reason: Prevent session and token mismatches during impersonation
+
+                        Code Removed:
+                        if ( CurrentUser != null && impersonatedPerson.Id == CurrentUser.PersonId )
+                        {
+                            return true;
+                        }
+                    */
 
                     Authorization.SignOut();
 
@@ -3022,7 +3037,7 @@ Sys.Application.add_load(function () {
             var baseUrl = FileUrlHelper.GetImageUrl( binaryFileId );
             var url = ResolveRockUrl( $"{baseUrl}&width={size}&height={size}&mode=crop&format=png" );
             favIcon.Text = $"<link rel=\"{rel}\" sizes=\"{size}x{size}\" href=\"{url}\" />";
-             
+
             AddHtmlLink( favIcon );
         }
 
@@ -4701,7 +4716,7 @@ Sys.Application.add_load(function () {
                 return string.Empty;
             }
 
-            return WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper(request) );
+            return WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper( request ) );
         }
 
         #endregion

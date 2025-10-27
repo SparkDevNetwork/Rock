@@ -1301,11 +1301,12 @@ namespace Rock.Blocks.Reporting
                     }
 
                     // Existing column configuration not found; add a new one with default values.
+                    var columnType = GetColumnTypeFromDataType( dataColumn.DataType );
                     column = new ColumnConfigurationBag
                     {
                         ActualColumnName = columnName,
                         Name = columnName,
-                        ColumnType = ColumnType.TextValue
+                        ColumnType = columnType
                     };
 
                     columnConfigurations.Add( column );
@@ -1315,6 +1316,37 @@ namespace Rock.Blocks.Reporting
             SetColumnConfigurationNames( columnConfigurations );
 
             return columnConfigurations;
+        }
+
+        /// <summary>
+        /// Gets the column type based on the data type.
+        /// </summary>
+        /// <param name="dataType">The data type.</param>
+        /// <returns>The column type.</returns>
+        private string GetColumnTypeFromDataType( Type dataType )
+        {
+            if ( dataType == typeof( bool ) )
+            {
+                return ColumnType.BooleanValue;
+            }
+            if ( dataType == typeof( DateTime ) || dataType == typeof( DateTimeOffset ) )
+            {
+                return ColumnType.DateTimeValue;
+            }
+            if ( dataType == typeof( decimal ) )
+            {
+                return ColumnType.CurrencyValue;
+            }
+            if ( dataType == typeof( double ) || dataType == typeof( float ) )
+            {
+                return ColumnType.NumberValue;
+            }
+            if ( dataType == typeof( int ) || dataType == typeof( long ) || dataType == typeof( short ) || dataType == typeof( byte ) )
+            {
+                return ColumnType.NumberValue;
+            }
+
+            return ColumnType.TextValue;
         }
 
         /// <summary>

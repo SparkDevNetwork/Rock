@@ -966,13 +966,22 @@ namespace Rock.Blocks.Group.Scheduling
             var includeGroupTypeGuids = GetAttributeValue( AttributeKey.IncludeGroupTypes ).SplitDelimitedValues().AsGuidList();
             var excludeGroupTypeGuids = GetAttributeValue( AttributeKey.ExcludeGroupTypes ).SplitDelimitedValues().AsGuidList();
 
+            /*
+                 7/29/2025 - MSE
+
+                 Group can be null for Unavailability entries that apply to "All Groups". These should always be included in the results
+                 for completeness and to prevent null reference exceptions when filtering by Group Type.
+
+                 Fixes: https://github.com/SparkDevNetwork/Rock/issues/6390
+            */
+
             if ( includeGroupTypeGuids.Any() )
             {
-                rows = rows.Where( gm => includeGroupTypeGuids.Contains( gm.Group.GroupType.Guid ) ).ToList();
+                rows = rows.Where( gm => gm.Group == null || includeGroupTypeGuids.Contains( gm.Group.GroupType.Guid ) ).ToList();
             }
             else if ( excludeGroupTypeGuids.Any() )
             {
-                rows = rows.Where( gm => !excludeGroupTypeGuids.Contains( gm.Group.GroupType.Guid ) ).ToList();
+                rows = rows.Where( gm => gm.Group == null || !excludeGroupTypeGuids.Contains( gm.Group.GroupType.Guid ) ).ToList();
             }
 
             // Sort and project all of the above into a final collection of rows.

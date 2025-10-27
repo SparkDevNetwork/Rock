@@ -1427,6 +1427,15 @@ namespace RockWeb.Blocks.Cms
 
                 if ( phoneNumber.NumberTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() )
                 {
+                    var cbSms = e.Item.FindControl( "cbSms" ) as RockCheckBox;
+                    if ( cbSms != null )
+                    {
+                        var smsOptInText = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
+                        cbSms.Text = string.IsNullOrWhiteSpace( smsOptInText )
+                            ? "I would like to receive important text messages"
+                            : smsOptInText;
+                    }
+
                     if ( GetAttributeValue( AttributeKey.HighlightMobilePhone ).AsBoolean() )
                     {
                         var hightlightTitle = ( Literal ) e.Item.FindControl( "litHighlightTitle" );

@@ -135,6 +135,32 @@ export function getContentWrapperSelector(componentTypeName: ContentWrapperSuppo
     return `.${getContentWrapperCssClass(componentTypeName, wrapperSuffix)}`;
 }
 
+/**
+ * These classes that can be added to globally style elements.
+ */
+export const GlobalCssClasses = {
+    borderHeading1: `border-heading-1`,
+    borderHeading2: `border-heading-2`,
+    borderHeading3: `border-heading-3`,
+    borderParagraph: `border-paragraph`,
+
+    fontGlobal: `font-global`,
+    fontHeading1: `font-heading-1`,
+    fontHeading2: `font-heading-2`,
+    fontHeading3: `font-heading-3`,
+    fontParagraph: `font-paragraph`,
+
+    marginHeading1: `margin-heading-1`,
+    marginHeading2: `margin-heading-2`,
+    marginHeading3: `margin-heading-3`,
+    marginParagraph: `margin-paragraph`,
+
+    paddingHeading1: `padding-heading-1`,
+    paddingHeading2: `padding-heading-2`,
+    paddingHeading3: `padding-heading-3`,
+    paddingParagraph: `padding-paragraph`
+} as const;
+
 export const GlobalStylesCssSelectors = {
     backgroundColor: `.${EmailWrapperCssClass}`,
 
@@ -144,26 +170,6 @@ export const GlobalStylesCssSelectors = {
     bodyAlignment: getMarginWrapperCellSelector("row"),
     bodyBorderStyling: getBorderWrapperCellSelector("row"),
     bodyMargin: getMarginWrapperCellSelector("row"),
-
-    globalTextStyling: `body, .${EmailWrapperCssClass} > tbody > tr > td`,
-
-    heading1TextStyling: `.component-title h1`,
-    heading1Margin: `${getMarginWrapperCellSelector("title", "-h1")}`,
-    heading1Padding: `${getPaddingWrapperCellSelector("title", "-h1")}`,
-    heading1BorderStyling: `${getBorderWrapperCellSelector("title", "-h1")}`,
-
-    heading2TextStyling: `.component-title h2`,
-    heading2Margin: `${getMarginWrapperCellSelector("title", "-h2")}`,
-    heading2Padding: `${getPaddingWrapperCellSelector("title", "-h2")}`,
-    heading2BorderStyling: `${getBorderWrapperCellSelector("title", "-h2")}`,
-
-    heading3TextStyling: `.component-title h3`,
-    heading3Margin: `${getMarginWrapperCellSelector("title", "-h3")}`,
-    heading3Padding: `${getPaddingWrapperCellSelector("title", "-h3")}`,
-    heading3BorderStyling: `${getBorderWrapperCellSelector("title", "-h3")}`,
-
-    paragraphTextStyling: getContentWrapperSelector("text"),
-    paragraphMargin: getMarginWrapperCellSelector("text"),
 
     buttonBackgroundColor: `.component-button .button-link`,
     buttonTextStyling: `.component-button .button-link`,
@@ -1596,7 +1602,7 @@ export function getVideoComponentHelper(): ComponentMigrationHelper & {
     getElements(componentElement: Element): ComponentStructure | null;
     createComponentElement(): HTMLElement;
 } {
-    const latestVersion = "v2-alpha" as const;
+    const latestVersion = "v17.3-alpha" as const;
 
     return {
         getElements(componentElement: Element): ComponentStructure | null {
@@ -1610,7 +1616,7 @@ export function getVideoComponentHelper(): ComponentMigrationHelper & {
         createComponentElement(): HTMLElement {
             const componentElements = createComponent(
                 "video",
-                "v2-alpha",
+                latestVersion,
                 `<a href=""><img src="/Assets/Images/video-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></a>`
             );
             // Image component needs a line-height of 0 to remove extra space under image.
@@ -1673,35 +1679,52 @@ export function getVideoComponentHelper(): ComponentMigrationHelper & {
                     if (sourceUrl) newComponent.setAttribute("data-image-source-video-url", sourceUrl);
 
                     // Create the v2-alpha structure
-                    newComponent.innerHTML = `
-            <tbody>
-                <tr>
-                    <td>
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="border-wrapper border-wrapper-for-video" style="border-collapse: separate !important;">
-                            <tbody>
-                                <tr>
-                                    <td style="overflow: hidden;">
-                                        <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper padding-wrapper-for-video">
-                                            <tbody>
-                                                <tr>
-                                                    <td style="line-height: 0;">
-                                                        <a href="${href}">
-                                                            <img src="${src}" ${dataImgCssWidth ? `data-imgcsswidth="${dataImgCssWidth}"` : ""} style="${style}">
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </td>
-                </tr>
-            </tbody>
-        `;
+                    newComponent.innerHTML =
+`<tbody>
+    <tr>
+        <td>
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="border-wrapper border-wrapper-for-video" style="border-collapse: separate !important;">
+                <tbody>
+                    <tr>
+                        <td style="overflow: hidden;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper padding-wrapper-for-video">
+                                <tbody>
+                                    <tr>
+                                        <td style="line-height: 0;">
+                                            <a href="${href}">
+                                                <img src="${src}" ${dataImgCssWidth ? `data-imgcsswidth="${dataImgCssWidth}"` : ""} style="${style}">
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+</tbody>`;
 
                     return newComponent;
+                },
+
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                function v2AlphaToV17_3Alpha(componentElement: Element): Element {
+                    const versionNumber = getComponentVersionNumber(componentElement);
+                    if (!versionNumber) {
+                        // This shouldn't occur unless the v0 migration was skipped or modified incorrectly.
+                        throw new Error("Component version number is missing.");
+                    }
+
+                    if (compareComponentVersions(versionNumber, "v17.3-alpha") >= 0) {
+                        return componentElement; // Already migrated
+                    }
+
+                    // Bump version.
+                    setComponentVersionNumber(componentElement, "v17.3-alpha");
+
+                    return componentElement;
                 }
             ];
 
@@ -1716,27 +1739,45 @@ export function getVideoComponentHelper(): ComponentMigrationHelper & {
     };
 }
 
-export function getTitleComponentHelper(): ComponentMigrationHelper & {
-    getElements(componentElement: Element): ComponentStructure & { readonly headingEl: HTMLHeadElement | null; } | null;
-    createComponentElement(): HTMLElement;
-} {
-    const latestVersion = "v2-alpha" as const;
+type TitleComponentStructure = ComponentStructure & {
+    readonly headingEl: HTMLHeadElement | null;
+    readonly borderEl: HTMLElement;
+    readonly marginEl: HTMLElement;
+    readonly paddingEl: HTMLElement;
+};
 
-    return {
+export type SupportedHeadingLevel = "h1" | "h2" | "h3";
+export const SupportedHeadingLevels: SupportedHeadingLevel[] = ["h1", "h2", "h3"];
+
+export function getTitleComponentHelper(): ComponentMigrationHelper & {
+    getElements(componentElement: Element): TitleComponentStructure | null;
+    createComponentElement(): HTMLElement;
+    setCssClasses(componentElements: TitleComponentStructure): void;
+} {
+    const latestVersion = "v17.3-alpha" as const;
+
+
+    const helper = {
         createComponentElement(): HTMLElement {
-            const componentElements = createComponent(
+            const component = createComponent(
                 "title",
                 latestVersion,
                 `<h1 class="${RockCssClassContentEditable}" style="margin: 0;">Title</h1>`
             );
-            // Initialize the component with the correct classes.
-            componentElements.marginWrapper.table.classList.add(getMarginWrapperTableCssClass("title", "-h1"));
-            componentElements.marginWrapper.borderWrapper.table.classList.add(getBorderWrapperTableCssClass("title", "-h1"));
-            componentElements.marginWrapper.borderWrapper.paddingWrapper.table.classList.add(getPaddingWrapperTableCssClass("title", "-h1"));
+
+            const componentElements = helper.getElements(component.marginWrapper.table);
+
+            if (!componentElements) {
+                throw new Error("Failed to create title component element. Structure is invalid.");
+            }
+
+            // Set CSS classes to enable global and component-specific styles.
+            helper.setCssClasses(componentElements);
+
             return componentElements.marginWrapper.table;
         },
 
-        getElements(componentElement: Element): ComponentStructure & { headingEl: HTMLHeadElement | null; } | null {
+        getElements(componentElement: Element): TitleComponentStructure | null {
             if (!componentElement.classList.contains("component-title")) {
                 throw new Error(`Element is not a title component element: ${componentElement.outerHTML}`);
             }
@@ -1751,9 +1792,119 @@ export function getTitleComponentHelper(): ComponentMigrationHelper & {
                 ...wrappers,
 
                 get headingEl(): HTMLHeadingElement | null {
-                    return (wrappers.marginWrapper.borderWrapper.paddingWrapper.td.querySelector("h1, h2, h3, h4, h5, h6") ?? null) as HTMLHeadingElement | null;
+                    return (wrappers.marginWrapper.borderWrapper.paddingWrapper.td.querySelector(SupportedHeadingLevels.join(", ")) ?? null) as HTMLHeadingElement | null;
+                },
+
+                get marginEl(): HTMLElement {
+                    return wrappers.marginWrapper.td;
+                },
+
+                get borderEl(): HTMLElement {
+                    return wrappers.marginWrapper.borderWrapper.td;
+                },
+
+                get paddingEl(): HTMLElement {
+                    return wrappers.marginWrapper.borderWrapper.paddingWrapper.td;
                 }
             };
+        },
+
+        setCssClasses(componentElements: TitleComponentStructure): void {
+            // CSS classes are set based on the heading level.
+            const headingLevel = (componentElements.headingEl?.tagName.toLowerCase() ?? "h1") as SupportedHeadingLevel;
+
+            // Wrapper classes.
+
+            const marginWrapperTable = componentElements.marginWrapper.table;
+            Enumerable
+                .from(SupportedHeadingLevels)
+                .select(level => getMarginWrapperTableCssClass("title", `-${level}`))
+                .forEach(cssClass => marginWrapperTable.classList.remove(cssClass));
+            marginWrapperTable.classList.add(getMarginWrapperTableCssClass("title", `-${headingLevel}`));
+
+            const borderWrapperTable = componentElements.marginWrapper.borderWrapper.table;
+            Enumerable
+                .from(SupportedHeadingLevels)
+                .select(level => getBorderWrapperTableCssClass("title", `-${level}`))
+                .forEach(cssClass => borderWrapperTable.classList.remove(cssClass));
+            borderWrapperTable.classList.add(getBorderWrapperTableCssClass("title", `-${headingLevel}`));
+
+            const paddingWrapperTable = componentElements.marginWrapper.borderWrapper.paddingWrapper.table;
+            Enumerable
+                .from(SupportedHeadingLevels)
+                .select(level => getPaddingWrapperTableCssClass("title", `-${level}`))
+                .forEach(cssClass => paddingWrapperTable.classList.remove(cssClass));
+            paddingWrapperTable.classList.add(getPaddingWrapperTableCssClass("title", `-${headingLevel}`));
+
+            // Style classes.
+
+            function getMarginClass(level: SupportedHeadingLevel): string {
+                switch (level) {
+                    case "h1": return GlobalCssClasses.marginHeading1;
+                    case "h2": return GlobalCssClasses.marginHeading2;
+                    case "h3": return GlobalCssClasses.marginHeading3;
+                    default: throw new Error(`Unsupported heading level: ${level}`);
+                }
+            }
+
+            function getBorderClass(level: SupportedHeadingLevel): string {
+                switch (level) {
+                    case "h1": return GlobalCssClasses.borderHeading1;
+                    case "h2": return GlobalCssClasses.borderHeading2;
+                    case "h3": return GlobalCssClasses.borderHeading3;
+                    default: throw new Error(`Unsupported heading level: ${level}`);
+                }
+            }
+
+            function getPaddingClass(level: SupportedHeadingLevel): string {
+                switch (level) {
+                    case "h1": return GlobalCssClasses.paddingHeading1;
+                    case "h2": return GlobalCssClasses.paddingHeading2;
+                    case "h3": return GlobalCssClasses.paddingHeading3;
+                    default: throw new Error(`Unsupported heading level: ${level}`);
+                }
+            }
+
+            function getFontClass(level: SupportedHeadingLevel): string {
+                switch (level) {
+                    case "h1": return GlobalCssClasses.fontHeading1;
+                    case "h2": return GlobalCssClasses.fontHeading2;
+                    case "h3": return GlobalCssClasses.fontHeading3;
+                    default: throw new Error(`Unsupported heading level: ${level}`);
+                }
+            }
+
+            const marginWrapperTd = componentElements.marginWrapper.td;
+            Enumerable
+                .from(SupportedHeadingLevels)
+                .select(level => getMarginClass(level))
+                .forEach(cssClass => marginWrapperTd.classList.remove(cssClass));
+            marginWrapperTd.classList.add(getMarginClass(headingLevel));
+
+            const borderWrapperTd = componentElements.marginWrapper.borderWrapper.td;
+            Enumerable
+                .from(SupportedHeadingLevels)
+                .select(level => getBorderClass(level))
+                .forEach(cssClass => borderWrapperTd.classList.remove(cssClass));
+            borderWrapperTd.classList.add(getBorderClass(headingLevel));
+
+            const paddingWrapperTd = componentElements.marginWrapper.borderWrapper.paddingWrapper.td;
+            Enumerable
+                .from(SupportedHeadingLevels)
+                .select(level => getPaddingClass(level))
+                .forEach(cssClass => paddingWrapperTd.classList.remove(cssClass));
+            paddingWrapperTd.classList.add(getPaddingClass(headingLevel));
+
+            const headingEl = componentElements.headingEl;
+            if (headingEl) {
+                Enumerable
+                    .from(SupportedHeadingLevels)
+                    .select(level => getFontClass(level))
+                    .forEach(cssClass => headingEl.classList.remove(cssClass));
+
+                // Also add the global font class so the global font can affect the heading.
+                headingEl.classList.add(GlobalCssClasses.fontGlobal, getFontClass(headingLevel));
+            }
         },
 
         isMigrationRequired(componentElement: Element): boolean {
@@ -1781,10 +1932,13 @@ export function getTitleComponentHelper(): ComponentMigrationHelper & {
                 throw new Error(`Element is not a title component element: ${oldComponentElement.outerHTML}`);
             }
 
-            if (!this.isMigrationRequired(oldComponentElement)) {
+            if (!helper.isMigrationRequired(oldComponentElement)) {
                 return oldComponentElement;
             }
 
+            // Migrations should be in chronological order
+            // and should not use helper methods or variables that
+            // can change.
             const migrations = [
                 function v0ToV2Alpha(componentElement: Element): Element {
                     if (getComponentVersionNumber(componentElement)) {
@@ -1847,6 +2001,69 @@ export function getTitleComponentHelper(): ComponentMigrationHelper & {
                     `;
 
                     return wrapper;
+                },
+
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                function v2AlphaToV17_3Alpha(componentElement: Element): Element {
+                    const versionNumber = getComponentVersionNumber(componentElement);
+                    if (!versionNumber) {
+                        // This shouldn't occur unless the v0 migration was skipped or modified incorrectly.
+                        throw new Error("Component version number is missing.");
+                    }
+
+                    if (compareComponentVersions(versionNumber, "v17.3-alpha") >= 0) {
+                        return componentElement; // Already migrated
+                    }
+
+                    const heading = (componentElement.querySelector("h1, h2, h3, h4, h5, h6") ?? null) as HTMLHeadingElement | null;
+                    if (!heading) {
+                        throw new Error("Heading tag not found in title component.");
+                    }
+
+                    const headingTag = heading.tagName.toLowerCase();
+                    const cssClasses = headingTag === "h1"
+                        ? {
+                            margin: "margin-heading-1",
+                            border: "border-heading-1",
+                            padding: "padding-heading-1",
+                            font: "font-heading-1"
+                        }
+                        : headingTag === "h2"
+                            ? {
+                                margin: "margin-heading-2",
+                                border: "border-heading-2",
+                                padding: "padding-heading-2",
+                                font: "font-heading-2"
+                            }
+                            : {
+                                margin: "margin-heading-3",
+                                border: "border-heading-3",
+                                padding: "padding-heading-3",
+                                font: "font-heading-3"
+                            };
+
+                    // Add the CSS classes.
+                    const marginWrapperTd = componentElement.querySelector(":scope > tbody > tr > td");
+                    if (marginWrapperTd) {
+                        marginWrapperTd.classList.add(cssClasses.margin);
+
+                        const borderWrapperTd = marginWrapperTd.querySelector(".border-wrapper > tbody > tr > td");
+                        if (borderWrapperTd) {
+                            borderWrapperTd.classList.add(cssClasses.border);
+
+                            const paddingWrapperTd = borderWrapperTd.querySelector(".padding-wrapper > tbody > tr > td");
+                            if (paddingWrapperTd) {
+                                paddingWrapperTd.classList.add(cssClasses.padding);
+
+                                // Add the font class to the heading element.
+                                heading.classList.add("font-global", cssClasses.font);
+                            }
+                        }
+                    }
+
+                    setComponentVersionNumber(componentElement, "v17.3-alpha"); // Ensure version tracking
+
+                    return componentElement;
                 }
             ];
 
@@ -1858,17 +2075,26 @@ export function getTitleComponentHelper(): ComponentMigrationHelper & {
             return latestVersion;
         }
     };
+
+    return helper;
 }
 
+type TextComponentStructure = ComponentStructure & {
+    readonly contentWrapper: HTMLHeadElement | null;
+    readonly borderEl: HTMLElement;
+    readonly marginEl: HTMLElement;
+    readonly paddingEl: HTMLElement;
+};
+
 export function getTextComponentHelper(): ComponentMigrationHelper & {
-    getElements(componentElement: Element): ComponentStructure & { readonly contentWrapper: HTMLElement | null; } | null;
+    getElements(componentElement: Element): TextComponentStructure | null;
     createComponentElement(): HTMLElement;
 } {
-    const latestVersion = "v2-alpha" as const;
+    const latestVersion = "v17.3-alpha" as const;
 
-    return {
+    const helper = {
         createComponentElement(): HTMLElement {
-            const componentElements = createComponent(
+            const componentStructure = createComponent(
                 "text",
                 latestVersion,
                 // Wrap component in a content-wrapper so the wrapper can be styled.
@@ -1876,10 +2102,22 @@ export function getTextComponentHelper(): ComponentMigrationHelper & {
                 `<div class="content-wrapper content-wrapper-for-text ${RockCssClassContentEditable}"><p style="margin: 0;">Let's see what you have to say!</p></div>`
             );
 
+            const componentElements = helper.getElements(componentStructure.marginWrapper.table);
+
+            if (!componentElements) {
+                throw new Error("Failed to create text component element. Structure is invalid.");
+            }
+
+            // Set CSS classes to enable global and component-specific styles.
+            componentElements.marginEl.classList.add(GlobalCssClasses.marginParagraph);
+            componentElements.borderEl.classList.add(GlobalCssClasses.borderParagraph);
+            componentElements.paddingEl.classList.add(GlobalCssClasses.paddingParagraph);
+            componentElements.contentWrapper?.classList.add(GlobalCssClasses.fontGlobal, GlobalCssClasses.fontParagraph);
+
             return componentElements.marginWrapper.table;
         },
 
-        getElements(componentElement: Element): ComponentStructure & { readonly contentWrapper: HTMLElement | null; } | null {
+        getElements(componentElement: Element): TextComponentStructure | null {
             if (!componentElement.classList.contains("component-text")) {
                 throw new Error(`Element is not a text component element: ${componentElement.outerHTML}`);
             }
@@ -1892,6 +2130,18 @@ export function getTextComponentHelper(): ComponentMigrationHelper & {
 
                     get contentWrapper(): HTMLElement | null {
                         return wrappers.marginWrapper.borderWrapper.paddingWrapper.td.querySelector(getContentWrapperSelector("text")) as HTMLElement | null;
+                    },
+
+                    get marginEl(): HTMLElement {
+                        return wrappers.marginWrapper.td;
+                    },
+
+                    get borderEl(): HTMLElement {
+                        return wrappers.marginWrapper.borderWrapper.td;
+                    },
+
+                    get paddingEl(): HTMLElement {
+                        return wrappers.marginWrapper.borderWrapper.paddingWrapper.td;
                     }
                 };
             }
@@ -1915,10 +2165,13 @@ export function getTextComponentHelper(): ComponentMigrationHelper & {
                 throw new Error(`Element is not a text component element: ${oldComponentElement.outerHTML}`);
             }
 
-            if (!this.isMigrationRequired(oldComponentElement)) {
+            if (!helper.isMigrationRequired(oldComponentElement)) {
                 return oldComponentElement;
             }
 
+            // Migrations should be in chronological order
+            // and should not use helper methods or variables that
+            // can change.
             const migrations = [
                 function v0ToV2Alpha(componentElement: Element): Element {
                     if (getComponentVersionNumber(componentElement)) {
@@ -1997,6 +2250,48 @@ export function getTextComponentHelper(): ComponentMigrationHelper & {
                     }
 
                     return newRoot;
+                },
+
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                function v2AlphaToV17_3Alpha(componentElement: Element): Element {
+                    const versionNumber = getComponentVersionNumber(componentElement);
+                    if (!versionNumber) {
+                        // This shouldn't occur unless the v0 migration was skipped or modified incorrectly.
+                        throw new Error("Component version number is missing.");
+                    }
+
+                    if (compareComponentVersions(versionNumber, "v17.3-alpha") >= 0) {
+                        return componentElement; // Already migrated
+                    }
+
+                    const contentWrapper = componentElement.querySelector(".content-wrapper-for-text");
+
+                    if (!contentWrapper) {
+                        throw new Error("Content wrapper not found in text component.");
+                    }
+
+                    // Add the CSS classes.
+                    const marginWrapperTd = componentElement.querySelector(":scope > tbody > tr > td");
+                    if (marginWrapperTd) {
+                        marginWrapperTd.classList.add("margin-paragraph");
+
+                        const borderWrapperTd = marginWrapperTd.querySelector(".border-wrapper > tbody > tr > td");
+                        if (borderWrapperTd) {
+                            borderWrapperTd.classList.add("border-paragraph");
+
+                            const paddingWrapperTd = borderWrapperTd.querySelector(".padding-wrapper > tbody > tr > td");
+                            if (paddingWrapperTd) {
+                                paddingWrapperTd.classList.add("padding-paragraph");
+
+                                // Add the font class to the content wrapper element.
+                                contentWrapper.classList.add("font-global", "font-paragraph");
+                            }
+                        }
+                    }
+
+                    setComponentVersionNumber(componentElement, "v17.3-alpha"); // Ensure version tracking
+
+                    return componentElement;
                 }
             ];
 
@@ -2008,13 +2303,16 @@ export function getTextComponentHelper(): ComponentMigrationHelper & {
             return latestVersion;
         }
     };
+
+    return helper;
 }
 
 export function getButtonComponentHelper(): ComponentMigrationHelper & {
     getElements(componentElement: Element): ComponentStructure & { readonly linkButton: HTMLAnchorElement | null; } | null;
     createComponentElement(): HTMLElement;
 } {
-    const latestVersion = "v2.1-alpha" as const;
+    // Don't forget to add a migration below if the version changes.
+    const latestVersion = "v17.3-alpha" as const;
 
     return {
         createComponentElement(): HTMLElement {
@@ -2180,6 +2478,24 @@ export function getButtonComponentHelper(): ComponentMigrationHelper & {
                     }
 
                     return outerWrapper;
+                },
+
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                function v2AlphaToV17_3Alpha(componentElement: Element): Element {
+                    const versionNumber = getComponentVersionNumber(componentElement);
+                    if (!versionNumber) {
+                        // This shouldn't occur unless the v0 migration was skipped or modified incorrectly.
+                        throw new Error("Component version number is missing.");
+                    }
+
+                    if (compareComponentVersions(versionNumber, "v17.3-alpha") >= 0) {
+                        return componentElement; // Already migrated
+                    }
+
+                    // Bump version.
+                    setComponentVersionNumber(componentElement, "v17.3-alpha");
+
+                    return componentElement;
                 }
             ];
 
@@ -2197,7 +2513,7 @@ export function getCodeComponentHelper(): ComponentMigrationHelper & {
     getElements(componentElement: Element): ComponentStructure & { readonly contentWrapper: HTMLElement | null; } | null
     createComponentElement(): HTMLElement;
 } {
-    const latestVersion = "v2-alpha" as const;
+    const latestVersion = "v17.3-alpha" as const;
 
     return {
         createComponentElement(): HTMLElement {
@@ -2289,6 +2605,24 @@ export function getCodeComponentHelper(): ComponentMigrationHelper & {
                     contentContainer.innerHTML = componentElement.innerHTML;
 
                     return newComponentElement;
+                },
+
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                function v2AlphaToV17_3Alpha(componentElement: Element): Element {
+                    const versionNumber = getComponentVersionNumber(componentElement);
+                    if (!versionNumber) {
+                        // This shouldn't occur unless the v0 migration was skipped or modified incorrectly.
+                        throw new Error("Component version number is missing.");
+                    }
+
+                    if (compareComponentVersions(versionNumber, "v17.3-alpha") >= 0) {
+                        return componentElement; // Already migrated
+                    }
+
+                    // Bump version.
+                    setComponentVersionNumber(componentElement, "v17.3-alpha");
+
+                    return componentElement;
                 }
             ];
 
@@ -2306,7 +2640,7 @@ export function getDividerComponentHelper(): ComponentMigrationHelper & {
     getElements(componentElement: Element): ComponentStructure | null;
     createComponentElement(): HTMLElement;
 } {
-    const latestVersion = "v2-alpha" as const;
+    const latestVersion = "v17.3-alpha" as const;
 
     return {
         createComponentElement(): HTMLElement {
@@ -2402,6 +2736,24 @@ export function getDividerComponentHelper(): ComponentMigrationHelper & {
                     `;
 
                     return newRoot;
+                },
+
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                function v2AlphaToV17_3Alpha(componentElement: Element): Element {
+                    const versionNumber = getComponentVersionNumber(componentElement);
+                    if (!versionNumber) {
+                        // This shouldn't occur unless the v0 migration was skipped or modified incorrectly.
+                        throw new Error("Component version number is missing.");
+                    }
+
+                    if (compareComponentVersions(versionNumber, "v17.3-alpha") >= 0) {
+                        return componentElement; // Already migrated
+                    }
+
+                    // Bump version.
+                    setComponentVersionNumber(componentElement, "v17.3-alpha");
+
+                    return componentElement;
                 }
             ];
 
@@ -2418,7 +2770,7 @@ export function getRsvpComponentHelper(): ComponentMigrationHelper & {
     getElements(componentElement: Element): ComponentStructure | null;
     createComponentElement(): HTMLElement;
 } {
-    const latestVersion = "v2-alpha" as const;
+    const latestVersion = "v17.3-alpha" as const;
 
     return {
         createComponentElement(): HTMLElement {
@@ -2439,7 +2791,7 @@ export function getRsvpComponentHelper(): ComponentMigrationHelper & {
                                                     <tbody>
                                                         <tr>
                                                             <td class="rsvp-accept-content" align="center" valign="middle">
-                                                                <a class="rsvp-accept-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" title="Accept" style="color: #FFFFFF; display: inline-block; font-family: Arial; font-size: 16px; font-weight: bold; letter-spacing: normal; padding: 15px; text-align: center; text-decoration: none; border-bottom-width: 0;">Accept</a>
+                                                                <a class="rsvp-accept-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" title="Accept" style="color: #FFFFFF; display: inline-block; font-family: ${FontFamilies.Arial}; font-size: 16px; font-weight: bold; letter-spacing: normal; padding: 15px; text-align: center; text-decoration: none; border-bottom-width: 0;">Accept</a>
                                                             </td>
                                                         </tr>
                                                     </tbody>
@@ -2450,7 +2802,7 @@ export function getRsvpComponentHelper(): ComponentMigrationHelper & {
                                                     <tbody>
                                                         <tr>
                                                             <td class="rsvp-decline-content" align="center" valign="middle">
-                                                                <a class="rsvp-decline-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" title="Decline" style="color: #FFFFFF; display: inline-block; font-family: Arial; font-size: 16px; font-weight: bold; letter-spacing: normal; padding: 15px; text-align: center; text-decoration: none; border-bottom-width: 0;">Decline</a>
+                                                                <a class="rsvp-decline-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" title="Decline" style="color: #FFFFFF; display: inline-block; font-family: ${FontFamilies.Arial}; font-size: 16px; font-weight: bold; letter-spacing: normal; padding: 15px; text-align: center; text-decoration: none; border-bottom-width: 0;">Decline</a>
                                                             </td>
                                                         </tr>
                                                     </tbody>
@@ -2604,6 +2956,24 @@ export function getRsvpComponentHelper(): ComponentMigrationHelper & {
                     if (occurrenceInput) newComponent.appendChild(occurrenceInput.cloneNode(true));
 
                     return newComponent;
+                },
+
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                function v2AlphaToV17_3Alpha(componentElement: Element): Element {
+                    const versionNumber = getComponentVersionNumber(componentElement);
+                    if (!versionNumber) {
+                        // This shouldn't occur unless the v0 migration was skipped or modified incorrectly.
+                        throw new Error("Component version number is missing.");
+                    }
+
+                    if (compareComponentVersions(versionNumber, "v17.3-alpha") >= 0) {
+                        return componentElement; // Already migrated
+                    }
+
+                    // Bump version.
+                    setComponentVersionNumber(componentElement, "v17.3-alpha");
+
+                    return componentElement;
                 }
             ];
 
@@ -2620,13 +2990,13 @@ export function getRowComponentHelper(): ComponentMigrationHelper & {
     getElements(componentElement: Element): ComponentStructure | null;
     createComponentElement(): HTMLElement;
 } {
-    const latestVersion = "v2-alpha" as const;
+    const latestVersion = "v17.3-alpha" as const;
 
     return {
         createComponentElement(): HTMLElement {
             const componentElements = createComponent(
                 "row",
-                "v2-alpha",
+                latestVersion,
                 `<div class="dropzone"></div>`
             );
             return componentElements.marginWrapper.table;
@@ -2665,8 +3035,8 @@ export function getRowComponentHelper(): ComponentMigrationHelper & {
 
             // Are there any child components that need migration?
             if (Enumerable
-                .from(componentElement.children)
-                .where(c => {
+                .from(componentElement.querySelectorAll(".component"))
+                .any(c => {
                     try {
                         const helper = getComponentHelper(getComponentTypeName(c));
                         return helper?.isMigrationRequired(c) ?? false;
@@ -2696,9 +3066,8 @@ export function getRowComponentHelper(): ComponentMigrationHelper & {
 
             // These are in order from oldest to newest; new migrations should be added at the end.
             const migrations = [
-                function v0ToV2Alpha(componentElement: Element): Element {
-                    // This component doesn't need a migration itself,
-                    // but a child component might need to be migrated.
+                // Always start by migrating child components.
+                function migrateChildComponents(componentElement: Element): Element {
                     const childComponents = componentElement.querySelectorAll(".component");
 
                     childComponents.forEach(childComponent => {
@@ -2710,6 +3079,24 @@ export function getRowComponentHelper(): ComponentMigrationHelper & {
                             }
                         }
                     });
+
+                    return componentElement;
+                },
+
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                function v2AlphaToV17_3Alpha(componentElement: Element): Element {
+                    const versionNumber = getComponentVersionNumber(componentElement);
+                    if (!versionNumber) {
+                        // This shouldn't occur unless the v0 migration was skipped or modified incorrectly.
+                        throw new Error("Component version number is missing.");
+                    }
+
+                    if (compareComponentVersions(versionNumber, "v17.3-alpha") >= 0) {
+                        return componentElement; // Already migrated
+                    }
+
+                    // Bump version.
+                    setComponentVersionNumber(componentElement, "v17.3-alpha");
 
                     return componentElement;
                 }
@@ -2733,11 +3120,12 @@ type SectionComponentTypeName = Extract<EditorComponentTypeName,
     | "four-column-section"
     | "right-sidebar-section"
     | "left-sidebar-section">;
+
 export function getSectionComponentHelper(): ComponentMigrationHelper & {
     getElements(componentElement: Element): ComponentStructure & { readonly rowWrapper: HTMLTableElement | null; } | null;
     createComponentElement(componentTypeName: SectionComponentTypeName): HTMLElement;
 } {
-    const latestVersion = "v2-alpha" as const;
+    const latestVersion = "v17.3-alpha" as const;
 
     return {
         createComponentElement(componentTypeName: SectionComponentTypeName): HTMLElement {
@@ -2820,6 +3208,24 @@ export function getSectionComponentHelper(): ComponentMigrationHelper & {
                 return true;
             }
 
+            // Are there any child components that need migration?
+            if (Enumerable
+                .from(componentElement.querySelectorAll(".component"))
+                .any(c => {
+                    try {
+                        const helper = getComponentHelper(getComponentTypeName(c));
+                        return helper?.isMigrationRequired(c) ?? false;
+                    }
+                    catch (e) {
+                        // Log error and continue
+                        console.error(`Error checking migration for row component child: ${e}`);
+                        return false;
+                    }
+                })
+            ) {
+                return true;
+            }
+
             return false;
         },
 
@@ -2833,6 +3239,23 @@ export function getSectionComponentHelper(): ComponentMigrationHelper & {
 
             // These are in order from oldest to newest; new migrations should be added at the end.
             const migrations = [
+                // Always start by migrating child components.
+                function migrateChildComponents(componentElement: Element): Element {
+                    const childComponents = componentElement.querySelectorAll(".component");
+
+                    childComponents.forEach(childComponent => {
+                        const helper = getComponentHelper(getComponentTypeName(childComponent));
+                        if (helper?.isMigrationRequired(childComponent)) {
+                            const migratedChild = helper.migrate(childComponent);
+                            if (migratedChild !== childComponent) {
+                                childComponent.replaceWith(migratedChild);
+                            }
+                        }
+                    });
+
+                    return componentElement;
+                },
+
                 function v0ToV2Alpha(componentElement: Element): Element {
                     if (getComponentVersionNumber(componentElement)) {
                         // The old component element didn't have a version number
@@ -2964,19 +3387,25 @@ export function getSectionComponentHelper(): ComponentMigrationHelper & {
                         }
                     });
 
-                    // Before returning the section, migrate all descendant components.
-                    const childComponents = newRoot.querySelectorAll(".component");
-                    childComponents.forEach(childComponent => {
-                        const helper = getComponentHelper(getComponentTypeName(childComponent));
-                        if (helper?.isMigrationRequired(childComponent)) {
-                            const migratedChild = helper.migrate(childComponent);
-                            if (migratedChild !== childComponent) {
-                                childComponent.replaceWith(migratedChild);
-                            }
-                        }
-                    });
-
                     return newRoot;
+                },
+
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                function v2AlphaToV17_3Alpha(componentElement: Element): Element {
+                    const versionNumber = getComponentVersionNumber(componentElement);
+                    if (!versionNumber) {
+                        // This shouldn't occur unless the v0 migration was skipped or modified incorrectly.
+                        throw new Error("Component version number is missing.");
+                    }
+
+                    if (compareComponentVersions(versionNumber, "v17.3-alpha") >= 0) {
+                        return componentElement; // Already migrated
+                    }
+
+                    // Bump version.
+                    setComponentVersionNumber(componentElement, "v17.3-alpha");
+
+                    return componentElement;
                 }
             ];
 
@@ -2994,13 +3423,13 @@ export function getImageComponentHelper(): ComponentMigrationHelper & {
     getElements(componentElement: Element): ComponentStructure | null,
     createComponentElement(): HTMLElement
 } {
-    const latestVersion = "v2-alpha" as const;
+    const latestVersion = "v17.3-alpha" as const;
 
     return {
         createComponentElement(): HTMLElement {
             const componentElements = createComponent(
                 "image",
-                "v2-alpha",
+                latestVersion,
                 // Use box-sizing: border-box to ensure border is included in image width calculations.
                 `<img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%; box-sizing: border-box;">`
             );
@@ -3125,6 +3554,24 @@ export function getImageComponentHelper(): ComponentMigrationHelper & {
                     `;
 
                     return wrapper;
+                },
+
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                function v2AlphaToV17_3Alpha(componentElement: Element): Element {
+                    const versionNumber = getComponentVersionNumber(componentElement);
+                    if (!versionNumber) {
+                        // This shouldn't occur unless the v0 migration was skipped or modified incorrectly.
+                        throw new Error("Component version number is missing.");
+                    }
+
+                    if (compareComponentVersions(versionNumber, "v17.3-alpha") >= 0) {
+                        return componentElement; // Already migrated
+                    }
+
+                    // Bump version.
+                    setComponentVersionNumber(componentElement, "v17.3-alpha");
+
+                    return componentElement;
                 }
             ];
 
@@ -3168,3 +3615,22 @@ export function getComponentHelper(componentTypeName: ComponentTypeName) {
 }
 
 // #endregion Components
+
+export const FontFamilies = {
+    "Arial": "Arial, Helvetica, sans-serif",
+    "Courier New": '"Courier New", Courier, monospace',
+    "Georgia": "Georgia, serif",
+    "Tahoma": "Tahoma, Geneva, sans-serif",
+    "Times New Roman": '"Times New Roman", Times, serif',
+    "Trebuchet MS": '"Trebuchet MS", Helvetica, sans-serif',
+    "Verdana": "Verdana, Geneva, sans-serif",
+    "Lucida": '"Lucida Sans Unicode", "Lucida Grande", sans-serif',
+    "Helvetica Neue": '"Helvetica Neue", Helvetica, Arial, sans-serif'
+} as const;
+
+export const LineHeights = {
+    tight: { value: "1.2", title: "Tight" },
+    normal: { value: "1.5", title: "Normal" },
+    loose: { value: "1.8", title: "Loose" },
+    veryLoose: { value: "2", title: "Very Loose" }
+} as const;
