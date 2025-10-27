@@ -34,6 +34,14 @@ namespace Rock.ViewModels.Blocks.CheckIn.Config.CheckinTypeDetail
         public ListItemBag RegistrationDefaultPersonConnectionStatus { get; set; }
 
         /// <summary>
+        /// Gets or sets the registration default person record source.
+        /// </summary>
+        /// <value>
+        /// The registration default person record source.
+        /// </value>
+        public ListItemBag RegistrationDefaultPersonRecordSource { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [registration display alternate identifier field for adults].
         /// </summary>
         /// <value>

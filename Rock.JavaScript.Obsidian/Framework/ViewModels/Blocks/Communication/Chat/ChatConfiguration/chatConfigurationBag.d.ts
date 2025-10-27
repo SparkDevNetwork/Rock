@@ -37,6 +37,9 @@ export type ChatConfigurationBag = {
     /** Gets or sets the list of data views that will be used to populate badges in the external chat application. */
     chatBadgeDataViews?: ListItemBag[] | null;
 
+    /** Gets or sets the data view that will be used to determine who has direct message access. */
+    directMessageAccessDataView?: ListItemBag | null;
+
     /** Gets or sets the system default for whether individuals can receive direct messages from anybody in the system. */
     isOpenDirectMessagingAllowed: boolean;
 };

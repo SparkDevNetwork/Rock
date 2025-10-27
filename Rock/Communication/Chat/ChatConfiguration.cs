@@ -69,5 +69,10 @@ namespace Rock.Communication.Chat
         /// Gets or sets the unique identifier of the Rock chat system user.
         /// </summary>
         public Guid? SystemUserGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier of the <see cref="DataView"/> that will be used to determine who has direct message access.
+        /// </summary>
+        public Guid? DirectMessageAccessDataViewGuid { get; set; }
     }
 }

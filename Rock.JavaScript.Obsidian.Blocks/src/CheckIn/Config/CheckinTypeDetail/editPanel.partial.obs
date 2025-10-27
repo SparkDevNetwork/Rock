@@ -261,6 +261,12 @@
                                         :definedTypeGuid="DefinedType.PersonConnectionStatus"
                                         showBlankItem />
 
+                    <DefinedValuePicker v-model="registrationDefaultPersonRecordSource"
+                                        label="Default Person Record Source"
+                                        help="The record source to use when creating a new person (default = 'Check-in'). If a 'RecordSource' page parameter is found, it will be used instead."
+                                        :definedTypeGuid="DefinedType.RecordSourceType"
+                                        showBlankItem />
+
                     <CheckBox v-model="registrationDisplayAlternateIdFieldForAdults"
                               label="Display Alternate ID Field for Adults" />
 
@@ -480,6 +486,7 @@
 
     // Registration Settings
     const registrationDefaultPersonConnectionStatus = ref(props.modelValue?.bag?.registrationSettings?.registrationDefaultPersonConnectionStatus ?? {});
+    const registrationDefaultPersonRecordSource = ref(props.modelValue?.bag?.registrationSettings?.registrationDefaultPersonRecordSource ?? {});
     const registrationDisplayAlternateIdFieldForAdults = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplayAlternateIdFieldForAdults ?? false);
     const registrationDisplayAlternateIdFieldForChildren = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplayAlternateIdFieldForChildren ?? false);
     const registrationDisplaySmsEnabled = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplaySmsEnabled ?? false);
@@ -593,7 +600,7 @@
 
     const displaySettingsRefs = [hidePhotos, startTemplate, familySelectTemplate, personSelectTemplate, successTemplateOverrideDisplayMode, successTemplate];
 
-    const registrationSettingsRefs = [registrationDefaultPersonConnectionStatus, registrationDisplayAlternateIdFieldForAdults, registrationDisplayAlternateIdFieldForChildren,
+    const registrationSettingsRefs = [registrationDefaultPersonConnectionStatus, registrationDefaultPersonRecordSource, registrationDisplayAlternateIdFieldForAdults, registrationDisplayAlternateIdFieldForChildren,
         registrationDisplaySmsEnabled, registrationSmsEnabledByDefault, enableCheckInAfterRegistration, knownRelationshipTypes, sameFamilyKnownRelationshipTypes,
         canCheckInKnownRelationshipTypes, registrationAddFamilyWorkflowTypes, registrationAddPersonWorkflowTypes, registrationRequiredAttributesForAdults, registrationOptionalAttributesForAdults,
         registrationRequiredAttributesForChildren, registrationOptionalAttributesForChildren, registrationRequiredAttributesForFamilies, registrationDisplayBirthdateOnAdults, registrationDisplayBirthdateOnChildren,
@@ -759,6 +766,7 @@
 
         // Registration Settings
         updateRefValue(registrationDefaultPersonConnectionStatus, props.modelValue?.bag?.registrationSettings?.registrationDefaultPersonConnectionStatus ?? {});
+        updateRefValue(registrationDefaultPersonRecordSource, props.modelValue?.bag?.registrationSettings?.registrationDefaultPersonRecordSource ?? {});
         updateRefValue(registrationDisplayAlternateIdFieldForAdults, props.modelValue?.bag?.registrationSettings?.registrationDisplayAlternateIdFieldForAdults ?? false);
         updateRefValue(registrationDisplayAlternateIdFieldForChildren, props.modelValue?.bag?.registrationSettings?.registrationDisplayAlternateIdFieldForChildren ?? false);
         updateRefValue(registrationDisplaySmsEnabled, props.modelValue?.bag?.registrationSettings?.registrationDisplaySmsEnabled ?? false);
@@ -806,6 +814,7 @@
 
             const registrationSettings: CheckInRegistrationSettingsBag = {
                 registrationDefaultPersonConnectionStatus: registrationDefaultPersonConnectionStatus.value,
+                registrationDefaultPersonRecordSource: registrationDefaultPersonRecordSource.value,
                 registrationDisplayAlternateIdFieldForAdults: registrationDisplayAlternateIdFieldForAdults.value,
                 registrationDisplayAlternateIdFieldForChildren: registrationDisplayAlternateIdFieldForChildren.value,
                 registrationDisplaySmsEnabled: registrationDisplaySmsEnabled.value,

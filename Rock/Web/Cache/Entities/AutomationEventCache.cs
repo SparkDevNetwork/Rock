@@ -116,7 +116,7 @@ namespace Rock.Web.Cache
         /// <param name="container">The container for all the automation event components.</param>
         internal static void CreateAllExecutors( AutomationEventContainer container )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Don't use cache since we might get executed before the cache
                 // is ready and valid.
@@ -149,7 +149,7 @@ namespace Rock.Web.Cache
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 lock ( _executorLock )
                 {

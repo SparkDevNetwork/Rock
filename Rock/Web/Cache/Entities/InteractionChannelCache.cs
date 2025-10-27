@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -185,7 +186,7 @@ namespace Rock.Web.Cache
                 return;
             }
 
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             InteractionComponentIds = new ConcurrentDictionary<int, int>( new InteractionComponentService( rockContext )
                 .GetByChannelId( Id )
                 .Select( v => v.Id )
@@ -324,7 +325,7 @@ namespace Rock.Web.Cache
                 return channelId;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var interactionChannelService = new InteractionChannelService( rockContext );
                 var interactionChannel = interactionChannelService.Queryable()
@@ -370,7 +371,7 @@ namespace Rock.Web.Cache
                 return channelId;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var interactionChannelService = new InteractionChannelService( rockContext );
                 var interactionChannel = interactionChannelService.Queryable()
@@ -419,7 +420,7 @@ namespace Rock.Web.Cache
                 return channelId;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var interactionChannelService = new InteractionChannelService( rockContext );
                 var interactionChannel = interactionChannelService.Queryable()

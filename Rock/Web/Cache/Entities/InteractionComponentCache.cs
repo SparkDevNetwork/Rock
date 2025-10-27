@@ -19,6 +19,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -178,7 +179,7 @@ namespace Rock.Web.Cache
                 return componentId;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 int? interactionComponentId = null;
                 var interactionComponent = new InteractionComponentService( rockContext ).GetComponentByChannelIdAndEntityId( interactionChannelId, componentEntityId, componentName );
@@ -210,7 +211,7 @@ namespace Rock.Web.Cache
                 return componentId;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 int? interactionComponentId = null;
                 var interactionComponent = new InteractionComponentService( rockContext ).GetComponentByComponentName( interactionChannelId, componentName );
@@ -252,7 +253,7 @@ namespace Rock.Web.Cache
                 return channelId;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var interactionComponentService = new InteractionComponentService( rockContext );
                 var interactionComponent = interactionComponentService.Queryable()

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 using Fluid;
@@ -69,8 +70,14 @@ namespace Rock.Lava.Fluid
 
         private static readonly Parser<char> SpaceParser = Terms.Char( ' ' );
 
-        private Parser<List<Statement>> _anyTagsListParser;
-        private Parser<List<Statement>> _knownTagsListParser;
+        private Parser<IReadOnlyList<Statement>> _anyTagsListParser;
+        private Parser<IReadOnlyList<Statement>> _knownTagsListParser;
+
+        private static readonly FluidParserOptions LavaOptions = new FluidParserOptions
+        {
+            AllowFunctions = true,
+            AllowLiquidTag = true
+        };
 
         #endregion
 
@@ -83,8 +90,10 @@ namespace Rock.Lava.Fluid
             LavaTagParsers.LavaBlockCommentEnd,
             LavaTagParsers.LavaInlineCommentEnd );
 
-        public Parser<List<FilterArgument>> ArgumentsListParser => ArgumentsList;
-        public Parser<List<FilterArgument>> LavaArgumentsListParser;
+        public Parser<IReadOnlyList<FilterArgument>> ArgumentsListParser => ArgumentsList;
+        public Parser<IReadOnlyList<FilterArgument>> LavaArgumentsListParser;
+
+        public static new Parser<string> CreateTag( string tagName ) => NoInlineTagStart.SkipAnd( Terms.Text( tagName ) ).AndSkip( NoInlineTagEnd );
 
         #endregion
 
@@ -102,8 +111,10 @@ namespace Rock.Lava.Fluid
         public LavaFluidParser()
             // Functions are being enabled as an experimental feature.
             // Do not use in production.
-            : base( new FluidParserOptions { AllowFunctions = true } )
+            : base( LavaOptions )
         {
+            var parserOptions = LavaOptions;
+
             CreateLavaDocumentParsers();
 
             RegisterLavaCommentTag();
@@ -116,7 +127,7 @@ namespace Rock.Lava.Fluid
             DefineLavaElementParsers();
             // Functions are being enabled as an experimental feature.
             // Do not use in production.
-            DefineLavaTrueFalseAsCaseInsensitive( true );
+            DefineLavaTrueFalseAsCaseInsensitive( parserOptions );
             DefineLavaDocumentParsers();
         }
 
@@ -125,41 +136,56 @@ namespace Rock.Lava.Fluid
             // Define a parser for a named argument list separated by spaces in the form:
             // [name1:]value1 [name2:]value2 ...
             // This parser can also return an empty argument list.
-            LavaArgumentsListParser = OneOf( LavaTokenEndParser.Then( x => new List<FilterArgument>() ),
+            LavaArgumentsListParser = OneOf<IReadOnlyList<FilterArgument>>(
+                LavaTokenEndParser.Then( x => ( IReadOnlyList<FilterArgument> ) new List<FilterArgument>() ),
                 Separated( SpaceParser,
-                            OneOf(
-                                Identifier.AndSkip( Colon ).And( Primary ).Then( x => new FilterArgument( x.Item1, x.Item2 ) ),
-                                Primary.Then( x => new FilterArgument( null, x ) )
-                            ) ) );
+                           OneOf(
+                               Identifier.AndSkip( Colon ).And( Primary ).Then( x => new FilterArgument( x.Item1, x.Item2 ) ),
+                               Primary.Then( x => new FilterArgument( null, x ) )
+                           ) ) );
         }
 
         /// <summary>
         /// Redefines the True/False keywords to be case-insensitive.
         /// </summary>
-        private void DefineLavaTrueFalseAsCaseInsensitive( bool allowFunctions )
+        private void DefineLavaTrueFalseAsCaseInsensitive( FluidParserOptions parserOptions )
         {
             // To redefine the True and False parsers, we need to rebuild the Fluid Primary expression parser.
             // Fluid defines a Primary expression as: primary => STRING | BOOLEAN | EMPTY | MEMBER | NUMBER.
 
             // Reproduce the standard Fluid parsers that are internally defined by the default parser.
             var integer = Terms.Integer().Then<Expression>( x => new LiteralExpression( NumberValue.Create( x ) ) );
+            integer.Name = "Integer";
 
             var indexer = Between( LBracket, Primary, RBracket ).Then<MemberSegment>( x => new IndexerSegment( x ) );
+            indexer.Name = "Indexer";
 
-            var call = allowFunctions
+            var call = parserOptions.AllowFunctions
                 ? LParen.SkipAnd( FunctionCallArgumentsList ).AndSkip( RParen ).Then<MemberSegment>( x => new FunctionCallSegment( x ) )
                 : LParen.Error<MemberSegment>( ErrorMessages.FunctionsNotAllowed );
+            call.Name = "Call";
 
+            // An Identifier followed by a list of MemberSegments (dot accessor, indexer or arguments list)
             var member = Identifier.Then<MemberSegment>( x => new IdentifierSegment( x ) ).And(
                 ZeroOrMany(
-                    Dot.SkipAnd( Identifier.Then<MemberSegment>( x => new IdentifierSegment( x ) ) )
+                    Dot.SkipAnd(
+                        // This CultureInfo.InvariantCulture in this next line is what's needed to make TRUE/false keywords
+                        // be case-insensitive.  It might make sense to pass this idea by the Fluid team to see if they think
+                        // it could become a FluidParserOptions (AllowCaseInsensitiveBoolean) so we don't have to maintain
+                        // this method here.
+                        Identifier.Or( Terms.Integer( NumberOptions.None ).Then( x => x.ToString( CultureInfo.InvariantCulture ) ) )
+                            .Then<MemberSegment>( x => new IdentifierSegment( x ) )
+                    )
                     .Or( indexer )
                     .Or( call ) ) )
+                //.Then( x => new MemberExpression( [x.Item1, .. x.Item2] ) );  // This is how Fluid does it for C# v12
                 .Then( x =>
                 {
-                    x.Item2.Insert( 0, x.Item1 );
-                    return new MemberExpression( x.Item2 );
+                    var segments = new List<MemberSegment> { x.Item1 };
+                    segments.AddRange( x.Item2 );
+                    return new MemberExpression( segments );
                 } );
+            member.Name = "Member";
 
             var range = LParen
                 .SkipAnd( OneOf( integer, member.Then<Expression>( x => x ) ) )
@@ -167,6 +193,41 @@ namespace Rock.Lava.Fluid
                 .And( OneOf( integer, member.Then<Expression>( x => x ) ) )
                 .AndSkip( RParen )
                 .Then<Expression>( x => new RangeExpression( x.Item1, x.Item2 ) );
+            range.Name = "Range";
+
+            var group = parserOptions.AllowParentheses
+                ? LParen.SkipAnd( FilterExpression ).AndSkip( RParen )
+                : LParen.SkipAnd( FilterExpression ).AndSkip( RParen ).Error<Expression>( ErrorMessages.ParenthesesNotAllowed )
+                ;
+            group.Name = "Group";
+
+            // primary => NUMBER | STRING | property
+            Primary.Parser =
+                String.Then<Expression>( x => new LiteralExpression( StringValue.Create( x.ToString() ) ) )
+                .Or( member.Then<Expression>( x =>
+                {
+                    if ( x.Segments.Count == 1 )
+                    {
+                        switch ( ( x.Segments[0] as IdentifierSegment ).Identifier.ToLowerInvariant() )
+                        {
+                            case "empty":
+                                return EmptyKeyword;
+                            case "blank":
+                                return BlankKeyword;
+                            case "true":
+                                return TrueKeyword;
+                            case "false":
+                                return FalseKeyword;
+                        }
+                    }
+
+                    return x;
+                } ) )
+                .Or( Number.Then<Expression>( x => new LiteralExpression( NumberValue.Create( x ) ) ) )
+                .Or( group )
+                .Or( range )
+                ;
+            Primary.Name = "Primary";
 
             Primary.Parser =
                 String.Then<Expression>( x => new LiteralExpression( StringValue.Create( x.ToString() ) ) )
@@ -565,9 +626,9 @@ namespace Rock.Lava.Fluid
         /// <summary>
         /// A Lava parser that captures an output token: {{ output }}
         /// </summary>
-        private static readonly Parser<LavaDocumentToken> LavaOutputTokenParser = OutputStart
-            .SkipAnd( AnyCharBefore( OutputEnd, canBeEmpty: true ) )
-            .AndSkip( OutputEnd )
+        private static readonly Parser<LavaDocumentToken> LavaOutputTokenParser = InlineOutputStart
+            .SkipAnd( AnyCharBefore( InlineOutputEnd, canBeEmpty: true ) )
+            .AndSkip( InlineOutputEnd )
             .Then( x => new LavaDocumentToken( LavaDocumentTokenTypeSpecifier.Output, x.ToString() ) );
 
         /// <summary>
@@ -580,7 +641,7 @@ namespace Rock.Lava.Fluid
         /// <summary>
         /// A parser that captures a span of literal text.
         /// </summary>
-        private static readonly Parser<LavaDocumentToken> LavaTextTokenParser = AnyCharBefore( OutputStart.Or( LavaTokenStartParser.AsFluidTagResultParser() ) )
+        private static readonly Parser<LavaDocumentToken> LavaTextTokenParser = AnyCharBefore( InlineOutputStart.Or( LavaTokenStartParser.AsFluidTagResultParser() ) )
             .Then( x => new LavaDocumentToken( LavaDocumentTokenTypeSpecifier.Literal, x.ToString() ) );
 
         /// <summary>
@@ -606,7 +667,7 @@ namespace Rock.Lava.Fluid
             .Then( x => new LavaDocumentToken( LavaDocumentTokenTypeSpecifier.Comment, x.ToString() ) );
 
         // The complete list of valid tokens in a Lava document.
-        public static readonly Parser<List<LavaDocumentToken>> LavaTokensListParser = ZeroOrMany( LavaOutputTokenParser
+        public static readonly Parser<IReadOnlyList<LavaDocumentToken>> LavaTokensListParser = ZeroOrMany( LavaOutputTokenParser
             .Or( LavaShortcodeTokenParser )
             .Or( LavaTagTokenParser )
             .Or( LavaTextTokenParser )

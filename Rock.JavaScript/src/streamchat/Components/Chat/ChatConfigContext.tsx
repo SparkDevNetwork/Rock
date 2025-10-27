@@ -19,6 +19,7 @@ interface ChatConfigContextType {
     chatViewStyle: ChatViewStyle;
     refreshChat: () => void;
     reactions: ChatReactionBag[]
+    directMessageAllowed: boolean;
 }
 
 /**

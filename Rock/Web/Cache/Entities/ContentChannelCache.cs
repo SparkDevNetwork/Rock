@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Cms;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -225,7 +227,7 @@ namespace Rock.Web.Cache
                     {
                         if ( ChildContentChannelIds == null )
                         {
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 ChildContentChannelIds = new ContentChannelService( rockContext )
                                     .GetChildContentChannels( Id )
@@ -278,7 +280,7 @@ namespace Rock.Web.Cache
                     {
                         if ( ParentContentChannelIds == null )
                         {
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 ParentContentChannelIds = new ContentChannelService( rockContext )
                                     .GetParentContentChannels( Id )
@@ -315,7 +317,7 @@ namespace Rock.Web.Cache
         {
             get
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var contentChannelType = new ContentChannelTypeService( rockContext ).Get( ContentChannelTypeId );
                     return contentChannelType ?? base.ParentAuthority;

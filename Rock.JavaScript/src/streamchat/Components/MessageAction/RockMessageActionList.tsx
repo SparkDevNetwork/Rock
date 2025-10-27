@@ -15,6 +15,9 @@ export const RockMessageActionList: React.FC = () => {
         if (!author) {
             return false;
         }
+        if (chatConfig.directMessageAllowed === false) {
+            return false;
+        }
 
         return author.rock_open_direct_message_allowed === true;
     }

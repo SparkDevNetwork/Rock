@@ -514,6 +514,16 @@ namespace Rock.Blocks.Communication.Chat
                 }
 
                 var chatUserAuth = await chatHelper.GetChatUserAuthenticationAsync( person.Id, true );
+                var dataViewGuid = ChatHelper.GetChatConfiguration().DirectMessageAccessDataViewGuid;
+
+                bool dmAllowed = true;
+                if (dataViewGuid.HasValue)
+                {
+                    var dmDataView = DataViewCache.Get( dataViewGuid.Value, RockContext );
+                    var personIds = dmDataView.GetEntityIds();
+
+                    dmAllowed = personIds.Contains( person.Id );
+                }
 
                 return ActionOk( new ChatPersonDataBag
                 {
@@ -522,7 +532,8 @@ namespace Rock.Blocks.Communication.Chat
                     IsAgeVerificationRequired = false,
                     HasFailedAgeVerification = false,
                     AgeRestrictionTemplate = string.Empty,
-                    AgeVerificationTemplate = string.Empty
+                    AgeVerificationTemplate = string.Empty,
+                    IsDirectMessagingAllowed = dmAllowed,
                 } );
             }
         }

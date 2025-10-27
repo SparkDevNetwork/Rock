@@ -35,6 +35,9 @@ export type ChatPersonDataBag = {
     /** Gets or sets a value indicating whether the individual is required to complete age verification before using chat features. */
     isAgeVerificationRequired: boolean;
 
+    /** Gets or sets a value indicating whether direct messaging is allowed for the individual. */
+    isDirectMessagingAllowed: boolean;
+
     /** Gets or sets the unique token used for authentication or session tracking in chat. */
     token?: string | null;
 

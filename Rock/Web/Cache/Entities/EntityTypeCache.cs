@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 using Rock.Attribute;
 using Rock.Cms.ContentCollection;
 using Rock.Cms.ContentCollection.Attributes;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility.Settings;
@@ -679,7 +680,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                using ( var myRockContext = new RockContext() )
+                using ( var myRockContext = RockApp.Current.CreateRockContext() )
                 {
                     var entityTypeModel = new EntityTypeService( myRockContext ).Get( type, createIfNotFound, null );
                     if ( entityTypeModel != null )
@@ -739,7 +740,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                using ( var myRockContext = new RockContext() )
+                using ( var myRockContext = RockApp.Current.CreateRockContext() )
                 {
                     var entityTypeModel = new EntityTypeService( myRockContext ).GetByName( name, createNew );
                     if ( entityTypeModel != null )

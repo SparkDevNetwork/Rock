@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -133,7 +134,7 @@ namespace Rock.Web.Cache
                 }
                 else
                 {
-                    using ( var newRockContext = new RockContext() )
+                    using ( var newRockContext = RockApp.Current.CreateRockContext() )
                     {
                         return QueryDbForLocationId( locId, newRockContext );
                     }

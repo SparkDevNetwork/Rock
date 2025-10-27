@@ -102,6 +102,7 @@ namespace Rock.Tests.CheckIn.v2
         [DataRow( nameof( TemplateConfigurationData.AddPersonWorkflowTypeGuids ), "491201c8-9f82-4644-8d88-9f4068d5a246,4c19cb07-9ce9-4e61-965e-e8cf57ed8951", GroupTypeAttributeKey.CHECKIN_REGISTRATION_ADDPERSONWORKFLOWTYPES )]
         // CanCheckInKnownRelationshipRoleGuids has its own test.
         [DataRow( nameof( TemplateConfigurationData.DefaultPersonConnectionStatusGuid ), "89f15ffa-cefa-4040-ab7e-becceb3e800d", GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTPERSONCONNECTIONSTATUS )]
+        // DefaultPersonRecordSourceGuid has its own test.
         // DisplayAddressOnFamilies has its own test.
         // DisplayBirthdateForAdults has its own test.
         // DisplayBirthdateForChildren has its own test.
@@ -488,6 +489,28 @@ namespace Rock.Tests.CheckIn.v2
         }
 
         [TestMethod]
+        public void Constructor_WithGroupMemberRecordSourceValueId_InitializesPropertyWithGuid()
+        {
+            var rockContextMock = GetRockContextMock();
+            rockContextMock.SetupDbSet<GroupType>();
+
+            var definedValue = CreateEntityMock<DefinedValue>( 12, new Guid( "8170716e-d9e7-469f-8dd2-6b196e803bc7" ) );
+            rockContextMock.SetupDbSet( definedValue.Object );
+
+            SetupGroupTypeRoleMocks( rockContextMock );
+
+            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+            groupType.Object.GroupMemberRecordSourceValueId = 12;
+
+            var groupTypeCache = new GroupTypeCache();
+            groupTypeCache.SetFromEntity( groupType.Object );
+
+            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+
+            Assert.AreEqual( definedValue.Object.Guid, instance.DefaultPersonRecordSourceGuid );
+        }
+
+        [TestMethod]
         public void Constructor_WithEmptyRegularExpressionFilterAttributeValue_InitializesPhoneNumberRegexToNull()
         {
             var rockContextMock = GetRockContextMock();
@@ -560,7 +583,7 @@ namespace Rock.Tests.CheckIn.v2
             // added so we can update the other tests to check for those
             // properties.
             var type = typeof( TemplateConfigurationData );
-            var expectedPropertyCount = 81;
+            var expectedPropertyCount = 82;
 
             var propertyCount = type.GetProperties().Length;
 

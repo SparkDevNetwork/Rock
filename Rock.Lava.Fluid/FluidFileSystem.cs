@@ -60,6 +60,11 @@ namespace Rock.Lava
             return content;
         }
 
+        public DateTimeOffset? FileLastModified( string filePath )
+        {
+            return _fileSystem.FileLastModified( filePath );
+        }
+
         #endregion
 
         #region IFileProvider implementation
@@ -111,6 +116,12 @@ namespace Rock.Lava
                 throw new LavaException( "File Load Failed. File \"{0}\" could not be accessed.", filePath );
             }
 
+            var lastModified = _fileSystem.FileLastModified( filePath );
+            if ( lastModified != null )
+            {
+                fileInfo.LastModified = lastModified.Value;
+            }
+
             return fileInfo;
         }
 
@@ -138,6 +149,12 @@ namespace Rock.Lava
 
             return filePath;
         }
+
+        /// <inheritdoc>
+        public string ResolveTemplatePath( string filePath )
+        {
+            return filePath;
+        }
     }
 
     #region Support Classes
@@ -152,6 +169,9 @@ namespace Rock.Lava
             Name = name;
             Content = content;
             Exists = exists;
+            // Set initially at construction to capture creation time as the LastModified time, but allow
+            // it to be set later if it is a real file.
+            LastModified = DateTimeOffset.Now;
         }
 
         public string Content { get; set; }
@@ -166,13 +186,7 @@ namespace Rock.Lava
             }
         }
 
-        public DateTimeOffset LastModified
-        {
-            get
-            {
-                return DateTimeOffset.MinValue;
-            }
-        }
+        public DateTimeOffset LastModified { get; set; }
 
         public long Length
         {

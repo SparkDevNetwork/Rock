@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -132,7 +133,7 @@ namespace Rock.Web.Cache
                     {
                         if ( ChildAccountIds == null )
                         {
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 ChildAccountIds = new FinancialAccountService( rockContext )
                                     .Queryable().Where( a => a.ParentAccountId.HasValue && a.ParentAccountId.Value == this.Id )

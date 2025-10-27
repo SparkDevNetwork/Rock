@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -276,7 +277,7 @@ namespace Rock.Web.Cache
                     {
                         if ( _activityTypeIds == null )
                         {
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 _activityTypeIds = new WorkflowActivityTypeService( rockContext )
                                     .Queryable().AsNoTracking()

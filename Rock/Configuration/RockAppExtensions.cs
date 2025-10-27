@@ -219,12 +219,17 @@ namespace Rock.Configuration
             return path;
         }
 
+        /// <summary>
+        /// Creates a new <see cref="RockContext"/> for use in the application.
+        /// This provides a central location to creating contexts for accessing
+        /// the database so that unit tests can more easily override the behavior.
+        /// </summary>
+        /// <param name="app">The current Rock application instannce.</param>
+        /// <returns>A new instance of <see cref="RockContext"/>.</returns>
         internal static RockContext CreateRockContext( this RockApp app )
         {
             return app.GetRequiredService<IRockContextFactory>().CreateRockContext();
         }
-
-        #region Service Provider
 
         /// <summary>
         /// Gets the <see cref="IChatProvider"/> service from the <see cref="RockApp"/>'s <see cref="IServiceProvider"/>.
@@ -241,7 +246,5 @@ namespace Rock.Configuration
         {
             return rockApp.GetRequiredService<IChatProvider>();
         }
-
-        #endregion Service Provider
     }
 }

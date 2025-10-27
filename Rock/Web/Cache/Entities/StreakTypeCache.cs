@@ -21,6 +21,8 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -169,7 +171,7 @@ namespace Rock.Web.Cache
                     {
                         if ( _streakTypeExclusionIds == null )
                         {
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 _streakTypeExclusionIds = new StreakTypeExclusionService( rockContext )
                                     .GetByStreakTypeId( Id )

@@ -364,6 +364,11 @@ namespace RockWeb.Blocks.CheckIn.Config
                     Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTPERSONCONNECTIONSTATUS,
                     defaultPersonConnectionStatusValueGuid.ToString() );
 
+                var defaultPersonRecordSourceValueId = dvpRegistrationDefaultPersonRecordSource.SelectedValue.AsIntegerOrNull()
+                    ?? DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_CHECK_IN.AsGuid() );
+
+                groupType.GroupMemberRecordSourceValueId = defaultPersonRecordSourceValueId;
+
                 var workflowTypeService = new WorkflowTypeService( rockContext );
 
                 groupType.SetAttributeValue(
@@ -651,6 +656,15 @@ namespace RockWeb.Blocks.CheckIn.Config
 
                 dvpRegistrationDefaultPersonConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).Id;
                 dvpRegistrationDefaultPersonConnectionStatus.SetValue( defaultPersonConnectionStatusValueId );
+
+                var defaultPersonRecordSourceValueId = groupType.GroupMemberRecordSourceValueId;
+                if ( !defaultPersonRecordSourceValueId.HasValue )
+                {
+                    defaultPersonRecordSourceValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_CHECK_IN.AsGuid() );
+                }
+
+                dvpRegistrationDefaultPersonRecordSource.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() )?.Id;
+                dvpRegistrationDefaultPersonRecordSource.SetValue( defaultPersonRecordSourceValueId );
 
                 var workflowTypeService = new WorkflowTypeService( rockContext );
                 wftpRegistrationAddFamilyWorkflowTypes.SetValues( workflowTypeService.GetByGuids( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_ADDFAMILYWORKFLOWTYPES ).SplitDelimitedValues().AsGuidList() ) );

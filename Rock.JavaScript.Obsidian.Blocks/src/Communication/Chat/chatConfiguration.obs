@@ -34,6 +34,15 @@
                                     :multiple="true"
                                     :enhanceForLongLists="true"
                                     :disabled="isSaving" />
+
+                    <DataViewPicker v-model="directMessageAccessDataView"
+                                    label="Direct Message Access Data View"
+                                    help="Optional Data View of people who are allowed to access Direct Message creation. If left blank, all individuals can start new Direct Message conversations."
+                                    :entityTypeGuid="EntityType.Person"
+                                    :displayPersistedOnly="true"
+                                    :multiple="false"
+                                    :enhanceForLongLists="true"
+                                    :disabled="isSaving" />
                 </div>
                 <div class="col-md-6">
                     <CheckBox v-model="areChatProfilesVisible"
@@ -90,6 +99,7 @@
     const areChatProfilesVisible = ref(config.chatConfigurationBag?.areChatProfilesVisible ?? false);
     const isOpenDirectMessagingAllowed = ref(config.chatConfigurationBag?.isOpenDirectMessagingAllowed ?? false);
     const chatBadgeDataViews = ref<ListItemBag[] | null>(config.chatConfigurationBag?.chatBadgeDataViews ?? null);
+    const directMessageAccessDataView = ref<ListItemBag | null>(config.chatConfigurationBag?.directMessageAccessDataView ?? null);
 
     const isSaving = ref(false);
     const blockActionMessage = ref("");
@@ -116,7 +126,8 @@
                 apiSecret: apiSecret.value,
                 areChatProfilesVisible: areChatProfilesVisible.value,
                 isOpenDirectMessagingAllowed: isOpenDirectMessagingAllowed.value,
-                chatBadgeDataViews: chatBadgeDataViews.value
+                chatBadgeDataViews: chatBadgeDataViews.value,
+                directMessageAccessDataView: directMessageAccessDataView.value
             };
 
             const result = await invokeBlockAction("SaveChatConfiguration", { bag });

@@ -21,6 +21,7 @@ using System.Net.Sockets;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -318,7 +319,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                using ( var newRockContext = new RockContext() )
+                using ( var newRockContext = RockApp.Current.CreateRockContext() )
                 {
                     return GetDevicesByGeocode( latitude, longitude, deviceTypeValueId, newRockContext )
                         .OrderBy( d => d.Id )
@@ -375,7 +376,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                using ( var newRockContext = new RockContext() )
+                using ( var newRockContext = RockApp.Current.CreateRockContext() )
                 {
                     allDevices = All( rockContext );
                 }
@@ -424,7 +425,7 @@ namespace Rock.Web.Cache
                 }
                 else
                 {
-                    using ( var newRockContext = new RockContext() )
+                    using ( var newRockContext = RockApp.Current.CreateRockContext() )
                     {
                         allDevices = All( rockContext );
                     }

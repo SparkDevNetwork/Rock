@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Runtime.Serialization;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -284,7 +285,7 @@ namespace Rock.Web.Cache
 
             PersistedDatasetCache persistedDatasetCache = null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var persistedDataset = new PersistedDatasetService( rockContext ).GetFromAccessKeyNoTracking( accessKey );
                 if ( persistedDataset != null )

@@ -21,6 +21,7 @@ using System.Runtime.Serialization;
 
 using Rock.Attribute;
 using Rock.Cms;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -205,7 +206,7 @@ namespace Rock.Web.Cache
                 return QueryDbByApiIdWithContext( apiId, rockContext );
             }
 
-            using ( var newRockContext = new RockContext() )
+            using ( var newRockContext = RockApp.Current.CreateRockContext() )
             {
                 return QueryDbByApiIdWithContext( apiId, newRockContext );
             }

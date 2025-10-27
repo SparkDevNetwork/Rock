@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Web.Cache
@@ -129,7 +130,7 @@ namespace Rock.Web.Cache
             }
 
             // If not, query the database for it, and then add to cache (if found).
-            var id = new Rock.Model.GroupService( new RockContext() ).GetId( guid );
+            var id = new Rock.Model.GroupService( RockApp.Current.CreateRockContext() ).GetId( guid );
             if ( id == null )
             {
                 return null;
@@ -152,7 +153,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static RoleCache LoadById( int id )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var securityGroupType = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid(), rockContext );
                 var securityGroupTypeId = securityGroupType?.Id ?? 0;
@@ -204,7 +205,7 @@ namespace Rock.Web.Cache
             var securityGroupType = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
             var securityGroupTypeId = securityGroupType?.Id ?? 0;
 
-            var groupService = new Model.GroupService( new RockContext() );
+            var groupService = new Model.GroupService( RockApp.Current.CreateRockContext() );
             foreach ( var id in groupService.Queryable()
                 .Where( g =>
                     g.IsActive &&

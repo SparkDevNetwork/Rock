@@ -43,6 +43,9 @@ export type CheckInRegistrationSettingsBag = {
     /** Gets or sets the registration default person connection status. */
     registrationDefaultPersonConnectionStatus?: ListItemBag | null;
 
+    /** Gets or sets the registration default person record source. */
+    registrationDefaultPersonRecordSource?: ListItemBag | null;
+
     /** Gets or sets a value indicating whether [registration display alternate identifier field for adults]. */
     registrationDisplayAlternateIdFieldForAdults: boolean;
 

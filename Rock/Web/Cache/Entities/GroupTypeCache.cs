@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 
 using Rock.Attribute;
 using Rock.CheckIn.v2;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.CheckIn;
 using Rock.Enums.Communication.Chat;
@@ -674,7 +675,7 @@ namespace Rock.Web.Cache
             {
                 if ( _roles == null )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var roleIds = new GroupTypeRoleService( rockContext )
                             .Queryable()
@@ -710,7 +711,7 @@ namespace Rock.Web.Cache
             {
                 if ( _groupScheduleExclusions == null )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         _groupScheduleExclusions = new GroupScheduleExclusionService( rockContext )
                             .Queryable().AsNoTracking()
@@ -774,7 +775,7 @@ namespace Rock.Web.Cache
             {
                 if ( _childGroupTypeIds == null )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         _childGroupTypeIds = new GroupTypeService( rockContext )
                             .GetChildGroupTypes( Id )
@@ -960,7 +961,7 @@ namespace Rock.Web.Cache
 
             if ( rockContext == null )
             {
-                ownedRockContext = rockContext = new RockContext();
+                ownedRockContext = rockContext = RockApp.Current.CreateRockContext();
             }
 
             foreach ( var id in GetParentGroupTypeIds( rockContext ) )
@@ -992,7 +993,7 @@ namespace Rock.Web.Cache
 
                 if ( rockContext == null )
                 {
-                    ownedRockContext = rockContext = new RockContext();
+                    ownedRockContext = rockContext = RockApp.Current.CreateRockContext();
                 }
 
                 _parentGroupTypeIds = new GroupTypeService( rockContext )

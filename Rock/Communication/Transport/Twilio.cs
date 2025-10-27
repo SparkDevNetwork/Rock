@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -613,6 +614,16 @@ namespace Rock.Communication.Transport
             AsyncHelper.RunSync( () => SendAsync( communication, mediumEntityTypeId, mediumAttributes ) );
         }
 
+        /// <inheritdoc/>
+        public override string ResolveText( string content, Person person, string enabledLavaCommands, Dictionary<string, object> mergeFields, string appRoot = "", string themeRoot = "" )
+        {
+            var resolved = base.ResolveText( content, person, enabledLavaCommands, mergeFields, appRoot, themeRoot );
+
+            resolved = ReplaceUnicodeCharacters( resolved );
+
+            return resolved;
+        }
+
         #region private shared methods
 
         /// <summary>
@@ -663,6 +674,463 @@ namespace Rock.Communication.Transport
                     return GetNextPending( communicationId, mediumEntityId, isBulkCommunication );
                 }
             }
+        }
+
+        /// <summary>
+        /// Replaces specific Unicode characters in the given text with their ASCII equivalents.
+        /// </summary>
+        /// <param name="text">The input string containing Unicode characters to be replaced.</param>
+        /// <returns>A new string with Unicode characters replaced by their ASCII equivalents.  If the input string is null or
+        /// consists only of whitespace, the original string is returned.</returns>
+        private string ReplaceUnicodeCharacters( string text )
+        {
+            if ( text.IsNullOrWhiteSpace() )
+            {
+                return text;
+            }
+
+            // This is from https://www.twilio.com/docs/messaging/services/smart-encoding-char-list
+            var replacements = new Dictionary<string, string>
+            {
+                // Quotes
+                { "\u00AB", "\"" }, // Left pointing double angle quotation mark («)
+                { "\u00BB", "\"" }, // Right pointing double angle quotation mark (»)
+                { "\u201C", "\"" }, // Left double quotation mark (“)
+                { "\u201D", "\"" }, // Right double quotation mark (”)
+                { "\u02BA", "\"" }, // Modifier letter double prime (ʺ)
+                { "\u02EE", "\"" }, // Modifier letter double apostrophe (ˮ)
+                { "\u201F", "\"" }, // Double high reversed 9 quotation mark (‟)
+                { "\u275D", "\"" }, // Heavy double turned comma quotation mark ornament (❝)
+                { "\u275E", "\"" }, // Heavy double comma quotation mark ornament (❞)
+                { "\u301D", "\"" }, // Reversed double prime quotation mark (〝)
+                { "\u301E", "\"" }, // Double prime quotation mark (〞)
+                { "\uFF02", "\"" }, // Fullwidth quotation mark (＂)
+                { "\u201E", "\"" }, // Double low 9 quotation mark („)
+
+                // Apostrophes and single quotes
+                { "\u2018", "'" }, // Left single quotation mark (‘)
+                { "\u2019", "'" }, // Right single quotation mark (’)
+                { "\u02BB", "'" }, // Modifier letter turned comma (ʻ)
+                { "\u02C8", "'" }, // Modifier letter vertical line (ˈ)
+                { "\u02BC", "'" }, // Modifier letter apostrophe (ʼ)
+                { "\u02BD", "'" }, // Modifier letter reversed comma (ʽ)
+                { "\u02B9", "'" }, // Modifier letter prime (ʹ)
+                { "\u201B", "'" }, // Single high reversed 9 quotation mark (‛)
+                { "\uFF07", "'" }, // Fullwidth apostrophe (＇)
+                { "\u00B4", "'" }, // Acute accent (´)
+                { "\u02CA", "'" }, // Modifier letter acute accent (ˊ)
+                { "\u0060", "'" }, // Grave accent (`)
+                { "\u02CB", "'" }, // Modifier letter grave accent (ˋ)
+                { "\u275B", "'" }, // Heavy single turned comma quotation mark ornament (❛)
+                { "\u275C", "'" }, // Heavy single comma quotation mark ornament (❜)
+                { "\u0313", "'" }, // Combining comma above ( ̓)
+                { "\u0314", "'" }, // Combining reversed comma above ( ̔)
+                { "\uFE10", "'" }, // Presentation form for vertical comma (︐)
+                { "\uFE11", "'" }, // Presentation form for vertical ideographic comma (︑)
+                { "\u00A0", "'" }, // No break space
+                { "\u2000", "'" }, // En quad
+
+                // Vulgar fractions
+                { "\u00BC", "1/4" }, // Vulgar fraction one quarter (¼)
+                { "\u00BD", "1/2" }, // Vulgar fraction one half (½)
+                { "\u00BE", "3/4" }, // Vulgar fraction three quarters (¾)
+
+                // Forward slashes
+                { "\u00F7", "/" }, // Division sign (÷)
+                { "\u29F8", "/" }, // Big solidus (⧸)
+                { "\u0337", "/" }, // Combining short solidus overlay (̷)
+                { "\u0338", "/" }, // Combining long solidus overlay (̸)
+                { "\u2044", "/" }, // Fraction slash (⁄)
+                { "\u2215", "/" }, // Division slash (∕)
+                { "\uFF0F", "/" }, // Fullwidth solidus (／)
+
+                // Backslashes
+                { "\u29F9", "\\" }, // Big reverse solidus (⧹)
+                { "\u29F5", "\\" }, // Reverse solidus operator (⧵)
+                { "\u20E5", "\\" }, // Combining reverse solidus overlay (⃥)
+                { "\uFE68", "\\" }, // Small reverse solidus (﹨)
+                { "\uFF3C", "\\" }, // Fullwidth reverse solidus (＼)
+
+                // Underscores and low lines
+                { "\u0332", "_" }, // Combining low line (̲)
+                { "\uFF3F", "_" }, // Fullwidth low line (＿)
+                { "\u2017", "_" }, // Double low line (‗)
+
+                // Vertical bars and similar
+                { "\u20D2", "|" }, // Combining long vertical line overlay (⃒)
+                { "\u20D3", "|" }, // Combining short vertical line overlay (⃓)
+                { "\u2223", "|" }, // Divides sign (∣)
+                { "\uFF5C", "|" }, // Fullwidth vertical line (｜)
+                { "\u23B8", "|" }, // Left vertical box line (⎸)
+                { "\u23B9", "|" }, // Right vertical box line (⎹)
+                { "\u23D0", "|" }, // Vertical line extension (⏐)
+                { "\u239C", "|" }, // Left parenthesis upper hook (⎜)
+                { "\u239F", "|" }, // Left parenthesis lower hook (⎟)
+    
+                // Dashes and bullets
+                { "\u2014", "-" }, // Em dash (—)
+                { "\u2013", "-" }, // En dash (–)
+                { "\u23BC", "-" }, // Horizontal scan line 1 (⎼)
+                { "\u23BD", "-" }, // Horizontal scan line 3 (⎽)
+                { "\u2015", "-" }, // Horizontal bar (―)
+                { "\uFE63", "-" }, // Small hyphen minus (﹣)
+                { "\uFF0D", "-" }, // Fullwidth hyphen minus (－)
+                { "\u2010", "-" }, // Hyphen (‐)
+                { "\u2022", "-" }, // Bullet (•)
+                { "\u2043", "-" }, // Hyphen bullet (⁃)
+
+                // At signs
+                { "\uFE6B", "@" }, // Small commercial at (﹫)
+                { "\uFF20", "@" }, // Fullwidth commercial at (＠)
+
+                // Dollar signs
+                { "\uFE69", "$" }, // Small dollar sign (﹩)
+                { "\uFF04", "$" }, // Fullwidth dollar sign (＄)
+
+                // Exclamation marks
+                { "\u01C3", "!" }, // Latin letter retroflex click (ǃ)
+                { "\uFE15", "!" }, // Presentation form for vertical exclamation mark (︕)
+                { "\uFE57", "!" }, // Small exclamation mark (﹗)
+                { "\uFF01", "!" }, // Fullwidth exclamation mark (！)
+
+                // Number signs
+                { "\uFE5F", "#" }, // Small number sign (﹟)
+                { "\uFF03", "#" }, // Fullwidth number sign (＃)
+
+                // Percent signs
+                { "\uFE6A", "%" }, // Small percent sign (﹪)
+                { "\uFF05", "%" }, // Fullwidth percent sign (％)
+
+                // Ampersands
+                { "\uFE60", "&" }, // Small ampersand (﹠)
+                { "\uFF06", "&" }, // Fullwidth ampersand (＆)
+
+                // Commas and colons to comma
+                { "\u201A", "," }, // Single low 9 quotation mark (‚)
+                { "\u0326", "," }, // Combining comma below ( ̦)
+                { "\uFE50", "," }, // Small comma (﹐)
+                { "\u3001", "," }, // Ideographic comma (、)
+                { "\uFE51", "," }, // Small ideographic comma (﹑)
+                { "\uFF0C", "," }, // Fullwidth comma (，)
+                { "\uFF64", "," }, // Halfwidth ideographic comma (､)
+                { "\u02D0", "," }, // Modifier letter triangular colon (ː)
+                { "\u02F8", "," }, // Modifier letter raised colon (˸)
+                { "\u2982", "," }, // Z notation type colon (⦂)
+                { "\uA789", "," }, // Modifier letter colon (꞉)
+                { "\uFE13", "," }, // Presentation form for vertical colon (︓)
+                { "\uFF1A", "," }, // Fullwidth colon (：)
+
+                // Left parentheses
+                { "\u2768", "(" }, // Medium left parenthesis ornament (❨)
+                { "\u276A", "(" }, // Medium flattened left parenthesis ornament (❪)
+                { "\uFE59", "(" }, // Small left parenthesis (﹙)
+                { "\uFF08", "(" }, // Fullwidth left parenthesis (（)
+                { "\u27EE", "(" }, // Mathematical left flattened parenthesis (⟮)
+                { "\u2985", "(" }, // Left white parenthesis (⦅)
+
+                // Right parentheses
+                { "\u2769", ")" }, // Medium right parenthesis ornament (❩)
+                { "\u276B", ")" }, // Medium flattened right parenthesis ornament (❫)
+                { "\uFE5A", ")" }, // Small right parenthesis (﹚)
+                { "\uFF09", ")" }, // Fullwidth right parenthesis (）
+                { "\u27EF", ")" }, // Mathematical right flattened parenthesis (⟯)
+                { "\u2986", ")" }, // Right white parenthesis (⦆)
+
+                // Asterisks and asterisk like marks
+                { "\u204E", "*" }, // Low asterisk (⁎)
+                { "\u2217", "*" }, // Asterisk operator (∗)
+                { "\u229B", "*" }, // Circled asterisk operator (⊛)
+                { "\u2722", "*" }, // Four teardrop spoked asterisk (✢)
+                { "\u2723", "*" }, // Heavy teardrop spoked asterisk (✣)
+                { "\u2724", "*" }, // Snowflake symbol (✤)
+                { "\u2725", "*" }, // Heavy four balloon spoked asterisk (✥)
+                { "\u2731", "*" }, // Heavy asterisk (✱)
+                { "\u2732", "*" }, // Open centre asterisk (✲)
+                { "\u2733", "*" }, // Eight spoked asterisk (✳)
+                { "\u273A", "*" }, // Heavy teardrop spoked asterisk (✺)
+                { "\u273B", "*" }, // Open centre teardrop spoked asterisk (✻)
+                { "\u273C", "*" }, // Heavy open centre asterisk (✼)
+                { "\u273D", "*" }, // Open centre asterisk (✽)
+                { "\u2743", "*" }, // Heavy teardrop spoked snowflake (❃)
+                { "\u2749", "*" }, // Balloon spoked asterisk (❉)
+                { "\u274A", "*" }, // Heavy eight teardrop spoked asterisk (❊)
+                { "\u274B", "*" }, // Heavy eight balloon spoked asterisk (❋)
+                { "\u29C6", "*" }, // Square with diagonal crosshatch fill (⧆)
+                { "\uFE61", "*" }, // Small asterisk (﹡)
+                { "\uFF0A", "*" }, // Fullwidth asterisk (＊)
+
+                // Plus signs
+                { "\u02D6", "+" }, // Modifier letter plus sign (˖)
+                { "\uFE62", "+" }, // Small plus sign (﹢)
+                { "\uFF0B", "+" }, // Fullwidth plus sign (＋)
+
+                // Periods and full stops
+                { "\u3002", "." }, // Ideographic full stop (。)
+                { "\uFE52", "." }, // Small full stop (﹒)
+                { "\uFF0E", "." }, // Fullwidth full stop (．)
+                { "\uFF61", "." }, // Halfwidth ideographic full stop (｡)
+
+                // Fullwidth digits
+                { "\uFF10", "0" }, // Fullwidth digit zero (０)
+                { "\uFF11", "1" }, // Fullwidth digit one (１)
+                { "\uFF12", "2" }, // Fullwidth digit two (２)
+                { "\uFF13", "3" }, // Fullwidth digit three (３)
+                { "\uFF14", "4" }, // Fullwidth digit four (４)
+                { "\uFF15", "5" }, // Fullwidth digit five (５)
+                { "\uFF16", "6" }, // Fullwidth digit six (６)
+                { "\uFF17", "7" }, // Fullwidth digit seven (７)
+                { "\uFF18", "8" }, // Fullwidth digit eight (８)
+                { "\uFF19", "9" }, // Fullwidth digit nine (９)
+
+                // Semicolons
+                { "\u204F", ";" }, // Reversed semicolon (⁏)
+                { "\uFE14", ";" }, // Presentation form for vertical semicolon (︔)
+                { "\uFE54", ";" }, // Small semicolon (﹔)
+                { "\uFF1B", ";" }, // Fullwidth semicolon (；)
+
+                // Less than signs and similar
+                { "\uFE64", "<" }, // Small less than sign (﹤)
+                { "\uFF1C", "<" }, // Fullwidth less than sign (＜)
+                { "\u203A", "<" }, // Single right pointing angle quotation mark (›)
+
+                // Equals signs and similar
+                { "\u0347", "=" }, // Combining equals sign below ( ̻̇ note: equals below)
+                { "\uA78A", "=" }, // Latin letter saltillo like equals (꞊)
+                { "\uFE66", "=" }, // Small equals sign (﹦)
+                { "\uFF1D", "=" }, // Fullwidth equals sign (＝)
+    
+                // Greater than signs and similar
+                { "\u2039", ">" }, // Single left pointing angle quotation mark (‹)
+                { "\uFE65", ">" }, // Small greater than sign (﹥)
+                { "\uFF1E", ">" }, // Fullwidth greater than sign (＞)
+
+                // Question marks
+                { "\uFE16", "?" }, // Presentation form for vertical question mark (︖)
+                { "\uFE56", "?" }, // Small question mark (﹖)
+                { "\uFF1F", "?" }, // Fullwidth question mark (？)
+
+                // Letters A
+                { "\uFF21", "A" }, // Fullwidth Latin capital letter A (Ａ)
+                { "\u1D00", "A" }, // Latin letter small capital A (ᴀ)
+
+                // Letters B
+                { "\uFF22", "B" }, // Fullwidth Latin capital letter B (Ｂ)
+                { "\u0299", "B" }, // Latin letter small capital B (ʙ)
+
+                // Letters C
+                { "\uFF23", "C" }, // Fullwidth Latin capital letter C (Ｃ)
+                { "\u1D04", "C" }, // Latin letter small capital C (ᴄ)
+
+                // Letters D
+                { "\uFF24", "D" }, // Fullwidth Latin capital letter D (Ｄ)
+                { "\u1D05", "D" }, // Latin letter small capital D (ᴅ)
+
+                // Letters E
+                { "\uFF25", "E" }, // Fullwidth Latin capital letter E (Ｅ)
+                { "\u1D07", "E" }, // Latin letter small capital E (ᴇ)
+
+                // Letters F
+                { "\uFF26", "F" }, // Fullwidth Latin capital letter F (Ｆ)
+                { "\uA730", "F" }, // Latin letter small capital F (ꜰ)
+
+                // Letters G
+                { "\uFF27", "G" }, // Fullwidth Latin capital letter G (Ｇ)
+                { "\u0262", "G" }, // Latin letter small capital G (ɢ)
+
+                // Letters H
+                { "\uFF28", "H" }, // Fullwidth Latin capital letter H (Ｈ)
+                { "\u029C", "H" }, // Latin letter small capital H (ʜ)
+
+                // Letters I
+                { "\uFF29", "I" }, // Fullwidth Latin capital letter I (Ｉ)
+                { "\u026A", "I" }, // Latin letter small capital I (ɪ)
+
+                // Letters J
+                { "\uFF2A", "J" }, // Fullwidth Latin capital letter J (Ｊ)
+                { "\u1D0A", "J" }, // Latin letter small capital J (ᴊ)
+
+                // Letters K
+                { "\uFF2B", "K" }, // Fullwidth Latin capital letter K (Ｋ)
+                { "\u1D0B", "K" }, // Latin letter small capital K (ᴋ)
+
+                // Letters L
+                { "\uFF2C", "L" }, // Fullwidth Latin capital letter L (Ｌ)
+                { "\u029F", "L" }, // Latin letter small capital L (ʟ)
+
+                // Letters M
+                { "\uFF2D", "M" }, // Fullwidth Latin capital letter M (Ｍ)
+                { "\u1D0D", "M" }, // Latin letter small capital M (ᴍ)
+
+                // Letters N
+                { "\uFF2E", "N" }, // Fullwidth Latin capital letter N (Ｎ)
+                { "\u0274", "N" }, // Latin letter small capital N (ɴ)
+
+                // Letters O
+                { "\uFF2F", "O" }, // Fullwidth Latin capital letter O (Ｏ)
+                { "\u1D0F", "O" }, // Latin letter small capital O (ᴏ)
+
+                // Letters P
+                { "\uFF30", "P" }, // Fullwidth Latin capital letter P (Ｐ)
+                { "\u1D18", "P" }, // Latin letter small capital P (ᴘ)
+
+                // Letters Q
+                { "\uFF31", "Q" }, // Fullwidth Latin capital letter Q (Ｑ)
+
+                // Letters R
+                { "\uFF32", "R" }, // Fullwidth Latin capital letter R (Ｒ)
+                { "\u0280", "R" }, // Latin letter small capital R (ʀ)
+
+                // Letters S
+                { "\uFF33", "S" }, // Fullwidth Latin capital letter S (Ｓ)
+                { "\uA731", "S" }, // Latin letter small capital S (ꜱ)
+
+                // Letters T
+                { "\uFF34", "T" }, // Fullwidth Latin capital letter T (Ｔ)
+                { "\u1D1B", "T" }, // Latin letter small capital T (ᴛ)
+
+                // Letters U
+                { "\uFF35", "U" }, // Fullwidth Latin capital letter U (Ｕ)
+                { "\u1D1C", "U" }, // Latin letter small capital U (ᴜ)
+
+                // Letters V
+                { "\uFF36", "V" }, // Fullwidth Latin capital letter V (Ｖ)
+                { "\u1D20", "V" }, // Latin letter small capital V (ᴠ)
+
+                // Letters W
+                { "\uFF37", "W" }, // Fullwidth Latin capital letter W (Ｗ)
+                { "\u1D21", "W" }, // Latin letter small capital W (ᴡ)
+
+                // Letters X
+                { "\uFF38", "X" }, // Fullwidth Latin capital letter X (Ｘ)
+
+                // Letters Y
+                { "\uFF39", "Y" }, // Fullwidth Latin capital letter Y (Ｙ)
+                { "\u028F", "Y" }, // Latin letter small capital Y (ʏ)
+
+                // Letters Z
+                { "\uFF3A", "Z" }, // Fullwidth Latin capital letter Z (Ｚ)
+                { "\u1D22", "Z" }, // Latin letter small capital Z (ᴢ)
+
+                // Carets and modifiers
+                { "\u02C6", "^" }, // Modifier letter circumflex accent (ˆ)
+                { "\u0302", "^" }, // Combining circumflex accent ( ̂)
+                { "\uFF3E", "^" }, // Fullwidth circumflex accent (＾)
+                { "\u1DCD", "^" }, // Combining double circumflex above ( ͍̂ note: double circumflex)
+
+                // Braces
+                { "\u2774", "{" }, // Medium left curly bracket ornament (❴)
+                { "\uFE5B", "{" }, // Small left curly bracket (﹛)
+                { "\uFF5B", "{" }, // Fullwidth left curly bracket (｛)
+
+                { "\u2775", "}" }, // Medium right curly bracket ornament (❵)
+                { "\uFE5C", "}" }, // Small right curly bracket (﹜)
+                { "\uFF5D", "}" }, // Fullwidth right curly bracket (｝)
+
+                // Brackets
+                { "\uFF3B", "[" }, // Fullwidth left square bracket (［)
+                { "\uFF3D", "]" }, // Fullwidth right square bracket (］)
+
+                // Tildes and similar
+                { "\u02DC", "~" }, // Small tilde (˜)
+                { "\u02F7", "~" }, // Modifier letter low tilde (˷)
+                { "\u0303", "~" }, // Combining tilde ( ̃)
+                { "\u0330", "~" }, // Combining tilde below ( ̰)
+                { "\u0334", "~" }, // Combining tilde overlay ( ̴)
+                { "\u223C", "~" }, // Tilde operator (∼)
+                { "\uFF5E", "~" }, // Fullwidth tilde (～)
+
+                // Spaces and separators to empty
+                { "\u2001", string.Empty }, // Em quad
+                { "\u2002", string.Empty }, // En space
+                { "\u2003", string.Empty }, // Em space
+                { "\u2004", string.Empty }, // Three per em space
+                { "\u2005", string.Empty }, // Four per em space
+                { "\u2006", string.Empty }, // Six per em space
+                { "\u2007", string.Empty }, // Figure space
+                { "\u2008", string.Empty }, // Punctuation space
+                { "\u2009", string.Empty }, // Thin space
+                { "\u200A", string.Empty }, // Hair space
+                { "\u200B", string.Empty }, // Zero width space
+                { "\u202F", string.Empty }, // Narrow no break space
+                { "\u205F", string.Empty }, // Medium mathematical space
+                { "\u3000", string.Empty }, // Ideographic space
+                { "\uFEFF", string.Empty }, // Zero width no break space
+                { "\u008D", string.Empty }, // C1 control: Reverse line feed
+                { "\u009F", string.Empty }, // C1 control: Application program command
+                { "\u0080", string.Empty }, // C1 control: Padding character
+                { "\u0090", string.Empty }, // C1 control: Device control string
+                { "\u009B", string.Empty }, // C1 control: Control sequence introducer
+                { "\u0010", string.Empty }, // C0 control: Data link escape
+                { "\u0009", string.Empty }, // C0 control: Horizontal tab
+                { "\u0000", string.Empty }, // C0 control: Null
+                { "\u0003", string.Empty }, // C0 control: End of text
+                { "\u0004", string.Empty }, // C0 control: End of transmission
+                { "\u0017", string.Empty }, // C0 control: End of transmission block
+                { "\u0019", string.Empty }, // C0 control: End of medium
+                { "\u0011", string.Empty }, // C0 control: Device control one
+                { "\u0012", string.Empty }, // C0 control: Device control two
+                { "\u0013", string.Empty }, // C0 control: Device control three
+                { "\u0014", string.Empty }, // C0 control: Device control four
+                { "\u2028", string.Empty }, // Line separator
+                { "\u2029", string.Empty }, // Paragraph separator
+                { "\u2060", string.Empty }, // Word joiner
+
+                // Double punctuation expansions
+                { "\u203C", "!!" }, // Double exclamation mark (‼)
+
+                // Ellipsis
+                { "\u2026", "..." }, // Horizontal ellipsis (…)
+            };
+
+            // Aggregate the replacements into character classes to improve performance.
+            var aggregatedReplacements = AggregateReplacements( replacements );
+
+            foreach ( var replacement in aggregatedReplacements )
+            {
+                text = Regex.Replace( text, replacement.Key, replacement.Value );
+            }
+
+            return text;
+        }
+
+        /// <summary>
+        /// Aggregates a dictionary of character replacements into a new dictionary where keys are grouped by their
+        /// replacement values, forming regex-compatible character classes.
+        /// </summary>
+        /// <param name="replacements">A dictionary where each key-value pair represents a character and its replacement.</param>
+        /// <returns>A dictionary where each key is a regex character class representing characters to be replaced, and each
+        /// value is the replacement character.</returns>
+        private static Dictionary<string, string> AggregateReplacements( Dictionary<string, string> replacements )
+        {
+            // Group all entries by their replacement value (the target character)
+            var grouped = replacements
+                .GroupBy( kvp => kvp.Value )
+                .ToDictionary(
+                    g => $"[{string.Concat( g.Select( kvp => kvp.Key ) )}]",
+                    g => g.Key == "\"" || g.Key == "'" ? g.First().Value : g.Key // ensures correct mapping type
+                );
+
+            // Now properly escape regex special characters inside the brackets
+            var aggregated = new Dictionary<string, string>();
+            foreach ( var kvp in replacements.GroupBy( kvp => kvp.Value ) )
+            {
+                var chars = string.Concat( kvp.Select( x =>
+                {
+                    // Escape characters that have special meaning in regex char classes
+                    var c = x.Key;
+                    
+                    if ( c == "\\" || c == "]" || c == "^" || c == "-" )
+                    {
+                        c = "\\" + c;
+                    }
+
+                    return c;
+                } ) );
+
+                aggregated.Add( $"[{chars}]", kvp.Key );
+            }
+
+            return aggregated;
         }
 
         #endregion

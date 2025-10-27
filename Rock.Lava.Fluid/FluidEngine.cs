@@ -221,13 +221,26 @@ namespace Rock.Lava.Fluid
             }
 
             templateOptions.FileProvider = new FluidFileSystem( options.FileSystem );
+
+            /*
+                10/24/2025 - NA
+
+                Overrides the default Fluid TemplateCache to correctly process our custom ~~ theme path syntax.
+
+                Reason: The default cache uses the path as a cache key which is not unique when ~~ is used.
+            */
+            templateOptions.TemplateCache = new FluidTemplateCache( options.FileSystem );
         }
 
         private TemplateOptions GetTemplateOptions()
         {
             if ( _templateOptions == null )
             {
-                _templateOptions = new TemplateOptions();
+                // ModelNamesComparer with StringComparer.Ordinal should allow the
+                // "LavaDataDictionary_WithKeysDifferingOnlyByCase_ReturnsMatchingValueForKey" test to pass again
+                // but it does not seem to have this effect.  I've posted my question about this feature
+                // in https://github.com/sebastienros/fluid/pull/681#issuecomment-2891948387
+                _templateOptions = new TemplateOptions { ModelNamesComparer = StringComparer.Ordinal };
 
                 // Re-register the basic Liquid filters implemented by Fluid using CamelCase rather than the default snakecase.
                 HideSnakeCaseFilters( _templateOptions );
@@ -647,11 +660,33 @@ namespace Rock.Lava.Fluid
             {
                 try
                 {
-                    template.Render( templateContext.FluidContext, encoder, writer );
+                    /*
+                        10/16/2025 - N.A.
+
+                        In Fluid v2.20, this original Fluid `Render` method was obsoleted and also updated to call an internal method that defaults `isolateContext` to true:
+
+                            public static void Render(this IFluidTemplate template, TemplateContext context, TextEncoder encoder, TextWriter writer)
+
+                        This change introduced a regression (see https://github.com/sebastienros/fluid/issues/811) due to the unexpected context isolation behavior.
+
+                        To resolve this, we've updated the call:
+                            template.Render( templateContext.FluidContext, encoder, writer );
+
+                        to use the non-isolating async version instead:
+                            var task = template.RenderAsync( writer, encoder, templateContext.FluidContext );
+                            ...
+
+                        Reason: Prevent unintended context isolation introduced by the new default behavior in Fluid.
+                    */
+
+                    var task = template.RenderAsync( writer, encoder, templateContext.FluidContext );
+                    if ( !task.IsCompletedSuccessfully )
+                    {
+                        task.AsTask().GetAwaiter().GetResult();
+                    }
 
                     writer.Flush();
                     result.Text = sb.ToString();
-
                 }
                 catch ( LavaInterruptException )
                 {

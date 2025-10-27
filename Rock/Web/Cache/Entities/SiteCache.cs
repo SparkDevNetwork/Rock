@@ -21,6 +21,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Oidc;
@@ -794,7 +795,7 @@ namespace Rock.Web.Cache
                 return siteId.HasValue ? Get( siteId.Value ) : null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var siteDomainService = new SiteDomainService( rockContext );
                 var siteDomain = siteDomainService.GetByDomain( host ) ?? siteDomainService.GetByDomainContained( host );

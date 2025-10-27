@@ -20,6 +20,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net.Geolocation;
@@ -191,7 +192,7 @@ namespace Rock.Web.Cache
                     {
                         if ( _definedValueIds == null )
                         {
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 _definedValueIds = new DefinedValueService( rockContext )
                                     .GetByDefinedTypeId( Id )

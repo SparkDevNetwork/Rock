@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -163,7 +164,7 @@ namespace Rock.Web.Cache
                 {
                     if ( _categoryIds == null )
                     {
-                        using ( var rockContext = new RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             _categoryIds = new CategoryService( rockContext )
                                 .Get( Id, EntityTypeId )
@@ -205,7 +206,7 @@ namespace Rock.Web.Cache
                     if ( _scheduleExclusions != null ) return _scheduleExclusions;
                     _scheduleExclusions = new List<DateRange>();
 
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         foreach ( var exclusion in new ScheduleCategoryExclusionService( rockContext )
                             .Queryable().AsNoTracking()
@@ -297,9 +298,9 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         internal static CategoryCache[] GetByEntityType( int? entityTypeId )
         {
-            var rockContext = new RockContext();
-            var Categorieservice = new CategoryService(rockContext);
-            var categoryIdList = Categorieservice.GetByEntityTypeId( entityTypeId )
+            var rockContext = RockApp.Current.CreateRockContext();
+            var categorieService = new CategoryService( rockContext );
+            var categoryIdList = categorieService.GetByEntityTypeId( entityTypeId )
                .Select(c => c.Id)
                .ToList();
 

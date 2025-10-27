@@ -143,7 +143,7 @@ namespace Rock.Web.Cache
         /// <param name="container">The container for all the automation trigger components.</param>
         internal static void CreateAllMonitors( AutomationTriggerContainer container )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Don't use cache since we might get executed before the cache
                 // is ready and valid.
@@ -195,7 +195,7 @@ namespace Rock.Web.Cache
         {
             var container = RockApp.Current.GetService<AutomationTriggerContainer>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Don't use cache since we might get executed before the cache
                 // flush bus message has gone through.

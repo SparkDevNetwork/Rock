@@ -445,6 +445,22 @@ namespace Rock.Blocks.CheckIn.Config
                 }
             }
 
+            DefinedValueCache defaultPersonRecordSourceValue = null;
+            if ( groupType.GroupMemberRecordSourceValueId.HasValue )
+            {
+                defaultPersonRecordSourceValue = DefinedValueCache.Get( groupType.GroupMemberRecordSourceValueId.Value );
+            }
+
+            if ( defaultPersonRecordSourceValue == null )
+            {
+                defaultPersonRecordSourceValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_CHECK_IN.AsGuid() );
+            }
+
+            if ( defaultPersonRecordSourceValue != null )
+            {
+                bag.RegistrationDefaultPersonRecordSource = defaultPersonRecordSourceValue.ToListItemBag();
+            }
+
             return bag;
         }
 
@@ -805,6 +821,15 @@ namespace Rock.Blocks.CheckIn.Config
 
             box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationDefaultPersonConnectionStatus ),
                 () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTPERSONCONNECTIONSTATUS, box.Bag.RegistrationSettings.RegistrationDefaultPersonConnectionStatus.Value ) );
+
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationDefaultPersonRecordSource ),
+                () =>
+                {
+                    var defaultPersonRecordSourceValueId = DefinedValueCache.GetId( box.Bag.RegistrationSettings.RegistrationDefaultPersonRecordSource.Value.AsGuid() )
+                        ?? DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_CHECK_IN.AsGuid() );
+
+                    entity.GroupMemberRecordSourceValueId = defaultPersonRecordSourceValueId;
+                } );
 
             // Search Settings
             box.IfValidProperty( nameof( box.Bag.SearchSettings.MaxPhoneLength ),

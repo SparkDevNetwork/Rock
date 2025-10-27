@@ -50,5 +50,10 @@ namespace Rock.ViewModels.Blocks.Communication.Chat.ChatView
         /// Gets or sets the template used for displaying age restriction messages.
         /// </summary>
         public string AgeRestrictionTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether direct messaging is allowed for the individual.
+        /// </summary>
+        public bool IsDirectMessagingAllowed { get; set; }
     }
 }

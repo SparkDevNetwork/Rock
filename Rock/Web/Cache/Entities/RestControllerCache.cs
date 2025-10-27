@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 
 using Rock.Attribute;
 using Rock.Cms;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -80,7 +81,7 @@ namespace Rock.Web.Cache
                     {
                         if ( _restActionIds == null )
                         {
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 _restActionIds = new RestActionService( rockContext )
                                     .Queryable()
@@ -194,7 +195,7 @@ namespace Rock.Web.Cache
                 return QueryDbByClassNameWithContext( className, rockContext );
             }
 
-            using ( var newRockContext = new RockContext() )
+            using ( var newRockContext = RockApp.Current.CreateRockContext() )
             {
                 return QueryDbByClassNameWithContext( className, newRockContext );
             }

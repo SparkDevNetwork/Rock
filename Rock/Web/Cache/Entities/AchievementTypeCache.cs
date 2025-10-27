@@ -21,6 +21,7 @@ using System.Runtime.Serialization;
 
 using Rock.Achievement;
 using Rock.Achievement.Component;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -391,7 +392,7 @@ namespace Rock.Web.Cache
 
             foreach ( var achievementTypeCache in sortedAchievementTypes )
             {
-                var loopRockContext = new RockContext();
+                var loopRockContext = RockApp.Current.CreateRockContext();
                 var component = achievementTypeCache.AchievementComponent;
                 var loopUpdatedAttempts = component.Process( loopRockContext, achievementTypeCache, sourceEntity );
                 loopRockContext.SaveChanges();

@@ -468,7 +468,7 @@ namespace Rock.Web.Cache
             {
                 if ( _childPagesCache == null )
                 {
-                    _childPagesCache = GetPages( new RockContext() );
+                    _childPagesCache = GetPages( RockApp.Current.CreateRockContext() );
                 }
                 return _childPagesCache;
             }
