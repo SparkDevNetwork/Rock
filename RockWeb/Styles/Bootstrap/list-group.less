@@ -158,3 +158,21 @@ li.list-group-item:has(> a) {
 li.list-group-item:hover:has(> a) {
   background-color: var(--color-interface-softer) !important;
 }
+
+// Overrides for Workflow Items
+
+.workflow-entry-panel {
+  & > h1:first-of-type {
+    margin-top: 0;
+  }
+}
+
+// Override list group item styles to add flex and remove table styles
+.panel-workflowitem .list-group-item {
+  display: flex;
+  justify-content: space-between;
+  &::before,
+  &::after {
+    all: unset;
+  }
+}

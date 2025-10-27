@@ -9,7 +9,7 @@
                         <template v-else>{{ recipientsLabel }}</template>
                     </HighlightLabel>
                 </div>
-                <div v-if="isUseSimpleEditorButtonShown && internalSimpleCommunicationPageUrl" class="mr-3">
+                <div v-if="isUseSimpleEditorButtonShown && internalSimpleCommunicationPageUrl" class="ml-2">
                     <HighlightLabel labelType="default">
                         <a :href="internalSimpleCommunicationPageUrl">Use Simple Editor</a>
                     </HighlightLabel>

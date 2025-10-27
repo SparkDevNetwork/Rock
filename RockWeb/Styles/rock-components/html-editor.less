@@ -82,14 +82,18 @@
 }
 
 .picker-folders {
-  max-width: 320px;
-  padding-right: 24px;
-  @media (max-width: @screen-xs-max) {
-    -ms-flex: 0 0 100%;
-    flex: 0 0 100%;
-    max-width: 100%;
-    padding-right: 0;
-    padding-bottom: 24px;
+  max-width:        320px;
+  padding-right:    var(--spacing-medium);
+  border-right: 1px solid var(--color-interface-soft);
+  @media (max-width: @screen-md) {
+    -ms-flex:       0 0 100%;
+    flex:           0 0 100%;
+    max-width:      100%;
+    padding-right:  0;
+    padding-bottom: var(--spacing-medium);
+    border-bottom: 1px solid var(--color-interface-soft);
+    border-right: 0;
+    height: 300px;
   }
 
   .actions {

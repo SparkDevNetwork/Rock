@@ -352,11 +352,10 @@
   height: 1em;
 
   .badge-icon {
-    position: absolute;
     top: 0;
     right: 0;
     left: 0;
-    font-size: inherit;
+    font-size: 1.25em;
     line-height: 1.15em;
     text-align: center;
   }
@@ -382,7 +381,7 @@
   }
 
   .badge-content {
-    font-size: .888em;
+    font-size: 1em;
     color: @badge-lastvisitonsite-color;
 
     &.today {
@@ -414,11 +413,21 @@
   bottom:   .65em;
 }
 
-.rockbadge-personaldevice {
-  width: .6em;
+.rockbadge-personaldevice,
+.rockbadge-lastvisitonsite {
+  width:  .9em;
   .badge-content .metric-value {
-    top: .7142em;
+    bottom: 1em;
   }
+}
+
+.rockbadge-personaldevice .badge-content .metric-value {
+  font-size: .3em;
+}
+
+.rockbadge-lastvisitonsite .badge-content .metric-value {
+  font-size: .4em;
+  top:       .4em;
 }
 
 .rockbadge-assessment {

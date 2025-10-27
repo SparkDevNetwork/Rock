@@ -278,7 +278,7 @@
     });
 
     const approvedDateTimeTooltip = computed((): string => {
-        return sendRockDateTime.value?.toASPString("g") ?? "";
+        return approvedRockDateTime.value?.toASPString("g") ?? "";
     });
 
     const fromName = computed((): string => {

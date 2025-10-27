@@ -1032,7 +1032,7 @@ namespace Rock.CheckIn.v2
                 if ( !saveResult.RecordSourceValueId.HasValue )
                 {
                     saveResult.RecordSourceValueId = RecordSourceHelper.GetSessionRecordSourceValueId()
-                        ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_CHECK_IN.AsGuid() )?.Id;
+                        ?? DefinedValueCache.Get( _template.DefaultPersonRecordSourceGuid, _rockContext )?.Id;
                 }
 
                 person.RecordSourceValueId = saveResult.RecordSourceValueId;

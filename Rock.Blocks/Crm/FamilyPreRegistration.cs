@@ -2034,7 +2034,7 @@ namespace Rock.Blocks.Crm
                 };
                 mockChild.LoadAttributes( rockContext );
                 var childAttributes = GetAttributeCategoryAttributes( rockContext, this.ChildAttributeCategoryGuids );
-                box.ChildAttributes = mockChild.GetPublicAttributesForEdit( currentPerson, attributeFilter: f => childAttributes.Any( a => a.Guid == f.Guid ) );
+                box.ChildAttributes = mockChild.GetPublicAttributesForEdit( currentPerson, enforceSecurity: false, attributeFilter: f => childAttributes.Any( a => a.Guid == f.Guid ) );
                 box.Children = children.Select( child => GetFamilyPreRegistrationPersonBag( child.Person, child.FamilyRoleGuid, currentPerson, childAttributes ) ).ToList();
 
                 // Only load the home address if the Address field is shown.

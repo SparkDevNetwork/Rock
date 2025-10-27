@@ -530,7 +530,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         /// <param name="responseBag">The bag whose attributes should be populated.</param>
         /// <param name="template">The configuration template to use for which attributes to populate.</param>
         /// <param name="familyGroup">The group representing the primary family.</param>
-        private void PopulatePersonAttributeBags( EditFamilyResponseBag responseBag, TemplateConfigurationData template, Model.Group familyGroup )
+        private static void PopulatePersonAttributeBags( EditFamilyResponseBag responseBag, RockContext rockContext, Rock.Model.Person person, TemplateConfigurationData template, Model.Group familyGroup )
         {
             var tempPerson = new Person();
             var familyAttributeGuids = template.RequiredAttributeGuidsForFamilies
@@ -547,20 +547,20 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 .Union( template.RequiredAttributeGuidsForFamilies )
                 .ToList();
 
-            tempPerson.LoadAttributes( RockContext );
+            tempPerson.LoadAttributes( rockContext );
 
             responseBag.AdultAttributes = tempPerson.GetPublicAttributesForEdit(
-                RequestContext.CurrentPerson,
+                person,
                 false,
                 a => adultAttributeGuids.Contains( a.Guid ) );
 
             responseBag.ChildAttributes = tempPerson.GetPublicAttributesForEdit(
-                RequestContext.CurrentPerson,
+                person,
                 false,
                 a => childAttributeGuids.Contains( a.Guid ) );
 
             responseBag.FamilyAttributes = familyGroup.GetPublicAttributesForEdit(
-                RequestContext.CurrentPerson,
+                person,
                 false,
                 a => familyAttributeGuids.Contains( a.Guid ) );
 
@@ -755,54 +755,88 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         }
 
         /// <summary>
-        /// Begins the process of editing a new family. This loads all the
-        /// information about the family as well as information needed to paint
-        /// the UI screens for the current configuration.
+        /// Attempts to construct an <see cref="EditFamilyResponseBag"/> for the given person and family context,
+        /// applying configuration rules and kiosk permissions defined in Rock.
         /// </summary>
-        /// <param name="familyId">The encrypted identifier of the family to edit. This should be an empty string to add a new family.</param>
-        /// <param name="templateId">The encrypted identifier of the configuration template.</param>
-        /// <param name="kioskId">The encrypted identifier of the kiosk being used to edit a family.</param>
-        /// <param name="addIndividualOnly">If <c>true</c> then a single individual will be added to the family, no family edit operations allowed.</param>
-        /// <returns>An instance of <see cref="EditFamilyResponseBag"/> that describes the family and UI details.</returns>
-        private BlockActionResult GetEditFamilyResponseBag( string familyId, string templateId, string kioskId, bool addIndividualOnly )
+        /// <param name="rockContext">The Rock data context used for database queries and caching.</param>
+        /// <param name="person">The person initiating the request, typically the logged-in or registering individual.</param>
+        /// <param name="familyId">
+        /// The unique identifier (IdKey) of the family to edit or view.  
+        /// If <c>null</c> or empty, a new family record will be created in memory.
+        /// </param>
+        /// <param name="templateId">
+        /// The IdKey of the check-in configuration template defining registration and UI behavior.  
+        /// Must reference a valid <see cref="CheckInTemplate"/> in the system.
+        /// </param>
+        /// <param name="kioskId">
+        /// The IdKey of the kiosk device being used for registration or check-in.  
+        /// Used to enforce feature permissions such as allowing new families or editing existing ones.
+        /// </param>
+        /// <param name="addIndividualOnly">
+        /// If <c>true</c>, restricts registration to adding an individual (child or adult) to an existing family,
+        /// bypassing full family edit behavior.
+        /// </param>
+        /// <param name="bypassKioskChecks">
+        /// If <c>true</c>, skips kiosk-level validation checks (for example, when invoked by an admin or system process).  
+        /// Otherwise, kiosk configuration is enforced for allowed registration and editing actions.
+        /// </param>
+        /// <param name="errorMessage">
+        /// When the method fails, this output parameter contains a user-friendly error message describing the reason.  
+        /// Returns <c>null</c> if the operation succeeds.
+        /// </param>
+        /// <returns>
+        /// An initialized <see cref="EditFamilyResponseBag"/> populated with registration configuration,
+        /// family members, attributes, and UI visibility options,  
+        /// or <c>null</c> if the operation fails due to invalid configuration, kiosk restrictions, or missing data.
+        /// </returns>
+        /// <remarks>
+        /// This method validates and prepares the data required for a family registration or edit workflow,
+        /// including template rules, kiosk permissions, known relationship types, and person attributes.
+        /// It is typically used by the Rock Check-in system and related mobile registration flows.
+        /// </remarks>
+        public static EditFamilyResponseBag TryGetEditFamilyResponseBag( RockContext rockContext, Rock.Model.Person person, string familyId, string templateId, string kioskId, bool addIndividualOnly, bool bypassKioskChecks, out string errorMessage )
         {
+            errorMessage = null;
             Model.Group group = null;
-            var template = GroupTypeCache.GetByIdKey( templateId, RockContext )
-                ?.GetCheckInConfiguration( RockContext );
-            var kiosk = DeviceCache.GetByIdKey( kioskId, RockContext );
+            var template = GroupTypeCache.GetByIdKey( templateId, rockContext )
+                ?.GetCheckInConfiguration( rockContext );
+            var kiosk = DeviceCache.GetByIdKey( kioskId, rockContext );
 
             if ( familyId.IsNotNullOrWhiteSpace() )
             {
-                group = new GroupService( RockContext ).GetQueryableByKey( familyId, false )
+                group = new GroupService( rockContext ).GetQueryableByKey( familyId, false )
                     .Include( g => g.Members.Select( gm => gm.Person ) )
                     .FirstOrDefault();
 
                 if ( group == null )
                 {
-                    return ActionBadRequest( "Family not found." );
+                    errorMessage = "Family not found.";
+                    return null;
                 }
 
-                group.LoadAttributes( RockContext );
-                group.Members.Select( gm => gm.Person ).ToList().LoadAttributes( RockContext );
+                group.LoadAttributes( rockContext );
+                group.Members.Select( gm => gm.Person ).ToList().LoadAttributes( rockContext );
             }
             else
             {
                 group = new Model.Group
                 {
-                    GroupTypeId = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), RockContext ).Id
+                    GroupTypeId = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), rockContext ).Id
                 };
 
-                group.LoadAttributes( RockContext );
+                group.LoadAttributes( rockContext );
             }
 
             if ( template == null )
             {
-                return ActionBadRequest( "Check-in configuration template not found." );
+                errorMessage = "Configuration template not found.";
+                return null;
             }
 
             if ( kiosk == null )
             {
-                return ActionBadRequest( "Kiosk not found." );
+                errorMessage = "Kiosk not found.";
+                return null;
             }
 
             if ( addIndividualOnly )
@@ -811,26 +845,29 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
 
                 if ( addMode == AdultsOrChildrenSelectionMode.None )
                 {
-                    return ActionBadRequest( "This kiosk does not support individual registration." );
+                    errorMessage = "This kiosk does not support individual registration.";
+                    return null;
                 }
             }
-            else if ( group.Id == 0 && !kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_ADDING_FAMILIES ).AsBoolean() )
+            else if ( !bypassKioskChecks && ( group.Id == 0 && !kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_ADDING_FAMILIES ).AsBoolean() ) )
             {
-                return ActionBadRequest( "This kiosk does not support family registration." );
+                errorMessage = "This kiosk does not support family registration.";
+                return null;
             }
-            else if ( group.Id != 0 && !kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_EDITING_FAMILIES ).AsBoolean() )
+            else if ( !bypassKioskChecks && group.Id != 0 && !kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_EDITING_FAMILIES ).AsBoolean() )
             {
-                return ActionBadRequest( "This kiosk does not support family registration." );
+                errorMessage = "This kiosk does not support editing families.";
+                return null;
             }
 
-            var canCheckInMembers = new CheckInDirector( RockContext )
+            var canCheckInMembers = new CheckInDirector( rockContext )
                 .CreateSession( template )
                 .SearchProvider
                 .GetCanCheckInFamilyMembersQuery( group.IdKey )
                 .ToList();
 
-            var registration = new FamilyRegistration( RockContext, RequestContext.CurrentPerson, template );
-            var knownRelationshipsCache = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid(), RockContext ).Roles;
+            var registration = new FamilyRegistration( rockContext, person, template );
+            var knownRelationshipsCache = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid(), rockContext ).Roles;
             ListItemBag childRelationship = null;
 
             if ( template.KnownRelationshipRoleGuids.Contains( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CHILD.AsGuid() ) )
@@ -868,7 +905,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 DisplayRaceForAdults = template.DisplayRaceForAdults,
                 DisplayRaceForChildren = template.DisplayRaceForChildren,
                 DisplaySuffix = template.DisplaySuffix,
-                Suffixes = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid(), RockContext )
+                Suffixes = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid(), rockContext )
                     ?.DefinedValues
                     .OrderBy( dv => dv.Order )
                     .ToListItemBagList(),
@@ -885,7 +922,30 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 ChildRelationship = childRelationship
             };
 
-            PopulatePersonAttributeBags( response, template, group );
+            PopulatePersonAttributeBags( response, rockContext, person, template, group );
+
+            return response;
+        }
+
+        /// <summary>
+        /// Begins the process of editing a new family. This loads all the
+        /// information about the family as well as information needed to paint
+        /// the UI screens for the current configuration.
+        /// </summary>
+        /// <param name="familyId">The encrypted identifier of the family to edit. This should be an empty string to add a new family.</param>
+        /// <param name="templateId">The encrypted identifier of the configuration template.</param>
+        /// <param name="kioskId">The encrypted identifier of the kiosk being used to edit a family.</param>
+        /// <param name="addIndividualOnly">If <c>true</c> then a single individual will be added to the family, no family edit operations allowed.</param>
+        /// <returns>An instance of <see cref="EditFamilyResponseBag"/> that describes the family and UI details.</returns>
+        private BlockActionResult GetEditFamilyResponseBag( string familyId, string templateId, string kioskId, bool addIndividualOnly )
+        {
+            var response = TryGetEditFamilyResponseBag( RockContext, RequestContext.CurrentPerson, familyId, templateId, kioskId, addIndividualOnly, false, out var errorMessage );
+
+            if ( response == null )
+            {
+                var error = errorMessage ?? "An unknown error occurred.";
+                return ActionBadRequest( error );
+            }
 
             return ActionOk( response );
         }

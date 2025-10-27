@@ -474,6 +474,7 @@ select.form-control {
     .control-label {
       margin-bottom:    0;
       vertical-align:   middle;
+      margin-right:     var(--spacing-tiny);
     }
 
     // Remove default margin on radios/checkboxes that were used for stacking, and
@@ -691,7 +692,7 @@ a.warning {
   }
   select.form-control {
     height: 34px;
-    line-height: var(--line-height-normal);
+    line-height: 1.1;
   }
   textarea.form-control,
   select[multiple].form-control {
@@ -991,13 +992,9 @@ a.warning {
       label {
         position: relative;
         min-height: 1px;
-        padding-right: 15px;
         padding-left: 15px;
-
         position: relative;
         min-height: 1px;
-        padding-right: calc(30px / 2);
-        padding-left: calc(30px / 2);
 
         @media (min-width: $screen-small) {
           float: left;

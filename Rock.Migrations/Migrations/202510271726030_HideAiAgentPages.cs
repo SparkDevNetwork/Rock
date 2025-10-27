@@ -14,36 +14,27 @@
 // limitations under the License.
 // </copyright>
 //
-
-namespace Rock.ViewModels.Blocks.Communication.EmailPreferenceEntryLegacy
+namespace Rock.Migrations
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
-    public class EmailPreferenceEntrySaveResponseBag
+    public partial class HideAiAgentPages : Rock.Migrations.RockMigration
     {
         /// <summary>
-        /// Gets or sets the error message.
+        /// Operations to be performed during the upgrade process.
         /// </summary>
-        /// <value>
-        /// The error message.
-        /// </value>
-        public string ErrorMessage { get; set; }
-
+        public override void Up()
+        {
+            Sql( "UPDATE [Page] SET [DisplayInNavWhen] = 2 WHERE [Guid] = '9F7B9158-3A73-429A-A817-5909D2AED13C'" );
+        }
+        
         /// <summary>
-        /// Gets or sets the success message.
+        /// Operations to be performed during the downgrade process.
         /// </summary>
-        /// <value>
-        /// The success message.
-        /// </value>
-        public string SuccessMessage { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of the alert.
-        /// </summary>
-        /// <value>
-        /// The type of the alert.
-        /// </value>
-        public string AlertType { get; set; }
+        public override void Down()
+        {
+            Sql( "UPDATE [Page] SET [DisplayInNavWhen] = 0 WHERE [Guid] = '9F7B9158-3A73-429A-A817-5909D2AED13C'" );
+        }
     }
 }

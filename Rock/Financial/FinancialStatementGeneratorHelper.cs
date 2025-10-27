@@ -174,7 +174,15 @@ namespace Rock.Financial
                             IsInternationalAddress = a.Country.IsNotNullOrWhiteSpace() && localCountry.IsNotNullOrWhiteSpace() && !a.Country.Equals( localCountry, StringComparison.OrdinalIgnoreCase )
                         } ).ToList();
 
-                    if ( financialStatementGeneratorOptions.DataViewId.HasValue )
+                    /*
+                        10/10/2025 - MSE
+
+                        If a specific PersonId is provided, ignore DataView filtering
+                        to prevent excluding that individual if they are not part of the Data View.
+
+                        Reason: https://github.com/SparkDevNetwork/Rock/issues/6478
+                    */
+                    if ( financialStatementGeneratorOptions.DataViewId.HasValue && !financialStatementGeneratorOptions.PersonId.HasValue )
                     {
                         var dataView = DataViewCache.Get( financialStatementGeneratorOptions.DataViewId.Value );
                         if ( dataView != null )

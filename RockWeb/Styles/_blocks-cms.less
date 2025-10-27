@@ -7,6 +7,7 @@
     4. Social Tools - Used for showing social media links
     5. Media Element
     6. Asset Manager - Used for managing media assets
+    7. Connection Request - Used for connection request block
 */
 
 
@@ -419,7 +420,7 @@
   }
 }
 
-// 5. Asset Manager
+// 6. Asset Manager
 // -------------------------
 
 .actions.assetmanager-actions {
@@ -428,4 +429,10 @@
   & > .pull-left {
     margin-right: var(--spacing-xsmall);
   }
+}
+
+// 7. Connection Request
+// -------------------------
+.connection-request-board .modal-open .grid-table .grid-select-cell p:empty {
+  display: none;
 }

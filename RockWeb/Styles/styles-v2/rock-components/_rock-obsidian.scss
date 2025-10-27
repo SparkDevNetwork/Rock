@@ -97,6 +97,10 @@
       }
     }
 
+    .panel-header-actions:not(:has(.action)) {
+      margin-right: var(--spacing-medium);
+    }
+
     .panel-header-actions {
       display:          flex;
       align-items:      center;

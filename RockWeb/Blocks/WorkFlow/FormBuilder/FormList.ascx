@@ -213,11 +213,11 @@
                             </div>
                             <asp:Repeater ID="rForms" runat="server" OnItemDataBound="rForms_ItemDataBound" OnItemCommand="rForms_ItemCommand">
                                 <ItemTemplate>
-                                    <div class="card card-sm group-hover mb-3">
+                                    <div class="card group-hover mb-3">
                                         <div class="card-body d-flex justify-content-between">
                                             <div>
-                                                <h3 class="m-0"><%# Eval("Name") %></h3>
-                                                <p class="text-muted text-sm group-hover-item pr-3 mt-1 leading-snug"><%# Eval("Description") %></p>
+                                                <h4 class="m-0"><%# Eval("Name") %></h4>
+                                                <p class="text-muted text-sm group-hover-item pr-3 mt-1 mb-1 leading-snug"><%# Eval("Description") %></p>
                                             </div>
                                             <asp:Panel ID="pnlSideMenu" class="d-flex align-items-center" runat="server">
                                                 <asp:LinkButton ID="lbSubmissions" runat="server" ToolTip="Submissions" CssClass="btn btn-default btn-sm btn-square ml-2" CommandName="Submissions" CommandArgument='<%# Eval( "Id" ) %>' Text="<i class='ti ti-list'></i>" />

@@ -189,6 +189,8 @@ export const ServiceJob = {
     DataMigrations180SwapObsidianBlocks: "B3663D0F-6426-44BB-9C43-D9921A0974D3",
     /** The job to run Post v18.0 Data Migrations to update an existing index on the CommunicationRecipient table. */
     DataMigrations180UpdateCommunicationrecipientIndex: "FE519BCE-CCB8-42B7-A14C-1620859F23E8",
+    /** The job to run Post v18.0 Data Migrations to update the Manage My Account Page block setting for the recently-chopped Email Preference Entry block. */
+    DataMigrations180UpdateEmailPreferenceEntryBlockManageMyAccountPage: "7319E385-8068-43FE-9085-6F9A21F5972B",
     /** The job to run Post v18.0 Data Migrations to update the Nameless Locations. */
     DataMigrations180UpdateNamelessLocations: "6C3EE640-A442-4F9C-92ED-23E353BA8509",
     /**

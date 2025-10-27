@@ -84,12 +84,16 @@
 .picker-folders {
   max-width:        320px;
   padding-right:    var(--spacing-medium);
-  @media (max-width: $screen-xsmall) {
+  border-right: 1px solid var(--color-interface-soft);
+  @media (max-width: $screen-medium) {
     -ms-flex:       0 0 100%;
     flex:           0 0 100%;
     max-width:      100%;
     padding-right:  0;
     padding-bottom: var(--spacing-medium);
+    border-bottom: 1px solid var(--color-interface-soft);
+    border-right: 0;
+    height: 300px;
   }
 
   .actions {

@@ -15,6 +15,12 @@
     gap: var(--spacing-large);
     width: 100%;
     height: auto;
+    padding-bottom: var(--spacing-xlarge);
+    border-bottom: 1px solid var(--color-interface-soft);
+    &:last-child{
+        padding-bottom: var(--spacing-large);
+        border-bottom: none;
+    }
 }
 
 .contentstack-body {
@@ -74,6 +80,11 @@
 .contentstack-header-description {
     color: var(--color-interface-medium);
     margin-bottom: 0;
+}
+
+// Adjust spacing when content stack is the last child in a content section and there is an overflow body.
+.contentsection:has(.contentsection-body-overflow) .contentstack:last-child {
+    padding-bottom: var(--spacing-small);
 }
 
 @media (max-width: 767px) {

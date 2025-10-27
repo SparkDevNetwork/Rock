@@ -264,8 +264,11 @@
   --slider-handle-bg--hover: var(--color-interface-softest);
   --slider-handle-border-color: var(--color-interface-soft);
   --slider-handle-border-color--hover: var(--color-interface-soft);
+}
 
-
+// Applies only when no theme is set or when "System" theme is selected.
+:root:not([theme]),
+[theme="system"] {
   // Follow the system color.
   @media (prefers-color-scheme: dark) {
     --color-interface-strongest: var(--base-interface-softest);

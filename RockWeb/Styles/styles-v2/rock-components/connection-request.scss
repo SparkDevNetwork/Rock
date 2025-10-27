@@ -154,7 +154,7 @@ $board-cards-gutter: 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: calc(var(--font-size-regular) * var(--line-height-normal)); 
+  width: calc(var(--font-size-regular) * var(--line-height-normal));
   height: calc(var(--font-size-regular) * var(--line-height-normal));
   margin-bottom: var(--spacing-tiny);
   vertical-align: top;
@@ -286,5 +286,17 @@ $board-cards-gutter: 16px;
 }
 
 .can-connect-false {
+  display: none;
+}
+
+.connection-request-board .modal-open .modal-body .panel-body .photo > img {
+  width: 100%;
+}
+
+.connection-request-board .modal-open .modal-body .nav-tabs {
+  margin-top: var(--spacing-medium);
+}
+
+.connection-request-board .modal-open .grid-table .grid-select-cell p:empty {
   display: none;
 }

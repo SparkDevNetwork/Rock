@@ -25,15 +25,15 @@ import { Guid } from "@Obsidian/Types";
 
 /** IP Address filter configuration item. */
 export type IPAddressRequestFilterBag = {
-    /** Start IP address. */
+    /** Gets or sets the beginning IP address. */
     beginningIPAddress?: string | null;
 
-    /** End IP address. */
+    /** Gets or sets the ending IP address. */
     endingIPAddress?: string | null;
 
-    /** Unique identifier. */
+    /** Gets or sets the unique identifier. */
     guid: Guid;
 
-    /** Range match type. */
+    /** Gets or sets the IP range match type. */
     matchType: number;
 };

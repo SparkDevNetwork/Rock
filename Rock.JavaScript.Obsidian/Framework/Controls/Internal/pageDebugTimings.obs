@@ -1,6 +1,8 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <span>
+    <Modal v-model="showTimingsModal"
+           title="Page Debug Timings"
+           cancelText="Close">
         <table class="table table-bordered table-striped debug-timings" style="width:100%; margin-bottom: 48px;">
             <thead>
                 <tr>
@@ -11,17 +13,41 @@
                 </tr>
             </thead>
             <tbody>
-                <PageDebugTimingRow v-for="(vm, i) in serverViewModels" :key="`s${i}-${vm.timestampMs}`" :viewModel="vm" :startTimeMs="serverStartTimeMs" :totalMs="totalMs" />
-                <PageDebugTimingRow :viewModel="clientHeader" :startTimeMs="serverStartTimeMs" :totalMs="totalMs" />
-                <PageDebugTimingRow v-for="(vm, i) in relativeClientViewModels" :key="`c${i}-${vm.timestampMs}`" :viewModel="vm" :startTimeMs="serverStartTimeMs" :totalMs="totalMs" />
+                <PageDebugTimingRow v-for="(vm, i) in serverViewModels" :key="`s${i}-${vm.timestampMs}`" :viewModel="vm" :totalMs="clientRelativeEndTimeMs" />
+                <PageDebugTimingRow :viewModel="clientHeader" :totalMs="clientRelativeEndTimeMs" />
+                <PageDebugTimingRow v-for="(vm, i) in relativeClientViewModels" :key="`c${i}-${vm.timestampMs}`" :viewModel="vm" :totalMs="clientRelativeEndTimeMs" />
             </tbody>
         </table>
-    </span>
+    </Modal>
 </template>
 
+<style>
+.debug-timestamp {
+    text-align: right;
+    text-wrap: nowrap;
+}
+
+td.debug-waterfall {
+    width: 40%;
+    position: relative;
+    vertical-align: middle !important;
+    padding: 0 !important;
+}
+
+.debug-chart-bar {
+    position: absolute;
+    display: block;
+    min-width: 1px;
+    height: 1.125em;
+    background: #009ce3;
+    margin-top: -0.5625em;
+}
+</style>
+
 <script setup lang="ts">
-    import { computed, PropType } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import PageDebugTimingRow from "./pageDebugTimingRow.obs";
+    import { computed, PropType, ref } from "vue";
     import { DebugTiming } from "@Obsidian/ViewModels/Utility/debugTiming";
     import { useStore } from "@Obsidian/PageState";
 
@@ -34,14 +60,7 @@
         }
     });
 
-
-    const serverStartTimeMs = computed((): number => {
-        if (!props.serverViewModels.length) {
-            return 0;
-        }
-
-        return props.serverViewModels[0].timestampMs;
-    });
+    const showTimingsModal = ref(true);
 
     const serverEndTimeMs = computed((): number => {
         if (!props.serverViewModels.length) {
@@ -70,10 +89,6 @@
         const lastIndex = relativeClientViewModels.value.length - 1;
         const lastViewModel = relativeClientViewModels.value[lastIndex];
         return lastViewModel.timestampMs + lastViewModel.durationMs;
-    });
-
-    const totalMs = computed((): number => {
-        return clientRelativeEndTimeMs.value - serverStartTimeMs.value;
     });
 
     const clientViewModels = computed((): DebugTiming[] => {

@@ -25,15 +25,15 @@ import { Guid } from "@Obsidian/Types";
 
 /** Geolocation filter configuration item. */
 export type GeolocationRequestFilterBag = {
-    /** Comparison type. */
+    /** Gets or sets the comparison type (Reporting.ComparisonType values). */
     comparisonType: number;
 
-    /** Unique identifier. */
+    /** Gets or sets the unique identifier. */
     guid: Guid;
 
-    /** Geolocation component. */
+    /** Gets or sets the location component enum value. */
     locationComponent: number;
 
-    /** Comparison value. */
+    /** Gets or sets the comparison value. */
     value?: string | null;
 };

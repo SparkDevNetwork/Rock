@@ -74,13 +74,12 @@
 
 /* SECTION BODY */
 
-.contentsection-body,
-contentsection-body-overflow {
+.contentsection-body {
     height: auto;
     padding: var(--spacing-large);
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-large);
+    gap: var(--spacing-xlarge);
 }
 
 .contentsection-header + div > .contentsection-body {

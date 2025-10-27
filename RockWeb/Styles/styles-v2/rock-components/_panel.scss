@@ -205,7 +205,7 @@
     }
 
     // When there is only a label in the actions, add a bit more margin
-    > .panel-header-actions:has(div:only-child) {
+    > .panel-header-actions:has(div:only-child > .label) {
       margin-right: var(--spacing-medium);
     }
   }

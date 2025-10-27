@@ -29,6 +29,7 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -515,6 +516,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 tbGroupName.Label = _groupTypeName + " Name";
                 cpCampus.Visible = false;
                 dvpMaritalStatus.Visible = false;
+            }
+
+            var defaultRecordSourceId = RecordSourceHelper.GetSessionRecordSourceValueId()
+                ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_FAMILY_REGISTRATION.AsGuid() )?.Id;
+
+            dvpRecordSource.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() )?.Id;
+            if ( defaultRecordSourceId.HasValue )
+            {
+                dvpRecordSource.SetValue( defaultRecordSourceId );
             }
 
             nfmMembers.ShowGrade = _isFamilyGroupType && GetAttributeValue( AttributeKey.Grade ) != "None";
@@ -1489,6 +1499,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             int recordTypePersonId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
             int recordStatusActiveId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
 
+            var recordSourceValueId = dvpRecordSource.SelectedValueAsInt();
+
             foreach ( NewGroupMembersRow row in nfmMembers.GroupMemberRows )
             {
                 var groupMember = new GroupMember();
@@ -1497,6 +1509,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMember.Person.Guid = row.PersonGuid.Value;
                 groupMember.Person.RecordTypeValueId = recordTypePersonId;
                 groupMember.Person.RecordStatusValueId = recordStatusActiveId;
+                groupMember.Person.RecordSourceValueId = recordSourceValueId;
 
                 if ( row.RoleId.HasValue )
                 {
@@ -1682,6 +1695,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             int recordTypePersonId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
             int recordStatusActiveId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
             var connectionStatusValue = DefinedValueCache.Get( GetAttributeValue( AttributeKey.DefaultConnectionStatus ).AsGuid() );
+            var recordSourceValueId = dvpRecordSource.SelectedValueAsInt();
 
             var person = new Person();
             person.Guid = Guid.NewGuid();
@@ -1689,6 +1703,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             person.RecordStatusValueId = recordStatusActiveId;
             person.Gender = Gender.Unknown;
             person.ConnectionStatusValueId = ( connectionStatusValue != null ) ? connectionStatusValue.Id : ( int? ) null;
+            person.RecordSourceValueId = recordSourceValueId;
 
             var groupMember = new GroupMember();
             groupMember.GroupMemberStatus = GroupMemberStatus.Active;

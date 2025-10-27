@@ -69,7 +69,7 @@
     margin: 0;
     /* line-height: var(--line-height-compact) (line-height: 1.055) clips the bottom of "g" and "y"
        for small text, so making a little larger. */
-    line-height: 1.2;
+    line-height: var(--line-height-normal);
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;

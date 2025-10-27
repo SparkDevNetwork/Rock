@@ -25,15 +25,15 @@ import { Guid } from "@Obsidian/Types";
 
 /** Query String filter configuration item. */
 export type QueryStringRequestFilterBag = {
-    /** Comparison type. */
+    /** Gets or sets the comparison type (Reporting.ComparisonType values). */
     comparisonType: number;
 
-    /** Comparison value. */
+    /** Gets or sets the comparison value. */
     comparisonValue?: string | null;
 
-    /** Unique identifier. */
+    /** Gets or sets the unique identifier. */
     guid: Guid;
 
-    /** Query string key. */
+    /** Gets or sets the query string key to evaluate. */
     key?: string | null;
 };

@@ -79,6 +79,62 @@ namespace RockWeb.Blocks.Store
 
         private int _packageId = -1;
 
+
+        /// <summary>
+        /// The list of files that should not be installed into the Bin directory.
+        /// This is used to deal with DLLs that are considered Rock Core and should
+        /// not be installed by plugins since it would potentially break Rock.
+        /// </summary>
+        private static readonly string[] BinDirectoryBlacklist = new[] {
+            "Azure.AI.OpenAI.dll",
+            "Azure.Core.dll",
+            "Google.Protobuf.dll",
+            "Microsoft.ML.Tokenizers.Data.O200kBase.dll",
+            "Microsoft.ML.Tokenizers.dll",
+            "Microsoft.Bcl.AsyncInterfaces.dll",
+            "Microsoft.Bcl.HashCode.dll",
+            "Microsoft.Bcl.Memory.dll",
+            "Microsoft.Bcl.Numerics.dll",
+            "Microsoft.Extensions.AI.dll",
+            "Microsoft.Extensions.AI.Abstractions.dll",
+            "Microsoft.Extensions.AI.OpenAI.dll",
+            "Microsoft.Extensions.Caching.Memory.dll",
+            "Microsoft.Extensions.Caching.Abstractions.dll",
+            "Microsoft.Extensions.DependencyInjection.dll",
+            "Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+            "Microsoft.Extensions.Logging.Abstractions.dll",
+            "Microsoft.Extensions.Options.dll",
+            "Microsoft.Extensions.Primitives.dll",
+            "Microsoft.Extensions.VectorData.Abstractions.dll",
+            "Microsoft.Recognizers.Definitions.dll",
+            "Microsoft.Recognizers.Text.dll",
+            "Microsoft.Recognizers.Text.DateTime.dll",
+            "Microsoft.Recognizers.Text.DataTypes.TimexExpression.dll",
+            "Microsoft.Recognizers.Text.Number.dll",
+            "Microsoft.Recognizers.Text.NumberWithUnit.dll",
+            "Microsoft.SemanticKernel.dll",
+            "Microsoft.SemanticKernel.Abstractions.dll",
+            "Microsoft.SemanticKernel.Connectors.AzureOpenAI.dll",
+            "Microsoft.SemanticKernel.Connectors.OpenAI.dll",
+            "Microsoft.SemanticKernel.Core.dll",
+            "OpenAI.dll",
+            "System.Buffers.dll",
+            "System.ClientModel.dll",
+            "System.Collections.Immutable.dll",
+            "System.Diagnostics.DiagnosticSource.dll",
+            "System.IO.Pipelines.dll",
+            "System.Memory.dll",
+            "System.Memory.Data.dll",
+            "System.Numerics.Tensors.dll",
+            "System.Numerics.Vectors.dll",
+            "System.Runtime.CompilerServices.Unsafe.dll",
+            "System.Text.Json.dll",
+            "System.Text.Encodings.Web.dll",
+            "System.Threading.Channels.dll",
+            "System.Threading.Tasks.Extensions.dll",
+            "System.ValueTuple.dll",
+        };
+
         #endregion Fields
 
         #region Base Control Methods
@@ -394,6 +450,13 @@ namespace RockWeb.Blocks.Store
                 string fullpath = Path.Combine( appRoot, fullName.ReplaceFirstOccurrence( "content/", string.Empty ) );
                 string directory = Path.GetDirectoryName( fullpath ).ReplaceFirstOccurrence( "content/", string.Empty );
 
+                // If we are trying to install a file into the Bin directory, check
+                // if it is a blacklisted file and if so ignore it.
+                if ( IsBlacklisted( fullName.ReplaceFirstOccurrence( "content/", string.Empty ) ) )
+                {
+                    return false;
+                }
+
                 EnsureDirectoryExists( directory );
                 entry.ExtractToFile( fullpath, true );
                 wasActionTaken = true;
@@ -470,6 +533,12 @@ namespace RockWeb.Blocks.Store
                     if ( string.IsNullOrWhiteSpace( deleteItem ) )
                     {
                         continue; // empty line, nothing to delete, ignore it.
+                    }
+
+                    // If file is blacklisted, don't delete it.
+                    if ( IsBlacklisted( deleteItem ) )
+                    {
+                        continue;
                     }
 
                     // We will assume an action was taken at this point so that the install step does not get
@@ -591,6 +660,27 @@ namespace RockWeb.Blocks.Store
                 pnlError.Visible = true;
                 lErrorMessage.Text = errorResponse;
             }
+        }
+
+        /// <summary>
+        /// Check if the file from the archive is blacklisted. This means it
+        /// should not be installed or deleted.
+        /// </summary>
+        /// <param name="fullName">The full name from the archive, such as 'bin/some.dll'.</param>
+        /// <returns><c>true</c> if the file is blacklisted; otherwise <c>false</c>.</returns>
+        private static bool IsBlacklisted( string fullName )
+        {
+            if ( fullName.StartsWith( "bin/", StringComparison.OrdinalIgnoreCase ) )
+            {
+                var filename = Path.GetFileName( fullName );
+
+                if ( BinDirectoryBlacklist.Contains( filename, StringComparer.OrdinalIgnoreCase ) )
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         #endregion Private Methods

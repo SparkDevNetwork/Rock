@@ -32,7 +32,7 @@
            :class="{ active: section.anchor.value === activeSectionId }"
            @click.prevent.stop="onOpenSectionClick(section)">
             <i v-if="section.icon.value" :class="section.icon.value"></i>
-            {{ section.title.value || "Primary" }}
+            {{ section.title.value }}
         </a>
     </div>
 </template>

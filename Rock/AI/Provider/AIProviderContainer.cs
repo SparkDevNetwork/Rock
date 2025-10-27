@@ -109,7 +109,7 @@ namespace Rock.AI.Provider
 
                     Rock.Attribute.Helper.UpdateAttributes( componentType,
                         providerEntityTypeId,
-                        "EntityTypeId",
+                        "ProviderComponentEntityTypeId",
                         componentEntityTypeId.ToString(),
                         rockContext );
                 }

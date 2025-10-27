@@ -23,6 +23,6 @@
 
 /** Previous Activity filter configuration. */
 export type PreviousActivityRequestFilterBag = {
-    /** Gets or sets the previous activity types. */
+    /** Gets or sets the previous activity types (enum numeric values). */
     previousActivityTypes?: number[] | null;
 };

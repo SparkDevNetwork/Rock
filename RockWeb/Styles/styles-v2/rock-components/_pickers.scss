@@ -167,7 +167,6 @@
     will-change:      height;
 
     @media (max-width: $screen-small) {
-      position:       static;
       max-width:      100%;
     }
   }

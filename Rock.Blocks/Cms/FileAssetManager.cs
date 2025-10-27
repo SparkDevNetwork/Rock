@@ -58,7 +58,7 @@ namespace Rock.Blocks.Cms
         Description = "Static lets you set a CSS height below to determine the height of the block. Flexible will grow with the content. Full Worksurface is designed to fill up a full worksurface page layout.",
         ListSource = "static^Static,flexible^Flexible,full^Full Worksurface",
         IsRequired = true,
-        DefaultValue = "static",
+        DefaultValue = "full",
         Order = 2
     )]
 

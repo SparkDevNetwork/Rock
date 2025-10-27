@@ -6,7 +6,7 @@
         </div>
 
         <ContentSectionNav v-if="showSidebar"
-                           :sections="sections" />
+                           :sections="visibleSections" />
     </div>
 </template>
 
@@ -55,9 +55,18 @@
 
     // #region Computed Values
 
+    /**
+     * Filters sections to only include those that have both title and icon.
+     */
+    const visibleSections = computed((): IContentSectionHolder[] => {
+        return sections.value.filter(section =>
+            section.title.value && section.icon.value
+        );
+    });
+
     /** Determines whether the sidebar should be currently shown. */
     const showSidebar = computed((): boolean => {
-        return props.sidebar ?? sections.value.length > 1;
+        return props.sidebar ?? visibleSections.value.length > 1;
     });
 
     /**

@@ -22,12 +22,14 @@
                     :filter="dateValueFilter"
                     headerClass="title-right"
                     itemClass="justify-content-end text-right"
+                    width="5%"
                     visiblePriority="xs" />
 
         <TextColumn v-if="!config.options?.columnsToHide?.includes(ColumnKey.Campus)"
                     name="campus"
                     title="Campus"
                     field="campus"
+                    width="5%"
                     :filter="pickExistingValueFilter"
                     visiblePriority="md" />
 
@@ -72,6 +74,7 @@
                     title="Request"
                     field="requestText"
                     :filter="textValueFilter"
+                    width="60%"
                     visiblePriority="xs" />
 
         <PersonColumn v-if="!config.options?.columnsToHide?.includes(ColumnKey.AssignedTo)"
@@ -89,7 +92,6 @@
                     field="resultSummary"
                     disableSort
                     :filter="textValueFilter"
-                    width="25%"
                     visiblePriority="lg" />
 
         <Column name="resultSpecifics"
@@ -98,8 +100,8 @@
                 :filterValue="getResultSpecificsFilterValue"
                 :quickFilterValue="getResultSpecificsFilterValue"
                 :exportValue="getResultSpecificsExportValue"
-                visiblePriority="md"
-                width="20%">
+                width="5%"
+                visiblePriority="md">
             <template #format="{ row }">
                 <div class="flex-grow-1">
                     <div v-for="result of row.resultSpecifics">
@@ -119,6 +121,7 @@
                 field="requestStatus"
                 :filter="pickExistingValueFilter"
                 :filterValue="getRequestStatusFilterValue"
+                width="5%"
                 visiblePriority="md">
             <template #format="{ row }">
                 <div>
@@ -138,6 +141,7 @@
                         :filter="numberValueFilter"
                         headerClass="title-right"
                         itemClass="justify-content-end text-right"
+                        width="5%"
                         visiblePriority="md" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />

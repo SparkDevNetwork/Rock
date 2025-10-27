@@ -35,7 +35,7 @@ export type AdditionalFilterConfigurationBag = {
     /** Gets or sets the browser request filters. */
     browserRequestFilters?: BrowserRequestFilterBag[] | null;
 
-    /** Gets or sets the cookie filter expression type. */
+    /** Gets or sets the cookie filter expression type (Reporting.FilterExpressionType values). */
     cookieRequestFilterExpressionType: number;
 
     /** Gets or sets the cookie request filters. */
@@ -56,7 +56,7 @@ export type AdditionalFilterConfigurationBag = {
     /** Gets or sets the previous activity request filter configuration. */
     previousActivityRequestFilter?: PreviousActivityRequestFilterBag | null;
 
-    /** Gets or sets the query string filter expression type. */
+    /** Gets or sets the query string filter expression type (Reporting.FilterExpressionType values). */
     queryStringRequestFilterExpressionType: number;
 
     /** Gets or sets the query string request filters. */

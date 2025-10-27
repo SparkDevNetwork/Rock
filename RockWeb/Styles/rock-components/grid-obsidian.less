@@ -479,6 +479,11 @@
     justify-content: center;
   }
 
+  // Offset the title when there is a filter button
+  .grid-obsidian .grid-column-header-boolean:has(.btn-grid-column-filter) .grid-column-title {
+      padding-left: 26px; // button width
+  }
+
 .grid-obsidian .grid-cell-number,
 .grid-obsidian .grid-cell-currency,
 .grid-obsidian .grid-column-header-number,
@@ -498,3 +503,30 @@
       top: ~"calc(var(--sticky-element-offset) + 114px)";
     }
   }
+
+
+// Edge case handling for when there are no rows (empty table)
+.grid-obsidian {
+  .grid-row:has(.table-empty) {
+    border-bottom: 1px solid var(--theme-light);
+
+    &:hover {
+        background-color: transparent;
+    }
+
+    .grid-cell {
+        border-bottom: none;
+        background-color: transparent;
+
+        &:hover {
+            background-color: transparent;
+        }
+    }
+
+    // If there is no footer content, round the bottom corners of the last row
+    &:has(.grid-footing:empty) .grid-row .grid-cell {
+            border-bottom: none;
+            background-color: transparent;
+        }
+    }
+}

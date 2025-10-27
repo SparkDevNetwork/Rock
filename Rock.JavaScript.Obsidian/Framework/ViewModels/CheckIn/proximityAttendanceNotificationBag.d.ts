@@ -21,13 +21,14 @@
 // </copyright>
 //
 
-export type EmailPreferenceEntrySaveResponseBag = {
-    /** Gets or sets the type of the alert. */
-    alertType?: string | null;
+/**
+ * Represents the notification details sent to the client when a proximity-based
+ * attendance event occurs.
+ */
+export type ProximityAttendanceNotificationBag = {
+    /** Gets or sets the body/message content of the notification displayed to the user. */
+    message?: string | null;
 
-    /** Gets or sets the error message. */
-    errorMessage?: string | null;
-
-    /** Gets or sets the success message. */
-    successMessage?: string | null;
+    /** Gets or sets the title of the notification (e.g. the heading presented to the user). */
+    title?: string | null;
 };

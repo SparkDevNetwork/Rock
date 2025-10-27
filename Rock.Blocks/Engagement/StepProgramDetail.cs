@@ -2018,7 +2018,7 @@ namespace Rock.Blocks.Engagement
             "{% for stepItem in Steps %}\n" +
             "    <div class=\"flow-key\">\n" +
             "        <span class=\"color\" style=\"background-color:{{stepItem.Color}};\"></span>\n" +
-            "        <span class=\"step-text\">{{stepItem.StepName}}</span>\n" +
+            "        <span class=\"step-text\">{{forloop.index}}. {{stepItem.StepName}}</span>\n" +
             "    </div>\n" +
             "{% endfor %}\n" +
             "</div>";

@@ -183,6 +183,17 @@
     cursor: pointer;
 }
 
+
+// Hide the filter button by default and only show it when hovering over the header, to help with alignment and give more space.
+.btn-grid-column-filter:not(.active) {
+    display: none;
+}
+.grid-column-header:has(.btn-grid-column-filter):hover {
+    .btn-grid-column-filter {
+        display: inherit;
+    }
+}
+
 .grid-column-header.sortable:hover {
     background-color: var(--color-info-soft);
 }
@@ -220,8 +231,8 @@
     text-align: center;
     background-color: transparent;
     margin-left: var(--spacing-tiny);
-    width: 26px;
-    height: 24px;
+    width: 24px;
+    height: 20px;
     border-radius: var(--rounded-xsmall);
     color: var(--color-interface-medium);
     opacity: 0;
@@ -240,11 +251,13 @@
 .grid-column-header > .btn-grid-column-filter svg {
     width: 14px;
     height: 14px;
+    align-self: center;
 }
 
 .grid-column-header > .btn-grid-column-filter.active {
     opacity: 1;
     color: var(--color-info-strong);
+    display: inherit;
 }
 
 .grid-filter-popup-container {
@@ -476,6 +489,18 @@
   justify-content: right;
 }
 
+// When there is nothing in the footer, round the bottom corners of the last row and cells to match the rounded grid panel.
+.grid-obsidian:not(:has(.grid-footing > *)) .grid-row:not(:has(~ .grid-row)) {
+    border-bottom-left-radius: var(--rounded-medium);
+    border-bottom-right-radius: var(--rounded-medium);
+    .grid-cell:first-child {
+      border-bottom-left-radius: var(--rounded-medium);
+    }
+    .grid-cell:last-child {
+      border-bottom-right-radius: var(--rounded-medium);
+    }
+}
+
 .grid-obsidian {
     .grid-row:has(.table-empty) {
         border-bottom: 1px solid var(--color-interface-soft);
@@ -505,6 +530,7 @@
 
             .grid-cell {
                 border-bottom: none;
+                background-color: transparent;
             }
 
             .grid-cell:first-child,
@@ -525,6 +551,15 @@
                 background-color: transparent;
             }
         }
+
+        &:hover .grid-cell {
+            background-color: transparent;
+        }
+    }
+
+    &:not(:has(.grid-footing > *)) .grid-row:has(.table-empty) {
+        border-bottom-left-radius: var(--rounded-medium);
+        border-bottom-right-radius: var(--rounded-medium);
     }
 
     @media (max-width: 767px) {

@@ -550,11 +550,10 @@ ul.activeusers {
     .btn-tool,
     .picker .picker-label {
         padding: 1px var(--spacing-tiny);
-        color: var(--color-interface-medium);
+        color: var(--color-interface-strong);
         font-size: var(--font-size-xsmall);
         font-weight: var(--font-weight-semibold);
         line-height: 24px;
-        color: var(--color-interface-medium);
         background: transparent;
         border: 1px solid transparent;
 
@@ -874,6 +873,9 @@ ul.activeusers {
 
         & > tfoot > tr > td {
           border:     0;
+          &.grid-actions {
+            border-top: 1px solid var(--color-interface-soft);
+          }
         }
       }
     }

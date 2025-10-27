@@ -16,6 +16,12 @@
                                     trueText="Adult"
                                     falseText="Child" />
                         </RockFormField>
+
+                        <DefinedValuePicker v-if="wasRecordInactive"
+                                            v-model="recordStatus"
+                                            label="Record Status"
+                                            :definedTypeGuid="DefinedType.PersonRecordStatus"
+                                            rules="required" />
                     </div>
 
                     <div class="col-md-6">
@@ -139,6 +145,7 @@
 <script setup lang="ts">
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import DatePartsPicker from "@Obsidian/Controls/datePartsPicker.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
@@ -160,8 +167,10 @@
     import { Gender } from "@Obsidian/Enums/Crm/gender";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { RequirementLevel } from "@Obsidian/Enums/Controls/requirementLevel";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { newGuid } from "@Obsidian/Utility/guid";
+    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
     import { setPropertiesBoxValue, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { DatePartsPickerValueBag } from "@Obsidian/ViewModels/Controls/datePartsPickerValueBag";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
@@ -195,6 +204,8 @@
 
     const submitForm = ref(false);
     const isAdult = ref(false);
+    const recordStatus = ref<ListItemBag>();
+    const wasRecordInactive = ref(false);
     const relationshipToAdult = ref("");
     const isMarried = ref(false);
     const nickName = ref("");
@@ -437,6 +448,8 @@
         };
 
         setPropertiesBoxValue(person, "isAdult", isAdult.value);
+        setPropertiesBoxValue(person, "recordStatus", recordStatus.value);
+        (person.bag as Record<string, unknown>)["wasRecordInactive"] = wasRecordInactive.value;
         setPropertiesBoxValue(person, "relationshipToAdult", relationship);
         setPropertiesBoxValue(person, "isMarried", isMarried.value);
         setPropertiesBoxValue(person, "gender", isFemale.value ? Gender.Female : Gender.Male);
@@ -472,6 +485,9 @@
         }
 
         isAdult.value = person?.bag.isAdult ?? false;
+        recordStatus.value = person?.bag.recordStatus ?? undefined;
+        wasRecordInactive.value = areEqual(recordStatus.value?.value, DefinedValue.PersonRecordStatusInactive)
+            || (person?.bag as Record<string, unknown> | undefined)?.["wasRecordInactive"] === true;
         relationshipToAdult.value = person?.bag.relationshipToAdult?.value ?? getDefaultRelationship();
         isMarried.value = person?.bag.isMarried ?? false;
         nickName.value = person?.bag.nickName ?? "";

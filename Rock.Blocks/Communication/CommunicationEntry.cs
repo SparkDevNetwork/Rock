@@ -250,13 +250,38 @@ namespace Rock.Blocks.Communication
         /// </summary>
         private static class PageParameterKey
         {
+            // "Communication" allows Communication Id, Guid, or IdKey values,
+            // while the older "CommunicationId" only supports Id.
+            public const string Communication = "Communication";
             public const string CommunicationId = "CommunicationId";
-            public const string Edit = "Edit";
+
+            // "Person" allows Person Id, Guid, or IdKey values,
+            // while the older "PersonId" only supports Id.
             public const string Person = "Person";
             public const string PersonId = "PersonId";
-            public const string TemplateGuid = "TemplateGuid";
+
+            // "Medium" allows Medium [Entity Type] Id, Guid, or IdKey values,
+            // while the older "MediumId" only supports Id.
+            public const string Medium = "Medium";
             public const string MediumId = "MediumId";
+
+            public const string Edit = "Edit";
+            public const string TemplateGuid = "TemplateGuid";
         }
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// The backing field for the <see cref="PersonId"/> property.
+        /// </summary>
+        private int? _personId;
+
+        /// <summary>
+        /// The backing field for the <see cref="MediumEntityTypeId"/> property.
+        /// </summary>
+        private int? _mediumEntityTypeId;
 
         #endregion
 
@@ -385,19 +410,115 @@ namespace Rock.Blocks.Communication
         private bool EditPageParameter => PageParameter( PageParameterKey.Edit ).AsBoolean();
 
         /// <summary>
-        /// 'Person' or 'PersonId' querystring parameter with a person Id to the block to create a communication for that person.
+        /// Gets the Person entity key passed to the "Person" or "PersonId" page parameter.
         /// </summary>
-        private int? PersonOrPersonIdPageParameter => PageParameter( PageParameterKey.Person ).AsIntegerOrNull() ?? PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+        private string PersonOrPersonIdPageParameter
+        {
+            get
+            {
+                var personPageParameter = PageParameter( PageParameterKey.Person );
+
+                if ( personPageParameter.IsNotNullOrWhiteSpace() )
+                {
+                    return personPageParameter;
+                }
+                else
+                {
+                    // Only allow the PersonId to contain an ID, but return it as a string so it can be used as an entity key.
+                    return PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull()?.ToString();
+                }
+            }
+        }
 
         /// <summary>
-        /// Gets the CommunicationId page parameter.
+        /// Gets the Person entity identifier representing the key passed to the "Person" or "PersonId" page parameter.
         /// </summary>
-        private int? CommunicationIdPageParameter => PageParameter( PageParameterKey.CommunicationId ).AsIntegerOrNull();
+        private int? PersonId
+        {
+            get
+            {
+                if ( !_personId.HasValue )
+                {
+                    var personId = new PersonService( RockContext )
+                        .GetQueryableByKey( PersonOrPersonIdPageParameter, !this.PageCache.Layout.Site.DisablePredictableIds )
+                        .Select( p => p.Id )
+                        .FirstOrDefault();
+
+                    if ( personId > 0 )
+                    {
+                        _personId = personId;
+                    }
+                }
+
+                return _personId;
+            }
+        }
 
         /// <summary>
-        /// Gets the MediumId page parameter.
+        /// Gets the Communication entity key passed to the "Communication" or "CommunicationId" page parameter.
         /// </summary>
-        private int? MediumIdPageParameter => PageParameter( PageParameterKey.MediumId ).AsIntegerOrNull();
+        private string CommunicationOrCommunicationIdPageParameter
+        {
+            get
+            {
+                var communicationPageParameter = PageParameter( PageParameterKey.Communication );
+
+                if ( communicationPageParameter.IsNotNullOrWhiteSpace() )
+                {
+                    return communicationPageParameter;
+                }
+                else
+                {
+                    // Only allow the CommunicationId to contain an ID, but return it as a string so it can be used as an entity key.
+                    return PageParameter( PageParameterKey.CommunicationId ).AsIntegerOrNull()?.ToString();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the Medium entity type key passed to the "Medium" or "MediumId" page parameter.
+        /// </summary>
+        private string MediumOrMediumIdPageParameter
+        {
+            get
+            {
+                var mediumPageParameter = PageParameter( PageParameterKey.Medium );
+
+                if ( mediumPageParameter.IsNotNullOrWhiteSpace() )
+                {
+                    return mediumPageParameter;
+                }
+                else
+                {
+                    // Only allow the MediumId to contain an ID, but return it as a string so it can be used as an entity key.
+                    return PageParameter( PageParameterKey.MediumId ).AsIntegerOrNull()?.ToString();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the Medium entity type identifier representing the key passed to the "Medium" or "MediumId" page parameter.
+        /// </summary>
+        private int? MediumEntityTypeId
+        {
+            get
+            {
+                if ( !_mediumEntityTypeId.HasValue )
+                {
+                    var mediumEntityTypeId = new EntityTypeService( RockContext )
+                        .GetQueryableByKey( MediumOrMediumIdPageParameter, !this.PageCache.Layout.Site.DisablePredictableIds )
+                        .Select( et => et.Id )
+                        .FirstOrDefault();
+
+                    if ( mediumEntityTypeId > 0 )
+                    {
+                        _mediumEntityTypeId = mediumEntityTypeId;
+                    }
+                }
+
+                return _mediumEntityTypeId;
+            }
+        }
 
         /// <summary>
         /// Gets the TemplateGuid page parameter.
@@ -910,7 +1031,7 @@ namespace Rock.Blocks.Communication
         #region Private Methods
 
         /// <summary>
-        /// Loads the communication based on the CommunicationId page parameter.
+        /// Loads an existing communication based on the page parameter.
         /// </summary>
         /// <param name="rockContext">The Rock context.</param>
         /// <returns>The loaded <see cref="Model.Communication"/> object or <see langword="null"/> if the communication doesn't exist or a new one is being created.</returns>
@@ -918,10 +1039,11 @@ namespace Rock.Blocks.Communication
         {
             // Check page parameter for existing communication.
             Model.Communication communication = null;
-            var communicationId = this.CommunicationIdPageParameter;
-            if ( communicationId.HasValue )
+            var communicationKey = this.CommunicationOrCommunicationIdPageParameter;
+
+            if ( communicationKey.IsNotNullOrWhiteSpace() )
             {
-                communication = new CommunicationService( rockContext ).Get( communicationId.Value );
+                communication = new CommunicationService( rockContext ).Get( communicationKey, !this.PageCache.Layout.Site.DisablePredictableIds );
                 communication?.GetAttachments( communication.CommunicationType );
             }
 
@@ -1329,10 +1451,6 @@ namespace Rock.Blocks.Communication
             SetInitialCommunicationTemplateValues( rockContext, communication, communicationBag, selectedMediumOptions );
             SetInitialCommunicationBulkValues( communication, communicationBag );
 
-            // Override the sender information to the logged in person since they are creating/editing the communication.
-            communicationBag.FromAddress = currentPerson.Email;
-            communicationBag.FromName = currentPerson.FullName;
-
             return (communicationBag, selectedMediumOptions);
         }
 
@@ -1345,7 +1463,13 @@ namespace Rock.Blocks.Communication
         {
             var isNewCommunication = communication.Id == 0;
 
-            if ( isNewCommunication )
+            // If started from a grid and not edited yet, treat it as new so 'Default As Bulk' block setting will apply.
+            var isNewCommunicationFromGrid = communication.Status == Model.CommunicationStatus.Transient
+                && communication.CreatedDateTime.HasValue
+                && communication.ModifiedDateTime.HasValue
+                && communication.CreatedDateTime.Value == communication.ModifiedDateTime.Value;
+
+            if ( isNewCommunication || isNewCommunicationFromGrid )
             {
                 communicationBag.IsBulkCommunication = this.DefaultAsBulk;
             }
@@ -1354,7 +1478,7 @@ namespace Rock.Blocks.Communication
                 communicationBag.IsBulkCommunication = communication.IsBulkCommunication;
             }
 
-            if ( isNewCommunication
+            if ( isNewCommunication || isNewCommunicationFromGrid
                  && ( communicationBag.Recipients?.Count ?? 0 ) + ( communicationBag.AdditionalEmailAddresses?.Count ?? 0 ) == 1 )
             {
                 communicationBag.IsBulkCommunication = false;
@@ -1420,10 +1544,10 @@ namespace Rock.Blocks.Communication
                 // Use the medium type on the existing communication.
                 communicationBag.MediumEntityTypeGuid = GetMediumEntityTypeGuid( communication.CommunicationType ) ?? Guid.Empty;
             }
-            else if ( this.MediumIdPageParameter.HasValue )
+            else if ( MediumEntityTypeId.HasValue )
             {
                 // Use the medium page parameter.
-                var mediumGuid = EntityTypeCache.Get( this.MediumIdPageParameter.Value, rockContext )?.Guid;
+                var mediumGuid = EntityTypeCache.Get( MediumEntityTypeId.Value, rockContext )?.Guid;
 
                 if ( mediumGuid.HasValue )
                 {
@@ -1511,13 +1635,12 @@ namespace Rock.Blocks.Communication
             {
                 if ( this.IsPersonPageParameterEnabled )
                 {
-                    var personId = this.PersonOrPersonIdPageParameter;
-                    if ( personId.HasValue )
+                    if ( PersonId.HasValue )
                     {
                         // Try to use the Person/PersonId page parameter to set the single recipient.
                         var personAlias = new PersonAliasService( rockContext )
                             .GetPrimaryAliasQuery()
-                            .Where( p => p.PersonId == personId.Value )
+                            .Where( p => p.PersonId == PersonId.Value )
                             .Select( p => new
                             {
                                 p.Guid
@@ -1705,7 +1828,7 @@ namespace Rock.Blocks.Communication
                 }
             }
 
-            Rock.Model.Communication communication = null;
+            var communication = LoadCommunication( rockContext );
 
             var currentRecipients = CreateLazy(
                 () =>
@@ -1721,12 +1844,6 @@ namespace Rock.Blocks.Communication
                         .ToList();
                 } );
 
-            var communicationId = this.CommunicationIdPageParameter;
-            if ( communicationId.HasValue && communicationId.Value != 0 )
-            {
-                communication = communicationService.Get( communicationId.Value );
-            }
-
             if ( communication == null )
             {
                 communication = new Rock.Model.Communication
@@ -1738,8 +1855,6 @@ namespace Rock.Blocks.Communication
             }
             else
             {
-                communication.GetAttachments( communication.CommunicationType );
-
                 // Remove any deleted recipients.
                 var newRecipientPersonAliasGuids = newRecipients.Select( r => r.PersonAliasGuid ).Distinct().ToList();
                 foreach ( var currentRecipient in currentRecipients.Value )

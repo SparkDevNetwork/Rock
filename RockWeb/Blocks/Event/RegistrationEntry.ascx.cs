@@ -2108,7 +2108,9 @@ namespace RockWeb.Blocks.Event
                 // set group id
                 if ( groupId.HasValue )
                 {
-                    GroupId = groupId;
+                    // Commenting out line below to improve security. More refactoring could be made to clean up this
+                    // section of code but limiting changes for now to reduce chance of introducing a bug.
+                    // GroupId = groupId;
                 }
                 else if ( !string.IsNullOrWhiteSpace( registrationSlug ) )
                 {

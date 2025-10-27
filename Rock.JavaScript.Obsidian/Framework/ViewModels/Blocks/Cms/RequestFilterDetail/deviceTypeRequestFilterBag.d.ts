@@ -23,6 +23,6 @@
 
 /** Device Type filter configuration. */
 export type DeviceTypeRequestFilterBag = {
-    /** Gets or sets the device types. */
+    /** Gets or sets the device types (enum numeric values). */
     deviceTypes?: number[] | null;
 };

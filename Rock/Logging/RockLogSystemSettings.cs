@@ -19,6 +19,8 @@ using System.Collections.Generic;
 
 using Microsoft.Extensions.Logging;
 
+using Newtonsoft.Json;
+
 namespace Rock.Logging
 {
     /// <summary>
@@ -38,6 +40,11 @@ namespace Rock.Logging
         /// at the level specified by <see cref="StandardLogLevel"/>.
         /// </summary>
         /// <value>The standard categories to log.</value>
+        // Using this attribute is not ideal because it couples this class to
+        // Newtonsoft. But we found that by default Newtonsoft would not replace
+        // the list when deserializing, it would just add to it. This caused
+        // problems when trying to clear out the default "Rock" category.
+        [JsonProperty( ObjectCreationHandling = ObjectCreationHandling.Replace )]
         public List<string> StandardCategories { get; set; } = new List<string> { "Rock" };
 
         /// <summary>

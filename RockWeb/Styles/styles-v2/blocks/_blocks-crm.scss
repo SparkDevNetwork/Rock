@@ -413,13 +413,22 @@ $badge-count-width: 18px;
   bottom:   .65em;
 }
 
-.rockbadge-personaldevice {
+.rockbadge-personaldevice,
+.rockbadge-lastvisitonsite {
   width:  .9em;
   .badge-content .metric-value {
     top:  .9em;
     left: .6em;
-    font-size: .3em;
   }
+}
+
+.rockbadge-personaldevice .badge-content .metric-value {
+  font-size: .3em;
+}
+
+.rockbadge-lastvisitonsite .badge-content .metric-value {
+  font-size: .4em;
+  top:       .6em;
 }
 
 .rockbadge-assessment {
@@ -698,7 +707,7 @@ span.field-value {
 
 // ======================== FLUID BOX ========================
 #fluidbox-overlay {
-  background:     var(--color-interface-strongest);
+  background:     rgba(10, 10, 10, 0.5); // Hardcoded color with opacity to keep it consistent with JS implementation
 }
 // ====================== END FLUID BOX ======================
 
@@ -916,18 +925,6 @@ tr.inactive {
   }
 }
 // ====================== END EDIT PERSON ======================
-
-// ======================== CONNECTION REQUEST ========================
-
-.connection-request-board .modal-open .modal-body .panel-body .photo > img {
-  width: 100%;
-}
-
-.connection-request-board .modal-open .modal-body .nav-tabs {
-  margin-top: var(--spacing-medium);
-}
-
-// ======================== END CONNECTION REQUEST ========================
 
 // ====================== PEOPLE MERGE ======================
 

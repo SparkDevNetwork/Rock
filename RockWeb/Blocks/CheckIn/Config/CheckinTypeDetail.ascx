@@ -198,6 +198,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:DefinedValuePicker ID="dvpRegistrationDefaultPersonConnectionStatus" runat="server" Label="Default Person Connection Status" />
+                                    <Rock:DefinedValuePicker ID="dvpRegistrationDefaultPersonRecordSource" runat="server" Label="Default Person Record Source" Help="The record source to use when creating a new person (default = 'Check-in'). If a 'RecordSource' page parameter is found, it will be used instead." />
                                     <Rock:RockCheckBox ID="cbRegistrationDisplayAlternateIdFieldForAdults" runat="server" Label="Display Alternate ID Field for Adults" />
                                     <Rock:RockCheckBox ID="cbRegistrationDisplayAlternateIdFieldForChildren" runat="server" Label="Display Alternate ID Field for Children" />
                                     <Rock:RockCheckBox ID="cbRegistrationDisplaySmsEnabled" runat="server" Label="Display SMS Enabled Selection for Phone Number" />

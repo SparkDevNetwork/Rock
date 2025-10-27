@@ -332,7 +332,7 @@ namespace Rock.Workflow
 
                      Reason: To address issue #6377 by storing only the Date portion of the value.
                 */
-                if ( attr.FieldType.Field is Field.Types.DateFieldType )
+                if ( attr.FieldType.Field.GetType() == typeof( Field.Types.DateFieldType ) )
                 {
                     var dateValue = value.AsDateTime();
                     if ( dateValue != null )

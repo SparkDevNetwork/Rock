@@ -25,15 +25,15 @@ import { Guid } from "@Obsidian/Types";
 
 /** Browser filter configuration item. */
 export type BrowserRequestFilterBag = {
-    /** Browser family. */
+    /** Gets or sets the browser family enum value. */
     browserFamily: number;
 
-    /** Unique identifier. */
+    /** Gets or sets the unique identifier. */
     guid: Guid;
 
-    /** Major version. */
+    /** Gets or sets the browser major version to compare. */
     majorVersion: number;
 
-    /** Version comparison type. */
+    /** Gets or sets the version comparison type (Reporting.ComparisonType values). */
     versionComparisonType: number;
 };

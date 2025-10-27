@@ -406,6 +406,26 @@
 
 }
 
+.group-schedule-roster {
+  .location {
+    border-radius: 0;
+    & > .panel-block {
+      border-radius: 0;
+    }
+    &:last-of-type {
+      border-bottom-left-radius: var(--rounded-medium);
+      border-bottom-right-radius: var(--rounded-medium);
+      .panel-block {
+        border-bottom-left-radius: var(--rounded-medium);
+        border-bottom-right-radius: var(--rounded-medium);
+      }
+    }
+  }
+}
+
+
+
+
 
 
 // ====================== END GROUP SCHEDULE STATUS BOARD ======================

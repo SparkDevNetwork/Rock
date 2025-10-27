@@ -28,7 +28,7 @@ export type EnvironmentRequestFilterBag = {
     /** Gets or sets the beginning time of day. */
     beginningTimeOfDay?: TimePickerValueBag | null;
 
-    /** Gets or sets the days of week. */
+    /** Gets or sets the days of week (System.DayOfWeek numeric values). */
     daysOfWeek?: number[] | null;
 
     /** Gets or sets the ending time of day. */

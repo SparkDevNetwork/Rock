@@ -40,7 +40,7 @@
                              :title="step"
                              @update:communicationListGroupGuid="onCommunicationListGroupGuidUpdated"
                              @update:segmentCriteria="debouncedUpdateRecipients"
-                             @update:personalizationSegmentIds="debouncedUpdateRecipients"
+                             @update:personalizationSegments="debouncedUpdateRecipients"
                              @nextStep="onNextStepClicked"
                              @recipientListModified="wasRecipientListModifiedOnce = true" />
 

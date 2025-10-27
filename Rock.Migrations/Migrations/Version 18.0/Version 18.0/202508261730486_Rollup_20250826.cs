@@ -1344,7 +1344,7 @@ VALUES
         private void ChopBlocksForV18Up()
         {
             RegisterBlockAttributesForChop();
-            ChopBlockTypesv18_0();
+            //ChopBlockTypesv18_0();
         }
 
         #endregion

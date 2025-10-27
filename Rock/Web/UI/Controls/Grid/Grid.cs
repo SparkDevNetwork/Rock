@@ -1974,7 +1974,6 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     var communicationRockContext = new RockContext();
                     var communicationService = new Rock.Model.CommunicationService( communicationRockContext );
                     var communication = new Rock.Model.Communication();
-                    communication.IsBulkCommunication = true;
                     communication.Status = Model.CommunicationStatus.Transient;
 
                     // Get a list of the mergefield names
@@ -1998,6 +1997,8 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     if ( rockPage.CurrentPerson != null )
                     {
                         communication.SenderPersonAliasId = rockPage.CurrentPersonAliasId;
+                        communication.FromEmail = rockPage.CurrentPerson.Email;
+                        communication.FromName = rockPage.CurrentPerson.FullName;
                     }
 
                     if ( rockPage.Request != null && rockPage.Request.UrlProxySafe() != null )

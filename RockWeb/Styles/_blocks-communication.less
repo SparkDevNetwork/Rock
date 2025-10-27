@@ -6,6 +6,7 @@
     3. Communication List
     4. Communication Wizard
     5. SMS Conversations
+    6. Communication History
 
 */
 
@@ -498,3 +499,19 @@ iframe.email-body {
 }
 
 
+// 6. Communication History
+// -------------------------
+
+.communication-detail-recipient-details > .grid-obsidian > .grid-header {
+    position: sticky;
+    top: 0;
+}
+
+.page-fullscreen-capable .panel.panel-block.panel-flex > .panel-body:has(.communication-detail-recipient-details) {
+    overflow: auto;
+}
+
+// Had to refactor the padding here because of the grid header sticky positioning.
+.panel-body:has(.communication-detail-recipient-details) {
+    padding: 0 var(--spacing-medium) var(--spacing-medium) var(--spacing-medium);
+}

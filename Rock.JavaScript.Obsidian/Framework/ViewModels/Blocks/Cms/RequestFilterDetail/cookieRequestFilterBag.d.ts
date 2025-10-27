@@ -25,15 +25,15 @@ import { Guid } from "@Obsidian/Types";
 
 /** Cookie filter configuration item. */
 export type CookieRequestFilterBag = {
-    /** Comparison type. */
+    /** Gets or sets the comparison type (Reporting.ComparisonType values). */
     comparisonType: number;
 
-    /** Comparison value. */
+    /** Gets or sets the comparison value. */
     comparisonValue?: string | null;
 
-    /** Unique identifier. */
+    /** Gets or sets the unique identifier. */
     guid: Guid;
 
-    /** Cookie key. */
+    /** Gets or sets the cookie key to evaluate. */
     key?: string | null;
 };

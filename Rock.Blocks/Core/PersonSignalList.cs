@@ -299,6 +299,18 @@ namespace Rock.Blocks.Core
                     entity.SaveAttributeValues( rockContext );
                 } );
 
+                // Recalculate the person's top signal so badges update immediately on refresh.
+                var person = new PersonService( rockContext )
+                    .Queryable()
+                    .Include( p => p.Signals )
+                    .FirstOrDefault( p => p.Id == entity.PersonId );
+
+                if ( person != null )
+                {
+                    person.CalculateSignals();
+                    rockContext.SaveChanges();
+                }
+
                 if ( isNew )
                 {
                     return ActionOk( GetGridBuilder() );
@@ -336,6 +348,19 @@ namespace Rock.Blocks.Core
 
             entityService.Delete( entity );
             RockContext.SaveChanges();
+
+            // Recalculate the person's top signal after deletion so badges update immediately on refresh.
+            var personId = entity.PersonId;
+            var person = new PersonService( RockContext )
+                .Queryable()
+                .Include( p => p.Signals )
+                .FirstOrDefault( p => p.Id == personId );
+
+            if ( person != null )
+            {
+                person.CalculateSignals();
+                RockContext.SaveChanges();
+            }
 
             return ActionOk();
         }

@@ -930,11 +930,22 @@ namespace Rock.Blocks.Communication
             var pageParams = GetPageParamsForReload( newCommunicationId.Value );
             pageParams.Remove( PageParameterKey.Tab );
 
+            string communicationUrl = null;
+            if ( IsLegacyCommunication( communicationService, newCommunicationId.Value ) )
+            {
+                communicationUrl = GetLegacyCommunicationUrl( pageParams );
+            }
+
+            if ( communicationUrl.IsNullOrWhiteSpace() )
+            {
+                communicationUrl = this.GetCurrentPageUrl( pageParams );
+            }
+
             return ActionOk(
                 new CommunicationRedirectBag
                 {
                     Permissions = permissions,
-                    CommunicationUrl = this.GetCurrentPageUrl( pageParams )
+                    CommunicationUrl = communicationUrl
                 }
             );
         }
@@ -1071,6 +1082,61 @@ namespace Rock.Blocks.Communication
         #endregion Block Actions
 
         #region Private Methods
+
+        /// <summary>
+        /// Determines whether the specified communication is considered a legacy communication.
+        /// </summary>
+        /// <param name="communicationService">The service used to query communication data.</param>
+        /// <param name="communicationId">The unique identifier of the communication to evaluate.</param>
+        /// <returns><see langword="true"/> if the communication is identified as a legacy communication; otherwise, <see langword="false"/>.</returns>
+        private bool IsLegacyCommunication( CommunicationService communicationService, int communicationId )
+        {
+            var data = communicationService.Queryable()
+                .Where( c => c.Id == communicationId )
+                .Select( c => new
+                {
+                    CommunicationTemplateVersion = ( CommunicationTemplateVersion? ) c.CommunicationTemplate.Version,
+                    c.Segments
+                } )
+                .FirstOrDefault();
+
+            if ( data != null )
+            {
+                if ( data.Segments.IsNotNullOrWhiteSpace() )
+                {
+                    // Only legacy communications use DataView-based segments.
+                    // Newer communications use Personalization Segments.
+                    return true;
+                }
+
+                if ( data.CommunicationTemplateVersion == CommunicationTemplateVersion.Legacy )
+                {
+                    // Only legacy communications use legacy communication templates.
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Constructs a URL for the legacy communication page using the specified parameters.
+        /// </summary>
+        /// <param name="pageParams">A dictionary of parameters to include in the URL.</param>
+        /// <returns>A string representing the constructed URL if the page ID is valid; otherwise, <see langword="null"/>.</returns>
+        private string GetLegacyCommunicationUrl( IDictionary<string, string> pageParams )
+        {
+            var pageReference = new Rock.Web.PageReference(
+                Rock.SystemGuid.Page.NEW_COMMUNICATION,
+                new Dictionary<string, string>( pageParams ) );
+
+            if ( pageReference.PageId > 0 )
+            {
+                return pageReference.BuildUrl();
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Gets an <see cref="IQueryable{Rock.Model.Communication}"/> based on the page parameter.
@@ -2521,6 +2587,7 @@ namespace Rock.Blocks.Communication
             var pageParams = RequestContext.GetPageParameters();
             pageParams.AddOrReplace( PageParameterKey.Communication, communicationId.AsIdKey() );
             pageParams.Remove( PageParameterKey.CommunicationId );
+            pageParams.Remove( "PageId" );
 
             return pageParams;
         }
