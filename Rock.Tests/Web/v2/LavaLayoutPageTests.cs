@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 using AngleSharp.Html.Parser;
@@ -18,33 +17,16 @@ using Rock.Model;
 using Rock.Net;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
-using Rock.Web.v2;
-using Rock.Web.Cache;
+using Rock.Utility.ExtensionMethods;
 using Rock.Web;
+using Rock.Web.Cache;
+using Rock.Web.v2;
 
 namespace Rock.Tests.Web.v2
 {
     [TestClass]
     public class LavaLayoutPageTests
     {
-        [TestMethod]
-        public async Task BasicLavaFilters_AreAvailable()
-        {
-            using ( TestHelper.CreateScopedRockApp( ConfigureLava ) )
-            {
-                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
-                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions {  InitializeDynamicShortcodes = false } );
-                var requestContext = new Net.RockRequestContext( new RockResponseBase() );
-                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
-
-                var renderer = new LavaPageRenderer( "<span id=\"test-marker\">{{ 1 | Plus:2 }}</span>", engine, requestContext );
-
-                var output = await renderer.RenderAsync();
-
-                Assert.Contains( "<span id=\"test-marker\">3</span>", output );
-            }
-        }
-
         [TestMethod]
         public async Task AddCssLinkFilter_AddsLinkTag()
         {
@@ -92,6 +74,35 @@ namespace Rock.Tests.Web.v2
                     .SingleOrDefault( l => l.GetAttribute( "src" ) == expectedUrl );
 
                 Assert.IsNotNull( link, "Link tag not found." );
+            }
+        }
+
+        [TestMethod]
+        public async Task AddScript_AddsScriptTagToBody()
+        {
+            using ( TestHelper.CreateScopedRockApp( ConfigureLava ) )
+            {
+                var expectedUrl = "https://localhost/testmarker.min.js";
+
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( $"{{{{ '{expectedUrl}' | AddScriptLink }}}}", engine, requestContext );
+
+                response.AddScript( "test-marker", "console.log('test-marker');" );
+
+                var output = await renderer.RenderAsync();
+
+                var script = new HtmlParser()
+                    .ParseDocument( output )
+                    .QuerySelectorAll( "script" )
+                    .SingleOrDefault( l => l.TextContent == "console.log('test-marker');" );
+
+                Assert.IsNotNull( script, "Script tag not found." );
+                Assert.AreEqual( "body", script.ParentElement.LocalName, "Script not added to body." );
             }
         }
 

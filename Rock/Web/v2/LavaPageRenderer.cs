@@ -24,7 +24,6 @@ using System.Threading.Tasks;
 
 using AngleSharp;
 using AngleSharp.Dom;
-using AngleSharp.Html;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 using AngleSharp.Text;
@@ -45,7 +44,7 @@ using Rock.Web.Cache;
 
 namespace Rock.Web.v2
 {
-    internal class LavaPageRenderer
+    internal partial class LavaPageRenderer
     {
         private const string LegacyBlockTypeSuffix = "(Legacy)";
 
@@ -131,45 +130,6 @@ namespace Rock.Web.v2
             }
 
             return document.ToHtml( new ZoneHtmlFormatter() );
-        }
-
-        class ZoneHtmlFormatter : HtmlMarkupFormatter
-        {
-            public override string OpenTag( IElement element, bool selfClosing )
-            {
-                if ( element.NodeName == "ROCK:ZONE" )
-                {
-                    var temp = StringBuilderPool.Obtain();
-
-                    temp.Append( "<div id=\"zone-" );
-                    temp.Append( element.GetAttribute( "name" ).ToLower() );
-                    temp.Append( "\" class=\"zone-instance\"><div class=\"zone-content\">" );
-
-                    return temp.ToPool();
-                }
-
-                return base.OpenTag( element, selfClosing );
-            }
-
-            public override string Text( ICharacterData text )
-            {
-                if ( text.Parent?.NodeName == "ROCK:ZONE" )
-                {
-                    return text.Data;
-                }
-
-                return base.Text( text );
-            }
-
-            public override string CloseTag( IElement element, bool selfClosing )
-            {
-                if ( element.NodeName == "ROCK:ZONE" )
-                {
-                    return "</div></div>";
-                }
-
-                return base.CloseTag( element, selfClosing );
-            }
         }
 
         private async Task RenderBlocksAsync( IHtmlDocument document, IHtmlCollection<IElement> zones )
