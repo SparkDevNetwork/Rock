@@ -30,6 +30,8 @@ using AngleSharp.Text;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using OpenXmlPowerTools;
+
 using Rock;
 using Rock.Blocks;
 using Rock.Configuration;
@@ -44,7 +46,7 @@ using Rock.Web.Cache;
 
 namespace Rock.Web.v2
 {
-    internal partial class LavaPageRenderer
+    internal sealed class LavaPageRenderer
     {
         private const string LegacyBlockTypeSuffix = "(Legacy)";
 
@@ -55,6 +57,12 @@ namespace Rock.Web.v2
         private readonly RockRequestContext _rockRequestContext;
 
         private readonly HtmlParser _htmlParser;
+
+        private bool _pageHasObsidianBlock = false;
+
+        private bool _pageNeedsObsidian = false;
+
+        private bool _canAdministrateBlockOnPage = false;
 
         public LavaPageRenderer( string layoutText, ILavaEngine engine, RockRequestContext rockRequestContext )
         {
@@ -97,7 +105,10 @@ namespace Rock.Web.v2
 
             await RenderBlocksAsync( document, zoneElements );
 
-            InjectObsidian( document );
+            if ( _pageNeedsObsidian )
+            {
+                InjectObsidian( document );
+            }
 
             if ( _rockRequestContext.Response is RockResponseBase responseBase )
             {
@@ -132,131 +143,93 @@ namespace Rock.Web.v2
             return document.ToHtml( new LavaPageHtmlFormatter() );
         }
 
-        private async Task RenderBlocksAsync( IHtmlDocument document, IHtmlCollection<IElement> zones )
+        internal async Task RenderBlocksAsync( IHtmlDocument document, IHtmlCollection<IElement> zones )
         {
-            var pageBlocks = _rockRequestContext.Page?.Blocks;
-
-            if ( pageBlocks == null )
-            {
-                return;
-            }
+            var pageBlocks = _rockRequestContext.Page.Blocks;
 
             foreach ( var block in pageBlocks )
             {
                 var stopwatchBlockInit = Stopwatch.StartNew();
-                //Page.Trace.Warn( string.Format( "\tLoading '{0}' block", block.Name ) );
 
-                // Get current user's permissions for the block instance
-                //Page.Trace.Warn( "\tChecking permission" );
+                // Get current user's permissions for the block instance.
                 bool canAdministrate = block.IsAuthorized( Authorization.ADMINISTRATE, _rockRequestContext.CurrentPerson );
                 bool canEdit = block.IsAuthorized( Authorization.EDIT, _rockRequestContext.CurrentPerson );
                 bool canView = block.IsAuthorized( Authorization.VIEW, _rockRequestContext.CurrentPerson );
 
-                // if this is a Site-wide block, only render it if its Zone exists on this page
-                // In other cases, Rock will add the block to the Form (at the very bottom of the page)
+                // Get the zone element that the block is in.
                 var zone = zones.FirstOrDefault( z => z.GetAttribute( "name" ) == block.Zone );
 
-                // Make sure there is a Zone for the block, and make sure user has access to view block instance
+                // Make sure there is a Zone for the block, and make sure user
+                // has access to view block instance.
                 if ( zone != null && ( canAdministrate || canEdit || canView ) )
                 {
-                    // Load the control and add to the control tree
-                    //Page.Trace.Warn( "\tLoading control" );
-                    INode control = null;
+                    var markup = await RenderBlockAsync( block, canEdit, canAdministrate );
 
-                    // Check to see if block is configured to use a "Cache Duration'
-                    if ( block.OutputCacheDuration > 0 )
+                    if ( markup != null )
                     {
-                        // Cache object used for block output caching
-                        //Page.Trace.Warn( "Getting memory cache" );
-                        string blockCacheKey = string.Format( "Rock:BlockOutput:{0}", block.Id );
-                        var blockCacheString = RockCache.Get( blockCacheKey ) as string;
-                        if ( blockCacheString.IsNotNullOrWhiteSpace() )
-                        {
-                            // If the current block exists in our custom output cache, add the cached output instead of adding the control
-                            control = document.CreateTextNode( blockCacheString );
-                        }
+                        zone.AppendChild( document.CreateTextNode( markup ) );
                     }
-
-                    if ( control == null )
-                    {
-                        try
-                        {
-                            if ( !string.IsNullOrWhiteSpace( block.BlockType.Path ) )
-                            {
-                                control = document.CreateTextNode( $"<div>WebForms block '{block.BlockType.Name}' is not supported." );
-                            }
-                            else if ( block.BlockType.EntityTypeId.HasValue )
-                            {
-                                using ( var scope = RockApp.Current.CreateScope() )
-                                {
-                                    var blockEntity = ActivatorUtilities.CreateInstance( scope.ServiceProvider, block.BlockType.EntityType.GetEntityType() );
-
-                                    if ( blockEntity is RockBlockType rockBlockType )
-                                    {
-                                        rockBlockType.RockContext = scope.ServiceProvider.GetRequiredService<RockContext>();
-                                    }
-
-                                    if ( blockEntity is IRockWebBlockType rockBlockEntity )
-                                    {
-                                        rockBlockEntity.RequestContext = _rockRequestContext;
-                                        rockBlockEntity.PageCache = _rockRequestContext.Page;
-                                        rockBlockEntity.BlockCache = block;
-
-                                        var blockHtml = await rockBlockEntity.GetControlMarkupAsync();
-                                        blockHtml = WrapBlockContent( blockHtml, block, canEdit, canAdministrate );
-
-                                        control = document.CreateTextNode( blockHtml );
-                                    }
-                                }
-
-                                //if ( blockEntity is IRockObsidianBlockType )
-                                //{
-                                //    _pageNeedsObsidian = true;
-                                //    _pageHasObsidianBlock = true;
-                                //}
-                            }
-
-                            if ( control == null )
-                            {
-                                throw new Exception( "Cannot instantiate unknown block type" );
-                            }
-                        }
-                        catch ( Exception ex )
-                        {
-                            try
-                            {
-                                LogException( ex );
-                            }
-                            catch
-                            {
-                                //
-                            }
-
-                            var errorHtml = $"<div class=\"alert alert-danger system-error\"><strong>Error Loading Block: {block.Name}</strong> {ex.Message.EncodeHtml()}<pre>{ex.StackTrace.EncodeHtml()}</pre>";
-                            control = document.CreateTextNode( errorHtml );
-                        }
-                    }
-
-                    if ( control != null )
-                    {
-                        //if ( canAdministrate || ( canEdit && control is RockBlockCustomSettings ) )
-                        //{
-                        //    canAdministrateBlockOnPage = true;
-                        //}
-
-                        // If the current control is a block, set its properties
-                        //var blockControl = control as RockBlock;
-                        //if ( blockControl != null )
-                        //{
-                        //    Page.Trace.Warn( "\tSetting block properties" );
-                        //    blockControl.SetBlock( _pageCache, block, canEdit, canAdministrate );
-                        //    blockControl.RequestContext = RequestContext;
-                        //    control = new RockBlockWrapper( blockControl );
-                        //}
-                    }
-
-                    zone.Append( control );
                 }
+            }
+        }
+
+        private async Task<string> RenderBlockAsync( BlockCache block, bool canEdit, bool canAdministrate )
+        {
+            try
+            {
+                if ( !string.IsNullOrWhiteSpace( block.BlockType.Path ) )
+                {
+                    return $"<div>WebForms block '{block.BlockType.Name.EncodeHtml()}' is not supported.</div>";
+                }
+                else if ( block.BlockType.EntityTypeId.HasValue )
+                {
+                    using ( var scope = RockApp.Current.CreateScope() )
+                    {
+                        var blockEntity = ActivatorUtilities.CreateInstance( scope.ServiceProvider, block.BlockType.EntityType.GetEntityType() );
+
+                        if ( blockEntity is RockBlockType rockBlockType )
+                        {
+                            rockBlockType.RockContext = scope.ServiceProvider.GetRequiredService<RockContext>();
+                        }
+
+                        if ( blockEntity is IRockObsidianBlockType )
+                        {
+                            _pageNeedsObsidian = true;
+                            _pageHasObsidianBlock = true;
+                        }
+
+                        if ( canAdministrate || ( canEdit && blockEntity is IHasCustomActions ) )
+                        {
+                            _canAdministrateBlockOnPage = true;
+                        }
+
+                        if ( blockEntity is IRockWebBlockType rockBlockEntity )
+                        {
+                            rockBlockEntity.RequestContext = _rockRequestContext;
+                            rockBlockEntity.PageCache = _rockRequestContext.Page;
+                            rockBlockEntity.BlockCache = block;
+
+                            var blockHtml = await rockBlockEntity.GetControlMarkupAsync();
+
+                            return WrapBlockContent( blockHtml, block, canEdit, canAdministrate );
+                        }
+                    }
+                }
+
+                return $"<div>Cannot instantiate unknown block type '{block.BlockType.Name.EncodeHtml()}'.</div>";
+            }
+            catch ( Exception ex )
+            {
+                try
+                {
+                    LogException( ex );
+                }
+                catch
+                {
+                    //
+                }
+
+                return $"<div class=\"alert alert-danger system-error\"><strong>Error Loading Block: {block.Name}</strong> {ex.Message.EncodeHtml()}<pre>{ex.StackTrace.EncodeHtml()}</pre>";
             }
         }
 
@@ -325,7 +298,7 @@ Obsidian.onReady(() => {{
 Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
 ";
 
-            //if ( _pageHasObsidianBlock )
+            if ( _pageHasObsidianBlock )
             {
                 var bodyElement = document.QuerySelector( "body" );
 
@@ -335,7 +308,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
             _rockRequestContext.Response.AddScriptToHead( "rock-obsidian-init", script );
         }
 
-        private string WrapBlockContent( string blockHtml, BlockCache block, bool canEdit, bool canAdministrate )
+        private static string WrapBlockContent( string blockHtml, BlockCache block, bool canEdit, bool canAdministrate )
         {
             var str = StringBuilderPool.Obtain();
 
@@ -390,6 +363,6 @@ Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
         }
 
         [ExcludeFromCodeCoverage]
-        protected virtual void LogException( Exception ex ) => ExceptionLogService.LogException( ex );
+        private void LogException( Exception ex ) => ExceptionLogService.LogException( ex );
     }
 }
