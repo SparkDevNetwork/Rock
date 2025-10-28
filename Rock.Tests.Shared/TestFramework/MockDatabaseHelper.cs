@@ -42,21 +42,24 @@ namespace Rock.Tests.Shared.TestFramework
         public static Mock<TEntity> CreateEntityMock<TEntity>( int id, Guid guid )
             where TEntity : class, IEntity, new()
         {
-            var entityMock = new Mock<TEntity>( MockBehavior.Loose )
+            var entityMock = new LazyMock<TEntity>( MockBehavior.Loose )
             {
                 CallBase = true
             };
 
             entityMock.Setup( m => m.TypeId ).Returns( 0 );
 
-            entityMock.Object.Id = id;
-            entityMock.Object.Guid = guid;
-
-            if ( entityMock.Object is IHasAttributes attributeMock )
+            entityMock.SetupInitializer( instance =>
             {
-                attributeMock.Attributes = new Dictionary<string, AttributeCache>();
-                attributeMock.AttributeValues = new Dictionary<string, AttributeValueCache>();
-            }
+                instance.Id = id;
+                instance.Guid = guid;
+
+                if ( instance is IHasAttributes attributeMock )
+                {
+                    attributeMock.Attributes = new Dictionary<string, AttributeCache>();
+                    attributeMock.AttributeValues = new Dictionary<string, AttributeValueCache>();
+                }
+            } );
 
             return entityMock;
         }
