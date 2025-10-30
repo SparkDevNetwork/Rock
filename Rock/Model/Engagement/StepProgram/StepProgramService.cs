@@ -43,12 +43,23 @@ namespace Rock.Model
 
             var rockContext = Context as RockContext;
             var stepProgramCompletionService = new StepProgramCompletionService( rockContext );
+            var stepService = new StepService( rockContext );
 
-            // Start with all the completed steps to try to narrow the set
-            var completedStepQuery = stepProgramCompletionService.Queryable()
+            // Get StepProgramCompletions that are actually referenced by Steps
+            var validCompletionIds = stepService.Queryable()
                 .AsNoTracking()
                 .Where( s =>
-                    s.StepProgramId == stepProgram.Id );
+                    s.StepType.StepProgramId == stepProgram.Id &&
+                    s.StepProgramCompletionId.HasValue )
+                .Select( s => s.StepProgramCompletionId.Value )
+                .Distinct();
+
+            // Only include StepProgramCompletions that match those valid completions
+            var completedStepQuery = stepProgramCompletionService.Queryable()
+                .AsNoTracking()
+                .Where( spc =>
+                    spc.StepProgramId == stepProgram.Id &&
+                    validCompletionIds.Contains( spc.Id ) );
 
             var personQuery = completedStepQuery
                 .Select( g => new PersonStepProgramViewModel
