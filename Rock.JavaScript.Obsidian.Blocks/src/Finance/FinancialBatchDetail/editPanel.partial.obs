@@ -119,8 +119,8 @@
     // #endregion
 
     // #region Computed Values
-    const isStatusClosed = computed((): boolean => props.modelValue.status == 2);
-    const shouldGetNameFromDefinedType = computed((): boolean => props.modelValue.id == 0 && !!toGuidOrNull(props.options.batchNameDefinedTypeGuid));
+    const isStatusClosed = computed((): boolean => props.modelValue.status === 2);
+    const shouldGetNameFromDefinedType = computed((): boolean => props.modelValue.id === 0 && !!toGuidOrNull(props.options.batchNameDefinedTypeGuid));
 
     // #endregion
 

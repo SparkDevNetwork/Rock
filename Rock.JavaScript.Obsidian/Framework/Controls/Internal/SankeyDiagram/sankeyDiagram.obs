@@ -255,7 +255,7 @@
         // Make sure nodes are in order
         const orderedNodes = [...props.flowNodes].sort((nodeA, nodeB) => nodeA.order - nodeB.order);
 
-        if (levelsCount.value == 0) {
+        if (levelsCount.value === 0) {
             return [] as FlowDiagramData;
         }
 
@@ -275,7 +275,7 @@
             flowPositionData.push([]);
 
             // Get everything flowing into the nodes at this level.
-            const levelFlows = props.flowEdges.filter(flow => flow.level == level);
+            const levelFlows = props.flowEdges.filter(flow => flow.level === level);
 
             // Total number of units flowing into this level.
             const totalLevelUnits = levelFlows.reduce((tot, { units }) => tot + units, 0);
@@ -290,9 +290,9 @@
             // Construct the base diagram nodes, which we'll fill in calculations for later.
             const levelNodes: FlowDiagramLevel = orderedNodes.map(node => {
                 // Get the flows coming into this node and order them by the order of the source nodes
-                const nodeInFlows: SankeyDiagramEdgeBag[] = levelFlows.filter(flow => flow.targetId == node.id).sort((flowA, flowB): number => {
-                    const nodeOrderA = orderedNodes.findIndex(node => node.id == flowA.sourceId);
-                    const nodeOrderB = orderedNodes.findIndex(node => node.id == flowB.sourceId);
+                const nodeInFlows: SankeyDiagramEdgeBag[] = levelFlows.filter(flow => flow.targetId === node.id).sort((flowA, flowB): number => {
+                    const nodeOrderA = orderedNodes.findIndex(node => node.id === flowA.sourceId);
+                    const nodeOrderB = orderedNodes.findIndex(node => node.id === flowB.sourceId);
 
                     return nodeOrderA - nodeOrderB;
                 });
@@ -318,7 +318,7 @@
                     nodeFlowPosition.nextLeftY += thickness;
 
                     if (level > 1) {
-                        const prevNodeFlowPosition = flowPositionData[level - 1].find(node => node.id == flow.sourceId);
+                        const prevNodeFlowPosition = flowPositionData[level - 1].find(node => node.id === flow.sourceId);
 
                         if (prevNodeFlowPosition) {
                             sourcePoint.y = prevNodeFlowPosition.nextRightY;

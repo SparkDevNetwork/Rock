@@ -134,7 +134,7 @@
 
     // #region Computed Values
     const showDayOfWeekPicker = computed(() => {
-        return batchSchedule.value == weeklySchedule;
+        return batchSchedule.value === weeklySchedule;
     });
     // #endregion
 

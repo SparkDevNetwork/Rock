@@ -146,11 +146,11 @@
     });
 
     const communicationPreferenceIsSms = computed((): boolean => {
-        return registrarCommunicationPreference.value == "2";
+        return registrarCommunicationPreference.value === "2";
     });
 
     const communicationPreferenceIsEmail = computed((): boolean => {
-        return registrarCommunicationPreference.value == "1";
+        return registrarCommunicationPreference.value === "1";
     });
 
     const registrarMobilePhoneNumber = computed<string | undefined>({

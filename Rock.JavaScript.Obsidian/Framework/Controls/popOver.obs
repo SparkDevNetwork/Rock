@@ -189,7 +189,7 @@
         const boxA = getElementBox(activatorEl.value);
         const boxP = getElementBox(popOverEl.value);
 
-        if (props.placement == "top") {
+        if (props.placement === "top") {
             if (props.anchorX !== undefined && props.anchorY !== undefined) {
                 return {
                     left: `${props.anchorX - (boxP.width / 2)}px`,
@@ -203,7 +203,7 @@
             };
         }
 
-        if (props.placement == "bottom") {
+        if (props.placement === "bottom") {
             if (props.anchorX !== undefined && props.anchorY !== undefined) {
                 return {
                     left: `${props.anchorX - (boxP.width / 2)}px`,
@@ -217,7 +217,7 @@
             };
         }
 
-        if (props.placement == "left") {
+        if (props.placement === "left") {
             if (props.anchorX !== undefined && props.anchorY !== undefined) {
                 return {
                     left: `${props.anchorX - boxP.width}px`,

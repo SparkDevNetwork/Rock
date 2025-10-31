@@ -535,6 +535,43 @@ WELCOME TO THE LAVA TAG
             TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
         }
 
+        [TestMethod]
+        public void LavaTag_WithInnerForLoop_ShouldParseCorrectly()
+        {
+            var template = @"
+{% liquid 
+    for i in (1..5)
+        if i > 3
+            continue
+        endif
+        echo i
+    endfor
+%}";
+            var expectedOutput = @"123";
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// Verify that the {% lava %} tag is correctly aliased to the default {% liquid %} tag.
+        /// </summary>
+        [TestMethod]
+        public void LavaTag_WrappedWithForLoop_IsProcessedCorrectly()
+        {
+            var template = @"
+{%- for i in (1..5) %}
+    {%- liquid 
+        if i > 3
+            continue
+        endif
+        echo i
+    %}
+{%- endfor %}
+";
+
+            var expectedOutput = @"123";
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+        }
         #endregion
 
         #region Raw Tag

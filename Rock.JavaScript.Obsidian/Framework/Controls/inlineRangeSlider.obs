@@ -17,7 +17,7 @@
             <span :style="leftSliderStyle" style="background-color: var(--slider-progress-bg); height: var(--slider-height); border-top-left-radius: calc(var(--slider-height) / 2); border-bottom-left-radius: calc(var(--slider-height) / 2);"></span>
             <span class="flex-grow-1" style="background-color: var(--slider-bg); height: var(--slider-height); border-top-right-radius: calc(var(--slider-height) / 2); border-bottom-right-radius: calc(var(--slider-height) / 2);"></span>
 
-            <span class="position-absolute cursor-pointer" :style="thumbStyle" style="width: var(--slider-handle-height); height: var(--slider-handle-height); margin-left: calc(var(--slider-handle-height) * -.5)); background: var(--slider-handle-bg); border: 1px solid var(--slider-handle-border-color); border-radius: var(--slider-handle-height);transform: translateX(-50%);" @mousedown="onMouseDown" @mouseup="onMouseUp"></span>
+            <span class="position-absolute cursor-pointer" :style="thumbStyle" style="width: var(--slider-handle-height); height: var(--slider-handle-height); margin-left: calc(var(--slider-handle-height) * -.5); background: var(--slider-handle-bg); border: 1px solid var(--slider-handle-border-color); border-radius: var(--slider-handle-height);transform: translateX(-50%);" @mousedown="onMouseDown" @mouseup="onMouseUp"></span>
         </div>
     </div>
 </template>
@@ -115,7 +115,7 @@
      * @returns The value after any constraints have been applied.
      */
     function constrainValue(value: number): number {
-        if (props.step != 0) {
+        if (props.step !== 0) {
             value = Math.round(value / props.step) * props.step;
 
             // If the step has a decimal in it, we need to round to the same number of decimal places

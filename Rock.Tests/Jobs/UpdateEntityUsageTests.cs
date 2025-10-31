@@ -22,6 +22,7 @@ namespace Rock.Tests.Jobs
         {
             var metadataHelperMock = new Mock<MetadataHelper>( MockBehavior.Strict );
             var mediaElementId = 42;
+            var processedCount = 0;
 
             metadataHelperMock.Setup( m => m.DeleteEntityValue( It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<RockContext>() ) );
 
@@ -38,7 +39,7 @@ namespace Rock.Tests.Jobs
 
                 var job = new UpdateEntityUsage();
 
-                job.UpdateMediaUsage( rockContextMock.Object );
+                job.UpdateMediaUsage( rockContextMock.Object, ref processedCount );
 
                 metadataHelperMock.Verify( m => m.DeleteEntityValue( It.IsAny<int>(), mediaElementId, MetadataKey.EntityUsage, It.IsAny<RockContext>() ), Times.Once );
             }
@@ -51,6 +52,7 @@ namespace Rock.Tests.Jobs
             var attributeId = 2;
             var mediaElementId = 3;
             var metadataHelperMock = new Mock<MetadataHelper>( MockBehavior.Strict );
+            var processedCount = 0;
 
             metadataHelperMock.Setup( m => m.DeleteEntityValue( It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<RockContext>() ) );
 
@@ -76,7 +78,7 @@ namespace Rock.Tests.Jobs
 
                 var job = new UpdateEntityUsage();
 
-                job.UpdateMediaUsage( rockContextMock.Object );
+                job.UpdateMediaUsage( rockContextMock.Object, ref processedCount );
 
                 metadataHelperMock.Verify( m => m.DeleteEntityValue( It.IsAny<int>(), mediaElementId, MetadataKey.EntityUsage, It.IsAny<RockContext>() ), Times.Once );
             }
@@ -91,6 +93,7 @@ namespace Rock.Tests.Jobs
             var contentChannelItemId = 4;
             var mediaElementId = 5;
             var metadataHelperMock = new Mock<MetadataHelper>( MockBehavior.Strict );
+            var processedCount = 0;
 
             metadataHelperMock.Setup( m => m.DeleteEntityValue( It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<RockContext>() ) );
 
@@ -126,7 +129,7 @@ namespace Rock.Tests.Jobs
 
                 var job = new UpdateEntityUsage();
 
-                job.UpdateMediaUsage( rockContextMock.Object );
+                job.UpdateMediaUsage( rockContextMock.Object, ref processedCount );
 
                 metadataHelperMock.Verify( m => m.DeleteEntityValue( It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<RockContext>() ), Times.Once );
             }
@@ -141,6 +144,7 @@ namespace Rock.Tests.Jobs
             var contentChannelItemId = 4;
             var mediaElementId = 5;
             var metadataHelperMock = new Mock<MetadataHelper>( MockBehavior.Strict );
+            var processedCount = 0;
 
             metadataHelperMock.Setup( m => m.SaveEntityValue( It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<RockContext>() ) );
 
@@ -176,7 +180,7 @@ namespace Rock.Tests.Jobs
 
                 var job = new UpdateEntityUsage();
 
-                job.UpdateMediaUsage( rockContextMock.Object );
+                job.UpdateMediaUsage( rockContextMock.Object, ref processedCount );
 
                 metadataHelperMock.Verify( m => m.SaveEntityValue( It.IsAny<int>(), mediaElementId, MetadataKey.EntityUsage, It.IsAny<string>(), It.IsAny<RockContext>() ), Times.Once );
             }

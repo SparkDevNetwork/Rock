@@ -4,43 +4,43 @@
         <div class="row">
             <div class="col-md-6">
                 <DropDownList
-                    v-model="signalType"
-                    label="Signal Type"
-                    rules="required"
-                    :items="signalTypeOptions" />
+                              v-model="signalType"
+                              label="Signal Type"
+                              rules="required"
+                              :items="signalTypeOptions" />
             </div>
         </div>
         <div class="row">
             <div class="col-md-6">
                 <PersonPicker v-model="ownerAlias"
-                    label="Owner"
-                    rules="required"
-                    :disabled="!isEditable" />
+                              label="Owner"
+                              rules="required"
+                              :disabled="!isEditable" />
             </div>
             <div class="col-md-6">
                 <DatePicker v-model="expirationDate"
-                    label="Expiration Date"
-                    help="Once this date has been reached the signal will automatically be removed." />
+                            label="Expiration Date"
+                            help="Once this date has been reached the signal will automatically be removed." />
             </div>
         </div>
         <TextBox v-model="note"
-            label="Note"
-            textMode="multiline" />
+                 label="Note"
+                 textMode="multiline" />
     </fieldset>
 </template>
 
 <script setup lang="ts">
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { PropType, ref, computed, watch } from "vue";
-import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import TextBox from "@Obsidian/Controls/textBox.obs";
-import PersonPicker from "@Obsidian/Controls/personPicker.obs";
-import DatePicker from "@Obsidian/Controls/datePicker.obs";
-import { PersonSignalListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/PersonSignalList/personSignalListOptionsBag";
-import { PersonSignalBag } from "@Obsidian/ViewModels/Blocks/Core/PersonSignalList/PersonSignalBag";
-import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
-import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
-import { updateRefValue } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PropType, ref, computed, watch } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import { PersonSignalListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/PersonSignalList/personSignalListOptionsBag";
+    import { PersonSignalBag } from "@Obsidian/ViewModels/Blocks/Core/PersonSignalList/PersonSignalBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { updateRefValue } from "@Obsidian/Utility/component";
 
     const props = defineProps({
         modelValue: {
@@ -89,16 +89,16 @@ import { updateRefValue } from "@Obsidian/Utility/component";
         ownerAlias,
         expirationDate,
         note], () => {
-        const newValue: ValidPropertiesBox<PersonSignalBag> = {
-            bag: { ...props.modelValue.bag } as PersonSignalBag
-        };
+            const newValue: ValidPropertiesBox<PersonSignalBag> = {
+                bag: { ...props.modelValue.bag } as PersonSignalBag
+            };
 
-        setPropertiesBoxValue(newValue, "signalType", signalTypeOptions?.value?.find(s => s.value == signalType.value));
-        setPropertiesBoxValue(newValue, "owner", ownerAlias.value);
-        setPropertiesBoxValue(newValue, "expirationDate", expirationDate.value);
-        setPropertiesBoxValue(newValue, "note", note.value);
+            setPropertiesBoxValue(newValue, "signalType", signalTypeOptions?.value?.find(s => s.value === signalType.value));
+            setPropertiesBoxValue(newValue, "owner", ownerAlias.value);
+            setPropertiesBoxValue(newValue, "expirationDate", expirationDate.value);
+            setPropertiesBoxValue(newValue, "note", note.value);
 
-        emit("update:modelValue", newValue);
-    });
+            emit("update:modelValue", newValue);
+        });
 
 </script>

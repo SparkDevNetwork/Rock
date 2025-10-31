@@ -205,7 +205,7 @@
             return;
         }
 
-        if (!internalValues.value || internalValues.value.length == 0) {
+        if (!internalValues.value || internalValues.value.length === 0) {
             emit("update:modelValue", props.multiple ? [] : null);
             return;
         }
@@ -224,7 +224,7 @@
 
         const guid = internalValues.value[0];
         if (guid) {
-            const value = flatItems.value.find(i => i.value == guid);
+            const value = flatItems.value.find(i => i.value === guid);
             emit("update:modelValue", value ? { value: value.value, text: value.text } : null);
         }
         else {
@@ -298,7 +298,7 @@
     }
 
     function changeMode(): void {
-        if (mode.value == "tree") {
+        if (mode.value === "tree") {
             mode.value = "preview";
         }
         else {
@@ -332,7 +332,7 @@
             // We're told to refetch the root nodes
             (refetch && !parentNode) ||
             // We're getting root items and don't have any root items
-            (!parentNode && (!treeItems.value || treeItems.value.length == 0))
+            (!parentNode && (!treeItems.value || treeItems.value.length === 0))
         ) {
             const timeout = setTimeout(() => {
                 treeItems.value = [{
@@ -356,7 +356,7 @@
             // We're told to refetch child nodes
             (refetch && parentNode) ||
             // We're getting child nodes that don't already exist
-            (parentNode && (!parentNode.children || parentNode.children.length == 0))
+            (parentNode && (!parentNode.children || parentNode.children.length === 0))
         ) {
             const timeout = setTimeout(() => {
                 parentNode.children = [{
@@ -420,7 +420,7 @@
             // Figure out which selected items we don't already have
             const unFetchedSelectedGuids = internalValues.value.filter(guid => {
                 // Return true if we didn't find a node with that Guid
-                return !flatItems.value.find(i => i.value == guid);
+                return !flatItems.value.find(i => i.value === guid);
             });
 
             if (unFetchedSelectedGuids.length > 0) {
@@ -429,12 +429,12 @@
                 // Filter out the parents we already have the child data for
                 parentGuids = parentGuids.filter(guid => {
                     // Return true if we don't already have this parent node
-                    return !flatItems.value.find(i => i.value == guid && i.children?.length);
+                    return !flatItems.value.find(i => i.value === guid && i.children?.length);
                 });
             }
         }
 
-        if (parentGuids.length == 0) {
+        if (parentGuids.length === 0) {
             // Selected accounts have no parents or we already have all the parent data, so we're done.
             return;
         }
@@ -442,7 +442,7 @@
         const childLists = await Promise.all(parentGuids.map(guid => fetchItems(guid)));
 
         parentGuids.forEach((parentGuid, i) => {
-            const parentPage: TreeItemBag | undefined = flatItems.value.find(i => i.value == parentGuid);
+            const parentPage: TreeItemBag | undefined = flatItems.value.find(i => i.value === parentGuid);
             if (parentPage) {
                 parentPage.children = childLists[i];
             }
@@ -579,7 +579,7 @@
     async function getPreviewItems(): Promise<void> {
         const selectedGuids: Guid[] = internalValues.value.map(v => toGuidOrNull(v)).filter(g => g !== null).map(g => g as Guid);
 
-        if (selectedGuids.length == 0) {
+        if (selectedGuids.length === 0) {
             previewItems.value = [];
             return;
         }
@@ -611,7 +611,7 @@
 
     /** Get the preview items when we switch to that mode */
     watch(mode, () => {
-        if (mode.value == "preview") {
+        if (mode.value === "preview") {
             getPreviewItems();
         }
     });
@@ -626,9 +626,9 @@
             internalValues.value.splice(index, 1);
         }
 
-        if (previewItems.value.find(i => i.value == guid)) {
+        if (previewItems.value.find(i => i.value === guid)) {
             // Exists. Remove it from list
-            const index = previewItems.value.findIndex(i => i.value == guid);
+            const index = previewItems.value.findIndex(i => i.value === guid);
             previewItems.value.splice(index, 1);
         }
     }

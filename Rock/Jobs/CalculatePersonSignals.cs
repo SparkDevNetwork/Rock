@@ -47,13 +47,32 @@ namespace Rock.Jobs
             List<int> people;
             int count = 0;
 
-            //
-            // Create a list of every Person Id that has a signal.
-            //
+            /*
+                 10/27/2025 - MSE
+
+                 When a SignalType is deleted, related PersonSignal rows are removed, but the
+                 Person’s TopSignal fields (TopSignalId, TopSignalColor, TopSignalIconCssClass)
+                 can remain populated. This can cause stale signal icons to persist throughout the UI.
+
+                 Previously, the job queried the PersonSignal table to find people to process:
+
+                     people = new PersonSignalService( rockContext ).Queryable()
+                         .Select( s => s.PersonId )
+                         .Distinct()
+                         .ToList();
+
+                 However, since the PersonSignal rows were deleted, those individuals were no
+                 longer returned.
+
+                 Now, the job identifies people based on whether they still have a TopSignalId.
+            */
+
             using ( var rockContext = new RockContext() )
             {
-                people = new PersonSignalService( rockContext ).Queryable()
-                    .Select( s => s.PersonId )
+                people = new PersonService( rockContext ).Queryable()
+                    .AsNoTracking()
+                    .Where( p => p.TopSignalId.HasValue )
+                    .Select( p => p.Id )
                     .Distinct()
                     .ToList();
             }

@@ -72,7 +72,7 @@
             return valueBuilder.build();
         }
 
-        if (props.modelValue.enablePageViews != undefined) {
+        if (props.modelValue.enablePageViews != null) {
             valueBuilder.addTextValue("Enable Page Views", props.modelValue.enablePageViews ? "Yes" : "No");
         }
 

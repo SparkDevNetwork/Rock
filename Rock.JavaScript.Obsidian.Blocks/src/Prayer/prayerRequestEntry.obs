@@ -40,6 +40,7 @@
                                           v-model="campusListItemBag"
                                           :disabled="isSaving || isNavigating"
                                           :includeInactive="false"
+                                          :showBlankItem="true"
                                           label="Campus"
                                           :campusStatusFilter="campusStatusFilter"
                                           :campusTypeFilter="campusTypeFilter"
@@ -151,7 +152,7 @@
     const email = ref<string>(config.defaultEmail ?? "");
     const mobilePhoneNumber = ref<string>("");
     const mobilePhoneNumberCountryCode = ref<string>("");
-    const campusListItemBag = ref<ListItemBag | null | undefined>(config.defaultCampus);
+    const campusListItemBag = ref<ListItemBag | null | undefined>(config.defaultCampus ?? null);
     /** The selected category guid (or empty string if none selected). */
     const categoryGuidOrEmptyString = ref<string>(toGuidOrNull(config.defaultCategoryGuid) ?? "");
     const categories = ref<ListItemBag[]>(config.categories || []);

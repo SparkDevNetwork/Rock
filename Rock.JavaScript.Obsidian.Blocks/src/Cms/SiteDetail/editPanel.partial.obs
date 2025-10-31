@@ -464,8 +464,8 @@
             const index = siteAttributes.value.findIndex(a => a.guid === siteAttribute.value?.guid);
             if (index !== -1) {
                 // Get the updated attribute and rowItem.
-                let editedAttribute = siteAttributes.value.find(a => a.guid == siteAttribute.value?.guid);
-                let rowItem = gridData.rows?.find(x => x["idKey"] == siteAttribute.value?.guid);
+                let editedAttribute = siteAttributes.value.find(a => a.guid === siteAttribute.value?.guid);
+                let rowItem = gridData.rows?.find(x => x["idKey"] === siteAttribute.value?.guid);
 
                 if (editedAttribute) {
                     // Replace old attribute with updated attribute.

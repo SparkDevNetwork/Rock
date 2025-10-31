@@ -1,5 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
     <Grid :definition="config.gridDefinition ?? undefined"
           title="Person Duplicates"
           :data="gridDataSource"
@@ -13,107 +14,149 @@
           :selectedKeysOverride="selectedKeysOverride"
           :isSearchVisible="false">
 
-        <SelectColumn :enableRowExclusions="true"
-                      :excludeRow="excludeRow"
+        <SelectColumn :rowDisabled="showRowSelectCheckbox"
                       :forceAllowSelectAll="true"
                       :disableSort="true" />
-        <HtmlColumn name="confidenceScore"
-                    title="Confidence"
-                    field="confidenceScore"
+        <Column name="confidenceScore"
+                title="Confidence"
+                field="confidenceScore"
+                :disableSort="true">
+            <template #format="{ row }">
+                <span v-if="row.confidenceScore >= config.options!.confidenceScoreHigh" class='label label-success'>
+                    {{ (row.confidenceScore as number).toFixed(2) }}%
+                </span>
+                <span v-else-if="row.confidenceScore >= config.options!.confidenceScoreLow" class='label label-warning'>
+                    {{ (row.confidenceScore as number).toFixed(2) }}%
+                </span>
+                <span v-else-if="row.confidenceScore > 0" class='label label-default'>
+                    {{ (row.confidenceScore as number).toFixed(2) }}%
+                </span>
+            </template>
+        </Column>
+        <TextColumn v-if="config.options?.hasMultipleCampuses"
+                    name="campus"
+                    title="Campus"
+                    field="campus"
                     :disableSort="true" />
-        <Column v-if="config.options?.hasMultipleCampuses"
-                name="campus"
-                title="Campus"
-                field="campus"
-                :disableSort="true" />
-        <HtmlColumn name="accountProtectionProfile"
-                    title="Account Protection Profile"
-                    field="accountProtectionProfile"
+        <Column name="accountProtectionProfile"
+                title="Account Protection Profile"
+                field="accountProtectionProfile"
+                :disableSort="true">
+            <template #format="{ row }">
+                <span v-if="row.accountProtectionProfile === 0" class='label label-success'>Low</span>
+                <span v-else-if="row.accountProtectionProfile === 1" class='label label-warning'>Medium</span>
+                <span v-else-if="row.accountProtectionProfile === 2" class='label label-primary'>High</span>
+                <span v-else-if="row.accountProtectionProfile === 3" class='label label-danger'>Extreme</span>
+            </template>
+        </Column>
+        <TextColumn name="firstName"
+                    title="First Name"
+                    field="firstName"
                     :disableSort="true" />
-        <Column name="firstName"
-                title="First Name"
-                field="firstName"
-                :disableSort="true" />
-        <Column name="lastName"
-                title="Last Name"
-                field="lastName"
-                :disableSort="true" />
-        <Column name="email"
-                title="Email"
-                field="email"
-                :disableSort="true" />
-        <Column name="gender"
-                title="Gender"
-                field="gender"
-                :disableSort="true" />
-        <Column name="age"
-                title="Age"
-                field="age"
-                :disableSort="true" />
-        <HtmlColumn name="addresses"
-                    title="Addresses"
-                    field="addresses"
+        <TextColumn name="lastName"
+                    title="Last Name"
+                    field="lastName"
                     :disableSort="true" />
-        <HtmlColumn name="phoneNumbers"
-                    title="Phone Numbers"
-                    field="phoneNumbers"
+        <TextColumn name="email"
+                    title="Email"
+                    field="email"
                     :disableSort="true" />
+        <TextColumn name="gender"
+                    title="Gender"
+                    field="gender"
+                    :disableSort="true"
+                    itemClass="justify-content-center text-center"
+                    width="80" />
+        <TextColumn name="age"
+                    title="Age"
+                    field="age"
+                    :disableSort="true"
+                    itemClass="justify-content-center text-center"
+                    width="60" />
+        <Column name="addresses"
+                title="Addresses"
+                field="addresses"
+                :wrapped="false"
+                :disableSort="true">
+            <template #format="{ row }">
+                <ul class="list-unstyled">
+                    <li v-for="address in row.addresses" class="address clearfix">
+                        <strong>{{ address.groupLocationTypeValue }}</strong>
+                        <div>
+                            {{ (address.street1 as string) }}
+                        </div>
+                        <div v-if="address.street2 !== null">
+                            {{ address.street2 }}
+                        </div>
+                        <div>
+                            {{ address.city }}, {{ address.state }} {{ address.postalCode }}
+                        </div>
+                    </li>
+                </ul>
+            </template>
+        </Column>
+        <Column name="phoneNumbers"
+                title="Phone Numbers"
+                field="phoneNumbers"
+                :disableSort="true">
+            <template #format="{ row }">
+                <ul class="list-unstyled">
+                    <li v-for="phoneNumber in row.phoneNumbers" class="phone clearfix">
+                        <strong>{{ phoneNumber.phoneNumberTypeValue }}</strong>
+                        <p>{{ phoneNumber.phoneNumber }}</p>
+                    </li>
+                </ul>
+            </template>
+        </Column>
 
         <Column name="rowActions"
                 columnType="custom"
-                width="50px">
+                width="60px">
             <template #format="{ row }">
                 <div class="d-flex flex-column gap-3">
-                    <span class="action clickable text-info"
-                          title="View Person"
-                          @click="onViewPersonClick(row as Record<string, unknown>)">
+                    <RockButton title="View Person"
+                                :btnSize="BtnSize.ExtraSmall"
+                                :btnType="BtnType.Default"
+                                @click="onPersonProfileClick(row.personIdKey as string)">
                         <i class="ti ti-user"></i>
-                    </span>
-                    <span v-if="row.isDuplicateRow"
-                          class="action clickable text-info"
-                          title="Not Duplicate"
-                          @click="onNotDuplicateClick(row as Record<string, unknown>)">
+                    </RockButton>
+                    <RockButton v-if="row.isDuplicateRow"
+                                title="Not Duplicate"
+                                :btnSize="BtnSize.ExtraSmall"
+                                :btnType="BtnType.Default"
+                                :disabled="isMarkingDuplicate"
+                                @click="onNotDuplicateClick(row.idKey as string)">
                         <i class="ti ti-ban"></i>
-                    </span>
-                    <span v-if="row.isDuplicateRow"
-                          class="action clickable text-info"
-                          title="Ignore"
-                          @click="onIgnoreClick(row as Record<string, unknown>)">
+                    </RockButton>
+                    <RockButton v-if="row.isDuplicateRow"
+                                title="Ignore"
+                                :btnSize="BtnSize.ExtraSmall"
+                                :btnType="BtnType.Default"
+                                :disabled="isMarkingDuplicate"
+                                @click="onIgnoreDuplicateClick(row.idKey as string)">
                         <i class="ti ti-bell-off"></i>
-                    </span>
+                    </RockButton>
                 </div>
             </template>
         </Column>
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
     </Grid>
-    <Modal v-model="isMarkNotDuplicateModalVisible"
-           saveText="OK"
-           :isNarrow="true"
-           :saveAutoDisable="true"
-           @save="onNotDuplicateConfirm"
-           @closeModal="onNotDuplicateCancel">
-        <p>Are you sure this is not a duplicate?</p>
-    </Modal>
-    <Modal v-model="isMarkIgnoreDuplicateModalVisible"
-           saveText="OK"
-           :isNarrow="true"
-           :saveAutoDisable="false"
-           @save="onIgnoreDuplicateConfirm"
-           @closeModal="onIgnoreDuplicateCancel">
-        <p>This will ignore this potential duplicate until the score changes. Are you sure you want to ignore this as a duplicate?</p>
-    </Modal>
 </template>
 
 <script setup lang="ts">
+    import { ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Grid, { Column, TextColumn, AttributeColumns, SelectColumn } from "@Obsidian/Controls/grid";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { Column, HtmlColumn, AttributeColumns, SelectColumn } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PersonDuplicateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDuplicateDetail/personDuplicateDetailOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import Modal from "@Obsidian/Controls/modal.obs";
-    import { reactive, ref } from "vue";
+    import { confirm } from "@Obsidian/Utility/dialogs";
 
     const config = useConfigurationValues<ListBlockBox<PersonDuplicateDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -126,13 +169,14 @@
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
-    let combinedGridData: GridDataBag | undefined;
 
-    const currentRow = ref<Record<string, unknown> | null>(null);
-    const isMarkNotDuplicateModalVisible = ref(false);
-    const isMarkIgnoreDuplicateModalVisible = ref(false);
+    const primaryPersonIdKey = ref<string | null>(null);
 
-    // #endregion
+    const errorMessage = ref("");
+
+    const isMarkingDuplicate = ref(false);
+
+    // #endregion Values
 
     // #region Functions
 
@@ -140,185 +184,17 @@
      * Called when the grid is requesting the row data be loaded.
      */
     async function loadGridData(): Promise<GridDataBag> {
-        const duplicates = await invokeBlockAction<GridDataBag>("GetGridData");
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
 
-        if (duplicates.isSuccess && duplicates.data) {
-            const person = await invokeBlockAction<GridDataBag>("GetPerson");
-            if (person.isSuccess && person.data) {
-                let personGridData = reactive(person.data) as GridDataBag;
-                let duplicateGridData = reactive(duplicates.data) as GridDataBag;
-
-                combinedGridData = {
-                    ...personGridData,
-                    rows: [
-                        ...(personGridData.rows ?? []),
-                        ...(duplicateGridData.rows ?? [])
-                    ]
-                } as GridDataBag;
-
-                combinedGridData = formatConfidenceScores(combinedGridData);
-                combinedGridData = formatAccountProtectionProfiles(combinedGridData);
-                combinedGridData = formatAddresses(combinedGridData);
-                combinedGridData = formatPhoneNumbers(combinedGridData);
-                return combinedGridData;
+        if (result.isSuccess && result.data) {
+            if (result.data.rows && result.data.rows.length > 0) {
+                primaryPersonIdKey.value = result.data.rows[0]["personIdKey"] as string;
             }
-            else {
-                throw new Error(duplicates.errorMessage ?? "Unknown error while trying to load person grid data.");
-            }
+            return result.data;
         }
         else {
-            throw new Error(duplicates.errorMessage ?? "Unknown error while trying to load duplicate grid data.");
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load person duplicate grid data.");
         }
-    }
-    /**
-     * Formats the confidence scores in the provided GridDataBag.
-     * - Converts the confidence score to a percentage string with two decimal places.
-     * - Applies a label class based on the score's value (success, warning, or default).
-     *
-     * @param {GridDataBag} data - The data object containing rows to format.
-     * @returns {GridDataBag} The data object with formatted confidence scores.
-     */
-
-    function formatConfidenceScores(data: GridDataBag): GridDataBag {
-        if (data?.rows) {
-            data.rows.forEach(row => {
-                const score = Number(row["confidenceScore"]);
-                let formattedScore = "0.00%";
-
-                if (!isNaN(score)) {
-                    formattedScore = `${score.toFixed(2)}%`;
-                }
-
-                if (score >= Number(config.options?.confidenceScoreHigh)) {
-                    formattedScore = `<span class='label label-success'>${formattedScore}</span>`;
-                }
-                else if (score >= Number(config.options?.confidenceScoreLow)) {
-                    formattedScore = `<span class='label label-warning'>${formattedScore}</span>`;
-                }
-                else {
-                    formattedScore = ``;
-                }
-                row["confidenceScore"] = formattedScore;
-            });
-        }
-
-        return data;
-    }
-
-    /**
-     * Formats the account protection profiles in the provided GridDataBag.
-     * - Converts the profile value to a labeled HTML span with appropriate styling.
-     * - Handles "low", "medium", "high", "extreme", and unknown values.
-     *
-     * @param {GridDataBag} data - The data object containing rows to format.
-     * @returns {GridDataBag} The data object with formatted account protection profiles.
-     */
-    function formatAccountProtectionProfiles(data: GridDataBag): GridDataBag {
-        if (data?.rows) {
-            data.rows.forEach(row => {
-                const profile = String(row["accountProtectionProfile"]) ?? "";
-                let formattedProfile = profile;
-
-                switch (profile.toLowerCase()) {
-                    case "low":
-                        formattedProfile = "<span class='label label-success'>Low</span>";
-                        break;
-                    case "medium":
-                        formattedProfile = "<span class='label label-warning'>Medium</span>";
-                        break;
-                    case "high":
-                        formattedProfile = "<span class='label label-primary'>High</span>";
-                        break;
-                    case "extreme":
-                        formattedProfile = "<span class='label label-danger'>Extreme</span>";
-                        break;
-                    default:
-                        formattedProfile = "<span class='label label-light'>Unknown</span>";
-                        break;
-                }
-
-                row["accountProtectionProfile"] = formattedProfile;
-            });
-        }
-
-        return data;
-    }
-
-    /**
-     * Formats the addresses in the provided GridDataBag.
-     * - Converts the addresses array into an HTML unordered list.
-     * - Each address is displayed with its value, street, and city/state/postal information.
-     * - If no addresses are present, displays a "None" label.
-     *
-     * @param {GridDataBag} data - The data object containing rows to format.
-     * @returns {GridDataBag} The data object with formatted addresses.
-     */
-    function formatAddresses(data: GridDataBag): GridDataBag {
-        if (data?.rows) {
-            data.rows.forEach(row => {
-                const addresses = Array.isArray(row["addresses"]) ? row["addresses"] : [];
-
-                if (addresses.length > 0) {
-                    const addressList = addresses.map((address) => {
-                        let addressHtml = `<li class="address clearfix"><strong>${address["value"] || ""}</strong>`;
-                        if (address["key"]["street1"]) {
-                            addressHtml += `<p>${address["key"]["street1"]}`;
-                        }
-                        if (address["key"]["street2"]) {
-                            addressHtml += `<br>${address["key"]["street2"]}`;
-                        }
-                        const cityStatePostal = [address["key"]["city"], address["key"]["state"], address["key"]["postalCode"]]
-                            .filter(x => x)
-                            .join(", ");
-                        if (cityStatePostal) {
-                            addressHtml += `<br>${cityStatePostal}</p>`;
-                        }
-                        addressHtml += `</li>`;
-                        return addressHtml;
-                    }).join("");
-                    row["addresses"] = `<ul class="list-unstyled">${addressList}</ul>`;
-                }
-                else {
-                    row["addresses"] = "<span class='label label-light'>None</span>";
-                }
-            });
-        }
-
-        return data;
-    }
-
-    /**
-     * Formats the phone numbers in the provided GridDataBag.
-     * - Converts the phoneNumbers array into an HTML unordered list.
-     * - Each phone number is displayed with its value and formatted number.
-     * - If no phone numbers are present, displays a "None" label.
-     *
-     * @param {GridDataBag} data - The data object containing rows to format.
-     * @returns {GridDataBag} The data object with formatted phone numbers.
-     */
-    function formatPhoneNumbers(data: GridDataBag): GridDataBag {
-        if (data?.rows) {
-            data.rows.forEach(row => {
-                const phoneNumbers = Array.isArray(row["phoneNumbers"]) ? row["phoneNumbers"] : [];
-
-                if (phoneNumbers.length > 0) {
-                    const phoneList = phoneNumbers.map((phone) => {
-                        return `
-                            <li class="phone clearfix">
-                                <strong>${phone["value"] || ""}</strong>
-                                <p>${phone["key"]["numberFormatted"] || ""}</p>
-                            </li>
-                        `;
-                    }).join("");
-                    row["phoneNumbers"] = `<ul class="list-unstyled">${phoneList}</ul>`;
-                }
-                else {
-                    row["phoneNumbers"] = "<span class='label label-light'>None</span>";
-                }
-            });
-        }
-
-        return data;
     }
 
     /**
@@ -328,9 +204,9 @@
      * @param {unknown} row - The row object to evaluate.
      * @returns {boolean} True if the row should be excluded, false otherwise.
      */
-    function excludeRow(row: unknown): boolean {
-        if (row && typeof row === "object" && "isDuplicateRow" in row) {
-            return Boolean((row as Record<string, unknown>)["isDuplicateRow"]);
+    function showRowSelectCheckbox(row: Record<string, unknown>): boolean {
+        if (row && "isDuplicateRow" in row) {
+            return Boolean(row["isDuplicateRow"]);
         }
         return false;
     }
@@ -343,10 +219,8 @@
      * @returns {string[]} The modified list of selected keys including the person being viewed.
      */
     function selectedKeysOverride(selectedKeys: string[]): string[] {
-        const urlParams = new URLSearchParams(window.location.search);
-        const personId = urlParams.get("PersonId");
-        if (personId && !selectedKeys.includes(personId)) {
-            selectedKeys.unshift(personId);
+        if (primaryPersonIdKey.value && !selectedKeys.includes(primaryPersonIdKey.value)) {
+            selectedKeys.unshift(primaryPersonIdKey.value);
         }
         return selectedKeys;
     }
@@ -355,54 +229,50 @@
 
     // #region Event Handlers
 
-    function onViewPersonClick(row: Record<string, unknown>): void {
-        const personId = row["personIdKey"];
-        if (personId) {
-            const url = "/person/" + personId.toString();
-            window.open(url, "_blank", "scrollbars=1,resizable=1,toolbar=1'); return false;");
+    function onPersonProfileClick(idKey: string): void {
+        if (idKey?.length > 0) {
+            window.location.href = `/person/${idKey}`;
         }
     }
 
-    function onNotDuplicateClick(row: Record<string, unknown>): void {
-        currentRow.value = row;
-        isMarkNotDuplicateModalVisible.value = true;
+    async function onNotDuplicateClick(idKey: string): Promise<void> {
+        isMarkingDuplicate.value = true;
+        if (await confirm("Are you sure this is not a duplicate?")) {
+            const response = await invokeBlockAction("MarkNotDuplicate", {
+                personDuplicateIdKey: idKey
+            });
+
+            if (response.isSuccess) {
+                gridDataSource.value = loadGridData();
+            }
+            else if (response.errorMessage) {
+                errorMessage.value = response.errorMessage;
+            }
+            else {
+                errorMessage.value = "An unknown error occurred while trying to mark duplicate as not a duplicate.";
+            }
+        }
+        isMarkingDuplicate.value = false;
     }
 
-    function onNotDuplicateCancel(): void {
-        isMarkNotDuplicateModalVisible.value = false;
-        currentRow.value = null;
-    }
+    async function onIgnoreDuplicateClick(idKey: string): Promise<void> {
+        isMarkingDuplicate.value = true;
+        if (await confirm("This will ignore this potential duplicate until the score changes. Are you sure you want to ignore this as a duplicate?")) {
+            const response = await invokeBlockAction("MarkIgnoreDuplicate", {
+                personDuplicateIdKey: idKey
+            });
 
-    function onNotDuplicateConfirm(): void {
-        // block action to mark as not duplicate
-        invokeBlockAction("MarkNotDuplicate", {
-            personDuplicateIdKey: currentRow.value?.["idKey"]
-        }).then(() => {
-            gridDataSource.value = loadGridData();
-        });
-
-        onNotDuplicateCancel();
-    }
-
-    function onIgnoreClick(row: Record<string, unknown>): void {
-        currentRow.value = row;
-        isMarkIgnoreDuplicateModalVisible.value = true;
-    }
-
-    function onIgnoreDuplicateCancel(): void {
-        isMarkIgnoreDuplicateModalVisible.value = false;
-        currentRow.value = null;
-    }
-
-    function onIgnoreDuplicateConfirm(): void {
-        // block action to mark as ignored
-        invokeBlockAction("MarkIgnoreDuplicate", {
-            personDuplicateIdKey: currentRow.value?.["idKey"]
-        }).then(() => {
-            gridDataSource.value = loadGridData();
-        });
-
-        onIgnoreDuplicateCancel();
+            if (response.isSuccess) {
+                gridDataSource.value = loadGridData();
+            }
+            else if (response.errorMessage) {
+                errorMessage.value = response.errorMessage;
+            }
+            else {
+                errorMessage.value = "An unknown error occurred while trying to mark duplicate as ignored.";
+            }
+        }
+        isMarkingDuplicate.value = false;
     }
 
     // #endregion

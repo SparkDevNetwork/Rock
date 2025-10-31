@@ -155,7 +155,7 @@
     }
 
     function onEditButtonClick(id: string): void {
-        const index = internalValue.value.findIndex(x => x.id == +id);
+        const index = internalValue.value.findIndex(x => x.id === +id);
 
         if (index >= 0) {
             currentEditIndex.value = index;
@@ -165,7 +165,7 @@
     }
 
     function onDeleteButtonClick(id: string): void {
-        const i = internalValue.value.findIndex(x => x.id == +id);
+        const i = internalValue.value.findIndex(x => x.id === +id);
         internalValue.value.splice(i, 1);
     }
 
@@ -187,7 +187,7 @@
         }
 
         // Get the original property item
-        const propertyItem = props.availableProperties.find(x => x.value == property);
+        const propertyItem = props.availableProperties.find(x => x.value === property);
 
         if (!propertyItem) {
             return;
@@ -206,7 +206,7 @@
 
         let postfix = "";
 
-        if (currentFieldSetting.attributeFormat == AttributeFormat.RawValue) {
+        if (currentFieldSetting.attributeFormat === AttributeFormat.RawValue) {
             postfix = ",'RawValue'";
         }
 
@@ -221,7 +221,7 @@
 
         let postfix = "";
 
-        if (attributeFormat == AttributeFormat.RawValue) {
+        if (attributeFormat === AttributeFormat.RawValue) {
             postfix = ",'RawValue'";
         }
 
@@ -237,8 +237,8 @@
     }
 
     function onSubmit(): void {
-        if (mode.value == "add") {
-            if (internalValue.value.some(x => x.key == currentFieldSetting.key)) {
+        if (mode.value === "add") {
+            if (internalValue.value.some(x => x.key === currentFieldSetting.key)) {
                 console.error("DUPLICATE KEY");
                 error.value = "Unable to add item. An item with the same key already exists.";
                 return;
@@ -246,8 +246,8 @@
 
             internalValue.value.push({ ...currentFieldSetting });
         }
-        else if (mode.value == "edit") {
-            if (internalValue.value.some((x, i) => x.key == currentFieldSetting.key && i != currentEditIndex.value)) {
+        else if (mode.value === "edit") {
+            if (internalValue.value.some((x, i) => x.key === currentFieldSetting.key && i !== currentEditIndex.value)) {
                 console.error("DUPLICATE KEY");
                 error.value = "Unable to apply changes. An item with the same key already exists.";
                 return;
@@ -274,7 +274,7 @@
         console.log("Copying this to currentFieldSetting", JSON.stringify(source, null, 4));
         Object.entries(source).forEach(([key, value]) => {
             // Don't copy the id, since it's a getter based on key
-            if (key != "id") {
+            if (key !== "id") {
                 currentFieldSetting[key] = value;
             }
         });
@@ -285,7 +285,7 @@
      */
     function resetCurrentFieldSetting(source: FieldSource = FieldSource.Property): void {
         console.log("Resetting currentFieldSetting");
-        if (source == FieldSource.Property) {
+        if (source === FieldSource.Property) {
             const prop = props.availableProperties[0]?.value ?? "";
             currentFieldSetting.key = prop;
             currentFieldSetting.value = `{{ item.${prop} }}`;
@@ -294,7 +294,7 @@
             currentFieldSetting.attributeFormat = AttributeFormat.FriendlyValue;
             currentFieldSetting.fieldFormat = FieldFormat.String;
         }
-        else if (source == FieldSource.Attribute) {
+        else if (source === FieldSource.Attribute) {
             const attr = props.availableAttributes[0]?.value ?? "";
             currentFieldSetting.key = attr;
             currentFieldSetting.value = `{{ item | Attribute:'${attr}' }}`;
@@ -303,7 +303,7 @@
             currentFieldSetting.attributeFormat = AttributeFormat.FriendlyValue;
             currentFieldSetting.fieldFormat = FieldFormat.String;
         }
-        else if (source == FieldSource.LavaExpression) {
+        else if (source === FieldSource.LavaExpression) {
             currentFieldSetting.key = "";
             currentFieldSetting.value = "{{ item | Attribute:'AttributeKey' }}";
             currentFieldSetting.fieldName = "";

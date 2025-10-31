@@ -164,12 +164,12 @@
     // If the model value changes from the outside, we need to figure out what kind of value it is,
     // assign it to the correct internal value, and change the current picker mode to match.
     watch(() => props.modelValue, () => {
-        if (props.modelValue == internalValue.value) {
+        if (props.modelValue === internalValue.value) {
             return;
         }
 
         // If undefined, stick with the current picker mode.
-        if (props.modelValue == undefined) {
+        if (props.modelValue === undefined || props.modelValue === null) {
             if (numericSelectedMode.value === LocationPickerMode.Address) {
                 addressValue.value = {};
             }
@@ -188,13 +188,13 @@
         // If it's a string, it could be one of the 2 different geo picker types
         if (typeof props.modelValue === "string") {
             // If it matches a point string, set the point value
-            if ((props.modelValue.search(/^POINT *\(/) >= 0 || props.modelValue == "") && props.allowedPickerModes & LocationPickerMode.Point) {
+            if ((props.modelValue.search(/^POINT *\(/) >= 0 || props.modelValue === "") && props.allowedPickerModes & LocationPickerMode.Point) {
                 pointValue.value = props.modelValue;
                 selectedMode.value = `${LocationPickerMode.Point}`;
                 return;
             }
             // If it's a polygon, set the fence value
-            else if ((props.modelValue.search(/^POLYGON *\(\(/) >= 0 || props.modelValue == "") && props.allowedPickerModes & LocationPickerMode.Polygon) {
+            else if ((props.modelValue.search(/^POLYGON *\(\(/) >= 0 || props.modelValue === "") && props.allowedPickerModes & LocationPickerMode.Polygon) {
                 polygonValue.value = props.modelValue;
                 selectedMode.value = `${LocationPickerMode.Polygon}`;
                 return;

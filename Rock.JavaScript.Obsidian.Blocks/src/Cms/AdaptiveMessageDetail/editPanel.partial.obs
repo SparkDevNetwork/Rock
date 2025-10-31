@@ -192,7 +192,7 @@
 
     function populateMessageKey(): void {
         // if the attribute key hasn't been filled in yet, populate it with the attribute name minus whitespace
-        if (key.value.trim() == "" && name.value.trim() != "") {
+        if (key.value.trim() === "" && name.value.trim() !== "") {
             let keyValue = name.value.trim().replace(/[^a-zA-Z0-9_.-]/g, "");
             let newKeyValue = keyValue;
 
@@ -256,8 +256,8 @@
             const index = adaptationAttributes.value.findIndex(a => a.key === adaptationAttribute.value?.key);
             if (index !== -1) {
                 // Get the updated attribute and rowItem.
-                let editedAttribute = adaptationAttributes.value.find(a => a.guid == adaptationAttribute.value?.guid);
-                let rowItem = gridData.rows?.find(x => x.key == adaptationAttribute.value?.key);
+                let editedAttribute = adaptationAttributes.value.find(a => a.guid === adaptationAttribute.value?.guid);
+                let rowItem = gridData.rows?.find(x => x.key === adaptationAttribute.value?.key);
 
                 if (editedAttribute) {
                     // Replace old attribute with updated attribute.

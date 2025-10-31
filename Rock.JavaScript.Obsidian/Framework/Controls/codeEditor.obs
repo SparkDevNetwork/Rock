@@ -256,13 +256,13 @@
     watch(() => [themeName.value, modeName.value, props.noLineWrap, props.disabled], async (...args) => {
         // Also check for the existence of the function before calling it because `editor` can be an old version if
         // config changed before the new editor was initialized.
-        if (editor && props.editor == "ace" && typeof editor.setTheme === "function") {
+        if (editor && props.editor === "ace" && typeof editor.setTheme === "function") {
             editor.setTheme(`ace/theme/${themeName.value}`);
             editor.getSession().setMode(`ace/mode/${modeName.value}`);
             editor.getSession().setUseWrapMode(!props.noLineWrap);
             editor.setReadOnly(props.disabled);
         }
-        else if (editor && props.editor == "monaco" && typeof editor.updateOptions === "function") {
+        else if (editor && props.editor === "monaco" && typeof editor.updateOptions === "function") {
             editor.updateOptions({
                 theme: themeName.value,
                 wordWrap: props.noLineWrap ? "off" : "on",
@@ -331,7 +331,7 @@
             editorWrapper.value.innerHTML = "";
         }
 
-        if (props.editor == "ace") {
+        if (props.editor === "ace") {
             await loadAce();
             editor = window.ace.edit(codeEditorId.value);
             editor.setTheme(`ace/theme/${themeName.value}`);
@@ -370,7 +370,7 @@
                 editor.resize();
             });
         }
-        else if (props.editor == "monaco") {
+        else if (props.editor === "monaco") {
             await loadMonaco();
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore

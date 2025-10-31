@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.SignalTypeList;
 using Rock.Web.Cache;
@@ -141,6 +142,38 @@ namespace Rock.Blocks.Core
                 .AddAttributeFields( GetGridAttributes() );
         }
 
+        /// <summary>
+        /// Recalculates signals for a list of person IDs, either synchronously (if small) or via queue.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="personIds">The list of person IDs to process.</param>
+        private static void RecalculateSignals( RockContext rockContext, List<int> personIds )
+        {
+            if ( !personIds.Any() )
+            {
+                return;
+            }
+
+            if ( personIds.Count < 250 )
+            {
+                new PersonService( rockContext ).Queryable()
+                    .Where( p => personIds.Contains( p.Id ) )
+                    .ToList()
+                    .ForEach( p => p.CalculateSignals() );
+
+                rockContext.SaveChanges();
+            }
+            else
+            {
+                var updatePersonSignalTypesMsg = new UpdatePersonSignalTypes.Message()
+                {
+                    PersonIds = personIds
+                };
+
+                updatePersonSignalTypesMsg.Send();
+            }
+        }
+
         #endregion
 
         #region Block Actions
@@ -202,8 +235,19 @@ namespace Rock.Blocks.Core
                     return ActionBadRequest( errorMessage );
                 }
 
+                // Capture the impacted PersonIds BEFORE deleting the SignalType since
+                // related PersonSignal rows are deleted by cascade.
+                var impactedPersonIds = new PersonSignalService( rockContext ).Queryable()
+                    .AsNoTracking()
+                    .Where( s => s.SignalTypeId == entity.Id )
+                    .Select( s => s.PersonId )
+                    .Distinct()
+                    .ToList();
+
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
+
+                RecalculateSignals( rockContext, impactedPersonIds );
 
                 return ActionOk();
             }

@@ -51,7 +51,7 @@ export const EditComponent = defineComponent({
         });
 
         const userSpecificRoot = computed(() => {
-            return props.configurationValues[ConfigurationValueKey.UserSpecificRoot] == "True";
+            return props.configurationValues[ConfigurationValueKey.UserSpecificRoot] === "True";
         });
 
         const enableAssetManager = computed(() => {

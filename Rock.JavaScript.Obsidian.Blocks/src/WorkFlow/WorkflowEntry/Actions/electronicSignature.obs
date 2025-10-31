@@ -68,7 +68,7 @@
     });
 
     const isDrawn = computed((): boolean => {
-        return props.configuration[ComponentConfigurationKey.SignatureType] == SignatureType.Drawn.toString();
+        return props.configuration[ComponentConfigurationKey.SignatureType] === SignatureType.Drawn.toString();
     });
 
     const sendCopy = computed((): boolean => {

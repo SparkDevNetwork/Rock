@@ -677,7 +677,7 @@ tr.row-highlight {
     &:focus,
     &:hover,
     &:active {
-      background-color: var(--color-danger-softer); // TODO darken ui softest it by 10%
+      background-color: var(--color-interface-softer); // TODO darken ui softest it by 10%
     }
   }
 
@@ -696,7 +696,7 @@ tr.row-highlight {
     &:active:focus {
       color:        var(--color-danger-strong);
       background:   var(--color-danger-soft);
-      border-color: var(--color-danger-strnog);
+      border-color: var(--color-danger-strong);
     }
   }
 }

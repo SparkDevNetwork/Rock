@@ -86,7 +86,7 @@ function updateConfigurationBarActions(blockContainerElement: HTMLElement, actio
     }
 
     // Find the name element, which is what we will use as our insertion point.
-    const nameElement = Array.from(configurationBar.children).find(el => el.tagName == "SPAN");
+    const nameElement = Array.from(configurationBar.children).find(el => el.tagName === "SPAN");
     if (!nameElement) {
         return;
     }

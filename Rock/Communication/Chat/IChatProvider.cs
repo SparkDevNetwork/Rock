@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 
 using Rock.Communication.Chat.DTO;
 using Rock.Communication.Chat.Sync;
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Communication.Chat
@@ -191,6 +192,19 @@ namespace Rock.Communication.Chat
         /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
         Task<ChatSyncCrudResult> DeleteChatChannelsAsync( List<string> chatChannelQueryableKeys );
+
+        /// <summary>
+        /// Gets or creates a direct message <see cref="ChatChannel"/> in the external chat system for the specified
+        /// <see cref="ChatUser"/> keys.
+        /// </summary>
+        /// <param name="chatUserKeys">
+        /// The list of keys for the <see cref="ChatUser"/>s who should be <see cref="ChatChannelMember"/>s
+        /// of the <see cref="ChatChannel"/>.
+        /// </param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="GetChatChannelsResult"/>.
+        /// </returns>
+        Task<GetChatChannelsResult> GetOrCreateDirectMessageChatChannelAsync( List<string> chatUserKeys );
 
         #endregion Chat Channels
 
@@ -388,6 +402,29 @@ namespace Rock.Communication.Chat
         #endregion Chat Users
 
         #region Messages
+
+        /// <summary>
+        /// Looks for any mentioned <see cref="Person"/> identifiers within the <see cref="RockChatMessage.MessageText"/>
+        /// and resolves these identifiers to the format expected by the chat provider, while also adding each mentioned
+        /// <see cref="ChatUser.Key"/> to the <see cref="RockChatMessage.MentionedChatUserKeys"/> collection.
+        /// </summary>
+        /// <param name="rockChatMessage">The message that might contain mentions.</param>
+        /// <param name="rockChatUserKeys">
+        /// The mappings between any mentioned <see cref="Person"/>s and their respective <see cref="ChatUser"/>.
+        /// </param>
+        void ResolveMentionedChatUsers( RockChatMessage rockChatMessage, Dictionary<int, RockChatUserKey> rockChatUserKeys );
+
+        /// <summary>S
+        /// Sends a message to the specified <see cref="ChatChannel"/> from the specified <see cref="ChatUser"/>.
+        /// </summary>
+        /// <param name="chatChannelTypeKey">The key of the <see cref="ChatChannelType"/> to which the message should be sent.</param>
+        /// <param name="chatChannelKey">The key of the <see cref="ChatChannel"/> to which the message should be sent.</param>
+        /// <param name="senderChatUserKey">The key of the <see cref="ChatUser"/> sending the message.</param>
+        /// <param name="rockChatMessage">The <see cref="RockChatMessage"/> to send.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="SendChatMessageResult"/>.
+        /// </returns>
+        Task<SendChatMessageResult> SendChatChannelMessageAsync( string chatChannelTypeKey, string chatChannelKey, string senderChatUserKey, RockChatMessage rockChatMessage );
 
         /// <summary>
         /// Gets the message counts for each <see cref="ChatUser"/> within each <see cref="ChatChannel"/>, for the specified date.

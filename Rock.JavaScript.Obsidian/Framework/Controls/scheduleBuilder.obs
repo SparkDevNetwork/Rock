@@ -415,7 +415,7 @@
     });
 
     const isRecurringSchedule = computed((): boolean => {
-        return scheduleType.value == "recurring";
+        return scheduleType.value === "recurring";
     });
 
     const isRecurringSpecificDates = computed((): boolean => {

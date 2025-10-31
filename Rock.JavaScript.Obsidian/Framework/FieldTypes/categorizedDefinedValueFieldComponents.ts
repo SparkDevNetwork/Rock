@@ -124,7 +124,7 @@ export const ConfigurationComponent = defineComponent({
          */
         const maybeUpdateModelValue = (): boolean => {
             const newValue: Record<string, string> = {};
-            const definedType = definedTypes.value.find(dt => dt.value == definedTypeValue.value);
+            const definedType = definedTypes.value.find(dt => dt.value === definedTypeValue.value);
 
             // Construct the new value that will be emitted if it is different
             // than the current value.

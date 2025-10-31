@@ -843,7 +843,7 @@ The logged-in person's information will be used to complete the registrar inform
             var rockContext = new RockContext();
             var registrationTemplate = new RegistrationTemplateService( rockContext ).Get( hfRegistrationTemplateId.Value.AsInteger() );
 
-            if ( registrationTemplate != null && ( UserCanEdit || registrationTemplate.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) ) )
+            if ( registrationTemplate != null && ( UserCanEdit || registrationTemplate.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ) )
             {
                 LoadStateDetails( registrationTemplate, rockContext );
                 ShowEditDetails( registrationTemplate, rockContext );
@@ -864,7 +864,7 @@ The logged-in person's information will be used to complete the registrar inform
 
             if ( registrationTemplate != null )
             {
-                if ( !UserCanEdit && !registrationTemplate.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                if ( ! (UserCanEdit || registrationTemplate.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ) || registrationTemplate.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
                 {
                     mdDeleteWarning.Show( "You are not authorized to delete this registration template.", ModalAlertType.Information );
                     return;
@@ -1223,6 +1223,27 @@ The logged-in person's information will be used to complete the registrar inform
                 validationErrors.Add( "A Financial Gateway is required when the registration has a cost or additional fees or is configured to allow instances to set a cost." );
             }
 
+            // Check security on category to verify they are authorized to use it.
+            var categoryId = cpCategory.SelectedValueAsInt();
+            if ( categoryId.HasValue )
+            {
+                var category = CategoryCache.Get( categoryId.Value );
+                if ( !category.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                {
+                    var categoryValidator = cpCategory.RequiredFieldValidator;
+                    categoryValidator.IsValid = false;
+                    categoryValidator.ErrorMessage = "You are not authorized to create or edit templates for the selected category.";
+                    return;
+                }
+            }
+            else
+            {
+                var categoryValidator = cpCategory.RequiredFieldValidator;
+                categoryValidator.IsValid = false;
+                categoryValidator.ErrorMessage = "You must select a valid category.";
+                return;
+            }
+
             if ( validationErrors.Any() )
             {
                 nbValidationError.Visible = true;
@@ -1544,22 +1565,6 @@ The logged-in person's information will be used to complete the registrar inform
                         rockContext.SaveChanges();
 
                         SaveAttributes( new Registration().TypeId, "RegistrationTemplateId", registrationTemplate.Id.ToString(), RegistrationAttributesState, rockContext );
-
-                        // If this is a new template, give the current user and the Registration Administrators role administrative
-                        // rights to this template, and staff, and staff like roles edit rights
-                        if ( newTemplate )
-                        {
-                            registrationTemplate.AllowPerson( Authorization.ADMINISTRATE, CurrentPerson, rockContext );
-
-                            var registrationAdmins = groupService.Get( Rock.SystemGuid.Group.GROUP_EVENT_REGISTRATION_ADMINISTRATORS.AsGuid() );
-                            registrationTemplate.AllowSecurityRole( Authorization.ADMINISTRATE, registrationAdmins, rockContext );
-
-                            var staffLikeUsers = groupService.Get( Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS.AsGuid() );
-                            registrationTemplate.AllowSecurityRole( Authorization.EDIT, staffLikeUsers, rockContext );
-
-                            var staffUsers = groupService.Get( Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS.AsGuid() );
-                            registrationTemplate.AllowSecurityRole( Authorization.EDIT, staffUsers, rockContext );
-                        }
                     } );
 
                     var qryParams = new Dictionary<string, string>
@@ -2560,10 +2565,18 @@ The logged-in person's information will be used to complete the registrar inform
 
             if ( registrationTemplate == null )
             {
+                var parentCategory = new Category();
+
+                if ( parentCategoryId.HasValue )
+                {
+                    parentCategory = new CategoryService( rockContext ).Get( parentCategoryId.Value );
+                }
+
                 registrationTemplate = new RegistrationTemplate
                 {
                     Id = 0,
                     IsActive = true,
+                    Category = parentCategory,
                     CategoryId = parentCategoryId,
                     ConfirmationFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}",
                     ConfirmationFromEmail = "{{ RegistrationInstance.ContactEmail }}",
@@ -2598,8 +2611,8 @@ The logged-in person's information will be used to complete the registrar inform
 
             nbEditModeMessage.Text = string.Empty;
 
-            // User must have 'Edit' rights to block, or 'Administrate' rights to template
-            if ( !UserCanEdit && !registrationTemplate.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+            // User must have 'Edit' rights to block, or 'Edit' rights to template
+            if ( !( UserCanEdit || registrationTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Heading = "Information";

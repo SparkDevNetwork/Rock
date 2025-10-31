@@ -127,7 +127,7 @@
     const panelName = computed((): string => {
         if (config.isEditable === true && panelMode.value !== DetailPanelMode.View) {
             const binaryFileTypeName = binaryFileEditBag.value?.bag?.binaryFileType?.text ?? "Binary File";
-            return panelMode.value == DetailPanelMode.Add ? `Add ${binaryFileTypeName}` : `Edit ${binaryFileTypeName}`;
+            return panelMode.value === DetailPanelMode.Add ? `Add ${binaryFileTypeName}` : `Edit ${binaryFileTypeName}`;
         }
         else {
             return "View Binary File";

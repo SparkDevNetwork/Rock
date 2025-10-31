@@ -136,7 +136,7 @@
     });
 
     const isAuditHidden = computed((): boolean => {
-        return panelMode.value == DetailPanelMode.Add;
+        return panelMode.value === DetailPanelMode.Add;
     });
 
     // #endregion

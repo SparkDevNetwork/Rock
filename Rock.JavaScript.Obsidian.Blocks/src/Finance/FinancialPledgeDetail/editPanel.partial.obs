@@ -145,7 +145,7 @@
 
         const accounts = value as ListItemBag[];
 
-        if (!accounts || accounts.length == 0 || !accounts[0]) {
+        if (!accounts || accounts.length === 0 || !accounts[0]) {
             return "is required";
         }
 

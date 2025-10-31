@@ -735,6 +735,35 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Measurement Classifications
+
+        /// <summary>
+        /// The measurement classification for metrics that measure weekend attendance.
+        /// </summary>
+        public const string MEASUREMENT_TOTAL_WEEKEND_ATTENDANCE = "B24ACB41-8B75-41DC-9B47-F289D8C9F04F";
+
+        /// <summary>
+        /// The measurement classification for metrics that measure student attendance.
+        /// </summary>
+        public const string MEASUREMENT_TOTAL_STUDENTS_ATTENDANCE = "8EC797E4-7DCE-4A70-B1E8-9B21192476C3";
+
+        /// <summary>
+        /// The measurement classification for metrics that measure children attendance.
+        /// </summary>
+        public const string MEASUREMENT_TOTAL_CHILDRENS_ATTENDANCE = "9B16A979-48B1-4180-B44F-57FCD38A103A";
+
+        /// <summary>
+        /// The measurement classification for metrics that measure volunteer attendance.
+        /// </summary>
+        public const string MEASUREMENT_TOTAL_VOLUNTEER_ATTENDANCE = "6A2621BF-E600-428A-94C2-CCB79645FA27";
+
+        /// <summary>
+        /// The measurement classification for metrics that measure adult attendance.
+        /// </summary>
+        public const string MEASUREMENT_TOTAL_ADULT_ATTENDANCE = "66C649EF-7569-4CE2-8EA0-FB9851F9A598";
+
+        #endregion
+
         #region Person Marital Status
 
         /// <summary>
@@ -1617,6 +1646,11 @@ namespace Rock.SystemGuid
         /// The Roku TV app record source.
         /// </summary>
         public const string RECORD_SOURCE_TYPE_ROKU_TV_APP = "1849A5FB-1434-45AA-AD78-D403A3C7685A";
+
+        /// <summary>
+        /// The Serving Connection record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_SERVING_CONNECTION = "2CF9DE9F-14D5-4036-B329-85B192A63A9B";
 
         #endregion
 

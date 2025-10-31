@@ -81,7 +81,7 @@
     const fieldRules = computed(() => {
         let rules = normalizeRules(props.rules);
         rules = rules.map(rule => {
-            if (rule == "required") {
+            if (rule === "required") {
                 return validateRequired;
             }
 
@@ -133,23 +133,23 @@
         const errs: string[] = [];
 
         // Each field should either be empty, or a number
-        if (volume.value.trim() && toNumber(volume.value.trim()) == 0) {
+        if (volume.value.trim() && toNumber(volume.value.trim()) === 0) {
             errs.push("Volume");
         }
 
-        if (page.value.trim() && toNumber(page.value.trim()) == 0) {
+        if (page.value.trim() && toNumber(page.value.trim()) === 0) {
             errs.push("Page");
         }
 
-        if (line.value.trim() && toNumber(line.value.trim()) == 0) {
+        if (line.value.trim() && toNumber(line.value.trim()) === 0) {
             errs.push("Line");
         }
 
-        if (errs.length == 0) {
+        if (errs.length === 0) {
             return true;
         }
 
-        return "is invalid. " + errs.join(" and ") + " should be " + (errs.length == 1 ? "a number" : "numbers") + " greater than zero.";
+        return "is invalid. " + errs.join(" and ") + " should be " + (errs.length === 1 ? "a number" : "numbers") + " greater than zero.";
     }
 
     // #endregion

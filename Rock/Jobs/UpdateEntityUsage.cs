@@ -77,18 +77,21 @@ namespace Rock.Jobs
         public override void Execute()
         {
             var usageType = GetAttributeValue( AttributeKey.UsageType ).ConvertToEnumOrNull<UsageType>();
+            var processedCount = 0;
 
             if ( usageType == UsageType.MediaUsage )
             {
                 using ( var rockContext = CreateRockContext() )
                 {
-                    UpdateMediaUsage( rockContext );
+                    UpdateMediaUsage( rockContext, ref processedCount );
                 }
             }
             else
             {
                 throw new Exception( "Invalid job configuration. A valid Usage Type must be selected." );
             }
+
+            UpdateLastStatusMessage( $"Processed {processedCount:N0} items." );
         }
 
         /// <summary>
@@ -97,7 +100,8 @@ namespace Rock.Jobs
         /// attributes.
         /// </summary>
         /// <param name="rockContext">The database context to use for retrieving and updating media element and attribute data.</param>
-        internal void UpdateMediaUsage( RockContext rockContext )
+        /// <param name="processedCount">The number of media elements that were processed.</param>
+        internal void UpdateMediaUsage( RockContext rockContext, ref int processedCount )
         {
             var mediaElementFieldTypeGuid = Rock.SystemGuid.FieldType.MEDIA_ELEMENT.AsGuid();
 
@@ -152,6 +156,8 @@ namespace Rock.Jobs
                 {
                     mediaElement.DeleteMetadataValue( MetadataKey.EntityUsage, rockContext );
                 }
+
+                processedCount++;
             }
         }
 

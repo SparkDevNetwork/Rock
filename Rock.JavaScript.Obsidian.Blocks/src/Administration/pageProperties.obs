@@ -91,7 +91,7 @@
 
     const pageViewBag = ref(config.entity);
     const pageEditBag = ref<ValidPropertiesBox<PagePropertiesBag>>({
-        bag: config.options?.enableFullEditMode == true ? {} as PagePropertiesBag : pageViewBag.value
+        bag: config.options?.enableFullEditMode === true ? {} as PagePropertiesBag : pageViewBag.value
     });
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);

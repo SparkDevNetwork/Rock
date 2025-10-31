@@ -10,6 +10,7 @@
           :entityTypeGuid="EntityType.Step"
           stickyHeader
           liveUpdates
+          markInactiveRows
           gridSettings
           :gridSettingsActive="hasSettingsFilters"
           @gridSettingsClick="onGridSettingsClick"
@@ -36,12 +37,14 @@
                 visiblePriority="xs"
                 width="25%">
             <template #format="{ row }">
-                <PersonAvatar :personIdKey="row.personIdKey" :photoUrl="photoUrl(row)" photoSize="xs" marginRight="sm" enableHoverInfo />
-                <span class="mr-1">{{ row.fullName }}</span>
-                <span v-if="row.signalMarkup" class="mr-1" v-html="row.signalMarkup"></span>
-                <span v-if="config.options?.isNoteColumnVisible && row.note" class='js-member-note' data-toggle='tooltip' data-placement='top' :title='`${row.note}`'>
-                    <i class='ti ti-file-type-txt text-info'></i>
-                </span>
+                <div class="d-flex flex-fill align-items-center">
+                    <PersonAvatar :personIdKey="row.personIdKey" :photoUrl="photoUrl(row)" photoSize="xs" marginRight="sm" enableHoverInfo />
+                    <span class="mr-1">{{ row.fullName }}</span>
+                    <span v-if="row.signalMarkup" class="mr-1" v-html="row.signalMarkup"></span>
+                    <span v-if="config.options?.isNoteColumnVisible && row.note" class='js-member-note' data-toggle='tooltip' data-placement='top' :title='`${row.note}`'>
+                        <i class='ti ti-file-type-txt text-info'></i>
+                    </span>
+                </div>
             </template>
         </Column>
 

@@ -55,7 +55,7 @@
     const entityTitle = computed(() => {
         let title = props.title;
 
-        if (title.substring(0, 6).toUpperCase() == "SECURE") {
+        if (title.substring(0, 6).toUpperCase() === "SECURE") {
             title = title.substring(6).trim();
         }
 

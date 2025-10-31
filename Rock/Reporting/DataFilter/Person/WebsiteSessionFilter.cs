@@ -28,7 +28,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -505,13 +504,31 @@ function() {
 
             IQueryable<Rock.Model.Interaction> interactionQry;
 
+            /*
+                10/30/2025 - NA
+
+                This filter, along with the WebsitePageViewFilter, stores InteractionChannelIds
+                ("WebsiteIds") in its configuration. However, the methods GetPageViewsByPage()
+                and GetPageViewsBySite() expect Site.Id values, not InteractionChannelIds.
+                Therefore, we convert the stored ChannelIds to SiteIds using the ChannelEntityId
+                of each InteractionChannel.
+
+                Reason: Ensures compatibility with existing DataViewFilter configuration data.
+            */
+            var siteIds = InteractionChannelCache.GetMany( selectionConfig.WebsiteIds )
+                .Select( ic => ic.ChannelEntityId )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .Distinct()
+                .ToArray();
+
             if ( selectionConfig.PageIds.Count > 0 )
             {
-                interactionQry = new InteractionService( rockContext ).GetPageViewsByPage( selectionConfig.WebsiteIds.ToArray(), selectionConfig.PageIds.ToArray() );
+                interactionQry = new InteractionService( rockContext ).GetPageViewsByPage( siteIds, selectionConfig.PageIds.ToArray() );
             }
             else
             {
-                interactionQry = new InteractionService( rockContext ).GetPageViewsBySite( selectionConfig.WebsiteIds.ToArray() );
+                interactionQry = new InteractionService( rockContext ).GetPageViewsBySite( siteIds );
             }
 
             if ( selectionConfig.DelimitedDateRangeValues.IsNotNullOrWhiteSpace() )
@@ -560,6 +577,15 @@ function() {
         /// <summary>
         /// Get and set the filter settings from DataViewFilter.Selection
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>
+        ///         You CANNOT change these property names unless you also
+        ///         write a migration to change them for all the saved values in
+        ///         the Selection column of the DataViewFilter table.
+        ///         </strong>
+        ///     </para>
+        /// </remarks>
         protected class SelectionConfig
         {
             /// <summary>
@@ -570,18 +596,22 @@ function() {
             }
 
             /// <summary>
-            /// Gets or sets the note type identifiers.
+            /// Gets or sets the InteractionChannel Ids for the corresponding
+            /// SiteIds.
             /// </summary>
             /// <value>
-            /// The note type identifiers.
+            /// A list of InteractionChannelIds
             /// </value>
+            /// <remarks>
+            /// FYI: The InteractionChannel.ChannelEntityId holds the value of the SiteId.
+            /// </remarks>
             public List<int> WebsiteIds { get; set; }
 
             /// <summary>
-            /// Gets or sets the note type identifiers.
+            /// Gets or sets list of PageIds to match.
             /// </summary>
             /// <value>
-            /// The note type identifiers.
+            /// A list of PageIds
             /// </value>
             public List<int> PageIds { get; set; }
 

@@ -54,7 +54,7 @@
     // #region Computed Values
 
     const showRoleMessage = computed((): boolean => {
-        return props.modelValue?.requiresApproval == true && !props.options.isApproverConfigured;
+        return props.modelValue?.requiresApproval === true && !props.options.isApproverConfigured;
     });
 
     /** The values to display full-width at the top of the block. */

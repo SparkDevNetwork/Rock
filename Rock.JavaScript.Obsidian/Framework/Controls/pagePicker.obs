@@ -159,7 +159,7 @@
             // When `multiple`, we can assume we're receiving an array
             emit("update:modelValue", (pages as ListItemBag[]).map(page => ({ page })));
         }
-        else if ((pages as ListItemBag).value == (internalPageValue.value as ListItemBag)?.value) {
+        else if ((pages as ListItemBag).value === (internalPageValue.value as ListItemBag)?.value) {
             // In this case, the user hit "select" without choosing a different option, so reset the value to the current page (no route)
             emit("update:modelValue", { page: internalPageValue.value as ListItemBag });
         }
@@ -198,7 +198,7 @@
             };
             updatePage(props.multiple ? [currentPage] : currentPage);
         }
-        else if (response.statusCode == 401) {
+        else if (response.statusCode === 401) {
             Dialogs.alert("Could not determine current page");
             return;
         }
@@ -284,7 +284,7 @@
         return 0;
     });
     const routeCountText = computed<string>(() => {
-        if (routeItemsCount.value == 1) {
+        if (routeItemsCount.value === 1) {
             return "( 1 route exists )";
         }
 

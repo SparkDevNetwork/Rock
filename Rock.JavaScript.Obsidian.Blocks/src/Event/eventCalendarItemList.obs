@@ -246,7 +246,7 @@
      */
     function onSelectItem(key: string): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            const row = gridData?.rows?.find(r => r.idKey == key);
+            const row = gridData?.rows?.find(r => r.idKey === key);
             const eventItemKey = row?.eventItemIdKey as string ?? "0";
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", eventItemKey);
         }

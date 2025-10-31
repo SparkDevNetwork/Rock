@@ -188,7 +188,7 @@
     const hasAttributes = ref(props.modelValue?.bag?.attributeValues ?? false);
 
     const isReasonVisible = computed((): boolean => {
-        return recordStatus.value.value?.toUpperCase() == DefinedValue.PersonRecordStatusInactive;
+        return recordStatus.value.value?.toUpperCase() === DefinedValue.PersonRecordStatusInactive;
     });
 
     const searchKeyGridData: GridDataBag = reactive<GridDataBag>({

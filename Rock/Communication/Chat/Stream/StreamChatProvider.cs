@@ -1594,6 +1594,55 @@ namespace Rock.Communication.Chat
             return await DeleteChatChannelsAsync( chatChannelQueryableKeys );
         }
 
+        /// <inheritdoc/>
+        public async Task<GetChatChannelsResult> GetOrCreateDirectMessageChatChannelAsync( List<string> chatUserKeys )
+        {
+            var result = new GetChatChannelsResult();
+
+            if ( chatUserKeys?.Any() != true )
+            {
+                return result;
+            }
+
+            var operationName = nameof( GetOrCreateDirectMessageChatChannelAsync ).SplitCase();
+
+            var channelRequest = new ChannelRequest
+            {
+                CreatedBy = TryConvertToStreamUserRequest( ChatHelper.GetChatSystemUser() ),
+                Members = chatUserKeys
+                    .Distinct()
+                    .Select( k => new ChannelMember { UserId = k } )
+            };
+
+            var request = new ChannelGetRequest
+            {
+                Data = channelRequest
+            };
+
+            try
+            {
+                var channelGetResponse = await RetryAsync(
+                    async () => await ChannelClient.GetOrCreateAsync(
+                        ChatHelper.GetChatChannelTypeKey( ChatHelper.ChatDirectMessageGroupTypeId ),
+                        request
+                    ),
+                    operationName
+                );
+
+                var chatChannel = TryConvertToChatChannel( channelGetResponse );
+                if ( chatChannel != null )
+                {
+                    result.ChatChannels.Add( chatChannel );
+                }
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
+            }
+
+            return result;
+        }
+
         #endregion Chat Channels
 
         #region Chat Channel Members
@@ -2894,6 +2943,96 @@ namespace Rock.Communication.Chat
         #region Messages
 
         /// <inheritdoc/>
+        public void ResolveMentionedChatUsers( RockChatMessage rockChatMessage, Dictionary<int, RockChatUserKey> rockChatUserKeys )
+        {
+            if ( ( rockChatMessage?.MessageText ).IsNullOrWhiteSpace() )
+            {
+                // No work to do.
+                return;
+            }
+
+            /*
+                10/28/2025 - JPH
+
+                The way mentions work with Stream is difficult. In the message itself, the mention token needs to be in
+                the body of the message with the person's name like:
+
+                @Ted Decker hope you're having a great day!
+
+                This seems odd, especially with the space in the name, but that is what it is wanting. We also need to
+                reference the mentioned chat user keys in the "mentioned_users" array.
+
+                Reason: Explain unusual mentions pattern.
+            */
+
+            // Find/replace the mentioned person ID with their name.
+            string ReplaceMention( Match match )
+            {
+                var unknown = "@Unknown";
+                var mentionedPersonId = match.Groups[1].Value.AsInteger();
+                if ( mentionedPersonId <= 0 )
+                {
+                    return unknown;
+                }
+
+                if ( rockChatUserKeys == null
+                    || !rockChatUserKeys.TryGetValue( mentionedPersonId, out var rockChatUser )
+                    || rockChatUser == null )
+                {
+                    return unknown;
+                }
+
+                rockChatMessage.MentionedChatUserKeys.Add( rockChatUser.ChatUserKey );
+
+                return $"@{rockChatUser.NickName} {rockChatUser.LastName}";
+            }
+
+            var resolvedMessageText = ChatHelper.PersonMentionsRegex
+                .Replace(
+                    rockChatMessage.MessageText,
+                    new MatchEvaluator( ReplaceMention )
+                );
+
+            rockChatMessage.MessageText = resolvedMessageText;
+        }
+
+        /// <inheritdoc/>
+        public async Task<SendChatMessageResult> SendChatChannelMessageAsync( string chatChannelTypeKey, string chatChannelKey, string senderChatUserKey, RockChatMessage rockChatMessage )
+        {
+            var result = new SendChatMessageResult();
+
+            var operationName = nameof( SendChatChannelMessageAsync ).SplitCase();
+
+            var request = TryConvertToStreamMessageRequest( rockChatMessage );
+            if ( request == null )
+            {
+                return result;
+            }
+
+            try
+            {
+                await RetryAsync(
+                    async () => await MessageClient.SendMessageAsync(
+                        chatChannelTypeKey,
+                        chatChannelKey,
+                        request,
+                        senderChatUserKey
+                    ),
+                    operationName
+                );
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
+            }
+
+            // If an exception wasn't thrown, assume the message was sent.
+            result.WasMessageSent = !result.HasException;
+
+            return result;
+        }
+
+        /// <inheritdoc/>
         public async Task<ChatUserMessageCountsByChatChannelResult> GetChatUserMessageCountsByChatChannelKeyAsync( DateTime messageDate )
         {
             var result = new ChatUserMessageCountsByChatChannelResult();
@@ -3626,6 +3765,68 @@ namespace Rock.Communication.Chat
             request.SetData( UserDataKey.CampusId, chatUser.CampusId ?? 0 );
 
             return request;
+        }
+
+        /// <summary>
+        /// Tries to convert a <see cref="RockChatMessage"/> to a <see cref="MessageRequest"/>.
+        /// </summary>
+        /// <param name="rockChatMessage">The <see cref="RockChatMessage"/> to convert.</param>
+        /// <returns>A <see cref="MessageRequest"/> or <see langword="null"/> if unable to convert.</returns>
+        private MessageRequest TryConvertToStreamMessageRequest( RockChatMessage rockChatMessage )
+        {
+            if ( ( rockChatMessage?.MessageText ).IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var request = new MessageRequest
+            {
+                Text = rockChatMessage.MessageText
+            };
+
+            if ( rockChatMessage.MentionedChatUserKeys.Any() )
+            {
+                request.MentionedUsers = rockChatMessage.MentionedChatUserKeys.ToList();
+            }
+
+            if ( rockChatMessage.Attachments.Any() )
+            {
+                request.Attachments = rockChatMessage.Attachments
+                    .Select( a => TryConvertToStreamAttachment( a ) )
+                    .Where( a => a != null )
+                    .ToList();
+            }
+
+            return request;
+        }
+
+        /// <summary>
+        /// Tries to convert a <see cref="RockChatMessageAttachment"/> to a <see cref="Attachment"/>.
+        /// </summary>
+        /// <param name="rockChatMessageAttachment">The <see cref="RockChatMessageAttachment"/> to convert.</param>
+        /// <returns>A <see cref="Attachment"/> or <see langword="null"/> if unable to convert.</returns>
+        private Attachment TryConvertToStreamAttachment( RockChatMessageAttachment rockChatMessageAttachment )
+        {
+            if ( ( rockChatMessageAttachment?.Url ).IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var attachment = new Attachment
+            {
+                Type = rockChatMessageAttachment.Type.GetDescription(),
+            };
+
+            if ( rockChatMessageAttachment.Type == ChatAttachmentType.Image )
+            {
+                attachment.ImageUrl = rockChatMessageAttachment.Url;
+            }
+            else
+            {
+                attachment.AssetUrl = rockChatMessageAttachment.Url;
+            }
+
+            return attachment;
         }
 
         #endregion Converters: From Rock Chat DTOs to Stream DTOs

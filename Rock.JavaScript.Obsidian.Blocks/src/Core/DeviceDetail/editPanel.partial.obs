@@ -208,7 +208,7 @@
     });
 
     const showCameraBarCodeConfiguration = computed((): boolean => {
-        return kioskType.value == "0" && hasCamera.value;
+        return kioskType.value === "0" && hasCamera.value;
     });
 
     const isGeoVisible = computed((): boolean => {

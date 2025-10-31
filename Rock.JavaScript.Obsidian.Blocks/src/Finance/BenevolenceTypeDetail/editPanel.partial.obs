@@ -186,7 +186,7 @@
     }
 
     function onEditWorkflowItem(key: string): void {
-        const selectedWorkflow = workflows.value.find(x => x.guid == key);
+        const selectedWorkflow = workflows.value.find(x => x.guid === key);
         if (selectedWorkflow) {
             workflow.value = selectedWorkflow;
             triggerType.value = selectedWorkflow.trigger ?? "";
@@ -244,15 +244,15 @@
 
     const onSaveWorkflow = (): void => {
         isWorkflowModalOpen.value = false;
-        const selectedTriggerType = triggerTypes.value.find(t => t.value == triggerType.value);
+        const selectedTriggerType = triggerTypes.value.find(t => t.value === triggerType.value);
 
         if (triggerType.value && workflow.value.workflowType?.value && gridData.rows) {
             const index = workflows.value.findIndex(a => (a.guid === workflow.value.guid));
 
             if (index !== -1) {
                 // Get the updated WorkflowTrigger and RowItem.
-                let editedWorkflow = workflows.value.find(a => a.guid == workflow.value.guid);
-                let rowItem = gridData.rows.find(x => x["key"] == workflow.value.guid);
+                let editedWorkflow = workflows.value.find(a => a.guid === workflow.value.guid);
+                let rowItem = gridData.rows.find(x => x["key"] === workflow.value.guid);
 
                 if (editedWorkflow && rowItem) {
                     // Replace old WorkflowTrigger with updated WorkflowTrigger.

@@ -189,7 +189,7 @@
         return {
             key: participant.personAlias?.value,
             name: participant.personFullName,
-            purposeKey: purposeKeyOptions.value.find(x => x.value == participant.purposeKey)?.text
+            purposeKey: purposeKeyOptions.value.find(x => x.value === participant.purposeKey)?.text
         };
     }
     // #endregion

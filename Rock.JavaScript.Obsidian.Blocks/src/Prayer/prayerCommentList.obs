@@ -118,7 +118,7 @@
     function onSelectItem(key: string): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             if (gridData && gridData.rows) {
-                let rowItem = gridData.rows?.find(x => x["idKey"] == key);
+                let rowItem = gridData.rows?.find(x => x["idKey"] === key);
 
                 if (rowItem) {
                     window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key) + `&PrayerRequestId=${rowItem?.prayerRequestIdKey}`;

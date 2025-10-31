@@ -1034,6 +1034,16 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Convert a Lava template by replacing only the Lava-specific "elseif" keyword into Liquid's "elsif"
+        /// </summary>
+        /// <param name="lavaTemplateText"></param>
+        /// <returns></returns>
+        public string ConvertToLiquidElsif( string lavaTemplateText )
+        {
+            return _lavaToLiquidConverter.ReplaceElseIfKeyword( lavaTemplateText );
+        }
+
+        /// <summary>
         /// Remove all entries from the template cache.
         /// </summary>
         public void ClearTemplateCache()

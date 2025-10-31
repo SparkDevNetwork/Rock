@@ -94,7 +94,7 @@
         });
     }
 
-    if (!internalValue.value || internalValue.value.type == null || internalValue.value.type == undefined) {
+    if (!internalValue.value || internalValue.value.type === null || internalValue.value.type === undefined) {
         updateInternalValue();
     }
 </script>

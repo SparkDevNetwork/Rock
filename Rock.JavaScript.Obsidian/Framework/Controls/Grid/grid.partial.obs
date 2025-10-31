@@ -953,7 +953,8 @@
             props.definition,
             props.liveUpdates ?? false,
             props.itemTerm || "item",
-            props.entityTypeGuid);
+            props.entityTypeGuid,
+            props.selectedKeysOverride);
 
         state.setItemKey(props.keyField);
 
@@ -1442,7 +1443,7 @@
             return;
         }
 
-        if (pageSize.value && pageSize.value != 50) {
+        if (pageSize.value && pageSize.value !== 50) {
             gridPreferences.setValue(PreferenceKey.PageSize, JSON.stringify(pageSize.value));
         }
         else {

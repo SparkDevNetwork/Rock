@@ -148,14 +148,14 @@
 
     // Automatically expand to show selected value deep in the tree
     watch(() => [props.item, props.modelValue], () => {
-        if (!props.autoExpand || hasChildrenLoaded.value == false) {
+        if (!props.autoExpand || hasChildrenLoaded.value === false) {
             return;
         }
 
         if (hasSelectedChild(props.item, props.modelValue)) {
             showChildren.value = true;
         }
-        else if (children.value.length == 0) {
+        else if (children.value.length === 0) {
             showChildren.value = false;
         }
     }, { immediate: true, deep: true });

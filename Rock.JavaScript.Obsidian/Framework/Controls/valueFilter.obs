@@ -26,7 +26,7 @@
     import { PropType, ref, watch } from "vue";
     import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import ValueFilterItem from "./Internal/valueFilterItem.obs";
-    import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import { ComparisonItem, CompoundFilterExpression } from "@Obsidian/ViewModels/Controls/valueFilter.d";
     import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
 
@@ -97,7 +97,7 @@
         internalValue.value.filters = [];
     }
 
-    if (internalValue.value.filters?.length == 0) {
+    if (internalValue.value.filters.length === 0) {
         addFilterItem();
     }
 

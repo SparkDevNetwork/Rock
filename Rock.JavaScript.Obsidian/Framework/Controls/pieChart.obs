@@ -8,7 +8,7 @@
     import { computed, PropType } from "vue";
     import Chart from "./chart.obs";
     import { LabelDateFormat, LegendAlign, LegendPosition, LineStyle, PieSeries, TooltipCallback } from "@Obsidian/Core/Controls/chart";
-    import { Chart as ChartJS, ChartData, ChartOptions, Color, TooltipItem, TooltipLabelStyle, ChartDataset, LegendItem, BubbleDataPoint, Point } from "@Obsidian/Libs/chart";
+    import { ChartData, ChartOptions, TooltipItem, TooltipLabelStyle, ChartDataset, LegendItem } from "@Obsidian/Libs/chart";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { isNullish } from "@Obsidian/Utility/util";
     import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";

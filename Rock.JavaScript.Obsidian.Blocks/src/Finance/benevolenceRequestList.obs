@@ -241,7 +241,7 @@
     const customActions = computed((): GridAction[] => {
         let actions: GridAction[] = [];
 
-        if (config.options?.canAdministrate == true) {
+        if (config.options?.canAdministrate === true) {
             actions.push({
                 title: "Options",
                 iconCssClass: "ti ti-settings",

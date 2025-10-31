@@ -1737,7 +1737,7 @@ export class CheckInSession {
      * @returns A new CheckInSession object.
      */
     private async withNextScreenFromPersonSelect(): Promise<CheckInSession> {
-        if (this.configuration.template?.kioskCheckInType == KioskCheckInMode.Family) {
+        if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Family) {
             if (this.configuration.template?.isAutoSelect) {
                 if (this.currentAttendeeId) {
                     return this.withScreen(Screen.AutoModeOpportunitySelect);

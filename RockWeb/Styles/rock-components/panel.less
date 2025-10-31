@@ -103,6 +103,10 @@
       margin-right: var(--spacing-medium);
 }
 
+// If the panel is using flex for the panel-header, and there are no actions, add the right margin.
+.panel.panel-flex .panel-header-actions:not(:has(.action)) {
+      margin-right: var(--spacing-medium);
+    }
 
 // File Asset Manager panel adjustments
 .panel-block:has(.file-asset-manager) {

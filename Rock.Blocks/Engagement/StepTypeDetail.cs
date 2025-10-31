@@ -432,7 +432,7 @@ namespace Rock.Blocks.Engagement
                 Name = entity.Name,
                 ShowCountOnBadge = entity.ShowCountOnBadge,
                 IconCssClass = entity.IconCssClass,
-                IsDeletable = !entity.IsSystem,
+                IsDeletable = !entity.IsSystem && entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ),
                 EngagementType = entity.EngagementType,
                 ImpactWeight = entity.ImpactWeight,
                 OrganizationalObjectiveValue = entity.OrganizationalObjectiveValue.ToListItemBag(),

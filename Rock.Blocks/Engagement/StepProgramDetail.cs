@@ -273,7 +273,7 @@ namespace Rock.Blocks.Engagement
                 DefaultListView = entity.DefaultListView.ConvertToInt(),
                 CanAdministrate = entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ),
                 CompletionFlow = entity.Id > 0 ? ( CompletionFlow? ) entity.CompletionFlow : null,
-                IsDeletable = !entity.IsSystem,
+                IsDeletable = !entity.IsSystem && entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ),
                 StatusFilterOptions = GetStepStatuses( entity.Id )
                     .Select( s => new ListItemBag
                     {

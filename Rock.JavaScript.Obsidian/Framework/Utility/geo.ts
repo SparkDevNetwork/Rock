@@ -52,10 +52,10 @@ export function toCoordinate(coord: string | ILatLng, isWellKnown: boolean = fal
  * Takes a Well Known Text value and converts it into a Coordinate array
  */
 export function wellKnownToCoordinates(wellKnownText: string, type: DrawingMode): Coordinate[] {
-    if (wellKnownText == "") {
+    if (wellKnownText === "") {
         return [];
     }
-    if (type == "Point") {
+    if (type === "Point") {
         // From this format: POINT (-112.130946 33.600114)
         return [toCoordinate(wellKnownText.replace(/(POINT *\( *)|( *\) *)/ig, ""), true)];
     }
@@ -69,10 +69,10 @@ export function wellKnownToCoordinates(wellKnownText: string, type: DrawingMode)
  * Takes a Well Known Text value and converts it into a Coordinate array
  */
 export function coordinatesToWellKnown(coordinates: Coordinate[], type: DrawingMode): string {
-    if (coordinates.length == 0) {
+    if (coordinates.length === 0) {
         return "";
     }
-    else if (type == "Point") {
+    else if (type === "Point") {
         return `POINT(${coordinates[0].reverse().join(" ")})`;
     }
     else {
@@ -95,7 +95,7 @@ export function nearAddressForCoordinate(coordinate: Coordinate): Promise<string
         if (window.google) {
             const geocoder = new google.maps.Geocoder();
             geocoder.geocode({ location: new google.maps.LatLng(...coordinate) }, function (results, status) {
-                if (status == google.maps.GeocoderStatus.OK && results?.[0]) {
+                if (status === google.maps.GeocoderStatus.OK && results?.[0]) {
                     resolve("near " + results[0].formatted_address);
                 }
                 else {
@@ -114,7 +114,7 @@ export function nearAddressForCoordinate(coordinate: Coordinate): Promise<string
  * Takes a Coordinate array and uses Geocoding to get nearest address for the first point
  */
 export function nearAddressForCoordinates(coordinates: Coordinate[]): Promise<string> {
-    if (!coordinates || coordinates.length == 0) {
+    if (!coordinates || coordinates.length === 0) {
         return Promise.resolve("");
     }
     return nearAddressForCoordinate(coordinates[0]);

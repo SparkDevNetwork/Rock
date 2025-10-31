@@ -28,7 +28,7 @@
             </div>
         </TransitionVerticalCollapse>
         <TransitionVerticalCollapse speed="fast">
-            <button v-if="mode == 'view'" @click="mode = 'edit'" type="button" title="Click to edit value" class="d-block w-100 text-left border rounded px-3 py-1" style="background: #fff; border-color:#ddd !important;">
+            <button v-if="mode == 'view'" @click="mode = 'edit'" type="button" title="Click to edit value" class="d-block w-100 text-left border rounded px-3 py-1 btn-default">
                 {{ modelValue?.text }}&nbsp;
             </button>
         </TransitionVerticalCollapse>

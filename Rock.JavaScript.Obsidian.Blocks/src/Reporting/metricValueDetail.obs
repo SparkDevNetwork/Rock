@@ -163,7 +163,7 @@
                 window.location.href = makeUrlRedirectSafe(result.data);
             }
         }
-        else if (result.statusCode == 400 && typeof result.errorMessage === "string") {
+        else if (result.statusCode === 400 && typeof result.errorMessage === "string") {
             validationError.value = result.errorMessage;
         }
         else {

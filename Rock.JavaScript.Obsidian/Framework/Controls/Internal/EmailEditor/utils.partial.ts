@@ -1442,11 +1442,11 @@ export function createDomWatcher(
 }
 
 /**
-     * Removes temporary wrapper elements from an element's or document's children.
-     *
-     * This will place the wrapped elements in place of their associated wrappers,
-     * and the wrappers will be removed.
-     */
+ * Removes temporary wrapper elements from an element's or document's children.
+ *
+ * This will place the wrapped elements in place of their associated wrappers,
+ * and the wrappers will be removed.
+ */
 export function removeTemporaryWrappers(element: Document | Element): void {
     element.querySelectorAll(`.${RockRuntimeWrapperElementCssClass}`)
         .forEach((wrapper) => {
@@ -1463,8 +1463,8 @@ export function removeTemporaryWrappers(element: Document | Element): void {
 }
 
 /**
-     * Removes temporary elements from a document or element.
-     */
+ * Removes temporary elements from a document or element.
+ */
 export function removeTemporaryElements(element: Document | Element): void {
     element.querySelectorAll(`.${RockRuntimeElementCssClass}`)
         .forEach(el => el.remove());

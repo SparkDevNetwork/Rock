@@ -87,7 +87,7 @@
     watch(internalValue, () => {
         const clean = cleanValue(internalValue.value);
 
-        if (internalValue.value != clean) {
+        if (internalValue.value !== clean) {
             internalValue.value = clean;
         }
         emit("update:modelValue", internalValue.value);
@@ -96,7 +96,7 @@
     watch(() => props.modelValue, () => {
         const clean = cleanValue(props.modelValue);
 
-        if (internalValue.value != clean) {
+        if (internalValue.value !== clean) {
             internalValue.value = clean;
         }
     }, { immediate: true });

@@ -44,11 +44,11 @@
 
     const placement = ref<"right" | "left" | "top" | "bottom">("right");
     const textAlign = computed(() => {
-        if (placement.value == "right") {
+        if (placement.value === "right") {
             return "left";
         }
 
-        if (placement.value == "left") {
+        if (placement.value === "left") {
             return "right";
         }
 

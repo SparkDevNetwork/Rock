@@ -223,8 +223,8 @@
             const index = itemAttributes.value.findIndex(a => a.guid === itemAttribute.value?.guid);
             if (index !== -1) {
                 // Get the updated attribute and rowItem.
-                let editedAttribute = itemAttributes.value.find(a => a.guid == itemAttribute.value?.guid);
-                let rowItem = itemAttributesGridData.rows?.find(x => x.guid == itemAttribute.value?.guid);
+                let editedAttribute = itemAttributes.value.find(a => a.guid === itemAttribute.value?.guid);
+                let rowItem = itemAttributesGridData.rows?.find(x => x.guid === itemAttribute.value?.guid);
 
                 if (editedAttribute) {
                     // Replace old attribute with updated attribute.
@@ -343,8 +343,8 @@
             const index = channelAttributes.value.findIndex(a => a.guid === channelAttribute.value?.guid);
             if (index !== -1) {
                 // Get the updated attribute and rowItem.
-                let editedAttribute = channelAttributes.value.find(a => a.guid == channelAttribute.value?.guid);
-                let rowItem = channelAttributesGridData.rows?.find(x => x.guid == channelAttribute.value?.guid);
+                let editedAttribute = channelAttributes.value.find(a => a.guid === channelAttribute.value?.guid);
+                let rowItem = channelAttributesGridData.rows?.find(x => x.guid === channelAttribute.value?.guid);
 
                 if (editedAttribute) {
                     // Replace old attribute with updated attribute.

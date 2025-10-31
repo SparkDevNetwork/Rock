@@ -72,6 +72,7 @@ namespace Rock.Jobs
             var metricSourceValueTypeDataviewGuid = Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid();
             var metricSourceValueTypeSqlGuid = Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid();
             var metricSourceValueTypeLavaGuid = Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_LAVA.AsGuid();
+            var weekendAttendanceMeasurementGuid = Rock.SystemGuid.DefinedValue.MEASUREMENT_TOTAL_WEEKEND_ATTENDANCE.AsGuid();
 
             Guid[] calculatedSourceTypes = new Guid[] {
                 metricSourceValueTypeDataviewGuid,
@@ -84,7 +85,19 @@ namespace Rock.Jobs
                 && a.SourceValueTypeId.HasValue
                 && calculatedSourceTypes.Contains( a.SourceValueType.Guid ) );
 
-            var metricIdList = metricsQry.OrderBy( a => a.Title ).ThenBy( a => a.Subtitle ).Select( a => a.Id ).ToList();
+            /*
+                10/28/2025 - KBH
+
+                We need to order by the Total Weekend Attendance measurement so that the metric
+                with that measurement classification runs last. This ensures it executes after
+                the other attendance metrics, since it depends on their calculated data.
+            */
+            var metricIdList = metricsQry
+                .OrderBy( a => a.MeasurementClassificationValue.Guid == weekendAttendanceMeasurementGuid )
+                .ThenBy( a => a.Title )
+                .ThenBy( a => a.Subtitle )
+                .Select( a => a.Id )
+                .ToList();
 
             var metricExceptions = new List<Exception>();
             int metricsCalculated = 0;

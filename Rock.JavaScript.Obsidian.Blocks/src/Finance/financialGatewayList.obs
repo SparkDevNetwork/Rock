@@ -109,7 +109,7 @@
      * @param entityType
      */
     function getGateway(entityType: string): string {
-        return entityType == "not found" ? "<span class='label label-danger'>not found</span>" : entityType;
+        return entityType === "not found" ? "<span class='label label-danger'>not found</span>" : entityType;
     }
 
     // #endregion

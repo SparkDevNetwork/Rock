@@ -6888,73 +6888,144 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "E57312EC-92A7-464C-AA7E-5320DDFAEF3D" )]
         public IActionResult LocationItemPickerGetActiveChildren( [FromBody] LocationItemPickerGetActiveChildrenOptionsBag options )
         {
-            IQueryable<Location> qry;
-
             using ( var rockContext = new RockContext() )
             {
                 var locationService = new LocationService( rockContext );
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-                if ( options.Guid == Guid.Empty )
-                {
-                    qry = locationService.Queryable().AsNoTracking().Where( a => a.ParentLocationId == null );
-                    if ( options.RootLocationGuid != Guid.Empty )
-                    {
-                        qry = qry.Where( a => a.Guid == options.RootLocationGuid );
-                    }
-                }
-                else
-                {
-                    qry = locationService.Queryable().AsNoTracking().Where( a => a.ParentLocation.Guid == options.Guid );
-                }
-
-                // limit to only active locations.
-                qry = qry.Where( a => a.IsActive );
-
-                // limit to only Named Locations (don't show home addresses, etc)
-                qry = qry.Where( a => a.Name != null && a.Name != string.Empty );
-
-                List<Location> locationList = new List<Location>();
-                List<TreeItemBag> locationNameList = new List<TreeItemBag>();
-
-                var person = GetPerson();
-
-                foreach ( var location in qry.OrderBy( l => l.Name ) )
-                {
-                    if ( location.IsAuthorized( Security.Authorization.VIEW, person ) || grant?.IsAccessGranted( location, Security.Authorization.VIEW ) == true )
-                    {
-                        locationList.Add( location );
-                        var treeViewItem = new TreeItemBag();
-                        treeViewItem.Value = location.Guid.ToString();
-                        treeViewItem.Text = location.Name;
-                        locationNameList.Add( treeViewItem );
-                    }
-                }
-
-                // try to quickly figure out which items have Children
-                List<int> resultIds = locationList.Select( a => a.Id ).ToList();
-
-                var qryHasChildren = locationService.Queryable().AsNoTracking()
-                    .Where( l =>
-                        l.ParentLocationId.HasValue &&
-                        resultIds.Contains( l.ParentLocationId.Value ) &&
-                        l.IsActive
-                    )
-                    .Select( l => l.ParentLocation.Guid )
-                    .Distinct()
-                    .ToList();
-
-                var qryHasChildrenList = qryHasChildren.ToList();
-
-                foreach ( var item in locationNameList )
-                {
-                    var locationGuid = item.Value.AsGuid();
-                    item.IsFolder = qryHasChildrenList.Any( a => a == locationGuid );
-                    item.HasChildren = item.IsFolder;
-                }
+                var locationNameList = LocationItemPickerGetChildrenInternal(
+                    options.Guid,
+                    options.RootLocationGuid,
+                    grant,
+                    locationService,
+                    LocationItemPickerGetAutoExpandGuids( options.ExpandToValues ),
+                    0 );
 
                 return Ok( locationNameList );
             }
+        }
+
+        /// <summary>
+        /// Gets the items that should be automatically expanded based on the
+        /// selected values.
+        /// </summary>
+        /// <param name="selectedValues">The currently selected values in the picker.</param>
+        /// <returns>A list of unique identifiers for the items that should be eager loaded.</returns>
+        private List<Guid> LocationItemPickerGetAutoExpandGuids( List<string> selectedValues )
+        {
+            var autoExpandGuids = new List<Guid>();
+
+            if ( selectedValues == null )
+            {
+                return autoExpandGuids;
+            }
+
+            var autoExpandLocations = selectedValues
+                .Select( v => NamedLocationCache.Get( v.AsGuid() ) )
+                .Where( v => v != null );
+
+            foreach ( var selectedLocation in autoExpandLocations )
+            {
+                int depth = 0;
+
+                for ( var location = selectedLocation.ParentLocation; location != null; location = location.ParentLocation )
+                {
+                    autoExpandGuids.Add( location.Guid );
+
+                    if ( depth++ > 50 )
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return autoExpandGuids;
+        }
+
+        /// <summary>
+        /// Loads the child locations recursively.
+        /// </summary>
+        /// <param name="parentLocationGuid">The unique identifier of the parent location.</param>
+        /// <param name="rootLocationGuid">The unique identifier of the root location if no parent location was specified.</param>
+        /// <param name="grant">The security grant to use for additional authorization checks.</param>
+        /// <param name="locationService">The service to use when accessing the database.</param>
+        /// <param name="autoExpandGuids">The unique identifiers of the items to automatically expand.</param>
+        /// <param name="depth">The current depth for recursion safety.</param>
+        /// <returns>A list of tree items.</returns>
+        private List<TreeItemBag> LocationItemPickerGetChildrenInternal( Guid parentLocationGuid, Guid rootLocationGuid, SecurityGrant grant, LocationService locationService, List<Guid> autoExpandGuids, int depth )
+        {
+            if ( depth > 50 )
+            {
+                // Null will cause a lazy load to be attempted later.
+                return null;
+            }
+
+            IQueryable<Location> qry;
+
+            if ( parentLocationGuid == Guid.Empty )
+            {
+                qry = locationService.Queryable().AsNoTracking().Where( a => a.ParentLocationId == null );
+                if ( rootLocationGuid != Guid.Empty )
+                {
+                    qry = qry.Where( a => a.Guid == rootLocationGuid );
+                }
+            }
+            else
+            {
+                qry = locationService.Queryable().AsNoTracking().Where( a => a.ParentLocation.Guid == parentLocationGuid );
+            }
+
+            // limit to only active locations.
+            qry = qry.Where( a => a.IsActive );
+
+            // limit to only Named Locations (don't show home addresses, etc)
+            qry = qry.Where( a => a.Name != null && a.Name != string.Empty );
+
+            List<Location> locationList = new List<Location>();
+            List<TreeItemBag> locationNameList = new List<TreeItemBag>();
+
+            var person = GetPerson();
+
+            foreach ( var location in qry.OrderBy( l => l.Name ) )
+            {
+                if ( location.IsAuthorized( Security.Authorization.VIEW, person ) || grant?.IsAccessGranted( location, Security.Authorization.VIEW ) == true )
+                {
+                    locationList.Add( location );
+                    var treeViewItem = new TreeItemBag();
+                    treeViewItem.Value = location.Guid.ToString();
+                    treeViewItem.Text = location.Name;
+                    locationNameList.Add( treeViewItem );
+
+                    if ( autoExpandGuids.Contains( location.Guid ) )
+                    {
+                        treeViewItem.Children = LocationItemPickerGetChildrenInternal( location.Guid, Guid.Empty, grant, locationService, autoExpandGuids, depth + 1 );
+                    }
+                }
+            }
+
+            // try to quickly figure out which items have Children
+            List<int> resultIds = locationList.Select( a => a.Id ).ToList();
+
+            var qryHasChildren = locationService.Queryable().AsNoTracking()
+                .Where( l =>
+                    l.ParentLocationId.HasValue &&
+                    resultIds.Contains( l.ParentLocationId.Value ) &&
+                    l.IsActive
+                )
+                .Select( l => l.ParentLocation.Guid )
+                .Distinct()
+                .ToList();
+
+            var qryHasChildrenList = qryHasChildren.ToList();
+
+            foreach ( var item in locationNameList )
+            {
+                var locationGuid = item.Value.AsGuid();
+                item.IsFolder = qryHasChildrenList.Any( a => a == locationGuid );
+                item.HasChildren = item.IsFolder;
+            }
+
+            return locationNameList;
         }
 
         #endregion

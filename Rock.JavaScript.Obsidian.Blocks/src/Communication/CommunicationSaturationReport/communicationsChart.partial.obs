@@ -89,7 +89,7 @@
                 yAlign: "bottom",
                 callbacks: {
                     title: () => "",
-                    label: (context) => context.raw == 1 ? "1 Recipient" : `${context.formattedValue} Recipients`,
+                    label: (context) => context.raw === 1 ? "1 Recipient" : `${context.formattedValue} Recipients`,
                 }
             }
         },

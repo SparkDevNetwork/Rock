@@ -536,39 +536,30 @@ iframe {
      */
     function getHtml(options: GetHtmlRequest): void {
         try {
-            const clone = document.createElement("iframe");
-
-            // Hide the clone.
-            clone.style.display = "none";
-
-            // Append the cloned iframe to the body to get access to the clone's contentDocument.
-            document.body.appendChild(clone);
-
-            const cloneDocument = clone.contentDocument ?? clone.contentWindow?.document;
-
-            if (cloneDocument) {
-                cloneDocument.open();
-                cloneDocument.writeln(iFrameElement.value?.contentWindow?.document.documentElement.outerHTML ?? "");
-                cloneDocument.close();
-
-                removeTemporaryElements(cloneDocument);
-                removeTemporaryAttributes(cloneDocument);
-                removeTemporaryWrappers(cloneDocument);
-                removeTemporaryClasses(cloneDocument);
-
-                const html = cloneDocument.documentElement.outerHTML ?? "";
-
-                // Remove the cloned iframe element before returning the HTML.
-                clone.remove();
-
-                options.onSuccess({
-                    html,
-                    bodyWidth: globalBodyWidthProvider.value?.value
-                });
+            const sourceDoc = iFrameElement.value?.contentWindow?.document;
+            if (!sourceDoc) {
+                throw new Error("Unable to access the iframe document.");
             }
-            else {
-                throw new Error("An error occurred while preparing HTML.");
-            }
+
+            // Build the doctype text. If none, default to HTML5.
+            const doctypeText = sourceDoc.doctype
+                ? `<!DOCTYPE ${sourceDoc.doctype.name}${sourceDoc.doctype.publicId ? ` PUBLIC "${sourceDoc.doctype.publicId}"` : ""}${sourceDoc.doctype.systemId ? ` "${sourceDoc.doctype.systemId}"` : ""}>`
+                : "<!DOCTYPE html>";
+
+            const cloneDocument = sourceDoc.cloneNode(true) as Document;
+
+            removeTemporaryElements(cloneDocument);
+            removeTemporaryAttributes(cloneDocument);
+            removeTemporaryWrappers(cloneDocument);
+            removeTemporaryClasses(cloneDocument);
+
+            const finalHtmlOuterHtml = cloneDocument.documentElement.outerHTML ?? "";
+            const html = `${doctypeText}\n${finalHtmlOuterHtml}`;
+
+            options.onSuccess({
+                html,
+                bodyWidth: globalBodyWidthProvider.value?.value
+            });
         }
         catch (e) {
             if (options.onError) {

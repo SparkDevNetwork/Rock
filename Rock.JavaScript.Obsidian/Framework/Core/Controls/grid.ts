@@ -1790,6 +1790,9 @@ export class GridState implements IGridState {
     /** A background worker that will populate all the row cache data. */
     private populateRowCacheWorker: BackgroundGridRowCacheWorker | null = null;
 
+    /** A function that can be used to override the selected keys. */
+    private selectedKeysOverride?: (selectedKeys: string[]) => string[];
+
     // #endregion
 
     // #region Constructors
@@ -1803,7 +1806,7 @@ export class GridState implements IGridState {
      * @param itemTerm The word or phrase that describes each row.
      * @param entityTypeGuid The unique identifier of the entity type this grid represents, or `undefined`.
      */
-    constructor(columns: ColumnDefinition[], gridDefinition: GridDefinitionBag | undefined, liveUpdates: boolean, itemTerm: string, entityTypeGuid: Guid | undefined) {
+    constructor(columns: ColumnDefinition[], gridDefinition: GridDefinitionBag | undefined, liveUpdates: boolean, itemTerm: string, entityTypeGuid: Guid | undefined, selectedKeysOverride: ((selectedKeys: string[]) => string[]) | undefined) {
         this.gridDefinition = gridDefinition;
         this.rowCache = new GridRowCache(undefined);
         this.liveUpdates = liveUpdates;
@@ -1820,6 +1823,8 @@ export class GridState implements IGridState {
         }
 
         this.internalVisibleColumns = this.columns.filter(c => !c.hideOnScreen);
+
+        this.selectedKeysOverride = selectedKeysOverride;
     }
 
     /**
@@ -1878,7 +1883,13 @@ export class GridState implements IGridState {
     }
 
     public set selectedKeys(value: string[]) {
-        this.internalSelectedKeys = value;
+        if (this.selectedKeysOverride) {
+            this.internalSelectedKeys = this.selectedKeysOverride(value);
+        }
+        else {
+            this.internalSelectedKeys = value;
+        }
+
         this.emitter.emit("selectedKeysChanged", this);
     }
 

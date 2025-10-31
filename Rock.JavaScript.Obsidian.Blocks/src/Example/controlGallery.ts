@@ -64,7 +64,7 @@ import CampusAccountAmountPickerGallery from "./ControlGallery/campusAccountAmou
 import PersonPickerGallery from "./ControlGallery/personPickerGallery.partial.obs";
 import ImageEditorGallery from "./ControlGallery/imageEditorGallery.partial.obs";
 import HighlightLabelGallery from "./ControlGallery/highlightLabelGallery.partial.obs";
-import LightGridGallery from "./ControlGallery/lightGridGallery.partial.obs";
+import GridGallery from "./ControlGallery/gridGallery.partial.obs";
 import PdfViewerGallery from "./ControlGallery/pdfViewerGallery.partial.obs";
 import ChartGallery from "./ControlGallery/chartGallery.partial.obs";
 import EntityPickerGallery from "./ControlGallery/entityPickerGallery.partial.obs";
@@ -414,7 +414,7 @@ const controlGalleryComponents: Record<string, Component> = [
     DropDownContentGallery,
     ButtonDropDownListGallery,
     CampusAccountAmountPickerGallery,
-    LightGridGallery,
+    GridGallery,
     ImageEditorGallery,
     HighlightLabelGallery,
     PdfViewerGallery,

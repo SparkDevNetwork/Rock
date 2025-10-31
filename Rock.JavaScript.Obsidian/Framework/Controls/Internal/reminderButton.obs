@@ -299,9 +299,7 @@
      * Delete the given reminder.
      */
     const {
-        run: cancelReminder,
-        isLoading: isCancelationLoading,
-        hasError: hasCancelationError
+        run: cancelReminder
     } = createApiCaller<ReminderButtonGetRemindersReminderBag[], [Guid]>({
         url: `/api/v2/Controls/ReminderButtonCancelReminder`,
         data: (reminderGuid) => ({

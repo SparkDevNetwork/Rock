@@ -51,10 +51,10 @@ export const EditComponent = defineComponent({
             try {
                 const optionsListItems = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
                 const isIncludeInactive = asBoolean(!props.configurationValues[ConfigurationValueKey.IncludeInactive]);
-                const isValueFoundOnActiveItems = optionsListItems.find(x => x.value == internalValue.value);
+                const isValueFoundOnActiveItems = optionsListItems.find(x => x.value === internalValue.value);
                 if (!isIncludeInactive && !isValueFoundOnActiveItems) {
                     const inactiveListItem = JSON.parse(props.configurationValues[ConfigurationValueKey.ValuesInactive] ?? "[]") as ListItemBag[];
-                    const selectedValue = inactiveListItem.find(x => x.value == internalValue.value);
+                    const selectedValue = inactiveListItem.find(x => x.value === internalValue.value);
                     if (selectedValue) {
                         optionsListItems.push(selectedValue);
                     }
@@ -72,9 +72,9 @@ export const EditComponent = defineComponent({
 
         const shouldHidePicker = computed((): boolean => {
             return asBoolean(!props.configurationValues[ConfigurationValueKey.ForceVisible])
-            && options.value.length <= 1
-            && props.configurationValues[ConfigurationValueKey.FilterCampusTypes] == ""
-            && props.configurationValues[ConfigurationValueKey.FilterCampusStatus] == "";
+                && options.value.length <= 1
+                && props.configurationValues[ConfigurationValueKey.FilterCampusTypes] === ""
+                && props.configurationValues[ConfigurationValueKey.FilterCampusStatus] === "";
         });
 
         return {

@@ -65,7 +65,7 @@ export const EditComponent = defineComponent({
 
         // Watch for changes from the client UI and update the parent component.
         watch(internalValue, () => {
-            emit("update:modelValue", allowMultiple.value == true ? JSON.stringify(internalValue.value) : internalValue.value);
+            emit("update:modelValue", allowMultiple.value === true ? JSON.stringify(internalValue.value) : internalValue.value);
         });
 
         return {

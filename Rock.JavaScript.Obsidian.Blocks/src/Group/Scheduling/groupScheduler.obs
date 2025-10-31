@@ -733,9 +733,9 @@
      */
     function scrollToSchedule(currentDateIndex: number, currentScheduleIndex: number, direction: ScrollDirection): void {
         let targetSchedules = scheduleComponentsByOccurrenceDate.value[currentDateIndex];
-        let targetScheduleIndex = direction == ScrollDirection.Previous ? currentScheduleIndex - 1 : currentScheduleIndex + 1;
+        let targetScheduleIndex = direction === ScrollDirection.Previous ? currentScheduleIndex - 1 : currentScheduleIndex + 1;
 
-        if (direction == ScrollDirection.Previous) {
+        if (direction === ScrollDirection.Previous) {
             if (targetScheduleIndex < 0) {
                 // The first schedule of a given occurrence date is currently within view.
                 if (occurrenceDateCount.value > 1) {
@@ -757,7 +757,7 @@
                 }
             }
         }
-        else if (direction == ScrollDirection.Next) {
+        else if (direction === ScrollDirection.Next) {
             if (!targetSchedules) {
                 return;
             }

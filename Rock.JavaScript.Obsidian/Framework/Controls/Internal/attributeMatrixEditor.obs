@@ -45,6 +45,7 @@
     import { AttributeMatrixEditorPublicItemBag } from "@Obsidian/ViewModels/Rest/Controls/attributeMatrixEditorPublicItemBag.d";
     import { useHttp } from "@Obsidian/Utility/http";
     import { containsRequiredRule, normalizeRules } from "@Obsidian/ValidationRules";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 
     defineOptions({ inheritAttrs: false });
 
@@ -153,7 +154,7 @@
     });
 
     const minRowInvalidMessage = computed(() => {
-        if (minRows.value == 1) {
+        if (minRows.value === 1) {
             return "At least 1 item is required.";
         }
 
@@ -161,7 +162,7 @@
     });
 
     const maxRowInvalidMessage = computed(() => {
-        if (props.maxRows == 1) {
+        if (props.maxRows === 1) {
             return "No more than 1 item is allowed.";
         }
 
@@ -291,9 +292,9 @@
     /** Open the form to edit a selected row item */
     function onSelectItem(key: string): void {
         const [itemGuid, itemKey] = key.split(keySeparator);
-        const item = items.value.find(i => i.guid == itemGuid && i.key == (itemKey || undefined));
+        const item = items.value.find(i => i.guid === itemGuid && (i.key ?? undefined) === (toNumberOrNull(itemKey) ?? undefined));
 
-        if (item != undefined) {
+        if (item) {
             editValue.value = clone(item.editValues ?? {});
             editKey.value = key;
             mode.value = "edit";
@@ -305,7 +306,7 @@
         error.value = null;
 
         const [itemGuid, itemKey] = editKey.value.split(keySeparator);
-        const index = items.value.findIndex(i => i.guid == itemGuid && i.key == (itemKey || undefined));
+        const index = items.value.findIndex(i => i.guid === itemGuid && (i.key ?? undefined) === (toNumberOrNull(itemKey) ?? undefined));
 
         if (index < 0) {
             mode.value = "grid";
@@ -330,7 +331,7 @@
     /** Delete a row item */
     async function onDelete(key: string): Promise<void> {
         const [itemGuid, itemKey] = key.split(keySeparator);
-        const index = items.value.findIndex(i => i.guid == itemGuid && i.key == (itemKey || undefined));
+        const index = items.value.findIndex(i => i.guid === itemGuid && (i.key ?? undefined) === (toNumberOrNull(itemKey) ?? undefined));
         if (index !== -1) {
             items.value.splice(index, 1);
         }
@@ -344,7 +345,7 @@
         const [movedItemGuid, movedItemKey] = (movedItem.key as string).split(keySeparator);
         const [beforeItemGuid, beforeItemKey] = beforeItem == null ? [null, null] : (beforeItem.key as string).split(keySeparator);
 
-        const movedIndex = items.value.findIndex(i => i.guid == movedItemGuid && i.key == (movedItemKey || undefined));
+        const movedIndex = items.value.findIndex(i => i.guid === movedItemGuid && (i.key ?? undefined) === (toNumberOrNull(movedItemKey) ?? undefined));
 
         if (movedIndex < 0) {
             return;
@@ -352,7 +353,7 @@
 
         const [trueMovedItem] = items.value.splice(movedIndex, 1);
 
-        const beforeItemIndex = items.value.findIndex(i => i.guid == beforeItemGuid && i.key == (beforeItemKey || undefined));
+        const beforeItemIndex = items.value.findIndex(i => i.guid === beforeItemGuid && (i.key ?? undefined) === (toNumberOrNull(beforeItemKey) ?? undefined));
 
         if (beforeItem == null || beforeItemIndex < 0) {
             items.value.push(trueMovedItem);

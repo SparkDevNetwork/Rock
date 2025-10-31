@@ -3947,6 +3947,11 @@ ORDER BY ct.[Name], cs.[Name]",
         /// <param name="e"></param>
         protected void lbApplyFilter_Click( object sender, EventArgs e )
         {
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
             SaveSettingByConnectionType( FilterKey.DateRange, sdrpLastActivityDateRangeFilter.DelimitedValues );
             SaveSettingByConnectionType( FilterKey.Requester, ppRequesterFilter.PersonId.ToStringSafe() );
             SaveSettingByConnectionType( FilterKey.Statuses, cblStatusFilter.SelectedValues.AsDelimited( DefaultDelimiter ) );
@@ -4012,6 +4017,8 @@ ORDER BY ct.[Name], cs.[Name]",
                 Text = cs.ToString().SplitCase()
             } );
             cblStateFilter.DataBind();
+
+            cblStateFilter.Required = true;
 
             cblLastActivityFilter.DataSource = GetConnectionActivityTypes().Select( cat => new
             {

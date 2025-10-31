@@ -44,7 +44,7 @@
     });
 
     const labelClass = computed(() => {
-        if (props.labelType == "custom") {
+        if (props.labelType === "custom") {
             return "label " + props.customClass;
         }
         else {

@@ -263,7 +263,7 @@
      * Event handler for when the individual clicks to manually select a file
      * to be uploaded into Rock.
      */
-    function onSelectFileClick(e): void {
+    function onSelectFileClick(): void {
         if (!isUploading.value) {
             fileInputElement.value?.click();
         }

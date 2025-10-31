@@ -236,7 +236,7 @@ function getRecurrenceDates(attributes: Record<string, string>, value: string): 
     let valueType = attributes["VALUE"];
 
     for (const valuePart of valueParts) {
-        if(!valueType) {
+        if (!valueType) {
             // The value type is unspecified and it could be a PERIOD, DATE-TIME or a DATE.
             // Determine it based on the length and the contents of the valuePart string.
 
@@ -265,7 +265,7 @@ function getRecurrenceDates(attributes: Record<string, string>, value: string): 
                 recurrenceDates.push(date);
             }
         }
-        else if (valueType === "DATE-TIME")  {
+        else if (valueType === "DATE-TIME") {
             // Values are date and time values.
             const date = getDateTimeFromString(valuePart);
             if (date) {
@@ -667,7 +667,7 @@ export class RecurrenceRule {
                     continue;
                 }
 
-                if (day === "SU" || day === "MO" || day === "TU" || day == "WE" || day == "TH" || day == "FR" || day == "SA") {
+                if (day === "SU" || day === "MO" || day === "TU" || day === "WE" || day === "TH" || day === "FR" || day === "SA") {
                     this.byDay.push({
                         value: num,
                         day: getDayOfWeekFromIcalDay(day)
@@ -975,7 +975,7 @@ export class Event {
      *
      * @returns An ICS formatted string that represents the event data.
      */
-     public build(): string | null {
+    public build(): string | null {
         const lines = this.buildLines();
 
         if (lines.length === 0) {
@@ -1207,7 +1207,7 @@ export class Event {
                 }
                 else if (rrule.byDay.length > 0) {
                     const byDay = rrule.byDay[0];
-                    const offsetNames = nthNamesAbbreviated.filter(n => rrule.byDay.some(d => d.value == n[0])).map(n => n[1]);
+                    const offsetNames = nthNamesAbbreviated.filter(n => rrule.byDay.some(d => d.value === n[0])).map(n => n[1]);
                     let result = "";
 
                     if (offsetNames.length > 0) {

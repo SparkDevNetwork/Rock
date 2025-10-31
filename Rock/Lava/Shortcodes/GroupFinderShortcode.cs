@@ -129,7 +129,9 @@ There are two experiences to choose from. One is a simple filtering option that 
 </p>
 
 <div class=""alert alert-info"">
-	To power all of this magic, your Rock instance must have an active Google Maps API key with the Routes API enabled.
+	To power this functionality, your Rock instance needs an active Google API key stored in the
+    ""Google API Key Server"" global attribute. This is separate from the ""Google API Key"" attribute used for
+    client-side JavaScript. The key must have the Routes API enabled.
 </div>
 
 <h5>Selecting an Origin</h5>

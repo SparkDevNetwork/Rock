@@ -111,7 +111,7 @@ export const ConfigurationComponent = defineComponent({
          */
         const maybeUpdateModelValue = (): boolean => {
             const newValue: Record<string, string> = {};
-            const connectionType = options.value.find(o => o.value == connectionTypeValue.value);
+            const connectionType = options.value.find(o => o.value === connectionTypeValue.value);
 
             // Construct the new value that will be emitted if it is different
             // than the current value.

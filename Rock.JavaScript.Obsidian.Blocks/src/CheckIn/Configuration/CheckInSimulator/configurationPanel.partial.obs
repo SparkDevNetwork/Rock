@@ -250,7 +250,7 @@
             url.searchParams.delete("cfgBenchDur");
         }
 
-        if (window.location.href != url.href) {
+        if (window.location.href !== url.href) {
             history.replaceState(undefined, "", url);
         }
     }

@@ -119,7 +119,6 @@ namespace Rock.Lava.Fluid
 
             RegisterLavaCommentTag();
             RegisterLavaCaptureTag();
-            RegisterLavaElseIfTag();
             RegisterLavaTag();
 
             RegisterLavaOperators();
@@ -407,27 +406,6 @@ namespace Rock.Lava.Fluid
                 .ElseError( "Invalid 'capture' tag" );
 
             RegisteredTags["capture"] = captureTag;
-        }
-
-        /// <summary>
-        /// Redefine the standard Liquid {% if %} tag to allow "{% elsif %}" or "{% elseif %}".
-        /// </summary>
-        private void RegisterLavaElseIfTag()
-        {
-            var ifTag = LogicalExpression
-                .AndSkip( TagEnd )
-                .And( _anyTagsListParser )
-                .And( ZeroOrMany(
-                    TagStart.SkipAnd( Terms.Text( "elsif" ).Or( Terms.Text( "elseif" ) ) ).SkipAnd( LogicalExpression ).AndSkip( TagEnd ).And( _anyTagsListParser ) )
-                    .Then( x => x.Select( e => new ElseIfStatement( e.Item1, e.Item2 ) ).ToList() ) )
-                .And( ZeroOrOne(
-                    CreateTag( "else" ).SkipAnd( _anyTagsListParser ) )
-                    .Then( x => x != null ? new ElseStatement( x ) : null ) )
-                .AndSkip( CreateTag( "endif" ).ElseError( $"'{{% endif %}}' was expected" ) )
-                .Then<Statement>( x => new IfStatement( x.Item1, x.Item2, x.Item4, x.Item3 ) )
-                .ElseError( "Invalid 'if' tag" );
-
-            RegisteredTags["if"] = ifTag;
         }
 
         /// <summary>

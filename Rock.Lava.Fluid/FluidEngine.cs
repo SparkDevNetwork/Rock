@@ -605,7 +605,19 @@ namespace Rock.Lava.Fluid
             string error;
             IFluidTemplate fluidTemplate;
 
-            var success = _parser.TryParse( lavaTemplate, out fluidTemplate, out error );
+            /*
+                10/27/2025 - NA
+
+                Added ConvertToLiquidElsif method while having to remove our custom RegisterLavaElseIfTag() in our
+                custom LavaFluidParser in order to get shortcodes working inside of {% lava %} blocks. It might
+                be possible to make RegisterLavaElseIfTag() also work with shortcodes inside of {% lava %} blocks
+                with more effort.
+
+                See also https://app.asana.com/1/20866866924293/project/1208321217019996/task/1210049417532194?focus=true
+
+                Reason: Ensures proper parsing of conditional blocks when {% lava %} tags and shortcodes are present.
+            */
+            var success = _parser.TryParse( ConvertToLiquidElsif( lavaTemplate ), out fluidTemplate, out error );
 
             var fluidTemplateObject = ( FluidTemplate ) fluidTemplate;
 

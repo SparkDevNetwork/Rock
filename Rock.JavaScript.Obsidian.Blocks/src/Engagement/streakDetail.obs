@@ -128,7 +128,7 @@
     });
 
     const footerActions = computed((): PanelAction[] => {
-        if (panelMode.value != DetailPanelMode.View) {
+        if (panelMode.value !== DetailPanelMode.View) {
             return [];
         }
         return [

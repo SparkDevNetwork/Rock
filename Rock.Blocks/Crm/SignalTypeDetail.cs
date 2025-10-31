@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -287,26 +288,26 @@ namespace Rock.Blocks.Crm
         }
 
         /// <summary>
-        /// Calculates the top-most signal and updates the person properties for Persons with this SignalType.
+        /// Recalculates signals for a list of person IDs, either synchronously (if small) or via queue.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="signalTypeId">The signal type identifier.</param>
-        private static void RecalculateSignals( RockContext rockContext, int signalTypeId )
+        /// <param name="personIds">The list of person IDs to process.</param>
+        private static void RecalculateSignals( RockContext rockContext, List<int> personIds )
         {
-            var people = new PersonSignalService( rockContext ).Queryable()
-                .Where( s => s.SignalTypeId == signalTypeId )
-                .Select( s => s.PersonId )
-                .Distinct()
-                .ToList();
+            if ( !personIds.Any() )
+            {
+                return;
+            }
 
             //
             // If less than 250 people with this signal type then just update them all now,
             // otherwise put something in the rock queue to take care of it.
             //
-            if ( people.Count < 250 )
+
+            if ( personIds.Count < 250 )
             {
                 new PersonService( rockContext ).Queryable()
-                    .Where( p => people.Contains( p.Id ) )
+                    .Where( p => personIds.Contains( p.Id ) )
                     .ToList()
                     .ForEach( p => p.CalculateSignals() );
 
@@ -316,7 +317,7 @@ namespace Rock.Blocks.Crm
             {
                 var updatePersonSignalTypesMsg = new UpdatePersonSignalTypes.Message()
                 {
-                    PersonIds = people
+                    PersonIds = personIds
                 };
 
                 updatePersonSignalTypesMsg.Send();
@@ -390,7 +391,14 @@ namespace Rock.Blocks.Crm
                 entity.SaveAttributeValues( RockContext );
             } );
 
-            RecalculateSignals( RockContext, entity.Id );
+            var impactedPersonIds = new PersonSignalService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Where( s => s.SignalTypeId == entity.Id )
+                .Select( s => s.PersonId )
+                .Distinct()
+                .ToList();
+
+            RecalculateSignals( RockContext, impactedPersonIds );
 
             return ActionOk( this.GetParentPageUrl() );
         }
@@ -415,10 +423,19 @@ namespace Rock.Blocks.Crm
                 return ActionBadRequest( errorMessage );
             }
 
+            // Capture the impacted PersonIds BEFORE deleting the SignalType since
+            // related PersonSignal rows are deleted by cascade.
+            var impactedPersonIds = new PersonSignalService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Where( s => s.SignalTypeId == entity.Id )
+                .Select( s => s.PersonId )
+                .Distinct()
+                .ToList();
+
             entityService.Delete( entity );
             RockContext.SaveChanges();
 
-            RecalculateSignals( RockContext, entity.Id );
+            RecalculateSignals( RockContext, impactedPersonIds );
 
             return ActionOk( this.GetParentPageUrl() );
         }

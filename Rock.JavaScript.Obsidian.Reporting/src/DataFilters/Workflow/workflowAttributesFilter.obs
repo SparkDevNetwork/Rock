@@ -44,7 +44,7 @@
     watch(sourcesForWorkflowType, () => {
         // Workflows types may share attributes between them if they're not specific to that type, so if they have an attribute
         // identical to the one in the filter rule, we should keep it. Otherwise, we need to reset the rule.
-        if (!sourcesForWorkflowType.value.some(source => source.attribute?.attributeGuid == filterRule.value.attributeGuid)) {
+        if (!sourcesForWorkflowType.value.some(source => source.attribute?.attributeGuid === filterRule.value.attributeGuid)) {
             filterRule.value = createNewFieldRule();
         }
     });

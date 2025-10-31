@@ -88,7 +88,7 @@
     });
 
     const availableCountryCodeOptions = computed<ListItemBag[]>(() => {
-        if (availableCountryCodes.value.length == 0) {
+        if (availableCountryCodes.value.length === 0) {
             return [{ value: "1", text: "1" }];
         }
 
@@ -109,7 +109,7 @@
 
         const val = stripPhoneNumber(value as string);
 
-        if (rules.length == 0) {
+        if (rules.length === 0) {
             return true;
         }
 
@@ -170,7 +170,7 @@
 
     watch([configuration, availableCountryCodes], () => {
         // If we don't have any country codes from the server, ignore
-        if (configuration.value == null || availableCountryCodes.value.length == 0) return;
+        if (configuration.value == null || availableCountryCodes.value.length === 0) return;
 
         // If no country code set or the set country code isn't in the list of available codes, then change it to the default
         if (countryCode.value == null || !availableCountryCodes.value.includes(countryCode.value)) {

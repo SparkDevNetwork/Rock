@@ -84,7 +84,7 @@ const defaultRulesConfig = [
 export function formatPhoneNumber(value: string, rules: PhoneNumberCountryCodeRulesConfigurationBag[] = defaultRulesConfig): string {
     value = stripPhoneNumber(value);
 
-    if (!value || rules.length == 0) {
+    if (!value || rules.length === 0) {
         return value;
     }
 

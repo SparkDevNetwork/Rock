@@ -44,7 +44,7 @@ namespace Rock.Core.Geography.GeographyExtensions.GoogleMaps
         #region Constructors
         public GoogleMapsLocationExtension()
         {
-            _apiKey = GlobalAttributesCache.Get().GetValue( "GoogleApiKey" );
+            _apiKey = GlobalAttributesCache.Get().GetValue( "GoogleApiKeyServer" );
 
             if ( _apiKey.IsNullOrWhiteSpace() )
             {

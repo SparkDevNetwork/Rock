@@ -142,15 +142,11 @@ namespace Rock.Web.Cache
         /// <param name="automationTriggerId">The identifier of the <see cref="AutomationTrigger"/> to initialize executors for.</param>
         internal static void UpdateTriggerExecutors( int automationTriggerId )
         {
-            var container = RockApp.Current.GetService<AutomationEventContainer>();
-
-            if ( container == null )
+            using ( var scope = RockApp.Current.CreateScope() )
             {
-                return;
-            }
+                var container = scope.ServiceProvider.GetRequiredService<AutomationEventContainer>();
+                var rockContext = scope.ServiceProvider.GetRequiredService<RockContext>();
 
-            using ( var rockContext = RockApp.Current.CreateRockContext() )
-            {
                 lock ( _executorLock )
                 {
                     UpdateTriggerExecutors( container, automationTriggerId, rockContext );

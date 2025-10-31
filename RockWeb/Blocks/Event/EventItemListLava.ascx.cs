@@ -227,10 +227,7 @@ namespace RockWeb.Blocks.Event
             mergeFields.Add( "DetailsPage", LinkedPageRoute( "DetailsPage" ) );
             mergeFields.Add( "EventOccurrenceSummaries", eventOccurrenceSummaries );
 
-            // Enable Calendar Events and Event Scheduled Instance Lava commands
-            var enabledLavaCommands = "CalendarEvents,EventScheduledInstance";
-
-            lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields, enabledLavaCommands );
+            lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 
         }
 

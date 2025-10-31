@@ -92,7 +92,7 @@
      * The panel title.
      */
     const paneltitle = computed((): string => {
-        return panelMode.value == DetailPanelMode.Add ? "Add Financial Account" : financialAccountViewBag.value?.name ?? "";
+        return panelMode.value === DetailPanelMode.Add ? "Add Financial Account" : financialAccountViewBag.value?.name ?? "";
     });
 
     /**

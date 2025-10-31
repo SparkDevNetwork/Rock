@@ -488,6 +488,15 @@ function() {
         /// <summary>
         /// Get and set the filter settings from DataViewFilter.Selection
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>
+        ///         You CANNOT change these property names unless you also
+        ///         write a migration to change them for all the saved values in
+        ///         the Selection column of the DataViewFilter table.
+        ///         </strong>
+        ///     </para>
+        /// </remarks>
         protected class SelectionConfig
         {
             /// <summary>
@@ -498,11 +507,15 @@ function() {
             }
 
             /// <summary>
-            /// Gets or sets the note type identifiers.
+            /// Gets or sets the InteractionChannel Ids for the corresponding
+            /// SiteIds.
             /// </summary>
             /// <value>
-            /// The note type identifiers.
+            /// A list of InteractionChannelIds
             /// </value>
+            /// <remarks>
+            /// FYI: The InteractionChannel.ChannelEntityId holds the value of the SiteId.
+            /// </remarks>
             public List<int> WebsiteIds { get; set; }
 
             /// <summary>

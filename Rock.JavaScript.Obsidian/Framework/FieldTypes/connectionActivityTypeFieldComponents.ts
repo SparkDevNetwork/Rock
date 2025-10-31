@@ -104,7 +104,7 @@ export const ConfigurationComponent = defineComponent({
         });
 
         const connectionTypeBagSerialized = computed(() => {
-            return JSON.stringify(options.value.find(o => o.value == connectionType.value));
+            return JSON.stringify(options.value.find(o => o.value === connectionType.value));
         });
 
         /**

@@ -137,7 +137,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        if (panelMode.value == DetailPanelMode.View) {
+        if (panelMode.value === DetailPanelMode.View) {
             return "Business Details";
         }
         else {
@@ -155,14 +155,14 @@
             return undefined;
         }
 
-        if (businessDetailViewBag.value?.recordStatus?.value?.toUpperCase() == DefinedValue.PersonRecordStatusPending) {
+        if (businessDetailViewBag.value?.recordStatus?.value?.toUpperCase() === DefinedValue.PersonRecordStatusPending) {
             labels.push({
                 iconCssClass: "ti ti-bulb-filled",
                 title: "Pending",
                 type: "warning"
             });
         }
-        else if (businessDetailViewBag.value?.recordStatus?.value?.toUpperCase() == DefinedValue.PersonRecordStatusInactive) {
+        else if (businessDetailViewBag.value?.recordStatus?.value?.toUpperCase() === DefinedValue.PersonRecordStatusInactive) {
             labels.push({
                 iconCssClass: "ti ti-bulb-filled",
                 title: "Inactive",

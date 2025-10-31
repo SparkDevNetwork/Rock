@@ -38,7 +38,7 @@ export const EditComponent = defineComponent({
             get() {
                 const components = (props.modelValue || "").split("/");
 
-                if (components.length == 2) {
+                if (components.length === 2) {
                     return {
                         month: toNumber(components[0]),
                         day: toNumber(components[1])

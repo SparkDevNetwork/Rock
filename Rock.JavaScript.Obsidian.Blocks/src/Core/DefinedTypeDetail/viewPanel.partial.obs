@@ -169,7 +169,7 @@
         // Close modal and remove deleted attribute from the current collection of attributes.
         isAttributeModalOpen.value = false;
 
-        const deletedAttribute = definedTypeAttributes.value.find(a => a.key == key);
+        const deletedAttribute = definedTypeAttributes.value.find(a => a.key === key);
 
         if (deletedAttribute) {
             if (deletedAttribute.guid) {
@@ -218,8 +218,8 @@
                 const index = definedTypeAttributes.value.findIndex(a => a.key === definedTypeAttribute.value?.key);
                 if (index !== -1) {
                     // Get the updated attribute and rowItem.
-                    let editedAttribute = definedTypeAttributes.value.find(a => a.key == definedTypeAttribute.value?.key);
-                    let rowItem = attributesGridData.rows?.find(x => x.key == definedTypeAttribute.value?.key);
+                    let editedAttribute = definedTypeAttributes.value.find(a => a.key === definedTypeAttribute.value?.key);
+                    let rowItem = attributesGridData.rows?.find(x => x.key === definedTypeAttribute.value?.key);
 
                     if (editedAttribute) {
                         // Replace old attribute with updated attribute.

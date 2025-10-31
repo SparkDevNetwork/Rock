@@ -109,6 +109,20 @@ namespace Rock.Lava
              */
             var liquidText = _lavaConverter.RemoveLavaComments( lavaText );
 
+            /*
+                10/29/2025 - NA
+
+                Added a call to ReplaceElseIfKeyword() to convert Lava's 'elseif' syntax to
+                the standard Liquid 'elsif' keyword. This adjustment is necessary because we
+                no longer override the IfTag parser, which previously handled this keyword
+                translation internally.
+
+                Reason: Ensures Lava Include templates using 'elseif' continue to parse correctly now
+                        that the custom IfTag parser has been removed in commit
+                        https://github.com/SparkDevNetwork/Rock/commit/6a294f8#L412-L431
+            */
+            liquidText = _lavaConverter.ReplaceElseIfKeyword( liquidText );
+
             var fileInfo = new LavaFileInfo( filePath, liquidText, exists );
 
             if ( !exists )

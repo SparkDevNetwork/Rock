@@ -1,0 +1,164 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      demoMode>
+        <div class="row">
+            <div class="col-md-12">
+                <Grid :data="gridData"
+                      keyField="key"
+                      liveUpdates
+                      :light="light"
+                      :markInactiveRows="markInactiveRows"
+                      itemTerm="Widget"
+                      @addItem="onAddItem"
+                      :showExport="showExport">
+                    <ReorderColumn />
+
+                    <TextColumn name="name"
+                                :title="nameTitle"
+                                field="name" />
+
+                    <DateColumn name="date"
+                                :title="dateTitle"
+                                field="date"
+                                visiblePriority="md" />
+
+                    <NumberColumn name="index"
+                                  :title="numberTitle"
+                                  field="index"
+                                  visiblePriority="lg" />
+
+                    <BooleanColumn name="isActive"
+                                   :title="activeTitle"
+                                   field="isActive"
+                                   visiblePriority="sm" />
+
+                    <EditColumn @click="onEdit" />
+
+                    <DeleteColumn @click="onDelete" />
+                </Grid>
+            </div>
+        </div>
+
+        <template #settings>
+            <div class="automatic-layout">
+                <CheckBox label="Light" v-model="light" />
+                <CheckBox label="Show Export" v-model="showExport" />
+                <CheckBox label="Mark Inactive Rows" v-model="markInactiveRows" />
+                <CheckBox label="Use Column Titles" v-model="useColumnTitles" />
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import Grid, { BooleanColumn, DateColumn, DeleteColumn, EditColumn, NumberColumn, TextColumn, ReorderColumn } from "@Obsidian/Controls/grid";
+    import { ComponentUsage, getControlImportPath } from "./common/utils.partial";
+    import { computed, reactive, ref } from "vue";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { alert } from "@Obsidian/Utility/dialogs";
+
+    const light = ref(false);
+    const showExport = ref(false);
+    const markInactiveRows = ref(false);
+    const useColumnTitles = ref(true);
+
+    const gridData: GridDataBag = reactive<GridDataBag>({
+        rows: [1, 2, 3, 4, 5].map(idx => generateItem(idx))
+    });
+
+    const nameTitle = computed(() => useColumnTitles.value ? "Name" : "");
+    const dateTitle = computed(() => useColumnTitles.value ? "Date" : "");
+    const numberTitle = computed(() => useColumnTitles.value ? "Number" : "");
+    const activeTitle = computed(() => useColumnTitles.value ? "Active" : "");
+
+    const importCode = getControlImportPath("grid");
+
+    const exampleCode = computed(() => {
+        const usage = new ComponentUsage("Grid");
+
+        usage.addAttribute(":data", "gridData");
+        usage.addAttribute("keyField", "key");
+        usage.addAttribute("liveUpdates", true);
+        usage.addAttribute("itemTerm", "Widget");
+        usage.addAttribute("light", light.value, false);
+        usage.addAttribute("showExport", showExport.value, false);
+        usage.addAttribute("markInactiveRows", markInactiveRows.value, false);
+
+        usage.addBody(createColumn("ReorderColumn"));
+        usage.addBody("");
+        usage.addBody(createColumn("TextColumn", "name", nameTitle.value));
+        usage.addBody("");
+        usage.addBody(createColumn("DateColumn", "date", dateTitle.value, "md"));
+        usage.addBody("");
+        usage.addBody(createColumn("NumberColumn", "index", numberTitle.value, "lg"));
+        usage.addBody("");
+        usage.addBody(createColumn("BooleanColumn", "isActive", activeTitle.value, "sm"));
+        usage.addBody("");
+        usage.addBody(createColumn("EditColumn"));
+        usage.addBody("");
+        usage.addBody(createColumn("DeleteColumn"));
+
+        return usage.toString();
+    });
+
+    function createColumn(type: string, field?: string, title?: string, visiblePriority?: string): string {
+        const columnUsage = new ComponentUsage(type);
+
+        if (field) {
+            columnUsage.addAttribute("name", field);
+            columnUsage.addAttribute("field", field);
+        }
+
+        if (title) {
+            columnUsage.addAttribute("title", title);
+        }
+
+        if (visiblePriority) {
+            columnUsage.addAttribute("visiblePriority", visiblePriority);
+        }
+
+        if (type === "EditColumn") {
+            columnUsage.addAttribute("@click", "onEdit");
+        }
+
+        if (type === "DeleteColumn") {
+            columnUsage.addAttribute("@click", "onDelete");
+        }
+
+        return columnUsage.toString();
+    }
+
+    function generateItem(index: number): Record<string, unknown> {
+        return {
+            key: `${index}`,
+            name: `Item ${index}`,
+            date: RockDateTime.now().date.addDays(-index).toISOString(),
+            index: index,
+            isActive: (index % 3) !== 0
+        };
+    }
+
+    function onAddItem(): void {
+        if (gridData.rows) {
+            gridData.rows.splice(gridData.rows.length, 0, generateItem(gridData.rows.length + 1));
+        }
+    }
+
+    async function onEdit(): Promise<void> {
+        await alert("Edit clicked.");
+    }
+
+    function onDelete(key: string): void {
+        if (gridData.rows) {
+            const index = gridData.rows.findIndex(r => r.key === key);
+
+            if (index !== -1) {
+                gridData.rows.splice(index, 1);
+            }
+        }
+    }
+</script>

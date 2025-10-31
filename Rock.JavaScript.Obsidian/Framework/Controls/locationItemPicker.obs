@@ -4,6 +4,7 @@
                     formGroupClasses="location-item-picker"
                     iconCssClass="ti ti-home"
                     :provider="itemProvider"
+                    autoExpand
                     :multiple="multiple"
                     v-model:showPopup="internalShowPopup">
 

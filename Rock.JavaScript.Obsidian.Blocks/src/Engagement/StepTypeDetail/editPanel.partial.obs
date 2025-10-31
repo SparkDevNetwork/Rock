@@ -380,12 +380,12 @@
 
     // #region Functions
     function getTriggerDescription(triggerType: string, primaryQualifier: string | null | undefined, secondaryQualifier: string | null | undefined): string {
-        if (triggerType == "StatusChanged") {
+        if (triggerType === "StatusChanged") {
 
-            let status = stepStatuses.value.find(x => x.value == primaryQualifier);
+            let status = stepStatuses.value.find(x => x.value === primaryQualifier);
             const fromStatus = !status?.text ? "[Any]" : status.text;
 
-            status = stepStatuses.value.find(x => x.value == secondaryQualifier);
+            status = stepStatuses.value.find(x => x.value === secondaryQualifier);
 
             const toStatus = !status?.text ? "[Any]" : status.text;
 
@@ -393,7 +393,7 @@
 
             return description;
         }
-        else if (triggerType == "IsComplete") {
+        else if (triggerType === "IsComplete") {
             return "Step Completed";
         }
         else {
@@ -414,7 +414,7 @@
     };
 
     const onEditWorkflow = (key: string): void => {
-        const workflow = stepWorkflowTriggers.value.find(x => x.idKey == key);
+        const workflow = stepWorkflowTriggers.value.find(x => x.idKey === key);
         if (workflow) {
             stepWorkflowTrigger.value = workflow;
             triggerType.value = workflow.workflowTrigger?.value ?? "";
@@ -441,7 +441,7 @@
 
     const onSaveWorkflow = (): void => {
         isWorkflowModalOpen.value = false;
-        const selectedTriggerType = triggerTypes.value.find(t => t.value == triggerType.value);
+        const selectedTriggerType = triggerTypes.value.find(t => t.value === triggerType.value);
 
         if (triggerType.value && stepWorkflowTrigger.value.workflowType?.value && workflowTriggersGridData.rows && selectedTriggerType?.value) {
             const index = stepWorkflowTriggers.value.findIndex(a => (a.idKey === stepWorkflowTrigger.value.idKey));
@@ -452,8 +452,8 @@
 
             if (index !== -1) {
                 // Get the updated WorkflowTrigger and RowItem.
-                let editedWorkflowTrigger = stepWorkflowTriggers.value.find(a => a.idKey == stepWorkflowTrigger.value.idKey);
-                let rowItem = workflowTriggersGridData.rows.find(x => x["idKey"] == stepWorkflowTrigger.value.idKey);
+                let editedWorkflowTrigger = stepWorkflowTriggers.value.find(a => a.idKey === stepWorkflowTrigger.value.idKey);
+                let rowItem = workflowTriggersGridData.rows.find(x => x["idKey"] === stepWorkflowTrigger.value.idKey);
 
                 if (editedWorkflowTrigger && rowItem) {
                     // Replace old WorkflowTrigger with updated WorkflowTrigger.
@@ -530,7 +530,7 @@
     const onDeleteAttribute = async (key: string): Promise<void> => {
         // Close modal and remove deleted attribute from the current collection of attributes.
         isAttributeModalOpen.value = false;
-        const deletedAttribute = stepAttributes.value.find(a => a.attribute?.guid == key);
+        const deletedAttribute = stepAttributes.value.find(a => a.attribute?.guid === key);
         stepAttributes.value = stepAttributes.value.filter(s => s.attribute?.guid !== key);
         reservedKeyNames.value = reservedKeyNames.value.filter(r => r !== deletedAttribute?.attribute?.key);
 
@@ -551,8 +551,8 @@
 
             if (index !== -1) {
                 // Get the updated attribute and rowItem.
-                let editedAttribute = stepAttributes.value.find(a => a.attribute?.guid == stepAttribute.value?.guid);
-                let rowItem = attributesGridData.rows.find(x => x["idKey"] == stepAttribute.value?.guid);
+                let editedAttribute = stepAttributes.value.find(a => a.attribute?.guid === stepAttribute.value?.guid);
+                let rowItem = attributesGridData.rows.find(x => x["idKey"] === stepAttribute.value?.guid);
 
                 if (editedAttribute && rowItem) {
                     // Replace old attribute with updated attribute.

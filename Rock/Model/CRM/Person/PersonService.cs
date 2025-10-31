@@ -5559,6 +5559,8 @@ AND GroupTypeId = ${familyGroupType.Id}
                     return new RockChatUserKey
                     {
                         PersonId = p.Person.Id,
+                        NickName = p.Person.NickName,
+                        LastName = p.Person.LastName,
                         ChatPersonAliasId = firstChatAlias?.Id,
                         ChatPersonAliasGuid = firstChatAlias?.Guid
                     };
@@ -5609,6 +5611,8 @@ AND GroupTypeId = ${familyGroupType.Id}
                     ( p, pa ) => new RockChatUserKey
                     {
                         PersonId = p.Id,
+                        NickName = p.NickName,
+                        LastName = p.LastName,
                         ChatPersonAliasId = pa.Id,
                         ChatPersonAliasGuid = pa.Guid,
                     }
@@ -5646,6 +5650,8 @@ AND GroupTypeId = ${familyGroupType.Id}
                     ( p, pa ) => new RockChatUserKey
                     {
                         PersonId = p.Id,
+                        NickName = p.NickName,
+                        LastName = p.LastName,
                         ChatPersonAliasId = pa.Id,
                         ChatPersonAliasGuid = pa.Guid,
                     }

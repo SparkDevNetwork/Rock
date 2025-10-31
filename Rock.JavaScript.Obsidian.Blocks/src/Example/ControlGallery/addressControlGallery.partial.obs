@@ -39,8 +39,8 @@
 
     const showCountrySelected = ref("default");
     const showCountry = computed(() => {
-        return showCountrySelected.value == "true" ? true :
-            showCountrySelected.value == "false" ? false : null;
+        return showCountrySelected.value === "true" ? true :
+            showCountrySelected.value === "false" ? false : null;
     });
 
     const value = ref({});

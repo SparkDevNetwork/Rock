@@ -212,22 +212,6 @@
         return row.engagementCount as string;
     }
 
-    /**
-    * Gets the filter value text to use for the person column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getEnrollmentDateFilterValue(row: Record<string, unknown>): string {
-        const dateStr = row.enrollmentDate as string;
-        if (!dateStr) return "";
-        const date = new Date(dateStr);
-        if (isNaN(date.getTime())) return dateStr;
-        const mm = String(date.getMonth() + 1);
-        const dd = String(date.getDate());
-        const yyyy = date.getFullYear();
-        return `${mm}/${dd}/${yyyy}`;
-    }
-
     // #endregion
 
     // #region Event Handlers

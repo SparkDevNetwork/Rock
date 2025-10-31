@@ -24,6 +24,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Caching;
+using System.Web.Hosting;
 using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
@@ -410,6 +411,8 @@ namespace RockWeb
 
                     // Pass in a CancellationToken so we can stop compiling if Rock shuts down before it is done
                     BlockTypeService.VerifyBlockTypeInstanceProperties( allUsedBlockTypeIds, _threadCancellationTokenSource.Token );
+
+                    BlockTypeService.RegisterBlockTypes( HostingEnvironment.MapPath( "~" ), false );
 
                     UpdateCompilerAttributesOnBlockTypes();
 

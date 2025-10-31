@@ -141,7 +141,7 @@
     function onOkClicked(): void {
         const editor = editorInstance.value;
 
-        if (editor && image.value?.length == 1) {
+        if (editor && image.value?.length === 1) {
             // Possible commands: https://www.tiny.cloud/docs/tinymce/latest/editor-command-identifiers/
             editor.execCommand("InsertHTML", false, `<img style="width:25%" src="${image.value[0].uri}" alt="${image.value[0].name}" />`);
         }

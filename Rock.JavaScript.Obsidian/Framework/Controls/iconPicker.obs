@@ -289,7 +289,7 @@
         icon.value = undefined;
 
         // If the library isn't loaded, load it.
-        if ((icons.value[library.value] ?? [])?.length == 0) {
+        if ((icons.value[library.value] ?? [])?.length === 0) {
             getIcons();
         }
     });

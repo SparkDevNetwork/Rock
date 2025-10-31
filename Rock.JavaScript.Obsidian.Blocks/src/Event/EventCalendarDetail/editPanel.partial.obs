@@ -214,8 +214,8 @@
     const onSaveContentChannel = (): void => {
         isContentChannelModalOpen.value = false;
 
-        if (!savedContentChannels.value.some(x => x.value == contentChannel.value)) {
-            const selectedContentChannel = contentChannelsList.value.find(x => x.value == contentChannel.value);
+        if (!savedContentChannels.value.some(x => x.value === contentChannel.value)) {
+            const selectedContentChannel = contentChannelsList.value.find(x => x.value === contentChannel.value);
             if (selectedContentChannel) {
                 savedContentChannels.value.push(selectedContentChannel);
 
@@ -291,8 +291,8 @@
             const index = eventAttributes.value.findIndex(a => a.attribute?.guid === eventAttribute.value?.guid);
 
             if (index !== -1) {
-                let editedAttribute = eventAttributes.value.find(a => a.attribute?.guid == eventAttribute.value?.guid);
-                let rowItem = eventAttributesGridData.rows?.find(x => x.key == eventAttribute.value?.key);
+                let editedAttribute = eventAttributes.value.find(a => a.attribute?.guid === eventAttribute.value?.guid);
+                let rowItem = eventAttributesGridData.rows?.find(x => x.key === eventAttribute.value?.key);
 
                 if (editedAttribute?.attribute) {
                     editedAttribute.attribute = eventAttribute.value;

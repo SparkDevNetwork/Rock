@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -141,6 +142,28 @@ namespace Rock.Communication.Chat
         } );
 
         /// <summary>
+        /// A lazy-loaded <see cref="Regex"/> to use when searching for mentioned <see cref="ChatUser"/>s within a chat message.
+        /// </summary>
+        private static readonly Lazy<Regex> _personMentionsRegex = new Lazy<Regex>( () =>
+        {
+            return new Regex( @"(?<!\w)@(\d+)\b", RegexOptions.Compiled | RegexOptions.CultureInvariant );
+        } );
+
+        /// <summary>
+        /// A lazy-loaded dictionary of <see cref="ChatAttachmentType"/>s by <see cref="FieldType"/> unique identifiers.
+        /// </summary>
+        private static readonly Lazy<Dictionary<Guid, ChatAttachmentType>> _chatAttachmentTypesByFieldTypeGuid = new Lazy<Dictionary<Guid, ChatAttachmentType>>( () =>
+        {
+            return new Dictionary<Guid, ChatAttachmentType>
+            {
+                { SystemGuid.FieldType.FILE.AsGuid(), ChatAttachmentType.File },
+                { SystemGuid.FieldType.IMAGE.AsGuid(), ChatAttachmentType.Image },
+                { SystemGuid.FieldType.AUDIO_FILE.AsGuid(), ChatAttachmentType.Audio },
+                { SystemGuid.FieldType.VIDEO_FILE.AsGuid(), ChatAttachmentType.Video }
+            };
+        } );
+
+        /// <summary>
         /// The prefix to use for cache keys specific to the Rock chat system.
         /// </summary>
         private const string CacheKeyPrefix = "core-chat:";
@@ -234,7 +257,17 @@ namespace Rock.Communication.Chat
         internal static int ChatSharedChannelsGroupId => _systemGroupIdsByGuid.Value[SystemGuid.Group.GROUP_CHAT_SHARED_CHANNELS];
 
         /// <summary>
-        /// Gets the value to use for <see cref="Group.Name"/>, for groups that are children of the parent direct messages group.
+        /// Gets the <see cref="Regex"/> to use when searching for mentioned <see cref="ChatUser"/>s within a chat message.
+        /// </summary>
+        internal static Regex PersonMentionsRegex => _personMentionsRegex.Value;
+
+        /// <summary>
+        /// Gets the mappings from <see cref="FieldType"/> unique identifier to <see cref="ChatAttachmentType"/>.
+        /// </summary>
+        internal static Dictionary<Guid, ChatAttachmentType> ChatAttachmentTypesByFieldTypeGuid => _chatAttachmentTypesByFieldTypeGuid.Value;
+
+        /// <summary>
+        /// Gets the value to use for <see cref="Group"/> name, for groups that are children of the parent direct messages group.
         /// </summary>
         internal static string ChatDirectMessageGroupName => "Chat Direct Message";
 
@@ -650,7 +683,7 @@ namespace Rock.Communication.Chat
                 var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( new List<SyncPersonToChatCommand> { syncCommand } );
                 if ( createOrUpdateChatUsersResult == null || createOrUpdateChatUsersResult.HasException )
                 {
-                    Logger.LogError( createOrUpdateChatUsersResult?.Exception, $"{logMessagePrefix} at step '{nameof( CreateOrUpdateChatUsersAsync ).SplitCase()}'.", personId, shouldCreate );
+                    Logger.LogError( createOrUpdateChatUsersResult?.Exception, $"{logMessagePrefix} on step '{nameof( CreateOrUpdateChatUsersAsync ).SplitCase()}'.", personId, shouldCreate );
                     return auth;
                 }
 
@@ -664,7 +697,7 @@ namespace Rock.Communication.Chat
                     {
                         // If the caller specified that a chat-specific person alias should be created if missing, yet
                         // we didn't get one back, log it.
-                        Logger.LogError( $"{logMessagePrefix} at step '{nameof( CreateOrUpdateChatUsersAsync ).SplitCase()}'; no chat-specific Person Alias record was returned.", personId, shouldCreate );
+                        Logger.LogError( $"{logMessagePrefix} on step '{nameof( CreateOrUpdateChatUsersAsync ).SplitCase()}'; no chat-specific Person Alias record was returned.", personId, shouldCreate );
                     }
 
                     return auth;
@@ -673,7 +706,7 @@ namespace Rock.Communication.Chat
                 var tokenResult = await ChatProvider.GetChatUserTokenAsync( chatUserResult.ChatUserKey );
                 if ( tokenResult?.Value.IsNotNullOrWhiteSpace() != true || tokenResult.HasException )
                 {
-                    Logger.LogError( tokenResult?.Exception, $"{logMessagePrefix} at step '{nameof( ChatProvider.GetChatUserTokenAsync ).SplitCase()}'; no token was returned from the Chat provider.", personId, shouldCreate );
+                    Logger.LogError( tokenResult?.Exception, $"{logMessagePrefix} on step '{nameof( ChatProvider.GetChatUserTokenAsync ).SplitCase()}'; no token was returned from the Chat provider.", personId, shouldCreate );
                     return auth;
                 }
 
@@ -1653,8 +1686,8 @@ namespace Rock.Communication.Chat
                                 .ToList();
 
                             // The next method call does the following:
-                            //  1) Ensures this person has a chat-specific person alias in Rock;
-                            //  2) Ensures this person has a chat user in the external chat system.
+                            //  1) Ensures each person has a chat-specific person alias in Rock;
+                            //  2) Ensures each person has a chat user in the external chat system.
                             var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( syncPersonToChatCommands );
 
                             // If `createOrUpdateChatUsersResult` failed, a detailed error will have already been logged.
@@ -1767,8 +1800,8 @@ namespace Rock.Communication.Chat
                                 .ToList();
 
                             // The next method call does the following:
-                            //  1) Ensures this person has a chat-specific person alias in Rock;
-                            //  2) Ensures this person has a chat user in the external chat system.
+                            //  1) Ensures each person has a chat-specific person alias in Rock;
+                            //  2) Ensures each person has a chat user in the external chat system.
                             var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( syncPersonToChatCommands );
 
                             // If `createOrUpdateChatUsersResult` failed, a detailed error will have already been logged.
@@ -2040,8 +2073,8 @@ namespace Rock.Communication.Chat
                             .ToList();
 
                         // The next method call does the following:
-                        //  1) Ensures this person has a chat-specific person alias in Rock;
-                        //  2) Ensures this person has a chat user in the external chat system.
+                        //  1) Ensures each person has a chat-specific person alias in Rock;
+                        //  2) Ensures each person has a chat user in the external chat system.
                         var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( syncPersonToChatCommands );
 
                         // If `createOrUpdateChatUsersResult` failed, a detailed error will have already been logged.
@@ -2394,6 +2427,8 @@ namespace Rock.Communication.Chat
                             {
                                 ChatUserKey = chatUserKey,
                                 PersonId = chatUserPerson.PersonId,
+                                NickName = chatUserPerson.NickName,
+                                LastName = chatUserPerson.LastName,
                                 SyncTypePerformed = chatSyncType
                             }
                         );
@@ -3048,6 +3083,309 @@ namespace Rock.Communication.Chat
 
         #endregion Synchronization: From Chat Provider To Rock
 
+        #region Message Sending
+
+        /// <summary>
+        /// Gets the <see cref="ChatAttachmentType"/> for the provided <see cref="FieldTypeCache"/>.
+        /// </summary>
+        /// <param name="fieldType">The <see cref="FieldTypeCache"/> for which to get the <see cref="ChatAttachmentType"/>.</param>
+        /// <returns>
+        /// The <see cref="ChatAttachmentType"/> or <see langword="null"/> if there is no corresponding
+        /// <see cref="ChatAttachmentType"/> for the provided <see cref="FieldTypeCache"/>.
+        /// </returns>
+        internal static ChatAttachmentType? GetChatAttachmentType( FieldTypeCache fieldType )
+        {
+            if ( fieldType == null || !ChatAttachmentTypesByFieldTypeGuid.TryGetValue( fieldType.Guid, out var chatAttachmentType ) )
+            {
+                return null;
+            }
+
+            return chatAttachmentType;
+        }
+
+        /// <summary>
+        /// Sends a chat direct message to <see cref="ChatUser"/>s in the external chat system.
+        /// </summary>
+        /// <param name="command">The command for the message to send.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="SendChatMessageResult"/>.
+        /// </returns>
+        internal async Task<SendChatMessageResult> SendChatDirectMessageAsync( SendChatDirectMessageCommand command )
+        {
+            var result = new SendChatMessageResult();
+
+            if ( !IsChatEnabled )
+            {
+                return result;
+            }
+
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Send Chat Direct Message" ) )
+            {
+                var structuredLog = "Command: {@Command}";
+                var logMessagePrefix = $"{LogMessagePrefix} {nameof( SendChatDirectMessageAsync ).SplitCase()} failed";
+
+                try
+                {
+                    if ( ( command?.MessageText ).IsNullOrWhiteSpace() )
+                    {
+                        throw new ChatSendMessageException( "Message text cannot be empty." );
+                    }
+
+                    if ( command.RecipientPersonIds?.Any() != true )
+                    {
+                        throw new ChatSendMessageException( "At least one recipient Person ID must be provided." );
+                    }
+
+                    // Do the sender and recipients already have chat users in the external chat system?
+                    var personIds = new HashSet<int>
+                    {
+                        command.SenderPersonId
+                    };
+
+                    personIds.UnionWith( command.RecipientPersonIds );
+
+                    var personService = new PersonService( RockContext );
+                    var rockChatUserKeys = personService
+                        .GetActiveRockChatUserKeys( personIds.ToList() )
+                        .GroupBy( k => k.PersonId )
+                        .ToDictionary(
+                            g => g.Key,
+                            g => g.First()
+                        );
+
+                    // Determine if we need to create any chat users.
+                    var personIdsToSync = personIds
+                        .Where( personId => !rockChatUserKeys.ContainsKey( personId ) )
+                        .ToList();
+
+                    if ( personIdsToSync.Any() )
+                    {
+                        var syncPersonToChatCommands = personIdsToSync
+                            .Select( personId =>
+                                new SyncPersonToChatCommand
+                                {
+                                    PersonId = personId,
+                                    ShouldEnsureChatAliasExists = true
+                                }
+                            )
+                            .ToList();
+
+                        // The next method call does the following:
+                        //  1) Ensures each person has a chat-specific person alias in Rock;
+                        //  2) Ensures each person has a chat user in the external chat system.
+                        var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( syncPersonToChatCommands );
+                        if ( createOrUpdateChatUsersResult == null || createOrUpdateChatUsersResult.HasException )
+                        {
+                            result.Exception = createOrUpdateChatUsersResult?.Exception;
+                            Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( CreateOrUpdateChatUsersAsync ).SplitCase()}'. {structuredLog}", command );
+
+                            return result;
+                        }
+
+                        // Append the newly-synced chat users to the outer collection.
+                        createOrUpdateChatUsersResult.UserResults
+                            .ForEach( r =>
+                            {
+                                rockChatUserKeys.AddOrReplace( r.PersonId, new RockChatUserKey
+                                {
+                                    PersonId = r.PersonId,
+                                    NickName = r.NickName,
+                                    LastName = r.LastName,
+                                    ChatUserKey = r.ChatUserKey
+                                } );
+                            } );
+                    }
+
+                    // Does a direct message chat channel already exist for these chat users?
+                    var getOrCreateChatChannelResult = await ChatProvider.GetOrCreateDirectMessageChatChannelAsync(
+                        rockChatUserKeys.Values.Select( k => k.ChatUserKey ).ToList()
+                    );
+
+                    var chatChannel = getOrCreateChatChannelResult?.ChatChannels?.FirstOrDefault();
+                    if ( chatChannel == null || getOrCreateChatChannelResult?.HasException == true )
+                    {
+                        result.Exception = getOrCreateChatChannelResult?.Exception;
+                        Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( ChatProvider.GetOrCreateDirectMessageChatChannelAsync ).SplitCase()}'. {structuredLog}", command );
+
+                        return result;
+                    }
+
+                    // Get the sender's chat user key (since we already know it) to prevent the SendChatChannelMessageAsync
+                    // method from having to re-lookup this key based on the sender's person ID.
+                    if ( !rockChatUserKeys.TryGetValue( command.SenderPersonId, out var senderRockChatUserKey ) )
+                    {
+                        throw new ChatSendMessageException( $"An unknown error occurred while retrieving the chat individual key for sender Person ID {command.SenderPersonId}." );
+                    }
+
+                    // Send the message to the direct message chat channel.
+                    var sendChatChannelMessageResult = await SendChatChannelMessageAsync(
+                        new SendChatChannelMessageCommand
+                        {
+                            ChatChannelTypeKey = chatChannel.ChatChannelTypeKey,
+                            ChatChannelKey = chatChannel.Key,
+                            SenderChatUserKey = senderRockChatUserKey.ChatUserKey,
+                            MessageText = command.MessageText,
+                            Attachments = command.Attachments
+                        }
+                    );
+
+                    if ( sendChatChannelMessageResult?.WasMessageSent != true || sendChatChannelMessageResult.HasException )
+                    {
+                        result.Exception = sendChatChannelMessageResult?.Exception;
+                        Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( SendChatChannelMessageAsync ).SplitCase()}'. {structuredLog}", command );
+
+                        return result;
+                    }
+
+                    // If we made it this far, send was successful.
+                    result.WasMessageSent = true;
+                }
+                catch ( Exception ex )
+                {
+                    result.Exception = ex;
+                    Logger.LogError( ex, $"{logMessagePrefix}. {structuredLog}", command );
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Sends a chat message to a <see cref="ChatChannel"/> in the external chat system.
+        /// </summary>
+        /// <param name="command">The command for the message to send.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="SendChatMessageResult"/>.
+        /// </returns>
+        internal async Task<SendChatMessageResult> SendChatChannelMessageAsync( SendChatChannelMessageCommand command )
+        {
+            var result = new SendChatMessageResult();
+
+            if ( !IsChatEnabled )
+            {
+                return result;
+            }
+
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Send Chat Channel Message" ) )
+            {
+                var structuredLog = "Command: {@Command}";
+                var logMessagePrefix = $"{LogMessagePrefix} {nameof( SendChatChannelMessageAsync ).SplitCase()} failed";
+
+                try
+                {
+                    if ( ( command?.MessageText ).IsNullOrWhiteSpace() )
+                    {
+                        throw new ChatSendMessageException( "Message text cannot be empty." );
+                    }
+
+                    // If the caller provided these values, go ahead and use them.
+                    var chatChannelTypeKey = command.ChatChannelTypeKey;
+                    var chatChannelKey = command.ChatChannelKey;
+
+                    if ( chatChannelTypeKey.IsNullOrWhiteSpace() || chatChannelKey.IsNullOrWhiteSpace() )
+                    {
+                        // Otherwise, we need to look them up based on the provided Group ID.
+                        var groupCache = GroupCache.Get( command.GroupId );
+                        if ( groupCache == null )
+                        {
+                            throw new ChatSendMessageException( $"Rock group with ID {command.GroupId} could not be found." );
+                        }
+
+                        if ( !groupCache.GetIsChatChannelActive() )
+                        {
+                            throw new ChatSendMessageException( $"Rock group with ID {command.GroupId} is not chat-enabled." );
+                        }
+
+                        chatChannelTypeKey = GetChatChannelTypeKey( groupCache.GroupTypeId );
+                        chatChannelKey = GetChatChannelKey( groupCache.Id, groupCache.ChatChannelKey );
+                    }
+
+                    // The caller might have provided the sender's chat user key.
+                    var senderChatUserKey = command.SenderChatUserKey;
+
+                    var personService = new PersonService( RockContext );
+
+                    if ( senderChatUserKey.IsNullOrWhiteSpace() )
+                    {
+                        // Otherwise, we need to verify that the sender has a chat user in the external chat system.
+                        senderChatUserKey = personService
+                            .GetActiveRockChatUserKeys( new List<int> { command.SenderPersonId } )
+                            .FirstOrDefault()
+                            ?.ChatUserKey;
+
+                        if ( senderChatUserKey.IsNullOrWhiteSpace() )
+                        {
+                            var syncCommand = new SyncPersonToChatCommand
+                            {
+                                PersonId = command.SenderPersonId,
+                                ShouldEnsureChatAliasExists = true
+                            };
+
+                            // The next method call does the following:
+                            //  1) Ensures the sender has a chat-specific person alias in Rock;
+                            //  2) Ensures the sender has a chat user in the external chat system.
+                            var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( new List<SyncPersonToChatCommand> { syncCommand } );
+                            if ( createOrUpdateChatUsersResult == null || createOrUpdateChatUsersResult.HasException )
+                            {
+                                result.Exception = createOrUpdateChatUsersResult?.Exception;
+                                Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( CreateOrUpdateChatUsersAsync ).SplitCase()}'. {structuredLog}", command );
+
+                                return result;
+                            }
+
+                            senderChatUserKey = createOrUpdateChatUsersResult
+                                .UserResults
+                                .FirstOrDefault()
+                                ?.ChatUserKey;
+
+                            if ( senderChatUserKey.IsNullOrWhiteSpace() )
+                            {
+                                throw new ChatSendMessageException( $"An unknown error occurred while creating the chat individual for sender Person ID {command.SenderPersonId}." );
+                            }
+                        }
+                    }
+
+                    var rockChatMessage = await TryConvertToRockChatMessageAsync(
+                        command.MessageText,
+                        command.Attachments,
+                        personService
+                    );
+
+                    if ( rockChatMessage == null )
+                    {
+                        throw new ChatSendMessageException( "An unknown error occurred while sending the chat message." );
+                    }
+
+                    var sendMessageResult = await ChatProvider.SendChatChannelMessageAsync(
+                        chatChannelTypeKey,
+                        chatChannelKey,
+                        senderChatUserKey,
+                        rockChatMessage
+                    );
+
+                    if ( sendMessageResult?.WasMessageSent != true || sendMessageResult.HasException )
+                    {
+                        result.Exception = sendMessageResult?.Exception;
+                        Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( ChatProvider.SendChatChannelMessageAsync ).SplitCase()}'. {structuredLog}", command );
+
+                        return result;
+                    }
+
+                    // If we made it this far, send was successful.
+                    result.WasMessageSent = true;
+                }
+                catch ( Exception ex )
+                {
+                    result.Exception = ex;
+                    Logger.LogError( ex, $"{logMessagePrefix}. {structuredLog}", command );
+                }
+            }
+
+            return result;
+        }
+
+        #endregion Message Sending
+
         #region Interactions
 
         /// <summary>
@@ -3360,7 +3698,7 @@ namespace Rock.Communication.Chat
         /// <returns>
         /// A list of <see cref="RockChatGroup"/>s with one entry for each <see cref="Group"/>.
         /// </returns>
-        internal List<RockChatGroup> GetRockChatGroups( IQueryable<Group> groupQry )
+        internal List<RockChatGroup> GetRockChatGroups( IQueryable<Model.Group> groupQry )
         {
             if ( groupQry == null )
             {
@@ -3490,7 +3828,7 @@ namespace Rock.Communication.Chat
         /// <remarks>
         /// The most performant query approach will be chosen, based on the count of <see cref="Group"/> identifiers provided.
         /// </remarks>
-        private IQueryable<Group> GetGroupQuery( List<int> groupIds )
+        private IQueryable<Model.Group> GetGroupQuery( List<int> groupIds )
         {
             // We always want to include archived groups, as they'll be considered inactive chat channels.
             var groupQry = new GroupService( RockContext ).AsNoFilter();
@@ -3512,7 +3850,7 @@ namespace Rock.Communication.Chat
                 var entitySetOptions = new AddEntitySetActionOptions
                 {
                     Name = $"{nameof( ChatHelper )}_{nameof( GetGroupQuery )}",
-                    EntityTypeId = EntityTypeCache.Get<Group>().Id,
+                    EntityTypeId = EntityTypeCache.Get<Model.Group>().Id,
                     EntityIdList = groupIds,
                     ExpiryInMinutes = 20
                 };
@@ -3648,7 +3986,7 @@ namespace Rock.Communication.Chat
                     var entitySetOptions = new AddEntitySetActionOptions
                     {
                         Name = $"{nameof( ChatHelper )}_{nameof( GetRockChatGroupMembers )}_Groups",
-                        EntityTypeId = EntityTypeCache.Get<Group>().Id,
+                        EntityTypeId = EntityTypeCache.Get<Model.Group>().Id,
                         EntityIdList = groupIds,
                         ExpiryInMinutes = 20
                     };
@@ -4185,6 +4523,36 @@ namespace Rock.Communication.Chat
             };
         }
 
+        /// <summary>
+        /// Tries to convert message text and attachments to a <see cref="RockChatMessage"/>.
+        /// </summary>
+        /// <param name="messageText">The message text to send. Mentions should be in the format of @{personId} (e.g. @123).</param>
+        /// <param name="attachments">The list of <see cref="RockChatMessageAttachment"/>s to include with the message.</param>
+        /// <param name="personService">
+        /// The <see cref="PersonService"/> to use for checking for the existence of mentioned chat rock users.
+        /// </param>
+        /// <returns>A <see cref="RockChatMessage"/> or <see langword="null"/> if unable to convert.</returns>
+        private async Task<RockChatMessage> TryConvertToRockChatMessageAsync( string messageText, List<RockChatMessageAttachment> attachments, PersonService personService )
+        {
+            if ( messageText.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var rockChatMessage = new RockChatMessage
+            {
+                MessageText = messageText,
+                Attachments = attachments
+            };
+
+            if ( !await TryResolveMentionedChatUsersAsync( rockChatMessage, personService ?? new PersonService( RockContext ) ) )
+            {
+                return null;
+            }
+
+            return rockChatMessage;
+        }
+
         #endregion Converters: From Rock Models To Rock Chat DTOs
 
         #region Synchronization: From Rock To Chat Provider
@@ -4224,7 +4592,7 @@ namespace Rock.Communication.Chat
                     if ( deleteResult == null || deleteResult.HasException )
                     {
                         result.Exception = deleteResult?.Exception;
-                        Logger.LogError( result.Exception, $"{logMessagePrefix} at step '{nameof( ChatProvider.DeleteChatUsersAsync ).SplitCase()}'. {structuredLog}", keysToDelete, newKey );
+                        Logger.LogError( result.Exception, $"{logMessagePrefix} on step '{nameof( ChatProvider.DeleteChatUsersAsync ).SplitCase()}'. {structuredLog}", keysToDelete, newKey );
                     }
                     else
                     {
@@ -4430,7 +4798,7 @@ namespace Rock.Communication.Chat
                         var groupService = new GroupService( rockContext );
 
                         // Try to get the targeted group.
-                        Group group;
+                        Model.Group group;
 
                         if ( groupId.HasValue )
                         {
@@ -4494,7 +4862,7 @@ namespace Rock.Communication.Chat
                                 continue;
                             }
 
-                            var newGroup = new Group
+                            var newGroup = new Model.Group
                             {
                                 ParentGroupId = ChatDirectMessagesGroupId,
                                 Name = groupName,
@@ -5372,6 +5740,107 @@ namespace Rock.Communication.Chat
         }
 
         #endregion Synchronization: From Chat Provider To Rock
+
+        #region Message Sending
+
+        /// <summary>
+        /// Looks for any mentioned <see cref="Person"/> identifiers within the <see cref="RockChatMessage.MessageText"/>
+        /// and tries to resolve these identifiers to the format expected by the external chat provider, while also
+        /// adding each mentioned <see cref="ChatUser.Key"/> to the <see cref="RockChatMessage.MentionedChatUserKeys"/>
+        /// collection.
+        /// </summary>
+        /// <param name="rockChatMessage">The message that might contain mentions.</param>
+        /// <param name="personService">
+        /// The <see cref="PersonService"/> to use for checking for the existence of mentioned chat rock users.
+        /// </param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see langword="bool"/> indicating whether the
+        /// operation was successful. Any errors encountered will be error-logged.
+        /// </returns>
+        private async Task<bool> TryResolveMentionedChatUsersAsync( RockChatMessage rockChatMessage, PersonService personService )
+        {
+            var mentionedPersonIds = PersonMentionsRegex.Matches( rockChatMessage.MessageText )
+                .Cast<Match>()
+                .Select( m => m.Groups[1].Value.AsInteger() )
+                .Distinct()
+                .ToList();
+
+            if ( !mentionedPersonIds.Any() )
+            {
+                // No work to do.
+                return true;
+            }
+
+            // Get the mentioned people who already have a chat user record in the external chat system.
+            var rockChatUserKeys = personService
+                .GetActiveRockChatUserKeys( mentionedPersonIds )
+                .GroupBy( k => k.PersonId )
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.First()
+                );
+
+            // Determine which mentioned people don't already have a chat user record.
+            var personIdsToSync = mentionedPersonIds
+                .Where( personId => !rockChatUserKeys.ContainsKey( personId ) )
+                .ToList();
+
+            if ( personIdsToSync.Any() )
+            {
+                var syncPersonToChatCommands = personIdsToSync
+                    .Select( personId =>
+                        new SyncPersonToChatCommand
+                        {
+                            PersonId = personId,
+                            ShouldEnsureChatAliasExists = true
+                        }
+                    )
+                    .ToList();
+
+                // The next method call does the following:
+                //  1) Ensures each person has a chat-specific person alias in Rock;
+                //  2) Ensures each person has a chat user in the external chat system.
+                var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( syncPersonToChatCommands );
+                if ( createOrUpdateChatUsersResult == null || createOrUpdateChatUsersResult.HasException )
+                {
+                    var structuredLog = "Message Text: {@MessageText}";
+
+                    Logger.LogError( createOrUpdateChatUsersResult?.Exception, $"{LogMessagePrefix} {nameof( TryResolveMentionedChatUsersAsync ).SplitCase()} failed on step '{nameof( CreateOrUpdateChatUsersAsync ).SplitCase()}'. {structuredLog}", rockChatMessage.MessageText );
+
+                    return false;
+                }
+
+                // Append the newly-synced chat users to the outer collection.
+                createOrUpdateChatUsersResult.UserResults
+                    .ForEach( r =>
+                    {
+                        /*
+                            10/28/2025 - JPH
+
+                            Stream only requires the following limited fields to be set on the RockChatUserKey object
+                            (as we'll be replacing "@123" with "@Ted Decker" in the outgoing message text). This might
+                            not be the case with other providers; we might need to add more info to this object if we
+                            ever switch providers.
+
+                            Reason: Call out risk of switching to a different external chat provider.
+                         */
+                        rockChatUserKeys.AddOrReplace( r.PersonId, new RockChatUserKey
+                        {
+                            PersonId = r.PersonId,
+                            NickName = r.NickName,
+                            LastName = r.LastName,
+                            ChatUserKey = r.ChatUserKey
+                        } );
+                    } );
+            }
+
+            // Each provider will have its own way of resolving these mentions.
+            ChatProvider.ResolveMentionedChatUsers( rockChatMessage, rockChatUserKeys );
+
+            return true;
+        }
+
+        #endregion Message Sending
 
         #endregion Private Methods
 

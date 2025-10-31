@@ -30,6 +30,12 @@ namespace Rock.Communication.Chat.Sync
         /// </summary>
         public int PersonId { get; set; }
 
+        /// <inheritdoc cref="Person.NickName"/>
+        public string NickName { get; set; }
+
+        /// <inheritdoc cref="Person.LastName"/>
+        public string LastName { get; set; }
+
         /// <summary>
         /// Gets or sets the <see cref="ChatUser.Key"/> that represents this person in the external chat system.
         /// </summary>

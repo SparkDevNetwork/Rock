@@ -178,7 +178,7 @@
      * The footer secondary actions for the block panel.
      */
     const footerSecondaryActions = computed((): PanelAction[] => {
-        if (panelMode.value != DetailPanelMode.View) {
+        if (panelMode.value !== DetailPanelMode.View) {
             return [];
         }
 

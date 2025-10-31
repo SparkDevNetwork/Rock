@@ -413,13 +413,22 @@ $badge-count-width: 18px;
   bottom:   .65em;
 }
 
-.rockbadge-personaldevice {
+.rockbadge-personaldevice,
+.rockbadge-lastvisitonsite {
   width:  .9em;
   .badge-content .metric-value {
     top:  .9em;
     left: .6em;
-    font-size: .3em;
   }
+}
+
+.rockbadge-personaldevice .badge-content .metric-value {
+  font-size: .3em;
+}
+
+.rockbadge-lastvisitonsite .badge-content .metric-value {
+  font-size: .4em;
+  top:       .6em;
 }
 
 .rockbadge-assessment {

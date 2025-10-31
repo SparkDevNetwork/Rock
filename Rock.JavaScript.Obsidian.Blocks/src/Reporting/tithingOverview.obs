@@ -223,7 +223,7 @@
     // #region Computed Values
 
     const isToggled = computed((): boolean => {
-        return chartType.value == ChartTypeKey.BarChart;
+        return chartType.value === ChartTypeKey.BarChart;
     });
 
     // #endregion
@@ -305,14 +305,14 @@
         // Set Text
         if (tooltipModel.body) {
             const dataPoint = tooltipModel.dataPoints[0];
-            const label = chartType.value == ChartTypeKey.BarChart ? dataPoint?.label ?? "" : dataPoint?.dataset?.label ?? "";
+            const label = chartType.value === ChartTypeKey.BarChart ? dataPoint?.label ?? "" : dataPoint?.dataset?.label ?? "";
 
             let innerHtml = "";
             if (config.toolTipData) {
                 const toolTipInfo = toolTipData.value[label];
                 innerHtml += `<thead><tr><th>${toolTipInfo.campus}</th></tr></thead><tbody>`;
 
-                if (chartType.value == ChartTypeKey.BarChart) {
+                if (chartType.value === ChartTypeKey.BarChart) {
                     const titheMetric = toolTipInfo.titheMetric ? `${toCurrencyOrNull(toolTipInfo.titheMetric, toolTipInfo.currencyInfo)}` : "N/A";
                     innerHtml += `<tr><td><span style="border-width: 2px">Tithe Index : ${titheMetric}</span></td><tr>`;
                     innerHtml += `<tr><td><span style="border-width: 2px">Campus Age : ${formatAge(toolTipInfo.campusOpenedDate, toolTipInfo.campusClosedDate)}</span></td><tr>`;
@@ -350,7 +350,7 @@
     function generateLegendLabels(chart: Chart): LegendItem[] {
         let legendItems = [] as LegendItem[];
 
-        if (chartType.value == ChartTypeKey.BarChart) {
+        if (chartType.value === ChartTypeKey.BarChart) {
             for (const label in legendLabelColorMap.value) {
                 let legendItem = {
                     text: label,
@@ -427,7 +427,7 @@
     function getChartConfig(): ChartConfiguration<keyof ChartTypeRegistry, number[]> {
 
         if (options.value.plugins?.legend?.title) {
-            options.value.plugins.legend.title.text = chartType.value == ChartTypeKey.BarChart ? "Campus Age" : "Campus";
+            options.value.plugins.legend.title.text = chartType.value === ChartTypeKey.BarChart ? "Campus Age" : "Campus";
         }
 
         const config: ChartConfiguration<keyof ChartTypeRegistry, number[]> = {

@@ -193,10 +193,11 @@ namespace Rock.Web.Cache
         /// <param name="triggerId">The identifier of the automation trigger that was added, modified or deleted.</param>
         internal static void UpdateTriggerMonitor( int triggerId )
         {
-            var container = RockApp.Current.GetService<AutomationTriggerContainer>();
-
-            using ( var rockContext = RockApp.Current.CreateRockContext() )
+            using ( var scope = RockApp.Current.CreateScope() )
             {
+                var container = scope.ServiceProvider.GetRequiredService<AutomationTriggerContainer>();
+                var rockContext = scope.ServiceProvider.GetRequiredService<RockContext>();
+
                 // Don't use cache since we might get executed before the cache
                 // flush bus message has gone through.
                 var trigger = new AutomationTriggerService( rockContext ).Get( triggerId );

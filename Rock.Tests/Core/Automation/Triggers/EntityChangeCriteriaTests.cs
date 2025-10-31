@@ -183,7 +183,7 @@ namespace Rock.Tests.Core.Automation.Triggers
         public void IsMatch_ReturnsFalseWithInvalidPropertyAdvancedCriteria()
         {
             var entryMock = new Mock<IEntitySaveEntry>();
-            var criteria = new EntityChangeCriteria( typeof( Group ), 1, null, "DoDeDa == 2" );
+            var criteria = new EntityChangeCriteria( typeof( Group ), 1, null, "Entity.DoDeDa == 2" );
 
             var result = criteria.IsMatch( entryMock.Object );
 
@@ -194,10 +194,9 @@ namespace Rock.Tests.Core.Automation.Triggers
         public void IsMatch_ReturnsTrueWithMatchingAdvancedCriteria()
         {
             var entryMock = new Mock<IEntitySaveEntry>();
-            entryMock.Setup( e => e.Entity )
-                .Returns( new Group { Id = 2 } );
+            entryMock.Setup( e => e.Entity ).Returns( new Group { Id = 2 } );
 
-            var criteria = new EntityChangeCriteria( typeof( Group ), 1, null, "Id == 2" );
+            var criteria = new EntityChangeCriteria( typeof( Group ), 1, null, "Entity.Id == 2" );
 
             var result = criteria.IsMatch( entryMock.Object );
 
@@ -211,7 +210,7 @@ namespace Rock.Tests.Core.Automation.Triggers
             entryMock.Setup( e => e.Entity )
                 .Returns( new Group { Id = 1 } );
 
-            var criteria = new EntityChangeCriteria( typeof( Group ), 1, null, "Id == 2" );
+            var criteria = new EntityChangeCriteria( typeof( Group ), 1, null, "Entity.Id == 2" );
 
             var result = criteria.IsMatch( entryMock.Object );
 

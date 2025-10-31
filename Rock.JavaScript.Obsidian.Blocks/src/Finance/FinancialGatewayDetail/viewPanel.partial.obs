@@ -92,7 +92,7 @@
                 if (hour > 12) {
                     hour -= 12;
                 }
-                else if (hour == 0 && meridiem == "AM") {
+                else if (hour === 0 && meridiem === "AM") {
                     hour = 12;
                 }
 

@@ -43,7 +43,7 @@
     // #region Values
 
     const attributes = computed(() => {
-        if(!props.modelValue?.attributes) {
+        if (!props.modelValue?.attributes) {
             return {};
         }
         const attributes = props.modelValue.attributes;
@@ -83,7 +83,7 @@
         valueBuilder.addTextValue("Event Type", props.modelValue.entityType?.text ?? "");
         valueBuilder.addTextValue("Require Notification", props.modelValue.isNoticeRequired ? "Yes" : "No");
         valueBuilder.addTextValue("Send Weekend Notices on Friday", !props.modelValue.sendOnWeekends ? "Yes" : "No");
-        if(props.modelValue.entityType?.value?.toUpperCase() == EntityType.PersonPrayerRequest) {
+        if (props.modelValue.entityType?.value?.toUpperCase() === EntityType.PersonPrayerRequest) {
             valueBuilder.addTextValue("Include Non-Public Requests", props.modelValue.includeNonPublicRequests ? "Yes" : "No");
         }
         return valueBuilder.build();

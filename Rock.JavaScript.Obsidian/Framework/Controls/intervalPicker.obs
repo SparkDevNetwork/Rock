@@ -94,10 +94,10 @@
     ];
 
     const maxValue = computed(() => {
-        if (unit.value == TimeIntervalUnit.Minutes.toString()) {
+        if (unit.value === TimeIntervalUnit.Minutes.toString()) {
             return 59;
         }
-        if (unit.value == TimeIntervalUnit.Hours.toString()) {
+        if (unit.value === TimeIntervalUnit.Hours.toString()) {
             return 23;
         }
 

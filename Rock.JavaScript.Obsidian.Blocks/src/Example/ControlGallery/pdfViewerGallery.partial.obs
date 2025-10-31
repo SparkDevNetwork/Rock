@@ -50,7 +50,7 @@
 
     const importCode = getSfcControlImportPath("pdfViewer");
     const exampleCode = computed((): string => {
-        return `<PdfViewer sourceUrl="${sourceUrl.value}"${viewerHeight.value != "600px" ? ` viewerHeight="${viewerHeight.value}"` : ""
+        return `<PdfViewer sourceUrl="${sourceUrl.value}"${viewerHeight.value !== "600px" ? ` viewerHeight="${viewerHeight.value}"` : ""
             }${fitView.value ? ` fitView="${fitView.value}"` : ""
             }${pageMode.value ? ` pageMode="${pageMode.value}"` : ""
             } />`;

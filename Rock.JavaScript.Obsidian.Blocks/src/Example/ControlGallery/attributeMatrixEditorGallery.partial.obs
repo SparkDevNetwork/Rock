@@ -161,7 +161,7 @@
 
     const importCode = getSfcControlImportPath("attributeMatrixEditor");
     const exampleCode = computed(() => {
-        const minRowsProp = minRows.value != 0 ? ` :minRows="${minRows.value}"` : "";
+        const minRowsProp = minRows.value !== 0 ? ` :minRows="${minRows.value}"` : "";
         const maxRowsProp = maxRows.value != null ? ` :maxRows="${maxRows.value}"` : "";
         return `<AttributeMatrixEditor v-model="value" :attributes="attributes" :defaultAttributeValues="defaultAttributeValues" v-model="value"${minRowsProp}${maxRowsProp} />`;
     });

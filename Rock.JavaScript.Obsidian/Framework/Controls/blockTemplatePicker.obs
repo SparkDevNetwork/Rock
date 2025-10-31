@@ -86,7 +86,7 @@
             loadedItems.value = result.data;
 
             if (result.data.length > 0) {
-                if (view.value == "SELECT") {
+                if (view.value === "SELECT") {
                     let item = result.data[0];
 
                     if (internalkey.value) {
@@ -122,7 +122,7 @@
     }, { immediate: true });
 
     watch(view, () => {
-        if (view.value == "CUSTOM") {
+        if (view.value === "CUSTOM") {
             internalkey.value = emptyGuid;
         }
         else {

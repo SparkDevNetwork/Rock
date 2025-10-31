@@ -77,7 +77,7 @@ export class DaysOfWeekFieldType extends FieldTypeBase {
                     }
                 }
             })
-            .filter(v => v != "")
+            .filter(v => v !== "")
             .join(", ");
     }
 

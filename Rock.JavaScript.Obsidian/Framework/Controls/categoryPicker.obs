@@ -4,6 +4,7 @@
                     formGroupClasses="category-picker"
                     iconCssClass="ti ti-folder-open"
                     :provider="itemProvider"
+                    autoExpand
                     :multiple="multiple" />
 </template>
 

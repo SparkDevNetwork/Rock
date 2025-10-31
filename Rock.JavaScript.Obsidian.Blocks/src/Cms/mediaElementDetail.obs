@@ -1140,7 +1140,7 @@
                 resetToViewMode();
                 return;
             }
-            else if (result.isSuccess && result.data && result.statusCode == 201 && typeof result.data === "string") {
+            else if (result.isSuccess && result.data && result.statusCode === 201 && typeof result.data === "string") {
                 window.location.href = makeUrlRedirectSafe(result.data);
                 return;
             }

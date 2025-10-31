@@ -6,6 +6,7 @@
                     iconCssClass="ti ti-settings-cog"
                     :provider="itemProvider"
                     :multiple="multiple"
+                    autoExpand
                     :disabled="disabled"
                     disableFolderSelection />
 </template>

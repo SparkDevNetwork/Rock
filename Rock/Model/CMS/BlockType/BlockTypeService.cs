@@ -23,10 +23,13 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Cms;
 using Rock.Data;
 using Rock.Enums.Cms;
+using Rock.Logging;
 using Rock.Observability;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -326,9 +329,15 @@ namespace Rock.Model
         public static void RegisterBlockTypes( string physWebAppPath, bool refreshAll = false )
         {
             // Dictionary for block types.  Key is path, value is friendly name
-            var list = new Dictionary<string, string>();
+            var list = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
+            var logger = RockLogger.LoggerFactory.CreateLogger<BlockTypeService>();
+            var sw = new Stopwatch();
+            sw.Start();
 
+            logger.LogDebug( "Starting RegisterEntityBlockTypes..." );
             RegisterEntityBlockTypes( refreshAll );
+            logger.LogDebug( $"\t{sw.ElapsedMilliseconds} ms ...done RegisterEntityBlockTypes." );
+
 
             // Find all the blocks in the Blocks folder...
             FindAllBlocksInPath( physWebAppPath, list, "Blocks" );
@@ -337,11 +346,14 @@ namespace Rock.Model
             FindAllBlocksInPath( physWebAppPath, list, "Plugins" );
 
             // Get a list of the BlockTypes already registered (via the path)
-            List<string> registeredPaths;
+            HashSet<string> registeredPaths;
             if ( refreshAll )
             {
+                logger.LogDebug( "Starting FlushRegistrationCache..." );
                 FlushRegistrationCache();
-                registeredPaths = new List<string>();
+                logger.LogDebug( $"\t{sw.ElapsedMilliseconds} ms ...done FlushRegistrationCache." );
+
+                registeredPaths = new HashSet<string>( StringComparer.OrdinalIgnoreCase );
             }
             else
             {
@@ -351,7 +363,7 @@ namespace Rock.Model
                         .Queryable().AsNoTracking()
                         .Where( b => !string.IsNullOrEmpty( b.Path ) )
                         .Select( b => b.Path )
-                        .ToList();
+                        .ToHashSet( StringComparer.OrdinalIgnoreCase );
                 }
             }
 
@@ -362,22 +374,35 @@ namespace Rock.Model
             foreach ( string path in list.Keys )
             {
                 // If the block has been previously processed or successfully registered, ignore it. 
-                if ( _processedBlockPaths.Any( b => b.Equals( path, StringComparison.OrdinalIgnoreCase ) )
-                     || registeredPaths.Any( b => b.Equals( path, StringComparison.OrdinalIgnoreCase ) ) )
+                if ( registeredPaths.Contains( path ) )
                 {
                     continue;
                 }
 
-                // Store the block path in the list of processed blocks to avoid re-processing if the registration fails.
+                // Atomic check+add for processed set (thread-safe).
+                bool alreadyProcessed;
                 lock ( _processedBlockPathsLock )
                 {
-                    _processedBlockPaths.Add( path );
+                    alreadyProcessed = _processedBlockPaths.Contains( path );
+                    if ( !alreadyProcessed )
+                    {
+                        // Store the block path in the list of processed blocks to avoid re-processing if the registration fails.
+                        _processedBlockPaths.Add( path ); // why: avoid duplicate concurrent work (matches original intent)
+                    }
+                }
+
+                if ( alreadyProcessed )
+                {
+                    continue;
                 }
 
                 // Attempt to load the control
                 try
                 {
+                    logger.LogDebug( $"Starting block {path}" );
                     var blockCompiledType = System.Web.Compilation.BuildManager.GetCompiledType( path );
+                    logger.LogDebug( $"\t\t{sw.ElapsedMilliseconds} ms ... finished GetCompiledType." );
+
                     if ( blockCompiledType != null && typeof( Web.UI.RockBlock ).IsAssignableFrom( blockCompiledType ) )
                     {
                         using ( var rockContext = new RockContext() )
@@ -459,6 +484,7 @@ namespace Rock.Model
                             // Update the attributes used by the block
                             Rock.Attribute.Helper.UpdateAttributes( controlType, blockEntityTypeId, "BlockTypeId", blockType.Id.ToString(), rockContext );
                         }
+                        logger.LogDebug( $"\t{sw.ElapsedMilliseconds} ms ...done with {path}." );
                     }
                 }
                 catch ( Exception thrownException )

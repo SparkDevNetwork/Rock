@@ -173,11 +173,11 @@
     });
 
     const showPersonPicker = computed((): boolean => {
-        return entityType.value?.value?.toUpperCase() == EntityType.Person;
+        return entityType.value?.value?.toUpperCase() === EntityType.Person;
     });
 
     const showGroupPicker = computed((): boolean => {
-        return entityType.value?.value?.toUpperCase() == EntityType.Group;
+        return entityType.value?.value?.toUpperCase() === EntityType.Group;
     });
 
     const showNoteTypePicker = computed((): boolean => {

@@ -214,7 +214,7 @@ export function pluralConditional(num: number, singular: string, plural: string)
  * @param padCharacter The character to use to pad the string.
  */
 export function padLeft(str: string | undefined | null, length: number, padCharacter: string = " "): string {
-    if (padCharacter == "") {
+    if (padCharacter === "") {
         padCharacter = " ";
     }
     else if (padCharacter.length > 1) {
@@ -240,7 +240,7 @@ export function padLeft(str: string | undefined | null, length: number, padChara
  * @param padCharacter The character to use to pad the string.
  */
 export function padRight(str: string | undefined | null, length: number, padCharacter: string = " "): string {
-    if (padCharacter == "") {
+    if (padCharacter === "") {
         padCharacter = " ";
     }
     else if (padCharacter.length > 1) {

@@ -4,6 +4,7 @@
                     formGroupClasses="location-item-picker"
                     iconCssClass="ti ti-chart-bar"
                     :provider="itemProvider"
+                    autoExpand
                     :multiple="multiple"
                     disableFolderSelection />
 </template>
