@@ -47,8 +47,6 @@ namespace Rock.Tests.Web.v2
             public const int MockBlock = 1;
         }
 
-
-
         #endregion
 
         [TestMethod]

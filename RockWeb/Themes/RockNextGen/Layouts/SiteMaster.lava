@@ -17,7 +17,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
 -->
 
 <html>
-<head runat="server">
+<head>
 
     <meta charset="utf-8">
     <title></title>
@@ -39,7 +39,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
     {{ Conent.head }}
 
 </head>
-<body runat="server" id="body">
+<body id="body">
     <div class="page-wrapper">
 
         <nav class="navbar navbar-fixed-top rock-top-header">
@@ -51,16 +51,16 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
             <a href="{{ '~' | ResolveRockUrl }}" title="Rock RMS" class="navbar-brand-corner no-logo"></a>
 
             <div id="fixed-header" class="header-content" role="navigation">
-                <div class="navbar-zone-login"><Rock:Zone Name="Login" runat="server" /></div>
-                <div class="navbar-zone-header"><Rock:Zone Name="Header" runat="server" /></div>
+                <div class="navbar-zone-login"><Rock:Zone Name="Login" /></div>
+                <div class="navbar-zone-header"><Rock:Zone Name="Header" /></div>
 
                 <!-- Page Title -->
                 {% if Page.PageDisplayTitle == true and PageTitle != empty %}
-                <section id="secPageTitle" class="page-title-display" runat="server">
+                <section id="secPageTitle" class="page-title-display">
                     <div class="page-title">
-                        <h1 class="title"><Rock:PageIcon ID="PageIcon" runat="server" /> <Rock:PageTitle ID="PageTitle" runat="server" /></h1>
-                        <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
-                        <Rock:PageDescription ID="PageDescription" runat="server" />
+                        <h1 class="title"><Rock:PageIcon ID="PageIcon" /> <Rock:PageTitle ID="PageTitle" /></h1>
+                        <Rock:PageBreadCrumbs ID="PageBreadCrumbs" />
+                        <Rock:PageDescription ID="PageDescription" />
                     </div>
                 </section>
                 {% endif %}
@@ -69,17 +69,17 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
         </nav>
 
         <nav class="navbar-default navbar-static-side" role="navigation">
-            <Rock:Zone Name="Navigation" CssClass="zone-navigation" runat="server" />
+            <Rock:Zone Name="Navigation" CssClass="zone-navigation" />
         </nav>
 
         <div id="content-wrapper">
-            <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+            {{ Content.Feature }}
 
             <div class="main-content">
                 {{ Content.Main }}
 
                 <div class="main-footer">
-                    <Rock:Zone Name="Footer" runat="server" />
+                    <Rock:Zone Name="Footer" />
                 </div>
             </div>
         </div>
