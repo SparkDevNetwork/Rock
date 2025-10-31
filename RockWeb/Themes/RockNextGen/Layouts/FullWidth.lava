@@ -1,13 +1,13 @@
 {% sitemaster src:'~~/Layouts/SiteMaster.lava' %}
     [[ content id:'Main' ]]
         <!-- Page Title -->
-        <section id="secPageTitle" class="page-header fullwidth" runat="server">
+        <section id="secPageTitle" class="page-header fullwidth">
             <div class="page-title">
-                <h1 class="title"><Rock:PageIcon ID="PageIcon" runat="server" /> <Rock:PageTitle ID="PageTitle" runat="server" /></h1>
-                <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
-                <Rock:PageDescription ID="PageDescription" runat="server" />
+                <h1 class="title"><Rock:PageIcon /> <Rock:PageTitle /></h1>
+                <Rock:PageBreadCrumbs />
+                <Rock:PageDescription />
             </div>
-            <Rock:Zone Name="Context" CssClass="zone-context" runat="server" />
+            <Rock:Zone Name="Context" CssClass="zone-context" />
         </section>
 
         <!-- Start Content Area -->
@@ -22,40 +22,40 @@
 
             <div class="row">
                 <div class="col-md-12">
-                    <Rock:Zone Name="Feature" runat="server" />
+                    <Rock:Zone Name="Feature" />
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-md-12">
-                    <Rock:Zone Name="Main" runat="server" />
+                    <Rock:Zone Name="Main" />
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-md-12">
-                    <Rock:Zone Name="Section A" runat="server" />
+                    <Rock:Zone Name="Section A" />
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-md-4">
-                    <Rock:Zone Name="Section B" runat="server" />
+                    <Rock:Zone Name="Section B" />
                 </div>
                 <div class="col-md-4">
-                    <Rock:Zone Name="Section C" runat="server" />
+                    <Rock:Zone Name="Section C" />
                 </div>
                 <div class="col-md-4">
-                    <Rock:Zone Name="Section D" runat="server" />
+                    <Rock:Zone Name="Section D" />
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-md-6">
-                    <Rock:Zone Name="Section E" runat="server" />
+                    <Rock:Zone Name="Section E" />
                 </div>
                 <div class="col-md-6">
-                    <Rock:Zone Name="Section F" runat="server" />
+                    <Rock:Zone Name="Section F" />
                 </div>
             </div>
         </section>

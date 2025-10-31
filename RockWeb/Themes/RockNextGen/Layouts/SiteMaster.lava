@@ -58,9 +58,36 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 {% if Page.PageDisplayTitle == true and PageTitle != empty %}
                 <section id="secPageTitle" class="page-title-display">
                     <div class="page-title">
-                        <h1 class="title"><Rock:PageIcon ID="PageIcon" /> <Rock:PageTitle ID="PageTitle" /></h1>
-                        <Rock:PageBreadCrumbs ID="PageBreadCrumbs" />
-                        <Rock:PageDescription ID="PageDescription" />
+                        <h1 class="title">
+                            {% if Page.PageDisplayIcon == true and PageIcon != empty %}
+                                <div class="page-icon"><i class="{{ PageIcon }}"></i></div>
+                            {% endif %}
+                            {% if Page.PageDisplayTitle == true and PageTitle != empty %}
+                                {{ PageTitle | Escape }}
+                            {% endif %}
+                        </h1>
+
+                        {% if Page.PageDisplayBreadCrumb == true %}
+                            <ol class="breadcrumb">
+                            {% for crumb in BreadCrumbs %}
+                                <li class="breadcrumb-item">
+                                    {% if crumb.IsActive %}
+                                        {{ crumb.Name | Escape }}
+                                    {% else %}
+                                        <a href="{{ crumb.Url }}" rel="rocknofollow">
+                                            {{ Crumb.Name | Escape }}
+                                        </a>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                            </ol>
+                        {% endif %}
+
+                        {% if Page.PageDisplayDescription == true and Page.Description != empty %}
+                            <div class="pageoverview-description">
+                                {{ Page.Description | Escape }}
+                            </div>
+                        {% endif %}
                     </div>
                 </section>
                 {% endif %}
