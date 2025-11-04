@@ -1,14 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
 using AngleSharp;
 using AngleSharp.Html.Parser;
 
-using Microsoft.Ajax.Utilities;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Moq;
+
+using Rock.Lava;
+using Rock.Web.v2;
 
 namespace Rock.Tests.Web.v2
 {
@@ -18,100 +20,72 @@ namespace Rock.Tests.Web.v2
         [TestMethod]
         public void Test()
         {
-            var x = @"<!DOCTYPE html>
-
-<!--
-  _______       _____           _   ____         _______ _             _____ _
- |__   __|     / ____|         | | |  _ \       |__   __| |           / ____| |
-    | | ___   | |  __  ___   __| | | |_) | ___     | |  | |__   ___  | |  __| | ___  _ __ _   _
-    | |/ _ \  | | |_ |/ _ \ / _` | |  _ < / _ \    | |  | '_ \ / _ \ | | |_ | |/ _ \| '__| | | |
-    | | (_) | | |__| | (_) | (_| | | |_) |  __/    | |  | | | |  __/ | |__| | | (_) | |  | |_| |
-    |_|\___/   \_____|\___/ \__,_| |____/ \___|    |_|  |_| |_|\___|  \_____|_|\___/|_|   \__, |
-                                                                                           __/ |
-                                                                                          |___/
-
-We believe in Jesus Christ as our Lord and Savior, the Son of God. We embrace His virgin birth,
-sinless life, sacrificial death on the cross for our sins, His resurrection from the dead, and
-His promised return. Our faith is steadfast, rooted in the unchanging truth of the Bible, and
-through Christ, we find forgiveness, salvation, and the assurance of eternal life.
--->
-
+            var mainLava = @"<!DOCTYPE html>
 <html>
-<head runat=""server"">
-
-    <meta charset=""utf-8"">
-    <title></title>
-
-    <script src=""{{ '~/Scripts/Bundles/RockJQueryLatest' | ResolveRockUrl }}""></script>
-
-
-
-    <!-- Set the viewport width to device width for mobile -->
-	<meta name=""viewport"" content=""width=device-width, initial-scale=1.0, user-scalable=no"">
-
-    {{ Content.css }}
-
-	<!-- Included CSS Files -->
-	<link rel=""stylesheet"" href=""{{ '~~/Styles/theme.css' | ResolveRockUrl | FingerprintUrl }}""/>
-
-    <script src=""{{ '~~/Assets/Scripts/theme.js' | ResolveRockUrl | FingerprintUrl }}""></script> 
-
-    {{ Conent.head }}
-
+<head>
 </head>
-<body runat=""server"" id=""body"">
-    <div class=""page-wrapper"">
-
-        <nav class=""navbar navbar-fixed-top rock-top-header"">
-            <button type=""button"" class=""navbar-toggle navbar-toggle-side-left collapsed"" data-toggle=""collapse"" data-target="".navbar-static-side"">
-                <div class=""hamburger-box"">
-                    <div class=""hamburger-icon""></div>
-                </div>
-            </button>
-            <a href=""{{ '~' | ResolveRockUrl }}"" title=""Rock RMS"" class=""navbar-brand-corner no-logo""></a>
-
-            <div id=""fixed-header"" class=""header-content"" role=""navigation"">
-                <div class=""navbar-zone-login""><Rock:Zone Name=""Login"" runat=""server"" /></div>
-                <div class=""navbar-zone-header""><Rock:Zone Name=""Header"" runat=""server"" /></div>
-
-                <!-- Page Title -->
-                {% if Page.PageDisplayTitle == true and PageTitle != empty %}
-                <section id=""secPageTitle"" class=""page-title-display"" runat=""server"">
-                    <div class=""page-title"">
-                        <h1 class=""title""><Rock:PageIcon ID=""PageIcon"" runat=""server"" /> <Rock:PageTitle ID=""PageTitle"" runat=""server"" /></h1>
-                        <Rock:PageBreadCrumbs ID=""PageBreadCrumbs"" runat=""server"" />
-                        <Rock:PageDescription ID=""PageDescription"" runat=""server"" />
-                    </div>
-                </section>
-                {% endif %}
-
-            </div>
-        </nav>
-
-        <nav class=""navbar-default navbar-static-side"" role=""navigation"">
-            <Rock:Zone Name=""Navigation"" CssClass=""zone-navigation"" runat=""server"" />
-        </nav>
-
-        <div id=""content-wrapper"">
-            <asp:ContentPlaceHolder ID=""feature"" runat=""server""></asp:ContentPlaceHolder>
-
-            <div class=""main-content"">
-                {{ Content.Main }}
-
-                <div class=""main-footer"">
-                    <Rock:Zone Name=""Footer"" runat=""server"" />
-                </div>
-            </div>
-        </div>
-
-    </div>
-
+<body id=""body"">
+    <Rock:RenderBody />
+    {{ Content.Main }}
 </body>
 </html>
 ";
-            var parser = new HtmlParser();
-            var document = parser.ParseDocument( x );
-            var y = document.DocumentElement.ToHtml();
+
+            var layoutLava = @"<Rock:ParentLayout src=""/main.lava"">
+    <div>body</div>
+</Rock:ParentLayout>";
+
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", mainLava },
+                new[] { "/layout.lava", layoutLava } );
+
+            var builder = new LavaPageLayoutBuilder( fileProvider );
+            var factory = new LavaEngineFactory();
+            var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+
+            var layout = builder.GetLayout( "/layout.lava", engine );
+        }
+
+        private IFileProvider GetMockFileProvider( params string[][] filesAndContents )
+        {
+            var fileProviderMock = new Mock<IFileProvider>();
+
+            fileProviderMock.Setup( m => m.GetFileInfo( It.IsAny<string>() ) ).Returns<string>( path =>
+            {
+                var fileInfoMock = new Mock<IFileInfo>();
+
+                for ( int i = 0; i < filesAndContents.Length; i++ )
+                {
+                    if ( filesAndContents[i][0] != path )
+                    {
+                        continue;
+                    }
+
+                    var stream = new MemoryStream();
+
+                    using ( var writer = new StreamWriter( stream, Encoding.UTF8, 4096, true ) )
+                    {
+                        writer.Write( filesAndContents[i][1] );
+                    }
+
+                    fileInfoMock.Setup( m => m.Exists ).Returns( true );
+                    fileInfoMock.Setup( m => m.CreateReadStream() ).Returns( () =>
+                    {
+                        var fileStream = new MemoryStream();
+
+                        stream.Position = 0;
+                        stream.CopyTo( fileStream );
+
+                        return fileStream;
+                    } );
+                }
+
+                fileInfoMock.Setup( m => m.Exists ).Returns( false );
+
+                return fileInfoMock.Object;
+            } );
+
+            return fileProviderMock.Object;
         }
     }
 }

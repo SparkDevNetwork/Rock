@@ -16,12 +16,47 @@ namespace Rock.Tests.Web.v2
     public class LavaPageLayoutBlockTests
     {
         [TestMethod]
+        public async Task Layout_RendersSourceTemplate()
+        {
+            var factory = new LavaEngineFactory();
+            var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+
+            engine.RegisterBlock( "layout", _ => new LavaPageLayoutBlock( GetMockFileProvider() ) );
+            engine.RegisterBlock( "renderbody", _ => new LavaPageRenderBodyBlock() );
+
+            var context = engine.NewRenderContext();
+            var parameters = LavaRenderParameters.WithContext( context );
+            var result = engine.RenderTemplate( "{% layout src:'/main.lava' %}hello{% endlayout %}", parameters );
+
+            Assert.IsFalse( result.HasErrors, "Lava generated errors." );
+            Assert.Contains( "<!-- main.lava -->", result.Text );
+        }
+
+        [TestMethod]
+        public async Task Layout_WithBody_RendersBody()
+        {
+            var factory = new LavaEngineFactory();
+            var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+
+            engine.RegisterBlock( "layout", _ => new LavaPageLayoutBlock( GetMockFileProvider() ) );
+            engine.RegisterBlock( "renderbody", _ => new LavaPageRenderBodyBlock() );
+
+            var context = engine.NewRenderContext();
+            var parameters = LavaRenderParameters.WithContext( context );
+            var result = engine.RenderTemplate( "{% layout src:'/main.lava' %}<!-- body -->{% endlayout %}", parameters );
+
+            Assert.IsFalse( result.HasErrors, "Lava generated errors." );
+            Assert.Contains( "<!-- body -->", result.Text );
+        }
+
+        [TestMethod]
         public async Task Layout_WithBody_SetsMergeField()
         {
             var factory = new LavaEngineFactory();
             var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
 
             engine.RegisterBlock( "layout", _ => new LavaPageLayoutBlock( GetMockFileProvider() ) );
+            engine.RegisterBlock( "renderbody", _ => new LavaPageRenderBodyBlock() );
 
             var context = engine.NewRenderContext();
             var parameters = LavaRenderParameters.WithContext( context );
@@ -38,6 +73,7 @@ namespace Rock.Tests.Web.v2
             var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
 
             engine.RegisterBlock( "layout", _ => new LavaPageLayoutBlock( GetMockFileProvider() ) );
+            engine.RegisterBlock( "renderbody", _ => new LavaPageRenderBodyBlock() );
 
             var context = engine.NewRenderContext();
             var parameters = LavaRenderParameters.WithContext( context );
@@ -72,7 +108,7 @@ namespace Rock.Tests.Web.v2
 
             using ( var writer = new StreamWriter( mainLavaStream, Encoding.UTF8, 4096, true ) )
             {
-                writer.WriteLine( "" );
+                writer.WriteLine( "<html><!-- main.lava -->{% renderbody %}{% endrenderbody %}</html>" );
             }
 
             mainLavaStream.Position = 0;
