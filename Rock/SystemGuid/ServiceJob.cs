@@ -540,6 +540,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_180_SWAP_OBSIDIAN_BLOCKS = "B3663D0F-6426-44BB-9C43-D9921A0974D3";
 
         /// <summary>
+        /// The Job to run Post v19.0 Data Migrations to swap Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_190_SWAP_OBSIDIAN_BLOCKS = "C05C0C81-12B2-4C35-9405-C3CE09E3CE75";
+
+        /// <summary>
         /// The job to run Post v18.0 Data Migrations to populate the newly-added [CommunicationRecipient].[DeliveredDateTime] field.
         /// </summary>
         public const string DATA_MIGRATIONS_180_POPULATE_COMMUNICATIONRECIPIENT_DELIVEREDDATETIME = "EF2CF0AC-7A83-4BEB-8824-41D3B5B8B832";

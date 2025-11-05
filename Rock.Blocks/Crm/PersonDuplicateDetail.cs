@@ -17,7 +17,6 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -226,8 +225,11 @@ namespace Rock.Blocks.Crm
                             PersonId = pd.PersonAlias.Person.Id,
                             PersonCampus = pd.PersonAlias.Person.PrimaryCampus.Name,
                             PersonAccountProtectionProfile = ( int ) pd.PersonAlias.Person.AccountProtectionProfile,
-                            PersonFirstName = pd.PersonAlias.Person.FirstName,
+                            PersonRecordSourceValueId = pd.PersonAlias.Person.RecordSourceValueId,
+                            PersonNickName = pd.PersonAlias.Person.NickName,
                             PersonLastName = pd.PersonAlias.Person.LastName,
+                            PersonSuffixValueId = pd.PersonAlias.Person.SuffixValueId,
+                            PersonRecordTypeValueId = pd.PersonAlias.Person.RecordTypeValueId,
                             PersonEmail = pd.PersonAlias.Person.Email,
                             PersonGender = ( int ) pd.PersonAlias.Person.Gender,
                             PersonAge = pd.PersonAlias.Person.Age,
@@ -237,8 +239,11 @@ namespace Rock.Blocks.Crm
                             PersonId = pd.DuplicatePersonAlias.Person.Id,
                             PersonCampus = pd.DuplicatePersonAlias.Person.PrimaryCampus.Name,
                             PersonAccountProtectionProfile = ( int ) pd.DuplicatePersonAlias.Person.AccountProtectionProfile,
-                            PersonFirstName = pd.DuplicatePersonAlias.Person.FirstName,
+                            PersonRecordSourceValueId = pd.DuplicatePersonAlias.Person.RecordSourceValueId,
+                            PersonNickName = pd.DuplicatePersonAlias.Person.NickName,
                             PersonLastName = pd.DuplicatePersonAlias.Person.LastName,
+                            PersonSuffixValueId = pd.DuplicatePersonAlias.Person.SuffixValueId,
+                            PersonRecordTypeValueId = pd.DuplicatePersonAlias.Person.RecordTypeValueId,
                             PersonEmail = pd.DuplicatePersonAlias.Person.Email,
                             PersonGender = ( int ) pd.DuplicatePersonAlias.Person.Gender,
                             PersonAge = pd.DuplicatePersonAlias.Person.Age,
@@ -322,8 +327,8 @@ namespace Rock.Blocks.Crm
                 dto.ConfidenceScore = projection.ConfidenceScore ?? 0.0;
                 dto.Campus = projection.DuplicatePerson.PersonCampus;
                 dto.AccountProtectionProfile = projection.DuplicatePerson.PersonAccountProtectionProfile;
-                dto.FirstName = projection.DuplicatePerson.PersonFirstName;
-                dto.LastName = projection.DuplicatePerson.PersonLastName;
+                dto.RecordSource = GetRecordSourceValue( projection.DuplicatePerson.PersonRecordSourceValueId );
+                dto.FullName = GetPersonFullName( projection.DuplicatePerson );
                 dto.Email = projection.DuplicatePerson.PersonEmail;
                 dto.Gender = projection.DuplicatePerson.PersonGender == 0 ? "" : ( ( Gender ) projection.DuplicatePerson.PersonGender ).ToStringSafe();
                 dto.Age = projection.DuplicatePerson.PersonAge.ToStringSafe();
@@ -373,8 +378,8 @@ namespace Rock.Blocks.Crm
                 ConfidenceScore = 0d,
                 Campus = projection.Person.PersonCampus,
                 AccountProtectionProfile = projection.Person.PersonAccountProtectionProfile,
-                FirstName = projection.Person.PersonFirstName,
-                LastName = projection.Person.PersonLastName,
+                RecordSource = GetRecordSourceValue( projection.Person.PersonRecordSourceValueId ),
+                FullName = GetPersonFullName( projection.Person ),
                 Email = projection.Person.PersonEmail,
                 Gender = projection.Person.PersonGender == 0 ? "" : ( ( Gender ) projection.Person.PersonGender ).ToStringSafe(),
                 Age = projection.Person.PersonAge.ToStringSafe(),
@@ -411,13 +416,40 @@ namespace Rock.Blocks.Crm
                 .AddField( "confidenceScore", a => a.DTO.ConfidenceScore )
                 .AddTextField( "campus", a => a.DTO.Campus )
                 .AddField( "accountProtectionProfile", a => a.DTO.AccountProtectionProfile )
-                .AddTextField( "firstName", a => a.DTO.FirstName )
-                .AddTextField( "lastName", a => a.DTO.LastName )
+                .AddTextField( "recordSource", a => a.DTO.RecordSource )
+                .AddTextField( "fullName", a => a.DTO.FullName )
                 .AddTextField( "email", a => a.DTO.Email )
                 .AddTextField( "gender", a => a.DTO.Gender )
                 .AddTextField( "age", a => a.DTO.Age )
                 .AddField( "addresses", a => a.DTO.Addresses )
                 .AddField( "phoneNumbers", a => a.DTO.PhoneNumbers );
+        }
+
+        /// <summary>
+        /// Gets the record source <see cref="DefinedValueCache.Value" /> for the provided identifier.
+        /// </summary>
+        /// <param name="recordSourceValueId">The identifier of the record source value to get.</param>
+        /// <returns>The record source value or an empty string if no matching <see cref="DefinedValueCache"/> was found.</returns>
+        private string GetRecordSourceValue( int? recordSourceValueId )
+        {
+            return recordSourceValueId.HasValue
+                ? DefinedValueCache.Get( recordSourceValueId.Value )?.Value
+                : string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the full name of the person from the provided projection.
+        /// </summary>
+        /// <param name="projection">The person projection.</param>
+        /// <returns>The full name of the person.</returns>
+        private string GetPersonFullName( PersonProjection projection )
+        {
+            return Person.FormatFullName(
+                projection.PersonNickName,
+                projection.PersonLastName,
+                projection.PersonSuffixValueId,
+                projection.PersonRecordTypeValueId
+            );
         }
 
         #endregion Grid Data Methods
@@ -558,47 +590,62 @@ namespace Rock.Blocks.Crm
     {
 
         /// <summary>
-        /// Gets or sets the unique identifier for the original person.
+        /// Gets or sets the unique identifier for the person.
         /// </summary>
         public int PersonId { get; set; }
 
         /// <summary>
-        /// Gets the hashed key for the original person identifier.
+        /// Gets the hashed key for the person identifier.
         /// </summary>
         public string PersonIdKey => Rock.Utility.IdHasher.Instance.GetHash( PersonId );
 
         /// <summary>
-        /// Gets or sets the campus name for the original person.
+        /// Gets or sets the campus name for the person.
         /// </summary>
         public string PersonCampus { get; set; }
 
         /// <summary>
-        /// Gets or sets the account protection profile for the original person.
+        /// Gets or sets the account protection profile for the person.
         /// </summary>
         public int PersonAccountProtectionProfile { get; set; }
 
         /// <summary>
-        /// Gets or sets the first name of the original person.
+        /// Gets or sets the record source defined value identifier for the person.
         /// </summary>
-        public string PersonFirstName { get; set; }
+        public int? PersonRecordSourceValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the last name of the original person.
+        /// Gets or sets the nick name of the person.
+        /// </summary>
+        public string PersonNickName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last name of the person.
         /// </summary>
         public string PersonLastName { get; set; }
 
         /// <summary>
-        /// Gets or sets the email address of the original person.
+        /// Gets or sets the suffix defined value identifier for the person.
+        /// </summary>
+        public int? PersonSuffixValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the record type defined value identifier for the person.
+        /// </summary>
+        public int? PersonRecordTypeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the email address of the person.
         /// </summary>
         public string PersonEmail { get; set; }
 
         /// <summary>
-        /// Gets or sets the gender of the original person.
+        /// Gets or sets the gender of the person.
         /// </summary>
         public int PersonGender { get; set; }
 
         /// <summary>
-        /// Gets or sets the age of the original person.
+        /// Gets or sets the age of the person.
         /// </summary>
         public int? PersonAge { get; set; }
     }
@@ -692,13 +739,13 @@ namespace Rock.Blocks.Crm
         /// </summary>
         public int AccountProtectionProfile { get; set; }
         /// <summary>
-        /// Gets or sets the first name of the person.
+        /// Gets or sets the record source for the person.
         /// </summary>
-        public string FirstName { get; set; }
+        public string RecordSource { get; set; }
         /// <summary>
-        /// Gets or sets the last name of the person.
+        /// Gets or sets the full name of the person.
         /// </summary>
-        public string LastName { get; set; }
+        public string FullName { get; set; }
         /// <summary>
         /// Gets or sets the email address of the person.
         /// </summary>

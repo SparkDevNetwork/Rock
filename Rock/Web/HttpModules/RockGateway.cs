@@ -203,6 +203,7 @@ namespace Rock.Web.HttpModules
                 if ( tracingEnabled )
                 {
                     DebugTraceProcessor.MonitorTrace( activity.TraceId.ToString() );
+                    activity.SetCustomProperty( "rock.full_trace", true );
                 }
 
                 context.Items[ObservabilityContextKey] = activity;

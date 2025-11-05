@@ -194,6 +194,7 @@ namespace Rock.Jobs
             List<Person> personsScheduled = new List<Person>();
             using ( var rockContext = new RockContext() )
             {
+                rockContext.Database.SetCommandTimeout( commandTimeoutSeconds );
                 List<int> groupIds = new List<int>();
                 var groupService = new GroupService( rockContext );
                 var attendanceService = new AttendanceService( rockContext );

@@ -24,6 +24,7 @@ import { ConfigurationValueKey } from "./attributeField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
 import { updateRefValue } from "@Obsidian/Utility/component";
+import { deepEqual } from "@Obsidian/Utility/util";
 
 export const EditComponent = defineComponent({
     name: "AttributeField.Edit",
@@ -56,16 +57,60 @@ export const EditComponent = defineComponent({
             return allowMultiple;
         });
 
+        // Keep track of the last known value (in array form) so we can avoid
+        // ping-ponging between the following two watchers, as each is affected
+        // by the other.
+        const lastKnownValue = ref<string[] | null>(null);
+
         // Watch for changes from the parent component and update the client UI.
         watch(() => props.modelValue, () => {
-            updateRefValue(internalValue, JSON.parse(props.modelValue || "[]"));
+            const mv = props.modelValue;
+            let arrayValue: string[] = [];
+
+            if (Array.isArray(mv)) {
+                arrayValue = mv;
+            }
+            else if (typeof mv === "string" && mv.trim() !== "") {
+                try {
+                    const parsed = JSON.parse(mv);
+                    // If it was successfully parsed, but isn't an array, default
+                    // to an empty array (as any other type of object is invalid).
+                    arrayValue = Array.isArray(parsed) ? parsed : [];
+                }
+                catch {
+                    // If it's a single string value, wrap this single value in
+                    // an array of one.
+                    arrayValue = [mv];
+                }
+            }
+
+            // Acknowledge the value the parent currently knows about.
+            lastKnownValue.value = [...arrayValue];
+
+            if (!deepEqual(internalValue.value, arrayValue, true)) {
+                updateRefValue(internalValue, arrayValue);
+            }
         }, {
             immediate: true
         });
 
         // Watch for changes from the client UI and update the parent component.
         watch(internalValue, () => {
-            emit("update:modelValue", allowMultiple.value === true ? JSON.stringify(internalValue.value) : internalValue.value);
+            const iv = internalValue.value;
+            const arrayValue = Array.isArray(iv) ? iv : (iv ? [iv] : []);
+
+            if (lastKnownValue.value && deepEqual(arrayValue, lastKnownValue.value, true)) {
+                // No change: nothing to emit.
+                return;
+            }
+
+            lastKnownValue.value = [...arrayValue];
+
+            const stringValue = allowMultiple.value
+                ? JSON.stringify(arrayValue)
+                : (arrayValue[0] ?? "");
+
+            emit("update:modelValue", stringValue);
         });
 
         return {
@@ -101,6 +146,30 @@ export const ConfigurationComponent = defineComponent({
         const qualifierValue = ref<string>();
         const entityType = ref<ListItemBag>();
 
+        // Compute a consistent entity type string value to compare against.
+        const entityTypeStringFromProps = computed((): string => {
+            const propsString = props.modelValue[ConfigurationValueKey.Entitytype];
+            if (!propsString) {
+                return "{}";
+            }
+
+            try {
+                // It's possible for propsString to be "null", in which case we
+                // want to default to an empty object for consistent comparison.
+                return JSON.stringify(
+                    JSON.parse(propsString) ?? {}
+                );
+            }
+            catch {
+                return "{}";
+            }
+        });
+
+        // Compute a consistent entity type object value to compare against.
+        const entityTypeFromProps = computed((): ListItemBag => {
+            return JSON.parse(entityTypeStringFromProps.value);
+        });
+
         /**
          * Update the modelValue property if any value of the dictionary has
          * actually changed. This helps prevent unwanted postbacks if the value
@@ -117,14 +186,14 @@ export const ConfigurationComponent = defineComponent({
             newValue[ConfigurationValueKey.AllowMultiple] = asTrueOrFalseString(allowMultiple.value);
             newValue[ConfigurationValueKey.QualifierColumn] = qualifierColumn.value ?? "";
             newValue[ConfigurationValueKey.QualifierValue] = qualifierValue.value ?? "";
-            newValue[ConfigurationValueKey.Entitytype] = JSON.stringify(entityType.value);
+            newValue[ConfigurationValueKey.Entitytype] = JSON.stringify(entityType.value ?? {});
             newValue[ConfigurationValueKey.ClientValues] = props.modelValue[ConfigurationValueKey.ClientValues];
 
             // Compare the new value and the old value.
             const anyValueChanged = newValue[ConfigurationValueKey.AllowMultiple] !== (props.modelValue[ConfigurationValueKey.AllowMultiple])
                 || newValue[ConfigurationValueKey.QualifierColumn] !== (props.modelValue[ConfigurationValueKey.QualifierColumn])
                 || newValue[ConfigurationValueKey.QualifierValue] !== (props.modelValue[ConfigurationValueKey.QualifierValue])
-                || newValue[ConfigurationValueKey.Entitytype] !== (props.modelValue[ConfigurationValueKey.Entitytype]);
+                || newValue[ConfigurationValueKey.Entitytype] !== entityTypeStringFromProps.value;
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -154,7 +223,7 @@ export const ConfigurationComponent = defineComponent({
             allowMultiple.value = asBoolean(props.modelValue[ConfigurationValueKey.AllowMultiple]);
             qualifierColumn.value = props.modelValue[ConfigurationValueKey.QualifierColumn];
             qualifierValue.value = props.modelValue[ConfigurationValueKey.QualifierValue];
-            entityType.value = JSON.parse(props.modelValue[ConfigurationValueKey.Entitytype] || "{}") as ListItemBag;
+            entityType.value = entityTypeFromProps.value;
         }, {
             immediate: true
         });
@@ -171,7 +240,7 @@ export const ConfigurationComponent = defineComponent({
         watch(allowMultiple, () => maybeUpdateConfiguration(ConfigurationValueKey.AllowMultiple, asTrueOrFalseString(allowMultiple.value)));
         watch(qualifierColumn, () => maybeUpdateConfiguration(ConfigurationValueKey.QualifierColumn, qualifierColumn.value ?? ""));
         watch(qualifierValue, () => maybeUpdateConfiguration(ConfigurationValueKey.QualifierValue, qualifierValue.value ?? ""));
-        watch(entityType, () => maybeUpdateConfiguration(ConfigurationValueKey.Entitytype, JSON.stringify(entityType.value)));
+        watch(entityType, () => maybeUpdateConfiguration(ConfigurationValueKey.Entitytype, JSON.stringify(entityType.value ?? {})));
 
         return {
             allowMultiple,
@@ -183,7 +252,7 @@ export const ConfigurationComponent = defineComponent({
 
     template: `
 <EntityTypePicker v-model="entityType" label="Entity Type" :multiple="false" :includeGlobalOption="false" help="The Entity Type to select attributes for." showBlankItem />
-<CheckBox v-model="allowMultiple" label="Allow Multiple Values" help="When set, allows multiple system phone numbers to be selected." />
+<CheckBox v-model="allowMultiple" label="Allow Multiple Values" help="When set, allows multiple attributes to be selected." />
 <TextBox v-model="qualifierColumn" label="Qualifier Column" help="Entity column qualifier" />
 <TextBox v-model="qualifierValue" label="Qualifier Value" help="Entity column value" />
 `

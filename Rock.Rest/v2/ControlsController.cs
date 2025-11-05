@@ -8974,7 +8974,7 @@ namespace Rock.Rest.v2
             {
                 var definedValues = definedType.DefinedValues;
 
-                foreach ( var countryCode in definedValues.OrderBy( v => v.Order ).Select( v => v.Value ).Distinct() )
+                foreach ( var countryCode in definedValues.Where( v => v.IsActive ).OrderBy( v => v.Order ).Select( v => v.Value ).Distinct() )
                 {
                     var rules = new List<PhoneNumberCountryCodeRulesConfigurationBag>();
 

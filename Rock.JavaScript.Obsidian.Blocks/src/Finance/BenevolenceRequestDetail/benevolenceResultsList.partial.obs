@@ -1,0 +1,272 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="addResultError || deleteResultError" alertType="danger">
+        <strong><i class="ti ti-exclamation-circle"></i> Result {{ addResultError ? 'Addition' : 'Deletion' }} Error </strong>
+        <span>{{ addResultError ? addResultError : deleteResultError }}</span>
+    </NotificationBox>
+    <div>
+        <Grid
+              :data="gridData"
+              keyField="idKey"
+              itemTerm="result"
+              emptyDataText="No Benevolence Results"
+              :onAddItem="onAddResult"
+              :expectedRowCount=2
+              light>
+            <TextColumn name="resultTypeValueId"
+                        title="Result Type"
+                        field="resultTypeValueId"
+                        visiblePriority="xs"
+                        width="30%" />
+
+            <CurrencyColumn name="amount"
+                            title="Amount"
+                            field="amount"
+                            headerClass="title-right"
+                            itemClass="justify-content-end text-right"
+                            visiblePriority="xs"
+                            width="10%" />
+
+            <TextColumn name="resultSummary"
+                        title="Details"
+                        field="resultSummary"
+                        visiblePriority="xs"
+                        width="60%" />
+
+            <DeleteColumn @click="onResultDelete" />
+        </Grid>
+    </div>
+    <Modal v-model="isResultModalOpen"
+           title="Benevolence Request Result"
+           @save="onSaveResult"
+           @cancel="onCancelResult"
+           @closeModal="onCancelResult"
+           :isSaveButtonDisabled="isSaving"
+           saveText="Save">
+        <template #customButtons>
+            <LoadingIndicator v-if="isSaving" class="text-body pull-right p-2" isSmall />
+        </template>
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-model="resultType"
+                              label="Result Type"
+                              :items="resultTypeListBags"
+                              rules="required" />
+            </div>
+            <div class="col-md-6">
+                <TextBox label="Amount"
+                         v-model="resultAmount"
+                         rules="decimal">
+                    <template #inputGroupPrepend>
+                        <span class="input-group-addon">$</span>
+                    </template>
+                </TextBox>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <TextBox v-model="resultDetails"
+                         label="Details"
+                         textMode="multiline" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { ref, PropType, watch, computed } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Grid, { TextColumn, CurrencyColumn, DeleteColumn } from "@Obsidian/Controls/grid";
+    import { BenevolenceRequestDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceRequestDetailOptionsBag";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { BenevolenceRequestBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceRequestBag";
+    import { BenevolenceResultBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceResultBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<BenevolenceRequestBag>,
+            required: true
+        },
+        isEditable: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+        options: {
+            type: Object as PropType<BenevolenceRequestDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:requestResults", value: BenevolenceResultBag[]): void,
+    }>();
+
+    // #region Values
+
+    const isResultModalOpen = ref(false);
+    const isSaving = ref(false);
+
+    const addResultError = ref("");
+    const deleteResultError = ref("");
+
+    const resultType = ref("");
+    const resultTypeListBags = ref<ListItemBag[]>(props.options.resultTypeValues ?? []);
+    const resultAmount = ref("");
+    const resultDetails = ref("");
+
+    const requestResults = propertyRef<BenevolenceResultBag[]>([...props.modelValue.results ?? []], "requestResults");
+
+    const propRefs = [requestResults];
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** Keep gridData in sync with requestResults */
+    const gridData = computed((): GridDataBag => {
+        const results: (Record<string, unknown> & { isSystem: boolean })[] = (requestResults.value ?? []).map(result => ({
+            idKey: result.idKey,
+            resultTypeValueId: props.options.resultTypeValues?.find(type => type.value === result.resultTypeValueId.toString())?.text,
+            amount: (result.amount !== null && result.amount !== undefined && !isNaN(result.amount)) ? result.amount : "",
+            resultSummary: result.resultSummary,
+            isSystem: false
+        }));
+
+        return {
+            rows: [...results]
+        };
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Determines if the provided value is a properly formatted currency entry.
+     * @param value The string value to validate.
+     * @returns True if the value is a proper currency format, otherwise false.
+     */
+    function isProperCurrencyEntry(value: string): boolean {
+        const currencyRegex = /^\d+(\.\d{2})$/;
+        return currencyRegex.test(value);
+    }
+
+    /**
+     * Closes the Add Result modal and clears all input values.
+     */
+    function closeAndClearResult(): void {
+        isResultModalOpen.value = false;
+        resultAmount.value = "";
+        resultDetails.value = "";
+        resultType.value = "";
+        isSaving.value = false;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Handles the deletion of a result by its key.
+     * @param key The unique identifier of the result to delete.
+    */
+    async function onResultDelete(key: string): Promise<void> {
+        const result = await invokeBlockAction(
+            "DeleteBenevolenceRequestResult",
+            { benevolenceRequestIdKey: props.modelValue.idKey, benevolenceResultIdKey: key }
+        );
+
+        if (result.isSuccess) {
+            requestResults.value = requestResults.value.filter(result => result.idKey !== key);
+        }
+        else if (result.errorMessage) {
+            deleteResultError.value = result.errorMessage;
+        }
+        else {
+            deleteResultError.value = "An unknown error occurred while trying to remove the result.";
+        }
+    }
+
+    /**
+     * Handler for Add Result button click event.
+     */
+    function onAddResult(): void {
+        isResultModalOpen.value = true;
+    }
+
+    /**
+     * Handler for Add Result Modal cancel event.
+     */
+    function onCancelResult(): void {
+        closeAndClearResult();
+    }
+
+    /**
+     * Handler for Add Result Modal save event.
+     */
+    async function onSaveResult(): Promise<void> {
+        if (isSaving.value) {
+            return;
+        }
+
+        isSaving.value = true;
+
+        const newIdKey = crypto.randomUUID();
+
+        const newBag: BenevolenceResultBag = {
+            idKey: newIdKey,
+            resultTypeValueId: parseInt(resultType.value),
+            amount: parseFloat(resultAmount.value),
+            resultSummary: resultDetails.value,
+        };
+
+        const result = await invokeBlockAction<BenevolenceResultBag>(
+            "AddBenevolenceRequestResult",
+            { benevolenceRequestIdKey: props.modelValue.idKey, benevolenceResultBag: newBag }
+        );
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "object") {
+                newBag.idKey = result.data.idKey;
+                requestResults.value.push(newBag);
+            }
+        }
+        else {
+            addResultError.value = result.errorMessage ?? "Unknown error while trying to save benevolence request.";
+        }
+
+        closeAndClearResult();
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    /** Watch for parental changes in our requestResults and update them. */
+    watch(() => props.modelValue.results, () => {
+        updateRefValue(requestResults, [...(props.modelValue.results ?? [])]);
+    });
+
+    /**
+     * Determines which values we want to track changes on (defined in the
+     * array) and then emit a new object defined as newValue.
+     */
+    watch([...propRefs], () => {
+        const newValue: BenevolenceResultBag[] = [
+            ...requestResults.value ?? []
+        ];
+
+        emit("update:requestResults", newValue);
+    }, { deep: true });
+
+    // #endregion Watchers
+</script>

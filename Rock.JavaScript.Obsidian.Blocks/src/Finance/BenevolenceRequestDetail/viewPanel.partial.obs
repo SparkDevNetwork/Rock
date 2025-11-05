@@ -1,0 +1,399 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSection light
+                    disableCollapse>
+        <ContentStack>
+            <!-- Avatar / Name -->
+            <div class="row">
+                <div class="d-flex flex-fill align-items-center">
+                    <PersonAvatar :photoUrl="requesterPhotoUrl"
+                                  :personIdKey="requesterAvatarId"
+                                  :photoSize="60"
+                                  marginRight="3"
+                                  :enableHoverInfo="!!entity.requester?.personId" />
+
+                    <div class="flex-grow-1">
+                        <h3>{{ requesterDisplayName }}</h3>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="control-label">Assigned To</label>
+                        <div class="control-wrapper">
+                            <div class="d-flex flex-fill align-items-center">
+                                <PersonAvatar :photoUrl="caseWorkerPhotoUrl"
+                                              :personIdKey="caseWorkerAvatarId"
+                                              :photoSize="30"
+                                              marginRight="3"
+                                              :enableHoverInfo="!!entity.caseWorker?.personId" />
+
+                                <div class="flex-grow-1" v-if="entity.caseWorker?.firstName && entity.caseWorker?.lastName">
+                                    {{ caseWorkerDisplayName }}
+                                </div>
+                                <div v-else>
+                                    Not Assigned
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="control-label">Request Date</label>
+                        <div class="control-wrapper">
+                            <p>{{ formattedRequestDate }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ContentStack>
+    </ContentSection>
+    <br>
+    <ContentSection title="Contact Information"
+                    light
+                    disableCollapse>
+        <ContentStack>
+            <div v-if="hasNoContactInfo">
+                No contact information entered for this requester.
+            </div>
+            <div class="row">
+                <div class="col-md-3" v-if="hasEmailOrPhone">
+                    <div class="form-group">
+                        <div v-if="entity.requester?.email"
+                             class="control-wrapper mb-1"
+                             style="overflow-wrap: anywhere; word-break: break-all;">
+                            <p style="white-space: normal;"><i class="ti ti-mail"></i> {{ entity.requester?.email }}</p>
+                        </div>
+                        <div v-if="requesterHomePhoneNumber !== ''"
+                             class="control-wrapper mb-1">
+                            <p><i class="ti ti-home"></i> {{ requesterHomePhoneNumber }}</p>
+                        </div>
+                        <div v-if="requesterCellPhoneNumber !== ''"
+                             class="control-wrapper mb-1">
+                            <p><i class="ti ti-device-mobile"></i> {{ requesterCellPhoneNumber }}</p>
+                        </div>
+                        <div v-if="requesterWorkPhoneNumber !== ''"
+                             class="control-wrapper mb-1">
+                            <p><i class="ti ti-building-estate"></i> {{ requesterWorkPhoneNumber }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div v-if="hasAddress" class="form-group">
+                        <label class="control-label">Address</label>
+                        <div class="control-wrapper">
+                            <p>
+                                {{ entity.requester?.location?.addressFields?.street1 }}
+                                <br v-if="entity.requester?.location?.addressFields?.street2 && entity.requester?.location?.addressFields?.street1">
+                                {{ entity.requester?.location?.addressFields?.street2 }}
+                                <br v-if="entity.requester?.location?.addressFields?.city && (entity.requester?.location?.addressFields?.street1 || entity.requester?.location?.addressFields?.street2)">
+                                {{ entity.requester?.location?.addressFields?.city }}, {{ entity.requester?.location?.addressFields?.state }} {{ entity.requester?.location?.addressFields?.postalCode }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ContentStack>
+    </ContentSection>
+    <br>
+    <ContentSection title="Summary of Results"
+                    light
+                    disableCollapse>
+        <ContentStack>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="control-label">Results Summary</label>
+                        <div class="control-wrapper">
+                            <p>{{ entity.resultSummary ?? '' }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="control-label">Next Steps Provided</label>
+                        <div class="control-wrapper">
+                            <p>{{ entity.providedNextSteps ?? '' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <BenevolenceResultsList @update:requestResults="onResultsListUpdate"
+                                    :modelValue="entity"
+                                    :isEditable="props.isEditable"
+                                    :options="props.options" />
+        </ContentStack>
+    </ContentSection>
+    <ContentSection v-if="hasAttributes" title="Extended Attributes" icon="ti ti-adjustments-plus">
+        <ContentStack>
+            <fieldset>
+
+                <ValueDetailList :modelValue="topValues" />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <ValueDetailList :modelValue="leftSideValues" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <ValueDetailList :modelValue="rightSideValues" />
+                    </div>
+                </div>
+
+                <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+
+            </fieldset>
+        </ContentStack>
+    </ContentSection>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, ref } from "vue";
+    import BenevolenceResultsList from "./benevolenceResultsList.partial.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
+    import { BenevolenceRequestBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceRequestBag";
+    import { PersonBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/personBag";
+    import { BenevolenceResultBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceResultBag";
+    import { BenevolenceRequestDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceRequestDetailOptionsBag";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { isNotNullish } from "@Obsidian/Utility/util";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<BenevolenceRequestBag | null | undefined>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<BenevolenceRequestDetailOptionsBag>,
+            required: true
+        },
+
+        isEditable: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:requestResults", value: BenevolenceResultBag[]): void,
+    }>();
+
+    // #region Values
+
+    const entity: BenevolenceRequestBag = props.modelValue ?? getEmptyBenevolenceRequestBag();
+
+    /** The requester's photo URL or a default image if none exists. */
+    const requesterPhotoUrl = isNotNullish(entity.requester?.photoUrl) && entity.requester?.photoUrl !== ""
+        ? entity.requester!.photoUrl
+        : "/Assets/Images/person-no-photo-unknown.svg";
+
+    /** The case worker's photo URL or a default image if none exists. */
+    const caseWorkerPhotoUrl = isNotNullish(entity.caseWorker?.photoUrl) && entity.caseWorker?.photoUrl !== ""
+        ? entity.caseWorker!.photoUrl
+        : "/Assets/Images/person-no-photo-unknown.svg";
+
+    /** The display name of the requester using nickname if available. */
+    const requesterDisplayName = entity.requester?.nickName ?
+        `${entity.requester?.nickName} ${entity.requester?.lastName}` :
+        `${entity.requester?.firstName} ${entity.requester?.lastName}`;
+
+    /** The display name of the case worker using nickname if available. */
+    const caseWorkerDisplayName = entity.caseWorker?.nickName ?
+        `${entity.caseWorker?.nickName} ${entity.caseWorker?.lastName}` :
+        `${entity.caseWorker?.firstName} ${entity.caseWorker?.lastName}`;
+
+    const requesterHomePhoneNumber = entity.requester?.homePhoneNumber
+        ? entity.requester?.homePhoneNumber.countryCode !== null
+            && entity.requester?.homePhoneNumber.countryCode !== undefined
+            && entity.requester?.homePhoneNumber.countryCode !== ""
+            && props.options.countryCodesEnabled
+            ? `+${entity.requester?.homePhoneNumber?.countryCode} ${entity.requester?.homePhoneNumber?.numberFormatted}`
+            : `${entity.requester?.homePhoneNumber?.numberFormatted}`
+        : "";
+
+    const requesterCellPhoneNumber = entity.requester?.cellPhoneNumber
+        ? entity.requester?.cellPhoneNumber.countryCode !== null
+            && entity.requester?.cellPhoneNumber.countryCode !== undefined
+            && entity.requester?.cellPhoneNumber.countryCode !== ""
+            && props.options.countryCodesEnabled
+            ? `+${entity.requester?.cellPhoneNumber?.countryCode} ${entity.requester?.cellPhoneNumber?.numberFormatted}`
+            : `${entity.requester?.cellPhoneNumber?.numberFormatted}`
+        : "";
+
+    const requesterWorkPhoneNumber = entity.requester?.workPhoneNumber
+        ? entity.requester?.workPhoneNumber.countryCode !== null
+            && entity.requester?.workPhoneNumber.countryCode !== undefined
+            && entity.requester?.workPhoneNumber.countryCode !== ""
+            && props.options.countryCodesEnabled
+            ? `+${entity.requester?.workPhoneNumber?.countryCode} ${entity.requester?.workPhoneNumber?.numberFormatted}`
+            : `${entity.requester?.workPhoneNumber?.numberFormatted}`
+        : "";
+
+    /** The request date string formatted to display date and days ago. */
+    const formattedRequestDate = formatRequestDate(entity.requestDateTime ?? "");
+
+    const attributes = ref(entity.attributes ?? {});
+    const attributeValues = ref(entity.attributeValues ?? {});
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** Whether or not the requester has at least one email or phone number. */
+
+    const requesterAvatarId = computed((): string => {
+        return entity.requester?.personId?.toString() ?? "";
+    });
+
+    const caseWorkerAvatarId = computed((): string => {
+        return entity.caseWorker?.personId?.toString() ?? "";
+    });
+
+    const hasEmailOrPhone = computed((): boolean => {
+        if (entity.requester == null || entity.requester === undefined) {
+            return false;
+        }
+
+        return (isNotNullish(entity.requester.email) && entity.requester.email !== "")
+            || (isNotNullish(entity.requester.homePhoneNumber) && entity.requester.homePhoneNumber.number !== "")
+            || (isNotNullish(entity.requester.cellPhoneNumber) && entity.requester.cellPhoneNumber.number !== "")
+            || (isNotNullish(entity.requester.workPhoneNumber) && entity.requester.workPhoneNumber.number !== "");
+    });
+
+    /** Whether or not the requester has the required address fields for a valid address. */
+    const hasAddress = computed((): boolean => {
+        if (entity.requester?.location?.addressFields == null || entity.requester?.location?.addressFields === undefined) {
+            return false;
+        }
+
+        return !isNullOrEmpty(entity.requester.location.addressFields.street1 ?? "")
+            && !isNullOrEmpty(entity.requester.location.addressFields.city ?? "")
+            && !isNullOrEmpty(entity.requester.location.addressFields.state ?? "");
+    });
+
+    /** Whether or not the requester has no contact information. */
+    const hasNoContactInfo = computed((): boolean => {
+        return !hasEmailOrPhone.value && !hasAddress.value;
+    });
+
+    /** Whether or not there are any attributes to display. */
+    const hasAttributes = computed((): boolean => {
+        return Object.keys(attributes.value).length > 0;
+    });
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the right side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Get an empty PersonBag
+     * @returns An empty PersonBag
+     */
+    function getEmptyPersonBag(): PersonBag {
+        return {
+            personAliasGuid: emptyGuid,
+            raceGuid: emptyGuid,
+            ethnicityGuid: emptyGuid,
+        };
+    }
+
+    function getEmptyBenevolenceRequestBag(): BenevolenceRequestBag {
+        return {
+            benevolenceTypeId: 0,
+            requester: getEmptyPersonBag(),
+            caseWorker: getEmptyPersonBag(),
+            results: [],
+        };
+    }
+
+    /**
+     * Formats the request date into a local date and includes how many days ago it was.
+     * @param date The ISO date string to format.
+     * @return The formatted date string.
+     */
+    function formatRequestDate(date: string): string {
+        const parsedDate = RockDateTime.parseISO(date)?.toASPString("d");
+        if (parsedDate) {
+            const now = RockDateTime.now();
+            const requestDate = RockDateTime.parseISO(date);
+            let daysAgo = 0;
+            if (now && requestDate) {
+                const msPerDay = 1000 * 60 * 60 * 24;
+                daysAgo = Math.floor((now.toMilliseconds() - requestDate.toMilliseconds()) / msPerDay);
+            }
+            return `${parsedDate} (${daysAgo === 0 ? "Today" : daysAgo === 1 ? "1 day ago" : `${daysAgo} days ago`})`;
+        }
+        return parsedDate ?? "";
+    }
+
+    /**
+     * Checks if a string is null or empty.
+     * @param value The string to check.
+     * @return True if the string is null or empty; otherwise false.
+    */
+    function isNullOrEmpty(value: string): boolean {
+        return value == null || value.trim() === "";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles when the results list is updated.
+     * @param newValue The updated list of benevolence results.
+     * @returns void
+    */
+    function onResultsListUpdate(newValue: BenevolenceResultBag[]): void {
+        // Update our local entity with the new bag values
+        entity.results = newValue;
+
+        // Emit the updated entity to the parent
+        emit("update:requestResults", newValue);
+    }
+
+    // #endregion
+</script>

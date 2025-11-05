@@ -335,7 +335,8 @@ namespace Rock.Jobs
                                     PersonAliasId = person.PrimaryAliasId.Value,
                                     StepStatusId = inProgressStepStatus.Id,
                                     StartDateTime = RockDateTime.Now,
-                                    CreatedDateTime = RockDateTime.Now
+                                    CreatedDateTime = RockDateTime.Now,
+                                    CampusId = family.CampusId
                                 };
                                 stepService.Add( stepRecord );
                             }

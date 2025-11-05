@@ -1928,7 +1928,13 @@ export class GridState implements IGridState {
     }
 
     public getSortedRows(): Record<string, unknown>[] {
-        return this.sortRows(this.internalRows);
+        // Bail early if we don't have any sorting to perform.
+        if (!this.columnSort) {
+            return [...this.internalRows];
+        }
+        else {
+            return this.sortRows(this.internalRows, this.columnSort);
+        }
     }
 
     on(event: keyof GridEvents, callback: (grid: IGridState) => void): void {
@@ -1937,6 +1943,66 @@ export class GridState implements IGridState {
 
     off(event: keyof GridEvents, callback: (grid: IGridState) => void): void {
         this.emitter.off(event, callback);
+    }
+
+    /**
+     * Sorts the given set of rows.
+     *
+     * @param rows The rows that should be sorted according to the current sorting definition.
+     *
+     * @returns A new array of rows that is properly sorted.
+     */
+    public sortRows(rows: ReadonlyArray<Record<string, unknown>>, columnSort: ColumnSort): Record<string, unknown>[] {
+        const column = this.visibleColumns.find(c => c.name === columnSort.column);
+        const order = columnSort.isDescending ? -1 : 1;
+
+        if (!column) {
+            console.warn("Ignoring invalid sort definition.", toRaw(this.columnSort));
+            return [...rows];
+        }
+
+        const sortValue = column.sortValue;
+
+        // Pre-process each row to calculate the sort value. Otherwise it will
+        // be calculated exponentially during sort. This provides a serious
+        // performance boost when sorting Lava columns. Even though we have
+        // cache we do it this way because we may not have an itemKey which
+        // would disable the cache.
+        const rowsToSort = rows.map(r => {
+            let value: string | number | undefined;
+
+            if (sortValue) {
+                value = sortValue(r, column, this);
+            }
+            else {
+                value = undefined;
+            }
+
+            return {
+                row: r,
+                value
+            };
+        });
+
+        rowsToSort.sort((a, b) => {
+            if (a.value === undefined) {
+                return -order;
+            }
+            else if (b.value === undefined) {
+                return order;
+            }
+            else if (a.value < b.value) {
+                return -order;
+            }
+            else if (a.value > b.value) {
+                return order;
+            }
+            else {
+                return 0;
+            }
+        });
+
+        return rowsToSort.map(r => r.row);
     }
 
     // #endregion
@@ -2081,78 +2147,17 @@ export class GridState implements IGridState {
     }
 
     /**
-     * Sorts the given set of rows.
-     *
-     * @param rows The rows that should be sorted according to the current sorting definition.
-     *
-     * @returns A new array of rows that is properly sorted.
-     */
-    private sortRows(rows: ReadonlyArray<Record<string, unknown>>): Record<string, unknown>[] {
-        const columnSort = this.columnSort;
-
-        // Bail early if we don't have any sorting to perform.
-        if (!columnSort) {
-            return [...rows];
-        }
-
-        const column = this.visibleColumns.find(c => c.name === columnSort.column);
-        const order = columnSort.isDescending ? -1 : 1;
-
-        if (!column) {
-            console.warn("Ignoring invalid sort definition.", toRaw(this.columnSort));
-            return [...rows];
-        }
-
-        const sortValue = column.sortValue;
-
-        // Pre-process each row to calculate the sort value. Otherwise it will
-        // be calculated exponentially during sort. This provides a serious
-        // performance boost when sorting Lava columns. Even though we have
-        // cache we do it this way because we may not have an itemKey which
-        // would disable the cache.
-        const rowsToSort = rows.map(r => {
-            let value: string | number | undefined;
-
-            if (sortValue) {
-                value = sortValue(r, column, this);
-            }
-            else {
-                value = undefined;
-            }
-
-            return {
-                row: r,
-                value
-            };
-        });
-
-        rowsToSort.sort((a, b) => {
-            if (a.value === undefined) {
-                return -order;
-            }
-            else if (b.value === undefined) {
-                return order;
-            }
-            else if (a.value < b.value) {
-                return -order;
-            }
-            else if (a.value > b.value) {
-                return order;
-            }
-            else {
-                return 0;
-            }
-        });
-
-        return rowsToSort.map(r => r.row);
-    }
-
-    /**
      * Takes the {@link filteredRows} and sorts them according to the information
      * tracked by the Grid and updates the {@link sortedRows} property.
      */
     private updateSortedRows(): void {
-        this.sortedRows = this.sortRows(this.filteredRows);
+        // Bail early if we don't have any sorting to perform.
+        if (!this.columnSort) {
+            this.sortedRows = [...this.filteredRows];
+        }
+        else {
+            this.sortedRows = this.sortRows(this.filteredRows, this.columnSort);
+        }
     }
 
     /**

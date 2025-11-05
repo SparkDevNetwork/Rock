@@ -1020,6 +1020,17 @@ export interface IGridState {
     getSortedRows(): Record<string, unknown>[];
 
     /**
+     * Sorts the given set of rows. This does not update the internal state of
+     * the grid, it simply returns a new array of rows that is sorted.
+     *
+     * @param rows The rows that should be sorted according to the current sorting definition.
+     * @param columnSort The column sort definition that describes how to sort the rows.
+     *
+     * @returns A new array of rows that is properly sorted.
+     */
+    sortRows(rows: ReadonlyArray<Record<string, unknown>>, columnSort: ColumnSort): Record<string, unknown>[];
+
+    /**
      * Registers a function that will be called whenever the value of the
      * property changes.
      *

@@ -1,0 +1,345 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
+
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :labels="blockLabels"
+                 :entityKey="entityKey"
+                 :isAuditHidden="false"
+                 :isBadgesVisible="true"
+                 :isDeleteVisible="isEditable"
+                 :isEditVisible="isEditable"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="false"
+                 :footerSecondaryActions="footerSecondaryActions"
+                 @cancelEdit="onCancelEdit"
+                 @delete="onDelete"
+                 @edit="onEdit"
+                 @save="onSave">
+        <template #view>
+            <ViewPanel v-model="benevolenceRequestViewBag"
+                       :options="options"
+                       :isEditable="isEditable"
+                       @update:requestResults="onResultsListUpdate" />
+        </template>
+
+        <template #edit>
+            <EditPanel v-model="benevolenceRequestEditBag"
+                       :options="options"
+                       @propertyChanged="baseBlock.onPropertyChanged"
+                       @errorMessage="errorMessage = $event" />
+        </template>
+    </DetailBlock>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import EditPanel from "./BenevolenceRequestDetail/editPanel.partial.obs";
+    import ViewPanel from "./BenevolenceRequestDetail/viewPanel.partial.obs";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { NavigationUrlKey } from "./BenevolenceRequestDetail/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { BenevolenceRequestBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceRequestBag";
+    import { BenevolenceResultBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceResultBag";
+    import { BenevolenceRequestDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceRequestDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { emptyGuid, areEqual } from "@Obsidian/Utility/guid";
+
+    const config = useConfigurationValues<DetailBlockBox<BenevolenceRequestBag, BenevolenceRequestDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const benevolenceRequestViewBag = ref(config.entity);
+    const benevolenceRequestEditBag = ref<ValidPropertiesBox<BenevolenceRequestBag>>({
+        bag: {} as BenevolenceRequestBag
+    });
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: benevolenceRequestEditBag
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The entity name to display in the block panel. */
+    const panelName = computed((): string => {
+        return "Benevolence Request";
+    });
+
+    /** The identifier key value for this entity. */
+    const entityKey = computed((): string => {
+        return benevolenceRequestViewBag.value?.idKey ?? "";
+    });
+
+    /** The benevolence type of the request. */
+    const benevolenceType = computed(() => {
+        return benevolenceRequestViewBag.value?.benevolenceTypeId;
+    });
+
+    /** The campus of the request. */
+    const campus = computed(() => {
+        return benevolenceRequestViewBag.value?.campus;
+    });
+
+    /** The status of the request. */
+    const requestStatusValue = computed(() => {
+        return benevolenceRequestViewBag.value?.requestStatusValueId;
+    });
+
+    const footerSecondaryActions = computed((): PanelAction[] => {
+        if (panelMode.value !== DetailPanelMode.View) {
+            return [];
+        }
+
+        const actions: PanelAction[] = [];
+
+        if (
+            !areEqual(config.options?.benevolenceRequestStatementPageAttribute, emptyGuid) &&
+            config.navigationUrls?.[NavigationUrlKey.BenevolenceRequestStatementPage] &&
+            benevolenceRequestViewBag.value?.idKey
+        ) {
+            actions.push({
+                type: "default",
+                iconCssClass: "ti ti-printer",
+                handler: async () => {
+                    let urlResult = config.navigationUrls
+                        ? config.navigationUrls[NavigationUrlKey.BenevolenceRequestStatementPage]
+                        : undefined;
+
+                    if (urlResult !== undefined) {
+                        urlResult = urlResult.replace("((Value))", benevolenceRequestViewBag.value?.idKey ?? "");
+
+                        window.location.href = urlResult;
+                    }
+                },
+            });
+        }
+
+        return actions;
+    });
+
+    /** Additional labels to display in the block panel. */
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        const labels: PanelAction[] = [];
+
+        // Display no pills when adding a new request
+        if (panelMode.value === DetailPanelMode.Add) {
+            return undefined;
+        }
+
+        // Only show the benevolence type and campus when in view mode
+        if (panelMode.value === DetailPanelMode.View) {
+            if (benevolenceType.value) {
+                labels.push({
+                    title: `${config.options?.benevolenceRequestTypes?.find(t => t.value === benevolenceType.value?.toString())?.text ?? benevolenceType.value?.toString()}`,
+                    type: "default",
+                });
+            }
+
+            if (campus.value && campus.value.name) {
+                labels.push({
+                    title: `${campus.value.name}`,
+                    type: "link",
+                });
+            }
+        }
+
+        // Always show the status if it is set
+        if (requestStatusValue.value) {
+            const label = config.options?.requestStatusValues?.find(t => t.value === requestStatusValue.value?.toString())?.text ?? requestStatusValue.value?.toString();
+
+            let labelType;
+            switch (label.toLowerCase()) {
+                case "approved":
+                    labelType = "success";
+                    break;
+                case "denied":
+                    labelType = "danger";
+                    break;
+                case "pending":
+                    labelType = "warning";
+                    break;
+                default:
+                    labelType = "default";
+                    break;
+            }
+
+            labels.push({
+                title: label,
+                type: labelType,
+            });
+        }
+
+        return labels;
+    });
+
+    /** Whether or not the current user can edit the benevolence request. */
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    /** The options bag for the benevolence request detail block. */
+    const options = computed((): BenevolenceRequestDetailOptionsBag => {
+        return config.options ?? {
+            benevolenceDocumentBinaryFileTypeGuid: emptyGuid,
+            benevolenceRequestStatementPageAttribute: emptyGuid,
+            caseWorkersByRole: [],
+            displayGovernmentIdAttribute: true,
+            displayMiddleNameAttribute: false,
+            workflowDetailPageAttribute: emptyGuid,
+            workflowEntryPageAttribute: emptyGuid,
+            benevolenceRequestTypes: [],
+            requestStatusValues: [],
+            countryCodesEnabled: false,
+            displayCountryCodeAttribute: false
+        };
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when the results list is updated in the view panel.
+     *
+     * @param newResults The updated list of benevolence request results.
+     */
+    function onResultsListUpdate(newResults: BenevolenceResultBag[]): void {
+        if (benevolenceRequestViewBag.value) {
+            benevolenceRequestViewBag.value.results = newResults;
+        }
+    }
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (!benevolenceRequestEditBag.value.bag?.idKey) {
+            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+                return config.navigationUrls[NavigationUrlKey.ParentPage];
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Event handler for the Delete button being clicked. Sends the
+     * delete request to the server and then redirects to the target page.
+     *
+     * @returns false if it should stay on the page; or a string containing a redirect URL.
+     */
+    async function onDelete(): Promise<false | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<string>("Delete", {
+            key: benevolenceRequestViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete benevolence request.";
+
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for the Edit button being clicked. Request the edit
+     * details from the server and then enter edit mode.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+    async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<ValidPropertiesBox<BenevolenceRequestBag>>("Edit", {
+            key: benevolenceRequestViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            benevolenceRequestEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<ValidPropertiesBox<BenevolenceRequestBag> | string>("Save", {
+            box: benevolenceRequestEditBag.value
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "object") {
+                benevolenceRequestViewBag.value = result.data.bag;
+
+                return true;
+            }
+            else if (result.statusCode === 201 && typeof result.data === "string") {
+                return result.data;
+            }
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save benevolence request.";
+
+        return false;
+    }
+
+    // #endregion
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified benevolence request could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        benevolenceRequestEditBag.value = { bag: config.entity };
+        panelMode.value = DetailPanelMode.Add;
+    }
+</script>

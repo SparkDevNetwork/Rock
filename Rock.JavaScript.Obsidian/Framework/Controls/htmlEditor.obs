@@ -73,14 +73,12 @@
 </template>
 
 <style scoped>
-
 .note-editor-container :deep(.note-editor .note-editable) {
     padding: 0;
     border-right: none;
     border-left: none;
     border-bottom: none;
 }
-
 </style>
 
 <script setup lang="ts">
@@ -719,7 +717,20 @@
 
     onUnmounted(() => {
         if (tinyMceInstance.value) {
-            tinyMceInstance.value.destroy();
+            try {
+                tinyMceInstance.value.destroy();
+            }
+            catch (e) {
+                // Ignore error if TinyMCE fails to destroy the instance during unmounting.
+                // This usually means that the elements have already been removed from the DOM.
+                const ignoreMessage = "Node cannot be null or undefined";
+                if (e === ignoreMessage || (e instanceof Error && e.message?.includes(ignoreMessage))) {
+                    return;
+                }
+
+                // Re-throw error if it is something else.
+                throw e;
+            }
         }
     });
 </script>

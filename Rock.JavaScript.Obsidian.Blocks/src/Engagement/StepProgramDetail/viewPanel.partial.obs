@@ -88,7 +88,7 @@
                            :flowEdges="flowEdges"
                            :isLoading="isLoading"
                            nodeTooltipActionLabel="Total Steps Taken"
-                           :settings="settings" />
+                           :settings="flowSettings" />
 
             <div v-else :style="{ height: chartHeight }">
                 <LineChart v-if="selectedStepProgramViewEnum === StepProgramView.Trends && !isBarChart"
@@ -185,6 +185,7 @@
     import { ChartDataBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/chartDataBag";
     import { StepFlowGetDataBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/stepFlowGetDataBag";
     import { SankeyDiagramSettingsBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramSettingsBag";
+    import { SeriesBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/seriesBag";
     import { CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
     import { BarChartClickEvent, BarSeries, LineSeries } from "@Obsidian/Core/Controls/chart";
     import { SankeyDiagramNodeBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramNodeBag";
@@ -220,7 +221,6 @@
     import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import SankeyDiagram from "@Obsidian/Controls/internal/SankeyDiagram/sankeyDiagram.obs";
-    import { SeriesBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/seriesBag";
 
     const props = defineProps({
         modelValue: {
@@ -292,13 +292,13 @@
     // Step Flow refs
     const flowNodes = ref<SankeyDiagramNodeBag[]>([]);
     const flowEdges = ref<SankeyDiagramEdgeBag[]>([]);
-    // TODO - These are Block Attributes on the Step Flow Block.
-    const settings = ref<SankeyDiagramSettingsBag>({
+    // These were Block Attributes on the Step Flow Block.
+    const flowSettings = ref<SankeyDiagramSettingsBag>({
         nodeWidth: 8,
         nodeVerticalSpacing: 8,
         chartWidth: 750,
         chartHeight: 315,
-        legendHtml: props.modelValue?.stepFlowConfigurationBag?.legendHtml ?? ""
+        legendHtml: ""
     });
     const flowForm = ref<InstanceType<typeof RockForm>>();
     const startingStepTypes = ref();
@@ -820,6 +820,7 @@
         if (response.data) {
             flowEdges.value = response.data.edges ?? [];
             flowNodes.value = response.data.nodes ?? [];
+            flowSettings.value.legendHtml = response.data.legendHtml ?? "";
 
             // State is up-to-date.
             programViewStateFlags[StepProgramView.Flow] = true;

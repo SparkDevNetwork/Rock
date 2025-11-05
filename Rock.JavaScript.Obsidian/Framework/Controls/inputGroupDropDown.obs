@@ -1,9 +1,14 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="input-group-btn" :class="{ open: expanded }">
-        <button class="btn btn-default dropdown-toggle" type="button" @click.prevent="expanded = !expanded">{{ selectedText }}&nbsp;<span class="caret"></span></button>
+        <button class="btn btn-default dropdown-toggle"
+                type="button"
+                @click.prevent="disabled ? null : expanded = !expanded"
+                :disabled="disabled">
+            {{ selectedText }}&nbsp;<span class="caret"></span>
+        </button>
         <TransitionVerticalCollapse>
-            <ul class="dropdown-menu" v-show="expanded">
+            <ul class="dropdown-menu" v-show="expanded && !disabled">
                 <li v-for="(item, index) in items" :key="item?.value ?? index"><a href="#" @click.prevent="select(item.value ?? '')">{{ item.text }}</a></li>
             </ul>
         </TransitionVerticalCollapse>
@@ -25,6 +30,11 @@
         items: {
             type: Object as PropType<ListItemBag[]>,
             default: []
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 

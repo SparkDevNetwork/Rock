@@ -414,7 +414,7 @@ namespace Rock.Communication.Chat
         /// </param>
         void ResolveMentionedChatUsers( RockChatMessage rockChatMessage, Dictionary<int, RockChatUserKey> rockChatUserKeys );
 
-        /// <summary>S
+        /// <summary>
         /// Sends a message to the specified <see cref="ChatChannel"/> from the specified <see cref="ChatUser"/>.
         /// </summary>
         /// <param name="chatChannelTypeKey">The key of the <see cref="ChatChannelType"/> to which the message should be sent.</param>

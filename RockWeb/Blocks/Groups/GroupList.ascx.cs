@@ -640,21 +640,7 @@ namespace RockWeb.Blocks.Groups
         protected void modalDetails_SaveClick( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            var groupService = new GroupService( rockContext );
-
-            Group group = null;
-            if ( GetAttributeValue( AttributeKey.GroupPickerType ) == "GroupPicker" )
-            {
-                if ( gpGroup.GroupId.HasValue )
-                {
-                    group = groupService.Get( gpGroup.GroupId.Value );
-                }
-            }
-            else
-            {
-                group = groupService.Get( ddlGroup.SelectedValue.AsInteger() );
-            }
-
+            var group = GetSelectedGroup( rockContext );
             if ( group == null )
             {
                 nbModalDetailsMessage.Title = "Please select a Group";
@@ -671,44 +657,109 @@ namespace RockWeb.Blocks.Groups
             }
 
             var personContext = ContextEntity<Person>();
+
+            // Check for matching archived group member with same person and role
+            GroupMember archivedGroupMember;
+            var groupService = new GroupService( rockContext );
+            if ( groupService.ExistsAsArchived( group, personContext.Id, roleId.Value, out archivedGroupMember ) )
+            {
+                var role = new GroupTypeRoleService( rockContext ).Get( roleId.Value );
+                nbRestoreArchivedGroupMember.Text = string.Format(
+                    "There is an archived record for {0} as a {1} in this group. Do you want to restore the previous settings? Notes will be retained.",
+                    personContext,
+                    role );
+
+                hfRestoreGroupMemberId.Value = archivedGroupMember.Id.ToString();
+                nbRestoreError.Visible = false;
+                modalDetails.Hide();
+                mdRestoreArchivedPrompt.Show();
+                return;
+            }
+
+            AddNewGroupMember( group, personContext, roleId.Value, rockContext );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnRestoreArchivedGroupMember control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnRestoreArchivedGroupMember_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
             var groupMemberService = new GroupMemberService( rockContext );
-
-            if ( groupMemberService.Queryable().Any( a => a.PersonId == personContext.Id && a.GroupId == group.Id && a.GroupRoleId == roleId ) )
+            int restoreGroupMemberId = hfRestoreGroupMemberId.Value.AsInteger();
+            var groupMemberToRestore = groupMemberService.GetArchived().Where( a => a.Id == restoreGroupMemberId ).FirstOrDefault();
+            if ( groupMemberToRestore != null )
             {
-                nbModalDetailsMessage.Title = "Already added to the selected Group & Role";
+                // Ensure user is authorized to restore to this group
+                var group = groupMemberToRestore.Group ?? new GroupService( rockContext ).Get( groupMemberToRestore.GroupId );
+                if ( group == null || !( group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson ) ) )
+                {
+                    nbRestoreError.Text = "You are not authorized to restore members to this group";
+                    nbRestoreError.Visible = true;
+                    return;
+                }
+
+                groupMemberService.Restore( groupMemberToRestore );
+
+                var isValid = groupMemberToRestore.IsValidGroupMember( rockContext );
+                if ( !isValid )
+                {
+                    nbRestoreError.Text = groupMemberToRestore.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                    nbRestoreError.Visible = true;
+                    return;
+                }
+
+                rockContext.SaveChanges();
+                mdRestoreArchivedPrompt.Hide();
+
+                this.NavigateToCurrentPageReference();
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDontRestoreArchiveGroupmember control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDontRestoreArchiveGroupmember_Click( object sender, EventArgs e )
+        {
+            // if they said Don't Restore, create a new group member without prompting to restore
+            mdRestoreArchivedPrompt.Hide();
+
+            var rockContext = new RockContext();
+            var group = GetSelectedGroup( rockContext );
+            if ( group == null )
+            {
+                nbModalDetailsMessage.Title = "Please select a Group";
                 nbModalDetailsMessage.Visible = true;
+                modalDetails.Show();
                 return;
             }
 
-            if ( !( group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson ) ) )
+            var roleId = ddlGroupRole.SelectedValue.AsIntegerOrNull();
+            if ( roleId == null )
             {
-                // shouldn't happen because GroupList is limited to EDIT and MANAGE_MEMBERs, but just in case
-                nbModalDetailsMessage.Title = "You are not authorized to add members to this group";
+                nbModalDetailsMessage.Title = "Please select a role";
                 nbModalDetailsMessage.Visible = true;
+                modalDetails.Show();
                 return;
             }
 
-            GroupMember groupMember = new GroupMember { Id = 0 };
-            groupMember.GroupId = group.Id;
-            groupMember.PersonId = personContext.Id;
-            groupMember.GroupRoleId = ddlGroupRole.SelectedValue.AsInteger();
-            groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+            var personContext = ContextEntity<Person>();
 
-            // Check if the group member is valid. This includes checking for met group requirements.
-            cvGroupMember.IsValid = groupMember.IsValidGroupMember( rockContext );
+            AddNewGroupMember( group, personContext, roleId.Value, rockContext );
+        }
 
-            if ( !cvGroupMember.IsValid )
-            {
-                cvGroupMember.ErrorMessage = groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
-                return;
-            }
-
-            groupMemberService.Add( groupMember );
-            rockContext.SaveChanges();
-
-            // Reload the page so that other blocks will know about any data that changed as a result of a new member added to a group.
-            // On the PersonProfile page, this will help update the UserProtectionProfile label just in case it was changed.
-            this.NavigateToCurrentPageReference();
+        /// <summary>
+        /// Handles the Click event of the btnCancelRestore control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCancelRestore_Click( object sender, EventArgs e )
+        {
+            mdRestoreArchivedPrompt.Hide();
         }
 
         #endregion
@@ -1142,6 +1193,83 @@ namespace RockWeb.Blocks.Groups
 
             ddlGroupRole.DataSource = qry;
             ddlGroupRole.DataBind();
+        }
+
+        /// <summary>
+        /// Gets the selected group.
+        /// </summary>
+        /// <param name="rockContext">The Rock context.</param>
+        /// <returns>The selected group.</returns>
+        private Group GetSelectedGroup( RockContext rockContext )
+        {
+            var groupService = new GroupService( rockContext );
+            Group group = null;
+            if ( GetAttributeValue( AttributeKey.GroupPickerType ) == "GroupPicker" )
+            {
+                if ( gpGroup.GroupId.HasValue )
+                {
+                    group = groupService.Get( gpGroup.GroupId.Value );
+                }
+            }
+            else
+            {
+                group = groupService.Get( ddlGroup.SelectedValue.AsInteger() );
+            }
+
+            return group;
+        }
+
+        /// <summary>
+        /// Adds a new group member and handles validation, saving, and navigation.
+        /// </summary>
+        /// <param name="group">The group to add the member to.</param>
+        /// <param name="person">The person to add as a member.</param>
+        /// <param name="roleId">The role ID for the member.</param>
+        /// <param name="rockContext">The Rock context.</param>
+        private void AddNewGroupMember( Group group, Person person, int roleId, RockContext rockContext )
+        {
+            var groupMemberService = new GroupMemberService( rockContext );
+            
+            // Ensure user is authorized to add members to this group
+            if ( !( group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson ) ) )
+            {
+                // shouldn't happen because GroupList is limited to EDIT and MANAGE_MEMBERs, but just in case.
+                nbModalDetailsMessage.Title = "You are not authorized to add members to this group";
+                nbModalDetailsMessage.Visible = true;
+                modalDetails.Show();
+                return;
+            }
+            
+            // Consider duplicates
+            if ( !GroupService.AllowsDuplicateMembers() && groupMemberService.Queryable().Any( a => a.PersonId == person.Id && a.GroupId == group.Id && a.GroupRoleId == roleId ) )
+            {
+                nbModalDetailsMessage.Title = "This group member has already been added to the selected Group & Role";
+                nbModalDetailsMessage.Visible = true;
+                modalDetails.Show();
+                return;
+            }
+
+            GroupMember groupMember = new GroupMember { Id = 0 };
+            groupMember.GroupId = group.Id;
+            groupMember.PersonId = person.Id;
+            groupMember.GroupRoleId = roleId;
+            groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+
+            // Check if the group member is valid. This includes checking for met group requirements.
+            cvGroupMember.IsValid = groupMember.IsValidGroupMember( rockContext );
+            if ( !cvGroupMember.IsValid )
+            {
+                cvGroupMember.ErrorMessage = groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                modalDetails.Show();
+                return;
+            }
+
+            groupMemberService.Add( groupMember );
+            rockContext.SaveChanges();
+
+            // Reload the page so that other blocks will know about any data that changed as a result of a new member added to a group.
+            // On the PersonProfile page, this will help update the UserProtectionProfile label just in case it was changed.
+            this.NavigateToCurrentPageReference();
         }
 
         #endregion

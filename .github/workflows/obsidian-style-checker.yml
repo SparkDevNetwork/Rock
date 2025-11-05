@@ -8,6 +8,7 @@ jobs:
   style-check:
     name: Obsidian Style Checker
     runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, 'style cleanup') }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5

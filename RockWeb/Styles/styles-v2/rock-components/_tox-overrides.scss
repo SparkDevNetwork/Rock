@@ -104,10 +104,28 @@
 // Toolbar Buttons
 
 .tox .tox-tbtn {
-  color: var(--color-interface-stronger) !important;
+  color: var(--color-interface-strong) !important;
+
+  &:hover {
+    background: var(--color-interface-soft) !important;
+    cursor: pointer;
+  }
+
+  &--enabled {
+    background: var(--color-interface-soft) !important;
+  }
+
+  &[aria-label="Create Shortlink"] {
+    svg,
+    .tox-icon svg path {
+      fill: none !important;
+      stroke: var(--color-interface-strong) !important;
+    }
+  }
 }
 
-.tox .tox-tbtn svg {
+.tox .tox-tbtn svg,
+.tox .tox-tbtn .tox-icon svg path {
   fill: var(--color-interface-strong) !important;
 }
 
@@ -124,6 +142,11 @@
 
 .tox .tox-tbtn--disabled .tox-tbtn:not(.tox-tbtn--enabled) {
   opacity: 0.5 !important;
+}
+
+.tox .tox-split-button:hover {
+  box-shadow: none !important;
+  background: var(--color-interface-soft) !important;
 }
 
 // Toolbar Dropdowns
@@ -172,7 +195,7 @@
   background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
   border: 1px solid transparent;
   background-color: var(--color-primary);
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
 
   &:hover {
     background-color: #d05e10;

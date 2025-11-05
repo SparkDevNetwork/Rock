@@ -216,6 +216,7 @@ INSERT INTO [dbo].[Step] (
     [StartDateKey],
     [EndDateKey],
     [CompletedDateKey],
+    [CampusId],
     [CreatedDateTime],
     [ModifiedDateTime],
     [Guid]
@@ -240,6 +241,7 @@ SELECT
         WHEN x.[EndDate] IS NULL THEN NULL
         ELSE CAST(FORMAT(x.[EndDate], 'yyyyMMdd') AS INT)
     END,
+    pf.[CampusId],
     GETDATE(),
     GETDATE(),
     NEWID()
@@ -248,7 +250,19 @@ LEFT JOIN Exited x
     ON e.[PersonId] = x.[PersonId]
    AND e.[RowNum] = x.[RowNum]
 INNER JOIN [dbo].[Person] p
-    ON p.[Id] = e.[PersonId];
+    ON p.[Id] = e.[PersonId]
+OUTER APPLY (
+    SELECT TOP 1 g.[CampusId]
+    FROM [GroupMember] gm
+    INNER JOIN [Group] g ON gm.[GroupId] = g.[Id]
+    WHERE gm.[PersonId] = p.[Id]
+      AND g.[GroupTypeId] = (
+          SELECT TOP 1 [Id] 
+          FROM [GroupType] 
+          WHERE [Guid] = '790E3215-3B10-442B-AF69-616C0DCB998E'  -- Family group type
+      )
+    ORDER BY ISNULL(gm.[GroupOrder], 99999)
+) AS pf;
 " );
 
             migrationHelper.AddServiceJobAttributeValue( "623F4751-C654-FEB7-45B7-59685B1F60AE", "DEF426E3-2A86-493D-BEE9-AC1CF0D3D066", "true" );

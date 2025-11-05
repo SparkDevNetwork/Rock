@@ -271,12 +271,20 @@
             address1.rules = data.addressLine1Requirement;
 
             // Address Line 2 is only shown if it's required or it's requested by the prop; Label is static
-            address2.isVisible = !(data.addressLine2Requirement === RequirementLevel.Unavailable || (!props.disableFrontEndValidation && !props.showAddressLine2 && data.addressLine2Requirement === RequirementLevel.Optional));
-            address2.rules = data.addressLine2Requirement;
+            const address2LocalityRequirement = (!props.disableFrontEndValidation && data.addressLine2Requirement === RequirementLevel.Optional && !props.showAddressLine2)
+                ? RequirementLevel.Unavailable
+                : data.addressLine2Requirement;
 
-            // County / Locality is only shown if it's required or it's requested by the prop
-            county.isVisible = !(data.localityRequirement === RequirementLevel.Unavailable || (!props.disableFrontEndValidation && props.showCounty && data.localityRequirement === RequirementLevel.Optional));
-            county.rules = data.localityRequirement;
+            address2.isVisible = !(address2LocalityRequirement === RequirementLevel.Unavailable);
+            address2.rules = address2LocalityRequirement;
+
+            // County / Locality is only shown if not unavailable or it's requested by the prop
+            const countyLocalityRequirement = (!props.disableFrontEndValidation && data.localityRequirement === RequirementLevel.Optional && !props.showCounty)
+                ? RequirementLevel.Unavailable
+                : data.localityRequirement;
+
+            county.isVisible = !(countyLocalityRequirement === RequirementLevel.Unavailable);
+            county.rules = countyLocalityRequirement;
             county.label = data.localityLabel ?? county.label;
 
             city.isVisible = data.cityRequirement !== RequirementLevel.Unavailable;

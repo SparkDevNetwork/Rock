@@ -218,7 +218,7 @@ namespace RockWeb.Blocks.Event
             // Add a custom button with an EventHandler that is only in this block.
 			var customActionConfigEventButton = new CustomActionConfigEvent
 			{
-				IconCssClass = "ti ti-users",
+				IconCssClass = "ti ti-user-check",
 				HelpText = "Communicate to Registrars",
 				EventHandler = LbRegistrarCommunication_Click
 			};

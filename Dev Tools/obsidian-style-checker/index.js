@@ -23,7 +23,7 @@ if (!env.ASANA_SECTION) {
     missing_variables.push("ASANA_SECTION");
 }
 
-if (missing_variables.length > 0) {
+if (missing_variables.length > 0 && !process.argv.some(a => a === "--no-asana")) {
     console.error(`Missing one or more environment variables: ${missing_variables.join(", ")}`);
     process.exit(1);
 }
@@ -141,7 +141,11 @@ function detectStyleChanges(filePath) {
     }
 
     for (let i = 0; i < previousStyles.length; i++) {
-        if (previousStyles[i].innerHTML !== currentStyles[i].innerHTML) {
+        // Ignore whitespace differences.
+        const previousStyle = previousStyles[i].innerHTML.replace(/\s+/g, '').trim();
+        const currentStyle = currentStyles[i].innerHTML.replace(/\s+/g, '').trim();
+
+        if (previousStyle !== currentStyle) {
             console.log(`Style tag content changed in ${filePath} at index ${i}`);
             return true;
         }
@@ -214,14 +218,16 @@ async function main() {
     }
 
     if (reportFiles.length > 0) {
-        try {
-            await createAsanaTask(reportFiles);
-        }
-        catch (error) {
-            console.error("Error creating Asana task:", error.message);
+        if (!process.argv.some(a => a === "--no-asana")) {
+            try {
+                await createAsanaTask(reportFiles);
+            }
+            catch (error) {
+                console.error("Error creating Asana task:", error.message);
 
-            if (error.response?.error?.text) {
-                console.error(error.response.error.text);
+                if (error.response?.error?.text) {
+                    console.error(error.response.error.text);
+                }
             }
         }
     }

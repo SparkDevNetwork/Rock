@@ -335,6 +335,17 @@ namespace Rock.Jobs
                     rockContext.SaveChanges();
                 } );
 
+                /*
+                    10/30/2025 - KBH
+
+                    This is needed for a custom fix when swapping the Asset Manager Block with the Obsidian File Asset Manager Block.
+                    We need to update the Block Attributes for the newly created File Asset Manager Blocks.
+                */
+                if ( oldBlockTypeGuid == "13165D92-9CCD-4071-8484-3956169CB640".AsGuid() )
+                {
+                    UpdateFileAssetManagerAttributeValues( rockContext );
+                }
+
                 foreach ( var pageId in flushPageIds )
                 {
                     PageCache.FlushPage( pageId );
@@ -444,6 +455,18 @@ namespace Rock.Jobs
                 // Shallow clone the old block without copying its identity information so we can save new blocks.
                 var newBlock = oldBlock.CloneWithoutIdentity();
 
+                /*
+                    10/30/2025 - KBH
+
+                    This is needed for a custom fix when swapping the Asset Manager Block with the Obsidian File Asset Manager Block.
+                    We need to keep track of which Blocks were originally Asset Manager Blocks so that we can update their Block
+                    Attributes later.
+                */
+                if ( oldBlockTypeGuid == "13165D92-9CCD-4071-8484-3956169CB640".AsGuid() )
+                {
+                    newBlock.ForeignGuid = oldBlockTypeGuid;
+                }
+
                 // Overwrite the block type ID.
                 newBlock.BlockTypeId = newBlockTypeId;
 
@@ -530,6 +553,100 @@ namespace Rock.Jobs
                     rockContext.SaveChanges();
                 }
             }
+        }
+
+        /// <summary>
+        /// Updates the File Asset Manager attribute values for the swapped blocks.
+        /// </summary>
+        /// <param name="rockContext"></param>
+        private void UpdateFileAssetManagerAttributeValues( RockContext rockContext )
+        {
+            rockContext.Database.ExecuteSqlCommand( @"
+DECLARE @NewBlockTypeGuid UNIQUEIDENTIFIER = '535500a7-967f-4da3-8fca-cb844203cb3d'; -- File Asset Manager Block Type Guid
+DECLARE @OldBlockTypeGuid UNIQUEIDENTIFIER   = '13165D92-9CCD-4071-8484-3956169CB640'; -- Asset Manager Block Type Guid
+
+-- Attribute GUIDs and Values
+DECLARE @EnableAssetManagerAttributeGuid UNIQUEIDENTIFIER = '7750F7BB-DC53-41C6-987B-5FD2B02674C2';
+DECLARE @EnableFileManagerAttributeGuid UNIQUEIDENTIFIER = 'FCBB90A6-965F-4237-9B0F-4384E3FFC991';
+
+DECLARE @EnableAssetManagerAttributeId INT;
+DECLARE @EnableFileManagerAttributeId INT;
+
+-- Get Attribute IDs
+SELECT @EnableAssetManagerAttributeId = [Id] FROM [Attribute] WHERE [Guid] = @EnableAssetManagerAttributeGuid;
+SELECT @EnableFileManagerAttributeId = [Id] FROM [Attribute] WHERE [Guid] = @EnableFileManagerAttributeGuid;
+
+-- Collect Asset Manager Block IDs
+DECLARE @AssetManagerBlockIds TABLE (BlockId INT);
+
+INSERT INTO @AssetManagerBlockIds (BlockId)
+SELECT b.[Id]
+FROM [Block] b
+WHERE b.[BlockTypeId] = (
+        SELECT [Id]
+        FROM [BlockType]
+        WHERE [Guid] = @NewBlockTypeGuid
+    )
+  AND b.[ForeignGuid] = @OldBlockTypeGuid;
+
+DECLARE @BlockId INT;
+
+DECLARE block_cursor CURSOR FOR
+SELECT BlockId FROM @AssetManagerBlockIds;
+
+OPEN block_cursor;
+FETCH NEXT FROM block_cursor INTO @BlockId;
+
+-- Now, for each block using the old Asset Manager Block Type, all we need to do is: 
+-- 1) turn on the EnableAssetProviders attribute value and
+-- 2) turn off the EnableFileManager attribute value
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    DELETE FROM [AttributeValue]
+    WHERE [AttributeId] = @EnableAssetManagerAttributeId
+      AND [EntityId] = @BlockId;
+
+    INSERT INTO [AttributeValue] (
+        [IsSystem],
+        [AttributeId],
+        [EntityId],
+        [Value],
+        [Guid]
+    )
+    VALUES (
+        0,
+        @EnableAssetManagerAttributeId,
+        @BlockId,
+        1,
+        NEWID()
+    );
+
+    DELETE FROM [AttributeValue]
+    WHERE [AttributeId] = @EnableFileManagerAttributeId
+      AND [EntityId] = @BlockId;
+
+    INSERT INTO [AttributeValue] (
+        [IsSystem],
+        [AttributeId],
+        [EntityId],
+        [Value],
+        [Guid]
+    )
+    VALUES (
+        0,
+        @EnableFileManagerAttributeId,
+        @BlockId,
+        0,
+        NEWID()
+    );
+
+    FETCH NEXT FROM block_cursor INTO @BlockId;
+END;
+
+CLOSE block_cursor;
+DEALLOCATE block_cursor;
+" );
         }
     }
 }

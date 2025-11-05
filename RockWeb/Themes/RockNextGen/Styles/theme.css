@@ -18180,10 +18180,23 @@ iframe.file-browser {
 }
 
 .tox .tox-tbtn {
-  color: var(--color-interface-stronger) !important;
+  color: var(--color-interface-strong) !important;
+}
+.tox .tox-tbtn:hover {
+  background: var(--color-interface-soft) !important;
+  cursor: pointer;
+}
+.tox .tox-tbtn--enabled {
+  background: var(--color-interface-soft) !important;
+}
+.tox .tox-tbtn[aria-label="Create Shortlink"] svg,
+.tox .tox-tbtn[aria-label="Create Shortlink"] .tox-icon svg path {
+  fill: none !important;
+  stroke: var(--color-interface-strong) !important;
 }
 
-.tox .tox-tbtn svg {
+.tox .tox-tbtn svg,
+.tox .tox-tbtn .tox-icon svg path {
   fill: var(--color-interface-strong) !important;
 }
 
@@ -18200,6 +18213,11 @@ iframe.file-browser {
 
 .tox .tox-tbtn--disabled .tox-tbtn:not(.tox-tbtn--enabled) {
   opacity: 0.5 !important;
+}
+
+.tox .tox-split-button:hover {
+  box-shadow: none !important;
+  background: var(--color-interface-soft) !important;
 }
 
 .tox .tox-menu {
@@ -18244,7 +18262,7 @@ iframe.file-browser {
   background-image: none;
   border: 1px solid transparent;
   background-color: var(--color-primary);
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
 }
 .tox .tox-dialog__footer .tox-dialog__footer-end .tox-button:hover {
   background-color: #d05e10;

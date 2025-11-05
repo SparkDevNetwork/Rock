@@ -49,13 +49,13 @@
                 <span v-else-if="row.accountProtectionProfile === 3" class='label label-danger'>Extreme</span>
             </template>
         </Column>
-        <TextColumn name="firstName"
-                    title="First Name"
-                    field="firstName"
+        <TextColumn name="recordSource"
+                    title="Record Source"
+                    field="recordSource"
                     :disableSort="true" />
-        <TextColumn name="lastName"
-                    title="Last Name"
-                    field="lastName"
+        <TextColumn name="fullName"
+                    title="Name"
+                    field="fullName"
                     :disableSort="true" />
         <TextColumn name="email"
                     title="Email"

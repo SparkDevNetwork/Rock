@@ -28,7 +28,8 @@
                                  v-model:columnFilters="columnFilterValues"
                                  v-model:columnSort="columnSortDirection"
                                  :grid="gridState"
-                                 :light="light" />
+                                 :light="light"
+                                 :manualSort="manualSort" />
                 <div v-if="$slots.gridHeaderAppend"
                      class="grid-header-append">
                     <slot name="gridHeaderAppend" />
@@ -115,8 +116,6 @@
         </div>
     </div>
 </template>
-
-
 
 <script setup lang="ts">
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -573,8 +572,18 @@
         isNestedInScrollable: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
 
+        /**
+         * When defined, this function will be called when a column's header
+         * is clicked for sorting. This allows the consumer to implement manual
+         * sorting logic. This function receives the column name and is expected
+         * to provide the sorted data back to the grid via the data property.
+         */
+        manualSort: {
+            type: Function as PropType<((column: string, grid: IGridState) => void) | undefined>,
+            default: undefined
+        },
     });
 
     const emit = defineEmits<{
@@ -1358,6 +1367,10 @@
      * Sets the current sort value to match what is in the preferences.
      */
     function setSortFromPreferences(): void {
+        if (props.manualSort) {
+            return;
+        }
+
         const sortDirection = gridPreferences.getValue(PreferenceKey.SortDirection);
 
         if (sortDirection) {
@@ -1420,7 +1433,7 @@
      * a request to save the preferences.
      */
     function saveSortPreferences(): void {
-        if (props.disablePreferences) {
+        if (props.disablePreferences || props.manualSort) {
             return;
         }
 

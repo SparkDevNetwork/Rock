@@ -14,7 +14,7 @@
             <slot name="append" :isInputGroupSupported="isInputGroupSupported" />
         </template>
     </LocationItemPicker>
-    <LocationAddressPicker v-if="numericSelectedMode === LocationPickerMode.Address" v-model="addressValue" v-model:showPopup="popupStatus" v-bind="fieldProps">
+    <LocationAddressPicker v-if="numericSelectedMode === LocationPickerMode.Address" v-model="addressValue" v-model:showPopup="popupStatus" v-bind="fieldProps" rules="required">
         <template #pickerContentSuperHeader v-if="options.length > 1">
             <RadioButtonList v-model="selectedMode" :items="options" horizontal />
         </template>

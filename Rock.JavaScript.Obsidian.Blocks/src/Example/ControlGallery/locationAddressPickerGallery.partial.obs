@@ -1,22 +1,63 @@
 <template>
     <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
 
-        <LocationAddressPicker label="Location Address Picker" v-model="value" />
+        <RockForm @submit="onSubmitted">
+            <LocationAddressPicker v-model="value"
+                                   :label="label"
+                                   :help="help"
+                                   :rules="isRequired ? 'required' : undefined"
+                                   :showPopup="showPopup" />
+            <RockButton type="submit" title="Test against the Required option.">Simulate Form Submit</RockButton>
+        </RockForm>
 
         <template #settings>
+            <div class="d-flex flex-row gap-3">
+                <Switch v-model="isRequired" label="Required" help="Disables <strong>front end</strong> validation and allows submitting parent without an entry." />
+                <Switch v-model="showPopup" label="Show Popup" help="Displays the pop-up right away without individual clicking the" />
+            </div>
+            <div class="d-flex flex-row gap-3">
+                <TextBox v-model="label" label="Label" help="Changes the label for the location address picker." />
+                <TextBox v-model="help" label="Help Text" help="Changes the help text for the location address picker." />
+            </div>
             <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field.</code></p>
         </template>
     </GalleryAndResult>
 </template>
 
 <script setup lang="ts">
-    import { ref } from "vue";
+    import { ref, computed } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import LocationAddressPicker from "@Obsidian/Controls/locationAddressPicker.obs";
-    import { getSfcControlImportPath } from "./common/utils.partial";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { getSfcControlImportPath, ComponentUsage } from "./common/utils.partial";
 
     const value = ref({});
+    const label = ref("");
+    const help = ref("");
+    const isRequired = ref<boolean>(false);
+    const showPopup = ref<boolean>(false);
+
+    label.value = "Location Address Picker";
+    help.value = "Please select a location.";
+
     const importCode = getSfcControlImportPath("locationAddressPicker");
-    const exampleCode = `<LocationAddressPicker v-model="value" />`;
+    const exampleCode = computed(() => {
+        const usage = new ComponentUsage("LocationAddressPicker");
+
+        usage.addAttribute('v-model="value"', true, false);
+        usage.addAttribute(`label="${label.value}"`, label.value !== "", false);
+        usage.addAttribute(`help="${help.value}"`, help.value !== "", false);
+        usage.addAttribute(':showPopup="true"', showPopup.value, false);
+        usage.addAttribute('rules="required"', isRequired.value, false);
+
+        return usage.toString();
+    });
+
+    function onSubmitted(): void {
+        alert("Form submitted!");
+    }
 </script>

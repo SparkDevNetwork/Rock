@@ -7,6 +7,7 @@
                           :sortDirection="columnSortLookup[column.name]"
                           :grid="grid"
                           :light="light"
+                          :manualSort="manualSort"
                           @update:filterValue="onUpdateFilterValue(column.name, $event)"
                           @update:sortDirection="onUpdateSortDirection(column.name, $event)" />
     </div>
@@ -58,7 +59,18 @@
         light: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
+
+        /**
+         * When defined, this function will be called when a column's header
+         * is clicked for sorting. This allows the consumer to implement manual
+         * sorting logic. This function receives the column name and is expected
+         * to provide the sorted data back to the grid via the data property.
+         */
+        manualSort: {
+            type: Function as PropType<((column: string, grid: IGridState) => void) | undefined>,
+            default: undefined
+        },
     });
 
     const emit = defineEmits<{

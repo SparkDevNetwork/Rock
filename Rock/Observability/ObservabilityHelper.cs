@@ -328,8 +328,12 @@ namespace Rock.Observability
 
                 rootActivity.SetTag( "rock.descendant_count", childCount + 1 );
 
+                // Allow the root activity to specify that it wants a full trace
+                // even if it is disabled by default.
+                var wantsFullTrace = rootActivity.GetCustomProperty( "rock.full_trace" ) is bool b && b == true;
+
                 // Don't create child spans in minimal mode.
-                if ( _traceLevel == Enums.Observability.TraceLevel.Minimal )
+                if ( _traceLevel == Enums.Observability.TraceLevel.Minimal && !wantsFullTrace )
                 {
                     return null;
                 }

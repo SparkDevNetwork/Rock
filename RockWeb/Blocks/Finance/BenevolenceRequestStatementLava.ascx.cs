@@ -224,11 +224,16 @@ namespace RockWeb.Blocks.Finance
         private void DisplayResults()
         {
             RockContext rockContext = new RockContext();
-            var benevolenceRequestId = PageParameter( "BenevolenceRequestId" ).AsInteger();
-            if ( benevolenceRequestId > 0 )
-            {
-                var benevolenceRequest = new BenevolenceRequestService( rockContext ).Get( benevolenceRequestId );
+            var benevolenceRequestService = new BenevolenceRequestService( rockContext );
+            var benevolenceRequest = benevolenceRequestService
+                                       .GetQueryableByKey(
+                                           PageParameter( "BenevolenceRequestId" ),
+                                           !PageCache.Layout.Site.DisablePredictableIds
+                                       )
+                                       .FirstOrDefault();
 
+            if ( benevolenceRequest != null )
+            {
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "Request", benevolenceRequest );
 

@@ -117,8 +117,7 @@ namespace Rock.Blocks.Cms
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "e357ad54-1725-48b8-997c-23c2587800fb" )]
-    // Was [Rock.SystemGuid.BlockTypeGuid( "535500a7-967f-4da3-8fca-cb844203cb3d" )]
-    [Rock.SystemGuid.BlockTypeGuid( "BA327D25-BD8A-4B67-B04C-17B499DDA4B6" )]
+    [Rock.SystemGuid.BlockTypeGuid( "535500a7-967f-4da3-8fca-cb844203cb3d" )]
     public class FileAssetManager : RockBlockType
     {
         #region Keys
