@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.XPath;
 
@@ -10,7 +7,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,8 +16,7 @@ using Microsoft.OpenApi.Models;
 
 using Rock.Configuration;
 using Rock.Data;
-using Rock.Net;
-using Rock.Rest;
+using Rock.Web2;
 using Rock.Web2.Routing;
 
 namespace RockWebCore
@@ -44,8 +39,21 @@ namespace RockWebCore
             services.AddAuthentication( CookieAuthenticationDefaults.AuthenticationScheme )
                 .AddCookie( options =>
                 {
+                    // These keys are from the RockWeb web.config machineKey element.
+                    // They are hard coded now to be the sample keys from the repo.
+                    // In the future this entire .AddCookie() call should be replaced
+                    // with a new .AddRockCookie() extension methods that performs
+                    // all of this initialization and uses an IPostConfigureOptions<CookieAuthenticationOptions>
+                    // class to create the WebFormsCookieDataFormat and pull the keys
+                    // from IConfiguration.
+                    var webFormsDecryptionHexKey = "08CA6024B2BC3CA7B61165BAF1398D94212976EC00DAC895B23E4BADEE76386B";
+                    var webFormsValidationHexKey = "09FC7CE0D57E55DCF18196743CDCDF77E86E8E522D0DDF2AB2663980F987A288B09BE034018539EAF87565AC5CB285B9C827CE0C251B8D1832627B14A7DC7697";
+
+                    options.Cookie.Name = ".ROCK";
+                    options.Cookie.Path = "/";
                     options.ExpireTimeSpan = TimeSpan.FromDays( 30 );
                     options.SlidingExpiration = true;
+                    options.TicketDataFormat = new WebFormsCookieDataFormat( webFormsDecryptionHexKey, webFormsValidationHexKey, options.Cookie.Path, options.ExpireTimeSpan );
 
                     options.Events.OnRedirectToLogin = context =>
                     {
@@ -99,6 +107,7 @@ namespace RockWebCore
 
             services.AddSingleton<IConnectionStringProvider, NetCoreConnectionStringProvider>();
             services.AddSingleton<IInitializationSettings, NetCoreInitializationSettings>();
+            services.AddSingleton<IHostingSettings, Rock.Configuration.HostingSettings>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -133,19 +142,6 @@ namespace RockWebCore
             app.UseEndpoints( endpoints =>
             {
                 endpoints.MapControllers();
-
-                foreach ( var endpoint in endpoints.DataSources.SelectMany( ds => ds.Endpoints ) )
-                {
-                    var routeEndpoint = endpoint as RouteEndpoint;
-                    if ( routeEndpoint != null )
-                    {
-                        Console.WriteLine( $"Route: {routeEndpoint.RoutePattern.RawText}" );
-
-                        if ( routeEndpoint.RoutePattern.RawText.Contains( "CampusPickerGetCampuses" ) )
-                        {
-                        }
-                    }
-                }
             } );
 
             app.UseMiddleware<RockRouterMiddleware>( app );
@@ -187,12 +183,12 @@ namespace RockWebCore
     }
 
     /// <summary>
-    /// The WebForms implementation of <see cref="InitializationSettings"/>.
+    /// The Net Core implementation of <see cref="InitializationSettings"/>.
     /// </summary>
     internal class NetCoreInitializationSettings : InitializationSettings
     {
         /// <summary>
-        /// Creates a new <see cref="WebFormsInitializationSettings"/> instance
+        /// Creates a new <see cref="NetCoreInitializationSettings"/> instance
         /// and loads all the settings from the web.config file.
         /// </summary>
         public NetCoreInitializationSettings( IConnectionStringProvider connectionStringProvider )

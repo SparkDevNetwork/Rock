@@ -98,7 +98,11 @@ namespace Rock.Security.Authentication
         /// <exception cref="System.Configuration.ConfigurationErrorsException">Authentication requires a 'PasswordKey' app setting</exception>
         static Database()
         {
+#if REVIEW_WEBFORMS
             var passwordKey = ConfigurationManager.AppSettings["PasswordKey"];
+#else
+            var passwordKey = Rock.Configuration.RockApp.Current.InitializationSettings.PasswordKey;
+#endif
             if ( String.IsNullOrWhiteSpace( passwordKey ) )
             {
                 throw new ConfigurationErrorsException( "Authentication requires a 'PasswordKey' app setting" );
