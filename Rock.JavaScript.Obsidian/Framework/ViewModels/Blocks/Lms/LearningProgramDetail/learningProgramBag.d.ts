@@ -74,6 +74,9 @@ export type LearningProgramBag = {
     /** Gets or sets the Description of the LearningProgram. */
     description?: string | null;
 
+    /** Gets or sets a value indicating whether public security should be enforced for this program. */
+    enforcePublicSecurity: boolean;
+
     /** Gets or sets the color of the highlight. */
     highlightColor?: string | null;
 

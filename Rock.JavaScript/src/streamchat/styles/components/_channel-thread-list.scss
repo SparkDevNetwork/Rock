@@ -1,0 +1,24 @@
+.rocktheme-community {
+    .str-chat__main-panel .str-chat__ul .str-chat__li:first-of-type {
+        padding-top: 0;
+    }
+
+    .str-chat__parent-message-li {
+        padding: 0;
+        padding-block-end: var(--str-chat__spacing-4);
+        margin-block-end: var(--str-chat__spacing-4);
+        margin-top: var(--str-chat__spacing-4);
+    }
+
+    .str-chat__thread-start {
+        margin-left: var(--str-chat__spacing-4);
+    }
+
+    .str-chat__thread-container {
+        border: none;
+    }
+
+    .str-chat__message-text-inner {
+        text-align: start;
+    }
+}

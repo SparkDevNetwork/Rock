@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,18 +15,20 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web;
 using System.Web.UI.WebControls;
-using Rock.Attribute;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Person
@@ -37,7 +39,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select a Phone Number of the Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Phone Number" )]
-    [Rock.SystemGuid.EntityTypeGuid( "5CBFBC11-826A-4B83-845E-247DD6268FFF")]
+    [Rock.SystemGuid.EntityTypeGuid( "5CBFBC11-826A-4B83-845E-247DD6268FFF" )]
     public class PhoneNumberSelect : DataSelectComponent
     {
         #region Properties
@@ -123,6 +125,61 @@ namespace Rock.Reporting.DataSelect.Person
             {
                 return "Phone Number";
             }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var phoneNumberTypeOptions = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Value )
+                .Select( a => new ListItemBag { Text = a.Value.EndsWith( "Phone" ) ? a.Value : a.Value + " Phone", Value = a.Guid.ToString() } );
+
+            var enableCallOrigination = true;
+            var pbxComponent = Rock.Pbx.PbxContainer.GetActiveComponentWithOriginationSupport();
+            if ( pbxComponent == null )
+            {
+                enableCallOrigination = false;
+            }
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Person/phoneNumberSelect.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    ["phoneNumberTypeOptions"] = phoneNumberTypeOptions.ToCamelCaseJson( false, true ),
+                    ["showCallOriginationCheckBox"] = enableCallOrigination.ToTrueFalse(),
+                }
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+            string[] selectionValues = selection.Split( '|' );
+
+            if ( selectionValues.Length >= 1 )
+            {
+                data.Add( "phoneNumberType", selectionValues[0] );
+            }
+
+            if ( selectionValues.Length >= 2 )
+            {
+                data.Add( "enableCallOrigination", selectionValues[1] );
+            }
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return $"{data.GetValueOrDefault( "phoneNumberType", "" )}|{data.GetValueOrDefault( "enableCallOrigination", "False" )}";
         }
 
         #endregion

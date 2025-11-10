@@ -1,8 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <PrePost v-if="isVisible"
-             :pre="field.preHtml"
-             :post="field.postHtml">
+    <template v-if="isVisible">
         <RockField v-if="field.attribute && field.attribute.fieldTypeGuid !== emptyGuid"
                    :modelValue="value"
                    :attribute="field.attribute"
@@ -20,11 +18,10 @@
                 <div class="form-control-static" v-html="value"></div>
             </div>
         </div>
-    </PrePost>
+    </template>
 </template>
 
 <script setup lang="ts">
-    import PrePost from "../prePost.partial";
     import RockField from "@Obsidian/Controls/rockField.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import { emptyGuid } from "@Obsidian/Utility/guid";

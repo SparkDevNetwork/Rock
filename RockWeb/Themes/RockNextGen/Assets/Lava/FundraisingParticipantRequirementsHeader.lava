@@ -1,0 +1,5 @@
+﻿<div>
+    <h4>Participant Checklist</h4>
+    <p>Below are tasks required for this {{ Group | Attribute:'OpportunityType' }}.</p>
+    <hr />
+</div>

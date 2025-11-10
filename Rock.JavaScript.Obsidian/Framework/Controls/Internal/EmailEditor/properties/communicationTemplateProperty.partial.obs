@@ -1,9 +1,10 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <DropDownList v-model="communicationTemplateGuidOrEmptyString"
+                  enhanceForLongLists
+                  :help="communicationTemplatesHelp ?? undefined"
                   :items="communicationTemplates ?? []"
-                  label="Template"
-                  :popupContainerOverride="documentBody" />
+                  label="Template" />
 </template>
 
 <script setup lang="ts">
@@ -24,6 +25,11 @@
             required: false
         },
 
+        communicationTemplatesHelp: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
         label: {
             type: String as PropType<string>,
             default: "Template" as const
@@ -33,8 +39,6 @@
     const emit = defineEmits<{
         (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
     }>();
-
-    const documentBody = document.body;
 
     // #region Values
 

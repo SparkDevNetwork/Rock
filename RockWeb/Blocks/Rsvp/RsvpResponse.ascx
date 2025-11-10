@@ -7,7 +7,7 @@
 
             <asp:Panel ID="pnlHeading" runat="server" CssClass="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-user-check"></i>
+                    <i class="ti ti-user-check"></i>
                     <asp:Literal ID="lHeading" runat="server" Text="RSVP for Event" />
                 </h1>
             </asp:Panel>

@@ -1,0 +1,226 @@
+<template>
+    <ContentSectionWrapper :sidebar="false">
+        <ContentSection light>
+            <ContentStack>
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="editToolName"
+                                 label="Name"
+                                 :rules="['required', validateToolName]" />
+                    </div>
+                </div>
+
+                <TextBox v-model="editToolDescription"
+                         label="Description"
+                         rules="required"
+                         textMode="multiline" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Configuration"
+                        icon="ti ti-settings">
+            <ContentStack>
+                <div class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="editToolType"
+                                      label="Type"
+                                      :items="editToolTypeItems"
+                                      rules="required" />
+                    </div>
+                </div>
+
+                <TextBox v-model="editToolPreamble"
+                         label="Preamble" />
+
+                <div v-if="editToolType === ToolType.AIPrompt.toString()"
+                     class="row">
+                    <div class="col-md-4">
+                        <NumberBox v-model="editToolTemperature"
+                                   label="Temperature"
+                                   help="The temperature to use when generating the response. A higher value will produce more random results."
+                                   rules="required"
+                                   :minimumValue="0" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <NumberBox v-model="editToolMaxTokens"
+                                   label="Max Tokens"
+                                   help="The maximum number of tokens to generate in the response."
+                                   :minimumValue="1" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <CheckBox v-model="editToolPreRenderLava"
+                                  label="Pre-render Lava"
+                                  help="Turning this on will render Lava over the prompt before it is processed by the language model." />
+                    </div>
+                </div>
+
+                <CodeEditor v-model="editToolPrompt"
+                            label="Prompt"
+                            editor="monaco"
+                            :mode="editToolPromptMode"
+                            :maxEditorHeight="400"
+                            rules="required" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Instructions"
+                        icon="ti ti-info-circle"
+                        overflowText="Help">
+            <ContentStack>
+                <InstructionList v-model="editToolInstructions" />
+            </ContentStack>
+
+            <template #overflow>
+                <p>
+                    Instructions are used to provide additional context to the
+                    language model about how to use this tool.
+                </p>
+
+                <ul>
+                    <li>Purpose - Describes the basic purpose of the tool.</li>
+                    <li>Usage - Provides details on usage instructions for the tool.</li>
+                    <li>Guardrail - Provides instructions around how to safely call the tool (like warnings that data will be updated or deleted.)</li>
+                    <li>Prerequisite - Describes steps that should be completed before calling this step.</li>
+                    <li>Example - Provides an example of usage for the orchestrator.</li>
+                    <li>Returns - Provides information about what the tool will return after it is called.</li>
+                </ul>
+            </template>
+        </ContentSection>
+
+        <ContentSection v-if="editToolType === ToolType.ExecuteLava.toString()"
+                        title="Parameters"
+                        icon="ti ti-adjustments-cog">
+            <ContentStack>
+                <RockLabel help="The parameters that will be passed to your Lava as merge fields. These are used by the language model to understand what data is passed in, but it is not guaranteed to perfectly honor what is defined here.">
+                    Parameter List
+                </RockLabel>
+
+                <div class="control-wrapper">
+                    <ParameterList v-model="editToolPromptParameters" />
+                </div>
+            </ContentStack>
+        </ContentSection>
+    </ContentSectionWrapper>
+</template>
+
+<script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionWrapper from "@Obsidian/Controls/contentSectionWrapper.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import InstructionList from "./instructionList.partial.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import ParameterList from "./parameterList.partial.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { computed, PropType, ref, watch } from "vue";
+    import { AugmentedParameterSchemaBag, InstructionItem, InstructionTypes } from "./types.partial";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { ToolType, ToolTypeDescription } from "@Obsidian/Enums/AI/Agent/toolType";
+    import { AISkillToolBag } from "@Obsidian/ViewModels/Blocks/AI/AISkillToolList/aiSkillToolBag";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<AISkillToolBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: AISkillToolBag): void;
+    }>();
+
+    // #region Values
+
+    const editToolName = ref("");
+    const editToolType = ref("");
+    const editToolDescription = ref("");
+    const editToolPreamble = ref("");
+    const editToolInstructions = ref<InstructionItem[]>([]);
+    const editToolPreRenderLava = ref(false);
+    const editToolTemperature = ref(0.7);
+    const editToolMaxTokens = ref<number>();
+    const editToolPrompt = ref("");
+    const editToolPromptParameters = ref<AugmentedParameterSchemaBag[]>([]);
+
+    // They are not allowed to set a tool type to C# code.
+    const editToolTypeItems = enumToListItemBag(ToolTypeDescription)
+        .filter(i => i.value !== ToolType.ExecuteCode.toString());
+
+    // #endregion
+
+    // #region Computed Values
+
+    const editToolPromptMode = computed((): "text" | "lava" => {
+        if (editToolType.value === ToolType.ExecuteLava.toString()) {
+            return "lava";
+        }
+
+        return editToolType.value === ToolType.AIPrompt.toString()
+            && editToolPreRenderLava.value ? "lava" : "text";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Validates the tool name to ensure it only contains valid characters.
+     *
+     * @param value The value to validate.
+     *
+     * @returns A string with an error message if the value is invalid, or true if the value is valid.
+     */
+    function validateToolName(value: unknown): string | true {
+        if (typeof value !== "string") {
+            return true;
+        }
+
+        if (value.match(/[^a-zA-Z0-9_ ]/)) {
+            return "may only contain letters, numbers, underscores and spaces.";
+        }
+
+        return true;
+    }
+
+    // #endregion
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(editToolName, props.modelValue.name ?? "");
+        updateRefValue(editToolType, props.modelValue.toolType.toString());
+        updateRefValue(editToolDescription, props.modelValue.description ?? "");
+        updateRefValue(editToolPreamble, props.modelValue.preamble ?? "");
+        updateRefValue(editToolInstructions, props.modelValue.instructions
+            ?.map(h => ({ id: h.category || newGuid(), type: h.text as InstructionTypes, text: h.value ?? "" }))
+            ?? []);
+        updateRefValue(editToolPreRenderLava, props.modelValue.preRenderLava);
+        updateRefValue(editToolTemperature, props.modelValue.temperature);
+        updateRefValue(editToolMaxTokens, props.modelValue.maxTokens ?? undefined);
+        updateRefValue(editToolPrompt, props.modelValue.prompt ?? "");
+        updateRefValue(editToolPromptParameters, props.modelValue.promptParameters
+            ?.map(p => ({ id: newGuid(), ...p }))
+            ?? []);
+    }, { immediate: true });
+
+    watch([editToolName, editToolType, editToolDescription, editToolPreamble, editToolInstructions, editToolPreRenderLava, editToolTemperature, editToolMaxTokens, editToolPrompt, editToolPromptParameters], () => {
+        emit("update:modelValue", {
+            name: editToolName.value,
+            toolType: <ToolType>toNumber(editToolType.value),
+            description: editToolDescription.value,
+            instructions: editToolInstructions.value.map(h => ({ text: h.type, value: h.text, category: h.id })),
+            preamble: editToolPreamble.value,
+            preRenderLava: editToolPreRenderLava.value,
+            temperature: editToolTemperature.value,
+            maxTokens: editToolMaxTokens.value,
+            prompt: editToolPrompt.value,
+            promptParameters: editToolPromptParameters.value
+        });
+    });
+</script>

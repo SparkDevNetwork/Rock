@@ -34,8 +34,7 @@ using PuppeteerSharp.Media;
 
 using RestSharp;
 
-using Rock.Client;
-using Rock.Client.Enums;
+using Rock.Apps.StatementGenerator.Client;
 
 using Page = PuppeteerSharp.Page;
 
@@ -49,7 +48,7 @@ namespace Rock.Apps.StatementGenerator
         /// <summary>
         /// Initializes a new instance of the <see cref="ContributionReport"/> class.
         /// </summary>
-        public ContributionReport( Rock.Client.FinancialStatementGeneratorOptions options, ProgressPage progressPage )
+        public ContributionReport( FinancialStatementGeneratorOptions options, ProgressPage progressPage )
         {
             this.Options = options;
             this.ProgressPage = progressPage;
@@ -61,7 +60,7 @@ namespace Rock.Apps.StatementGenerator
         /// <value>
         /// The options.
         /// </value>
-        public Rock.Client.FinancialStatementGeneratorOptions Options { get; set; }
+        public FinancialStatementGeneratorOptions Options { get; set; }
 
         private ProgressPage ProgressPage { get; set; }
 
@@ -526,7 +525,7 @@ namespace Rock.Apps.StatementGenerator
                 throw getFinancialStatementTemplatesResponse.ErrorException;
             }
 
-            Rock.Client.FinancialStatementTemplate financialStatementTemplate = getFinancialStatementTemplatesResponse.Data;
+            FinancialStatementTemplate financialStatementTemplate = getFinancialStatementTemplatesResponse.Data;
             if ( !this.Options.FinancialStatementTemplateId.HasValue )
             {
                 this.Options.FinancialStatementTemplateId = financialStatementTemplate.Id;

@@ -38,13 +38,14 @@ namespace Rock.Blocks.Tv
     [DisplayName( "TV Page List" )]
     [Category( "TV > TV Apps" )]
     [Description( "Displays a list of pages." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the page details.",
         Key = AttributeKey.DetailPage )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "bfe024a8-bdf2-4f11-8266-8ae4f4ea483b" )]
     [Rock.SystemGuid.BlockTypeGuid( "11616362-6f7f-4b98-bc2a-dfd18ab983d9" )]
     [CustomizedGrid]

@@ -113,6 +113,9 @@ registerFieldType(FieldTypeGuids.Color, new ColorFieldType());
 import { ColorSelectorFieldType } from "./colorSelectorField.partial";
 registerFieldType(FieldTypeGuids.ColorSelector, new ColorSelectorFieldType());
 
+import { CommunicationFlowFieldType } from "./communicationFlowField.partial";
+registerFieldType(FieldTypeGuids.CommunicationFlow, new CommunicationFlowFieldType());
+
 import { ConditionalScaleFieldType } from "./conditionalScaleField.partial";
 registerFieldType(FieldTypeGuids.ConditionalScale, new ConditionalScaleFieldType());
 

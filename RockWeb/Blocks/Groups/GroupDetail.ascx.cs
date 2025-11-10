@@ -32,6 +32,7 @@ using Rock.Attribute;
 using Rock.Communication.Chat;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
 using Rock.Model;
 using Rock.Model.Groups.Group.Options;
@@ -177,8 +178,15 @@ namespace RockWeb.Blocks.Groups
         DefaultBooleanValue = false,
         Order = 19 )]
 
+    [LinkedPage( "Group Placement Page",
+        Key = AttributeKey.GroupPlacementPage,
+        Description = "The page used for performing group placements.",
+        IsRequired = false,
+        Order = 20 )]
+
     #endregion Block Attributes
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.BlockTypeGuid( "582BEEA1-5B27-444D-BC0A-F60CEB053981" )]
     public partial class GroupDetail : ContextEntityBlock
     {
@@ -215,6 +223,7 @@ namespace RockWeb.Blocks.Groups
             public const string EnableGroupTags = "EnableGroupTags";
             public const string AddAdministrateSecurityToGroupCreator = "AddAdministrateSecurityToGroupCreator";
             public const string IsScheduleTabVisible = "IsScheduleTabVisible";
+            public const string GroupPlacementPage = "GroupPlacementPage";
         }
 
         #endregion Attribute Keys
@@ -972,12 +981,22 @@ namespace RockWeb.Blocks.Groups
                 checkinDataUpdated = true;
             }
 
+            int? orphanedChatChannelAvatarId = null;
+
             if ( ChatHelper.IsChatEnabled && group.GroupType?.IsChatAllowed == true )
             {
                 group.IsChatEnabledOverride = ddlIsChatEnabled.SelectedValue.AsBooleanOrNull();
                 group.IsLeavingChatChannelAllowedOverride = ddlIsLeavingChatChannelAllowed.SelectedValue.AsBooleanOrNull();
                 group.IsChatChannelPublicOverride = ddlIsChatChannelPublic.SelectedValue.AsBooleanOrNull();
                 group.IsChatChannelAlwaysShownOverride = ddlIsChatChannelAlwaysShown.SelectedValue.AsBooleanOrNull();
+                group.ChatPushNotificationModeOverride = ddlChatPushNotificationMode.SelectedValueAsEnumOrNull<ChatNotificationMode>();
+
+                if ( group.ChatChannelAvatarBinaryFileId != imgChatChannelAvatar.BinaryFileId )
+                {
+                    orphanedChatChannelAvatarId = group.ChatChannelAvatarBinaryFileId;
+                }
+
+                group.ChatChannelAvatarBinaryFileId = imgChatChannelAvatar.BinaryFileId;
             }
 
             // Add/update GroupSyncs
@@ -1027,6 +1046,15 @@ namespace RockWeb.Blocks.Groups
             group.StatusValueId = dvpGroupStatus.SelectedValueAsId();
             group.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
             group.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
+
+            if ( group.GroupType.AllowGroupSpecificRecordSource )
+            {
+                group.GroupMemberRecordSourceValueId = dvpRecordSource.SelectedValueAsInt();
+            }
+            else
+            {
+                group.GroupMemberRecordSourceValueId = null;
+            }
 
             group.IsSecurityRole = cbIsSecurityRole.Checked;
 
@@ -1341,6 +1369,31 @@ namespace RockWeb.Blocks.Groups
 
                     rockContext.SaveChanges();
                 }
+
+                if ( orphanedChatChannelAvatarId.HasValue || group.ChatChannelAvatarBinaryFileId.HasValue )
+                {
+                    var binaryFileService = new BinaryFileService( rockContext );
+
+                    if ( orphanedChatChannelAvatarId.HasValue )
+                    {
+                        var binaryFile = binaryFileService.Get( orphanedChatChannelAvatarId.Value );
+                        if ( binaryFile != null )
+                        {
+                            binaryFile.IsTemporary = true;
+                        }
+                    }
+
+                    if ( group.ChatChannelAvatarBinaryFileId.HasValue )
+                    {
+                        var binaryFile = binaryFileService.Get( group.ChatChannelAvatarBinaryFileId.Value );
+                        if ( binaryFile != null )
+                        {
+                            binaryFile.IsTemporary = false;
+                        }
+                    }
+
+                    rockContext.SaveChanges();
+                }
             } );
 
             bool isNowSecurityRole = group.IsActive && ( group.IsSecurityRole || group.GroupTypeId == roleGroupTypeId );
@@ -1485,6 +1538,7 @@ namespace RockWeb.Blocks.Groups
                 var group = new Group { GroupTypeId = CurrentGroupTypeId };
                 var groupType = CurrentGroupTypeCache;
 
+                SetRecordSourceControls( groupType, group );
                 SetPeerNetworkControls( groupType, group );
                 SetRsvpControls( groupType, null );
                 SetScheduleControls( groupType, null );
@@ -1985,6 +2039,7 @@ namespace RockWeb.Blocks.Groups
             BindAdministratorPerson( group, groupTypeCache );
             nbGroupCapacity.Visible = groupTypeCache != null && groupTypeCache.GroupCapacityRule != GroupCapacityRule.None;
             nbGroupCapacity.Help = nbGroupCapacity.Visible ? GetGroupCapacityHelpText( groupTypeCache.GroupCapacityRule ) : string.Empty;
+            SetRecordSourceControls( groupTypeCache, group );
             SetPeerNetworkControls( groupTypeCache, group );
             SetRsvpControls( groupTypeCache, group );
             SetScheduleControls( groupTypeCache, group );
@@ -2278,6 +2333,26 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Sets the record source controls.
+        /// </summary>
+        /// <param name="groupType">The group type cache.</param>
+        /// <param name="group">The group.</param>
+        private void SetRecordSourceControls( GroupTypeCache groupType, Group group )
+        {
+            if ( groupType?.AllowGroupSpecificRecordSource == true )
+            {
+                // Setting the type here, as setting it in `LoadDropDowns()` wasn't reliably working.
+                dvpRecordSource.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() )?.Id;
+                dvpRecordSource.SetValue( group.GroupMemberRecordSourceValueId );
+                dvpRecordSource.Visible = true;
+            }
+            else
+            {
+                dvpRecordSource.Visible = false;
+            }
+        }
+
+        /// <summary>
         /// Sets the Peer Network controls.
         /// </summary>
         /// <param name="groupType">The group type cache.</param>
@@ -2423,10 +2498,18 @@ namespace RockWeb.Blocks.Groups
                     ? group.IsChatChannelAlwaysShownOverride.Value ? "y" : "n"
                     : string.Empty;
 
+                var chatPushNotificationMode = group.ChatPushNotificationModeOverride.HasValue
+                    ? group.ChatPushNotificationModeOverride.Value.ConvertToInt()
+                    : ( int? ) null;
+
                 ddlIsChatEnabled.SetValue( isChatEnabled );
                 ddlIsLeavingChatChannelAllowed.SetValue( isLeavingChatChannelAllowed );
                 ddlIsChatChannelPublic.SetValue( isChatChannelPublic );
                 ddlIsChatChannelAlwaysShown.SetValue( isChatChannelAlwaysShown );
+                ddlChatPushNotificationMode.SetValue( chatPushNotificationMode );
+
+                imgChatChannelAvatar.BinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
+                imgChatChannelAvatar.BinaryFileId = group.ChatChannelAvatarBinaryFileId;
 
                 if ( group.IsSystem )
                 {
@@ -2434,6 +2517,8 @@ namespace RockWeb.Blocks.Groups
                     ddlIsLeavingChatChannelAllowed.Enabled = false;
                     ddlIsChatChannelPublic.Enabled = false;
                     ddlIsChatChannelAlwaysShown.Enabled = false;
+                    ddlChatPushNotificationMode.Enabled = false;
+                    imgChatChannelAvatar.Enabled = false;
                 }
 
                 wpChat.Visible = true;
@@ -2516,7 +2601,7 @@ namespace RockWeb.Blocks.Groups
                     // Only show the growth icon and tooltip if growth enabled AND the strength is not "None".
                     if ( isRelationshipGrowthEnabled && finalRelationshipStrength > 0 )
                     {
-                        relationshipLabelIconsSb.Append( $@" <i class=""fa fa-chart-line""></i>" );
+                        relationshipLabelIconsSb.Append( $@" <i class=""ti ti-chart-line""></i>" );
 
                         relationshipGrowthTooltip = " The relationship is also set to strengthen over time.";
                     }
@@ -2524,7 +2609,7 @@ namespace RockWeb.Blocks.Groups
                     // Show the overridden icon if this group is overriding its parent group type's peer network configuration in any way.
                     if ( group.IsOverridingGroupTypePeerNetworkConfiguration )
                     {
-                        relationshipLabelIconsSb.Append( $@" <i class=""fa fa-star-of-life""></i>" );
+                        relationshipLabelIconsSb.Append( $@" <i class=""ti ti-asterisk""></i>" );
                     }
 
                     // Only show the overridden tooltip if the relationship strength itself has been overridden.
@@ -2547,7 +2632,7 @@ namespace RockWeb.Blocks.Groups
 
                 if ( ChatHelper.IsChatEnabled && group.GetIsChatEnabled() )
                 {
-                    hlChat.Text = $"Chat-Enabled <i class=\"fa fa-comments-o\"></i>";
+                    hlChat.Text = $"Chat-Enabled <i class=\"ti ti-messages\"></i>";
                     hlChat.Visible = true;
                 }
                 else
@@ -2664,6 +2749,30 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 hlGroupScheduler.Visible = false;
+            }
+
+            string groupPlacementUrl = LinkedPageUrl( AttributeKey.GroupPlacementPage, new Dictionary<string, string>
+            {
+                { "SourceGroup", group.Id.ToString() },
+                { "AllowMultiplePlacements", "false" },
+                { "ReturnUrl", GetCurrentPageUrl() }
+            } );
+            if ( groupPlacementUrl.IsNotNullOrWhiteSpace() )
+            {
+                hlGroupPlacement.Visible = groupType != null;
+                if ( group.DisableScheduling )
+                {
+                    hlGroupPlacement.Enabled = false;
+                }
+                else
+                {
+                    hlGroupPlacement.NavigateUrl = groupPlacementUrl;
+                    hlGroupPlacement.Enabled = true;
+                }
+            }
+            else
+            {
+                hlGroupPlacement.Visible = false;
             }
 
             string groupHistoryUrl = LinkedPageUrl( AttributeKey.GroupHistoryPage, pageParams );
@@ -3912,7 +4021,7 @@ namespace RockWeb.Blocks.Groups
             GroupRequirement requirement = e.Row.DataItem as GroupRequirement;
             if ( requirement != null )
             {
-                lAppliesToDataViewId.Text = requirement.AppliesToDataViewId.HasValue ? "<i class=\"fa fa-check\"></i>" : string.Empty;
+                lAppliesToDataViewId.Text = requirement.AppliesToDataViewId.HasValue ? "<i class=\"ti ti-check\"></i>" : string.Empty;
             }
         }
 

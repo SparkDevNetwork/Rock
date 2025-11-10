@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <i class="clear-style-button fa fa-times" role="button" aria-label="Clear" title="Clear"></i>
+    <i class="clear-style-button ti ti-x" role="button" aria-label="Clear" title="Clear"></i>
 </template>
 
 <style scoped>

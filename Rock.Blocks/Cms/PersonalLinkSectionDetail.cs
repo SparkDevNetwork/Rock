@@ -40,7 +40,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Personal Link Section Detail" )]
     [Category( "CMS" )]
     [Description( "Displays the details of a particular personal link section." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

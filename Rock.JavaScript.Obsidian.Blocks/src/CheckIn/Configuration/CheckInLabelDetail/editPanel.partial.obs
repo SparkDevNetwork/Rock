@@ -78,7 +78,9 @@
 
         <LabelPreviewModal v-model="isPreviewOpen"
                            showCustomSize
-                           :refreshCallback="refreshPreviewCallback" />
+                           :refreshCallback="refreshPreviewCallback"
+                           :printCallback="printPreviewCallback"
+                           :printers="options.printers" />
     </fieldset>
 </template>
 
@@ -212,6 +214,24 @@
             data: result.data,
             size: ""
         };
+    }
+
+    /**
+     * Prints the preview data to the specified printer.
+     */
+    async function printPreviewCallback(content: string, printerId: string): Promise<void> {
+        const result = await invokeBlockAction<PreviewResultBag>("PrintPreview", {
+            key: props.modelValue.bag?.idKey,
+            content: content,
+            printerKey: printerId
+        });
+
+        if (result.isSuccess) {
+            await alert("The label was successfully sent to the printer.");
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to print check-in label.");
+        }
     }
 
     function showPreview(): void {

@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock;
 using Rock.Data;
 
@@ -47,7 +49,7 @@ namespace Rock.Model
             {
                 if ( commandTimeout.HasValue )
                 {
-                    rockContext.Database.CommandTimeout = commandTimeout;
+                    rockContext.Database.SetCommandTimeout( commandTimeout );
                 }
 
                 interactionEntities = rockContext.Set<InteractionEntity>()

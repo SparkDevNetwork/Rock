@@ -36,11 +36,11 @@ namespace Rock.Blocks.Bus
     [DisplayName( "Consumer List" )]
     [Category( "Bus" )]
     [Description( "Displays a list of consumers." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.BlockTypeGuid( "63f5509a-3d71-4f0f-a074-fa5869856038" )]
-
     [Rock.SystemGuid.EntityTypeGuid( "444BD66E-A715-4367-A3A6-5C0BBD6E93B4")]
     public class ConsumerList : RockListBlockType<ConsumerListBag>
     {

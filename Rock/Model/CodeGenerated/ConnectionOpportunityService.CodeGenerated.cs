@@ -142,6 +142,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this ConnectionOpportunity target, ConnectionOpportunity source )
         {
             target.Id = source.Id;
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.ConnectionTypeId = source.ConnectionTypeId;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;

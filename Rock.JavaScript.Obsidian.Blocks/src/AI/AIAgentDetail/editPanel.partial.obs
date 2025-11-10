@@ -1,0 +1,229 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-model="agentType"
+                              label="Type"
+                              :items="agentTypeItems"
+                              :showBlankItem="false"
+                              :disabled="!!props.modelValue.bag?.idKey"
+                              rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <DropDownList v-model="audienceType"
+                              label="Audience"
+                              :items="audienceTypeItems"
+                              :showBlankItem="false"
+                              rules="required" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <TextBox v-model="instructions"
+                 label="Instructions"
+                 textMode="multiline" />
+
+        <template v-if="agentType === AgentType.Chat.toString()">
+            <div class="row">
+                <div class="col-md-6">
+                    <ImageUploader v-model="avatarBinaryFile"
+                                   label="Avatar" />
+                </div>
+
+                <div class="col-md-6">
+                    <DropDownList v-model="role"
+                                  label="Role"
+                                  :items="roleItems"
+                                  :showBlankItem="false"
+                                  rules="required" />
+                </div>
+            </div>
+
+            <Panel title="Advanced Settings" hasCollapse>
+                <div class="row">
+                    <div class="col-md-6">
+                        <NumberBox v-model="autoSummarizeThreshold"
+                                   label="Auto Summarize Threshold"
+                                   help="The number of tokens that will trigger an auto summarization of the conversion when the agent is processing a message."
+                                   :minimumValue="0" />
+
+                    </div>
+
+                    <div class="col-md-6">
+                        <CheckBox v-model="isExcludingSystemSkills"
+                                  label="Exclude System Skills"
+                                  help="By default, a set of system skills and tools will be included in the agent. These provide critical functionality and should only be removed if you are sure you need to remove them." />
+                    </div>
+                </div>
+
+                <CodeEditor v-model="currentPersonTemplate"
+                            label="Current Person Template"
+                            help="The Lava template to use when rendering the details about the current person for the agent. The merge field 'CurrentPerson' is available. If blank a default template will be used."
+                            editor="monaco"
+                            mode="lava" />
+            </Panel>
+        </template>
+
+        <template v-if="agentType === AgentType.Mcp.toString()">
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="slug"
+                             label="Slug"
+                             help="The URL slug that identifies this agent to the MCP service."
+                             :rules="['required', validateSlug]" />
+                </div>
+            </div>
+
+            <Panel title="Advanced Settings" hasCollapse>
+                <div class="row">
+                    <div class="col-md-6">
+                        <CheckBox v-model="isExcludingSystemSkills"
+                                  label="Exclude System Skills"
+                                  help="By default, a set of system skills and tools will be included in the agent. These provide critical functionality and should only be removed if you are sure you need to remove them." />
+                    </div>
+                </div>
+            </Panel>
+        </template>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { PropType, ref, watch } from "vue";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { AIAgentBag } from "@Obsidian/ViewModels/Blocks/AI/AIAgentDetail/aiAgentBag";
+    import { AIAgentDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/AI/AIAgentDetail/aiAgentDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { ModelServiceRole, ModelServiceRoleDescription } from "@Obsidian/Enums/AI/Agent/modelServiceRole";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { AgentType, AgentTypeDescription } from "@Obsidian/Enums/AI/Agent/agentType";
+    import { AudienceType, AudienceTypeDescription } from "@Obsidian/Enums/AI/Agent/audienceType";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<AIAgentBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<AIAgentDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<AIAgentBag>): void
+    }>();
+
+    // #region Values
+
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const agentType = propertyRef((props.modelValue.bag?.agentType ?? AgentType.Chat).toString(), "AgentType");
+    const audienceType = propertyRef((props.modelValue.bag?.audienceType ?? AudienceType.Internal).toString(), "AudienceType");
+    const instructions = propertyRef(props.modelValue.bag?.instructions ?? "", "Instructions");
+    const autoSummarizeThreshold = ref(props.modelValue.bag?.autoSummarizeThreshold ?? 0);
+    const avatarBinaryFile = ref(props.modelValue.bag?.avatarBinaryFile ?? null);
+    const role = ref((props.modelValue.bag?.role ?? ModelServiceRole.Default).toString());
+    const currentPersonTemplate = ref(props.modelValue.bag?.currentPersonTemplate ?? "");
+    const slug = ref(props.modelValue.bag?.slug ?? "");
+    const isExcludingSystemSkills = ref(props.modelValue.bag?.isExcludingSystemSkills ?? false);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [agentType, audienceType, description, name, instructions];
+
+    const roleItems = enumToListItemBag(ModelServiceRoleDescription);
+    const agentTypeItems = enumToListItemBag(AgentTypeDescription);
+    const audienceTypeItems = enumToListItemBag(AudienceTypeDescription);
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    function validateSlug(value: unknown): true | string {
+        if (typeof value !== "string" || value.trim() === "") {
+            return true;
+        }
+
+        return /^[a-z0-9-]+$/.test(value) || "must contain only letters, numbers and hyphens";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    watch(name, (newValue, oldValue) => {
+        const slugRegex = /[^a-z0-9-]/g;
+        const oldSlug = oldValue.trim().toLowerCase().replace(slugRegex, "-");
+        const newSlug = newValue.trim().toLowerCase().replace(slugRegex, "-");
+
+        if (oldSlug === slug.value || !slug.value) {
+            updateRefValue(slug, newSlug);
+        }
+    });
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(agentType, (props.modelValue.bag?.agentType ?? AgentType.Chat).toString());
+        updateRefValue(audienceType, (props.modelValue.bag?.audienceType ?? AudienceType.Internal).toString());
+        updateRefValue(instructions, props.modelValue.bag?.instructions ?? "");
+        updateRefValue(autoSummarizeThreshold, props.modelValue.bag?.autoSummarizeThreshold ?? 0);
+        updateRefValue(avatarBinaryFile, props.modelValue.bag?.avatarBinaryFile ?? null);
+        updateRefValue(role, (props.modelValue.bag?.role ?? ModelServiceRole.Default).toString());
+        updateRefValue(currentPersonTemplate, props.modelValue.bag?.currentPersonTemplate ?? "");
+        updateRefValue(slug, props.modelValue.bag?.slug ?? "");
+        updateRefValue(isExcludingSystemSkills, props.modelValue.bag?.isExcludingSystemSkills ?? false);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs, autoSummarizeThreshold, avatarBinaryFile, isExcludingSystemSkills, role, currentPersonTemplate, slug], () => {
+        const newValue: ValidPropertiesBox<AIAgentBag> = {
+            bag: { ...props.modelValue.bag } as AIAgentBag
+        };
+
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "agentType", toNumber(agentType.value) as AgentType);
+        setPropertiesBoxValue(newValue, "audienceType", toNumber(audienceType.value) as AudienceType);
+        setPropertiesBoxValue(newValue, "instructions", instructions.value);
+        setPropertiesBoxValue(newValue, "autoSummarizeThreshold", autoSummarizeThreshold.value);
+        setPropertiesBoxValue(newValue, "avatarBinaryFile", avatarBinaryFile.value);
+        setPropertiesBoxValue(newValue, "role", toNumber(role.value) as ModelServiceRole);
+        setPropertiesBoxValue(newValue, "currentPersonTemplate", currentPersonTemplate.value);
+        setPropertiesBoxValue(newValue, "slug", slug.value);
+        setPropertiesBoxValue(newValue, "isExcludingSystemSkills", isExcludingSystemSkills.value);
+
+        emit("update:modelValue", newValue);
+    });
+</script>

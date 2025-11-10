@@ -1,0 +1,36 @@
+<template>
+    <DropDownList v-model="attribute"
+                  label="Attribute"
+                  :items="attributeOptions"
+                  showBlankItem />
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { dataViewSelectProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+
+    const props = defineProps(dataViewSelectProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    // #region Values
+
+    const attribute = ref(props.modelValue.attribute ?? "");
+    const attributeOptions: ListItemBag[] = safeParseJson(props.options.attributeOptions) ?? [];
+
+    // #endregion
+
+    watch(attribute, () => {
+        const newData = {
+            ...props.modelValue,
+            attribute: attribute.value
+        };
+
+        emit("update:modelValue", newData);
+    });
+</script>

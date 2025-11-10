@@ -183,7 +183,7 @@ $('.checkin-group a.checkin-group-add-group').on('click', function (event) {
             _lbAddGroup.Click += lbAddGroup_Click;
             _lbAddGroup.CausesValidation = false;
             _lbAddGroup.ToolTip = "Add New Group";
-            _lbAddGroup.Controls.Add( new LiteralControl { Text = "<i class='fa fa-plus'></i> <i class='fa fa-check-circle'></i>" } );
+            _lbAddGroup.Controls.Add( new LiteralControl { Text = "<i class='ti ti-plus'></i> <i class='ti ti-circle-check'></i>" } );
             Controls.Add( _lbAddGroup );
         }
 
@@ -203,8 +203,8 @@ $('.checkin-group a.checkin-group-add-group').on('click', function (event) {
             // Hidden Field to track expansion
             _hfExpanded.RenderControl( writer );
 
-            writer.WriteLine( "<a class='checkin-group-reorder'><i class='fa fa-bars'></i></a>" );
-            writer.WriteLine( "<a class='checkin-group-expand'><i class='checkin-group-state fa fa-check-circle'></i></a>" );
+            writer.WriteLine( "<a class='checkin-group-reorder'><i class='ti ti-menu-2'></i></a>" );
+            writer.WriteLine( "<a class='checkin-group-expand'><i class='checkin-group-state ti ti-circle-check'></i></a>" );
 
             _lblGroupRowName.RenderControl( writer );
 

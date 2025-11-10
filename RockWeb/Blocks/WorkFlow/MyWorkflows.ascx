@@ -5,7 +5,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-gears"></i> My Workflows</h1>
+                <h1 class="panel-title"><i class="ti ti-settings-cog"></i> My Workflows</h1>
 
                 <div class="pull-right">
                     <Rock:Toggle ID="tglRole" CssClass="margin-r-sm pull-left"  runat="server" OnText="Initiated By Me" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" OffText="Assigned To Me" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />

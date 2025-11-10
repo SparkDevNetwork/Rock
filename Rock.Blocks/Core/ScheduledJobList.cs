@@ -39,7 +39,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Scheduled Job List" )]
     [Category( "Core" )]
     [Description( "Lists all scheduled jobs." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
@@ -178,7 +178,11 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<ServiceJob> GetOrderedListQueryable( IQueryable<ServiceJob> queryable, RockContext rockContext )
         {
-            return  queryable.OrderByDescending( a => a.LastRunDateTime ).ThenBy( a => a.Name );
+            return queryable.OrderBy( a => a.IsActive.HasValue ? ( a.IsActive.Value ? 0 : 1 ) : 2 ) // Active first
+                .ThenBy( a => a.LastStatus == null ? 1 : 0 )    // NULL LastStatus last
+                .ThenBy( a => a.LastStatus )
+                .ThenByDescending( a => a.LastRunDateTime )
+                .ThenBy( a => a.Name );
         }
 
         /// <inheritdoc/>

@@ -6,7 +6,8 @@
             <Accordion title="Body Settings">
                 <CommunicationTemplateProperty v-if="communicationTemplates"
                                                v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
-                                               :communicationTemplates="communicationTemplates" />
+                                               :communicationTemplates="communicationTemplates"
+                                               :communicationTemplatesHelp="communicationTemplatesHelp" />
 
                 <RangeSliderProperty label="Body Width"
                                      :min="480"
@@ -259,11 +260,11 @@
                 </div>
 
                 <RangeSliderProperty label="Divider Width"
-                                                 :min="5"
-                                                 :max="100"
-                                                 :showValueBar="true"
-                                                 valueSuffix="%"
-                                                 :valueProvider="getGlobalDividerWidthProvider(document)" />
+                                     :min="5"
+                                     :max="100"
+                                     :showValueBar="true"
+                                     valueSuffix="%"
+                                     :valueProvider="getGlobalDividerWidthProvider(document)" />
 
                 <HorizontalAlignmentProperty label="Horizontal Alignment"
                                              :valueProvider="getGlobalDividerHorizontalAlignmentProvider(document)" />
@@ -332,6 +333,11 @@
 
         communicationTemplates: {
             type: Object as PropType<ListItemBag[] | null | undefined>,
+            required: false
+        },
+
+        communicationTemplatesHelp: {
+            type: String as PropType<string | null | undefined>,
             required: false
         }
     });

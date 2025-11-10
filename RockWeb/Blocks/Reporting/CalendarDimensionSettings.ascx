@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-calendar"></i>&nbsp;Calendar Dimension Settings</h1>
+                <h1 class="panel-title"><i class="ti ti-calendar"></i>&nbsp;Calendar Dimension Settings</h1>
             </div>
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbGenerate" runat="server" Text="This will populate the AnalyticsSourceDate table (and associated Views). It will first empty the AnalyticsSourceDate table if there is already data in it." />

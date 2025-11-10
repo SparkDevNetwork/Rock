@@ -9,7 +9,7 @@
             <div class="control-wrapper">
                 <div class="input-group">
                     <span class="input-group-addon">
-                        <i class="fa fa-envelope"></i>
+                        <i class="ti ti-mail"></i>
                     </span>
                     <input v-model="internalValue" :id="uniqueId" class="form-control" v-bind="field" :type="computedType" />
                 </div>

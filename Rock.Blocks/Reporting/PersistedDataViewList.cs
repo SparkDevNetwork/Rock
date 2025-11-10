@@ -37,7 +37,7 @@ namespace Rock.Blocks.Reporting
     [DisplayName( "Persisted Data View List" )]
     [Category( "Reporting" )]
     [Description( "Shows a list of Data Views that have persistence enabled." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
@@ -108,7 +108,7 @@ namespace Rock.Blocks.Reporting
         protected override IQueryable<DataView> GetListQueryable( RockContext rockContext )
         {
             var dataViewService = new DataViewService( rockContext );
-            return dataViewService.Queryable().Where( a => a.PersistedScheduleIntervalMinutes.HasValue && a.PersistedLastRefreshDateTime.HasValue ).AsNoTracking();
+            return dataViewService.Queryable().Where( a => a.PersistedScheduleIntervalMinutes.HasValue || a.PersistedScheduleId.HasValue ).AsNoTracking();
         }
 
         /// <inheritdoc/>
@@ -124,26 +124,46 @@ namespace Rock.Blocks.Reporting
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
-                .AddTextField( "persistedInterval", a => FormatFriendlyMinutesDuration( a.PersistedScheduleIntervalMinutes ) )
+                .AddTextField( "persistedInterval", a => FormatFriendlyInterval( a.PersistedScheduleIntervalMinutes, a.PersistedSchedule ) )
                 .AddField( "persistedLastRunDurationMilliseconds", a => a.PersistedLastRunDurationMilliseconds )
+                .AddField( "isPersistedIntervalMinutes", a => IsPersistedScheduleIntervalMinutes( a.PersistedScheduleIntervalMinutes ) )
                 .AddField( "runCount", a => a.RunCount )
                 .AddDateTimeField( "lastRunDateTime", a => a.LastRunDateTime )
                 .AddDateTimeField( "persistedLastRefreshDateTime", a => a.PersistedLastRefreshDateTime );
         }
 
+        private bool IsPersistedScheduleIntervalMinutes( int? persistedScheduleIntervalMinutes )
+        {
+            if ( persistedScheduleIntervalMinutes == null || persistedScheduleIntervalMinutes == 0 )
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
         /// <summary>
-        /// Formats the value as a human friendly duration.
+        /// Formats the value as a human friendly interval.
         /// </summary>
         /// <param name="minutesValue">The interval value to convert.</param>
+        /// <param name="schedule">The schedule to convert.</param>
         /// <returns>a human readable value</returns>
-        private string FormatFriendlyMinutesDuration( int? minutesValue )
+        private string FormatFriendlyInterval( int? minutesValue, Schedule persistedSchedule )
         {
-            if ( !minutesValue.HasValue )
+            if ( minutesValue.HasValue )
             {
+                return ( minutesValue * 60 ).ToFriendlyDuration();
+            }
+            else if ( persistedSchedule != null )
+            {
+                return ( string.IsNullOrEmpty( persistedSchedule.Name ) ? persistedSchedule.Description : persistedSchedule.Name );
+            }
+            else
+            { 
                 return string.Empty;
             }
-
-            return ( minutesValue * 60 ).ToFriendlyDuration();
         }
 
         #endregion

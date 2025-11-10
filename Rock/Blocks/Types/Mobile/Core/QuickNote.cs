@@ -33,7 +33,7 @@ namespace Rock.Blocks.Types.Mobile.Core
     [DisplayName( "Quick Note" )]
     [Category( "Mobile > Core" )]
     [Description( "Allows an individual to quickly add a note that is not tied to any specific entity." )]
-    [IconCssClass( "fa fa-sticky-note" )]
+    [IconCssClass( "ti ti-sticker-2" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

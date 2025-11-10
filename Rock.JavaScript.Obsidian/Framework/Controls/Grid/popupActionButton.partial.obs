@@ -9,7 +9,7 @@
             <span class="ml-2 action-title flex-grow-1">{{ action.title }}</span>
 
             <span v-if="actionTooltip" class="ml-2">
-                <i class="fa fa-info-circle" :title="actionTooltip"></i>
+                <i class="ti ti-info-circle" :title="actionTooltip"></i>
             </span>
         </a>
     </li>
@@ -58,10 +58,10 @@
         if (props.action.iconCssClass) {
             let iconClass = props.action.iconCssClass;
 
-            return `${iconClass} fa-fw`;
+            return `${iconClass} ti-fw`;
         }
         else {
-            return "fa fa-fw";
+            return "ti ti-fw";
         }
     });
 

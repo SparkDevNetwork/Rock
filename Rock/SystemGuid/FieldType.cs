@@ -177,6 +177,11 @@ namespace Rock.SystemGuid
         public const string COLOR_SELECTOR = "B07070F6-B66E-4B83-8DA6-12CF3400A1EC";
 
         /// <summary>
+        /// Communication Flow field type
+        /// </summary>
+        public const string COMMUNICATION_FLOW = "DD16B493-2588-436A-8C99-8771206ED28D";
+
+        /// <summary>
         /// Communication Template field type
         /// </summary>
         public const string COMMUNICATION_TEMPLATE = "C3B37465-DCAF-4C8C-930C-9A9B5D066CA9";
@@ -345,6 +350,11 @@ namespace Rock.SystemGuid
         /// Defined Value Range field type
         /// </summary>
         public const string DEFINED_VALUE_RANGE = "B5C07B16-844D-4620-82E3-4CCA8F5FC350";
+
+        /// <summary>
+        /// Device field type
+        /// </summary>
+        public const string DEVICE = "D7F5D737-BDC9-4656-951E-08325D0543FD";
 
         /// <summary>
         /// Document Type field type

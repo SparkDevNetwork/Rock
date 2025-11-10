@@ -20,14 +20,19 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Newtonsoft.Json;
 
 using Rock.Data;
+using Rock.Enums.Reporting;
+using Rock.Field;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -39,7 +44,7 @@ namespace Rock.Reporting.DataFilter
     [Description( "Filter entities on any of its property or attribute values" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Property Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "03F0D6AC-D181-48B6-B4BC-1F2652B55323")]
+    [Rock.SystemGuid.EntityTypeGuid( "03F0D6AC-D181-48B6-B4BC-1F2652B55323" )]
     public class PropertyFilter : EntityFieldFilter
     {
         #region Properties
@@ -78,6 +83,218 @@ namespace Rock.Reporting.DataFilter
             {
                 return int.MinValue;
             }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/propertyFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+
+            var fieldFilterSources = new List<FieldFilterSourceBag>();
+            var entityFields = EntityHelper.GetEntityFields( entityType )
+                .OrderBy( a => !a.IsPreviewable )
+                .ThenBy( a => a.FieldKind != FieldKind.Property )
+                .ThenBy( a => a.Title );
+
+            foreach ( var entityField in entityFields )
+            {
+                bool isAuthorized = true;
+                bool includeField = true;
+                AttributeCache attribute = null;
+
+                if ( entityField.FieldKind == FieldKind.Attribute && entityField.AttributeGuid.HasValue )
+                {
+                    if ( entityType == typeof( Rock.Model.Workflow ) && !string.IsNullOrWhiteSpace( entityField.AttributeEntityTypeQualifierName ) )
+                    {
+                        // Workflows can contain tons of Qualified Attributes, so let the WorkflowAttributeFilter take care of those
+                        includeField = false;
+                    }
+
+                    attribute = AttributeCache.Get( entityField.AttributeGuid.Value );
+
+                    // Don't include the attribute if it isn't active
+                    if ( attribute.IsActive == false )
+                    {
+                        includeField = false;
+                    }
+
+                    if ( includeField && attribute != null )
+                    {
+                        // only show the Attribute field in the drop down if they have VIEW Auth to it
+                        isAuthorized = attribute.IsAuthorized( Rock.Security.Authorization.VIEW, requestContext.CurrentPerson );
+                    }
+                }
+
+                if ( isAuthorized && includeField )
+                {
+                    FieldFilterSourceBag source = null;
+
+                    if ( entityField.FieldKind == FieldKind.Attribute )
+                    {
+                        var fieldType = attribute.FieldType;
+                        source = new FieldFilterSourceBag
+                        {
+                            Guid = attribute.Guid,
+                            Type = FieldFilterSourceType.Attribute,
+                            Attribute = new PublicAttributeBag
+                            {
+                                AttributeGuid = attribute.Guid,
+                                ConfigurationValues = fieldType.Field.GetPublicConfigurationValues( attribute.ConfigurationValues, Field.ConfigurationValueUsage.Edit, null ),
+                                Description = attribute.Description,
+                                FieldTypeGuid = fieldType.Guid,
+                                Name = entityField.Title
+                            }
+                        };
+                    }
+                    else
+                    {
+                        var fieldType = entityField.FieldType;
+                        source = new FieldFilterSourceBag
+                        {
+                            Guid = Guid.NewGuid(),
+                            Type = FieldFilterSourceType.Property,
+                            Property = new FieldFilterPublicPropertyBag
+                            {
+                                Name = entityField.UniqueName,
+                                Title = entityField.Title,
+                                FieldTypeGuid = fieldType.Guid,
+                                ConfigurationValues = fieldType.Field.GetPublicConfigurationValues( entityField.FieldConfig.ToDictionary( c => c.Key, c => c.Value.Value ), Field.ConfigurationValueUsage.Edit, null ),
+                            }
+                        };
+                    }
+
+                    if ( entityField.IsPreviewable )
+                    {
+                        source.Category = "Common";
+                    }
+                    else if ( entityField.FieldKind == FieldKind.Attribute )
+                    {
+                        source.Category = string.Format( "{0} Attributes", entityType.Name );
+                    }
+                    else
+                    {
+                        source.Category = string.Format( "{0} Fields", entityType.Name );
+                    }
+
+                    fieldFilterSources.Add( source );
+                }
+            }
+
+            data.AddOrReplace( "fieldFilterSources", fieldFilterSources.ToCamelCaseJson( false, true ) );
+
+            if ( !string.IsNullOrWhiteSpace( selection ) || selection.IsNotNullOrWhiteSpace() )
+            {
+                var values = selection.FromJsonOrNull<List<string>>();
+                if ( values == null || values.Count == 0 )
+                {
+                    return data;
+                }
+
+                if ( values.Count > 0 )
+                {
+                    var entityField = entityFields.ToList().FindFromFilterSelection( values[0] );
+
+                    if ( entityField == null )
+                    {
+                        return data;
+                    }
+
+                    var attribute = AttributeCache.Get( entityField.AttributeGuid ?? Guid.Empty );
+
+                    FieldFilterRuleBag filterRule = null;
+
+                    if ( values.Count > 1 && entityField.FieldKind == FieldKind.Property )
+                    {
+                        var config = entityField.FieldConfig.ToDictionary( a => a.Key, a => a.Value.Value );
+                        var comparisonValue = entityField.FieldType.Field.GetPublicFilterValue( values.Skip( 1 ).ToJson(), config );
+                        filterRule = new FieldFilterRuleBag
+                        {
+                            ComparisonType = comparisonValue.ComparisonType ?? 0,
+                            Value = comparisonValue.Value,
+                            SourceType = FieldFilterSourceType.Property,
+                            PropertyName = entityField.UniqueName
+                        };
+                    }
+                    else if ( values.Count == 2 )
+                    {
+                        filterRule = FieldVisibilityRule.GetPublicRuleBag( attribute, 0, values[1] );
+                    }
+                    else if ( values.Count == 3 )
+                    {
+                        filterRule = FieldVisibilityRule.GetPublicRuleBag( attribute, ( ComparisonType ) ( values[1].AsInteger() ), values[2] );
+                    }
+
+                    data.AddOrReplace( "filterRule", filterRule.ToCamelCaseJson( false, true ) );
+                }
+            }
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionValues = new List<string>();
+
+            var filterRule = data.GetValueOrNull( "filterRule" ).FromJsonOrNull<FieldFilterRuleBag>();
+            if ( filterRule == null
+                || ( filterRule.SourceType == FieldFilterSourceType.Attribute && ( filterRule.AttributeGuid == null || filterRule.AttributeGuid == Guid.Empty ) )
+                || ( filterRule.SourceType == FieldFilterSourceType.Property && filterRule.PropertyName.IsNullOrWhiteSpace() )
+            )
+            {
+                return selectionValues.ToJson();
+            }
+
+            EntityField entityField = null;
+            List<string> filterValue = new List<string>();
+
+            if ( filterRule.SourceType == FieldFilterSourceType.Attribute )
+            {
+                var attribute = AttributeCache.Get( filterRule.AttributeGuid.Value );
+                entityField = EntityHelper.GetEntityFieldForAttribute( attribute );
+                var comparisonValue = new ComparisonValue
+                {
+                    ComparisonType = filterRule.ComparisonType,
+                    Value = filterRule.Value
+                };
+
+                filterValue = attribute.FieldType.Field.GetPrivateFilterValue( comparisonValue, attribute.ConfigurationValues ).FromJsonOrNull<List<string>>();
+            }
+            else
+            {
+                var entityFields = EntityHelper.GetEntityFields( entityType );
+                entityField = entityFields.FindFromFilterSelection( filterRule.PropertyName );
+                var comparisonValue = new ComparisonValue
+                {
+                    ComparisonType = filterRule.ComparisonType,
+                    Value = filterRule.Value
+                };
+
+                filterValue = entityField.FieldType.Field.GetPrivateFilterValue( comparisonValue, entityField.FieldConfig.ToDictionary( c => c.Key, c => c.Value.Value ) ).FromJsonOrNull<List<string>>();
+            }
+
+            if ( filterValue.Count >= 2 && filterValue[0] == "0" )
+            {
+                filterValue = filterValue.Skip( 1 ).ToList();
+            }
+
+            selectionValues.Add( entityField.UniqueName );
+            selectionValues = selectionValues.Concat( filterValue ).ToList();
+
+            return selectionValues.ToJson();
         }
 
         #endregion

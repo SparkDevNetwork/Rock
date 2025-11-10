@@ -75,5 +75,11 @@ namespace Rock.ViewModels.CheckIn
         /// </summary>
         /// <value>The identifier of the person performing the action.</value>
         public string PerformedByPersonId { get; set; }
+
+        /// <summary>
+        /// The identifier of the check-in source that will be used when creating
+        /// the attendance records for this session.
+        /// </summary>
+        public string SourceValueId { get; set; }
     }
 }

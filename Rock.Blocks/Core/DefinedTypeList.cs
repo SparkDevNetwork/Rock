@@ -40,7 +40,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Defined Type List" )]
     [Category( "Core" )]
     [Description( "Displays a list of defined types." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
@@ -119,7 +119,7 @@ namespace Rock.Blocks.Core
         private DefinedTypeListOptionsBag GetBoxOptions()
         {
             var options = new DefinedTypeListOptionsBag();
-            options.ShowCategoryColumn = GetAttributeValue( AttributeKey.Categories ).IsNullOrWhiteSpace();
+            options.ShowCategoryColumn = GetAttributeValue( AttributeKey.Categories ).IsNotNullOrWhiteSpace();
             return options;
         }
 

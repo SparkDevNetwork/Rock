@@ -19,6 +19,9 @@ import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+import { containsComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
+import { getStandardFilterComponent } from "./utils";
 
 export const enum ConfigurationValueKey {
     ClientValues = "values",
@@ -29,6 +32,11 @@ export const enum ConfigurationValueKey {
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
     return (await import("./badgesFieldComponents")).EditComponent;
+});
+
+// The edit component can be quite large, so load it only as needed.
+const filterComponent = defineAsyncComponent(async () => {
+    return (await import("./badgesFieldComponents")).FilterComponent;
 });
 
 // The configuration component can be quite large, so load it only as needed.
@@ -60,5 +68,13 @@ export class BadgesFieldType extends FieldTypeBase {
 
     public override getConfigurationComponent(): Component {
         return configurationComponent;
+    }
+
+    public override getSupportedComparisonTypes(_configurationValues: Record<string, string>): ComparisonType {
+        return containsComparisonTypes;
+    }
+
+    public override getFilterComponent(configurationValues: Record<string, string>): Component | null {
+        return getStandardFilterComponent(this.getSupportedComparisonTypes(configurationValues), filterComponent);
     }
 }

@@ -109,7 +109,7 @@
                                             <asp:PlaceHolder ID="phForms" runat="server" />
                                         </div>
                                         <div class="pull-right">
-                                            <asp:LinkButton ID="lbAddForm" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddForm_Click" CausesValidation="false"><i class="fa fa-plus"></i> Add Form</asp:LinkButton>
+                                            <asp:LinkButton ID="lbAddForm" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddForm_Click" CausesValidation="false"><i class="ti ti-plus"></i> Add Form</asp:LinkButton>
                                         </div>
 
                                     </div>

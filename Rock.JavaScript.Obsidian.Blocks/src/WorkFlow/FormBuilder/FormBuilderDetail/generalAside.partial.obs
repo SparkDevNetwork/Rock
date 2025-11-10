@@ -9,7 +9,7 @@
             <div class="panel-body">
                 <div v-drag-source="sectionDragOptions">
                     <div class="form-template-item form-template-item-section">
-                        <i class="fa fa-expand fa-fw"></i>
+                        <i class="ti ti-maximize ti-fw"></i>
                         Section
                     </div>
                 </div>
@@ -133,7 +133,7 @@
     });
 
     const additionalFieldsClass = computed((): string => {
-        return isAdditionalFieldsVisible.value ? "fa fa-chevron-up" : "fa fa-chevron-down";
+        return isAdditionalFieldsVisible.value ? "ti ti-chevron-up" : "ti ti-chevron-down";
     });
 
     /**

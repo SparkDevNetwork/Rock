@@ -57,6 +57,9 @@ export const EditComponent = defineComponent({
             const rowsConfig = props.configurationValues[ConfigurationValueKey.NumberOfRows];
             attributes.rows = toNumber(rowsConfig || null) || 1;
 
+            const allowHtmlConfig = props.configurationValues[ConfigurationValueKey.AllowHtml];
+            attributes.allowHtml = asBooleanOrNull(allowHtmlConfig) ?? false;
+
             return attributes;
         });
 

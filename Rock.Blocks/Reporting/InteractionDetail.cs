@@ -34,7 +34,7 @@ namespace Rock.Blocks.Reporting
     [DisplayName( "Interaction Detail" )]
     [Category( "Reporting" )]
     [Description( "Presents the details of a interaction using Lava" )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -90,7 +90,7 @@ namespace Rock.Blocks.Reporting
         protected const string DEFAULT_LAVA_TEMPLATE = @"<div class='panel panel-block'>
         <div class='panel-heading'>
 	        <h1 class='panel-title'>
-                <i class='fa fa-user'></i>
+                <i class='ti ti-user'></i>
                 Interaction Detail
             </h1>
         </div>

@@ -74,12 +74,12 @@
 svg {
     height: 24px;
     width: 16px;
-    stroke: var(--theme-black);
+    stroke: var(--color-interface-strong);
     stroke-width: 3px;
 }
 
 .btn-primary svg {
-    stroke: var(--theme-white);
+    stroke: var(--color-interface-softer);
 }
 </style>
 

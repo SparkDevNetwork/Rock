@@ -14,7 +14,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-user"></i>
+                <h1 class="panel-title"><i class="ti ti-user"></i>
                     <asp:Literal ID="lTitle" runat="server" /></h1>
             </div>
 
@@ -74,6 +74,8 @@
                                         <Rock:DefinedValuePicker ID="dvpConnectionStatus" runat="server" Label="Connection Status" Required="true" />
                                     </div>
                                     <div class="col-sm-6">
+                                        <Rock:RockLiteral ID="lRecordSourceReadOnly" runat="server" Label="Record Source" />
+                                        <Rock:DefinedValuePicker ID="dvpRecordSource" runat="server" Label="Record Source" />
                                     </div>
                                 </div>
                                 <Rock:RockRadioButtonList ID="rblGender" runat="server" RepeatDirection="Horizontal" Label="Gender">

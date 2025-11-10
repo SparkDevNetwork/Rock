@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
@@ -93,5 +94,31 @@ namespace Rock.Lava
 
             return false;
         }
+
+        #region Lava Extensions
+
+        /// <summary>
+        /// Attempts to retrieve the <see cref="CultureInfo"/> from the <see cref="ILavaRenderContext"/>.
+        /// or returns a the current culture if it does not exist.
+        /// </summary>
+        /// <param name="renderContext">The <see cref="ILavaRenderContext"/>.</param>
+        /// <returns>The <see cref="CultureInfo"/> or null if not found.</returns>
+        internal static CultureInfo GetCultureInfo( this ILavaRenderContext renderContext )
+        {
+            CultureInfo cultureInfo;
+            if ( renderContext != null && renderContext.GetInternalField( "rock_culture" ) != null )
+            {
+                cultureInfo = ( CultureInfo ) renderContext.GetInternalField( "rock_culture" );
+            }
+            else
+            {
+                cultureInfo = CultureInfo.CurrentCulture;
+            }
+
+            return cultureInfo;
+        }
+
+        #endregion Lava Extensions
+
     }
 }

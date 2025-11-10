@@ -13,7 +13,7 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <%-- Block-specific Header --%>
-                <h1 class="panel-title"><i class="fa fa-bug"></i>Exception Log Summary</h1>
+                <h1 class="panel-title"><i class="ti ti-bug"></i>Exception Log Summary</h1>
             </div>
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbBlockStatus" runat="server" />
@@ -44,7 +44,7 @@
                         <div class="col-md-3 mt-3 mt-md-0">
                             <p class="clearfix">
                                 <asp:LinkButton ID="btnClearExceptions" runat="server" CssClass="btn btn-action btn-sm pull-right" OnClientClick="return confirmExceptionListClear();" OnClick="btnClearExceptions_Click" CausesValidation="false">
-                            <i class="fa fa-repeat"></i> Clear All Exceptions
+                            <i class="ti ti-repeat"></i> Clear All Exceptions
                                 </asp:LinkButton>
                             </p>
                         </div>
@@ -65,7 +65,7 @@
                                 <Rock:RockLiteralField ID="lDescription" HeaderText="Description" SortExpression="Description" ItemStyle-CssClass="wrap-contents" />
                                 <Rock:RockBoundField DataField="TotalCount" HeaderText="Total Count" SortExpression="TotalCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Center" />
                                 <Rock:RockBoundField DataField="SubsetCount" SortExpression="SubsetCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Center" />
-                                <Rock:LinkButtonField ID="lbShowDetail" Text="<i class='fa fa-file-alt'></i>" CssClass="btn btn-default btn-sm btn-square" OnClick="gExceptionList_ShowDetail" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
+                                <Rock:LinkButtonField ID="lbShowDetail" Text="<i class='ti ti-file'></i>" CssClass="btn btn-default btn-sm btn-square" OnClick="gExceptionList_ShowDetail" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                             </Columns>
                         </Rock:Grid>
                     </div>

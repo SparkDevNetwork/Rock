@@ -26,6 +26,7 @@ namespace Rock.Blocks
     /// will display an entity with the option to edit and save changes.
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockBlockType" />
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     public abstract class RockDetailBlockType : RockBlockType
     {
         /// <summary>

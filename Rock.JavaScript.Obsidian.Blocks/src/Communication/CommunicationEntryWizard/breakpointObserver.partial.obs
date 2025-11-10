@@ -51,7 +51,7 @@
      *   ...
      * (/script)
      */
-    import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+    import { computed, onBeforeUnmount, onMounted, ref } from "vue";
     import { Breakpoint, BreakpointHelper } from "./types.partial";
     import { provideBreakpointHelper } from "./utils.partial";
 

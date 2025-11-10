@@ -38,8 +38,8 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Block Type Detail" )]
     [Category( "CMS" )]
     [Description( "Displays the details of a particular block type." )]
-    [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [IconCssClass( "ti ti-question-mark" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 

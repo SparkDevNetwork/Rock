@@ -114,7 +114,7 @@
 
         labels.push({
             type: "default",
-            iconCssClass: "fa fa-calendar",
+            iconCssClass: "ti ti-calendar",
             title: "Schedule",
             handler: onScheduleClick
         });

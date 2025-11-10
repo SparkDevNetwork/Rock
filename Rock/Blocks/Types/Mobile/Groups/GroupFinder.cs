@@ -42,7 +42,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [DisplayName( "Group Finder" )]
     [Category( "Mobile > Groups" )]
     [Description( "Allows an individual to search for a group to join." )]
-    [IconCssClass( "fa fa-search" )]
+    [IconCssClass( "ti ti-search" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

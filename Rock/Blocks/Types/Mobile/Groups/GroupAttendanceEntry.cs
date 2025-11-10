@@ -35,7 +35,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [DisplayName( "Group Attendance Entry" )]
     [Category( "Mobile > Groups" )]
     [Description( "Allows the user to mark attendance for a group." )]
-    [IconCssClass( "fa fa-user-check" )]
+    [IconCssClass( "ti ti-user-check" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

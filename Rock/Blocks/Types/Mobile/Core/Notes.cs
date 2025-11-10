@@ -43,7 +43,7 @@ namespace Rock.Blocks.Types.Mobile.Core
     [DisplayName( "Notes" )]
     [Category( "Mobile > Core" )]
     [Description( "Displays entity notes to the user and allows adding new notes." )]
-    [IconCssClass( "fa fa-sticky-note" )]
+    [IconCssClass( "ti ti-sticker-2" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

@@ -6,19 +6,19 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-line-chart"></i>
+                    <i class="ti ti-chart-line"></i>
                     Group Scheduler Analytics
                 </h1>
 
                 <div class="panel-labels">
                     <a href="#" class="btn btn-default btn-xs btn-square" onclick="$('.js-slidingdaterange-help').slideToggle()">
-                        <i class='fa fa-question'></i>
+                        <i class='ti ti-question-mark'></i>
                     </a>
                     <button id="btnCopyToClipboard" runat="server" disabled="disabled"
                         data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Report Link to Clipboard"
                         class="btn btn-default btn-xs btn-square btn-copy-to-clipboard"
                         onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
-                        <i class='fa fa-clipboard'></i>
+                        <i class='ti ti-clipboard'></i>
                     </button>
                 </div>
             </div>
@@ -74,7 +74,7 @@
 
                             <div class="col-md-12">
                                 <div class="controls text-right">
-                                    <asp:LinkButton ID="btnUpdate" runat="server" OnClick="btnUpdate_Click" CssClass="btn btn-primary" ToolTip="Update the chart"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
+                                    <asp:LinkButton ID="btnUpdate" runat="server" OnClick="btnUpdate_Click" CssClass="btn btn-primary" ToolTip="Update the chart"><i class="ti ti-refresh"></i> Update</asp:LinkButton>
                                 </div>
                             </div>
                         </div>

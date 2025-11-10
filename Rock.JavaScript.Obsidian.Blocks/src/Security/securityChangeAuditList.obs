@@ -1,13 +1,16 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid ref="gridElement"
+          :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Security Change"
           title="Security Change Audit"
           :entityTypeGuid="EntityType.AuthAuditLog"
           stickyHeader
-          liveUpdates>
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="isGridSettingsVisible = true">
 
         <DateColumn name="changeDateTime"
                     title="Date"
@@ -15,7 +18,13 @@
                     :filter="dateValueFilter"
                     visiblePriority="xs"
                     headerClass="title-right"
-                    itemClass="justify-content-end text-right" />
+                    itemClass="justify-content-end text-right">
+            <template #filterPrepend>
+                <div v-if="hasSettingsFilterDate" class="alert alert-info">
+                    Settings is also limiting the dates shown.
+                </div>
+            </template>
+        </DateColumn>
 
         <TextColumn name="entityType"
                     title="Entity Type"
@@ -33,22 +42,18 @@
                     headerClass="title-right"
                     itemClass="justify-content-end text-right" />
 
-        <PersonColumn name="changeBy"
-                      title="Changed By"
-                      field="changeBy"
-                      :hideAvatar="true"
-                      :filterValue="getChangedByValueFilter"
-                      :quickFilterValue="getChangedByValueFilter"
-                      :filter="pickExistingValueFilter"
-                      visiblePriority="xs" />
+        <TextColunn name="changeBy"
+                    title="Changed By"
+                    field="changeBy"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="xs" />
 
         <TextColumn name="action"
                     title="Action"
                     field="action"
                     width="8%"
                     :filter="pickExistingValueFilter"
-                    visiblePriority="md"
-                    itemClass="justify-content-start" />
+                    visiblePriority="md" />
 
         <Column name="access"
                 title="Access"
@@ -59,8 +64,7 @@
                 :quickFilterValue="getAccessRowFilterValue"
                 :sortValue="getAccessRowSortValue"
                 width="8%"
-                visiblePriority="md"
-                itemClass="justify-content-center">
+                visiblePriority="md">
 
             <template #format="{ row }">
                 <span v-html="getAccessText(row.preAllowOrDeny, row.postAllowOrDeny)"></span>
@@ -97,7 +101,6 @@
                     field="individual"
                     :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
-
 
         <TextColumn name="specialRole"
                     title="Special Role"
@@ -145,8 +148,11 @@
                      :textSource="ChangeTypeDescription"
                      :classSource="batchLabelColors"
                      visiblePriority="sm"
-                     width="100" />
+                     width="115" />
     </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible" />
 </template>
 
 <style>
@@ -156,22 +162,25 @@
 </style>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { PersonColumn, TextColumn, DateColumn, LabelColumn, NumberColumn, Column, pickExistingValueFilter, dateValueFilter, numberValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, DateColumn, LabelColumn, Column, pickExistingValueFilter, dateValueFilter, numberValueFilter } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { SecurityChangeAuditListOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/SecurityChangeAuditList/securityChangeAuditListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { reactive, ref } from "vue";
+    import { computed, reactive, ref, watch } from "vue";
     import { ChangeType, ChangeTypeDescription } from "@Obsidian/Enums/Core/changeType";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { PreferenceKey, GridSettingsOptions } from "./SecurityChangeAuditList/types.partial";
+    import GridSettingsModal from "./SecurityChangeAuditList/gridSettingsModal.partial.obs";
 
     const config = useConfigurationValues<ListBlockBox<SecurityChangeAuditListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
+    const gridElement = ref<InstanceType<typeof Grid>>();
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
     const batchLabelColors: Record<string, string> = {
@@ -182,6 +191,21 @@
     const rightArrowIndicator: string = " &rarr; ";
     const allow = "Allow";
     const deny = "Deny";
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        daysBack: toNumberOrNull(preferences.getValue(PreferenceKey.FilterDaysBack)) ?? 180,
+    });
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return gridSettings.value.daysBack > 0;
+    });
+
+    /** `true` if the grid settings is filtering by date. */
+    const hasSettingsFilterDate = computed((): boolean => {
+        return gridSettings.value.daysBack > 0;
+    });
 
     // #endregion
 
@@ -222,15 +246,15 @@
         return getOrderText(preOrder, postOrder, rightArrowIndicator);
     }
 
-    /**
-    * Gets the filter value to use for the changed by column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getChangedByValueFilter(row: Record<string, unknown>): string {
-        const person = row.changeBy as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
-    }
+    // /**
+    // * Gets the filter value to use for the changed by column.
+    // *
+    // * @param row The row to be filtered.
+    // */
+    // function getChangedByValueFilter(row: Record<string, unknown>): string {
+    //     const person = row.changeBy as PersonFieldBag;
+    //     return !person ? "" : `${person.nickName} ${person.lastName}`;
+    // }
 
     /**
     * Gets the sort value to use for the access column.
@@ -345,6 +369,14 @@
     }
 
     // #endregion
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterDaysBack, gridSettings.value.daysBack.toString());
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
 
     gridDataSource.value = loadGridData();
 </script>

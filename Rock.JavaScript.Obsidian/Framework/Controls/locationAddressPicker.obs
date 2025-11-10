@@ -2,7 +2,7 @@
 <template>
     <ContentDropDownPicker v-bind="formFieldProps"
                            :modelValue="pickerValue"
-                           iconCssClass="fa fa-map-marker"
+                           iconCssClass="ti ti-map-pin"
                            :showClear="!!pickerValue"
                            @primaryButtonClicked="select"
                            @secondaryButtonClicked="cancel"

@@ -25,8 +25,6 @@ using Rock.Lava;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Lms.LearningCourseRequirement;
 
-using WebGrease.Css.Extensions;
-
 namespace Rock.Model
 {
     public partial class LearningCourseService
@@ -86,6 +84,7 @@ namespace Rock.Model
                 .Include( c => c.Category )
                 .Include( c => c.LearningCourseRequirements )
                 .Include( c => c.LearningClasses )
+                .Include( c => c.LearningClasses.Select( lc => lc.LearningGradingSystem.LearningGradingSystemScales ) )
                 .Where( c => c.IsActive && c.Id == courseId )
                 .Where( c => !publicOnly || c.IsPublic )
                 .Select( c => new PublicLearningCourseBag
@@ -110,6 +109,11 @@ namespace Rock.Model
                         ( LearningCompletionStatus? ) orderedPersonCompletions
                         .FirstOrDefault( p => p.LearningClass.LearningCourseId == c.Id )
                         .LearningCompletionStatus,
+                    IsCompletionOnly = !c.LearningClasses.Any( lc =>
+                        lc.LearningGradingSystem.LearningGradingSystemScales
+                            .Select( s => s.Id )
+                            .Count() > 1
+                    ),
                     ProgramInfo = new LearningProgramService.PublicLearningProgramBag
                     {
                         Id = c.LearningProgramId,
@@ -196,6 +200,7 @@ namespace Rock.Model
             // Get the distinct Semesters for the course and project them into
             // a new PublicLearningSemesterBag ordered by semester start date.
             course.Semesters = classes
+                .Where( c => c.LearningSemesterId.HasValue )
                 .Select( c => c.LearningSemester )
                 .DistinctBy( s => s.Id )
                 .ToList()
@@ -296,7 +301,6 @@ namespace Rock.Model
         /// <returns>An enumerable of PublicLearningCourseBag.</returns>
         public List<PublicLearningCourseBag> GetPublicCourses( int programId, int? personId, bool publicOnly = true, DateTime? semesterStartFrom = null, DateTime? semesterStartTo = null )
         {
-            var now = RockDateTime.Now;
             var rockContext = ( RockContext ) Context;
             var studentRoleGuid = SystemGuid.GroupRole.GROUPROLE_LMS_CLASS_STUDENT.AsGuid();
             var facilitatorRoleGuid = SystemGuid.GroupRole.GROUPROLE_LMS_CLASS_FACILITATOR.AsGuid();
@@ -341,20 +345,37 @@ namespace Rock.Model
 
             var unmetPrerequisiteTypes = new List<RequirementType> { RequirementType.Prerequisite, RequirementType.Equivalent };
 
-            var courses = Queryable()
+            var courseQuery = Queryable()
                 .AsNoTracking()
                 .Include( c => c.ImageBinaryFile )
                 .Include( c => c.LearningProgram )
                 .Include( c => c.LearningProgram.Category )
                 .Include( c => c.LearningProgram.ImageBinaryFile )
                 .Include( c => c.LearningClasses )
+                .Include( c => c.LearningClasses.Select( lc => lc.LearningGradingSystem.LearningGradingSystemScales ) )
                 .Include( c => c.Category )
                 .Include( c => c.LearningCourseRequirements )
                 .Where( c =>
                     c.IsActive
                     && c.LearningProgramId == programId
-                    && ( c.IsPublic || !publicOnly ) )
-                .ToList()
+                    && ( c.IsPublic || !publicOnly ) );
+
+            bool enforceSecurity = new LearningProgramService( rockContext ).GetNoTracking( programId )?.EnforcePublicSecurity ?? false;
+            var currentPerson = personId.HasValue ? new PersonService( rockContext ).GetNoTracking( personId.Value ) : null;
+
+            var participantCourseIds = new HashSet<int>();
+
+            if ( personId.HasValue && enforceSecurity )
+            {
+                participantCourseIds = new LearningClassService( rockContext )
+                    .GetStudentClasses( personId.Value )
+                    .Where( c => c.LearningCourse.LearningProgramId == programId )
+                    .Select( c => c.LearningCourseId )
+                    .ToHashSet();
+            }
+
+            var courses = courseQuery.ToList()
+                .Where( c => !enforceSecurity || c.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) || participantCourseIds.Contains( c.Id ) )
                 .OrderBy( c => c.Order )
                 .Select( c => new PublicLearningCourseBag
                 {
@@ -376,6 +397,16 @@ namespace Rock.Model
                         orderedPersonCompletions
                         .FirstOrDefault( p => p.LearningClass.LearningCourseId == c.Id )?
                         .LearningCompletionStatus,
+                    IsCompletionOnly = !c.LearningClasses.Any( lc =>
+                        lc.LearningGradingSystem.LearningGradingSystemScales
+                            .Select( s => s.Id )
+                            .Count() > 1
+                    ),
+                    CompletionScaleName = !personId.HasValue ?
+                        null :
+                        orderedPersonCompletions
+                        .FirstOrDefault( p => p.LearningClass.LearningCourseId == c.Id )?
+                        .LearningGradingSystemScale?.Name,
                     ProgramInfo = new LearningProgramService.PublicLearningProgramBag
                     {
                         Id = c.LearningProgramId,
@@ -444,7 +475,7 @@ namespace Rock.Model
                 }
             }
 
-            return courses.ToList();
+            return courses;
         }
 
         /// <summary>
@@ -548,6 +579,24 @@ namespace Rock.Model
             /// otherwise the most recent occurrence (if any) will show: 'Incomplete' or 'Failed'.
             /// </remarks>
             public LearningCompletionStatus? LearningCompletionStatus { get; set; }
+
+            /// <summary>
+            /// Gets or sets the boolean indicating if all grading for this course is done by completion only.
+            /// </summary>
+            /// <remarks>
+            /// To determine if the Grading System is "Completion" we check the number of Grading System Scales.
+            /// If there is only one Scale, than we conclude it is "Completion". If there are any Classes in this
+            /// Course that are not found to be "Completion" than this value will be set to false.
+            /// </remarks>
+            public bool IsCompletionOnly { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the grading system scale for "Completion Only" courses.
+            /// </summary>
+            /// <remarks>
+            /// Only intended for "Completion Only" courses, where it is guaranteed there is a single scale.
+            /// </remarks>
+            public string CompletionScaleName { get; set; }
 
             /// <summary>
             /// Gets or sets the sort order for the <see cref="LearningCourse"/>.

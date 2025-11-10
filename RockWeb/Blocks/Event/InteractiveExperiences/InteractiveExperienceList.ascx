@@ -8,7 +8,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-list"></i> Experiences
+                    <i class="ti ti-list"></i> Experiences
                 </h1>
             </div>
 
@@ -29,7 +29,7 @@
                             <Rock:RockTemplateField HeaderStyle-CssClass="grid-columncommand" ItemStyle-CssClass="grid-columncommand">
                                 <ItemTemplate>
                                     <asp:LinkButton ID="lbShowManager" runat="server" CssClass="btn btn-default btn-sm" ToolTip="Open Experience Manager" Visible='<%# Eval( "HasOccurrences" ) %>' OnCommand="lbShowManager_Command" CommandArgument='<%# Eval( "Id" ) %>'>
-                                        <i class="fa fa-desktop"></i>
+                                        <i class="ti ti-device-desktop"></i>
                                     </asp:LinkButton>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>

@@ -358,22 +358,22 @@ export function getComponentTypeName(componentElement: Element): ComponentTypeNa
 
 export function getComponentIconHtml(componentTypeName: EditorComponentTypeName): string {
     function createIconElement(iconCssClass: string): string {
-        return `<i class="${iconCssClass} fa-lg"></i>`;
+        return `<i class="${iconCssClass} ti-lg"></i>`;
     }
 
     switch (componentTypeName) {
         case "title":
-            return createIconElement("fa fa-font");
+            return createIconElement("ti ti-typography");
         case "video":
-            return createIconElement("fa fa-play-circle-o");
+            return createIconElement("ti ti-player-play");
         case "button":
             return `
 <div style="background-color: var(--color-interface-strong); width: 60px; border-radius: var(--border-radius-base);">
-    <i class="fa fa-mouse-pointer fa-sm" style="color: var(--color-interface-softest);"></i>
+    <i class="ti ti-pointer ti-sm" style="color: var(--color-interface-softest);"></i>
 </div>
 `;
         case "text":
-            return createIconElement("fa fa-align-left");
+            return createIconElement("ti ti-align-left");
         case "divider":
             return `
 <div class="d-flex flex-column align-items-center" style="gap: var(--spacing-tiny);">
@@ -382,13 +382,13 @@ export function getComponentIconHtml(componentTypeName: EditorComponentTypeName)
     <div style="width: 42px; height: 10px; background-color: var(--color-interface-soft);"></div>
 </div>`;
         case "message":
-            return createIconElement("fa fa-user");
+            return createIconElement("ti ti-user");
         case "image":
-            return createIconElement("fa fa-image");
+            return createIconElement("ti ti-photo");
         case "code":
-            return createIconElement("fa fa-code");
+            return createIconElement("ti ti-code");
         case "rsvp":
-            return createIconElement("fa fa-check-square-o");
+            return createIconElement("ti ti-square-check");
         case "section":
             return createIconElement("rk rk-one-column");
         case "one-column-section":
@@ -438,7 +438,7 @@ export function getComponentIconHtml(componentTypeName: EditorComponentTypeName)
 `;
         default:
             console.warn(`Unable to retrieve the icon for the unknown component type: '${componentTypeName}'. Returning the default icon.`);
-            return createIconElement("fa fa-question");
+            return createIconElement("ti ti-question-mark");
     }
 }
 
@@ -1442,11 +1442,11 @@ export function createDomWatcher(
 }
 
 /**
-     * Removes temporary wrapper elements from an element's or document's children.
-     *
-     * This will place the wrapped elements in place of their associated wrappers,
-     * and the wrappers will be removed.
-     */
+ * Removes temporary wrapper elements from an element's or document's children.
+ *
+ * This will place the wrapped elements in place of their associated wrappers,
+ * and the wrappers will be removed.
+ */
 export function removeTemporaryWrappers(element: Document | Element): void {
     element.querySelectorAll(`.${RockRuntimeWrapperElementCssClass}`)
         .forEach((wrapper) => {
@@ -1463,8 +1463,8 @@ export function removeTemporaryWrappers(element: Document | Element): void {
 }
 
 /**
-     * Removes temporary elements from a document or element.
-     */
+ * Removes temporary elements from a document or element.
+ */
 export function removeTemporaryElements(element: Document | Element): void {
     element.querySelectorAll(`.${RockRuntimeElementCssClass}`)
         .forEach(el => el.remove());
@@ -1680,7 +1680,7 @@ export function getVideoComponentHelper(): ComponentMigrationHelper & {
 
                     // Create the v2-alpha structure
                     newComponent.innerHTML =
-`<tbody>
+                        `<tbody>
     <tr>
         <td>
             <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="border-wrapper border-wrapper-for-video" style="border-collapse: separate !important;">
@@ -2986,13 +2986,17 @@ export function getRsvpComponentHelper(): ComponentMigrationHelper & {
     };
 }
 
+type RowComponentStructure = ComponentStructure & {
+    readonly dropzone: HTMLElement | null;
+};
+
 export function getRowComponentHelper(): ComponentMigrationHelper & {
-    getElements(componentElement: Element): ComponentStructure | null;
+    getElements(componentElement: Element): RowComponentStructure | null;
     createComponentElement(): HTMLElement;
 } {
     const latestVersion = "v17.3-alpha" as const;
 
-    return {
+    const helper = {
         createComponentElement(): HTMLElement {
             const componentElements = createComponent(
                 "row",
@@ -3002,7 +3006,7 @@ export function getRowComponentHelper(): ComponentMigrationHelper & {
             return componentElements.marginWrapper.table;
         },
 
-        getElements(componentElement: Element): ComponentStructure | null {
+        getElements(componentElement: Element): RowComponentStructure | null {
             if (!componentElement.classList.contains("component-row")) {
                 throw new Error(`Element is not a row component element: ${componentElement.outerHTML}`);
             }
@@ -3013,7 +3017,13 @@ export function getRowComponentHelper(): ComponentMigrationHelper & {
                 return null;
             }
 
-            return wrappers;
+            return {
+                ...wrappers,
+
+                get dropzone(): HTMLElement | null {
+                    return (wrappers.marginWrapper.borderWrapper.paddingWrapper.td.querySelector(".dropzone") ?? null) as HTMLElement | null;
+                },
+            };
         },
 
         isMigrationRequired(componentElement: Element): boolean {
@@ -3083,20 +3093,46 @@ export function getRowComponentHelper(): ComponentMigrationHelper & {
                     return componentElement;
                 },
 
+                // Enable placeholder `<div class="component component-row"></div>`
+                // to create a row component.
+                function placeholderToLatest(componentElement: Element): Element {
+                    const outerHTML = componentElement.outerHTML;
+                    const innerHTML = componentElement.innerHTML;
+
+                    const outerHTMLWithoutChildren = outerHTML.replace(innerHTML, "");
+
+                    if (outerHTMLWithoutChildren === `<div class="component component-row"></div>`) {
+                        const newComponent = helper.createComponentElement();
+
+                        if (innerHTML.trim()) {
+                            helper.getElements(newComponent)
+                                ?.dropzone
+                                ?.append(...componentElement.childNodes);
+                        }
+
+                        return newComponent;
+                    }
+                    else {
+                        return componentElement;
+                    }
+                },
+
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 function v2AlphaToV17_3Alpha(componentElement: Element): Element {
+                    const migrationVersionNumber = "v17.3-alpha";
                     const versionNumber = getComponentVersionNumber(componentElement);
+
                     if (!versionNumber) {
                         // This shouldn't occur unless the v0 migration was skipped or modified incorrectly.
                         throw new Error("Component version number is missing.");
                     }
 
-                    if (compareComponentVersions(versionNumber, "v17.3-alpha") >= 0) {
+                    if (compareComponentVersions(versionNumber, migrationVersionNumber) >= 0) {
                         return componentElement; // Already migrated
                     }
 
                     // Bump version.
-                    setComponentVersionNumber(componentElement, "v17.3-alpha");
+                    setComponentVersionNumber(componentElement, migrationVersionNumber);
 
                     return componentElement;
                 }
@@ -3110,6 +3146,8 @@ export function getRowComponentHelper(): ComponentMigrationHelper & {
             return latestVersion;
         }
     };
+
+    return helper;
 }
 
 type SectionComponentTypeName = Extract<EditorComponentTypeName,
@@ -3423,7 +3461,7 @@ export function getImageComponentHelper(): ComponentMigrationHelper & {
     getElements(componentElement: Element): ComponentStructure | null,
     createComponentElement(): HTMLElement
 } {
-    const latestVersion = "v17.3-alpha" as const;
+    const latestVersion = "v18-alpha" as const;
 
     return {
         createComponentElement(): HTMLElement {
@@ -3481,6 +3519,13 @@ export function getImageComponentHelper(): ComponentMigrationHelper & {
             // These are in order from oldest to newest; new migrations should be added at the end.
             const migrations = [
                 function v0ToV2Alpha(oldComponent: Element): Element {
+                    const migrationVersionNumber = "v2-alpha";
+                    const versionNumber = getComponentVersionNumber(oldComponent);
+
+                    if (versionNumber && compareComponentVersions(versionNumber, migrationVersionNumber) >= 0) {
+                        return oldComponent; // Already migrated
+                    }
+
                     const image = oldComponent.querySelector("img");
                     if (!image) {
                         throw new Error("No <img> found in the image component.");
@@ -3517,7 +3562,7 @@ export function getImageComponentHelper(): ComponentMigrationHelper & {
                     wrapper.setAttribute("role", "presentation");
                     wrapper.className = "margin-wrapper margin-wrapper-for-image component component-image";
                     wrapper.setAttribute("data-state", "component");
-                    setComponentVersionNumber(wrapper, "v2-alpha");
+                    setComponentVersionNumber(wrapper, migrationVersionNumber);
 
                     if (imageGuid) {
                         wrapper.setAttribute("data-image-guid", imageGuid);
@@ -3558,18 +3603,82 @@ export function getImageComponentHelper(): ComponentMigrationHelper & {
 
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 function v2AlphaToV17_3Alpha(componentElement: Element): Element {
+                    const migrationVersionNumber = "v17.3-alpha";
                     const versionNumber = getComponentVersionNumber(componentElement);
+
+                    if (!versionNumber) {
+                        throw new Error("Component version number is missing.");
+                    }
+
+                    if (compareComponentVersions(versionNumber, migrationVersionNumber) >= 0) {
+                        return componentElement; // Already migrated
+                    }
+
+                    // Bump version.
+                    setComponentVersionNumber(componentElement, migrationVersionNumber);
+
+                    return componentElement;
+                },
+
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                function v17_3AlphaToV18Alpha(componentElement: Element): Element {
+                    const migrationVersionNumber = "v18-alpha";
+
+                    const versionNumber = getComponentVersionNumber(componentElement);
+
                     if (!versionNumber) {
                         // This shouldn't occur unless the v0 migration was skipped or modified incorrectly.
                         throw new Error("Component version number is missing.");
                     }
 
-                    if (compareComponentVersions(versionNumber, "v17.3-alpha") >= 0) {
+                    if (compareComponentVersions(versionNumber, migrationVersionNumber) >= 0) {
                         return componentElement; // Already migrated
                     }
 
-                    // Bump version.
-                    setComponentVersionNumber(componentElement, "v17.3-alpha");
+                    // Check if this is an "asset" image based on `data-image-assetstorageproviderid`
+                    const assetStorageId = componentElement.getAttribute("data-image-assetstorageproviderid");
+
+                    if (!assetStorageId) {
+                        // If it's not an asset-based image, just bump the version number.
+                        setComponentVersionNumber(componentElement, migrationVersionNumber);
+                        return componentElement;
+                    }
+
+                    let scalePercentage = parseInt(componentElement.getAttribute("data-image-scale") ?? "100");
+                    if (!scalePercentage || Number.isNaN(scalePercentage)) {
+                        scalePercentage = 100;
+                    }
+
+                    const img = componentElement.querySelector("img");
+                    let inlineImageWidth = parseInt(img?.style.width ?? "0");
+
+                    if (!img?.style.width.endsWith("px") || Number.isNaN(inlineImageWidth)) {
+                        inlineImageWidth = 0;
+                    }
+
+                    // Remove the scale since it's irrelevant for responsive rendering
+                    componentElement.removeAttribute("data-image-scale");
+
+                    if (scalePercentage < 100 && inlineImageWidth > 0) {
+                        // The image was scaled down so set the width to the scaled size
+                        componentElement.setAttribute("data-image-resizemode", "crop");
+                        componentElement.setAttribute("data-image-width", `${inlineImageWidth}`);
+
+                        if (img) {
+                            img.style.objectFit = "cover";
+                            // img should already have a width set based on the previous scale feature.
+                        }
+                    }
+                    else {
+                        // The image was left at 100% scale so set to the original image size
+                        componentElement.removeAttribute("data-image-size");
+
+                        if (img) {
+                            img.style.removeProperty("width");
+                        }
+                    }
+
+                    setComponentVersionNumber(componentElement, migrationVersionNumber);
 
                     return componentElement;
                 }

@@ -29,8 +29,6 @@ using System.Web;
 using System.Web.Http;
 #endif
 
-using Microsoft.AspNetCore.Mvc;
-
 using Newtonsoft.Json;
 
 using Rock;
@@ -77,7 +75,7 @@ namespace Rock.Rest.v2.Controllers
         [HttpGet]
         [Route( "apple/GetLaunchPacket" )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( AppleLaunchPacket ) )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( AppleLaunchPacket ) )]
         [Rock.SystemGuid.RestActionGuid( "55D648CD-0533-4FE6-99B1-CE301728DB73" )]
         public IActionResult GetAppleLaunchPacket() => GetCommonLaunchPacket();
 
@@ -88,7 +86,7 @@ namespace Rock.Rest.v2.Controllers
         [HttpGet]
         [Route( "roku/GetLaunchPacket" )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( AppleLaunchPacket ) )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( AppleLaunchPacket ) )]
         [Rock.SystemGuid.RestActionGuid( "1E8C3F94-98F0-4D2D-A2B3-FA304C77C7C0" )]
         public IActionResult GetRokuLaunchPacket() => GetCommonLaunchPacket();
 
@@ -101,7 +99,7 @@ namespace Rock.Rest.v2.Controllers
         [HttpGet]
         [Route( "apple/GetApplicationJavaScript/{applicationId}" )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Description = "A raw string with the application JavaScript." )]
+        [ProducesResponse( HttpStatusCode.OK, Description = "A raw string with the application JavaScript." )]
         [Rock.SystemGuid.RestActionGuid( "A3792A52-0F64-4F55-9C9C-7E02AA96D0F9" )]
         public HttpResponseMessage GetApplicationScript( int applicationId )
         {
@@ -141,7 +139,7 @@ namespace Rock.Rest.v2.Controllers
         [HttpGet]
         [Route( "apple/GetTvmlForPage/{pageGuid}" )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( AppleTvPageSettings ) )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( AppleTvPageSettings ) )]
         [Rock.SystemGuid.RestActionGuid( "AE76F738-7380-48EB-85BD-C42102E2A4A0" )]
         public HttpResponseMessage GetTvmlForPage( Guid pageGuid )
         {
@@ -275,7 +273,7 @@ namespace Rock.Rest.v2.Controllers
         [Route( "SaveInteractions/{personalDeviceGuid}" )]
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Description = "An empty response indicates the interactions were recorded." )]
+        [ProducesResponse( HttpStatusCode.OK, Description = "An empty response indicates the interactions were recorded." )]
         [Rock.SystemGuid.RestActionGuid( "624CDFBB-4688-4312-BCCD-4AEAABB49523" )]
         public IActionResult PostInteractions( [FromBody] List<TvInteractionSession> sessions, Guid? personalDeviceGuid = null )
         {
@@ -476,7 +474,7 @@ namespace Rock.Rest.v2.Controllers
         [HttpGet]
         [Route( "StartAuthenticationSession/{siteId}" )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( AuthCodeResponse ) )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( AuthCodeResponse ) )]
         [Rock.SystemGuid.RestActionGuid( "0747D3BF-8BCF-4C4D-A022-4158694DDB1B" )]
         public HttpResponseMessage StartAuthenicationSession( int siteId )
         {
@@ -575,9 +573,9 @@ namespace Rock.Rest.v2.Controllers
         [Route( "GetRokuPageComponent/{pageGuid}" )]
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Description = "A zip-file that contains the components required for the page to load." )]
-        [ProducesResponseType( HttpStatusCode.NotFound, Description = "The requested page was not found." )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized, Description = "Authenticated user does not have access tot he requested page." )]
+        [ProducesResponse( HttpStatusCode.OK, Description = "A zip-file that contains the components required for the page to load." )]
+        [ProducesResponse( HttpStatusCode.NotFound, Description = "The requested page was not found." )]
+        [ProducesResponse( HttpStatusCode.Unauthorized, Description = "Authenticated user does not have access tot he requested page." )]
         [Rock.SystemGuid.RestActionGuid( "103BA971-E7BB-41DE-A12A-1C8B8BF85AD7" )]
         public HttpResponseMessage GetRokuPageComponent( Guid pageGuid )
         {
@@ -730,7 +728,7 @@ namespace Rock.Rest.v2.Controllers
         [HttpGet]
         [Route( "CheckAuthenticationSession/{siteId}/{code}" )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( AuthCodeCheckResponse ) )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( AuthCodeCheckResponse ) )]
         [Rock.SystemGuid.RestActionGuid( "35C60489-936F-42F9-8617-18C959ABDB0C" )]
         public HttpResponseMessage CheckAuthenticationSession( int siteId, string code )
         {

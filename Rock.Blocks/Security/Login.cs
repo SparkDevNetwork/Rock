@@ -50,7 +50,7 @@ namespace Rock.Blocks.Security
     [DisplayName( "Login" )]
     [Category( "Security" )]
     [Description( "Allows the user to authenticate." )]
-    [IconCssClass( "fa fa-user-lock" )]
+    [IconCssClass( "ti ti-user-shield" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -312,6 +312,7 @@ namespace Rock.Blocks.Security
 
     #endregion
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "D9482EF9-F774-4E37-AC84-8B340CBCA364" )]
     [Rock.SystemGuid.BlockTypeGuid( "5437C991-536D-4D9C-BE58-CBDB59D1BBB3" )]
 

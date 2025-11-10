@@ -123,6 +123,13 @@ namespace Rock.SystemKey
         public const string PDF_EXTERNAL_RENDER_ENDPOINT = "core_PDFExternalRenderEndpoint";
 
         /// <summary>
+        /// The hostname to use for connections to the Rock RealTime system.
+        /// If not set then the hostname connected to by the client for other
+        /// web requests will be used.
+        /// </summary>
+        public const string REALTIME_HOSTNAME = "core_RealTimeHostname";
+
+        /// <summary>
         /// The number of days that a visitor cookie persists. Default is 365.
         /// </summary>
         public const string VISITOR_COOKIE_PERSISTENCE_DAYS = "core_VisitorCookiePersistenceDays";
@@ -438,5 +445,15 @@ namespace Rock.SystemKey
         /// Channel Type-scoped Stream chat permission grants.
         /// </summary>
         public const string CHAT_STREAM_GRANTS_CHANNEL_TYPE_SCOPED = "core_ChatStreamGrantsChannelTypeScoped";
+
+        /// <summary>
+        /// The countries that are globally restricted from accessing Rock.
+        /// </summary>
+        public const string COUNTRIES_RESTRICTED_FROM_ACCESSING = "core_CountriesRestrictedFromAccessing";
+
+        /// <summary>
+        /// The system settings for AI Agent features.
+        /// </summary>
+        public const string AI_AGENT_SYSTEM_SETTINGS = "core_AIAgentSystemSettings";
     }
 }

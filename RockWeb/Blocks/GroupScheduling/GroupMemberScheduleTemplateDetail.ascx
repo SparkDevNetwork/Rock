@@ -9,7 +9,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-calendar-day"></i>
+                    <i class="ti ti-calendar-event"></i>
                     <asp:Literal ID="lActionTitle" runat="server" />
                 </h1>
 

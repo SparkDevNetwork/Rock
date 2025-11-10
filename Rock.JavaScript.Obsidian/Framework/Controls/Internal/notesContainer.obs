@@ -9,7 +9,7 @@
             <button v-if="showAddNote && descending"
                     class="add-note btn btn-xs btn-action btn-square"
                     @click.prevent="onAddNoteClick">
-                <i class="fa fa-plus"></i>
+                <i class="ti ti-plus"></i>
             </button>
         </div>
 
@@ -51,7 +51,7 @@
             <button v-if="showAddNote && !descending"
                     class="add-note btn btn-xs btn-action btn-square"
                     @click.prevent="onAddNoteClick">
-                <i class="fa fa-plus"></i>
+                <i class="ti ti-plus"></i>
             </button>
         </div>
     </div>

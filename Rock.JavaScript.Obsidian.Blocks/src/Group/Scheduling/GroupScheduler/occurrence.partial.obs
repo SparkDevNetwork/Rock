@@ -33,7 +33,7 @@
                                 :disabled="schedulingDisabled"
                                 @click="onSelectIndividualsClick">
                         <Loading :isLoading="isLoadingResources" :isSmall="true">
-                            <i class="fa fa-plus"></i>
+                            <i class="ti ti-plus"></i>
                         </Loading>
                     </RockButton>
                 </div>

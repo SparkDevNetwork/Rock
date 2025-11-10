@@ -83,6 +83,11 @@
         searchUrl: {
             type: String as PropType<string>,
             required: false
+        },
+
+        context: {
+            type: String as PropType<string>,
+            required: false
         }
     });
 
@@ -189,6 +194,7 @@
         }
 
         const payload = {
+            context: props.context,
             value: searchValue.value,
             isInactiveIncluded: includeInactive.value
         };

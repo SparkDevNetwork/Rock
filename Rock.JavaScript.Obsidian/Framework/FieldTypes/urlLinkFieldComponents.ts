@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, computed, PropType, ref, watch  } from "vue";
+import { defineComponent, computed, ref, watch } from "vue";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";

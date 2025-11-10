@@ -40,7 +40,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
     [DisplayName( "Prayer Request Details" )]
     [Category( "Mobile > Prayer" )]
     [Description( "Edits an existing prayer request or creates a new one." )]
-    [IconCssClass( "fa fa-praying-hands" )]
+    [IconCssClass( "ti ti-pray" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

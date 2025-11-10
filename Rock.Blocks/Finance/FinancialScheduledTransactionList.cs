@@ -45,7 +45,7 @@ namespace Rock.Blocks.Finance
     [DisplayName( "Financial Scheduled Transaction List" )]
     [Category( "Finance" )]
     [Description( "Displays a list of financial scheduled transactions." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "View Page",

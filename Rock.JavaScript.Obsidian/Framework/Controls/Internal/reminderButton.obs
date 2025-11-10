@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockButton type="button" isSquare @click="showModal" title="Add Reminder" :btnSize="btnSize"><i class="fa fa-bell"></i></RockButton>
+    <RockButton type="button" isSquare @click="showModal" title="Add Reminder" :btnSize="btnSize"><i class="ti ti-bell"></i></RockButton>
 
     <Modal v-model="isModalShown" :title="reminderTitle" :saveText="hasFetchError ? '' : saveText" @save="saveForm" @closeModal="resetForm" :isSaveButtonDisabled="isSaving">
         <Loading :isLoading="isLoading">
@@ -48,7 +48,7 @@
                             </div>
 
                             <div class="col-xs-6 col-sm order-2 order-sm-3 flex-grow-0 text-right text-nowrap">
-                                <i v-if="reminder.isRenewing" class="fa fa-clock-o" title="Recurring Reminder" style="vertical-align: middle;"></i>
+                                <i v-if="reminder.isRenewing" class="ti ti-clock" title="Recurring Reminder" style="vertical-align: middle;"></i>
 
                                 <DropDownMenu class="ml-1 btn-group" :items="reminderActions[index]" align="right" />
                             </div>

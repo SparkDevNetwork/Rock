@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Core
         IsRequired = false,
         Key = AttributeKey.DefinedType )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.BlockTypeGuid( "08C35F15-9AF7-468F-9D50-CDFD3D21220C" )]
     public partial class DefinedTypeDetail : RockBlock
     {

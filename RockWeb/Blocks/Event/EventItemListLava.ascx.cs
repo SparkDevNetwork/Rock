@@ -227,10 +227,7 @@ namespace RockWeb.Blocks.Event
             mergeFields.Add( "DetailsPage", LinkedPageRoute( "DetailsPage" ) );
             mergeFields.Add( "EventOccurrenceSummaries", eventOccurrenceSummaries );
 
-            // Enable Calendar Events and Event Scheduled Instance Lava commands
-            var enabledLavaCommands = "CalendarEvents,EventScheduledInstance";
-
-            lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields, enabledLavaCommands );
+            lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 
         }
 
@@ -240,8 +237,7 @@ namespace RockWeb.Blocks.Event
 
         /// <summary>
         /// A class to store event item occurrence data for Lava.
-        /// </summary>      
-        [DotLiquid.LiquidType( "EventItem", "EventItemOccurrence", "DateTime", "Name", "Date", "Time", "EndDate", "EndTime", "Location", "Description", "Summary", "DetailPage" )]
+        /// </summary>
         public class EventOccurrenceSummary : LavaDataObject
         {
             /// <summary>

@@ -3,7 +3,7 @@
 
     // create button
     var button = ui.button({
-        contents: '<i class="fa fa-picture-o"/>',
+        contents: '<i class="ti ti-photo-scan"/>',
         tooltip: 'Image Browser',
         click: function () {
             // If we have a target image, store it before the selection is modified when the modal dialog receives focus.

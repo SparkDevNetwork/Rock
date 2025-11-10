@@ -129,9 +129,6 @@ namespace Rock.Lava.Blocks
 
                     if ( response.StatusCode == System.Net.HttpStatusCode.OK )
                     {
-
-                        var content = response.Content;
-
                         var contentType = parms["responsecontenttype"].ToLower();
 
                         if ( contentType == "xml" )
@@ -145,18 +142,22 @@ namespace Rock.Lava.Blocks
                             var converter = new ExpandoObjectConverter();
 
                             // determine if the return type is an array or not
-                            if ( content.Trim().Substring( 0, 1 ) == "[" )
+                            if ( response.Content.Trim().Substring( 0, 1 ) == "[" )
                             {
-                                responseData = JsonConvert.DeserializeObject<List<ExpandoObject>>( content, converter ); // array
+                                responseData = JsonConvert.DeserializeObject<List<ExpandoObject>>( response.Content, converter ); // array
                             }
                             else
                             {
-                                responseData = JsonConvert.DeserializeObject<ExpandoObject>( content, converter ); // not an array
+                                responseData = JsonConvert.DeserializeObject<ExpandoObject>( response.Content, converter ); // not an array
                             }
+                        }
+                        else if ( contentType == "base64" )
+                        {
+                            responseData = System.Convert.ToBase64String( response.RawBytes );
                         }
                         else // otherwise assume html and just throw the contents out to the screen
                         {
-                            responseData = content;
+                            responseData = response.Content;
                         }
                     }
                     else if ( response.ErrorException != null )

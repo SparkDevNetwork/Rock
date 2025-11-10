@@ -64,5 +64,10 @@ namespace Rock.ViewModels.CheckIn
         /// </summary>
         /// <value>The selected opportunities.</value>
         public List<OpportunitySelectionBag> SelectedOpportunities { get; set; }
+
+        /// <summary>
+        /// Gets all possible schedules that are available to this attendee.
+        /// </summary>
+        public List<ScheduleOpportunityBag> PossibleSchedules { get; set; }
     }
 }

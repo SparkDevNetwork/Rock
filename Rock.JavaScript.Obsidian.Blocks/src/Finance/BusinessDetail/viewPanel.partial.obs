@@ -3,8 +3,9 @@
     <fieldset>
 
         <h1>{{ businessName }}</h1>
+        <BadgeList v-if="showBadges" :showCategoryLabel="true" entityTypeName="Attributes" :entityTypeGuid="EntityType.Person" :entityKey="entityKey" :badgeTypeGuids="badgeTypeGuids" />
 
-        <EntityTagList v-if="options.displayTags" :entityTypeGuid="EntityType.Person" :entityKey="entityKey" :categoryGuid="tagCategoryGuid ?? undefined" />
+        <EntityTagList v-if="options.displayTags" class="mt-3 mb-2 clearfix" :entityTypeGuid="EntityType.Person" :entityKey="entityKey" :categoryGuid="tagCategoryGuid ?? undefined" />
 
         <div class="row">
             <div class="col-md-6">
@@ -16,14 +17,16 @@
             </div>
         </div>
 
-        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" :showCategoryLabel="false" />
-
+        <SectionContainer title="Attributes" v-if="hasAttributes">
+            <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" :showCategoryLabel="false" />
+        </SectionContainer>
     </fieldset>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import BadgeList from "@Obsidian/Controls/badgeList.obs";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
@@ -33,6 +36,7 @@
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { Guid } from "@Obsidian/Types";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
 
     const props = defineProps({
         modelValue: {
@@ -54,9 +58,19 @@
     const entityKey = ref(props.modelValue?.idKey ?? "");
     const tagCategoryGuid = ref<Guid | null>(toGuidOrNull(props.options?.tagCategoryGuid));
 
+    const badgeTypeGuids = computed((): string[] => {
+        return props.modelValue?.badgeTypeGuids ?? [];
+    });
+
+    const showBadges = computed((): boolean => {
+        const badgeTypeGuids = props.modelValue?.badgeTypeGuids ?? [];
+        return badgeTypeGuids.length > 0;
+    });
+
     // #endregion
 
     // #region Computed Values
+    const hasAttributes = ref(props.modelValue?.attributeValues ?? false);
 
     /** The values to display at half-width on the left side of the block. */
     const leftSideValues = computed((): ValueDetailListItem[] => {

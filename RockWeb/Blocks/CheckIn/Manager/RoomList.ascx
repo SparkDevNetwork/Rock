@@ -11,7 +11,7 @@
                 </h1>
                 <div class="panel-labels">
                     <asp:LinkButton ID="btnShowFilter" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnShowFilter_Click">
-                        <i class="fa fa-filter"></i>
+                        <i class="ti ti-filter"></i>
                         Filters
                     </asp:LinkButton>
                 </div>

@@ -153,20 +153,20 @@ namespace RockWeb.Blocks.Crm
                     switch ( session.PageViewSession.DeviceType.ClientType )
                     {
                         case "Desktop":
-                            icon = "fa-desktop";
+                            icon = "ti ti-device-desktop";
                             break;
                         case "Tablet":
-                            icon = "fa-tablet";
+                            icon = "ti ti-device-ipad";
                             break;
                         case "Mobile":
-                            icon = "fa-mobile-phone";
+                            icon = "ti ti-device-mobile";
                             break;
                     }
 
                     var lUserAgent = e.Item.FindControl( "lUserAgent" ) as Literal;
 
                     lClientIcon.Text = string.Format(
-                        "<div class='pageviewsession-client pull-right'><div class='pull-left margin-r-sm'><small>{0}<br>{1}</small></div><i class='fa {2} fa-2x pull-right'></i></div>",
+                        "<div class='pageviewsession-client pull-right'><div class='pull-left margin-r-sm'><small>{0}<br>{1}</small></div><i class='{2} ti-2x pull-right'></i></div>",
                         session.PageViewSession.DeviceType.Application,
                         session.PageViewSession.DeviceType.OperatingSystem,
                         icon );

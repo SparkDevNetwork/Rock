@@ -61,7 +61,7 @@ namespace RockWeb.Blocks.CheckIn
             string script = string.Format( @"
         function GetPersonSelection() {{
             var ids = '';
-            $('div.checkin-person-list').find('i.fa-check-square').each( function() {{
+            $('div.checkin-person-list').find('i.ti-checkbox').each( function() {{
                 ids += $(this).closest('a').attr('person-id') + ',';
             }});
             if (ids == '') {{
@@ -77,7 +77,7 @@ namespace RockWeb.Blocks.CheckIn
         }}
 
         $('a.btn-checkin-select').on('click', function() {{
-            $(this).toggleClass('active').find('i').toggleClass('fa-check-square').toggleClass('fa-square-o');
+            $(this).toggleClass('active').find('i').toggleClass('ti-checkbox').toggleClass('ti-square');
         }});
 
 ", lbSelect.ClientID, hfPeople.ClientID );
@@ -192,7 +192,7 @@ namespace RockWeb.Blocks.CheckIn
 
         protected string GetCheckboxClass( bool selected )
         {
-            return selected ? "fa fa-check-square fa-3x" : "fa fa-square-o fa-3x";
+            return selected ? "ti ti-checkbox ti-3x" : "ti ti-square ti-3x";
         }
 
         protected string GetPersonImageTag( object dataitem )

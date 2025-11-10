@@ -76,7 +76,7 @@
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
+    import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
     import { RegistrantsSameFamily } from "@Obsidian/Enums/Event/registrantsSameFamily";
     import { RegistrationFieldSource } from "@Obsidian/Enums/Event/registrationFieldSource";
     import { useStore } from "@Obsidian/PageState";

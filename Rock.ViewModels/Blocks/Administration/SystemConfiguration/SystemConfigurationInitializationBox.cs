@@ -88,5 +88,13 @@ namespace Rock.ViewModels.Blocks.Administration.SystemConfiguration
         /// The time zones.
         /// </value>
         public List<ListItemBag> TimeZones { get; set; }
+
+        /// <summary>
+        /// Gets or sets the countries.
+        /// </summary>
+        /// <value>
+        /// The countries.
+        /// </value>
+        public List<ListItemBag> Countries { get; set; }
     }
 }

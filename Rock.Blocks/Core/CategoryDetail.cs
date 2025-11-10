@@ -41,7 +41,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Category Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a particular category." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -72,6 +72,7 @@ namespace Rock.Blocks.Core
         Key = AttributeKey.ExcludeCategories )]
     #endregion
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "2889352c-52ba-45f6-8ee1-9afa61211582" )]
     [Rock.SystemGuid.BlockTypeGuid( "515dc5c2-4fbd-4eea-9d8e-a807409defde" )]
     public class CategoryDetail : RockEntityDetailBlockType<Category, CategoryBag>, IHasCustomActions
@@ -447,7 +448,7 @@ namespace Rock.Blocks.Core
             {
                 actions.Add( new BlockCustomActionBag
                 {
-                    IconCssClass = "fa fa-edit",
+                    IconCssClass = "ti ti-edit",
                     Tooltip = "Settings",
                     ComponentFileUrl = "/Obsidian/Blocks/Core/categoryDetailCustomSettings.obs"
                 } );

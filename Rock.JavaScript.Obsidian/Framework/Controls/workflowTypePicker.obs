@@ -3,9 +3,10 @@
     <TreeItemPicker v-model="internalValue"
                     v-bind="standardProps"
                     :formGroupClasses="'category-picker ' + formGroupClasses"
-                    iconCssClass="fa fa-cogs"
+                    iconCssClass="ti ti-settings-cog"
                     :provider="itemProvider"
                     :multiple="multiple"
+                    autoExpand
                     :disabled="disabled"
                     disableFolderSelection />
 </template>
@@ -88,5 +89,5 @@
         updateRefValue(internalValue, props.modelValue ?? null);
     });
 
-                            // #endregion
+    // #endregion
 </script>

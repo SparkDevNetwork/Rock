@@ -5,7 +5,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class='fa fa-flag'></i> Following Events</h1>
+                <h1 class="panel-title"><i class='ti ti-flag'></i> Following Events</h1>
             </div>
 
             <div class="panel-body">
@@ -21,7 +21,7 @@
                                         <li class="mb-2">
                                             <asp:HiddenField ID="hfEvent" runat="server" Value='<%# Eval("Id") %>' />
                                             <Rock:RockCheckBox ID="cbEvent" runat="server" Checked='<%# (bool)Eval("Selected") %>'  Enabled='<%# !(bool)Eval("IsNoticeRequired") %>'
-                                                Text='<%# Eval("Name") %>' SelectedIconCssClass="fa fa-check-square-o fa-lg fa-fw" UnSelectedIconCssClass="fa fa-square-o fa-lg fa-fw" />
+                                                Text='<%# Eval("Name") %>' SelectedIconCssClass="ti ti-square-check ti-lg ti-fw" UnSelectedIconCssClass="ti ti-square ti-lg ti-fw" />
                                             <span class="margin-l-lg"><small><%# Eval("description") %></small></span>
                                         </li>
                                     </ItemTemplate>

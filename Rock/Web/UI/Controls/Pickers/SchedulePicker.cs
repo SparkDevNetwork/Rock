@@ -79,8 +79,8 @@ namespace Rock.Web.UI.Controls
             {
                 _cbShowInactiveSchedules = new RockCheckBox();
                 _cbShowInactiveSchedules.ContainerCssClass = "pull-right";
-                _cbShowInactiveSchedules.SelectedIconCssClass = "fa fa-check-square-o";
-                _cbShowInactiveSchedules.UnSelectedIconCssClass = "fa fa-square-o";
+                _cbShowInactiveSchedules.SelectedIconCssClass = "ti ti-square-check";
+                _cbShowInactiveSchedules.UnSelectedIconCssClass = "ti ti-square";
                 _cbShowInactiveSchedules.ID = this.ID + "_cbShowInactiveSchedules";
                 _cbShowInactiveSchedules.Text = "Show Inactive";
                 _cbShowInactiveSchedules.AutoPostBack = true;
@@ -97,7 +97,7 @@ namespace Rock.Web.UI.Controls
         {
             SetExtraRestParams();
 
-            this.IconCssClass = "fa fa-calendar";
+            this.IconCssClass = "ti ti-calendar";
             base.OnInit( e );
         }
 

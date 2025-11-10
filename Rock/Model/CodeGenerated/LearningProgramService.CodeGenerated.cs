@@ -138,6 +138,7 @@ namespace Rock.Model
             target.ConfigurationMode = source.ConfigurationMode;
             target.DefaultLearningGradingSystemId = source.DefaultLearningGradingSystemId;
             target.Description = source.Description;
+            target.EnforcePublicSecurity = source.EnforcePublicSecurity;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.HighlightColor = source.HighlightColor;

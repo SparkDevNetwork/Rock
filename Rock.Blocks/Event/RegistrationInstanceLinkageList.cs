@@ -38,7 +38,7 @@ namespace Rock.Blocks.Event
     [DisplayName( "Registration Instance - Linkage List" )]
     [Category( "Event" )]
     [Description( "Displays the linkages associated with an event registration instance." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     //[SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
@@ -69,6 +69,7 @@ namespace Rock.Blocks.Event
         IsRequired = false,
         Order = 4 )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "7c5b1e75-0571-4d62-90a5-0b2431ebb9e8" )]
     [Rock.SystemGuid.BlockTypeGuid( "aaa65861-b711-4659-8e80-975c72a2aa52" )]
     [CustomizedGrid]

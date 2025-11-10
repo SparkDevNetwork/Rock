@@ -321,11 +321,11 @@ namespace Rock.Web.UI.Controls
 
                 if ( isTenKey )
                 {
-                    RenderCommand( writer, "backspace", "<i class='fa fa-backspace'></i>" );
+                    RenderCommand( writer, "backspace", "<i class='ti ti-backspace'></i>" );
                 }
                 else
                 {
-                    RenderCommand( writer, "clear", "<i class='fa fa-times'></i>" );
+                    RenderCommand( writer, "clear", "<i class='ti ti-x'></i>" );
                 }
             }
             writer.RenderEndTag();
@@ -360,7 +360,7 @@ namespace Rock.Web.UI.Controls
                 RenderDigit( writer, "0", ")" );
                 RenderDigit( writer, "-", "_" );
                 RenderDigit( writer, "=", "+" );
-                RenderCommand( writer, "backspace", "<i class='fa fa-arrow-left'></i>", "key-2x" );
+                RenderCommand( writer, "backspace", "<i class='ti ti-arrow-left'></i>", "key-2x" );
             }
             writer.RenderEndTag();
 

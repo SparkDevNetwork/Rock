@@ -140,6 +140,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public ChatRole ChatRole { get; set; }
 
+        /// <inheritdoc cref="GroupTypeRole.IsPublic"/>
+        [DataMember]
+        public bool IsPublic { get; set; }
+
         #endregion
 
         #region Constructors
@@ -198,6 +202,7 @@ namespace Rock.Web.Cache
             IsExcludedFromPeerNetwork = role.IsExcludedFromPeerNetwork;
             IsCheckInAllowed = role.IsCheckInAllowed;
             ChatRole = role.ChatRole;
+            IsPublic = role.IsPublic;
         }
 
         /// <summary>

@@ -37,7 +37,7 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             UpdateItemRestUrlExtraParams();
-            this.IconCssClass = "fa fa-files-o";
+            this.IconCssClass = "ti ti-files";
             base.OnInit( e );
         }
 

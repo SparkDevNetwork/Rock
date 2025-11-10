@@ -7,7 +7,7 @@
           :entityTypeGuid="EntityType.Note"
           stickyHeader
           liveUpdates
-          :gridSettings = "isCategoryFilterVisible"
+          :gridSettings="isCategoryFilterVisible"
           :showLaunchWorkflow="false"
           :gridSettingsActive="hasSettingsFilters"
           @gridSettingsClick="isGridSettingsVisible = true"
@@ -52,7 +52,7 @@
     import { NavigationUrlKey } from "./PrayerRequestList/types.partial";
     import { PreferenceKey, GridSettingsOptions } from "./PrayerCommentList/types.partial";
     import { computed, reactive, ref, watch } from "vue";
-import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<PrayerCommentListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -110,14 +110,6 @@ import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     // #region Event Handlers
 
-     /**
-    * Called when the grid setting icon is clicked, displays the block filters.
-    *
-    */
-    function onClickGridSetting(): void {
-        isGridSettingsVisible.value = true;
-    }
-
     /**
      * Called when a row has been selected by the individual.
      *
@@ -129,7 +121,7 @@ import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
                 let rowItem = gridData.rows?.find(x => x["idKey"] == key);
 
                 if (rowItem) {
-                    window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key)+ `&PrayerRequestId=${rowItem?.prayerRequestIdKey}`;
+                    window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key) + `&PrayerRequestId=${rowItem?.prayerRequestIdKey}`;
                 }
             }
         }

@@ -226,11 +226,16 @@
             const newCssVariables: Record<string, string> = {};
 
             const cssVariableNames: string[] = [
+                "--base-interface-softer",
                 "--color-info-soft",
                 "--color-info-strong",
+                "--color-interface-soft",
                 "--color-interface-softer",
+                "--color-interface-softest",
                 "--color-interface-medium",
+                "--color-interface-strong",
                 "--color-interface-stronger",
+                "--color-interface-strongest",
                 "--font-size-xsmall",
                 "--spacing-tiny",
                 "--spacing-xsmall",

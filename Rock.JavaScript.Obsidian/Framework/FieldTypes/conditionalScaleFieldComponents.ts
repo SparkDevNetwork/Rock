@@ -181,14 +181,14 @@ export const ConfigurationComponent = defineComponent({
                 <NumberBox v-model="value.lowValue" class="conditional-scale-lowValue form-control margin-t-md" placeholder="Low Value" />
             </div>
                 <div class='col-md-2'>
-                    <a href="#" @click.prevent="onRemoveClick(valueIndex)" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a>
+                    <a href="#" @click.prevent="onRemoveClick(valueIndex)" class="btn btn-sm btn-danger"><i class="ti ti-x"></i></a>
                 </div>
 
         </div>
     </span>
     <hr>
     <div class="control-actions">
-        <a class="btn btn-action btn-square btn-xs" href="#" @click.prevent="onAddClick"><i class="fa fa-plus-circle"></i></a>
+        <a class="btn btn-action btn-square btn-xs" href="#" @click.prevent="onAddClick"><i class="ti ti-circle-plus"></i></a>
     </div>
 </span>
         </div>

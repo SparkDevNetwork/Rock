@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <i v-if="isTrue" class="fa fa-check"></i>
+    <i v-if="isTrue" class="ti ti-check"></i>
 </template>
 
 <script setup lang="ts">

@@ -31,7 +31,7 @@
             <div class="d-flex flex-column align-items-center p-2 pb-3 py-lg-3 px-lg-4">
                 <h1 class="h3 title name js-checkin-person-name mt-0 text-center">
                     <asp:Literal ID="lName" runat="server" />
-                    <a id="btnShare" runat="server" class="btn btn-lg btn-link text-muted p-0 js-share-editperson" style="display:none;"><i class="fa fa-share-alt-square hand"></i></a></h1>
+                    <a id="btnShare" runat="server" class="btn btn-lg btn-link text-muted p-0 js-share-editperson" style="display:none;"><i class="ti ti-share hand"></i></a></h1>
                 <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
             </div>
 
@@ -51,8 +51,8 @@
                                 </span>
                             </div>
                             <div class="text-right">
-                                <asp:LinkButton ID="btnSms" runat="server" Visible="false" OnClick="btnSms_Click" CssClass="btn btn-sm btn-square btn-default my-1" Text="<i class='fa fa-sms'></i>" />
-                                <a class="btn btn-sm btn-square btn-default my-1" href="tel:<%# Eval("Number") %>"><i class="fa fa-phone"></i></a>
+                                <asp:LinkButton ID="btnSms" runat="server" Visible="false" OnClick="btnSms_Click" CssClass="btn btn-sm btn-square btn-default my-1" Text="<i class='ti ti-device-mobile-message'></i>" />
+                                <a class="btn btn-sm btn-square btn-default my-1" href="tel:<%# Eval("Number") %>"><i class="ti ti-phone"></i></a>
                             </div>
                         </div>
                     </ItemTemplate>

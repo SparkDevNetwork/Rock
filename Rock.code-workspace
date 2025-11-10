@@ -113,6 +113,8 @@
 		"vue.server.additionalExtensions": [
 			"obs"
 		],
+        "vue.suggest.propNameCasing": "alwaysCamelCase",
+        "vue.suggest.componentNameCasing": "alwaysPascalCase",
 		"files.trimTrailingWhitespace": true,
 		"html.format.wrapAttributes": "preserve-aligned",
 		"html.format.wrapLineLength": 0,

@@ -1,0 +1,40 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+using System.Collections.Generic;
+
+using Rock.ViewModels.Utility;
+
+namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
+{
+    /// <summary>
+    /// The additional configuration options for the AI Agent Detail block.
+    /// </summary>
+    public class AIAgentDetailOptionsBag
+    {
+        /// <summary>
+        /// The list of available skills that can be selected.
+        /// </summary>
+        public List<ListItemBag> AvailableSkills { get; set; }
+
+        /// <summary>
+        /// The list of system skills that are always present if they have not
+        /// been excluded by the agent configuration.
+        /// </summary>
+        public List<ListItemBag> SystemSkills { get; set; }
+    }
+}

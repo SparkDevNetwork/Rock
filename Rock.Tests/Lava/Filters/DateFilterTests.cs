@@ -171,6 +171,36 @@ namespace Rock.Tests.Lava.Filters
         }
 
         /// <summary>
+        /// Converts an input value to a date/time value.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "5/1/2018", "May 1, 2018", "en-US" )]
+        [DataRow( "5/1/2018", "Jan 5, 2018", "de-DE" )] // Note: Mai is May in German
+        public void AsDateTime_UsingAmbiguousDate_ProducesDifferentDates( string input, string expectedResult, string clientCulture )
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input + "' | AsDateTime | Date:'MMM d, yyyy' }}" );
+                return null;
+            }, clientCulture );
+        }
+
+        /// <summary>
+        /// Converts an input value to a date/time value.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "5/1/2018", "May 1, 2018", "en-US" )]
+        [DataRow( "5/1/2018", "Mai 1, 2018", "de-DE" )] // Note: Mai is May in German
+        public void AsDateTime_UsingAmbiguousDate_WithSetCulture_AsInvariant_ProducesSameDate( string input, string expectedResult, string clientCulture )
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'invariant' %}{{ '" + input + "' | AsDateTime | Date:'MMM d, yyyy' }}{% endsetculture %}" );
+                return null;
+            }, clientCulture );
+        }
+
+        /// <summary>
         /// Using the Date filter to format a DateTimeOffset type should correctly report the offset in the output.
         /// </summary>
         [TestMethod]
@@ -254,6 +284,66 @@ namespace Rock.Tests.Lava.Filters
             TestHelper.AssertTemplateOutput( "2018-05-01T23:00:00+00:00", "{{ dateTimeInput | AsDateTimeUtc | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", mergeValues );
         }
 
+        /// <summary>
+        /// Converts an input value to a date/time value.  We need to specify a time and time zone otherwise
+        /// the server's timezone will be used, and the date time will shift.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "5/1/2018 00:00:00 +00:00", "2018-05-01T00:00:00.000+00:00", "en-US" )]
+        [DataRow( "5/1/2018 00:00:00 +00:00", "2018-01-05T00:00:00.000+00:00", "de-DE" )] // Would be seen as Jan 5th,
+        public void AsDateTimeUtc_UsingAmbiguousDate_ProducesDifferentDates( string input, string expectedResult, string clientCulture )
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input + "' | AsDateTimeUtc | Date:'yyyy-MM-ddTHH:mm:ss.fffzzz' }}" );
+                return null;
+            }, clientCulture );
+        }
+
+        /*
+            5/30/2025 - N.A.
+
+            This test was cancelled due to limitations with the DateTime object. Specifically, DateTime cannot include time
+            zone data, which causes unintended time shifting to the server's time zone.
+
+            Reason: DateTimeOffset to preserve timezone context and avoid server-based shifts but we wanted to test DateTime only.
+        */
+        /// <summary>
+        /// Converts the hard-coded input DateTime Object value to a date/time value. We need to specify a time and time zone otherwise
+        /// the server's timezone will be used, and the date time will shift.
+        /// </summary>
+        //[DataTestMethod]
+        //[DataRow( "2018-05-01T00:00:00.000+00:00", "en-US" )]
+        //[DataRow( "2018-01-05T00:00:00.000+00:00", "de-DE" )] // Would be seen as Jan 5th,
+        //public void AsDateTimeUtc_UsingAmbiguousDateTimeObject_ProducesDifferentDates( string expectedResult, string clientCulture )
+        //{
+        //    var output = TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+        //    {
+        //        // Build the DateTime with UTC timezone to avoid shifting the date time (which would happen if we used the server's timezone).
+        //        var dateTimeInput = TimeZoneInfo.ConvertTime( new DateTime( 2018, 5, 1, 0, 0, 0, DateTimeKind.Utc ), TimeZoneInfo.Utc );
+        //        var mergeValues = new LavaDataDictionary() { { "dateTimeInput", dateTimeInput } };
+
+        //        TestHelper.AssertTemplateOutput( expectedResult, "{{ dateTimeInput | AsDateTimeUtc | Date:'yyyy-MM-ddTHH:mm:ss.fffzzz' }}", mergeValues );
+        //        return null;
+        //    }, clientCulture );
+        //}
+
+        /// <summary>
+        /// Converts an input value to a date/time value.  We need to specify a time and time zone otherwise
+        /// the server's timezone will be used, and the date time will shift.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "5/1/2018 00:00:00 +00:00", "2018-05-01T00:00:00.000+00:00", "en-US" )]
+        [DataRow( "5/1/2018 00:00:00 +00:00", "2018-05-01T00:00:00.000+00:00", "de-DE" )] // Should be the same
+        public void AsDateTimeUtc_UsingAmbiguousDate_WithSetCulture_AsInvariant_ProducesSameDate( string input, string expectedResult, string clientCulture )
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'invariant' %}{{ '" + input + "' | AsDateTimeUtc | Date:'yyyy-MM-ddTHH:mm:ss.fffzzz' }}{% endsetculture %}" );
+                return null;
+            }, clientCulture );
+        }
+
         #endregion
 
         #region Filter Tests: Date
@@ -305,6 +395,48 @@ namespace Rock.Tests.Lava.Filters
         public void Date_NowWithFormatStringAsInput_ResolvesToCurrentDateTimeWithSpecifiedFormat()
         {
             TestHelper.AssertTemplateOutputDate( _now.ToString( "yyyy-MM-dd" ), "{{ 'Now' | Date:'yyyy-MM-dd' }}" );
+        }
+
+        [DataTestMethod]
+        [DataRow( "1-May-2018 6:30 PM", "5/1/2018", "en-US" )]
+        [DataRow( "1-May-2018 6:30 PM", "01.05.2018", "de-DE" )]
+        [DataRow( "01/02/2020", "01.02.2020", "de-DE" )] // That is February 1 as dd.MM.yyyy
+        [DataRow( "01/02/2020", "1/2/2020", "en-US" )] // That is January 2
+        public void DateString_ShortDateParameter_AgainstClientCulture( string input, string expectedResult, string clientCulture )
+        {
+            TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input + "' | Date:'sd' }}" );
+                return null;
+            }, clientCulture );
+        }
+
+        [DataTestMethod]
+        [DataRow( "1-May-2018 6:30 PM", "05/01/2018", "en-US" )]
+        [DataRow( "1-May-2018 6:30 PM", "05/01/2018", "de-DE" )]
+        [DataRow( "01/02/2020", "01/02/2020", "de-DE" )] // That is January 2
+        [DataRow( "01/02/2020", "01/02/2020", "en-US" )] // That is January 2
+        public void DateString_WithSetCulture_AsInvariant_ShortDateParameter_AgainstClientCulture( string input, string expectedResult, string clientCulture )
+        {
+            TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'invariant' %}{{ '" + input + "' | Date:'sd' }}{% endsetculture %}" );
+                return null;
+            }, clientCulture );
+        }
+
+        [DataTestMethod]
+        [DataRow( "1-May-2018 6:30 PM", "5/1/2018", "en-US" )]
+        [DataRow( "1-May-2018 6:30 PM", "01.05.2018", "de-DE" )]
+        [DataRow( "01/02/2020", "01.02.2020", "de-DE" )] // That is February 1 as dd.MM.yyyy
+        [DataRow( "01/02/2020", "1/2/2020", "en-US" )] // That is January 2
+        public void DateString_WithSetCulture_AsClientt_ShortDateParameter_AgainstClientCulture( string input, string expectedResult, string clientCulture )
+        {
+            TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'client' %}{{ '" + input + "' | Date:'sd' }}{% endsetculture %}" );
+                return null;
+            }, clientCulture );
         }
 
         /// <summary>
@@ -1832,6 +1964,24 @@ namespace Rock.Tests.Lava.Filters
                 TestHelper.AssertTemplateOutputDate( "1-May-2018 12:00 AM",
                     "{{ '1-May-2018 3:00 PM' | ToMidnight }}" );
             } );
+        }
+
+        /// <summary>
+        /// Converts an input value to a date/time value.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "1-May-2018 3:00 PM", "2018-05-01T00:00", "en-US" )]
+        [DataRow( "1-May-2018 3:00 PM", "2018-05-01T00:00", "de-DE" )]
+        public void ToMidnight_InputDateHasTimeComponent_YieldsMidnight_WithClientCulture( string input, string expectedResult, string clientCulture )
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                LavaTestHelper.ExecuteForTimeZones( tz =>
+                {
+                    TestHelper.AssertTemplateOutputDate( expectedResult, "{{ '" + input + "' | ToMidnight | Date:'yyyy-MM-ddTHH:mm' }}" );
+                } );
+                return null;
+            }, clientCulture );
         }
 
         /// <summary>

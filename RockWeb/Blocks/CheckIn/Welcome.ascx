@@ -67,7 +67,7 @@
 
             function GetLabelTypeSelection () {
                 var ids = '';
-                $('div.js-label-list').find('i.fa-check-square').each(function () {
+                $('div.js-label-list').find('i.ti-checkbox').each(function () {
                     ids += $(this).closest('a').attr('data-label-guid') + ',';
                 });
                 if (ids == '') {
@@ -85,9 +85,9 @@
 
                 $('a.js-label-select').off('click').on('click', function () {
                     $(this).toggleClass('active');
-                    $(this).find('i').toggleClass('fa-check-square').toggleClass('fa-square-o');
+                    $(this).find('i').toggleClass('ti-checkbox').toggleClass('ti-square');
                     var ids = '';
-                    $('div.js-label-list').find('i.fa-check-square').each(function () {
+                    $('div.js-label-list').find('i.ti-checkbox').each(function () {
                         ids += $(this).closest('a').attr('data-label-guid') + ',';
                     });
                     $('.js-label-file-guids').val(ids);
@@ -480,7 +480,7 @@
 
         </asp:Panel>
 
-        <asp:LinkButton runat="server" ID="btnManager" CssClass="kioskmanager-activate" OnClick="btnManager_Click"><i class="fa fa-cog fa-4x"></i><span class="sr-only">Kiosk Manager</span></asp:LinkButton>
+        <asp:LinkButton runat="server" ID="btnManager" CssClass="kioskmanager-activate" OnClick="btnManager_Click"><i class="ti ti-settings ti-4x"></i><span class="sr-only">Kiosk Manager</span></asp:LinkButton>
 
         <%-- Panel for checkin manager --%>
         <asp:Panel ID="pnlManager" runat="server" Visible="false">
@@ -597,7 +597,7 @@
                                                 <a data-label-guid='<%# Eval("FileGuid") %>' class="btn btn-primary btn-checkin-select btn-block js-label-select <%# GetSelectedClass( false ) %>">
                                                     <div class="row">
                                                         <div class="col-md-1 col-sm-2 col-xs-3 checkbox-container">
-                                                            <i class='fa fa-3x <%# GetCheckboxClass( false ) %>'></i>
+                                                            <i class='ti-3x <%# GetCheckboxClass( false ) %>'></i>
                                                         </div>
                                                         <asp:Panel ID="pnlLabel" runat="server">
                                                             <asp:Literal ID="lLabelButton" runat="server"></asp:Literal>
@@ -685,7 +685,7 @@
                                         <div>
                                             <a href="#" class="btn btn-default btn-lg btn-keypad command clear">Clear</a>
                                             <a href="#" class="btn btn-default btn-lg btn-keypad digit">0</a>
-                                            <a href="#" class="btn btn-default btn-lg btn-keypad command back"><i class="fas fa-backspace"></i></a>
+                                            <a href="#" class="btn btn-default btn-lg btn-keypad command back"><i class="ti ti-backspace"></i></a>
                                         </div>
                                     </div>
 

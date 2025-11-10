@@ -1,0 +1,60 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DropDownList
+                  label="Parent Category"
+                  v-model="parentCategory"
+                  :items="parentCategoryItems"
+                  help="The parent category to use by default when dealing with requests."
+                  rules="required" />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { standardDynamicComponentProps, updateRefValue } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ref, watch } from "vue";
+
+    const enum ConfigurationKey {
+        ParentCategory = "parentCategory",
+    }
+
+    const props = defineProps(standardDynamicComponentProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    // #region Values
+
+    // Single value, not an array.
+    const parentCategory = ref<string>(props.modelValue[ConfigurationKey.ParentCategory] ?? "");
+
+    // Match your C# key: Options["prayerCategories"] = ...
+    const parentCategoryItems = ref<ListItemBag[]>(
+        safeParseJson<ListItemBag[]>(props.options?.prayerCategories) ?? []
+    );
+
+    // #endregion
+
+    // #region Watches
+
+    // When the local value changes, emit the new modelValue
+    watch(parentCategory, () => {
+        const newValues = { ...props.modelValue };
+        newValues[ConfigurationKey.ParentCategory] = parentCategory.value;
+        emit("update:modelValue", newValues);
+    });
+
+    // When the external modelValue changes, sync our ref
+    watch(() => props.modelValue[ConfigurationKey.ParentCategory], (val) => {
+        updateRefValue(parentCategory, (val as string | undefined) ?? "");
+    });
+
+    // When options change, re-parse items
+    watch(() => props.options, () => {
+        parentCategoryItems.value = safeParseJson<ListItemBag[]>(props.options?.prayerCategories) ?? [];
+    });
+
+    // #endregion
+</script>

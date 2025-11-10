@@ -37,7 +37,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Event List" )]
     [Category( "Follow" )]
     [Description( "Block for viewing list of following events." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

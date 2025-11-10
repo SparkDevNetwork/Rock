@@ -73,7 +73,7 @@
 
     const hasIcon = computed(() => iconCssClass.value.length > 0);
 
-    const iconCssClasses = computed(() => [iconCssClass.value, "fa-fw"]);
+    const iconCssClasses = computed(() => [iconCssClass.value, "ti-fw"]);
 
     // The color style attribute value for the stack color.
     const stackColorStyle = computed(() => {

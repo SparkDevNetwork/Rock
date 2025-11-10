@@ -37,13 +37,14 @@ namespace Rock.Blocks.Lms
     [DisplayName( "Learning Class Activity Completion List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of learning class activity completions." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the learning class activity completion details.",
         Key = AttributeKey.DetailPage )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "152fea00-5721-4cb2-897f-1b6829f4b7c4" )]
     [Rock.SystemGuid.BlockTypeGuid( "ef1a5cdd-6769-4ffc-b826-55c194b01897" )]
     [CustomizedGrid]

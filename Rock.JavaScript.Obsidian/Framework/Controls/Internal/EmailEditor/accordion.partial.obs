@@ -3,7 +3,7 @@
     <div :class="['accordion', `accordion-${accordionType}`, { 'accordion-pb-0': removeBottomPadding, 'accordion-pt-0': removeTopPadding, 'disabled': disabled }]">
         <Panel v-model="isExpanded"
                :hasCollapse="true"
-               :panelBodyCssClass="isPaddingRemoved ? 'p-0' : ''">
+               :hasNoBodyPadding="isPaddingRemoved">
             <template #title>
                 <h6>{{ title }}</h6>
             </template>

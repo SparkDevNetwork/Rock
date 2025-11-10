@@ -89,7 +89,7 @@
                             <RockButton :btnSize="BtnSize.ExtraSmall"
                                         @click="onReloadColumnsClick"
                                         :disabled="isDisabled">
-                                <i class="fa fa-redo" aria-hidden></i> Reload Columns From Query
+                                <i class="ti ti-arrow-forward-up" aria-hidden></i> Reload Columns From Query
                             </RockButton>
                         </div>
                     </template>

@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-file-invoice-dollar"></i>
+                <h1 class="panel-title"><i class="ti ti-file-dollar"></i>
                     Transaction Fee Report
                 </h1>
             </div>
@@ -19,7 +19,7 @@
                     </div>
                     <div class="col-md-8 d-flex flex-wrap align-items-end">
                         <Rock:SlidingDateRangePicker ID="srpFilterDates" Label="Date Range" runat="server" FormGroupCssClass="mb-2" />
-                        <div class="pb-2" style="margin-bottom: 6px">
+                        <div class="pb-2">
                             <Rock:BootstrapButton ID="bbtnApply" CssClass="btn btn-primary" CausesValidation="true" runat="server" Text="Apply" OnClick="bbtnApply_Click" />
                         </div>
                     </div>

@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -39,8 +38,8 @@ namespace Rock.Blocks.Engagement
     [DisplayName( "Step Program List" )]
     [Category( "Steps" )]
     [Description( "Displays a list of step programs." )]
-    [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [IconCssClass( "ti ti-list" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [CategoryField(
         "Categories",
@@ -56,7 +55,8 @@ namespace Rock.Blocks.Engagement
         Key = AttributeKey.DetailPage )]
 
     [Rock.SystemGuid.EntityTypeGuid( "ef0d9904-48be-4ba5-9950-e77d318a4cfa" )]
-    [Rock.SystemGuid.BlockTypeGuid( "5284b259-a9ec-431c-b949-661780bfcd68" )]
+    // Was [Rock.SystemGuid.BlockTypeGuid( "5284b259-a9ec-431c-b949-661780bfcd68" )]
+    [Rock.SystemGuid.BlockTypeGuid( "429A817E-1379-4BCC-AEFE-01D9C75273E5" )]
     [CustomizedGrid]
     public class StepProgramList : RockEntityListBlockType<StepProgram>
     {
@@ -76,18 +76,15 @@ namespace Rock.Blocks.Engagement
         private static class PreferenceKey
         {
             public const string FilterActive = "filter-active";
-
-            public const string FilterCategory = "filter-category";
         }
 
         #endregion Keys
 
         #region Properties
+
         protected string FilterActive => GetBlockPersonPreferences()
             .GetValue(PreferenceKey.FilterActive);
 
-        protected string FilterCategory => GetBlockPersonPreferences()
-            .GetValue(PreferenceKey.FilterCategory);
         #endregion
 
         #region Methods
@@ -149,17 +146,13 @@ namespace Rock.Blocks.Engagement
         {
             var query = base.GetListQueryable( rockContext );
 
-            // Filter by Category (first by block setting, and then by selected filter).
+            // Filter by Category
             var categoryGuids = GetAttributeValue( AttributeKey.Categories ).SplitDelimitedValues().AsGuidList();
             if ( categoryGuids.Any() )
             {
                 query = query.Where( sp => sp.Category != null && categoryGuids.Contains( sp.Category.Guid ) );
             }
 
-            if ( !string.IsNullOrWhiteSpace( FilterCategory ) )
-            {
-                query = ( IOrderedQueryable<StepProgram> ) query.Where( sp => sp.Category.Name == FilterCategory );
-            }
 
             // Filter by isActive
             if ( !string.IsNullOrWhiteSpace( FilterActive ) )
@@ -179,6 +172,12 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <inheritdoc/>
+        protected override IQueryable<StepProgram> GetOrderedListQueryable( IQueryable<StepProgram> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( sp => sp.Order ).ThenBy( sp => sp.Id );
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<StepProgram> GetGridBuilder()
         {
             var completedStepsQry = new StepService(  RockContext ).Queryable().Where( x => x.StepStatus != null && x.StepStatus.IsCompleteStatus && x.StepType.IsActive );
@@ -194,6 +193,7 @@ namespace Rock.Blocks.Engagement
                 .AddField( "stepType", a => a.StepTypes.Count( m => m.IsActive ) )
                 .AddField( "stepsTaken", a => completedStepsQry.Count( y => y.StepType.StepProgramId == a.Id ) )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddField( "isSystem", a => a.IsSystem )
                 .AddAttributeFields( GetGridAttributes() );
         }
 
@@ -204,32 +204,29 @@ namespace Rock.Blocks.Engagement
         /// <summary>
         /// Changes the ordered position of a single item.
         /// </summary>
-        /// <param name="idKey">The identifier of the item that will be moved.</param>
-        /// <param name="beforeIdKey">The identifier of the item it will be placed before.</param>
+        /// <param name="key">The identifier of the item that will be moved.</param>
+        /// <param name="beforeKey">The identifier of the item it will be placed before.</param>
         /// <returns>An empty result that indicates if the operation succeeded.</returns>
         [BlockAction]
-        public BlockActionResult ReorderItem( int idKey, int? beforeIdKey )
+        public BlockActionResult ReorderItem( string key, string beforeKey )
         {
-            using ( var rockContext = new RockContext() )
+            var stepProgramService = new StepProgramService( RockContext );
+
+            // Get the queryable and make sure it is ordered correctly.
+            var qry = GetListQueryable( RockContext );
+            qry = GetOrderedListQueryable( qry, RockContext );
+
+            // Get the entities from the database.
+            var items = GetListItems( qry, RockContext );
+
+            if ( !items.ReorderEntity( key, beforeKey ) )
             {
-                var stepProgramService = new StepProgramService( rockContext );
-
-                // Get all step programs
-                var allStepPrograms = stepProgramService.Queryable().OrderBy( sp => sp.Order ).ToList();
-
-                // Find the current and new index for the moved item
-                int currentIndex = allStepPrograms.FindIndex( sp => sp.Id == idKey );
-                int newIndex = beforeIdKey.HasValue ? allStepPrograms.FindIndex( sp => sp.Id == beforeIdKey.Value ) : allStepPrograms.Count - 1;
-
-                // Perform the reordering
-                if ( currentIndex != newIndex )
-                {
-                    stepProgramService.Reorder( allStepPrograms, currentIndex, newIndex );
-                    rockContext.SaveChanges();
-                }
-
-                return ActionOk();
+                return ActionBadRequest( "Invalid reorder attempt." );
             }
+
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         /// <summary>
@@ -240,31 +237,28 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new StepProgramService( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
             {
-                var entityService = new StepProgramService( rockContext );
-                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-                if ( entity == null )
-                {
-                    return ActionBadRequest( $"{StepProgram.FriendlyTypeName} not found." );
-                }
-
-                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete {StepProgram.FriendlyTypeName}." );
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( $"{StepProgram.FriendlyTypeName} not found." );
             }
+
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete {StepProgram.FriendlyTypeName}." );
+            }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         #endregion

@@ -67,7 +67,7 @@ $('.js-panel-toggle').on('click', function (e) {
     e.preventDefault();
     var $header = $(this).closest('.panel-heading');
     $header.siblings('.panel-body').slideToggle();
-    $header.find('i').toggleClass('fa-chevron-up fa-chevron-down');
+    $header.find('i').toggleClass('ti-chevron-up ti-chevron-down');
 });
 ";
             ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "DefinedValueChecklistScript", script, true );
@@ -480,7 +480,7 @@ $('.js-panel-toggle').on('click', function (e) {
                             {
                                 content.Append( "<div class='panel panel-widget'>" );
                                 content.Append( "<div class='panel-heading'>" );
-                                content.Append( string.Format( "<h1 class='panel-title'>{0}</h1><div class='pull-right'><a class='btn btn-link btn-xs js-panel-toggle'><i class='fa fa-chevron-up'></i></a></div>", title ) );
+                                content.Append( string.Format( "<h1 class='panel-title'>{0}</h1><div class='pull-right'><a class='btn btn-link btn-xs js-panel-toggle'><i class='ti ti-chevron-up'></i></a></div>", title ) );
                                 content.Append( "</div>" );
                                 content.Append( "<div class='panel-body'>" );
                             }
@@ -488,7 +488,7 @@ $('.js-panel-toggle').on('click', function (e) {
                             {
                                 content.Append( "<div class='panel panel-widget collapsed'>" );
                                 content.Append( "<div class='panel-heading'>" );
-                                content.Append( string.Format( "<h1 class='panel-title'>{0}</h1><div class='pull-right'><a class='btn btn-link btn-xs js-panel-toggle'><i class='fa fa-chevron-down'></i></a></div>", title ) );
+                                content.Append( string.Format( "<h1 class='panel-title'>{0}</h1><div class='pull-right'><a class='btn btn-link btn-xs js-panel-toggle'><i class='ti ti-chevron-down'></i></a></div>", title ) );
                                 content.Append( "</div>" );
                                 content.Append( "<div class='panel-body' style='display:none;'>" );
                             }
@@ -562,7 +562,7 @@ $('.js-panel-toggle').on('click', function (e) {
                                             colorPicker.Text = overrides[variableKey];
 
                                             // add restore logic
-                                            overrideControl.Text = string.Format( "<i class='fa fa-times js-color-override variable-override' style='opacity: 1;' data-control='{0}' data-original-value='{1}'></i>", variableKey, variableValue );
+                                            overrideControl.Text = string.Format( "<i class='ti ti-x js-color-override variable-override' style='opacity: 1;' data-control='{0}' data-original-value='{1}'></i>", variableKey, variableValue );
                                         }
                                         else
                                         {
@@ -619,7 +619,7 @@ $('.js-panel-toggle').on('click', function (e) {
 
                                         // add restore logic
                                         var overrideImagePath = variableValue.Replace( "~", "" ).Replace( "'", "" ).Replace( "\"","" ).Replace( "../", string.Format( "{0}Themes/{1}/", Request.ApplicationPath, _themeName ) );
-                                        overrideControl.Text = string.Format( "<i class='fa fa-times js-image-override variable-override' style='opacity: 1;' data-control='{0}' data-original-value='~{1}'></i>", variableKey, overrideImagePath );
+                                        overrideControl.Text = string.Format( "<i class='ti ti-x js-image-override variable-override' style='opacity: 1;' data-control='{0}' data-original-value='~{1}'></i>", variableKey, overrideImagePath );
                                     }
                                     else
                                     {
@@ -671,7 +671,7 @@ $('.js-panel-toggle').on('click', function (e) {
                                             textbox.Text = overrides[variableKey];
 
                                             // add restore logic
-                                            overrideControl.Text = string.Format( "<i class='fa fa-times margin-l-sm js-text-override variable-override pull-left' style='margin-top: 34px; cursor: pointer;' data-control='{0}' data-original-value='{1}'></i>", variableKey, variableValue );
+                                            overrideControl.Text = string.Format( "<i class='ti ti-x margin-l-sm js-text-override variable-override pull-left' style='margin-top: 34px; cursor: pointer;' data-control='{0}' data-original-value='{1}'></i>", variableKey, variableValue );
                                         }
                                         else
                                         {

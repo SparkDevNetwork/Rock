@@ -95,7 +95,7 @@
                 width="48px"
                 visiblePriority="md">
             <template #format="{ row }">
-                <i class="fa fa-user pr-3" @click="onPersonProfileClick(row.individual?.idKey)"></i>
+                <i class="ti ti-user pr-3" @click="onPersonProfileClick(row.individual?.idKey)"></i>
             </template>
         </Column>
     </Grid>

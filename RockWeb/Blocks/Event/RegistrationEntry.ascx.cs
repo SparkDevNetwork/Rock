@@ -30,6 +30,7 @@ using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Field;
 using Rock.Financial;
@@ -193,6 +194,7 @@ namespace RockWeb.Blocks.Event
 
         // protected variables
         private decimal _percentComplete = 0;
+        private int? _recordSourceValueId = null;
 
         #endregion
 
@@ -214,6 +216,27 @@ namespace RockWeb.Blocks.Event
             set
             {
                 _percentComplete = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the Record Source Type <see cref="Rock.Model.DefinedValue"/> identifier for this registration.
+        /// </summary>
+        /// <value>
+        /// An identifier representing the Record Source Type <see cref="DefinedValue"/>.
+        /// </value>
+        private int? RecordSourceValueId
+        {
+            get
+            {
+                if ( !_recordSourceValueId.HasValue )
+                {
+                    _recordSourceValueId = RecordSourceHelper.GetSessionRecordSourceValueId()
+                        ?? this.RegistrationInstanceState?.GetRegistrantRecordSourceValueId()
+                        ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_EVENT_REGISTRATION.AsGuid() )?.Id;
+                }
+
+                return _recordSourceValueId;
             }
         }
 
@@ -2085,7 +2108,9 @@ namespace RockWeb.Blocks.Event
                 // set group id
                 if ( groupId.HasValue )
                 {
-                    GroupId = groupId;
+                    // Commenting out line below to improve security. More refactoring could be made to clean up this
+                    // section of code but limiting changes for now to reduce chance of introducing a bug.
+                    // GroupId = groupId;
                 }
                 else if ( !string.IsNullOrWhiteSpace( registrationSlug ) )
                 {
@@ -3783,6 +3808,9 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
+                // Assign the record source for new people.
+                person.RecordSourceValueId = this.RecordSourceValueId;
+
                 // If we've created the family already for this registrant, add them to it
                 if (
                         ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask && multipleFamilyGroupIds.ContainsKey( familyGuid ) ) ||

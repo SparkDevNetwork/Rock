@@ -20,8 +20,8 @@
                 <asp:HiddenField ID="hfCurrentPage" runat="server" />
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnPrevious" runat="server" OnClick="btnPrevious_Click" CssClass="btn btn-xs btn-default"><i class="fa fa-chevron-left"></i> Prev</asp:LinkButton>
-                    <asp:LinkButton ID="btnNext" runat="server" OnClick="btnNext_Click" CssClass="btn btn-xs btn-default pull-right">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                    <asp:LinkButton ID="btnPrevious" runat="server" OnClick="btnPrevious_Click" CssClass="btn btn-xs btn-default"><i class="ti ti-chevron-left"></i> Prev</asp:LinkButton>
+                    <asp:LinkButton ID="btnNext" runat="server" OnClick="btnNext_Click" CssClass="btn btn-xs btn-default pull-right">Next <i class="ti ti-chevron-right"></i></asp:LinkButton>
                 </div>
             </div>
         

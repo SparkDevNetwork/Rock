@@ -4,10 +4,11 @@
     <li class="dropdown" ID="liDropdown" runat="server">
 
         <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
-            <div id="divProfilePhoto" runat="server" class="profile-photo"></div>
-
-            <asp:PlaceHolder ID="phHello" runat="server"><asp:Literal ID="lHello" runat="server" /></asp:PlaceHolder>
-            <b class="fa fa-caret-down"></b>
+            <div class="loginstatus-wrapper">
+                <div id="divProfilePhoto" runat="server" class="profile-photo"></div>
+                <asp:PlaceHolder ID="phHello" runat="server"><asp:Literal ID="lHello" runat="server" /></asp:PlaceHolder>
+            </div>
+            <b class="ti ti-caret-down-filled"></b>
         </a>
 
         <ul class="dropdown-menu">

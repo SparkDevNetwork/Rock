@@ -24,10 +24,10 @@
 
     <!-- Controls -->
     <a class="left carousel-control" href="#announcement-rotator" data-slide="prev">
-      <span class="fa fa-chevron-left"></span>
+      <span class="ti ti-chevron-left"></span>
     </a>
     <a class="right carousel-control" href="#announcement-rotator" data-slide="next">
-      <span class="fa fa-chevron-right"></span>
+      <span class="ti ti-chevron-right"></span>
     </a>
 
   </div>

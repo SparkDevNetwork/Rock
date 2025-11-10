@@ -1,0 +1,46 @@
+<template>
+    <DropDownList v-model="noteTypes"
+                  :items="noteTypeOptions"
+                  label="Note Types"
+                  help="The type of note to filter by. Leave blank to include all note types."
+                  showBlankItem
+                  multiple
+                  enhanceForLongLists />
+
+    <SlidingDateRangePicker v-model="dateRange"
+                            label="Date Range"
+                            help="The date range that the note was created during." />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { dataViewSelectProps } from "@Obsidian/Utility/component";
+    import { ref, watch } from "vue";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { parseSlidingDateRangeString, SlidingDateRange, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { SlidingDateRangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps(dataViewSelectProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const noteTypeOptions = safeParseJson<ListItemBag[]>(props.options.noteTypeOptions);
+    const noteTypes = ref(safeParseJson<Guid[]>(props.modelValue.noteTypes) ?? []);
+
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
+
+    watch([noteTypes, dateRange], () => {
+        const newData = {
+            ...props.modelValue,
+            noteTypes: JSON.stringify(noteTypes.value),
+            dateRange: slidingDateRangeToString(dateRange.value ?? { rangeType: SlidingDateRangeType.All }),
+        };
+
+        emit("update:modelValue", newData);
+    });
+</script>

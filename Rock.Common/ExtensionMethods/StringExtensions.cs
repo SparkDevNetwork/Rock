@@ -1375,25 +1375,32 @@ namespace Rock
         /// <summary>
         /// Attempts to convert string to decimal with invariant culture. Returns null if unsuccessful.
         /// </summary>
-        /// <param name="str">The string.</param>
+        /// <param name="str">The string to convert.</param>
         /// <returns></returns>
         public static decimal? AsDecimalInvariantCultureOrNull( this string str )
         {
+            return str.AsDecimalWithCultureOrNull( CultureInfo.InvariantCulture );
+        }
+
+        /// <summary>
+        /// Attempts to convert a string to a decimal using a specific CultureInfo. Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string to convert.</param>
+        /// <param name="cultureInfo">The culture info to use for parsing.</param>
+        /// <returns>Nullable decimal value or null.</returns>
+        public static decimal? AsDecimalWithCultureOrNull( this string str, CultureInfo cultureInfo )
+        {
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
-                // strip off non numeric and characters at the beginning of the line (currency symbols)
                 str = Regex.Replace( str, @"^[^0-9\.-]", string.Empty );
             }
 
-            decimal value;
-            if ( decimal.TryParse( str, NumberStyles.Number, CultureInfo.InvariantCulture, out value ) )
+            if ( decimal.TryParse( str, NumberStyles.Number, cultureInfo, out var value ) )
             {
                 return value;
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
 
         /// <summary>
@@ -1421,6 +1428,30 @@ namespace Rock
 
             double value;
             if ( double.TryParse( str, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to convert a string to a decimal using a specific CultureInfo. Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string to convert.</param>
+        /// <param name="cultureInfo">The culture info to use for parsing.</param>
+        /// <returns>Nullable double value or null.</returns>
+        public static double? AsDoubleWithCultureOrNull( this string str, CultureInfo cultureInfo )
+        {
+            if ( !string.IsNullOrWhiteSpace( str ) )
+            {
+                str = Regex.Replace( str, @"^[^0-9\.-]", string.Empty );
+            }
+
+            double value;
+            if ( double.TryParse( str, NumberStyles.Number, cultureInfo, out value ) )
             {
                 return value;
             }
@@ -1831,6 +1862,30 @@ namespace Rock
         {
             string specialCharacters = "!@#$%^&*()_+[]{}|;:'\",.<>/?`~";
             return !string.IsNullOrEmpty( value ) && value.Length == 1 && specialCharacters.Contains( value );
+        }
+
+        /// <summary>
+        /// Regular expression for the <see cref="NormalizeWhiteSpace(string)"/> method.
+        /// </summary>
+        private static readonly Regex _normalizeWhiteSpaceRegex = new Regex( @"\s+", RegexOptions.Compiled );
+
+        /// <summary>
+        /// Normalizes all whitespace in the string by replacing any sequence of whitespace characters
+        /// (spaces, tabs, newlines, etc.) with a single space, and trims leading and trailing whitespace.
+        /// Returns an empty string if the input is null or consists only of whitespace.
+        /// </summary>
+        /// <param name="str">The input string to normalize.</param>
+        /// <returns>
+        /// A string with normalized whitespace, or an empty string if the input is null or whitespace.
+        /// </returns>
+        public static string NormalizeWhiteSpace( this string str )
+        {
+            if ( str.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            return _normalizeWhiteSpaceRegex.Replace( str, " " ).Trim();
         }
 
         #endregion String Extensions

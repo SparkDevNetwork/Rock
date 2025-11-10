@@ -7,7 +7,7 @@
         <div class="panel panel-block">
 
             <div class="panel-heading clearfix">
-                <h1 class="panel-title pull-left"><i class="fa fa-exchange-alt"></i>Connection Status Changes</h1>
+                <h1 class="panel-title pull-left"><i class="ti ti-arrows-right-left"></i>Connection Status Changes</h1>
             </div>
 
             <div class="panel-body" runat="server" id="pnlBody">
@@ -61,7 +61,7 @@
             <div class="panel panel-block">
 
                 <div class="panel-heading clearfix">
-                    <h1 class="panel-title pull-left"><i class="fa fa-list"></i>Results</h1>
+                    <h1 class="panel-title pull-left"><i class="ti ti-list"></i>Results</h1>
                 </div>
 
                 <div class="panel-body">

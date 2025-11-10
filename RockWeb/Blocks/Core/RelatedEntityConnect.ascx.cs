@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Core
     [TextField( "Header Icon CSS Class",
         Description = "The CSS icon for the panel heading.",
         IsRequired = false,
-        DefaultValue = "fa fa-link",
+        DefaultValue = "ti ti-link",
         Order = 10,
         Key = AttributeKey.HeaderIconCssClass )]
 

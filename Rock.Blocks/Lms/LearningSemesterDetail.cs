@@ -38,7 +38,7 @@ namespace Rock.Blocks.Lms
     [DisplayName( "Learning Semester Detail" )]
     [Category( "LMS" )]
     [Description( "Displays the details of a particular learning semester." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "78bcf0d7-b5ac-4429-8055-b436652083a7" )]

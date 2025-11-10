@@ -26,7 +26,7 @@
             <asp:HiddenField ID="hfRegistrationTemplateId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-clipboard"></i>
+                <h1 class="panel-title"><i class="ti ti-clipboard"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
 
                 <div class="panel-labels">
@@ -67,6 +67,7 @@
                                     Help="The group member status that new registrants should be added to group with." />
                                 <Rock:DefinedValuePicker ID="dvpConnectionStatus" runat="server" Label="Connection Status"
                                     Help="The connection status to use for new individuals. Setting this here will override the setting on the Registration Entry block." />
+                                <Rock:DefinedValuePicker ID="dvpRecordSource" runat="server" Label="Record Source" Help="The record source to use for new individuals. If a 'RecordSource' page parameter is found at the time of registration, it will be used instead." />
                             </div>
                             <div class="col-md-8">
                                 <div class="row">
@@ -204,7 +205,7 @@
                             <asp:PlaceHolder ID="phForms" runat="server" />
                         </div>
                         <div class="pull-right">
-                            <asp:LinkButton ID="lbAddForm" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddForm_Click" CausesValidation="false"><i class="fa fa-plus"></i> Add Form</asp:LinkButton>
+                            <asp:LinkButton ID="lbAddForm" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddForm_Click" CausesValidation="false"><i class="ti ti-plus"></i> Add Form</asp:LinkButton>
                         </div>
                     </Rock:PanelWidget>
 
@@ -405,7 +406,7 @@
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <Rock:RockLiteral ID="lGroupType" runat="server" Label="Group Type" />
                             <Rock:RockLiteral ID="lWorkflowType" runat="server" Label="Registration Workflow" />
                             <Rock:RockLiteral ID="lRequiredSignedDocument" runat="server" Label="Required Signature Document" />
@@ -420,7 +421,7 @@
                                 </div>
                             </Rock:RockControlWrapper>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <Rock:RockLiteral ID="lCost" runat="server" Label="Cost" />
                             <Rock:RockLiteral ID="lMinimumInitialPayment" runat="server" Label="Minimum Initial Payment" />
                             <Rock:RockLiteral ID="lDefaultPaymentAmount" runat="server" Label="Default Payment Amount" />
@@ -435,6 +436,18 @@
                                 </asp:Repeater>
                             </Rock:RockControlWrapper>
                         </div>
+                        <div class="col-md-4">
+                            <div class="form-group static-control">
+                                <asp:Label ID="lGroupPlacements" runat="server" CssClass="control-label" Text="Group Placements"></asp:Label>
+                                <asp:Repeater ID="rptGroupPlacements" runat="server">
+                                    <ItemTemplate>
+                                        <li>
+                                            <asp:HyperLink ID="hlPlacement" runat="server" NavigateUrl='<%# Eval("Url") %>' Text='<%# Eval("Name") %>' />
+                                        </li>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </div>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-md-12">
@@ -448,10 +461,7 @@
                         <Rock:HiddenFieldWithClass ID="hfHasRegistrations" runat="server" CssClass="js-has-registrations" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link js-delete-template" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
-                            <asp:LinkButton ID="btnPlacements" runat="server" CssClass="btn btn-default btn-sm btn-square" OnClick="btnPlacements_Click">
-                                <i class="fa fa-random"></i>
-                            </asp:LinkButton>
-                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square" Text="<i class='fa fa-clone'></i>" OnClick="btnCopy_Click" />
+                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square" Text="<i class='ti ti-copy'></i>" OnClick="btnCopy_Click" />
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
                         </span>
                     </div>
@@ -497,7 +507,7 @@
                     </div>
                     <div class="col-md-3">
                         <Rock:RockCheckBox ID="cbCommonValue" runat="server" Label="Common Value" Visible="false" ValidationGroup="Field"
-                            Help="When registering more than one person, should the value of this attribute default to the value entered for first person registered?" />
+                            Help="When multiple people are being registered, this option uses the value entered for the first person to automatically fill the same field for each additional registrant." />
                         <Rock:RockCheckBox ID="cbShowOnGrid" runat="server" Label="Show on Grid" Visible="false" ValidationGroup="Field"
                             Help="Should this value be displayed on the list of registrants? Note: Some person fields cannot be shown in grids, and group member attributes are only shown in group member lists." />
                     </div>
@@ -627,13 +637,13 @@
                                         </asp:Panel>
                                         <Rock:CurrencyBox ID="cbFeeItemCost" runat="server" CssClass="input-width-md margin-b-sm" Placeholder="Cost" ValidationGroup="Fee" NumberType="Currency" Required="false" />
                                         <Rock:NumberBox ID="nbMaximumUsageCount" runat="server" CssClass="input-width-md margin-b-sm" Placeholder="Max Available" ValidationGroup="Fee" Required="false" NumberType="Integer" />
-                                        <asp:LinkButton ID="btnDeleteFeeItem" runat="server" CssClass="btn btn-danger btn-sm btn-square margin-b-sm" OnClick="btnDeleteFeeItem_Click"><i class="fa fa-times"></i></asp:LinkButton>
+                                        <asp:LinkButton ID="btnDeleteFeeItem" runat="server" CssClass="btn btn-danger btn-sm btn-square margin-b-sm" OnClick="btnDeleteFeeItem_Click"><i class="ti ti-x"></i></asp:LinkButton>
                                     </div>
                                 </ItemTemplate>
                             </asp:Repeater>
 
                             <div class="actions">
-                                <asp:LinkButton ID="btnAddFeeItem" runat="server" CssClass="btn btn-action btn-sm btn-square" OnClick="btnAddFeeItem_Click"><i class="fa fa-plus-circle"></i></asp:LinkButton>
+                                <asp:LinkButton ID="btnAddFeeItem" runat="server" CssClass="btn btn-action btn-sm btn-square" OnClick="btnAddFeeItem_Click"><i class="ti ti-circle-plus"></i></asp:LinkButton>
                             </div>
                         </Rock:RockControlWrapper>
 

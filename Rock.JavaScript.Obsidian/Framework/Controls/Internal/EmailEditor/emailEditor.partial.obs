@@ -5,6 +5,7 @@
             <SidePanel v-if="ltr" v-model:selectedComponentElement="selectedComponentElement"
                        v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
                        :communicationTemplates="communicationTemplates"
+                       :communicationTemplatesHelp="communicationTemplatesHelp"
                        :emailDocument="emailDocument"
                        :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
                        :ltr="ltr"
@@ -40,6 +41,7 @@
             <SidePanel v-if="!ltr" v-model:selectedComponentElement="selectedComponentElement"
                        v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
                        :communicationTemplates="communicationTemplates"
+                       :communicationTemplatesHelp="communicationTemplatesHelp"
                        :emailDocument="emailDocument"
                        :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
                        :ltr="ltr"
@@ -120,6 +122,11 @@
             required: false
         },
 
+        communicationTemplatesHelp: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
         emailEditorCssClass: {
             type: String as PropType<string | null | undefined>
         },
@@ -186,6 +193,7 @@
 
     const emit = defineEmits<{
         (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
+        (e: "emailDocumentUpdated", document: Document): void;
     }>();
 
     defineExpose({
@@ -258,6 +266,7 @@
 
     function onEmailDocumentUpdated(document: Document): void {
         emailDocument.value = document;
+        emit("emailDocumentUpdated", document);
     }
 
     // #endregion Event Handlers

@@ -43,7 +43,7 @@ namespace Rock.Badge.Component
 {% if GroupType.IconCssClass and GroupType.IconCssClass != '' %}
   {% assign groupIcon = GroupType.IconCssClass %}
 {% else %}
-  {% assign groupIcon = 'fa fa-users' %}
+  {% assign groupIcon = 'ti ti-users' %}
 {% endif %}
 
 {% if DateRange and DateRange.Summary != '' %}

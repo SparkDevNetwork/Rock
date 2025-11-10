@@ -3,37 +3,37 @@
     <RockForm @submit="onFormSubmit">
         <div class="row">
             <AccountInfo
-                v-if="!config.isAccountInfoHidden"
-                v-model="internalAccountInfo"
-                v-model:isUsernameAvailable="internalIsUsernameAvailable"
-                class="col-md-6"
-                :config="config"
-                :disabled="disabled"
-                @checkUsernameAvailability="onCheckUsernameAvailability" />
+                         v-if="!config.isAccountInfoHidden"
+                         v-model="internalAccountInfo"
+                         v-model:isUsernameAvailable="internalIsUsernameAvailable"
+                         class="col-md-6"
+                         :config="config"
+                         :disabled="disabled"
+                         @checkUsernameAvailability="onCheckUsernameAvailability" />
 
             <PersonInfo
-                v-model="internalPersonInfo"
-                class="col-md-6"
-                :config="config"
-                :disabled="disabled"
-                :isMobile="isMobile" />
-            </div>
+                        v-model="internalPersonInfo"
+                        class="col-md-6"
+                        :config="config"
+                        :disabled="disabled"
+                        :isMobile="isMobile" />
+        </div>
 
         <slot name="captcha" />
 
         <div class="row">
             <div class="col-md-12">
                 <RockButton
-                    :btnType="BtnType.Primary"
-                    :disabled="disabled"
-                    type="submit">Next</RockButton>
+                            :btnType="BtnType.Primary"
+                            :disabled="disabled"
+                            type="submit">Next</RockButton>
             </div>
         </div>
     </RockForm>
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, ref } from "vue";
+    import { computed, PropType } from "vue";
     import { useBreakpoint } from "../types.partial";
     import AccountInfo from "./registrationStepAccountInfo.partial.obs";
     import PersonInfo from "./registrationStepPersonInfo.partial.obs";
@@ -46,7 +46,6 @@
     import { AccountEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryInitializationBox";
     import { AccountEntryPersonInfoBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPersonInfoBag";
     import { AccountEntryRegisterRequestBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryRegisterRequestBox";
-    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 
     const breakpoint = useBreakpoint();
 

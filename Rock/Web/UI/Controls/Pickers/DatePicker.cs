@@ -164,7 +164,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
             this.AddCssClass( "input-width-md js-date-picker date" );
-            this.AppendText = "<i class='fa fa-calendar'></i>";
+            this.AppendText = "<i class='ti ti-calendar'></i>";
 
             if ( string.IsNullOrWhiteSpace( this.SourceTypeName ) )
             {

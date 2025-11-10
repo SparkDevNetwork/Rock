@@ -11,7 +11,7 @@
                     <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
                     <asp:PlaceHolder runat="server">
                         <div class="wizard-item-icon">
-                            <i class="fa fa-fw fa-clipboard"></i>
+                            <i class="ti ti-fw ti-clipboard"></i>
                         </div>
                         <div class="wizard-item-label">
                             <asp:Literal ID="lWizardTemplateName" runat="server" Text="Template" />
@@ -24,7 +24,7 @@
                 <asp:LinkButton ID="lbWizardInstance" runat="server" OnClick="lbWizardInstance_Click" CausesValidation="false">
                     <asp:PlaceHolder runat="server">
                         <div class="wizard-item-icon">
-                            <i class="fa fa-fw fa-file-o"></i>
+                            <i class="ti ti-fw ti-file"></i>
                         </div>
                         <div class="wizard-item-label">
                             <asp:Literal ID="lWizardInstanceName" runat="server" Text="Instance" />
@@ -35,7 +35,7 @@
 
             <div class="wizard-item active">
                 <div class="wizard-item-icon">
-                    <i class="fa fa-fw fa-group"></i>
+                    <i class="ti ti-fw ti-users"></i>
                 </div>
                 <div class="wizard-item-label">
                     <asp:Literal ID="lWizardRegistrationName" runat="server" Text="Registration" />
@@ -44,7 +44,7 @@
 
             <div class="wizard-item">
                 <div class="wizard-item-icon">
-                    <i class="fa fa-fw fa-user"></i>
+                    <i class="ti ti-fw ti-user"></i>
                 </div>
                 <div class="wizard-item-label">
                     Registrant
@@ -319,8 +319,8 @@
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link js-delete-registration" OnClick="btnDelete_Click" CausesValidation="false" />
 
                             <div class="pull-right">
-                                <asp:LinkButton ID="lbHistory" runat="server" CssClass="btn btn-default btn-sm" CausesValidation="false" ToolTip="View Audit Log" OnClick="lbHistory_Click"><i class="fa fa-file-text-o"></i> Audit Log</asp:LinkButton>
-                                <asp:LinkButton ID="lbShowMoveRegistrationDialog" runat="server" CssClass="btn btn-default btn-sm btn-square margin-l-sm" ToolTip="Move Registration" CausesValidation="false" OnClick="lbShowMoveRegistrationDialog_Click"><i class="fa fa-external-link"></i></asp:LinkButton>
+                                <asp:LinkButton ID="lbHistory" runat="server" CssClass="btn btn-default btn-sm" CausesValidation="false" ToolTip="View Audit Log" OnClick="lbHistory_Click"><i class="ti ti-file-type-txt"></i> Audit Log</asp:LinkButton>
+                                <asp:LinkButton ID="lbShowMoveRegistrationDialog" runat="server" CssClass="btn btn-default btn-sm btn-square margin-l-sm" ToolTip="Move Registration" CausesValidation="false" OnClick="lbShowMoveRegistrationDialog_Click"><i class="ti ti-external-link"></i></asp:LinkButton>
                             </div>
 
                         </div>
@@ -334,7 +334,7 @@
 
             <div class="row">
                 <div class="col-md-12">
-                    <asp:LinkButton ID="lbAddRegistrant" runat="server" CssClass="btn btn-default btn-xs pull-right margin-b-sm" OnClick="lbAddRegistrant_Click"><i class="fa fa-plus"></i> Add New Registrant</asp:LinkButton>
+                    <asp:LinkButton ID="lbAddRegistrant" runat="server" CssClass="btn btn-default btn-xs pull-right margin-b-sm" OnClick="lbAddRegistrant_Click"><i class="ti ti-plus"></i> Add New Registrant</asp:LinkButton>
                 </div>
             </div>
 

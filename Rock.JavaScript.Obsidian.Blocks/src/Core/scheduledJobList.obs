@@ -121,7 +121,7 @@
                         @click.prevent="onShowHistory(row, $event)"
                         class="btn btn-sm"
                         title="History">
-                    <i class="fa fa-history"></i>
+                    <i class="ti ti-history"></i>
                 </button>
             </template>
         </Column>
@@ -136,7 +136,7 @@
                         @click.prevent="onRunNowClick(row, $event)"
                         class="btn btn-default btn-sm"
                         title="Run Now">
-                    <i class="fa fa-play"></i>
+                    <i class="ti ti-player-play"></i>
                 </button>
             </template>
         </Column>
@@ -148,10 +148,6 @@
 <style>
 .no-x-padding {
     padding: var(--table-cell-padding-y) 0 !important;
-}
-
-.title-right .grid-column-title {
-    text-align: right;
 }
 
 .title-center .grid-column-title {
@@ -175,7 +171,7 @@
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { ServiceJob } from "@Obsidian/SystemGuids/serviceJob";
-    import Grid, { BooleanColumn, dateValueFilter, TextColumn, textValueFilter, pickExistingValueFilter, booleanValueFilter, DeleteColumn, DateTimeColumn, Column } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, dateValueFilter, TextColumn, textValueFilter, pickExistingValueFilter, booleanValueFilter, DeleteColumn, Column } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ScheduledJobListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduledJobList/scheduledJobListOptionsBag";

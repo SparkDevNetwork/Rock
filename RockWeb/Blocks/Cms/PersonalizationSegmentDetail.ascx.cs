@@ -16,6 +16,7 @@
 //
 using System;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -80,6 +81,18 @@ namespace RockWeb.Blocks.Cms
 
         private Rock.Personalization.PersonalizationSegmentAdditionalFilterConfiguration AdditionalFilterConfiguration { get; set; }
 
+        private enum PersistenceType
+        {
+            Interval = 0,
+            Schedule = 1
+        }
+
+        private enum PersistedScheduleType
+        {
+            Unique = 0,
+            NamedSchedule = 1
+        }
+
         #region Base Control Methods
 
         /// <summary>
@@ -129,6 +142,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( !Page.IsPostBack )
             {
+                LoadNamedScheduleDropdown();
                 ShowDetail( PageParameter( PageParameterKey.PersonalizationSegmentId ) );
             }
 
@@ -161,6 +175,29 @@ namespace RockWeb.Blocks.Cms
         #endregion Base Control Methods
 
         #region Methods
+
+        /// <summary>
+        /// Loads the named schedule dropdown.
+        /// </summary
+        private void LoadNamedScheduleDropdown()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var personalizationSegmentScheduleCategoryId = CategoryCache.GetId( Rock.SystemGuid.Category.SCHEDULE_PERSONALIZATION_SEGMENTS.AsGuid() ).Value;
+
+                var persistedNamedSchedules = new ScheduleService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( s => s.CategoryId == personalizationSegmentScheduleCategoryId && s.Name != string.Empty )
+                    .OrderBy( s => s.Name )
+                    .ToList();
+
+                ddlNamedSchedule.Items.Clear();
+                foreach ( var schedule in persistedNamedSchedules )
+                {
+                    ddlNamedSchedule.Items.Add( new ListItem( schedule.Name, schedule.Id.ToString() ) );
+                }
+            }
+        }
 
         /// <summary>
         /// Shows the detail.
@@ -232,6 +269,165 @@ namespace RockWeb.Blocks.Cms
             // Interaction Filters
             tglInteractionFiltersAllAny.Checked = AdditionalFilterConfiguration.InteractionFilterExpressionType == FilterExpressionType.GroupAll;
             BindInteractionFiltersGrid();
+
+            // Persistence Schedule
+            if ( personalizationSegment.PersistedScheduleIntervalMinutes.HasValue )
+            {
+                // Show interval-based persistence
+                rblPersistenceType.SelectedValue = ( ( int ) PersistenceType.Interval ).ToString();
+                SetScheduleVisibility( false );
+                SetIntervalVisibility( true );
+                ipPersistedScheduleInterval.IntervalInMinutes = personalizationSegment.PersistedScheduleIntervalMinutes;
+            }
+            else if ( personalizationSegment.PersistedScheduleId.HasValue )
+            {
+                // Show schedule-based persistence
+                rblPersistenceType.SelectedValue = ( ( int ) PersistenceType.Schedule ).ToString();
+                SetIntervalVisibility( false );
+                SetScheduleVisibility( true );
+                var schedule = new ScheduleService( rockContext ).Get( personalizationSegment.PersistedScheduleId.Value );
+                if ( schedule != null )
+                {
+                    if ( schedule.Name.IsNotNullOrWhiteSpace() )
+                    {
+                        rblPersistenceSchedule.SelectedValue = ( ( int ) PersistedScheduleType.NamedSchedule ).ToString();
+                        ddlNamedSchedule.SetValue( schedule.Id );
+                        sbUniqueSchedule.Visible = false;
+                    }
+                    else
+                    {
+                        rblPersistenceSchedule.SelectedValue = ( ( int ) PersistedScheduleType.Unique ).ToString();
+                        sbUniqueSchedule.iCalendarContent = schedule.iCalendarContent;
+                        ddlNamedSchedule.Visible = false;
+                    }
+                }
+
+                SetPersistenceScheduleType();
+            }
+            else
+            {
+                // Default for new segment -- set to interval-based persistence (every 24 hours)
+                rblPersistenceType.SelectedValue = ( ( int ) PersistenceType.Interval ).ToString();
+                SetScheduleVisibility( false );
+                SetIntervalVisibility( true );
+                ipPersistedScheduleInterval.IntervalInMinutes = 1440;
+
+                rblPersistenceSchedule.SelectedValue = ( ( int ) PersistedScheduleType.NamedSchedule ).ToString();
+                ddlNamedSchedule.SetValue( (int?)null );
+                ddlNamedSchedule.Visible = true;
+                sbUniqueSchedule.iCalendarContent = string.Empty;
+                sbUniqueSchedule.Visible = false;
+            }
+
+            hlblPersisted.Visible = personalizationSegment.PersistedLastRefreshDateTime.HasValue;
+            if ( hlblPersisted.Visible )
+            {
+                hlblPersisted.Text = string.Format( "Persisted {0}", personalizationSegment.PersistedLastRefreshDateTime.ToElapsedString() );
+                hlblPersisted.ToolTip = personalizationSegment.PersistedLastRefreshDateTime.Value.ToShortDateTimeString();
+            }
+
+            hlTimeToRun.Visible = personalizationSegment.PersistedLastRunDurationMilliseconds.HasValue;
+            if ( hlTimeToRun.Visible )
+            {
+                double labelValue = personalizationSegment.PersistedLastRunDurationMilliseconds.Value;
+                var labelUnit = "ms";
+                var labelType = LabelType.Success;
+                if ( labelValue > 1000 )
+                {
+                    labelValue = labelValue / 1000;
+                    labelUnit = "s";
+                    if ( labelValue > 10 )
+                    {
+                        labelType = LabelType.Warning;
+                    }
+                }
+                if ( labelValue > 60 && labelUnit == "s" )
+                {
+                    labelValue = labelValue / 60;
+                    labelUnit = "m";
+                    if ( labelValue > 1 )
+                    {
+                        labelType = LabelType.Danger;
+                    }
+                }
+                hlTimeToRun.LabelType = labelType;
+                var isValueAWholeNumber = Math.Abs( labelValue % 1 ) < 0.01;
+                if ( isValueAWholeNumber )
+                {
+                    hlTimeToRun.Text = string.Format( "Time To Persist: {0:0}{1}", labelValue, labelUnit );
+                }
+                else
+                {
+                    hlTimeToRun.Text = string.Format( "Time To Persist: {0:0.0}{1}", labelValue, labelUnit );
+                }
+            }
+        }
+
+        private void SetIntervalVisibility( bool isVisible )
+        {
+            pnlScheduleIntervalControls.Visible = isVisible;
+        }
+
+        private void SetScheduleVisibility( bool isVisible )
+        {
+            divPersistenceSchedule.Visible = isVisible;
+            divScheduleSelect.Visible = isVisible;
+            ddlNamedSchedule.Visible = isVisible && rblPersistenceSchedule.SelectedValue == ( ( int ) PersistedScheduleType.NamedSchedule ).ToString();
+            sbUniqueSchedule.Visible = isVisible && rblPersistenceSchedule.SelectedValue == ( ( int ) PersistedScheduleType.Unique ).ToString();
+        }
+
+        protected void rblPersistenceType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            if ( rblPersistenceType.SelectedValue == ( ( int ) PersistenceType.Interval ).ToString() )
+            {
+                SetScheduleVisibility( false );
+                SetIntervalVisibility( true );
+            }
+            else
+            {
+                SetIntervalVisibility( false );
+                SetScheduleVisibility( true );
+                if ( string.IsNullOrWhiteSpace( rblPersistenceSchedule.SelectedValue ) )
+                {
+                    rblPersistenceSchedule.SelectedValue = ( ( int ) PersistedScheduleType.NamedSchedule ).ToString();
+                }
+                SetPersistenceScheduleType();
+            }
+        }
+
+        protected void rblPersistenceSchedule_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SetPersistenceScheduleType();
+        }
+
+        private void SetPersistenceScheduleType()
+        {
+            if ( rblPersistenceSchedule.SelectedValueAsEnumOrNull<PersistedScheduleType>() == PersistedScheduleType.Unique )
+            {
+                ddlNamedSchedule.Visible = false;
+                sbUniqueSchedule.Visible = true;
+                ddlNamedSchedule.Required = false;
+            }
+            else
+            {
+                sbUniqueSchedule.Visible = false;
+                ddlNamedSchedule.Visible = true;
+                ddlNamedSchedule.Required = true;
+            }
+        }
+
+        private bool HasNamedSchedule()
+        {
+            return rblPersistenceType.SelectedValue == ( ( int ) PersistenceType.Schedule ).ToString() &&
+                   rblPersistenceSchedule.SelectedValue == ( ( int ) PersistedScheduleType.NamedSchedule ).ToString() &&
+                   ddlNamedSchedule.SelectedValue.IsNotNullOrWhiteSpace();
+        }
+
+        private bool HasUniqueSchedule()
+        {
+            return rblPersistenceType.SelectedValue == ( ( int ) PersistenceType.Schedule ).ToString() &&
+                   rblPersistenceSchedule.SelectedValue == ( ( int ) PersistedScheduleType.Unique ).ToString() &&
+                   sbUniqueSchedule.iCalendarContent.IsNotNullOrWhiteSpace();
         }
 
         #endregion Methods
@@ -255,12 +451,16 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            var rockContext = new RockContext();
+            var personalizationSegmentService = new PersonalizationSegmentService( rockContext );
+
             var personalizationSegmentId = hfPersonalizationSegmentId.Value.AsInteger();
 
             // validate if request filter key unique
-            var isKeyDuplicate = PersonalizationSegmentCache.All()
-                .Where( ps => ps.Id != personalizationSegmentId && ps.SegmentKey == tbSegmentKey.Text )
-                .Any();
+            var isKeyDuplicate = personalizationSegmentService
+                .Queryable()
+                .Any( a => a.Id != personalizationSegmentId && a.SegmentKey == tbSegmentKey.Text );
+
             if ( isKeyDuplicate )
             {
                 nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
@@ -268,9 +468,6 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
 
-            var rockContext = new RockContext();
-
-            var personalizationSegmentService = new PersonalizationSegmentService( rockContext );
             PersonalizationSegment personalizationSegment;
 
             if ( personalizationSegmentId == 0 )
@@ -286,7 +483,8 @@ namespace RockWeb.Blocks.Cms
 
             if ( personalizationSegment == null )
             {
-                return;
+                nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbWarningMessage.Text = "Personalization Segment could not be found.";
             }
 
             bool isSegmentDefinitionChanged = (
@@ -338,10 +536,113 @@ namespace RockWeb.Blocks.Cms
             personalizationSegment.Categories.Clear();
             foreach ( var categoryId in cpCategories.SelectedValuesAsInt() )
             {
-                personalizationSegment.Categories.Add( categoryService.Get( categoryId ) );
+                var category = categoryService.Get( categoryId );
+                if ( category != null )
+                {
+                    personalizationSegment.Categories.Add( category );
+                }
+            }
+
+            var oldPersistenceScheduleId = personalizationSegment.PersistedScheduleId;
+            var personalizationSegmentScheduleCategoryId = CategoryCache.GetId( Rock.SystemGuid.Category.SCHEDULE_PERSONALIZATION_SEGMENTS.AsGuid() ).Value;
+
+            personalizationSegment.PersistedScheduleIntervalMinutes = null;
+            personalizationSegment.PersistedScheduleId = null;
+
+            bool isPersistenceTypeSchedule = rblPersistenceType.SelectedValue == ( ( int ) PersistenceType.Schedule ).ToString();
+
+            if ( !isPersistenceTypeSchedule )
+            {
+                // Save interval-based persistence to the model
+                personalizationSegment.PersistedScheduleIntervalMinutes = ipPersistedScheduleInterval.IntervalInMinutes;
+            }
+            else
+            {
+                var scheduleService = new ScheduleService( rockContext );
+                Schedule schedule = null;
+
+                bool isNamedSchedule = HasNamedSchedule();
+                bool isUniqueSchedule = HasUniqueSchedule();
+
+                if ( isNamedSchedule )
+                {
+                    var selectedScheduleId = ddlNamedSchedule.SelectedValueAsId();
+                    if ( selectedScheduleId.HasValue )
+                    {
+                        schedule = scheduleService.Get( selectedScheduleId.Value );
+                    }
+                }
+                else if ( isUniqueSchedule )
+                {
+                    // Use an existing unique (nameless) schedule if it exists
+                    if ( personalizationSegment.PersistedScheduleId.HasValue )
+                    {
+                        var existingSchedule = scheduleService.Get( personalizationSegment.PersistedScheduleId.Value );
+                        if ( existingSchedule != null && existingSchedule.Name.IsNullOrWhiteSpace() )
+                        {
+                            schedule = existingSchedule;
+                        }
+                    }
+
+                    if ( schedule == null )
+                    {
+                        var scheduleCategory = personalizationSegmentScheduleCategoryId;
+
+                        schedule = new Schedule
+                        {
+                            Name = string.Empty,
+                            CategoryId = scheduleCategory
+                        };
+                    }
+
+                    schedule.iCalendarContent = sbUniqueSchedule.iCalendarContent;
+
+                    if ( !schedule.HasSchedule() )
+                    {
+                        // Don't save as an unnamed unique schedule if the schedule doesn't do anything
+                        schedule = null;
+                    }
+                    else if ( schedule.Id == 0 )
+                    {
+                        scheduleService.Add( schedule );
+                        rockContext.SaveChanges();
+                    }
+                }
+
+                if ( schedule != null )
+                {
+                    personalizationSegment.PersistedScheduleId = schedule.Id;
+                }
             }
 
             rockContext.SaveChanges();
+
+            /*
+                 7/17/2025 - MSE
+
+                 Cleanup logic to remove unused unique (nameless) Schedules when a Personalization Segment's
+                 persistence type is changed from a unique Schedule to either a named Schedule or the "Interval" persistence type. 
+                 This ensures the old unique Schedule is removed from the database if it's no longer referenced.
+
+                 Reason: Prevent accumulation of orphaned schedules associated with Personalization Segments.
+            */
+            if ( oldPersistenceScheduleId.HasValue && oldPersistenceScheduleId != personalizationSegment.PersistedScheduleId )
+            {
+                var scheduleService = new ScheduleService( rockContext );
+                var oldSchedule = scheduleService.Get( oldPersistenceScheduleId.Value );
+                if ( oldSchedule != null &&
+                     oldSchedule.Name.IsNullOrWhiteSpace() && // Unique (nameless) schedule
+                     oldSchedule.CategoryId == personalizationSegmentScheduleCategoryId )
+                {
+                    var referenceCount = personalizationSegmentService.Queryable()
+                        .Count( ps => ps.PersistedScheduleId == oldPersistenceScheduleId );
+                    if ( referenceCount == 0 )
+                    {
+                        scheduleService.Delete( oldSchedule );
+                        rockContext.SaveChanges();
+                    }
+                }
+            }
 
             NavigateToParentPage();
         }

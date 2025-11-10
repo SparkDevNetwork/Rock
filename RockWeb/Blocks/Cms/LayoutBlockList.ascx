@@ -6,7 +6,7 @@
             <asp:HiddenField runat="server" ID="hfLayoutId" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-square"></i> Layout Block List</h1>
+                <h1 class="panel-title"><i class="ti ti-square"></i> Layout Block List</h1>
             </div>
             <div class="panel-body">
                 <div id="pnlBlocks" runat="server">

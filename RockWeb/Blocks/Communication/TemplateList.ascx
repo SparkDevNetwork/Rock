@@ -7,7 +7,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-comment-o"></i>&nbsp;Communication Template List</h1>
+                <h1 class="panel-title"><i class="ti ti-message"></i>&nbsp;Communication Template List</h1>
             </div>
             <div class="panel-body">
 
@@ -37,7 +37,7 @@
                             <Rock:RockBoundField DataField="Version" SortExpression="Version" HeaderText="Version" />
                             <Rock:BoolField DataField="IsActive" SortExpression="IsActive" HeaderText="Active" />
                             <Rock:SecurityField TitleField="Name" />
-                            <Rock:LinkButtonField HeaderText="Copy" CssClass="btn btn-default btn-sm btn-square" Text="<i class='fa fa-clone'></i>" OnClick="gCommunicationTemplates_Copy" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
+                            <Rock:LinkButtonField HeaderText="Copy" CssClass="btn btn-default btn-sm btn-square" Text="<i class='ti ti-copy'></i>" OnClick="gCommunicationTemplates_Copy" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                             <Rock:DeleteField OnClick="gCommunicationTemplates_Delete" />
                         </Columns>
                     </Rock:Grid>

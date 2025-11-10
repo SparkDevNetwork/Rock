@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,7 +36,7 @@ namespace Rock.Blocks.Bus
     [DisplayName( "Queue List" )]
     [Category( "Bus" )]
     [Description( "Displays the details of bus queues." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,12 +19,10 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Web.UI;
 
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
 {
@@ -34,8 +32,8 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people that are associated with a specific campus." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Campus Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "D976C41F-226F-4051-9CA3-C661C938B064")]
-    public class CampusFilter : DataFilterComponent, IUpdateSelectionFromPageParameters
+    [Rock.SystemGuid.EntityTypeGuid( "D976C41F-226F-4051-9CA3-C661C938B064" )]
+    public class CampusFilter : BaseCampusFilter, IUpdateSelectionFromRockRequestContext
     {
         #region Properties
 
@@ -77,28 +75,6 @@ namespace Rock.Reporting.DataFilter.Person
             }
         }
 
-        /// <summary>
-        /// Gets the control class name.
-        /// </summary>
-        /// <value>
-        /// The name of the control class.
-        /// </value>
-        internal virtual string ControlClassName
-        {
-            get { return "js-campus-picker"; }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether to include inactive campuses.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [include inactive]; otherwise, <c>false</c>.
-        /// </value>
-        internal virtual bool IncludeInactive
-        {
-            get { return true; }
-        }
-
         #endregion
 
         #region Public Methods
@@ -131,7 +107,6 @@ namespace Rock.Reporting.DataFilter.Person
 function() {{
     var campusPicker = $('.{this.ControlClassName}', $content);
     var campusName = $(':selected', campusPicker).text();
-
     return 'Campus: ' + campusName;
 }}";
         }
@@ -161,94 +136,21 @@ function() {{
         }
 
         /// <summary>
-        /// Creates the child controls.
-        /// </summary>
-        /// <returns></returns>
-        public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
-        {
-            CampusPicker campusPicker = new CampusPicker();
-            campusPicker.ID = filterControl.ID + "_0";
-            campusPicker.Label = string.Empty;
-            campusPicker.CssClass = $"{ControlClassName}";
-            campusPicker.Campuses = CampusCache.All( IncludeInactive );
-
-            filterControl.Controls.Add( campusPicker );
-
-            return new Control[] { campusPicker };
-        }
-
-        /// <summary>
-        /// Renders the controls.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="filterControl">The filter control.</param>
-        /// <param name="writer">The writer.</param>
-        /// <param name="controls">The controls.</param>
-        public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
-        {
-            base.RenderControls( entityType, filterControl, writer, controls );
-        }
-
-        /// <summary>
-        /// Gets the selection.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override string GetSelection( Type entityType, Control[] controls )
-        {
-            var campusId = ( controls[0] as CampusPicker ).SelectedCampusId;
-            if ( campusId.HasValue )
-            {
-                var campus = CampusCache.Get( campusId.Value );
-                if ( campus != null )
-                {
-                    return campus.Guid.ToString();
-                }
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Sets the selection.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="controls">The controls.</param>
-        /// <param name="selection">The selection.</param>
-        public override void SetSelection( Type entityType, Control[] controls, string selection )
-        {
-            string[] selectionValues = selection.Split( '|' );
-            if ( selectionValues.Length >= 1 )
-            {
-                var campusPicker = controls[0] as CampusPicker;
-                var selectedCampus = CampusCache.Get( selectionValues[0].AsGuid() );
-                if ( selectedCampus != null )
-                {
-                    campusPicker.SelectedCampusId = selectedCampus.Id;
-                }
-                else
-                {
-                    campusPicker.SelectedCampusId = null;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Updates the selection from page parameters.
+        /// Updates the selection from parameters on the request.
         /// </summary>
         /// <param name="selection">The selection.</param>
-        /// <param name="rockBlock">The rock block.</param>
+        /// <param name="requestContext">The rock request context.</param>
+        /// <param name="rockContext">The rock database context.</param>
         /// <returns></returns>
-        public string UpdateSelectionFromPageParameters( string selection, Rock.Web.UI.RockBlock rockBlock )
+        public string UpdateSelectionFromRockRequestContext( string selection, Rock.Net.RockRequestContext requestContext, RockContext rockContext )
         {
             string[] selectionValues = selection?.Split( '|' ) ?? new string[] { "" };
             if ( selectionValues.Length >= 1 )
             {
-                var campusId = rockBlock.PageParameter( "CampusId" ).AsIntegerOrNull();
+                var campusId = requestContext.GetPageParameter( "CampusId" ).AsIntegerOrNull();
                 if ( campusId == null )
                 {
-                    var campusEntity = rockBlock.ContextEntity<Campus>();
+                    var campusEntity = requestContext.GetContextEntity<Campus>();
                     if ( campusEntity != null )
                     {
                         campusId = campusEntity.Id;
@@ -279,7 +181,7 @@ function() {{
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            var rockContext = (RockContext)serviceInstance.Context;
+            var rockContext = ( RockContext ) serviceInstance.Context;
 
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )

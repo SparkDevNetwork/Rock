@@ -1,0 +1,151 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="chartData" class="communication-detail-top-clients">
+        <Chart type="bar"
+               :data="chartData"
+               :options="chartOptions" />
+    </div>
+</template>
+
+<style scoped>
+.communication-detail-top-clients {
+    height: 100%;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { useChartStyles } from "./utils.partial";
+    import Chart from "@Obsidian/Controls/chart.obs";
+    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
+
+    const chartStyles = useChartStyles();
+
+    const props = defineProps({
+        chartDataPoints: {
+            type: Array as PropType<ChartNumericDataPointBag[] | null | undefined>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    const dataPoints = computed((): ChartNumericDataPointBag[] => {
+        return props.chartDataPoints
+            ?.filter(dp =>
+                dp?.seriesName
+                && dp.label
+                && !isNullish(dp.value)
+                && dp.color
+            )
+            ?? [];
+    });
+
+    const chartData = computed((): ChartData | null => {
+        if (!dataPoints.value.length) {
+            return null;
+        }
+
+        const labels: string[] = [];
+        const data: number[] = [];
+        const backgroundColor: string[] = [];
+
+        dataPoints.value.forEach(dp => {
+            labels.push(dp.label!);
+            data.push(dp.value!);
+            backgroundColor.push(
+                getCssVariableValue(dp.color!, chartStyles.value.fallbackColor)
+            );
+        });
+
+        return {
+            labels,
+            datasets: [{
+                label: dataPoints.value[0].seriesName!,
+                data,
+                backgroundColor
+            }]
+        };
+    });
+
+    const maxPercentage = computed((): number => {
+        if (!dataPoints.value.length) {
+            return 0;
+        }
+
+        return Math.max(
+            ...dataPoints.value
+                .map((dp => dp.value!))
+        );
+    });
+
+    const yStepSize = computed((): number => {
+        return maxPercentage.value > 50
+            ? 10
+            : 5;
+    });
+
+    const yMax = computed((): number => {
+        return maxPercentage.value > 50
+            ? Math.ceil(maxPercentage.value / 10) * 10 // Up to the nearest 10.
+            : 50;
+    });
+
+    const chartOptions = computed((): ChartOptions => {
+        return {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        boxWidth: 0,
+                        font: {
+                            family: chartStyles.value.fontFamily,
+                            size: chartStyles.value.fontSize,
+                            weight: chartStyles.value.fontWeight
+                        },
+                        color: chartStyles.value.fontColor
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: context => {
+                            const value = context.parsed.y;
+                            return `${value}%`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        drawOnChartArea: false
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    max: yMax.value,
+                    title: {
+                        display: true,
+                        text: "Percent",
+                        font: {
+                            family: chartStyles.value.fontFamily,
+                            size: chartStyles.value.fontSize,
+                            weight: chartStyles.value.fontWeight
+                        },
+                        color: chartStyles.value.fontColor
+                    },
+                    ticks: {
+                        stepSize: yStepSize.value,
+                        callback: v => `${v}%`
+                    }
+                }
+            }
+        };
+    });
+
+    // #endregion Computed Values
+</script>

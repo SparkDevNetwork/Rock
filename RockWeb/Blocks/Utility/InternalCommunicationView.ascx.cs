@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Utility
     [Category( "Utility" )]
     [Description( "Block for showing the contents of internal content channels." )]
     [CodeEditorField( "Block Title Template", "Lava template for determining the title of the block.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, true, "Staff Updates <small>({{ Item.StartDateTime | Date:'sd' }})</small>", order: 0 )]
-    [TextField( "Block Title Icon CSS Class", "The icon CSS class for use in the block title.", false, "fa fa-newspaper", order: 1, key: "BlockTitleIconCssClass" )]
+    [TextField( "Block Title Icon CSS Class", "The icon CSS class for use in the block title.", false, "ti ti-news", order: 1, key: "BlockTitleIconCssClass" )]
     [ContentChannelField( "Content Channel", "The content channel to display with the template. The contant channel must be of type 'Internal Communication Template'.", true, "", order: 2 )]
     [MetricCategoriesField( "Metrics", "Select the metrics you would like to display on the page.", false, "", order: 3 )]
     [IntegerField( "Metric Value Count", "The number of metric values to return per metric. You will always get the lastest value, but if you would like to return additional values (i.e. to create a chart) you can specify that here.", false, 0, order: 4 )]

@@ -38,9 +38,10 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Layout Block List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of blocks." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "9cf1aa10-24e4-4530-a345-57da4cfe9595" )]
     [Rock.SystemGuid.BlockTypeGuid( "ea8be085-d420-4d1b-a538-2c0d4d116e0a" )]
     [CustomizedGrid]
@@ -80,7 +81,11 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override IQueryable<Block> GetListQueryable( RockContext rockContext )
         {
-            if ( int.TryParse( RequestContext.PageParameters["layoutId"], out int layoutId ) )
+            int layoutId;
+            if (
+                int.TryParse( RequestContext.PageParameters["layoutId"], out layoutId )
+                || Rock.Utility.IdHasher.Instance.TryGetId( RequestContext.PageParameters["layoutId"], out layoutId )
+            )
             {
                 return base.GetListQueryable( rockContext )
                     .Include( a => a.BlockType )

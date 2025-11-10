@@ -32,7 +32,7 @@ namespace Rock.Blocks.Reporting
     [DisplayName( "Interaction Component Detail" )]
     [Category( "Reporting" )]
     [Description( "Presents the details of a interaction channel using Lava" )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

@@ -66,7 +66,7 @@ class ProxyClientWebSocket : ProxyWebSocket
         }
         else if ( message is CloudPrintMessagePrint printMessage )
         {
-            _status.AddLabel();
+            _status.AddLabels( printMessage.Count > 0 ? printMessage.Count : 1 );
 
             var printResult = await SendPrintDataAsync( printMessage.Address, extraData, cancellationToken );
 

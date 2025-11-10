@@ -89,7 +89,7 @@
                             <div>
                                 <a href="#" class="btn btn-default btn-lg btn-keypad command clear">Clear</a>
                                 <a href="#" class="btn btn-default btn-lg btn-keypad digit">0</a>
-                                <a href="#" class="btn btn-default btn-lg btn-keypad command back"><i class="fas fa-backspace"></i></a>
+                                <a href="#" class="btn btn-default btn-lg btn-keypad command back"><i class="ti ti-backspace"></i></a>
                             </div>
                         </div>
                     </asp:Panel>

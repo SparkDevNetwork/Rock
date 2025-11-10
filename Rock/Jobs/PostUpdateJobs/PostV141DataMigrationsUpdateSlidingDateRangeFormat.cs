@@ -14,11 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Attribute;
 using System.ComponentModel;
+using System.Linq;
+
+using Microsoft.EntityFrameworkCore;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using System.Linq;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -80,7 +83,7 @@ namespace Rock.Jobs
 
             var fieldType = FieldTypeCache.Get( Rock.SystemGuid.FieldType.SLIDING_DATE_RANGE.AsGuid() );
             var batchSizeQueryContext = new RockContext();
-            batchSizeQueryContext.Database.CommandTimeout = commandTimeout;
+            batchSizeQueryContext.Database.SetCommandTimeout( commandTimeout );
             totalBatchSize = new AttributeValueService( batchSizeQueryContext )
                 .Queryable()
                 .Where( a => a.Attribute.FieldTypeId == fieldType.Id )
@@ -93,7 +96,7 @@ namespace Rock.Jobs
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    rockContext.Database.CommandTimeout = commandTimeout;
+                    rockContext.Database.SetCommandTimeout( commandTimeout );
                     var attributes = new AttributeValueService( rockContext )
                         .Queryable()
                         .Where( a => a.Attribute.FieldTypeId == fieldType.Id && a.Id > lastProcessedAttributeId )

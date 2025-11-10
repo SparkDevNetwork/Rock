@@ -283,7 +283,7 @@ btnCopyToClipboard.ClientID );
         protected override void OnPreRender( EventArgs e )
         {
             bool advancedOptionsVisible = hfAdvancedVisible.Value.AsBoolean();
-            lblAdvancedOptions.Text = string.Format( "Advanced Options <i class='fa fa-caret-{0}'></i>", advancedOptionsVisible ? "up" : "down" );
+            lblAdvancedOptions.Text = string.Format( "Advanced Options <i class='ti ti-caret-{0}'></i>", advancedOptionsVisible ? "up" : "down" );
             divAdvancedSettings.Style["display"] = advancedOptionsVisible ? "block" : "none";
 
             base.OnPreRender( e );
@@ -366,13 +366,13 @@ btnCopyToClipboard.ClientID );
             if ( pnlChartAmountGrid.Visible )
             {
                 pnlChartAmountGrid.Visible = false;
-                lShowChartAmountGrid.Text = "Show Data <i class='fa fa-chevron-down'></i>";
+                lShowChartAmountGrid.Text = "Show Data <i class='ti ti-chevron-down'></i>";
                 lShowChartAmountGrid.ToolTip = "Show Data";
             }
             else
             {
                 pnlChartAmountGrid.Visible = true;
-                lShowChartAmountGrid.Text = "Hide Data <i class='fa fa-chevron-up'></i>";
+                lShowChartAmountGrid.Text = "Hide Data <i class='ti ti-chevron-up'></i>";
                 lShowChartAmountGrid.ToolTip = "Hide Data";
                 BindChartAmountGrid( GetGivingChartData() );
             }

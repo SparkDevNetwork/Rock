@@ -35,7 +35,7 @@ namespace Rock.Blocks.Bus
     [DisplayName( "Queue Detail" )]
     [Category( "Bus" )]
     [Description( "Displays the details of a queue detail." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

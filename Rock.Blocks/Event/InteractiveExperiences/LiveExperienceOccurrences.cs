@@ -38,7 +38,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     [DisplayName( "Live Experience Occurrences" )]
     [Category( "Event > Interactive Experiences" )]
     [Description( "Displays a list of interactive experience occurrences for the individual to pick from." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -115,7 +115,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     <a class=""d-flex rounded overflow-hidden mb-2 align-items-stretch border border-gray-400 bg-white"" href=""{{ occurrence.PageUrl | Escape }}"">
         <div class=""p-2 d-flex align-items-center align-self-stretch bg-info text-white"">
             <span>
-                <i class=""fa fa-calendar-alt""></i>
+                <i class=""ti ti-calendar-month""></i>
             </span>
         </div>
 
@@ -125,7 +125,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
 
         <div class=""p-2 mr-2 d-flex align-items-center align-self-stretch text-info"">
             <span>
-                <i class=""fa fa-arrow-circle-right""></i>
+                <i class=""ti ti-circle-arrow-right""></i>
             </span>
         </div>
     </a>
@@ -290,7 +290,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             }
         }
 
-        private class LavaDataDictionaryExtension : ILavaDataDictionary, DotLiquid.ILiquidizable, DotLiquid.IIndexable
+        private class LavaDataDictionaryExtension : ILavaDataDictionary
         {
             private readonly ILavaDataDictionary _baseObject;
             private readonly Dictionary<string, PropertyInfo> _additionalKeys;
@@ -347,26 +347,6 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             string ILavaDataDictionary.ToString()
             {
                 return ToString();
-            }
-
-            #endregion
-
-            #region ILiquidizable
-
-            object DotLiquid.ILiquidizable.ToLiquid()
-            {
-                return this;
-            }
-
-            #endregion
-
-            #region IIndexable
-
-            object DotLiquid.IIndexable.this[object key] => GetValue( key.ToString() );
-
-            bool DotLiquid.IIndexable.ContainsKey( object key )
-            {
-                return GetAllAvailableKeys().Contains( key );
             }
 
             #endregion

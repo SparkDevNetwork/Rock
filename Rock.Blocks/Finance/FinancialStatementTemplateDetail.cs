@@ -40,7 +40,7 @@ namespace Rock.Blocks.Finance
     [DisplayName( "Financial Statement Template Detail" )]
     [Category( "Finance" )]
     [Description( "Displays the details of the statement template." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

@@ -11,7 +11,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-square"></i> Entity List</h1>
+                <h1 class="panel-title"><i class="ti ti-square"></i> Entity List</h1>
             </div>
             <div class="panel-body">
 
@@ -28,7 +28,7 @@
                                 <HeaderStyle CssClass="grid-columncommand" />
                                 <ItemStyle CssClass="grid-columncommand" HorizontalAlign="Center"/>
                                 <ItemTemplate>
-                                    <a id="aSecure" runat="server" class="btn btn-sm btn-square btn-security"><i class="fa fa-lock"></i></a>
+                                    <a id="aSecure" runat="server" class="btn btn-sm btn-square btn-security"><i class="ti ti-lock"></i></a>
                                 </ItemTemplate>
                             </Rock:RockTemplateFieldUnselected>
                         </Columns>

@@ -34,8 +34,8 @@
                               v-model="owner"
                               label="Owner" />
 
-                <TextBox v-model="iconCssClass"
-                         label="Icon Css Class" />
+                <IconPicker v-model="iconCssClass"
+                            label="Icon Css Class" />
 
             </div>
 
@@ -68,6 +68,7 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";

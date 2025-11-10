@@ -1077,6 +1077,70 @@ DELETE [AV]
         }
 
         [TestMethod]
+        public void CreateOrUpdatePerson_WithChangedNickName_UpdatesFirstName()
+        {
+            var expectedFirstName = "Teddy";
+
+            var rockContextMock = CreateRockContextWithoutSaveChanges();
+
+            var tedDeckerIdKey = new PersonService( rockContextMock.Object ).Get( TestGuids.TestPeople.TedDecker ).IdKey;
+            var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
+            var registration = new FamilyRegistration( rockContextMock.Object, null, templateConfigurationDataMock.Object );
+
+            Group primaryFamily = null;
+            var registrationPerson = new ValidPropertiesBox<RegistrationPersonBag>
+            {
+                Bag = new RegistrationPersonBag
+                {
+                    Id = tedDeckerIdKey,
+                    NickName = expectedFirstName
+                },
+                ValidProperties = new List<string>
+                {
+                    nameof( RegistrationPersonBag.NickName )
+                }
+            };
+
+            var saveResult = new FamilyRegistrationSaveResult();
+            var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
+
+            Assert.That.AreEqual( expectedFirstName, person.FirstName );
+        }
+
+        [TestMethod]
+        public void CreateOrUpdatePerson_WithExistingPersonAndSameNickName_SkipsFirstName()
+        {
+            var rockContextMock = CreateRockContextWithoutSaveChanges();
+
+            var tedDecker = new PersonService( rockContextMock.Object ).Get( TestGuids.TestPeople.TedDecker );
+            var expectedFirstName = tedDecker.FirstName;
+
+            Assert.AreNotEqual( tedDecker.NickName, tedDecker.FirstName, "Expected Ted Decker's first name and nick name to be different." );
+
+            var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
+            var registration = new FamilyRegistration( rockContextMock.Object, null, templateConfigurationDataMock.Object );
+
+            Group primaryFamily = null;
+            var registrationPerson = new ValidPropertiesBox<RegistrationPersonBag>
+            {
+                Bag = new RegistrationPersonBag
+                {
+                    Id = tedDecker.IdKey,
+                    NickName = tedDecker.NickName
+                },
+                ValidProperties = new List<string>
+                {
+                    nameof( RegistrationPersonBag.NickName )
+                }
+            };
+
+            var saveResult = new FamilyRegistrationSaveResult();
+            var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
+
+            Assert.That.AreEqual( expectedFirstName, person.FirstName );
+        }
+
+        [TestMethod]
         public void CreateOrUpdatePerson_WithLastName_UpdatesLastName()
         {
             var expectedLastName = "Decker";

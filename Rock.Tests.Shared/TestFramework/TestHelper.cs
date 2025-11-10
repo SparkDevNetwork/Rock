@@ -25,6 +25,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
 using Rock.Configuration;
+using Rock.Web.Cache;
 
 namespace Rock.Tests.Shared
 {
@@ -344,6 +345,7 @@ namespace Rock.Tests.Shared
             {
                 if ( ReferenceEquals( RockApp.Current, App ) )
                 {
+                    RockCache.ClearAllCachedItems( false );
                     RockApp.Current = _previousApp;
                 }
                 else

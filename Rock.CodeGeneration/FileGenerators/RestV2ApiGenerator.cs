@@ -50,7 +50,6 @@ namespace Rock.CodeGeneration.FileGenerators
             var hasPatchAttributeValues = endpoints.HasFlag( CodeGenerateRestEndpoint.UpdateAttributeValues );
             var hasSearch = endpoints.HasFlag( CodeGenerateRestEndpoint.Search );
 
-            usings.Add( "Microsoft.AspNetCore.Mvc" );
             usings.Add( "System.Collections.Generic" );
             usings.Add( "System.Net" );
             usings.Add( "Rock.Rest.Filters" );
@@ -74,6 +73,10 @@ namespace Rock.CodeGeneration.FileGenerators
             {
                 codeBuilder.AppendLine( $"    using {name} = {source};" );
             }
+            codeBuilder.AppendLine( "#else" );
+            codeBuilder.AppendLine( "    using Microsoft.AspNetCore.Mvc;" );
+            codeBuilder.AppendLine();
+            codeBuilder.AppendLine( "    using RoutePrefixAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;" );
             codeBuilder.AppendLine( "#endif" );
             codeBuilder.AppendLine();
 
@@ -210,10 +213,10 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "[Authenticate]" );
             codeBuilder.AppendLine( $"[Secured( Security.Authorization.{securityAction} )]" );
             codeBuilder.AppendLine( $"[ExcludeSecurityActions( {additionalExcludedActions}Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
-            codeBuilder.AppendLine( $"[ProducesResponseType( HttpStatusCode.OK, Type = typeof( {modelTypeFullName} ) )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.Unauthorized )]" );
+            codeBuilder.AppendLine( $"[ProducesResponse( HttpStatusCode.OK, Type = typeof( {modelTypeFullName} ) )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.BadRequest )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.NotFound )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.Unauthorized )]" );
             codeBuilder.AppendLine( $"[SystemGuid.RestActionGuid( \"{actionGuid}\" )]" );
             codeBuilder.AppendLine( "public IActionResult GetItem( string id )" );
             codeBuilder.AppendLine( "{" );
@@ -265,10 +268,10 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "[Authenticate]" );
             codeBuilder.AppendLine( $"[Secured( Security.Authorization.{securityAction} )]" );
             codeBuilder.AppendLine( $"[ExcludeSecurityActions( {additionalExcludedActions}Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.Created, Type = typeof( CreatedAtResponseBag ) )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.Unauthorized )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.Created, Type = typeof( CreatedAtResponseBag ) )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.BadRequest )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.NotFound )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.Unauthorized )]" );
             codeBuilder.AppendLine( $"[SystemGuid.RestActionGuid( \"{actionGuid}\" )]" );
             codeBuilder.AppendLine( $"public IActionResult PostItem( [FromBody] {modelTypeFullName} value )" );
             codeBuilder.AppendLine( "{" );
@@ -322,10 +325,10 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "[Authenticate]" );
             codeBuilder.AppendLine( $"[Secured( Security.Authorization.{securityAction} )]" );
             codeBuilder.AppendLine( $"[ExcludeSecurityActions( {additionalExcludedActions}Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NoContent )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.Unauthorized )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.NoContent )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.BadRequest )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.NotFound )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.Unauthorized )]" );
             codeBuilder.AppendLine( $"[SystemGuid.RestActionGuid( \"{actionGuid}\" )]" );
             codeBuilder.AppendLine( $"public IActionResult PutItem( string id, [FromBody] {modelTypeFullName} value )" );
             codeBuilder.AppendLine( "{" );
@@ -379,10 +382,10 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "[Authenticate]" );
             codeBuilder.AppendLine( $"[Secured( Security.Authorization.{securityAction} )]" );
             codeBuilder.AppendLine( $"[ExcludeSecurityActions( {additionalExcludedActions}Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NoContent )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.Unauthorized )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.NoContent )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.BadRequest )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.NotFound )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.Unauthorized )]" );
             codeBuilder.AppendLine( $"[SystemGuid.RestActionGuid( \"{actionGuid}\" )]" );
             codeBuilder.AppendLine( "public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )" );
             codeBuilder.AppendLine( "{" );
@@ -434,10 +437,10 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "[Authenticate]" );
             codeBuilder.AppendLine( $"[Secured( Security.Authorization.{securityAction} )]" );
             codeBuilder.AppendLine( $"[ExcludeSecurityActions( {additionalExcludedActions}Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NoContent )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.Unauthorized )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.NoContent )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.BadRequest )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.NotFound )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.Unauthorized )]" );
             codeBuilder.AppendLine( $"[SystemGuid.RestActionGuid( \"{actionGuid}\" )]" );
             codeBuilder.AppendLine( "public IActionResult DeleteItem( string id )" );
             codeBuilder.AppendLine( "{" );
@@ -489,10 +492,10 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "[Authenticate]" );
             codeBuilder.AppendLine( $"[Secured( Security.Authorization.{securityAction} )]" );
             codeBuilder.AppendLine( $"[ExcludeSecurityActions( {additionalExcludedActions}Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.OK, Type = typeof( Dictionary<string, ModelAttributeValueBag> ) )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.Unauthorized )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.OK, Type = typeof( Dictionary<string, ModelAttributeValueBag> ) )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.BadRequest )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.NotFound )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.Unauthorized )]" );
             codeBuilder.AppendLine( $"[SystemGuid.RestActionGuid( \"{actionGuid}\" )]" );
             codeBuilder.AppendLine( "public IActionResult GetAttributeValues( string id )" );
             codeBuilder.AppendLine( "{" );
@@ -546,10 +549,10 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "[Authenticate]" );
             codeBuilder.AppendLine( $"[Secured( Security.Authorization.{securityAction} )]" );
             codeBuilder.AppendLine( $"[ExcludeSecurityActions( {additionalExcludedActions}Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NoContent )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.Unauthorized )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.NoContent )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.BadRequest )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.NotFound )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.Unauthorized )]" );
             codeBuilder.AppendLine( $"[SystemGuid.RestActionGuid( \"{actionGuid}\" )]" );
             codeBuilder.AppendLine( "public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )" );
             codeBuilder.AppendLine( "{" );
@@ -593,7 +596,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "[Authenticate]" );
             codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_UNRESTRICTED_READ )]" );
             codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.OK, Type = typeof( object ) )]" );
             codeBuilder.AppendLine( $"[SystemGuid.RestActionGuid( \"{actionGuid}\" )]" );
             codeBuilder.AppendLine( "public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )" );
             codeBuilder.AppendLine( "{" );
@@ -626,9 +629,9 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "[Authenticate]" );
             codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_READ )]" );
             codeBuilder.AppendLine( $"[ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.Unauthorized )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.OK, Type = typeof( object ) )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.NotFound )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.Unauthorized )]" );
             codeBuilder.AppendLine( $"[SystemGuid.RestActionGuid( \"{actionGuid}\" )]" );
             codeBuilder.AppendLine( "public IActionResult GetSearchByKey( string searchKey )" );
             codeBuilder.AppendLine( "{" );
@@ -664,10 +667,10 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "[Authenticate]" );
             codeBuilder.AppendLine( $"[Secured( Security.Authorization.EXECUTE_READ )]" );
             codeBuilder.AppendLine( $"[ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
-            codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.Unauthorized )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.OK, Type = typeof( object ) )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.BadRequest )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.NotFound )]" );
+            codeBuilder.AppendLine( "[ProducesResponse( HttpStatusCode.Unauthorized )]" );
             codeBuilder.AppendLine( $"[SystemGuid.RestActionGuid( \"{actionGuid}\" )]" );
             codeBuilder.AppendLine( "public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )" );
             codeBuilder.AppendLine( "{" );

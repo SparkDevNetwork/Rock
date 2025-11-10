@@ -12,7 +12,7 @@
             <asp:HiddenField ID="hfEntitySetId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-files-o"></i>
+                <h1 class="panel-title"><i class="ti ti-files"></i>
                     <asp:Literal ID="lActionTitle" runat="server" Text="Create Merge Document" /></h1>
 
                 <div class="panel-labels">
@@ -43,7 +43,7 @@
                                 </div>
                             </asp:Panel>
 
-                            <asp:LinkButton ID="btnShowMergeFieldsHelp" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnShowMergeFieldsHelp_Click" CausesValidation="false"> Show Merge Fields <i class="fa fa-chevron-down"></i></asp:LinkButton>
+                            <asp:LinkButton ID="btnShowMergeFieldsHelp" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnShowMergeFieldsHelp_Click" CausesValidation="false"> Show Merge Fields <i class="ti ti-chevron-down"></i></asp:LinkButton>
                             <asp:Panel ID="pnlMergeFieldsHelp" runat="server" Visible="false">
                                 <Rock:RockLiteral ID="lShowMergeFields" runat="server" />
                             </asp:Panel>

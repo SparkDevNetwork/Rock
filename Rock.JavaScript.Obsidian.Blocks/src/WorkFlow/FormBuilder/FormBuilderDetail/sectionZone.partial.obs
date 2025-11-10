@@ -22,20 +22,20 @@
                         </div>
 
                         <template #preActions>
-                            <div class="zone-action zone-action-move"><i class="fa fa-bars fa-fw"></i></div>
+                            <div class="zone-action zone-action-move"><i class="ti ti-menu-2 ti-fw"></i></div>
                         </template>
                         <template #postActions>
-                            <i class="fa fa-times fa-fw zone-action zone-action-delete" @click.stop="onDeleteField(field)"></i>
+                            <i class="ti ti-x ti-fw zone-action zone-action-delete" @click.stop="onDeleteField(field)"></i>
                         </template>
                     </ConfigurableZone>
                 </div>
             </div>
         </div>
         <template #preActions>
-            <div class="zone-action zone-action-move"><i class="fa fa-bars fa-fw "></i></div>
+            <div class="zone-action zone-action-move"><i class="ti ti-menu-2 ti-fw"></i></div>
         </template>
         <template #postActions>
-            <div class="zone-action zone-action-delete" @click.stop="onDelete"><i class="fa fa-times fa-fw"></i></div>
+            <div class="zone-action zone-action-delete" @click.stop="onDelete"><i class="ti ti-x ti-fw"></i></div>
         </template>
     </ConfigurableZone>
 </template>

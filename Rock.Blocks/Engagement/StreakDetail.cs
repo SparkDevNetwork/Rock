@@ -43,13 +43,14 @@ namespace Rock.Blocks.Engagement
     [DisplayName( "Streak Detail" )]
     [Category( "Engagement" )]
     [Description( "Displays the details of a particular streak." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
     #endregion
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "867abce8-47a9-46fa-8a35-47ebbc60c4fe" )]
     [Rock.SystemGuid.BlockTypeGuid( "1c98107f-dfbf-44bd-a860-0c9df2e6c495" )]
     public class StreakDetail : RockDetailBlockType, IBreadCrumbBlock

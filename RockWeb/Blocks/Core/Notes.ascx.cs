@@ -137,6 +137,7 @@ namespace RockWeb.Blocks.Core
         Order = 15,
         Key = AttributeKey.NoteViewLavaTemplate )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.NOTES )]
     public partial class Notes : RockBlock, ISecondaryBlock
     {

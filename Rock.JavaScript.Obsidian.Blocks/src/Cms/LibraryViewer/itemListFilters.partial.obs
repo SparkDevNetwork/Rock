@@ -3,7 +3,7 @@
     <div class="library-viewer-item-list-filters">
         <DropDownContent v-model="internalIsOpen">
             <template #anchor>
-                <RockButton btnType="tool" btnSize="xs"><i class="fa fa-filter" /> {{ appliedFilters.filterButtonText }}</RockButton>
+                <RockButton btnType="tool" btnSize="xs"><i class="ti ti-filter" /> {{ appliedFilters.filterButtonText }}</RockButton>
             </template>
 
             <div class="library-viewer-item-list-filters-container p-3">

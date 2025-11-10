@@ -1,0 +1,257 @@
+<template>
+    <TransitionVerticalCollapse>
+        <Grid v-if="!isEditingParameter" :data="parameterData"
+              keyField="id"
+              light
+              class="mb-0"
+              @addItem="onAddParameterClick">
+            <TextColumn name="name"
+                        title="Name"
+                        field="name" />
+
+            <Column name="dataType"
+                    title="Type">
+                <template #format="{ row }">
+                    <span class="label label-default">
+                        {{ getDataTypeName(row) }}
+                    </span>
+                </template>
+            </Column>
+
+            <BooleanColumn name="isRequired"
+                           title="Required"
+                           field="isRequired" />
+
+            <EditColumn @click="onEditParameterClick" />
+
+            <DeleteColumn disableConfirmation
+                          @click="onDeleteParameterClick" />
+        </Grid>
+    </TransitionVerticalCollapse>
+
+    <TransitionVerticalCollapse>
+        <div v-if="isEditingParameter">
+            <div style="display: none">
+                <TextBox modelValue=""
+                         label="Parameter Editor"
+                         :rules="() => 'must be closed before saving.'" />
+            </div>
+
+            <RockForm @submit="onEditParameterSave">
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="name"
+                                 label="Name"
+                                 rules="required" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <CheckBox v-model="isRequired"
+                                  label="Required" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="dataType"
+                                      label="Data Type"
+                                      :items="dataTypeItems"
+                                      :showBlankItem="false"
+                                      rules="required" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <CheckBox v-model="isCollection"
+                                  label="Is Collection"
+                                  help="If checked, this parameter will be treated as a collection of the specified data type." />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="instructions"
+                                 label="Instructions"
+                                 textMode="multiline"
+                                 :rows="6" />
+                    </div>
+                    <div class="col-md-6">
+                        <TransitionVerticalCollapse>
+                            <div v-if="!isCollection">
+                                <TextBox v-model="defaultValue"
+                                         label="Default Value"
+                                         help="Optional default value for this parameter." />
+                            </div>
+                        </TransitionVerticalCollapse>
+
+                        <ValueList v-if="dataType === ParameterSchemaDataType.String.toString()"
+                                   v-model="allowedValues"
+                                   label="Allowed Values"
+                                   help="Optional list of allowed values for this parameter." />
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <RockButton type="submit"
+                                btnType="primary"
+                                btnSize="xs">
+                        OK
+                    </RockButton>
+
+                    <RockButton btnSize="xs"
+                                @click="onEditParameterCancel">
+                        Cancel
+                    </RockButton>
+                </div>
+            </RockForm>
+        </div>
+    </TransitionVerticalCollapse>
+
+</template>
+
+<style scoped>
+.actions {
+    display: flex;
+    gap: var(--spacing-xsmall);
+}
+</style>
+
+<script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Grid, { TextColumn, DeleteColumn, EditColumn, BooleanColumn } from "@Obsidian/Controls/grid";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import ValueList from "@Obsidian/Controls/valueList.obs";
+    import { ParameterSchemaDataType, ParameterSchemaDataTypeDescription } from "@Obsidian/Enums/AI/Agent/parameterSchemaDataType";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { computed, PropType, ref } from "vue";
+    import { AugmentedParameterSchemaBag } from "./types.partial";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps({
+        modelValue: {
+            type: Array as PropType<AugmentedParameterSchemaBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: AugmentedParameterSchemaBag[]): void;
+    }>();
+
+    const parameters = useVModelPassthrough(props, "modelValue", emit);
+    const isEditingParameter = ref(false);
+    const editId = ref<Guid | null>(null);
+    const name = ref("");
+    const isRequired = ref(false);
+    const dataType = ref(ParameterSchemaDataType.String.toString());
+    const isCollection = ref(false);
+    const instructions = ref("");
+    const defaultValue = ref("");
+    const allowedValues = ref<string[]>([]);
+
+    const dataTypeItems = enumToListItemBag(ParameterSchemaDataTypeDescription);
+
+    const parameterData = computed((): GridDataBag => {
+        return {
+            rows: parameters.value
+        };
+    });
+
+    function getDataTypeName(row: Record<string, unknown>): string {
+        const item = enumToListItemBag(ParameterSchemaDataTypeDescription)
+            .filter(i => toNumber(i.value) === row.dataType);
+
+        if (item.length === 0 || !item[0].text) {
+            return "";
+        }
+
+        return row.isCollection
+            ? `${item[0].text}[]`
+            : item[0].text;
+    }
+
+    function onAddParameterClick(): void {
+        editId.value = null;
+        name.value = "";
+        isRequired.value = false;
+        dataType.value = ParameterSchemaDataType.String.toString();
+        isCollection.value = false;
+        instructions.value = "";
+        defaultValue.value = "";
+        allowedValues.value = [];
+
+        isEditingParameter.value = true;
+    }
+
+    function onEditParameterClick(key: string): void {
+        const parameter = parameters.value.find(p => p.id === key);
+
+        if (!parameter) {
+            return;
+        }
+
+        editId.value = parameter.id;
+        name.value = parameter.name ?? "";
+        isRequired.value = parameter.isRequired;
+        dataType.value = parameter.dataType.toString();
+        isCollection.value = parameter.isCollection;
+        instructions.value = parameter.instructions ?? "";
+        defaultValue.value = parameter.defaultValue ?? "";
+        allowedValues.value = parameter.allowedValues ?? [];
+
+        isEditingParameter.value = true;
+    }
+
+    function onDeleteParameterClick(key: string): void {
+        const index = parameters.value.findIndex(p => p.id === key);
+
+        if (index !== -1) {
+            const newParameters = [...parameters.value];
+            newParameters.splice(index, 1);
+            parameters.value = newParameters;
+        }
+    }
+
+    function onEditParameterCancel(): void {
+        isEditingParameter.value = false;
+    }
+
+    function onEditParameterSave(): void {
+        let parameter: AugmentedParameterSchemaBag | undefined;
+
+        if (editId.value) {
+            parameter = parameters.value.find(p => p.id === editId.value);
+
+            if (!parameter) {
+                return;
+            }
+        }
+        else {
+            const newParameters = [...parameters.value];
+
+            parameter = {
+                id: newGuid()
+            } as AugmentedParameterSchemaBag;
+
+            newParameters.push(parameter);
+            parameters.value = newParameters;
+        }
+
+        parameter.name = name.value;
+        parameter.isRequired = isRequired.value;
+        parameter.dataType = toNumber(dataType.value) as ParameterSchemaDataType;
+        parameter.isCollection = isCollection.value;
+        parameter.instructions = instructions.value;
+        parameter.defaultValue = defaultValue.value;
+        parameter.allowedValues = allowedValues.value;
+
+        isEditingParameter.value = false;
+    }
+</script>

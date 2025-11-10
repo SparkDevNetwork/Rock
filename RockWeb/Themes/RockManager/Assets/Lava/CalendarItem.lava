@@ -139,22 +139,22 @@
 	<ul class="socialsharing">
         <li>
             <a href="https://www.facebook.com/sharer/sharer.php?u={{ 'Global' | Page:'Url' | EscapeDataString }}" onclick="return fbs_click()" target="_blank" rel="noopener noreferrer" class="socialicon socialicon-facebook" title="" data-original-title="Share via Facebook">
-                <i class="fa fa-fw fa-facebook"></i>
+                <i class="ti ti-fw ti-brand-facebook"></i>
             </a>
         </li>
         <li>
             <a href="https://twitter.com/intent/tweet?text={{ 'Global' | Page:'Url' | EscapeDataString }}" class="socialicon socialicon-twitter" title="" data-original-title="Share via Twitter">
-                <i class="fa fa-fw fa-twitter"></i>
+                <i class="ti ti-fw ti-brand-twitter"></i>
             </a>
         </li>
         <li>
             <a href="mailto:?Subject={{ Event.Name | EscapeDataString }}&Body={{ 'Global' | Page:'Url' | EscapeDataString }}"  class="socialicon socialicon-email" title="" data-original-title="Share via Email">
-                <i class="fa fa-fw fa-envelope-o"></i>
+                <i class="ti ti-fw ti-mail"></i>
             </a>
         </li>
         <li>
             <a href="" onclick="return ics_click(event);" class="socialicon socialicon-calendar" title="" data-original-title="Download Event">
-            <i class="fa fa-fw fa-calendar"></i>
+            <i class="ti ti-fw ti-calendar"></i>
             </a>
         </li>
 	</ul>

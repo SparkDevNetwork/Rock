@@ -31,7 +31,7 @@ namespace Rock.Utility
     /// </summary>
     /// <seealso cref="System.Dynamic.DynamicObject" />
     /// <seealso cref="Rock.Lava.ILavaDataDictionary" />
-    public class RockDynamic : DynamicObject, Lava.ILiquidizable, ILavaDataDictionary
+    public class RockDynamic : DynamicObject, ILavaDataDictionary
     {
         private Dictionary<string, object> _members = new Dictionary<string, object>();
 
@@ -327,6 +327,8 @@ namespace Rock.Utility
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public object this[object key]
         {
             get
@@ -382,6 +384,8 @@ namespace Rock.Utility
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public bool ContainsKey( object key )
         {
             return this.GetDynamicMemberNames().Contains( key );
@@ -391,6 +395,8 @@ namespace Rock.Utility
         /// Returns liquid for the object
         /// </summary>
         /// <returns></returns>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public object ToLiquid()
         {
             return this;

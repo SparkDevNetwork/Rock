@@ -36,7 +36,7 @@ export interface IDragSourceOptions {
     /**
      * Defines the query selector that specifies which elements may act as drag
      * handles. By default all elements are allowed. This value will be ignored
-     * if you defined a value for canStartDrag.
+     * if you defined a value for startDrag.
      */
     handleSelector?: string;
 
@@ -661,7 +661,7 @@ function destroyService(service: DragDropService): void {
  *
  * @returns An options object that conforms to IDragTargetOptions.
  */
-function getTargetOptions(value: string | IDragTargetOptions | undefined): IDragTargetOptions | null | undefined{
+function getTargetOptions(value: string | IDragTargetOptions | undefined): IDragTargetOptions | null | undefined {
     if (!value) {
         return undefined;
     }

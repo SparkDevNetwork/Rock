@@ -32,7 +32,7 @@ namespace Rock.Blocks.Lms
     [DisplayName( "Public Learning Program List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of public learning programs." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [TextField( "Page Title",
@@ -185,7 +185,7 @@ namespace Rock.Blocks.Lms
                     
                     {% else %} 
                         <div class=""d-flex justify-content-center align-items-center card-img-h card-img-top""> 
-                        <i class=""fa fa-image fa-2x o-30""></i> </div>
+                        <i class=""ti ti-photo ti-2x o-30""></i> </div>
                 {% endif %}
                 
                 //- 2 TITLE

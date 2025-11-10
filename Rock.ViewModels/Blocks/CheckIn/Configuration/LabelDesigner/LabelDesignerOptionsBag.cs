@@ -18,6 +18,7 @@ using System.Collections.Generic;
 
 using Rock.Enums.CheckIn.Labels;
 using Rock.ViewModels.Reporting;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.CheckIn.Configuration.LabelDesigner
 {
@@ -74,5 +75,11 @@ namespace Rock.ViewModels.Blocks.CheckIn.Configuration.LabelDesigner
         /// The URL to return to when the cancel button is clicked.
         /// </summary>
         public string ReturnUrl { get; set; }
+
+        /// <summary>
+        /// The list of printers that are available to select from when
+        /// printing a preview label to a physical printer.
+        /// </summary>
+        public List<ListItemBag> Printers { get; set; }
     }
 }

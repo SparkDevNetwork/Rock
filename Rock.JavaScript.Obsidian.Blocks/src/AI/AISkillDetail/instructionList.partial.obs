@@ -1,0 +1,153 @@
+<template>
+    <Grid :data="instructionData"
+          keyField="id"
+          light
+          liveUpdates
+          itemTerm="Instruction"
+          class="mb-0"
+          @addItem="onAddInstructionClick">
+        <ReorderColumn @orderChanged="onOrderChanged" />
+
+        <Column name="type"
+                title="Type"
+                width="200px">
+            <template #format="{ row }: { row: InstructionItem }">
+                <div class="flex-grow-1">
+                    <DropDownList v-model="row.type"
+                                  :items="typeItems"
+                                  :showBlankItem="false" />
+                </div>
+            </template>
+        </Column>
+
+        <Column name="text"
+                title="Text"
+                width="100%">
+            <template #format="{ row }: { row: InstructionItem }">
+                <div class="flex-grow-1">
+                    <AutoHeightTextBox v-model="row.text" />
+                </div>
+            </template>
+        </Column>
+
+        <DeleteColumn disableConfirmation
+                      @click="onDeleteInstructionClick" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import AutoHeightTextBox from "../AISkillToolList/autoHeightTextBox.partial.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Grid, { Column, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { computed, PropType, ref, watch } from "vue";
+    import { InstructionItem } from "./types.partial";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Array as PropType<InstructionItem[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: InstructionItem[]): void;
+    }>();
+
+    const instructions = ref(props.modelValue);
+
+    // #region ValueList
+
+    const typeItems: ListItemBag[] = [
+        { value: "Purpose", text: "Purpose" },
+        { value: "Usage", text: "Usage" },
+        { value: "Guardrail", text: "Guardrail" }
+    ];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const instructionData = computed((): GridDataBag => {
+        return {
+            rows: instructions.value
+        };
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the add instruction button is clicked.
+     */
+    function onAddInstructionClick(): void {
+        instructions.value.push({
+            id: newGuid(),
+            type: "Purpose",
+            text: ""
+        });
+    }
+
+    /**
+     * Called when the order of instructions is changed.
+     *
+     * @param item The item that was moved.
+     * @param beforeItem The item that was before the moved item. If null, the item was moved to the end of the list.
+     */
+    function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): void {
+        const itemIndex = instructions.value.findIndex(i => i.id === (item as InstructionItem).id);
+
+        if (itemIndex < 0) {
+            return;
+        }
+
+        if (beforeItem === null) {
+            const newInstructions = [...instructions.value];
+            const movedItem = newInstructions.splice(itemIndex, 1)[0];
+            instructions.value = [
+                ...newInstructions,
+                movedItem
+            ];
+        }
+        else {
+            const beforeItemIndex = instructions.value.findIndex(i => i.id === (beforeItem as InstructionItem).id);
+
+            if (beforeItemIndex < 0) {
+                return;
+            }
+
+            const newInstructions = [...instructions.value];
+            const movedItem = newInstructions.splice(itemIndex, 1)[0];
+            newInstructions.splice(beforeItemIndex, 0, movedItem);
+            instructions.value = [...newInstructions];
+        }
+    }
+
+    function onDeleteInstructionClick(key: string): void {
+        const itemIndex = instructions.value.findIndex(i => i.id === key);
+
+        if (itemIndex < 0) {
+            return;
+        }
+
+        instructions.value.splice(itemIndex, 1);
+    }
+
+    // #endregion
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(instructions, props.modelValue);
+    });
+
+    watch(() => instructions, () => {
+        emit("update:modelValue", [...instructions.value]);
+    }, { deep: true });
+</script>

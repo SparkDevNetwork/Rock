@@ -26,7 +26,6 @@ using System.Threading.Tasks;
 
 using Rock.CheckIn.v2.Labels;
 using Rock.CheckIn.v2.Labels.Renderers;
-using Rock.Cms.StructuredContent.BlockTypes;
 using Rock.Data;
 using Rock.Enums.CheckIn.Labels;
 using Rock.Model;
@@ -79,7 +78,7 @@ namespace Rock.CheckIn.v2
         /// <param name="printProvider">The instance that will handle sending data to the physical printers.</param>
         /// <param name="cancellationToken">A token that will be triggered if the operation should be aborted.</param>
         /// <returns>A list of <see cref="RenderedLabel"/> objects that should be printed on the client.</returns>
-        public Task<List<RenderedLabel>> RenderAndPrintCheckInLabelsAsync( CheckInResultBag checkInResult, DeviceCache kiosk, DeviceCache printerOverride, LabelPrintProvider printProvider, CancellationToken cancellationToken = default )
+        public async Task<List<RenderedLabel>> RenderAndPrintCheckInLabelsAsync( CheckInResultBag checkInResult, DeviceCache kiosk, DeviceCache printerOverride, LabelPrintProvider printProvider, CancellationToken cancellationToken = default )
         {
             List<RenderedLabel> labels;
 
@@ -94,7 +93,7 @@ namespace Rock.CheckIn.v2
             {
                 activity?.AddTag( "rock.checkin.print_provider", GetType().FullName );
 
-                return PrintLabelsAsync( labels, printProvider, cancellationToken, msg =>
+                return await PrintLabelsAsync( labels, printProvider, cancellationToken, msg =>
                         checkInResult.Messages.Add( msg ) );
             }
         }
@@ -109,7 +108,7 @@ namespace Rock.CheckIn.v2
         /// <param name="printProvider">The instance that will handle sending data to the physical printers.</param>
         /// <param name="cancellationToken">A token that will be triggered if the operation should be aborted.</param>
         /// <returns>A list of <see cref="RenderedLabel"/> objects that should be printed on the client.</returns>
-        public Task<List<RenderedLabel>> RenderAndPrintCheckoutLabelsAsync( CheckoutResultBag checkOutResult, DeviceCache kiosk, DeviceCache printerOverride, LabelPrintProvider printProvider, CancellationToken cancellationToken = default )
+        public async Task<List<RenderedLabel>> RenderAndPrintCheckoutLabelsAsync( CheckoutResultBag checkOutResult, DeviceCache kiosk, DeviceCache printerOverride, LabelPrintProvider printProvider, CancellationToken cancellationToken = default )
         {
             List<RenderedLabel> labels;
 
@@ -129,7 +128,7 @@ namespace Rock.CheckIn.v2
             {
                 activity?.AddTag( "rock.checkin.print_provider", GetType().FullName );
 
-                return PrintLabelsAsync( labels, printProvider, cancellationToken, msg =>
+                return await PrintLabelsAsync( labels, printProvider, cancellationToken, msg =>
                     checkOutResult.Messages.Add( msg ) );
             }
         }

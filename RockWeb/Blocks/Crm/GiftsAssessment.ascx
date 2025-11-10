@@ -71,7 +71,7 @@
                     <asp:Literal ID="lInstructions" runat="server"></asp:Literal>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnStart" runat="server" CssClass="btn btn-primary pull-right" OnClick="btnStart_Click">Start <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                        <asp:LinkButton ID="btnStart" runat="server" CssClass="btn btn-primary pull-right" OnClick="btnStart_Click">Start <i class="ti ti-chevron-right"></i></asp:LinkButton>
                     </div>
                 </asp:Panel>
 

@@ -61,7 +61,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute("class", "fa fa-exclamation-triangle");
+                writer.AddAttribute("class", "ti ti-alert-triangle");
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();

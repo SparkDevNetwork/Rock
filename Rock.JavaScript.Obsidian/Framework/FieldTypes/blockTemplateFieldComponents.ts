@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-import { defineComponent, ref, watch } from "vue";
+import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
 import BlockTemplatePicker from "@Obsidian/Controls/blockTemplatePicker.obs";
@@ -36,15 +36,18 @@ export const EditComponent = defineComponent({
         // The internal value used by the text editor.
         const templateValue = ref<string>();
         const templateKey = ref<string>();
-        const templateBlockValueGuid = ref<string | null| undefined>();
+
+        const templateBlockValueGuid = computed(() => {
+            const templateBlock = JSON.parse(props.configurationValues[ConfigurationValueKey.TemplateBlock] || "{}") as ListItemBag;
+            return templateBlock?.value;
+        });
 
         // Watch for changes from configuration component and update the text editor.
         watch(() => props.configurationValues, () => {
             templateKey.value = "";
-            const templateBlock = JSON.parse(props.configurationValues[ConfigurationValueKey.TemplateBlock] || "{}") as ListItemBag;
-            templateBlockValueGuid.value = templateBlock?.value;
         }, {
-            immediate: true
+            immediate: true,
+            deep: true
         });
 
         // Watch for changes from the parent component and update the text editor.
@@ -138,16 +141,6 @@ export const ConfigurationComponent = defineComponent({
             internalValue.value = JSON.parse(props.modelValue[ConfigurationValueKey.TemplateBlock] || "{}");
         }, {
             immediate: true
-        });
-
-        // Watch for changes in properties that require new configuration
-        // properties to be retrieved from the server.
-        // THIS IS JUST A PLACEHOLDER FOR COPYING TO NEW FIELDS THAT MIGHT NEED IT.
-        // THIS FIELD DOES NOT NEED THIS
-        watch([], () => {
-            if (maybeUpdateModelValue()) {
-                emit("updateConfiguration");
-            }
         });
 
         // Watch for changes in properties that only require a local UI update.

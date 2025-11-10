@@ -1,7 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid v-if="isVisible"
-          :definition="config.gridDefinition ?? undefined"
+    <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Contacts"
@@ -30,6 +29,7 @@
 </template>
 
 <script setup lang="ts">
+    import { reactive, ref, watch } from "vue";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { TextColumn, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
@@ -41,9 +41,7 @@
     import { BusinessContactBag } from "@Obsidian/ViewModels/Blocks/Finance/BusinessContactList/businessContactBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./BusinessContactList/types.partial";
-    import { reactive, ref, watch, computed } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<ListBlockBox<BusinessContactListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -58,10 +56,6 @@
     // #endregion
 
     // #region Computed Values
-
-    const isVisible = computed((): boolean => {
-        return useStore().state.areSecondaryBlocksShown;
-    });
 
     // #endregion
 

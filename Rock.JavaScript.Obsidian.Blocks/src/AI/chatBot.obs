@@ -1,0 +1,1000 @@
+<template>
+    <NotificationBox v-if="config.error"
+                     alertType="warning">
+        {{ config.error }}
+    </NotificationBox>
+
+    <div v-else class="chat-container styled-scroll" ref="chatContainer">
+        <div class="sessions-column">
+            <div class="sessions-container" ref="sessionsContainer">
+                <div v-for="session in sessions"
+                     :key="session.id"
+                     class="session"
+                     :class="{ 'active': session.id === sessionId }"
+                     @click="onSelectSession(session.id)">
+                    <div class="session-name">{{ session.name || "Unnamed Session" }}</div>
+                    <div v-if="sessions.length > 1"
+                         class="session-delete"
+                         @click.stop="onDeleteSession(session)">
+                        <i class="ti ti-x"></i>
+                    </div>
+                    <div class="session-date">
+                        {{ RockDateTime.parseISO(session.lastMessageDateTime!)?.localDateTime.toASPString("g") }}
+                    </div>
+                </div>
+            </div>
+
+            <RockButton btnType="info"
+                        autoDisable
+                        @click="onNewSession">
+                New Session
+            </RockButton>
+        </div>
+
+        <div class="conversation-container">
+            <div class="well messages-container" ref="messagesContainer">
+                <div v-for="(message, index) in messages"
+                     :key="index"
+                     class="message"
+                     :class="getMessageClass(message)">
+                    <div class="message-text" v-html="parseMarkdown(message.message ?? '')"></div>
+
+                    <div v-if="isDebugEnabled && message.role == AuthorRole.Assistant" class="message-debug">
+                        <span class="label label-info" title="Prompt Tokens">
+                            <i class="ti ti-upload"></i>
+                            {{ asFormattedString(message.consumedTokenCount - message.tokenCount) }}
+                        </span>
+
+                        <span class="label label-info" title="Completion Tokens">
+                            <i class="ti ti-download"></i>
+                            {{ asFormattedString(message.tokenCount) }}
+                        </span>
+
+                        <span v-if="doesMessageHaveLogData(message)"
+                              class="label label-info"
+                              title="Tool Calls">
+                            <i class="ti ti-code"></i>
+                            {{ getDebugToolCalls(message).length }}
+                        </span>
+
+                        <span v-if="message.duration"
+                              class="label label-info" title="Duration">
+                            <i class="ti ti-stopwatch"></i>
+                            {{ asFormattedString(message.duration / 1000, 3) }}s
+                        </span>
+
+                        <button v-if="doesMessageHaveLogData(message)"
+                                class="btn btn-link btn-xs"
+                                type="button"
+                                @click.prevent="onShowMessageDebug(message)">
+                            <i class="ti ti-bug"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div v-if="liveMessage && (liveMessage.tool || liveMessage?.message)"
+                     class="message"
+                     :class="getMessageClass(liveMessage)">
+                    <div v-if="liveMessage.tool" class="message-preamble">
+                        {{ liveMessage.tool }}
+                        <span class="ti ti-loader fa fa-spin"></span>
+                    </div>
+
+                    <div v-else class="message-text" v-html="parseMarkdown(liveMessage.message ?? '')"></div>
+                </div>
+
+                <div v-else-if="isSending"
+                     class="message-thinking">
+                    <span class="ti ti-loader fa fa-spin"></span>
+                </div>
+            </div>
+
+            <div class="footer-actions">
+                <div v-if="sortedAnchors.length > 0" class="anchors-container">
+                    <div v-for="anchor in sortedAnchors"
+                         :key="anchor.id"
+                         class="anchor">
+                        <span class="anchor-type">{{ anchor.entityTypeName }}</span>
+                        <span class="anchor-text">{{ anchor.name }}</span>
+                        <span class="anchor-clear" @click="onDeleteAnchor(anchor.entityTypeId)"><i class="ti ti-x"></i></span>
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <div class="action-bar-container">
+                        <TextBox v-model="message"
+                                 placeholder="Ask anything..."
+                                 @keyup.enter="onSubmit">
+                            <template #inputGroupAppend>
+                                <span class="input-group-btn">
+                                    <button :class="isDebugEnabled ? 'btn btn-warning' : 'btn btn-default'"
+                                            type="button"
+                                            :title="isDebugEnabled ? 'Disable Debug Mode' : 'Enable Debug Mode'"
+                                            @click.prevent="onToggleDebugClick">
+                                        <i v-if="isDebugEnabled" class="ti ti-bug"></i>
+                                        <i v-else class="ti ti-bug-off"></i>
+                                    </button>
+
+                                    <button class="btn btn-default"
+                                            type="button"
+                                            @click.prevent="onClearMessages"
+                                            title="Clear Chat History">
+                                        <i class="ti ti-trash"></i>
+                                    </button>
+
+                                    <button class="btn btn-primary"
+                                            type="button"
+                                            :disabled="isSendDisabled"
+                                            @click.prevent="onSubmit"><i class="ti ti-arrow-up"></i></button>
+                                </span>
+                            </template>
+                        </TextBox>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <Modal v-model="isMessageDebugVisible"
+           title="Message Debug Information"
+           cancelText="Close">
+        <TabbedBar v-model="messageDebugTab"
+                   :tabs="['Tool Calls', 'Logs']" />
+
+        <div v-if="messageDebugTab === 'Tool Calls'" class="message-debug-tool-calls">
+            <div v-if="getDebugToolCalls(debugMessage).length === 0" class="text-muted">
+                No tool calls for this request.
+            </div>
+
+            <Panel v-for="func in getDebugToolCalls(debugMessage)"
+                   :title="func.name"
+                   :key="func.name"
+                   hasCollapse>
+                <template #headerActions>
+                    <div class="tool-labels">
+                        <span v-if="!func.error" class="label label-success">Success</span>
+                        <span v-else class="label label-danger">Failed</span>
+                        <span class="label label-info">{{ func.duration }}</span>
+                    </div>
+                </template>
+
+                <div class="tool-args">
+                    <h4>Arguments</h4>
+                    <pre v-html="highlightJavaScript(func.args)"></pre>
+                </div>
+
+                <div v-if="!func.error" class="tool-result">
+                    <h4>Result</h4>
+                    <pre v-html="highlightJavaScript(func.result)"></pre>
+                </div>
+
+                <div v-if="func.error" class="tool-error">
+                    <h4>Error</h4>
+                    <div>{{ func.error }}</div>
+                </div>
+            </Panel>
+        </div>
+
+        <div v-if="messageDebugTab === 'Logs'" class="message-debug-log">
+            <pre v-html="getDebugLogText(debugMessage)"></pre>
+        </div>
+    </Modal>
+</template>
+
+<style scoped>
+.chat-container {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-small);
+}
+
+.sessions-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+}
+
+.sessions-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.sessions-container :first-child {
+    margin-top: auto;
+}
+
+.session {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    background-color: var(--color-info-soft);
+    color: var(--color-info-strong);
+    padding: var(--spacing-small);
+    border-radius: var(--rounded-small);
+    cursor: pointer;
+    min-width: 200px;
+}
+
+.session.active {
+    border: 2px solid var(--color-info-strong);
+    cursor: initial;
+}
+
+.session-delete {
+    opacity: 0;
+    cursor: pointer;
+    font-size: var(--font-size-xsmall);
+    background-color: transparent;
+    color: var(--color-danger-strong);
+    width: 24px;
+    align-content: center;
+    text-align: center;
+    border-radius: var(--rounded-small);
+    transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.session:hover .session-delete {
+    opacity: 1;
+}
+
+.session-delete:hover {
+    background-color: var(--color-danger-strong);
+    color: var(--color-danger-soft);
+}
+
+.session-name {
+    line-height: 1.3em;
+    margin-bottom: var(--spacing-tiny);
+}
+
+.session-date {
+    grid-row: 2;
+    grid-column: 1 / 3;
+    font-size: small;
+    opacity: 0.7;
+}
+
+.conversation-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    gap: var(--spacing-small);
+    position: relative;
+}
+
+.footer-actions {
+    /* this is ugly, don't use as final */
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0 24px;
+    padding: var(--spacing-large)
+}
+
+.action-bar .btn-warning,
+.action-bar .btn-warning:active {
+    background: none;
+    color: var(--color-warning-strong);
+    box-shadow: unset !important;
+    border: 0;
+}
+
+.action-bar .btn-default {
+    background: none;
+    color: var(--color-interface-medium);
+    box-shadow: unset;
+    border: 0;
+}
+
+.action-bar .btn-primary {
+    border-radius: 100px;
+    padding: 8px 12px;
+}
+
+.action-bar-container {
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
+    padding: var(--spacing-small);
+    border-radius: 1000px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.action-bar-container :deep(input) {
+    border: none;
+    box-shadow: none;
+}
+
+
+.messages-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow-y: auto;
+    gap: var(--spacing-small);
+    margin-bottom: 0;
+    padding: var(--spacing-medium) var(--spacing-xlarge) 160px var(--spacing-xlarge);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-small);
+    background-color: var(--color-interface-softest)
+}
+
+.message {
+    padding: var(--spacing-tiny) var(--spacing-small);
+    border-radius: var(--rounded-medium);
+    max-width: 75%;
+}
+
+.message-user {
+    background-color: var(--color-interface-softer);
+    border: 1px solid var(--color-interface-soft);
+    color: var(--color-interface-strong);
+    margin-left: auto;
+    max-width: 400px;
+}
+
+.message-user .message-text :deep(p) {
+    margin: 0;
+    padding: var(--spacing-small);
+}
+
+.message-assistant {
+
+    margin-right: auto;
+}
+
+.message-assistant .message-text :deep(p) {
+    color: var(--color-interface-stronger);
+}
+
+.message-preamble {
+    font-size: var(--font-size-small);
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-medium);
+    color: var(--color-interface-strong);
+    padding: var(--spacing-tiny) var(--spacing-small);
+}
+
+.message-thinking {
+    font-size: var(--font-size-h4);
+    opacity: 0.5;
+}
+
+.message-debug {
+    display: flex;
+    gap: var(--spacing-tiny);
+    --justify-content: flex-end;
+}
+
+.message-debug .label,
+.message-debug .btn {
+    background: none;
+    padding: 0;
+    color: var(--color-interface-medium);
+    margin-right: var(--spacing-small);
+    font-size: var(--font-size-xsmall);
+    margin-top: var(--spacing-small);
+}
+
+.message-debug .btn {
+    display: flex;
+    align-items: flex-start;
+}
+
+.anchors-container {
+    display: flex;
+    gap: var(--spacing-xsmall);
+    margin: var(--spacing-small) var(--spacing-xlarge);
+}
+
+.anchor {
+    border: 1px solid var(--color-success-strong);
+    background-color: var(--color-success-soft);
+    color: var(--color-success-strong);
+    font-size: var(--font-size-small);
+    display: flex;
+    border-radius: 12px;
+    height: 24px;
+    line-height: 1em;
+    align-items: center;
+    padding: 0 8px 0 12px;
+    gap: 8px;
+}
+
+.anchor-type {
+    font-weight: var(--font-weight-semibold);
+}
+
+.anchor-type::after {
+    content: ":";
+}
+
+.anchor-clear {
+    font-size: calc(0.77 * var(--font-size-xsmall));
+    padding-top: 2px;
+    cursor: pointer;
+}
+
+/* Message Debug Modal */
+.message-debug-log > pre {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    column-gap: var(--spacing-medium);
+    max-height: calc(100vh - 300px);
+}
+
+.message-debug-tool-calls {
+    max-height: calc(100vh - 300px);
+    margin-top: var(--spacing-medium);
+    overflow-y: auto;
+}
+
+.tool-labels {
+    display: flex;
+    gap: var(--spacing-tiny);
+    margin-right: var(--spacing-xsmall);
+}
+
+/* Hack to temporarily fix icon size. */
+:deep(.ti) {
+    font-size: 1em;
+}
+</style>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import HighlightJs from "@Obsidian/Libs/highlightJs";
+    import { parse, Renderer } from "@Obsidian/Libs/marked";
+    import { useConfigurationValues, useInvokeBlockAction, useInvokeStreamingBlockAction } from "@Obsidian/Utility/block";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+    import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from "vue";
+
+    const enum AuthorRole {
+        User = 0,
+
+        Assistant = 1
+    }
+
+    type ChatBotConfigurationBag = {
+        error?: string | null;
+
+        sessionId?: number | null;
+
+        sessions?: ChatSessionBag[] | null;
+
+        messages?: ChatMessageBag[] | null;
+
+        anchors?: ChatAnchorBag[] | null;
+    };
+
+    type ChatSessionBag = {
+        id: number;
+
+        name?: string | null;
+
+        lastMessageDateTime?: string | null;
+    };
+
+    type SendMessageRequestBag = {
+        message?: string | null;
+
+        sessionId: number;
+
+        isDebugEnabled: boolean;
+    };
+
+    type SendMessageResponseBag = {
+        message?: ChatMessageBag | null;
+
+        tool?: string | null;
+
+        logs?: ChatLogBag[] | null;
+    };
+
+    type ChatMessageBag = {
+        duration: number;
+
+        role: AuthorRole;
+
+        message?: string | null;
+
+        tokenCount: number;
+
+        consumedTokenCount: number;
+    };
+
+    type ExtendedChatMessageBag = ChatMessageBag & {
+        logs?: ChatLogBag[] | null;
+
+        tool?: string | null;
+    };
+
+    type ChatLogBag = {
+        category?: string | null;
+
+        logLevel: number;
+
+        logLevelName?: string | null;
+
+        message?: string | null;
+
+        timestamp: number;
+    };
+
+    type ChatAnchorBag = {
+        id: number;
+
+        entityTypeId: number;
+
+        entityTypeName?: string | null;
+
+        name?: string | null;
+    };
+
+    type ToolCall = {
+        name: string;
+
+        args: string;
+
+        result: string;
+
+        error: string;
+
+        duration: string;
+    };
+
+    const config = useConfigurationValues<ChatBotConfigurationBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const invokeStreamingBlockAction = useInvokeStreamingBlockAction();
+
+    // #region Values
+
+    const chatContainer = ref<HTMLDivElement>();
+    const sessionsContainer = ref<HTMLDivElement>();
+    const messagesContainer = ref<HTMLDivElement>();
+
+    const message = ref("");
+    const isSending = ref(false);
+    const messages = reactive<ExtendedChatMessageBag[]>(config.messages ?? []);
+    const liveMessage = ref<ExtendedChatMessageBag | null>(null);
+    const sessions = reactive(config.sessions ?? []);
+    const anchors = reactive(config.anchors ?? []);
+    const sessionId = ref(config.sessionId ?? 0);
+
+    const isDebugEnabled = ref(false);
+    const isMessageDebugVisible = ref(false);
+    const debugMessage = ref<ExtendedChatMessageBag | null>(null);
+    const messageDebugTab = ref<"Tool Calls" | "Logs">("Tool Calls");
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isSendDisabled = computed((): boolean => {
+        return isSending.value || !message.value;
+    });
+
+    const sortedAnchors = computed((): ChatAnchorBag[] => {
+        return anchors.sort((a, b) => a.entityTypeName?.localeCompare(b.entityTypeName ?? "") || 0);
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function updateContainerHeight(): void {
+        if (!chatContainer.value) {
+            return;
+        }
+
+        const top = chatContainer.value.getBoundingClientRect().y;
+        chatContainer.value.style.height = `${window.innerHeight - top - 105}px`;
+    }
+
+    function getMessageClass(message: ExtendedChatMessageBag): string[] {
+        const classes: string[] = [];
+
+        classes.push(message.role === AuthorRole.User ? "message-user" : "message-assistant");
+
+        if (message.logs && message.logs.length > 0) {
+            classes.push("has-logs");
+        }
+
+        return classes;
+    }
+
+    function doesMessageHaveLogData(message: ExtendedChatMessageBag): boolean {
+        return !!message.logs && message.logs.length > 0;
+    }
+
+    function updateSessionDate(): void {
+        const session = sessions.find(s => s.id === sessionId.value);
+
+        if (session) {
+            session.lastMessageDateTime = RockDateTime.now().toISOString();
+        }
+
+        updateSessionOrder();
+    }
+
+    function updateSessionOrder(): void {
+        sessions.sort((a, b) => {
+            const da = RockDateTime.parseISO(a.lastMessageDateTime ?? "");
+            const db = RockDateTime.parseISO(b.lastMessageDateTime ?? "");
+
+            if (!da) {
+                return 1;
+            }
+
+            if (!db) {
+                return -1;
+            }
+
+            return da.toMilliseconds() - db.toMilliseconds();
+        });
+    }
+
+    function getDebugLogText(message: ExtendedChatMessageBag | null): string {
+        if (!message || !message.logs || message.logs.length === 0) {
+            return "No logs available.";
+        }
+
+        let logText = "";
+
+        for (const log of message.logs) {
+            logText += `<span class="log-time">@${asFormattedString(log.timestamp)}ms</span>`;
+            logText += `<span class="log-category" title="${log.category}">${log.logLevelName}</span>`;
+            logText += `<span class="log-message">${escapeHtml(log.message!)}</span>\n`;
+        }
+
+        return logText;
+    }
+
+    function getDebugToolCalls(message: ExtendedChatMessageBag | null): ToolCall[] {
+        const toolInvokingRegExp = /^Function ([a-zA-Z0-9_-]+) invoking\.$/;
+        const toolArgumentsRegExp = /^Function ([a-zA-Z0-9_-]+) arguments: ([\s\S]+)$/;
+        const toolResultRegExp = /^Function ([a-zA-Z0-9_-]+) result: ([\s\S]+)$/;
+        const toolErrorRegExp = /^Function ([a-zA-Z0-9_-]+) failed. Error: ([\s\S]+)$/;
+        const toolCompletedRegExp = /^Function ([a-zA-Z0-9_-]+) completed. Duration: (.+)$/;
+
+        const logs = message?.logs?.map(l => l.message ?? "") ?? [];
+
+        if (logs.length === 0) {
+            return [];
+        }
+
+        const tools: ToolCall[] = [];
+        let currentTool: ToolCall | null = null;
+
+        for (const log of logs) {
+            if (currentTool === null) {
+                const match = toolInvokingRegExp.exec(log);
+                if (match) {
+                    currentTool = {
+                        name: match[1],
+                        args: "{}",
+                        result: "",
+                        error: "",
+                        duration: ""
+                    };
+                }
+
+                continue;
+            }
+
+            // Look for the arguments for this tool call.
+            let match = toolArgumentsRegExp.exec(log);
+            if (match) {
+                currentTool.args = match[2];
+
+                continue;
+            }
+
+            // Look for the result of this tool call.
+            match = toolResultRegExp.exec(log);
+            if (match) {
+                currentTool.result = match[2];
+
+                continue;
+            }
+
+            // Look for an error for this tool call.
+            match = toolErrorRegExp.exec(log);
+            if (match) {
+                currentTool.error = match[2];
+
+                continue;
+            }
+
+            // Look for the completion of this tool call.
+            match = toolCompletedRegExp.exec(log);
+            if (match) {
+                currentTool.duration = match[2];
+
+                // Add the completed tool call to the list.
+                tools.push(currentTool);
+                currentTool = null;
+
+                continue;
+            }
+        }
+
+        return tools;
+    }
+
+    function highlightJavaScript(code: string): string {
+        try {
+            var jsonObject = JSON.parse(code);
+
+            return HighlightJs.highlight(JSON.stringify(jsonObject, null, 2), {
+                language: "json"
+            })?.value ?? escapeHtml(code);
+        }
+        catch {
+            return escapeHtml(code);
+        }
+    }
+
+    function parseMarkdown(text: string): string {
+        return parse(text, {
+            renderer: new CustomRenderer()
+        }) as string;
+    }
+
+    class CustomRenderer extends Renderer {
+        override table(token): string {
+            const html = super.table(token);
+
+            return html.replace("<table>", `<table class="table table-bordered table-striped">`);
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    async function onSubmit(): Promise<void> {
+        if (!message.value) {
+            return;
+        }
+
+        var msg = message.value;
+
+        message.value = "";
+
+        if (msg.startsWith("#")) {
+            return onSpecialCommand(msg);
+        }
+
+        messages.push({
+            duration: 0,
+            role: AuthorRole.User,
+            message: msg,
+            tokenCount: 0,
+            consumedTokenCount: 0
+        });
+        nextTick(() => messagesContainer.value?.scrollTo(0, messagesContainer.value.scrollHeight));
+
+        isSending.value = true;
+        try {
+            const request: SendMessageRequestBag = {
+                message: msg,
+                sessionId: sessionId.value,
+                isDebugEnabled: isDebugEnabled.value
+            };
+
+            const response = await invokeStreamingBlockAction<SendMessageResponseBag>("SendMessage", { request });
+
+            if (response.isSuccess && response.data) {
+                const reader = response.data.getReader();
+                liveMessage.value = reactive({
+                    duration: 0,
+                    role: AuthorRole.Assistant,
+                    message: "",
+                    tokenCount: 0,
+                    consumedTokenCount: 0
+                });
+                // messages.push(msg);
+
+                // eslint-disable-next-line no-constant-condition
+                while (true) {
+                    const { value, done } = await reader.read();
+
+                    if (done) {
+                        break;
+                    }
+
+                    if (value.tool) {
+                        liveMessage.value.tool = value.tool;
+                        nextTick(() => messagesContainer.value?.scrollTo(0, messagesContainer.value.scrollHeight));
+                    }
+
+                    if (value.logs) {
+                        liveMessage.value.logs = value.logs;
+                    }
+
+                    if (value.message) {
+                        console.log(`Received message chunk: '${value.message.message}'`);
+
+                        if (value.message.duration > 0) {
+                            liveMessage.value.duration = value.message.duration;
+                        }
+
+                        if (value.message.consumedTokenCount > 0) {
+                            liveMessage.value.consumedTokenCount = value.message.consumedTokenCount;
+                        }
+
+                        if (value.message.tokenCount > 0) {
+                            liveMessage.value.tokenCount = value.message.tokenCount;
+                        }
+
+                        if (value.message.message) {
+                            liveMessage.value.tool = undefined;
+                            liveMessage.value.message = `${liveMessage.value.message}${value.message.message}`;
+                        }
+
+                        nextTick(() => messagesContainer.value?.scrollTo(0, messagesContainer.value.scrollHeight));
+                    }
+                }
+
+                messages.push(liveMessage.value);
+                liveMessage.value = null;
+                updateSessionDate();
+                nextTick(() => messagesContainer.value?.scrollTo(0, messagesContainer.value.scrollHeight));
+            }
+            else {
+                await alert(response.errorMessage ?? "Unknown error while trying to send message.");
+                messages.pop(); // Remove the user's message if sending failed.
+            }
+        }
+        finally {
+            isSending.value = false;
+        }
+    }
+
+    async function onSpecialCommand(command: string): Promise<void> {
+        if (command.startsWith("#anchor ")) {
+            const parts = command.split(" ");
+            if (parts.length !== 3) {
+                await alert("Invalid anchor command. Usage: #anchor <EntityTypeName> <EntityId>");
+                return;
+            }
+
+            const entityTypeName = parts[1];
+            const entityId = parseInt(parts[2]);
+
+            const result = await invokeBlockAction<ChatAnchorBag[]>("CreateAnchor", { sessionId: sessionId.value, entityTypeName, entityId });
+
+            if (result.isSuccess && result.data) {
+                anchors.splice(0, anchors.length, ...result.data);
+            }
+            else {
+                await alert(result.errorMessage || "Unknown error while trying to add anchor.");
+            }
+            return;
+        }
+
+        await alert(`Unknown command: ${command}`);
+    }
+
+    async function onDeleteAnchor(entityTypeId: number): Promise<void> {
+        const result = await invokeBlockAction("DeleteAnchor", { sessionId: sessionId.value, entityTypeId });
+
+        if (result.isSuccess) {
+            const index = anchors.findIndex(a => a.entityTypeId === entityTypeId);
+            if (index !== -1) {
+                anchors.splice(index, 1);
+            }
+        }
+        else {
+            await alert(result.errorMessage || "Unknown error while trying to delete anchor.");
+        }
+    }
+
+    async function onSelectSession(id: number): Promise<void> {
+        if (sessionId.value === id) {
+            return;
+        }
+
+        const result = await invokeBlockAction<{ messages: ChatMessageBag[], anchors: ChatAnchorBag[] }>("LoadSession", { sessionId: id });
+
+        if (result.isSuccess && result.data) {
+            sessionId.value = id;
+            messages.splice(0, messages.length, ...result.data.messages);
+            anchors.splice(0, anchors.length, ...result.data.anchors);
+            updateSessionOrder();
+            nextTick(() => messagesContainer.value?.scrollTo(0, messagesContainer.value.scrollHeight));
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to load session messages.");
+        }
+    }
+
+    async function onNewSession(): Promise<void> {
+        const result = await invokeBlockAction<ChatSessionBag>("StartNewSession");
+
+        if (result.isSuccess && result.data) {
+            sessionId.value = result.data.id;
+            messages.splice(0, messages.length);
+            anchors.splice(0, anchors.length);
+            sessions.push(result.data);
+            nextTick(() => sessionsContainer.value?.scrollTo(0, sessionsContainer.value.scrollHeight));
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to start new session.");
+        }
+    }
+
+    async function onDeleteSession(session: ChatSessionBag): Promise<void> {
+        if (!await confirm(`Are you sure you want to delete the session "${session.name}"?`)) {
+            return;
+        }
+
+        const result = await invokeBlockAction("DeleteSession", { sessionId: session.id });
+
+        if (result.isSuccess) {
+            const index = sessions.findIndex(s => s.id === session.id);
+            if (index !== -1) {
+                sessions.splice(index, 1);
+                await onSelectSession(sessions[sessions.length - 1].id);
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete session.");
+        }
+    }
+
+    async function onClearMessages(): Promise<void> {
+        if (!await confirm("Are you sure you want to clear all messages?")) {
+            return;
+        }
+
+        const result = await invokeBlockAction("ClearSession", { sessionId: sessionId.value });
+
+        if (result.isSuccess) {
+            messages.splice(0, messages.length);
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to clear chat history.");
+        }
+    }
+
+    function onToggleDebugClick(): void {
+        isDebugEnabled.value = !isDebugEnabled.value;
+        localStorage.setItem("Rock.AI.ChatBot.DebugEnabled", isDebugEnabled.value ? "true" : "false");
+    }
+
+    function onShowMessageDebug(message: ExtendedChatMessageBag): void {
+        debugMessage.value = message;
+        messageDebugTab.value = "Tool Calls";
+        isMessageDebugVisible.value = true;
+    }
+
+    // #endregion
+
+    onMounted(() => {
+        updateContainerHeight();
+        messagesContainer.value?.scrollTo(0, messagesContainer.value.scrollHeight);
+        sessionsContainer.value?.scrollTo(0, sessionsContainer.value.scrollHeight);
+
+        window.addEventListener("resize", updateContainerHeight);
+    });
+
+    onBeforeUnmount(() => {
+        window.removeEventListener("resize", updateContainerHeight);
+    });
+
+    isDebugEnabled.value = localStorage.getItem("Rock.AI.ChatBot.DebugEnabled") === "true";
+</script>

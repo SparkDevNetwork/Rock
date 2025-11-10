@@ -185,7 +185,7 @@
             styles["--experience-visualizer-accent-color"] = style.visualizer.accentColor;
         }
         else {
-            styles["--experience-visualizer-accent-color"] = "var(--color-info)";
+            styles["--experience-visualizer-accent-color"] = "var(--color-info-strong)";
         }
 
         return styles;

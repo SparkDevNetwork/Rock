@@ -317,8 +317,11 @@ namespace Rock.Communication.Transport
 
                         await SendToApiAsync( fromPhone, attachments, message, smsNumber ).ConfigureAwait( false );
 
+                        var now = RockDateTime.Now;
+
                         recipient.Status = CommunicationRecipientStatus.Delivered;
-                        recipient.SendDateTime = RockDateTime.Now;
+                        recipient.SendDateTime = now;
+                        recipient.DeliveredDateTime = now;
                         recipient.TransportEntityTypeName = this.GetType().FullName;
                         recipient.UniqueMessageId = Guid.NewGuid().ToString();
 

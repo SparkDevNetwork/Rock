@@ -1,0 +1,31 @@
+<template>
+    <DropDownList v-model="memberType" :items="memberTypes" label="Member Type" showBlankItem />
+    <DropDownList v-model="memberStatus" :items="memberStatuses" label="Member Status" showBlankItem />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const memberTypes = safeParseJson<ListItemBag[]>(props.options.memberTypes) ?? [];
+    const memberStatuses = safeParseJson<ListItemBag[]>(props.options.memberStatuses) ?? [];
+
+    const memberType = ref<string>(props.modelValue.memberType ?? "");
+    const memberStatus = ref<string>(props.modelValue.memberStatus ?? "");
+
+    watch([memberType, memberStatus], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            memberType: memberType.value,
+            memberStatus: memberStatus.value,
+        });
+    });
+</script>

@@ -102,7 +102,7 @@ namespace Rock.UniversalSearch.IndexModels
         {
             get
             {
-                return "fa fa-building";
+                return "ti ti-building";
             }
         }
 

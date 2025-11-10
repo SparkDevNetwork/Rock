@@ -223,6 +223,7 @@ namespace Rock.Blocks.Group
 
     #endregion
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "64ECB2E0-218F-4EB4-8691-7DC94A767037" )]
     [Rock.SystemGuid.BlockTypeGuid( "308DBA32-F656-418E-A019-9D18235027C1" )]
     public class GroupAttendanceDetail : RockBlockType
@@ -2370,7 +2371,7 @@ namespace Rock.Blocks.Group
                     }
                 }
 
-                var occurrenceDate = attendanceOccurrenceSearchParameters.AttendanceOccurrenceDate ?? RockDateTime.Today;
+                var occurrenceDate = ( attendanceOccurrenceSearchParameters.AttendanceOccurrenceDate ?? RockDateTime.Today ).Date;
                 var locationId = attendanceOccurrenceSearchParameters.LocationId;
                 var scheduleId = attendanceOccurrenceSearchParameters.ScheduleId;
                 var group = attendanceOccurrenceSearchParameters.Group;

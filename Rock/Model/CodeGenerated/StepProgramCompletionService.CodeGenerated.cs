@@ -52,6 +52,12 @@ namespace Rock.Model
         public bool CanDelete( StepProgramCompletion item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            if ( new Service<Step>( Context ).Queryable().Any( a => a.StepProgramCompletionId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", StepProgramCompletion.FriendlyTypeName, Step.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }

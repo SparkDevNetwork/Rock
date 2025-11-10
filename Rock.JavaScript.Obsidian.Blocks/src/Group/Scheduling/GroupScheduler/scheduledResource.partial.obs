@@ -7,8 +7,8 @@
               data-toggle="tooltip"
               :data-original-title="resourceTooltip">
             {{ personName }}
-            <i v-if="conflictTooltip" class="fa fa-exclamation-triangle"></i>
-            <i v-if="preferenceTooltip" class="fa fa-minus-circle"></i>
+            <i v-if="conflictTooltip" class="ti ti-alert-triangle"></i>
+            <i v-if="preferenceTooltip" class="ti ti-circle-minus"></i>
         </span>
         <span class="resource-role">{{ resource?.GroupRoleName }}</span>
 
@@ -19,7 +19,7 @@
                     aria-haspopup="true"
                     aria-expanded="false"
                     :disabled="isSchedulingDisabled">
-                <i class="fa fa-ellipsis-v"></i>
+                <i class="ti ti-dots-vertical"></i>
             </button>
 
             <ul class="dropdown-menu dropdown-menu-right">

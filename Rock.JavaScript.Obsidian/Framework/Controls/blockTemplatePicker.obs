@@ -15,7 +15,7 @@
                     <button type="button" class="btn btn-xs btn-link" @click.prevent="view = 'CUSTOM'">Customize</button>
                 </div>
             </div>
-            <div v-else id="ctl00_main_ctl35_ctl01_ctl06_mdAttribute_edtAttribute_defaultValue_148_efea8d0ec39c41e9932b490870b7000d_defaultValue_148_efea8d0ec39c41e9932b490870b7000dpnlCustom" class="js-template-custom-panel">
+            <div v-else class="js-template-custom-panel">
                 <label class="radio-inline"><input type="radio" :name="uniqueId" checked><span class="label-text"><b>Custom</b></span></label>
                 <div class="actions clearfix">
                     <button type="button" class="btn btn-xs btn-link pull-right" @click.prevent="view = 'SELECT'" v-if="templateBlockValueGuid">Use Standard Templates</button>
@@ -86,10 +86,17 @@
             loadedItems.value = result.data;
 
             if (result.data.length > 0) {
-                let item = result.data[0];
                 if (view.value == "SELECT") {
-                    internalValue.value = item.template ?? "";
-                    internalkey.value = item.guid ?? null;
+                    let item = result.data[0];
+
+                    if (internalkey.value) {
+                        item = result.data.find(i => i.guid === internalkey.value) ?? item;
+                    }
+
+                    if (item) {
+                        internalValue.value = item.template ?? "";
+                        internalkey.value = item.guid ?? null;
+                    }
                 }
             }
         }

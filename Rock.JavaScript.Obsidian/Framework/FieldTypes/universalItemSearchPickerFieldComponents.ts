@@ -50,6 +50,10 @@ export const EditComponent = defineComponent({
             return props.configurationValues["searchUrl"];
         });
 
+        const context = computed((): string | undefined => {
+            return props.configurationValues["context"] ?? undefined;
+        });
+
         function getModelValue(): ListItemBag | null {
             try {
                 return JSON.parse(props.modelValue) as ListItemBag;
@@ -73,7 +77,8 @@ export const EditComponent = defineComponent({
             isIncludeInactiveVisible,
             internalValue,
             isRequired,
-            searchUrl
+            searchUrl,
+            context
         };
     },
 
@@ -83,7 +88,8 @@ export const EditComponent = defineComponent({
                            :iconCssClass="iconCssClass"
                            :isIncludeInactiveVisible="isIncludeInactiveVisible"
                            :isRequired="isRequired"
-                           :searchUrl="searchUrl" />
+                           :searchUrl="searchUrl"
+                           :context="context" />
 `
 });
 

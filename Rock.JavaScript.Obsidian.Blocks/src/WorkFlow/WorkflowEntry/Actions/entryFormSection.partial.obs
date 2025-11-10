@@ -21,18 +21,25 @@
     </div>
 
     <template v-else-if="!section">
-        <EntryFormField v-for="field of sectionFields"
-                        :field="field"
-                        :fieldValues="fieldValues"
-                        :filterContext="filterContext"
-                        @updateFieldValue="onUpdateFieldValue" />
+        <ItemsWithPreAndPostHtml :items="prePostHtmlItems">
+            <template v-for="field of sectionFields"
+                      :key="field.attribute?.attributeGuid"
+                      v-slot:[field.attribute!.attributeGuid!]>
+                <EntryFormField :field="field"
+                                :fieldValues="fieldValues"
+                                :filterContext="filterContext"
+                                @updateFieldValue="onUpdateFieldValue" />
+            </template>
+        </ItemsWithPreAndPostHtml>
     </template>
 </template>
 
 <script setup lang="ts">
     import { Guid } from "@Obsidian/Types";
     import EntryFormField from "./entryFormField.partial.obs";
+    import ItemsWithPreAndPostHtml from "@Obsidian/Controls/itemsWithPreAndPostHtml.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import { ItemWithPreAndPostHtml } from "@Obsidian/Types/Controls/itemsWithPreAndPostHtml";
     import { EntryFormFieldBag } from "@Obsidian/ViewModels/Workflow/entryFormFieldBag";
     import { EntryFormSectionBag } from "@Obsidian/ViewModels/Workflow/entryFormSectionBag";
     import { computed, PropType } from "vue";
@@ -69,6 +76,17 @@
     /** The fields that should be displayed in this section. */
     const sectionFields = computed((): EntryFormFieldBag[] => {
         return props.fields.filter(f => (f.sectionId ?? "") === (props.section?.id ?? ""));
+    });
+
+    /** The section fields' pre-post items to allow pre-post HTML to be rendered */
+    const prePostHtmlItems = computed<ItemWithPreAndPostHtml[]>(() => {
+        return sectionFields.value
+            .filter(f => f.attribute?.attributeGuid)
+            .map(f => ({
+                preHtml: f.preHtml ?? "",
+                postHtml: f.postHtml ?? "",
+                slotName: f.attribute!.attributeGuid!
+            }));
     });
 
     /**

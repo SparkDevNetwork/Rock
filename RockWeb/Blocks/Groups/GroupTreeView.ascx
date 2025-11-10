@@ -23,7 +23,7 @@
                         <asp:Panel ID="pnlTreeviewActions" CssClass="panel-labels treeview-actions" runat="server">
                             <div id="divAddGroup" runat="server" class="btn-group">
                                 <button type="button" class="btn btn-link btn-xs dropdown-toggle" data-toggle="dropdown" title="Add Group">
-                                    <i class="fa fa-plus"></i>
+                                    <i class="ti ti-plus"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-right" role="menu">
                                     <li>
@@ -33,10 +33,10 @@
                                 </ul>
                             </div>
                             <button class="btn btn-link btn-xs" onclick="$(this).closest('.js-grouptreeview').find('.js-group-search').slideToggle()">
-                                <i class="fa fa-search"></i>
+                                <i class="ti ti-search"></i>
                             </button>
                             <button type="button" id="pnlRolloverConfig" class="btn btn-link btn-xs clickable js-show-config" onclick="$(this).closest('.js-grouptreeview').find('.js-config-panel').slideToggle()" runat="server">
-                                <i class="fa fa-ellipsis-v"></i>
+                                <i class="ti ti-dots-vertical"></i>
                             </button>
                         </asp:Panel>
                 </div>
@@ -46,7 +46,7 @@
                         <asp:Panel ID="pnlSearch" runat="server" DefaultButton="btnSearch" CssClass="input-group">
                             <asp:TextBox ID="tbSearch" runat="server" placeholder="Quick Find" CssClass="form-control input-sm" />
                             <span class="input-group-btn">
-                                <asp:LinkButton ID="btnSearch" runat="server" CssClass="btn btn-default btn-sm" OnClick="btnSearch_OnClick"><i class="fa fa-search"></i></asp:LinkButton>
+                                <asp:LinkButton ID="btnSearch" runat="server" CssClass="btn btn-default btn-sm" OnClick="btnSearch_OnClick"><i class="ti ti-search"></i></asp:LinkButton>
                             </span>
                         </asp:Panel>
                     </div>

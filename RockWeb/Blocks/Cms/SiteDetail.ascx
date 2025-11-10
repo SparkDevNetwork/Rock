@@ -15,7 +15,7 @@
             <asp:HiddenField ID="hfSiteId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-desktop"></i>
+                <h1 class="panel-title"><i class="ti ti-device-desktop"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
                 <div class="panel-labels">
                     <asp:Literal ID="lVisitSite" runat="server" />

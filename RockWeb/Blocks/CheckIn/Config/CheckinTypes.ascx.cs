@@ -157,7 +157,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 {
                     t.Id,
                     t.Name,
-                    IconCssClass = string.IsNullOrWhiteSpace( t.IconCssClass ) ? "fa fa-sign-in" : t.IconCssClass,
+                    IconCssClass = string.IsNullOrWhiteSpace( t.IconCssClass ) ? "ti ti-login-2" : t.IconCssClass,
                     ActiveCssClass = t.Id == activeTypeId ? "active" : ""
                 } );
                 rptCheckinTypes.DataBind();

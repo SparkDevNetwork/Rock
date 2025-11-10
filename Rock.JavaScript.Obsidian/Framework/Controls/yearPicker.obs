@@ -4,7 +4,7 @@
         <div class="input-group input-width-md">
             <input ref="inputEl" type="text" class="form-control" v-model.lazy="internalValue" :disabled="disabled" v-bind="field" :id="uniqueId" />
             <span class="input-group-addon">
-                <i class="fa fa-calendar"></i>
+                <i class="ti ti-calendar"></i>
             </span>
         </div>
     </RockFormField>

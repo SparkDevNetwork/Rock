@@ -39,7 +39,7 @@ namespace Rock.Blocks.Engagement.Steps
     [DisplayName( "Step Flow" )]
     [Category( "Steps" )]
     [Description( "Show the flow of individuals as they move through different steps in a given step program." )]
-    [IconCssClass( "fa fa-users" )]
+    [IconCssClass( "ti ti-users" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

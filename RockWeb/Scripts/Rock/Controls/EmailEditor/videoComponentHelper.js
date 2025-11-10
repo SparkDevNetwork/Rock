@@ -64,7 +64,7 @@
                 var self = this;
 
                 // Make the button show loading
-                $('#component-video-addon').html('<i class="fa fa-sync fa-spin"></i>')
+                $('#component-video-addon').html('<i class="ti ti-refresh ti-spin"></i>')
 
                 // Change link
                 self.handleVideoUrlUpdate();
@@ -84,7 +84,7 @@
 
             videoUploadComplete: function (imageUrl) {
                 // Change the icon back
-                $('#component-video-addon').html('<i class="fa fa-arrow-right"></i>');
+                $('#component-video-addon').html('<i class="ti ti-arrow-right"></i>');
 
                 if (imageUrl != '') {
                     //change video image url

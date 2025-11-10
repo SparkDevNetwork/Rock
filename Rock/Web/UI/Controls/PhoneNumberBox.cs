@@ -473,7 +473,7 @@ namespace Rock.Web.UI.Controls
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group-addon" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                writer.Write( "<i class='fa fa-phone-square'></i>" );
+                writer.Write( "<i class='ti ti-phone'></i>" );
                 writer.RenderEndTag();
             }
 

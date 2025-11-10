@@ -2,8 +2,9 @@
 <template>
     <TreeItemPicker v-model="internalValue"
                     formGroupClasses="category-picker"
-                    iconCssClass="fa fa-folder-open"
+                    iconCssClass="ti ti-folder-open"
                     :provider="itemProvider"
+                    autoExpand
                     :multiple="multiple" />
 </template>
 

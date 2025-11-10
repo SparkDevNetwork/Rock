@@ -29,7 +29,6 @@ using Rock.Web;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Lava;
-using DotLiquid;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -177,41 +176,7 @@ namespace RockWeb.Blocks.Cms
         {
             SyndicationFeedHelper.ClearCachedFeed( GetAttributeValue( AttributeKey.RSSFeedUrl ) );
 
-            if ( LavaService.RockLiquidIsEnabled )
-            {
-#pragma warning disable CS0618 // Type or member is obsolete
-                LavaTemplateCache.Remove( TemplateCacheKey );
-#pragma warning restore CS0618 // Type or member is obsolete
-            }
-
             LavaService.RemoveTemplateCacheEntry( TemplateCacheKey );
-        }
-
-        [RockObsolete( "1.13" )]
-        [Obsolete( "This method is only required for the DotLiquid Lava implementation." )]
-        private Template GetTemplate()
-        {
-            var cacheTemplate = LavaTemplateCache.Get( TemplateCacheKey, GetAttributeValue( AttributeKey.Template ) );
-
-            LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( AttributeKey.Template ) );
-
-            return cacheTemplate != null ? cacheTemplate.Template as DotLiquid.Template : null;
-        }
-
-        private string LoadDebugData( Dictionary<string, object> feedDictionary )
-        {
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-
-            if ( feedDictionary != null && feedDictionary.Count > 0 )
-            {
-                sb.AppendLine( "<ul id=\"debugFeed\">" );
-                foreach ( var kvp in feedDictionary )
-                {
-                    sb.Append( FeedDebugNode( kvp ) );
-                }
-                sb.AppendLine( "</ul>" );
-            }
-            return sb.ToString();
         }
 
         private string FeedDebugNode( KeyValuePair<string, object> node )
@@ -341,24 +306,15 @@ namespace RockWeb.Blocks.Cms
 
                     string content = String.Empty;
 
-                    if ( LavaService.RockLiquidIsEnabled )
+                    var renderParameters = new LavaRenderParameters
                     {
-#pragma warning disable CS0618 // Type or member is obsolete
-                        content = GetTemplate().Render( Hash.FromDictionary( feedDictionary ) );
-#pragma warning restore CS0618 // Type or member is obsolete
-                    }
-                    else
-                    {
-                        var renderParameters = new LavaRenderParameters
-                        {
-                            Context = LavaService.NewRenderContext( feedDictionary ),
-                            CacheKey = this.TemplateCacheKey
-                        };
+                        Context = LavaService.NewRenderContext( feedDictionary ),
+                        CacheKey = this.TemplateCacheKey
+                    };
 
-                        var result = LavaService.RenderTemplate( GetAttributeValue( AttributeKey.Template ), renderParameters );
+                    var result = LavaService.RenderTemplate( GetAttributeValue( AttributeKey.Template ), renderParameters );
 
-                        content = result.Text;
-                    }
+                    content = result.Text;
 
                     if ( content.Contains( "No such template" ) )
                     {

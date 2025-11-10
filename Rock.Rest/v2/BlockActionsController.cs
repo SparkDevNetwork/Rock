@@ -198,6 +198,11 @@ namespace Rock.Rest.v2
                     return new NotFoundResult( controller );
                 }
 
+                if ( controller.RockRequestContext?.IsClientForbidden( pageCache ) == true )
+                {
+                    return new StatusCodeResult( HttpStatusCode.Forbidden, controller );
+                }
+
                 //
                 // Get the authenticated person and make sure it's cached.
                 //

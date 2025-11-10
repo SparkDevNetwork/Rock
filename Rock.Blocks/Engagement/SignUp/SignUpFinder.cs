@@ -48,7 +48,7 @@ namespace Rock.Blocks.Engagement.SignUp
     [DisplayName( "Sign-Ups Finder" )]
     [Category( "Engagement > Sign-Up" )]
     [Description( "Block used for finding sign-up groups/projects." )]
-    [IconCssClass( "fa fa-clipboard-check" )]
+    [IconCssClass( "ti ti-clipboard-check" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
     [ContextAware( typeof( Campus ) )]
 
@@ -1477,7 +1477,7 @@ namespace Rock.Blocks.Engagement.SignUp
             {
                 actions.Add( new BlockCustomActionBag
                 {
-                    IconCssClass = "fa fa-edit",
+                    IconCssClass = "ti ti-edit",
                     Tooltip = "Settings",
                     ComponentFileUrl = "/Obsidian/Blocks/Engagement/SignUp/signUpFinderCustomSettings.obs"
                 } );

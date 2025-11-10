@@ -1147,13 +1147,13 @@ var headerText = dp.label;
             if ( pnlChartAttendanceGrid.Visible )
             {
                 pnlChartAttendanceGrid.Visible = false;
-                lShowChartAttendanceGrid.Text = "Show Data <i class='fa fa-chevron-down'></i>";
+                lShowChartAttendanceGrid.Text = "Show Data <i class='ti ti-chevron-down'></i>";
                 lShowChartAttendanceGrid.ToolTip = "Show Data";
             }
             else
             {
                 pnlChartAttendanceGrid.Visible = true;
-                lShowChartAttendanceGrid.Text = "Hide Data <i class='fa fa-chevron-up'></i>";
+                lShowChartAttendanceGrid.Text = "Hide Data <i class='ti ti-chevron-up'></i>";
                 lShowChartAttendanceGrid.ToolTip = "Hide Data";
                 BindChartAttendanceGrid();
             }

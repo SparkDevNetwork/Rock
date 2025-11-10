@@ -14,7 +14,7 @@
             <asp:HiddenField ID="hfWorkflowTypeId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-cogs"></i>
+                <h1 class="panel-title"><i class="ti ti-settings-cog"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
 
                 <div class="panel-labels">
@@ -34,7 +34,7 @@
                     <Rock:PanelWidget ID="pwDetails" runat="server" Title="Details" Expanded="true">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Name" />
+                                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Name" OnTextChanged="tbName_TextChanged" AutoPostBack="true" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
@@ -54,6 +54,11 @@
                             <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbNumberPrefix" runat="server" Label="Workflow Number Prefix" Help="The number prefix to use for workflows of this type. For example, to have workflows of this type numbered like 'WF0001, WF0002' use a prefix of 'WF'. Prefixes do need to be unique between workflow types." />
                                 <Rock:RockTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" Help="The Icon to use when displaying this type of workflow." />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:DataTextBox ID="tbSlug" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Slug" Label="Slug" OnTextChanged="tbSlug_TextChanged" AutoPostBack="true" Help="Unique identifier for this workflow type. Changing this may affect links and integrations." />
                             </div>
                         </div>
                     </Rock:PanelWidget>
@@ -120,7 +125,7 @@
                         <fieldset>
                             <legend>Activities
                                 <span class="pull-right">
-                                    <asp:LinkButton ID="lbAddActivityType" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddActivityType_Click" CausesValidation="false"><i class="fa fa-plus"></i> Add Activity</asp:LinkButton>
+                                    <asp:LinkButton ID="lbAddActivityType" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddActivityType_Click" CausesValidation="false"><i class="ti ti-plus"></i> Add Activity</asp:LinkButton>
                                 </span>
                             </legend>
                             <div class="workflow-activity-list">
@@ -147,7 +152,7 @@
                         <div class="col-md-12">
                             <a class="workflow-activities-readonly-header" href="#" onclick="javascript: toggleReadOnlyActivitiesList();">
                                 <asp:Label ID="lblActivitiesReadonlyHeaderLabel" runat="server" Text="Activities" EnableViewState="false" />
-                                <b class="fa fa-caret-down"></b>
+                                <b class="ti ti-caret-down-filled"></b>
                             </a>
 
                             <div class="workflow-activities-readonly-list" style="display: none">
@@ -161,11 +166,11 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
-                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square" Text="<i class='fa fa-clone'></i>" OnClick="btnCopy_Click" ToolTip="Copy Workflow" />
-                            <asp:LinkButton ID="lbLaunchWorkflow" runat="server" CssClass="btn btn-sm btn-square btn-default" OnClick="btnLaunch_Click" ToolTip="Launch Workflow"><i class="fa fa-play"></i></asp:LinkButton>
-                            <asp:LinkButton ID="lbManage" runat="server" CssClass="btn btn-sm btn-square btn-default" OnClick="btnManage_Click" ToolTip="Manage Workflows"><i class="fa fa-list"></i></asp:LinkButton>
+                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square" Text="<i class='ti ti-copy'></i>" OnClick="btnCopy_Click" ToolTip="Copy Workflow" />
+                            <asp:LinkButton ID="lbLaunchWorkflow" runat="server" CssClass="btn btn-sm btn-square btn-default" OnClick="btnLaunch_Click" ToolTip="Launch Workflow"><i class="ti ti-player-play"></i></asp:LinkButton>
+                            <asp:LinkButton ID="lbManage" runat="server" CssClass="btn btn-sm btn-square btn-default" OnClick="btnManage_Click" ToolTip="Manage Workflows"><i class="ti ti-list"></i></asp:LinkButton>
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
-                            <asp:LinkButton ID="btnExport" runat="server" class="btn btn-sm btn-square btn-default" ToolTip="Export Workflows"  OnClick="btnExport_Click"><i class="fa fa-file-export"></i></asp:LinkButton>
+                            <asp:LinkButton ID="btnExport" runat="server" class="btn btn-sm btn-square btn-default" ToolTip="Export Workflows"  OnClick="btnExport_Click"><i class="ti ti-file-export"></i></asp:LinkButton>
                         </span>
 
                     </div>
@@ -297,6 +302,6 @@
                     }
                 };
             })();
-        </script> 
+        </script>
     </ContentTemplate>
 </asp:UpdatePanel>

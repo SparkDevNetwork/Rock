@@ -32,7 +32,7 @@ namespace Rock.Blocks.Example
     [DisplayName( "Control Gallery" )]
     [Category( "Obsidian > Example" )]
     [Description( "Allows the user to try out various controls." )]
-    [IconCssClass( "fa fa-flask" )]
+    [IconCssClass( "ti ti-flask" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [BooleanField( "Show Reflection",

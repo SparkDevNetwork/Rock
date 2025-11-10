@@ -692,7 +692,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _aRemove );
             _aRemove.ID = "rmv";
             _aRemove.HRef = "#";
-            _aRemove.InnerHtml = "<i class='fa fa-times'></i>";
+            _aRemove.InnerHtml = "<i class='ti ti-x'></i>";
             _aRemove.Attributes["class"] = "remove-file";
             _aRemove.Attributes["title"] = "Remove File";
 
@@ -796,11 +796,11 @@ namespace Rock.Web.UI.Controls
                 }
 
                 string uploadClass = this.DisplayMode == UploaderDisplayMode.DefaultButton ? "upload-progress-sm" : "upload-progress";
-                string spinnerSize = this.DisplayMode == UploaderDisplayMode.DefaultButton ? "fa-lg" : "fa-3x";
+                string spinnerSize = this.DisplayMode == UploaderDisplayMode.DefaultButton ? "ti-lg" : "ti-3x";
 
                 writer.Write( $@"
                     <div class='js-upload-progress {uploadClass}' style='display:none;'>
-                        <i class='fa fa-refresh {spinnerSize} fa-spin'></i>
+                        <i class='ti ti-refresh {spinnerSize} ti-spin'></i>
                         <div class='js-upload-progress-percent'></div>
                     </div>" );
 

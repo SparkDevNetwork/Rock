@@ -39,8 +39,22 @@ export const EntityType = {
     AdaptiveMessageAdaptationSegment: "40EDF82B-EFF5-4253-A129-965F7BC90033",
     /** The EntityType Guid for Rock.Model.AdaptiveMessageCategory  */
     AdaptiveMessageCategory: "D47BDA25-03A3-46EE-A0A6-F8B220E39E4A",
+    /** The EntityType Guid for Rock.Model.AIAgent  */
+    AiAgent: "EE3FE609-5C7C-492E-B0E9-5461045FC825",
+    /** The EntityType Guid for Rock.Model.AIAgentSession  */
+    AiAgentSession: "2415941A-8A3F-49FE-8039-DB27096B0EDF",
+    /** The EntityType Guid for Rock.Model.AIAgentSessionAnchor  */
+    AiAgentSessionAnchor: "3ED1476A-B7FC-40E2-BBAB-AF084C82D7F1",
+    /** The EntityType Guid for Rock.Model.AIAgentSessionHistory  */
+    AiAgentSessionHistory: "6AD212BE-F8D0-4C58-AB0E-D723ED5E2155",
+    /** The EntityType Guid for Rock.Model.AIAgentSkill  */
+    AiAgentSkill: "36DEDA2F-75BD-4BEE-AC36-46D20DCD1331",
     /** The EntityType Guid for Rock.Model.AIProvider  */
     AiProvider: "945A994F-F15E-43AC-B503-A54BDE70F77F",
+    /** The EntityType Guid for Rock.Model.AISkill  */
+    AiSkill: "D953AB34-4AB6-47C6-857B-53044A99ED75",
+    /** The EntityType Guid for Rock.Model.AISkillTool  */
+    AiSkillTool: "357D2625-FDCA-41F8-AB8D-1CF2CE0ABEED",
     /** The EntityType Guid for Rock.Model.AnalyticsDimCampus  */
     AnalyticsDimCampus: "DCEB0575-1351-4CFF-BA4F-410BA2D638CB",
     /** The EntityType Guid for Rock.Model.AnalyticsDimFamilyCurrent  */
@@ -121,6 +135,10 @@ export const EntityType = {
     AuthenticationPasswordless: "2D037783-09BD-48BA-8C1D-626B0BC82495",
     /** The pin authentication provider */
     AuthenticationPin: "1FB5A259-F45C-4857-AF3D-3B9E32DB0EEE",
+    /** The EntityType Guid for Rock.Model.AutomationEvent  */
+    AutomationEvent: "905DE2D9-1EA8-4E59-B0CF-E2BAC8383927",
+    /** The EntityType Guid for Rock.Model.AutomationTrigger  */
+    AutomationTrigger: "89ABFA37-68E5-41B7-B43C-A0CF823DEA61",
     /** The EntityType Guid for Rock.Model.BackgroundCheck  */
     BackgroundCheck: "6D3A2293-BA7E-44D9-B5B3-5B85DA0EECAC",
     /** The guid for the Rock.Model.Badge entity */
@@ -161,6 +179,18 @@ export const EntityType = {
     Communication: "C4CCBD91-1264-48BF-BC33-92751C8948B5",
     /** The EntityType Guid for Rock.Model.CommunicationAttachment  */
     CommunicationAttachment: "4271BFB1-AF05-4B6C-8931-032EB02DD760",
+    /** The guid for the communication flow */
+    CommunicationFlow: "C7A67172-9A41-4421-94B0-F59DFEACF705",
+    /** The guid for the communication flow communication */
+    CommunicationFlowCommunication: "07D0CECC-066F-45A8-95BC-7C8F5199D53C",
+    /** The guid for the communication flow instance */
+    CommunicationFlowInstance: "7B487D88-0667-4AFF-BC6C-1FC8482392C8",
+    /** The guid for the communication flow instance communication */
+    CommunicationFlowInstanceCommunication: "FC2D426E-07E4-4803-BCB6-09CB43031856",
+    /** The guid for the communication flow instance communication conversion */
+    CommunicationFlowInstanceCommunicationConversion: "726B5B81-B4B2-4E74-9069-0409A3D19753",
+    /** The guid for the communication flow instance recipient */
+    CommunicationFlowInstanceRecipient: "F615AC08-8ACD-48F9-B42E-2F4CE02D4206",
     /** The guid for the email communication medium */
     CommunicationMediumEmail: "5A653EBE-6803-44B4-85D2-FB7B8146D55D",
     /** The guid for the push notification communication medium */
@@ -329,8 +359,6 @@ export const EntityType = {
     GroupLocation: "26248EE7-09F3-4578-A1D6-47E01D91D6EF",
     /** The EntityType Guid for Rock.Model.GroupLocationHistorical  */
     GroupLocationHistorical: "03128778-5E7D-4FE4-9C7A-929936E06F90",
-    /** The EntityType Guid for Rock.Model.GroupLocationHistoricalSchedule  */
-    GroupLocationHistoricalSchedule: "3BC646E4-CA5E-47D6-BC6D-4BBFAAEDAD8B",
     /** The guid for the Rock.Model.GroupMember entity. */
     GroupMember: "49668B95-FEDC-43DD-8085-D2B0D6343C48",
     /** The EntityType Guid for Rock.Model.GroupMemberAssignment  */
@@ -399,6 +427,10 @@ export const EntityType = {
     InteractiveExperienceSchedule: "D23B4DCF-545A-490F-AEAD-BA78A8FB4028",
     /** The EntityType Guid for Rock.Model.InteractiveExperienceScheduleCampus */
     InteractiveExperienceScheduleCampus: "ABEF4137-F25B-4B2E-AF01-2CEFF704FC11",
+    /** The EntityType Guid for Rock.Model.LavaApplication  */
+    LavaApplication: "FFFE0DE1-B410-435E-9AA8-3A0B18AAF0F7",
+    /** The EntityType Guid for Rock.Model.LavaEndpoint  */
+    LavaEndpoint: "F1BBF7D4-CAFD-450D-A89A-B3312C9738A2",
     /** The EntityType Guid for Rock.Model.LavaShortcode (well known as of v14) */
     LavaShortcode: "7574A473-3326-4973-8DF6-C7BF5F64EB36",
     /** The EntityType Guid for LavaShortcodeCategory 'joiner' table Rock.Model.LavaShortcodeConfiguration */
@@ -521,6 +553,10 @@ export const EntityType = {
     MobileEventsPrayerSessionBlockType: "BCAF9B7B-2ADE-496B-9303-150F495851FC",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Events.PrayerSessionSetup */
     MobileEventsPrayerSessionSetupBlockType: "51431866-FF92-433C-8B0F-0F6BBAD9BCE7",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Finance.FinancialBatchDetail. */
+    MobileFinanceFinancialBatchDetailBlockType: "14FE11A8-A4AA-43EF-9F36-354CE60240CA",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Finance.FinancialBatchList. */
+    MobileFinanceFinancialBatchListBlockType: "E7E18663-7EF9-454C-9C6E-F4A839DB60C8",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Finance.ScheduledTransactionList. */
     MobileFinanceScheduledTransactionListBlockType: "7698E529-6834-46B0-BC5A-D466A6BCE4F6",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Finance.TransactionDetail. */

@@ -30,12 +30,14 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Cms.Utm;
+using Rock.Configuration;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Logging;
@@ -103,11 +105,6 @@ namespace Rock.Web.UI
         /// The obsidian file watchers.
         /// </summary>
         private static readonly List<FileSystemWatcher> _obsidianFileWatchers = new List<FileSystemWatcher>();
-
-        /// <summary>
-        /// The service provider to use during requests.
-        /// </summary>
-        private static readonly Lazy<IServiceProvider> _lazyServiceProvider = new Lazy<IServiceProvider>( CreateServiceProvider );
 
         /// <summary>
         /// The service scopes that should be disposed.
@@ -862,7 +859,14 @@ namespace Rock.Web.UI
 
             if ( _pageCache != null )
             {
-                RequestContext.PrepareRequestForPage( _pageCache );
+                try
+                {
+                    RequestContext.PrepareRequestForPage( _pageCache );
+                }
+                catch
+                {
+                    /* Ignore any exceptions here and keep loading the page.  Earlier problems should have been logged by now. */
+                }
             }
 
             _showDebugTimings = this.PageParameter( "ShowDebugTimings" ).AsBoolean();
@@ -1203,6 +1207,11 @@ namespace Rock.Web.UI
                 {
                     /* At this point, we know the Person (or NULL person) is authorized to View the page */
 
+                    RecordSourceHelper.TrySetRecordSourceSessionCookie( ( cookieName, cookieValue ) =>
+                    {
+                        AddOrUpdateCookie( new HttpCookie( cookieName, cookieValue ) );
+                    } );
+
                     if ( Site.EnableVisitorTracking )
                     {
                         bool isLoggingIn = this.PageId == Site.LoginPageId;
@@ -1221,8 +1230,16 @@ namespace Rock.Web.UI
                     if ( Site.EnablePersonalization )
                     {
                         Page.Trace.Warn( "Loading Personalization Data" );
-                        LoadPersonalizationSegments();
-                        LoadPersonalizationRequestFilters();
+                        try
+                        {
+                            LoadPersonalizationSegments();
+                            LoadPersonalizationRequestFilters();
+                        }
+                        catch ( Exception ex )
+                        {
+                            // Catch and log this exception, but don't stop the page from loading.
+                            ExceptionLogService.LogException( new Exception( "Error loading personalization data (segments and or request filters).", ex ) );
+                        }
                     }
 
                     // Set current models (context)
@@ -1293,13 +1310,38 @@ namespace Rock.Web.UI
                     Page.Trace.Warn( "Creating JS objects" );
                     if ( !ClientScript.IsStartupScriptRegistered( "rock-js-object" ) )
                     {
+                        var realTimeUrl = "/rock-rt";
+                        var realTimeHostname = SystemSettings.GetValue( SystemKey.SystemSetting.REALTIME_HOSTNAME );
+
+                        if ( realTimeHostname.IsNotNullOrWhiteSpace() )
+                        {
+                            try
+                            {
+                                var requestUrl = HttpContext.Current.Request.Url;
+
+                                realTimeUrl = new UriBuilder
+                                {
+                                    Scheme = requestUrl.Scheme,
+                                    Host = realTimeHostname,
+                                    Port = requestUrl.Port,
+                                    Path = "/rock-rt"
+                                }.ToString();
+                            }
+                            catch ( Exception ex )
+                            {
+                                RockLogger.LoggerFactory.CreateLogger( GetType().FullName )
+                                    .LogError( ex, "Unable to create URL for real-time engine." );
+                            }
+                        }
+
                         var script = $@"
 Rock.settings.initialize({{
     siteId: {_pageCache.Layout.SiteId},
     layoutId: {_pageCache.LayoutId},
     pageId: {_pageCache.Id},
     layout: '{_pageCache.Layout.FileName}',
-    baseUrl: '{ResolveUrl( "~" )}'
+    baseUrl: '{ResolveUrl( "~" )}',
+    realTimeUrl: '{realTimeUrl}',
 }});";
 
                         ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-js-object", script, true );
@@ -1578,6 +1620,24 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                         }
                     }
 
+                    var colorModeScript = @"
+        (function () {
+            var attr = 'theme';
+            var states = ['light', 'dark', 'system'];
+            var html = document.documentElement;
+
+            // init state
+            var saved = localStorage.getItem(attr);
+            var currentIndex = Math.max(0, states.indexOf(saved));
+            if ( saved == null ) {
+                currentIndex = 2; // default to system
+            }
+
+            html.setAttribute( ""theme"", states[currentIndex] );
+        })();
+";
+                    AddScriptToHead( this.Page, colorModeScript, true );
+
                     /*
                      * 2020-06-17 - JH
                      *
@@ -1631,7 +1691,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                         lbCacheControl.Click += lbCacheControl_Click;
                         lbCacheControl.CssClass = $"pull-left margin-l-md {cacheIndicator}";
                         lbCacheControl.ToolTip = $"Web cache {cacheEnabled}";
-                        lbCacheControl.Text = "<i class='fa fa-running'></i>";
+                        lbCacheControl.Text = "<i class='ti ti-run'></i>";
                         adminFooter.Controls.Add( lbCacheControl );
 
                         // If the current user is Impersonated by another user, show a link on the admin bar to log back in as the original user
@@ -1646,7 +1706,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             //_btnRestoreImpersonatedByUser.CssClass = "btn";
                             _btnRestoreImpersonatedByUser.Visible = impersonatedByUser != null;
                             _btnRestoreImpersonatedByUser.Click += _btnRestoreImpersonatedByUser_Click;
-                            _btnRestoreImpersonatedByUser.Text = $"<i class='fa-fw fa fa-unlock'></i> " + $"Restore {impersonatedByUser?.Person?.ToString()}";
+                            _btnRestoreImpersonatedByUser.Text = $"<i class='ti-fw ti ti-lock-open'></i> " + $"Restore {impersonatedByUser?.Person?.ToString()}";
                             impersonatedByUserDiv.Controls.Add( _btnRestoreImpersonatedByUser );
                             adminFooter.Controls.Add( impersonatedByUserDiv );
                         }
@@ -1665,7 +1725,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             aBlockConfig.Attributes.Add( "Title", "Block Configuration (Alt-B)" );
                             HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
                             aBlockConfig.Controls.Add( iBlockConfig );
-                            iBlockConfig.Attributes.Add( "class", "fa fa-th-large" );
+                            iBlockConfig.Attributes.Add( "class", "ti ti-border-all" );
                         }
 
                         if ( canEditPage || canAdministratePage )
@@ -1680,7 +1740,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             aPageProperties.Attributes.Add( "Title", "Page Properties (Alt+P)" );
                             HtmlGenericControl iPageProperties = new HtmlGenericControl( "i" );
                             aPageProperties.Controls.Add( iPageProperties );
-                            iPageProperties.Attributes.Add( "class", "fa fa-cog" );
+                            iPageProperties.Attributes.Add( "class", "ti ti-settings" );
                         }
 
                         if ( canAdministratePage )
@@ -1695,7 +1755,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             aChildPages.Attributes.Add( "Title", "Child Pages (Alt+L)" );
                             HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
                             aChildPages.Controls.Add( iChildPages );
-                            iChildPages.Attributes.Add( "class", "fa fa-sitemap" );
+                            iChildPages.Attributes.Add( "class", "ti ti-sitemap" );
 
                             // RockPage Zones
                             HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
@@ -1705,7 +1765,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             aPageZones.Attributes.Add( "Title", "Page Zones (Alt+Z)" );
                             HtmlGenericControl iPageZones = new HtmlGenericControl( "i" );
                             aPageZones.Controls.Add( iPageZones );
-                            iPageZones.Attributes.Add( "class", "fa fa-columns" );
+                            iPageZones.Attributes.Add( "class", "ti ti-columns" );
 
                             // RockPage Security
                             HtmlGenericControl aPageSecurity = new HtmlGenericControl( "a" );
@@ -1718,7 +1778,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             aPageSecurity.Attributes.Add( "Title", "Page Security" );
                             HtmlGenericControl iPageSecurity = new HtmlGenericControl( "i" );
                             aPageSecurity.Controls.Add( iPageSecurity );
-                            iPageSecurity.Attributes.Add( "class", "fa fa-lock" );
+                            iPageSecurity.Attributes.Add( "class", "ti ti-lock" );
 
                             // ShortLink Properties
                             var administratorShortlinkScript = $@"Obsidian.onReady(() => {{
@@ -1736,7 +1796,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             aShortLink.Attributes.Add( "Title", "Add Short Link" );
                             HtmlGenericControl iShortLink = new HtmlGenericControl( "i" );
                             aShortLink.Controls.Add( iShortLink );
-                            iShortLink.Attributes.Add( "class", "fa fa-link" );
+                            iShortLink.Attributes.Add( "class", "ti ti-link" );
 
                             // System Info
                             HtmlGenericControl aSystemInfo = new HtmlGenericControl( "a" );
@@ -1748,7 +1808,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             aSystemInfo.Attributes.Add( "Title", "Rock Information" );
                             HtmlGenericControl iSystemInfo = new HtmlGenericControl( "i" );
                             aSystemInfo.Controls.Add( iSystemInfo );
-                            iSystemInfo.Attributes.Add( "class", "fa fa-info-circle" );
+                            iSystemInfo.Attributes.Add( "class", "ti ti-info-circle" );
                         }
                     }
 
@@ -1807,10 +1867,11 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                     Page.Header.Controls.Add( new LiteralControl( "<meta name=\"robots\" content=\"noindex, nofollow\"/>" ) );
                 }
 
-                // Add response headers to request that the client tell us if they prefer dark mode
-                Response.Headers.Add( "Accept-CH", "Sec-CH-Prefers-Color-Scheme" );
+                // Add response headers to request that the client tell us if they prefer dark mode, and which platform version they are using
+                Response.Headers.Add( "Accept-CH", "Sec-CH-Prefers-Color-Scheme, Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version" );
                 Response.Headers.Add( "Vary", "Sec-CH-Prefers-Color-Scheme" );
-                Response.Headers.Add( "Critical-CH", "Sec-CH-Prefers-Color-Scheme" );
+                Response.Headers.Add( "Critical-CH", "Sec-CH-Prefers-Color-Scheme, Sec-CH-UA-Platform-Version" );
+                Response.Headers.Add( "Permissions-Policy", "ch-ua-platform-version=(self)" );
 
                 if ( _showDebugTimings )
                 {
@@ -1826,31 +1887,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                     Page.Form.Controls.Add( new Literal
                     {
                         ID = _obsidianPageTimingControlId,
-                        Text = $@"
-<span>
-    <style>
-        .debug-timestamp {{
-            text-align: right;
-        }}
-
-        .debug-waterfall {{
-            width: 40%;
-            position: relative;
-            vertical-align: middle !important;
-            padding: 0 !important;
-        }}
-
-        .debug-chart-bar {{
-            position: absolute;
-            display: block;
-            min-width: 1px;
-            height: 1.125em;
-            background: #009ce3;
-            margin-top: -0.5625em;
-        }}
-    </style>
-    <div id=""{_obsidianPageTimingControlId}""></div>
-</span>"
+                        Text = $"<div id=\"{_obsidianPageTimingControlId}\"></div>"
                     } );
                 }
             }
@@ -2251,10 +2288,19 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
             var requestFilterIds = new List<int>();
             foreach ( var requestFilter in requestFilters )
             {
-                if ( requestFilter.RequestMeetsCriteria( this.Request, this.Site ) )
+                try
                 {
-                    requestFilterIds.Add( requestFilter.Id );
+                    if ( requestFilter.RequestMeetsCriteria( this.Request, this.Site ) )
+                    {
+                        requestFilterIds.Add( requestFilter.Id );
+                    }
                 }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( new Exception( $"Error processing personalization request filter: {requestFilter.Name ?? requestFilter.RequestFilterKey}.", ex ) );
+                    throw;
+                }
+
             }
 
             this.PersonalizationRequestFilterIds = requestFilterIds.ToArray();
@@ -2652,7 +2698,8 @@ Sys.Application.add_load(function () {
                     PostalCode = geolocation?.PostalCode,
                     Latitude = geolocation?.Latitude,
                     Longitude = geolocation?.Longitude,
-                    InteractionChannelCustom1 = Activity.Current?.TraceId.ToString()
+                    InteractionChannelCustom1 = Activity.Current?.TraceId.ToString(),
+                    UserAgentPlatformVersion = Request.UserAgentPlatformVersion()
                 };
 
                 // If we have a UTM cookie, add the information to the interaction.
@@ -2792,31 +2839,12 @@ Sys.Application.add_load(function () {
         }
 
         /// <summary>
-        /// Creates the service provider that will provides services for all
-        /// requests during the lifetime of this application.
-        /// </summary>
-        /// <returns>A new service provider.</returns>
-        private static IServiceProvider CreateServiceProvider()
-        {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IRockRequestContextAccessor, RockRequestContextAccessor>();
-            serviceCollection.AddScoped<RockContext>();
-            serviceCollection.AddSingleton<IWebHostEnvironment>( provider => new Utility.WebHostEnvironment
-            {
-                WebRootPath = AppDomain.CurrentDomain.BaseDirectory
-            } );
-            serviceCollection.AddRockLogging();
-
-            return serviceCollection.BuildServiceProvider();
-        }
-
-        /// <summary>
         /// Creates the service scope and initializes any required values.
         /// </summary>
         /// <returns>An new service scope.</returns>
         private IServiceScope CreateServiceScope()
         {
-            var scope = _lazyServiceProvider.Value.CreateScope();
+            var scope = RockApp.Current.CreateScope();
 
             _pageServiceScopes.Add( scope );
 
@@ -3745,7 +3773,7 @@ Sys.Application.add_load(function () {
         /// and this request has not yet been prepared for a given page.</returns>
         public string GetContextCookieName( bool pageSpecific )
         {
-            return RequestContext?.GetContextCookieName( pageSpecific );
+            return RequestContext?.GetContextCookieName( pageSpecific ? RequestContext.Page : null );
         }
 
         /// <summary>
@@ -3954,7 +3982,7 @@ Sys.Application.add_load(function () {
                     zoneConfigLink.Attributes.Add( "href", "#" );
                     zoneConfig.Controls.Add( zoneConfigLink );
                     HtmlGenericControl iZoneConfig = new HtmlGenericControl( "i" );
-                    iZoneConfig.Attributes.Add( "class", "fa fa-arrow-circle-right" );
+                    iZoneConfig.Attributes.Add( "class", "ti ti-circle-arrow-right" );
                     zoneConfigLink.Controls.Add( iZoneConfig );
 
                     HtmlGenericControl zoneConfigBar = new HtmlGenericControl( "div" );
@@ -3976,7 +4004,7 @@ Sys.Application.add_load(function () {
                     aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
                     //aBlockConfig.InnerText = "Blocks";
                     HtmlGenericControl iZoneBlocks = new HtmlGenericControl( "i" );
-                    iZoneBlocks.Attributes.Add( "class", "fa fa-th-large" );
+                    iZoneBlocks.Attributes.Add( "class", "ti ti-border-all" );
                     aBlockConfig.Controls.Add( iZoneBlocks );
                 }
 
@@ -5107,9 +5135,18 @@ Sys.Application.add_load(function () {
         {
             RequestContext = new RockRequestContext( context.Request, new RockResponseContext( this ), CurrentUser );
 
-            if ( _lazyServiceProvider.Value.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
+            if ( RockApp.Current.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
             {
                 internalAccessor.RockRequestContext = RequestContext;
+            }
+
+            if ( RequestContext.IsClientForbidden( _pageCache ) )
+            {
+                context.Response.StatusCode = ( int ) System.Net.HttpStatusCode.Forbidden;
+                context.Response.SuppressContent = true;
+                context.ApplicationInstance.CompleteRequest();
+
+                return null;
             }
 
             return AsyncPageBeginProcessRequest( context, cb, extraData );
@@ -5120,7 +5157,7 @@ Sys.Application.add_load(function () {
         {
             AsyncPageEndProcessRequest( result );
 
-            if ( _lazyServiceProvider.Value.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
+            if ( RockApp.Current.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
             {
                 if ( ReferenceEquals( internalAccessor.RockRequestContext, RequestContext ) )
                 {

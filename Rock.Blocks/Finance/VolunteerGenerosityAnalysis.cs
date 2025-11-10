@@ -80,7 +80,7 @@ namespace Rock.Blocks.Finance
                             var uniqueCampuses = campusDict.Select( c => new ListItemBag { Text = c.Value, Value = c.Key } ).OrderBy( i => i.Text ).ToList();
 
                             var uniqueGroups = peopleData.Select( p => p.GroupName ).Distinct().ToList();
-                            var hasMultipleCampuses = CampusCache.All().Count( c => ( bool ) c.IsActive ) > 1;
+                            var hasMultipleCampuses = CampusCache.All().Count( c => c.IsActive == true ) > 1;
 
                             box.UniqueCampuses = uniqueCampuses;
                             box.UniqueGroups = uniqueGroups;

@@ -3,9 +3,10 @@
     <ComponentPropertyPanelBase v-bind="$attrs"
                                 :componentElement="componentElement"
                                 :componentMigrationHelper="sectionComponentHelper"
-                                title="Layout"
                                 :isCloneDisabled="isCloneDisabled"
                                 :isSaveButtonShown="true"
+                                :ltr="ltr"
+                                title="Layout"
                                 @save="onShowSaveSectionModal"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
@@ -78,6 +79,11 @@
         },
 
         isCloneDisabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        ltr: {
             type: Boolean as PropType<boolean>,
             default: false
         }

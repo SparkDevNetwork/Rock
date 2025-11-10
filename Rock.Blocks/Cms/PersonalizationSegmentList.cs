@@ -39,7 +39,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Personalization Segment List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of personalization segments." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
@@ -131,7 +131,19 @@ namespace Rock.Blocks.Cms
                 .Include( s => s.FilterDataView )
                 .Include( s => s.Categories );
 
-            var personalizationSegmentItemQuery = personalizationSegmentList.Select( a => new PersonalizationSegmentListBag
+            var scheduleIds = personalizationSegmentList
+                .Where( ps => ps.PersistedScheduleId.HasValue )
+                .Select( ps => ps.PersistedScheduleId.Value )
+                .Distinct()
+                .ToList();
+
+            var schedules = new ScheduleService( rockContext )
+                .GetByIds( scheduleIds )
+                .ToDictionary( s => s.Id, s => s );
+
+            // Server-side projection only (EF-translatable).
+            var sqlProjection = personalizationSegmentList
+                .Select( a => new
             {
                 PersonalizationSegment = a,
                 KnownIndividualsCount = a.IsDirty ? -1 : personAliasPersonalizationsSegmentsQry.Where( p => p.PersonalizationEntityId == a.Id && p.PersonAlias.PersonId != anonymousVisitorPersonId ).Count(),
@@ -139,6 +151,29 @@ namespace Rock.Blocks.Cms
                 TimeToUpdateDurationMilliseconds = a.TimeToUpdateDurationMilliseconds ?? 0,
                 Categories = a.Categories.Select( c => c.Name ).ToList(),
                 FilterDataViewName = a.FilterDataViewId.HasValue ? a.FilterDataView.Name : null,
+                PersistedScheduleIntervalMinutes = a.PersistedScheduleIntervalMinutes,
+                PersistedScheduleId = a.PersistedScheduleId,
+            } );
+
+            var currentPerson = GetCurrentPerson();
+
+            // Client-side only to format the PersistedScheduleInfo string (not SQL-translatable).
+            var personalizationSegmentItemQuery = sqlProjection
+            .AsEnumerable()
+            .Where( a => a.PersonalizationSegment.IsAuthorized( Authorization.VIEW, currentPerson ) )
+            .Select( a => new PersonalizationSegmentListBag
+            {
+                PersonalizationSegment = a.PersonalizationSegment,
+                KnownIndividualsCount = a.KnownIndividualsCount,
+                AnonymousIndividualsCount = a.AnonymousIndividualsCount,
+                TimeToUpdateDurationMilliseconds = a.TimeToUpdateDurationMilliseconds,
+                Categories = a.Categories,
+                FilterDataViewName = a.FilterDataViewName,
+                PersistedScheduleInfo = a.PersistedScheduleId.HasValue
+                        ? schedules[a.PersistedScheduleId.Value].FriendlyScheduleText
+                        : a.PersistedScheduleIntervalMinutes.HasValue
+                            ? $"Every {new Rock.Utility.TimeIntervalSetting( a.PersistedScheduleIntervalMinutes, null )}"
+                            : "Not Persisted"
             } );
 
             return personalizationSegmentItemQuery.AsQueryable();
@@ -157,10 +192,11 @@ namespace Rock.Blocks.Cms
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.PersonalizationSegment.IdKey )
                 .AddField( "guid", a => a.PersonalizationSegment.Guid )
-                .AddField( "isSecurityDisabled", a => a.PersonalizationSegment.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddField( "isSecurityDisabled", a => !a.PersonalizationSegment.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 .AddTextField( "name", a => a.PersonalizationSegment.Name )
                 .AddTextField( "description", a => a.PersonalizationSegment.Description )
                 .AddTextField( "filterDataViewName", a => a.FilterDataViewName )
+                .AddTextField( "persistedScheduleInfo", a => a.PersistedScheduleInfo )
                 .AddField( "knownIndividualsCount", a => a.KnownIndividualsCount )
                 .AddField( "anonymousIndividualsCount", a => a.AnonymousIndividualsCount )
                 .AddField( "timeToUpdateDurationMilliseconds", a => a.TimeToUpdateDurationMilliseconds.HasValue ? Math.Round( ( double ) a.TimeToUpdateDurationMilliseconds ) : a.TimeToUpdateDurationMilliseconds )
@@ -224,6 +260,8 @@ namespace Rock.Blocks.Cms
             public double? TimeToUpdateDurationMilliseconds { get; set; }
 
             public List<string> Categories { get; set; }
+
+            public string PersistedScheduleInfo { get; set; }
         }
 
         #endregion

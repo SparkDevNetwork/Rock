@@ -886,7 +886,7 @@ namespace RockWeb.Blocks.Cms
 
         protected string DisplayDateStatus( DateTime aDate )
         {
-            return ( aDate > RockDateTime.Now ) ? "<i class='fa fa-clock'></i>" : string.Empty;
+            return ( aDate > RockDateTime.Now ) ? "<i class='ti ti-clock'></i>" : string.Empty;
         }
 
         protected void BindAttributes( ContentChannel channel )

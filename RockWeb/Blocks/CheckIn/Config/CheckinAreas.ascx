@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block js-panel-details">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-list"></i>
+                    <i class="ti ti-list"></i>
                     Areas and Groups
                 </h1>
                 <div class="pull-right">
@@ -23,7 +23,7 @@
                             <asp:PlaceHolder ID="phRows" runat="server" />
                         </ul>
                         <div class="pull-right checkin-item-actions">
-                            <asp:LinkButton ID="lbAddArea" runat="server" ToolTip="Add New Area" CssClass="btn btn-xs btn-default" OnClick="lbAddArea_Click"><i class="fa fa-plus"></i> <i class="fa fa-folder-open"></i></asp:LinkButton>
+                            <asp:LinkButton ID="lbAddArea" runat="server" ToolTip="Add New Area" CssClass="btn btn-xs btn-default" OnClick="lbAddArea_Click"><i class="ti ti-plus"></i> <i class="ti ti-folder-open"></i></asp:LinkButton>
                         </div>
                     </div>
                     <div class="col-md-6 js-area-group-details">

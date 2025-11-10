@@ -7,7 +7,7 @@
         <div class="panel panel-block" id="pnlEditGroup" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-users"></i>
+                    <i class="ti ti-users"></i>
                     <asp:Literal ID="lBanner" runat="server" />
                 </h1>
             </div>
@@ -46,7 +46,7 @@
                     <div class="panel-heading clearfix">
                         <h3 class="panel-title pull-left"><%=GroupTypeName %> Members</h3>
                         <div class="panel-labels">
-                            <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddPerson_Click" CausesValidation="false">Add Person<i class="btn-icon fa fa-user"></i></asp:LinkButton>
+                            <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddPerson_Click" CausesValidation="false">Add Person<i class="btn-icon ti ti-user"></i></asp:LinkButton>
                         </div>
                     </div>
                     <div class="panel-body">
@@ -64,8 +64,8 @@
                                             </div>
                                         </div>
                                         <div class="control-actions">
-                                            <asp:LinkButton ID="lbNewGroup" runat="server" CssClass="btn btn-default btn-square btn-move btn-sm" CommandName="Move"><i class="fa fa-fw fa-external-link"></i></asp:LinkButton>
-                                            <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-remove btn-default btn-square btn-sm" CommandName="Remove"><i class="fa fa-fw fa-times"></i></asp:LinkButton>
+                                            <asp:LinkButton ID="lbNewGroup" runat="server" CssClass="btn btn-default btn-square btn-move btn-sm" CommandName="Move"><i class="ti ti-fw ti-external-link"></i></asp:LinkButton>
+                                            <asp:LinkButton ID="lbRemoveMember" runat="server" Visible="false" CssClass="btn btn-remove btn-default btn-square btn-sm" CommandName="Remove"><i class="ti ti-fw ti-x"></i></asp:LinkButton>
                                         </div>
                                     </li>
                                 </ItemTemplate>
@@ -78,7 +78,7 @@
                     <div class="panel-heading clearfix">
                         <h4 class="panel-title pull-left">Addresses</h4>
                         <div class="panel-labels">
-                            <asp:LinkButton ID="lbMoved" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbMoved_Click" CausesValidation="false"><i class="fa fa-truck fa-flip-horizontal"></i> <%=GroupTypeName %> Moved</asp:LinkButton>
+                            <asp:LinkButton ID="lbMoved" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbMoved_Click" CausesValidation="false"><i class="ti ti-truck"></i> <%=GroupTypeName %> Moved</asp:LinkButton>
                         </div>
                     </div>
 
@@ -105,7 +105,7 @@
                                     </Rock:RockTemplateField>
                                     <Rock:RockTemplateField HeaderText="Mailing" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-select-field">
                                         <ItemTemplate>
-                                            <%# ((bool)Eval("IsMailing")) ? "<i class=\"fa fa-check\"></i>" : "" %>
+                                            <%# ((bool)Eval("IsMailing")) ? "<i class=\"ti ti-check\"></i>" : "" %>
                                         </ItemTemplate>
                                         <EditItemTemplate>
                                             <asp:CheckBox ID="cbMailing" runat="server" Checked='<%# Eval("IsMailing") %>' Text="<span class='sr-only'>Is Mailing Address</span>" />
@@ -113,20 +113,20 @@
                                     </Rock:RockTemplateField>
                                     <Rock:RockTemplateField HeaderText="Map Location" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-select-field">
                                         <ItemTemplate>
-                                            <%# ((bool)Eval("IsLocation")) ? "<i class=\"fa fa-check\"></i>" : "" %>
+                                            <%# ((bool)Eval("IsLocation")) ? "<i class=\"ti ti-check\"></i>" : "" %>
                                         </ItemTemplate>
                                         <EditItemTemplate>
-                                            <%# ((bool)Eval("IsLocation")) ? "<i class=\"fa fa-check\"></i>" : "" %>
+                                            <%# ((bool)Eval("IsLocation")) ? "<i class=\"ti ti-check\"></i>" : "" %>
                                             <asp:CheckBox ID="cbLocation" runat="server" Checked='<%# Eval("IsLocation") %>' Visible='<%# !(bool)Eval("IsLocation") %>' Text="<span class='sr-only'>Is Map Location</span>" />
                                         </EditItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:RockTemplateField ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" HeaderStyle-CssClass="span1" ItemStyle-CssClass="grid-columncommand" ItemStyle-Wrap="false">
                                         <ItemTemplate>
-                                            <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CommandName="Edit" CssClass="btn btn-default btn-sm" CausesValidation="false"><i class="fa fa-pencil"></i></asp:LinkButton>
+                                            <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CommandName="Edit" CssClass="btn btn-default btn-sm" CausesValidation="false"><i class="ti ti-pencil"></i></asp:LinkButton>
                                         </ItemTemplate>
                                         <EditItemTemplate>
-                                            <asp:LinkButton ID="lbSave" runat="server" Text="Save" CommandName="Update" CssClass="btn btn-sm btn-success"><i class="fa fa-check"></i></asp:LinkButton>
-                                            <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CommandName="Cancel" CssClass="btn btn-sm btn-warning" CausesValidation="false"><i class="fa fa-minus"></i></asp:LinkButton>
+                                            <asp:LinkButton ID="lbSave" runat="server" Text="Save" CommandName="Update" CssClass="btn btn-sm btn-success"><i class="ti ti-check"></i></asp:LinkButton>
+                                            <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CommandName="Cancel" CssClass="btn btn-sm btn-warning" CausesValidation="false"><i class="ti ti-minus"></i></asp:LinkButton>
                                         </EditItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:DeleteField OnClick="gLocation_RowDelete" />

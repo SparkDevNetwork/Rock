@@ -344,8 +344,8 @@ namespace Rock.Security.ExternalAuthentication
                 if ( user == null )
                 {
                     // Get name/email from Google login
-                    string lastName = googleUser.family_name.ToString();
-                    string firstName = googleUser.given_name.ToString();
+                    string lastName = googleUser.family_name.ToStringSafe();
+                    string firstName = googleUser.given_name.ToStringSafe();
                     string email = googleUser.email ?? string.Empty;
 
                     Person person = null;
@@ -375,11 +375,11 @@ namespace Rock.Security.ExternalAuthentication
                              person.EmailPreference = EmailPreference.EmailAllowed;
                              try
                              {
-                                 if ( googleUser.gender.ToString().ToLower() == "male" )
+                                 if ( googleUser.gender.ToStringSafe().ToLower() == "male" )
                                  {
                                      person.Gender = Gender.Male;
                                  }
-                                 else if ( googleUser.gender.ToString().ToLower() == "female" )
+                                 else if ( googleUser.gender.ToStringSafe().ToLower() == "female" )
                                  {
                                      person.Gender = Gender.Female;
                                  }
@@ -390,8 +390,8 @@ namespace Rock.Security.ExternalAuthentication
                              }
                              catch
                              {
-                                // Empty catch
-                            }
+                                 // Empty catch
+                             }
 
                              if ( person != null )
                              {

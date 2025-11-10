@@ -1083,7 +1083,7 @@ namespace Rock.Web.UI.Controls
             _lbDelete.CssClass = "btn btn-xs btn-square btn-danger pull-right";
             _lbDelete.Click += lbDelete_Click;
             _lbDelete.CausesValidation = false;
-            _lbDelete.Text = "<i class='fa fa-times'></i>";
+            _lbDelete.Text = "<i class='ti ti-x'></i>";
         }
 
         /// <summary>

@@ -99,7 +99,7 @@ namespace RockWeb.Blocks.Reporting
         Key = AttributeKey.BlockTitleIconCssClass,
         Description = "The css class name to use for the block title icon.",
         IsRequired = true,
-        DefaultValue = "fa fa-filter",
+        DefaultValue = "ti ti-filter",
         Category = "CustomSetting",
         Order = 3 )]
 

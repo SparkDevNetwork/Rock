@@ -2,11 +2,11 @@
 <template>
     <div class="numberincrement">
         <a @click="goDown" class="numberincrement-down" :class="{ disabled: disabled || isDownDisabled }" :disabled="disabled || isDownDisabled">
-            <i class="fa fa-minus "></i>
+            <i class="ti ti-minus"></i>
         </a>
         <span class="numberincrement-value">{{ internalValue }}</span>
         <a @click="goUp" class="numberincrement-up" :class="{ disabled: disabled || isUpDisabled }" :disabled="disabled || isUpDisabled">
-            <i class="fa fa-plus "></i>
+            <i class="ti ti-plus"></i>
         </a>
     </div>
 </template>

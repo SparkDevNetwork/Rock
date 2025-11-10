@@ -3,8 +3,9 @@
     <TreeItemPicker v-model="internalValue"
                     v-bind="standardProps"
                     formGroupClasses="category-picker"
-                    iconCssClass="fa fa-filter"
+                    iconCssClass="ti ti-filter"
                     :provider="itemProvider"
+                    autoExpand
                     :multiple="multiple"
                     disableFolderSelection />
 </template>

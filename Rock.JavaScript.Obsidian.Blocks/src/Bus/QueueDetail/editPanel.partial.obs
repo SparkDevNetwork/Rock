@@ -5,15 +5,14 @@
             <div class="col-md-6">
                 <NumberBox v-model="timeToLiveSeconds"
                            label="Time to Live (Seconds)"
-                           help="The amount of seconds that a message sent on the queue can persist without being consumed before being discarded. A value less than 1 means the message will not expire."
-                            />
+                           help="The amount of seconds that a message sent on the queue can persist without being consumed before being discarded. A value less than 1 means the message will not expire." />
             </div>
         </div>
     </fieldset>
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { PropType, watch } from "vue";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";

@@ -39,7 +39,7 @@
 
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" Help="The Font Awesome icon class to use when displaying check-in of this check-in type." />
+                                <Rock:RockTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" Help="The icon class to use when displaying check-in of this check-in type." />
                             </div>
                         </div>
 
@@ -94,10 +94,20 @@
                                     <Rock:RockCheckBox ID="cbPreventInactivePeople" runat="server" Label="Prevent Inactive People"
                                         Help="Should people who are inactive be excluded from being able to check-in?" />
                                     <Rock:RockCheckBox ID="cbPreventDuplicateCheckin" runat="server" Label="Prevent Duplicate Check-in"
-                                        Help="Should people be prevented from checking into a specifice service time (schedule) more than once?" />
+                                        Help="Should people be prevented from checking into a specific service time (schedule) more than once?" />
 
                                     <Rock:RockCheckBox ID="cbEnableProximityCheckIn" runat="server" Label="Enable Proximity Check-in"
-                                        Help="Makes this check-in configuration and all areas and groups available for proximity check-in with a native Rock Mobile application." />
+                                        Help="Makes this check-in configuration and all areas and groups available for proximity check-in with a native Rock Mobile application."
+                                        OnCheckedChanged="cbEnableProximityCheckIn_CheckedChanged"
+                                        AutoPostBack="true" />
+
+                                    <div class="well well-conditional" id="proximityAttendanceConfiguration" runat="server">
+                                     <Rock:CodeEditor ID="ceCheckInNotificationTemplate" runat="server" Label="Notification Template"
+                                        Help="The lava template that will be parsed to deliver a push notification when a person checks in through proximity attendance."
+                                        EditorMode="Lava"
+                                        Rows="3" />
+                                    </div>
+
                                 </div>
                             </div>
 
@@ -188,16 +198,19 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:DefinedValuePicker ID="dvpRegistrationDefaultPersonConnectionStatus" runat="server" Label="Default Person Connection Status" />
+                                    <Rock:DefinedValuePicker ID="dvpRegistrationDefaultPersonRecordSource" runat="server" Label="Default Person Record Source" Help="The record source to use when creating a new person (default = 'Check-in'). If a 'RecordSource' page parameter is found, it will be used instead." />
                                     <Rock:RockCheckBox ID="cbRegistrationDisplayAlternateIdFieldForAdults" runat="server" Label="Display Alternate ID Field for Adults" />
                                     <Rock:RockCheckBox ID="cbRegistrationDisplayAlternateIdFieldForChildren" runat="server" Label="Display Alternate ID Field for Children" />
                                     <Rock:RockCheckBox ID="cbRegistrationDisplaySmsEnabled" runat="server" Label="Display SMS Enabled Selection for Phone Number" />
                                     <Rock:RockCheckBox ID="cbRegistrationSmsEnabledByDefault" runat="server" Label="Set the SMS Enabled for the phone number by default" />
                                     <Rock:RockCheckBox ID="cbEnableCheckInAfterRegistration" runat="server" Label="Enable Check-in After Registration" Help="This determines if the family should continue on the check-in path after being registered, or if they should be directed to a different kiosk after registration (take them back to search )." />
                                     <Rock:RockListBox ID="lbKnownRelationshipTypes" runat="server" Label="Known Relationship Types" Help="The known relationships to display in the child's 'Relationship to Adult' field." />
+                                    <Rock:RockCheckBox ID="cbRegistrationForceSelectionOfKnownRelationshipType" runat="server" Label="Force Selection of Known Relationship Type" Help="Requires the individual to select a relationship type from the list. 'Child' will not be preselected automatically." />
                                     <Rock:RockListBox ID="lbSameFamilyKnownRelationshipTypes" runat="server" Label="Same Family Known Relationship Types" Help="Of the known relationships defined above which should be used to place the child in the family with the adults." />
                                     <Rock:RockListBox ID="lbCanCheckInKnownRelationshipTypes" runat="server" Label="Can Check-in Known Relationship Types" Help="The known relationships that will place the child in a separate family with a 'Can Check-in' relationship back to the person." />
                                     <Rock:WorkflowTypePicker ID="wftpRegistrationAddFamilyWorkflowTypes" runat="server" AllowMultiSelect="true" Label="New Family Workflow Types" Help="The workflow types that should be launched when a family is added." />
                                     <Rock:WorkflowTypePicker ID="wftpRegistrationAddPersonWorkflowTypes" runat="server" AllowMultiSelect="true" Label="New Person Workflow Types" Help="The workflow types that should be launched when a person is added to a family." />
+                                    <Rock:NumberBox ID="nbRegistrationGradeConfirmationAge" runat="server" Label="Grade Confirmation Age" Help="Sets the age when the grade confirmation dialog appears while adding or editing a child. Use decimals for partial years (e.g., 5.5). Only applies if grade is optional. Leave blank to disable the dialog." NumberType="Double" MinimumValue="0" />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockListBox ID="lbRegistrationRequiredAttributesForAdults" runat="server" Label="Required Attributes for Adults" />
@@ -213,6 +226,8 @@
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplayEthnicityOnAdults" runat="server" Label="Display Ethnicity on Adults" Help="How should ethnicity be displayed for adults?" />
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplayRaceOnChildren" runat="server" Label="Display Race on Children" Help="How should race be displayed for children?" />
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplayEthnicityOnChildren" runat="server" Label="Display Ethnicity on Children" Help="How should ethnicity be displayed for children?" />
+                                    <Rock:RockDropDownList ID="ddlRegistrationDisplayMobilePhoneOnChildren" runat="server" Label="Display Mobile Phone on Children" Help="How should Mobile Phone be displayed for children?" />
+                                    <Rock:RockDropDownList ID="ddlRegistrationDisplaySuffix" runat="server" Label="Display Suffix" Help="Show or hide the suffix field when editing an individual." />
                                 </div>
                             </div>
                         </Rock:PanelWidget>
@@ -308,7 +323,7 @@
                             <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                             <div class="pull-right">
-                                <asp:LinkButton ID="btnSchedules" runat="server" CssClass="btn btn-default" OnClick="btnSchedules_Click"><i class="fa fa-calendar"></i> Schedule</asp:LinkButton>
+                                <asp:LinkButton ID="btnSchedules" runat="server" CssClass="btn btn-default" OnClick="btnSchedules_Click"><i class="ti ti-calendar"></i> Schedule</asp:LinkButton>
                             </div>
                         </div>
 

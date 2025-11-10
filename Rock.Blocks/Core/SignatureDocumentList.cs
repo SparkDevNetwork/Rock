@@ -21,8 +21,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
-using DotLiquid;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -45,13 +43,14 @@ namespace Rock.Blocks.Core
     [DisplayName( "Signature Document List" )]
     [Category( "Core" )]
     [Description( "Block for viewing values for a signature document type." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the signature document details.",
         Key = AttributeKey.DetailPage )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "b4526eb4-3ca4-47be-b686-4b9fbee2bf4d" )]
     [Rock.SystemGuid.BlockTypeGuid( "6076609b-d4d2-4825-8bb2-8681e99c59f2" )]
     [CustomizedGrid]
@@ -217,7 +216,7 @@ namespace Rock.Blocks.Core
                 .AddTextField( "status", a => a.Status.ToString() )
                 .AddDateTimeField( "lastInviteDate", a => a.LastInviteDate )
                 .AddDateTimeField( "signedDateTime", a => a.SignedDateTime )
-                .AddTextField( "fileText", a => a.BinaryFileId.HasValue ? "<i class='fa fa-file-alt fa-lg'></i>" : "<i class='fa fa-exclamation-triangle text-danger' title='File deleted'></i>" )
+                .AddTextField( "fileText", a => a.BinaryFileId.HasValue ? "<i class='ti ti-file ti-lg'></i>" : "<i class='ti ti-alert-triangle text-danger' title='File deleted'></i>" )
                 .AddField( "fileGuid", a => a.BinaryFile == null ? Guid.Empty : a.BinaryFile.Guid )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 .AddAttributeFields( GetGridAttributes() );

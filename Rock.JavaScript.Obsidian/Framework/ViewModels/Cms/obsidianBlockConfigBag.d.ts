@@ -22,6 +22,7 @@
 //
 
 import { BlockReloadMode } from "@Obsidian/Enums/Cms/blockReloadMode";
+import { BlockRole } from "@Obsidian/Enums/Cms/blockRole";
 import { Guid } from "@Obsidian/Types";
 import { BlockCustomActionBag } from "@Obsidian/ViewModels/Cms/blockCustomActionBag";
 import { ObsidianBlockPreferencesBag } from "@Obsidian/ViewModels/Cms/obsidianBlockPreferencesBag";
@@ -70,6 +71,12 @@ export type ObsidianBlockConfigBag = {
 
     /** Gets or sets the reload mode when the block configuration changes. */
     reloadMode: BlockReloadMode;
+
+    /**
+     * The role this block plays on the page. This is used to show and
+     * hide certain blocks in response to user actions.
+     */
+    role: BlockRole;
 
     /**
      * Gets or sets the HTML element identifier that the block will be

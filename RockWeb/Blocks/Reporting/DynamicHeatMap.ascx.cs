@@ -35,9 +35,9 @@ namespace RockWeb.Blocks.Reporting
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName( "Dynamic Heat Map" )]
+    [DisplayName( "Dynamic Heat Map (Legacy) (Deprecated)" )]
     [Category( "Reporting" )]
-    [Description( "Block to a map of the locations of people" )]
+    [Description( "This block is deprecated due to the upcoming removal of the Heatmap Layer in the Google Maps JavaScript API. Block to a map of the locations of people" )]
 
     // CustomSetting Dialog
     [TextField( "DataView", "The dataview to filter the people shown on the map. Leave blank to have it determined by the user or by page param", false, "", "CustomSetting" )]

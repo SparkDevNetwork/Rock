@@ -18,6 +18,8 @@ using System;
 using System.Configuration;
 using Newtonsoft.Json;
 
+using Rock.Apps.StatementGenerator.Client;
+
 namespace Rock.Apps.StatementGenerator
 {
     /// <summary>
@@ -235,11 +237,11 @@ namespace Rock.Apps.StatementGenerator
         /// <value>The last report options.</value>
         [DefaultSettingValue( null )]
         [UserScopedSetting]
-        public Rock.Client.FinancialStatementGeneratorOptions LastReportOptions
+        public FinancialStatementGeneratorOptions LastReportOptions
         {
             get
             {
-                return this["LastReportOptions"] as Rock.Client.FinancialStatementGeneratorOptions;
+                return this["LastReportOptions"] as FinancialStatementGeneratorOptions;
             }
 
             set

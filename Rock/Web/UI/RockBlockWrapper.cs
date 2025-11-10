@@ -136,6 +136,7 @@ namespace Rock.Web.UI
             blockTypeCss = blockTypeCss.Replace( ' ', '-' ).ToLower();
             var blockInstanceCss = "block-instance js-block-instance " +
                 blockTypeCss +
+                " block-role-" + ( blockCache.Role ?? blockCache.BlockType?.DefaultRole ).ToStringSafe().ToLower() +
                 ( string.IsNullOrWhiteSpace( blockCache.CssClass ) ? string.Empty : " " + blockCache.CssClass.Trim() ) +
                 ( _rockBlock.UserCanEdit || _rockBlock.UserCanAdministrate ? " can-configure " : string.Empty );
 
@@ -168,7 +169,7 @@ namespace Rock.Web.UI
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-arrow-circle-right" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "ti ti-circle-arrow-right" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();

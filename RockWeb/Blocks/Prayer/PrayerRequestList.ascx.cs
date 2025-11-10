@@ -829,7 +829,7 @@ namespace RockWeb.Blocks.Prayer
                     var lModerationFlags = e.Row.FindControl( "lModerationFlags" ) as RockLiteral;
                     if (lModerationFlags != null )
                     {
-                        lModerationFlags.Text = $"<i class=\"fa fa-exclamation-triangle text-warning\" data-toggle=\"tooltip\" data-trigger=\"hover\" data-delay=\"250\" title=\"{tooltipText}\" ></i>";
+                        lModerationFlags.Text = $"<i class=\"ti ti-alert-triangle text-warning\" data-toggle=\"tooltip\" data-trigger=\"hover\" data-delay=\"250\" title=\"{tooltipText}\" ></i>";
                     }
                 }
             }

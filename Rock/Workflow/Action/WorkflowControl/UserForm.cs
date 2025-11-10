@@ -338,7 +338,7 @@ namespace Rock.Workflow.Action
                 ? formBuilderTemplate.FormFooter.ToStringSafe() + form.Footer.ToStringSafe()
                 : form.Footer.ToStringSafe();
 
-            var fields = GetFormFields( form, action, rockContext );
+            var fields = GetFormFields( form, action, mergeFields, rockContext );
             var fieldValues = GetFormFieldValues( form, action, rockContext );
             var personEntryValues = GetPersonEntryValues( action, requestContext.CurrentPerson, rockContext );
             var personEntryConfiguration = GetPersonEntryConfiguration( action, requestContext.CurrentPerson, personEntryValues?.MaritalStatusGuid, mergeFields, rockContext );
@@ -643,9 +643,10 @@ namespace Rock.Workflow.Action
         /// </summary>
         /// <param name="form">The data that describes the form to be displayed.</param>
         /// <param name="action">The action currently being processed.</param>
+        /// <param name="mergeFields">The merge fields to use for Lava parsing.</param>
         /// <param name="rockContext">The context to use if access to the database is required.</param>
         /// <returns>A list of bags that represent the fields to be displayed.</returns>
-        private static List<EntryFormFieldBag> GetFormFields( WorkflowActionFormCache form, WorkflowAction action, RockContext rockContext )
+        private static List<EntryFormFieldBag> GetFormFields( WorkflowActionFormCache form, WorkflowAction action, Dictionary<string, object> mergeFields, RockContext rockContext )
         {
             var fields = new List<EntryFormFieldBag>();
             var activity = action.Activity;
@@ -684,8 +685,8 @@ namespace Rock.Workflow.Action
                     Attribute = PublicAttributeHelper.GetPublicAttributeForEdit( attribute ),
                     IsLabelHidden = formAttribute.HideLabel,
                     IsRequired = formAttribute.IsRequired,
-                    PreHtml = formAttribute.PreHtml,
-                    PostHtml = formAttribute.PostHtml,
+                    PreHtml = formAttribute.PreHtml.ResolveMergeFields( mergeFields ),
+                    PostHtml = formAttribute.PostHtml.ResolveMergeFields( mergeFields ),
                     SectionId = formAttribute.ActionFormSectionId.HasValue
                         ? IdHasher.Instance.GetHash( formAttribute.ActionFormSectionId.Value )
                         : null,
@@ -870,7 +871,7 @@ namespace Rock.Workflow.Action
 
             if ( buttonHtml.IsNullOrWhiteSpace() )
             {
-                buttonHtml = "<a href=\"{{ ButtonLink }}\" onclick=\"{{ ButtonClick }}\" class=\"btn btn-primary\" data-loading-text=\"<i class='fa fa-refresh fa-spin'></i> {{ ButtonText }}\">{{ ButtonText }}</a>";
+                buttonHtml = "<a href=\"{{ ButtonLink }}\" onclick=\"{{ ButtonClick }}\" class=\"btn btn-primary\" data-loading-text=\"<i class='ti ti-refresh ti-spin'></i> {{ ButtonText }}\">{{ ButtonText }}</a>";
             }
 
             var buttonMergeFields = new Dictionary<string, object>();
@@ -1302,7 +1303,9 @@ namespace Rock.Workflow.Action
                     return;
                 }
 
-                recipients.Add( new RockEmailMessageRecipient( recipientPerson, mergeFields ) );
+                var recipient = new RockEmailMessageRecipient( recipientPerson, mergeFields );
+                recipient.MergeFields.AddOrReplace( recipient.PersonMergeFieldKey, recipientPerson );
+                recipients.Add( recipient );               
             }
             else if ( formNotificationEmailDestination == FormNotificationEmailDestination.CampusTopic
                 && notificationEmailSettings.CampusTopicValueId.HasValue )
@@ -1346,6 +1349,7 @@ namespace Rock.Workflow.Action
                 if ( systemCommunication != null )
                 {
                     var emailMessage = new RockEmailMessage( systemCommunication );
+                    emailMessage.AdditionalMergeFields = new Dictionary<string, object>( mergeFields );
                     emailMessage.SetRecipients( recipients );
                     emailMessage.Send();
                 }

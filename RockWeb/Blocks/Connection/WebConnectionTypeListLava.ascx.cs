@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Connection
     [DisplayName( "Connection Type List" )]
     [Category( "Connection > WebView" )]
     [Description( "Displays the list of connection types." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
 
     #region Block Attributes
     [CodeEditorField( "Type Template",

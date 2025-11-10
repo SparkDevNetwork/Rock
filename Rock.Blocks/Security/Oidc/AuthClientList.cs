@@ -37,7 +37,7 @@ namespace Rock.Blocks.Security.Oidc
     [DisplayName( "OpenID Connect Clients" )]
     [Category( "Security > OIDC" )]
     [Description( "Block for displaying and editing available OpenID Connect clients." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

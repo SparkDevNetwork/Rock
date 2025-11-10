@@ -40,7 +40,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Scheduled Job Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a particular service job." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -95,7 +95,7 @@ namespace Rock.Blocks.Core
         {
             var options = new ServiceJobDetailOptionsBag
             {
-                JobTypeOptions = ServiceJobService.GetJobTypes(),
+                JobTypeOptions = ServiceJobService.GetJobTypeOptions(),
                 NotificationStatusOptions = GetNotificationStatusOptions()
             };
 

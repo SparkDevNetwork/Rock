@@ -25,7 +25,7 @@
             <asp:HiddenField ID="hfSelectedEventId" ClientIDMode="Static" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-check-circle"></i> <asp:Literal ID="lBlockTitle" runat="server" /></h1>
+                <h1 class="panel-title"><i class="ti ti-circle-check"></i> <asp:Literal ID="lBlockTitle" runat="server" /></h1>
 
                 <div class="panel-labels form-horizontal">
                     <Rock:CampusPicker ID="cpCampus" FormGroupCssClass="form-group-sm" Style="width: 170px;" runat="server" AutoPostBack="true" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" />

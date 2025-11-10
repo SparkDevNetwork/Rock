@@ -37,13 +37,14 @@ namespace Rock.Blocks.Lms
     [DisplayName( "Learning Semester List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of learning semesters." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the learning semester details.",
         Key = AttributeKey.DetailPage )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "928978c0-9695-454d-9e17-33f12f278f78" )]
     [Rock.SystemGuid.BlockTypeGuid( "c89c7f15-fb8a-43d4-9afb-5e40e397f246" )]
     [CustomizedGrid]

@@ -85,6 +85,8 @@ export const FieldType = {
     Color: "D747E6AE-C383-4E22-8846-71518E3DD06F",
     /** Color selector field type */
     ColorSelector: "B07070F6-B66E-4B83-8DA6-12CF3400A1EC",
+    /** Communication Flow field type */
+    CommunicationFlow: "DD16B493-2588-436A-8C99-8771206ED28D",
     /** Communication Preference field type */
     CommunicationPreferenceType: "507C28F2-8BC0-4909-A4FE-9C2B1149E2B2",
     /** Communication Template field type */
@@ -153,6 +155,8 @@ export const FieldType = {
     DefinedValueCategorized: "3217C31F-85B6-4E0D-B6BE-2ADB0D28588D",
     /** Defined Value Range field type */
     DefinedValueRange: "B5C07B16-844D-4620-82E3-4CCA8F5FC350",
+    /** Device field type */
+    Device: "D7F5D737-BDC9-4656-951E-08325D0543FD",
     /** Document Type field type */
     DocumentType: "1FD31CDC-E5E2-431B-8D53-72FC0430044D",
     /** Email field type */

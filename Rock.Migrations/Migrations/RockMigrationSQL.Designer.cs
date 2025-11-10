@@ -1676,6 +1676,221 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to -- Add a temporary table to track reserved slugs
+        ///CREATE TABLE #UsedSlugs (
+        ///    Slug NVARCHAR(400)
+        ///);
+        ///
+        ///-- Update WorkflowTypes one at a time to ensure unique slugs
+        ///DECLARE @Id INT;
+        ///DECLARE @Name NVARCHAR(400);
+        ///DECLARE @BaseSlug NVARCHAR(400);
+        ///DECLARE @Slug NVARCHAR(400);
+        ///DECLARE @Suffix INT;
+        ///DECLARE @MaxLength INT = 400;
+        ///DECLARE @MaxSlugGenerationAttempts INT = 999;
+        ///DECLARE @SuffixText NVARCHAR(10);
+        ///DECLARE @BaseLength INT;
+        ///
+        ///DECLARE WorkflowCursor CURSOR LOCAL FAST_FORWARD FOR
+        ///    SELECT Id, [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport_GenerateWorkflowTypeSlugs {
+            get {
+                return ResourceManager.GetString("_202504281829314_UpdateWorkflowEntryFormSharingAndFormBuilderSupport_GenerateWork" +
+                        "flowTypeSlugs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*  
+        ///&lt;doc&gt;  
+        ///&lt;summary&gt;  
+        ///This stored procedure returns the data for the communication saturation report.  
+        ///&lt;/summary&gt;  
+        ///&lt;param name=&apos;StartDate&apos; datatype=&apos;date&apos;&gt;The starting date.&lt;/param&gt;  
+        ///&lt;param name=&apos;EndDate&apos; datatype=&apos;date&apos;&gt;The ending date.&lt;/param&gt;  
+        ///&lt;param name=&apos;BucketSize&apos; datatype=&apos;int&apos;&gt;The number of messages in the buckets.&lt;/param&gt;  
+        ///&lt;param name=&apos;CommunicationType&apos; datatype=&apos;int&apos;&gt;The type of communications to filter on (1 = Email, 2 = SMS, 3 = Push).&lt;/param&gt;  
+        ///&lt;param name=&apos;@IncludeNonBulk&apos; d [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202506042042400_AddCommunicationSaturationReport_spCommunication_SaturationReport {
+            get {
+                return ResourceManager.GetString("_202506042042400_AddCommunicationSaturationReport_spCommunication_SaturationRepor" +
+                        "t", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        Retrieves destination groups for use in the Group Placement block, supporting multiple modes
+        ///        of operation including TemplateMode, InstanceMode, GroupMode, and EntitySetMode. This 
+        ///		procedure determines which groups are available for placement, optionally filtered by related 
+        ///		entity mappings, group type, campus, or purpose keys.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        A result set of available destination groups with metadata including capacity, campus, 
+        ///    [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202506232302341_AddAndSwapToObsidianGroupPlacementBlock_spGetDestinationGroups {
+            get {
+                return ResourceManager.GetString("_202506232302341_AddAndSwapToObsidianGroupPlacementBlock_spGetDestinationGroups", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        This stored procedure retrieves placed and unplaced people for all supported configurations
+        ///        of the Group Placement block in Rock RMS. It supports filtering by template, instance, groups,
+        ///        and entity sets.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        A result set containing placement people for group placements.
+        ///    &lt;/returns&gt;
+        ///
+        ///    &lt;param name=&apos;@RegistrationTemplatePlacementEntityTypeId&apos; datatype=&apos;int&apos;&gt;
+        ///		The EntityTypeId for RegistrationTemplatePlacement.        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202506232302341_AddAndSwapToObsidianGroupPlacementBlock_spGetGroupPlacementPeople {
+            get {
+                return ResourceManager.GetString("_202506232302341_AddAndSwapToObsidianGroupPlacementBlock_spGetGroupPlacementPeopl" +
+                        "e", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///&lt;summary&gt;
+        ///This stored procedure returns the data for the communication saturation report.
+        ///&lt;/summary&gt;
+        ///&lt;param name=&apos;StartDate&apos; datatype=&apos;date&apos;&gt;The starting date.&lt;/param&gt;
+        ///&lt;param name=&apos;EndDate&apos; datatype=&apos;date&apos;&gt;The ending date.&lt;/param&gt;
+        ///&lt;param name=&apos;BucketSize&apos; datatype=&apos;int&apos;&gt;The number of messages in the buckets.&lt;/param&gt;
+        ///&lt;param name=&apos;CommunicationType&apos; datatype=&apos;int&apos;&gt;The type of communications to filter on (1 = Email, 2 = SMS, 3 = Push).&lt;/param&gt;
+        ///&lt;param name=&apos;@IncludeNonBulk&apos; datatype=&apos;bool&apos;&gt;Det [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202507161631443_UpdateCommunicationSaturationReportSp_spCommunication_SaturationReport {
+            get {
+                return ResourceManager.GetString("_202507161631443_UpdateCommunicationSaturationReportSp_spCommunication_Saturation" +
+                        "Report", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        Retrieves destination groups for use in the Group Placement block, supporting multiple modes
+        ///        of operation including TemplateMode, InstanceMode, GroupMode, and EntitySetMode. This 
+        ///		procedure determines which groups are available for placement, optionally filtered by related 
+        ///		entity mappings, group type, campus, or purpose keys.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        A result set of available destination groups with metadata including capacity, campus, 
+        ///    [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202507162006509_UpdateGroupPlacementStoredProcedure_spGetDestinationGroups {
+            get {
+                return ResourceManager.GetString("_202507162006509_UpdateGroupPlacementStoredProcedure_spGetDestinationGroups", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        This stored procedure retrieves placed and unplaced people for all supported configurations
+        ///        of the Group Placement block in Rock RMS. It supports filtering by template, instance, groups,
+        ///        and entity sets.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        A result set containing placement people for group placements.
+        ///    &lt;/returns&gt;
+        ///
+        ///    &lt;param name=&apos;@RegistrationTemplatePlacementEntityTypeId&apos; datatype=&apos;int&apos;&gt;
+        ///		The EntityTypeId for RegistrationTemplatePlacement.        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202507162006509_UpdateGroupPlacementStoredProcedure_spGetGroupPlacementPeople {
+            get {
+                return ResourceManager.GetString("_202507162006509_UpdateGroupPlacementStoredProcedure_spGetGroupPlacementPeople", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        This stored procedure returns the data needed to create a Step Flow 
+        ///        chart for a provided Step Program. It supports filtering on date 
+        ///        ranges, data views, campuses, and an optional list of starting 
+        ///        step type IDs via a table-valued parameter.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        * Level - The step level. 1 = Steps that were a person&apos;s first step, 2 = The second steps, etc.
+        ///        * SourceStepTypeId - The last step taken before the current o [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202509152345443_AddStepAnalytics_spSteps_StepFlow {
+            get {
+                return ResourceManager.GetString("_202509152345443_AddStepAnalytics_spSteps_StepFlow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///        This procedure takes a communication list (group) or communication and returns all of the
+        ///		recipients along with the data needed to determine if the individual can recieve an email,
+        ///		sms or push notification.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		All of the fields needed to drive the communication wizard.
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;ListId&apos; datatype=&apos;int&apos;&gt;The group id of the communication list or the communication id.&lt;/param&gt;
+        ///	&lt;param name=&apos;ListType&apos; datatype=&apos;int&apos;&gt;1 = Communicati [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202510221632361_UpdateCommunicationEntryWizardToExcludeArchivedCommunicationListMembers_spCommunicationRecipientDetails {
+            get {
+                return ResourceManager.GetString("_202510221632361_UpdateCommunicationEntryWizardToExcludeArchivedCommunicationList" +
+                        "Members_spCommunicationRecipientDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        This stored procedure retrieves placed and unplaced people for all supported configurations
+        ///        of the Group Placement block in Rock RMS. It supports filtering by template, instance, groups,
+        ///        and entity sets.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        A result set containing placement people for group placements.
+        ///    &lt;/returns&gt;
+        ///
+        ///    &lt;param name=&apos;@RegistrationTemplatePlacementEntityTypeId&apos; datatype=&apos;int&apos;&gt;
+        ///		The EntityTypeId for RegistrationTemplatePlacement.        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202511051918499_UpdateGetGroupPlacementPeopleStoredProcedure_spGetGroupPlacementPeople {
+            get {
+                return ResourceManager.GetString("_202511051918499_UpdateGetGroupPlacementPeopleStoredProcedure_spGetGroupPlacement" +
+                        "People", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] lms_header_min {

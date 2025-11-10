@@ -403,7 +403,7 @@ namespace Rock.Blocks
                 .ToList();
 
             // Filename convention is camelCase.
-            var fileName = $"{type.Name.Substring( 0, 1 ).ToLower()}{type.Name.Substring( 1 )}";
+            var fileName = type.Name.ToCamelCase();
 
             return $"~/Obsidian/Blocks/{namespaces.AsDelimited( "/" )}/{fileName}.obs";
         }
@@ -524,6 +524,8 @@ Obsidian.onReady(() => {{
                 configActions = customActionsBlock.GetCustomActions( canEdit, canAdministrate );
             }
 
+            var configurationValues = await GetBlockInitializationAsync( RockClientType.Web );
+
             var blockPreferences = new ObsidianBlockPreferencesBag
             {
                 EntityTypeKey = EntityTypeCache.Get<Rock.Model.Block>().IdKey,
@@ -538,10 +540,11 @@ Obsidian.onReady(() => {{
                 RootElementId = rootElementId,
                 BlockGuid = BlockCache.Guid,
                 BlockTypeGuid = BlockCache.BlockType.Guid,
-                ConfigurationValues = await GetBlockInitializationAsync( RockClientType.Web ),
+                ConfigurationValues = configurationValues,
                 CustomConfigurationActions = configActions,
                 Preferences = blockPreferences,
-                ReloadMode = reloadModeAttribute?.ReloadMode ?? Enums.Cms.BlockReloadMode.None
+                ReloadMode = reloadModeAttribute?.ReloadMode ?? Enums.Cms.BlockReloadMode.None,
+                Role = BlockCache.Role ?? BlockCache.BlockType?.DefaultRole ?? Enums.Cms.BlockRole.Content,
             };
         }
 

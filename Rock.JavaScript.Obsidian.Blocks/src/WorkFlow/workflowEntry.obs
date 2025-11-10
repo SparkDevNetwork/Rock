@@ -37,7 +37,7 @@
 
         <div v-if="currentAction?.isNotesVisible === true" class="col-md-6">
             <NotesContainer title="Notes"
-                            titleIconCssClass="fa fa-comment"
+                            titleIconCssClass="ti ti-message"
                             :notes="currentAction.notes ?? []"
                             :noteTypes="currentAction.noteTypes ?? []"
                             descending
@@ -100,7 +100,7 @@
 
     /** The CSS icon to display in the header of the block panel. */
     const blockIconCssClass = computed((): string => {
-        return currentAction.value?.iconCssClass ?? "fa fa-gear";
+        return currentAction.value?.iconCssClass ?? "ti ti-settings";
     });
 
     /** The string that contains the date the workflow was created. */

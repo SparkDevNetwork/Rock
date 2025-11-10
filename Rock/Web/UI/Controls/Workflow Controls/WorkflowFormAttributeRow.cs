@@ -330,7 +330,7 @@ namespace Rock.Web.UI.Controls
 
             _lbFilter = new LinkButton();
             _lbFilter.ID = $"{ID}{nameof( _lbFilter )}";
-            _lbFilter.Text = "<i class=\"fa fa-filter\"></i>";
+            _lbFilter.Text = "<i class=\"ti ti-filter\"></i>";
             _lbFilter.CssClass = "btn btn-default btn-xs btn-square";
             _lbFilter.Click += _lbFilter_Click;
             Controls.Add( _lbFilter );
@@ -388,7 +388,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "minimal workflow-formfield-reorder" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-bars" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "ti ti-menu-2" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();      // I
                 writer.RenderEndTag();      // A

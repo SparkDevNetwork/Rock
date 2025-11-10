@@ -7,7 +7,7 @@
 
         <asp:Panel ID="pnlContent" runat="server" CssClass="checkin-manager">
             <div class="input-group mb-4 w-100">
-                <Rock:RockTextBox ID="tbSearch" runat="server" CssClass="js-search" PrependText="<i class='fa fa-search'></i>" spellcheck="false" onkeydown="javascript:return handleSearchBoxKeyPress(this, event.keyCode);"/>
+                <Rock:RockTextBox ID="tbSearch" runat="server" CssClass="js-search" PrependText="<i class='ti ti-search'></i>" spellcheck="false" onkeydown="javascript:return handleSearchBoxKeyPress(this, event.keyCode);"/>
             </div>
 
             <asp:Panel ID="pnlSearchResults" runat="server" CssClass="panel panel-block" Visible="false">

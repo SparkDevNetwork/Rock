@@ -35,7 +35,7 @@
             <div class="js-report-container">
                 <div class="report-wrapper js-report-wrapper">
                     <div style="position: relative; width: 100%; height: 100%;">
-                        <a id="fullsizer" href="#" class="btn btn-action report-fullsize" title="View Fullsize" style="position: absolute; top: 0; left: 0; border-radius: 0;" runat="server"><i class="fa fa-arrows-alt"></i></a>
+                        <a id="fullsizer" href="#" class="btn btn-action report-fullsize" title="View Fullsize" style="position: absolute; top: 0; left: 0; border-radius: 0;" runat="server"><i class="ti ti-arrows-move"></i></a>
                         <iframe id="report-iframe" src="" frameborder="1" style="border: 0;" seamless></iframe>
                     </div>
                 </div>

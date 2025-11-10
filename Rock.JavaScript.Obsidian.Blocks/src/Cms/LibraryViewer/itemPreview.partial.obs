@@ -32,7 +32,7 @@
                                 :isLoading="isLoadingDetails"
                                 :disabled="disabled"
                                 @click="onDownloadArticleClicked">
-                        <i class="fa fa-arrow-down"></i> <span class="library-viewer-item-preview-download-button-label">{{ downloadArticleButtonText }}</span>
+                        <i class="ti ti-arrow-down"></i> <span class="library-viewer-item-preview-download-button-label">{{ downloadArticleButtonText }}</span>
                     </RockButton>
                 </template>
             </div>

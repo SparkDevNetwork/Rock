@@ -275,10 +275,10 @@ namespace Rock.Web.UI.Controls
             this.Attributes.Add( "data-min", "1" );
             this.Attributes.Add( "data-max", "5" );
             this.Attributes.Add( "data-clearable", " " );
-            this.Attributes.Add( "data-icon-lib", "fa" );
-            this.Attributes.Add( "data-active-icon", "fa-rating-selected" );
-            this.Attributes.Add( "data-inactive-icon", "fa-rating-unselected" );
-            this.Attributes.Add( "data-clearable-icon", "fa-remove" );
+            this.Attributes.Add( "data-icon-lib", "ti" );
+            this.Attributes.Add( "data-active-icon", "ti-star-filled" );
+            this.Attributes.Add( "data-inactive-icon", "ti-star" );
+            this.Attributes.Add( "data-clearable-icon", "ti-x" );
         }
 
         /// <summary>

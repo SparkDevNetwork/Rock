@@ -7,7 +7,7 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-history"></i>
+                    <i class="ti ti-history"></i>
                     <asp:Literal ID="lGroupTitle" runat="server" />
                     <asp:Literal ID="lGroupGridTitle" runat="server" Text=" | Historical Group Members" Visible="false" />
                     <%-- lGroupMemberPreHtml and lGroupMemberTitle will be Visible=true when a GroupMember is selected  --%>

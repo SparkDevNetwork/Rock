@@ -70,7 +70,7 @@ namespace Rock.Badge.Component
                 if ( GetAttributeValue( badge, "EnableDebug" ).AsBoolean() )
                 {
                     displayText +=
-$@"<small><a data-toggle='collapse' data-parent='#accordion' href='#badge-debug'><i class='fa fa-eye'></i></a></small>
+$@"<small><a data-toggle='collapse' data-parent='#accordion' href='#badge-debug'><i class='ti ti-eye'></i></a></small>
     <div id='badge-debug' class='collapse well badge-debug'>
         {mergeValues.lavaDebugInfo()}
     </div>";

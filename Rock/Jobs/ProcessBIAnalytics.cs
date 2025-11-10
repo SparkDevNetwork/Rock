@@ -25,6 +25,7 @@ using System.Reflection;
 using System.Text;
 using System.Web;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
@@ -575,7 +576,7 @@ UPDATE [{analyticsTableName}]
         {
             var dataContext = new RockContext();
 
-            dataContext.Database.CommandTimeout = _commandTimeout;
+            dataContext.Database.SetCommandTimeout( _commandTimeout );
 
             return dataContext;
         }
@@ -1339,7 +1340,7 @@ UPDATE [AnalyticsSourceFamilyHistorical]
         private void ProcessGivingUnitAnalytics()
         {
             var rockContext = new RockContext();
-            rockContext.Database.CommandTimeout = _commandTimeout;
+            rockContext.Database.SetCommandTimeout( _commandTimeout );
 
             var givingLeaderPersonQry = new PersonService( rockContext ).Queryable().Where( p => p.GivingLeaderId == p.Id );
 

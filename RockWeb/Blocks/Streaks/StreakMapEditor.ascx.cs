@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Streaks
 
     #endregion
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.BlockTypeGuid( "4DB69FBA-32C7-448A-B322-EDFBCEF2D124" )]
     public partial class StreakMapEditor : RockBlock, ISecondaryBlock
     {

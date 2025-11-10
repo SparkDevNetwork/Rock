@@ -2,14 +2,14 @@
 <template>
     <TreeItemPicker v-model="internalValue"
                     formGroupClasses="category-picker"
-                    iconCssClass="fa fa-calendar"
+                    iconCssClass="ti ti-calendar"
                     :provider="itemProvider"
                     :multiple="multiple"
                     disableFolderSelection>
 
         <template #customPickerActions>
             <label class="rock-checkbox-icon">
-                <i :class="['fa', includeInactive ? 'fa-check-square-o' : 'fa-square-o']"></i> Show Inactive
+                <i :class="['ti', includeInactive ? 'ti-square-check' : 'ti-square']"></i> Show Inactive
                 <span style="display:none"><input type="checkbox" v-model="includeInactive"></span>
             </label>
         </template>

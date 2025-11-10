@@ -227,7 +227,7 @@ namespace Rock.Web.Cache
                 return new RenderedBadgeBag
                 {
                     Html = $@"<div class='rockbadge rockbadge-{badgeNameClass} rockbadge-id-{Id} badge-error' data-toggle='tooltip' data-original-title='{errorMessage}'>
-    <i class='fa fa-exclamation-triangle badge-icon text-warning'></i>
+    <i class='ti ti-alert-triangle badge-icon text-warning'></i>
 </div>"
                 };
             }

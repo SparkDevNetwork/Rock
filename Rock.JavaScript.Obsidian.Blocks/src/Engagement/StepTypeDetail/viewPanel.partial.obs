@@ -10,26 +10,30 @@
                     <div class="description">{{ description }}</div>
                 </div>
                 <div class="col-xs-12 col-sm-6 d-flex align-items-start justify-content-end">
-                    <SlidingDateRangePicker v-model="filterDate"
-                                            :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]"
-                                            :enabledTimeUnits="[TimeUnit.Week, TimeUnit.Month, TimeUnit.Year]"
-                                            class="pull-right"
-                                            previewLocation="None" />
-                    <RockButton :btnSize="BtnSize.Default"
-                                :btnType="BtnType.Default"
-                                class="btn btn-default btn-square pull-right"
-                                @click="onRefresh"
-                                loadingText="..."
-                                :isLoading="isRefreshLoading">
-                        <i class="fa fa-refresh"></i>
-                    </RockButton>
+                    <div class="d-flex gap-3 align-items-center">
+                        <div v-if="isLoading">
+                            <Loading :isLoading="isLoading" />
+                        </div>
+                        <SlidingDateRangePicker v-model="filterDate"
+                                                :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]"
+                                                :enabledTimeUnits="[TimeUnit.Week, TimeUnit.Month, TimeUnit.Year]"
+                                                :isRangeClearable="false"
+                                                class="pull-right"
+                                                previewLocation="None" />
+                    </div>
                 </div>
             </div>
             <div v-html="kpi"></div>
             <div>
-                <NotificationBox v-if="showChart && notificationMessage" alertType="info">{{ notificationMessage }}</NotificationBox>
-                <div v-if="showChart && !notificationMessage" style="height: 350px;" class="col-md-12">
-                    <Chart type="line" :data="chartData" :options="options" />
+                <NotificationBox v-if="notificationMessage" alertType="info">{{ notificationMessage }}</NotificationBox>
+                <div v-else style="height: 300px">
+                    <LineChart :series="chartSeries"
+                               :labels="chartLabels"
+                               :labelDateFormat="dateUnit"
+                               :valueSuggestedMin="0"
+                               :valueSuggestedMax="3"
+                               :valuePrecision="0"
+                               categoryShowGridLines />
                 </div>
             </div>
         </div>
@@ -37,19 +41,37 @@
     </fieldset>
 </template>
 
+<style scoped>
+/* Overrides the font-size set on the loading indicator because it was affecting the height of the flex row its in. */
+:deep(.ti-2x) {
+    font-size: 1.5em !important;
+}
+
+.margin-y-xsmall {
+    margin: var(--spacing-xsmall) 0;
+}
+</style>
+
 <script setup lang="ts">
-    import { PropType, ref } from "vue";
-    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { PropType, ref, watch } from "vue";
+    import { useInvokeBlockAction, useBlockBrowserBus } from "@Obsidian/Utility/block";
     import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
-    import { RangeType, SlidingDateRange, TimeUnit, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { RangeType, SlidingDateRange, TimeUnit, calculateSlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import Chart from "@Obsidian/Controls/chart.obs";
-    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
-    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
-    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import LineChart from "@Obsidian/Controls/lineChart.obs";
+    import Loading from "@Obsidian/Controls/loading.obs";
     import { StepTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeBag";
     import { StepTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeDetailOptionsBag";
+    import { LineSeries } from "@Obsidian/Core/Controls/chart";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
+    import { PageMessages } from "@Obsidian/Utility/browserBus";
+    import { ContextEntityChangedData, Message } from "@Obsidian/Types/Utility/browserBus";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { SeriesBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/seriesBag";
+    import { StepTypeDetailsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeDetailsBag";
+    import { CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
 
     const props = defineProps({
         modelValue: {
@@ -64,88 +86,106 @@
     });
 
     // #region Values
+
+    const customColors = [getCssVariableValue("--color-categorical-1"), getCssVariableValue("--color-categorical-3")];
+
     const name = ref(props.modelValue?.name ?? "");
     const description = ref(props.modelValue?.description ?? "");
-    const chartData = ref<ChartData>(JSON.parse(props.modelValue?.chartData ?? "{}"));
-    const kpi = ref(props.modelValue?.kpi ?? "");
-    const showChart = ref(props.modelValue?.showChart);
-    const notificationMessage = ref(props.modelValue?.chartData ? "" : "There are no Steps matching the current filter.");
+    const kpi = ref(props.modelValue?.stepTypeDetailsBag?.kpi ?? "");
+    const chartLabels = ref<string[]>(props.modelValue?.stepTypeDetailsBag?.chartData?.dateLabels ?? []);
+    const chartSeries = ref<LineSeries[]>(convertToLineSeries(props.modelValue?.stepTypeDetailsBag?.chartData?.series ?? []));
+    const notificationMessage = ref(props.modelValue?.errorMessage);
     const filterDate = ref(props.modelValue?.defaultDateRange as SlidingDateRange);
-    const isRefreshLoading = ref(false);
-    const options = ref<ChartOptions>({
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: {
-            duration: 1000
-        },
-        plugins: {
-            legend: {
-                position: "bottom",
-                align: "center",
-                display: true
-            },
-            tooltip: {
-                enabled: true
-            },
-        },
-        scales: {
-            y:
-            {
-                ticks: {
-                    callback: function (label, _index, _labels) {
-                        const date = Number(label);
-                        if (date) {
-                            return Intl.NumberFormat().format(date);
-                        }
-                        else {
-                            return label;
-                        }
-                    },
-                    stepSize: 1
-                },
-                stacked: false,
-                beginAtZero: true,
-                suggestedMax: 2
-            },
+    const isLoading = ref(false);
+    const dateUnit = ref<"day" | "month" | "year">(getDateUnit(props.modelValue?.stepTypeDetailsBag?.chartData?.timeUnit));
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const browserBus = useBlockBrowserBus();
+
+    let fetchStepTYpeDetailsCts: CancellationTokenSource | null = null;
+
+    browserBus.subscribe(PageMessages.ContextEntityChanged, async (message: Message<ContextEntityChangedData>) => {
+        if (areEqual(message.data.entityTypeGuid, EntityType.Campus)) {
+            fetchStepTYpeDetailsCts?.cancel();
+            fetchStepTYpeDetailsCts = new CancellationTokenSource();
+            fetchStepTypeDetails(fetchStepTYpeDetailsCts.token);
         }
     });
 
-    const invokeBlockAction = useInvokeBlockAction();
+    // #endregion
+
+    // #region Functions
+
+    function convertToLineSeries(seriesBags: SeriesBag[]): LineSeries[] {
+        return seriesBags.map((bag, index) => ({
+            label: bag.label ?? "",
+            data: bag.data ?? [],
+            color: customColors[index]
+        }));
+    }
+
+    function getDateUnit(timeUnit: string | null | undefined): "day" | "month" | "year" {
+        if (!isNullOrWhiteSpace(timeUnit)) {
+            const unit = timeUnit;
+            if (unit === "day" || unit === "month" || unit === "year") {
+                return unit;
+            }
+        }
+
+        return "day";
+    }
 
     // #endregion
 
     // #region Event Handlers
-    /**
-     * Event handler for the Refresh button being clicked. Request new chart
-     * data from the server using the specified filter date.
-     */
-    async function onRefresh(): Promise<void> {
 
-        isRefreshLoading.value = true;
+    async function fetchStepTypeDetails(cancellationToken: ICancellationToken): Promise<void> {
+        if (cancellationToken.isCancellationRequested) {
+            return;
+        }
+
+        isLoading.value = true;
+        chartLabels.value = [];
+        chartSeries.value = [];
         notificationMessage.value = "";
+        const dates = calculateSlidingDateRange(filterDate.value);
 
-        const result = await invokeBlockAction<StepTypeBag>("RefreshChart", {
-            dateRange: filterDate.value ? slidingDateRangeToString(filterDate.value as SlidingDateRange) : "DateRange||||"
+        if (!dates.start || !dates.end) {
+            notificationMessage.value = "Please select a valid date range to display chart data.";
+            isLoading.value = false;
+            return;
+        }
+
+        const result = await invokeBlockAction<StepTypeDetailsBag>("GetStepTypeDetails", {
+            startDateTime: dates.start.toISOString(),
+            endDateTime: dates.end.toISOString(),
         });
 
-        isRefreshLoading.value = false;
+        if (cancellationToken.isCancellationRequested) {
+            return;
+        }
 
-        if (result.isSuccess && result.data) {
+        isLoading.value = false;
+
+        if (result.isSuccess && result.data && result.data.chartData) {
+            // Set KPI data
             kpi.value = result.data.kpi ?? "";
 
-            if (result.data.chartData) {
-                chartData.value = JSON.parse(result.data.chartData ?? "{}") as ChartData;
-                showChart.value = result.data.showChart;
-            }
-            else {
-                notificationMessage.value = "There are no Steps matching the current filter.";
-                showChart.value = result.data.showChart;
-            }
+            // Set chart data
+            chartLabels.value = result.data.chartData.dateLabels ?? [];
+            chartSeries.value = convertToLineSeries(result.data.chartData.series ?? []);
+            dateUnit.value = getDateUnit(result.data.chartData.timeUnit);
         }
         else {
-            chartData.value = {} as ChartData;
-            notificationMessage.value = result.errorMessage ?? "Unknown error while trying to refresh chart.";
+            notificationMessage.value = result.errorMessage ?? "Unknown error while trying to fetch KPI and chart data.";
         }
     }
+
     // #endregion
+
+    watch(filterDate, () => {
+        fetchStepTYpeDetailsCts?.cancel();
+        fetchStepTYpeDetailsCts = new CancellationTokenSource();
+        fetchStepTypeDetails(fetchStepTYpeDetailsCts.token);
+    });
 </script>

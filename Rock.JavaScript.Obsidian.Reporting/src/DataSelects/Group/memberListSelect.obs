@@ -1,0 +1,114 @@
+<template>
+    <RadioButtonList v-model="showAsLinkType"
+                     :items="showAsLinkTypeOptions" />
+
+    <DropDownList v-model="groupType"
+                  label="Group Type"
+                  :items="groupTypeOptions"
+                  showBlankItem />
+
+    <CheckBoxList v-if="showGroupRolePicker"
+                  v-model="groupRoles"
+                  label="with Group Role(s)"
+                  :items="groupRoleOptions" />
+
+    <DropDownList v-model="memberStatus"
+                  label="with Group Member Status"
+                  :items="memberStatusOptions"
+                  help="Select a specific group member status to only include group members with that status. Leaving this blank will return all members."
+                  showBlankItem />
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import { MemberListSelectGetGroupRolesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/memberListSelectGetGroupRolesOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { dataViewSelectProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps(dataViewSelectProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const showAsLinkTypeOptions: ListItemBag[] = safeParseJson(props.options.showAsLinkTypeOptions) ?? [];
+    const showAsLinkType = ref(props.modelValue.showAsLinkType ?? showAsLinkTypeOptions[0]?.value ?? "");
+
+    const groupTypeOptions: ListItemBag[] = safeParseJson(props.options.groupTypeOptions) ?? [];
+    const groupType = ref(props.modelValue.groupType ?? "");
+
+    const groupRoleOptions = ref<ListItemBag[]>(safeParseJson(props.options.groupRoleOptions) ?? []);
+    const groupRoles = ref<Guid[]>(safeParseJson(props.modelValue.groupRoles) ?? []);
+
+    const memberStatusOptions: ListItemBag[] = safeParseJson(props.options.memberStatusOptions) ?? [];
+    const memberStatus = ref(props.modelValue.memberStatus ?? "");
+
+    const groupRolesByGroupType: Record<string, ListItemBag[]> = {};
+    if (groupType.value) {
+        groupRolesByGroupType[groupType.value] = groupRoleOptions.value;
+    }
+
+    const showGroupRolePicker = ref(groupRoleOptions.value.length > 0);
+
+    watch(groupType, async () => {
+        if (groupType.value) {
+            // check if we have the groupRoles for this group type cached
+            if (groupRolesByGroupType[groupType.value] == null) {
+                // Not cached, so we need to load it
+                groupRoles.value = [];
+                const results = await loadGroupRoles();
+                groupRolesByGroupType[groupType.value] = results;
+                groupRoleOptions.value = results;
+
+                showGroupRolePicker.value = results.length > 0;
+            }
+            else {
+                // Use the cached list
+                groupRoleOptions.value = groupRolesByGroupType[groupType.value];
+                showGroupRolePicker.value = groupRoles.value.length > 0;
+            }
+        }
+        else {
+            groupRoles.value = [];
+            showGroupRolePicker.value = false;
+        }
+    });
+
+    watch([showAsLinkType, groupType, groupRoles, memberStatus], () => {
+        const newData: Record<string, string> = {
+            ...props.modelValue,
+            showAsLinkType: showAsLinkType.value,
+            groupType: groupType.value,
+            groupRoles: JSON.stringify(groupRoles.value ?? "[]"),
+            memberStatus: memberStatus.value
+        };
+
+        emit("update:modelValue", newData);
+    });
+
+    async function loadGroupRoles(): Promise<ListItemBag[]> {
+        const options: MemberListSelectGetGroupRolesOptionsBag = {
+            groupType: groupType.value,
+        };
+
+        const response = await props.executeRequest({
+            action: "GetGroupRoles",
+            options: JSON.stringify(options)
+        });
+
+        const groupRoleOptions = safeParseJson<ListItemBag[]>(response?.groupRoleOptions ?? "[]");
+
+        if (Array.isArray(groupRoleOptions)) {
+            return groupRoleOptions;
+        }
+        else {
+            console.error("Error fetching items from server", response?.Message);
+            return [];
+        }
+    }
+</script>

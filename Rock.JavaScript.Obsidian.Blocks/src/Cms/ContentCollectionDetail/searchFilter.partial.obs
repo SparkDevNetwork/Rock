@@ -2,8 +2,8 @@
 <template>
     <div class="search-filter-row">
         <div class="search-filter-icon">
-            <i v-if="props.isEnabled" class="fa fa-check-square" style="color: var(--color-primary);"></i>
-            <i v-else class="fa fa-square-o" style="color: var(--color-interface-soft);"></i>
+            <i v-if="props.isEnabled" class="ti ti-checkbox" style="color: var(--color-primary);"></i>
+            <i v-else class="ti ti-square" style="color: var(--color-interface-soft);"></i>
         </div>
 
         <div class="search-filter-content">
@@ -25,7 +25,7 @@
         </div>
 
         <div class="search-filter-actions">
-            <RockButton v-if="!isInconsistent" btnSize="sm" @click="onEditClick"><i class="fa fa-pencil"></i></RockButton>
+            <RockButton v-if="!isInconsistent" btnSize="sm" @click="onEditClick"><i class="ti ti-pencil"></i></RockButton>
         </div>
     </div>
 </template>

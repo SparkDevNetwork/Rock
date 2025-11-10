@@ -45,7 +45,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     [DisplayName( "Experience Manager" )]
     [Category( "Event > Interactive Experiences" )]
     [Description( "Manages an active interactive experience." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

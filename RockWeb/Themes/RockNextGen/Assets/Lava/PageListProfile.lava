@@ -1,0 +1,13 @@
+{% comment %} {% include '~~/Assets/Lava/PageListProfile.lava' %} {% endcomment %}
+<div class="overflow-nav-container" id="overflow-nav">
+    <ul class="navflex nav-pills">
+        {% for childPage in Page.Pages %}
+            <li {% if childPage.Current %}class="active"{% endif %}>
+                <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+
+{{ '~~/Styles/newprofilenew.css' | AddCssLink }}
+<script src="{{ '~~/Assets/Scripts/profile.js' | ResolveRockUrl }}" type="text/javascript"></script>

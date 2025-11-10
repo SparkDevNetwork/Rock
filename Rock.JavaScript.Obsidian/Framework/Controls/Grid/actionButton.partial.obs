@@ -69,7 +69,7 @@
 
     /** The CSS classes to be applied to the icon. */
     const iconCssClass = computed((): string => {
-        return `${props.action.iconCssClass || "fa fa-square"} fa-fw`;
+        return `${props.action.iconCssClass || "ti ti-square"} ti-fw`;
     });
 
     // #endregion

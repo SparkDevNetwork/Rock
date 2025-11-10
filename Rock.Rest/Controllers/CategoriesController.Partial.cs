@@ -159,7 +159,7 @@ namespace Rock.Rest.Controllers
 
             var includedCategoryIdList = includedCategoryIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
             var excludedCategoryIdList = excludedCategoryIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
-            defaultIconCssClass = defaultIconCssClass ?? "fa fa-list-ol";
+            defaultIconCssClass = defaultIconCssClass ?? "ti ti-list-numbers";
 
             bool hasActiveFlag = false;
             bool excludeInactiveItems = !includeInactiveItems;
@@ -416,7 +416,7 @@ namespace Rock.Rest.Controllers
 
             var includedCategoryIdList = includedCategoryIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
             var excludedCategoryIdList = excludedCategoryIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
-            defaultIconCssClass = defaultIconCssClass ?? "fa fa-list-ol";
+            defaultIconCssClass = defaultIconCssClass ?? "ti ti-list-numbers";
 
             bool hasActiveFlag = false;
             bool excludeInactiveItems = !includeInactiveItems;

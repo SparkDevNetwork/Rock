@@ -80,6 +80,12 @@
             </template>
         </NumberColumn>
 
+        <TextColumn name="persistedScheduleInfo"
+                    title="Persisted Schedule"
+                    field="persistedScheduleInfo"
+                    :filter="textValueFilter"
+                    visiblePriority="sm" />
+
         <NumberColumn name="timeToUpdateDurationMilliseconds"
                       title="Time To Update (ms)"
                       field="timeToUpdateDurationMilliseconds"
@@ -96,10 +102,12 @@
                        visiblePriority="xs" />
 
         <ButtonColumn name="segmentLink"
-                      iconClass="fa fa-users"
+                      iconClass="ti ti-users"
                       :excludeFromExport="true"
                       @click="onSegmentClick"
                       visiblePriority="xs" />
+
+        <SecurityColumn />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
@@ -108,7 +116,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, numberValueFilter, NumberColumn, TextColumn, textValueFilter, DeleteColumn, ButtonColumn, pickExistingValueFilter, booleanValueFilter, LabelColumn } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, numberValueFilter, NumberColumn, TextColumn, SecurityColumn, textValueFilter, DeleteColumn, ButtonColumn, pickExistingValueFilter, booleanValueFilter, LabelColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PersonalizationSegmentListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalizationSegmentList/personalizationSegmentListOptionsBag";

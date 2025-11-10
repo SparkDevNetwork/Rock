@@ -3,15 +3,15 @@
     <tr v-if="!isEditMode">
         <td>{{ key }}</td>
         <td>{{ title }}</td>
-        <td><i class="fa fa-check"></i></td>
+        <td><i class="ti ti-check"></i></td>
         <td class="grid-columncommand" align="center">
             <a class="btn btn-default btn-sm" @click="onEditClick">
-                <i class="fa fa-pencil"></i>
+                <i class="ti ti-pencil"></i>
             </a>
         </td>
         <td class="grid-columncommand" align="center">
             <a class="btn btn-danger btn-sm" @click="onRemoveClick">
-                <i class="fa fa-times"></i>
+                <i class="ti ti-x"></i>
             </a>
         </td>
     </tr>
@@ -48,13 +48,13 @@
 
         <td class="grid-columncommand" align="center">
             <a class="btn btn-success btn-sm" :class="{disabled: isSaveDisabled}" @click="onAcceptClick">
-                <i class="fa fa-check"></i>
+                <i class="ti ti-check"></i>
             </a>
         </td>
 
         <td class="grid-columncommand" align="center">
             <a class="btn btn-default btn-sm" @click="onCancelClick">
-                <i class="fa fa-minus"></i>
+                <i class="ti ti-minus"></i>
             </a>
         </td>
     </tr>
