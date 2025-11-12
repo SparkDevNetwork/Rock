@@ -75,6 +75,18 @@ namespace RockWeb.Blocks.Mobile
             public const string DeepLinkDetail = "DeepLinkDetail";
         }
 
+        private static class PageParameterKey
+        {
+            /// <summary>
+            /// Key for SiteId
+            /// </summary>
+            public const string SiteId = "SiteId";
+            /// <summary>
+            /// Key for which tab to show
+            /// </summary>
+            public const string Tab = "Tab";
+        }
+
         #region Private Fields
 
         private const string _defaultLayoutXaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
@@ -139,8 +151,8 @@ namespace RockWeb.Blocks.Mobile
             {
                 ConfigureControls();
 
-                var siteId = PageParameter( "SiteId" ).AsInteger();
-                hfCurrentTab.Value = PageParameter( "Tab" ) ?? Tabs.Application.ConvertToString();
+                var siteId = PageParameter( PageParameterKey.SiteId ).AsInteger();
+                hfCurrentTab.Value = PageParameter( PageParameterKey.Tab ) ?? Tabs.Application.ConvertToString();
 
                 if ( siteId != 0 )
                 {
@@ -169,7 +181,7 @@ namespace RockWeb.Blocks.Mobile
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? siteId = PageParameter( pageReference, "SiteId" ).AsIntegerOrNull();
+            int? siteId = PageParameter( pageReference, PageParameterKey.SiteId ).AsIntegerOrNull();
             if ( siteId != null )
             {
                 var site = new SiteService( new RockContext() ).Get( siteId.Value );
@@ -911,7 +923,7 @@ namespace RockWeb.Blocks.Mobile
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbEditCancel_Click( object sender, EventArgs e )
         {
-            var siteId = PageParameter( "SiteId" ).AsInteger();
+            var siteId = PageParameter( PageParameterKey.SiteId ).AsInteger();
 
             if ( siteId == 0 )
             {
@@ -947,7 +959,7 @@ namespace RockWeb.Blocks.Mobile
             var userLoginService = new UserLoginService( rockContext );
 
             // Find the site or if we are creating a new one, bootstrap it.
-            var site = siteService.Get( PageParameter( "SiteId" ).AsInteger() );
+            var site = siteService.Get( PageParameter( PageParameterKey.SiteId ).AsInteger() );
             if ( site == null )
             {
                 site = new Site
@@ -1151,7 +1163,7 @@ namespace RockWeb.Blocks.Mobile
                 var siteService = new SiteService( rockContext );
                 var binaryFileService = new BinaryFileService( rockContext );
 
-                var site = siteService.Get( PageParameter( "SiteId" ).AsInteger() );
+                var site = siteService.Get( PageParameter( PageParameterKey.SiteId ).AsInteger() );
                 var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
 
                 site.FavIconBinaryFileId = imgEditHeaderImage.BinaryFileId;
@@ -1306,7 +1318,7 @@ namespace RockWeb.Blocks.Mobile
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected async void lbDeploy_Click( object sender, EventArgs e )
         {
-            var applicationId = PageParameter( "SiteId" ).AsInteger();
+            var applicationId = PageParameter( PageParameterKey.SiteId ).AsInteger();
 
             using ( var rockContext = new RockContext() )
             {
@@ -1546,11 +1558,18 @@ namespace RockWeb.Blocks.Mobile
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gDeepLinks_RowSelected( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DeepLinkDetail, new Dictionary<string, string>
+            var queryParameters = new Dictionary<string, string>
             {
-                {"SiteId", hfSiteId.Value },
+                {PageParameterKey.SiteId, hfSiteId.Value },
                 {"DeepLinkRouteGuid", e.RowKeyValue.ToString() }
-            } );
+            };
+
+            if ( IsUserAuthorized( Authorization.EDIT ) )
+            {
+                queryParameters.Add( "AutoEdit", "true" );
+            }
+
+            NavigateToLinkedPage( AttributeKey.DeepLinkDetail, queryParameters );
         }
 
         /// <summary>

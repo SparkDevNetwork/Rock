@@ -1868,6 +1868,29 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        This stored procedure retrieves placed and unplaced people for all supported configurations
+        ///        of the Group Placement block in Rock RMS. It supports filtering by template, instance, groups,
+        ///        and entity sets.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        A result set containing placement people for group placements.
+        ///    &lt;/returns&gt;
+        ///
+        ///    &lt;param name=&apos;@RegistrationTemplatePlacementEntityTypeId&apos; datatype=&apos;int&apos;&gt;
+        ///		The EntityTypeId for RegistrationTemplatePlacement.        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202511051918499_UpdateGetGroupPlacementPeopleStoredProcedure_spGetGroupPlacementPeople {
+            get {
+                return ResourceManager.GetString("_202511051918499_UpdateGetGroupPlacementPeopleStoredProcedure_spGetGroupPlacement" +
+                        "People", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] lms_header_min {

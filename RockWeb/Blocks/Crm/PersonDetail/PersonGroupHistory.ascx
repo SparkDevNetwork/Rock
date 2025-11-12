@@ -8,53 +8,54 @@
   fill: none; }
 
 .swimlanes .grid-header {
-  fill: #f7f7f7;
-  stroke: #e5e5e5;
+  fill: var(--color-interface-softer);
+  stroke: var(--color-interface-soft);
   stroke-width: .3; }
 
 .swimlanes .grid-row {
-  fill: #fff; }
+  fill: var(--color-interface-softest); }
 
 .swimlanes .grid-row:nth-child(even) {
-  fill: #f9f9f9; }
+  fill: var(--color-interface-softer); }
 
 .swimlanes .row-line {
-  stroke: #e5e5e5; }
+  stroke: var(--color-interface-soft);
+}
 
 .swimlanes .tick {
-  stroke: #e5e5e5;
+  stroke: var(--color-interface-softer);
   stroke-width: .2; }
   .swimlanes .tick.thick {
     stroke-width: .4; }
 
 .swimlanes .today-highlight {
   opacity: .5;
-  fill: #fcf8e3; }
+  fill: var(--color-primary-soft); }
 
 .swimlanes .bar {
   user-select: none;
   transition: stroke-width .3s ease;
-  fill: #b8c2cc;
-  stroke: #8d99a6;
+  fill: var(--color-interface-soft);
+  stroke: var(--color-interface-medium);
   stroke-width: 0;
   opacity: 0.8 }
 
 .swimlanes .bar-invalid {
   fill: transparent;
-  stroke: #8d99a6;
+  stroke: var(--color-interface-medium);
   stroke-width: 1;
   stroke-dasharray: 5; }
   .swimlanes .bar-invalid ~ .bar-label {
-    fill: #555; }
+    fill: var(--color-interface-strong); }
 
 .swimlanes .bar-label {
   font-size: 12px;
   font-weight: 400;
-  fill: #000;
+  fill: var(--color-interface-stronger);
   dominant-baseline: central;
   text-anchor: middle; }
   .swimlanes .bar-label.big {
-    fill: #555;
+    fill: var(--color-interface-strong);
     text-anchor: start; }
 
 .swimlanes .bar-wrapper {
@@ -72,11 +73,11 @@
 
 .swimlanes .upper-text {
   font-weight: 800;
-  fill: #555; }
+  fill: var(--color-interface-strong); }
 
 .swimlanes .lower-text {
   font-size: 12px;
-  fill: #333; }
+  fill: var(--color-interface-stronger); }
 
 .swimlanes .hide {
   display: none; }
@@ -84,30 +85,44 @@
 .swimlanes-container {
   position: relative;
   overflow: auto;
+  border-bottom: 1px solid var(--color-interface-soft);
   font-size: 12px; }
   .swimlanes-container .popup-wrapper {
     position: absolute;
     top: 0;
     left: 0;
     padding: 0;
-    color: #959da5;
-    background: rgba(0, 0, 0, 0.8);
+    color: var(--color-interface-medium);
+    background: var(--color-interface-strong);
     border-radius: 3px; }
     .swimlanes-container .popup-wrapper .title {
       padding: 10px;
-      border-bottom: 1px solid #fff; }
+      border-bottom: 1px solid var(--color-interface-softest);
       .swimlanes-container .popup-wrapper .title a {
-        color: #fff;
+        color: var(--color-interface-softest);
         font-size: 16px; }
+    }
     .swimlanes-container .popup-wrapper .subtitle {
       padding: 10px;
-      color: #dfe2e5; }
+      color: var(--color-interface-softer); }
     .swimlanes-container .popup-wrapper .pointer {
       position: absolute;
       height: 5px;
       margin: 0 0 0 -5px;
       border: 5px solid transparent;
-      border-top-color: rgba(0, 0, 0, 0.8); }
+      border-top-color: var(--color-interface-strong); }
+
+.grouptype-legend {
+  display: flex;
+  margin-top: var(--spacing-medium);
+  align-items: center;
+  gap: var(--spacing-medium);
+  label {
+    color: var(--color-interface-medium);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-small);
+  }
+}
 
 </style>
 
@@ -158,8 +173,8 @@
                 </div>
 
                 <div class="grouptype-legend">
-                    <label>Group Types</label>
-                    <div class="grouptype-legend">
+                    <label>Group Types:</label>
+                    <div class="grouptype-legend-items">
                         <asp:Repeater ID="rptGroupTypeLegend" runat="server" OnItemDataBound="rptGroupTypeLegend_ItemDataBound">
                             <ItemTemplate>
                                 <span class="padding-r-sm">

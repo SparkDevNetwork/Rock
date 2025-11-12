@@ -1,0 +1,280 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="row">
+        <div class="col-md-7">
+            <div class="rock-header">
+                <h3 class="title">Comma Separated File Import</h3>
+                <span class="description">The first step is to upload your comma delimited file. We'll then allow you to map the columns to fields in Rock. The first
+                    row of your file must contain headers for each column.
+                </span>
+                <hr class="section-header-hr">
+            </div>
+
+            <RockForm @submit="onSubmit">
+                <DropDownList v-model="dataType" label="Data Type" :items="dataTypes" :showBlankItem="false" />
+
+                <template v-if="usePreviousSourceDescription">
+                    <RadioButtonList v-model="selectedPreviousSourceDescription"
+                                     :items="previousSourceDescriptions"
+                                     label="Previous Source Descriptions"
+                                     horizontal
+                                     rules="required"
+                                     help="If you are importing data from a source that has already been run once, select the matching description below. Otherwise, if this is a different source than those shown, choose to add a new source description." />
+
+                    <RockButton :btnType="BtnType.Link" class="mb-4 px-0" @click="usePreviousSourceDescription = false" type="button">
+                        <small>Add Additional Source Description</small>
+                    </RockButton>
+                </template>
+
+                <template v-else>
+                    <TextBox v-model="typedSourceDescription"
+                             label="Source Description"
+                             rules="required"
+                             help="Describe where this data came from. We'll store what you type as a setting so if you import data from this system again we'll be able to match people you've already imported. (e.g.: 'former-chms', 'mailchimp', etc.)" />
+
+                    <RockButton v-if="config.sources && config.sources.length > 0" :btnType="BtnType.Link" class="mb-4 px-0" @click="usePreviousSourceDescription = true" type="button">
+                        <small>Choose Previous Source Description</small>
+                    </RockButton>
+                </template>
+
+                <NotificationBox v-if="errorsInFile" class="mt-4" alertType="danger">
+                    {{ errorsInFile }}
+                </NotificationBox>
+
+                <FileUploader v-model="importFile"
+                              formGroupCssClass="mt-4"
+                              label="CSV File"
+                              rules="required"
+                              :isBinaryFile="false"
+                              :rootFolder="config.rootFolder ?? ''"
+                              :uploadAsTemporary="false"
+                              :allowMultipleUploads="false" />
+
+                <CheckBox v-model="allowUpdatingExistingRecords"
+                          formGroupCssClass="mt-4"
+                          label="Allow Updating Existing Matched Records"
+                          help="When enabled, records in the database that match the imported data (first name, last name, and email) will be updated. Otherwise, only new records will be added." />
+
+                <NotificationBox v-if="submissionErrors" class="mt-4" alertType="danger">
+                    {{ submissionErrors }}
+                </NotificationBox>
+
+                <RockButton btnType="primary" class="mt-3" type="submit" :disabled="!!errorsInFile">Start</RockButton>
+            </RockForm>
+        </div>
+        <div class="col-md-5">
+            <div class="well">
+                <h4 class="mt-0 mb-1">Required Fields </h4>
+                When uploading data about people you'll need to include the following information. These should be separate columns on your CSV
+                file. The name of the field doesn't matter as you'll be able to map it later.
+
+                <ol>
+                    <li>Id - Some form of unique identifier for the person. This should come from your former system.</li>
+                    <li>Family Id - This field should be an unique value for each family. This tells us who is in the same family.</li>
+                    <li>Family Role - This column should have the values of Adult or Child.</li>
+                    <li>First Name - The individual's first name.</li>
+                    <li>Last Name - The individual's last name.</li>
+                </ol>
+
+                <h4 class="mt-4 mb-1">Optional Fields</h4>
+                <p>You may optionally add the following fields.</p>
+
+                <ol>
+                    <li>Nick Name - The individual's nick name.</li>
+                    <li>Middle Name - The individual's middle name.</li>
+                    <li>Suffix - The person's suffix.
+                        <br />
+                        <div v-if="config?.suffixOptions" v-html="config.suffixOptions"></div>
+                    </li>
+                    <li>Home Phone - The individual's home phone number.
+                        <br />
+                        (480-555-1234)
+                    </li>
+                    <li>Mobile Phone - The individuals's mobile phone number.
+                        <br />
+                        (480-555-1234)
+                    </li>
+                    <li>Is SMS Enabled - Whether the individual allows SMS messages to be sent to them. (True,False)</li>
+                    <li>Email - The individual's email address.</li>
+                    <li>Email Preference - The permissions you have been granted to email the individual.
+                        <br />
+                        <div v-if="config?.emailPreferenceOptions" v-html="config.emailPreferenceOptions"></div>
+                    </li>
+                    <li>Gender - The gender of the individual.
+                        <br />
+                        <div v-if="config?.genderOptions" v-html="config.genderOptions"></div>
+                    </li>
+                    <li>Marital Status - The marital status of the individual.
+                        <br />
+                        <div v-if="config?.maritalStatusOptions" v-html="config.maritalStatusOptions"></div>
+                    </li>
+                    <li>Birthdate - The individual's birthdate. </li>
+                    <li>Anniversary Date - The marriage anniversary date of the individual.</li>
+                    <li>Record Status - Whether the person is active or not.
+                        <br />
+                        <div v-if="config?.recordStatusOptions" v-html="config.recordStatusOptions"></div>
+                    </li>
+                    <li>Inactive Reason - The reason why the person is inactive.</li>
+                    <li>Is Deceased - Determines whether the person is deceased.
+                        <br />
+                        (True,False)
+                    </li>
+                    <li>Connection Status - The connection type the individual has to your organization. This must match the connection statuses you have in Rock.
+                        <br />
+                        <div v-if="config?.connectionStatusOptions" v-html="config.connectionStatusOptions"></div>
+                    </li>
+                    <li>Grade - The grade of the individual.
+                        <br />
+                        <div v-if="config?.gradeOptions" v-html="config.gradeOptions"></div>
+                    </li>
+                    <li>Home Address Street 1 - The first line of their home street address.</li>
+                    <li>Home Address Street 2 - The second line of their home street address.</li>
+                    <li>Home Address City - The city of their home address.</li>
+                    <li>Home Address State - The state of their home address.
+                        <br />
+                        (CA, AZ, etc.)
+                    </li>
+                    <li>Home Address Postal Code - The postal code of their home address.</li>
+                    <li>Home Address Country - The country of their home address.
+                        <br />
+                        (US)
+                    </li>
+                    <li>Created Date Time - The date and time the record was originally created.
+                        <br />
+                        (1/1/2020 9:12:34 AM)
+                    </li>
+                    <li>Modified Date Time - The date and time the record was last modified.
+                        <br />
+                        (5/1/2020 9:12:34 AM)
+                    </li>
+                    <li>Note - A note that you would like to add to the person.</li>
+                    <li>Campus Id - The Rock campus id for the individual. Must supply the Campus Name if the Campus Id is given.</li>
+                    <li>Campus Name - The Rock campus name for the individual. Must supply the Campus Id if the Campus Name is given. This will update if it does not exist.</li>
+                    <li>Give Individually - Determines if the person gives with the family or as an individual.
+                        <br />
+                        (True, False)
+                    </li>
+                </ol>
+
+                <h4 class="mt-4 mb-1">Additional Fields</h4>
+                <p>
+                    You can provide as many other additional fields as you'd like. We'll allow you to match these to attributes in
+                    Rock. You'll want to make sure that these Rock attributes exist.
+                </p>
+                <p>
+                    You can also choose to ignore columns on your CSV file.
+                </p>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { CsvImportBox } from "@Obsidian/ViewModels/Blocks/BulkImport/csvImportBox";
+    import { CsvImportDeleteFileOptionsBag } from "@Obsidian/ViewModels/Blocks/BulkImport/csvImportDeleteFileOptionsBag";
+    import { CsvImportGetCsvFieldsOptionsBag } from "@Obsidian/ViewModels/Blocks/BulkImport/csvImportGetCsvFieldsOptionsBag";
+    import { CsvImportGetCsvFieldsResultsBag } from "@Obsidian/ViewModels/Blocks/BulkImport/csvImportGetCsvFieldsResultsBag";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { StepOneResults } from "./types.partial";
+
+    const props = defineProps({
+        /** The foreign system key to use for this import. */
+        config: {
+            type: Object as PropType<CsvImportBox>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "stepFinished", data: StepOneResults): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const importFile = ref<ListItemBag | null>(null);
+
+    const dataTypes = ref<ListItemBag[]>([{ value: "People", text: "People" }]);
+    const dataType = ref<string>(dataTypes.value[0].value ?? "");
+
+    const previousSourceDescriptions = props.config.sources ?? undefined;
+    const selectedPreviousSourceDescription = ref<string | undefined>();
+    const typedSourceDescription = ref<string>("");
+    const usePreviousSourceDescription = ref<boolean>((previousSourceDescriptions?.length ?? 0) > 0);
+    const selectedSourceDescription = computed(() => {
+        return usePreviousSourceDescription.value ? selectedPreviousSourceDescription.value ?? "" : typedSourceDescription.value;
+    });
+
+    const allowUpdatingExistingRecords = ref<boolean>(true);
+
+    const errorsInFile = ref<string>("");
+    const submissionErrors = ref<string>("");
+
+    // #endregion
+
+    async function onSubmit(): Promise<void> {
+        if (errorsInFile.value) {
+            return;
+        }
+
+        // Reset submission errors
+        submissionErrors.value = "";
+
+        const result = await invokeBlockAction<CsvImportGetCsvFieldsResultsBag>("GetCsvFields", {
+            options: {
+                fileName: importFile.value?.text
+            } as CsvImportGetCsvFieldsOptionsBag
+        });
+
+        if (!result.isSuccess) {
+            submissionErrors.value = result.errorMessage ?? "Unknown error while reading CSV file.";
+            return;
+        }
+        else if (result.data) {
+            emit("stepFinished", {
+                dataType: dataType.value,
+                sourceDescription: selectedSourceDescription.value,
+                allowUpdatingExistingRecords: allowUpdatingExistingRecords.value,
+                importFile: importFile.value ?? {},
+                csvColumns: result.data.csvColumns ?? [],
+                personFieldOptions: result.data.personFields ?? [],
+                recordCount: result.data.recordCount ?? 0
+            });
+        }
+
+    }
+
+    // Validate newly selected files, and make sure when a file is removed that it is deleted from the server.
+    watch(importFile, (newValue, oldValue) => {
+        errorsInFile.value = "";
+
+        if (newValue) {
+            // Make sure it's a CSV file.
+            const fileName = newValue.text ?? "";
+            if (!fileName.toLowerCase().endsWith(".csv")) {
+                errorsInFile.value = `${fileName} is not a CSV file. Please select a valid CSV file.`;
+                return;
+            }
+        }
+        else if (oldValue) {
+            // File removed. Delete it from the server.
+            invokeBlockAction("DeleteFile", {
+                options: {
+                    fileName: oldValue.text
+                } as CsvImportDeleteFileOptionsBag
+            });
+        }
+    });
+</script>

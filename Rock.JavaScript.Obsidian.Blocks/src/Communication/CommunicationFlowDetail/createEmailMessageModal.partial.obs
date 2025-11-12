@@ -69,8 +69,9 @@
                 </div>
 
                 <div class="email-editor-container">
-                    <EmailEditor :communicationTemplateGuid="communicationTemplate?.guid"
+                    <EmailEditor v-model:communicationTemplateGuid="communicationTemplateGuid"
                                  :communicationTemplates="communicationTemplateListItemsBags"
+                                 communicationTemplatesHelp="Copies the message content and details from the selected template. If you're starting fresh, all template fields are copied. If you've already started editing, only the message content is updated unless all other fields are still blank."
                                  :disabled="disabled"
                                  :getHtmlRequest="getHtmlRequest"
                                  :html="message"
@@ -210,6 +211,7 @@
     const testEmailAddress = ref<string>(props.testEmailAddress ?? "");
     const isSendingTest = ref<boolean>(false);
     const sendTestError = ref<string | null | undefined>();
+    const communicationTemplateGuid = ref<Guid | null | undefined>(props.communicationTemplate?.guid ?? null);
 
     // Entity state.
     const guid = ref<Guid>(toGuidOrNull(props.communicationTemplate?.guid) ?? emptyGuid);
@@ -288,15 +290,26 @@
 
         const template = props.communicationTemplates.find(x => areEqual(x.guid, communicationTemplateGuid));
         if (template) {
-            guid.value = template.guid;
+            // Always update the message content.
             message.value = template.message ?? "";
-            emailName.value = template.name ?? "";
-            emailSubject.value = template.subject ?? "";
-            emailFromName.value = template.fromName ?? "";
-            emailFromEmail.value = template.fromEmail ?? "";
-            emailReplyToAddress.value = template.replyToEmail ?? "";
+
             // Preview text will be updated when the document is updated.
             // emailPreviewText
+
+            // Only update the other fields if they are ALL empty
+            // indicating none have been set yet.
+            if (!emailName.value
+                && !emailSubject.value
+                && !emailFromName.value
+                && !emailFromEmail.value
+                && !emailReplyToAddress.value
+            ) {
+                emailName.value = template.name ?? "";
+                emailSubject.value = template.subject ?? "";
+                emailFromName.value = template.fromName ?? "";
+                emailFromEmail.value = template.fromEmail ?? "";
+                emailReplyToAddress.value = template.replyToEmail ?? "";
+            }
         }
     }
 

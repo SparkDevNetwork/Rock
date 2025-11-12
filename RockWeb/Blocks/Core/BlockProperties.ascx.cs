@@ -395,6 +395,8 @@ namespace RockWeb.Blocks.Core
                 || customizedGrid?.IsStickyHeaderSupported == true;
             this.ShowMobileOptions = _block.Attributes.Any( a => a.Value.Categories.Any( c => c.Name == "custommobile" ) );
 
+            nbCustomColumnMessage.Text = customizedGrid?.CustomColumnMessage;
+
             if ( !Page.IsPostBack && _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
                 if ( _block.Attributes != null )

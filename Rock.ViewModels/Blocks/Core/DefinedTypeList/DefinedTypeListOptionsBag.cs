@@ -22,9 +22,5 @@ namespace Rock.ViewModels.Blocks.Core.DefinedTypeList
     /// </summary>
     public class DefinedTypeListOptionsBag
     {
-        /// <summary>
-        /// Determines if the category column should be displayed.
-        /// </summary>
-        public bool ShowCategoryColumn { get; set; }
     }
 }

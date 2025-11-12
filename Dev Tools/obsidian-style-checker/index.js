@@ -4,50 +4,124 @@ import { spawnSync } from "child_process";
 import { parse } from "node-html-parser";
 import Asana from "asana";
 import { env } from "process";
+import { parseArgs } from "node:util";
 
-const missing_variables = [];
+/**
+ * @typedef {Object} Config
+ *
+ * @property {boolean} asana - Whether to create Asana tasks.
+ * @property {string} asanaToken - The Asana access token.
+ * @property {string} asanaWorkspace - The Asana workspace GID.
+ * @property {string} asanaProject - The Asana project GID.
+ * @property {string} asanaSection - The Asana section GID.
+ * @property {boolean} test - Whether to force a notification to be sent for testing.
+ * @property {string} from - The starting commit, this is the commit before the push.
+ * @property {string} to - The final commit in the push.
+ */
 
-if (!env.ASANA_ACCESS_TOKEN) {
-    missing_variables.push("ASANA_ACCESS_TOKEN");
-}
-
-if (!env.ASANA_WORKSPACE) {
-    missing_variables.push("ASANA_WORKSPACE");
-}
-
-if (!env.ASANA_PROJECT) {
-    missing_variables.push("ASANA_PROJECT");
-}
-
-if (!env.ASANA_SECTION) {
-    missing_variables.push("ASANA_SECTION");
-}
-
-if (missing_variables.length > 0 && !process.argv.some(a => a === "--no-asana")) {
-    console.error(`Missing one or more environment variables: ${missing_variables.join(", ")}`);
-    process.exit(1);
-}
-
-// Initialize Asana client.
-//
-// You can get the Workspace Gid and Project Gid by inspecting the URL when
-// viewing the project in the browser:
-//
-// https://app.asana.com/1/<workspace_gid>/project/<project_gid>/overview/<some_other_gid>
-//
-// Next you can get the Section Gid by calling this API from the browser while
-// logged in:
-//
-// https://app.asana.com/api/1.0/projects/<project_gid>/sections
-
-const client = Asana.ApiClient.instance;
-const token = client.authentications["token"];
-token.accessToken = env.ASANA_ACCESS_TOKEN;
-const asanaWorkspaceGid = env.ASANA_WORKSPACE;
-const asanaProjectGid = env.ASANA_PROJECT;
-const asanaSectionGid = env.ASANA_SECTION;
-
+const config = parseConfig();
 const repoRoot = runCommand("git", ["rev-parse", "--show-toplevel"]).trim();
+
+main();
+
+/**
+ * Initializes the Asana client.
+ *
+ * You can get the Workspace Gid and Project Gid by inspecting the URL when
+ * viewing the project in the browser:
+ *
+ * https://app.asana.com/1/<workspace_gid>/project/<project_gid>/overview/<some_other_gid>
+ *
+ * Next you can get the Section Gid by calling this API from the browser while
+ * logged in:
+ *
+ * https://app.asana.com/api/1.0/projects/<project_gid>/sections
+ */
+function initializeAsana() {
+    const missingSettings = [];
+
+    if (!config.asanaToken) {
+        missingSettings.push({ env: "ASANA_ACCESS_TOKEN", arg: "--asana-token" });
+    }
+
+    if (!config.asanaWorkspace) {
+        missingSettings.push({ env: "ASANA_WORKSPACE", arg: "--asana-workspace" });
+    }
+
+    if (!config.asanaProject) {
+        missingSettings.push({ env: "ASANA_PROJECT", arg: "--asana-project" });
+    }
+
+    if (!config.asanaSection) {
+        missingSettings.push({ env: "ASANA_SECTION", arg: "--asana-section" });
+    }
+
+    if (missingSettings.length > 0 && config.asana) {
+        console.error(`Missing one or more environment variables: ${missingSettings.map(m => `${m.env} (${m.arg})`).join(", ")}`);
+        process.exit(1);
+    }
+
+    const client = Asana.ApiClient.instance;
+    const token = client.authentications["token"];
+    token.accessToken = config.asanaToken;
+}
+
+/**
+ * Parses command line arguments and returns a configuration object.
+ *
+ * @returns {Config}
+ */
+function parseConfig() {
+    const args = parseArgs({
+        options: {
+            "asana": { type: "boolean", default: false },
+            "asana-token": { type: "string" },
+            "asana-workspace": { type: "string" },
+            "asana-project": { type: "string" },
+            "asana-section": { type: "string" },
+            "test": { type: "boolean", default: false },
+            "from": { type: "string" },
+            "to": { type: "string" },
+        }
+    });
+
+    if (!args.values["from"]) {
+        console.error("Missing required argument: from");
+        process.exit(1);
+    }
+
+    if (!args.values["to"]) {
+        console.error("Missing required argument: to");
+        process.exit(1);
+    }
+
+    if (!args.values["asana-token"] && env.ASANA_ACCESS_TOKEN) {
+        args.values["asana-token"] = env.ASANA_ACCESS_TOKEN;
+    }
+
+    if (!args.values["asana-workspace"] && env.ASANA_WORKSPACE) {
+        args.values["asana-workspace"] = env.ASANA_WORKSPACE;
+    }
+
+    if (!args.values["asana-project"] && env.ASANA_PROJECT) {
+        args.values["asana-project"] = env.ASANA_PROJECT;
+    }
+
+    if (!args.values["asana-section"] && env.ASANA_SECTION) {
+        args.values["asana-section"] = env.ASANA_SECTION;
+    }
+
+    return {
+        asana: args.values["asana"],
+        asanaToken: args.values["asana-token"],
+        asanaWorkspace: args.values["asana-workspace"],
+        asanaProject: args.values["asana-project"],
+        asanaSection: args.values["asana-section"],
+        test: args.values["test"],
+        from: args.values["from"],
+        to: args.values["to"],
+    };
+}
 
 /**
  * Helper to run a command with spawnSync and return combined stdout and stderr as text.
@@ -61,6 +135,12 @@ const repoRoot = runCommand("git", ["rev-parse", "--show-toplevel"]).trim();
 function runCommand(cmd, args, cwd) {
     const result = spawnSync(cmd, args, { cwd, encoding: "utf-8" });
 
+    if (result.status !== 0) {
+        console.error(`Command failed: ${cmd} ${args.join(" ")}`);
+        console.error(result.stderr);
+        process.exit(1);
+    }
+
     return ((result.stdout || "") + (result.stderr || "")).trim();
 }
 
@@ -68,10 +148,13 @@ function runCommand(cmd, args, cwd) {
  * Gets the list of files changed in the latest commit.
  * Returns an array of file paths (one per line).
  *
+ * @param {string} from The previous commit.
+ * @param {string} to The commit that made the change.
+ *
  * @returns {string[]} Array of changed file paths.
  */
-function getChangedFiles() {
-    const output = runCommand("git", ["diff", "--name-only", "HEAD^", "HEAD"], repoRoot);
+function getChangedFiles(from, to) {
+    const output = runCommand("git", ["diff", "--name-only", from, to], repoRoot);
     return output.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
 }
 
@@ -79,12 +162,14 @@ function getChangedFiles() {
  * Gets the previous content of a file, handling renames.
  *
  * @param {string} relPath - Path to the file relative to the git root.
+ * @param {string} from The previous commit.
+ * @param {string} to The commit that made the change.
  *
  * @returns {string|null} Previous content of the file, or null if not found.
  */
-function getPreviousFileContent(relPath) {
-    // Check for renames in the last commit
-    const diffOutput = runCommand("git", ["diff", "--name-status", "HEAD^", "HEAD"], repoRoot);
+function getPreviousFileContent(relPath, from, to) {
+    // Check for renames or additions in the last commit
+    const diffOutput = runCommand("git", ["diff", "--name-status", from, to], repoRoot);
     const diffLines = diffOutput.split(/\r?\n/);
     let oldPath = relPath;
 
@@ -97,9 +182,16 @@ function getPreviousFileContent(relPath) {
                 break;
             }
         }
+        else if (line.startsWith("A")) {
+            const parts = line.split(/\t/);
+            if (parts[1] === relPath) {
+                return null;
+            }
+        }
     }
+
     // Try to get previous content
-    const prevContent = runCommand("git", ["show", `HEAD^:${oldPath}`], repoRoot);
+    const prevContent = runCommand("git", ["show", `${from}:${oldPath}`], repoRoot);
 
     return prevContent || null;
 }
@@ -108,12 +200,28 @@ function getPreviousFileContent(relPath) {
  * Gets the current content of a file.
  *
  * @param {string} relPath - Path to the file relative to the git root.
+ * @param {string} from The previous commit.
+ * @param {string} to The commit that made the change.
  *
  * @returns {string|null} Current content of the file, or null if not found.
  */
-function getCurrentFileContent(relPath) {
+function getCurrentFileContent(relPath, from, to) {
+    // Check for deletions in this commit
+    const diffOutput = runCommand("git", ["diff", "--name-status", from, to], repoRoot);
+    const diffLines = diffOutput.split(/\r?\n/);
+    let oldPath = relPath;
+
+    for (const line of diffLines) {
+        if (line.startsWith("D")) {
+            const parts = line.split(/\t/);
+            if (parts[1] === relPath) {
+                return null;
+            }
+        }
+    }
+
     // Try to get current content
-    const currContent = runCommand("git", ["show", `HEAD:${relPath}`], repoRoot);
+    const currContent = runCommand("git", ["show", `${to}:${relPath}`], repoRoot);
 
     return currContent || null;
 }
@@ -122,12 +230,14 @@ function getCurrentFileContent(relPath) {
  * Verifies the file to see if any style tags were modified.
  *
  * @param {string} filePath Path to the file relative to the git root.
+ * @param {string} from The previous commit.
+ * @param {string} to The commit that made the change.
  *
  * @returns {boolean} True if styles were modified, false otherwise.
  */
-function detectStyleChanges(filePath) {
-    const prevContent = getPreviousFileContent(filePath);
-    const currentContent = getCurrentFileContent(filePath);
+function detectStyleChanges(filePath, from, to) {
+    const prevContent = getPreviousFileContent(filePath, from, to);
+    const currentContent = getCurrentFileContent(filePath, from, to);
 
     const previousRoot = parse(prevContent ?? "");
     const currentRoot = parse(currentContent ?? "");
@@ -158,16 +268,16 @@ function detectStyleChanges(filePath) {
  * Creates an Asana task reporting the style changes.
  *
  * @param {string[]} changedFiles The relative paths to the changed files.
+ * @param {string} to The commit that made the change.
  *
  * @returns {Promise<void>} A promise that resolves when the task is created.
  */
-async function createAsanaTask(changedFiles) {
-    const shortCommitHash = runCommand("git", ["rev-parse", "--short", "HEAD"], repoRoot);
-    const longCommitHash = runCommand("git", ["rev-parse", "HEAD"], repoRoot);
+async function createAsanaTask(changedFiles, to) {
+    const shortCommitHash = runCommand("git", ["rev-parse", "--short", to], repoRoot);
     const commitMessage = runCommand("git", ["log", "-1", "--pretty=%B"], repoRoot);
 
     const tasksApiInstance = new Asana.TasksApi();
-    const message = `Commit <a href="https://github.com/SparkDevNetwork/Rock/commit/${longCommitHash}">${shortCommitHash}</a> made changes to Obsidian style tags.\n\n<pre>${commitMessage}</pre>`;
+    const message = `Commit <a href="https://github.com/SparkDevNetwork/Rock/commit/${to}">${shortCommitHash}</a> made changes to Obsidian style tags.\n\n<pre>${commitMessage}</pre>`;
     const fileBullets = changedFiles.map(f => `<li>${f}</li>`).join("");
     const body = {
         data: {
@@ -175,7 +285,7 @@ async function createAsanaTask(changedFiles) {
             approval_status: "pending",
             completed: false,
             html_notes: `<body>${message}\n\n<ul>${fileBullets}</ul>\n\n</body>`,
-            workspace: asanaWorkspaceGid,
+            workspace: config.asanaWorkspace,
             memberships: [
                 {
                     project: asanaProjectGid,
@@ -191,8 +301,14 @@ async function createAsanaTask(changedFiles) {
     console.log(`Created new asana task id=${createResult.data.gid}`);
 }
 
-async function main() {
-    const changedFiles = getChangedFiles();
+/**
+ * Processes a single commit to detect style changes and create Asana tasks if needed.
+ *
+ * @param {string} from The previous commit.
+ * @param {string} to The commit that made the change.
+ */
+async function processCommit(from, to) {
+    const changedFiles = getChangedFiles(from, to);
     const changedObsidianFiles = changedFiles.filter(f => f.endsWith(".obs"));
 
     /**
@@ -204,7 +320,7 @@ async function main() {
 
     for (const filePath of changedObsidianFiles) {
         try {
-            if (detectStyleChanges(filePath)) {
+            if (detectStyleChanges(filePath, from, to)) {
                 reportFiles.push(filePath);
             }
         }
@@ -213,12 +329,12 @@ async function main() {
         }
     }
 
-    if (process.argv.some(a => a === "--test-asana")) {
+    if (config.test) {
         reportFiles.push("Test file");
     }
 
     if (reportFiles.length > 0) {
-        if (!process.argv.some(a => a === "--no-asana")) {
+        if (config.asana) {
             try {
                 await createAsanaTask(reportFiles);
             }
@@ -230,10 +346,26 @@ async function main() {
                 }
             }
         }
+
+        console.log(`\x1b[1;31mStyle changes detected in commit ${to}.\x1b[0m`);
     }
     else {
-        console.log("No style changes detected.");
+        console.log(`No style changes detected in commit ${to}.`);
     }
 }
 
-main();
+async function main() {
+    const revList = runCommand("git", ["rev-list", "--first-parent", `${config.from}..${config.to}`], repoRoot).split(/\r?\n/);
+
+    if (revList.length < 1) {
+        console.log("No commits found.");
+        process.exit(1);
+    }
+
+    revList.push(config.from);
+    revList.reverse();
+
+    for (let i = 0; i < revList.length - 1; i++) {
+        await processCommit(revList[i], revList[i + 1]);
+    }
+}

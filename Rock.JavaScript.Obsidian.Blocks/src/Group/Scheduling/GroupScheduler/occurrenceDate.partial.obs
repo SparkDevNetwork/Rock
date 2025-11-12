@@ -1,13 +1,15 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div ref="occurrenceDateElement" class="occurrence-date js-occurrence-date" :style="inlineStyle">
-        <h2 class="occurrence-date-title">{{ title }}</h2>
+        <div class="occurrence-date-title-container">
+            <h2 class="occurrence-date-title">{{ title }}</h2>
+        </div>
 
         <NotificationBox v-if="!anySchedules" :alertType="AlertType.Info">
             No schedules available.
         </NotificationBox>
 
-        <div v-else class="schedules">
+        <div v-else class="schedules js-schedule-columns">
 
             <Schedule v-for="(occurrences, index) in sortedOccurrencesBySchedule" :key="getScheduleIdKey(occurrences)"
                       :occurrences="occurrences"
@@ -188,35 +190,35 @@
             return;
         }
 
-        const schedules = occurrenceDateElement.value.querySelectorAll<HTMLElement>(".js-schedule-column");
+        const scheduleElems = occurrenceDateElement.value.querySelectorAll<HTMLElement>(".js-schedule-column");
 
-        // Start by setting all groups back to "auto" minimum height. This will do two things:
+        // Start by setting all group elements back to "auto" minimum height. This will do two things:
         //  1. Reclaim any vertical space that is no longer needed (if an individual was removed).
         //  2. Set up the UI for mobile widths (as we won't synchronize heights in that case).
-        schedules.forEach((schedule: HTMLElement) => {
-            schedule.querySelectorAll<HTMLElement>(".js-schedule-group").forEach((group: HTMLElement) => {
-                group.style.minHeight = "auto";
+        scheduleElems.forEach((scheduleElem: HTMLElement) => {
+            scheduleElem.querySelectorAll<HTMLElement>(".js-schedule-group").forEach((groupElem: HTMLElement) => {
+                groupElem.style.minHeight = "auto";
             });
         });
 
         // For non-mobile widths, synchronize heights.
-        if (window.innerWidth > 768) {
+        if (window.innerWidth >= 992) {
             // But wait until the next tick to give the above "auto" minimum heights to take effect first.
             nextTick(() => {
                 const groupHeights: number[] = [];
 
-                // Loop through all groups to find the tallest one for a given index position.
-                schedules.forEach((schedule: HTMLElement) => {
-                    schedule.querySelectorAll<HTMLElement>(".js-schedule-group").forEach((group: HTMLElement, i: number) => {
-                        if (!groupHeights[i] || groupHeights[i] < group.offsetHeight) {
-                            groupHeights[i] = group.offsetHeight;
+                // Loop through all group elements to find the tallest one for a given index position.
+                scheduleElems.forEach((scheduleElem: HTMLElement) => {
+                    scheduleElem.querySelectorAll<HTMLElement>(".js-schedule-group").forEach((groupElem: HTMLElement, i: number) => {
+                        if (!groupHeights[i] || groupHeights[i] < groupElem.offsetHeight) {
+                            groupHeights[i] = groupElem.offsetHeight;
                         }
                     });
                 });
 
-                // Loop through all groups again to set each minimum height to match their tallest sibling.
-                schedules.forEach((schedule: HTMLElement) => {
-                    schedule.querySelectorAll<HTMLElement>(".js-schedule-group").forEach((group: HTMLElement, i: number) => {
+                // Loop through all group elements again to set each minimum height to match their tallest sibling.
+                scheduleElems.forEach((scheduleElem: HTMLElement) => {
+                    scheduleElem.querySelectorAll<HTMLElement>(".js-schedule-group").forEach((group: HTMLElement, i: number) => {
                         group.style.minHeight = `${groupHeights[i]}px`;
                     });
                 });

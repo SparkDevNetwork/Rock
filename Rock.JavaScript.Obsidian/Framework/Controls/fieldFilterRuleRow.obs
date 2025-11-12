@@ -2,7 +2,7 @@
 <template>
     <div class="filter-rule">
         <div class="filter-rule-fields row form-row">
-            <div class="filter-rule-comparefield col-xs-12 col-md-4">
+            <div v-if="filterMode === FilterMode.AdvancedFilter" class="filter-rule-comparefield col-xs-12 col-md-4">
                 <DropDownList v-model="selectedFieldKey"
                               :items="fieldList"
                               :grouped="groupSources"

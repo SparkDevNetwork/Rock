@@ -162,7 +162,7 @@
                                         </div>
                                     </div>
                                 </template>
-                                <div class="d-flex flex-column gap-1">
+                                <div v-if="showCommunicationPreference" class="d-flex flex-column gap-1">
                                     <RockLabel>
                                         Communication Preference
                                     </RockLabel>
@@ -234,7 +234,7 @@
                             </template>
                         </CustomSelect>
 
-                        <div v-if="config.programConfigurationMode === ConfigurationMode.OnDemandLearning" class="communication-preference-container">
+                        <div v-if="config.programConfigurationMode === ConfigurationMode.OnDemandLearning && showCommunicationPreference" class="communication-preference-container">
                             <RockLabel>
                                 Communication Preference
                             </RockLabel>
@@ -355,6 +355,7 @@
     const showGrades = ref(config.showGrades);
     const currentGrade = ref(config.currentGrade);
     const enableAnnouncements = ref(config.enableAnnouncements);
+    const showCommunicationPreference = ref(config.showCommunicationPreference);
 
     const overviewTab = ref("Class Overview");
     const activitiesTab = ref("Activities / Assignments");

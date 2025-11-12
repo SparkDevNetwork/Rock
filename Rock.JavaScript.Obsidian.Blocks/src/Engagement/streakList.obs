@@ -20,10 +20,10 @@
         <Column name="person"
                 title="Name"
                 field="person"
-                :sortValue="row => getPersonFullName(row)"
+                :sortValue="getNameRowSortValue"
                 :filter="pickExistingValueFilter"
                 :filterValue="getNameRowFilterValue"
-                :quickFilterValue="getNameRowFilterValue"
+                :quickFilterValue="getNameRowQuickFilterValue"
                 visiblePriority="xs"
                 width="15%">
             <template #format="{ row }">
@@ -150,10 +150,6 @@
         }
     }
 
-    const getPersonFullName = (row: Record<string, unknown>): string => {
-        return row["fullName"] as string;
-    };
-
     function getIsDeceasedRowClass(row: Record<string, unknown>): string {
         const isDeceased = asBoolean(row["isDeceased"]);
         return isDeceased ? "is-deceased" : "";
@@ -177,12 +173,30 @@
     }
 
     /**
+     * Gets the sort value text to use for the name column.
+     *
+     * @param row The row to be sorted.
+     */
+    const getNameRowSortValue = (row: Record<string, unknown>): string => {
+        return `${row.lastName} ${row.nickName}`;
+    };
+
+    /**
     * Gets the filter value text to use for the person column.
     *
     * @param row The row to be filtered.
     */
     function getNameRowFilterValue(row: Record<string, unknown>): string {
-        return row.fullName as string;
+        return `${row.nickName} ${row.lastName}`;
+    }
+
+    /**
+    * Gets the quick filter value text to use for the name column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getNameRowQuickFilterValue(row: Record<string, unknown>): string {
+        return `${row.nickName} ${row.lastName}`;
     }
 
     /**

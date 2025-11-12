@@ -179,6 +179,16 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
+        protected override List<MediaAccountData> GetListItems( IQueryable<MediaAccountData> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+
+            GridAttributeLoader.LoadFor( items, a => a.MediaAccount, _gridAttributes.Value, rockContext );
+
+            return items;
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<MediaAccountData> GetGridBuilder()
         {
             var blockOptions = new GridBuilderGridOptions<MediaAccountData>

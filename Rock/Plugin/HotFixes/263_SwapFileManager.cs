@@ -73,6 +73,55 @@ WHERE [Guid] = '6F074DAA-BDCC-44C5-BB89-B899C1AAC6C1';
             //   EntityType:Rock.Blocks.Cms.FileAssetManager
             RockMigrationHelper.AddOrUpdateEntityBlockType( "File Asset Manager", "Browse and manage files on the web server or stored on a remote server or 3rd party cloud storage", "Rock.Blocks.Cms.FileAssetManager", "CMS", "535500A7-967F-4DA3-8FCA-CB844203CB3D" );
 
+            // Remove any existing attributes that are assigned to the wrong BlockType (Cleanup from prior swap)
+            Sql( @"
+-- BlockType Guid
+DECLARE @BlockTypeGuid UNIQUEIDENTIFIER = '535500A7-967F-4DA3-8FCA-CB844203CB3D';
+DECLARE @BlockTypeId INT = (SELECT [Id] FROM [BlockType] WHERE [Guid] = @BlockTypeGuid);
+
+-- Table of Attribute GUIDs
+DECLARE @AttributeGuids TABLE (Guid UNIQUEIDENTIFIER);
+
+INSERT INTO @AttributeGuids (Guid)
+VALUES
+('C872B6A7-36F6-4771-807A-7B4A7E8BAD2C'), -- Browse Mode
+('7750F7BB-DC53-41C6-987B-5FD2B02674C2'), -- Enable Asset Storage Providers
+('FCBB90A6-965F-4237-9B0F-4384E3FFC991'), -- Enable File Manager
+('BD031ADA-5D23-4237-A332-468FAC7282E9'), -- Enable Zip Upload
+('80D4544B-563A-4109-9F61-F4E019580B3A'), -- File Editor Page
+('67ECB409-F5C5-4487-A60B-FD572B99D95B'), -- Height Mode
+('48C3DFAD-2168-4F6C-8DEC-167E49C379B7'), -- Height
+('14684245-5768-442D-9BFB-C80E1383775A'); -- Root Folder
+
+DECLARE @AttributeGuid UNIQUEIDENTIFIER;
+DECLARE @AttributeId INT;
+
+DECLARE AttributeCursor CURSOR FOR
+SELECT Guid FROM @AttributeGuids;
+
+OPEN AttributeCursor;
+FETCH NEXT FROM AttributeCursor INTO @AttributeGuid;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	SELECT @AttributeId = [Id]
+	FROM [Attribute]
+	WHERE [Guid] = @AttributeGuid
+		AND [EntityTypeQualifierColumn] = 'BlockTypeId'
+		AND [EntityTypeQualifierValue] <> CAST(@BlockTypeId AS NVARCHAR(200));
+
+    IF @AttributeId IS NOT NULL
+    BEGIN
+        DELETE FROM [Attribute] WHERE [Id] = @AttributeId;
+    END
+
+    FETCH NEXT FROM AttributeCursor INTO @AttributeGuid;
+END
+
+CLOSE AttributeCursor;
+DEALLOCATE AttributeCursor;
+" );
+
             // Attribute for BlockType
             //   BlockType: File Asset Manager
             //   Category: CMS

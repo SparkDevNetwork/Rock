@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField :modelValue="fileGuid" formGroupClasses="file-uploader" name="fileuploader">
+    <RockFormField :modelValue="fileGuid" v-bind="fieldProps" formGroupClasses="file-uploader" name="fileuploader">
         <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
                 <NotificationBox v-if="uploadErrorMessage" alertType="warning">
@@ -45,6 +45,7 @@
     import RockFormField from "./rockFormField.obs";
     import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
 
     const props = defineProps({
         /**
@@ -118,7 +119,9 @@
         uploadPath: {
             type: String as PropType<string>,
             default: ""
-        }
+        },
+
+        ...standardRockFormFieldProps
     });
 
     const emit = defineEmits<{
@@ -127,7 +130,7 @@
     }>();
 
     const internalValue = ref(props.modelValue);
-
+    const fieldProps = useStandardRockFormFieldProps(props);
     const securityGrantToken = useSecurityGrantToken();
 
     // Variables related to the progress of uploading a new file.
@@ -193,7 +196,7 @@
                     parentEntityTypeId: props.parentEntityTypeId,
                     parentEntityId: props.parentEntityId,
                     baseUrl: props.uploadUrl,
-                securityGrantToken: securityGrantToken.value
+                    securityGrantToken: securityGrantToken.value
                 });
                 internalValue.value = result;
             }

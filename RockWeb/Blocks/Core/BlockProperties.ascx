@@ -103,6 +103,7 @@
                         <Rock:PanelWidget ID="pwCustomGridColumns" runat="server" Title="Custom Columns">
                             <Rock:RockControlWrapper ID="rcwCustomGridColumns" runat="server" Label="Custom Columns">
                                 <Rock:NotificationBox ID="nbGridWarning" runat="server" Text="With great power comes great responsibility! This feature allows you to easily display additional information but be aware that this could cause performance issues for grids with more than a few dozen rows." CssClass="alert alert-warning"></Rock:NotificationBox>
+                                <Rock:NotificationBox ID="nbCustomColumnMessage" runat="server" NotificationBoxType="Info"></Rock:NotificationBox>
                                 <asp:LinkButton ID="lbAddColumns" runat="server" CssClass="btn btn-default" Text="Add Column" OnClick="lbAddColumns_Click" />
                                 <asp:Repeater ID="rptCustomGridColumns" runat="server" OnItemDataBound="rptCustomGridColumns_ItemDataBound">
                                     <ItemTemplate>

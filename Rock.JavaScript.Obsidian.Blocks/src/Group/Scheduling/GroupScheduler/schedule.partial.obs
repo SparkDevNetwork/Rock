@@ -1,16 +1,18 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="schedule-column js-schedule-column">
-        <div class="schedule-header">
-            <span v-if="showPrevNextButtons" class="page prev clickable" @click="$emit('goPrevious')">
-                <i class="ti ti-chevron-left"></i>
-            </span>
-            <span class="text-center text-sm-left">
-                {{ title }}
-            </span>
-            <span v-if="showPrevNextButtons" class="page next clickable" @click="$emit('goNext')">
-                <i class="ti ti-chevron-right"></i>
-            </span>
+        <div class="schedule-header-container">
+            <div class="schedule-header">
+                <span v-if="showPrevNextButtons" class="page prev clickable" @click="$emit('goPrevious')">
+                    <i class="ti ti-chevron-left"></i>
+                </span>
+                <span class="text-center text-sm-left">
+                    {{ title }}
+                </span>
+                <span v-if="showPrevNextButtons" class="page next clickable" @click="$emit('goNext')">
+                    <i class="ti ti-chevron-right"></i>
+                </span>
+            </div>
         </div>
 
         <NotificationBox v-if="!anyGroups" :alertType="AlertType.Info">

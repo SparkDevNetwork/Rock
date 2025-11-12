@@ -338,12 +338,13 @@ export function getStandardFilterComponent(comparisonLabelOrTypes: ComparisonTyp
                 hasValueComponent,
                 internalComparisonType,
                 internalComparisonValue,
-                isTypeOptional
+                isTypeOptional,
+                filterMode: props.filterMode
             };
         },
 
         template: `
-<FieldFilterContainer :compareLabel="compareLabel">
+<FieldFilterContainer :compareLabel="compareLabel" :filterMode="filterMode">
     <template v-if="hasCompareComponent" #compare>
         <DropDownList v-model="internalComparisonType" :items="comparisonTypeOptions" :showBlankItem="isTypeOptional" />
     </template>

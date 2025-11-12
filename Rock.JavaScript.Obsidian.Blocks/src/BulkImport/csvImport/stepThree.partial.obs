@@ -1,0 +1,207 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ID="pnlProgress" runat="server" CssClass="js-messageContainer" Visible="false">
+        <h2>Import</h2>
+        We'll now start the import process with the data and mappings you have provided.
+        <hr>
+        <NotificationBox v-if="completed == 'exception'" alertType="danger" v-html="errorMessage" style="word-wrap:break-word;" />
+
+        <div ID="pnlImportPreaprationProgress" runat="server" CssClass="mb-5">
+            <h4>Step 1: Import Preparation</h4>
+            <div>First, we'll arrange your data into a format we need to import. </div>
+
+            <NotificationBox v-if="preparationLogMessage" alertType="info">
+                {{ preparationLogMessage }}
+            </NotificationBox>
+
+            <ProgressBar v-if="preparationProgress > 0" :percent="preparationProgress" showCompletionText />
+
+            <div class="progress-bar js-progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemax="0">0%</div>
+        </div>
+
+        <div ID="pnlImportDataProgress" runat="server" CssClass="mb-5">
+
+            <h4>Step 2: Import Data</h4>
+            Then, we'll import the data into the database.
+
+            <NotificationBox v-if="importLogMessage && !completed" alertType="info">
+                {{ importLogMessage }}
+            </NotificationBox>
+
+            <ProgressBar v-if="importProgress > 0" :percent="importProgress" showCompletionText />
+
+        </div>
+        <div id="import-csv-success" v-if="completed == 'success'">
+            <NotificationBox alertType="success" heading="Success!">
+                Your data has been imported into Rock.
+            </NotificationBox>
+        </div>
+        <div id="import-csv-error" v-if="isFinishedWithErrors === true">
+            <NotificationBox alertType="warning">
+                There were a few failures while importing. Some records could be imported only partially or could not be
+                imported at all. Click the button to download a new csv file that has all the records that has failures.
+                The csv includes a new 'CSV Import Errors' column that details out the errors. You may correct those
+                records and retry importing. There is another column 'CSV Import Success'. If a record could not be
+                imported to Rock at all, it would be marked as FALSE under the 'CSV Import Success' column.
+            </NotificationBox>
+            <!-- TODO -->
+            <RockButton :btnType="BtnType.Primary" @click="onDownloadErrorCsvClick" type="button">Download CSV File with the Errors</RockButton>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import ProgressBar from "@Obsidian/Controls/progressBar.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { CsvImportBox } from "@Obsidian/ViewModels/Blocks/BulkImport/csvImportBox";
+    import { StepTwoResults } from "./types.partial";
+    import { useInvokeBlockAction, useBlockActionUrl } from "@Obsidian/Utility/block";
+    import { CsvImportStartImportOptionsBag } from "@Obsidian/ViewModels/Blocks/BulkImport/csvImportStartImportOptionsBag";
+    import { getTopic } from "@Obsidian/Utility/realTime";
+    import { CsvImportActivityProgressStatusBag } from "@Obsidian/ViewModels/Utility/csvImportActivityProgressStatusBag";
+
+    const props = defineProps({
+        config: {
+            type: Object as PropType<CsvImportBox>,
+            required: true
+        },
+
+        recordCount: {
+            type: Number,
+            required: true
+        },
+
+        allowUpdatingExisting: {
+            type: Boolean,
+            default: false
+        },
+
+        columnMappings: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        },
+
+        fileName: {
+            type: String,
+            required: true
+        },
+
+        sourceDescription: {
+            type: String,
+            required: true
+        }
+    });
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const blockActionUrl = useBlockActionUrl();
+
+    const completed = ref<"exception" | "success" | "error" | undefined>();
+    const isFinishedWithErrors = ref<true | false | undefined>();
+    const isErrorDuringProcessing = ref(false);
+    const errorMessage = ref("");
+    const errorCsvFolderName = ref("");
+
+    const preparationProgress = ref(0);
+    const preparationLogMessage = ref("");
+    const importProgress = ref(0);
+    const importLogMessage = ref("");
+
+    let realTimeConnectionId: string = "";
+
+    /**
+     * Initialize the real-time engine and start monitoring for updates to the
+     * proxy connection status messages.
+     */
+    async function startRealTime(): Promise<void> {
+        const topic = await getTopic("Rock.RealTime.Topics.CsvImportActivityProgress");
+
+        topic.onReconnected(async () => {
+            realTimeConnectionId = topic.connectionId ?? "";
+        });
+
+        topic.on("updateTaskProgress", (status: CsvImportActivityProgressStatusBag) => {
+            if (status.taskName === "preparation") {
+                preparationProgress.value = status.completionPercentage;
+            }
+        });
+        topic.on("updateTaskLog", (status: CsvImportActivityProgressStatusBag) => {
+            if (status.taskName === "preparation") {
+                preparationLogMessage.value = status.message ?? "";
+            }
+            else if (status.taskName === "import") {
+                importLogMessage.value = status.message ?? "";
+                importProgress.value = status.completionPercentage;
+            }
+        });
+        topic.on("taskErrored", (status: CsvImportActivityProgressStatusBag) => {
+            completed.value = "exception";
+            errorMessage.value = status.error ?? "";
+        });
+        topic.on("taskCompleted", (status: CsvImportActivityProgressStatusBag) => {
+            if (status.error) {
+                isErrorDuringProcessing.value = true;
+                errorMessage.value = status.message ?? "";
+            }
+
+            if (status.taskName === "preparation") {
+                preparationProgress.value = 100;
+            }
+            else if (status.taskName === "import") {
+                importProgress.value = 100;
+            }
+
+            completed.value = "success";
+            if (isErrorDuringProcessing.value === true) {
+                isFinishedWithErrors.value = true;
+            }
+            else {
+                isFinishedWithErrors.value = false;
+            }
+            importLogMessage.value = status.message ?? "";
+        });
+
+        topic.onMessage((...args) => console.debug("Real-time message received:", ...args));
+
+        realTimeConnectionId = topic.connectionId ?? "";
+
+        startImport();
+    }
+
+    async function startImport(): Promise<void> {
+        console.debug("START IMPORT");
+
+        // Reset submission errors
+        completed.value = undefined;
+
+        const result = await invokeBlockAction<{ errorCsvFolderName: string }>("StartImport", {
+            options: {
+                fileName: props.fileName,
+                columnMappings: props.columnMappings,
+                recordCount: props.recordCount,
+                sessionId: realTimeConnectionId,
+                sourceDescription: props.sourceDescription,
+                allowUpdatingExisting: props.allowUpdatingExisting
+            } as CsvImportStartImportOptionsBag
+        });
+
+        if (!result.isSuccess) {
+            errorMessage.value = result.errorMessage ?? "Unknown error while reading CSV file.";
+            completed.value = "exception";
+            return;
+        }
+        else if (result.data) {
+            errorCsvFolderName.value = result.data.errorCsvFolderName ?? "";
+        }
+    }
+
+    function onDownloadErrorCsvClick(): void {
+        const url = blockActionUrl("DownloadErrorCsv?f=" + errorCsvFolderName.value);
+        window.location.href = url;
+    }
+
+    // Initialize real-time connection when component mounts
+    startRealTime();
+</script>

@@ -138,6 +138,7 @@
                                      v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
                                      :document="emailDocument"
                                      :communicationTemplates="communicationTemplates"
+                                     :communicationTemplatesHelp="communicationTemplatesHelp"
                                      :hasScrollableBody="true" />
             </template>
         </div>
@@ -378,6 +379,11 @@
 
         communicationTemplates: {
             type: Object as PropType<ListItemBag[] | null | undefined>,
+            required: false
+        },
+
+        communicationTemplatesHelp: {
+            type: String as PropType<string | null | undefined>,
             required: false
         },
 

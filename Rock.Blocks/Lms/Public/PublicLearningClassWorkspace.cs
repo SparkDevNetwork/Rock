@@ -282,7 +282,8 @@ namespace Rock.Blocks.Lms
                     IsStudentCommentingEnabled = activity.LearningClassActivity.IsStudentCommentingEnabled,
                     Name = activity.LearningClassActivity.Name,
                     Order = activity.LearningClassActivity.Order,
-                    Points = activity.LearningClassActivity.Points
+                    Points = activity.LearningClassActivity.Points,
+                    SendNotificationCommunication = activity.LearningClassActivity.SendNotificationCommunication
                 };
 
                 var isPreviousMethodCalculation = activityBag.AvailabilityCriteria == AvailabilityCriteria.AfterPreviousCompleted;
@@ -454,6 +455,8 @@ namespace Rock.Blocks.Lms
             var currentPersonGuid = currentPerson.Guid.ToString();
 
             box.IsCurrentPersonFacilitator = box.Activities.Any( a => a.ClassActivityBag.CurrentPerson.IsFacilitator );
+
+            box.ShowCommunicationPreference = box.Activities.Any( a => a.ClassActivityBag.SendNotificationCommunication );
 
             var participantIdKey = box.Activities.Select( a => a.Student.IdKey ).FirstOrDefault();
             var participantData = participantService.GetSelect( participantIdKey, p => new

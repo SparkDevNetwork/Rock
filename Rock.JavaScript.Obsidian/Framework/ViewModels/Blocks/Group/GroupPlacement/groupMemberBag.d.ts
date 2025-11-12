@@ -32,8 +32,8 @@ export type GroupMemberBag = {
     /** The collection of attribute values associated with this group member. */
     attributeValues?: Record<string, string> | null;
 
-    /** The date and time when the group member record was created, if available. */
-    createdDateTime?: string | null;
+    /** The date and time when the group member record was added, if available. */
+    dateTimeAdded?: string | null;
 
     /**
      * Gets or sets the group member unique identifier.

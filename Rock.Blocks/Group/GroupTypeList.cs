@@ -74,6 +74,15 @@ namespace Rock.Blocks.Group
 
         #endregion Keys
 
+        #region Fields
+
+        /// <summary>
+        /// The GroupType attributes configured to show on the grid.
+        /// </summary>
+        private readonly Lazy<List<AttributeCache>> _gridAttributes = new System.Lazy<List<AttributeCache>>( BuildGridAttributes );
+
+        #endregion
+
         #region Methods
 
         /// <inheritdoc/>
@@ -146,6 +155,16 @@ namespace Rock.Blocks.Group
         }
 
         /// <inheritdoc/>
+        protected override List<GroupTypeWithGroupCounts> GetListItems( IQueryable<GroupTypeWithGroupCounts> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+
+            GridAttributeLoader.LoadFor( items, g => g.GroupType, _gridAttributes.Value, rockContext );
+
+            return items;
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<GroupTypeWithGroupCounts> GetGridBuilder()
         {
             return new GridBuilder<GroupTypeWithGroupCounts>()
@@ -156,7 +175,24 @@ namespace Rock.Blocks.Group
                 .AddTextField( "name", a => a.GroupType.Name )
                 .AddField( "showInNavigation", a => a.GroupType.ShowInNavigation )
                 .AddField( "isSystem", a => a.GroupType.IsSystem )
-                .AddField( "isSecurityDisabled", a => !a.GroupType.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
+                .AddField( "isSecurityDisabled", a => !a.GroupType.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddAttributeFieldsFrom( a => a.GroupType, _gridAttributes.Value );
+        }
+
+        /// <summary>
+        /// Builds the list of grid attributes that should be included on the Grid.
+        /// </summary>
+        /// <returns>A list of <see cref="AttributeCache"/> objects.</returns>
+        private static List<AttributeCache> BuildGridAttributes()
+        {
+            var entityTypeId = EntityTypeCache.Get<GroupType>( false )?.Id;
+
+            if ( entityTypeId.HasValue )
+            {
+                return AttributeCache.GetOrderedGridAttributes( entityTypeId.Value, string.Empty, string.Empty );
+            }
+
+            return new List<AttributeCache>();
         }
 
         #endregion

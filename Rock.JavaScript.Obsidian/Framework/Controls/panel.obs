@@ -39,7 +39,8 @@
                     </span>
 
                     <span v-if="hasFullscreen" class="action panel-action-fullscreen clickable" @click="onFullscreenClick">
-                        <i class="ti ti-maximize"></i>
+                        <i v-if="isFullscreen" class="ti ti-minimize"></i>
+                        <i v-else class="ti ti-maximize"></i>
                     </span>
 
                     <template v-if="hasHeaderSecondaryActions">
@@ -476,6 +477,7 @@
             ev.stopImmediatePropagation();
 
             isFullscreen.value = false;
+            emit("update:isFullscreen", false);
         }
     };
 
@@ -523,10 +525,16 @@
 
     // Watches for changes to our full screen status and responds accordingly.
     watch(isFullscreen, () => {
-        // If we have entered full screen then wait for the UI to update
-        // and set focus on the panel. This allows the escape key to work.
+        // Always emit update:isFullscreen so parent stays in sync
+        emit("update:isFullscreen", isFullscreen.value);
         if (isFullscreen.value) {
-            nextTick(() => panelElement.value?.focus());
+            nextTick(() => {
+                if (panelElement.value) {
+                    // If we have entered full screen then wait for the UI to update
+                    // and set focus on the panel. This allows the escape key to work.
+                    panelElement.value.focus();
+                }
+            });
         }
     });
 

@@ -1,0 +1,107 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { MobileDeepLinkDetailBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileDeepLinkDetail/mobileDeepLinkDetailBag";
+    import { MobileDeepLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileDeepLinkDetail/mobileDeepLinkDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<MobileDeepLinkDetailBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<MobileDeepLinkDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.route) {
+            valueBuilder.addTextValue("Route", `/${props.modelValue.pathPrefix}/${props.modelValue.route}`);
+        }
+
+        if (props.modelValue.mobilePage) {
+            valueBuilder.addTextValue("Mobile Page", props.modelValue.mobilePage.page?.text ?? "");
+        }
+
+        if (props.modelValue.usesUrlAsFallback !== undefined) {
+            valueBuilder.addTextValue("Fallback Method", props.modelValue.usesUrlAsFallback ? "URL" : "Page");
+        }
+
+        if (props.modelValue.usesUrlAsFallback === false && props.modelValue.webFallbackPage) {
+            valueBuilder.addTextValue("Web Fallback Page", props.modelValue.webFallbackPage.page?.text ?? "");
+        }
+
+        if (props.modelValue.usesUrlAsFallback === true && props.modelValue.webFallbackPageUrl) {
+            valueBuilder.addTextValue("Web Fallback URL", props.modelValue.webFallbackPageUrl);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the right side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

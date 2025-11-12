@@ -22,7 +22,7 @@ namespace Rock.Plugin.HotFixes
     /// Plug-in migration
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 262, "19.0" )]
+    [MigrationNumber( 262, "18.0" )]
     public class ImproveCommunicationPrepPerformance : Migration
     {
         /// <summary>

@@ -149,7 +149,7 @@
     position: relative;
     height: 30px;
     transition: height 0.3s ease-out;
-    background-color: var(--color-info);
+    background-color: var(--color-info-strong);
 }
 
 .empty {

@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web;
 
@@ -54,6 +55,23 @@ namespace Rock.Model
             };
         } );
 
+        /// <summary>
+        /// The lazy system sender <see cref="Person"/>.
+        /// </summary>
+        private static readonly Lazy<Person> _systemSenderPerson = new Lazy<Person>( () =>
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var systemSenderGuid = Rock.SystemGuid.Person.SYSTEM_SENDER.AsGuid();
+
+                return new PersonService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Include( p => p.Aliases )
+                    .FirstOrDefault( p => p.Guid.Equals( systemSenderGuid ) );
+            }
+        } );
+
         #endregion Fields
 
         #region Properties
@@ -67,6 +85,11 @@ namespace Rock.Model
         /// Gets the list of keywords indicating an individual wants to opt into receiving messages.
         /// </summary>
         private static HashSet<string> OptInKeywords => _optInKeywords.Value;
+
+        /// <summary>
+        /// Gets the system sender <see cref="Person"/>.
+        /// </summary>
+        private static Person SystemSenderPerson => _systemSenderPerson.Value;
 
         /// <summary>
         /// Gets the organization name to be used in response messages.
@@ -220,11 +243,6 @@ namespace Rock.Model
                         outcome.ErrorMessage = errorMessage;
                         LogIfError( errorMessage );
 
-                        if ( outcome.Response != null )
-                        {
-                            LogIfError( errorMessage );
-                        }
-
                         // Log an interaction if this action completed successfully.
                         if ( smsAction.IsInteractionLoggedAfterProcessing && errorMessage.IsNullOrWhiteSpace() )
                         {
@@ -350,6 +368,66 @@ namespace Rock.Model
 
             var lastOutcomeWithResponse = outcomes.LastOrDefault( o => o.Response != null );
             return lastOutcomeWithResponse == null ? null : lastOutcomeWithResponse.Response;
+        }
+
+        /// <summary>
+        /// Creates a <see cref="Communication"/> record to represent an automated response and adds it to the Rock
+        /// message bus for sending.
+        /// </summary>
+        /// <param name="smsMessage">
+        /// The <see cref="SmsMessage"/> that contains the message body and any attachments to send.
+        /// </param>
+        /// <param name="toPersonAliasId">
+        /// The <see cref="PersonAlias"/> identifier that represents the recipient of the automated response.
+        /// </param>
+        /// <param name="fromSystemPhoneNumber">
+        /// The string representation of the <see cref="SystemPhoneNumber"/> from which the response should be sent.
+        /// </param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The identifier of the queued <see cref="Communication"/> or <c>null</c> if unable to send.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "19.0" )]
+        public static int? CreateAndEnqueueResponseCommunication( SmsMessage smsMessage, int toPersonAliasId, string fromSystemPhoneNumber, RockContext rockContext )
+        {
+            if ( smsMessage?.SaveAsResponse != true
+                || toPersonAliasId <= 0
+                || fromSystemPhoneNumber.IsNullOrWhiteSpace()
+                || rockContext == null )
+            {
+                return null;
+            }
+
+            var systemPhoneNumber = SystemPhoneNumberCache.GetByNumber( fromSystemPhoneNumber );
+            if ( systemPhoneNumber == null )
+            {
+                return null;
+            }
+
+            if ( SystemSenderPerson == null )
+            {
+                return null;
+            }
+
+            var responseCode = Sms.GenerateResponseCode( rockContext );
+
+            var responseCommunication = Sms.CreateCommunicationMobile(
+                SystemSenderPerson,
+                toPersonAliasId,
+                smsMessage.Message,
+                systemPhoneNumber,
+                responseCode,
+                smsMessage.Attachments,
+                rockContext
+            );
+
+            return responseCommunication?.Id;
         }
 
         /// <summary>
@@ -521,7 +599,8 @@ namespace Rock.Model
                     {
                         ToNumber = PhoneNumber.CleanNumber( fromNumber ),
                         FromNumber = message.ToNumber,
-                        Message = optedOutMessage
+                        Message = optedOutMessage,
+                        SaveAsResponse = true
                     }
                 };
             }
@@ -537,7 +616,8 @@ namespace Rock.Model
                     {
                         ToNumber = PhoneNumber.CleanNumber( fromNumber ),
                         FromNumber = message.ToNumber,
-                        Message = optedInMessage
+                        Message = optedInMessage,
+                        SaveAsResponse = true
                     }
                 };
             }

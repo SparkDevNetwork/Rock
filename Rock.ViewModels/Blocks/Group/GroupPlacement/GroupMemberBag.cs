@@ -59,8 +59,8 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
         public PersonBag Person { get; set; }
 
         /// <summary>
-        /// The date and time when the group member record was created, if available.
+        /// The date and time when the group member record was added, if available.
         /// </summary>
-        public DateTimeOffset? CreatedDateTime { get; set; }
+        public DateTimeOffset? DateTimeAdded { get; set; }
     }
 }

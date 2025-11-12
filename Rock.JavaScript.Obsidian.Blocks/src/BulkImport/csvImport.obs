@@ -1,0 +1,80 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="CSV Import" class="panel panel-block">
+        <StepOne v-if="step === 1"
+                 :config="config"
+                 @stepFinished="onStepOneFinished" />
+        <StepTwo v-else-if="step === 2"
+                 :config="config"
+                 :csvColumns="csvColumns"
+                 :personFieldOptions="personFieldOptions"
+                 :recordCount="recordCount ?? 0"
+                 @stepFinished="onStepTwoFinished" />
+        <StepThree v-else-if="step === 3"
+                   :config="config"
+                   v-bind="stepThreeProps" />
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import StepOne from "./csvImport/stepOne.partial.obs";
+    import StepTwo from "./csvImport/stepTwo.partial.obs";
+    import StepThree from "./csvImport/stepThree.partial.obs";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { CsvImportBox } from "@Obsidian/ViewModels/Blocks/BulkImport/csvImportBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { StepOneResults, StepTwoResults } from "./csvImport/types.partial";
+
+    const config = useConfigurationValues<CsvImportBox>();
+
+    const step = ref<number>(1);
+
+    // #region Step 1
+
+    const dataType = ref<string>("");
+    const sourceDescription = ref<string>("");
+    const allowUpdatingExistingRecords = ref<boolean>(false);
+    const importFile = ref<ListItemBag>();
+    const csvColumns = ref<string[]>([]);
+    const personFieldOptions = ref<ListItemBag[]>([]);
+    const recordCount = ref<number>();
+
+    function onStepOneFinished(data: StepOneResults): void {
+        dataType.value = data.dataType;
+        sourceDescription.value = data.sourceDescription;
+        allowUpdatingExistingRecords.value = data.allowUpdatingExistingRecords;
+        importFile.value = data.importFile;
+        csvColumns.value = data.csvColumns;
+        personFieldOptions.value = data.personFieldOptions;
+        recordCount.value = data.recordCount;
+        step.value = 2;
+    }
+
+    // #endregion
+
+    // #region Step 2
+
+    const columnMappings = ref<Record<string, string>>({});
+
+    function onStepTwoFinished(data: StepTwoResults): void {
+        console.debug("Step two finished:", data.columnMappings);
+        columnMappings.value = data.columnMappings;
+        step.value = 3;
+    }
+
+    // #endregion
+
+    // #region Step 3
+
+    const stepThreeProps = computed(() => ({
+        columnMappings: columnMappings.value,
+        recordCount: recordCount.value ?? 0,
+        allowUpdatingExisting: allowUpdatingExistingRecords.value,
+        fileName: importFile.value?.text ?? "",
+        sourceDescription: sourceDescription.value
+    }));
+
+    // #endregion
+</script>

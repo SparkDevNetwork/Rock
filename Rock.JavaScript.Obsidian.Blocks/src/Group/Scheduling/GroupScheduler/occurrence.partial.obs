@@ -1,9 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="location js-schedule-location">
-        <div class="d-flex">
+        <div class="d-flex flex-column">
+            <span class="d-block font-weight-bold text-sm">
+                {{ groupName }}
+            </span>
             <span class="d-block text-sm">
-                {{ title }}
+                {{ locationName }}
             </span>
         </div>
 
@@ -99,7 +102,11 @@
 
     // #region Computed Values
 
-    const title = computed((): string => {
+    const groupName = computed((): string => {
+        return props.occurrence?.groupName || "Group";
+    });
+
+    const locationName = computed((): string => {
         return props.occurrence?.locationName || "Location";
     });
 

@@ -46,7 +46,7 @@
   }
 
   .panel-toolbar-mobile {
-    padding: 4px 15px;
+    padding: 12px 15px;
   }
 
   .panel-body {
@@ -62,19 +62,23 @@
     flex: 1 1 auto;
     width: 100%;
     min-height: 100%;
-    padding: 18px 0 24px;
+    padding: 0 0 24px;
     overflow: auto;
-    scroll-snap-type: x mandatory;
+    scroll-snap-type: x proximity;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
+
+    @media (min-width: @screen-md-min) {
+      scroll-snap-type: x mandatory;
+    }
   }
 
   .occurrence-date {
     position: relative;
     flex: 0 0 ~"calc(100% * var(--schedule-count))";
 
-    @media (min-width: @screen-sm-min) {
+    @media (min-width: @screen-md-min) {
       flex-basis: ~"calc(50% * var(--schedule-count))";
       height: fit-content;
       padding: 0 24px;
@@ -93,6 +97,16 @@
       padding-right: 0;
       border-right: none;
     }
+  }
+
+  .occurrence-date-title-container {
+    height: var(--spacing-xlarge);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+    background-color: var(--color-interface-softest);
   }
 
   .occurrence-date-title {
@@ -237,6 +251,13 @@
     height: 24px;
   }
 
+  .schedule-header-container {
+    position: sticky;
+    top: var(--spacing-xlarge);
+    z-index: 1;
+    background-color: var(--color-interface-softest);
+  }
+
   .schedule-header {
     position: relative;
     display: flex;
@@ -264,7 +285,7 @@
       color: @link-color;
     }
 
-    @media (min-width: @screen-sm-min) {
+    @media (min-width: @screen-md-min) {
       &::before {
         display: block;
       }
@@ -317,12 +338,6 @@
 
 .featured-content {
   .group-scheduler-v2 {
-    @media screen and (max-width: @screen-sm-max) {
-      .panel.panel-block {
-        height: auto;
-      }
-    }
-
     .panel-body {
       position: relative;
       display: flex;

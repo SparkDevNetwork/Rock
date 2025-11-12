@@ -482,7 +482,7 @@
             if (target && target.getAttribute("name") === "expander") {
                 let icon = target.querySelector(".ti-chevron-right");
                 if (icon) {
-                    icon.classList.add("ti-flip-horizontal");
+                    icon.classList.add("ti-flip-horizontal-x");
                 }
 
                 interaction.classList.add("expanded");
@@ -493,7 +493,7 @@
             if (interaction.querySelector(".ti-chevron-right")) {
                 let icon = interaction.querySelector(".ti-chevron-right");
                 if (icon) {
-                    icon.classList.remove("ti-flip-horizontal");
+                    icon.classList.remove("ti-flip-horizontal-x");
                 }
 
                 interaction.classList.remove("expanded");

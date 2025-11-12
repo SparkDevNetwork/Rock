@@ -60,7 +60,7 @@
   }
 
   .panel-toolbar-mobile {
-    padding:             var(--spacing-tiny) var(--spacing-medium);
+    padding:             var(--spacing-small) var(--spacing-medium);
   }
 
   .panel-body {
@@ -76,12 +76,16 @@
     flex:                1 1 auto;
     width:               100%;
     min-height:          100%;
-    padding:             var(--spacing-medium) 0 var(--spacing-large);
+    padding:             0 0 var(--spacing-large);
     overflow:            auto;
-    scroll-snap-type:    x mandatory;
+    scroll-snap-type:    x proximity;
     scroll-behavior:     smooth;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
+
+    @media (min-width: $screen-medium) {
+      scroll-snap-type:  x mandatory;
+    }
   }
 
   .occurrence-date {
@@ -109,6 +113,16 @@
     }
   }
 
+  .occurrence-date-title-container {
+    height:              var(--spacing-xlarge);
+    position:            sticky;
+    top:                 0;
+    z-index:             1;
+    display:             flex;
+    align-items:         flex-end;
+    background-color:    var(--color-interface-softest);
+  }
+
   .occurrence-date-title {
     position:            sticky;
     left:                12px;
@@ -126,7 +140,7 @@
   .schedule-column {
     scroll-snap-align:   start;
     width:               calc(100% / var(--schedule-count));
-    padding:             0 var(--spacing-column);
+    padding:             0 var(--spacing-medium);
 
     @media (min-width: $screen-medium) {
       width:             360px;
@@ -259,6 +273,13 @@
     height:              24px;
   }
 
+  .schedule-header-container {
+    position:          sticky;
+    top:               var(--spacing-xlarge);
+    z-index:           1;
+    background-color:  var(--color-interface-softest);
+  }
+
   .schedule-header {
     position:            relative;
     display:             flex;
@@ -338,12 +359,6 @@
 
 .featured-content {
   .group-scheduler-v2 {
-    @media screen and (max-width: ($screen-medium - 1) ) {
-      .panel.panel-block {
-        height:          auto;
-      }
-    }
-
     .panel-body {
       position:          relative;
       display:           flex;

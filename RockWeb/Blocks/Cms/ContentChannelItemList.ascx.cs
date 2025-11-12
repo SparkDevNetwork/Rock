@@ -229,8 +229,7 @@ namespace RockWeb.Blocks.Cms
 
                 lIcon.Text = string.Format( "<i class='{0}'></i>", cssIcon );
 
-                // Block Security and special attributes (RockPage takes care of View)
-                bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
+                bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT ) && contentChannel != null && contentChannel.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
                 gfFilter.ApplyFilterClick += gfFilter_ApplyFilterClick;
                 gfFilter.DisplayFilterValue += gfFilter_DisplayFilterValue;
@@ -267,9 +266,12 @@ namespace RockWeb.Blocks.Cms
                     securityColumn.Visible = GetAttributeValue( AttributeKey.ShowSecurityColumn ).AsBoolean();
                 }
 
-                var deleteField = new DeleteField();
-                gItems.Columns.Add( deleteField );
-                deleteField.Click += gItems_Delete;
+                if ( canAddEditDelete )
+                {
+                    var deleteField = new DeleteField();
+                    gItems.Columns.Add( deleteField );
+                    deleteField.Click += gItems_Delete;
+                }
 
                 // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
                 this.BlockUpdated += Block_BlockUpdated;
@@ -386,6 +388,15 @@ namespace RockWeb.Blocks.Cms
 
             if ( contentItem != null )
             {
+                var blockAllows = IsUserAuthorized( Authorization.EDIT );
+                var channelAllows = ContentChannelCache.Get( contentItem.ContentChannelId )?.IsAuthorized( Authorization.EDIT, CurrentPerson ) == true;
+                var itemAllows = contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                if ( !blockAllows || !channelAllows || !itemAllows )
+                {
+                    mdGridWarning.Show( "You are not authorized to delete this item.", ModalAlertType.Alert );
+                    return;
+                }
+
                 string errorMessage;
                 if ( !contentItemService.CanDelete( contentItem, out errorMessage ) )
                 {

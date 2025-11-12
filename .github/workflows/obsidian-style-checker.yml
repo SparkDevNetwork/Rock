@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
         with:
-          fetch-depth: 2
+          fetch-depth: 20
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -25,7 +25,7 @@ jobs:
         working-directory: "./Dev Tools/obsidian-style-checker"
 
       - name: Run Obsidian Style Checker
-        run: npx obsidian-style-checker
+        run: npx obsidian-style-checker --from "${{ github.event.before }}" --to "${{ github.event.after }}" --asana
         working-directory: "./Dev Tools/obsidian-style-checker"
         env:
           ASANA_ACCESS_TOKEN: "${{ secrets.ASANA_ACCESS_TOKEN }}"

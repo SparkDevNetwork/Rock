@@ -65,12 +65,13 @@
       em {
         font-style: normal;
         background: #feffde;
+        color: var(--base-interface-strong);
       }
 
       &.group-result {
         display:      list-item;
         font-weight:  var(--font-weight-bold);
-        color:      #999;
+        color:      var(--color-interface-medium);
         cursor:       default;
       }
 

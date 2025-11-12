@@ -1212,7 +1212,7 @@ namespace Rock.Blocks.Group
                             var groupMemberBag = new GroupMemberBag
                             {
                                 GroupMemberIdKey = IdHasher.Instance.GetHash( p.GroupMemberId.Value ),
-                                CreatedDateTime = p.CreatedDateTime
+                                DateTimeAdded = p.DateTimeAdded?.ToRockDateTimeOffset(),
                             };
 
                             // Grab our group member from the list of source group members.
@@ -1269,6 +1269,7 @@ namespace Rock.Blocks.Group
                         GroupRoleIdKey = row.GroupRoleId.HasValue
                             ? IdHasher.Instance.GetHash( row.GroupRoleId.Value )
                             : null,
+                        DateTimeAdded = row.DateTimeAdded?.ToRockDateTimeOffset(),
                         Attributes = destinationGroupMember.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedDestinationGroupMemberAttributeIds.Contains( a.Id ) ),
                         AttributeValues = destinationGroupMember.GetPublicAttributeValuesForView( GetCurrentPerson(), true, attributeFilter: a => displayedDestinationGroupMemberAttributeIds.Contains( a.Id ) ),
                         Person = personBag
@@ -2230,6 +2231,11 @@ namespace Rock.Blocks.Group
             /// Gets or sets the role identifier within the group.
             /// </summary>
             public int? GroupRoleId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Date Time the Group Member was added.
+            /// </summary>
+            public DateTime? DateTimeAdded { get; set; }
 
             #endregion
 

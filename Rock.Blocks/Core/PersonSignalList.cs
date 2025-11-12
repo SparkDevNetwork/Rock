@@ -180,14 +180,12 @@ namespace Rock.Blocks.Core
             }
 
             box.IfValidProperty( nameof( box.Bag.ExpirationDate ),
-                () => {
-                    if ( !box.Bag.ExpirationDate.HasValue )
-                    {
-                        return false;
-                    }
+                () =>
+                {
                     entity.ExpirationDate = box.Bag.ExpirationDate?.DateTime;
                     return true;
                 }, true );
+
             box.IfValidProperty( nameof( box.Bag.Note ),
                 () => entity.Note = box.Bag.Note );
 

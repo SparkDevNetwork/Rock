@@ -31,7 +31,7 @@ using Rock.Web.Cache;
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Connection Requests" )]
     [Category( "CRM > Person Detail" )]
@@ -184,13 +184,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     const string evenTemplate = @"
 <dl class='m-0 px-3 py-3 d-flex justify-content-between text-sm font-medium'>
-    <dt class='text-gray-900'>{0}</dt>
-    <dd class='text-gray-500'>{1}</dd>
+    <dt style='color: var(--color-interface-medium)'>{0}</dt>
+    <dd style='color: var(--color-interface-medium)'>{1}</dd>
  </dl>";
                     const string oddTemplate = @"
-<dl class='bg-gray-100 m-0 px-3 py-3 d-flex justify-content-between text-sm font-medium'>
-    <dt class='text-gray-900'>{0}</dt>
-    <dd class='text-gray-500'>{1}</dd>
+<dl class='m-0 px-3 py-3 d-flex justify-content-between text-sm font-medium' style='background-color: var(--color-interface-softer)'>
+    <dt style='color: var(--color-interface-medium)'>{0}</dt>
+    <dd style='color: var(--color-interface-medium)'>{1}</dd>
 </dl>
 ";
                     string connectionStatus = connectRequest.ConnectionRequestConnectionState == ConnectionState.Connected ? "Connected" : connectRequest.ConnectionStatus.ToString();

@@ -160,27 +160,6 @@ namespace Rock.Workflow.Action
 
             if ( request != null && opportunity != null )
             {
-                // Check if the request is already in the target opportunity
-                if ( request.ConnectionOpportunityId == opportunity.Id )
-                {
-                    errorMessages.Add( "This connection request is already in the selected opportunity. Transfer cannot be completed." );
-                    return false;
-                }
-
-                // Check if a connection request in the target opportunity already exists for the same person
-                var existingRequest = connectionRequestService.Queryable().AsNoTracking()
-                    .Where( r => r.PersonAliasId == request.PersonAliasId && 
-                                r.ConnectionOpportunityId == opportunity.Id &&
-                                r.Id != request.Id &&
-                                ( r.ConnectionState == ConnectionState.Active || r.ConnectionState == ConnectionState.FutureFollowUp ) )
-                    .FirstOrDefault();
-
-                if ( existingRequest != null )
-                {
-                    errorMessages.Add( "This person already has an active connection request for the selected opportunity. Transfer cannot be completed." );
-                    return false;
-                }
-
                 request.ConnectionOpportunityId = opportunity.Id;
                 request.ConnectionTypeId = opportunity.ConnectionTypeId;
                 var connectionStatusId = GetAttributeValue( action, AttributeKey.ConnectionStatusId ).AsIntegerOrNull();

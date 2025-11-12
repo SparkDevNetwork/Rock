@@ -374,6 +374,12 @@ export class PageTreeItemProvider implements ITreeItemProvider {
     public siteType?: SiteType | null;
 
     /**
+     * The unique identifier of the root page whose
+     * children are to be enumerated.
+     */
+    public rootPageGuid?: Guid | null;
+
+    /**
      * Gets the child items of the given parent (or root if no parent given) from the server.
      *
      * @param parentGuid The parent item whose children are retrieved.
@@ -385,7 +391,7 @@ export class PageTreeItemProvider implements ITreeItemProvider {
 
         const options: PagePickerGetChildrenOptionsBag = {
             guid: toGuidOrNull(parentGuid) ?? emptyGuid,
-            rootPageGuid: null,
+            rootPageGuid: this.rootPageGuid ?? null,
             hidePageGuids: this.hidePageGuids ?? [],
             securityGrantToken: this.securityGrantToken,
             siteType: this.siteType

@@ -14,25 +14,23 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using System.Web.UI;
 
-using Rock;
 using Rock.Attribute;
-using Rock.Web.Cache;
-using Rock.Data;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
-using Rock.Model;
-using Rock.Web;
+using Rock.Enums.Cms;
 using Rock.Lava;
+using Rock.Model;
+using Rock.Security;
+using Rock.Utility.ExtensionMethods;
+using Rock.Web.Cache;
 
-namespace RockWeb.Blocks.Cms
+namespace Rock.Blocks.Cms
 {
     [DisplayName( "Page Menu" )]
     [Category( "CMS" )]
@@ -43,8 +41,8 @@ namespace RockWeb.Blocks.Cms
     [CodeEditorField(
         "Template",
         Description = "The lava template to use for rendering. This template would typically be in the theme's \"Assets/Lava\" folder.",
-        EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
+        EditorMode = Web.UI.Controls.CodeEditorMode.Lava,
+        EditorTheme = Web.UI.Controls.CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = true,
         DefaultValue = @"{% include '~~/Assets/Lava/PageNav.lava' %}",
@@ -97,9 +95,11 @@ namespace RockWeb.Blocks.Cms
 
     #endregion
 
-    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Navigation )]
+    [ConfigurationChangedReload( BlockReloadMode.Block )]
+    [Rock.Cms.DefaultBlockRole( BlockRole.Navigation )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.PAGE_MENU )]
-    public partial class PageMenu : RockBlock, ISecondaryBlock
+    [Rock.SystemGuid.EntityTypeGuid( "7c797c18-b632-4fa7-a088-04e583c2a8c7" )]
+    public class PageMenu : RockBlockType
     {
         #region Attribute Keys
 
@@ -118,59 +118,38 @@ namespace RockWeb.Blocks.Cms
 
         #endregion Attribute Keys
 
-        #region Base Control Methods
+        #region Methods
 
-        protected override void OnInit( EventArgs e )
+        /// <inheritdoc/>
+        public override object GetObsidianBlockInitialization()
         {
-            this.EnableViewState = false;
-
-            base.OnInit( e );
-
-            this.BlockUpdated += PageMenu_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upContent );
-
-            var cssFile =GetAttributeValue( AttributeKey.CSSFile );
+            var cssFile = GetAttributeValue( AttributeKey.CSSFile );
 
             // add css file to page
             if ( cssFile.IsNotNullOrWhiteSpace() )
             {
-                RockPage.AddCSSLink( ResolveRockUrl( cssFile ), false );
+                RequestContext.Response.AddCssLink( RequestContext.ResolveRockUrl( cssFile ), false );
             }
+
+            return base.GetObsidianBlockInitialization();
         }
 
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnPreRender( EventArgs e )
+        /// <inheritdoc/>
+        protected override string GetInitialHtmlContent()
         {
-            base.OnPreRender( e );
-            Render();
+            return Render();
         }
 
-        /// <summary>
-        /// Handles the BlockUpdated event of the PageMenu control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void PageMenu_BlockUpdated( object sender, EventArgs e )
-        {
-            // Remove the existing template from the cache.
-            var cacheKey = CacheKey();
-
-            LavaService.RemoveTemplateCacheEntry( cacheKey );
-        }
-
-        private void Render()
+        private string Render()
         {
             string content = null;
 
             try
             {
-                PageCache currentPage = PageCache.Get( RockPage.PageId );
+                var currentPage = PageCache;
                 PageCache rootPage = null;
 
-                var pageRouteValuePair = GetAttributeValue( AttributeKey.RootPage ).SplitDelimitedValues(false).AsGuidOrNullList();
+                var pageRouteValuePair = GetAttributeValue( AttributeKey.RootPage ).SplitDelimitedValues( false ).AsGuidOrNullList();
                 if ( pageRouteValuePair.Any() && pageRouteValuePair[0].HasValue && !pageRouteValuePair[0].Value.IsEmpty() )
                 {
                     rootPage = PageCache.Get( pageRouteValuePair[0].Value );
@@ -182,18 +161,18 @@ namespace RockWeb.Blocks.Cms
                     rootPage = currentPage;
                 }
 
-                int levelsDeep = Convert.ToInt32( GetAttributeValue( AttributeKey.NumberofLevels ) );
+                int levelsDeep = GetAttributeValue( AttributeKey.NumberofLevels ).AsInteger();
 
                 Dictionary<string, string> pageParameters = null;
                 if ( GetAttributeValue( AttributeKey.IncludeCurrentParameters ).AsBoolean() )
                 {
-                    pageParameters = CurrentPageReference.Parameters;
+                    pageParameters = new Dictionary<string, string>( RequestContext.PageParameters );
                 }
 
                 NameValueCollection queryString = null;
                 if ( GetAttributeValue( AttributeKey.IncludeCurrentQueryString ).AsBoolean() )
                 {
-                    queryString = CurrentPageReference.QueryString;
+                    queryString = RequestContext.QueryString;
                 }
 
                 // Get list of pages in current page's hierarchy
@@ -204,46 +183,35 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 // Get default merge fields.
-                var pageProperties = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                pageProperties.Add( "Site", GetSiteProperties( RockPage.Site ) );
+                var pageProperties = RequestContext.GetCommonMergeFields();
+                pageProperties.Add( "Site", GetSiteProperties( PageCache.Layout.Site ) );
                 pageProperties.Add( "IncludePageList", GetIncludePageList() );
                 pageProperties.Add( "CurrentPage", this.PageCache );
-
-                using ( var rockContext = new RockContext() )
-                {
-                    pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
-                }
+                pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, RequestContext.CurrentPerson, RockContext, pageHeirarchy, pageParameters, queryString ) );
 
                 var templateText = GetAttributeValue( AttributeKey.Template );
-
-                // Apply Enabled Lava Commands
-                var lavaContext = LavaService.NewRenderContext( pageProperties );
-
                 var enabledCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
 
-                lavaContext.SetEnabledCommands( enabledCommands.SplitDelimitedValues() );
-
-                var result = LavaService.RenderTemplate( templateText,
-                    new LavaRenderParameters { Context = lavaContext, CacheKey = CacheKey() } );
-
-                content = result.Text;
-
-                if ( result.HasErrors )
-                {
-                    throw result.GetLavaException("PageMenu Block Lava Error");
-                }
-
-                phContent.Controls.Clear();
-                phContent.Controls.Add( new LiteralControl( content ) );
+                /**
+                 * 2025-011-06 - DSH
+                 * 
+                 * This originally used custom template parsing code with a custom cache
+                 * key. However, that added lots of complexity and didn't seem to provide
+                 * any benefit over the standard Lava template caching that is already in
+                 * place.
+                 * 
+                 * If weird errors start cropping up, consider revisiting this decision.
+                 */
+                return templateText.ResolveMergeFields( pageProperties, enabledCommands, throwExceptionOnErrors: true );
 
             }
             catch ( Exception ex )
             {
-                LogException( ex );
+                ExceptionLogService.LogException( ex, null, PageCache.Id, PageCache.Layout.SiteId, RequestContext.CurrentPerson?.PrimaryAlias );
 
                 // Create a block showing the error and the attempted content render.
                 // Show the error first to ensure that it is visible, because the rendered content may disrupt subsequent output if it is malformed.
-                StringBuilder errorMessage = new StringBuilder();
+                var errorMessage = new StringBuilder();
                 errorMessage.Append( "<div class='alert alert-warning'>" );
                 errorMessage.Append( "<h4>Warning</h4>" );
                 errorMessage.Append( "An error has occurred while generating the page menu. Error details:<br/>" );
@@ -256,28 +224,7 @@ namespace RockWeb.Blocks.Cms
                     errorMessage.Append( "</div>" );
                 }
 
-                phContent.Controls.Add( new LiteralControl( errorMessage.ToString() ) );
-            }
-        }
-
-        #endregion Base Control Methods
-
-        #region Methods
-
-        private string CacheKey()
-        {
-            return string.Format( "Rock:PageMenu:{0}", BlockId );
-        }
-
-        /// <summary>
-        /// Will not display the block information if it is considered a secondary block and secondary blocks are being hidden.
-        /// </summary>
-        /// <param name="visible">if set to <c>true</c> [visible].</param>
-        public void SetVisible( bool visible )
-        {
-            if ( GetAttributeValue( AttributeKey.IsSecondaryBlock ).AsBoolean() )
-            {
-                phContent.Visible = visible;
+                return errorMessage.ToString();
             }
         }
 
@@ -288,14 +235,15 @@ namespace RockWeb.Blocks.Cms
         /// <returns>A dictionary of various page ids for the site.</returns>
         private Dictionary<string, object> GetSiteProperties( SiteCache site )
         {
-            var properties = new Dictionary<string, object>();
-            properties.Add( "DefaultPageId", site.DefaultPageId );
-            properties.Add( "LoginPageId", site.LoginPageId );
-            properties.Add( "PageNotFoundPageId", site.PageNotFoundPageId );
-            properties.Add( "CommunicationPageId", site.CommunicationPageId );
-            properties.Add( "RegistrationPageId ", site.RegistrationPageId );
-            properties.Add( "MobilePageId", site.MobilePageId );
-            return properties;
+            return new Dictionary<string, object>
+            {
+                { "DefaultPageId", site.DefaultPageId },
+                { "LoginPageId", site.LoginPageId },
+                { "PageNotFoundPageId", site.PageNotFoundPageId },
+                { "CommunicationPageId", site.CommunicationPageId },
+                { "RegistrationPageId ", site.RegistrationPageId },
+                { "MobilePageId", site.MobilePageId }
+            };
         }
 
         /// <summary>
@@ -318,13 +266,12 @@ namespace RockWeb.Blocks.Cms
                 StringBuilder sbPageMarkup = new StringBuilder();
                 foreach ( var page in navPages )
                 {
-                    properties.Add( page.Title, Page.ResolveUrl( page.Link ) );
+                    properties.Add( page.Title, RequestContext.ResolveRockUrl( page.Link ) );
                 }
             }
             return properties;
         }
 
         #endregion
-
     }
 }

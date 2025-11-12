@@ -63,6 +63,7 @@
   display:      flex;
   flex-wrap:    wrap;
   align-items:  flex-start;
+  gap:          var(--spacing-tiny) var(--spacing-xsmall);
 
   input {
     display:          block;

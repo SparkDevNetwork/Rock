@@ -23,6 +23,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
@@ -66,7 +67,7 @@ namespace Rock.Blocks.Engagement
     [Rock.SystemGuid.EntityTypeGuid( "f3a7b501-61c4-4784-8f73-958e2f1fc353" )]
     // Was [Rock.SystemGuid.BlockTypeGuid( "6a7c7c71-4760-4e6c-9d6f-6926c81caf8f" )]
     [Rock.SystemGuid.BlockTypeGuid( "3EFB4302-9AB4-420F-A818-48B1B06AD109" )]
-    [CustomizedGrid]
+    [CustomizedGrid( CustomColumnMessage = "To access the entity, prefix your property names with <code>Row.StepType</code> (e.g. <code>{{ Row.StepType.Id }}</code>)." )]
     [ContextAware( typeof( Campus ) )]
     public class StepTypeList : RockListBlockType<StepTypeList.StepTypeWithCounts>
     {
@@ -249,6 +250,10 @@ namespace Rock.Blocks.Engagement
         protected override List<StepTypeWithCounts> GetListItems( IQueryable<StepTypeWithCounts> queryable, RockContext rockContext )
         {
             var items = queryable.ToList();
+
+            // Load attribute values for the grid-selected attributes.
+            GridAttributeLoader.LoadFor( items, a => a.StepType, _gridAttributes.Value, rockContext );
+
             return items.Where( st => st.StepType.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ).ToList();
         }
 
@@ -394,7 +399,7 @@ namespace Rock.Blocks.Engagement
         #endregion
 
         #region Helper Classes
-        public class StepTypeWithCounts
+        public class StepTypeWithCounts : LavaDataObject
         {
             public StepType StepType { get; set; }
             public int StartedCount { get; set; }

@@ -221,9 +221,9 @@ namespace Rock.Blocks.Event
             if ( !DisableAttributes && typeof( IHasAttributes ).IsAssignableFrom( typeof( EventCalendarItem ) ) )
             {
                 var gridAttributes = GetGridAttributes();
-                var gridAttributeIds = gridAttributes.Select( a => a.Id ).ToList();
-
-                Helper.LoadFilteredAttributes( items, rockContext, a => gridAttributeIds.Contains( a.Id ) );
+                
+                // Load attribute values for the grid-selected attributes.
+                GridAttributeLoader.LoadFor( items, a => a, gridAttributes, rockContext );
             }
 
             return GetGridBuilder().Build( items );

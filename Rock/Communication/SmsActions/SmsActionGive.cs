@@ -185,6 +185,14 @@ namespace Rock.Communication.SmsActions
         Category = "Response",
         Key = AttributeKeys.TransactionFailureResponse )]
 
+    [BooleanField( "Save Response",
+        Description = "If true, any response will be saved as a communication record so automated responses can be tracked.",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        Order = 16,
+        Category = "Response",
+        Key = AttributeKeys.SaveResponse )]
+
     #endregion Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "EFB22EDF-49E5-46C9-B204-AD99876E44D6" )]
@@ -217,6 +225,7 @@ namespace Rock.Communication.SmsActions
             public const string RefundFailureResponse = "RefundFailureResponse";
             public const string MissingAmountResponse = "MissingAmountResponse";
             public const string TransactionFailureResponse = "TransactionFailureResponse";
+            public const string SaveResponse = "SaveResponse";
         }
 
         /// <summary>
@@ -268,15 +277,12 @@ namespace Rock.Communication.SmsActions
         #region Base Method Overrides
 
         /// <summary>
-        /// Checks the attributes for this component and determines if the message
-        /// should be processed.
+        /// Checks the attributes for this component and determines if the message should be processed.
         /// </summary>
         /// <param name="action">The action that contains the configuration for this component.</param>
         /// <param name="message">The message that is to be checked.</param>
-        /// <param name="errorMessage">If there is a problem processing, this should be set</param>
-        /// <returns>
-        ///   <c>true</c> if the message should be processed.
-        /// </returns>
+        /// <param name="errorMessage">If there is a problem processing, this will be set.</param>
+        /// <returns><c>true</c> if the message should be processed.</returns>
         public override bool ShouldProcessMessage( SmsActionCache action, SmsMessage message, out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -303,8 +309,8 @@ namespace Rock.Communication.SmsActions
         /// </summary>
         /// <param name="action">The action that contains the configuration for this component.</param>
         /// <param name="message">The message that was received by Rock.</param>
-        /// <param name="errorMessage">If there is a problem processing, this should be set</param>
-        /// <returns>An SmsMessage that will be sent as the response or null if no response should be sent.</returns>
+        /// <param name="errorMessage">If there is a problem processing, this will be set.</param>
+        /// <returns>An <see cref="SmsMessage"/> that will be sent as the response or <c>null</c> if no response should be sent.</returns>
         public override SmsMessage ProcessMessage( SmsActionCache action, SmsMessage message, out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -319,19 +325,19 @@ namespace Rock.Communication.SmsActions
 
             if ( context.IsGiveMessage )
             {
-                return DoGift( context, out errorMessage );
+                return DoGift( action, context, out errorMessage );
             }
             else if ( context.IsRefundMessage )
             {
-                return DoRefund( context, out errorMessage );
+                return DoRefund( action, context, out errorMessage );
             }
             else if ( context.IsSetupMessage )
             {
-                return DoSetup( context, out errorMessage );
+                return DoSetup( action, context, out errorMessage );
             }
             else if ( context.IsHelpMessage )
             {
-                return DoHelp( context, out errorMessage );
+                return DoHelp( action, context, out errorMessage );
             }
             else
             {
@@ -347,9 +353,11 @@ namespace Rock.Communication.SmsActions
         /// <summary>
         /// Process a setup link request.
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="errorMessage"></param>
-        private SmsMessage DoSetup( SmsGiveContext context, out string errorMessage )
+        /// <param name="action">The action that contains the configuration for this component.</param>
+        /// <param name="context">The SMS give context.</param>
+        /// <param name="errorMessage">If there is a problem processing, this will be set.</param>
+        /// <returns>An <see cref="SmsMessage"/> that will be sent as the response.</returns>
+        private SmsMessage DoSetup( SmsActionCache action, SmsGiveContext context, out string errorMessage )
         {
             errorMessage = string.Empty;
 
@@ -364,7 +372,7 @@ namespace Rock.Communication.SmsActions
             SetPersonIdentifier( context );
             SetSetupPageLink( context );
 
-            return GetResolvedSmsResponse( AttributeKeys.SetupResponse, context );
+            return GetResolvedSmsResponse( action, AttributeKeys.SetupResponse, context );
         }
 
         #endregion Setup
@@ -374,9 +382,11 @@ namespace Rock.Communication.SmsActions
         /// <summary>
         /// Process a help request.
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="errorMessage"></param>
-        private SmsMessage DoHelp( SmsGiveContext context, out string errorMessage )
+        /// <param name="action">The action that contains the configuration for this component.</param>
+        /// <param name="context">The SMS give context.</param>
+        /// <param name="errorMessage">If there is a problem processing, this will be set.</param>
+        /// <returns>An <see cref="SmsMessage"/> that will be sent as the response.</returns>
+        private SmsMessage DoHelp( SmsActionCache action, SmsGiveContext context, out string errorMessage )
         {
             errorMessage = string.Empty;
 
@@ -384,7 +394,7 @@ namespace Rock.Communication.SmsActions
             SetPersonIdentifier( context );
             SetSetupPageLink( context );
 
-            return GetResolvedSmsResponse( AttributeKeys.HelpResponse, context );
+            return GetResolvedSmsResponse( action, AttributeKeys.HelpResponse, context );
         }
 
         #endregion Help
@@ -394,9 +404,11 @@ namespace Rock.Communication.SmsActions
         /// <summary>
         /// Process a text gift.
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="errorMessage"></param>
-        private SmsMessage DoGift( SmsGiveContext context, out string errorMessage )
+        /// <param name="action">The action that contains the configuration for this component.</param>
+        /// <param name="context">The SMS give context.</param>
+        /// <param name="errorMessage">If there is a problem processing, this will be set.</param>
+        /// <returns>An <see cref="SmsMessage"/> that will be sent as the response.</returns>
+        private SmsMessage DoGift( SmsActionCache action, SmsGiveContext context, out string errorMessage )
         {
             errorMessage = string.Empty;
 
@@ -415,13 +427,13 @@ namespace Rock.Communication.SmsActions
             // doesn't have a default saved payment method, send the "setup" response.
             if ( defaultSavedAccount == null || financialAccount == null )
             {
-                return GetResolvedSmsResponse( AttributeKeys.SetupResponse, context );
+                return GetResolvedSmsResponse( action, AttributeKeys.SetupResponse, context );
             }
 
             // If the amount is not valid, send the "missing amount" response.
             if ( !giftAmountNullable.HasValue || giftAmountNullable.Value < 1m )
             {
-                return GetResolvedSmsResponse( AttributeKeys.MissingAmountResponse, context );
+                return GetResolvedSmsResponse( action, AttributeKeys.MissingAmountResponse, context );
             }
 
             // If the gift amount exceeds the max amount, send the "max amount" response.
@@ -430,7 +442,7 @@ namespace Rock.Communication.SmsActions
 
             if ( exceedsMax )
             {
-                return GetResolvedSmsResponse( AttributeKeys.MaxAmountResponse, context );
+                return GetResolvedSmsResponse( action, AttributeKeys.MaxAmountResponse, context );
             }
 
             // Validation has passed so prepare the automated payment processor args to charge the payment.
@@ -464,13 +476,13 @@ namespace Rock.Communication.SmsActions
             // If the args are not valid, send the setup response.
             if ( !automatedPaymentProcessor.AreArgsValid( out errorMessage ) )
             {
-                return GetResolvedSmsResponse( AttributeKeys.SetupResponse, context );
+                return GetResolvedSmsResponse( action, AttributeKeys.SetupResponse, context );
             }
 
             // If charge seems like a duplicate or repeat, tell the sender.
             if ( automatedPaymentProcessor.IsRepeatCharge( out errorMessage ) )
             {
-                return GetSmsResponse( context, "It looks like you've given very recently. In order for us to avoid accidental charges, please wait several minutes before giving again. Thank you!" );
+                return GetSmsResponse( action, context, "It looks like you've given very recently. In order for us to avoid accidental charges, please wait several minutes before giving again. Thank you!" );
             }
 
             // Charge the payment.
@@ -480,7 +492,7 @@ namespace Rock.Communication.SmsActions
             if ( transaction == null || !string.IsNullOrEmpty( errorMessage ) )
             {
                 context.LavaMergeFields[LavaMergeFieldKeys.TransactionError] = errorMessage;
-                return GetResolvedSmsResponse( AttributeKeys.TransactionFailureResponse, context );
+                return GetResolvedSmsResponse( action, AttributeKeys.TransactionFailureResponse, context );
             }
 
             // Tag the transaction's summary with info from this action.
@@ -492,7 +504,7 @@ namespace Rock.Communication.SmsActions
             context.RockContext.SaveChanges();
 
             // Let the sender know that the gift was a success.
-            return GetResolvedSmsResponse( AttributeKeys.SuccessResponse, context );
+            return GetResolvedSmsResponse( action, AttributeKeys.SuccessResponse, context );
         }
 
         #endregion Giving
@@ -502,9 +514,11 @@ namespace Rock.Communication.SmsActions
         /// <summary>
         /// Handles the action of giving a refund if the message requests it. Only future transactions can be refunded.
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="errorMessage"></param>
-        private SmsMessage DoRefund( SmsGiveContext context, out string errorMessage )
+        /// <param name="action">The action that contains the configuration for this component.</param>
+        /// <param name="context">The SMS give context.</param>
+        /// <param name="errorMessage">If there is a problem processing, this will be set.</param>
+        /// <returns>An <see cref="SmsMessage"/> that will be sent as the response.</returns>
+        private SmsMessage DoRefund( SmsActionCache action, SmsGiveContext context, out string errorMessage )
         {
             errorMessage = string.Empty;
             var service = new FinancialTransactionService( context.RockContext );
@@ -513,18 +527,18 @@ namespace Rock.Communication.SmsActions
 
             if ( futureTransactionToDelete == null )
             {
-                return GetResolvedSmsResponse( AttributeKeys.RefundFailureResponse, context );
+                return GetResolvedSmsResponse( action, AttributeKeys.RefundFailureResponse, context );
             }
 
             // If there is a future transaction, it can simply be deleted since it has not been processed yet
             var success = service.Delete( futureTransactionToDelete );
             if ( !success )
             {
-                return GetResolvedSmsResponse( AttributeKeys.RefundFailureResponse, context );
+                return GetResolvedSmsResponse( action, AttributeKeys.RefundFailureResponse, context );
             }
 
             context.RockContext.SaveChanges();
-            return GetResolvedSmsResponse( AttributeKeys.RefundSuccessResponse, context );
+            return GetResolvedSmsResponse( action, AttributeKeys.RefundSuccessResponse, context );
         }
 
         #endregion Refund
@@ -534,9 +548,9 @@ namespace Rock.Communication.SmsActions
         /// <summary>
         /// Get the future transaction to delete and sync the context's merge fields.
         /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="service">The service.</param>
-        /// <returns>FinancialTransaction.</returns>
+        /// <param name="context">The SMS give context.</param>
+        /// <param name="service">The financial transaction service.</param>
+        /// <returns>A <see cref="FinancialTransaction"/> or <c>null</c> if none found or cannot be deleted.</returns>
         private FinancialTransaction GetMostRecentFutureTransactionToDelete( SmsGiveContext context, FinancialTransactionService service )
         {
             var fromPerson = context.SmsMessage.FromPerson;
@@ -575,7 +589,7 @@ namespace Rock.Communication.SmsActions
         /// <summary>
         /// Create a new person with the phone number in the SMS message if a person does not already exist.
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="context">The SMS give context.</param>
         private void CreatePersonRecordIfNeeded( SmsGiveContext context )
         {
             if ( context.SmsMessage.FromPerson != null )
@@ -603,8 +617,8 @@ namespace Rock.Communication.SmsActions
         /// <summary>
         /// Get the person's default saved account if they have one.
         /// </summary>
-        /// <param name="context">The context.</param>
-        /// <returns>FinancialPersonSavedAccount.</returns>
+        /// <param name="context">The SMS give context.</param>
+        /// <returns>A <see cref="FinancialPersonSavedAccount"/> or <c>null</c> if none found.</returns>
         private FinancialPersonSavedAccount GetDefaultSavedAccount( SmsGiveContext context )
         {
             if ( context.SmsMessage.FromPerson == null )
@@ -627,8 +641,8 @@ namespace Rock.Communication.SmsActions
         /// <summary>
         /// Parse the gift amount from the message text.  Expected format is something like "{{keyword}} {{amount}}".
         /// </summary>
-        /// <param name="context"></param>
-        /// <returns></returns>
+        /// <param name="context">The SMS give context.</param>
+        /// <returns>The gift amount or <c>null</c> if it could not be parsed.</returns>
         private decimal? GetGiftAmount( SmsGiveContext context )
         {
             var messageText = context.MessageText;
@@ -662,29 +676,32 @@ namespace Rock.Communication.SmsActions
         /// <summary>
         /// Take the lava template, resolve it with useful text-to-give fields, and generate an SMS object to respond with.
         /// </summary>
-        /// <param name="templateAttributeKey"></param>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        private SmsMessage GetResolvedSmsResponse( string templateAttributeKey, SmsGiveContext context )
+        /// <param name="action">The action that contains the configuration for this component.</param>
+        /// <param name="templateAttributeKey">The template attribute key.</param>
+        /// <param name="context">The SMS give context.</param>
+        /// <returns>An <see cref="SmsMessage"/> that will be sent as the response.</returns>
+        private SmsMessage GetResolvedSmsResponse( SmsActionCache action, string templateAttributeKey, SmsGiveContext context )
         {
             var lavaTemplate = context.SmsActionCache.GetAttributeValue( templateAttributeKey );
             var resolvedMessage = lavaTemplate.ResolveMergeFields( context.LavaMergeFields );
-            return GetSmsResponse( context, resolvedMessage );
+            return GetSmsResponse( action, context, resolvedMessage );
         }
 
         /// <summary>
         /// Generate an SMS response object to the message in the context with the specified message text.
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        private SmsMessage GetSmsResponse( SmsGiveContext context, string message )
+        /// <param name="action">The action that contains the configuration for this component.</param>
+        /// <param name="context">The SMS give context.</param>
+        /// <param name="message">The message.</param>
+        /// <returns>An <see cref="SmsMessage"/> that will be sent as the response.</returns>
+        private SmsMessage GetSmsResponse( SmsActionCache action, SmsGiveContext context, string message )
         {
             return new SmsMessage
             {
                 ToNumber = context.SmsMessage.FromNumber,
                 FromNumber = context.SmsMessage.ToNumber,
-                Message = message
+                Message = message,
+                SaveAsResponse = GetAttributeValue( action, AttributeKeys.SaveResponse ).AsBoolean()
             };
         }
 
@@ -695,8 +712,8 @@ namespace Rock.Communication.SmsActions
         /// <summary>
         /// Get and validate the max amount attribute.
         /// </summary>
-        /// <param name="context">The context.</param>
-        /// <returns>System.Nullable&lt;System.Decimal&gt;.</returns>
+        /// <param name="context">The SMS give context.</param>
+        /// <returns>The max amount or <c>null</c> if no max amount is configured.</returns>
         private decimal? GetMaxAmount( SmsGiveContext context )
         {
             var maxAmountString = context.SmsActionCache.GetAttributeValue( AttributeKeys.MaxAmount );
@@ -706,8 +723,8 @@ namespace Rock.Communication.SmsActions
         /// <summary>
         /// Get and validate the financial account attribute. If the attribute is omitted, then the person's default account is used.
         /// </summary>
-        /// <param name="context">The context.</param>
-        /// <returns>FinancialAccount.</returns>
+        /// <param name="context">The SMS give context.</param>
+        /// <returns>A <see cref="FinancialAccount"/> or <c>null</c> if none found.</returns>
         private FinancialAccount GetFinancialAccount( SmsGiveContext context )
         {
             var person = context.SmsMessage.FromPerson;
@@ -748,8 +765,7 @@ namespace Rock.Communication.SmsActions
         /// <summary>
         /// Set the setup page link on the context.
         /// </summary>
-        /// <param name="context"></param>
-        /// <returns></returns>
+        /// <param name="context">The SMS give context.</param>
         private void SetSetupPageLink( SmsGiveContext context )
         {
             var setupPageAttribute = context.SmsActionCache.GetAttributeValue( AttributeKeys.SetupPage );
@@ -811,7 +827,7 @@ namespace Rock.Communication.SmsActions
         /// <summary>
         /// Set the person token on the context.
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="context">The SMS give context.</param>
         private void SetPersonIdentifier( SmsGiveContext context )
         {
             var person = context.SmsMessage.FromPerson;
@@ -855,8 +871,8 @@ namespace Rock.Communication.SmsActions
         /// <summary>
         /// Get and validate the delay minutes attribute.
         /// </summary>
-        /// <param name="context">The context.</param>
-        /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
+        /// <param name="context">The SMS give context.</param>
+        /// <returns>The delay minutes or <c>null</c> if no delay is configured.</returns>
         private int? GetDelayMinutes( SmsGiveContext context )
         {
             return context.SmsActionCache.GetAttributeValue( AttributeKeys.ProcessingDelayMinutes ).AsIntegerOrNull();

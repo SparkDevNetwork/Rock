@@ -277,6 +277,9 @@ namespace Rock.Blocks.Core
         {
             var noteWatches = queryable.ToList();
 
+            // Load attribute values for the grid-selected attributes.
+            GridAttributeLoader.LoadFor( noteWatches, a => a.NoteWatch, _gridAttributes.Value, rockContext );
+
             foreach ( var noteWatch in noteWatches )
             {
                 if ( noteWatch.PersonProjection.Id.HasValue )

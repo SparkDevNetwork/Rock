@@ -29,6 +29,9 @@ import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/pers
  * the RealTime engine.
  */
 export type GroupMemberUpdatedMessageBag = {
+    /** The date and time the group member was added. */
+    dateTimeAdded?: string | null;
+
     /** The GUID of the group. */
     groupGuid?: Guid | null;
 

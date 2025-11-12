@@ -66,6 +66,15 @@ namespace Rock.Blocks.Cms
 
         #endregion Keys
 
+        #region Fields
+
+        /// <summary>
+        /// The PersonalizationSegment attributes configured to show on the grid.
+        /// </summary>
+        private readonly Lazy<List<AttributeCache>> _gridAttributes = new System.Lazy<List<AttributeCache>>( BuildGridAttributes );
+
+        #endregion
+
         #region Methods
 
         /// <inheritdoc/>
@@ -186,6 +195,16 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
+        protected override List<PersonalizationSegmentListBag> GetListItems( IQueryable<PersonalizationSegmentListBag> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+
+            GridAttributeLoader.LoadFor( items, a => a.PersonalizationSegment, _gridAttributes.Value, rockContext );
+
+            return items;
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<PersonalizationSegmentListBag> GetGridBuilder()
         {
             return new GridBuilder<PersonalizationSegmentListBag>()
@@ -201,7 +220,24 @@ namespace Rock.Blocks.Cms
                 .AddField( "anonymousIndividualsCount", a => a.AnonymousIndividualsCount )
                 .AddField( "timeToUpdateDurationMilliseconds", a => a.TimeToUpdateDurationMilliseconds.HasValue ? Math.Round( ( double ) a.TimeToUpdateDurationMilliseconds ) : a.TimeToUpdateDurationMilliseconds )
                 .AddField( "categories", a => a.Categories )
-                .AddField( "isActive", a => a.PersonalizationSegment.IsActive );
+                .AddField( "isActive", a => a.PersonalizationSegment.IsActive )
+                .AddAttributeFieldsFrom( a => a.PersonalizationSegment, _gridAttributes.Value );
+        }
+
+        /// <summary>
+        /// Builds the list of grid attributes that should be included on the Grid.
+        /// </summary>
+        /// <returns>A list of <see cref="AttributeCache"/> objects.</returns>
+        private static List<AttributeCache> BuildGridAttributes()
+        {
+            var entityTypeId = EntityTypeCache.Get<PersonalizationSegment>( false )?.Id;
+
+            if ( entityTypeId.HasValue )
+            {
+                return AttributeCache.GetOrderedGridAttributes( entityTypeId.Value, string.Empty, string.Empty );
+            }
+
+            return new List<AttributeCache>();
         }
 
         #endregion

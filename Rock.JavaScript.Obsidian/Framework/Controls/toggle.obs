@@ -8,11 +8,13 @@
             <div class="control-wrapper">
                 <div class="toggle-container">
                     <div :class="getButtonGroupClass">
-                        <JavaScriptAnchor :class="modelValue ? unselectedClasses : offButtonSelectedClasses" @click="onClick(false)">
-                            <slot name="off">{{ falseText }}</slot>
+                        <JavaScriptAnchor :class="modelValue ? unselectedClasses : offButtonSelectedClasses"
+                                          @click="onClick(false)">
+                            <slot name="off" :disabled="disabled">{{ falseText }}</slot>
                         </JavaScriptAnchor>
-                        <JavaScriptAnchor :class="modelValue ? onButtonSelectedClasses : unselectedClasses" @click="onClick(true)">
-                            <slot name="on">{{ trueText }}</slot>
+                        <JavaScriptAnchor :class="modelValue ? onButtonSelectedClasses : unselectedClasses"
+                                          @click="onClick(true)">
+                            <slot name="on" :disabled="disabled">{{ trueText }}</slot>
                         </JavaScriptAnchor>
                     </div>
                 </div>
@@ -55,6 +57,11 @@
         offButtonActiveCssClass: {
             type: String as PropType<string>,
             default: ""
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -73,7 +80,7 @@
     });
 
     const onClick = (isOn: boolean): void => {
-        if (isOn !== props.modelValue) {
+        if (!props.disabled && isOn !== props.modelValue) {
             emit("update:modelValue", isOn);
         }
     };

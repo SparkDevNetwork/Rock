@@ -2,13 +2,16 @@
 <template>
     <div class="card card-sched js-schedule-group">
         <div class="card-body">
-            <span class="d-block font-weight-bold text-sm">
-                {{ title }}
-            </span>
 
-            <NotificationBox v-if="!anyLocations" :alertType="AlertType.Info">
-                No locations available.
-            </NotificationBox>
+            <template v-if="!anyLocations">
+                <span class="d-block font-weight-bold text-sm">
+                    {{ title }}
+                </span>
+
+                <NotificationBox :alertType="AlertType.Info">
+                    No locations available.
+                </NotificationBox>
+            </template>
 
             <template v-else>
                 <NotificationBox v-if="unassignedResourceCount"

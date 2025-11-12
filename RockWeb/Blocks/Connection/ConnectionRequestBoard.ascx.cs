@@ -3290,21 +3290,6 @@ ORDER BY ct.[Name], cs.[Name]",
                     {
                         var newOpportunity = new ConnectionOpportunityService( rockContext ).Get( newOpportunityId.Value );
 
-                        // Check if a connection request in the target opportunity already exists for the same person
-                        var existingRequest = connectionRequestService.Queryable().AsNoTracking()
-                            .Where( r => r.PersonAliasId == connectionRequest.PersonAliasId &&
-                                        r.ConnectionOpportunityId == newOpportunityId.Value &&
-                                        r.Id != connectionRequest.Id &&
-                                        ( r.ConnectionState == ConnectionState.Active || r.ConnectionState == ConnectionState.FutureFollowUp ) )
-                            .FirstOrDefault();
-
-                        if ( existingRequest != null )
-                        {
-                            nbTranferFailed.Text = "This person already has an active connection request for the selected opportunity. Transfer cannot be completed.";
-                            nbTranferFailed.Visible = true;
-                            return;
-                        }
-
                         connectionRequest.ConnectionOpportunityId = newOpportunityId.Value;
                         connectionRequest.ConnectionTypeId = newOpportunity.ConnectionTypeId;
                         if ( newOpportunity.ShowStatusOnTransfer && ddlRequestModalViewModeTransferModeStatus.Visible )

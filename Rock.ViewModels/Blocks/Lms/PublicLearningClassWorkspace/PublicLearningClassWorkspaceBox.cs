@@ -134,6 +134,11 @@ namespace Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace
         public bool ShowGrades { get; set; }
 
         /// <summary>
+        /// Gets or sets whethere the Communication Preference toggle should be shown.
+        /// </summary>
+        public bool ShowCommunicationPreference { get; set; }
+
+        /// <summary>
         /// Gets or sets the communication preference
         /// </summary>
         public CommunicationType CommunicationPreference { get; set; }

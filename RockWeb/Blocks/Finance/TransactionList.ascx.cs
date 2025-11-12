@@ -526,7 +526,8 @@ namespace RockWeb.Blocks.Finance
                 {
                     nbClosedWarning.Visible = false;
                     showSelectColumn = true;
-                    _ddlMove.Visible = true;
+                    _ddlMove.Visible = hfTransactionViewMode.Value == "Transactions";
+                    hfIsMoveTransactionsEnabled.Value = true.ToString();
                 }
 
                 // If the batch is closed or is automated, do not allow any editing of the transactions
@@ -2350,10 +2351,12 @@ namespace RockWeb.Blocks.Finance
             if ( sender == btnTransactions )
             {
                 hfTransactionViewMode.Value = "Transactions";
+                _ddlMove.Visible = hfIsMoveTransactionsEnabled.Value.AsBoolean();
             }
             else
             {
                 hfTransactionViewMode.Value = "Transaction Details";
+                _ddlMove.Visible = false;
             }
 
             var preferences = GetBlockPersonPreferences();

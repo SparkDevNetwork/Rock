@@ -24,6 +24,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Controls;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
@@ -52,7 +53,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "b9825e53-d074-4280-a1a3-e20771e34625" )]
     [Rock.SystemGuid.BlockTypeGuid( "d25ff675-07c8-4e2d-a3fa-38ba3468b4ae" )]
-    [CustomizedGrid]
+    [CustomizedGrid( CustomColumnMessage = "To access the entity, prefix your property names with <code>Row.PageShortLink</code> (e.g. <code>{{ Row.PageShortLink.Id }}</code>)." )]
     public class PageShortLinkList : RockListBlockType<PageShortLinkList.PageShortLinkWithClicks>
     {
         #region Keys
@@ -273,6 +274,9 @@ namespace Rock.Blocks.Cms
             // Load all the Short Links into memory.
             var items = queryable.ToList();
 
+            // Load attribute values for the grid-selected attributes.
+            GridAttributeLoader.LoadFor( items, a => a.PageShortLink, _gridAttributes.Value, rockContext );
+
             // Get all SiteIds referenced by the short links
             var siteIds = items
                 .Select( x => x.PageShortLink.SiteId )
@@ -417,7 +421,7 @@ namespace Rock.Blocks.Cms
         #endregion
 
         #region Support Classes
-        public class PageShortLinkWithClicks
+        public class PageShortLinkWithClicks : LavaDataObject
         {
             public PageShortLink PageShortLink { get; set; }
 

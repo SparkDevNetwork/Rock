@@ -163,12 +163,31 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
 
                 var outcomes = SmsActionService.ProcessIncomingMessage( message, smsPipelineId );
                 var smsResponse = SmsActionService.GetResponseFromOutcomes( outcomes );
-                var twilioMessage = new Twilio.TwiML.Message();
 
                 if ( smsResponse == null )
                 {
                     return null;
                 }
+
+                var fromPersonAliasId = message.FromPerson?.PrimaryAliasId;
+                if ( fromPersonAliasId.HasValue )
+                {
+                    var responseCommunicationId = SmsActionService.CreateAndEnqueueResponseCommunication(
+                        smsResponse,
+                        fromPersonAliasId.Value,
+                        message.ToNumber,
+                        rockContext
+                    );
+
+                    if ( responseCommunicationId.HasValue )
+                    {
+                        // There's no need to send a message object back to the caller of this method since we've
+                        // already queued a response to be sent.
+                        return null;
+                    }
+                }
+
+                var twilioMessage = new Twilio.TwiML.Message();
 
                 if ( smsResponse.Message.IsNotNullOrWhiteSpace() )
                 {

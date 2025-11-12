@@ -258,13 +258,17 @@ namespace Rock.Workflow.Action
             var fieldValues = componentData.GetValueOrNull( ComponentDataKey.FieldValues )?.FromJsonOrNull<Dictionary<Guid, string>>();
             var personEntryValues = componentData.GetValueOrNull( ComponentDataKey.PersonEntryValues )?.FromJsonOrNull<PersonEntryValuesBag>();
             var button = componentData.GetValueOrNull( ComponentDataKey.Button );
+            var workflowType = WorkflowTypeCache.Get( action.Activity.Workflow.WorkflowTypeId, rockContext );
+            var formBuilderTemplate = workflowType.FormBuilderTemplateId.HasValue
+                ? WorkflowFormBuilderTemplateCache.Get( workflowType.FormBuilderTemplateId.Value )
+                : null;
 
             if ( form == null )
             {
                 throw new Exception( "Invalid action state, could not find workflow or form details." );
             }
 
-            if ( personEntryValues != null )
+            if ( form.GetAllowPersonEntry( formBuilderTemplate ) )
             {
                 // The person entry processor requires its own RockContext.
                 using ( var personEntryRockContext = new RockContext() )

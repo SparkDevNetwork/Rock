@@ -2,6 +2,7 @@
 <template>
     <DropDownList v-model="communicationTemplateGuidOrEmptyString"
                   enhanceForLongLists
+                  :help="communicationTemplatesHelp ?? undefined"
                   :items="communicationTemplates ?? []"
                   label="Template" />
 </template>
@@ -21,6 +22,11 @@
 
         communicationTemplates: {
             type: Object as PropType<ListItemBag[] | null | undefined>,
+            required: false
+        },
+
+        communicationTemplatesHelp: {
+            type: String as PropType<string | null | undefined>,
             required: false
         },
 
