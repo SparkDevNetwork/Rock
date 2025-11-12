@@ -209,7 +209,7 @@ namespace Rock.Blocks.Event
         /// <summary>
         /// A diagnostic collection of missing fields, grouped by form ID.
         /// </summary>
-        public Dictionary<int, Dictionary<int, string>> MissingFieldsByFormId { get; set; }
+        public Dictionary<int, Dictionary<Guid, string>> MissingFieldsByFormId { get; set; }
 
         /// <summary>
         /// Gets the registration identifier page parameter.
@@ -1485,7 +1485,7 @@ namespace Rock.Blocks.Event
 
                     bool isCreatedAsRegistrant = context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == args.Registrants.FirstOrDefault();
 
-                    MissingFieldsByFormId = new Dictionary<int, Dictionary<int, string>>();
+                    MissingFieldsByFormId = new Dictionary<int, Dictionary<Guid, string>>();
 
                     UpsertRegistrant(
                         rockContext,
@@ -1523,18 +1523,65 @@ namespace Rock.Blocks.Event
                             https://github.com/SparkDevNetwork/Rock/issues/5091
                          */
                         var logAllMissingFieldsSb = new StringBuilder();
-                        logAllMissingFieldsSb.AppendLine( $"{logMsgPrefix}Registrant {index} of {args.Registrants.Count}: The following required (non-conditional) Field values were missing:" );
 
-                        foreach ( var missingFormFields in MissingFieldsByFormId )
+                        try
                         {
-                            var logMissingFormFieldsSb = new StringBuilder( $"[Form ID: {missingFormFields.Key} -" );
+                            // Serialize and log the missing and expected form fields as well as this registrant's field
+                            // values so a more thorough investigation can be performed.
+                            var missingFields = MissingFieldsByFormId
+                                .SelectMany( mf => mf.Value.Select( f => new LogMissingField
+                                {
+                                    TemplateFormId = mf.Key,
+                                    TemplateFormFieldGuid = f.Key,
+                                    TemplateFormFieldName = f.Value,
+                                } ) )
+                                .ToList();
 
-                            foreach ( var missingField in missingFormFields.Value )
+                            var logMissingFields = new LogMissingFields
                             {
-                                logMissingFormFieldsSb.Append( $" {missingField.Value} (Field ID: {missingField.Key});" );
-                            }
+                                RegistrationTemplateId = context.RegistrationSettings.RegistrationTemplateId,
+                                RegistrationInstanceId = context.RegistrationSettings.RegistrationInstanceId,
+                                InstanceOrTemplateName = context.RegistrationSettings.Name,
+                                RegistrationId = context.Registration?.Id,
+                                MaxRegistrants = context.RegistrationSettings.MaxRegistrants,
+                                MaxAttendees = context.RegistrationSettings.MaxAttendees,
+                                SpotsRemaining = context.SpotsRemaining,
+                                IsTimeoutEnabled = context.RegistrationSettings.IsTimeoutEnabled,
+                                TimeoutMinutes = context.RegistrationSettings.TimeoutMinutes,
+                                TimeoutThreshold = context.RegistrationSettings.TimeoutThreshold,
+                                IsWaitlistEnabled = context.RegistrationSettings.IsWaitListEnabled,
+                                AreCurrentFamilyMembersShown = context.RegistrationSettings.AreCurrentFamilyMembersShown,
+                                CurrentPersonId = RequestContext.CurrentPerson?.Id,
+                                CurrentPersonName = RequestContext.CurrentPerson?.FullName,
+                                Registrar = args.Registrar,
+                                RegistrantIndexPosition = $"{index} of {args.Registrants.Count}",
+                                Registrant = registrantInfo,
+                                MissingFields = missingFields,
+                                ExpectedForms = context.RegistrationSettings.Forms
+                                    .Select( f => new LogTemplateForm( f ) )
+                                    .OrderBy( f => f.Order )
+                                    .ToList()
+                            };
 
-                            logAllMissingFieldsSb.AppendLine( $"{logMissingFormFieldsSb}]" );
+                            logAllMissingFieldsSb.Append( logMissingFields.ToJson() );
+                        }
+                        catch
+                        {
+                            // Go back to the old version of logging so we're sure to capture this failure.
+                            logAllMissingFieldsSb.Clear();
+                            logAllMissingFieldsSb.AppendLine( $"{logMsgPrefix}Registrant {index} of {args.Registrants.Count}: The following required (non-conditional) Field values were missing:" );
+
+                            foreach ( var missingFormFields in MissingFieldsByFormId )
+                            {
+                                var logMissingFormFieldsSb = new StringBuilder( $"[Form ID: {missingFormFields.Key} -" );
+
+                                foreach ( var missingField in missingFormFields.Value )
+                                {
+                                    logMissingFormFieldsSb.Append( $" {missingField.Value} (Field Guid: {missingField.Key});" );
+                                }
+
+                                logAllMissingFieldsSb.AppendLine( $"{logMissingFormFieldsSb}]" );
+                            }
                         }
 
                         ExceptionLogService.LogException( new RegistrationTemplateFormFieldException( logAllMissingFieldsSb.ToString() ) );
@@ -3123,9 +3170,9 @@ namespace Rock.Blocks.Event
                             }
                         }
                     }
-
-                    field.NoteFieldDetailsIfRequiredAndMissing( MissingFieldsByFormId, fieldValue );
                 }
+
+                field.NoteFieldDetailsIfRequiredAndMissing( MissingFieldsByFormId, fieldValue );
             }
 
             return isChanged;
@@ -3522,14 +3569,19 @@ namespace Rock.Blocks.Event
 
                 if ( attribute is null )
                 {
+                    field.NoteFieldDetailsIfRequiredAndMissing( MissingFieldsByFormId, null );
                     continue;
                 }
 
+                var originalValue = registrant.GetAttributeValue( attribute.Key );
+                var finalValue = originalValue;
+
                 if ( IsFieldUnlockedForEditing( field, registrant, attribute.Key ) )
                 {
-                    var originalValue = registrant.GetAttributeValue( attribute.Key );
                     var newValue = registrantInfo.FieldValues.GetValueOrNull( field.Guid ).ToStringSafe();
                     newValue = PublicAttributeHelper.GetPrivateValue( attribute, newValue );
+
+                    finalValue = newValue;
 
                     registrant.SetAttributeValue( attribute.Key, newValue );
 
@@ -3550,9 +3602,9 @@ namespace Rock.Blocks.Event
                         isChanged = true;
                         History.EvaluateChange( registrantChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
                     }
-
-                    field.NoteFieldDetailsIfRequiredAndMissing( MissingFieldsByFormId, newValue );
                 }
+
+                field.NoteFieldDetailsIfRequiredAndMissing( MissingFieldsByFormId, finalValue );
             }
 
             return isChanged;
@@ -5799,6 +5851,124 @@ namespace Rock.Blocks.Event
             public string UserAgent { get; set; }
 
             public DateTime SignedDateTime { get; set; }
+        }
+
+        /// <summary>
+        /// A POCO used to hold information about a registrant that is missing required fields for logging purposes.
+        /// </summary>
+        private class LogMissingFields
+        {
+            public DateTime CurrentRockDateTime { get; set; } = RockDateTime.Now;
+            public int RegistrationTemplateId { get; set; }
+            public int RegistrationInstanceId { get; set; }
+            public string InstanceOrTemplateName { get; set; }
+            public int? RegistrationId { get; set; }
+            public int? MaxRegistrants { get; set; }
+            public int? MaxAttendees { get; set; }
+            public int? SpotsRemaining { get; set; }
+            public bool IsTimeoutEnabled { get; set; }
+            public int? TimeoutMinutes { get; set; }
+            public int? TimeoutThreshold { get; set; }
+            public bool IsWaitlistEnabled { get; set; }
+            public bool AreCurrentFamilyMembersShown { get; set; }
+            public int? CurrentPersonId { get; set; }
+            public string CurrentPersonName { get; set; }
+            public RegistrarBag Registrar { get; set; }
+            public string RegistrantIndexPosition { get; set; }
+            public RegistrantBag Registrant { get; set; }
+            public List<LogMissingField> MissingFields { get; set; }
+            public List<LogTemplateForm> ExpectedForms { get; set; }
+        }
+
+        /// <summary>
+        /// A POCO used to hold information about a missing field for logging purposes.
+        /// </summary>
+        private class LogMissingField
+        {
+            public int TemplateFormId { get; set; }
+            public Guid TemplateFormFieldGuid { get; set; }
+            public string TemplateFormFieldName { get; set; }
+        }
+
+        /// <summary>
+        /// A POCO used to hold a simplified version of a <see cref="RegistrationTemplateForm"/> for logging purposes.
+        /// </summary>
+        private class LogTemplateForm
+        {
+            public int Id { get; set; }
+            public Guid Guid { get; set; }
+            public DateTime? CreatedDateTime { get; set; }
+            public DateTime? ModifiedDateTime { get; set; }
+            public string Name { get; set; }
+            public int Order { get; set; }
+            public List<LogTemplateFormField> Fields { get; set; }
+
+            public LogTemplateForm( RegistrationTemplateForm model )
+            {
+                Id = model.Id;
+                Guid = model.Guid;
+                CreatedDateTime = model.CreatedDateTime;
+                ModifiedDateTime = model.ModifiedDateTime;
+                Name = model.Name;
+                Order = model.Order;
+                Fields = model.Fields
+                    .OrderBy( f => f.Order )
+                    .Select( f => new LogTemplateFormField( f ) )
+                    .ToList();
+            }
+        }
+
+        /// <summary>
+        /// A POCO used to hold a simplified version of a <see cref="RegistrationTemplateFormField"/> for logging purposes.
+        /// </summary>
+        private class LogTemplateFormField
+        {
+            public int Id { get; set; }
+            public Guid Guid { get; set; }
+            public DateTime? CreatedDateTime { get; set; }
+            public DateTime? ModifiedDateTime { get; set; }
+            public string FieldSource { get; set; }
+            public string PersonFieldType { get; set; }
+            public int? AttributeId { get; set; }
+            public string AttributeName { get; set; }
+            public int? AttributeFieldTypeId { get; set; }
+            public string AttributeFieldTypeName { get; set; }
+            public bool IsSharedValue { get; set; }
+            public bool IsInternal { get; set; }
+            public bool ShowCurrentValue { get; set; }
+            public string PreText { get; set; }
+            public string PostText { get; set; }
+            public bool IsGridField { get; set; }
+            public bool IsRequired { get; set; }
+            public int Order { get; set; }
+            public bool ShowOnWaitlist { get; set; }
+            public string FieldVisibilityRulesJSON { get; set; }
+            public bool IsLockedIfValuesExist { get; set; }
+
+            public LogTemplateFormField( RegistrationTemplateFormField model )
+            {
+                Id = model.Id;
+                Guid = model.Guid;
+                CreatedDateTime = model.CreatedDateTime;
+                ModifiedDateTime = model.ModifiedDateTime;
+                FieldSource = model.FieldSource.ConvertToString();
+                PersonFieldType = model.PersonFieldType.ConvertToString();
+                AttributeId = model.AttributeId;
+                AttributeName = model.Attribute?.Name;
+                AttributeFieldTypeId = model.Attribute?.FieldTypeId;
+                AttributeFieldTypeName = model.Attribute?.FieldType.Name;
+                IsSharedValue = model.IsSharedValue;
+                IsInternal = model.IsInternal;
+                ShowCurrentValue = model.ShowCurrentValue;
+                PreText = model.PreText;
+                PostText = model.PostText;
+                IsGridField = model.IsGridField;
+                IsRequired = model.IsRequired;
+                Order = model.Order;
+                ShowOnWaitlist = model.ShowOnWaitlist;
+                FieldVisibilityRulesJSON = model.FieldVisibilityRulesJSON;
+                IsLockedIfValuesExist = model.IsLockedIfValuesExist;
+            }
         }
 
         #endregion
