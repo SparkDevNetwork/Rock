@@ -1,4 +1,6 @@
-﻿using Rock.AI.Agent.Annotations;
+﻿using System.ComponentModel;
+
+using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.Model;
 using Rock.SystemGuid;
@@ -14,6 +16,7 @@ namespace Rock.AI.Agent.Skills
         /// </summary>
         /// <param name="reminderIdKey">The key of the reminder to delete.</param>
         /// <returns>A <see cref="RockToolResult"/> indicating the success or failure of the operation.</returns>
+        [Description( "Deletes a reminder." )]
         [AgentToolGuid( "7E894055-3701-4172-AF81-6D4EC6B78752" )]
         [AgentGuardrail( "This action will permanently delete the specified reminder. Ensure that this action is intentional and that you have the correct identifier before proceeding." )]
         public RockToolResult DeleteReminder( string reminderIdKey )

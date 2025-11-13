@@ -20,7 +20,7 @@ namespace Rock.AI.Agent.Skills
     internal sealed partial class PersonSkill
     {
         #region Tool(s)
-
+        [Description( "Updates properties on the person." )]
         [AgentToolGuid( "A1198A34-FCF2-4F58-83FA-7D02DD69830E" )]
         [AgentUsage( "Any argument ending with 'ValueIdKey' must be a valid IdKey or the literal 'lookup' to retrieve allowed values. After lookup, call again with the chosen IdKey." )]
         [AgentUsage( "Include only fields you want to change. Omit or pass null to keep current values. For string fields, pass \"\" (empty) to clear." )]

@@ -1,4 +1,5 @@
-﻿using System.Data.Entity;
+﻿using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.AI.Agent.Classes.Common;
@@ -18,6 +19,7 @@ namespace Rock.AI.Agent.Skills
         /// </summary>
         /// <param name="personIdKey">The person.</param>
         /// <returns></returns>
+        [Description( "Lists personal devices for the provided person." )]
         [AgentToolGuid( "29B7A989-59C4-4956-9C45-1D1297D3E673" )]
         public RockToolResult ListPersonalDevicesForPerson( string personIdKey )
         {

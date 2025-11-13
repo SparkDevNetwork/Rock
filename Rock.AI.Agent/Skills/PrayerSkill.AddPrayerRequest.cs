@@ -16,7 +16,7 @@ namespace Rock.AI.Agent.Skills
     internal sealed partial class PrayerSkill
     {
         #region Tool(s)
-
+        [Description( "Adds a prayer request." )]
         [AgentToolGuid( "3AE458AB-C06C-47BC-AD2D-86EB19E556F1" )]
         [AgentUsage( "If a personIdKey is provided, first and last name will be determined from their Person record." )]
         [AgentToolPrerequisite( "Call the LookupPrayerCategories function to determine available categories. Select one that matches the prayer request sentiment." )]

@@ -31,6 +31,7 @@ namespace Rock.AI.Agent.Skills
         /// <param name="repeatEveryXDays">The updated number of days between repeats (optional).</param>
         /// <param name="repeatAmount">The updated number of times to repeat (optional).</param>
         /// <returns>A <see cref="RockToolResult"/> indicating the success or failure of the operation.</returns>
+        [Description( "Updates a reminder." )]
         [AgentToolGuid( "F7C1742B-31FB-4E80-9FEE-5B1E45D11A5F" )]
         public RockToolResult UpdateReminder(
             string reminderIdKey,

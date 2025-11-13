@@ -64,14 +64,6 @@ namespace Rock.AI.Agent.Skills
 
         #region Skill Tools
 
-        [Description( "Adds a note to a person." )]
-        [AgentPurpose( "Adds a note to a person." )]
-        [AgentToolGuid( "eae482a7-4dde-4914-baa8-bcb4a103259a" )]
-        public string AddNoteToPerson( int personId, string noteText )
-        {
-            return "Note added to person successfully.";
-        }
-
         [Description( @"Finds a group of people of a specific group type for a person." )]
         [AgentPurpose( "Finds a group of people of a specific group type for a person." )]
         [AgentUsage( @"This function is designed to be called multiple times in a progressive flow:

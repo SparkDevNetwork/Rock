@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
@@ -25,6 +26,7 @@ namespace Rock.AI.Agent.Skills
         /// <param name="isComplete">The completion status to filter by (optional).</param>
         /// <param name="pageNumber">The page number for pagination (optional).</param>
         /// <returns>A <see cref="RockToolResult"/> containing the list of reminders or an error message.</returns>
+        [Description( "Lists reminders." )]
         [AgentToolGuid( "AA2EA764-8CB6-48B1-815B-0FDCCDC742DE" )]
         public RockToolResult ListReminders(
             List<string> reminderTypeIdKeys = null,

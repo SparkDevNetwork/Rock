@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Linq;
 
@@ -17,7 +18,7 @@ namespace Rock.AI.Agent.Skills
     internal sealed partial class PersonSkill
     {
         #region Tool(s)
-
+        [Description( "Provide attendance information for members of the selected person." )]
         [AgentToolGuid( "544F23D7-6D28-41EA-BD43-249C976BEBA0" )]
         [AgentPurpose( "Fetches service attendance for a person's family." )]
         [AgentToolReturnDescription( "Returns the family's last recorded Sunday date and the list of family check-ins from that service week. Also includes the family's: monthly completion, first-time check-in, and the number of weeks attended out of the last 16." )]

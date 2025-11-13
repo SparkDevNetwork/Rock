@@ -15,7 +15,7 @@ namespace Rock.AI.Agent.Skills
     internal sealed partial class PrayerSkill
     {
         #region Tool(s)
-
+        [Description( "Updates a prayer request." )]
         [AgentToolGuid( "6A2F2659-DEA5-4BA0-9BE7-2329FF231776" )]
         public RockToolResult UpdatePrayerRequest(
             string prayerRequestIdKey,

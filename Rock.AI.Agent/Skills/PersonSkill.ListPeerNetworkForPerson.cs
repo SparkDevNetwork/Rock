@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 
@@ -12,7 +13,7 @@ namespace Rock.AI.Agent.Skills
     internal sealed partial class PersonSkill
     {
         #region Tool(s)
-
+        [Description( "Lists people in the provided person's peer network." )]
         [AgentToolGuid( "39244A1E-57BF-476B-AF88-65EBC205F25D" )]
         public RockToolResult ListPeerNetworkForPerson( string personIdKey )
         {

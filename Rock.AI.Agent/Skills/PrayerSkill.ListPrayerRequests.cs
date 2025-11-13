@@ -19,7 +19,7 @@ namespace Rock.AI.Agent.Skills
     internal sealed partial class PrayerSkill
     {
         #region Tool(s)
-
+        [Description( "Lists prayer requests." )]
         [AgentToolGuid( "99F1EDE0-F431-49BE-80F5-97032710143B" )]
         [AgentUsage( "Most filters are optional. If none are provided, the most recent prayer requests are returned." )]
         [AgentUsage( "Use either the first and last name filter or the requested by IdKey, not both." )]
