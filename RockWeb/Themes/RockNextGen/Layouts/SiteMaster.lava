@@ -36,7 +36,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
 
     <script src="{{ '~~/Assets/Scripts/theme.js' | ResolveRockUrl | FingerprintUrl }}"></script> 
 
-    {{ Conent.head }}
+    {{ Content.head }}
 
 </head>
 <body id="body">
