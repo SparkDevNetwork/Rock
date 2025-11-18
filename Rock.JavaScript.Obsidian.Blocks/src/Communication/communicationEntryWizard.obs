@@ -308,9 +308,6 @@
                     else if (allowedMediums.value.includes(CommunicationType.SMS)) {
                         return "SMS Editor";
                     }
-                    else if (allowedMediums.value.includes(CommunicationType.PushNotification)) {
-                        return "Push Notification Editor";
-                    }
                     else {
                         return null;
                     }
@@ -324,9 +321,6 @@
             if (communicationType.value === CommunicationType.RecipientPreference) {
                 if (allowedMediums.value.includes(CommunicationType.SMS)) {
                     return "SMS Editor";
-                }
-                else if (allowedMediums.value.includes(CommunicationType.PushNotification)) {
-                    return "Push Notification Editor";
                 }
                 else {
                     return "Review & Confirm";
@@ -493,19 +487,28 @@
     });
 
     const emailRecipients = computed<CommunicationEntryWizardRecipientBag[]>(() => {
-        return recipients.value.filter(r => r.isEmailAllowed);
+        var isEmailMediumAllowed = allowedMediums.value.includes(CommunicationType.Email);
+
+        return recipients.value.filter(r => isEmailMediumAllowed && r.isEmailAllowed);
     });
 
     const smsRecipients = computed<CommunicationEntryWizardRecipientBag[]>(() => {
-        return recipients.value.filter(r => r.isSmsAllowed);
+        var isSmsMediumAllowed = allowedMediums.value.includes(CommunicationType.SMS);
+
+        return recipients.value.filter(r => isSmsMediumAllowed && r.isSmsAllowed);
     });
 
     const pushNotificationRecipients = computed<CommunicationEntryWizardRecipientBag[]>(() => {
-        return recipients.value.filter(r => r.isPushAllowed);
+        var isPushNotificationMediumAllowed = allowedMediums.value.includes(CommunicationType.PushNotification);
+
+        return recipients.value.filter(r => isPushNotificationMediumAllowed && r.isPushAllowed);
     });
 
     const personalPreferenceRecipients = computed<CommunicationEntryWizardRecipientBag[]>(() => {
-        return recipients.value.filter(r => r.isEmailAllowed || r.isSmsAllowed);
+        var isEmailMediumAllowed = allowedMediums.value.includes(CommunicationType.Email);
+        var isSmsMediumAllowed = allowedMediums.value.includes(CommunicationType.SMS);
+
+        return recipients.value.filter(r => (isEmailMediumAllowed && r.isEmailAllowed) || (isSmsMediumAllowed && r.isSmsAllowed));
     });
 
     const selectedMediumRecipients = computed<CommunicationEntryWizardRecipientBag[]>(() => {

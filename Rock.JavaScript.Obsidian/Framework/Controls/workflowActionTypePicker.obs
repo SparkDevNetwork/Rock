@@ -4,7 +4,8 @@
                     formGroupClasses="workflow-action-type-picker"
                     iconCssClass="ti ti-folder"
                     :provider="itemProvider"
-                    disableFolderSelection />
+                    disableFolderSelection
+                    autoExpand />
 </template>
 
 <script setup lang="ts">

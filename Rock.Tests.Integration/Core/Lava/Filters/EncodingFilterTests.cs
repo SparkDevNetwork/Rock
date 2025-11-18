@@ -46,7 +46,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
                 .Queryable()
                 .FirstOrDefault( x => x.ContentChannel.Name == "External Website Ads" && x.Title == "SAMPLE: Easter" );
 
-            Assert.That.IsNotNull( contentChannelItem, "Required test data not found." );
+            Assert.IsNotNull( contentChannelItem, "Required test data not found." );
 
             var values = new LavaDataDictionary { { "Item", contentChannelItem } };
 
@@ -222,7 +222,7 @@ The decrypted message is: This is my secret!
 
             var output1 = TestHelper.GetTemplateOutput( typeof( FluidEngine ), inputTemplate1 );
 
-            Assert.That.AreNotEqual( output1?.RemoveWhiteSpace(), input?.RemoveWhiteSpace() );
+            Assert.AreNotEqual( output1?.RemoveWhiteSpace(), input?.RemoveWhiteSpace() );
 
             // Verify that the input text can be encrypted and decrypted successfully.
             var inputTemplate2 = @"

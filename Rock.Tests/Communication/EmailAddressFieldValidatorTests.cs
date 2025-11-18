@@ -158,14 +158,14 @@ namespace Rock.Tests.Communication
         [TestMethod]
         public void EmailAddressFieldValidator_IsValidCheckWithEmptyInput_ReturnsFalse()
         {
-            Assert.That.IsFalse( EmailAddressFieldValidator.IsValid( null ) );
-            Assert.That.IsFalse( EmailAddressFieldValidator.IsValid( string.Empty ) );
+            Assert.IsFalse( EmailAddressFieldValidator.IsValid( null ) );
+            Assert.IsFalse( EmailAddressFieldValidator.IsValid( string.Empty ) );
         }
 
         [TestMethod]
         public void EmailAddressFieldValidator_IsValidCheckWithValidAddress_ReturnsTrue()
         {
-            Assert.That.IsTrue( EmailAddressFieldValidator.IsValid( "ted@rocksolidchurchdemo.com" ) );
+            Assert.IsTrue( EmailAddressFieldValidator.IsValid( "ted@rocksolidchurchdemo.com" ) );
         }
 
     }

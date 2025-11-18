@@ -8,7 +8,8 @@
         {
             "type": "color",
             "name": "Primary Color",
-            "variable": "color-primary",
+            "key": "color-primary",
+            "variable": "base-primary",
             "description": "The primary color used to highlight screen elements, such as the main button.",
             "default": "#ee7725"
         },
@@ -30,49 +31,56 @@
                 {
                     "type": "color",
                     "name": "Interface Color Strongest",
-                    "variable": "color-interface-strongest",
+                    "key": "color-interface-strongest",
+                    "variable": "base-interface-strongest",
                     "description": "The strongest color used throughout the UI",
                     "default": "#000000"
                 },
                 {
                     "type": "color",
                     "name": "Interface Color Stronger",
-                    "variable": "color-interface-stronger",
+                    "key": "color-interface-stronger",
+                    "variable": "base-interface-stronger",
                     "description": "A stronger color used throughout the UI",
                     "default": "#1C1C1E"
                 },
                 {
                     "type": "color",
                     "name": "Interface Color Strong",
-                    "variable": "color-interface-strong",
+                    "key": "color-interface-strong",
+                    "variable": "base-interface-strong",
                     "description": "A strong color used throughout the UI",
                     "default": "#5D5D6F"
                 },
                 {
                     "type": "color",
                     "name": "Interface Color Medium",
-                    "variable": "color-interface-medium",
+                    "key": "color-interface-medium",
+                    "variable": "base-interface-medium",
                     "description": "A medium color used throughout the UI",
                     "default": "#8B8BA7"
                 },
                 {
                     "type": "color",
                     "name": "Interface Color Soft",
-                    "variable": "color-interface-soft",
+                    "key": "color-interface-soft",
+                    "variable": "base-interface-soft",
                     "description": "A soft color used throughout the UI",
                     "default": "#D9D9E3"
                 },
                 {
                     "type": "color",
                     "name": "Interface Color Softer",
-                    "variable": "color-interface-softer",
+                    "key": "color-interface-softer",
+                    "variable": "base-interface-softer",
                     "description": "A softer color used throughout the UI",
                     "default": "#E7E9EF"
                 },
                 {
                     "type": "color",
                     "name": "Interface Color Softest",
-                    "variable": "color-interface-softest",
+                    "key": "color-interface-softest",
+                    "variable": "base-interface-softest",
                     "description": "The softest color used throughout the UI",
                     "default": "#FFFFFF"
                 },

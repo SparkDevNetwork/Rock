@@ -186,7 +186,7 @@ namespace Rock.Tests.Web.UI.Controls
                 Value = null
             };
 
-            Assert.That.IsNull( control.GetValueAsDictionaryOrNull() );
+            Assert.IsNull( control.GetValueAsDictionaryOrNull() );
         }
 
         [TestMethod]
@@ -197,7 +197,7 @@ namespace Rock.Tests.Web.UI.Controls
                 Value = string.Empty
             };
 
-            Assert.That.IsNull( control.GetValueAsDictionaryOrNull() );
+            Assert.IsNull( control.GetValueAsDictionaryOrNull() );
         }
 
         [TestMethod]

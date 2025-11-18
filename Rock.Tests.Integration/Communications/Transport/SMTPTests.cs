@@ -28,7 +28,7 @@ namespace Rock.Tests.Integration.Communications.Transport
             _newServerAttributeValueGuid = newAttributeValueGuid;
         }
 
-        [ClassCleanup( ClassCleanupBehavior.EndOfClass )]
+        [ClassCleanup]
         public static void Cleanup()
         {
             if ( IsContainersEnabled )
@@ -73,7 +73,7 @@ namespace Rock.Tests.Integration.Communications.Transport
             smtp.Send( rockEmailMessage, 0, new Dictionary<string, string>(), out List<string> errorMessages );
 
             // Assert
-            Assert.That.AreEqual( 0, errorMessages.Count, errorMessages.JoinStrings(", ") );
+            Assert.AreEqual( 0, errorMessages.Count, errorMessages.JoinStrings(", ") );
         }
 
         #endregion

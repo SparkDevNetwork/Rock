@@ -1,0 +1,210 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      :scriptSetupCode="scriptSetupCode"
+                      enableReflection>
+
+        <PageTree v-model="value"
+                  :rules="isRequired ? 'required' : undefined"
+                  :rootPageGuid="rootPageGuid?.page?.value ?? undefined"
+                  :siteType="siteType"
+                  :multiple="multiple"
+                  :disableParentPageSelection="disableParentPageSelection"
+                  :showChildCount="showChildCount"
+                  :height="height"
+                  :enableDeselect="enableDeselect" />
+
+        <template #settings>
+            <div class="d-flex flex-row gap-3">
+                <ContentSection title="Demonstratable Settings" icon="ti ti-user" disableCollapse>
+                    <ContentStack title="Toggle Properties"
+                                  description="Properties that typically are either true or false.">
+                        <div class="d-flex flex-row gap-3">
+                            <Switch v-model="isRequired"
+                                    label="Required" />
+                            <Switch v-model="multiple"
+                                    label="Multiple Selection"
+                                    help="Allows selection of multiple pages." />
+                            <Switch v-model="disableParentPageSelection"
+                                    label="Disable Parent Page Selection"
+                                    help="Only allows the select of bottom-level pages which have no children of their own." />
+                            <Switch v-model="enableDeselect"
+                                    label="Enable Deselect"
+                                    help="Allows the deselection of a selected page." />
+                        </div>
+                    </ContentStack>
+                    <ContentStack title="Value Properties"
+                                  description="Properties that typically require a value to be set.">
+                        <div class="d-flex flex-row gap-3">
+                            <PagePicker v-model="rootPageGuid"
+                                        label="Root Page"
+                                        :multiple="false"
+                                        showSelectCurrentPage
+                                        help="Chooses a root page from which to enumerate children, rather than all root pages." />
+                            <BaseAsyncPicker v-model="selectedSiteType"
+                                             label="Site Type"
+                                             :multiple="false"
+                                             :items="siteTypeItems"
+                                             showBlankItem
+                                             help="Filter pages down to a particular SiteType." />
+                            <TextBox v-model="height"
+                                     label="Height"
+                                     help="Sets the height of the control (e.g., '300px', '30em', '30%', etc.)." />
+                        </div>
+                    </ContentStack>
+                </ContentSection>
+                <ContentSection title="Context-Specific Settings" icon="ti ti-user" disableCollapse>
+                    <p class="text-semibold font-italic">The settings are too context-specific, so their usage will show if enabled, but no demonstration will occur.</p>
+                    <ContentStack title="Toggle Properties"
+                                  description="Properties that typically are either true or false.">
+                        <div class="d-flex flex-row gap-3">
+                            <Switch v-model="hasSelectedPageGuids"
+                                    label="Selected Page GUIDs"
+                                    help="Allows the underlying TreeList to pre-select items based on the Guids provided." />
+                            <Switch v-model="hasHiddenPageGuids"
+                                    label="Hidden Page GUIDs"
+                                    help="Allows the underlying TreeList to hide items based on the Guids provided." />
+                        </div>
+                    </ContentStack>
+                </ContentSection>
+            </div>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying Rock Form Field.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref, computed } from "vue";
+    import { SiteType } from "@Obsidian/Enums/Cms/siteType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+    import { getSfcControlImportPath, ComponentUsage } from "./common/utils.partial";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import PageTree from "@Obsidian/Controls/pageTree.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+    import BaseAsyncPicker from "@Obsidian/Controls/baseAsyncPicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+
+    const value = ref({});
+    const isRequired = ref<boolean>(false);
+    const rootPageGuid = ref<PageRouteValueBag | undefined>(undefined);
+    const siteType = ref<SiteType | undefined>(undefined);
+    const hasSelectedPageGuids = ref<boolean>(false);
+    const hasHiddenPageGuids = ref<boolean>(false);
+    const multiple = ref<boolean>(false);
+    const disableParentPageSelection = ref<boolean>(false);
+    const showChildCount = ref<boolean>(false);
+    const height = ref<string>("300px");
+    const enableDeselect = ref<boolean>(false);
+
+    const siteTypeItems: ListItemBag[] = [
+        { text: "Web", value: "0" },
+        { text: "Mobile", value: "1" },
+        { text: "TV", value: "2" }
+    ];
+
+    const selectedSiteType = computed<ListItemBag | undefined>({
+        get() {
+            if (siteType.value === undefined || siteType.value === null || isNaN(siteType.value)) {
+                return undefined;
+            }
+
+            return siteTypeItems.find(i => i.value === siteType.value!.toString());
+        },
+        set(val: ListItemBag | undefined) {
+            if (val === null || val === undefined || val.value === null || val.value === undefined || val.value === "") {
+                siteType.value = undefined;
+            }
+            else {
+                siteType.value = Number(val.value) as SiteType;
+            }
+        }
+    });
+
+    const importCode = getSfcControlImportPath("pageTree");
+    const exampleCode = computed(() => {
+        const usage = new ComponentUsage("PageTree");
+
+        usage.addAttribute('v-model="value"', true, false);
+        usage.addAttribute(':rules="required"', isRequired.value, false);
+        usage.addAttribute(`:multiple="isMultipleSelect"`, multiple.value, false);
+        usage.addAttribute(`:rootPageGuid="rootPageGuid"`, rootPageGuid.value !== undefined && rootPageGuid.value !== null, false);
+        usage.addAttribute(`:siteType="siteType"`, siteType.value !== undefined && siteType.value !== null, false);
+        usage.addAttribute(`:selectedPageGuids="selectedPageGuids"`, hasSelectedPageGuids.value, false);
+        usage.addAttribute(`:hidePageGuids="hasHiddenPageGuids"`, hasHiddenPageGuids.value, false);
+        usage.addAttribute(`:disableParentPageSelection="disableParentPageSelection"`, disableParentPageSelection.value, false);
+        usage.addAttribute(`:showChildCount="${showChildCount.value}"`, showChildCount.value, false);
+        usage.addAttribute(`:height="'${height.value}'"`, height.value !== "300px", false);
+        usage.addAttribute(`:enableDeselect="enableDeselect"`, enableDeselect.value, false);
+
+        return usage.toString();
+    });
+    const scriptSetupCode = computed(() => {
+        const usage = new ComponentUsage("PageTree");
+
+        usage.addScriptImport('import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";');
+        usage.addScriptBody("const value = ref<{ListItemBag | ListItemBag[] | null | undefined}>(undefined);");
+
+        if (multiple.value) {
+            usage.addScriptBody("const isMultipleSelect = ref<boolean>(true);");
+        }
+
+        if (rootPageGuid.value !== undefined && rootPageGuid.value !== null) {
+            usage.addScriptImport('import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";');
+            usage.addScriptBodyWithComment(
+                "Define the root page GUID, use PagePicker to allow the person to set this value.",
+                "const rootPageGuid = ref<PageRouteValueBag | undefined>(undefined);"
+            );
+        }
+
+        if (siteType.value !== undefined && siteType.value !== null) {
+            usage.addScriptImport('import { SiteType } from "@Obsidian/Enums/Cms/siteType";');
+            usage.addScriptBodyWithComment(
+                "Define the site type",
+                "const siteType = ref<SiteType | undefined>(undefined);"
+            );
+        }
+
+        if (hasSelectedPageGuids.value) {
+            usage.addScriptBodyWithComment(
+                "Define the selected page GUIDs.",
+                "const selectedPageGuids = ref<string[]>([]);"
+            );
+        }
+
+        if (hasHiddenPageGuids.value) {
+            usage.addScriptBodyWithComment(
+                "Define the hidden page GUIDs.",
+                "const hiddenPageGuids = ref<string[]>([]);"
+            );
+        }
+
+        if (disableParentPageSelection.value) {
+            usage.addScriptBodyWithComment(
+                "Define whether parent page selection is disabled.",
+                "const disableParentPageSelection = ref<boolean>(false);"
+            );
+        }
+
+        if (height.value !== "" && height.value !== "300px") {
+            usage.addScriptBodyWithComment(
+                "Define the height of the PageTree.",
+                `const height = ref<string>("300px");`
+            );
+        }
+
+        if (enableDeselect.value) {
+            usage.addScriptBodyWithComment(
+                "Define whether deselect is enabled.",
+                "const enableDeselect = ref<boolean>(false);"
+            );
+        }
+
+        return usage.toScriptSetupString();
+    });
+</script>

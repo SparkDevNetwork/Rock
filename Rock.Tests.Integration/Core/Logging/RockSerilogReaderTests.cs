@@ -54,7 +54,7 @@ namespace Rock.Tests.Integration.Core.Logging
             var pageSize = 1000;
 
             var results = rockReader.GetEvents( currentPageIndex, pageSize );
-            Assert.That.AreEqual( 0, results.Count );
+            Assert.AreEqual( 0, results.Count );
         }
 
         [TestMethod]
@@ -80,7 +80,7 @@ namespace Rock.Tests.Integration.Core.Logging
             var pageSize = 1000;
 
             var results = rockReader.GetEvents( currentPageIndex, pageSize );
-            Assert.That.AreEqual( 0, results.Count );
+            Assert.AreEqual( 0, results.Count );
         }
 
         [TestMethod]
@@ -99,7 +99,7 @@ namespace Rock.Tests.Integration.Core.Logging
 
             var rockReader = new RockSerilogReader( config );
 
-            Assert.That.AreEqual( expectedLogs.Count, rockReader.RecordCount );
+            Assert.AreEqual( expectedLogs.Count, rockReader.RecordCount );
         }
 
         [TestMethod]
@@ -134,7 +134,7 @@ namespace Rock.Tests.Integration.Core.Logging
                 }
 
                 var resultIndex = lastIndex - i - currentPageIndex;
-                Assert.That.Contains( results[resultIndex].Message, expectedLogs[i] );
+                Assert.Contains( expectedLogs[i], results[resultIndex].Message );
             }
 
         }
@@ -159,7 +159,7 @@ namespace Rock.Tests.Integration.Core.Logging
             var pageSize = 1000;
 
             var results = rockReader.GetEvents( currentPageIndex, pageSize );
-            Assert.That.AreEqual( 0, results.Count );
+            Assert.AreEqual( 0, results.Count );
         }
 
         [TestMethod]
@@ -182,7 +182,7 @@ namespace Rock.Tests.Integration.Core.Logging
             var pageSize = 19000;
 
             var results = rockReader.GetEvents( currentPageIndex, pageSize );
-            Assert.That.AreEqual( expectedLogs.Count, results.Count );
+            Assert.AreEqual( expectedLogs.Count, results.Count );
         }
 
         [TestMethod]
@@ -209,9 +209,9 @@ namespace Rock.Tests.Integration.Core.Logging
             var pageSize = 100;
 
             var results = rockReader.GetEvents( currentPageIndex, pageSize );
-            Assert.That.AreEqual( 1, results.Count );
-            Assert.That.AreEqual( expectedMessage, results[0].Message );
-            Assert.That.AreEqual( expectedCategory, results[0].Category );
+            Assert.AreEqual( 1, results.Count );
+            Assert.AreEqual( expectedMessage, results[0].Message );
+            Assert.AreEqual( expectedCategory, results[0].Category );
         }
 
         private List<string> CreateLogFiles( Serilog.ILogger logger, SerilogConfiguration config )

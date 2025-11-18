@@ -249,7 +249,6 @@ export function getStandardFilterComponent(comparisonLabelOrTypes: ComparisonTyp
             /** True if the compare component should be visible. */
             const hasCompareComponent = computed(() => {
                 return comparisonTypes !== null
-                    && props.filterMode !== FilterMode.SimpleFilter
                     && !isSingleComparisonType(comparisonTypes)
                     && isCompareVisibleForComparisonFilter(comparisonTypes, props.filterMode);
             });
@@ -280,9 +279,8 @@ export function getStandardFilterComponent(comparisonLabelOrTypes: ComparisonTyp
                     type = comparisonTypes;
                 }
                 else {
-                    // If the filter mode is simple, then the comparison type is
-                    // not shown so we come up with a sane default.
-                    if (props.filterMode === FilterMode.SimpleFilter) {
+                    // If the compare component is not visible, then come up with a sane default.
+                    if (!hasCompareComponent.value) {
                         if (comparisonTypes === binaryComparisonTypes) {
                             type = ComparisonType.EqualTo;
                         }
@@ -294,8 +292,7 @@ export function getStandardFilterComponent(comparisonLabelOrTypes: ComparisonTyp
                         }
                     }
                     else {
-                        // Get the comparison type selected by the user if we are
-                        // in advanced mode.
+                        // When the compare component is visible, get the comparison type selected by the user.
                         type = toNumberOrNull(internalComparisonType.value);
                     }
                 }

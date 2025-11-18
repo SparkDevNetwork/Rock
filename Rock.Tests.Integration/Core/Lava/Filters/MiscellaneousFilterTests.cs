@@ -159,7 +159,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
 
                 var expectedOutput = RockApp.Current.GetCurrentLavaEngineName();
 
-                Assert.That.AreEqual( expectedOutput, result.Text );
+                Assert.AreEqual( expectedOutput, result.Text );
             } );
         }
 
@@ -211,7 +211,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
 
             var result = engine.RenderTemplate( inputTemplate, new LavaRenderParameters { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput } );
 
-            Assert.That.Contains( result.Error?.Messages().JoinStrings( "//" ), "Parameter type 'Guid' is not supported" );
+            Assert.Contains( result.Error?.Messages().JoinStrings( "//" ), "Parameter type 'Guid' is not supported" );
         }
 
         public static class TestLavaLibraryFilter
@@ -245,7 +245,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
             // minimal amount of information to satisfy us that it didn't error.
             TestHelper.Execute( template, options, actual =>
             {
-                Assert.That.StartsWith( "^FS ~DYR:LOGO,P,P,", actual );
+                Assert.StartsWith( "^FS ~DYR:LOGO,P,P,", actual );
             } );
         }
 

@@ -69,14 +69,14 @@ namespace Rock.Tests.Model
 
             financialTransaction.SetApportionedDetailAmounts( organizationCurrencyTotal );
 
-            Assert.That.AreEqual( expectedfinancialTransaction.TotalAmount, financialTransaction.TotalAmount );
+            Assert.AreEqual( expectedfinancialTransaction.TotalAmount, financialTransaction.TotalAmount );
 
             var expectedTransactionDetails = expectedfinancialTransaction.TransactionDetails.Cast<FinancialTransactionDetail>().ToList();
             var actualTransactionDetails = financialTransaction.TransactionDetails.Cast<FinancialTransactionDetail>().ToList();
 
             for ( var i = 0; i < expectedTransactionDetails.Count; i++ )
             {
-                Assert.That.AreEqual( expectedTransactionDetails[i].Amount, actualTransactionDetails[i].Amount );
+                Assert.AreEqual( expectedTransactionDetails[i].Amount, actualTransactionDetails[i].Amount );
             }
         }
     }

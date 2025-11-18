@@ -225,7 +225,7 @@ BEGIN
 				p.Age, 
 				p.RecordTypeValueId, 
 				p.AgeClassification, 
-				gm.CreatedDateTime
+				gm.DateTimeAdded
 			FROM GroupMember gm
 			INNER JOIN Person p ON gm.PersonId = p.Id
 			LEFT JOIN #DestinationGroups g ON gm.GroupId = g.GroupId
@@ -254,7 +254,8 @@ BEGIN
 			p.Age, 
 			p.RecordTypeValueId, 
 			p.AgeClassification, 
-			esi.CreatedDateTime
+			esi.CreatedDateTime,
+			NULL AS DateTimeAdded
 		FROM Person p
 		INNER JOIN EntitySetItem esi ON p.Id = esi.EntityId
 		INNER JOIN EntitySet es ON esi.EntitySetId = es.Id
@@ -278,7 +279,8 @@ BEGIN
 			p.Age, 
 			p.RecordTypeValueId, 
 			p.AgeClassification, 
-			NULL AS CreatedDateTime
+			NULL AS CreatedDateTime,
+			gm.DateTimeAdded
 		FROM Person p
 		INNER JOIN [GroupMember] gm ON p.Id = gm.PersonId
 		INNER JOIN #DestinationGroups g ON gm.GroupId = g.GroupId
@@ -333,6 +335,7 @@ BEGIN
 			g.GroupTypeId,
 			gm.Id AS GroupMemberId,
 			gm.GroupRoleId,
+			gm.DateTimeAdded,
 			p.Id AS PersonId, 
 			p.FirstName,
 			p.NickName,
@@ -443,7 +446,8 @@ BEGIN
 			g.GroupId, 
 			g.GroupTypeId, 
 			gm.Id AS GroupMemberId, 
-			gm.GroupRoleId, 
+			gm.GroupRoleId,
+			gm.DateTimeAdded,
 			p.Id AS PersonId, 
 			p.FirstName, 
 			p.NickName, 

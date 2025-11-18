@@ -50,7 +50,10 @@
         </div>
     </div>
 
-    <Captcha v-if="config.isCaptchaEnabled" ref="captchaElement"></Captcha>
+    <div v-if="config.isCaptchaEnabled" v-show="!isCaptchaComplete">
+        <Captcha ref="captchaElement"></Captcha>
+    </div>
+
 </template>
 
 <script setup lang="ts">
@@ -68,7 +71,7 @@
     import { WorkflowEntryOptionsBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowEntry/workflowEntryOptionsBag";
     import { InteractiveActionBag } from "@Obsidian/ViewModels/Workflow/interactiveActionBag";
     import { InteractiveMessageBag } from "@Obsidian/ViewModels/Workflow/interactiveMessageBag";
-    import { Component, computed, ref } from "vue";
+    import { Component, computed, ref, onMounted } from "vue";
     import { NoteEditBag } from "@Obsidian/ViewModels/Controls/noteEditBag";
     import { NoteBag } from "@Obsidian/ViewModels/Controls/noteBag";
     import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Controls/saveNoteRequestBag";
@@ -88,6 +91,7 @@
     const actionData = ref<Record<string, string | null | undefined>>({});
 
     const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
+    const isCaptchaComplete = ref(false);
 
     // #endregion
 
@@ -155,6 +159,14 @@
                 title: "Configuration error",
                 content: "We ran into something unexpected and can't proceed, please try again or contact an administrator."
             };
+        }
+
+        if (config.isCaptchaEnabled) {
+            isCaptchaComplete.value = false;
+            if (captchaElement.value) {
+                captchaElement.value.refreshToken();
+            }
+            waitForCaptcha();
         }
     }
 
@@ -270,6 +282,15 @@
         }
     }
 
+    async function waitForCaptcha(): Promise<void> {
+        if (!config.isCaptchaEnabled || !captchaElement.value) {
+            isCaptchaComplete.value = true;
+            return;
+        }
+        const token = await captchaElement.value.getToken();
+        isCaptchaComplete.value = !!token;
+    }
+
     // #endregion
 
     if (config.initialAction) {
@@ -280,4 +301,8 @@
             showAction(config.initialAction);
         }
     }
+
+    onMounted(() => {
+        waitForCaptcha();
+    });
 </script>

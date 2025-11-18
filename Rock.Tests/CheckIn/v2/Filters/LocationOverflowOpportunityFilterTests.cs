@@ -70,11 +70,11 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             filter.FilterLocations( opportunities );
 
-            Assert.That.AreEqual( 1, opportunities.Groups[0].Locations.Count );
-            Assert.That.AreEqual( "101", opportunities.Groups[0].Locations[0].LocationId );
-            Assert.That.AreEqual( 1, opportunities.Groups[1].Locations.Count );
-            Assert.That.AreEqual( "201", opportunities.Groups[1].Locations[0].LocationId );
-            Assert.That.AreEqual( 2, opportunities.Locations.Count );
+            Assert.AreEqual( 1, opportunities.Groups[0].Locations.Count );
+            Assert.AreEqual( "101", opportunities.Groups[0].Locations[0].LocationId );
+            Assert.AreEqual( 1, opportunities.Groups[1].Locations.Count );
+            Assert.AreEqual( "201", opportunities.Groups[1].Locations[0].LocationId );
+            Assert.AreEqual( 2, opportunities.Locations.Count );
         }
 
         [TestMethod]
@@ -137,17 +137,17 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             filter.FilterLocations( opportunities );
 
-            Assert.That.AreEqual( 1, opportunities.Groups[0].Locations.Count );
-            Assert.That.AreEqual( "101", opportunities.Groups[0].Locations[0].LocationId );
-            Assert.That.AreEqual( 0, opportunities.Groups[0].OverflowLocations.Count );
+            Assert.AreEqual( 1, opportunities.Groups[0].Locations.Count );
+            Assert.AreEqual( "101", opportunities.Groups[0].Locations[0].LocationId );
+            Assert.AreEqual( 0, opportunities.Groups[0].OverflowLocations.Count );
 
-            Assert.That.AreEqual( 1, opportunities.Groups[1].Locations.Count );
-            Assert.That.AreEqual( "201", opportunities.Groups[1].Locations[0].LocationId );
-            Assert.That.AreEqual( 0, opportunities.Groups[1].OverflowLocations.Count );
+            Assert.AreEqual( 1, opportunities.Groups[1].Locations.Count );
+            Assert.AreEqual( "201", opportunities.Groups[1].Locations[0].LocationId );
+            Assert.AreEqual( 0, opportunities.Groups[1].OverflowLocations.Count );
 
-            Assert.That.AreEqual( 2, opportunities.Locations.Count );
-            Assert.That.AreEqual( "101", opportunities.Locations[0].Id );
-            Assert.That.AreEqual( "201", opportunities.Locations[1].Id );
+            Assert.AreEqual( 2, opportunities.Locations.Count );
+            Assert.AreEqual( "101", opportunities.Locations[0].Id );
+            Assert.AreEqual( "201", opportunities.Locations[1].Id );
         }
 
         [TestMethod]
@@ -206,15 +206,15 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             // The kindergarten group should now have no locations which will
             // cause it to be removed in production.
-            Assert.That.AreEqual( 0, opportunities.Groups[0].Locations.Count );
-            Assert.That.AreEqual( 0, opportunities.Groups[0].OverflowLocations.Count );
+            Assert.AreEqual( 0, opportunities.Groups[0].Locations.Count );
+            Assert.AreEqual( 0, opportunities.Groups[0].OverflowLocations.Count );
 
-            Assert.That.AreEqual( 1, opportunities.Groups[1].Locations.Count );
-            Assert.That.AreEqual( "202", opportunities.Groups[1].Locations[0].LocationId );
-            Assert.That.AreEqual( 0, opportunities.Groups[1].OverflowLocations.Count );
+            Assert.AreEqual( 1, opportunities.Groups[1].Locations.Count );
+            Assert.AreEqual( "202", opportunities.Groups[1].Locations[0].LocationId );
+            Assert.AreEqual( 0, opportunities.Groups[1].OverflowLocations.Count );
 
-            Assert.That.AreEqual( 1, opportunities.Locations.Count );
-            Assert.That.AreEqual( "202", opportunities.Locations[0].Id );
+            Assert.AreEqual( 1, opportunities.Locations.Count );
+            Assert.AreEqual( "202", opportunities.Locations[0].Id );
         }
 
         #endregion

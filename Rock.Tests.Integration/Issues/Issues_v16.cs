@@ -110,7 +110,7 @@ Property Filter: 1
             var editValue = phoneNumberFieldType.GetEditValue( phoneNumberControl, null );
             var textValue = phoneNumberFieldType.GetTextValue( editValue, null );
 
-            Assert.That.AreEqual( "+81 11-2222-3333", textValue );
+            Assert.AreEqual( "+81 11-2222-3333", textValue );
 
             // Test 2: Set the edit control to a phone number value with the default country code.
             phoneNumberControl.CountryCode = "1";
@@ -120,7 +120,7 @@ Property Filter: 1
             editValue = phoneNumberFieldType.GetEditValue( phoneNumberControl, null );
             textValue = phoneNumberFieldType.GetTextValue( editValue, null );
 
-            Assert.That.AreEqual( "(112) 222-3333", textValue );
+            Assert.AreEqual( "(112) 222-3333", textValue );
         }
 
         /// <summary>

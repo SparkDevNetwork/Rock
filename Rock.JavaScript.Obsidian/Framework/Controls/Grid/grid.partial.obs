@@ -1580,6 +1580,11 @@
         const lineHeight = 15;
         const padding = 2;
 
+        if (!worksheet) {
+            await alert("Unable to create export file.");
+            return;
+        }
+
         // Apply formatting to data rows
         worksheet.eachRow((row, index) => {
             let maxLines = 1;

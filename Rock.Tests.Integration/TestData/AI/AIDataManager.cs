@@ -80,7 +80,7 @@ namespace Rock.Tests.Integration.TestData.AI
             // Set the default AI Provider component.
             //var openAIProviderEntityTypeId = EntityTypeCache.GetId( _openAiProviderEntityTypeGuid );
 
-            //Assert.That.IsNotNull( openAIProviderEntityTypeId, "Open AI Provider not found" );
+            //Assert.IsNotNull( openAIProviderEntityTypeId, "Open AI Provider not found" );
 
             newProvider.ProviderComponentEntityTypeId = aiProviderEntityTypeId;
 
@@ -135,7 +135,7 @@ namespace Rock.Tests.Integration.TestData.AI
             // Set the default AI Provider component.
             var openAIProviderEntityTypeId = EntityTypeCache.GetId( _openAiProviderEntityTypeGuid );
 
-            Assert.That.IsNotNull( openAIProviderEntityTypeId, "Open AI Provider not found" );
+            Assert.IsNotNull( openAIProviderEntityTypeId, "Open AI Provider not found" );
 
             // Add Default Provider.
             var newProvider = AIDataManager.Instance.NewAIProvider( _openAiDefaultProviderGuid.AsGuid(),

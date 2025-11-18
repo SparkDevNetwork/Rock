@@ -106,7 +106,12 @@ namespace RockWeb.Blocks.Groups
         Key = AttributeKey.DisableAutoSelectFirstGroup,
         Description = "Whether to disable the default behavior of auto-selecting the first group (ordered by name) in the tree view.",
         Order = 10 )]
-
+    [LinkedPage(
+        "Search Results Page",
+        Key = AttributeKey.SearchResultsPage,
+        Category = "Advanced",
+        Description = "If set, this is the page where search results will be shown when using the quick find feature. The selected page must include a Group Search block, and that block should be configured to link back to the appropriate Group Detail page.",
+        Order = 11 )]
     #endregion
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Navigation )]
@@ -126,6 +131,7 @@ namespace RockWeb.Blocks.Groups
             public const string InitialCountSetting = "InitialCountSetting";
             public const string InitialActiveSetting = "InitialActiveSetting";
             public const string DetailPage = "DetailPage";
+            public const string SearchResultsPage = "SearchResultsPage";
             public const string DisableAutoSelectFirstGroup = "DisableAutoSelectFirstGroup";
         }
 
@@ -671,7 +677,16 @@ namespace RockWeb.Blocks.Groups
         protected void btnSearch_OnClick( object sender, EventArgs e )
         {
             // redirect to search
-            NavigateToPage( Rock.SystemGuid.Page.GROUP_SEARCH_RESULTS.AsGuid(), new Dictionary<string, string>() { { "SearchType", "name" }, { "SearchTerm", tbSearch.Text.Trim() } } );
+            var alternateSearchResultsPage = GetAttributeValue( AttributeKey.SearchResultsPage );
+            if ( ! String.IsNullOrWhiteSpace( alternateSearchResultsPage ) )
+            {
+                var searchResultsPageRef = new Rock.Web.PageReference( alternateSearchResultsPage, new Dictionary<string, string>() { { "SearchType", "name" }, { "SearchTerm", tbSearch.Text.Trim() } } );
+                NavigateToPage( searchResultsPageRef );
+            }
+            else
+            {
+                NavigateToPage( Rock.SystemGuid.Page.GROUP_SEARCH_RESULTS.AsGuid(), new Dictionary<string, string>() { { "SearchType", "name" }, { "SearchTerm", tbSearch.Text.Trim() } } );
+            }
         }
 
         /// <summary>

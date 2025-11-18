@@ -492,7 +492,7 @@ namespace Rock.Tests.Lava.Filters
             // Set the Rock server timezone to UTC-07:00.
             var tzMst = TimeZoneInfo.FindSystemTimeZoneById( "US Mountain Standard Time" );
 
-            Assert.That.IsNotNull( tzMst, "Timezone is not available in this environment." );
+            Assert.IsNotNull( tzMst, "Timezone is not available in this environment." );
 
             var tzDefault = RockDateTime.OrgTimeZoneInfo;
 
@@ -965,7 +965,7 @@ namespace Rock.Tests.Lava.Filters
 
                     if ( !output.Contains( $"<li>{ rockDateTimeString }</li>" ) )
                     {
-                        Assert.That.Fail( $"Lava Output '{ output }' does not contain date string '{ rockDateTimeString }'.\n[SystemDateTime = {DateTime.Now:O}, RockDateTime = {_now:O}]" );
+                        Assert.Fail( $"Lava Output '{ output }' does not contain date string '{ rockDateTimeString }'.\n[SystemDateTime = {DateTime.Now:O}, RockDateTime = {_now:O}]" );
                     }
                 }
             } );
@@ -975,8 +975,8 @@ namespace Rock.Tests.Lava.Filters
         {
             // Verify that all dates are expressed as Kind=Unspecified. This is to ensure that the caller has intentionally expressed these parameters as calendar dates,
             // rather than specific points in time. 
-            Assert.That.IsTrue( asAtDateTime.Kind == DateTimeKind.Unspecified, "DateTime parameter must be of Kind 'Unspecified' because it is timezone independent." );
-            Assert.That.IsTrue( expectedNextDateTime.Kind == DateTimeKind.Unspecified, "DateTime parameter must be of Kind 'Unspecified' because it is timezone independent." );
+            Assert.IsTrue( asAtDateTime.Kind == DateTimeKind.Unspecified, "DateTime parameter must be of Kind 'Unspecified' because it is timezone independent." );
+            Assert.IsTrue( expectedNextDateTime.Kind == DateTimeKind.Unspecified, "DateTime parameter must be of Kind 'Unspecified' because it is timezone independent." );
 
             // Create a schedule with the specified parameters and verify the DatesFromICal filter output.
             var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( firstEventStartDateTime,
@@ -1164,7 +1164,7 @@ namespace Rock.Tests.Lava.Filters
             // DST begins on 13/03/2022 02:00 in this timezone.
             var tzCurrent = RockDateTime.OrgTimeZoneInfo;
             var tzDst = TimeZoneInfo.FindSystemTimeZoneById( "Central Standard Time" );
-            Assert.That.IsNotNull( tzDst, "Timezone is not available in this environment." );
+            Assert.IsNotNull( tzDst, "Timezone is not available in this environment." );
 
             try
             {
@@ -1176,8 +1176,8 @@ namespace Rock.Tests.Lava.Filters
                 var isNotDstDate = startDateTime;
                 var isDstDate = startDateTime.AddDays( 1 );
 
-                Assert.That.IsFalse( tzDst.IsDaylightSavingTime( isNotDstDate ), "Input date is adjusted for DST." );
-                Assert.That.IsTrue( tzDst.IsDaylightSavingTime( isDstDate ), "Input date is not adjusted for DST." );
+                Assert.IsFalse( tzDst.IsDaylightSavingTime( isNotDstDate ), "Input date is adjusted for DST." );
+                Assert.IsTrue( tzDst.IsDaylightSavingTime( isDstDate ), "Input date is not adjusted for DST." );
 
                 var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( startDateTime,
                     eventDuration: new TimeSpan( 1, 0, 0 ) );

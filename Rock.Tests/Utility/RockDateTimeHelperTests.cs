@@ -158,8 +158,8 @@ namespace Rock.Tests.Utility
         {
             var range = RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( rangeValue, currentDateTime );
 
-            Assert.That.AreEqual( expectedStart, range.Start );
-            Assert.That.AreEqual( expectedEnd, range.End );
+            Assert.AreEqual( expectedStart, range.Start );
+            Assert.AreEqual( expectedEnd, range.End );
         }
 
         [TestMethod]
@@ -173,13 +173,13 @@ namespace Rock.Tests.Utility
         public void ValidatePossibleCreditCardTwoDigitYears( int givenTwoDigitYear, int? expectedYear )
         {
             var actualYear = RockDateTime.ToFourDigitYearForCreditCardExpiration( givenTwoDigitYear );
-            Assert.That.AreEqual( expectedYear, actualYear );
+            Assert.AreEqual( expectedYear, actualYear );
         }
 
         [TestMethod]
         public void EnsureNegativeTwoDigitYearThrowsArgumentOutOfRangeException()
         {
-            Assert.That.ThrowsException<ArgumentOutOfRangeException>( () => RockDateTime.ToFourDigitYearForCreditCardExpiration( -10 ) );
+            Assert.Throws<ArgumentOutOfRangeException>( () => RockDateTime.ToFourDigitYearForCreditCardExpiration( -10 ) );
         }
 
         [TestMethod]
@@ -194,7 +194,7 @@ namespace Rock.Tests.Utility
         {
             var paymentDetail = new FinancialPaymentDetail();
             var actualYear = paymentDetail.ToFourDigitYear( givenDigitYear );
-            Assert.That.AreEqual( expectedYear, actualYear );
+            Assert.AreEqual( expectedYear, actualYear );
         }
 
 

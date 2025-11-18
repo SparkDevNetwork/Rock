@@ -42,7 +42,7 @@ namespace Rock.Tests.Integration.Reporting
             var lambda = Expression.Lambda<Func<Person, bool>>( expression, parameterExpression );
             var isMatch = lambda.Compile().Invoke( tedDecker );
 
-            Assert.That.IsFalse( isMatch );
+            Assert.IsFalse( isMatch );
         }
 
         [TestMethod]
@@ -66,7 +66,7 @@ namespace Rock.Tests.Integration.Reporting
             var lambda = Expression.Lambda<Func<Person, bool>>( expression, parameterExpression );
             var isMatch = lambda.Compile().Invoke( tedDecker );
 
-            Assert.That.IsFalse( isMatch );
+            Assert.IsFalse( isMatch );
         }
 
         [TestMethod]
@@ -90,7 +90,7 @@ namespace Rock.Tests.Integration.Reporting
             var lambda = Expression.Lambda<Func<Person, bool>>( expression, parameterExpression );
             var isMatch = lambda.Compile().Invoke( tedDecker );
 
-            Assert.That.IsFalse( isMatch );
+            Assert.IsFalse( isMatch );
         }
 
         [TestMethod]
@@ -114,7 +114,7 @@ namespace Rock.Tests.Integration.Reporting
             var lambda = Expression.Lambda<Func<Person, bool>>( expression, parameterExpression );
             var isMatch = lambda.Compile().Invoke( tedDecker );
 
-            Assert.That.IsFalse( isMatch );
+            Assert.IsFalse( isMatch );
         }
 
         [TestMethod]
@@ -138,7 +138,7 @@ namespace Rock.Tests.Integration.Reporting
             var lambda = Expression.Lambda<Func<Person, bool>>( expression, parameterExpression );
             var isMatch = lambda.Compile().Invoke( tedDecker );
 
-            Assert.That.IsTrue( isMatch );
+            Assert.IsTrue( isMatch );
         }
 
         #endregion
@@ -166,7 +166,7 @@ namespace Rock.Tests.Integration.Reporting
             var lambda = Expression.Lambda<Func<Person, bool>>( expression, parameterExpression );
             var isMatch = lambda.Compile().Invoke( tedDecker );
 
-            Assert.That.IsFalse( isMatch );
+            Assert.IsFalse( isMatch );
         }
 
         [TestMethod]
@@ -190,7 +190,7 @@ namespace Rock.Tests.Integration.Reporting
             var lambda = Expression.Lambda<Func<Person, bool>>( expression, parameterExpression );
             var isMatch = lambda.Compile().Invoke( tedDecker );
 
-            Assert.That.IsFalse( isMatch );
+            Assert.IsFalse( isMatch );
         }
 
         [TestMethod]
@@ -214,7 +214,7 @@ namespace Rock.Tests.Integration.Reporting
             var lambda = Expression.Lambda<Func<Person, bool>>( expression, parameterExpression );
             var isMatch = lambda.Compile().Invoke( tedDecker );
 
-            Assert.That.IsFalse( isMatch );
+            Assert.IsFalse( isMatch );
         }
 
         [TestMethod]
@@ -238,7 +238,7 @@ namespace Rock.Tests.Integration.Reporting
             var lambda = Expression.Lambda<Func<Person, bool>>( expression, parameterExpression );
             var isMatch = lambda.Compile().Invoke( tedDecker );
 
-            Assert.That.IsFalse( isMatch );
+            Assert.IsFalse( isMatch );
         }
 
         [TestMethod]
@@ -262,7 +262,7 @@ namespace Rock.Tests.Integration.Reporting
             var lambda = Expression.Lambda<Func<Person, bool>>( expression, parameterExpression );
             var isMatch = lambda.Compile().Invoke( tedDecker );
 
-            Assert.That.IsTrue( isMatch );
+            Assert.IsTrue( isMatch );
         }
 
         #endregion

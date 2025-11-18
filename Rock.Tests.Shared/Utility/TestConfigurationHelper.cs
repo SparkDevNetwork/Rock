@@ -55,18 +55,18 @@ namespace Rock.Tests.Shared
             // Set to India Standard Time, or an alternative if that is the local timezone in the current environment.
             tz = TimeZoneInfo.FindSystemTimeZoneById( "India Standard Time" );
 
-            Assert.That.IsNotNull( tz, "Timezone 'IST' is not available in this environment." );
+            Assert.IsNotNull( tz, "Timezone 'IST' is not available in this environment." );
 
             if ( tz.Id == TimeZoneInfo.Local.Id )
             {
                 tz = TimeZoneInfo.FindSystemTimeZoneById( "US Mountain Standard Time" );
 
-                Assert.That.IsNotNull( tz, "Timezone 'MST' is not available in this environment." );
+                Assert.IsNotNull( tz, "Timezone 'MST' is not available in this environment." );
             }
 
             // To simplify the process of testing date/time differences, we need to ensure that the selected timezone is not subject to Daylight Saving Time.
             // If a DST-affected timezone is used, some tests will fail when executed across DST boundary dates.
-            Assert.That.IsFalse( tz.SupportsDaylightSavingTime, "Test Timezone should not be configured for Daylight Saving Time (DST)." );
+            Assert.IsFalse( tz.SupportsDaylightSavingTime, "Test Timezone should not be configured for Daylight Saving Time (DST)." );
 
             return tz;
         }
@@ -80,7 +80,7 @@ namespace Rock.Tests.Shared
             var timezoneDst = TimeZoneInfo.GetSystemTimeZones()
                 .FirstOrDefault( x => x.SupportsDaylightSavingTime );
 
-            Assert.That.IsNotNull( timezoneDst, "A timezone configured for Daylight Saving Time (DST) could not be found in this environment." );
+            Assert.IsNotNull( timezoneDst, "A timezone configured for Daylight Saving Time (DST) could not be found in this environment." );
 
             return timezoneDst;
         }
@@ -104,7 +104,7 @@ namespace Rock.Tests.Shared
             var timezoneStd = TimeZoneInfo.GetSystemTimeZones()
                 .FirstOrDefault( x => !x.SupportsDaylightSavingTime );
 
-            Assert.That.IsNotNull( timezoneStd, "A timezone without Daylight Saving Time (DST) could not be found in this environment." );
+            Assert.IsNotNull( timezoneStd, "A timezone without Daylight Saving Time (DST) could not be found in this environment." );
 
             return timezoneStd;
         }

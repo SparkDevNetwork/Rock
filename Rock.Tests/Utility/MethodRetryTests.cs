@@ -20,7 +20,7 @@ namespace Rock.Tests.Utility
             var actualCallCount = 0;
             var result = methodRetry.Execute( () => actualCallCount++, ( callCount ) => false );
 
-            Assert.That.AreEqual( expectedCallCount, actualCallCount );
+            Assert.AreEqual( expectedCallCount, actualCallCount );
         }
 
         [TestMethod]
@@ -32,7 +32,7 @@ namespace Rock.Tests.Utility
             var actualCallCount = 0;
             var result = methodRetry.Execute( () => actualCallCount++, ( callCount ) => true );
 
-            Assert.That.AreEqual( expectedCallCount, actualCallCount );
+            Assert.AreEqual( expectedCallCount, actualCallCount );
         }
 
         [TestMethod]
@@ -44,7 +44,7 @@ namespace Rock.Tests.Utility
             var actualCallCount = 0;
             var result = methodRetry.Execute( () => actualCallCount++, ( callCount ) => callCount == ( expectedCallCount - 1 ) );
 
-            Assert.That.AreEqual( expectedCallCount, actualCallCount );
+            Assert.AreEqual( expectedCallCount, actualCallCount );
         }
 
         [TestMethod]
@@ -62,7 +62,7 @@ namespace Rock.Tests.Utility
             var minExpectedRuntime = expectedWait * expectedCallCount;
             if ( minExpectedRuntime > stopWatch.ElapsedMilliseconds )
             {
-                Assert.That.Fail( $"Execute did not take long enough to run. Expected a minimum of {minExpectedRuntime}ms, but only for {stopWatch.ElapsedMilliseconds}ms" );
+                Assert.Fail( $"Execute did not take long enough to run. Expected a minimum of {minExpectedRuntime}ms, but only for {stopWatch.ElapsedMilliseconds}ms" );
             }
 
             // Testing the maximum expected runtime is more complex and random
@@ -80,7 +80,7 @@ namespace Rock.Tests.Utility
             var actualCallCount = 0;
             var result = await methodRetry.ExecuteAsync( async () => await Task.FromResult( actualCallCount++ ), ( callCount ) => false ).ConfigureAwait( false );
 
-            Assert.That.AreEqual( expectedCallCount, actualCallCount );
+            Assert.AreEqual( expectedCallCount, actualCallCount );
         }
 
         [TestMethod]
@@ -92,7 +92,7 @@ namespace Rock.Tests.Utility
             var actualCallCount = 0;
             var result = await methodRetry.ExecuteAsync( () => Task.FromResult( actualCallCount++ ), ( callCount ) => true );
 
-            Assert.That.AreEqual( expectedCallCount, actualCallCount );
+            Assert.AreEqual( expectedCallCount, actualCallCount );
         }
 
         [TestMethod]
@@ -104,7 +104,7 @@ namespace Rock.Tests.Utility
             var actualCallCount = 0;
             var result = await methodRetry.ExecuteAsync<int>( () => Task.FromResult( actualCallCount++ ), ( callCount ) => callCount == ( expectedCallCount - 1 ) );
 
-            Assert.That.AreEqual( expectedCallCount, actualCallCount );
+            Assert.AreEqual( expectedCallCount, actualCallCount );
         }
 
         [TestMethod]
@@ -122,7 +122,7 @@ namespace Rock.Tests.Utility
             var minExpectedRuntime = expectedWait * expectedCallCount;
             if ( minExpectedRuntime > stopWatch.ElapsedMilliseconds )
             {
-                Assert.That.Fail( $"Execute did not take long enough to run. Expected a minimum of {minExpectedRuntime}ms, but only for {stopWatch.ElapsedMilliseconds}ms" );
+                Assert.Fail( $"Execute did not take long enough to run. Expected a minimum of {minExpectedRuntime}ms, but only for {stopWatch.ElapsedMilliseconds}ms" );
             }
 
             // Testing the maximum expected runtime is more complex and random

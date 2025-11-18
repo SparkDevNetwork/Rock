@@ -342,6 +342,16 @@ export const DefinedValue = {
     MapStyleGoogle: "BFC46259-FB66-4427-BF05-2B030A582BEA",
     /** The standard Rock map style */
     MapStyleRock: "FDC5D6BA-A818-4A06-96B1-9EF31B4087AC",
+    /** The measurement classification for metrics that measure adult attendance. */
+    MeasurementTotalAdultAttendance: "66C649EF-7569-4CE2-8EA0-FB9851F9A598",
+    /** The measurement classification for metrics that measure children attendance. */
+    MeasurementTotalChildrensAttendance: "9B16A979-48B1-4180-B44F-57FCD38A103A",
+    /** The measurement classification for metrics that measure student attendance. */
+    MeasurementTotalStudentsAttendance: "8EC797E4-7DCE-4A70-B1E8-9B21192476C3",
+    /** The measurement classification for metrics that measure volunteer attendance. */
+    MeasurementTotalVolunteerAttendance: "6A2621BF-E600-428A-94C2-CCB79645FA27",
+    /** The measurement classification for metrics that measure weekend attendance. */
+    MeasurementTotalWeekendAttendance: "B24ACB41-8B75-41DC-9B47-F289D8C9F04F",
     /** Metric values come from a DataView */
     MetricSourceValueTypeDataview: "2EC60BCF-EF63-4CCC-A970-F152292765D0",
     /** Metric values are populated from custom Lava */
@@ -524,6 +534,8 @@ export const DefinedValue = {
     RecordSourceTypePrayer: "2B8DF7D7-FA3A-4A56-A72B-DB4CAAB2DF32",
     /** The Roku TV app record source. */
     RecordSourceTypeRokuTvApp: "1849A5FB-1434-45AA-AD78-D403A3C7685A",
+    /** The Serving Connection record source. */
+    RecordSourceTypeServingConnection: "2CF9DE9F-14D5-4036-B329-85B192A63A9B",
     /** The sign-up record source. */
     RecordSourceTypeSignUp: "D0163E35-4065-4097-B018-D7D8092C86F7",
     /** The workflow record source. */

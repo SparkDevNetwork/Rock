@@ -32,13 +32,13 @@ namespace Rock.Tests.Model
             model.CacheControlHeaderSettings = "{\"RockCacheablityType\":3,\"MaxAge\":null,\"MaxSharedAge\":null}";
             var header = model.CacheControlHeader;
 
-            Assert.That.IsNotNull( header );
+            Assert.IsNotNull( header );
 
             model.CacheControlHeaderSettings = "{\"RockCacheablityType\":0,\"MaxAge\":{\"Value\":31556952,\"Unit\":0},\"MaxSharedAge\":null}";
             var header2 = model.CacheControlHeader;
 
-            Assert.That.IsNotNull( header2 );
-            Assert.That.AreNotEqual( header.RockCacheablityType, header2.RockCacheablityType );
+            Assert.IsNotNull( header2 );
+            Assert.AreNotEqual( header.RockCacheablityType, header2.RockCacheablityType );
         }
 
         [TestMethod]
@@ -49,13 +49,13 @@ namespace Rock.Tests.Model
             model.CacheControlHeaderSettings = "{\"RockCacheablityType\":3,\"MaxAge\":null,\"MaxSharedAge\":null}";
 
             var header = model.CacheControlHeader;
-            Assert.That.IsNotNull( header );
+            Assert.IsNotNull( header );
 
             model.CacheControlHeaderSettings = "{\"RockCacheablityType\":3,\"MaxAge\":null,\"MaxSharedAge\":null}";
             var header2 = model.CacheControlHeader;
 
-            Assert.That.IsNotNull( header2 );
-            Assert.That.AreEqual( header, header2 );
+            Assert.IsNotNull( header2 );
+            Assert.AreEqual( header, header2 );
         }
     }
 }

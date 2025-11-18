@@ -28,6 +28,15 @@ import { Guid } from "@Obsidian/Types";
  * the GroupMemberPicker control.
  */
 export type GroupPickerGetChildrenOptionsBag = {
+    /**
+     * Gets or sets the values that need to be expanded to. This is used
+     * when opening the tree view with an already selected value. Each
+     * selected value is included in this property. When getting the list
+     * of root items, you should automatically expand your results until
+     * each of these values is reached.
+     */
+    expandToValues?: string[] | null;
+
     /** GUID of the group the member is part of. */
     guid?: Guid | null;
 

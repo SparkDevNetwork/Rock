@@ -118,7 +118,7 @@ namespace Rock.Tests.Lava
             // Set to India Standard Time (UTC+05:30), or an alternative if that is the local timezone in the current environment.
             tz = TimeZoneInfo.FindSystemTimeZoneById( "India Standard Time" );
 
-            Assert.That.IsNotNull( tz, "Timezone 'IST' is not available in this environment." );
+            Assert.IsNotNull( tz, "Timezone 'IST' is not available in this environment." );
 
             if ( tz.Id == TimeZoneInfo.Local.Id )
             {
@@ -132,12 +132,12 @@ namespace Rock.Tests.Lava
                     tz = TimeZoneInfo.FindSystemTimeZoneById( "Japan Standard Time" );
                 }
 
-                Assert.That.IsNotNull( tz, "Timezone 'Tokyo Standard Time' is not available in this environment." );
+                Assert.IsNotNull( tz, "Timezone 'Tokyo Standard Time' is not available in this environment." );
             }
 
             // To simplify the process of testing date/time differences, we need to ensure that the selected timezone is not subject to Daylight Saving Time.
             // If a DST-affected timezone is used, some tests will fail when executed across DST boundary dates.
-            Assert.That.IsFalse( tz.SupportsDaylightSavingTime, "Test Timezone should not be configured for Daylight Saving Time (DST)." );
+            Assert.IsFalse( tz.SupportsDaylightSavingTime, "Test Timezone should not be configured for Daylight Saving Time (DST)." );
 
             return tz;
         }
@@ -153,18 +153,18 @@ namespace Rock.Tests.Lava
             // Set to UCT-07:00, or an alternative if that is the local timezone in the current environment.
             tz = TimeZoneInfo.FindSystemTimeZoneById( "US Mountain Standard Time" );
 
-            Assert.That.IsNotNull( tz, "Timezone 'MST' is not available in this environment." );
+            Assert.IsNotNull( tz, "Timezone 'MST' is not available in this environment." );
 
             if ( tz.Id == TimeZoneInfo.Local.Id )
             {
                 // Set to UCT-07:00.
                 tz = TimeZoneInfo.FindSystemTimeZoneById( "Hawaiian Standard Time" );
-                Assert.That.IsNotNull( tz, "Timezone 'Hawaiian Standard Time' is not available in this environment." );
+                Assert.IsNotNull( tz, "Timezone 'Hawaiian Standard Time' is not available in this environment." );
             }
 
             // To simplify the process of testing date/time differences, we need to ensure that the selected timezone is not subject to Daylight Saving Time.
             // If a DST-affected timezone is used, some tests will fail when executed across DST boundary dates.
-            Assert.That.IsFalse( tz.SupportsDaylightSavingTime, "Test Timezone should not be configured for Daylight Saving Time (DST)." );
+            Assert.IsFalse( tz.SupportsDaylightSavingTime, "Test Timezone should not be configured for Daylight Saving Time (DST)." );
 
             return tz;
         }
@@ -178,9 +178,9 @@ namespace Rock.Tests.Lava
             // Set to Central Standard Time (CST), a timezone that supports Daylight Saving Time (DST).
             var tz = TimeZoneInfo.FindSystemTimeZoneById( "Central Standard Time" );
 
-            Assert.That.IsNotNull( tz, "Timezone 'CST' is not available in this environment." );
+            Assert.IsNotNull( tz, "Timezone 'CST' is not available in this environment." );
 
-            Assert.That.IsTrue( tz.SupportsDaylightSavingTime, "Test Timezone should be configured for Daylight Saving Time (DST)." );
+            Assert.IsTrue( tz.SupportsDaylightSavingTime, "Test Timezone should be configured for Daylight Saving Time (DST)." );
 
             return tz;
         }
@@ -517,7 +517,7 @@ namespace Rock.Tests.Lava
 
             DebugWriteRenderResult( engine, inputTemplate, debugString );
 
-            Assert.That.Equal( expectedOutput, outputString );
+            Assert.AreEqual( expectedOutput, outputString );
         }
 
         /// <summary>
@@ -606,7 +606,7 @@ namespace Rock.Tests.Lava
 
             WriteOutputToDebug( engine, outputString );
 
-            Assert.That.IsNotNull( outputDateUtc, $"Template Output does not represent a valid DateTime. [Output=\"{ outputString }\"]" );
+            Assert.IsNotNull( outputDateUtc, $"Template Output does not represent a valid DateTime. [Output=\"{ outputString }\"]" );
 
             try
             {

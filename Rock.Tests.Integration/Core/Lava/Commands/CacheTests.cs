@@ -358,7 +358,7 @@ CacheValue={cache2},Key=key4,Tag=undefined,tag2<br>
             var options = new LavaTestRenderOptions { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput };
             var output = TestHelper.GetTemplateOutput( typeof( FluidEngine ), inputTemplate, options );
 
-            Assert.That.Contains( output, "CreateEntitySet failed." );
+            Assert.Contains( "CreateEntitySet failed.", output );
         }
 
         [TestMethod]
@@ -397,7 +397,7 @@ CacheValue={cache2},Key=key4,Tag=undefined,tag2<br>
             var definedValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.ENTITY_SET_PURPOSE_PERSON_MERGE_REQUEST.AsGuid() );
             var entitySet = CreatePersonEntitySetWithOptions( purposeId: definedValueId );
 
-            Assert.That.AreEqual( definedValueId, entitySet.EntitySetPurposeValueId.GetValueOrDefault() );
+            Assert.AreEqual( definedValueId, entitySet.EntitySetPurposeValueId.GetValueOrDefault() );
         }
 
         [TestMethod]
@@ -406,7 +406,7 @@ CacheValue={cache2},Key=key4,Tag=undefined,tag2<br>
             var note = "Test note.";
             var entitySet = CreatePersonEntitySetWithOptions( note: note );
 
-            Assert.That.AreEqual( note, entitySet.Note );
+            Assert.AreEqual( note, entitySet.Note );
         }
 
         [TestMethod]
@@ -415,7 +415,7 @@ CacheValue={cache2},Key=key4,Tag=undefined,tag2<br>
             var entitySetParent = CreatePersonEntitySetWithOptions();
             var entitySetChild = CreatePersonEntitySetWithOptions( parentSetId: entitySetParent.Id );
 
-            Assert.That.AreEqual( entitySetParent.Id, entitySetChild.ParentEntitySetId );
+            Assert.AreEqual( entitySetParent.Id, entitySetChild.ParentEntitySetId );
         }
 
         [TestMethod]
@@ -556,7 +556,7 @@ An Entity Set (Id=*) was created and 4 people have been added.
             var entitySet = CreateEntitySet( personIdList, "Person", expiryInMinutes, purposeId, note, parentSetId );
 
             // Verify the number of items in the set.
-            Assert.That.AreEqual( personList.Count(), entitySet.Items.Count );
+            Assert.AreEqual( personList.Count(), entitySet.Items.Count );
 
             return entitySet;
         }

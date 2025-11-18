@@ -17306,11 +17306,13 @@ iframe.file-browser {
   position: relative;
   width: 100%;
   padding-bottom: 60%;
-  border-radius: var(--rounded-xsmall) var(--rounded-xsmall) 0 0;
+  border-radius: var(--rounded-small) var(--rounded-small) 0 0;
 }
-
+.profile-squish .fluid-crop {
+  border-radius: var(--rounded-small) var(--rounded-small) 0 0;
+}
 .profile-squish img {
-  border-radius: var(--rounded-xsmall) var(--rounded-xsmall) 0 0;
+  border-radius: var(--rounded-small) var(--rounded-small) 0 0;
 }
 
 .profile-notes .notes .panel-noteadd-visible .panel-heading,
@@ -17586,8 +17588,11 @@ iframe.file-browser {
   width: 25%;
   height: 100%;
 }
+.card-profile-bio.card-profile-bio-condensed .profile-image.profile-image-sm .fluid-crop {
+  border-radius: var(--rounded-small) 0 0 var(--rounded-small);
+}
 .card-profile-bio.card-profile-bio-condensed .profile-image img {
-  border-radius: var(--rounded-normal) 0 0 var(--rounded-normal);
+  border-radius: var(--rounded-small) 0 0 var(--rounded-small);
 }
 .card-profile-bio.card-profile-bio-condensed .profile-data {
   width: 75%;
@@ -17698,7 +17703,7 @@ iframe.file-browser {
 
 @media (max-width: 990px) {
   .person-profile-ext {
-    overflow-x: hidden;
+    overflow-x: clip;
     margin-left: 0;
     margin-right: 0;
   }
@@ -19098,6 +19103,7 @@ iframe.file-browser {
 
 .contentstack-body {
   flex: 1 1 80%;
+  max-width: 100%;
 }
 
 .contentstack > .contentstack-sidebar {

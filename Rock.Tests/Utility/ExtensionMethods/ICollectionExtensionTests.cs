@@ -37,9 +37,9 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             masterCollection.RemoveAll( deleteCollection );
 
-            Assert.That.AreEqual( 2, masterCollection.Count );
-            Assert.That.IsTrue( masterCollection.Contains( item1 ) );
-            Assert.That.IsTrue( masterCollection.Contains( item3 ) );
+            Assert.AreEqual( 2, masterCollection.Count );
+            Assert.IsTrue( masterCollection.Contains( item1 ) );
+            Assert.IsTrue( masterCollection.Contains( item3 ) );
         }
 
         [TestMethod]
@@ -55,9 +55,9 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             masterCollection.RemoveAll( deleteCollection );
 
-            Assert.That.AreEqual( 2, masterCollection.Count );
-            Assert.That.IsTrue( masterCollection.Contains( item1 ) );
-            Assert.That.IsTrue( masterCollection.Contains( item3 ) );
+            Assert.AreEqual( 2, masterCollection.Count );
+            Assert.IsTrue( masterCollection.Contains( item1 ) );
+            Assert.IsTrue( masterCollection.Contains( item3 ) );
         }
     }
 }

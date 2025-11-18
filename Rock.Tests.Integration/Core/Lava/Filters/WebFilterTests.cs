@@ -65,7 +65,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
 
                 var header = simulator.Context.Response.Headers.Get( "cache-control" );
 
-                Assert.That.AreEqual( "public, max-age=120", header );
+                Assert.AreEqual( "public, max-age=120", header );
             }
         }
 
@@ -392,7 +392,7 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
 
             var phones = personTedDecker.PhoneNumbers;
 
-            Assert.That.IsNotNull( personTedDecker, "Test person not found in current database." );
+            Assert.IsNotNull( personTedDecker, "Test person not found in current database." );
 
             return personTedDecker;
         }
@@ -424,7 +424,7 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
 
                     var cookie = GetExistingCookie( simulator, "cookie1" );
 
-                    Assert.That.AreEqual( "oatmeal", cookie.Value );
+                    Assert.AreEqual( "oatmeal", cookie.Value );
                 }
             } );
         }
@@ -532,7 +532,7 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
         private HttpCookie GetExistingCookie( Http.TestLibrary.HttpSimulator simulator, string key )
         {
             // Check if the cookie exists. If not, reading the cookie simply returns an empty cookie of the same name.
-            Assert.That.IsTrue( simulator.Context.Response.Cookies.AllKeys.Contains( key ), "Cookie not found." );
+            Assert.IsTrue( simulator.Context.Response.Cookies.AllKeys.Contains( key ), "Cookie not found." );
 
             return simulator.Context.Response.Cookies[key];
         }

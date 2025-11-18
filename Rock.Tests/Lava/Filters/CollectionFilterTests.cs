@@ -344,7 +344,7 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
             var enumerableCollection = new Stack( itemList );
             mergeValues["TestEnumerable"] = enumerableCollection;
 
-            Assert.That.IsTrue( enumerableCollection is IEnumerable
+            Assert.IsTrue( enumerableCollection is IEnumerable
                 && !( enumerableCollection is IEnumerable<object> )
                 && !( enumerableCollection is IList ) );
 
@@ -354,7 +354,7 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
             var queueCollection = new Queue<string>( itemList );
             mergeValues["TestEnumerable"] = queueCollection;
 
-            Assert.That.IsTrue( queueCollection is IEnumerable<string>
+            Assert.IsTrue( queueCollection is IEnumerable<string>
                 && !( queueCollection is IList ) );
 
             TestHelper.AssertTemplateOutput( "true", lavaTemplate, mergeValues, ignoreWhitespace:true );
@@ -377,7 +377,7 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
             var itemArray = new ArrayList( itemList );
             mergeValues["TestEnumerable"] = itemArray;
 
-            Assert.That.IsTrue( itemArray is IList
+            Assert.IsTrue( itemArray is IList
                 && !( itemArray is IList<string> ) );
 
             TestHelper.AssertTemplateOutput( "true", lavaTemplate, mergeValues, ignoreWhitespace: true );
@@ -539,7 +539,7 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
                 // First, verify that the unshuffled lists are equal.
                 var orderedResult = TestHelper.GetTemplateOutput( engine, "{% assign items = OrderedList %}{% for item in items %}{{ item }};{% endfor %}", mergeValues );
 
-                Assert.That.Equal( orderedOutput, orderedResult );
+                Assert.AreEqual( orderedOutput, orderedResult );
 
                 // Next, verify that the shuffled lists are not equal.
                 // The Shuffle filter can, mathmatically, actually return the same ordered result.
@@ -558,7 +558,7 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
                     }
                 }
 
-                Assert.That.NotEqual( orderedOutput, shuffledResult );
+                Assert.AreNotEqual( orderedOutput, shuffledResult );
             } );
         }
 

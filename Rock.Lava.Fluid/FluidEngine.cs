@@ -606,7 +606,7 @@ namespace Rock.Lava.Fluid
             IFluidTemplate fluidTemplate;
 
             /*
-                10/27/2025 - NA
+                10/27/2025 - N.A.
 
                 Added ConvertToLiquidElsif method while having to remove our custom RegisterLavaElseIfTag() in our
                 custom LavaFluidParser in order to get shortcodes working inside of {% lava %} blocks. It might
@@ -617,7 +617,14 @@ namespace Rock.Lava.Fluid
 
                 Reason: Ensures proper parsing of conditional blocks when {% lava %} tags and shortcodes are present.
             */
-            var success = _parser.TryParse( ConvertToLiquidElsif( lavaTemplate ), out fluidTemplate, out error );
+
+            /*
+                11/17/2025 - N.A.
+
+                Changed from calling ConvertToLiquidElsif(...) to use the unused ConvertToLiquid(...) method since
+                it handles both the "elseif" conversion and uses our RemoveLavaComments() method.
+            */
+            var success = _parser.TryParse( ConvertToLiquid( lavaTemplate ), out fluidTemplate, out error );
 
             var fluidTemplateObject = ( FluidTemplate ) fluidTemplate;
 

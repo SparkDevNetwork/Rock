@@ -53,7 +53,7 @@ namespace Rock.Tests.Integration.Issues
 
                     var containsPersonId = BaptismDateFilterContainsPersonId( rockContext, ComparisonType.LessThan, tedDeckerPersonId );
 
-                    Assert.That.IsFalse( containsPersonId );
+                    Assert.IsFalse( containsPersonId );
                 }
             } );
         }
@@ -72,7 +72,7 @@ namespace Rock.Tests.Integration.Issues
 
                     var containsPersonId = BaptismDateFilterContainsPersonId( rockContext, ComparisonType.LessThan, tedDeckerPersonId );
 
-                    Assert.That.IsFalse( containsPersonId );
+                    Assert.IsFalse( containsPersonId );
                 }
             } );
         }
@@ -91,7 +91,7 @@ namespace Rock.Tests.Integration.Issues
 
                     var containsPersonId = BaptismDateFilterContainsPersonId( rockContext, ComparisonType.LessThan, tedDeckerPersonId );
 
-                    Assert.That.IsFalse( containsPersonId );
+                    Assert.IsFalse( containsPersonId );
                 }
             } );
         }
@@ -110,7 +110,7 @@ namespace Rock.Tests.Integration.Issues
 
                     var containsPersonId = BaptismDateFilterContainsPersonId( rockContext, ComparisonType.LessThan, tedDeckerPersonId );
 
-                    Assert.That.IsFalse( containsPersonId );
+                    Assert.IsFalse( containsPersonId );
                 }
             } );
         }
@@ -129,7 +129,7 @@ namespace Rock.Tests.Integration.Issues
 
                     var containsPersonId = BaptismDateFilterContainsPersonId( rockContext, ComparisonType.LessThan, tedDeckerPersonId );
 
-                    Assert.That.IsTrue( containsPersonId );
+                    Assert.IsTrue( containsPersonId );
                 }
             } );
         }
@@ -152,7 +152,7 @@ namespace Rock.Tests.Integration.Issues
 
                     var containsPersonId = BaptismDateFilterContainsPersonId( rockContext, ComparisonType.LessThanOrEqualTo, tedDeckerPersonId );
 
-                    Assert.That.IsFalse( containsPersonId );
+                    Assert.IsFalse( containsPersonId );
                 }
             } );
         }
@@ -171,7 +171,7 @@ namespace Rock.Tests.Integration.Issues
 
                     var containsPersonId = BaptismDateFilterContainsPersonId( rockContext, ComparisonType.LessThanOrEqualTo, tedDeckerPersonId );
 
-                    Assert.That.IsFalse( containsPersonId );
+                    Assert.IsFalse( containsPersonId );
                 }
             } );
         }
@@ -190,7 +190,7 @@ namespace Rock.Tests.Integration.Issues
 
                     var containsPersonId = BaptismDateFilterContainsPersonId( rockContext, ComparisonType.LessThanOrEqualTo, tedDeckerPersonId );
 
-                    Assert.That.IsFalse( containsPersonId );
+                    Assert.IsFalse( containsPersonId );
                 }
             } );
         }
@@ -209,7 +209,7 @@ namespace Rock.Tests.Integration.Issues
 
                     var containsPersonId = BaptismDateFilterContainsPersonId( rockContext, ComparisonType.LessThanOrEqualTo, tedDeckerPersonId );
 
-                    Assert.That.IsFalse( containsPersonId );
+                    Assert.IsFalse( containsPersonId );
                 }
             } );
         }
@@ -228,7 +228,7 @@ namespace Rock.Tests.Integration.Issues
 
                     var containsPersonId = BaptismDateFilterContainsPersonId( rockContext, ComparisonType.LessThanOrEqualTo, tedDeckerPersonId );
 
-                    Assert.That.IsTrue( containsPersonId );
+                    Assert.IsTrue( containsPersonId );
                 }
             } );
         }

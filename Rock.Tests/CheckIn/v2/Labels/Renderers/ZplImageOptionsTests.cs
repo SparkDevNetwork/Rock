@@ -17,7 +17,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
             var cacheKey = options.ToCacheKey();
             var keySegmentCount = cacheKey.Split( ':' ).Length;
 
-            Assert.That.AreEqual( expectedSegmentCount, keySegmentCount );
+            Assert.AreEqual( expectedSegmentCount, keySegmentCount );
         }
     }
 }

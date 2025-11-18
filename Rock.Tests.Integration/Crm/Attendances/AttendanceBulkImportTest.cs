@@ -153,7 +153,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
                 a.PersonAliasId = null;
             } );
 
-            Assert.That.IsNotNull( attendancesImport );
+            Assert.IsNotNull( attendancesImport );
             Exception exception = null;
 
             try
@@ -161,7 +161,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
                 AttendanceService.BulkAttendanceImport( attendancesImport );
 
                 // if this doesn't fail, the test fails
-                Assert.That.IsTrue( false );
+                Assert.IsTrue( false );
             }
             catch ( Exception ex )
             {
@@ -169,14 +169,14 @@ namespace Rock.Tests.Integration.Crm.Attendance
             }
 
             // Test passes if we get a SqlException
-            Assert.That.IsTrue( exception.Message == "All Attendance records must have either a PersonId or PersonAliasId assigned.", exception.Message );
+            Assert.IsTrue( exception.Message == "All Attendance records must have either a PersonId or PersonAliasId assigned.", exception.Message );
         }
 
         [TestMethod]
         public void Import_WithBadPersonIds()
         {
             var attendancesImport = GetAttendancesImport();
-            Assert.That.IsNotNull( attendancesImport );
+            Assert.IsNotNull( attendancesImport );
 
             Exception exception = null;
 
@@ -191,7 +191,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
                 AttendanceService.BulkAttendanceImport( attendancesImport );
 
                 // if this doesn't fail, the test fails
-                Assert.That.IsTrue( false );
+                Assert.IsTrue( false );
             }
             catch ( Exception ex )
             {
@@ -199,14 +199,14 @@ namespace Rock.Tests.Integration.Crm.Attendance
             }
 
             // Test passes if we get a SqlException
-            Assert.That.IsTrue( exception is SqlException, exception.Message );
+            Assert.IsTrue( exception is SqlException, exception.Message );
         }
 
         [TestMethod]
         public void Import_WithPersonId()
         {
             var attendancesImport = GetAttendancesImport();
-            Assert.That.IsNotNull( attendancesImport );
+            Assert.IsNotNull( attendancesImport );
 
             // don't include PersonAliasId value
             attendancesImport.Attendances.ForEach( a => a.PersonAliasId = null );
@@ -214,11 +214,11 @@ namespace Rock.Tests.Integration.Crm.Attendance
             try
             {
                 AttendanceService.BulkAttendanceImport( attendancesImport );
-                Assert.That.IsTrue( true );
+                Assert.IsTrue( true );
             }
             catch ( Exception ex )
             {
-                Assert.That.Fail( ex.Message );
+                Assert.Fail( ex.Message );
             }
         }
 
@@ -226,7 +226,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
         public void Import_WithPersonAliasId()
         {
             var attendancesImport = GetAttendancesImport();
-            Assert.That.IsNotNull( attendancesImport );
+            Assert.IsNotNull( attendancesImport );
 
             // don't include PersonId value
             attendancesImport.Attendances.ForEach( a => a.PersonId = null );
@@ -234,11 +234,11 @@ namespace Rock.Tests.Integration.Crm.Attendance
             try
             {
                 AttendanceService.BulkAttendanceImport( attendancesImport );
-                Assert.That.IsTrue( true );
+                Assert.IsTrue( true );
             }
             catch ( Exception ex )
             {
-                Assert.That.Fail( ex.Message );
+                Assert.Fail( ex.Message );
             }
         }
     }

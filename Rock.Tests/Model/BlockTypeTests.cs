@@ -18,7 +18,7 @@ namespace Rock.Tests.Model
         {
             var blockType = new BlockType { Name = "some block type" };
             var result = blockType.Clone( false );
-            Assert.That.AreEqual( result.Name, blockType.Name );
+            Assert.AreEqual( result.Name, blockType.Name );
         }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace Rock.Tests.Model
             var blockType = new BlockType();
             blockType.Blocks.Add( new Block() );
             var result = blockType.Clone() as BlockType;
-            Assert.That.IsNotNull( result );
+            Assert.IsNotNull( result );
             // TODO: Fix Clone() to include all child objects
             //Assert.That.IsNotNull( result.Blocks );
             //Assert.That.IsNotEmpty( result.Blocks );
@@ -44,7 +44,7 @@ namespace Rock.Tests.Model
         {
             var blockType = new BlockType { Name = "some block type" };
             var result = blockType.ToJson();
-            Assert.That.IsNotEmpty( result );
+            Assert.IsNotEmpty( result );
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Rock.Tests.Model
             var blockType = new BlockType { Name = "Foo" };
             var result = blockType.ToJson();
             const string key = "\"Name\":\"Foo\"";
-            Assert.That.AreNotEqual( result.IndexOf( key ), -1 );
+            Assert.AreNotEqual( result.IndexOf( key ), -1 );
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace Rock.Tests.Model
             var json = obj.ToJson();
             var blockType = BlockType.FromJson( json );
             var blocks = blockType.Blocks;
-            Assert.That.IsNotNull( blockType );
+            Assert.IsNotNull( blockType );
             // TODO: Fix Clone() to include all child objects
             //Assert.That.IsNotNull( blocks );
             //Assert.That.IsNotEmpty( blocks );

@@ -35,7 +35,7 @@ namespace Rock.Tests.Integration.Web.Utilities
         {
             // Remove the RockGetDate function if it exists.
             var result = DbService.ExecuteCommand( $"DROP FUNCTION IF EXISTS [{RockGetDateFunctionName}]" );
-            Assert.That.AreEqual( -1, result );
+            Assert.AreEqual( -1, result );
             RockDateTimeHelper.SetOrgTimeZoneForCurrentDatabase( null );
 
             RockDateTimeHelper.SynchronizeTimeZoneConfiguration( RockDateTime.OrgTimeZoneInfo.Id );
@@ -72,7 +72,7 @@ namespace Rock.Tests.Integration.Web.Utilities
         {
             var offset = DbService.ExecuteScalar( $"SELECT DATEDIFF( hour, GETUTCDATE(), [dbo].[{RockGetDateFunctionName}]() )" );
 
-            Assert.That.AreEqual( expectedOffsetInHours, Convert.ToDouble( offset ) );
+            Assert.AreEqual( expectedOffsetInHours, Convert.ToDouble( offset ) );
         }
 
         [TestMethod]
@@ -82,12 +82,12 @@ namespace Rock.Tests.Integration.Web.Utilities
             {
                 RockDateTimeHelper.SynchronizeTimeZoneConfiguration( "invalid_timezone" );
 
-                Assert.That.Fail( "Expected exception not thrown." );
+                Assert.Fail( "Expected exception not thrown." );
             }
             catch ( Exception ex )
             {
                 // Verify that the error message includes the name of the invalid timezone.
-                Assert.That.Contains( ex.Message, "invalid_timezone" );
+                Assert.Contains( "invalid_timezone", ex.Message );
             }
         }
     }

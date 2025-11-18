@@ -101,7 +101,7 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
             var workflowType = WorkflowTypeCache.Get( WorkflowTypeItSupportGuid );
             var workflowActivity = workflowType.ActivityTypes.FirstOrDefault( at => at.Name == "Assign Worker" );
 
-            Assert.That.IsNotNull( workflowActivity );
+            Assert.IsNotNull( workflowActivity );
 
             var mergeFields = new LavaDataDictionary
             {
@@ -171,7 +171,7 @@ Details: Now!
             var workflowType = WorkflowTypeCache.Get( WorkflowTypeItSupportGuid );
             var activityType = workflowType.ActivityTypes.FirstOrDefault( at => at.Name == "Open" );
 
-            Assert.That.IsNotNull( activityType );
+            Assert.IsNotNull( activityType );
 
             var mergeFields = new LavaDataDictionary
             {

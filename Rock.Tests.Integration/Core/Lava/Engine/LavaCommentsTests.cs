@@ -204,7 +204,7 @@ or ''
 
             TestHelper.Execute( input, new LavaTestRenderOptions { IgnoreWhiteSpace = false }, output =>
             {
-                Assert.That.AreEqual( expectedOutput, output.Replace( "\r\n", "\n" ) );
+                Assert.AreEqual( expectedOutput, output.Replace( "\r\n", "\n" ) );
             } );
         }
 
@@ -396,7 +396,7 @@ Line 1<br>
             var input = "Line 1\n   //-\nLine 2";
             var expectedOutput = "Line 1\n   \nLine 2";
 
-            var renderOptions = new LavaTestRenderOptions { IgnoreWhiteSpace = false };
+            var renderOptions = new LavaTestRenderOptions { IgnoreWhiteSpace = false, NormalizeNewLine = true };
             var result = TestHelper.GetTemplateRenderResult( typeof( FluidEngine ), input, options: renderOptions );
 
             TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, input, options: renderOptions );

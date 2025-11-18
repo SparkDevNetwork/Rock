@@ -99,6 +99,12 @@ module.exports = {
             {
                 selector: "typeLike",
                 format: ["PascalCase"]
+            },
+
+            // Default import names can be in either camelCase or PascalCase.
+            {
+                selector: "import",
+                format: ["camelCase", "PascalCase"]
             }
         ],
 

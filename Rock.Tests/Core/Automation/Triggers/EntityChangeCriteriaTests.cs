@@ -47,7 +47,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = criteria.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -58,7 +58,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = criteria.IsMatch( entryMock.Object );
 
-            Assert.That.IsTrue( result );
+            Assert.IsTrue( result );
         }
 
         [TestMethod]
@@ -90,7 +90,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = criteria.IsMatch( entryMock.Object );
 
-            Assert.That.IsTrue( result );
+            Assert.IsTrue( result );
         }
 
         [TestMethod]
@@ -122,7 +122,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = criteria.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -154,7 +154,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = criteria.IsMatch( entryMock.Object );
 
-            Assert.That.IsTrue( result );
+            Assert.IsTrue( result );
         }
 
         [TestMethod]
@@ -165,7 +165,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = criteria.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -176,7 +176,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = criteria.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -187,7 +187,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = criteria.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -200,7 +200,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = criteria.IsMatch( entryMock.Object );
 
-            Assert.That.IsTrue( result );
+            Assert.IsTrue( result );
         }
 
         [TestMethod]
@@ -214,7 +214,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = criteria.IsMatch( entryMock.Object );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         #endregion

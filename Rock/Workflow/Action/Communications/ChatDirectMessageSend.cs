@@ -1,4 +1,6 @@
-﻿//
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -12,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -70,6 +71,7 @@ namespace Rock.Workflow.Action.Communications
 
     #endregion Attributes
 
+    [Rock.SystemGuid.EntityTypeGuid( "07BEC42A-AB1B-4B8C-9BE5-39A58A82E445")]
     public class ChatDirectMessageSend : ActionComponent
     {
         #region Attribute Keys

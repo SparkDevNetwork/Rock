@@ -54,6 +54,10 @@
                 <h4 class="mt-0 mb-0">Props</h4>
                 <slot name="props" />
             </div>
+
+            <h5 v-if="scriptSetupCode || $slots.scriptSetupCode">Script Setup</h5>
+            <slot name="scriptSetupCode" />
+            <CodeSample v-if="scriptSetupCode" :code="scriptSetupCode" language="ts" />
         </div>
     </div>
 
@@ -168,6 +172,10 @@
         },
         // Code snippet of the component being used
         exampleCode: {
+            type: String as PropType<string>
+        },
+        // Code snippet of the script setup section
+        scriptSetupCode: {
             type: String as PropType<string>
         },
         // Describe what this component is/does

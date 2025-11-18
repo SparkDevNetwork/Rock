@@ -49,7 +49,7 @@ namespace Rock.Tests.Integration.Core.Field.Types
             var withoutEditValue = contentChannelItemFieldTypeWithoutConfigValues.GetEditValue( contentChannelItemControl, new Dictionary<string, ConfigurationValue>() );
             var withEditValue = contentChannelItemFieldTypeWithConfigValues.GetEditValue( contentChannelItemControl, configValues );
 
-            Assert.That.AreEqual( withoutEditValue, withEditValue );
+            Assert.AreEqual( withoutEditValue, withEditValue );
         }
     }
 }

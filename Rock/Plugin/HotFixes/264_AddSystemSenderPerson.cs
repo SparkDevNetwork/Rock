@@ -76,7 +76,13 @@ BEGIN
         , [IsEmailActive]
         , [Guid]
         , [CreatedDateTime]
+        , [EmailPreference]
+        , [CommunicationPreference]
         , [AgeClassification]
+        , [IsLockedAsChild]
+        , [GivingLeaderId]
+        , [AccountProtectionProfile]
+        , [AgeBracket]
     )
     VALUES
     (
@@ -92,7 +98,13 @@ BEGIN
         , 0                                             --IsEmailActive
         , @SystemPersonGuid                             --Guid
         , @Now                                          --CreatedDateTime
+        , 0                                             --EmailPreference (EmailAllowed)
+        , 0                                             --CommunicationPreference (None)
         , 1                                             --AgeClassification (Adult)
+        , 0                                             --IsLockedAsChild
+        , 0                                             --GivingLeaderId
+        , 0                                             --AccountProtectionProfile (Low)
+        , 0                                             --AgeBracket (Unknown)
     );
 
     SET @SystemPersonId = SCOPE_IDENTITY();
@@ -124,6 +136,14 @@ BEGIN
         , [Order]
         , [Guid]
         , [CreatedDateTime]
+        , [IsPublic]
+        , [IsArchived]
+        , [SchedulingMustMeetRequirements]
+        , [AttendanceRecordRequiredForCheckIn]
+        , [DisableScheduleToolboxAccess]
+        , [DisableScheduling]
+        , [ElevatedSecurityLevel]
+        , [IsSpecialNeeds]
     )
     VALUES
     (
@@ -135,6 +155,14 @@ BEGIN
         , 0                                             --Order
         , NEWID()                                       --Guid
         , @Now                                          --CreatedDateTime
+        , 1                                             --IsPublic
+        , 0                                             --IsArchived
+        , 0                                             --SchedulingMustMeetRequirements
+        , 0                                             --AttendanceRecordRequiredForCheckIn
+        , 0                                             --DisableScheduleToolboxAccess
+        , 0                                             --DisableScheduling
+        , 0                                             --ElevatedSecurityLevel (None)
+        , 0                                             --IsSpecialNeeds
     );
 
     SET @SystemFamilyGroupId = SCOPE_IDENTITY();
@@ -149,7 +177,12 @@ BEGIN
         , [Guid]
         , [CreatedDateTime]
         , [DateTimeAdded]
+        , [IsNotified]
+        , [IsArchived]
+        , [CommunicationPreference]
         , [GroupTypeId]
+        , [IsChatMuted]
+        , [IsChatBanned]
        )
     VALUES (
         1                                               --IsSystem
@@ -160,7 +193,12 @@ BEGIN
         , NEWID()                                       --Guid
         , @Now                                          --CreatedDateTime
         , @Now                                          --DateTimeAdded
+        , 0                                             --IsNotified
+        , 0                                             --IsArchived
+        , 0                                             --CommunicationPreference (None)
         , @FamilyGroupTypeId                            --GroupTypeId
+        , 0                                             --IsChatMuted
+        , 0                                             --IsChatBanned
     );
 END" );
         }

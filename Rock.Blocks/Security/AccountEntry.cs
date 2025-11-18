@@ -421,7 +421,7 @@ namespace Rock.Blocks.Security
         [BlockAction]
         public BlockActionResult ForgotUsername( AccountEntryForgotUsernameRequestBag bag )
         {
-            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            var disableCaptcha = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
 
             if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
             {
@@ -490,7 +490,7 @@ namespace Rock.Blocks.Security
         [BlockAction]
         public BlockActionResult Register( AccountEntryRegisterRequestBox box )
         {
-            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            var disableCaptcha = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
 
             if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
             {
@@ -1161,7 +1161,7 @@ namespace Rock.Blocks.Security
                 IsGenderPickerShown = !string.Equals( GetAttributeValue( AttributeKey.Gender ), "Hide", StringComparison.OrdinalIgnoreCase ),
                 IsGenderPickerRequired = string.Equals( GetAttributeValue( AttributeKey.Gender ), "Required", StringComparison.OrdinalIgnoreCase ),
                 AccountEntryPersonInfoBag = accountEntryPersonInfoBag,
-                DisableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean(),
+                DisableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() ),
                 CampusStatusFilter = GetAttributeValue( AttributeKey.CampusStatuses ).SplitDelimitedValues( true ).AsGuidList(),
                 CampusTypeFilter = GetAttributeValue( AttributeKey.CampusTypes ).SplitDelimitedValues( true ).AsGuidList()
             };

@@ -21,7 +21,7 @@ namespace Rock.Tests.Cms
 
             var result = ThemeDefinition.TryParse( json, out _ );
 
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -31,7 +31,7 @@ namespace Rock.Tests.Cms
 
             var result = ThemeDefinition.TryParse( json, out _ );
 
-            Assert.That.IsTrue( result );
+            Assert.IsTrue( result );
         }
 
         #endregion
@@ -43,7 +43,7 @@ namespace Rock.Tests.Cms
         {
             string json = null;
 
-            Assert.That.ThrowsException<ArgumentNullException>( () =>
+            Assert.Throws<ArgumentNullException>( () =>
             {
                 ThemeDefinition.Parse( json );
             } );
@@ -55,7 +55,7 @@ namespace Rock.Tests.Cms
             var json = string.Empty;
             var expectedError = "Invalid theme definition.";
 
-            Assert.That.ThrowsExceptionWithMessage<FormatException>( () =>
+            Assert.That.ThrowsWithMessage<FormatException>( () =>
             {
                 ThemeDefinition.Parse( json );
             }, expectedError );
@@ -67,7 +67,7 @@ namespace Rock.Tests.Cms
             var json = "[]";
             var expectedError = "Invalid theme definition.";
 
-            Assert.That.ThrowsExceptionWithMessage<FormatException>( () =>
+            Assert.That.ThrowsWithMessage<FormatException>( () =>
             {
                 ThemeDefinition.Parse( json );
             }, expectedError );
@@ -79,7 +79,7 @@ namespace Rock.Tests.Cms
             var json = "{}";
             var expectedError = "Theme is missing 'name' property.";
 
-            Assert.That.ThrowsExceptionWithMessage<FormatException>( () =>
+            Assert.That.ThrowsWithMessage<FormatException>( () =>
             {
                 ThemeDefinition.Parse( json );
             }, expectedError );
@@ -93,10 +93,10 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( expectedName, theme.Name );
-            Assert.That.AreEqual( string.Empty, theme.Description );
-            Assert.That.IsNotNull( theme.Fields );
-            Assert.That.IsEmpty( theme.Fields );
+            Assert.AreEqual( expectedName, theme.Name );
+            Assert.AreEqual( string.Empty, theme.Description );
+            Assert.IsNotNull( theme.Fields );
+            Assert.IsEmpty( theme.Fields );
         }
 
         [TestMethod]
@@ -107,7 +107,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( expectedDescription, theme.Description );
+            Assert.AreEqual( expectedDescription, theme.Description );
         }
 
         [TestMethod]
@@ -117,7 +117,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( ThemePurpose.Web, theme.Purpose );
+            Assert.AreEqual( ThemePurpose.Web, theme.Purpose );
         }
 
         [TestMethod]
@@ -127,7 +127,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( ThemePurpose.Web, theme.Purpose );
+            Assert.AreEqual( ThemePurpose.Web, theme.Purpose );
         }
 
         [TestMethod]
@@ -137,7 +137,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( ThemePurpose.Checkin, theme.Purpose );
+            Assert.AreEqual( ThemePurpose.Checkin, theme.Purpose );
         }
 
         [TestMethod]
@@ -145,7 +145,7 @@ namespace Rock.Tests.Cms
         {
             var json = "{\"name\": \"test\", \"purpose\": \"error\"}";
 
-            Assert.That.ThrowsExceptionWithMessage<FormatException>( () =>
+            Assert.That.ThrowsWithMessage<FormatException>( () =>
             {
                 ThemeDefinition.Parse( json );
             }, "Theme purpose 'error' is not valid." );
@@ -158,7 +158,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( ThemeIconSet.FontAwesome, theme.AvailableIconSets );
+            Assert.AreEqual( ThemeIconSet.FontAwesome, theme.AvailableIconSets );
         }
 
         [TestMethod]
@@ -168,7 +168,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( 0, ( int ) theme.AvailableIconSets );
+            Assert.AreEqual( 0, ( int ) theme.AvailableIconSets );
         }
 
         [TestMethod]
@@ -178,7 +178,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( ThemeIconSet.FontAwesome, theme.AvailableIconSets );
+            Assert.AreEqual( ThemeIconSet.FontAwesome, theme.AvailableIconSets );
         }
 
         [TestMethod]
@@ -188,7 +188,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( ThemeIconSet.Tabler, theme.AvailableIconSets );
+            Assert.AreEqual( ThemeIconSet.Tabler, theme.AvailableIconSets );
         }
 
         [TestMethod]
@@ -198,7 +198,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( ThemeIconSet.FontAwesome | ThemeIconSet.Tabler, theme.AvailableIconSets );
+            Assert.AreEqual( ThemeIconSet.FontAwesome | ThemeIconSet.Tabler, theme.AvailableIconSets );
         }
 
         [TestMethod]
@@ -206,7 +206,7 @@ namespace Rock.Tests.Cms
         {
             var json = "{\"name\": \"test\", \"availableIconSets\": [\"error\"]}";
 
-            Assert.That.ThrowsExceptionWithMessage<FormatException>( () =>
+            Assert.That.ThrowsWithMessage<FormatException>( () =>
             {
                 ThemeDefinition.Parse( json );
             }, "Theme icon set 'error' is not valid." );
@@ -217,7 +217,7 @@ namespace Rock.Tests.Cms
         {
             var json = "{\"name\": \"test\", \"availableIconSets\": \"error\"}";
 
-            Assert.That.ThrowsExceptionWithMessage<FormatException>( () =>
+            Assert.That.ThrowsWithMessage<FormatException>( () =>
             {
                 ThemeDefinition.Parse( json );
             }, "Property 'availableIconSets' must be an array." );
@@ -229,7 +229,7 @@ namespace Rock.Tests.Cms
             var json = "{\"name\": \"test\", \"fields\": \"\"}";
             var expectedError = "Theme 'fields' property was expected to be an array but was String.";
 
-            Assert.That.ThrowsExceptionWithMessage<FormatException>( () =>
+            Assert.That.ThrowsWithMessage<FormatException>( () =>
             {
                 ThemeDefinition.Parse( json );
             }, expectedError );
@@ -241,7 +241,7 @@ namespace Rock.Tests.Cms
             var json = "{\"name\": \"test\", \"fields\": [\"\"]}";
             var expectedError = "Theme field was expected to be an object but was String.";
 
-            Assert.That.ThrowsExceptionWithMessage<FormatException>( () =>
+            Assert.That.ThrowsWithMessage<FormatException>( () =>
             {
                 ThemeDefinition.Parse( json );
             }, expectedError );
@@ -253,7 +253,7 @@ namespace Rock.Tests.Cms
             var json = "{\"name\": \"test\", \"fields\": [{}]}";
             var expectedError = "Unknown field type '' found.";
 
-            Assert.That.ThrowsExceptionWithMessage<FormatException>( () =>
+            Assert.That.ThrowsWithMessage<FormatException>( () =>
             {
                 ThemeDefinition.Parse( json );
             }, expectedError );
@@ -270,8 +270,8 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( 1, theme.Fields.Count );
-            Assert.That.IsInstanceOfType( theme.Fields[0], typeof( LiteralThemeField ) );
+            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.IsInstanceOfType( theme.Fields[0], typeof( LiteralThemeField ) );
         }
 
         [TestMethod]
@@ -281,8 +281,8 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( 1, theme.Fields.Count );
-            Assert.That.IsInstanceOfType( theme.Fields[0], typeof( ColorThemeField ) );
+            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.IsInstanceOfType( theme.Fields[0], typeof( ColorThemeField ) );
         }
 
         [TestMethod]
@@ -292,8 +292,8 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( 1, theme.Fields.Count );
-            Assert.That.IsInstanceOfType( theme.Fields[0], typeof( ImageThemeField ) );
+            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.IsInstanceOfType( theme.Fields[0], typeof( ImageThemeField ) );
         }
 
         [TestMethod]
@@ -303,8 +303,8 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( 1, theme.Fields.Count );
-            Assert.That.IsInstanceOfType( theme.Fields[0], typeof( TextThemeField ) );
+            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.IsInstanceOfType( theme.Fields[0], typeof( TextThemeField ) );
         }
 
         [TestMethod]
@@ -314,8 +314,8 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( 1, theme.Fields.Count );
-            Assert.That.IsInstanceOfType( theme.Fields[0], typeof( FileThemeField ) );
+            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.IsInstanceOfType( theme.Fields[0], typeof( FileThemeField ) );
         }
 
         [TestMethod]
@@ -325,8 +325,8 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( 1, theme.Fields.Count );
-            Assert.That.IsInstanceOfType( theme.Fields[0], typeof( SwitchThemeField ) );
+            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.IsInstanceOfType( theme.Fields[0], typeof( SwitchThemeField ) );
         }
 
         #endregion

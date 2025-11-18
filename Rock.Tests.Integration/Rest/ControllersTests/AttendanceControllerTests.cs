@@ -24,7 +24,7 @@ namespace Rock.Tests.Integration.Rest.ControllersTests
             var attendancesController = new AttendancesController();
 
             var attendance = attendancesController.AddAttendance( groupId, locationId, scheduleId, occurrenceDate, personId, personAliasId );
-            Assert.That.IsNotNull( attendance );
+            Assert.IsNotNull( attendance );
         }
 
         [TestMethod]
@@ -51,7 +51,7 @@ namespace Rock.Tests.Integration.Rest.ControllersTests
             }
             finally
             {
-                Assert.That.IsTrue( exception.Response.StatusCode == System.Net.HttpStatusCode.BadRequest );
+                Assert.IsTrue( exception.Response.StatusCode == System.Net.HttpStatusCode.BadRequest );
             }
         }
     }

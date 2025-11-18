@@ -28,7 +28,6 @@ namespace Rock.Tests.Shared
     {
         private const string _DateTimeFormat = "HH:mm:ss.fff";
 
-        private static TestContext _TestContext = null;
         private static Dictionary<Guid, string> _tasks = new Dictionary<Guid, string>();
 
         static LogHelper()
@@ -38,7 +37,6 @@ namespace Rock.Tests.Shared
 
         public static void SetTestContext( TestContext testContext )
         {
-            _TestContext = testContext;
         }
 
         public static Guid StartTask( string testName )
@@ -64,7 +62,7 @@ namespace Rock.Tests.Shared
             var msg = $@"[{ DateTime.Now.ToString( _DateTimeFormat ) }] {message}";
 
             Trace.WriteLine( msg );
-            _TestContext?.WriteLine( "<INFO> " + msg );
+            Console.WriteLine( "<INFO> " + msg );
         }
 
         public static void LogWarning( string message )
@@ -72,7 +70,7 @@ namespace Rock.Tests.Shared
             var msg = $"[{ DateTime.Now.ToString( _DateTimeFormat ) }] {message}";
 
             Trace.TraceWarning( msg );
-            _TestContext?.WriteLine( "<WARN> " + msg );
+            Console.WriteLine( "<WARN> " + msg );
         }
 
         public static void LogError( string message )
@@ -80,7 +78,7 @@ namespace Rock.Tests.Shared
             var msg = $"[{ DateTime.Now.ToString( _DateTimeFormat ) }] {message}";
 
             Trace.TraceError( msg );
-            _TestContext?.WriteLine( "<ERR*> " + msg );
+            Console.WriteLine( "<ERR*> " + msg );
         }
 
         public static void LogError( Exception ex, string message = null )
@@ -89,7 +87,7 @@ namespace Rock.Tests.Shared
             msg += "\n" + ex.ToString();
 
             Trace.TraceError( msg );
-            _TestContext?.WriteLine( "<ERR*> " + msg );
+            Console.WriteLine( "<ERR*> " + msg );
         }
     }
 }

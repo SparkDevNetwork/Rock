@@ -18,6 +18,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Tests.Lava;
 
+[assembly: DoNotParallelize]
+
 namespace Rock.Tests
 {
     [TestClass()]

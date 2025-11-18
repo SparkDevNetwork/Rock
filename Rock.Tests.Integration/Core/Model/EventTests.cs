@@ -73,13 +73,13 @@ namespace Rock.Tests.Integration.Core.Model
             // It should not be returned in the list of active items.
             var warriorEvent = events.FirstOrDefault( x => x.Name == "Customs & Classics Car Show" );
 
-            Assert.That.IsNull( warriorEvent, "Unexpected event found in result set." );
+            Assert.IsNull( warriorEvent, "Unexpected event found in result set." );
 
             // This event is endlessly recurring, and the scheduled start date is prior to the current date.
             // Only instances after the current date should be returned in the list of active items.
             var staffEvent = events.FirstOrDefault( x => x.Name == "Staff Meeting" );
 
-            Assert.That.IsNotNull( staffEvent, "Expected event not found in result set." ); 
+            Assert.IsNotNull( staffEvent, "Expected event not found in result set." ); 
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             var warriorEvent = eventItemService.Queryable().FirstOrDefault( x => x.Name == "Warrior Youth Event" );
 
-            Assert.That.IsNotNull( warriorEvent, "Target event not found." );
+            Assert.IsNotNull( warriorEvent, "Target event not found." );
 
             ForceUpdateScheduleEffectiveDates( rockContext, warriorEvent );
 
@@ -106,7 +106,7 @@ namespace Rock.Tests.Integration.Core.Model
                 .HasOccurrencesOnOrAfterDate( effectiveDate )
                 .ToList();
 
-            Assert.That.IsTrue( validEvents.Count() == 1, "Expected Event not found." );
+            Assert.IsTrue( validEvents.Count() == 1, "Expected Event not found." );
 
             // ... but no event occurrences for the following month.
             var invalidEvents = eventItemService.Queryable()
@@ -114,7 +114,7 @@ namespace Rock.Tests.Integration.Core.Model
                 .HasOccurrencesOnOrAfterDate( effectiveDate.AddMonths(1) )
                 .ToList();
 
-            Assert.That.IsTrue( invalidEvents.Count() == 0, "Unexpected Event found." );
+            Assert.IsTrue( invalidEvents.Count() == 0, "Unexpected Event found." );
         }
 
         private void ForceUpdateScheduleEffectiveDates( RockContext rockContext, EventItem eventItem )
@@ -152,13 +152,13 @@ namespace Rock.Tests.Integration.Core.Model
             // It should be returned in the list of active items.
             var staffEvent = publicEvents.FirstOrDefault( x => x.Name == "Warrior Youth Event" );
 
-            Assert.That.IsNotNull( staffEvent, "Expected event not found in result set." );
+            Assert.IsNotNull( staffEvent, "Expected event not found in result set." );
 
             // The Event "Staff Meeting" only exists in the Internal calendar.
             // It should not be returned in the list of active items.
             var warriorEvent = publicEvents.FirstOrDefault( x => x.Name == "Staff Meeting" );
 
-            Assert.That.IsNull( warriorEvent, "Unexpected event found in result set." );
+            Assert.IsNull( warriorEvent, "Unexpected event found in result set." );
         }
 
         #endregion
@@ -456,8 +456,8 @@ namespace Rock.Tests.Integration.Core.Model
             var winTimeZoneId = tzDst.Id;
             var ianaTimeZoneId = TZConvert.WindowsToIana( winTimeZoneId );
 
-            Assert.That.Contains( calendarStringDst, ianaTimeZoneId );
-            Assert.That.DoesNotContain( calendarStringDst, winTimeZoneId );
+            Assert.Contains( ianaTimeZoneId, calendarStringDst );
+            Assert.DoesNotContain( winTimeZoneId, calendarStringDst );
         }
 
         private static GetCalendarEventFeedArgs GetCalendarEventFeedArgumentsForTest( string calendarName = null, string campusName = null, DateTime? startDate = null, DateTime? endDate = null, string eventIdentifier = null )

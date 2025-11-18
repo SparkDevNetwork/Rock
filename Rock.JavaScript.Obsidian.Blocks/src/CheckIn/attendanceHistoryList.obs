@@ -80,7 +80,7 @@
                         :filter="dateValueFilter"
                         headerClass="title-right"
                         itemClass="justify-content-end text-right"
-                        visiblePriority="md" />
+                        visiblePriority="sm" />
 
         <DateTimeColumn name="endDateTime"
                         title="End Date Time"
@@ -97,13 +97,34 @@
                        headerClass="text-center"
                        width="150"
                        itemClass="justify-content-center text-center"
-                       visiblePriority="xs" />
+                       visiblePriority="sm" />
+
+        <Column name="mobileStartDate"
+                title="Start Date"
+                visiblePriority="xs"
+                headerClass="d-sm-none"
+                itemClass="d-sm-none">
+            <template #format="{ row }">
+                <div class="mobile-start-date">
+                    <span>{{ getMobileStartDate(row) }}</span>
+                    <i v-if="row.didAttend" class="ti ti-check"></i>
+                </div>
+            </template>
+        </Column>
     </Grid>
 </template>
 
 <style>
 .title-right .grid-column-title {
     text-align: right;
+}
+</style>
+
+<style scoped>
+.mobile-start-date {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-tiny);
 }
 </style>
 
@@ -116,6 +137,7 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { reactive, ref } from "vue";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const config = useConfigurationValues<ListBlockBox<AttendanceHistoryListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -181,6 +203,10 @@
     */
     function getGroupSortValue(row: Record<string, unknown>): string {
         return getGroupFilterValue(row);
+    }
+
+    function getMobileStartDate(row: Record<string, unknown>): string {
+        return RockDateTime.parseISO(row["startDateTime"] as string)?.toASPString("d") ?? "";
     }
 
     // #endregion

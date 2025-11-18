@@ -47,7 +47,7 @@
         </td>
 
         <td class="grid-columncommand" align="center">
-            <a class="btn btn-success btn-sm" :class="{disabled: isSaveDisabled}" @click="onAcceptClick">
+            <a class="btn btn-success btn-sm" :class="{ disabled: isSaveDisabled }" @click="onAcceptClick">
                 <i class="ti ti-check"></i>
             </a>
         </td>
@@ -67,7 +67,7 @@
     import { ContentCollectionCustomFieldBag } from "@Obsidian/ViewModels/Cms/contentCollectionCustomFieldBag";
     import { useFormState } from "@Obsidian/Utility/form";
     import { newGuid } from "@Obsidian/Utility/guid";
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, onBeforeUnmount, PropType, ref, watch } from "vue";
 
     const props = defineProps({
         modelValue: {
@@ -134,6 +134,10 @@
      * the model to match what they entered.
      */
     function onAcceptClick(): void {
+        if (isSaveDisabled.value) {
+            return;
+        }
+
         emit("update:modelValue", {
             key: key.value.replace(/ /g, ""),
             title: title.value,
@@ -169,6 +173,10 @@
 
     watch(isEditMode, () => {
         updateValidation();
+    });
+
+    onBeforeUnmount(() => {
+        formState?.setError(validationId, "Custom Value", "");
     });
 
     updateValidation();

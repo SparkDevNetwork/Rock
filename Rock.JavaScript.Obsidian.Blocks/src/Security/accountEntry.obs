@@ -8,51 +8,35 @@
                           v-model:isUsernameAvailable="isUsernameAvailable"
                           :config="config"
                           :disabled="isRegistering || isNavigating"
+                          :hideActions="!disableCaptchaSupport && !isCaptchaComplete"
                           @checkUsernameAvailability="onCheckUsernameAvailability"
                           @error="showError"
-                          @register="onRegister">
-            <template #captcha>
-                <Captcha v-if="!disableCaptchaSupport"
-                         ref="captchaElement" />
-            </template>
-        </RegistrationStep>
+                          @register="onRegister" />
 
         <DuplicatePersonSelectionStep v-else-if="step.isDuplicatePersonSelection"
                                       v-model="selectedDuplicatePerson"
                                       :disabled="isRegistering || isNavigating"
+                                      :hideActions="!disableCaptchaSupport && !isCaptchaComplete"
                                       :options="duplicatePersonSelectionStepOptions"
                                       @movePrevious="onDuplicatePersonSelectionStepMovePrevious()"
                                       @personSelected="onDuplicatePersonSelected"
-                                      @noPersonSelected="onNoDuplicatePersonSelected">
-            <template #captcha>
-                <Captcha v-if="!disableCaptchaSupport"
-                         ref="captchaElement" />
-            </template>
-        </DuplicatePersonSelectionStep>
+                                      @noPersonSelected="onNoDuplicatePersonSelected" />
 
         <PasswordlessConfirmationSentStep v-else-if="step.isPasswordlessConfirmationSent"
                                           v-model="passwordlessConfirmationCode"
                                           :disabled="isRegistering || isNavigating"
+                                          :hideActions="!disableCaptchaSupport && !isCaptchaComplete"
                                           :options="passwordlessConfirmationSentStepOptions"
                                           @movePrevious="onPasswordlessConfirmationSentStepMovePrevious()"
-                                          @submit="onPasswordlessConfirmationSubmitted">
-            <template #captcha>
-                <Captcha v-if="!disableCaptchaSupport"
-                         ref="captchaElement" />
-            </template>
-        </PasswordlessConfirmationSentStep>
+                                          @submit="onPasswordlessConfirmationSubmitted" />
 
         <ExistingAccountStep v-else-if="step.isExistingAccount"
                              :disabled="isSendingForgotUsername || isRegistering || isNavigating"
+                             :hideActions="!disableCaptchaSupport && !isCaptchaComplete"
                              :options="existingAccountStepOptions"
                              @movePrevious="onMovePrevious()"
                              @emailUsername="onEmailUsername"
-                             @sendToLogin="onSendToLogin">
-            <template #captcha>
-                <Captcha v-if="!disableCaptchaSupport"
-                         ref="captchaElement" />
-            </template>
-        </ExistingAccountStep>
+                             @sendToLogin="onSendToLogin" />
 
         <ConfirmationSentStep v-else-if="step.isConfirmationSent"
                               :options="confirmationSentStepOptions" />
@@ -61,11 +45,15 @@
                        :disabled="isRegistering || isNavigating"
                        :options="completedStepOptions"
                        @navigate="onNavigate($event)" />
+
+        <div v-if="!disableCaptchaSupport && !step.isCompleted" v-show="!isCaptchaComplete">
+            <Captcha ref="captchaElement" />
+        </div>
     </BreakpointObserver>
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, ref, onMounted, nextTick } from "vue";
     import Captcha from "@Obsidian/Controls/captcha.obs";
     import CompletedStep from "./AccountEntry/completedStep.partial.obs";
     import ConfirmationSentStep from "./AccountEntry/confirmationSentStep.partial.obs";
@@ -103,6 +91,7 @@
 
     const disableCaptchaSupport = ref(config.disableCaptchaSupport);
     const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
+    const isCaptchaComplete = ref<boolean>(false);
 
     const stepStack = ref<AccountEntryStep[]>([]);
     const accountEntryStep = computed<AccountEntryStep | null | undefined>(() => stepStack.value.length ? stepStack.value[stepStack.value.length - 1] : config.accountEntryRegisterStepBox?.step || null);
@@ -235,6 +224,7 @@
 
             if (!result?.isSuccess) {
                 showError(result?.errorMessage || "An unexpected error occurred.");
+                triggerCaptchaRevalidationIfNeeded(accountEntryStep.value ?? AccountEntryStep.Registration);
                 return;
             }
 
@@ -344,6 +334,22 @@
         });
     }
 
+    /**
+     * Ensures the captcha is reset and revalidated for the provided step.
+     */
+    function triggerCaptchaRevalidationIfNeeded(step: AccountEntryStep | null | undefined): void {
+        if (disableCaptchaSupport.value || step === AccountEntryStep.Completed) {
+            return;
+        }
+        isCaptchaComplete.value = false;
+        nextTick(() => {
+            if (captchaElement.value) {
+                captchaElement.value.refreshToken();
+            }
+            waitForCaptcha();
+        });
+    }
+
     async function register(): Promise<void> {
         try {
             isRegistering.value = true;
@@ -359,11 +365,12 @@
 
             const response = await invokeBlockAction<AccountEntryRegisterResponseBox>("Register", { box: registrationInfo.value }, actionContext);
 
-            if (response?.data?.step || response?.data?.step === AccountEntryStep.Registration) {
+            if (response?.isSuccess && response.data || response?.data?.step === AccountEntryStep.Registration) {
                 displayStep(response.data);
             }
             else {
                 showError(response?.errorMessage || "An unexpected error occurred");
+                triggerCaptchaRevalidationIfNeeded(accountEntryStep.value ?? AccountEntryStep.Registration);
             }
         }
         finally {
@@ -489,10 +496,25 @@
                 break;
             }
         }
+
+        triggerCaptchaRevalidationIfNeeded(data.step);
+    }
+
+    async function waitForCaptcha(): Promise<void> {
+        if (disableCaptchaSupport.value || !captchaElement.value) {
+            isCaptchaComplete.value = true;
+            return;
+        }
+
+        const token = await captchaElement.value.getToken();
+        isCaptchaComplete.value = !!token;
     }
 
     //#endregion
 
     displayStep(config.accountEntryRegisterStepBox || { step: AccountEntryStep.Registration });
     onConfigurationValuesChanged(useReloadBlock());
+    onMounted(() => {
+        waitForCaptcha();
+    });
 </script>

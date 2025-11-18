@@ -4,7 +4,7 @@
 
     <slot name="captcha" />
 
-    <div class="actions">
+    <div class="actions" v-if="!hideActions">
         <RockButton
                     :btnType="BtnType.Link"
                     :disabled="disabled"
@@ -31,6 +31,11 @@
 
     defineProps({
         disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+        hideActions: {
             type: Boolean as PropType<boolean>,
             required: false,
             default: false

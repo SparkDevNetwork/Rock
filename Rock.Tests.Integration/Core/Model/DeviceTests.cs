@@ -28,7 +28,7 @@ namespace Rock.Tests.Integration.Core.Model
             // NOTE: generate in format: long, lat
             var pointInside = DbGeography.FromText( string.Format( "POINT({0} {1})", aLong, aLat ) );
 
-            Assert.That.IsTrue( pointInside.Intersects( deviceWithGeoFence.Location.GeoFence ) );
+            Assert.IsTrue( pointInside.Intersects( deviceWithGeoFence.Location.GeoFence ) );
         }
 
         [TestMethod] [Ignore( "Need the SqlServerTypes library to resolve" )]
@@ -43,7 +43,7 @@ namespace Rock.Tests.Integration.Core.Model
             var pointOutside = DbGeography.FromText( string.Format( "POINT({0} {1})", farLong, farLat ) );
 
             // point should NOT intersect the location
-            Assert.That.IsFalse( pointOutside.Intersects( deviceWithGeoFence.Location.GeoFence ) );
+            Assert.IsFalse( pointOutside.Intersects( deviceWithGeoFence.Location.GeoFence ) );
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace Rock.Tests.Integration.Core.Model
         {
             var device = StandardDevice();
             var result = device.ToJson();
-            Assert.That.IsNotEmpty( result );
+            Assert.IsNotEmpty( result );
         }
 
         /// <summary>
@@ -68,8 +68,8 @@ namespace Rock.Tests.Integration.Core.Model
             var result = device.ToJson();
             string key1 = "\"GeoPoint\": {";
             string key2 = "\"WellKnownText\": ";
-            Assert.That.AreNotEqual( result.IndexOf( key1 ), -1 );
-            Assert.That.AreNotEqual( result.IndexOf( key2 ), -1 );
+            Assert.AreNotEqual( result.IndexOf( key1 ), -1 );
+            Assert.AreNotEqual( result.IndexOf( key2 ), -1 );
         }
 
         /// <summary>
@@ -83,9 +83,9 @@ namespace Rock.Tests.Integration.Core.Model
             var deviceAsJson = device.ToJson();
             var deviceFromJson = JsonConvert.DeserializeObject( deviceAsJson, typeof( Device ) ) as Device;
 
-            Assert.That.AreEqual( device.Guid, deviceFromJson.Guid );
-            Assert.That.AreEqual( device.Location.GeoPoint.Latitude, deviceFromJson.Location.GeoPoint.Latitude );
-            Assert.That.AreEqual( device.Location.GeoPoint.Longitude, deviceFromJson.Location.GeoPoint.Longitude );
+            Assert.AreEqual( device.Guid, deviceFromJson.Guid );
+            Assert.AreEqual( device.Location.GeoPoint.Latitude, deviceFromJson.Location.GeoPoint.Latitude );
+            Assert.AreEqual( device.Location.GeoPoint.Longitude, deviceFromJson.Location.GeoPoint.Longitude );
         }
 
         /// <summary>

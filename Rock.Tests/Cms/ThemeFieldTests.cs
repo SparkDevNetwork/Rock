@@ -28,7 +28,7 @@ namespace Rock.Tests.Cms
             var json = "{\"name\": \"test\", \"fields\": [{\"type\": \"text\"}]}";
             var expectedError = "Text field is missing 'name' property.";
 
-            Assert.That.ThrowsExceptionWithMessage<FormatException>( () =>
+            Assert.That.ThrowsWithMessage<FormatException>( () =>
             {
                 ThemeDefinition.Parse( json );
             }, expectedError );
@@ -40,7 +40,7 @@ namespace Rock.Tests.Cms
             var json = "{\"name\": \"test\", \"fields\": [{\"type\": \"text\", \"name\": \"test\"}]}";
             var expectedError = "Text field is missing 'variable' property.";
 
-            Assert.That.ThrowsExceptionWithMessage<FormatException>( () =>
+            Assert.That.ThrowsWithMessage<FormatException>( () =>
             {
                 ThemeDefinition.Parse( json );
             }, expectedError );
@@ -55,16 +55,16 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( 1, theme.Fields.Count );
-            Assert.That.IsInstanceOfType( theme.Fields[0], typeof( VariableThemeField ) );
+            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.IsInstanceOfType( theme.Fields[0], typeof( VariableThemeField ) );
 
             var variableField = ( VariableThemeField ) theme.Fields[0];
 
-            Assert.That.AreEqual( ThemeFieldType.Text, variableField.Type );
-            Assert.That.AreEqual( expectedName, variableField.Name );
-            Assert.That.AreEqual( expectedVariable, variableField.Variable );
-            Assert.That.AreEqual( string.Empty, variableField.Description );
-            Assert.That.AreEqual( string.Empty, variableField.DefaultValue );
+            Assert.AreEqual( ThemeFieldType.Text, variableField.Type );
+            Assert.AreEqual( expectedName, variableField.Name );
+            Assert.AreEqual( expectedVariable, variableField.Variable );
+            Assert.AreEqual( string.Empty, variableField.Description );
+            Assert.AreEqual( string.Empty, variableField.DefaultValue );
         }
 
         [TestMethod]
@@ -77,7 +77,7 @@ namespace Rock.Tests.Cms
 
             var variableField = ( VariableThemeField ) theme.Fields[0];
 
-            Assert.That.AreEqual( expectedDescription, variableField.Description );
+            Assert.AreEqual( expectedDescription, variableField.Description );
         }
 
         [TestMethod]
@@ -90,7 +90,7 @@ namespace Rock.Tests.Cms
 
             var variableField = ( VariableThemeField ) theme.Fields[0];
 
-            Assert.That.AreEqual( expectedDefaultValue, variableField.DefaultValue );
+            Assert.AreEqual( expectedDefaultValue, variableField.DefaultValue );
         }
 
         [TestMethod]
@@ -143,9 +143,9 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( 1, theme.Fields.Count );
-            Assert.That.IsInstanceOfType<LiteralThemeField>( theme.Fields[0], out var literalField );
-            Assert.That.AreEqual( ThemeFieldType.Literal, literalField.Type );
+            Assert.AreEqual( 1, theme.Fields.Count );
+            var literalField = Assert.IsInstanceOfType<LiteralThemeField>( theme.Fields[0] );
+            Assert.AreEqual( ThemeFieldType.Literal, literalField.Type );
         }
 
         [TestMethod]
@@ -197,7 +197,7 @@ namespace Rock.Tests.Cms
 
             var colorField = new ColorThemeField( json.FromJsonOrThrow<JObject>(), ThemeFieldType.Color );
 
-            Assert.That.AreEqual( ThemeFieldType.Color, colorField.Type );
+            Assert.AreEqual( ThemeFieldType.Color, colorField.Type );
         }
 
         [TestMethod]
@@ -249,7 +249,7 @@ namespace Rock.Tests.Cms
 
             var imageField = new ImageThemeField( json.FromJsonOrThrow<JObject>(), ThemeFieldType.Image );
 
-            Assert.That.AreEqual( ThemeFieldType.Image, imageField.Type );
+            Assert.AreEqual( ThemeFieldType.Image, imageField.Type );
         }
 
         [TestMethod]
@@ -352,9 +352,9 @@ namespace Rock.Tests.Cms
 
             var textField = new TextThemeField( json.FromJsonOrThrow<JObject>(), ThemeFieldType.Text );
 
-            Assert.That.AreEqual( ThemeFieldType.Text, textField.Type );
-            Assert.That.IsFalse( textField.IsMultiline );
-            Assert.That.AreEqual( string.Empty, textField.Width );
+            Assert.AreEqual( ThemeFieldType.Text, textField.Type );
+            Assert.IsFalse( textField.IsMultiline );
+            Assert.AreEqual( string.Empty, textField.Width );
         }
 
         [TestMethod]
@@ -364,9 +364,9 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( 1, theme.Fields.Count );
-            Assert.That.IsInstanceOfType<TextThemeField>( theme.Fields[0], out var textField );
-            Assert.That.IsTrue( textField.IsMultiline );
+            Assert.AreEqual( 1, theme.Fields.Count );
+            var textField = Assert.IsInstanceOfType<TextThemeField>( theme.Fields[0] );
+            Assert.IsTrue( textField.IsMultiline );
         }
 
         [TestMethod]
@@ -377,9 +377,9 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( 1, theme.Fields.Count );
-            Assert.That.IsInstanceOfType<TextThemeField>( theme.Fields[0], out var textField );
-            Assert.That.AreEqual( expectedWidth, textField.Width );
+            Assert.AreEqual( 1, theme.Fields.Count );
+            var textField = Assert.IsInstanceOfType<TextThemeField>( theme.Fields[0] );
+            Assert.AreEqual( expectedWidth, textField.Width );
         }
 
         [TestMethod]
@@ -497,7 +497,7 @@ namespace Rock.Tests.Cms
 
             var fileField = new FileThemeField( json.FromJsonOrThrow<JObject>(), ThemeFieldType.File );
 
-            Assert.That.AreEqual( ThemeFieldType.File, fileField.Type );
+            Assert.AreEqual( ThemeFieldType.File, fileField.Type );
         }
 
         [TestMethod]
@@ -534,7 +534,7 @@ namespace Rock.Tests.Cms
         {
             var json = "{\"type\": \"switch\", \"name\": \"testName\", \"variable\": \"test-variable\", \"onImport\": 2}";
 
-            Assert.That.ThrowsExceptionWithMessage<FormatException>( () =>
+            Assert.That.ThrowsWithMessage<FormatException>( () =>
             {
                 new SwitchThemeField( json.FromJsonOrThrow<JObject>(), ThemeFieldType.Switch );
             }, "Import URLs must be of type string or an array of strings." );
@@ -545,7 +545,7 @@ namespace Rock.Tests.Cms
         {
             var json = "{\"type\": \"switch\", \"name\": \"testName\", \"variable\": \"test-variable\", \"onImport\": [2]}";
 
-            Assert.That.ThrowsExceptionWithMessage<FormatException>( () =>
+            Assert.That.ThrowsWithMessage<FormatException>( () =>
             {
                 new SwitchThemeField( json.FromJsonOrThrow<JObject>(), ThemeFieldType.Switch );
             }, "Import URLs must be of type string or an array of strings." );
@@ -558,7 +558,7 @@ namespace Rock.Tests.Cms
 
             var field = new SwitchThemeField( json.FromJsonOrThrow<JObject>(), ThemeFieldType.Switch );
 
-            Assert.That.AreEqual( ThemeFieldType.Switch, field.Type );
+            Assert.AreEqual( ThemeFieldType.Switch, field.Type );
         }
 
         [TestMethod]
@@ -729,7 +729,7 @@ namespace Rock.Tests.Cms
             var json = "{\"name\": \"test\", \"fields\": [{\"type\": \"heading\"}]}";
             var expectedError = "Heading field is missing 'title' property.";
 
-            Assert.That.ThrowsExceptionWithMessage<FormatException>( () =>
+            Assert.That.ThrowsWithMessage<FormatException>( () =>
             {
                 ThemeDefinition.Parse( json );
             }, expectedError );
@@ -743,10 +743,10 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( 1, theme.Fields.Count );
-            Assert.That.IsInstanceOfType<HeadingThemeField>( theme.Fields[0], out var headingField );
-            Assert.That.AreEqual( expectedTitle, headingField.Name );
-            Assert.That.AreEqual( string.Empty, headingField.Description );
+            Assert.AreEqual( 1, theme.Fields.Count );
+            var headingField = Assert.IsInstanceOfType<HeadingThemeField>( theme.Fields[0] );
+            Assert.AreEqual( expectedTitle, headingField.Name );
+            Assert.AreEqual( string.Empty, headingField.Description );
         }
 
         [TestMethod]
@@ -757,9 +757,9 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( 1, theme.Fields.Count );
-            Assert.That.IsInstanceOfType<HeadingThemeField>( theme.Fields[0], out var headingField );
-            Assert.That.AreEqual( expectedDescription, headingField.Description );
+            Assert.AreEqual( 1, theme.Fields.Count );
+            var headingField = Assert.IsInstanceOfType<HeadingThemeField>( theme.Fields[0] );
+            Assert.AreEqual( expectedDescription, headingField.Description );
         }
 
         #endregion
@@ -773,8 +773,8 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( 1, theme.Fields.Count );
-            Assert.That.IsInstanceOfType( theme.Fields[0], typeof( SpacerThemeField ) );
+            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.IsInstanceOfType( theme.Fields[0], typeof( SpacerThemeField ) );
         }
 
         #endregion
@@ -787,7 +787,7 @@ namespace Rock.Tests.Cms
             var json = "{\"name\": \"test\", \"fields\": [{\"type\": \"panel\"}]}";
             var expectedError = "Panel field is missing 'title' property.";
 
-            Assert.That.ThrowsExceptionWithMessage<FormatException>( () =>
+            Assert.That.ThrowsWithMessage<FormatException>( () =>
             {
                 ThemeDefinition.Parse( json );
             }, expectedError );
@@ -801,12 +801,12 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( 1, theme.Fields.Count );
-            Assert.That.IsInstanceOfType<PanelThemeField>( theme.Fields[0], out var panelField );
-            Assert.That.AreEqual( expectedTitle, panelField.Name );
-            Assert.That.IsFalse( panelField.IsExpanded );
-            Assert.That.IsNotNull( panelField.Fields );
-            Assert.That.IsEmpty( panelField.Fields );
+            Assert.AreEqual( 1, theme.Fields.Count );
+            var panelField = Assert.IsInstanceOfType<PanelThemeField>( theme.Fields[0] );
+            Assert.AreEqual( expectedTitle, panelField.Name );
+            Assert.IsFalse( panelField.IsExpanded );
+            Assert.IsNotNull( panelField.Fields );
+            Assert.IsEmpty( panelField.Fields );
         }
 
         [TestMethod]
@@ -816,9 +816,9 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( 1, theme.Fields.Count );
-            Assert.That.IsInstanceOfType<PanelThemeField>( theme.Fields[0], out var panelField );
-            Assert.That.IsTrue( panelField.IsExpanded );
+            Assert.AreEqual( 1, theme.Fields.Count );
+            var panelField = Assert.IsInstanceOfType<PanelThemeField>( theme.Fields[0] );
+            Assert.IsTrue( panelField.IsExpanded );
         }
 
         [TestMethod]
@@ -828,9 +828,9 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.That.AreEqual( 1, theme.Fields.Count );
-            Assert.That.IsInstanceOfType<PanelThemeField>( theme.Fields[0], out var panelField );
-            Assert.That.IsNotEmpty( panelField.Fields );
+            Assert.AreEqual( 1, theme.Fields.Count );
+            var panelField = Assert.IsInstanceOfType<PanelThemeField>( theme.Fields[0] );
+            Assert.IsNotEmpty( panelField.Fields );
         }
 
         [TestMethod]
@@ -838,7 +838,7 @@ namespace Rock.Tests.Cms
         {
             var json = $"{{\"name\": \"test\", \"fields\": [{{\"type\": \"panel\", \"title\": \"test\", \"fields\": [{{\"type\": \"panel\", \"title\": \"test2\"}}]}}]}}";
 
-            Assert.That.ThrowsExceptionWithMessage<FormatException>( () =>
+            Assert.That.ThrowsWithMessage<FormatException>( () =>
             {
                 ThemeDefinition.Parse( json );
             }, "Panel 'test' may not have nested panels." );

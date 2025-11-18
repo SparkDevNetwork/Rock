@@ -53,7 +53,7 @@ namespace Rock.Tests.Integration.Rest
 
             actionFilter.OnActionExecuting( httpContext );
 
-            Assert.That.AreEqual( HttpStatusCode.OK, httpContext.Response.StatusCode );
+            Assert.AreEqual( HttpStatusCode.OK, httpContext.Response.StatusCode );
         }
     }
 }

@@ -77,7 +77,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             var savedRequest = prayerRequestService.Get( prayerRequest.Guid );
 
-            Assert.That.AreEqual( email, savedRequest.Email );
+            Assert.AreEqual( email, savedRequest.Email );
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             if ( !isValid )
             {
-                Assert.That.Fail( $"Email Validation failed: {email} ({rule})" );
+                Assert.Fail( $"Email Validation failed: {email} ({rule})" );
             }
         }
 

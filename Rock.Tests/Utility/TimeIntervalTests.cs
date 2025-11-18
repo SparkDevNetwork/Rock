@@ -41,7 +41,7 @@ namespace Rock.Tests.Utility
 
             foreach ( var keyValue in testData )
             {
-                Assert.That.AreEqual( keyValue.Value, keyValue.Key.ToSeconds() );
+                Assert.AreEqual( keyValue.Value, keyValue.Key.ToSeconds() );
             }
         }
     }

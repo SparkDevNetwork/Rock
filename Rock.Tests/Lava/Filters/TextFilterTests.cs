@@ -255,7 +255,7 @@ namespace Rock.Tests.Lava.Filters
             {
                 var output = TestHelper.GetTemplateOutput( engine, template );
 
-                Assert.That.False( string.IsNullOrWhiteSpace( output ) );
+                Assert.IsFalse( string.IsNullOrWhiteSpace( output ) );
 
                 var readTime = TimeSpan.ParseExact( output, _timeSpanOutputFormats, CultureInfo.CurrentCulture );
 
@@ -279,7 +279,7 @@ namespace Rock.Tests.Lava.Filters
             {
                 var output = TestHelper.GetTemplateOutput( engine, template );
 
-                Assert.That.False( string.IsNullOrWhiteSpace( output ) );
+                Assert.IsFalse( string.IsNullOrWhiteSpace( output ) );
 
                 var readTime = TimeSpan.ParseExact( output, _timeSpanOutputFormats, CultureInfo.CurrentCulture );
 

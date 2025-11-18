@@ -103,9 +103,9 @@ namespace Rock.Tests.Model
 
                 var endDateReturned = scheduleDates.LastOrDefault();
 
-                Assert.That.IsNotNull( endDateReturned );
+                Assert.IsNotNull( endDateReturned );
                 Assert.That.AreEqualDate( endDateSpecified, endDateReturned.Period.StartTime.Date, "Unexpected value for Last Occurrence Date." );
-                Assert.That.AreEqual( _specificDates.Count, scheduleDates.Count, "Incorrect number of Occurrences returned from Schedule." );
+                Assert.AreEqual( _specificDates.Count, scheduleDates.Count, "Incorrect number of Occurrences returned from Schedule." );
             } );
         }
 
@@ -125,7 +125,7 @@ namespace Rock.Tests.Model
 
                 var endDateReturned = schedule.EffectiveEndDate;
 
-                Assert.That.IsNotNull( endDateReturned );
+                Assert.IsNotNull( endDateReturned );
                 Assert.That.AreEqualDate( endDateSpecified, endDateReturned.Value.Date, "Unexpected value for Last Occurrence Date." );
             } );
         }
@@ -153,7 +153,7 @@ namespace Rock.Tests.Model
                 var endDateExpected = eventDate.AddDays( 1 );
                 var endDateReturned = schedule.EffectiveEndDate;
 
-                Assert.That.IsNotNull( endDateReturned );
+                Assert.IsNotNull( endDateReturned );
                 Assert.That.AreEqualDate( endDateExpected, endDateReturned.Value.Date, "Unexpected value for EffectiveEndDate." );
             } );
         }
@@ -175,7 +175,7 @@ namespace Rock.Tests.Model
                 var endDateExpected = eventDate.AddDays( 1 );
                 var endDateReturned = schedule.EffectiveEndDate;
 
-                Assert.That.IsNotNull( endDateReturned );
+                Assert.IsNotNull( endDateReturned );
                 Assert.That.AreEqualDate( endDateExpected, endDateReturned.Value.Date, "Unexpected value for EffectiveEndDate." );
             } );
         }
@@ -199,7 +199,7 @@ namespace Rock.Tests.Model
 
                 var scheduleDates = schedule.GetICalOccurrences( RockDateTime.Now, endDate );
 
-                Assert.That.IsNotNull( scheduleDates.LastOrDefault() );
+                Assert.IsNotNull( scheduleDates.LastOrDefault() );
 
                 // End date is at 12am, so the last occurrence of the event will land on the preceding day.
                 Assert.That.AreEqualDate( endDate, scheduleDates.LastOrDefault().Period.StartTime.Date.AddDays( 1 ) );
@@ -229,7 +229,7 @@ namespace Rock.Tests.Model
 
                 var scheduleDates = schedule.GetICalOccurrences( nowDate, endRequestDate );
 
-                Assert.That.IsNotNull( scheduleDates.FirstOrDefault() );
+                Assert.IsNotNull( scheduleDates.FirstOrDefault() );
 
                 // Verify that the result does not include the event that started yesterday and is in progress today.
                 var firstEvent = scheduleDates.FirstOrDefault();
@@ -260,7 +260,7 @@ namespace Rock.Tests.Model
                 // Get occurrences for the schedule from today.
                 var scheduleDates = schedule.GetICalOccurrences( RockDateTime.Now, lastRequestDate );
 
-                Assert.That.IsNotNull( scheduleDates.FirstOrDefault() );
+                Assert.IsNotNull( scheduleDates.FirstOrDefault() );
 
                 var lastEvent = scheduleDates.LastOrDefault();
 
@@ -403,8 +403,8 @@ namespace Rock.Tests.Model
                 var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( GetRockNowDateTimeAsUnspecifiedKind(),
                     endDateTime: scheduleEndDate );
 
-                Assert.That.IsNotNull( schedule.EffectiveStartDate );
-                Assert.That.IsNotNull( schedule.EffectiveEndDate );
+                Assert.IsNotNull( schedule.EffectiveStartDate );
+                Assert.IsNotNull( schedule.EffectiveEndDate );
 
                 // Modify schedule to a weekly scheduleType
                 schedule.iCalendarContent = null;
@@ -413,8 +413,8 @@ namespace Rock.Tests.Model
 
                 schedule.EnsureEffectiveStartEndDates();
 
-                Assert.That.IsNull( schedule.EffectiveStartDate );
-                Assert.That.IsNull( schedule.EffectiveEndDate );
+                Assert.IsNull( schedule.EffectiveStartDate );
+                Assert.IsNull( schedule.EffectiveEndDate );
             } );
         }
 
@@ -424,11 +424,11 @@ namespace Rock.Tests.Model
             // Sunday, Thursday 11AM to 2AM
             var schedule = ScheduleWithCheckOut11PMto2AM();
 
-            Assert.That.IsTrue( schedule.WasScheduleActive( DateTime.Parse( "2019-08-08 11:01PM" ) ) );
-            Assert.That.IsTrue( schedule.WasScheduleActive( DateTime.Parse( "2019-08-08 1:00AM" ) ) );
-            Assert.That.IsFalse( schedule.WasScheduleActive( DateTime.Parse( "2019-08-08 3:00AM" ) ) );
-            Assert.That.IsFalse( schedule.WasScheduleActive( DateTime.Parse( "2019-08-08 2:00PM" ) ) );
-            Assert.That.IsFalse( schedule.WasScheduleActive( DateTime.Parse( "2019-08-08 10:00PM" ) ) );
+            Assert.IsTrue( schedule.WasScheduleActive( DateTime.Parse( "2019-08-08 11:01PM" ) ) );
+            Assert.IsTrue( schedule.WasScheduleActive( DateTime.Parse( "2019-08-08 1:00AM" ) ) );
+            Assert.IsFalse( schedule.WasScheduleActive( DateTime.Parse( "2019-08-08 3:00AM" ) ) );
+            Assert.IsFalse( schedule.WasScheduleActive( DateTime.Parse( "2019-08-08 2:00PM" ) ) );
+            Assert.IsFalse( schedule.WasScheduleActive( DateTime.Parse( "2019-08-08 10:00PM" ) ) );
         }
 
         [TestMethod]
@@ -437,11 +437,11 @@ namespace Rock.Tests.Model
             // Sunday, 9AM to 10AM
             var schedule = Standard9AMto10AMSchedule();
 
-            Assert.That.IsTrue( schedule.WasScheduleActive( DateTime.Parse( "2019-08-04 9:00AM" ) ) );
-            Assert.That.IsTrue( schedule.WasScheduleActive( DateTime.Parse( "2019-08-04 9:01AM" ) ) );
-            Assert.That.IsFalse( schedule.WasScheduleActive( DateTime.Parse( "2019-08-04 10:01AM" ) ) );
-            Assert.That.IsFalse( schedule.WasScheduleActive( DateTime.Parse( "2019-08-04 8:00AM" ) ) );
-            Assert.That.IsFalse( schedule.WasScheduleActive( DateTime.Parse( "2019-08-03 9:00AM" ) ) );
+            Assert.IsTrue( schedule.WasScheduleActive( DateTime.Parse( "2019-08-04 9:00AM" ) ) );
+            Assert.IsTrue( schedule.WasScheduleActive( DateTime.Parse( "2019-08-04 9:01AM" ) ) );
+            Assert.IsFalse( schedule.WasScheduleActive( DateTime.Parse( "2019-08-04 10:01AM" ) ) );
+            Assert.IsFalse( schedule.WasScheduleActive( DateTime.Parse( "2019-08-04 8:00AM" ) ) );
+            Assert.IsFalse( schedule.WasScheduleActive( DateTime.Parse( "2019-08-03 9:00AM" ) ) );
         }
 
         /// <summary>

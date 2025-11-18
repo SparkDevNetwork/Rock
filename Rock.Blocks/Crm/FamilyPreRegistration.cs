@@ -1674,7 +1674,7 @@ namespace Rock.Blocks.Crm
         {
             errorMessages = new List<string>();
 
-            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            var disableCaptcha = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
             if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
             {
                 errorMessages.Add( "Captcha was not valid." );
@@ -1999,7 +1999,7 @@ namespace Rock.Blocks.Crm
                 ChildProfilePhotoField = GetFieldBag( AttributeKey.ChildProfilePhoto ),
                 ChildRaceField = GetFieldBag( AttributeKey.ChildRaceOption ),
                 ChildEthnicityField = GetFieldBag( AttributeKey.ChildEthnicityOption ),
-                DisableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean(),
+                DisableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() ),
                 AdultLabel = GetAttributeValue( AttributeKey.AdultLabel ),
                 ChildLabel = GetAttributeValue( AttributeKey.ChildLabel ),
             };

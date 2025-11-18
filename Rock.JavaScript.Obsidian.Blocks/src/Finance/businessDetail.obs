@@ -9,6 +9,7 @@
                  :name="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
+                 entityTypeName="Business"
                  :isAuditHidden="false"
                  :isBadgesVisible="false"
                  :isDeleteVisible="false"

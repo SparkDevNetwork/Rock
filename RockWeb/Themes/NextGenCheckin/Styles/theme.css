@@ -9,15 +9,15 @@
 
 /* CSS Overrides Bottom Start */
 :root {
-    --color-primary: #ee7725;
+    --base-primary: #ee7725;
     --logo-image: url('/Assets/Images/rock-logo-gray.svg');
-    --color-interface-strongest: #000000;
-    --color-interface-stronger: #1C1C1E;
-    --color-interface-strong: #5D5D6F;
-    --color-interface-medium: #8B8BA7;
-    --color-interface-soft: #D9D9E3;
-    --color-interface-softer: #E7E9EF;
-    --color-interface-softest: #FFFFFF;
+    --base-interface-strongest: #000000;
+    --base-interface-stronger: #1C1C1E;
+    --base-interface-strong: #5D5D6F;
+    --base-interface-medium: #8B8BA7;
+    --base-interface-soft: #D9D9E3;
+    --base-interface-softer: #E7E9EF;
+    --base-interface-softest: #FFFFFF;
     --color-success-soft: #D7F4DE;
     --color-success-strong: #248A3D;
 }

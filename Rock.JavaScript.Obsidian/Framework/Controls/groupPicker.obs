@@ -4,7 +4,8 @@
                     formGroupClasses="group-item-picker"
                     iconCssClass="ti ti-users"
                     :provider="itemProvider"
-                    :multiple="multiple">
+                    :multiple="multiple"
+                    autoExpand>
 
         <template #customPickerActions>
             <label class="rock-checkbox-icon">

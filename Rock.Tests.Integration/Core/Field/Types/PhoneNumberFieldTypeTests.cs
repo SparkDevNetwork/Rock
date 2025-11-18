@@ -91,14 +91,14 @@ namespace Rock.Tests.Integration.Core.Field.Types
             phoneNumberFieldType.SetEditValue( phoneNumberControl, null, inputNumber );
 
             // Verify that the phone number parts are correctly identified in the edit control.
-            Assert.That.AreEqual( expectedCountryCode, phoneNumberControl.CountryCode );
-            Assert.That.AreEqual( expectedFormattedNumber, phoneNumberControl.Number );
+            Assert.AreEqual( expectedCountryCode, phoneNumberControl.CountryCode );
+            Assert.AreEqual( expectedFormattedNumber, phoneNumberControl.Number );
 
             // Verify that the formatted phone number used to store the value is correct.
             // The country code prefix should only be included for non-default values.
             var formattedValue = phoneNumberFieldType.GetEditValue( phoneNumberControl, null );
 
-            Assert.That.AreEqual( expectedFormattedValue, formattedValue );
+            Assert.AreEqual( expectedFormattedValue, formattedValue );
         }
 
     }

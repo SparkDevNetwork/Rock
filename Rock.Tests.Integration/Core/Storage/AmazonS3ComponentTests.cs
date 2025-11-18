@@ -101,7 +101,7 @@ namespace Rock.Tests.Integration.Core.Storage
             }
             catch ( System.Exception ex )
             {
-                Assert.That.Inconclusive( $"Unable to get the Amazon S3 Asset Storage Provider ({ex.Message})." );
+                Assert.Inconclusive( $"Unable to get the Amazon S3 Asset Storage Provider ({ex.Message})." );
             }
         }
     }

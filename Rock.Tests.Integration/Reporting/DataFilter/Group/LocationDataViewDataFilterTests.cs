@@ -38,7 +38,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Group
             TestDataHelper.Reporting.AddDataViewsForGroupsModule();
         }
 
-        [ClassCleanup( ClassCleanupBehavior.EndOfClass )]
+        [ClassCleanup]
         public static void Cleanup()
         {
             if ( IsContainersEnabled )
@@ -63,7 +63,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Group
 
             var settingsTarget = new Rock.Reporting.DataFilter.Group.LocationDataViewFilter.FilterSettings( settingsString );
 
-            Assert.That.AreEqual( TestGuids.DataViews.LocationsOutsideArizona.AsGuid(), settingsTarget.DataViewGuid );
+            Assert.AreEqual( TestGuids.DataViews.LocationsOutsideArizona.AsGuid(), settingsTarget.DataViewGuid );
         }
 
         /// <summary>
@@ -80,12 +80,12 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Group
 
             var results = groupQuery.ToList();
 
-            Assert.That.IsTrue( results.Count > 0, "The result set must contain at least one group." );
+            Assert.IsTrue( results.Count > 0, "The result set must contain at least one group." );
 
             // Verify all Groups have at least one Location where State = "AZ".
             var countOfGroupsNotInArizona = results.Where( x => !x.GroupLocations.Any( gl => gl.Location.State == "AZ" ) ).Count();
 
-            Assert.That.IsTrue( countOfGroupsNotInArizona == 0, "The result set contains one or more groups that do not match the location filter." );
+            Assert.IsTrue( countOfGroupsNotInArizona == 0, "The result set contains one or more groups that do not match the location filter." );
         }
 
         /// <summary>
@@ -101,12 +101,12 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Group
 
             var results = groupQuery.ToList();
 
-            Assert.That.IsTrue( results.Count > 0, "The result set must contain at least one group." );
+            Assert.IsTrue( results.Count > 0, "The result set must contain at least one group." );
 
             // Verify that there are no Groups in the result set having any Location where State = "AZ".
             var countOfGroupsInArizona = results.Where( x => x.GroupLocations.Any( gl => gl.Location.State == "AZ" ) ).Count();
 
-            Assert.That.IsTrue( countOfGroupsInArizona == 0, "The result set contains one or more groups that do not match the location filter." );
+            Assert.IsTrue( countOfGroupsInArizona == 0, "The result set contains one or more groups that do not match the location filter." );
         }
 
         /// <summary>

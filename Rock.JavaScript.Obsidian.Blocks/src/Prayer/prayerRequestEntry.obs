@@ -92,12 +92,14 @@
                     </fieldset>
 
                     <div class="captcha-container">
-                        <Captcha v-if="!config.disableCaptchaSupport" ref="captchaElement" validationTitle="Captcha" />
+                        <div v-if="!config.disableCaptchaSupport" v-show="!isCaptchaComplete">
+                            <Captcha ref="captchaElement" validationTitle="Captcha" />
+                        </div>
                     </div>
 
-                    <RockButton shortcutKey="s"
+                    <RockButton v-if="isCaptchaComplete || config.disableCaptchaSupport" shortcutKey="s"
                                 btnType="primary"
-                                :disabled="isSaving || isNavigating || !isCaptchaComplete"
+                                :disabled="isSaving || isNavigating"
                                 type="submit">{{ saveButtonText }}</RockButton>
                 </RockForm>
                 <template v-else>
@@ -174,7 +176,6 @@
     const campusStatusFilter = ref<string[] | undefined>(config.campusStatusFilter ?? undefined);
 
     const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
-    const captchaToken = ref<string | undefined>();
     const isCaptchaComplete = ref(false);
 
     //#endregion
@@ -222,7 +223,6 @@
 
         const token = await captchaElement.value.getToken();
         isCaptchaComplete.value = !!token;
-        captchaToken.value = token;
     }
 
     /**
@@ -256,8 +256,20 @@
         attributeValues.value = {};
         isEntryHidden.value = false;
 
-        // Automatically set focus to the Request textarea after the template is rendered.
+        const shouldValidateCaptcha = !config.disableCaptchaSupport;
+        if (shouldValidateCaptcha) {
+            isCaptchaComplete.value = false;
+        }
+
         nextTick(() => {
+            if (shouldValidateCaptcha) {
+                if (captchaElement.value) {
+                    captchaElement.value.refreshToken();
+                }
+                waitForCaptcha();
+            }
+
+            // Automatically set focus to the Request textarea after the template is rendered.
             if (requestInput.value) {
                 requestInput.value.focus();
             }
@@ -288,14 +300,11 @@
 
             const actionContext: BlockActionContextBag = {};
             if (!config.disableCaptchaSupport && captchaElement.value) {
-                actionContext.captcha = captchaToken.value;
+                actionContext.captcha = await captchaElement.value.getToken();
+                captchaElement.value.refreshToken();
             }
 
             const result = await invokeBlockAction<PrayerRequestEntrySaveResponseBag>("Save", { bag }, actionContext);
-
-            if (!config.disableCaptchaSupport && captchaElement.value) {
-                captchaElement.value.refreshToken();
-            }
 
             if (!result?.isSuccess || !result.data) {
                 errors.value = [result.errorMessage || "An unexpected error occurred."];

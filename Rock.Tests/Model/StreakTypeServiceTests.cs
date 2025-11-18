@@ -23,11 +23,11 @@ namespace Rock.Tests.Model
             var hexString = "ABCDEF0123456789";
 
             var result = StreakTypeService.GetMapFromHexDigitString( hexString );
-            Assert.That.AreEqual( expectedBytes.Length, result.Length );
+            Assert.AreEqual( expectedBytes.Length, result.Length );
 
             for ( var i = 0; i < expectedBytes.Length; i++ )
             {
-                Assert.That.AreEqual( expectedBytes[i], result[i] );
+                Assert.AreEqual( expectedBytes[i], result[i] );
             }
         }
 
@@ -45,7 +45,7 @@ namespace Rock.Tests.Model
             var expectedString = "ABCDEF0123456789";
 
             var result = StreakTypeService.GetHexDigitStringFromMap( map );
-            Assert.That.AreEqual( expectedString, result );
+            Assert.AreEqual( expectedString, result );
         }
 
         #endregion GetHexDigitStringFromMap
@@ -65,32 +65,32 @@ namespace Rock.Tests.Model
             var result = StreakTypeService.GetAggregateMap( new byte[][] { map1, map2, map3 } );
 
             // Verify map 1 didn't change
-            Assert.That.AreEqual( 3, map1.Length );
-            Assert.That.AreEqual( 0b_1000_0000, map1[0] );
-            Assert.That.AreEqual( 0b_0010_0000, map1[1] );
-            Assert.That.AreEqual( 0b_1000_0100, map1[2] );
+            Assert.AreEqual( 3, map1.Length );
+            Assert.AreEqual( 0b_1000_0000, map1[0] );
+            Assert.AreEqual( 0b_0010_0000, map1[1] );
+            Assert.AreEqual( 0b_1000_0100, map1[2] );
 
             // Verify map 2 didn't change
-            Assert.That.AreEqual( 4, map2.Length );
-            Assert.That.AreEqual( 0b_1001_0000, map2[0] );
-            Assert.That.AreEqual( 0b_0010_0100, map2[1] );
-            Assert.That.AreEqual( 0b_0000_0100, map2[2] );
-            Assert.That.AreEqual( 0b_1111_0101, map2[3] );
+            Assert.AreEqual( 4, map2.Length );
+            Assert.AreEqual( 0b_1001_0000, map2[0] );
+            Assert.AreEqual( 0b_0010_0100, map2[1] );
+            Assert.AreEqual( 0b_0000_0100, map2[2] );
+            Assert.AreEqual( 0b_1111_0101, map2[3] );
 
             // Verify map3 didn't change
-            Assert.That.AreEqual( 0, map3.Length );
+            Assert.AreEqual( 0, map3.Length );
 
             // Verify that the result is a new array, consisting of bytes OR'ed together
-            Assert.That.AreEqual( 128, result.Length );
-            Assert.That.AreEqual( map1[2] | map2[3], result[128 - 1] );
-            Assert.That.AreEqual( map1[1] | map2[2], result[128 - 2] );
-            Assert.That.AreEqual( map1[0] | map2[1], result[128 - 3] );
-            Assert.That.AreEqual( map2[0], result[128 - 4] );
+            Assert.AreEqual( 128, result.Length );
+            Assert.AreEqual( map1[2] | map2[3], result[128 - 1] );
+            Assert.AreEqual( map1[1] | map2[2], result[128 - 2] );
+            Assert.AreEqual( map1[0] | map2[1], result[128 - 3] );
+            Assert.AreEqual( map2[0], result[128 - 4] );
 
             // Check all the other bytes are 0
             for ( var i = 0; i < ( 128 - 4 ); i++ )
             {
-                Assert.That.AreEqual( 0, result[i] );
+                Assert.AreEqual( 0, result[i] );
             }
         }
 

@@ -115,7 +115,7 @@ Outer 'a' = a
 
                 TestHelper.DebugWriteRenderResult( engine, input, result.Text );
 
-                Assert.That.Contains( result.Error.Messages().JoinStrings( "//" ), "File Load Failed." );
+                Assert.Contains( "File Load Failed.", result.Error.Messages().JoinStrings( "//" ) );
             } );
         }
 
@@ -132,7 +132,7 @@ Outer 'a' = a
 
                 var result = testEngine.RenderTemplate( input );
 
-                Assert.That.Contains( result.Error.Messages().JoinStrings( "//" ), "File Load Failed." );
+                Assert.Contains( "File Load Failed.", result.Error.Messages().JoinStrings( "//" ) );
             } );
         }
 

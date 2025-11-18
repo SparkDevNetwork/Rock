@@ -13,9 +13,11 @@
 
             <template #footerActions v-if="!resultLavaTemplate && !blockError">
                 <div class="captcha-container">
-                    <Captcha v-if="!options.disableCaptchaSupport" ref="captchaElement" validationTitle="Captcha" />
+                    <div v-if="!options.disableCaptchaSupport" v-show="!isCaptchaComplete">
+                        <Captcha ref="captchaElement" validationTitle="Captcha" />
+                    </div>
                 </div>
-                <RockButton :btnSize="BtnSize.Default" :btnType="BtnType.Primary" :disabled="isRegistering || !isCaptchaComplete" type="submit">
+                <RockButton v-if="isCaptchaComplete || options.disableCaptchaSupport" :btnSize="BtnSize.Default" :btnType="BtnType.Primary" :disabled="isRegistering" type="submit">
                     {{ buttonText }}
                 </RockButton>
             </template>
@@ -64,7 +66,6 @@
     const isRegistering = ref(false);
 
     const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
-    const captchaToken = ref<string | undefined>();
     const isCaptchaComplete = ref(false);
 
     // #endregion
@@ -87,7 +88,6 @@
 
         const token = await captchaElement.value.getToken();
         isCaptchaComplete.value = !!token;
-        captchaToken.value = token;
     }
 
     // #endregion
@@ -106,16 +106,13 @@
 
         const actionContext: BlockActionContextBag = {};
         if (!options.value.disableCaptchaSupport && captchaElement.value) {
-            actionContext.captcha = captchaToken.value;
+            actionContext.captcha = await captchaElement.value.getToken();
+            captchaElement.value.refreshToken();
         }
 
         const result = await invokeBlockAction<string>("Save", {
             groupRegistrationBag: groupRegistrationBag.value
         }, actionContext);
-
-        if (!options.value.disableCaptchaSupport && captchaElement.value) {
-            captchaElement.value.refreshToken();
-        }
 
         isRegistering.value = false;
 

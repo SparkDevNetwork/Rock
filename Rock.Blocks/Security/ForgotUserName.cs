@@ -28,6 +28,7 @@ using Rock.Enums.Blocks.Security.ForgotUserName;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks.Security.ForgotUserName;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Security
 {
@@ -161,7 +162,7 @@ namespace Rock.Blocks.Security
                 ErrorMessage = null,
                 NavigationUrls = GetBoxNavigationUrls(),
                 SecurityGrantToken = null,
-                DisableCaptchaSupport = this.DisableCaptchaSupport
+                DisableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() )
             };
         }
 
@@ -176,7 +177,7 @@ namespace Rock.Blocks.Security
         [BlockAction]
         public BlockActionResult SendInstructions( ForgotUserNameSendInstructionsRequestBag bag )
         {
-            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            var disableCaptcha = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
 
             if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
             {

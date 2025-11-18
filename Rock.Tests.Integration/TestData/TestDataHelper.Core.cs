@@ -87,10 +87,10 @@ namespace Rock.Tests.Integration.TestData
                 foreach ( var attributeArgs in args )
                 {
                     var fieldType = FieldTypeCache.Get( attributeArgs.FieldTypeIdentifier, allowIntegerIdentifier: true );
-                    Assert.That.IsNotNull( fieldType, $"Invalid Field Type [FieldTypeIdentifier={attributeArgs.FieldTypeIdentifier}" );
+                    Assert.IsNotNull( fieldType, $"Invalid Field Type [FieldTypeIdentifier={attributeArgs.FieldTypeIdentifier}" );
 
                     var entityType = EntityTypeCache.Get( attributeArgs.EntityTypeIdentifier, allowIntegerIdentifier: true );
-                    Assert.That.IsNotNull( entityType, $"Invalid Entity Type [EntityTypeIdentifier={attributeArgs.EntityTypeIdentifier}" );
+                    Assert.IsNotNull( entityType, $"Invalid Entity Type [EntityTypeIdentifier={attributeArgs.EntityTypeIdentifier}" );
 
                     var name = attributeArgs.Name;
                     if ( string.IsNullOrWhiteSpace( name ) )

@@ -1,4 +1,6 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -10,22 +12,30 @@ namespace Rock.Tests.Shared
     /// </summary>
     public class ConditionalTestMethodAttribute : TestMethodAttribute
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConditionalTestMethodAttribute"/> class.
+        /// </summary>
+        public ConditionalTestMethodAttribute( [CallerFilePath] string callerFilePath = "", [CallerLineNumber] int callerLineNumber = -1 )
+            : base( callerFilePath, callerLineNumber )
+        {
+        }
+
         /// <inheritdoc/>
-        public override TestResult[] Execute( ITestMethod testMethod )
+        public override Task<TestResult[]> ExecuteAsync( ITestMethod testMethod )
         {
             if ( !ShouldExecute( testMethod, out var message ) )
             {
-                return new[]
+                return Task.FromResult( new[]
                 {
                     new TestResult
                     {
                         Outcome = UnitTestOutcome.Inconclusive,
                         TestFailureException = new AssertInconclusiveException( message ),
                     }
-                };
+                } );
             }
 
-            return base.Execute( testMethod );
+            return base.ExecuteAsync( testMethod );
         }
 
         /// <summary>
@@ -37,7 +47,7 @@ namespace Rock.Tests.Shared
         /// <returns><c>true</c> if the test method should be executed, <c>false</c> otherwise.</returns>
         private bool ShouldExecute( ITestMethod testMethod, out string message )
         {
-            foreach ( var attribute in testMethod.GetAttributes<BaseIgnoreIfAttribute>( inherit: true ) )
+            foreach ( var attribute in testMethod.GetAttributes<BaseIgnoreIfAttribute>() )
             {
                 if ( !attribute.ShouldExecute( testMethod ) )
                 {

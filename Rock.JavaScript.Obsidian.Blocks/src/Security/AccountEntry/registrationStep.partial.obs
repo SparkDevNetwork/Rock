@@ -23,10 +23,12 @@
 
         <div class="row">
             <div class="col-md-12">
-                <RockButton
-                            :btnType="BtnType.Primary"
-                            :disabled="disabled"
-                            type="submit">Next</RockButton>
+                <div v-if="!hideActions">
+                    <RockButton
+                                :btnType="BtnType.Primary"
+                                :disabled="disabled"
+                                type="submit">Next</RockButton>
+                </div>
             </div>
         </div>
     </RockForm>
@@ -55,6 +57,11 @@
             required: true
         },
         disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+        hideActions: {
             type: Boolean as PropType<boolean>,
             required: false,
             default: false

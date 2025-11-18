@@ -62,10 +62,10 @@ namespace Rock.Tests.Integration.Workflow
 
                 // The specific test, is that Ted Decker is logged in. In the UI
                 // we don't change anything. Ted and Cindy should be used.
-                Assert.That.AreEqual( tedDecker.Id, formPerson.Id );
-                Assert.That.AreEqual( cindyDecker.Id, formSpouse.Id );
-                Assert.That.AreEqual( tedDecker.PrimaryFamilyId.Value, formPerson.PrimaryFamilyId.Value );
-                Assert.That.AreEqual( tedDecker.PrimaryFamilyId.Value, formSpouse.PrimaryFamilyId.Value );
+                Assert.AreEqual( tedDecker.Id, formPerson.Id );
+                Assert.AreEqual( cindyDecker.Id, formSpouse.Id );
+                Assert.AreEqual( tedDecker.PrimaryFamilyId.Value, formPerson.PrimaryFamilyId.Value );
+                Assert.AreEqual( tedDecker.PrimaryFamilyId.Value, formSpouse.PrimaryFamilyId.Value );
             }
         }
 
@@ -110,10 +110,10 @@ namespace Rock.Tests.Integration.Workflow
                 // The specific test, nobody is logged in. In the UI we fill out
                 // information for Ted and Cindy Decker. Ted and Cindy should be
                 // matched and used.
-                Assert.That.AreEqual( tedDecker.Id, formPerson.Id );
-                Assert.That.AreEqual( cindyDecker.Id, formSpouse.Id );
-                Assert.That.AreEqual( tedDecker.PrimaryFamilyId.Value, formPerson.PrimaryFamilyId.Value );
-                Assert.That.AreEqual( tedDecker.PrimaryFamilyId.Value, formSpouse.PrimaryFamilyId.Value );
+                Assert.AreEqual( tedDecker.Id, formPerson.Id );
+                Assert.AreEqual( cindyDecker.Id, formSpouse.Id );
+                Assert.AreEqual( tedDecker.PrimaryFamilyId.Value, formPerson.PrimaryFamilyId.Value );
+                Assert.AreEqual( tedDecker.PrimaryFamilyId.Value, formSpouse.PrimaryFamilyId.Value );
             }
         }
 
@@ -164,10 +164,10 @@ namespace Rock.Tests.Integration.Workflow
                 // NOTE: We kno wthis might not be the ideal behavior, but it is
                 // the best we could come up with and mirrors the legacy behavior.
                 // Any change to this behavior should be reviewed carefully.
-                Assert.That.AreNotEqual( tedDecker.Id, formPerson.Id );
-                Assert.That.AreEqual( cindyDecker.Id, formSpouse.Id );
-                Assert.That.AreNotEqual( tedDecker.PrimaryFamilyId.Value, formPerson.PrimaryFamilyId.Value );
-                Assert.That.AreEqual( tedDecker.PrimaryFamilyId.Value, formSpouse.PrimaryFamilyId.Value );
+                Assert.AreNotEqual( tedDecker.Id, formPerson.Id );
+                Assert.AreEqual( cindyDecker.Id, formSpouse.Id );
+                Assert.AreNotEqual( tedDecker.PrimaryFamilyId.Value, formPerson.PrimaryFamilyId.Value );
+                Assert.AreEqual( tedDecker.PrimaryFamilyId.Value, formSpouse.PrimaryFamilyId.Value );
             }
         }
 
@@ -217,10 +217,10 @@ namespace Rock.Tests.Integration.Workflow
                 // NOTE: We kno wthis might not be the ideal behavior, but it is
                 // the best we could come up with and mirrors the legacy behavior.
                 // Any change to this behavior should be reviewed carefully.
-                Assert.That.AreEqual( tedDecker.Id, formPerson.Id );
-                Assert.That.AreNotEqual( cindyDecker.Id, formSpouse.Id );
-                Assert.That.AreEqual( tedDecker.PrimaryFamilyId.Value, formPerson.PrimaryFamilyId.Value );
-                Assert.That.AreEqual( tedDecker.PrimaryFamilyId.Value, formSpouse.PrimaryFamilyId.Value );
+                Assert.AreEqual( tedDecker.Id, formPerson.Id );
+                Assert.AreNotEqual( cindyDecker.Id, formSpouse.Id );
+                Assert.AreEqual( tedDecker.PrimaryFamilyId.Value, formPerson.PrimaryFamilyId.Value );
+                Assert.AreEqual( tedDecker.PrimaryFamilyId.Value, formSpouse.PrimaryFamilyId.Value );
             }
         }
 
@@ -273,11 +273,11 @@ namespace Rock.Tests.Integration.Workflow
                 // NOTE: We kno wthis might not be the ideal behavior, but it is
                 // the best we could come up with and mirrors the legacy behavior.
                 // Any change to this behavior should be reviewed carefully.
-                Assert.That.AreEqual( billMarble.Id, formPerson.Id );
-                Assert.That.AreNotEqual( cindyDecker.Id, formSpouse.Id );
-                Assert.That.AreNotEqual( alishaMarble.Id, formSpouse.Id );
-                Assert.That.AreEqual( billMarble.PrimaryFamilyId.Value, formPerson.PrimaryFamilyId.Value );
-                Assert.That.AreEqual( billMarble.PrimaryFamilyId.Value, formSpouse.PrimaryFamilyId.Value );
+                Assert.AreEqual( billMarble.Id, formPerson.Id );
+                Assert.AreNotEqual( cindyDecker.Id, formSpouse.Id );
+                Assert.AreNotEqual( alishaMarble.Id, formSpouse.Id );
+                Assert.AreEqual( billMarble.PrimaryFamilyId.Value, formPerson.PrimaryFamilyId.Value );
+                Assert.AreEqual( billMarble.PrimaryFamilyId.Value, formSpouse.PrimaryFamilyId.Value );
             }
         }
 
@@ -328,11 +328,11 @@ namespace Rock.Tests.Integration.Workflow
                 // NOTE: We kno wthis might not be the ideal behavior, but it is
                 // the best we could come up with and mirrors the legacy behavior.
                 // Any change to this behavior should be reviewed carefully.
-                Assert.That.AreEqual( tedDecker.Id, formPerson.Id );
-                Assert.That.AreNotEqual( cindyDecker.Id, formSpouse.Id );
-                Assert.That.AreNotEqual( alishaMarble.Id, formSpouse.Id );
-                Assert.That.AreEqual( tedDecker.PrimaryFamilyId.Value, formPerson.PrimaryFamilyId.Value );
-                Assert.That.AreEqual( tedDecker.PrimaryFamilyId.Value, formSpouse.PrimaryFamilyId.Value );
+                Assert.AreEqual( tedDecker.Id, formPerson.Id );
+                Assert.AreNotEqual( cindyDecker.Id, formSpouse.Id );
+                Assert.AreNotEqual( alishaMarble.Id, formSpouse.Id );
+                Assert.AreEqual( tedDecker.PrimaryFamilyId.Value, formPerson.PrimaryFamilyId.Value );
+                Assert.AreEqual( tedDecker.PrimaryFamilyId.Value, formSpouse.PrimaryFamilyId.Value );
             }
         }
 
@@ -366,9 +366,9 @@ namespace Rock.Tests.Integration.Workflow
                 var spouseAliasGuid = config.Action.Activity.Workflow.GetAttributeValue( config.SpouseAttribute.Key ).AsGuidOrNull();
                 var newPersonCount = personService.Queryable().Count() - originalPersonCount;
 
-                Assert.That.IsNotNull( personAliasGuid, "Person alias should be non-null." );
-                Assert.That.IsNull( spouseAliasGuid, "Spouse alias should be null." );
-                Assert.That.AreEqual( 1, newPersonCount, "Number of new person records should be 1." );
+                Assert.IsNotNull( personAliasGuid, "Person alias should be non-null." );
+                Assert.IsNull( spouseAliasGuid, "Spouse alias should be null." );
+                Assert.AreEqual( 1, newPersonCount, "Number of new person records should be 1." );
             }
         }
 

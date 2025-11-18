@@ -46,7 +46,7 @@ namespace Rock.Tests.Integration.TestData
             var person = new PersonService( rockContext ).Queryable()
                 .FirstOrDefault( x => x.Guid == guid );
 
-            Assert.That.IsNotNull( person, "Test person not found in current database." );
+            Assert.IsNotNull( person, "Test person not found in current database." );
 
             return person;
         }

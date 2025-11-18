@@ -54,7 +54,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             filter.FilterGroups( opportunities );
 
-            Assert.That.AreEqual( 2, opportunities.Groups.Count );
+            Assert.AreEqual( 2, opportunities.Groups.Count );
         }
 
         [TestMethod]
@@ -88,8 +88,8 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             filter.FilterGroups( opportunities );
 
-            Assert.That.AreEqual( 1, opportunities.Groups.Count );
-            Assert.That.AreEqual( firstGroupId, IdHasher.Instance.GetId( firstGroupOpportunity.Id ) );
+            Assert.AreEqual( 1, opportunities.Groups.Count );
+            Assert.AreEqual( firstGroupId, IdHasher.Instance.GetId( firstGroupOpportunity.Id ) );
         }
 
         [TestMethod]
@@ -123,7 +123,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             filter.FilterGroups( opportunities );
 
-            Assert.That.AreEqual( 2, opportunities.Groups.Count );
+            Assert.AreEqual( 2, opportunities.Groups.Count );
         }
 
         [TestMethod]
@@ -157,7 +157,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             filter.FilterGroups( opportunities );
 
-            Assert.That.AreEqual( 2, opportunities.Groups.Count );
+            Assert.AreEqual( 2, opportunities.Groups.Count );
         }
 
         #endregion

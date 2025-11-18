@@ -129,7 +129,7 @@ namespace Rock.Tests.Integration.Core.Model
         /// <summary>
         /// Runs after all tests in this class is executed.
         /// </summary>
-        [ClassCleanup( ClassCleanupBehavior.EndOfClass )]
+        [ClassCleanup]
         public static void ClassCleanup()
         {
             if ( IsContainersEnabled )
@@ -157,39 +157,39 @@ namespace Rock.Tests.Integration.Core.Model
             var result = _streakTypeService.GetStreakData( StreakTypeCache.Get( _streakTypeId ), _personId, out string errorMessage,
                 startDate, endDate, true, true, 100 );
 
-            Assert.That.AreEqual( string.Empty, errorMessage );
-            Assert.That.IsNotNull( result );
+            Assert.AreEqual( string.Empty, errorMessage );
+            Assert.IsNotNull( result );
 
-            Assert.That.AreEqual( 9, result.LongestStreakCount );
-            Assert.That.AreEqual( new DateTime( 2019, 1, 5 ), result.LongestStreakStartDate );
-            Assert.That.AreEqual( new DateTime( 2019, 1, 18 ), result.LongestStreakEndDate );
+            Assert.AreEqual( 9, result.LongestStreakCount );
+            Assert.AreEqual( new DateTime( 2019, 1, 5 ), result.LongestStreakStartDate );
+            Assert.AreEqual( new DateTime( 2019, 1, 18 ), result.LongestStreakEndDate );
 
-            Assert.That.AreEqual( 1, result.CurrentStreakCount );
-            Assert.That.AreEqual( new DateTime( 2019, 2, 4 ), result.CurrentStreakStartDate );
+            Assert.AreEqual( 1, result.CurrentStreakCount );
+            Assert.AreEqual( new DateTime( 2019, 2, 4 ), result.CurrentStreakStartDate );
 
-            Assert.That.AreEqual( 4, result.ComputedStreaks.Count );
+            Assert.AreEqual( 4, result.ComputedStreaks.Count );
 
-            Assert.That.AreEqual( 1, result.ComputedStreaks[0].Count );
-            Assert.That.AreEqual( new DateTime( 2019, 1, 1 ), result.ComputedStreaks[0].StartDate );
-            Assert.That.AreEqual( new DateTime( 2019, 1, 1 ), result.ComputedStreaks[0].EndDate );
+            Assert.AreEqual( 1, result.ComputedStreaks[0].Count );
+            Assert.AreEqual( new DateTime( 2019, 1, 1 ), result.ComputedStreaks[0].StartDate );
+            Assert.AreEqual( new DateTime( 2019, 1, 1 ), result.ComputedStreaks[0].EndDate );
 
-            Assert.That.AreEqual( 9, result.ComputedStreaks[1].Count );
-            Assert.That.AreEqual( new DateTime( 2019, 1, 5 ), result.ComputedStreaks[1].StartDate );
-            Assert.That.AreEqual( new DateTime( 2019, 1, 18 ), result.ComputedStreaks[1].EndDate );
+            Assert.AreEqual( 9, result.ComputedStreaks[1].Count );
+            Assert.AreEqual( new DateTime( 2019, 1, 5 ), result.ComputedStreaks[1].StartDate );
+            Assert.AreEqual( new DateTime( 2019, 1, 18 ), result.ComputedStreaks[1].EndDate );
 
-            Assert.That.AreEqual( 4, result.ComputedStreaks[2].Count );
-            Assert.That.AreEqual( new DateTime( 2019, 1, 23 ), result.ComputedStreaks[2].StartDate );
-            Assert.That.AreEqual( new DateTime( 2019, 1, 26 ), result.ComputedStreaks[2].EndDate );
+            Assert.AreEqual( 4, result.ComputedStreaks[2].Count );
+            Assert.AreEqual( new DateTime( 2019, 1, 23 ), result.ComputedStreaks[2].StartDate );
+            Assert.AreEqual( new DateTime( 2019, 1, 26 ), result.ComputedStreaks[2].EndDate );
 
-            Assert.That.AreEqual( 1, result.ComputedStreaks[3].Count );
-            Assert.That.AreEqual( new DateTime( 2019, 2, 4 ), result.ComputedStreaks[3].StartDate );
-            Assert.That.IsNull( result.ComputedStreaks[3].EndDate );
+            Assert.AreEqual( 1, result.ComputedStreaks[3].Count );
+            Assert.AreEqual( new DateTime( 2019, 2, 4 ), result.ComputedStreaks[3].StartDate );
+            Assert.IsNull( result.ComputedStreaks[3].EndDate );
 
-            Assert.That.AreEqual( 0, result.EngagementsThisMonth );
-            Assert.That.AreEqual( RockDateTime.Now.Year == 2019 ? 22 : 0, result.EngagementsThisYear );
-            Assert.That.AreEqual( new DateTime( 2019, 2, 24 ), result.MostRecentEngagementDate );
-            Assert.That.AreEqual( new DateTime( 2019, 2, 24 ), result.MostRecentOccurrenceDate );
-            Assert.That.IsTrue( result.EngagedAtMostRecentOccurrence );
+            Assert.AreEqual( 0, result.EngagementsThisMonth );
+            Assert.AreEqual( RockDateTime.Now.Year == 2019 ? 22 : 0, result.EngagementsThisYear );
+            Assert.AreEqual( new DateTime( 2019, 2, 24 ), result.MostRecentEngagementDate );
+            Assert.AreEqual( new DateTime( 2019, 2, 24 ), result.MostRecentOccurrenceDate );
+            Assert.IsTrue( result.EngagedAtMostRecentOccurrence );
         }
 
         /// <summary>
@@ -203,23 +203,23 @@ namespace Rock.Tests.Integration.Core.Model
             var result = _streakTypeService.GetStreakData( StreakTypeCache.Get( _emptyStreakTypeId ), _personId, out string errorMessage,
                 startDate, endDate, true, true, 100 );
 
-            Assert.That.AreEqual( string.Empty, errorMessage );
-            Assert.That.IsNotNull( result );
+            Assert.AreEqual( string.Empty, errorMessage );
+            Assert.IsNotNull( result );
 
-            Assert.That.AreEqual( 0, result.LongestStreakCount );
-            Assert.That.IsNull( result.LongestStreakStartDate );
-            Assert.That.IsNull( result.LongestStreakEndDate );
+            Assert.AreEqual( 0, result.LongestStreakCount );
+            Assert.IsNull( result.LongestStreakStartDate );
+            Assert.IsNull( result.LongestStreakEndDate );
 
-            Assert.That.AreEqual( 0, result.CurrentStreakCount );
-            Assert.That.IsNull( result.CurrentStreakStartDate );
+            Assert.AreEqual( 0, result.CurrentStreakCount );
+            Assert.IsNull( result.CurrentStreakStartDate );
 
-            Assert.That.AreEqual( 0, result.ComputedStreaks.Count );
+            Assert.AreEqual( 0, result.ComputedStreaks.Count );
 
-            Assert.That.AreEqual( 0, result.EngagementsThisMonth );
-            Assert.That.AreEqual( 0, result.EngagementsThisYear );
-            Assert.That.IsNull( result.MostRecentEngagementDate );
-            Assert.That.IsNull( result.MostRecentOccurrenceDate );
-            Assert.That.IsFalse( result.EngagedAtMostRecentOccurrence );
+            Assert.AreEqual( 0, result.EngagementsThisMonth );
+            Assert.AreEqual( 0, result.EngagementsThisYear );
+            Assert.IsNull( result.MostRecentEngagementDate );
+            Assert.IsNull( result.MostRecentOccurrenceDate );
+            Assert.IsFalse( result.EngagedAtMostRecentOccurrence );
         }
 
         #endregion GetStreakData
@@ -244,23 +244,23 @@ namespace Rock.Tests.Integration.Core.Model
             var startDate = new DateTime( 2019, 1, 1 );
             var endDate = new DateTime( 2019, 1, 31 );
             var result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
-            Assert.That.AreEqual( 31, result );
+            Assert.AreEqual( 31, result );
 
             // Year of 2019 is 365 days long
             startDate = new DateTime( 2019, 1, 1 );
             endDate = new DateTime( 2019, 12, 31 );
             result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
-            Assert.That.AreEqual( 365, result );
+            Assert.AreEqual( 365, result );
 
             // Negative calculation is okay
             startDate = new DateTime( 2019, 1, 1 );
             endDate = new DateTime( 2018, 12, 31 );
             result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
-            Assert.That.AreEqual( -2, result );
+            Assert.AreEqual( -2, result );
 
             // Same day calculation is 1 day because of inclusiveness
             result = StreakTypeService.GetFrequencyUnitDifference( startDate, startDate, streakTypeCache, isInclusive );
-            Assert.That.AreEqual( 1, result );
+            Assert.AreEqual( 1, result );
         }
 
         /// <summary>
@@ -281,23 +281,23 @@ namespace Rock.Tests.Integration.Core.Model
             var startDate = new DateTime( 2019, 1, 1 );
             var endDate = new DateTime( 2019, 1, 31 );
             var result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
-            Assert.That.AreEqual( 30, result );
+            Assert.AreEqual( 30, result );
 
             // Year of 2019 is 365 days long
             startDate = new DateTime( 2019, 1, 1 );
             endDate = new DateTime( 2019, 12, 31 );
             result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
-            Assert.That.AreEqual( 364, result );
+            Assert.AreEqual( 364, result );
 
             // Negative calculation is okay
             startDate = new DateTime( 2019, 1, 1 );
             endDate = new DateTime( 2018, 12, 31 );
             result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
-            Assert.That.AreEqual( -1, result );
+            Assert.AreEqual( -1, result );
 
             // Same day calculation is 0
             result = StreakTypeService.GetFrequencyUnitDifference( startDate, startDate, streakTypeCache, isInclusive );
-            Assert.That.AreEqual( 0, result );
+            Assert.AreEqual( 0, result );
         }
 
         /// <summary>
@@ -318,23 +318,23 @@ namespace Rock.Tests.Integration.Core.Model
             var startDate = new DateTime( 2019, 1, 1 );
             var endDate = new DateTime( 2019, 1, 31 );
             var result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
-            Assert.That.AreEqual( 4, result );
+            Assert.AreEqual( 4, result );
 
             // Year of 2019 is 52 weeks long
             startDate = new DateTime( 2019, 1, 1 );
             endDate = new DateTime( 2019, 12, 31 );
             result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
-            Assert.That.AreEqual( 52, result );
+            Assert.AreEqual( 52, result );
 
             // Negative calculation is okay
             startDate = new DateTime( 2019, 1, 1 );
             endDate = new DateTime( 2018, 12, 26 );
             result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
-            Assert.That.AreEqual( -1, result );
+            Assert.AreEqual( -1, result );
 
             // Same week calculation is 0
             result = StreakTypeService.GetFrequencyUnitDifference( startDate, startDate, streakTypeCache, isInclusive );
-            Assert.That.AreEqual( 0, result );
+            Assert.AreEqual( 0, result );
         }
 
         /// <summary>
@@ -355,23 +355,23 @@ namespace Rock.Tests.Integration.Core.Model
             var startDate = new DateTime( 2019, 1, 1 );
             var endDate = new DateTime( 2019, 1, 31 );
             var result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
-            Assert.That.AreEqual( 5, result );
+            Assert.AreEqual( 5, result );
 
             // Year of 2019 is 52 weeks long
             startDate = new DateTime( 2019, 1, 1 );
             endDate = new DateTime( 2019, 12, 31 );
             result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
-            Assert.That.AreEqual( 53, result );
+            Assert.AreEqual( 53, result );
 
             // Negative calculation is okay
             startDate = new DateTime( 2019, 1, 1 );
             endDate = new DateTime( 2018, 12, 26 );
             result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
-            Assert.That.AreEqual( -2, result );
+            Assert.AreEqual( -2, result );
 
             // Same day calculation is 1 day because of inclusiveness
             result = StreakTypeService.GetFrequencyUnitDifference( startDate, startDate, streakTypeCache, isInclusive );
-            Assert.That.AreEqual( 1, result );
+            Assert.AreEqual( 1, result );
         }
 
         #endregion GetFrequencyUnitDifference
@@ -403,20 +403,20 @@ namespace Rock.Tests.Integration.Core.Model
                 if ( dayOffset < 0 )
                 {
                     // Should get error about checking a bit that is pre-start-date
-                    Assert.That.IsFalse( errorMessage.IsNullOrWhiteSpace() );
+                    Assert.IsFalse( errorMessage.IsNullOrWhiteSpace() );
                 }
                 else
                 {
-                    Assert.That.IsTrue( errorMessage.IsNullOrWhiteSpace() );
+                    Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() );
 
                     // The day of the month is the offset + 1 since offset 0 is Jan 1, 2019
                     if ( date.Year == 2019 && date.Month == 1 && ( date.Day == 3 || date.Day == 14 || date.Day == 24 ) )
                     {
-                        Assert.That.IsTrue( isSet );
+                        Assert.IsTrue( isSet );
                     }
                     else
                     {
-                        Assert.That.IsFalse( isSet );
+                        Assert.IsFalse( isSet );
                     }
                 }
             }
@@ -448,30 +448,30 @@ namespace Rock.Tests.Integration.Core.Model
                 if ( dayOffset < 0 )
                 {
                     // Should get error about checking a bit that is pre-start-date
-                    Assert.That.IsFalse( errorMessage.IsNullOrWhiteSpace() );
+                    Assert.IsFalse( errorMessage.IsNullOrWhiteSpace() );
                 }
                 else
                 {
-                    Assert.That.IsTrue( errorMessage.IsNullOrWhiteSpace() );
+                    Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() );
 
                     // Bit index 2 is week of Jan 14-20
                     if ( date.Year == 2019 && date.Month == 1 && date.Day >= 14 && date.Day <= 20 )
                     {
-                        Assert.That.IsTrue( isSet );
+                        Assert.IsTrue( isSet );
                     }
                     // Bit index 13 is week of Apr 1-7
                     else if ( date.Year == 2019 && date.Month == 4 && date.Day >= 1 && date.Day <= 7 )
                     {
-                        Assert.That.IsTrue( isSet );
+                        Assert.IsTrue( isSet );
                     }
                     // Bit index 23 is week of Jun 10-16
                     else if ( date.Year == 2019 && date.Month == 6 && date.Day >= 10 && date.Day <= 16 )
                     {
-                        Assert.That.IsTrue( isSet );
+                        Assert.IsTrue( isSet );
                     }
                     else
                     {
-                        Assert.That.IsFalse( isSet );
+                        Assert.IsFalse( isSet );
                     }
                 }
             }
@@ -508,42 +508,42 @@ namespace Rock.Tests.Integration.Core.Model
 
             // Reset a bit before the start date and get an error
             var result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( -1 ), false, out var errorMessage );
-            Assert.That.IsFalse( errorMessage.IsNullOrWhiteSpace() ); // Verify error occurred
-            Assert.That.AreSame( result, map ); // Verify in-place operation
-            Assert.That.AreEqual( byte0, result[0] ); // Verify no changes
-            Assert.That.AreEqual( byte1, result[1] ); // Verify no changes
-            Assert.That.AreEqual( byte2, result[2] ); // Verify no changes
+            Assert.IsFalse( errorMessage.IsNullOrWhiteSpace() ); // Verify error occurred
+            Assert.AreSame( result, map ); // Verify in-place operation
+            Assert.AreEqual( byte0, result[0] ); // Verify no changes
+            Assert.AreEqual( byte1, result[1] ); // Verify no changes
+            Assert.AreEqual( byte2, result[2] ); // Verify no changes
 
             // Reset a bit that is already 0
             result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 0 ), false, out errorMessage );
-            Assert.That.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
-            Assert.That.AreSame( result, map ); // Verify in-place operation
-            Assert.That.AreEqual( byte0, result[0] ); // Verify no changes
-            Assert.That.AreEqual( byte1, result[1] ); // Verify no changes
-            Assert.That.AreEqual( byte2, result[2] ); // Verify no changes
+            Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
+            Assert.AreSame( result, map ); // Verify in-place operation
+            Assert.AreEqual( byte0, result[0] ); // Verify no changes
+            Assert.AreEqual( byte1, result[1] ); // Verify no changes
+            Assert.AreEqual( byte2, result[2] ); // Verify no changes
 
             // Reset the first set bit
             result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 2 ), false, out errorMessage );
-            Assert.That.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
-            Assert.That.AreSame( result, map ); // Verify in-place operation
-            Assert.That.AreEqual( 0, result[2] ); // Verify change
-            Assert.That.AreEqual( byte1, result[1] ); // Verify no changes
-            Assert.That.AreEqual( byte0, result[0] ); // Verify no changes
+            Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
+            Assert.AreSame( result, map ); // Verify in-place operation
+            Assert.AreEqual( 0, result[2] ); // Verify change
+            Assert.AreEqual( byte1, result[1] ); // Verify no changes
+            Assert.AreEqual( byte0, result[0] ); // Verify no changes
 
             // Reset a bit beyond the array and force it to grow
             result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 24 ), false, out errorMessage );
-            Assert.That.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
-            Assert.That.AreNotSame( result, map ); // Verify memory allocation occurred for new array
+            Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
+            Assert.AreNotSame( result, map ); // Verify memory allocation occurred for new array
             var newLength = 128;
-            Assert.That.IsTrue( result.Length == newLength ); // Verify the array grew to the next multiple of 128            
-            Assert.That.AreEqual( 0, result[newLength - 1] ); // Verify no additional changes
-            Assert.That.AreEqual( byte1, result[newLength - 2] ); // Verify no changes
-            Assert.That.AreEqual( byte0, result[newLength - 3] ); // Verify no changes
+            Assert.IsTrue( result.Length == newLength ); // Verify the array grew to the next multiple of 128            
+            Assert.AreEqual( 0, result[newLength - 1] ); // Verify no additional changes
+            Assert.AreEqual( byte1, result[newLength - 2] ); // Verify no changes
+            Assert.AreEqual( byte0, result[newLength - 3] ); // Verify no changes
 
             // Verify all other bytes are unset
             for ( var i = 0; i < ( newLength - 3 ); i++ )
             {
-                Assert.That.AreEqual( 0, result[i] );
+                Assert.AreEqual( 0, result[i] );
             }
         }
 
@@ -575,42 +575,42 @@ namespace Rock.Tests.Integration.Core.Model
 
             // Reset a bit before the start date and get an error
             var result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( -1 * 7 ), valueForReset, out var errorMessage );
-            Assert.That.IsFalse( errorMessage.IsNullOrWhiteSpace() ); // Verify error occurred
-            Assert.That.AreSame( result, map ); // Verify in-place operation
-            Assert.That.AreEqual( byte0, result[0] ); // Verify no changes
-            Assert.That.AreEqual( byte1, result[1] ); // Verify no changes
-            Assert.That.AreEqual( byte2, result[2] ); // Verify no changes
+            Assert.IsFalse( errorMessage.IsNullOrWhiteSpace() ); // Verify error occurred
+            Assert.AreSame( result, map ); // Verify in-place operation
+            Assert.AreEqual( byte0, result[0] ); // Verify no changes
+            Assert.AreEqual( byte1, result[1] ); // Verify no changes
+            Assert.AreEqual( byte2, result[2] ); // Verify no changes
 
             // Reset a bit that is already 0
             result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 0 * 7 ), valueForReset, out errorMessage );
-            Assert.That.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
-            Assert.That.AreSame( result, map ); // Verify in-place operation
-            Assert.That.AreEqual( byte0, result[0] ); // Verify no changes
-            Assert.That.AreEqual( byte1, result[1] ); // Verify no changes
-            Assert.That.AreEqual( byte2, result[2] ); // Verify no changes
+            Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
+            Assert.AreSame( result, map ); // Verify in-place operation
+            Assert.AreEqual( byte0, result[0] ); // Verify no changes
+            Assert.AreEqual( byte1, result[1] ); // Verify no changes
+            Assert.AreEqual( byte2, result[2] ); // Verify no changes
 
             // Reset the first set bit
             result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 2 * 7 ), valueForReset, out errorMessage );
-            Assert.That.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no errors
-            Assert.That.AreSame( result, map ); // Verify in-place operation
-            Assert.That.AreEqual( 0, result[2] ); // Verify change
-            Assert.That.AreEqual( byte1, result[1] ); // Verify no changes
-            Assert.That.AreEqual( byte0, result[0] ); // Verify no changes
+            Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no errors
+            Assert.AreSame( result, map ); // Verify in-place operation
+            Assert.AreEqual( 0, result[2] ); // Verify change
+            Assert.AreEqual( byte1, result[1] ); // Verify no changes
+            Assert.AreEqual( byte0, result[0] ); // Verify no changes
 
             // Reset a bit beyond the array and force it to grow
             result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 24 * 7 ), valueForReset, out errorMessage );
-            Assert.That.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no errors
-            Assert.That.AreNotSame( result, map ); // Verify memory allocation occurred for new array
+            Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no errors
+            Assert.AreNotSame( result, map ); // Verify memory allocation occurred for new array
             var newLength = 128;
-            Assert.That.IsTrue( result.Length == newLength ); // Verify the array grew to the next multiple of 128            
-            Assert.That.AreEqual( 0, result[newLength - 1] ); // Verify no additional changes
-            Assert.That.AreEqual( byte1, result[newLength - 2] ); // Verify no changes
-            Assert.That.AreEqual( byte0, result[newLength - 3] ); // Verify no changes
+            Assert.IsTrue( result.Length == newLength ); // Verify the array grew to the next multiple of 128            
+            Assert.AreEqual( 0, result[newLength - 1] ); // Verify no additional changes
+            Assert.AreEqual( byte1, result[newLength - 2] ); // Verify no changes
+            Assert.AreEqual( byte0, result[newLength - 3] ); // Verify no changes
 
             // Verify all other bytes are unset
             for ( var i = 0; i < ( newLength - 3 ); i++ )
             {
-                Assert.That.AreEqual( 0, result[i] );
+                Assert.AreEqual( 0, result[i] );
             }
         }
 
@@ -644,51 +644,51 @@ namespace Rock.Tests.Integration.Core.Model
 
             // Set a bit before the start date and get an error
             var result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( -1 ), true, out var errorMessage );
-            Assert.That.IsFalse( errorMessage.IsNullOrWhiteSpace() ); // Verify error occurred
-            Assert.That.AreSame( result, map ); // Verify in-place operation
-            Assert.That.AreEqual( byte0, result[0] ); // Verify no changes
-            Assert.That.AreEqual( byte1, result[1] ); // Verify no changes
-            Assert.That.AreEqual( byte2, result[2] ); // Verify no changes
+            Assert.IsFalse( errorMessage.IsNullOrWhiteSpace() ); // Verify error occurred
+            Assert.AreSame( result, map ); // Verify in-place operation
+            Assert.AreEqual( byte0, result[0] ); // Verify no changes
+            Assert.AreEqual( byte1, result[1] ); // Verify no changes
+            Assert.AreEqual( byte2, result[2] ); // Verify no changes
 
             // Set a bit that is already set
             result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 2 ), true, out errorMessage );
-            Assert.That.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
-            Assert.That.AreSame( result, map ); // Verify in-place operation
-            Assert.That.AreEqual( byte0, result[0] ); // Verify no changes
-            Assert.That.AreEqual( byte1, result[1] ); // Verify no changes
-            Assert.That.AreEqual( byte2, result[2] ); // Verify no changes
+            Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
+            Assert.AreSame( result, map ); // Verify in-place operation
+            Assert.AreEqual( byte0, result[0] ); // Verify no changes
+            Assert.AreEqual( byte1, result[1] ); // Verify no changes
+            Assert.AreEqual( byte2, result[2] ); // Verify no changes
 
             // Set the least significant bit
             result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 0 ), true, out errorMessage );
-            Assert.That.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
-            Assert.That.AreSame( result, map ); // Verify in-place operation
-            Assert.That.AreEqual( byte2 | lsb, result[2] ); // Verify change
-            Assert.That.AreEqual( byte1, result[1] ); // Verify no changes
-            Assert.That.AreEqual( byte0, result[0] ); // Verify no changes
+            Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
+            Assert.AreSame( result, map ); // Verify in-place operation
+            Assert.AreEqual( byte2 | lsb, result[2] ); // Verify change
+            Assert.AreEqual( byte1, result[1] ); // Verify no changes
+            Assert.AreEqual( byte0, result[0] ); // Verify no changes
 
             // Set the most significant bit
             result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 23 ), true, out errorMessage );
-            Assert.That.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
-            Assert.That.AreSame( result, map ); // Verify in-place operation
-            Assert.That.AreEqual( byte2 | lsb, result[2] ); // Verify no additional changes
-            Assert.That.AreEqual( byte1, result[1] ); // Verify no changes
-            Assert.That.AreEqual( byte0 | msb, result[0] ); // Verify change
+            Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
+            Assert.AreSame( result, map ); // Verify in-place operation
+            Assert.AreEqual( byte2 | lsb, result[2] ); // Verify no additional changes
+            Assert.AreEqual( byte1, result[1] ); // Verify no changes
+            Assert.AreEqual( byte0 | msb, result[0] ); // Verify change
 
             // Set a bit beyond the array and force it to grow
             result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 24 ), true, out errorMessage );
-            Assert.That.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
-            Assert.That.AreNotSame( result, map ); // Verify memory allocation occurred for new array
+            Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
+            Assert.AreNotSame( result, map ); // Verify memory allocation occurred for new array
             var newLength = 128;
-            Assert.That.IsTrue( result.Length == newLength ); // Verify the array grew to the next multiple of 128            
-            Assert.That.AreEqual( byte2 | lsb, result[newLength - 1] ); // Verify no additional changes
-            Assert.That.AreEqual( byte1, result[newLength - 2] ); // Verify no changes
-            Assert.That.AreEqual( byte0 | msb, result[newLength - 3] ); // Verify no additional changes
-            Assert.That.AreEqual( lsb, result[newLength - 4] ); // Verify first bit in first new byte is set
+            Assert.IsTrue( result.Length == newLength ); // Verify the array grew to the next multiple of 128            
+            Assert.AreEqual( byte2 | lsb, result[newLength - 1] ); // Verify no additional changes
+            Assert.AreEqual( byte1, result[newLength - 2] ); // Verify no changes
+            Assert.AreEqual( byte0 | msb, result[newLength - 3] ); // Verify no additional changes
+            Assert.AreEqual( lsb, result[newLength - 4] ); // Verify first bit in first new byte is set
 
             // Verify all other bytes are unset
             for ( var i = 0; i < ( newLength - 4 ); i++ )
             {
-                Assert.That.AreEqual( 0, result[i] );
+                Assert.AreEqual( 0, result[i] );
             }
         }
 
@@ -722,51 +722,51 @@ namespace Rock.Tests.Integration.Core.Model
 
             // Set a bit before the start date and get an error
             var result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( -1 * 7 ), true, out var errorMessage );
-            Assert.That.IsFalse( errorMessage.IsNullOrWhiteSpace() ); // Verify error occurred
-            Assert.That.AreSame( result, map ); // Verify in-place operation
-            Assert.That.AreEqual( byte0, result[0] ); // Verify no changes
-            Assert.That.AreEqual( byte1, result[1] ); // Verify no changes
-            Assert.That.AreEqual( byte2, result[2] ); // Verify no changes
+            Assert.IsFalse( errorMessage.IsNullOrWhiteSpace() ); // Verify error occurred
+            Assert.AreSame( result, map ); // Verify in-place operation
+            Assert.AreEqual( byte0, result[0] ); // Verify no changes
+            Assert.AreEqual( byte1, result[1] ); // Verify no changes
+            Assert.AreEqual( byte2, result[2] ); // Verify no changes
 
             // Set a bit that is already set
             result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 2 * 7 ), true, out errorMessage );
-            Assert.That.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
-            Assert.That.AreSame( result, map ); // Verify in-place operation
-            Assert.That.AreEqual( byte0, result[0] ); // Verify no changes
-            Assert.That.AreEqual( byte1, result[1] ); // Verify no changes
-            Assert.That.AreEqual( byte2, result[2] ); // Verify no changes
+            Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
+            Assert.AreSame( result, map ); // Verify in-place operation
+            Assert.AreEqual( byte0, result[0] ); // Verify no changes
+            Assert.AreEqual( byte1, result[1] ); // Verify no changes
+            Assert.AreEqual( byte2, result[2] ); // Verify no changes
 
             // Set the least significant bit
             result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 0 * 7 ), true, out errorMessage );
-            Assert.That.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no errors
-            Assert.That.AreSame( result, map ); // Verify in-place operation
-            Assert.That.AreEqual( byte2 | lsb, result[2] ); // Verify change
-            Assert.That.AreEqual( byte1, result[1] ); // Verify no changes
-            Assert.That.AreEqual( byte0, result[0] ); // Verify no changes
+            Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no errors
+            Assert.AreSame( result, map ); // Verify in-place operation
+            Assert.AreEqual( byte2 | lsb, result[2] ); // Verify change
+            Assert.AreEqual( byte1, result[1] ); // Verify no changes
+            Assert.AreEqual( byte0, result[0] ); // Verify no changes
 
             // Set the most significant bit
             result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 23 * 7 ), true, out errorMessage );
-            Assert.That.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no errors
-            Assert.That.AreSame( result, map ); // Verify in-place operation
-            Assert.That.AreEqual( byte2 | lsb, result[2] ); // Verify no additional changes
-            Assert.That.AreEqual( byte1, result[1] ); // Verify no changes
-            Assert.That.AreEqual( byte0 | msb, result[0] ); // Verify change
+            Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no errors
+            Assert.AreSame( result, map ); // Verify in-place operation
+            Assert.AreEqual( byte2 | lsb, result[2] ); // Verify no additional changes
+            Assert.AreEqual( byte1, result[1] ); // Verify no changes
+            Assert.AreEqual( byte0 | msb, result[0] ); // Verify change
 
             // Set a bit beyond the array and force it to grow
             result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 24 * 7 ), true, out errorMessage );
-            Assert.That.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no errors
-            Assert.That.AreNotSame( result, map ); // Verify memory allocation occurred for new array
+            Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no errors
+            Assert.AreNotSame( result, map ); // Verify memory allocation occurred for new array
             var newLength = 128;
-            Assert.That.IsTrue( result.Length == newLength ); // Verify the array grew to the next multiple of 128            
-            Assert.That.AreEqual( byte2 | lsb, result[newLength - 1] ); // Verify no additional changes
-            Assert.That.AreEqual( byte1, result[newLength - 2] ); // Verify no changes
-            Assert.That.AreEqual( byte0 | msb, result[newLength - 3] ); // Verify no additional changes
-            Assert.That.AreEqual( lsb, result[newLength - 4] ); // Verify first bit in first new byte is set
+            Assert.IsTrue( result.Length == newLength ); // Verify the array grew to the next multiple of 128            
+            Assert.AreEqual( byte2 | lsb, result[newLength - 1] ); // Verify no additional changes
+            Assert.AreEqual( byte1, result[newLength - 2] ); // Verify no changes
+            Assert.AreEqual( byte0 | msb, result[newLength - 3] ); // Verify no additional changes
+            Assert.AreEqual( lsb, result[newLength - 4] ); // Verify first bit in first new byte is set
 
             // Verify all other bytes are unset
             for ( var i = 0; i < ( newLength - 4 ); i++ )
             {
-                Assert.That.AreEqual( 0, result[i] );
+                Assert.AreEqual( 0, result[i] );
             }
         }
 

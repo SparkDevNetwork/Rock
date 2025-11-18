@@ -19,15 +19,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AngleSharp" Version="1.4.0" />
     <PackageReference Include="Antlr" Version="3.5.0.2" />
     <PackageReference Include="AWSSDK.Core" Version="3.3.25.4" />
     <PackageReference Include="AWSSDK.S3" Version="3.3.21.1" />
     <PackageReference Include="Azure.AI.DocumentIntelligence" Version="1.0.0" />
-    <PackageReference Include="Azure.Core" Version="1.44.1" />
+    <PackageReference Include="Azure.Core" Version="1.50.0" />
+    <PackageReference Include="Azure.Identity" Version="1.17.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.20.0" />
     <PackageReference Include="BCrypt-Official" Version="0.1.109" />
     <PackageReference Include="CacheManager.SystemRuntimeCaching" Version="1.2.0" />
-    <PackageReference Include="CommonMark.NET" Version="0.13.2" />
+    <PackageReference Include="CommonMark.NET" Version="0.15.1" />
     <PackageReference Include="CronExpressionDescriptor" Version="2.16.0" />
     <PackageReference Include="CS-Script" Version="3.13.2" />
     <PackageReference Include="DDay.iCal" Version="1.0.2.575" />
@@ -36,8 +38,8 @@
     <PackageReference Include="EntityFramework" Version="6.4.4" />
     <PackageReference Include="FirebaseAdmin" Version="2.4.0" />
     <PackageReference Include="Google.Cloud.Storage.V1" Version="2.4.0" />
-    <PackageReference Include="Google.Protobuf" Version="3.27.1" />
-    <PackageReference Include="Hashids.net" Version="1.4.1" />
+    <PackageReference Include="Google.Protobuf" Version="3.33.1" />
+    <PackageReference Include="Hashids.net" Version="1.7.0" />
     <PackageReference Include="HtmlAgilityPack" Version="1.4.9.5" />
     <PackageReference Include="Ical.Net" Version="4.2.0" />
     <PackageReference Include="IdentityModel" Version="3.0.0" />
@@ -52,14 +54,14 @@
     <PackageReference Include="MessagePack" Version="2.5.198" />
     <PackageReference Include="Microsoft.AspNet.SignalR" Version="2.4.3" />
     <PackageReference Include="Microsoft.AspNet.Web.Optimization" Version="1.1.3" />
-    <PackageReference Include="Microsoft.AspNet.WebApi.WebHost" Version="5.2.3" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.WebHost" Version="5.2.9" />
     <PackageReference Include="Microsoft.Azure.SignalR.AspNet" Version="1.0.14" />
     <PackageReference Include="Microsoft.Azure.Storage.Blob" Version="11.1.3" />
     <PackageReference Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
     <PackageReference Include="Microsoft.Diagnostics.Tracing.EventSource.Redist" Version="1.1.28" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="2.21.301221612" />
     <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="5.2.1" />
     <PackageReference Include="Microsoft.Net.Http.Headers" Version="2.2.0" />
@@ -71,31 +73,31 @@
     <PackageReference Include="Microsoft.SqlServer.Types" Version="11.0.2" />
     <PackageReference Include="Microsoft.Web.Xdt" Version="2.1.1" />
     <PackageReference Include="NEST.JsonNetSerializer" Version="7.17.0" />
-    <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.1" />
-    <PackageReference Include="NuGet.Core" Version="2.11.1" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.7.0" />
+    <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3" />
+    <PackageReference Include="OpenTelemetry" Version="1.14.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.11.1" />
     <PackageReference Include="OpenXmlPowerTools" Version="4.2.0" />
     <PackageReference Include="PreMailer.Net" Version="2.4.0" />
     <PackageReference Include="PuppeteerSharp" Version="18.1.0" />
     <PackageReference Include="QRCoder" Version="1.3.9" />
     <PackageReference Include="RestSharp" Version="105.2.3" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
-    <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
-    <PackageReference Include="Serilog.Formatting.Compact.Reader" Version="1.0.3" />
-    <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="2.1.11" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta15" />
-    <PackageReference Include="System.ClientModel" Version="1.4.0" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.7.0" />
-    <PackageReference Include="System.IO.Pipelines" Version="9.0.6" />
-    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.6" />
-    <PackageReference Include="System.Memory.Data" Version="8.0.1" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.2" />
+    <PackageReference Include="Serilog.Formatting.Compact" Version="3.0.0" />
+    <PackageReference Include="Serilog.Formatting.Compact.Reader" Version="4.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="2.1.12" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0" />
+    <PackageReference Include="System.ClientModel" Version="1.8.1" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
+    <PackageReference Include="System.IO.Pipelines" Version="10.0.0" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.7.0" />
+    <PackageReference Include="System.Memory.Data" Version="10.0.0" />
     <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
     <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0" />
-    <PackageReference Include="System.Text.Json" Version="9.0.6" />
-    <PackageReference Include="System.Threading.Channels" Version="8.0.0" />
-    <PackageReference Include="TimeZoneConverter" Version="7.0.0" />
+    <PackageReference Include="System.Text.Json" Version="10.0.0" />
+    <PackageReference Include="System.Threading.Channels" Version="10.0.0" />
+    <PackageReference Include="TimeZoneConverter" Version="7.2.0" />
     <PackageReference Include="Twilio" Version="5.1.0" />
     <PackageReference Include="UAParser" Version="3.1.47" />
     <PackageReference Include="xxHashSharp" Version="1.0.0" />

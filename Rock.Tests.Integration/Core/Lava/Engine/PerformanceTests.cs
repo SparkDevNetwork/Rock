@@ -130,7 +130,7 @@ Ted's other contact numbers are: (623) 555-3322,(623) 555-2444.'
 
             var phones = personTedDecker.PhoneNumbers;
 
-            Assert.That.IsNotNull( personTedDecker, "Test person not found in current database." );
+            Assert.IsNotNull( personTedDecker, "Test person not found in current database." );
 
             return personTedDecker;
         }

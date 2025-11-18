@@ -2,10 +2,8 @@
 <template>
     <div class="email-editor-wrapper styled-scroll">
         <div class="email-editor">
-            <SidePanel v-if="ltr" v-model:selectedComponentElement="selectedComponentElement"
-                       v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
-                       :communicationTemplates="communicationTemplates"
-                       :communicationTemplatesHelp="communicationTemplatesHelp"
+            <SidePanel v-if="ltr"
+                       v-model:selectedComponentElement="selectedComponentElement"
                        :emailDocument="emailDocument"
                        :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
                        :ltr="ltr"
@@ -22,7 +20,11 @@
                        @componentTypeDragStart="onComponentTypeDragStart"
                        @componentTypeDragEnd="onComponentTypeDragEnd"
                        @deleteComponent="onDeleteComponent"
-                       @replaceComponent="onReplaceComponent" />
+                       @replaceComponent="onReplaceComponent">
+                <template v-if="$slots.bodySettingsPrepend" #bodySettingsPrepend>
+                    <slot name="bodySettingsPrepend"></slot>
+                </template>
+            </SidePanel>
 
             <div class="email-designer-container">
                 <EmailDesigner v-model:selectedComponentElement="selectedComponentElement"
@@ -38,10 +40,8 @@
                                @emailDocumentUpdated="onEmailDocumentUpdated" />
             </div>
 
-            <SidePanel v-if="!ltr" v-model:selectedComponentElement="selectedComponentElement"
-                       v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
-                       :communicationTemplates="communicationTemplates"
-                       :communicationTemplatesHelp="communicationTemplatesHelp"
+            <SidePanel v-if="!ltr"
+                       v-model:selectedComponentElement="selectedComponentElement"
                        :emailDocument="emailDocument"
                        :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
                        :ltr="ltr"
@@ -58,7 +58,11 @@
                        @componentTypeDragStart="onComponentTypeDragStart"
                        @componentTypeDragEnd="onComponentTypeDragEnd"
                        @deleteComponent="onDeleteComponent"
-                       @replaceComponent="onReplaceComponent" />
+                       @replaceComponent="onReplaceComponent">
+                <template v-if="$slots.bodySettingsPrepend" #bodySettingsPrepend>
+                    <slot name="bodySettingsPrepend"></slot>
+                </template>
+            </SidePanel>
         </div>
     </div>
 </template>
@@ -101,30 +105,14 @@
     import { GetHtmlRequest, UsageType } from "./types";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { Guid } from "@Obsidian/Types";
-    import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { EmailEditorApi, provideApi } from "./api";
 
-    const props = defineProps({
+    defineProps({
         html: {
             type: String as PropType<string>,
             required: true
-        },
-
-        communicationTemplateGuid: {
-            type: String as PropType<Guid | null | undefined>,
-            required: false
-        },
-
-        communicationTemplates: {
-            type: Object as PropType<ListItemBag[] | null | undefined>,
-            required: false
-        },
-
-        communicationTemplatesHelp: {
-            type: String as PropType<string | null | undefined>,
-            required: false
         },
 
         emailEditorCssClass: {
@@ -207,7 +195,6 @@
     // #region Values
 
     const selectedComponentElement = ref<HTMLElement | null | undefined>();
-    const internalCommunicationTemplateGuid = useVModelPassthrough(props, "communicationTemplateGuid", emit);
     const emailDocument = ref<Document | null | undefined>();
 
     const cloneComponentRequest = ref<CloneComponentRequest | null | undefined>();

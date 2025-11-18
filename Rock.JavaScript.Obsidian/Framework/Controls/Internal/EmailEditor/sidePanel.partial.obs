@@ -135,11 +135,12 @@
 
             <template v-else-if="selectedSidePanelMenuItem === 'styles'">
                 <GlobalPropertyPanel v-if="emailDocument"
-                                     v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
                                      :document="emailDocument"
-                                     :communicationTemplates="communicationTemplates"
-                                     :communicationTemplatesHelp="communicationTemplatesHelp"
-                                     :hasScrollableBody="true" />
+                                     :hasScrollableBody="true">
+                    <template v-if="$slots.bodySettingsPrepend" #bodySettingsPrepend>
+                        <slot name="bodySettingsPrepend"></slot>
+                    </template>
+                </GlobalPropertyPanel>
             </template>
         </div>
 
@@ -372,21 +373,6 @@
     // #endregion Types
 
     const props = defineProps({
-        communicationTemplateGuid: {
-            type: String as PropType<Guid | null | undefined>,
-            required: false
-        },
-
-        communicationTemplates: {
-            type: Object as PropType<ListItemBag[] | null | undefined>,
-            required: false
-        },
-
-        communicationTemplatesHelp: {
-            type: String as PropType<string | null | undefined>,
-            required: false
-        },
-
         emailDocument: {
             type: Object as PropType<Document | null | undefined>,
             required: true
@@ -503,7 +489,6 @@
     const api = useApi();
 
     const selectedSidePanelMenuItem = ref<SidePanelMenuItemType>("blocks");
-    const internalCommunicationTemplateGuid = useVModelPassthrough(props, "communicationTemplateGuid", emit);
     const internalSelectedComponentElement = useVModelPassthrough(props, "selectedComponentElement", emit);
     const emailSectionFilterByCategory = ref<ListItemBag | ListItemBag[] | null | undefined>({
         value: Category.EmailSectionStarterSections,

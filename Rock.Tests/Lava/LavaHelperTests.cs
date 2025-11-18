@@ -30,7 +30,7 @@ namespace Rock.Tests.Lava
         {
             var actualResult = LavaHelper.RemoveLavaComments( null );
 
-            Assert.That.AreEqual( string.Empty, actualResult );
+            Assert.AreEqual( string.Empty, actualResult );
         }
 
         [TestMethod]
@@ -50,7 +50,7 @@ Line 3<br>
 
             var templateUncommented = LavaHelper.RemoveLavaComments( input );
 
-            Assert.That.AreEqual( expectedOutput, templateUncommented );
+            Assert.AreEqual( expectedOutput, templateUncommented );
         }
 
         [TestMethod]
@@ -80,7 +80,7 @@ or '/- Block Comment 2...
 
             var templateUncommented = LavaHelper.RemoveLavaComments( input );
 
-            Assert.That.AreEqual( expectedOutput, templateUncommented );
+            Assert.AreEqual( expectedOutput, templateUncommented );
         }
 
         [TestMethod]
@@ -100,7 +100,7 @@ Line 3<br>
 
             var templateUncommented = LavaHelper.RemoveLavaComments( input );
 
-            Assert.That.AreEqual( expectedOutput, templateUncommented );
+            Assert.AreEqual( expectedOutput, templateUncommented );
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ one giant leap for mankind.""
 
             var templateUncommented = LavaHelper.RemoveLavaComments( input );
 
-            Assert.That.AreEqual( expectedOutput, templateUncommented );
+            Assert.AreEqual( expectedOutput, templateUncommented );
         }
 
         public void RemoveLavaCommentsBlockCommentContainingQuotedStringIsRemoved()
@@ -158,7 +158,7 @@ Line 3<br>
 
             var templateUncommented = LavaHelper.RemoveLavaComments( input );
 
-            Assert.That.AreEqual( expectedOutput, templateUncommented );
+            Assert.AreEqual( expectedOutput, templateUncommented );
         }
 
         [TestMethod]
@@ -190,7 +190,7 @@ Example End<br>
 
             var templateUncommented = LavaHelper.RemoveLavaComments( input );
 
-            Assert.That.AreEqual( expectedOutput, templateUncommented );
+            Assert.AreEqual( expectedOutput, templateUncommented );
         }
 
         [TestMethod]
@@ -213,7 +213,7 @@ Line 3<br>
 
             var templateUncommented = LavaHelper.RemoveLavaComments( input );
 
-            Assert.That.AreEqual( expectedOutput, templateUncommented );
+            Assert.AreEqual( expectedOutput, templateUncommented );
         }
 
         [TestMethod]
@@ -233,7 +233,7 @@ Line 3<br>
 
             var templateUncommented = LavaHelper.RemoveLavaComments( input );
 
-            Assert.That.AreEqual( expectedOutput, templateUncommented );
+            Assert.AreEqual( expectedOutput, templateUncommented );
         }
 
         [TestMethod]
@@ -247,7 +247,7 @@ Line 3<br>
 
             var isTemplate = LavaHelper.IsLavaTemplate( input );
 
-            Assert.That.AreEqual( true, isTemplate );
+            Assert.AreEqual( true, isTemplate );
         }
 
         [TestMethod]
@@ -262,7 +262,7 @@ Line 3<br>
 
             var isTemplate = LavaHelper.IsLavaTemplate( input );
 
-            Assert.That.AreEqual( false, isTemplate );
+            Assert.AreEqual( false, isTemplate );
         }
 
         [TestMethod]
@@ -278,7 +278,7 @@ Line 3<br>
 
             var isTemplate = LavaHelper.IsLavaTemplate( input );
 
-            Assert.That.AreEqual( false, isTemplate );
+            Assert.AreEqual( false, isTemplate );
         }
 
         [TestMethod]
@@ -292,7 +292,7 @@ Line 3<br>
 
             var isTemplate = LavaHelper.IsLavaTemplate( input );
 
-            Assert.That.AreEqual( true, isTemplate );
+            Assert.AreEqual( true, isTemplate );
         }
 
         [TestMethod]
@@ -304,14 +304,14 @@ Line 3<br>
    echo ""Hello World"" %}
 ";
 
-            Assert.That.AreEqual( true, LavaHelper.IsLavaTemplate( template ) );
+            Assert.AreEqual( true, LavaHelper.IsLavaTemplate( template ) );
         }
 
         [TestMethod]
         public void IsLavaTemplate_UnmatchedTag_ReturnsFalse()
         {
-            Assert.That.AreEqual( false, LavaHelper.IsLavaTemplate( "{% This is not a Lava template." ) );
-            Assert.That.AreEqual( false, LavaHelper.IsLavaTemplate( "... nor is this %}" ) );
+            Assert.AreEqual( false, LavaHelper.IsLavaTemplate( "{% This is not a Lava template." ) );
+            Assert.AreEqual( false, LavaHelper.IsLavaTemplate( "... nor is this %}" ) );
         }
     }
 }

@@ -140,7 +140,13 @@ namespace Rock.ClientService.Core.Category
                 } )
                 .ToList();
 
-            if ( options.GetCategorizedItems )
+            var getCategorizedItems = options.GetCategorizedItems
+                || (
+                    options.ParentGuid.HasValue
+                    && options.ExpandToCategoryGuids?.Contains( options.ParentGuid.Value ) == true
+                );
+
+            if ( getCategorizedItems )
             {
                 var itemOptions = new CategorizedItemQueryOptions
                 {
@@ -160,30 +166,31 @@ namespace Rock.ClientService.Core.Category
                 }
             }
 
-            if ( options.LazyLoad )
+            foreach ( var categoryItem in categoryItemList )
             {
-                // Try to figure out which items have viewable children in
-                // the existing list and set them appropriately.
-                foreach ( var categoryItemListItem in categoryItemList )
+                var categoryGuid = categoryItem.Value.AsGuid();
+
+                if ( !options.LazyLoad || options.ExpandToCategoryGuids?.Contains( categoryGuid ) == true )
                 {
-                    if ( categoryItemListItem.IsFolder )
+                    if ( categoryItem.Children == null )
                     {
-                        categoryItemListItem.HasChildren = DoesCategoryHaveChildren( options, categoryService, serviceInstance, categoryItemListItem.Value );
+                        categoryItem.Children = new List<TreeItemBag>();
                     }
+
+                    GetAllDescendants(
+                        categoryItem,
+                        Person,
+                        categoryService,
+                        serviceInstance,
+                        cachedEntityType,
+                        options,
+                        0,
+                        filterMethod
+                    );
                 }
-            }
-            else
-            {
-                foreach ( var item in categoryItemList )
+                else if ( categoryItem.IsFolder )
                 {
-                    var parentGuid = item.Value.AsGuidOrNull();
-
-                    if ( item.Children == null )
-                    {
-                        item.Children = new List<TreeItemBag>();
-                    }
-
-                    GetAllDescendants( item, Person, categoryService, serviceInstance, cachedEntityType, options, filterMethod );
+                    categoryItem.HasChildren = DoesCategoryHaveChildren( options, categoryService, serviceInstance, categoryItem.Value );
                 }
             }
 
@@ -310,7 +317,7 @@ namespace Rock.ClientService.Core.Category
         }
 
         /// <summary>
-        /// Gets all both category and non-category item decendents for the provided categoryItem.
+        /// Gets all both category and non-category item descendants for the provided categoryItem.
         /// This method updates the provided categoryItem.
         /// </summary>
         /// <param name="categoryItem">The category item.</param>
@@ -319,10 +326,25 @@ namespace Rock.ClientService.Core.Category
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="cachedEntityType">The cached entity type of the items.</param>
         /// <param name="options">The options that describe the current operation.</param>
+        /// <param name="depth">The current depth for recursion safety.</param>
         /// <param name="filterMethod">A Function to filter out Categories</param>
         /// <returns></returns>
-        private TreeItemBag GetAllDescendants<T>( TreeItemBag categoryItem, Person currentPerson, CategoryService categoryService, IService serviceInstance, EntityTypeCache cachedEntityType, CategoryItemTreeOptions options, Func<T, bool> filterMethod = null ) where T : ICategorized
+        private TreeItemBag GetAllDescendants<T>(
+            TreeItemBag categoryItem,
+            Person currentPerson,
+            CategoryService categoryService,
+            IService serviceInstance,
+            EntityTypeCache cachedEntityType,
+            CategoryItemTreeOptions options,
+            int depth,
+            Func<T, bool> filterMethod = null ) where T : ICategorized
         {
+            if ( depth > 50 )
+            {
+                // Prevent recursive loops.
+                return categoryItem;
+            }
+
             if ( categoryItem.IsFolder )
             {
                 var parentGuid = categoryItem.Value.AsGuidOrNull();
@@ -351,7 +373,17 @@ namespace Rock.ClientService.Core.Category
                             childCategoryItem.IsActive = activatedItem.IsActive;
                         }
 
-                        var childCategorizedItemBranch = GetAllDescendants<T>( childCategoryItem, currentPerson, categoryService, serviceInstance, cachedEntityType, options, filterMethod );
+                        var childCategorizedItemBranch = GetAllDescendants<T>(
+                            childCategoryItem,
+                            currentPerson,
+                            categoryService,
+                            serviceInstance,
+                            cachedEntityType,
+                            options,
+                            depth + 1,
+                            filterMethod
+                        );
+
                         if ( categoryItem.Children == null )
                         {
                             categoryItem.Children = new List<TreeItemBag>();
@@ -362,7 +394,13 @@ namespace Rock.ClientService.Core.Category
                 }
 
                 // now that we have taken care of the child categories get the items for this category.
-                if ( options.GetCategorizedItems )
+                var getCategorizedItems = options.GetCategorizedItems
+                    || (
+                        parentGuid.HasValue
+                        && options.ExpandToCategoryGuids?.Contains( parentGuid.Value ) == true
+                    );
+
+                if ( getCategorizedItems )
                 {
                     var itemOptions = new CategorizedItemQueryOptions
                     {
@@ -385,9 +423,13 @@ namespace Rock.ClientService.Core.Category
                         }
                         categoryItem.Children.AddRange( childItems );
                     }
-                }
 
-                categoryItem.HasChildren = categoryItem.Children?.Any() ?? false;
+                    categoryItem.HasChildren = categoryItem.Children.Any();
+                }
+                else
+                {
+                    categoryItem.HasChildren = DoesCategoryHaveChildren( options, categoryService, serviceInstance, categoryItem.Value );
+                }
             }
 
             return categoryItem;

@@ -150,5 +150,12 @@ namespace Rock.ClientService.Core.Category.Options
         /// </summary>
         /// <value>The security grant to use for additional authorization.</value>
         internal SecurityGrant SecurityGrant { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifiers of the categories that need to be
+        /// expanded to within the tree in order to display the selected value(s).
+        /// </summary>
+
+        internal List<Guid> ExpandToCategoryGuids { get; set; }
     }
 }

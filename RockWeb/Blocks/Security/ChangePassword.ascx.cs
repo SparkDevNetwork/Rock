@@ -90,8 +90,8 @@ namespace RockWeb.Blocks.Security
             {
                 if ( !Page.IsPostBack )
                 {
-                    var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
-                    if ( disableCaptchaSupport )
+                    var disableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
+                    if ( disableCaptchaSupport || !cpCaptcha.IsAvailable )
                     {
                         pnlCaptcha.Visible = false;
                         EnableForm();

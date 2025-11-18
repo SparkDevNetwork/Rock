@@ -42,7 +42,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             jobAnalytics.ExecuteInternal( analyticsSettings );
 
             var result = jobAnalytics.Result;
-            Assert.That.Contains( jobAnalytics.Result, "completed" );
+            Assert.Contains( "completed", jobAnalytics.Result );
 
             TestHelper.Log( $"Finished Job: ProcessBiAnalytics." );
         }

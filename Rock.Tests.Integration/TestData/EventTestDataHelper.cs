@@ -714,7 +714,7 @@ namespace Rock.Tests.Integration.TestData
             var occurrence = eventOccurrenceService.Queryable()
                 .FirstOrDefault( i => i.EventItem.Name == eventName );
 
-            Assert.That.IsNotNull( occurrence, $"Event not found. [Name=\"{eventName}\"]" );
+            Assert.IsNotNull( occurrence, $"Event not found. [Name=\"{eventName}\"]" );
 
             SetStartDateForSchedule( occurrence?.ScheduleId ?? 0,
                 startDate,

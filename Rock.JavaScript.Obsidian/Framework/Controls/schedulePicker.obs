@@ -5,7 +5,8 @@
                     iconCssClass="ti ti-calendar"
                     :provider="itemProvider"
                     :multiple="multiple"
-                    disableFolderSelection>
+                    disableFolderSelection
+                    autoExpand>
 
         <template #customPickerActions>
             <label class="rock-checkbox-icon">

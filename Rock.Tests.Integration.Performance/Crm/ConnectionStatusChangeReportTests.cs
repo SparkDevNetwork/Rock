@@ -49,7 +49,7 @@ namespace Rock.Tests.Integration.Performance.Crm
         /// <summary>
         /// Runs after all tests in this class is executed.
         /// </summary>
-        [ClassCleanup( ClassCleanupBehavior.EndOfClass )]
+        [ClassCleanup]
         public static void ClassCleanup()
         {
             if ( IsContainersEnabled )
@@ -155,7 +155,7 @@ namespace Rock.Tests.Integration.Performance.Crm
 
             var connectionStatusType = statusType.DefinedValues.FirstOrDefault( x => x.Value == statusName );
 
-            Assert.That.IsNotNull( connectionStatusType, $"Connection Status Type not found. [TypeName={statusName}]" );
+            Assert.IsNotNull( connectionStatusType, $"Connection Status Type not found. [TypeName={statusName}]" );
 
             return connectionStatusType.Id;
         }

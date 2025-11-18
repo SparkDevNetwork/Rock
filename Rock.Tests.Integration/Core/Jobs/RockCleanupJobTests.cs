@@ -47,7 +47,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             using ( var rockContext = new RockContext() )
             {
                 var actualPerson = new PersonService( rockContext ).Get( expectedPerson.Guid );
-                Assert.That.AreEqual( AccountProtectionProfile.Medium, actualPerson.AccountProtectionProfile );
+                Assert.AreEqual( AccountProtectionProfile.Medium, actualPerson.AccountProtectionProfile );
             }
         }
 
@@ -66,10 +66,10 @@ namespace Rock.Tests.Integration.Core.Jobs
             using ( var rockContext = new RockContext() )
             {
                 var actualPerson = new PersonService( rockContext ).Get( expectedLowGroupPerson.Guid );
-                Assert.That.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
+                Assert.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
 
                 actualPerson = new PersonService( rockContext ).Get( expectedHighSecurityGroupPerson.Guid );
-                Assert.That.AreEqual( AccountProtectionProfile.Extreme, actualPerson.AccountProtectionProfile );
+                Assert.AreEqual( AccountProtectionProfile.Extreme, actualPerson.AccountProtectionProfile );
             }
         }
 
@@ -111,7 +111,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             using ( var rockContext = new RockContext() )
             {
                 var actualPerson = new PersonService( rockContext ).Get( personGuid );
-                Assert.That.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
+                Assert.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
             }
         }
 
@@ -165,7 +165,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             using ( var rockContext = new RockContext() )
             {
                 var actualPerson = new PersonService( rockContext ).Get( personGuid );
-                Assert.That.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
+                Assert.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
             }
         }
 
@@ -207,7 +207,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             using ( var rockContext = new RockContext() )
             {
                 var actualPerson = new PersonService( rockContext ).Get( personGuid );
-                Assert.That.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
+                Assert.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
             }
         }
 
@@ -248,7 +248,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             using ( var rockContext = new RockContext() )
             {
                 var actualPerson = new PersonService( rockContext ).Get( personGuid );
-                Assert.That.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
+                Assert.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
             }
         }
 
@@ -626,7 +626,7 @@ DELETE FROM PersonSearchKey
             var result = job.Result;
             TestHelper.Log( result );
 
-            Assert.That.Contains( result, "2 Unused Interaction Sessions" );
+            Assert.Contains( "2 Unused Interaction Sessions", result );
 
             InteractionSession interactionSession;
             var interactionSessionService = new InteractionSessionService( rockContext );

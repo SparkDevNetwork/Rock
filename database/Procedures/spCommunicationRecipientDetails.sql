@@ -63,6 +63,7 @@ BEGIN
 	            WHERE gm.[GroupId] = @ListId
 		            AND p.[IsDeceased] = 0
 		            AND gm.[GroupMemberStatus] = 1
+                    AND gm.[IsArchived] = 0
             )
             INSERT INTO #RecipientList ([PersonId], [GroupCommunicationPreference])
             SELECT [PersonId], [CommunicationPreference] FROM DistinctRecipients

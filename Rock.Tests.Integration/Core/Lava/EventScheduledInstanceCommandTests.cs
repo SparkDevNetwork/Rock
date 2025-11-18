@@ -75,7 +75,7 @@ namespace Rock.Tests.Integration.Core.Lava
 
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
-                Assert.That.Contains( output, "Event Occurrences not available. Invalid configuration setting \"unknown_parameter\"." );
+                Assert.Contains( "Event Occurrences not available. Invalid configuration setting \"unknown_parameter\".", output );
             } );
         }
 
@@ -87,7 +87,7 @@ namespace Rock.Tests.Integration.Core.Lava
             var eventItemService = new EventItemService( rockContext );
 
             var testEvent = eventItemService.Get( StaffMeetingEventGuidString.AsGuid() );
-            Assert.That.IsNotNull( testEvent, "Expected test data not found." );
+            Assert.IsNotNull( testEvent, "Expected test data not found." );
 
             var effectiveDate = EventsDataManager.Instance.GetDefaultEffectiveDate();
             var template = GetTestTemplate( $"eventid:'{testEvent.Name}' startdate:'{effectiveDate:yyyy-MM-dd}' daterange:'12m' maxoccurrences:2" );
@@ -103,7 +103,7 @@ namespace Rock.Tests.Integration.Core.Lava
             var eventItemService = new EventItemService( rockContext );
 
             var eventId = eventItemService.GetId( StaffMeetingEventGuidString.AsGuid() );
-            Assert.That.IsNotNull( eventId, "Expected test data not found." );
+            Assert.IsNotNull( eventId, "Expected test data not found." );
 
             var effectiveDate = EventsDataManager.Instance.GetDefaultEffectiveDate();
             var template = GetTestTemplate( $"eventid:{eventId} startdate:'{effectiveDate:yyyy-MM-dd}' daterange:'12m' maxoccurrences:2" );
@@ -119,7 +119,7 @@ namespace Rock.Tests.Integration.Core.Lava
             var eventItemService = new EventItemService( rockContext );
 
             var testEvent = eventItemService.Get( StaffMeetingEventGuidString.AsGuid() );
-            Assert.That.IsNotNull( testEvent, "Expected test data not found." );
+            Assert.IsNotNull( testEvent, "Expected test data not found." );
 
             var effectiveDate = EventsDataManager.Instance.GetDefaultEffectiveDate();
             var template = GetTestTemplate( $"eventid:'{StaffMeetingEventGuidString}' startdate:'{effectiveDate:yyyy-MM-dd}' daterange:'12m' maxoccurrences:2" );
@@ -140,7 +140,7 @@ namespace Rock.Tests.Integration.Core.Lava
 
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
-                Assert.That.Contains( output, "Event Occurrences not available. An Event reference must be specified." );
+                Assert.Contains( "Event Occurrences not available. An Event reference must be specified.", output );
             } );
         }
 
@@ -157,7 +157,7 @@ namespace Rock.Tests.Integration.Core.Lava
 
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
-                Assert.That.Contains( output, "Event Occurrences not available. Cannot find an Event matching the reference \"no_event\"." );
+                Assert.Contains( "Event Occurrences not available. Cannot find an Event matching the reference \"no_event\".", output );
             } );
         }
 
@@ -259,18 +259,18 @@ namespace Rock.Tests.Integration.Core.Lava
                     var output01 = TestHelper.GetTemplateOutput( engine, templateDays01,
                         new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
-                    Assert.That.Contains( output01, "<<EventCount = 1>>" );
-                    Assert.That.Contains( output01, "<<Test Daily Event|2020-01-01|7:30 PM|Main Campus>>" );
-                    Assert.That.DoesNotContain( output01, "<<Test Daily Event|2020-01-02|7:30 PM|Main Campus>>" );
+                    Assert.Contains( "<<EventCount = 1>>", output01 );
+                    Assert.Contains( "<<Test Daily Event|2020-01-01|7:30 PM|Main Campus>>", output01 );
+                    Assert.DoesNotContain( "<<Test Daily Event|2020-01-02|7:30 PM|Main Campus>>", output01 );
 
                     // Verify output for 10 day range.
                     var output10 = TestHelper.GetTemplateOutput( engine, templateDays10,
                         new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
-                    Assert.That.Contains( output10, "<<EventCount = 10>>" );
-                    Assert.That.Contains( output10, "<<Test Daily Event|2020-01-01|7:30 PM|Main Campus>>" );
-                    Assert.That.Contains( output10, "<<Test Daily Event|2020-01-10|7:30 PM|Main Campus>>" );
-                    Assert.That.DoesNotContain( output10, "<<Test Daily Event|2020-01-11|7:30 PM|Main Campus>>" );
+                    Assert.Contains( "<<EventCount = 10>>", output10 );
+                    Assert.Contains( "<<Test Daily Event|2020-01-01|7:30 PM|Main Campus>>", output10 );
+                    Assert.Contains( "<<Test Daily Event|2020-01-10|7:30 PM|Main Campus>>", output10 );
+                    Assert.DoesNotContain( "<<Test Daily Event|2020-01-11|7:30 PM|Main Campus>>", output10 );
                 } );
             }
             finally
@@ -294,7 +294,7 @@ namespace Rock.Tests.Integration.Core.Lava
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 // Verify that the output contains series headings and relevant dates for both schedules.
-                Assert.That.Contains( output, "<EventCount = 0>" );
+                Assert.Contains( "<EventCount = 0>", output );
             } );
         }
 
@@ -311,7 +311,7 @@ namespace Rock.Tests.Integration.Core.Lava
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 // Ensure that the maximum number of occurrences has been retrieved.
-                Assert.That.Contains( output, "<EventCount = 200>" );
+                Assert.Contains( "<EventCount = 200>", output );
             } );
         }
 
@@ -327,7 +327,7 @@ namespace Rock.Tests.Integration.Core.Lava
 
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
-                Assert.That.Contains( output, "Event Occurrences not available. The specified Date Range is invalid." );
+                Assert.Contains( "Event Occurrences not available. The specified Date Range is invalid.", output );
             } );
         }
 
@@ -345,7 +345,7 @@ namespace Rock.Tests.Integration.Core.Lava
 
                 TestHelper.DebugWriteRenderResult( engine, template1, output1 );
 
-                Assert.That.Contains( output1, "<EventCount = 101>" );
+                Assert.Contains( "<EventCount = 101>", output1 );
 
                 // Now ensure that the default limit is applied.
                 var template2 = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1'" );
@@ -355,7 +355,7 @@ namespace Rock.Tests.Integration.Core.Lava
 
                 TestHelper.DebugWriteRenderResult( engine, template2, output2 );
 
-                Assert.That.Contains( output2, "<EventCount = 100>" );
+                Assert.Contains( "<EventCount = 100>", output2 );
             } );
         }
 
@@ -370,7 +370,7 @@ namespace Rock.Tests.Integration.Core.Lava
                 var output1 = TestHelper.GetTemplateOutput( engine, template1,
                     new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
-                Assert.That.Contains( output1, "<EventCount = 11>" );
+                Assert.Contains( "<EventCount = 11>", output1 );
 
                 // Now ensure that the maxoccurences limit is applied.
                 var template2 = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' maxoccurrences:10" );
@@ -378,7 +378,7 @@ namespace Rock.Tests.Integration.Core.Lava
                 var output2 = TestHelper.GetTemplateOutput( engine, template2,
                     new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
-                Assert.That.Contains( output2, "<EventCount = 10>" );
+                Assert.Contains( "<EventCount = 10>", output2 );
             } );
         }
 
@@ -395,7 +395,7 @@ namespace Rock.Tests.Integration.Core.Lava
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 // Verify that the output contains series headings and relevant dates for both schedules.
-                Assert.That.Contains( output, "Event Occurrences not available. Invalid configuration setting \"maxoccurrences\"." );
+                Assert.Contains( "Event Occurrences not available. Invalid configuration setting \"maxoccurrences\".", output );
             } );
         }
 
@@ -428,10 +428,10 @@ namespace Rock.Tests.Integration.Core.Lava
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 // Verify that the output contains series headings and relevant dates for both schedules.
-                Assert.That.Contains( output, "<b>Series 1</b>" );
-                Assert.That.Contains( output, "<li>Jan 4, 2020 in Meeting Room 1</li>" );
-                Assert.That.Contains( output, "<b>Series 2</b>" );
-                Assert.That.Contains( output, "<li>Jan 5, 2020 in Meeting Room 2</li>" );
+                Assert.Contains( "<b>Series 1</b>", output );
+                Assert.Contains( "<li>Jan 4, 2020 in Meeting Room 1</li>", output );
+                Assert.Contains( "<b>Series 2</b>", output );
+                Assert.Contains( "<li>Jan 5, 2020 in Meeting Room 2</li>", output );
             } );
         }
 
@@ -487,8 +487,8 @@ Name={testEvent.Name}<br>Date={expectedDate:yyyy-MM-dd}<br>Time={expectedDate:h:
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 // Verify that the output contains series headings and relevant dates for both schedules.
-                Assert.That.Contains( output, "<Campus: Main Campus>" );
-                Assert.That.DoesNotContain( output, "<Campus: Secondary Campus>" );
+                Assert.Contains( "<Campus: Main Campus>", output );
+                Assert.DoesNotContain( "<Campus: Secondary Campus>", output );
             } );
         }
 
@@ -591,14 +591,14 @@ Name={testEvent.Name}<br>Date={expectedDate:yyyy-MM-dd}<br>Time={expectedDate:h:
 
                 foreach ( var validDate in validDateList )
                 {
-                    Assert.That.Contains( output, $"<<{meetingName}|{validDate:yyyy-MM-dd}|10:30 AM|All Campuses>>" );
+                    Assert.Contains( $"<<{meetingName}|{validDate:yyyy-MM-dd}|10:30 AM|All Campuses>>", output );
                 }
 
                 if ( invalidDateList != null )
                 {
                     foreach ( var invalidDate in invalidDateList )
                     {
-                        Assert.That.DoesNotContain( output, $"<<Staff Meeting|{invalidDate:yyyy-MM-dd}|10:30 AM|All Campuses>>" );
+                        Assert.DoesNotContain( $"<<Staff Meeting|{invalidDate:yyyy-MM-dd}|10:30 AM|All Campuses>>", output );
                     }
                 }
 
@@ -631,14 +631,14 @@ Name={testEvent.Name}<br>Date={expectedDate:yyyy-MM-dd}<br>Time={expectedDate:h:
 
                 foreach ( var validDate in validDateList )
                 {
-                    Assert.That.Contains( output, $"<<Staff Meeting|{validDate:yyyy-MM-dd}|10:30 AM|All Campuses>>" );
+                    Assert.Contains( $"<<Staff Meeting|{validDate:yyyy-MM-dd}|10:30 AM|All Campuses>>", output );
                 }
 
                 if ( invalidDateList != null )
                 {
                     foreach ( var invalidDate in invalidDateList )
                     {
-                        Assert.That.DoesNotContain( output, $"<<Staff Meeting|{invalidDate:yyyy-MM-dd}|10:30 AM|All Campuses>>" );
+                        Assert.DoesNotContain( $"<<Staff Meeting|{invalidDate:yyyy-MM-dd}|10:30 AM|All Campuses>>", output );
                     }
                 }
 

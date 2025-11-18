@@ -38,10 +38,10 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             foreach ( var test in tests )
             {
-                Assert.That.AreEqual( test.Expected, test.Date.ToDateKey() );
+                Assert.AreEqual( test.Expected, test.Date.ToDateKey() );
             }
 
-            Assert.That.AreEqual( null, ( ( DateTime? ) null ).ToDateKey() );
+            Assert.AreEqual( null, ( ( DateTime? ) null ).ToDateKey() );
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             foreach ( var test in tests )
             {
-                Assert.That.AreEqual( test.Expected, test.DateKey.GetDateKeyYear() );
+                Assert.AreEqual( test.Expected, test.DateKey.GetDateKeyYear() );
             }
         }
 
@@ -76,7 +76,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             foreach ( var test in tests )
             {
-                Assert.That.AreEqual( test.Expected, test.DateKey.GetDateKeyMonth() );
+                Assert.AreEqual( test.Expected, test.DateKey.GetDateKeyMonth() );
             }
         }
 
@@ -94,7 +94,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             foreach ( var test in tests )
             {
-                Assert.That.AreEqual( test.Expected, test.DateKey.GetDateKeyDay() );
+                Assert.AreEqual( test.Expected, test.DateKey.GetDateKeyDay() );
             }
         }
     }

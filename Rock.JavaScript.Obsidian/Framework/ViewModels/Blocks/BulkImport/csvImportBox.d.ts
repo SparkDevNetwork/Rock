@@ -25,6 +25,24 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The initialization data for the Bulk Import Tool block. */
 export type CsvImportBox = {
+    /** Gets or sets the available Connection Status options for this Rock instance. */
+    connectionStatusOptions?: string | null;
+
+    /** Gets or sets the available Email Preference options for this Rock instance. */
+    emailPreferenceOptions?: string | null;
+
+    /** Gets or sets the available Gender options for this Rock instance. */
+    genderOptions?: string | null;
+
+    /** Gets or sets the available Grade options for this Rock instance. */
+    gradeOptions?: string | null;
+
+    /** Gets or sets the available Marital Status options for this Rock instance. */
+    maritalStatusOptions?: string | null;
+
+    /** Gets or sets the available Record Status options for this Rock instance. */
+    recordStatusOptions?: string | null;
+
     /** Gets or sets the Encrypted Root Folder. */
     rootFolder?: string | null;
 
@@ -33,22 +51,4 @@ export type CsvImportBox = {
 
     /** Gets or sets the available Suffix options for this Rock instance. */
     suffixOptions?: string | null;
-
-    /** Gets or sets the available Connection Status options for this Rock instance. */
-    connectionStatusOptions?: string | null;
-
-    /** Gets or sets the available Grade options for this Rock instance. */
-    gradeOptions?: string | null;
-
-    /** Gets or sets the available Email Preference options for this Rock instance. */
-    emailPreferenceOptions?: string | null;
-
-    /** Gets or sets the available Gender options for this Rock instance. */
-    genderOptions?: string | null;
-
-    /** Gets or sets the available Marital Status options for this Rock instance. */
-    maritalStatusOptions?: string | null;
-
-    /** Gets or sets the available Record Status options for this Rock instance. */
-    recordStatusOptions?: string | null;
 };

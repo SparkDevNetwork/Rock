@@ -21,7 +21,7 @@ namespace Rock.Tests.Model
         {
             var page = new Page { InternalName = "SomePage" };
             var result = page.Clone( false );
-            Assert.That.AreEqual( result.InternalName, page.InternalName );
+            Assert.AreEqual( result.InternalName, page.InternalName );
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace Rock.Tests.Model
             var children = new List<Page> { new Page() };
             var parent = new Page { Pages = children };
             var result = parent.Clone() as Page;
-            Assert.That.IsNotEmpty( result.Pages );
+            Assert.IsNotEmpty( result.Pages );
         }
 
         /// <summary>
@@ -48,8 +48,8 @@ namespace Rock.Tests.Model
             parent.Pages = new List<Page> { child };
             child.Pages = new List<Page> { grandchild };
             var result = parent.Clone() as Page;
-            Assert.That.IsNotEmpty( result.Pages );
-            Assert.That.IsNotEmpty( result.Pages.FirstOrDefault().Pages );
+            Assert.IsNotEmpty( result.Pages );
+            Assert.IsNotEmpty( result.Pages.FirstOrDefault().Pages );
         }
 
         /// <summary>
@@ -61,8 +61,8 @@ namespace Rock.Tests.Model
             var page = new Page { Blocks = new List<Block>() };
             page.Blocks.Add( new Block() );
             var result = page.Clone() as Page;
-            Assert.That.IsNotNull( result.Blocks );
-            Assert.That.IsNotEmpty( result.Blocks );
+            Assert.IsNotNull( result.Blocks );
+            Assert.IsNotEmpty( result.Blocks );
         }
 
         /// <summary>
@@ -74,8 +74,8 @@ namespace Rock.Tests.Model
             var page = new Page { PageRoutes = new List<PageRoute>() };
             page.PageRoutes.Add( new PageRoute() );
             var result = page.Clone() as Page;
-            Assert.That.IsNotNull( result.PageRoutes );
-            Assert.That.IsNotEmpty( result.PageRoutes );
+            Assert.IsNotNull( result.PageRoutes );
+            Assert.IsNotEmpty( result.PageRoutes );
         }
 
         /// <summary>
@@ -87,8 +87,8 @@ namespace Rock.Tests.Model
             var page = new Page { PageContexts = new List<PageContext>() };
             page.PageContexts.Add( new PageContext() );
             var result = page.Clone() as Page;
-            Assert.That.IsNotNull( result.PageContexts );
-            Assert.That.IsNotEmpty( result.PageContexts );
+            Assert.IsNotNull( result.PageContexts );
+            Assert.IsNotEmpty( result.PageContexts );
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace Rock.Tests.Model
         {
             var page = new Page();
             var result = page.ToJson();
-            Assert.That.IsNotEmpty( result );
+            Assert.IsNotEmpty( result );
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace Rock.Tests.Model
 
             var result = page.ToJson();
             const string key = "\"PageTitle\":\"FooPage\"";
-            Assert.That.AreNotEqual( result.IndexOf( key ), -1 );
+            Assert.AreNotEqual( -1, result.IndexOf( key ) );
         }
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace Rock.Tests.Model
             var result = page.ToJson();
             result = result.Substring( result.IndexOf( "\"Pages\":" ) + 7 );
             const string key = "\"PageTitle\":\"BarPage\"";
-            Assert.That.AreNotEqual( result.IndexOf( key ), -1 );
+            Assert.AreNotEqual( -1, result.IndexOf( key ) );
         }
 
         /// <summary>
@@ -151,9 +151,9 @@ namespace Rock.Tests.Model
             const string parentKey = "\"PageTitle\":\"Parent\"";
             const string childKey = "\"PageTitle\":\"Child\"";
             const string grandChildKey = "\"PageTitle\":\"Grandchild\"";
-            Assert.That.AreNotEqual( result.IndexOf( parentKey ), -1 );
-            Assert.That.AreNotEqual( result.IndexOf( childKey ), -1 );
-            Assert.That.AreNotEqual( result.IndexOf( grandChildKey ), -1 );
+            Assert.AreNotEqual( -1, result.IndexOf( parentKey ) );
+            Assert.AreNotEqual( -1, result.IndexOf( childKey ) );
+            Assert.AreNotEqual( -1, result.IndexOf( grandChildKey ) );
         }
 
         /// <summary>
@@ -170,8 +170,8 @@ namespace Rock.Tests.Model
 
             string json = obj.ToJson();
             var page = Page.FromJson( json );
-            Assert.That.AreEqual( obj.InternalName, page.InternalName );
-            Assert.That.AreEqual( obj.IsSystem, page.IsSystem );
+            Assert.AreEqual( obj.InternalName, page.InternalName );
+            Assert.AreEqual( obj.IsSystem, page.IsSystem );
         }
 
         /// <summary>
@@ -185,9 +185,9 @@ namespace Rock.Tests.Model
 
             var json = obj.ToJson();
             var page = Page.FromJson( json );
-            Assert.That.IsNotNull( page.Pages );
-            Assert.That.IsNotEmpty( page.Pages );
-            Assert.That.AreEqual( page.Pages.First().InternalName, obj.Pages.First().InternalName );
+            Assert.IsNotNull( page.Pages );
+            Assert.IsNotEmpty( page.Pages );
+            Assert.AreEqual( page.Pages.First().InternalName, obj.Pages.First().InternalName );
         }
 
         /// <summary>
@@ -208,9 +208,9 @@ namespace Rock.Tests.Model
             var json = grandparentPage.ToJson();
             var page = Page.FromJson( json );
             var childPages = page.Pages.First().Pages;
-            Assert.That.IsNotNull( childPages );
-            Assert.That.IsNotEmpty( childPages );
-            Assert.That.AreEqual( childPages.First().InternalName, PAGE_NAME );
+            Assert.IsNotNull( childPages );
+            Assert.IsNotEmpty( childPages );
+            Assert.AreEqual( PAGE_NAME, childPages.First().InternalName );
         }
 
         /// <summary>
@@ -223,9 +223,9 @@ namespace Rock.Tests.Model
             obj.Blocks.Add( new Block { Name = "Some Block" } );
             var json = obj.ToJson();
             var page = Page.FromJson( json );
-            Assert.That.IsNotNull( page.Blocks );
-            Assert.That.IsNotEmpty( page.Blocks );
-            Assert.That.AreEqual( page.Blocks.First().Name, obj.Blocks.First().Name );
+            Assert.IsNotNull( page.Blocks );
+            Assert.IsNotEmpty( page.Blocks );
+            Assert.AreEqual( page.Blocks.First().Name, obj.Blocks.First().Name );
         }
 
         /// <summary>
@@ -238,9 +238,9 @@ namespace Rock.Tests.Model
             obj.PageRoutes.Add( new PageRoute { Route = "/some/route" } );
             var json = obj.ToJson();
             var page = Page.FromJson( json );
-            Assert.That.IsNotNull( page.PageRoutes );
-            Assert.That.IsNotEmpty( page.PageRoutes );
-            Assert.That.AreEqual( page.PageRoutes.First().Route, obj.PageRoutes.First().Route );
+            Assert.IsNotNull( page.PageRoutes );
+            Assert.IsNotEmpty( page.PageRoutes );
+            Assert.AreEqual( page.PageRoutes.First().Route, obj.PageRoutes.First().Route );
         }
 
         /// <summary>
@@ -255,9 +255,9 @@ namespace Rock.Tests.Model
             obj.PageContexts.Add( new PageContext { PageId = id } );
             var json = obj.ToJson();
             var page = Page.FromJson( json );
-            Assert.That.IsNotNull( page.PageContexts );
-            Assert.That.IsNotEmpty( page.PageContexts );
-            Assert.That.AreEqual( page.PageContexts.First().PageId, id );
+            Assert.IsNotNull( page.PageContexts );
+            Assert.IsNotEmpty( page.PageContexts );
+            Assert.AreEqual( page.PageContexts.First().PageId, id );
         }
 
         /// <summary>
@@ -276,8 +276,8 @@ namespace Rock.Tests.Model
             var json = obj.ToJson().Replace( "\"foobar\":null", "\"foobar\":{}" );
 
             var page = Page.FromJson( json );
-            Assert.That.IsNotNull( page.Attributes );
-            Assert.That.IsNotEmpty( page.Attributes );
+            Assert.IsNotNull( page.Attributes );
+            Assert.IsNotEmpty( page.Attributes );
         }
 
         /// <summary>
@@ -297,9 +297,9 @@ namespace Rock.Tests.Model
 
             var json = obj.ToJson();
             var page = Page.FromJson( json );
-            Assert.That.IsNotNull( page.AttributeValues );
-            Assert.That.IsNotEmpty( page.AttributeValues );
-            Assert.That.AreEqual( "baz", page.AttributeValues.First().Value.Value );
+            Assert.IsNotNull( page.AttributeValues );
+            Assert.IsNotEmpty( page.AttributeValues );
+            Assert.AreEqual( "baz", page.AttributeValues.First().Value.Value );
         }
     }
 }

@@ -38,7 +38,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             foreach ( var test in tests )
             {
-                Assert.That.AreEqual( test.Expected, test.Date.StartOfMonth() );
+                Assert.AreEqual( test.Expected, test.Date.StartOfMonth() );
             }
         }
 
@@ -49,37 +49,37 @@ namespace Rock.Tests.Utility.ExtensionMethods
         [TestMethod]
         public void ToElapsedString_SecondsPastDateIncludesAgo()
         {
-            Assert.That.Contains( RockDateTime.Now.AddSeconds( -5 ).ToElapsedString(), "Seconds Ago" );
+            Assert.Contains( "Seconds Ago", RockDateTime.Now.AddSeconds( -5 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_LessThanOneSecondPastGivesSingularNoun()
         {
-            Assert.That.Equal( RockDateTime.Now.ToElapsedString(), "1 Second Ago" );
+            Assert.AreEqual( "1 Second Ago", RockDateTime.Now.ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_GreaterThanOneSecondGivesPluralNoun()
         {
-            Assert.That.Equal( RockDateTime.Now.AddSeconds( -5 ).ToElapsedString(), "5 Seconds Ago" );
+            Assert.AreEqual( "5 Seconds Ago", RockDateTime.Now.AddSeconds( -5 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_SecondsInFutureIncludesFromNow()
         {
-            Assert.That.Contains( RockDateTime.Now.AddSeconds( 5 ).ToElapsedString(), "Seconds From Now" );
+            Assert.Contains( "Seconds From Now", RockDateTime.Now.AddSeconds( 5 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_LessThanOneSecondInFutureGivesSingularNoun()
         {
-            Assert.That.Contains( RockDateTime.Now.AddSeconds( 1 ).ToElapsedString(), "Second From Now" );
+            Assert.Contains( "Second From Now", RockDateTime.Now.AddSeconds( 1 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_GreaterThanOneSecondInFutureGivesPluralNoun()
         {
-            Assert.That.Contains( RockDateTime.Now.AddSeconds( 5 ).ToElapsedString(), "Seconds From Now" );
+            Assert.Contains( "Seconds From Now", RockDateTime.Now.AddSeconds( 5 ).ToElapsedString() );
         }
 
         #endregion
@@ -89,37 +89,37 @@ namespace Rock.Tests.Utility.ExtensionMethods
         [TestMethod]
         public void ToElapsedString_MinutesPastDateIncludesAgo()
         {
-            Assert.That.Contains( RockDateTime.Now.AddMinutes( -5 ).ToElapsedString(), "Minutes Ago" );
+            Assert.Contains( "Minutes Ago", RockDateTime.Now.AddMinutes( -5 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_LessThanTwoMinutesPastGivesSingularNoun()
         {
-            Assert.That.Equal( RockDateTime.Now.AddMinutes( -1 ).ToElapsedString(), "1 Minute Ago" );
+            Assert.AreEqual( "1 Minute Ago", RockDateTime.Now.AddMinutes( -1 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_GreaterThanOneMinuteGivesPluralNoun()
         {
-            Assert.That.Equal( RockDateTime.Now.AddMinutes( -5 ).ToElapsedString(), "5 Minutes Ago" );
+            Assert.AreEqual( "5 Minutes Ago", RockDateTime.Now.AddMinutes( -5 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_MinutesInFutureIncludesFromNow()
         {
-            Assert.That.Contains( RockDateTime.Now.AddMinutes( 5 ).ToElapsedString(), "Minutes From Now" );
+            Assert.Contains( "Minutes From Now", RockDateTime.Now.AddMinutes( 5 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_LessThanTwoMinutesInFutureGivesSingularNoun()
         {
-            Assert.That.Contains( RockDateTime.Now.AddMinutes( 1 ).AddSeconds( 2 ).ToElapsedString(), "Minute From Now" );
+            Assert.Contains( "Minute From Now", RockDateTime.Now.AddMinutes( 1 ).AddSeconds( 2 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_GreaterThanOneMinuteInFutureGivesPluralNoun()
         {
-            Assert.That.Contains( RockDateTime.Now.AddMinutes( 5 ).ToElapsedString(), "Minutes From Now" );
+            Assert.Contains( "Minutes From Now", RockDateTime.Now.AddMinutes( 5 ).ToElapsedString() );
         }
 
         #endregion
@@ -129,37 +129,37 @@ namespace Rock.Tests.Utility.ExtensionMethods
         [TestMethod]
         public void ToElapsedString_HoursPastDateIncludesAgo()
         {
-            Assert.That.Contains( RockDateTime.Now.AddHours( -5 ).ToElapsedString(), "Hours Ago" );
+            Assert.Contains( "Hours Ago", RockDateTime.Now.AddHours( -5 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_LessThanTwoHoursPastGivesSingularNoun()
         {
-            Assert.That.Equal( RockDateTime.Now.AddHours( -1 ).ToElapsedString(), "1 Hour Ago" );
+            Assert.AreEqual( "1 Hour Ago", RockDateTime.Now.AddHours( -1 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_GreaterThanOneHourGivesPluralNoun()
         {
-            Assert.That.Equal( RockDateTime.Now.AddHours( -5 ).ToElapsedString(), "5 Hours Ago" );
+            Assert.AreEqual( "5 Hours Ago", RockDateTime.Now.AddHours( -5 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_HoursInFutureIncludesFromNow()
         {
-            Assert.That.Contains( RockDateTime.Now.AddHours( 5 ).ToElapsedString(), "Hours From Now" );
+            Assert.Contains( "Hours From Now", RockDateTime.Now.AddHours( 5 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_LessThanTwoHoursInFutureGivesSingularNoun()
         {
-            Assert.That.Contains( RockDateTime.Now.AddHours( 1 ).AddMinutes( 2 ).ToElapsedString(), "Hour From Now" );
+            Assert.Contains( "Hour From Now", RockDateTime.Now.AddHours( 1 ).AddMinutes( 2 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_GreaterThanOneHourInFutureGivesPluralNoun()
         {
-            Assert.That.Contains( RockDateTime.Now.AddHours( 5 ).ToElapsedString(), "Hours From Now" );
+            Assert.Contains( "Hours From Now", RockDateTime.Now.AddHours( 5 ).ToElapsedString() );
         }
 
         #endregion
@@ -169,37 +169,37 @@ namespace Rock.Tests.Utility.ExtensionMethods
         [TestMethod]
         public void ToElapsedString_DaysPastDateIncludesAgo()
         {
-            Assert.That.Contains( RockDateTime.Now.AddDays( -5 ).ToElapsedString(), "Days Ago" );
+            Assert.Contains( "Days Ago", RockDateTime.Now.AddDays( -5 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_LessThanTwoDaysPastGivesSingularNoun()
         {
-            Assert.That.Equal( RockDateTime.Now.AddDays( -1 ).ToElapsedString(), "1 Day Ago" );
+            Assert.AreEqual( "1 Day Ago", RockDateTime.Now.AddDays( -1 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_GreaterThanOneDayGivesPluralNoun()
         {
-            Assert.That.Equal( RockDateTime.Now.AddDays( -5 ).ToElapsedString(), "5 Days Ago" );
+            Assert.AreEqual( "5 Days Ago", RockDateTime.Now.AddDays( -5 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_DaysInFutureIncludesFromNow()
         {
-            Assert.That.Contains( RockDateTime.Now.AddDays( 5 ).ToElapsedString(), "Days From Now" );
+            Assert.Contains( "Days From Now", RockDateTime.Now.AddDays( 5 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_LessThanTwoDaysInFutureGivesSingularNoun()
         {
-            Assert.That.Contains( RockDateTime.Now.AddDays( 1 ).AddHours( 2 ).ToElapsedString(), "Day From Now" );
+            Assert.Contains( "Day From Now", RockDateTime.Now.AddDays( 1 ).AddHours( 2 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_GreaterThanOneDayInFutureGivesPluralNoun()
         {
-            Assert.That.Contains( RockDateTime.Now.AddDays( 5 ).ToElapsedString(), "Days From Now" );
+            Assert.Contains( "Days From Now", RockDateTime.Now.AddDays( 5 ).ToElapsedString() );
         }
 
         #endregion
@@ -209,7 +209,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         [TestMethod]
         public void ToElapsedString_MonthsPastDateIncludesAgo()
         {
-            Assert.That.Contains( RockDateTime.Now.AddMonths( -5 ).ToElapsedString(), "Months Ago" );
+            Assert.Contains( "Months Ago", RockDateTime.Now.AddMonths( -5 ).ToElapsedString() );
         }
 
         [TestMethod]
@@ -217,19 +217,19 @@ namespace Rock.Tests.Utility.ExtensionMethods
         {
             var nowDate = RockDateTime.New( 2024, 6, 30 ).Value;
             var date = RockDateTime.New( 2024, 5, 14 ).Value;
-            Assert.That.Equal( "1 Month Ago", DateTimeExtensions.ToElapsedString( date, nowDate ) );
+            Assert.AreEqual( "1 Month Ago", DateTimeExtensions.ToElapsedString( date, nowDate ) );
         }
 
         [TestMethod]
         public void ToElapsedString_GreaterThanOneMonthGivesPluralNoun()
         {
-            Assert.That.Equal( RockDateTime.Now.AddMonths( -5 ).ToElapsedString(), "5 Months Ago" );
+            Assert.AreEqual( "5 Months Ago", RockDateTime.Now.AddMonths( -5 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_MonthsInFutureIncludesFromNow()
         {
-            Assert.That.Contains( RockDateTime.Now.AddMonths( 5 ).ToElapsedString(), "Months From Now" );
+            Assert.Contains( "Months From Now", RockDateTime.Now.AddMonths( 5 ).ToElapsedString() );
         }
 
         [TestMethod]
@@ -237,13 +237,13 @@ namespace Rock.Tests.Utility.ExtensionMethods
         {
             var nowDate = RockDateTime.New( 2024, 5, 1 ).Value;
             var date = RockDateTime.New( 2024, 6, 30 ).Value;
-            Assert.That.Equal( "1 Month From Now", DateTimeExtensions.ToElapsedString( date, nowDate ) );
+            Assert.AreEqual( "1 Month From Now", DateTimeExtensions.ToElapsedString( date, nowDate ) );
         }
 
         [TestMethod]
         public void ToElapsedString_GreaterThanOneMonthInFutureGivesPluralNoun()
         {
-            Assert.That.Contains( RockDateTime.Now.AddMonths( 5 ).ToElapsedString(), "Months From Now" );
+            Assert.Contains( "Months From Now", RockDateTime.Now.AddMonths( 5 ).ToElapsedString() );
         }
 
         #endregion
@@ -253,37 +253,37 @@ namespace Rock.Tests.Utility.ExtensionMethods
         [TestMethod]
         public void ToElapsedString_YearsPastDateIncludesAgo()
         {
-            Assert.That.Contains( RockDateTime.Now.AddYears( -5 ).ToElapsedString(), "Years Ago" );
+            Assert.Contains( "Years Ago", RockDateTime.Now.AddYears( -5 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_LessThanTwoYearsPastGivesSingularNoun()
         {
-            Assert.That.Equal( RockDateTime.Now.AddYears( -1 ).AddMonths( -7 ).ToElapsedString(), "1 Year Ago" );
+            Assert.AreEqual( "1 Year Ago", RockDateTime.Now.AddYears( -1 ).AddMonths( -7 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_GreaterThanOneYearGivesPluralNoun()
         {
-            Assert.That.Equal( RockDateTime.Now.AddYears( -5 ).ToElapsedString(), "5 Years Ago" );
+            Assert.AreEqual( "5 Years Ago", RockDateTime.Now.AddYears( -5 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_YearsInFutureIncludesFromNow()
         {
-            Assert.That.Contains( RockDateTime.Now.AddYears( 5 ).ToElapsedString(), "Years From Now" );
+            Assert.Contains( "Years From Now", RockDateTime.Now.AddYears( 5 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_LessThanTwoYearsInFutureGivesSingularNoun()
         {
-            Assert.That.Contains( RockDateTime.Now.AddYears( 1 ).AddMonths( 7 ).ToElapsedString(), "Year From Now" );
+            Assert.Contains( "Year From Now", RockDateTime.Now.AddYears( 1 ).AddMonths( 7 ).ToElapsedString() );
         }
 
         [TestMethod]
         public void ToElapsedString_GreaterThanOneYearInFutureGivesPluralNoun()
         {
-            Assert.That.Contains( RockDateTime.Now.AddYears( 5 ).ToElapsedString(), "Years From Now" );
+            Assert.Contains( "Years From Now", RockDateTime.Now.AddYears( 5 ).ToElapsedString() );
         }
 
         #endregion

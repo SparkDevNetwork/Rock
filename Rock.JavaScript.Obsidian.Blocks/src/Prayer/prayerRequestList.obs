@@ -1,5 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
+
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
@@ -55,10 +57,19 @@
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
-        <Column name="isApproved" title="Approved?" field="isApproved" :filter="booleanValueFilter">
+        <Column name="isApproved"
+                title="Approved?"
+                field="isApproved"
+                :filter="booleanValueFilter">
             <template #format="{ row }">
-                <Toggle v-model="row.isApproved" btnSize="xs" onButtonActiveCssClass="btn-success"
-                        falseText="No" trueText="Yes" />
+                <Toggle v-model="row.isApproved"
+                        btnSize="xs"
+                        onButtonActiveCssClass="btn-success"
+                        falseText="No"
+                        trueText="Yes"
+                        :disabled="approvalStatusSaving[row.idKey]" />
+                <i v-if="approvalStatusSaving[row.idKey]"
+                   class='ti ti-rotate-clockwise-2 ti-spin'></i>
             </template>
         </Column>
 
@@ -75,6 +86,7 @@
 </template>
 
 <script setup lang="ts">
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { AttributeColumns, NumberColumn, TextColumn, textValueFilter, DeleteColumn, SelectColumn, DateColumn, dateValueFilter, numberValueFilter, booleanValueFilter } from "@Obsidian/Controls/grid";
@@ -94,8 +106,13 @@
 
     // #region Values
 
+    const errorMessage = ref("");
+
+    const approvalStatusSaving = reactive<Record<string, boolean>>({});
+
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
+    let gridDataCopy: GridDataBag | undefined;
 
     // #endregion
 
@@ -106,6 +123,21 @@
         if (element) {
             tooltip(element);
         }
+
+    }
+    /**
+     * Ensures a promise takes at least the specified minimum duration before resolving.
+     * @param promise The promise to await.
+     * @param minDurationMs The minimum duration in milliseconds.
+     */
+    async function withMinDurationPromise<T>(promise: Promise<T>, minDurationMs: number): Promise<T> {
+        const start = Date.now();
+        const result = await promise;
+        const elapsed = Date.now() - start;
+        if (elapsed < minDurationMs) {
+            await new Promise(resolve => setTimeout(resolve, minDurationMs - elapsed));
+        }
+        return result;
     }
 
     /**
@@ -116,6 +148,7 @@
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
+            gridDataCopy = JSON.parse(JSON.stringify(result.data)); // Create a non-reactive copy for change tracking.
             return gridData;
         }
         else {
@@ -128,13 +161,65 @@
     // #region Event Handlers
 
     /**
+     * Updates the approval status of a prayer request.
+     * @param prayerRequestIdKey The unique identifier for the prayer request.
+     * @param isApproved The new approval status to set.
+     */
+    async function updateApprovalStatus(prayerRequestIdKey: string, isApproved: boolean): Promise<void> {
+        const result = await invokeBlockAction("UpdateApprovalStatus", {
+            prayerRequestIdKey,
+            isApproved
+        });
+
+        if (!result.isSuccess) {
+            // Revert the change since it didn't save.
+            if (gridData && gridData.rows) {
+                const row = gridData.rows.find(r => r["idKey"] === prayerRequestIdKey);
+                if (row) {
+                    row.isApproved = !isApproved;
+                }
+            }
+
+            if (!result.errorMessage) {
+                errorMessage.value = "Unknown error while trying to update approval status.";
+                return;
+            }
+
+            errorMessage.value = result.errorMessage;
+        }
+    }
+
+    /**
      * Called when a row has been selected by the individual.
      *
      * @param key The key of the row that was selected.
      */
     function onSelectItem(key: string): void {
-        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        if (gridData && gridDataCopy && gridData.rows && gridDataCopy.rows) {
+            const rowToCheck = gridData?.rows.find(r => r["idKey"] === key);
+            const oldRowValue = gridDataCopy?.rows.find(r => r["idKey"] === key);
+
+            // If the approval status was not changed, we didn't click the approval toggle.
+            // So, navigate to the detail page.
+            if (rowToCheck && oldRowValue) {
+                if (rowToCheck?.isApproved === oldRowValue?.isApproved) {
+                    if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+                        window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+                    }
+                }
+                // Otherwise, update the approval status and do not navigate to the detail page.
+                else {
+                    approvalStatusSaving[key] = true;
+                    (async () => {
+                        await withMinDurationPromise(
+                            updateApprovalStatus(key, Boolean(rowToCheck.isApproved)),
+                            1000
+                        );
+                        gridDataCopy = JSON.parse(JSON.stringify(gridData));
+                        approvalStatusSaving[key] = false;
+                    })();
+                }
+            }
         }
     }
 

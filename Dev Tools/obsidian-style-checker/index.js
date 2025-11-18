@@ -22,6 +22,7 @@ import { parseArgs } from "node:util";
 const config = parseConfig();
 const repoRoot = runCommand("git", ["rev-parse", "--show-toplevel"]).trim();
 
+initializeAsana();
 main();
 
 /**
@@ -288,8 +289,8 @@ async function createAsanaTask(changedFiles, to) {
             workspace: config.asanaWorkspace,
             memberships: [
                 {
-                    project: asanaProjectGid,
-                    section: asanaSectionGid
+                    project: config.asanaProject,
+                    section: config.asanaSection
                 }
             ]
         },
@@ -336,7 +337,7 @@ async function processCommit(from, to) {
     if (reportFiles.length > 0) {
         if (config.asana) {
             try {
-                await createAsanaTask(reportFiles);
+                await createAsanaTask(reportFiles, to);
             }
             catch (error) {
                 console.error("Error creating Asana task:", error.message);

@@ -34,12 +34,12 @@ namespace Rock.Tests.Model
             // Test a null reference to a strongly-typed collection.
             List<Person> personList = null;
             result = personList.IsRockEntityCollection();
-            Assert.That.IsTrue( result );
+            Assert.IsTrue( result );
 
             // Test a reference to a concrete object.
             personList = new List<Person>();
             result = personList.IsRockEntityCollection();
-            Assert.That.IsTrue( result );
+            Assert.IsTrue( result );
         }
 
         [TestMethod]
@@ -48,7 +48,7 @@ namespace Rock.Tests.Model
             // Test a null reference to a collection of non-entities.
             List<string> stringListNull = null;
             var result = stringListNull.IsRockEntityCollection();
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -59,12 +59,12 @@ namespace Rock.Tests.Model
             // Test a reference to a single Entity.
             var person = new Person();
             result = person.IsRockEntityCollection();
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
 
             // Test a reference to a non-Entity.
             var sb = new StringBuilder();
             result = sb.IsRockEntityCollection();
-            Assert.That.IsFalse( result );
+            Assert.IsFalse( result );
         }
     }
 }

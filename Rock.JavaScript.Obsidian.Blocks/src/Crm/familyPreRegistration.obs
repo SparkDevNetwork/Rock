@@ -464,10 +464,12 @@
                                                  @removeChild="onRemoveChild" />
                     </Panel>
 
-                    <Captcha v-if="!disableCaptcha" ref="captchaElement"></Captcha>
+                    <div v-if="!disableCaptcha" v-show="!isCaptchaComplete">
+                        <Captcha ref="captchaElement"></Captcha>
+                    </div>
                 </template>
 
-                <template #footerActions>
+                <template #footerActions v-if="isCaptchaComplete || disableCaptcha">
                     <RockButton
                                 btnType="primary"
                                 :disabled="isSaving || isNavigating"
@@ -484,7 +486,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, nextTick, ref } from "vue";
+    import { computed, nextTick, ref, onMounted } from "vue";
     import PreRegistrationChildren from "./FamilyPreRegistration/preRegistrationChildren.partial.obs";
     import { ChildRequestBag, CreateAccountRequest, PersonRequestBag } from "./FamilyPreRegistration/types.partial";
     import { convertPersonToChildRequest, convertPersonToPersonRequest, createNotEqualRule, createPersonViewModel, createRuleWithReplacement, createRuleWithSuffix, monthAndDayAndYearRequiredRule, monthAndDayRequiredRule, required, noSpecialCharacters, noEmojisOrSpecialFonts } from "./FamilyPreRegistration/utils.partial";
@@ -559,6 +561,7 @@
     });
     const disableCaptcha = ref(config.disableCaptchaSupport);
     const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
+    const isCaptchaComplete = ref<boolean>(false);
     const adultLabel = config.adultLabel || "Adult";
     const childLabel = config.childLabel || "Child";
 
@@ -829,9 +832,21 @@
         }
     }
 
+    async function waitForCaptcha(): Promise<void> {
+        if (disableCaptcha.value || !captchaElement.value) {
+            isCaptchaComplete.value = true;
+            return;
+        }
+        const token = await captchaElement.value.getToken();
+        isCaptchaComplete.value = !!token;
+    }
+
     //#endregion
 
     onConfigurationValuesChanged(useReloadBlock());
+    onMounted(() => {
+        waitForCaptcha();
+    });
 
     if (config.visitDateField?.isDateAndTimeShown) {
         nextTick(() => updateScheduleDateControl());

@@ -106,10 +106,10 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 // Verify that the output contains series headings and relevant dates for both schedules.
-                Assert.That.Contains( output, "<b>Series 1</b>" );
-                Assert.That.Contains( output, "<li>Jan 4, 2020 in Meeting Room 1</li>" );
-                Assert.That.Contains( output, "<b>Series 2</b>" );
-                Assert.That.Contains( output, "<li>Jan 5, 2020 in Meeting Room 2</li>" );
+                Assert.Contains("<b>Series 1</b>", output );
+                Assert.Contains("<li>Jan 4, 2020 in Meeting Room 1</li>", output );
+                Assert.Contains("<b>Series 2</b>", output );
+                Assert.Contains("<li>Jan 5, 2020 in Meeting Room 2</li>", output );
             } );
         }
 
@@ -136,10 +136,10 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 // Verify that the output contains series headings and relevant dates for both schedules.
-                //Assert.That.Contains( output, "<b>Series 1</b>" );
-                //Assert.That.Contains( output, "<li>Jan 4, 2020 in Meeting Room 1</li>" );
-                //Assert.That.Contains( output, "<b>Series 2</b>" );
-                //Assert.That.Contains( output, "<li>Jan 5, 2020 in Meeting Room 2</li>" );
+                //Assert.Contains( output, "<b>Series 1</b>" );
+                //Assert.Contains( output, "<li>Jan 4, 2020 in Meeting Room 1</li>" );
+                //Assert.Contains( output, "<b>Series 2</b>" );
+                //Assert.Contains( output, "<li>Jan 5, 2020 in Meeting Room 2</li>" );
             } );
         }
 
@@ -161,8 +161,8 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
 
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
-                Assert.That.Contains( output, "Of Faith and Firsts (Pete Foster)" );
-                Assert.That.Contains( output, "1x8 (Pete Foster)" );
+                Assert.Contains("Of Faith and Firsts (Pete Foster)", output );
+                Assert.Contains("1x8 (Pete Foster)", output );
             } );
         }
 

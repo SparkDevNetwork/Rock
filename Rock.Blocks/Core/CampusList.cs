@@ -154,7 +154,16 @@ namespace Rock.Blocks.Core
                 .AddField( "isActive", a => a.IsActive )
                 .AddField( "isSystem", a => a.IsSystem )
                 .AddField( "Id", a => a.Id )
+                .AddField( "campusColor", a => a.GetAttributeValue( "core_CampusColor" ) )
                 .AddAttributeFields( GetGridAttributes() );
+        }
+
+        /// <inheritdoc/>
+        protected override List<AttributeCache> GetAdditionalGridAttributes()
+        {
+            var campusEntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.CAMPUS ).Id;
+
+            return AttributeCache.AllForEntityType( campusEntityTypeId ).Where( a => a.Key == "core_CampusColor" ).ToList();
         }
 
         #endregion

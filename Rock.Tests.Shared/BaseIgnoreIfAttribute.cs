@@ -1,5 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+[assembly: DoNotParallelize]
+
 namespace Rock.Tests.Shared
 {
     /// <summary>

@@ -10,10 +10,12 @@
         <form ref="formElement" @submit.prevent="onSubmit" enctype="multipart/form-data">
             <div v-html="config.content"></div>
 
-            <Captcha v-if="!config.disableCaptchaSupport" ref="captchaElement" validationTitle="Captcha" />
+            <div v-if="!config.disableCaptchaSupport" v-show="!isCaptchaComplete">
+                <Captcha ref="captchaElement" validationTitle="Captcha" />
+            </div>
 
-            <div :class="config.submitButtonWrapCssClass">
-                <RockButton type="submit" :btnType="BtnType.Primary" btnSize="sm" :disabled="!isCaptchaComplete" :class="config.submitButtonCssClass">{{ config.submitButtonText ?? "Submit" }}</RockButton>
+            <div v-if="isCaptchaComplete" :class="config.submitButtonWrapCssClass">
+                <RockButton type="submit" :btnType="BtnType.Primary" btnSize="sm" :class="config.submitButtonCssClass">{{ config.submitButtonText ?? "Submit" }}</RockButton>
             </div>
         </form>
     </template>
@@ -42,7 +44,6 @@
 
     const formElement = ref<HTMLFormElement | null>(null);
     const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
-    const captchaToken = ref<string | undefined>();
     const isCaptchaComplete = ref(false);
 
     const showSuccess = ref(false);
@@ -64,7 +65,6 @@
 
         const token = await captchaElement.value.getToken();
         isCaptchaComplete.value = !!token;
-        captchaToken.value = token;
     }
 
     // #endregion Functions
@@ -81,7 +81,8 @@
 
         const actionContext: BlockActionContextBag = {};
         if (!config.disableCaptchaSupport && captchaElement.value) {
-            actionContext.captcha = captchaToken.value;
+            actionContext.captcha = await captchaElement.value.getToken();
+            captchaElement.value.refreshToken();
         }
 
         if (!formElement.value) {
@@ -124,10 +125,6 @@
         };
 
         const result = await invokeBlockAction<EmailFormResponseBag>("SendEmail", { bag: requestBag }, actionContext);
-
-        if (!config.disableCaptchaSupport && captchaElement.value) {
-            captchaElement.value.refreshToken();
-        }
 
         if (result.isError || !result.isSuccess) {
             errorMessage.value = result.errorMessage || "An error occurred while processing your request.";

@@ -41,11 +41,11 @@ namespace Rock.Tests.Integration.Security
             RockCache.ClearAllCachedItems( false );
 
             var rockSigningCredentials = ReflectionHelper.InstantiateInternalObject<IRockOidcSigningCredentials>( "Rock.Oidc.Configuration.RockOidcSigningCredentials", RockOidcSettings.GetDefaultSettings() );
-            Assert.That.IsNotNull( rockSigningCredentials );
-            Assert.That.IsTrue( rockSigningCredentials.SigningKeys.Count > 0 );
+            Assert.IsNotNull( rockSigningCredentials );
+            Assert.IsTrue( rockSigningCredentials.SigningKeys.Count > 0 );
 
             var systemSettings = SystemSettings.GetValue( SystemSetting.OPEN_ID_CONNECT_RSA_KEYS );
-            Assert.That.IsNotEmpty( systemSettings );
+            Assert.IsNotEmpty( systemSettings );
         }
 
         [TestMethod]
@@ -64,16 +64,16 @@ namespace Rock.Tests.Integration.Security
             RockCache.ClearAllCachedItems( false );
 
             var systemSettings = SystemSettings.GetValue( SystemSetting.OPEN_ID_CONNECT_RSA_KEYS );
-            Assert.That.IsNotEmpty( systemSettings );
+            Assert.IsNotEmpty( systemSettings );
 
             var rockSigningCredentials = ReflectionHelper.InstantiateInternalObject<IRockOidcSigningCredentials>( "Rock.Oidc.Configuration.RockOidcSigningCredentials", RockOidcSettings.GetDefaultSettings() );
-            Assert.That.IsNotNull( rockSigningCredentials );
-            Assert.That.AreEqual( 1, rockSigningCredentials.SigningKeys.Count );
+            Assert.IsNotNull( rockSigningCredentials );
+            Assert.AreEqual( 1, rockSigningCredentials.SigningKeys.Count );
 
             var actualParameters = rockSigningCredentials.SigningKeys[0].ExportParameters( true );
             var actualModulus = Convert.ToBase64String( actualParameters.Modulus, 0, actualParameters.Modulus.Length );
 
-            Assert.That.AreNotEqual( "y99YHW6o5ym/Oeia3cGwFNYUxSFyQTrSpuX7j/2uV6HcVxqFV3Hlo/UC/st5bnUfIaIDX3egC8VeoDyRacsNogAvBDXYGUMQjGd6lwwfm5XFaZXcETi1JioU2Ddl3R21fWxooXBVuUQE7g8+6p5/yMnahA/T1JcVCDeeHU2RWZovtQOh+Y9n3q6eL6mbjtF6TghQazeiAyL3LtYkos6+WwY8Y9gaAWgB3CeZU6j1Ae/E+qGPuQq0v4mwibuDL8oRUk0NhCWb7CM2jIbMMXe3SBjbK+qy7hndAMNgwJ/qvSJWWuonkzqeCdStZnpiNQc34JKedGqBKLk+it8Di3dSMQ==", actualModulus );
+            Assert.AreNotEqual( "y99YHW6o5ym/Oeia3cGwFNYUxSFyQTrSpuX7j/2uV6HcVxqFV3Hlo/UC/st5bnUfIaIDX3egC8VeoDyRacsNogAvBDXYGUMQjGd6lwwfm5XFaZXcETi1JioU2Ddl3R21fWxooXBVuUQE7g8+6p5/yMnahA/T1JcVCDeeHU2RWZovtQOh+Y9n3q6eL6mbjtF6TghQazeiAyL3LtYkos6+WwY8Y9gaAWgB3CeZU6j1Ae/E+qGPuQq0v4mwibuDL8oRUk0NhCWb7CM2jIbMMXe3SBjbK+qy7hndAMNgwJ/qvSJWWuonkzqeCdStZnpiNQc34JKedGqBKLk+it8Di3dSMQ==", actualModulus );
         }
 
         [TestMethod]
@@ -92,20 +92,20 @@ namespace Rock.Tests.Integration.Security
             RockCache.ClearAllCachedItems( false );
 
             var systemSettings = SystemSettings.GetValue( SystemSetting.OPEN_ID_CONNECT_RSA_KEYS );
-            Assert.That.IsNotEmpty( systemSettings );
+            Assert.IsNotEmpty( systemSettings );
 
             var oidcSettings = RockOidcSettings.GetDefaultSettings();
             oidcSettings.AccessTokenLifetime = 3600;
             oidcSettings.SigningKeyLifetime = 86400;
 
             var rockSigningCredentials = ReflectionHelper.InstantiateInternalObject<IRockOidcSigningCredentials>( "Rock.Oidc.Configuration.RockOidcSigningCredentials", oidcSettings );
-            Assert.That.IsNotNull( rockSigningCredentials );
-            Assert.That.AreEqual( 2, rockSigningCredentials.SigningKeys.Count );
+            Assert.IsNotNull( rockSigningCredentials );
+            Assert.AreEqual( 2, rockSigningCredentials.SigningKeys.Count );
 
             var actualParameters = rockSigningCredentials.SigningKeys[1].ExportParameters( true );
             var actualModulus = Convert.ToBase64String( actualParameters.Modulus, 0, actualParameters.Modulus.Length );
 
-            Assert.That.AreEqual( "y99YHW6o5ym/Oeia3cGwFNYUxSFyQTrSpuX7j/2uV6HcVxqFV3Hlo/UC/st5bnUfIaIDX3egC8VeoDyRacsNogAvBDXYGUMQjGd6lwwfm5XFaZXcETi1JioU2Ddl3R21fWxooXBVuUQE7g8+6p5/yMnahA/T1JcVCDeeHU2RWZovtQOh+Y9n3q6eL6mbjtF6TghQazeiAyL3LtYkos6+WwY8Y9gaAWgB3CeZU6j1Ae/E+qGPuQq0v4mwibuDL8oRUk0NhCWb7CM2jIbMMXe3SBjbK+qy7hndAMNgwJ/qvSJWWuonkzqeCdStZnpiNQc34JKedGqBKLk+it8Di3dSMQ==", actualModulus );
+            Assert.AreEqual( "y99YHW6o5ym/Oeia3cGwFNYUxSFyQTrSpuX7j/2uV6HcVxqFV3Hlo/UC/st5bnUfIaIDX3egC8VeoDyRacsNogAvBDXYGUMQjGd6lwwfm5XFaZXcETi1JioU2Ddl3R21fWxooXBVuUQE7g8+6p5/yMnahA/T1JcVCDeeHU2RWZovtQOh+Y9n3q6eL6mbjtF6TghQazeiAyL3LtYkos6+WwY8Y9gaAWgB3CeZU6j1Ae/E+qGPuQq0v4mwibuDL8oRUk0NhCWb7CM2jIbMMXe3SBjbK+qy7hndAMNgwJ/qvSJWWuonkzqeCdStZnpiNQc34JKedGqBKLk+it8Di3dSMQ==", actualModulus );
         }
 
         [TestMethod]
@@ -158,16 +158,16 @@ namespace Rock.Tests.Integration.Security
             RockCache.ClearAllCachedItems( false );
 
             var systemSettings = SystemSettings.GetValue( SystemSetting.OPEN_ID_CONNECT_RSA_KEYS );
-            Assert.That.IsNotEmpty( systemSettings );
+            Assert.IsNotEmpty( systemSettings );
 
             var rockSigningCredentials = ReflectionHelper.InstantiateInternalObject<IRockOidcSigningCredentials>( "Rock.Oidc.Configuration.RockOidcSigningCredentials", rockOidcSettings );
-            Assert.That.IsNotNull( rockSigningCredentials );
-            Assert.That.AreEqual( 1, rockSigningCredentials.SigningKeys.Count );
+            Assert.IsNotNull( rockSigningCredentials );
+            Assert.AreEqual( 1, rockSigningCredentials.SigningKeys.Count );
 
             var actualParameters = rockSigningCredentials.SigningKeys[0].ExportParameters( true );
             var actualModulus = Convert.ToBase64String( actualParameters.Modulus, 0, actualParameters.Modulus.Length );
 
-            Assert.That.AreEqual( expectedModulus, actualModulus );
+            Assert.AreEqual( expectedModulus, actualModulus );
         }
     }
 }

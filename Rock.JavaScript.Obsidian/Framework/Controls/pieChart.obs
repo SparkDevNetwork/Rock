@@ -256,7 +256,7 @@
         };
     });
 
-    const chartOptions = computed<ChartOptions<"pie">>(() => {
+    const chartOptions = computed<ChartOptions<"pie">>((): ChartOptions<"pie"> => {
         return {
             // Allow the chart to change size with the parent container.
             responsive: true,
@@ -271,7 +271,7 @@
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                             size: parseInt(getCssVar("--font-size-small")) || undefined,
-                            weight: getCssVar("--font-weight-semibold")
+                            weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                         },
 
                         generateLabels: (chart) => {
@@ -322,7 +322,7 @@
                     font: {
                         family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                         size: parseInt(getCssVar("--font-size-small")) || undefined,
-                        weight: getCssVar("--font-weight-semibold")
+                        weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                     },
 
                     text: props.title ?? undefined
@@ -336,7 +336,7 @@
                     bodyFont: {
                         family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                         size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
-                        weight: getCssVar("--font-weight-regular")
+                        weight: getCssVar("--font-weight-regular") as "bold" | "normal" | "bolder" | "lighter"
                     },
 
                     borderColor: getCssVar("--color-interface-soft"),
@@ -433,7 +433,7 @@
                     titleFont: {
                         family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                         size: parseInt(getCssVar("--font-size-small")) || undefined,
-                        weight: getCssVar("--font-weight-semibold")
+                        weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                     },
                 }
             },

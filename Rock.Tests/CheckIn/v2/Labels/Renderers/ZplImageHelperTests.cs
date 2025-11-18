@@ -39,7 +39,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
                 var imageCache = ZplImageHelper.CreateImage( ms, options );
                 var isAllZeroBits = imageCache.ImageData.All( d => d == 0 );
 
-                Assert.That.IsTrue( isAllZeroBits );
+                Assert.IsTrue( isAllZeroBits );
             }
         }
 
@@ -61,7 +61,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
 
                 var imageCache = ZplImageHelper.CreateImage( ms, options );
 
-                Assert.That.AreEqual( expectedDataSize, imageCache.ImageData.Length );
+                Assert.AreEqual( expectedDataSize, imageCache.ImageData.Length );
             }
         }
 
@@ -84,7 +84,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
 
                 var imageCache = ZplImageHelper.CreateImage( ms, options );
 
-                Assert.That.AreEqual( expectedDataSize, imageCache.ImageData.Length );
+                Assert.AreEqual( expectedDataSize, imageCache.ImageData.Length );
             }
         }
 
@@ -108,9 +108,9 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
 
                 var imageCache = ZplImageHelper.CreateImage( ms, options );
 
-                Assert.That.AreEqual( expectedDataSize, imageCache.ImageData.Length );
-                Assert.That.AreEqual( expectedWidth, imageCache.Width );
-                Assert.That.AreEqual( expectedHeight, imageCache.Height );
+                Assert.AreEqual( expectedDataSize, imageCache.ImageData.Length );
+                Assert.AreEqual( expectedWidth, imageCache.Width );
+                Assert.AreEqual( expectedHeight, imageCache.Height );
             }
         }
 
@@ -134,9 +134,9 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
 
                 var imageCache = ZplImageHelper.CreateImage( ms, options );
 
-                Assert.That.AreEqual( expectedDataSize, imageCache.ImageData.Length );
-                Assert.That.AreEqual( expectedWidth, imageCache.Width );
-                Assert.That.AreEqual( expectedHeight, imageCache.Height );
+                Assert.AreEqual( expectedDataSize, imageCache.ImageData.Length );
+                Assert.AreEqual( expectedWidth, imageCache.Width );
+                Assert.AreEqual( expectedHeight, imageCache.Height );
             }
         }
 
@@ -160,7 +160,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
 
                 var isAllOneBits = imageCache.ImageData.All( d => d == 255 );
 
-                Assert.That.IsTrue( isAllOneBits );
+                Assert.IsTrue( isAllOneBits );
             }
         }
 
@@ -176,7 +176,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
                 var expectedFontCount = 2;
                 var fontCollection = ZplImageHelper.CreateIconFontCollection();
 
-                Assert.That.AreEqual( expectedFontCount, fontCollection.Families.Count() );
+                Assert.AreEqual( expectedFontCount, fontCollection.Families.Count() );
             }
         }
 
@@ -194,7 +194,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
             {
                 var fontCollection = ZplImageHelper.CreateIconFontCollection();
 
-                Assert.That.AreEqual( expectedFontCount, fontCollection.Families.Count() );
+                Assert.AreEqual( expectedFontCount, fontCollection.Families.Count() );
             }
         }
 
@@ -219,7 +219,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
 
                 var isAllNoFillBits = image.ImageData.All( d => d == 0 );
 
-                Assert.That.IsTrue( isAllNoFillBits );
+                Assert.IsTrue( isAllNoFillBits );
             }
         }
 
@@ -235,7 +235,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
 
                 var isSomeFillBits = image.ImageData.Any( d => d != 0 );
 
-                Assert.That.IsTrue( isSomeFillBits );
+                Assert.IsTrue( isSomeFillBits );
             }
         }
 
@@ -251,7 +251,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
 
                 var isSomeFillBits = image.ImageData.Any( d => d != 0 );
 
-                Assert.That.IsTrue( isSomeFillBits );
+                Assert.IsTrue( isSomeFillBits );
             }
         }
 

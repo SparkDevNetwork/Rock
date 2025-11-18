@@ -482,6 +482,8 @@ namespace Rock.Communication.Chat
             return null;
         }
 
+
+#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
         /// <summary>
         /// Gets the <see cref="ChatChannel.Key"/> for the provided <paramref name="groupId"/> and <paramref name="chatChannelKey"/>.
         /// </summary>
@@ -489,6 +491,7 @@ namespace Rock.Communication.Chat
         /// <param name="chatChannelKey">The <see cref="Group.ChatChannelKey"/> for which to get the <see cref="ChatChannel.Key"/>.</param>
         /// <returns>The <see cref="ChatChannel.Key"/>.</returns>
         internal static string GetChatChannelKey( int groupId, string chatChannelKey )
+#pragma warning restore CS1574 // XML comment has cref attribute that could not be resolved
         {
             if ( chatChannelKey.IsNotNullOrWhiteSpace() )
             {
@@ -1144,6 +1147,8 @@ namespace Rock.Communication.Chat
             }
         }
 
+
+#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
         /// <summary>
         /// Synchronizes <see cref="Group"/>s from Rock to <see cref="ChatChannel"/>s in the external chat system.
         /// </summary>
@@ -1164,6 +1169,7 @@ namespace Rock.Communication.Chat
         /// </para>
         /// </remarks>
         internal async Task<ChatSyncCrudResult> SyncGroupsToChatProviderAsync( List<SyncGroupToChatCommand> syncCommands, RockToChatGroupSyncConfig syncConfig = null )
+#pragma warning restore CS1574 // XML comment has cref attribute that could not be resolved
         {
             var result = new ChatSyncCrudResult();
 

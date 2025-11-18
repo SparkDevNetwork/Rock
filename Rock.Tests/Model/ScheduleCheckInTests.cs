@@ -20,8 +20,8 @@ namespace Rock.Tests.Model
             // Sunday, Thursday 11AM to 2AM
             var schedule = ScheduleWithCheckOut11PMto2AM();
 
-            Assert.That.IsTrue( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-08 11:01PM" ) ) );
-            Assert.That.IsTrue( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-08 1:00AM" ) ) );
+            Assert.IsTrue( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-08 11:01PM" ) ) );
+            Assert.IsTrue( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-08 1:00AM" ) ) );
         }
 
         /// <summary>
@@ -34,8 +34,8 @@ namespace Rock.Tests.Model
             // Sunday, Thursday 11AM to 2AM
             var schedule = ScheduleWithCheckOut11PMto2AM();
 
-            Assert.That.IsFalse( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-08 10:45PM" ) ) );
-            Assert.That.IsFalse( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-08 3:00AM" ) ) );
+            Assert.IsFalse( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-08 10:45PM" ) ) );
+            Assert.IsFalse( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-08 3:00AM" ) ) );
         }
 
         /// <summary>
@@ -48,11 +48,11 @@ namespace Rock.Tests.Model
             // Sunday 9AM to 10AM (check-in starts 30 min before start time and ends 30 minutes after start time)
             var schedule = Standard9AMto10AMSchedule();
 
-            Assert.That.IsTrue( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-04 8:31 AM" ) ) );
-            Assert.That.IsTrue( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-04 9:00 AM" ) ) );
-            Assert.That.IsTrue( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-04 10:00:00 AM" ) ) ); // hurry!!!
-            Assert.That.IsTrue( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-04 9:55 AM" ) ) );
-            Assert.That.IsTrue( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-04 9:59:59AM" ) ) );
+            Assert.IsTrue( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-04 8:31 AM" ) ) );
+            Assert.IsTrue( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-04 9:00 AM" ) ) );
+            Assert.IsTrue( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-04 10:00:00 AM" ) ) ); // hurry!!!
+            Assert.IsTrue( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-04 9:55 AM" ) ) );
+            Assert.IsTrue( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-04 9:59:59AM" ) ) );
         }
 
         /// <summary>
@@ -65,9 +65,9 @@ namespace Rock.Tests.Model
             // Sunday 9AM to 10AM (check-in starts 30 min before start time and ends 30 minutes after start time)
             var schedule = Standard9AMto10AMSchedule();
 
-            Assert.That.IsFalse( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-04 8:29:59 AM" ) ) );
-            Assert.That.IsFalse( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-04 10:00:01 AM" ) ) ); // just missed it!
-            Assert.That.IsFalse( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-04 9:05 PM" ) ) );
+            Assert.IsFalse( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-04 8:29:59 AM" ) ) );
+            Assert.IsFalse( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-04 10:00:01 AM" ) ) ); // just missed it!
+            Assert.IsFalse( schedule.WasScheduleOrCheckInActiveForCheckOut( DateTime.Parse( "2019-08-04 9:05 PM" ) ) );
         }
 
         #region Helper Methods - Sample Schedules

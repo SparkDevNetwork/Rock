@@ -62,7 +62,7 @@ namespace Rock.Tests.Lava.Filters
         {
             // Verify that the input can be converted to a Guid.
             var expectedResult = input.AsGuidOrNull();
-            Assert.That.IsNotNull( expectedResult );
+            Assert.IsNotNull( expectedResult );
 
             // Verify the Lava filter output.
             TestHelper.AssertTemplateOutput( expectedResult.ToString(), "{{ '" + input + "' | AsGuid }}" );
@@ -79,7 +79,7 @@ namespace Rock.Tests.Lava.Filters
         {
             // Verify that the input cannot be converted to a Guid.
             var expectedResult = input.AsGuidOrNull();
-            Assert.That.IsNull( expectedResult );
+            Assert.IsNull( expectedResult );
 
             // Verify the Lava filter output.
             TestHelper.AssertTemplateOutput( string.Empty, "{{ '" + input + "' | AsGuid }}" );

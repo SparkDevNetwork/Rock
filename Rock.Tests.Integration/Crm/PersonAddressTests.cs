@@ -85,7 +85,7 @@ namespace Rock.Tests.Integration.Crm
 
             // Verify that the last-added address is returned as the Home Location,
             // even though neither address is set as the Mapped Location.
-            Assert.That.AreEqual( "2 New St", location?.Street1, "Expected Home Location not found." );
+            Assert.AreEqual( "2 New St", location?.Street1, "Expected Home Location not found." );
         }
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace Rock.Tests.Integration.Crm
 
             // Verify that the first address is returned as the Home Location,
             // because it is the only mapped location.
-            Assert.That.AreEqual( "1 New St", location?.Street1, "Incorrect Home Location returned." );
+            Assert.AreEqual( "1 New St", location?.Street1, "Incorrect Home Location returned." );
         }
     }
 }

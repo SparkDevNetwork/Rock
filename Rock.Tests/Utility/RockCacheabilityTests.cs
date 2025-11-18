@@ -37,13 +37,13 @@ namespace Rock.Tests.Utility
                 SharedMaxAge = new TimeInterval { Unit = TimeIntervalUnit.Days, Value = 10 }
             };
 
-            Assert.That.IsNotNull( cache.SharedMaxAge );
-            Assert.That.IsNotNull( cache.MaxAge );
+            Assert.IsNotNull( cache.SharedMaxAge );
+            Assert.IsNotNull( cache.MaxAge );
 
             cache.RockCacheablityType = RockCacheablityType.NoCache;
 
-            Assert.That.IsNull( cache.SharedMaxAge );
-            Assert.That.IsNull( cache.MaxAge );
+            Assert.IsNull( cache.SharedMaxAge );
+            Assert.IsNull( cache.MaxAge );
 
             cache = new RockCacheability
             {
@@ -52,13 +52,13 @@ namespace Rock.Tests.Utility
                 SharedMaxAge = new TimeInterval { Unit = TimeIntervalUnit.Days, Value = 10 }
             };
 
-            Assert.That.IsNotNull( cache.SharedMaxAge );
-            Assert.That.IsNotNull( cache.MaxAge );
+            Assert.IsNotNull( cache.SharedMaxAge );
+            Assert.IsNotNull( cache.MaxAge );
 
             cache.RockCacheablityType = RockCacheablityType.NoStore;
 
-            Assert.That.IsNull( cache.SharedMaxAge );
-            Assert.That.IsNull( cache.MaxAge );
+            Assert.IsNull( cache.SharedMaxAge );
+            Assert.IsNull( cache.MaxAge );
         }
 
         [TestMethod]
@@ -71,18 +71,18 @@ namespace Rock.Tests.Utility
                 SharedMaxAge = new TimeInterval { Unit = TimeIntervalUnit.Days, Value = 10 }
             };
 
-            Assert.That.IsNotNull( cache.SharedMaxAge );
-            Assert.That.IsNotNull( cache.MaxAge );
+            Assert.IsNotNull( cache.SharedMaxAge );
+            Assert.IsNotNull( cache.MaxAge );
 
             cache.RockCacheablityType = RockCacheablityType.Public;
 
-            Assert.That.IsNotNull( cache.SharedMaxAge );
-            Assert.That.IsNotNull( cache.MaxAge );
+            Assert.IsNotNull( cache.SharedMaxAge );
+            Assert.IsNotNull( cache.MaxAge );
 
             cache.RockCacheablityType = RockCacheablityType.Private;
 
-            Assert.That.IsNotNull( cache.SharedMaxAge );
-            Assert.That.IsNotNull( cache.MaxAge );
+            Assert.IsNotNull( cache.SharedMaxAge );
+            Assert.IsNotNull( cache.MaxAge );
         }
 
         [TestMethod]
@@ -93,22 +93,22 @@ namespace Rock.Tests.Utility
                 MaxAge = new TimeInterval { Unit = TimeIntervalUnit.Days, Value = 10 },
             };
 
-            Assert.That.IsNotNull( cache.MaxAge );
+            Assert.IsNotNull( cache.MaxAge );
 
             cache.RockCacheablityType = RockCacheablityType.Private;
 
-            Assert.That.IsNotNull( cache.MaxAge );
+            Assert.IsNotNull( cache.MaxAge );
 
             cache = new RockCacheability
             {
                 MaxAge = new TimeInterval { Unit = TimeIntervalUnit.Days, Value = 10 },
             };
 
-            Assert.That.IsNotNull( cache.MaxAge );
+            Assert.IsNotNull( cache.MaxAge );
 
             cache.RockCacheablityType = RockCacheablityType.Public;
 
-            Assert.That.IsNotNull( cache.MaxAge );
+            Assert.IsNotNull( cache.MaxAge );
 
         }
 
@@ -120,22 +120,22 @@ namespace Rock.Tests.Utility
                 RockCacheablityType = RockCacheablityType.Private
             };
 
-            Assert.That.IsNull( cache.MaxAge );
+            Assert.IsNull( cache.MaxAge );
 
             cache.MaxAge = new TimeInterval { Unit = TimeIntervalUnit.Days, Value = 5 };
 
-            Assert.That.IsNotNull( cache.MaxAge );
+            Assert.IsNotNull( cache.MaxAge );
 
             cache = new RockCacheability
             {
                 RockCacheablityType = RockCacheablityType.Public
             };
 
-            Assert.That.IsNull( cache.MaxAge );
+            Assert.IsNull( cache.MaxAge );
 
             cache.MaxAge = new TimeInterval { Unit = TimeIntervalUnit.Days, Value = 5 };
 
-            Assert.That.IsNotNull( cache.MaxAge );
+            Assert.IsNotNull( cache.MaxAge );
         }
 
         [TestMethod]
@@ -146,22 +146,22 @@ namespace Rock.Tests.Utility
                 RockCacheablityType = RockCacheablityType.NoCache
             };
 
-            Assert.That.IsNull( cache.MaxAge );
+            Assert.IsNull( cache.MaxAge );
 
             cache.MaxAge = new TimeInterval { Unit = TimeIntervalUnit.Days, Value = 5 };
 
-            Assert.That.IsNull( cache.MaxAge );
+            Assert.IsNull( cache.MaxAge );
 
             cache = new RockCacheability
             {
                 RockCacheablityType = RockCacheablityType.NoStore
             };
 
-            Assert.That.IsNull( cache.MaxAge );
+            Assert.IsNull( cache.MaxAge );
 
             cache.MaxAge = new TimeInterval { Unit = TimeIntervalUnit.Days, Value = 5 };
 
-            Assert.That.IsNull( cache.MaxAge );
+            Assert.IsNull( cache.MaxAge );
         }
 
         [TestMethod]
@@ -172,22 +172,22 @@ namespace Rock.Tests.Utility
                 SharedMaxAge = new TimeInterval { Unit = TimeIntervalUnit.Days, Value = 10 },
             };
 
-            Assert.That.IsNotNull( cache.SharedMaxAge );
+            Assert.IsNotNull( cache.SharedMaxAge );
 
             cache.RockCacheablityType = RockCacheablityType.Private;
 
-            Assert.That.IsNotNull( cache.SharedMaxAge );
+            Assert.IsNotNull( cache.SharedMaxAge );
 
             cache = new RockCacheability
             {
                 SharedMaxAge = new TimeInterval { Unit = TimeIntervalUnit.Days, Value = 10 },
             };
 
-            Assert.That.IsNotNull( cache.SharedMaxAge );
+            Assert.IsNotNull( cache.SharedMaxAge );
 
             cache.RockCacheablityType = RockCacheablityType.Public;
 
-            Assert.That.IsNotNull( cache.SharedMaxAge );
+            Assert.IsNotNull( cache.SharedMaxAge );
         }
 
         [TestMethod]
@@ -198,22 +198,22 @@ namespace Rock.Tests.Utility
                 RockCacheablityType = RockCacheablityType.Private
             };
 
-            Assert.That.IsNull( cache.SharedMaxAge );
+            Assert.IsNull( cache.SharedMaxAge );
 
             cache.SharedMaxAge = new TimeInterval { Unit = TimeIntervalUnit.Days, Value = 5 };
 
-            Assert.That.IsNotNull( cache.SharedMaxAge );
+            Assert.IsNotNull( cache.SharedMaxAge );
 
             cache = new RockCacheability
             {
                 RockCacheablityType = RockCacheablityType.Public
             };
 
-            Assert.That.IsNull( cache.SharedMaxAge );
+            Assert.IsNull( cache.SharedMaxAge );
 
             cache.SharedMaxAge = new TimeInterval { Unit = TimeIntervalUnit.Days, Value = 5 };
 
-            Assert.That.IsNotNull( cache.SharedMaxAge );
+            Assert.IsNotNull( cache.SharedMaxAge );
         }
 
         [TestMethod]
@@ -224,32 +224,32 @@ namespace Rock.Tests.Utility
                 RockCacheablityType = RockCacheablityType.NoCache
             };
 
-            Assert.That.IsNull( cache.SharedMaxAge );
+            Assert.IsNull( cache.SharedMaxAge );
 
             cache.SharedMaxAge = new TimeInterval { Unit = TimeIntervalUnit.Days, Value = 5 };
 
-            Assert.That.IsNull( cache.SharedMaxAge );
+            Assert.IsNull( cache.SharedMaxAge );
 
             cache = new RockCacheability
             {
                 RockCacheablityType = RockCacheablityType.NoStore
             };
 
-            Assert.That.IsNull( cache.SharedMaxAge );
+            Assert.IsNull( cache.SharedMaxAge );
 
             cache.SharedMaxAge = new TimeInterval { Unit = TimeIntervalUnit.Days, Value = 5 };
 
-            Assert.That.IsNull( cache.SharedMaxAge );
+            Assert.IsNull( cache.SharedMaxAge );
         }
 
         [TestMethod]
         public void OptionSupportsAgeShouldReturnCorrectly()
         {
             var cache = new RockCacheability();
-            Assert.That.IsFalse( cache.OptionSupportsAge( RockCacheablityType.NoCache ) );
-            Assert.That.IsFalse( cache.OptionSupportsAge( RockCacheablityType.NoStore ) );
-            Assert.That.IsTrue( cache.OptionSupportsAge( RockCacheablityType.Private ) );
-            Assert.That.IsTrue( cache.OptionSupportsAge( RockCacheablityType.Public ) );
+            Assert.IsFalse( cache.OptionSupportsAge( RockCacheablityType.NoCache ) );
+            Assert.IsFalse( cache.OptionSupportsAge( RockCacheablityType.NoStore ) );
+            Assert.IsTrue( cache.OptionSupportsAge( RockCacheablityType.Private ) );
+            Assert.IsTrue( cache.OptionSupportsAge( RockCacheablityType.Public ) );
         }
 
         [TestMethod]
@@ -260,44 +260,44 @@ namespace Rock.Tests.Utility
                 RockCacheablityType = RockCacheablityType.NoStore
             };
 
-            Assert.That.AreEqual( "no-store", cache.ToString() );
+            Assert.AreEqual( "no-store", cache.ToString() );
 
             cache.RockCacheablityType = RockCacheablityType.NoCache;
-            Assert.That.AreEqual( "no-cache", cache.ToString() );
+            Assert.AreEqual( "no-cache", cache.ToString() );
 
             cache.RockCacheablityType = RockCacheablityType.Public;
-            Assert.That.AreEqual( "public", cache.ToString() );
+            Assert.AreEqual( "public", cache.ToString() );
 
             cache.RockCacheablityType = RockCacheablityType.Private;
-            Assert.That.AreEqual( "private", cache.ToString() );
+            Assert.AreEqual( "private", cache.ToString() );
 
             cache.RockCacheablityType = RockCacheablityType.Public;
             cache.MaxAge = new TimeInterval { Unit = TimeIntervalUnit.Seconds, Value = 3600 };
-            Assert.That.AreEqual( "public,max-age=3600", cache.ToString() );
+            Assert.AreEqual( "public,max-age=3600", cache.ToString() );
 
             cache.RockCacheablityType = RockCacheablityType.Private;
             cache.MaxAge = new TimeInterval { Unit = TimeIntervalUnit.Seconds, Value = 3600 };
-            Assert.That.AreEqual( "private,max-age=3600", cache.ToString() );
+            Assert.AreEqual( "private,max-age=3600", cache.ToString() );
 
             cache.RockCacheablityType = RockCacheablityType.Public;
             cache.MaxAge = null;
             cache.SharedMaxAge = new TimeInterval { Unit = TimeIntervalUnit.Seconds, Value = 3600 };
-            Assert.That.AreEqual( "public,s-maxage=3600", cache.ToString() );
+            Assert.AreEqual( "public,s-maxage=3600", cache.ToString() );
 
             cache.RockCacheablityType = RockCacheablityType.Private;
             cache.MaxAge = null;
             cache.SharedMaxAge = new TimeInterval { Unit = TimeIntervalUnit.Seconds, Value = 3600 };
-            Assert.That.AreEqual( "private,s-maxage=3600", cache.ToString() );
+            Assert.AreEqual( "private,s-maxage=3600", cache.ToString() );
 
             cache.RockCacheablityType = RockCacheablityType.Public;
             cache.MaxAge = new TimeInterval { Unit = TimeIntervalUnit.Seconds, Value = 3600 };
             cache.SharedMaxAge = new TimeInterval { Unit = TimeIntervalUnit.Seconds, Value = 3600 };
-            Assert.That.AreEqual( "public,max-age=3600,s-maxage=3600", cache.ToString() );
+            Assert.AreEqual( "public,max-age=3600,s-maxage=3600", cache.ToString() );
 
             cache.RockCacheablityType = RockCacheablityType.Private;
             cache.MaxAge = new TimeInterval { Unit = TimeIntervalUnit.Seconds, Value = 3600 };
             cache.SharedMaxAge = new TimeInterval { Unit = TimeIntervalUnit.Seconds, Value = 3600 };
-            Assert.That.AreEqual( "private,max-age=3600,s-maxage=3600", cache.ToString() );
+            Assert.AreEqual( "private,max-age=3600,s-maxage=3600", cache.ToString() );
         }
 
         [TestMethod]
@@ -313,7 +313,7 @@ namespace Rock.Tests.Utility
             cache.SetupHttpCachePolicy( cachePolicy );
 
             var noStore = ReflectionHelper.GetFieldValue<bool>( cachePolicy, "_noStore" );
-            Assert.That.IsTrue( noStore );
+            Assert.IsTrue( noStore );
         }
 
         [TestMethod]
@@ -329,10 +329,10 @@ namespace Rock.Tests.Utility
             cache.SetupHttpCachePolicy( cachePolicy );
 
             var noStore = ReflectionHelper.GetFieldValue<bool>( cachePolicy, "_noStore" );
-            Assert.That.IsFalse( noStore );
+            Assert.IsFalse( noStore );
 
             var cacheability = ReflectionHelper.GetFieldValue<HttpCacheability>( cachePolicy, "_cacheability" );
-            Assert.That.AreEqual( HttpCacheability.NoCache, cacheability );
+            Assert.AreEqual( HttpCacheability.NoCache, cacheability );
         }
 
         [TestMethod]
@@ -348,10 +348,10 @@ namespace Rock.Tests.Utility
             cache.SetupHttpCachePolicy( cachePolicy );
 
             var noStore = ReflectionHelper.GetFieldValue<bool>( cachePolicy, "_noStore" );
-            Assert.That.IsFalse( noStore );
+            Assert.IsFalse( noStore );
 
             var cacheability = ReflectionHelper.GetFieldValue<HttpCacheability>( cachePolicy, "_cacheability" );
-            Assert.That.AreEqual( HttpCacheability.Public, cacheability );
+            Assert.AreEqual( HttpCacheability.Public, cacheability );
         }
 
         [TestMethod]
@@ -369,16 +369,16 @@ namespace Rock.Tests.Utility
             cache.SetupHttpCachePolicy( cachePolicy );
 
             var noStore = ReflectionHelper.GetFieldValue<bool>( cachePolicy, "_noStore" );
-            Assert.That.IsFalse( noStore );
+            Assert.IsFalse( noStore );
 
             var cacheability = ReflectionHelper.GetFieldValue<HttpCacheability>( cachePolicy, "_cacheability" );
-            Assert.That.AreEqual( HttpCacheability.Public, cacheability );
+            Assert.AreEqual( HttpCacheability.Public, cacheability );
 
             var maxAge = ReflectionHelper.GetFieldValue<TimeSpan>( cachePolicy, "_maxAge" );
-            Assert.That.AreEqual( new TimeSpan( 0, 0, 120 ), maxAge );
+            Assert.AreEqual( new TimeSpan( 0, 0, 120 ), maxAge );
 
             var sharedMaxAge = ReflectionHelper.GetFieldValue<TimeSpan>( cachePolicy, "_proxyMaxAge" );
-            Assert.That.AreEqual( new TimeSpan( 0, 0, 240 ), sharedMaxAge );
+            Assert.AreEqual( new TimeSpan( 0, 0, 240 ), sharedMaxAge );
         }
 
         [TestMethod]
@@ -394,10 +394,10 @@ namespace Rock.Tests.Utility
             cache.SetupHttpCachePolicy( cachePolicy );
 
             var noStore = ReflectionHelper.GetFieldValue<bool>( cachePolicy, "_noStore" );
-            Assert.That.IsFalse( noStore );
+            Assert.IsFalse( noStore );
 
             var cacheability = ReflectionHelper.GetFieldValue<HttpCacheability>( cachePolicy, "_cacheability" );
-            Assert.That.AreEqual( HttpCacheability.Private, cacheability );
+            Assert.AreEqual( HttpCacheability.Private, cacheability );
         }
 
         [TestMethod]
@@ -415,16 +415,16 @@ namespace Rock.Tests.Utility
             cache.SetupHttpCachePolicy( cachePolicy );
 
             var noStore = ReflectionHelper.GetFieldValue<bool>( cachePolicy, "_noStore" );
-            Assert.That.IsFalse( noStore );
+            Assert.IsFalse( noStore );
 
             var cacheability = ReflectionHelper.GetFieldValue<HttpCacheability>( cachePolicy, "_cacheability" );
-            Assert.That.AreEqual( HttpCacheability.Private, cacheability );
+            Assert.AreEqual( HttpCacheability.Private, cacheability );
 
             var maxAge = ReflectionHelper.GetFieldValue<TimeSpan>( cachePolicy, "_maxAge" );
-            Assert.That.AreEqual( new TimeSpan( 0, 0, 120 ), maxAge );
+            Assert.AreEqual( new TimeSpan( 0, 0, 120 ), maxAge );
 
             var sharedMaxAge = ReflectionHelper.GetFieldValue<TimeSpan>( cachePolicy, "_proxyMaxAge" );
-            Assert.That.AreEqual( new TimeSpan( 0, 0, 240 ), sharedMaxAge );
+            Assert.AreEqual( new TimeSpan( 0, 0, 240 ), sharedMaxAge );
         }
     }
 }

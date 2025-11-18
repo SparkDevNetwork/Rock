@@ -53,7 +53,7 @@ namespace Rock.Tests.Integration.Core.Model
                 rockContext.SaveChanges();
 
                 person = personService.Get( person.Id );
-                Assert.That.AreEqual( AccountProtectionProfile.Low, person.AccountProtectionProfile );
+                Assert.AreEqual( AccountProtectionProfile.Low, person.AccountProtectionProfile );
 
                 var group = CreateTestGroup( rockContext, ( ElevatedSecurityLevel ) expectedElevatedSecurityLevel );
                 var groupMember = new GroupMember
@@ -69,7 +69,7 @@ namespace Rock.Tests.Integration.Core.Model
                 rockContext.SaveChanges();
 
                 person = personService.Get( person.Id );
-                Assert.That.AreEqual( ( AccountProtectionProfile ) expectedAccountProtectionProfile, person.AccountProtectionProfile );
+                Assert.AreEqual( ( AccountProtectionProfile ) expectedAccountProtectionProfile, person.AccountProtectionProfile );
             }
         }
 
@@ -96,7 +96,7 @@ namespace Rock.Tests.Integration.Core.Model
                 rockContext.SaveChanges();
 
                 person = personService.Get( person.Id );
-                Assert.That.AreEqual( AccountProtectionProfile.Extreme, person.AccountProtectionProfile );
+                Assert.AreEqual( AccountProtectionProfile.Extreme, person.AccountProtectionProfile );
 
                 var group = CreateTestGroup( rockContext, ( ElevatedSecurityLevel ) expectedElevatedSecurityLevel );
                 var groupMember = new GroupMember
@@ -112,7 +112,7 @@ namespace Rock.Tests.Integration.Core.Model
                 rockContext.SaveChanges();
 
                 person = personService.Get( person.Id );
-                Assert.That.AreEqual( AccountProtectionProfile.Extreme, person.AccountProtectionProfile );
+                Assert.AreEqual( AccountProtectionProfile.Extreme, person.AccountProtectionProfile );
             }
         }
 
@@ -166,7 +166,7 @@ namespace Rock.Tests.Integration.Core.Model
             }
 
             var areAnyArchived = deceasedList.Any( x => x.IsArchived );
-            Assert.That.IsFalse( areAnyArchived );
+            Assert.IsFalse( areAnyArchived );
         }
 
         /// <summary>
@@ -184,12 +184,12 @@ namespace Rock.Tests.Integration.Core.Model
 
                 if ( deceasedList.Count == 0 )
                 {
-                    Assert.That.Fail( "No group members found." );
+                    Assert.Fail( "No group members found." );
                 }
 
                 var includesDeceased = deceasedList.Any( x => x.Person.IsDeceased );
 
-                Assert.That.True( includesDeceased, "Expected at least 1 deceased person, found none." );
+                Assert.IsTrue( includesDeceased, "Expected at least 1 deceased person, found none." );
 
             }
         }

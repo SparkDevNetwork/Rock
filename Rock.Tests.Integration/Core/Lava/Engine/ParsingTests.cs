@@ -214,7 +214,7 @@ Slow
 
             var output = converter.ReplaceElseIfKeyword( input );
 
-            Assert.That.AreEqual( expectedOutput, output );
+            Assert.AreEqual( expectedOutput, output );
         }
 
         [TestMethod]
@@ -265,7 +265,7 @@ Slow
                     var context = engine.NewRenderContext( mergeFields );
                     var settings = LavaElementAttributes.NewFromMarkup( parameterString, context );
 
-                    Assert.That.AreEqual( "Ted's Workflow", settings.GetString( "workflowname" ) );
+                    Assert.AreEqual( "Ted's Workflow", settings.GetString( "workflowname" ) );
                 } );
         }
 
@@ -279,7 +279,7 @@ Slow
                 var context = engine.NewRenderContext();
                 var settings = LavaElementAttributes.NewFromMarkup( parameterString, context );
 
-                Assert.That.AreEqual( "2", settings.GetString( "param2" ) );
+                Assert.AreEqual( "2", settings.GetString( "param2" ) );
             } );
         }
 
@@ -294,9 +294,9 @@ Slow
                 var context = engine.NewRenderContext();
                 var settings = LavaElementAttributes.NewFromMarkup( parameterString, context );
 
-                Assert.That.AreEqual( "ContentChannelId == 1 && Title == `Blog Posts`".Replace("`", @""""), settings.GetStringOrNull( "where" ) );
-                Assert.That.AreEqual( "items", settings.GetStringOrNull( "iterator" ) );
-                Assert.That.AreEqual( "StartDateTime", settings.GetStringOrNull( "sort" ) );
+                Assert.AreEqual( "ContentChannelId == 1 && Title == `Blog Posts`".Replace("`", @""""), settings.GetStringOrNull( "where" ) );
+                Assert.AreEqual( "items", settings.GetStringOrNull( "iterator" ) );
+                Assert.AreEqual( "StartDateTime", settings.GetStringOrNull( "sort" ) );
             } );
         }
 
@@ -311,9 +311,9 @@ Slow
                 var context = engine.NewRenderContext();
                 var settings = LavaElementAttributes.NewFromMarkup( parameterString, context );
 
-                Assert.That.AreEqual( "1", settings.GetStringOrNull( "param1" ) );
-                Assert.That.AreEqual( "2", settings.GetStringOrNull( "param2" ) );
-                Assert.That.AreEqual( "abc", settings.GetStringOrNull( "param3" ) );
+                Assert.AreEqual( "1", settings.GetStringOrNull( "param1" ) );
+                Assert.AreEqual( "2", settings.GetStringOrNull( "param2" ) );
+                Assert.AreEqual( "abc", settings.GetStringOrNull( "param3" ) );
             } );
         }
 
@@ -327,8 +327,8 @@ Slow
                 var context = engine.NewRenderContext();
                 var settings = LavaElementAttributes.NewFromMarkup( parameterString, context );
 
-                Assert.That.AreEqual( "", settings.GetStringOrNull( "param1" ) );
-                Assert.That.AreEqual( "", settings.GetStringOrNull( "param2" ) );
+                Assert.AreEqual( "", settings.GetStringOrNull( "param1" ) );
+                Assert.AreEqual( "", settings.GetStringOrNull( "param2" ) );
             } );
         }
     }

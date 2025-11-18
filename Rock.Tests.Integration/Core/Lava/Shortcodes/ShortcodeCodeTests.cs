@@ -302,7 +302,7 @@ Main Output: The Lava command 'execute' is not configured for this template.<br>
 
                 if ( engine.GetType() == typeof( FluidEngine ) )
                 {
-                    Assert.That.IsTrue( error.Message.Contains( "Unknown shortcode 'testshortcode1'" ), "Unexpected Lava error message." );
+                    Assert.IsTrue( error.Message.Contains( "Unknown shortcode 'testshortcode1'" ), "Unexpected Lava error message." );
                 }
             } );
 

@@ -93,6 +93,10 @@ namespace Rock.Tests.Shared.Lava
 
         public bool IgnoreWhiteSpace = true;
         public bool IgnoreCase = false;
+        /// <summary>
+        /// When enabled, newline differences (CRLF vs LF) will be normalized (into LF which is \n) before comparison.
+        /// </summary>
+        public bool NormalizeNewLine = false;
 
         public List<string> Wildcards = new List<string>();
 

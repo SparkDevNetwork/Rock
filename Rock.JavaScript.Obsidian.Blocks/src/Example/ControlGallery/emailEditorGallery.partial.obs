@@ -2,31 +2,51 @@
     <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" :value="value" :displayAsRaw="true">
 
         <EmailEditor class="gallery-email-editor" :html="value"
-                     :disabled="disabled"
                      :getHtmlRequest="getHtmlRequest"
                      :mergeFields="mergeFields"
                      :recipientPersonIds="[]"
                      :ltr="ltr"
-                     :videoProviderNames="[]" />
+                     :videoProviderNames="[]">
+            <template v-if="simulateValues.includes('bodySettingsPrependSlot')" #bodySettingsPrepend>
+                <div class="well well-conditional">{{ bodySettingsPrependSlotText }}</div>
+            </template>
+        </EmailEditor>
 
         <template #settings>
-            <p> Since this editor does not automatically save changes, they must be requested on demand when the updated HTML is needed.</p>
-            <RockButton btnType="primary" help="The Email Editor value is only updated on demand. Click this button to get its current value." @click="onGetHtmlClicked">Get HTML</RockButton>
+            <div class="settings">
+                <ContentSection title="Settings">
+                    <ContentStack title="General">
+                        <div class="autolayout">
+                            <div>
+                                <p>Since this editor does not automatically save changes, they must be requested on demand when the updated HTML is needed.</p>
+                                <div class="button-wrapper">
+                                    <RockButton btnType="primary" help="The Email Editor value is only updated on demand. Click this button to get its current value." @click="onGetHtmlClicked">Get HTML</RockButton>
+                                </div>
+                            </div>
 
-            <div class="row">
-                <div class="col-md-2">
-                    <Switch v-model="disabled" label="Disabled" :text="disabled ? 'Yes' : 'No'" />
-                </div>
+                            <Switch v-model="ltr"
+                                    help="Enable left-to-right layout for the editor and side panel."
+                                    label="Left to Right"
+                                    :text="ltr ? 'Yes' : 'No'" />
+                        </div>
+                    </ContentStack>
 
-                <div class="col-md-2">
-                    <Switch v-model="ltr" label="Left to Right" :text="ltr ? 'Yes' : 'No'" />
-                </div>
-            </div>
+                    <ContentStack title="Blocks > Paragraph">
+                        <div class="autolayout">
+                            <ValueList v-model="mergeFields"
+                                       label="Merge Fields"
+                                       help="The merge fields that are available for selection in the Merge Field toolbar button of the Paragraph block. If this is not set, then the Merge Field button will be hidden in the editor toolbar." />
+                        </div>
+                    </ContentStack>
 
-            <div class="row">
-                <div class="col">
-                    <ValueList label="Merge Fields" v-model="mergeFields" help="The merge fields that are available for selection in the Merge Field toolbar button. If this is not set, then the Merge Field button will be hidden in the editor toolbar." />
-                </div>
+                    <ContentStack title="Styles > Body Settings">
+                        <CheckBoxList v-model="simulateValues"
+                                      label="Simulate"
+                                      :items="simulateOptions"
+                                      horizontal
+                                      :repeatColumns="4" />
+                    </ContentStack>
+                </ContentSection>
             </div>
         </template>
 
@@ -37,16 +57,45 @@
 .gallery-email-editor {
     height: 600px;
 }
+
+.button-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.settings {
+    max-height: 350px;
+    overflow: auto;
+}
+
+.autolayout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    column-gap: var(--spacing-small);
+}
 </style>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import { getSfcControlImportPath } from "./common/utils.partial";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import EmailEditor, { GetHtmlRequest } from "@Obsidian/Controls/emailEditor";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import ValueList from "@Obsidian/Controls/valueList.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const simulateOptions: ListItemBag[] = [
+        {
+            value: "bodySettingsPrependSlot",
+            text: "Body Settings Prepend Slot"
+        }
+    ];
+
+    const bodySettingsPrependSlotText = `This is content from the Body Settings Prepend Slot.`;
 
     const value = ref(`<!DOCTYPE html>
 <html lang="en-us">
@@ -70,6 +119,7 @@
         "MergeFieldWithCustomLabel|Custom Label"
     ]);
     const getHtmlRequest = ref<GetHtmlRequest | null | undefined>();
+    const simulateValues = ref<string[]>([]);
 
     const importCode = getSfcControlImportPath("htmlEditor");
     const exampleCode = computed(() => {
@@ -78,7 +128,11 @@
     :ltr="${ltr.value}"` : ""}
     :getHtmlRequest="getHtmlRequest"${disabled.value ? `
     :disabled="${disabled.value}"` : ""}${mergeFields.value?.length ? `
-    :mergeFields="['${mergeFields.value.join(`', '`)}']"` : ""} />`;
+    :mergeFields="['${mergeFields.value.join(`', '`)}']"` : ""}${simulateValues.value.includes("bodySettingsPrependSlot") ? `>
+        <template #bodySettingsPrepend>
+            <div class="well well-conditional">${bodySettingsPrependSlotText}</div>
+        </template>
+</EmailEditor>` : " />"}`;
     });
 
     function onGetHtmlClicked(): void {

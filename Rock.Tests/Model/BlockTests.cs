@@ -16,7 +16,7 @@ namespace Rock.Tests.Model
         {
             var block = new Block { Name = "Foo" };
             var result = block.Clone( false );
-            Assert.That.AreEqual( result.Name, block.Name );
+            Assert.AreEqual( result.Name, block.Name );
         }
 
         /// <summary>
@@ -27,8 +27,8 @@ namespace Rock.Tests.Model
         {
             var block = new Block { BlockType = new BlockType() };
             var result = block.Clone() as Block;
-            Assert.That.IsNotNull( result );
-            Assert.That.IsNotNull( result.BlockType );
+            Assert.IsNotNull( result );
+            Assert.IsNotNull( result.BlockType );
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace Rock.Tests.Model
         {
             var block = new Block { Name = "Foo" };
             var result = block.ToJson();
-            Assert.That.IsNotEmpty( result );
+            Assert.IsNotEmpty( result );
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace Rock.Tests.Model
 
             var result = block.ToJson();
             const string key = "\"Name\":\"Foo\"";
-            Assert.That.AreNotEqual( result.IndexOf( key ), -1 );
+            Assert.AreNotEqual( result.IndexOf( key ), -1 );
         }
 
         /// <summary>
@@ -85,8 +85,8 @@ namespace Rock.Tests.Model
             var json = obj.ToJson();
             var block = Block.FromJson( json );
             var blockType = block.BlockType;
-            Assert.That.IsNotNull( blockType );
-            Assert.That.AreEqual( blockType.Name, obj.BlockType.Name );
+            Assert.IsNotNull( blockType );
+            Assert.AreEqual( blockType.Name, obj.BlockType.Name );
         }
     }
 }

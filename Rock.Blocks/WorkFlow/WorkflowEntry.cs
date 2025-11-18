@@ -37,6 +37,7 @@ using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Workflow;
 using Rock.Web;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 using Rock.Workflow;
 
 namespace Rock.Blocks.Workflow
@@ -375,7 +376,7 @@ namespace Rock.Blocks.Workflow
 
             return new WorkflowEntryOptionsBag
             {
-                IsCaptchaEnabled = !GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean(),
+                IsCaptchaEnabled = !Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() ),
                 InitialAction = initialAction
             };
         }
@@ -1251,7 +1252,7 @@ namespace Rock.Blocks.Workflow
             }
 
             // Admin doesn't want to use captcha on the site.
-            if ( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() )
+            if ( Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() ) )
             {
                 return true;
             }

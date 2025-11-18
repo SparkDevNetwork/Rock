@@ -53,7 +53,7 @@ namespace Rock.Tests.Integration.Core.Model
             Person.GradeOffset = 0;
 
             // Grade Transition isn't until tomorrow, so if their GradeOffset is 0,they should graduation day should be this year
-            Assert.That.IsTrue( Person.GraduationYear == thisYear );
+            Assert.IsTrue( Person.GraduationYear == thisYear );
         }
 
         [TestMethod]
@@ -69,7 +69,7 @@ namespace Rock.Tests.Integration.Core.Model
             Person.GradeOffset = 0;
 
             // Grade Transition was yesterday, so if their GradeOffset is 0, they should graduate next year
-            Assert.That.IsTrue( Person.GraduationYear == nextYear );
+            Assert.IsTrue( Person.GraduationYear == nextYear );
         }
 
         private static void SetGradeTransitionDateGlobalAttribute( int month, int day )

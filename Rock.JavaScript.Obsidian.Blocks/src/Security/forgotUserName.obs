@@ -24,11 +24,13 @@
                       label="Enter your email address"
                       rules="required"></EmailBox>
 
-            <Captcha v-if="!disableCaptchaSupport"
-                     ref="captchaElement" />
+            <div v-if="!disableCaptchaSupport" v-show="!isCaptchaComplete">
+                <Captcha ref="captchaElement" />
+            </div>
 
             <div class="actions">
-                <RockButton :autoDisable="true"
+                <RockButton v-if="isCaptchaComplete || disableCaptchaSupport"
+                            :autoDisable="true"
                             :btnType="BtnType.Primary"
                             :disabled="isProcessing"
                             type="submit">Email me reset instructions</RockButton>
@@ -38,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-    import { ref } from "vue";
+    import { ref, onMounted } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
@@ -81,6 +83,7 @@
 
     const isProcessing = ref<boolean>(false);
     const disableCaptchaSupport = ref<boolean>(config.disableCaptchaSupport);
+    const isCaptchaComplete = ref<boolean>(false);
 
     //#endregion
 
@@ -223,7 +226,19 @@
         isWarningShown.value = true;
     }
 
+    async function waitForCaptcha(): Promise<void> {
+        if (disableCaptchaSupport.value || !captchaElement.value) {
+            isCaptchaComplete.value = true;
+            return;
+        }
+        const token = await captchaElement.value.getToken();
+        isCaptchaComplete.value = !!token;
+    }
+
     //#endregion
 
     onConfigurationValuesChanged(useReloadBlock());
+    onMounted(() => {
+        waitForCaptcha();
+    });
 </script>

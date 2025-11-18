@@ -37,7 +37,12 @@ namespace Rock.Tests.Integration.TestData.Tests
         [ClassInitialize( InheritanceBehavior.BeforeEachDerivedClass )]
         public static void Initialize( TestContext context )
         {
-            _utilityTestActionsEnabled = context.Properties[TestConfigurationKeys.UtilityTestActionsEnabled]
+            if ( !context.Properties.TryGetValue( TestConfigurationKeys.UtilityTestActionsEnabled, out var enabledValue ) )
+            {
+                _utilityTestActionsEnabled = false;
+            }
+
+            _utilityTestActionsEnabled = enabledValue
                 .ToStringOrDefault( string.Empty )
                 .AsBoolean();
         }

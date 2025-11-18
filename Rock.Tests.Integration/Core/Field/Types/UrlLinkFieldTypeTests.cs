@@ -37,13 +37,13 @@ namespace Rock.Tests.Integration.Core.Field.Types
             var expectedUrl = "http://test.com/test";
             var expectedResult = $@"<a href='{expectedUrl}'>{expectedUrl}</a>";
 
-            Assert.That.AreEqual( expectedResult, urlLinkField.FormatValue( null, expectedUrl, new Dictionary<string, ConfigurationValue>(), false ) );
+            Assert.AreEqual( expectedResult, urlLinkField.FormatValue( null, expectedUrl, new Dictionary<string, ConfigurationValue>(), false ) );
 
             var configValues = new Dictionary<string, ConfigurationValue>
             {
                 { ConfigurationKey.ShouldAlwaysShowCondensed, new ConfigurationValue("false") }
             };
-            Assert.That.AreEqual( expectedUrl, urlLinkField.FormatValue( null, expectedUrl, configValues, true ) );
+            Assert.AreEqual( expectedUrl, urlLinkField.FormatValue( null, expectedUrl, configValues, true ) );
         }
 
         [TestMethod]
@@ -52,13 +52,13 @@ namespace Rock.Tests.Integration.Core.Field.Types
             var urlLinkField = new UrlLinkFieldType();
             var expectedUrl = "http://test.com/test";
 
-            Assert.That.AreEqual( expectedUrl, urlLinkField.FormatValue( null, expectedUrl, new Dictionary<string, ConfigurationValue>(), true ) );
+            Assert.AreEqual( expectedUrl, urlLinkField.FormatValue( null, expectedUrl, new Dictionary<string, ConfigurationValue>(), true ) );
 
             var configValues = new Dictionary<string, ConfigurationValue>
             {
                 { ConfigurationKey.ShouldAlwaysShowCondensed, new ConfigurationValue("false") }
             };
-            Assert.That.AreEqual( expectedUrl, urlLinkField.FormatValue( null, expectedUrl, configValues, true ) );
+            Assert.AreEqual( expectedUrl, urlLinkField.FormatValue( null, expectedUrl, configValues, true ) );
         }
 
         [TestMethod]
@@ -71,8 +71,8 @@ namespace Rock.Tests.Integration.Core.Field.Types
                 { ConfigurationKey.ShouldAlwaysShowCondensed, new ConfigurationValue("true") }
             };
 
-            Assert.That.AreEqual( expectedUrl, urlLinkField.FormatValue( null, expectedUrl, configValues, true ) );
-            Assert.That.AreEqual( expectedUrl, urlLinkField.FormatValue( null, expectedUrl, configValues, false ) );
+            Assert.AreEqual( expectedUrl, urlLinkField.FormatValue( null, expectedUrl, configValues, true ) );
+            Assert.AreEqual( expectedUrl, urlLinkField.FormatValue( null, expectedUrl, configValues, false ) );
         }
     }
 }

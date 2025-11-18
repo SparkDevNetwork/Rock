@@ -44,8 +44,6 @@ namespace Rock.Lava
             string liquidTemplateText;
 
             liquidTemplateText = RemoveLavaComments( lavaTemplateText );
-
-            liquidTemplateText = ReplaceTemplateShortcodes( liquidTemplateText );
             liquidTemplateText = ReplaceElseIfKeyword( liquidTemplateText );
 
             return liquidTemplateText;
@@ -67,16 +65,45 @@ namespace Rock.Lava
             return inputTemplate;
         }
 
-        internal static readonly Regex ElseIfToken = new Regex( @"{\%(.*?\s?)elseif(\s?.*?)\%}", RegexOptions.Compiled );
-
+        /// <summary>
+        /// Convert a Lava template to a Liquid-compatible template by replacing Rock Lava-specific "elseif" keyword.
+        /// </summary>
+        /// <remarks>
+        /// The "elseif" is not a recognized keyword in Liquid - it implements the less natural variant "elsif".
+        ///  This keyword forms part of a conditional construct (if/then/else) that is processed internally by the Liquid engine,
+        ///  so the most portable method of processing this alternative is to replace it with the recognized Liquid keyword.    
+        /// </remarks>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        /// <param name="inputTemplate">A Lava template string</param>
+        /// <returns>the template string without the "elseif" keyword</returns>
         public string ReplaceElseIfKeyword( string inputTemplate )
         {
-            // "elseif" is not a recognized keyword in Liquid - it implements the less natural variant "elsif".
-            // This keyword forms part of a conditional construct (if/then/else) that is processed internally by the Liquid engine,
-            // so the most portable method of processing this alternative is to replace it with the recognized Liquid keyword.            
-            inputTemplate = ElseIfToken.Replace( inputTemplate, "{%$1elsif$2%}" );
+            /*
+                11/17/2025 - N.A.
 
-            return inputTemplate;
+                The original Regex-based approach used this Regex, but it fails to work correly inside {% lava/liquid %} style
+                lava:
+
+                    internal static readonly Regex ElseIfToken = new Regex( @"{\%(.*?\s?)elseif(\s?.*?)\%}", RegexOptions.Compiled );
+                    inputTemplate = ElseIfToken.Replace( inputTemplate, "{%$1elsif$2%}" );
+
+                We considered updating to this other Regex, but testing showed it to be significantly less efficient. It
+                was approximately twice as slow and used nearly double the memory compared to a simple string replacement.
+                
+                    internal static readonly Regex ElseIfToken = new Regex( @"\{\%(.*?)\belseif\b(.*?)\%\}", RegexOptions.Compiled | RegexOptions.Singleline );
+
+                Reason: Chose performance-optimized simple string replacement over Regex to reduce processing time and memory usage.
+                        See https://app.asana.com/1/20866866924293/project/1208321217019996/task/1211949287939339
+            */
+
+            return inputTemplate?.Replace( "elseif", "elsif" );
         }
 
         #region Lava Comments

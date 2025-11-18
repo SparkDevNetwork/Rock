@@ -105,7 +105,7 @@
                         font: {
                             family: chartStyles.value.fontFamily,
                             size: chartStyles.value.fontSize,
-                            weight: chartStyles.value.fontWeight
+                            weight: chartStyles.value.fontWeight as "lighter" | "normal" | "bold" | "bolder"
                         },
                         color: chartStyles.value.fontColor
                     }
@@ -134,7 +134,7 @@
                         font: {
                             family: chartStyles.value.fontFamily,
                             size: chartStyles.value.fontSize,
-                            weight: chartStyles.value.fontWeight
+                            weight: chartStyles.value.fontWeight as "lighter" | "normal" | "bold" | "bolder"
                         },
                         color: chartStyles.value.fontColor
                     },

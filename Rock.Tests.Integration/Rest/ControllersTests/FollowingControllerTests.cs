@@ -108,10 +108,10 @@ namespace Rock.Tests.Integration.Rest.ControllersTests
             }
 
             // Verify that an invalid parameter error is returned.
-            Assert.That.IsTrue( exception?.Response?.StatusCode == System.Net.HttpStatusCode.BadRequest );
+            Assert.IsTrue( exception?.Response?.StatusCode == System.Net.HttpStatusCode.BadRequest );
             errorMessage = exception.Response.Content.ReadAsStringAsync().Result;
-            Assert.That.IsTrue( errorMessage.Contains( "Invalid parameter value." ) );
-            Assert.That.IsTrue( errorMessage.Contains( Guid.Empty.ToString() ) );
+            Assert.IsTrue( errorMessage.Contains( "Invalid parameter value." ) );
+            Assert.IsTrue( errorMessage.Contains( Guid.Empty.ToString() ) );
         }
     }
 }

@@ -44,11 +44,13 @@
                 </div>
             </div>
 
-            <Captcha v-if="!disableCaptchaSupport" ref="captchaElement" />
+            <div v-if="!disableCaptchaSupport" v-show="!isCaptchaComplete">
+                <Captcha ref="captchaElement" />
+            </div>
 
             <NotificationBox v-if="submitErrorMessage" alertType="danger">{{ submitErrorMessage }}</NotificationBox>
 
-            <div class="actions text-right">
+            <div v-if="isCaptchaComplete || disableCaptchaSupport" class="actions text-right">
                 <RockButton class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading" autoDisable>
                     Previous
                 </RockButton>
@@ -61,7 +63,7 @@
     </div>
 </template>
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, ref, onMounted } from "vue";
     import { CurrentRegistrationEntryState, GetPersistSessionArgs, use } from "./utils.partial";
     import Captcha from "@Obsidian/Controls/captcha.obs";
     import GatewayControl from "@Obsidian/Controls/gatewayControl.obs";
@@ -86,6 +88,7 @@
     const registrationEntryState = use(CurrentRegistrationEntryState);
     const disableCaptchaSupport = ref(registrationEntryState.viewModel.disableCaptchaSupport);
     const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
+    const isCaptchaComplete = ref(false);
     const uniqueId = newGuid();
 
     const emit = defineEmits<{
@@ -330,5 +333,19 @@
         return result.isSuccess;
     }
 
+    async function waitForCaptcha(): Promise<void> {
+        if (disableCaptchaSupport.value || !captchaElement.value) {
+            isCaptchaComplete.value = true;
+            return;
+        }
+        const token = await captchaElement.value.getToken();
+        isCaptchaComplete.value = !!token;
+    }
+
     // #endregion
+
+    onMounted(() => {
+        waitForCaptcha();
+    });
+
 </script>

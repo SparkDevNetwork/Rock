@@ -39,7 +39,6 @@ namespace Rock.Tests.Integration.AI
         /// Test Explorer. Once the testing is complete the [TestMethod] should be replaced by [Ignore]
         /// so the method is not run as part of the normal integration testing process.
         /// </remarks>
-        [Ignore]
         public void RunOneTimeAnalyzerCompletions()
         {
             var inFile = @"C:\Temp\analysis_in.csv";
@@ -68,7 +67,6 @@ namespace Rock.Tests.Integration.AI
         /// Test Explorer. Once the testing is complete the [TestMethod] should be replaced by [Ignore]
         /// so the method is not run as part of the normal integration testing process.
         /// </remarks>
-        [Ignore]
         public void RunOneTimeFormatterCompletions()
         {
             var inFile = @"C:\Temp\formatter_in.csv";
@@ -99,7 +97,6 @@ namespace Rock.Tests.Integration.AI
         /// Test Explorer. Once the testing is complete the [TestMethod] should be replaced by [Ignore]
         /// so the method is not run as part of the normal integration testing process.
         /// </remarks>
-        [Ignore]
         public void RunBatchConversion()
         {
             var inFile = @"C:\Temp\all_requests_in.csv";

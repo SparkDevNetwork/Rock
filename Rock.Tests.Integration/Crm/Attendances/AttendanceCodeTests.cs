@@ -45,7 +45,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
             string lastCode = "0665";
 
             string code = AttendanceCodeService.GetNextNumericCodeAsString( alphaNumericLength, alphaLength, numericLength, isRandomized, lastCode );
-            Assert.That.Equal( "0667", code );
+            Assert.AreEqual( "0667", code );
         }
 
         #endregion
@@ -67,7 +67,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
 
             bool hasMatchIsBad = codeList.Where( c => AttendanceCodeService.NoGood.Any( ng => c.Contains( ng ) ) ).Any();
 
-            Assert.That.False( hasMatchIsBad );
+            Assert.IsFalse( hasMatchIsBad );
         }
 
         #endregion
@@ -87,7 +87,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
                 code = attendanceCodeService.CreateNewCode( 0, 0, 3, false );
             }
 
-            Assert.That.Equal( "002", code.Code );
+            Assert.AreEqual( "002", code.Code );
         }
 
         [TestMethod]
@@ -103,8 +103,8 @@ namespace Rock.Tests.Integration.Crm.Attendance
                 codeList.Add( code.Code );
             }
 
-            Assert.That.DoesNotContain( codeList, "911" );
-            Assert.That.DoesNotContain( codeList, "666" );
+            Assert.DoesNotContain( codeList, "911" );
+            Assert.DoesNotContain( codeList, "666" );
         }
 
         /// <summary>
@@ -131,13 +131,13 @@ namespace Rock.Tests.Integration.Crm.Attendance
 
                 // should not be longer than 2 characters
                 // This is a known bug in v7.4 and earlier, and possibly fixed via PR #3071
-                Assert.That.True( codeList.OrderBy( x => x.Length ).Last().Length == 2 );
+                Assert.IsTrue( codeList.OrderBy( x => x.Length ).Last().Length == 2 );
             }
             catch ( TimeoutException )
             {
                 // An exception in this case is considered better than hanging (since there is 
                 // no actual solution).
-                Assert.That.True( true );
+                Assert.IsTrue( true );
             }
         }
 
@@ -162,7 +162,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
                                     .Where( group => group.Count() > 1 )
                                     .Select( group => group.Key );
 
-            Assert.That.True( duplicates.Count() == 0 );
+            Assert.IsTrue( duplicates.Count() == 0 );
         }
 
         /// <summary>
@@ -186,7 +186,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
                                     .Where( group => group.Count() > 1 )
                                     .Select( group => group.Key );
 
-            Assert.That.True( duplicates.Count() == 0 );
+            Assert.IsTrue( duplicates.Count() == 0 );
         }
 
         /// <summary>
@@ -208,13 +208,13 @@ namespace Rock.Tests.Integration.Crm.Attendance
                 codeList.Add( code.Code );
             }
 
-            Assert.That.ThrowsException<TimeoutException>( () =>
+            Assert.Throws<TimeoutException>( () =>
             {
                 var code = attendanceCodeService.CreateNewCode( 0, 0, 2, true );
                 codeList.Add( code.Code );
             } );
 
-            Assert.That.AreEqual( 100, codeList.Count );
+            Assert.AreEqual( 100, codeList.Count );
         }
 
         [TestMethod]
@@ -230,7 +230,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
                 code = attendanceCodeService.CreateNewCode( 0, 0, 3, false );
             }
 
-            Assert.That.Equal( "100", code.Code );
+            Assert.AreEqual( "100", code.Code );
         }
 
         #endregion
@@ -259,7 +259,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
 
             bool hasMatchIsBad = codeList.Where( c => AttendanceCodeService.NoGood.Any( ng => c.Contains( ng ) ) ).Any();
 
-            Assert.That.False( hasMatchIsBad );
+            Assert.IsFalse( hasMatchIsBad );
         }
 
         /// <summary>
@@ -285,7 +285,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
                                     .Where( group => group.Count() > 1 )
                                     .Select( group => group.Key );
 
-            Assert.That.True( duplicates.Count() == 0 );
+            Assert.IsTrue( duplicates.Count() == 0 );
         }
 
         #endregion
@@ -342,19 +342,19 @@ namespace Rock.Tests.Integration.Crm.Attendance
                 var matches = codeList.Where( c => AttendanceCodeService.NoGood.Any( ng => c.Contains( ng ) ) );
                 bool hasMatchIsBad = matches.Any();
 
-                Assert.That.IsFalse( hasMatchIsBad, "bad codes were: " + string.Join( ", ", matches ) );
+                Assert.IsFalse( hasMatchIsBad, "bad codes were: " + string.Join( ", ", matches ) );
 
                 var duplicates = codeList.GroupBy( x => x )
                         .Where( group => group.Count() > 1 )
                         .Select( group => group.Key );
 
-                Assert.That.True( duplicates.Count() == 0 );
+                Assert.IsTrue( duplicates.Count() == 0 );
             }
             catch ( TimeoutException )
             {
                 // If an infinite loop was detected, but we tried at least 5100 codes then
                 // we'll consider this a pass.
-                Assert.That.IsTrue( attemptCombination >= 5100 );
+                Assert.IsTrue( attemptCombination >= 5100 );
             }
             finally
             {
@@ -404,13 +404,13 @@ namespace Rock.Tests.Integration.Crm.Attendance
                 var matches = codeList.Where( c => AttendanceCodeService.NoGood.Any( ng => c.Contains( ng ) ) );
                 bool hasMatchIsBad = matches.Any();
 
-                Assert.That.IsFalse( hasMatchIsBad, "bad codes were: " + string.Join( ", ", matches ) );
+                Assert.IsFalse( hasMatchIsBad, "bad codes were: " + string.Join( ", ", matches ) );
             }
             catch ( TimeoutException )
             {
                 // If an infinite loop was detected, but we tried at least 596 codes then
                 // we'll consider this a pass.
-                Assert.That.IsTrue( attemptCombination >= 596 );
+                Assert.IsTrue( attemptCombination >= 596 );
             }
             finally
             {
@@ -439,7 +439,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
 
             bool hasMatchIsBad = codeList.Where( c => AttendanceCodeService.NoGood.Any( ng => c.Contains( ng ) ) ).Any();
 
-            Assert.That.False( hasMatchIsBad );
+            Assert.IsFalse( hasMatchIsBad );
         }
 
         /// <summary>
@@ -467,7 +467,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
 
             var matches = codeList.Where( c => AttendanceCodeService.NoGood.Any( ng => c.Contains( ng ) ) );
             bool hasMatchIsBad = matches.Any();
-            Assert.That.IsFalse( hasMatchIsBad, "bad codes were: " + string.Join( ", ", matches ) );
+            Assert.IsFalse( hasMatchIsBad, "bad codes were: " + string.Join( ", ", matches ) );
 
             stopWatch.Stop();
             System.Diagnostics.Trace.Listeners.Add( new System.Diagnostics.TextWriterTraceListener( Console.Out ) );

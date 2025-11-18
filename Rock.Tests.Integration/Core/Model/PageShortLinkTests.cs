@@ -67,14 +67,14 @@ namespace Rock.Tests.Integration.Core.Model
             interaction.SetUTMFieldsFromURL( $"http://www.rocksolidchurchdemo.com/signup?utm_source={dvSource.Value}&utm_medium={dvMedium.Value}&utm_campaign={dvCampaign.Value}" );
 
             // Verify that the elements are recorded as defined values.
-            Assert.That.AreEqual( dvSource.Id, interaction.SourceValueId );
-            Assert.That.AreEqual( "youtube", interaction.Source );
+            Assert.AreEqual( dvSource.Id, interaction.SourceValueId );
+            Assert.AreEqual( "youtube", interaction.Source );
 
-            Assert.That.AreEqual( dvMedium.Id, interaction.MediumValueId );
-            Assert.That.AreEqual( "organic", interaction.Medium );
+            Assert.AreEqual( dvMedium.Id, interaction.MediumValueId );
+            Assert.AreEqual( "organic", interaction.Medium );
 
-            Assert.That.AreEqual( dvCampaign.Id, interaction.CampaignValueId );
-            Assert.That.AreEqual( _testCampaignNameBlog, interaction.Campaign );
+            Assert.AreEqual( dvCampaign.Id, interaction.CampaignValueId );
+            Assert.AreEqual( _testCampaignNameBlog, interaction.Campaign );
         }
 
         [TestMethod]
@@ -85,14 +85,14 @@ namespace Rock.Tests.Integration.Core.Model
             interaction.SetUTMFieldsFromURL( "http://www.rocksolidchurchdemo.com/signup?utm_source=undefinedsource&utm_medium=undefinedmedium&utm_campaign=undefinedcampaign" );
 
             // Verify that the unmatched values are recorded as free-form text, but the value field is not populated.
-            Assert.That.IsNull( interaction.SourceValueId );
-            Assert.That.AreEqual( "undefinedsource", interaction.Source );
+            Assert.IsNull( interaction.SourceValueId );
+            Assert.AreEqual( "undefinedsource", interaction.Source );
 
-            Assert.That.IsNull( interaction.MediumValueId );
-            Assert.That.AreEqual( "undefinedmedium", interaction.Medium );
+            Assert.IsNull( interaction.MediumValueId );
+            Assert.AreEqual( "undefinedmedium", interaction.Medium );
 
-            Assert.That.IsNull( interaction.CampaignValueId );
-            Assert.That.AreEqual( "undefinedcampaign", interaction.Campaign );
+            Assert.IsNull( interaction.CampaignValueId );
+            Assert.AreEqual( "undefinedcampaign", interaction.Campaign );
         }
 
         [TestMethod]
@@ -104,8 +104,8 @@ namespace Rock.Tests.Integration.Core.Model
             interaction.SetUTMFieldsFromURL( $"http://www.rocksolidchurchdemo.com/signup?utm_source=google&utm_medium=organic&utm_campaign" );
             interaction.SetUTMFieldsFromURL( $"http://www.rocksolidchurchdemo.com/signup?utm_source=google&utm_medium=organic" );
 
-            Assert.That.IsEmpty( $"{interaction.Campaign}{interaction.CampaignValueId}" );
-            Assert.That.IsNotEmpty( $"{interaction.Source}{interaction.SourceValueId}" );
+            Assert.IsEmpty( $"{interaction.Campaign}{interaction.CampaignValueId}" );
+            Assert.IsNotEmpty( $"{interaction.Source}{interaction.SourceValueId}" );
         }
 
         [TestMethod]
@@ -115,7 +115,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             interaction.SetUTMFieldsFromURL( $"/give?utm_content=newsletter-image#howtogive" );
 
-            Assert.That.AreEqual( "newsletter-image", interaction.Content );
+            Assert.AreEqual( "newsletter-image", interaction.Content );
         }
 
         [TestMethod]
@@ -126,7 +126,7 @@ namespace Rock.Tests.Integration.Core.Model
             // Verify that fields specified more than once are overwritten by the later value.
             interaction.SetUTMFieldsFromURL( $"http://www.rocksolidchurchdemo.com/signup?utm_source=source1&utm_medium=organic&utm_source=source2" );
 
-            Assert.That.AreEqual( "source2", interaction.Source );
+            Assert.AreEqual( "source2", interaction.Source );
         }
 
         [TestMethod]
@@ -147,14 +147,14 @@ namespace Rock.Tests.Integration.Core.Model
             var interaction = CreateNewPageInteractionWithTransaction( utmInfo );
 
             // Verify that the elements are recorded as defined values.
-            Assert.That.AreEqual( dvSource.Id, interaction.SourceValueId );
-            Assert.That.AreEqual( "youtube", interaction.Source );
+            Assert.AreEqual( dvSource.Id, interaction.SourceValueId );
+            Assert.AreEqual( "youtube", interaction.Source );
 
-            Assert.That.AreEqual( dvMedium.Id, interaction.MediumValueId );
-            Assert.That.AreEqual( "organic", interaction.Medium );
+            Assert.AreEqual( dvMedium.Id, interaction.MediumValueId );
+            Assert.AreEqual( "organic", interaction.Medium );
 
-            Assert.That.AreEqual( dvCampaign.Id, interaction.CampaignValueId );
-            Assert.That.AreEqual( _testCampaignNameBlog, interaction.Campaign );
+            Assert.AreEqual( dvCampaign.Id, interaction.CampaignValueId );
+            Assert.AreEqual( _testCampaignNameBlog, interaction.Campaign );
         }
 
         [TestMethod]
@@ -171,14 +171,14 @@ namespace Rock.Tests.Integration.Core.Model
             var interaction = CreateNewPageInteractionWithTransaction( utmInfo );
 
             // Verify that the elements are recorded as defined values, but the free-form text field is not populated.
-            Assert.That.AreEqual( utmInfo.Source, interaction.Source );
-            Assert.That.IsNull( interaction.SourceValueId );
+            Assert.AreEqual( utmInfo.Source, interaction.Source );
+            Assert.IsNull( interaction.SourceValueId );
 
-            Assert.That.AreEqual( utmInfo.Medium, interaction.Medium );
-            Assert.That.IsNull( interaction.MediumValueId );
+            Assert.AreEqual( utmInfo.Medium, interaction.Medium );
+            Assert.IsNull( interaction.MediumValueId );
 
-            Assert.That.AreEqual( utmInfo.Campaign, interaction.Campaign );
-            Assert.That.IsNull( interaction.CampaignValueId );
+            Assert.AreEqual( utmInfo.Campaign, interaction.Campaign );
+            Assert.IsNull( interaction.CampaignValueId );
         }
 
         private Interaction CreateNewPageInteractionWithTransaction( UtmCookieData utmInfo )
@@ -243,11 +243,11 @@ namespace Rock.Tests.Integration.Core.Model
 
             utmSettings = shortlink.GetAdditionalSettings<UtmSettings>();
 
-            Assert.That.AreEqual( sourceValueId, utmSettings.UtmSourceValueId );
-            Assert.That.AreEqual( mediumValueId, utmSettings.UtmMediumValueId );
-            Assert.That.AreEqual( campaignValueId, utmSettings.UtmCampaignValueId );
-            Assert.That.AreEqual( "special", utmSettings.UtmTerm );
-            Assert.That.AreEqual( "banner_image", utmSettings.UtmContent );
+            Assert.AreEqual( sourceValueId, utmSettings.UtmSourceValueId );
+            Assert.AreEqual( mediumValueId, utmSettings.UtmMediumValueId );
+            Assert.AreEqual( campaignValueId, utmSettings.UtmCampaignValueId );
+            Assert.AreEqual( "special", utmSettings.UtmTerm );
+            Assert.AreEqual( "banner_image", utmSettings.UtmContent );
         }
 
         [DataTestMethod]
@@ -259,7 +259,7 @@ namespace Rock.Tests.Integration.Core.Model
             // If the shortlink Url is incomplete, the UrlWithUtm property should continue to return the correct query parameters.
             var shortlink = CreateTestPageShortlinkWithUtmValues( "test-promotion", baseUrl, utmSource, null, null, null, null );
 
-            Assert.That.AreEqual( expectedOutput, shortlink.UrlWithUtm );
+            Assert.AreEqual( expectedOutput, shortlink.UrlWithUtm );
         }
 
         [DataTestMethod]
@@ -282,7 +282,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             var expectedUrl = uriBuilder.Uri.OriginalString;
 
-            Assert.That.AreEqual( expectedUrl, shortlink.UrlWithUtm );
+            Assert.AreEqual( expectedUrl, shortlink.UrlWithUtm );
         }
 
         [TestMethod]
@@ -297,7 +297,7 @@ namespace Rock.Tests.Integration.Core.Model
                 "term1&term2",
                 "http://embedded-link" );
 
-            Assert.That.AreEqual( "https://mywebsite.com/?utm_source=source%3Atest%21&utm_medium=medium%3Atest%21&utm_campaign=new%20campaign%20%28%2Apending%29&utm_term=term1%26term2&utm_content=http%3A%2F%2Fembedded-link",
+            Assert.AreEqual( "https://mywebsite.com/?utm_source=source%3Atest%21&utm_medium=medium%3Atest%21&utm_campaign=new%20campaign%20%28%2Apending%29&utm_term=term1%26term2&utm_content=http%3A%2F%2Fembedded-link",
                 shortlink.UrlWithUtm );
         }
 

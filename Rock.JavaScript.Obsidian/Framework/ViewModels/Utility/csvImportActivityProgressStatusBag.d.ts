@@ -34,7 +34,4 @@ export type CsvImportActivityProgressStatusBag = {
 
     /** The name of the task. */
     taskName?: string | null;
-
-    /** A collection of warnings the task encountered while running. */
-    warnings?: string[] | null;
 };

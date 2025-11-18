@@ -130,7 +130,7 @@ namespace Rock.Tests.Integration.Reporting.ReportBuilder
             var unauthorizedAttribute = person.Attributes
                  .Select( x => x.Value ).FirstOrDefault( a => !a.IsAuthorized( Rock.Security.Authorization.VIEW, unauthorizedPerson ) );
 
-            Assert.That.IsNotNull( unauthorizedAttribute, "Test User must have at least one unauthorized Attribute." );
+            Assert.IsNotNull( unauthorizedAttribute, "Test User must have at least one unauthorized Attribute." );
 
             // Create a report template containing the test Attribute.
             var templateBuilder = new ReportTemplateBuilder( typeof( Person ) );
@@ -156,7 +156,7 @@ namespace Rock.Tests.Integration.Reporting.ReportBuilder
 
             var valueCount1 = results1.Data.Select( "[AttributeValue] > ''" ).Count();
 
-            Assert.That.IsTrue( valueCount1 > 0, "Attribute column must contain at least one value." );
+            Assert.IsTrue( valueCount1 > 0, "Attribute column must contain at least one value." );
 
             // Build and verify the report output for the unauthorized user.
             builder.OutputFieldMask = "@@@";
@@ -169,7 +169,7 @@ namespace Rock.Tests.Integration.Reporting.ReportBuilder
 
             var valueCount2 = results2.Data.Select( "[AttributeValue] > '' AND [AttributeValue] <> '@@@'" ).Count();
 
-            Assert.That.IsTrue( ( valueCount2 == 0 ), "Attribute column contains unauthorized values." );
+            Assert.IsTrue( ( valueCount2 == 0 ), "Attribute column contains unauthorized values." );
         }
 
         #endregion

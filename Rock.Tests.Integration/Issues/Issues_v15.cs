@@ -86,11 +86,11 @@ namespace Rock.Tests.Integration.Issues
             var jobResult = job.Execute( settings );
 
             // Verify that the job executed without throwing an exception, but reported the ignored session.
-            Assert.That.IsNull( jobResult.Exception, "Unexpected Job Exception reported." );
+            Assert.IsNull( jobResult.Exception, "Unexpected Job Exception reported." );
 
             var output = jobResult.OutputMessages.JoinStrings( "\n" );
-            Assert.That.Contains( output, "Interaction Session with invalid Guid ignored" );
-            Assert.That.Contains( output, "Updated Interaction Count And Session Duration for 1 interaction session" );
+            Assert.Contains( "Interaction Session with invalid Guid ignored", output );
+            Assert.Contains( "Updated Interaction Count And Session Duration for 1 interaction session", output );
         }
     }
 }

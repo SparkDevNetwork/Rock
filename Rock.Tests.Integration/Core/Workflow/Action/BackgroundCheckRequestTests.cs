@@ -18,14 +18,14 @@ namespace Rock.Tests.Integration.Core.Workflow.Action
         [TestMethod]
         public void CanBeInstantiated()
         {
-            Assert.That.True( new BackgroundCheckRequest() != null );
+            Assert.IsTrue( new BackgroundCheckRequest() != null );
         }
 
         [TestMethod]
         public void HasExecuteMethod()
         {
             var BackgroundAction = new BackgroundCheckRequest();
-            Assert.That.True( BackgroundAction.GetType().GetMethod( "Execute" ) != null );
+            Assert.IsTrue( BackgroundAction.GetType().GetMethod( "Execute" ) != null );
         }
 
         [TestMethod]
@@ -44,7 +44,7 @@ namespace Rock.Tests.Integration.Core.Workflow.Action
             };
             var errors = new List<string>();
             var result = BackgroundAction.Execute( new RockContext(), action, null, out errors );
-            Assert.That.False( result );
+            Assert.IsFalse( result );
         }
 
         [TestMethod]
@@ -62,8 +62,8 @@ namespace Rock.Tests.Integration.Core.Workflow.Action
             };
             var errors = new List<string>();
             var result = BackgroundAction.Execute( new RockContext(), action, null, out errors );
-            Assert.That.Single( errors );
-            Assert.That.Equal( "Invalid Background Check Provider Guid!", errors[0] );
+            Assert.ContainsSingle( errors );
+            Assert.AreEqual( "Invalid Background Check Provider Guid!", errors[0] );
         }
     }
 }

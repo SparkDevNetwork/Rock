@@ -27,6 +27,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Security
 {
@@ -122,8 +123,8 @@ namespace RockWeb.Blocks.Security
 
             if ( !Page.IsPostBack )
             {
-                var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
-                if ( disableCaptchaSupport )
+                var disableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
+                if ( disableCaptchaSupport || !cpCaptcha.IsAvailable )
                 {
                     pnlCaptcha.Visible = false;
                     EnableForm();

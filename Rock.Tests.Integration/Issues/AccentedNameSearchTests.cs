@@ -54,7 +54,7 @@ namespace Rock.Tests.Integration.Issues
 
             var salutation = GroupService.CalculateFamilySalutation( deckerFamilyGroup, new Person.CalculateFamilySalutationArgs( true ) );
 
-            Assert.That.AreEqual( "Ted, Cindy, Noah & Alex Decker", salutation );
+            Assert.AreEqual( "Ted, Cindy, Noah & Alex Decker", salutation );
         }
 
         [TestMethod]
@@ -66,7 +66,7 @@ namespace Rock.Tests.Integration.Issues
 
             var salutation = GroupService.CalculateFamilySalutation( familyGroup, new Person.CalculateFamilySalutationArgs( true ) );
 
-            Assert.That.AreEqual( "René & Joséphine Côté", salutation );
+            Assert.AreEqual( "René & Joséphine Côté", salutation );
         }
 
         [TestMethod]
@@ -85,7 +85,7 @@ namespace Rock.Tests.Integration.Issues
                     .Where( a => a.PersonAlias.Person.Guid == personGuid )
                     .ToList();
 
-            Assert.That.AreEqual( 1, personDuplicates.Count, "Duplicate entry expected but not found." );
+            Assert.AreEqual( 1, personDuplicates.Count, "Duplicate entry expected but not found." );
         }
 
         [TestMethod]
@@ -98,7 +98,7 @@ namespace Rock.Tests.Integration.Issues
 
             jobAnalytics.ExecuteInternal( analyticsSettings );
 
-            Assert.That.Contains( jobAnalytics.Result, "Person BI Results:" );
+            Assert.Contains( "Person BI Results:", jobAnalytics.Result );
         }
 
         [TestMethod]
@@ -111,7 +111,7 @@ namespace Rock.Tests.Integration.Issues
 
             var results = Search( personSearchOptions );
 
-            Assert.That.AreEqual( 2, results.Count, "Search results expected but not found." );
+            Assert.AreEqual( 2, results.Count, "Search results expected but not found." );
         }
 
         private List<Person> Search( PersonService.PersonSearchOptions options )
@@ -130,7 +130,7 @@ namespace Rock.Tests.Integration.Issues
         {
             var results = SmartSearch( "Gagne" );
 
-            Assert.That.AreEqual( 2, results.Count, "Search results expected but not found." );
+            Assert.AreEqual( 2, results.Count, "Search results expected but not found." );
         }
 
         private List<string> SmartSearch( string name )
@@ -186,7 +186,7 @@ ALTER COLUMN [MiddleName] NVARCHAR(100) COLLATE SQL_Latin1_General_CP1_CI_AI
 
             var result = DbService.ExecuteCommand( sql );
 
-            Assert.That.AreEqual( -1, result, "Modify name column indexes failed." );
+            Assert.AreEqual( -1, result, "Modify name column indexes failed." );
         }
 
         private const string _PersonGuidUnaccentedName = "FEB54A3B-9E21-48B1-8BE9-BB8E1F96306C";
