@@ -1,65 +1,63 @@
-{% sitemaster src:'~~/Layouts/SiteMaster.lava' %}
-    [[ content id:'Main' ]]
-        <!-- Page Title -->
-        <section id="secPageTitle" class="page-header fullwidth">
-            <div class="page-title">
-                <h1 class="title"><Rock:PageIcon /> <Rock:PageTitle /></h1>
-                <Rock:PageBreadCrumbs />
-                <Rock:PageDescription />
+<Rock:ParentLayout src:"~~/Layouts/SiteMaster.lava">
+    <!-- Page Title -->
+    <section id="secPageTitle" class="page-header fullwidth">
+        <div class="page-title">
+            <h1 class="title"><Rock:PageIcon /> <Rock:PageTitle /></h1>
+            <Rock:PageBreadCrumbs />
+            <Rock:PageDescription />
+        </div>
+        <Rock:Zone Name="Context" CssClass="zone-context" />
+    </section>
+
+    <!-- Start Content Area -->
+
+    <section id="page-content">
+
+        <!-- Ajax Error -->
+        <div class="alert alert-danger ajax-error no-index" style="display:none">
+            <p><strong>Error</strong></p>
+            <span class="ajax-error-message"></span>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <Rock:Zone Name="Feature" />
             </div>
-            <Rock:Zone Name="Context" CssClass="zone-context" />
-        </section>
+        </div>
 
-        <!-- Start Content Area -->
-
-        <section id="page-content">
-
-            <!-- Ajax Error -->
-            <div class="alert alert-danger ajax-error no-index" style="display:none">
-                <p><strong>Error</strong></p>
-                <span class="ajax-error-message"></span>
+        <div class="row">
+            <div class="col-md-12">
+                <Rock:Zone Name="Main" />
             </div>
+        </div>
 
-            <div class="row">
-                <div class="col-md-12">
-                    <Rock:Zone Name="Feature" />
-                </div>
+        <div class="row">
+            <div class="col-md-12">
+                <Rock:Zone Name="Section A" />
             </div>
+        </div>
 
-            <div class="row">
-                <div class="col-md-12">
-                    <Rock:Zone Name="Main" />
-                </div>
+        <div class="row">
+            <div class="col-md-4">
+                <Rock:Zone Name="Section B" />
             </div>
-
-            <div class="row">
-                <div class="col-md-12">
-                    <Rock:Zone Name="Section A" />
-                </div>
+            <div class="col-md-4">
+                <Rock:Zone Name="Section C" />
             </div>
-
-            <div class="row">
-                <div class="col-md-4">
-                    <Rock:Zone Name="Section B" />
-                </div>
-                <div class="col-md-4">
-                    <Rock:Zone Name="Section C" />
-                </div>
-                <div class="col-md-4">
-                    <Rock:Zone Name="Section D" />
-                </div>
+            <div class="col-md-4">
+                <Rock:Zone Name="Section D" />
             </div>
+        </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <Rock:Zone Name="Section E" />
-                </div>
-                <div class="col-md-6">
-                    <Rock:Zone Name="Section F" />
-                </div>
+        <div class="row">
+            <div class="col-md-6">
+                <Rock:Zone Name="Section E" />
             </div>
-        </section>
+            <div class="col-md-6">
+                <Rock:Zone Name="Section F" />
+            </div>
+        </div>
+    </section>
 
-        <!-- End Content Area -->
-    [[ endcontent ]]
-{% endsitemaster %}
+    <!-- End Content Area -->
+</Rock:ParentLayout>

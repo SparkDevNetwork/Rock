@@ -58,6 +58,19 @@ namespace Rock.Web.v2
 
         #endregion
 
+        #region Constructors
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="LavaPageLayoutContext"/> class.
+        /// </summary>
+        /// <param name="themeName">The name of the theme that the layout belongs to.</param>
+        public LavaPageLayoutContext( string themeName )
+        {
+            ThemeName = themeName;
+        }
+
+        #endregion
+
         #region Methods
 
         /// <summary>

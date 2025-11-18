@@ -69,22 +69,24 @@ namespace Rock.Web.v2
         /// file.
         /// </summary>
         /// <param name="layoutPath">The full path and filename to the template file.</param>
+        /// <param name="themeName">The name of the theme that the layout belongs to.</param>
         /// <param name="lavaEngine">The Lava engine that will be used to render the templates later.</param>
         /// <returns>An instance of <see cref="LavaPageLayout"/> that represents the pre-parsed template.</returns>
-        public LavaPageLayout GetLayout( string layoutPath, ILavaEngine lavaEngine )
+        public LavaPageLayout GetLayout( string layoutPath, string themeName, ILavaEngine lavaEngine )
         {
-            return _layoutCache.GetOrAdd( layoutPath, CreateLayout, lavaEngine );
+            return _layoutCache.GetOrAdd( layoutPath, ( p, a ) => CreateLayout( p, a.themeName, a.lavaEngine ), (themeName, lavaEngine) );
         }
 
         /// <summary>
         /// Creates a new layout for the specified file.
         /// </summary>
         /// <param name="layoutPath">The full path and filename to the template file.</param>
+        /// <param name="themeName">The name of the theme that the layout belongs to.</param>
         /// <param name="lavaEngine">The Lava engine that will be used to render the templates later.</param>
         /// <returns>An instance of <see cref="LavaPageLayout"/> that represents the pre-parsed template.</returns>
-        internal LavaPageLayout CreateLayout( string layoutPath, ILavaEngine lavaEngine )
+        internal LavaPageLayout CreateLayout( string layoutPath, string themeName, ILavaEngine lavaEngine )
         {
-            var context = new LavaPageLayoutContext();
+            var context = new LavaPageLayoutContext( themeName );
             var nodes = ProcessLayout( layoutPath, context, 10 );
             var templateContent = string.Join( string.Empty, nodes.Select( n => n.ToHtml() ) );
 

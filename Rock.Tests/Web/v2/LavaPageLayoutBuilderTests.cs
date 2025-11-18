@@ -52,14 +52,14 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
     <!-- Set the viewport width to device width for mobile -->
 	<meta name=""viewport"" content=""width=device-width, initial-scale=1.0, user-scalable=no"">
 
-    {{ Content.css }}
+    <Rock:RenderContent name=""css""></Rock:RenderContent>
 
 	<!-- Included CSS Files -->
 	<link rel=""stylesheet"" href=""{{ '~~/Styles/theme.css' | ResolveRockUrl | FingerprintUrl }}""/>
 
     <script src=""{{ '~~/Assets/Scripts/theme.js' | ResolveRockUrl | FingerprintUrl }}""></script> 
 
-    {{ Content.head }}
+    <Rock:RenderContent name=""head""></Rock:RenderContent>
 
 </head>
 <body id=""body"">
@@ -123,10 +123,10 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
         </nav>
 
         <div id=""content-wrapper"">
-            {{ Content.Feature }}
+            <Rock:RenderContent name=""feature""></Rock:RenderContent>
 
             <div class=""main-content"">
-                <Rock:RenderSection name=""Main""></Rock:RenderSection>
+                <Rock:RenderBody></Rock:RenderBody>
 
                 <div class=""main-footer"">
                     <Rock:Zone Name=""Footer"" />
@@ -140,76 +140,74 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
 </html>
 ";
 
-            var fullWidthLava = @"<Rock:ParentLayout src='/master.lava'>
-    <Rock:Section name=""Main"">
-        <!-- Page Title -->
-        <section id=""secPageTitle"" class=""page-header fullwidth"">
-            <div class=""page-title"">
-                <h1 class=""title""><Rock:PageIcon /> <Rock:PageTitle /></h1>
-                <Rock:PageBreadCrumbs />
-                <Rock:PageDescription />
+            var fullWidthLava = @"<Rock:ParentLayout src:""~~/Layouts/SiteMaster.lava"">
+    <!-- Page Title -->
+    <section id=""secPageTitle"" class=""page-header fullwidth"">
+        <div class=""page-title"">
+            <h1 class=""title""><Rock:PageIcon /> <Rock:PageTitle /></h1>
+            <Rock:PageBreadCrumbs />
+            <Rock:PageDescription />
+        </div>
+        <Rock:Zone Name=""Context"" CssClass=""zone-context"" />
+    </section>
+
+    <!-- Start Content Area -->
+
+    <section id=""page-content"">
+
+        <!-- Ajax Error -->
+        <div class=""alert alert-danger ajax-error no-index"" style=""display:none"">
+            <p><strong>Error</strong></p>
+            <span class=""ajax-error-message""></span>
+        </div>
+
+        <div class=""row"">
+            <div class=""col-md-12"">
+                <Rock:Zone Name=""Feature"" />
             </div>
-            <Rock:Zone Name=""Context"" CssClass=""zone-context"" />
-        </section>
+        </div>
 
-        <!-- Start Content Area -->
-
-        <section id=""page-content"">
-
-            <!-- Ajax Error -->
-            <div class=""alert alert-danger ajax-error no-index"" style=""display:none"">
-                <p><strong>Error</strong></p>
-                <span class=""ajax-error-message""></span>
+        <div class=""row"">
+            <div class=""col-md-12"">
+                <Rock:Zone Name=""Main"" />
             </div>
+        </div>
 
-            <div class=""row"">
-                <div class=""col-md-12"">
-                    <Rock:Zone Name=""Feature"" />
-                </div>
+        <div class=""row"">
+            <div class=""col-md-12"">
+                <Rock:Zone Name=""Section A"" />
             </div>
+        </div>
 
-            <div class=""row"">
-                <div class=""col-md-12"">
-                    <Rock:Zone Name=""Main"" />
-                </div>
+        <div class=""row"">
+            <div class=""col-md-4"">
+                <Rock:Zone Name=""Section B"" />
             </div>
-
-            <div class=""row"">
-                <div class=""col-md-12"">
-                    <Rock:Zone Name=""Section A"" />
-                </div>
+            <div class=""col-md-4"">
+                <Rock:Zone Name=""Section C"" />
             </div>
-
-            <div class=""row"">
-                <div class=""col-md-4"">
-                    <Rock:Zone Name=""Section B"" />
-                </div>
-                <div class=""col-md-4"">
-                    <Rock:Zone Name=""Section C"" />
-                </div>
-                <div class=""col-md-4"">
-                    <Rock:Zone Name=""Section D"" />
-                </div>
+            <div class=""col-md-4"">
+                <Rock:Zone Name=""Section D"" />
             </div>
+        </div>
 
-            <div class=""row"">
-                <div class=""col-md-6"">
-                    <Rock:Zone Name=""Section E"" />
-                </div>
-                <div class=""col-md-6"">
-                    <Rock:Zone Name=""Section F"" />
-                </div>
+        <div class=""row"">
+            <div class=""col-md-6"">
+                <Rock:Zone Name=""Section E"" />
             </div>
-        </section>
+            <div class=""col-md-6"">
+                <Rock:Zone Name=""Section F"" />
+            </div>
+        </div>
+    </section>
 
-        <!-- End Content Area -->
-    </Rock:Section>
+    <!-- End Content Area -->
 </Rock:ParentLayout>
 ";
 
             var fileProvider = GetMockFileProvider(
-                new[] { "/master.lava", mainLava },
-                new[] { "/fullwidth.lava", fullWidthLava }
+                new[] { "/Layouts/RockNextGen/SiteMaster.lava", mainLava },
+                new[] { "/Layouts/RockNextGen/FullWidth.lava", fullWidthLava }
             );
 
             using ( TestHelper.CreateScopedRockApp( ConfigureServices ) )
@@ -220,18 +218,18 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
 
                 //for ( int i = 0; i < 1_000; i++ )
                 //{
-                //    var layout = builder.CreateLayout( "/fullwidth.lava", engine );
+                //    var layout = builder.CreateLayout( "/Layouts/RockNextGen/FullWidth.lava", engine );
                 //}
 
                 //var iterations = 1_000;
                 //var sw = System.Diagnostics.Stopwatch.StartNew();
                 //for ( int i = 0; i < iterations; i++ )
                 //{
-                //    var layout2 = builder.CreateLayout( "/fullwidth.lava", engine );
+                //    var layout2 = builder.CreateLayout( "/Layouts/RockNextGen/FullWidth.lava", engine );
                 //}
                 //sw.Stop();
 
-                var layout = builder.CreateLayout( "/fullwidth.lava", engine );
+                var layout = builder.CreateLayout( "/Layouts/RockNextGen/FullWidth.lava", "RockNextGen", engine );
 
                 for ( int i = 0; i < 1_000; i++ )
                 {
@@ -248,7 +246,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 }
                 sw.Stop();
 
-                throw new Exception( $"Elapsed ms per iteration: {sw.Elapsed.TotalMilliseconds / iterations}" );
+                Console.WriteLine( $"Elapsed ms per iteration: {sw.Elapsed.TotalMilliseconds / iterations}" );
             }
         }
 
@@ -273,8 +271,8 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 var builder = new LavaPageLayoutFactory( fileProvider );
                 var engine = GetMockLavaEngine();
 
-                var layout = builder.GetLayout( "/main.lava", engine );
-                var layout2 = builder.GetLayout( "/main.lava", engine );
+                var layout = builder.GetLayout( "/main.lava", "RockNextGen", engine );
+                var layout2 = builder.GetLayout( "/main.lava", "RockNextGen", engine );
 
                 Assert.AreSame( layout, layout2 );
             }
@@ -302,7 +300,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 var builder = new LavaPageLayoutFactory( fileProvider );
                 var engine = GetMockLavaEngine();
 
-                var layout = builder.CreateLayout( "/main.lava", engine );
+                var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
 
                 Assert.Contains( "<div>parent</div>", layout.Source );
             }
@@ -335,7 +333,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 var builder = new LavaPageLayoutFactory( fileProvider );
                 var engine = GetMockLavaEngine();
 
-                var layout = builder.CreateLayout( "/layout.lava", engine );
+                var layout = builder.CreateLayout( "/layout.lava", "RockNextGen", engine );
 
                 Assert.Contains( "<div>child</div>", layout.Source );
                 Assert.DoesNotContain( "<div>parent</div>", layout.Source );
@@ -371,7 +369,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 var builder = new LavaPageLayoutFactory( fileProvider );
                 var engine = GetMockLavaEngine();
 
-                var layout = builder.CreateLayout( "/layout.lava", engine );
+                var layout = builder.CreateLayout( "/layout.lava", "RockNextGen", engine );
 
                 Assert.Contains( "<div>child</div>", layout.Source );
                 Assert.DoesNotContain( "<div>parent</div>", layout.Source );
@@ -400,7 +398,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 var builder = new LavaPageLayoutFactory( fileProvider );
                 var engine = GetMockLavaEngine();
 
-                var layout = builder.CreateLayout( "/main.lava", engine );
+                var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
 
                 Assert.Contains( "<div>parent</div>", layout.Source );
             }
@@ -428,7 +426,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 var builder = new LavaPageLayoutFactory( fileProvider );
                 var engine = GetMockLavaEngine();
 
-                var layout = builder.CreateLayout( "/main.lava", engine );
+                var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
 
                 Assert.Contains( "<div>parent</div>", layout.Source );
             }
@@ -452,7 +450,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 var builder = new LavaPageLayoutFactory( fileProvider );
                 var engine = GetMockLavaEngine();
 
-                var layout = builder.CreateLayout( "/layout.lava", engine );
+                var layout = builder.CreateLayout( "/layout.lava", "RockNextGen", engine );
 
                 Assert.IsEmpty( layout.Source );
             }
