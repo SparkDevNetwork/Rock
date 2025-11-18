@@ -372,8 +372,8 @@ namespace Rock.Model
                 .Where( p => blockGuidDictionary.Keys.Contains( p.Guid ) || blockGuidDictionary.Values.Contains( p.Guid ) )
                 .ToDictionary( p => p.Guid, p => p.Id );
 
-            var htmlContents = htmlContentService.Queryable().Where( a =>
-                blockIntDictionary.Values.Contains( a.BlockId ) )
+            var htmlContents = htmlContentService.Queryable().Where( a => a.BlockId.HasValue &&
+                blockIntDictionary.Values.Contains( a.BlockId.Value ) )
                 .ToList();
 
             foreach ( var htmlContent in htmlContents )

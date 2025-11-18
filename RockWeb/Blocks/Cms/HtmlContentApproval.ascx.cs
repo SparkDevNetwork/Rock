@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.Cms
                     }
 
                     rockContext.SaveChanges();
-                    HtmlContentService.FlushCachedContent( htmlContent.BlockId, htmlContent.EntityValue );
+                    HtmlContentService.FlushCachedContent( htmlContent.BlockId.Value, htmlContent.EntityValue );
                 }
 
                 BindGrid();
@@ -264,7 +264,7 @@ namespace RockWeb.Blocks.Cms
                 .Where( a => a.Value == "True" )
                 .Select( a => a.EntityId );
 
-            var qry = htmlContentService.Queryable().Where( a => attributeValueQry.Contains( a.BlockId ) );
+            var qry = htmlContentService.Queryable().Where( a => a.BlockId.HasValue && attributeValueQry.Contains( a.BlockId.Value ) );
 
             // Filter by approved/unapproved
             if ( ddlApprovedFilter.SelectedIndex > -1 )
