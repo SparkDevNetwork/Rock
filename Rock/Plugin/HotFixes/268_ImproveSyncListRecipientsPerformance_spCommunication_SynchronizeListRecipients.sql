@@ -19,7 +19,7 @@
 </doc>
 */
 
-ALTER PROCEDURE [dbo].[spCommunication_SynchronizeListRecipients]
+CREATE PROCEDURE [dbo].[spCommunication_SynchronizeListRecipients]
     @CommunicationId INT
 AS
 BEGIN
@@ -197,7 +197,7 @@ BEGIN
                 AND p.[PrimaryAliasId] IS NOT NULL
                 AND (
                     -- Either the communication isn't tied to any personalization segments.
-       @PersonalizationSegmentCount = 0
+                    @PersonalizationSegmentCount = 0
                     -- OR.. filter down to only those list members who are in the specified
                     -- personalization segments.
                     OR (

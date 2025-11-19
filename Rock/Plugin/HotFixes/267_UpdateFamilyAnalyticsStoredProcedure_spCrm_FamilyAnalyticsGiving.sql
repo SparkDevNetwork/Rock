@@ -1,4 +1,4 @@
-ALTER PROCEDURE [dbo].[spCrm_FamilyAnalyticsGiving]
+CREATE PROCEDURE [dbo].[spCrm_FamilyAnalyticsGiving]
 	
 AS
 BEGIN

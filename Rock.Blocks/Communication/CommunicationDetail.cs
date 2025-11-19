@@ -499,53 +499,7 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult GetRecipientGridData()
         {
-            var communicationQuery = GetCommunicationQueryFromPageParameter();
-            if ( communicationQuery == null )
-            {
-                return ActionBadRequest();
-            }
-
-            // Eager-load related entities needed for authorization checks.
-            var communicationWithRecipientRows = communicationQuery
-                .AsNoTracking()
-                .Select( c => new
-                {
-                    Communication = c,
-                    RecipientRows = c.Recipients
-                        .Where( r => r.PersonAlias != null )
-                        .Select( r => new CommunicationRecipientRow
-                        {
-                            Person = r.PersonAlias.Person,
-                            CampusName = r.PersonAlias.Person.PrimaryCampus != null
-                                ? r.PersonAlias.Person.PrimaryCampus.Name
-                                : string.Empty,
-
-                            CommunicationRecipientId = r.Id,
-                            Status = r.Status,
-                            StatusNote = r.StatusNote,
-                            MediumEntityTypeId = r.MediumEntityTypeId,
-
-                            SendDateTime = r.SendDateTime,
-                            DeliveredDateTime = r.DeliveredDateTime,
-                            LastOpenedDateTime = r.OpenedDateTime,
-                            UnsubscribeDateTime = r.UnsubscribeDateTime,
-                            SpamComplaintDateTime = r.SpamComplaintDateTime,
-
-                            LastActivityDateTime = (
-                                    r.Status == CommunicationRecipientStatus.Failed
-                                    || r.Status == CommunicationRecipientStatus.Cancelled
-                                ) ? r.ModifiedDateTime : null
-                        } )
-                } )
-                .AsEnumerable() // Materialize the query.
-                .Select( a => new CommunicationWithRecipientRows
-                {
-                    Communication = a.Communication,
-                    RecipientRows = a.RecipientRows.ToList()
-                } )
-                .FirstOrDefault();
-
-            var communication = communicationWithRecipientRows?.Communication;
+            var communication = GetCommunicationQueryFromPageParameter()?.FirstOrDefault();
             if ( communication == null )
             {
                 return ActionBadRequest( $"Unable to find {CommunicationFriendlyName}." );
@@ -556,11 +510,43 @@ namespace Rock.Blocks.Communication
                 return ActionUnauthorized( EditModeMessage.NotAuthorizedToView( CommunicationFriendlyName ) );
             }
 
+            var recipientRows = new CommunicationRecipientService( RockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( cr =>
+                    cr.CommunicationId == communication.Id
+                    && cr.PersonAliasId.HasValue
+                )
+                .Select( r => new CommunicationRecipientRow
+                {
+                    Person = r.PersonAlias.Person,
+                    CampusName = r.PersonAlias.Person.PrimaryCampus != null
+                                ? r.PersonAlias.Person.PrimaryCampus.Name
+                                : string.Empty,
+
+                    CommunicationRecipientId = r.Id,
+                    Status = r.Status,
+                    StatusNote = r.StatusNote,
+                    MediumEntityTypeId = r.MediumEntityTypeId,
+
+                    SendDateTime = r.SendDateTime,
+                    DeliveredDateTime = r.DeliveredDateTime,
+                    LastOpenedDateTime = r.OpenedDateTime,
+                    UnsubscribeDateTime = r.UnsubscribeDateTime,
+                    SpamComplaintDateTime = r.SpamComplaintDateTime,
+
+                    LastActivityDateTime = (
+                                    r.Status == CommunicationRecipientStatus.Failed
+                                    || r.Status == CommunicationRecipientStatus.Cancelled
+                                ) ? r.ModifiedDateTime : null
+                } )
+                .ToList();
+
             // Load interactions so we can supplement each row with this data.
             var groupedInteractions = new GroupedInteractions( GetInteractions( communication.Id ) );
 
             // A local function to ensure each row reflects the recipient's most recent activity datetime.
-            void TrySetLastActivityDateTime( CommunicationRecipientRow row, DateTime? activityDateTime )
+            static void TrySetLastActivityDateTime( CommunicationRecipientRow row, DateTime? activityDateTime )
             {
                 if ( !activityDateTime.HasValue )
                 {
@@ -573,7 +559,7 @@ namespace Rock.Blocks.Communication
                 }
             }
 
-            foreach ( var row in communicationWithRecipientRows.RecipientRows )
+            foreach ( var row in recipientRows )
             {
                 // Set the last activity datetime based on info available directly on the communication recipient record.
                 TrySetLastActivityDateTime( row, row.SendDateTime );
@@ -598,7 +584,7 @@ namespace Rock.Blocks.Communication
                 }
             }
 
-            var people = communicationWithRecipientRows.RecipientRows
+            var people = recipientRows
                 .Select( r => r.Person )
                 .ToList();
 
@@ -613,7 +599,7 @@ namespace Rock.Blocks.Communication
 
             var builder = GetRecipientGridBuilder( ( CommunicationType ) communication.CommunicationType );
             var gridDataBag = builder.Build(
-                communicationWithRecipientRows.RecipientRows
+                recipientRows
                     .OrderByDescending( r => r.LastActivityDateTime )
                     .ThenBy( r => r.Person.LastName )
                     .ThenBy( r => r.Person.FirstName )
@@ -917,7 +903,13 @@ namespace Rock.Blocks.Communication
 
             var communicationService = new CommunicationService( RockContext );
 
-            var newCommunicationId = communicationService.CopyWithBulkInsert( communication.Id, GetCurrentPerson()?.PrimaryAliasId );
+            var copyArgs = new CommunicationService.CopyArgs
+            {
+                IsRecipientCopyingDisabled = false,
+                IsFutureSendDateCopyingDisabled = true
+            };
+
+            var newCommunicationId = communicationService.Copy( communication.Id, GetCurrentPerson()?.PrimaryAliasId, copyArgs )?.Id;
             if ( !newCommunicationId.HasValue )
             {
                 return ActionInternalServerError( $"Unable to duplicate the {CommunicationFriendlyName}." );

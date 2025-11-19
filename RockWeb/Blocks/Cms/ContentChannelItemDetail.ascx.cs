@@ -372,6 +372,7 @@ namespace RockWeb.Blocks.Cms
             ContentChannelItem contentItem = GetContentItem( rockContext );
 
             if ( contentItem != null &&
+                IsUserAuthorized( Authorization.EDIT ) &&
                 contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 StructuredContentHelper structuredContentHelper = null;
@@ -1050,6 +1051,7 @@ namespace RockWeb.Blocks.Cms
             if ( contentItem != null &&
                 contentItem.ContentChannelType != null &&
                 contentItem.ContentChannel != null &&
+                IsUserAuthorized( Authorization.EDIT ) &&
                 contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 hfIsDirty.Value = "false";

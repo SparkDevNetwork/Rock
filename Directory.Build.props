@@ -34,7 +34,8 @@
     <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-9pq7-rcxv-47vq" />
   </ItemGroup>
 
-  <PropertyGroup Label="Normalise stack trace file locations">
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" Label="Normalise stack trace file locations">
+    <!-- This interferes with things like Unit Tests, so only map paths on Release builds. The full path in an exception can display during debugging. -->
     <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=\</PathMap>
   </PropertyGroup>
 </Project>

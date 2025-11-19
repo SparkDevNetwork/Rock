@@ -435,7 +435,7 @@ namespace Rock.Model
 
                     // If they don't want to include entities without a name
                     // then exclude them from the results.
-                    if ( !options.IncludeUnnamedEntityItems )
+                    if ( result != null && !options.IncludeUnnamedEntityItems )
                     {
                         result = result.Where( a => a.Name != null && a.Name != string.Empty );
                     }
