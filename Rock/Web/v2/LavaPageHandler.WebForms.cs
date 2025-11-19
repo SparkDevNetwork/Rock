@@ -14,12 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using System.Web;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Primitives;
 
 using Rock.Configuration;
 using Rock.Lava;
@@ -36,7 +39,9 @@ namespace Rock.Web.v2
 
         public LavaPageHandler( string filename, RockRequestContext rockRequestContext )
         {
-            _renderer = new LavaPageRenderer( File.ReadAllText( filename ), LavaService.GetCurrentEngine(), rockRequestContext );
+            var factory = new LavaPageLayoutFactory( new StaticFileProvider() );
+            var layout = factory.GetLayout( filename, "RockNextGen", LavaService.GetCurrentEngine() );
+            _renderer = new LavaPageRenderer( layout.Template, LavaService.GetCurrentEngine(), rockRequestContext );
             _rockRequestContext = rockRequestContext;
         }
 
@@ -54,6 +59,51 @@ namespace Rock.Web.v2
             if ( internalAccessor != null )
             {
                 internalAccessor.RockRequestContext = null;
+            }
+        }
+
+        private class StaticFileProvider : IFileProvider
+        {
+            public IDirectoryContents GetDirectoryContents( string subpath )
+            {
+                throw new System.NotImplementedException();
+            }
+
+            public IFileInfo GetFileInfo( string subpath )
+            {
+                return new StaticFileInfo( subpath );
+            }
+
+            public IChangeToken Watch( string filter )
+            {
+                throw new System.NotImplementedException();
+            }
+        }
+
+        private class StaticFileInfo : IFileInfo
+        {
+            private readonly string _path;
+
+            public bool Exists => File.Exists( _path );
+
+            public long Length => throw new NotImplementedException();
+
+            public string PhysicalPath => throw new NotImplementedException();
+
+            public string Name => throw new NotImplementedException();
+
+            public DateTimeOffset LastModified => throw new NotImplementedException();
+
+            public bool IsDirectory => throw new NotImplementedException();
+
+            public StaticFileInfo( string path )
+            {
+                _path = path;
+            }
+
+            public Stream CreateReadStream()
+            {
+                return File.OpenRead( _path );
             }
         }
     }

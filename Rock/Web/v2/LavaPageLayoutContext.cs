@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Linq;
 
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
@@ -33,6 +34,11 @@ namespace Rock.Web.v2
         /// Represents the various levels of nesting layout files.
         /// </summary>
         private readonly List<ContextLevel> _levels = new List<ContextLevel>();
+
+        /// <summary>
+        /// The zones that have been defined somewhere in the layout.
+        /// </summary>
+        private readonly Dictionary<string, LavaPageZone> _zones = new Dictionary<string, LavaPageZone>();
 
         #endregion
 
@@ -116,6 +122,29 @@ namespace Rock.Web.v2
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Adds a zone definition to the layout context.
+        /// </summary>
+        /// <param name="name">The name of the zone to add.</param>
+        /// <param name="classes">The additional CSS classes to add to the zone container.</param>
+        public void AddZone( string name, string classes )
+        {
+            _zones[name] = new LavaPageZone
+            {
+                Name = name,
+                Classes = classes
+            };
+        }
+
+        /// <summary>
+        /// Gets the defined zones for the layout.
+        /// </summary>
+        /// <returns>A collection of <see cref="LavaPageZone"/> that represent the zones.</returns>
+        public IReadOnlyCollection<LavaPageZone> GetZones()
+        {
+            return _zones.Values.ToList();
         }
 
         /// <summary>

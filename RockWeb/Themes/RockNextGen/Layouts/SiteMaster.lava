@@ -51,8 +51,8 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
             <a href="{{ '~' | ResolveRockUrl }}" title="Rock RMS" class="navbar-brand-corner no-logo"></a>
 
             <div id="fixed-header" class="header-content" role="navigation">
-                <div class="navbar-zone-login"><Rock:Zone Name="Login" /></div>
-                <div class="navbar-zone-header"><Rock:Zone Name="Header" /></div>
+                <div class="navbar-zone-login"><Rock:Zone Name="Login"></Rock:Zone></div>
+                <div class="navbar-zone-header"><Rock:Zone Name="Header"></Rock:Zone></div>
 
                 <!-- Page Title -->
                 {% if Page.PageDisplayTitle == true and PageTitle != empty %}
@@ -96,7 +96,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
         </nav>
 
         <nav class="navbar-default navbar-static-side" role="navigation">
-            <Rock:Zone Name="Navigation" CssClass="zone-navigation" />
+            <Rock:Zone Name="Navigation" CssClass="zone-navigation"></Rock:Zone>
         </nav>
 
         <div id="content-wrapper">
@@ -106,7 +106,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 <Rock:RenderBody></Rock:RenderBody>
 
                 <div class="main-footer">
-                    <Rock:Zone Name="Footer" />
+                    <Rock:Zone Name="Footer"></Rock:Zone>
                 </div>
             </div>
         </div>

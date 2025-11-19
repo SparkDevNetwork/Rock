@@ -92,7 +92,7 @@ namespace Rock.Web.v2
 
             var result = lavaEngine.ParseTemplate( templateContent );
 
-            return new LavaPageLayout( result.Template, templateContent, context.Dependencies );
+            return new LavaPageLayout( result.Template, templateContent, context.GetZones(), context.Dependencies );
         }
 
         /// <summary>
@@ -154,7 +154,7 @@ namespace Rock.Web.v2
                 textNode.TextContent = Regex.Replace( textNode.TextContent, "\n\n+", "\n" );
             }
 
-            ProcessNodes( document.DocumentElement, context, 0 );
+            ProcessNodes( document, document.DocumentElement, context, 0 );
 
             return new List<INode> { document.DocumentElement };
         }
@@ -175,7 +175,7 @@ namespace Rock.Web.v2
             var container = document.CreateElement( "div" );
             container.Append( nodes.ToArray() );
 
-            ProcessNodes( container, context, maxDepth );
+            ProcessNodes( document, container, context, maxDepth );
 
             return container.ChildNodes.ToList();
         }
@@ -184,10 +184,11 @@ namespace Rock.Web.v2
         /// Process the custom nodes in the layout to build. This will modify
         /// the <paramref name="container"/> in place when making changes.
         /// </summary>
+        /// <param name="document">The document that should be used when creating new nodes.</param>
         /// <param name="container">The container element that represents the current layout.</param>
         /// <param name="context">The context for the entire render operation.</param>
         /// <param name="maxDepth">The maximum depth allowed for recursion.</param>
-        private void ProcessNodes( IElement container, LavaPageLayoutContext context, int maxDepth )
+        private void ProcessNodes( IDocument document, IElement container, LavaPageLayoutContext context, int maxDepth )
         {
             ProcessSectionNodes( container, context );
             ProcessRenderBodyNode( container, context );
@@ -197,6 +198,10 @@ namespace Rock.Web.v2
             if ( maxDepth > 0 )
             {
                 ProcessParentLayoutNodes( container, context, maxDepth );
+            }
+            else
+            {
+                ProcessZoneNodes( document, container, context );
             }
         }
 
@@ -234,6 +239,36 @@ namespace Rock.Web.v2
                 }
 
                 sectionElement.Remove();
+            }
+        }
+
+        /// <summary>
+        /// <para>
+        /// Processes any child 'Rock:Zone' nodes. These define the zones that
+        /// are available to render content into. This should only be called on
+        /// the root layout.
+        /// </para>
+        /// </summary>
+        /// <param name="document">The document that should be used when creating new nodes.</param>
+        /// <param name="container">The container element that represents the current layout.</param>
+        /// <param name="context">The context for the entire render operation.</param>
+        private void ProcessZoneNodes( IDocument document, IElement container, LavaPageLayoutContext context )
+        {
+            var zoneElements = container.QuerySelectorAll( "Rock\\:Zone" );
+
+            foreach ( var zoneElement in zoneElements )
+            {
+                var zoneName = zoneElement.GetAttribute( "name" );
+                var zoneClasses = zoneElement.GetAttribute( "class" );
+
+                if ( zoneName.IsNotNullOrWhiteSpace() )
+                {
+                    context.AddZone( zoneName, zoneClasses );
+                }
+
+                var textNode = document.CreateTextNode( $"{{{{ Zones.{zoneName.Replace( " ", string.Empty )} }}}}" );
+                zoneElement.Before( textNode );
+                zoneElement.Remove();
             }
         }
 
@@ -377,12 +412,15 @@ namespace Rock.Web.v2
 
         public string Source { get; }
 
+        public IReadOnlyCollection<LavaPageZone> Zones { get; }
+
         public IReadOnlyList<string> Dependencies { get; }
 
-        public LavaPageLayout( ILavaTemplate template, string source, IReadOnlyList<string> dependencies )
+        public LavaPageLayout( ILavaTemplate template, string source, IReadOnlyCollection<LavaPageZone> zones, IReadOnlyList<string> dependencies )
         {
             Template = template;
             Source = source;
+            Zones = zones;
             Dependencies = dependencies;
         }
     }

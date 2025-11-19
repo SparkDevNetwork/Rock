@@ -50,7 +50,7 @@ namespace Rock.Web.v2
     {
         private const string LegacyBlockTypeSuffix = "(Legacy)";
 
-        private readonly string _layoutTemplate;
+        private readonly ILavaTemplate _layoutTemplate;
 
         private readonly ILavaEngine _engine;
 
@@ -64,9 +64,9 @@ namespace Rock.Web.v2
 
         private bool _canAdministrateBlockOnPage = false;
 
-        public LavaPageRenderer( string layoutText, ILavaEngine engine, RockRequestContext rockRequestContext )
+        public LavaPageRenderer( ILavaTemplate template, ILavaEngine engine, RockRequestContext rockRequestContext )
         {
-            _layoutTemplate = layoutText;
+            _layoutTemplate = template;
             _engine = engine;
             _rockRequestContext = rockRequestContext;
 
@@ -140,7 +140,7 @@ namespace Rock.Web.v2
                 }
             }
 
-            return document.ToHtml( new LavaPageHtmlFormatter() );
+            return document.ToHtml();
         }
 
         internal async Task RenderBlocksAsync( IHtmlDocument document, IHtmlCollection<IElement> zones )

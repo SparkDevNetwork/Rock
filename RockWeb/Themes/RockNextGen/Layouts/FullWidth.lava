@@ -1,4 +1,4 @@
-<Rock:ParentLayout src:"~~/Layouts/SiteMaster.lava">
+<Rock:ParentLayout src="~~/Layouts/SiteMaster.lava">
     <!-- Page Title -->
     <section id="secPageTitle" class="page-header fullwidth">
         <div class="page-title">
@@ -6,7 +6,7 @@
             <Rock:PageBreadCrumbs />
             <Rock:PageDescription />
         </div>
-        <Rock:Zone Name="Context" CssClass="zone-context" />
+        <Rock:Zone Name="Context" CssClass="zone-context"></Rock:Zone>
     </section>
 
     <!-- Start Content Area -->
@@ -21,40 +21,40 @@
 
         <div class="row">
             <div class="col-md-12">
-                <Rock:Zone Name="Feature" />
+                <Rock:Zone Name="Feature"></Rock:Zone>
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-12">
-                <Rock:Zone Name="Main" />
+                <Rock:Zone Name="Main"></Rock:Zone>
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-12">
-                <Rock:Zone Name="Section A" />
+                <Rock:Zone Name="Section A"></Rock:Zone>
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-4">
-                <Rock:Zone Name="Section B" />
+                <Rock:Zone Name="Section B"></Rock:Zone>
             </div>
             <div class="col-md-4">
-                <Rock:Zone Name="Section C" />
+                <Rock:Zone Name="Section C"></Rock:Zone>
             </div>
             <div class="col-md-4">
-                <Rock:Zone Name="Section D" />
+                <Rock:Zone Name="Section D"></Rock:Zone>
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-6">
-                <Rock:Zone Name="Section E" />
+                <Rock:Zone Name="Section E"></Rock:Zone>
             </div>
             <div class="col-md-6">
-                <Rock:Zone Name="Section F" />
+                <Rock:Zone Name="Section F"></Rock:Zone>
             </div>
         </div>
     </section>
