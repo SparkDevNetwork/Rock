@@ -30,9 +30,10 @@ namespace Rock.Migrations
         public override void Up()
         {
             DropForeignKey( "dbo.HtmlContent", "BlockId", "dbo.Block" );
-            DropIndex( "dbo.HtmlContent", new[] { "BlockId" } );
+            // There is no need to drop the index in this case.
+            //DropIndex( "dbo.HtmlContent", new[] { "BlockId" } );
             AlterColumn( "dbo.HtmlContent", "BlockId", c => c.Int() );
-            CreateIndex( "dbo.HtmlContent", "BlockId" );
+            //CreateIndex( "dbo.HtmlContent", "BlockId" );
 
             // Instead of the scaffolded AddForeignKey( "dbo.HtmlContent", "BlockId", "dbo.Block", "Id" );
             // we want a ON DELETE NULL (cascade null).
@@ -40,8 +41,8 @@ namespace Rock.Migrations
                 ALTER TABLE [dbo].[HtmlContent]
                 ADD CONSTRAINT [FK_dbo.HtmlContent_dbo.Block_BlockId] FOREIGN KEY ([BlockId])
                 REFERENCES [dbo].[Block] ([Id])
-                ON DELETE SET NULL;" 
-            );
+                ON DELETE SET NULL;
+            " );
         }
 
         /// <summary>
@@ -53,10 +54,12 @@ namespace Rock.Migrations
             Sql( @"
                 UPDATE [dbo].[HtmlContent]
                 SET [BlockId] = (SELECT TOP 1 [Id] FROM [dbo].[Block] ORDER BY [Id])
+                , ForeignKey='AllowNullBlockIdForHtmlContent'
                 WHERE [BlockId] IS NULL
             " );
 
             DropForeignKey( "dbo.HtmlContent", "BlockId", "dbo.Block" );
+            // In this case, we _do_ have to drop the index before altering the column
             DropIndex( "dbo.HtmlContent", new[] { "BlockId" } );
             AlterColumn( "dbo.HtmlContent", "BlockId", c => c.Int( nullable: false ) );
             CreateIndex( "dbo.HtmlContent", "BlockId" );
