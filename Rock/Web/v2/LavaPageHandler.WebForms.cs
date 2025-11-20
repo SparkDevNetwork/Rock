@@ -41,7 +41,7 @@ namespace Rock.Web.v2
         {
             var factory = new LavaPageLayoutFactory( new StaticFileProvider() );
             var layout = factory.GetLayout( filename, "RockNextGen", LavaService.GetCurrentEngine() );
-            _renderer = new LavaPageRenderer( layout.Template, LavaService.GetCurrentEngine(), rockRequestContext );
+            _renderer = new LavaPageRenderer( layout, LavaService.GetCurrentEngine(), rockRequestContext );
             _rockRequestContext = rockRequestContext;
         }
 

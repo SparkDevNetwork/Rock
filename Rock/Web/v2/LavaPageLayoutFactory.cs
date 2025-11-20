@@ -155,6 +155,13 @@ namespace Rock.Web.v2
             }
 
             ProcessNodes( document, document.DocumentElement, context, 0 );
+            ProcessZoneNodes( document, document.DocumentElement, context );
+
+            var headElement = document.QuerySelector( "head" );
+            var bodyElement = document.QuerySelector( "body" );
+
+            headElement?.Append( document.CreateTextNode( "{{ HeadEndContent }}" ) );
+            bodyElement?.Append( document.CreateTextNode( "{{ BodyEndContent }}" ) );
 
             return new List<INode> { document.DocumentElement };
         }
@@ -194,14 +201,10 @@ namespace Rock.Web.v2
             ProcessRenderBodyNode( container, context );
             ProcessRenderSectionNodes( container, context );
 
-            // If this is not a root layout, then process any parent layouts.
+            // If we have not reached max depth, check for parent layouts.
             if ( maxDepth > 0 )
             {
                 ProcessParentLayoutNodes( container, context, maxDepth );
-            }
-            else
-            {
-                ProcessZoneNodes( document, container, context );
             }
         }
 
@@ -263,11 +266,12 @@ namespace Rock.Web.v2
 
                 if ( zoneName.IsNotNullOrWhiteSpace() )
                 {
-                    context.AddZone( zoneName, zoneClasses );
+                    var zone = context.AddZone( zoneName, zoneClasses );
+
+                    var textNode = document.CreateTextNode( $"{{{{ Zones.{zone.Key} }}}}" );
+                    zoneElement.Before( textNode );
                 }
 
-                var textNode = document.CreateTextNode( $"{{{{ Zones.{zoneName.Replace( " ", string.Empty )} }}}}" );
-                zoneElement.Before( textNode );
                 zoneElement.Remove();
             }
         }

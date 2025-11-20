@@ -29,14 +29,14 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
     <!-- Set the viewport width to device width for mobile -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
-    <Rock:RenderContent name="css"></Rock:RenderContent>
+    <Rock:RenderSection name="css"></Rock:RenderSection>
 
 	<!-- Included CSS Files -->
 	<link rel="stylesheet" href="{{ '~~/Styles/theme.css' | ResolveRockUrl | FingerprintUrl }}"/>
 
     <script src="{{ '~~/Assets/Scripts/theme.js' | ResolveRockUrl | FingerprintUrl }}"></script> 
 
-    <Rock:RenderContent name="head"></Rock:RenderContent>
+    <Rock:RenderSection name="head"></Rock:RenderSection>
 
 </head>
 <body id="body">
@@ -100,7 +100,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
         </nav>
 
         <div id="content-wrapper">
-            <Rock:RenderContent name="feature"></Rock:RenderContent>
+            <Rock:RenderSection name="feature"></Rock:RenderSection>
 
             <div class="main-content">
                 <Rock:RenderBody></Rock:RenderBody>
@@ -112,6 +112,12 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
         </div>
 
     </div>
+
+    <script>
+        Sys.Application.add_load(BindNavEvents);
+        Sys.Application.add_load(PreventNumberScroll);
+        Sys.Application.add_load(HandleBackForwardCache);
+    </script>
 
 </body>
 </html>

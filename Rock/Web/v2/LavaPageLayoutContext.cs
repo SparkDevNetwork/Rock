@@ -129,13 +129,18 @@ namespace Rock.Web.v2
         /// </summary>
         /// <param name="name">The name of the zone to add.</param>
         /// <param name="classes">The additional CSS classes to add to the zone container.</param>
-        public void AddZone( string name, string classes )
+        public LavaPageZone AddZone( string name, string classes )
         {
-            _zones[name] = new LavaPageZone
+            var zone = new LavaPageZone
             {
                 Name = name,
-                Classes = classes
+                Key = name.Replace( " ", string.Empty ),
+                Classes = classes,
             };
+
+            _zones[name] = zone;
+
+            return zone;
         }
 
         /// <summary>

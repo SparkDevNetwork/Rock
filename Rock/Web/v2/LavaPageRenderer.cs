@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -50,7 +51,7 @@ namespace Rock.Web.v2
     {
         private const string LegacyBlockTypeSuffix = "(Legacy)";
 
-        private readonly ILavaTemplate _layoutTemplate;
+        private readonly LavaPageLayout _layout;
 
         private readonly ILavaEngine _engine;
 
@@ -64,9 +65,9 @@ namespace Rock.Web.v2
 
         private bool _canAdministrateBlockOnPage = false;
 
-        public LavaPageRenderer( ILavaTemplate template, ILavaEngine engine, RockRequestContext rockRequestContext )
+        public LavaPageRenderer( LavaPageLayout layout, ILavaEngine engine, RockRequestContext rockRequestContext )
         {
-            _layoutTemplate = template;
+            _layout = layout;
             _engine = engine;
             _rockRequestContext = rockRequestContext;
 
@@ -75,6 +76,19 @@ namespace Rock.Web.v2
 
         internal async Task<string> RenderAsync()
         {
+            // Add a temporary shim to support Sys.Application.add_load();
+            _rockRequestContext.Response.AddScriptToHead( "RockSysApplication", @"(function() {
+    window.Sys = window.Sys || {};
+    window.Sys.Application = window.Sys.Application || {};
+    window.Sys.Application.add_load = window.Sys.Application.add_load || ((fn) => {
+        setTimeout(fn, 0);
+    });
+})();" );
+            _rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Scripts/Bundles/RockLibs" ), true );
+            _rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Scripts/Bundles/RockUi" ), true );
+            // DSH: In my quick testing on WebForms the validation.js part isn't actually used, and ajaxClientErrorHandler doesn't apply to non-WebForms.
+            //_rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Scripts/Bundles/RockValidation" ), true );
+
             var mergeFields = _rockRequestContext.GetCommonMergeFields();
 
             mergeFields.Add( "Page", _rockRequestContext.Page );
@@ -95,57 +109,70 @@ namespace Rock.Web.v2
 
             context.SetEnabledCommands( "", "," );
 
-            var parameters = LavaRenderParameters.WithContext( context );
-            var result = _engine.RenderTemplate( _layoutTemplate, parameters );
-
-            var html = result.Text;
-
-            var document = await _htmlParser.ParseDocumentAsync( html, CancellationToken.None );
-            var zoneElements = document.QuerySelectorAll( "Rock\\:Zone" );
-
-            await RenderBlocksAsync( document, zoneElements );
+            context.SetMergeField( "Zones", await RenderBlocksAsync( _layout.Zones ) );
 
             if ( _pageNeedsObsidian )
             {
-                InjectObsidian( document );
+                InjectObsidian( null );
             }
+
+            var headEndContent = string.Empty;
+            var bodyEndContent = string.Empty;
 
             if ( _rockRequestContext.Response is RockResponseBase responseBase )
             {
-                var headElement = document.QuerySelector( "head" );
-                var bodyElement = document.QuerySelector( "body" );
-
                 foreach ( var responseElement in responseBase.GetHtmlElements() )
                 {
-                    var element = document.CreateElement( responseElement.Name );
+                    var sb = new StringBuilder();
+
+                    sb.Append( $"<{responseElement.Name}" );
 
                     if ( responseElement.Attributes != null )
                     {
                         foreach ( var attr in responseElement.Attributes )
                         {
-                            element.SetAttribute( attr.Key, attr.Value );
+                            sb.Append( $" {attr.Key}=\"{attr.Value.EncodeXml( true ) }\"" );
                         }
                     }
 
-                    element.InnerHtml = responseElement.Content;
+                    sb.Append( ">" );
+
+                    if ( responseElement.Name != "link" )
+                    {
+                        if ( responseElement.Content.IsNotNullOrWhiteSpace() )
+                        {
+                            sb.Append( responseElement.Content );
+                        }
+
+                        sb.Append( "</" );
+                        sb.Append( responseElement.Name );
+                        sb.Append( ">" );
+                    }
 
                     if ( responseElement.Location == Enums.Net.ResponseElementLocation.Header )
                     {
-                        headElement.Append( element );
+                        headEndContent += sb.ToString();
                     }
                     else
                     {
-                        bodyElement.Append( element );
+                        bodyEndContent += sb.ToString();
                     }
                 }
             }
 
-            return document.ToHtml();
+            context.SetMergeField( "HeadEndContent", headEndContent );
+            context.SetMergeField( "BodyEndContent", bodyEndContent );
+
+            var parameters = LavaRenderParameters.WithContext( context );
+            var result = _engine.RenderTemplate( _layout.Template, parameters );
+
+            return result.Text;
         }
 
-        internal async Task RenderBlocksAsync( IHtmlDocument document, IHtmlCollection<IElement> zones )
+        internal async Task<Dictionary<string, string>> RenderBlocksAsync( IReadOnlyCollection<LavaPageZone> zones )
         {
             var pageBlocks = _rockRequestContext.Page.Blocks;
+            var zoneContent = new Dictionary<string, StringBuilder>();
 
             foreach ( var block in pageBlocks )
             {
@@ -157,7 +184,7 @@ namespace Rock.Web.v2
                 bool canView = block.IsAuthorized( Authorization.VIEW, _rockRequestContext.CurrentPerson );
 
                 // Get the zone element that the block is in.
-                var zone = zones.FirstOrDefault( z => z.GetAttribute( "name" ) == block.Zone );
+                var zone = zones.FirstOrDefault( z => z.Name == block.Zone );
 
                 // Make sure there is a Zone for the block, and make sure user
                 // has access to view block instance.
@@ -167,10 +194,82 @@ namespace Rock.Web.v2
 
                     if ( markup != null )
                     {
-                        zone.AppendChild( document.CreateTextNode( markup ) );
+                        if ( !zoneContent.TryGetValue( zone.Key, out var sb ) )
+                        {
+                            sb = new StringBuilder();
+                            zoneContent.Add( zone.Key, sb );
+                        }
+
+                        sb.Append( markup );
                     }
                 }
             }
+
+            return zoneContent.ToDictionary( kvp => kvp.Key,
+                kvp => RenderZone( zones.Single( z => z.Key == kvp.Key ), kvp.Value.ToString() ) );
+        }
+
+        internal string RenderZone( LavaPageZone zone, string blockContent )
+        {
+            var sb = new StringBuilder();
+            var canAdministrate = _rockRequestContext.Page.IsAuthorized( Authorization.ADMINISTRATE, _rockRequestContext.CurrentPerson );
+
+            sb.Append( "<div id=\"zone-" );
+            sb.Append( zone.Key.ToLower() );
+            sb.Append( "\" class=\"zone-instance" );
+
+            if ( canAdministrate )
+            {
+                sb.Append( " can-configure" );
+            }
+
+            sb.Append( "\"" );
+
+            if ( zone.Classes.IsNotNullOrWhiteSpace() )
+            {
+                sb.Append( " " );
+                sb.Append( zone.Classes );
+            }
+
+            sb.Append( ">" );
+
+            if ( canAdministrate )
+            {
+                var configUrl = $"~/ZoneBlocks/{_rockRequestContext.Page.Id}/{zone.Key}?t=Zone Block&pb=&sb=Done";
+
+                // Zone content configuration bar.
+                sb.Append( "<div class=\"zone-configuration config-bar\">" );
+
+                sb.Append( "<a href=\"#\" class=\"zoneinstance-config\">" );
+                sb.Append( "<i class=\"ti ti-circle-arrow-right\"></i>" );
+                sb.Append( "</a>" );
+
+                sb.Append( "<div class=\"zone-configuration-bar\">" );
+
+                sb.Append( "<span>" );
+                sb.Append( zone.Name );
+                sb.Append( "</span>" );
+
+                sb.Append( "<a id=\"aBlockConfig-\");" );
+                sb.Append( zone.Key );
+                sb.Append( "\" class=\"zone-blocks\" href=\"javascript: Rock.controls.modal.show($(this), '" );
+                sb.Append( _rockRequestContext.ResolveRockUrl( configUrl ) );
+                sb.Append( "')\" title=\"Zone Blocks\" zone=\"" );
+                sb.Append( zone.Key );
+                sb.Append( "\">" );
+                sb.Append( "<i class=\"ti ti-border-all\"></i>" );
+                sb.Append( "</a>" );
+
+                sb.Append( "</div>" );
+
+                sb.Append( "</div>" );
+            }
+
+            sb.Append( "<div class=\"zone-content\">" );
+            sb.Append( blockContent );
+            sb.Append( "</div></div>" );
+
+            return sb.ToString();
         }
 
         private async Task<string> RenderBlockAsync( BlockCache block, bool canEdit, bool canAdministrate )
@@ -298,7 +397,7 @@ Obsidian.onReady(() => {{
 Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
 ";
 
-            if ( _pageHasObsidianBlock )
+            if ( _pageHasObsidianBlock && document != null )
             {
                 var bodyElement = document.QuerySelector( "body" );
 
@@ -310,7 +409,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
 
         private static string WrapBlockContent( string blockHtml, BlockCache block, bool canEdit, bool canAdministrate )
         {
-            var str = StringBuilderPool.Obtain();
+            var str = new StringBuilder();
 
             var blockTypeCss = block.BlockType != null
                 ? block.BlockType.Name.ReplaceCaseInsensitive( LegacyBlockTypeSuffix, string.Empty ).Trim()
@@ -359,7 +458,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
 
             // TODO: Block Post-HTML
 
-            return str.ToPool();
+            return str.ToString();
         }
 
         [ExcludeFromCodeCoverage]

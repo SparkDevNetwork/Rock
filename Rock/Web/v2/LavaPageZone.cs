@@ -27,6 +27,12 @@ namespace Rock.Web.v2
         public string Name { get; set; }
 
         /// <summary>
+        /// The unique key for the zone, this is usually a sanitized version
+        /// of the name.
+        /// </summary>
+        public string Key { get; set; }
+
+        /// <summary>
         /// Additional CSS classes to apply to the zone container.
         /// </summary>
         public string Classes { get; set; }
