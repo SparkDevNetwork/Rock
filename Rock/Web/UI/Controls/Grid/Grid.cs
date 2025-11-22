@@ -2184,7 +2184,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
             // Safely retrieve the cancellation token so Rock can cancel the export if the request is aborted.
             // Checking if the request is cancelled is cheap but it makes the code less readable,
             // thus cancellation checks should only be added before performance-heavy regions.
-            var cancellationToken = Context?.GetOwinContext()?.Request?.CallCancelled ?? CancellationToken.None;
+            var cancellationToken = CancellationToken.None;
 
             // Create the excel file.
             using ( var excel = new ExcelPackage() )
