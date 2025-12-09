@@ -1597,7 +1597,7 @@ WHERE [Guid] = '8af769e9-972c-4f40-8344-89ff4b07fcbd'
     <li><strong>value</strong> - The text to initially set the control to.</li>
     <li><strong>size</strong> - Sets the vertical size of the input. Valid values: xs, sm, md, lg, xl, xxl.</li>
     <li><strong>width</strong> - Adjusts the width of the input. By default the width will grow to the size of the container. Valid values: xs, sm, md, lg.</li>
-    <li><strong>preeaddon</strong> - Places an add-on component before the input to provide extra context or functionality (like an icon or text). To place an icon here use the pattern &lt;i class=""fa fa-envelope""&gt;&lt;/i&gt;.</li>
+    <li><strong>preaddon</strong> - Places an add-on component before the input to provide extra context or functionality (like an icon or text). To place an icon here use the pattern &lt;i class=""fa fa-envelope""&gt;&lt;/i&gt;.</li>
     <li><strong>postaddon</strong> - Places an add-on component after the input to provide extra context or functionality (like an icon or text). To place an icon here use the pattern &lt;i class=""fa fa-envelope""&gt;&lt;/i&gt;.</li><li><b>isrequired </b>(false) - Establishes whether making a selection is necessary.
 </li><li><b>validationmessage </b>(Please enter a value.) - Message to display when the value is not valid.</li>
     <li><strong>additionalattributes</strong> -  Additional attributes to include on the input control.</li>
