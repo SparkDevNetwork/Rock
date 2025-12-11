@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Moq;
 
+using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
+using Rock.Net;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
+using Rock.Web.Cache;
 using Rock.Web.v2;
 
 namespace Rock.Tests.Web.v2
@@ -48,12 +53,12 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
 
 
     <!-- Set the viewport width to device width for mobile -->
-	<meta name=""viewport"" content=""width=device-width, initial-scale=1.0, user-scalable=no"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0, user-scalable=no"">
 
     <Rock:RenderContent name=""css""></Rock:RenderContent>
 
-	<!-- Included CSS Files -->
-	<link rel=""stylesheet"" href=""{{ '~~/Styles/theme.css' | ResolveRockUrl | FingerprintUrl }}""/>
+    <!-- Included CSS Files -->
+    <link rel=""stylesheet"" href=""{{ '~~/Styles/theme.css' | ResolveRockUrl | FingerprintUrl }}""/>
 
     <script src=""{{ '~~/Assets/Scripts/theme.js' | ResolveRockUrl | FingerprintUrl }}""></script> 
 
@@ -275,302 +280,6 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 var layout2 = builder.GetLayout( "/main.lava", "RockNextGen", engine );
 
                 Assert.AreSame( layout, layout2 );
-            }
-        }
-
-        #endregion
-
-        #region RockPageIcon
-
-        [TestMethod]
-        public void RockPageIcon_WithIcon_RendersIcon()
-        {
-            var mainLava = @"<!DOCTYPE html>
-<html>
-<head>
-</head>
-<body id=""body"">
-    <Rock:PageIcon></Rock:PageIcon>
-</body>
-</html>
-";
-
-            var fileProvider = GetMockFileProvider(
-                new[] { "/main.lava", mainLava }
-            );
-
-            using ( TestHelper.CreateScopedRockApp( ConfigureServices ) )
-            {
-                var builder = new LavaPageLayoutFactory( fileProvider );
-                var engine = new FluidEngine();
-                var renderContext = engine.NewRenderContext();
-
-                renderContext.SetMergeField( "Page", new Dictionary<string, object>
-                {
-                    ["PageDisplayIcon"] = true
-                } );
-                renderContext.SetMergeField( "PageIconCssClass", "ti ti-home" );
-
-                var layout = builder.GetLayout( "/main.lava", "RockNextGen", engine );
-                var renderResult = engine.RenderTemplate( layout.Template, renderContext );
-
-                Assert.Contains( "ti ti-home", renderResult.Text );
-            }
-        }
-
-        [TestMethod]
-        public void RockPageIcon_WithEmptyIcon_DoesNotRenderIcon()
-        {
-            var mainLava = @"<!DOCTYPE html>
-<html>
-<head>
-</head>
-<body id=""body"">
-    <Rock:PageIcon></Rock:PageIcon>
-</body>
-</html>
-";
-
-            var fileProvider = GetMockFileProvider(
-                new[] { "/main.lava", mainLava }
-            );
-
-            using ( TestHelper.CreateScopedRockApp( ConfigureServices ) )
-            {
-                var builder = new LavaPageLayoutFactory( fileProvider );
-                var engine = new FluidEngine();
-                var renderContext = engine.NewRenderContext();
-
-                renderContext.SetMergeField( "Page", new Dictionary<string, object>
-                {
-                    ["PageDisplayIcon"] = true
-                } );
-                renderContext.SetMergeField( "PageIconCssClass", "" );
-
-                var layout = builder.GetLayout( "/main.lava", "RockNextGen", engine );
-                var renderResult = engine.RenderTemplate( layout.Template, renderContext );
-
-                Assert.DoesNotContain( "page-icon", renderResult.Text );
-            }
-        }
-
-        [TestMethod]
-        public void RockPageIcon_WithNullIcon_DoesNotRenderIcon()
-        {
-            var mainLava = @"<!DOCTYPE html>
-<html>
-<head>
-</head>
-<body id=""body"">
-    <Rock:PageIcon></Rock:PageIcon>
-</body>
-</html>
-";
-
-            var fileProvider = GetMockFileProvider(
-                new[] { "/main.lava", mainLava }
-            );
-
-            using ( TestHelper.CreateScopedRockApp( ConfigureServices ) )
-            {
-                var builder = new LavaPageLayoutFactory( fileProvider );
-                var engine = new FluidEngine();
-                var renderContext = engine.NewRenderContext();
-
-                renderContext.SetMergeField( "Page", new Dictionary<string, object>
-                {
-                    ["PageDisplayIcon"] = true
-                } );
-                renderContext.SetMergeField( "PageIconCssClass", null );
-
-                var layout = builder.GetLayout( "/main.lava", "RockNextGen", engine );
-                var renderResult = engine.RenderTemplate( layout.Template, renderContext );
-
-                Assert.DoesNotContain( "page-icon", renderResult.Text );
-            }
-        }
-
-        [TestMethod]
-        public void RockPageIcon_WithoutPageDisplayIcon_DoesNotRenderIcon()
-        {
-            var mainLava = @"<!DOCTYPE html>
-<html>
-<head>
-</head>
-<body id=""body"">
-    <Rock:PageIcon></Rock:PageIcon>
-</body>
-</html>
-";
-
-            var fileProvider = GetMockFileProvider(
-                new[] { "/main.lava", mainLava }
-            );
-
-            using ( TestHelper.CreateScopedRockApp( ConfigureServices ) )
-            {
-                var builder = new LavaPageLayoutFactory( fileProvider );
-                var engine = new FluidEngine();
-                var renderContext = engine.NewRenderContext();
-
-                renderContext.SetMergeField( "Page", new Dictionary<string, object>
-                {
-                    ["PageDisplayIcon"] = false
-                } );
-                renderContext.SetMergeField( "PageIconCssClass", "ti ti-home" );
-
-                var layout = builder.GetLayout( "/main.lava", "RockNextGen", engine );
-                var renderResult = engine.RenderTemplate( layout.Template, renderContext );
-
-                Assert.DoesNotContain( "page-icon", renderResult.Text );
-            }
-        }
-
-        #endregion
-
-        #region RockPageTitle
-
-        [TestMethod]
-        public void RockPageTitle_WithTitle_RendersTitle()
-        {
-            var mainLava = @"<!DOCTYPE html>
-<html>
-<head>
-</head>
-<body id=""body"">
-    <Rock:PageTitle></Rock:PageTitle>
-</body>
-</html>
-";
-
-            var fileProvider = GetMockFileProvider(
-                new[] { "/main.lava", mainLava }
-            );
-
-            using ( TestHelper.CreateScopedRockApp( ConfigureServices ) )
-            {
-                var builder = new LavaPageLayoutFactory( fileProvider );
-                var engine = new FluidEngine();
-                var renderContext = engine.NewRenderContext();
-
-                renderContext.SetMergeField( "Page", new Dictionary<string, object>
-                {
-                    ["PageDisplayTitle"] = true
-                } );
-                renderContext.SetMergeField( "PageTitle", "homepage" );
-
-                var layout = builder.GetLayout( "/main.lava", "RockNextGen", engine );
-                var renderResult = engine.RenderTemplate( layout.Template, renderContext );
-
-                Assert.Contains( "homepage", renderResult.Text );
-            }
-        }
-
-        [TestMethod]
-        public void RockPageTitle_WithEmptyTitle_DoesNotRenderTitle()
-        {
-            var mainLava = @"<!DOCTYPE html>
-<html>
-<head>
-</head>
-<body id=""body"">
-    AA<Rock:PageIcon></Rock:PageIcon>ZZ
-</body>
-</html>
-";
-
-            var fileProvider = GetMockFileProvider(
-                new[] { "/main.lava", mainLava }
-            );
-
-            using ( TestHelper.CreateScopedRockApp( ConfigureServices ) )
-            {
-                var builder = new LavaPageLayoutFactory( fileProvider );
-                var engine = new FluidEngine();
-                var renderContext = engine.NewRenderContext();
-
-                renderContext.SetMergeField( "Page", new Dictionary<string, object>
-                {
-                    ["PageDisplayTitle"] = true
-                } );
-                renderContext.SetMergeField( "PageTitle", "" );
-
-                var layout = builder.GetLayout( "/main.lava", "RockNextGen", engine );
-                var renderResult = engine.RenderTemplate( layout.Template, renderContext );
-
-                Assert.Contains( "AAZZ", renderResult.Text );
-            }
-        }
-
-        [TestMethod]
-        public void RockPageTitle_WithNullTitle_DoesNotRenderTitle()
-        {
-            var mainLava = @"<!DOCTYPE html>
-<html>
-<head>
-</head>
-<body id=""body"">
-    AA<Rock:PageIcon></Rock:PageIcon>ZZ
-</body>
-</html>
-";
-
-            var fileProvider = GetMockFileProvider(
-                new[] { "/main.lava", mainLava }
-            );
-
-            using ( TestHelper.CreateScopedRockApp( ConfigureServices ) )
-            {
-                var builder = new LavaPageLayoutFactory( fileProvider );
-                var engine = new FluidEngine();
-                var renderContext = engine.NewRenderContext();
-
-                renderContext.SetMergeField( "Page", new Dictionary<string, object>
-                {
-                    ["PageDisplayTitle"] = true
-                } );
-                renderContext.SetMergeField( "PageTitle", null );
-
-                var layout = builder.GetLayout( "/main.lava", "RockNextGen", engine );
-                var renderResult = engine.RenderTemplate( layout.Template, renderContext );
-
-                Assert.Contains( "AAZZ", renderResult.Text );
-            }
-        }
-
-        [TestMethod]
-        public void RockPageTitle_WithoutPageDisplayTitle_DoesNotRenderTitle()
-        {
-            var mainLava = @"<!DOCTYPE html>
-<html>
-<head>
-</head>
-<body id=""body"">
-    <Rock:PageIcon></Rock:PageIcon>
-</body>
-</html>
-";
-
-            var fileProvider = GetMockFileProvider(
-                new[] { "/main.lava", mainLava }
-            );
-
-            using ( TestHelper.CreateScopedRockApp( ConfigureServices ) )
-            {
-                var builder = new LavaPageLayoutFactory( fileProvider );
-                var engine = new FluidEngine();
-                var renderContext = engine.NewRenderContext();
-
-                renderContext.SetMergeField( "Page", new Dictionary<string, object>
-                {
-                    ["PageDisplayTitle"] = false
-                } );
-                renderContext.SetMergeField( "PageTitle", "homepage" );
-
-                var layout = builder.GetLayout( "/main.lava", "RockNextGen", engine );
-                var renderResult = engine.RenderTemplate( layout.Template, renderContext );
-
-                Assert.DoesNotContain( "homepage", renderResult.Text );
             }
         }
 

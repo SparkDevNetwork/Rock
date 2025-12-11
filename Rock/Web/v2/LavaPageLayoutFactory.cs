@@ -92,6 +92,11 @@ namespace Rock.Web.v2
 
             var result = lavaEngine.ParseTemplate( templateContent );
 
+            if ( result.Error != null )
+            {
+                throw result.Error;
+            }
+
             return new LavaPageLayout( result.Template, templateContent, context.GetZones(), context.Dependencies );
         }
 
@@ -229,6 +234,16 @@ namespace Rock.Web.v2
 
                 pageTitleElement.InsertBefore( nodes );
                 pageTitleElement.Remove();
+            }
+
+            var pageBreadCrumbsElements = container.QuerySelectorAll( "Rock\\:PageBreadCrumbs" );
+
+            foreach ( var pageBreadCrumbsElement in pageBreadCrumbsElements )
+            {
+                var nodes = context.Parser.ParseFragment( "<ol class=\"breadcrumb\">{% for crumb in BreadCrumbs %}{% if crumb.Active == true %}<li class=\"breadcrumb-item\"><a href=\"{{ crumb.Url }}\" rel=\"rocknofollow\">{{ crumb.Name }}</a></li>{% else %}<li class=\"breadcrumb-item\">{{ crumb.Name }}</li>{% endif %}{% endfor %}</ol>", document.Body ).ToArray();
+
+                pageBreadCrumbsElement.InsertBefore( nodes );
+                pageBreadCrumbsElement.Remove();
             }
         }
 

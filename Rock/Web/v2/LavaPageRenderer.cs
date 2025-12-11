@@ -113,6 +113,7 @@ namespace Rock.Web.v2
             mergeFields.Add( "Page", _rockRequestContext.Page );
             mergeFields.Add( "PageIconCssClass", _rockRequestContext.Page.IconCssClass );
             mergeFields.Add( "PageTitle", _rockRequestContext.Page.PageTitle );
+            mergeFields.Add( "BreadCrumbs", GetPageBreadCrumbs() );
 
             var context = _engine.NewRenderContext();
 
@@ -185,6 +186,8 @@ namespace Rock.Web.v2
             context.SetMergeField( "BodyEndContent", bodyEndContent );
 
             var parameters = LavaRenderParameters.WithContext( context );
+            parameters.ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Throw;
+
             var result = _engine.RenderTemplate( _layout.Template, parameters );
 
             return result.Text;
@@ -480,6 +483,20 @@ Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
             // TODO: Block Post-HTML
 
             return str.ToString();
+        }
+
+        private IReadOnlyCollection<LavaDataObject> GetPageBreadCrumbs()
+        {
+            var pageReference = new PageReference( _rockRequestContext.Page.Id,
+                0,
+                _rockRequestContext.GetPageParameters() as Dictionary<string, string>,
+                _rockRequestContext.QueryString );
+            var pageReferences = PageReference.GetBreadCrumbPageReferences( null, _rockRequestContext.Page, pageReference, null );
+
+            // Get the breadcrumbs and convert them into a lava object.
+            return pageReferences.SelectMany( pr => pr.BreadCrumbs )
+                .Select( b => new LavaDataObject( b ) )
+                .ToList();
         }
 
         [ExcludeFromCodeCoverage]
