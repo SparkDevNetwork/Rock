@@ -55,7 +55,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.HasCount( 1, theme.Fields );
             Assert.IsInstanceOfType( theme.Fields[0], typeof( VariableThemeField ) );
 
             var variableField = ( VariableThemeField ) theme.Fields[0];
@@ -143,7 +143,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.HasCount( 1, theme.Fields );
             var literalField = Assert.IsInstanceOfType<LiteralThemeField>( theme.Fields[0] );
             Assert.AreEqual( ThemeFieldType.Literal, literalField.Type );
         }
@@ -364,7 +364,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.HasCount( 1, theme.Fields );
             var textField = Assert.IsInstanceOfType<TextThemeField>( theme.Fields[0] );
             Assert.IsTrue( textField.IsMultiline );
         }
@@ -377,7 +377,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.HasCount( 1, theme.Fields );
             var textField = Assert.IsInstanceOfType<TextThemeField>( theme.Fields[0] );
             Assert.AreEqual( expectedWidth, textField.Width );
         }
@@ -743,7 +743,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.HasCount( 1, theme.Fields );
             var headingField = Assert.IsInstanceOfType<HeadingThemeField>( theme.Fields[0] );
             Assert.AreEqual( expectedTitle, headingField.Name );
             Assert.AreEqual( string.Empty, headingField.Description );
@@ -757,7 +757,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.HasCount( 1, theme.Fields );
             var headingField = Assert.IsInstanceOfType<HeadingThemeField>( theme.Fields[0] );
             Assert.AreEqual( expectedDescription, headingField.Description );
         }
@@ -773,7 +773,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.HasCount( 1, theme.Fields );
             Assert.IsInstanceOfType( theme.Fields[0], typeof( SpacerThemeField ) );
         }
 
@@ -801,7 +801,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.HasCount( 1, theme.Fields );
             var panelField = Assert.IsInstanceOfType<PanelThemeField>( theme.Fields[0] );
             Assert.AreEqual( expectedTitle, panelField.Name );
             Assert.IsFalse( panelField.IsExpanded );
@@ -816,7 +816,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.HasCount( 1, theme.Fields );
             var panelField = Assert.IsInstanceOfType<PanelThemeField>( theme.Fields[0] );
             Assert.IsTrue( panelField.IsExpanded );
         }
@@ -828,7 +828,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.HasCount( 1, theme.Fields );
             var panelField = Assert.IsInstanceOfType<PanelThemeField>( theme.Fields[0] );
             Assert.IsNotEmpty( panelField.Fields );
         }

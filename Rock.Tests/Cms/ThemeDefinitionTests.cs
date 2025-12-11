@@ -270,7 +270,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.HasCount( 1, theme.Fields );
             Assert.IsInstanceOfType( theme.Fields[0], typeof( LiteralThemeField ) );
         }
 
@@ -281,7 +281,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.HasCount( 1, theme.Fields );
             Assert.IsInstanceOfType( theme.Fields[0], typeof( ColorThemeField ) );
         }
 
@@ -292,7 +292,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.HasCount( 1, theme.Fields );
             Assert.IsInstanceOfType( theme.Fields[0], typeof( ImageThemeField ) );
         }
 
@@ -303,7 +303,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.HasCount( 1, theme.Fields );
             Assert.IsInstanceOfType( theme.Fields[0], typeof( TextThemeField ) );
         }
 
@@ -314,7 +314,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.HasCount( 1, theme.Fields );
             Assert.IsInstanceOfType( theme.Fields[0], typeof( FileThemeField ) );
         }
 
@@ -325,7 +325,7 @@ namespace Rock.Tests.Cms
 
             var theme = ThemeDefinition.Parse( json );
 
-            Assert.AreEqual( 1, theme.Fields.Count );
+            Assert.HasCount( 1, theme.Fields );
             Assert.IsInstanceOfType( theme.Fields[0], typeof( SwitchThemeField ) );
         }
 

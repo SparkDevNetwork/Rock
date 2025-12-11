@@ -23,7 +23,6 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
 using Rock.Tests.Integration.TestData.Crm;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Issues
@@ -85,7 +84,7 @@ namespace Rock.Tests.Integration.Issues
                     .Where( a => a.PersonAlias.Person.Guid == personGuid )
                     .ToList();
 
-            Assert.AreEqual( 1, personDuplicates.Count, "Duplicate entry expected but not found." );
+            Assert.HasCount( 1, personDuplicates, "Duplicate entry expected but not found." );
         }
 
         [TestMethod]
@@ -111,7 +110,7 @@ namespace Rock.Tests.Integration.Issues
 
             var results = Search( personSearchOptions );
 
-            Assert.AreEqual( 2, results.Count, "Search results expected but not found." );
+            Assert.HasCount( 2, results, "Search results expected but not found." );
         }
 
         private List<Person> Search( PersonService.PersonSearchOptions options )
@@ -130,7 +129,7 @@ namespace Rock.Tests.Integration.Issues
         {
             var results = SmartSearch( "Gagne" );
 
-            Assert.AreEqual( 2, results.Count, "Search results expected but not found." );
+            Assert.HasCount( 2, results, "Search results expected but not found." );
         }
 
         private List<string> SmartSearch( string name )

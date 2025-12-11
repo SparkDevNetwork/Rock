@@ -242,7 +242,9 @@ namespace Rock.Model
             target.OpenedDate = source.OpenedDate;
             target.Order = source.Order;
             target.PhoneNumber = source.PhoneNumber;
+            #pragma warning disable 612, 618
             target.ServiceTimes = source.ServiceTimes;
+            #pragma warning restore 612, 618
             target.ShortCode = source.ShortCode;
             target.TeamGroupId = source.TeamGroupId;
             target.TimeZoneId = source.TimeZoneId;

@@ -1360,7 +1360,6 @@ $('.template-form > .panel-body').on('validation-error', function() {
             _tbFormHeader.Label = "Form Header";
             _tbFormHeader.Help = "HTML to display above the fields <span class='tip tip-lava'></span>.";
             _tbFormHeader.EditorMode = CodeEditorMode.Html;
-            _tbFormHeader.EditorTheme = CodeEditorTheme.Rock;
             _tbFormHeader.EditorHeight = "100";
 
             _tbFormFooter = new CodeEditor();
@@ -1369,7 +1368,6 @@ $('.template-form > .panel-body').on('validation-error', function() {
             _tbFormFooter.Label = "Form Footer";
             _tbFormFooter.Help = "HTML to display below the fields <span class='tip tip-lava'></span>.";
             _tbFormFooter.EditorMode = CodeEditorMode.Html;
-            _tbFormFooter.EditorTheme = CodeEditorTheme.Rock;
             _tbFormFooter.EditorHeight = "100";
 
             _gFields = new Grid();

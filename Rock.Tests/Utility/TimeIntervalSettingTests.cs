@@ -2,7 +2,6 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Tests.Shared;
 using Rock.Utility;
 
 namespace Rock.Tests.Utility
@@ -91,7 +90,7 @@ namespace Rock.Tests.Utility
                 {1440, IntervalTimeUnit.Day },
             };
 
-            foreach(var key in testValues.Keys )
+            foreach ( var key in testValues.Keys )
             {
                 var expectedIntervalUnit = testValues[key];
 
@@ -208,7 +207,7 @@ namespace Rock.Tests.Utility
             {
                 var expectedIntervalMinutes = testValues[key];
 
-                actualValue.IntervalValue = key;    
+                actualValue.IntervalValue = key;
 
                 Assert.AreEqual( expectedIntervalMinutes, actualValue.IntervalMinutes );
             }

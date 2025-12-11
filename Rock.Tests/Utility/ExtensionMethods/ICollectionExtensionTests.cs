@@ -2,8 +2,6 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Tests.Shared;
-
 namespace Rock.Tests.Utility.ExtensionMethods
 {
     [TestClass]
@@ -37,9 +35,9 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             masterCollection.RemoveAll( deleteCollection );
 
-            Assert.AreEqual( 2, masterCollection.Count );
-            Assert.IsTrue( masterCollection.Contains( item1 ) );
-            Assert.IsTrue( masterCollection.Contains( item3 ) );
+            Assert.HasCount( 2, masterCollection );
+            Assert.Contains( item1, masterCollection );
+            Assert.Contains( item3, masterCollection );
         }
 
         [TestMethod]
@@ -55,9 +53,9 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             masterCollection.RemoveAll( deleteCollection );
 
-            Assert.AreEqual( 2, masterCollection.Count );
-            Assert.IsTrue( masterCollection.Contains( item1 ) );
-            Assert.IsTrue( masterCollection.Contains( item3 ) );
+            Assert.HasCount( 2, masterCollection );
+            Assert.Contains( item1, masterCollection );
+            Assert.Contains( item3, masterCollection );
         }
     }
 }

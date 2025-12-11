@@ -19,6 +19,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
+
 using Rock.Communication;
 using Rock.Communication.Transport;
 using Rock.Model;

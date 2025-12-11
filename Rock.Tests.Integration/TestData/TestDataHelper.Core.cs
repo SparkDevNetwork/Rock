@@ -23,7 +23,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.TestData
@@ -119,7 +118,7 @@ namespace Rock.Tests.Integration.TestData
                         }
                         if ( attributeCategory == null )
                         {
-                            throw new Exception( $"Invalid Category. [CategoryReference={ attributeArgs.CategoryIdentifier }]" );
+                            throw new Exception( $"Invalid Category. [CategoryReference={attributeArgs.CategoryIdentifier}]" );
                         }
 
                         newAttribute.Categories = new List<Category>();

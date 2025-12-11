@@ -34,8 +34,12 @@ namespace Rock.Badge.Component
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Lava Badge" )]
 
-    [CodeEditorField( "Display Text", "The text (or HTML) to display as a badge", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200 )]
+    [CodeEditorField( "Display Text",
+        Description = "The text (or HTML) to display as a badge",
+        EditorMode = CodeEditorMode.Lava )]
+
     [BooleanField( "Enable Debug", "Outputs the object graph to help create your Lava syntax.", false )]
+
     [Rock.SystemGuid.EntityTypeGuid( "95912004-62B5-4460-951F-D752427D44FE")]
     public class Liquid : BadgeComponent
     {

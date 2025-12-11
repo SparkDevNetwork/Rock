@@ -84,7 +84,6 @@ namespace RockWeb.Blocks.Cms
         "Template",
         Description = "The template to use when formatting the list of items.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 600,
         IsRequired = false,
         Category = "CustomSetting",

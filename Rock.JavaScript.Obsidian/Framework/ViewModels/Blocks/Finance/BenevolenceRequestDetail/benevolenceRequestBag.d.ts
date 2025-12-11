@@ -22,6 +22,7 @@
 //
 
 import { BenevolenceDocumentBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceDocumentBag";
+import { BenevolenceRequestWorkflowBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceRequestWorkflowBag";
 import { BenevolenceResultBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceResultBag";
 import { CampusBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/campusBag";
 import { PersonBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/personBag";
@@ -73,4 +74,7 @@ export type BenevolenceRequestBag = {
 
     /** Gets or sets the summary of the request result. */
     resultSummary?: string | null;
+
+    /** Gets or sets the collection of workflow options available for this request. */
+    workflows?: BenevolenceRequestWorkflowBag[] | null;
 };

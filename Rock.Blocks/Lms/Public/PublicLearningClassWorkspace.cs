@@ -60,7 +60,6 @@ namespace Rock.Blocks.Lms
         Key = AttributeKey.HeaderTemplate,
         Description = "The lava template to use to render the header on the page. Merge fields include: Course, Activities, Announcements, Facilitators, ContentPages and other Common Merge Fields. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = false,
         DefaultValue = AttributeDefault.HeaderTemplate,

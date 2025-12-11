@@ -7,7 +7,6 @@ using Moq;
 
 using Rock.CheckIn.v2.Labels;
 using Rock.CheckIn.v2.Labels.Renderers;
-using Rock.Tests.Shared;
 
 namespace Rock.Tests.CheckIn.v2.Labels.Renderers
 {

@@ -73,7 +73,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
 
         #region TitleCase
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( @"{{ ""men's gathering/get-together"" | TitleCase }}", "Men's Gathering/get-together" )]
         [DataRow( @"{{ 'mATTHEw 24:29-41 - KJV' | TitleCase }}", "Matthew 24:29-41 - KJV" )]
         public void TitleCase_TextWithPunctuation_PreservesPunctuation( string inputTemplate, string expectedOutput )
@@ -542,7 +542,7 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
         #region PageRoute
 
         [TestMethod]
-        [Ignore("The current documentation example is incorrect. It references a system setting that is undefined.")]
+        [Ignore( "The current documentation example is incorrect. It references a system setting that is undefined." )]
         public void PageRoute_DocumentationExample_EmitsExpectedOutput()
         {
             TestHelper.AssertTemplateOutput( "/WorkflowEntry/10/324",
@@ -571,7 +571,7 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
         public void PageRoute_ForPageNumberWithAssociatedRoute_EmitsUrlWithRoute()
         {
             var pageId = GetPageIdFromRouteName( "Admin" );
-            var simulator = new Http.TestLibrary.HttpSimulator("");
+            var simulator = new Http.TestLibrary.HttpSimulator( "" );
 
             using ( simulator.SimulateRequest() )
             {
@@ -629,7 +629,7 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
                 $"Test Communication ({_systemCommunicationTestGuid})",
                 CategoryCache.GetId( SystemGuid.Category.SYSTEM_COMMUNICATION_WORKFLOW.AsGuid() ).GetValueOrDefault() );
 
-            communication.Body = lavaTemplate; 
+            communication.Body = lavaTemplate;
 
             CommunicationsDataManager.Instance.SaveSystemCommunication( communication );
 

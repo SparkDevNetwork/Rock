@@ -249,7 +249,7 @@
             </ContentStack>
             <ContentStack title="Page Header Content"
                           description="Inject custom HTML, CSS, or scripts into the page header. This will be added to each page's head section.">
-                <CodeEditor v-model="pageHeaderContent" theme="rock" mode="text" :editorHeight="200" />
+                <CodeEditor v-model="pageHeaderContent" mode="text" :editorHeight="200" />
             </ContentStack>
         </ContentSection>
 

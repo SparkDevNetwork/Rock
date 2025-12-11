@@ -42,7 +42,6 @@ namespace RockWeb.Blocks.Event
         "Results Lava Template",
         Description = "The lava template for display the results of the search",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         Order = 0,
         IsRequired = false,
         Key = AttributeKey.ResultsLavaTemplate,

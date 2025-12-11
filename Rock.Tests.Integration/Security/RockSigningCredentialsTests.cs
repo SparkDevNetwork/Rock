@@ -42,7 +42,7 @@ namespace Rock.Tests.Integration.Security
 
             var rockSigningCredentials = ReflectionHelper.InstantiateInternalObject<IRockOidcSigningCredentials>( "Rock.Oidc.Configuration.RockOidcSigningCredentials", RockOidcSettings.GetDefaultSettings() );
             Assert.IsNotNull( rockSigningCredentials );
-            Assert.IsTrue( rockSigningCredentials.SigningKeys.Count > 0 );
+            Assert.IsNotEmpty( rockSigningCredentials.SigningKeys );
 
             var systemSettings = SystemSettings.GetValue( SystemSetting.OPEN_ID_CONNECT_RSA_KEYS );
             Assert.IsNotEmpty( systemSettings );
@@ -68,7 +68,7 @@ namespace Rock.Tests.Integration.Security
 
             var rockSigningCredentials = ReflectionHelper.InstantiateInternalObject<IRockOidcSigningCredentials>( "Rock.Oidc.Configuration.RockOidcSigningCredentials", RockOidcSettings.GetDefaultSettings() );
             Assert.IsNotNull( rockSigningCredentials );
-            Assert.AreEqual( 1, rockSigningCredentials.SigningKeys.Count );
+            Assert.HasCount( 1, rockSigningCredentials.SigningKeys );
 
             var actualParameters = rockSigningCredentials.SigningKeys[0].ExportParameters( true );
             var actualModulus = Convert.ToBase64String( actualParameters.Modulus, 0, actualParameters.Modulus.Length );
@@ -81,7 +81,7 @@ namespace Rock.Tests.Integration.Security
         public void RockSigningCredentials_AddANewKeyWhenTheOldKeyHasExpired()
         {
             var keyCreatedDate = DateTime.UtcNow.AddHours( -26 );
-            var SigningKeys = $@"[{{""KeyId"":""c5c66078-c88f-4a57-9294-61b04491803a"",""KeyCreatedDate"":""{keyCreatedDate.ToString("O")}"",""Parameters"":{{""Exponent"":""AQAB"",""Modulus"":""y99YHW6o5ym/Oeia3cGwFNYUxSFyQTrSpuX7j/2uV6HcVxqFV3Hlo/UC/st5bnUfIaIDX3egC8VeoDyRacsNogAvBDXYGUMQjGd6lwwfm5XFaZXcETi1JioU2Ddl3R21fWxooXBVuUQE7g8+6p5/yMnahA/T1JcVCDeeHU2RWZovtQOh+Y9n3q6eL6mbjtF6TghQazeiAyL3LtYkos6+WwY8Y9gaAWgB3CeZU6j1Ae/E+qGPuQq0v4mwibuDL8oRUk0NhCWb7CM2jIbMMXe3SBjbK+qy7hndAMNgwJ/qvSJWWuonkzqeCdStZnpiNQc34JKedGqBKLk+it8Di3dSMQ=="",""P"":""/GyNNQIDxQdiTkQ2JhQwvsjrtMxgKKlQW6ZpHUdCZLDbpyEBa8fHgotO2j6ug8MX5dWv8/71KraUoNmbCC0hT8h+c0BMgiKrxUtCyrOEK3xOTsO2crbsQxnGRE0hNLQccLFzcxM+eJ6wQG8j8bMJNRbmlOy/Re+kNbvco6IyQYs="",""Q"":""zsK2x2F1Zm/wj5Cc4Q1c08be6C6dO6R1w9ZEWCoiCBh6F6I2+LyqXETsb+JD8aaFFel6nvsXDIXJlTYRLBjPjHD+Oh9CWIaSa6Uw016FowOt5R+VZipwzVK9tN7u09bcxOBoDcw4DlKmFN3u7APtjm349XT1NoLl3zFt8/muOrM="",""DP"":""ZTt3ifmr31mtwCu096KDRhA4D0MjkUsN0iOz5i0M4GrZPHaNJldxmNYbooUe4fLc46zGKvlmA2JDyxpaBXZr9J44sCnqRQp4juA3AinqaLIqiYYN5oWbzPFKRVwVZBiTi1JvNYhTNnaVwtGPvcAKgkMT6EfmEbsgxPf5bZp/wy8="",""DQ"":""ZIH+u/lCSqOLux4/RJ9sSn5YCWHviPivTp2v53PDy0+quiZetpdv8R6IGPNSt/uMolQ3CWVhlPLMRT5dJqSA7/JVgweDBumT78QDchx2tgGp3MF3rIxg/U6FbZEZY90EwKedrWdisIO4vFgONqjKJ/yJkzhhozgKam7q1ji/W0U="",""InverseQ"":""QzsjDBVYCpvHcjvBWTkS1gD1M/R5v5h03rKuCQ8u5p8U2PpzltLjglthjQ/Phn7yvUL7dfxfBasbFTSTYpPB/fXX42cAcCu7cmD5Sppy4v/h61W6Dhq1zH7N5DrGrp8z56EvZKph16xZCPwt1L96R2LaN01wlE9de7ehd3XRGyY="",""D"":""hAG66VvUy9ExO8rMNBiM7gDsc/RDKc9vxJeXutV0xNNOe6v1ePiLzA0Cgn63wvjdToa8Dl3D6LtEmRZ+xXSwAByEVQKUSU8ucOsz6of0E2b363UYiKIiUXLgClxcfb8V2/+NBDNbnllXo9mFUJ+OeDGTZv1kmPu2p5pzq9+k5NGTDTNZgYQmWnqDY44bj2BvtrP28w0TFdLm6zoCrkl8RYx028Nt3Vr2uGqroVef6L56BCH4Z6cbGArYBB7TZwG4qreJ+UcQHkNyzWtx6vHcz24WNyR8ZdD92mPvqrc7rGULEISHFlE67yYn31My6/m1jga3UaJADMMe/CS1eu483Q==""}}}}]";
+            var SigningKeys = $@"[{{""KeyId"":""c5c66078-c88f-4a57-9294-61b04491803a"",""KeyCreatedDate"":""{keyCreatedDate.ToString( "O" )}"",""Parameters"":{{""Exponent"":""AQAB"",""Modulus"":""y99YHW6o5ym/Oeia3cGwFNYUxSFyQTrSpuX7j/2uV6HcVxqFV3Hlo/UC/st5bnUfIaIDX3egC8VeoDyRacsNogAvBDXYGUMQjGd6lwwfm5XFaZXcETi1JioU2Ddl3R21fWxooXBVuUQE7g8+6p5/yMnahA/T1JcVCDeeHU2RWZovtQOh+Y9n3q6eL6mbjtF6TghQazeiAyL3LtYkos6+WwY8Y9gaAWgB3CeZU6j1Ae/E+qGPuQq0v4mwibuDL8oRUk0NhCWb7CM2jIbMMXe3SBjbK+qy7hndAMNgwJ/qvSJWWuonkzqeCdStZnpiNQc34JKedGqBKLk+it8Di3dSMQ=="",""P"":""/GyNNQIDxQdiTkQ2JhQwvsjrtMxgKKlQW6ZpHUdCZLDbpyEBa8fHgotO2j6ug8MX5dWv8/71KraUoNmbCC0hT8h+c0BMgiKrxUtCyrOEK3xOTsO2crbsQxnGRE0hNLQccLFzcxM+eJ6wQG8j8bMJNRbmlOy/Re+kNbvco6IyQYs="",""Q"":""zsK2x2F1Zm/wj5Cc4Q1c08be6C6dO6R1w9ZEWCoiCBh6F6I2+LyqXETsb+JD8aaFFel6nvsXDIXJlTYRLBjPjHD+Oh9CWIaSa6Uw016FowOt5R+VZipwzVK9tN7u09bcxOBoDcw4DlKmFN3u7APtjm349XT1NoLl3zFt8/muOrM="",""DP"":""ZTt3ifmr31mtwCu096KDRhA4D0MjkUsN0iOz5i0M4GrZPHaNJldxmNYbooUe4fLc46zGKvlmA2JDyxpaBXZr9J44sCnqRQp4juA3AinqaLIqiYYN5oWbzPFKRVwVZBiTi1JvNYhTNnaVwtGPvcAKgkMT6EfmEbsgxPf5bZp/wy8="",""DQ"":""ZIH+u/lCSqOLux4/RJ9sSn5YCWHviPivTp2v53PDy0+quiZetpdv8R6IGPNSt/uMolQ3CWVhlPLMRT5dJqSA7/JVgweDBumT78QDchx2tgGp3MF3rIxg/U6FbZEZY90EwKedrWdisIO4vFgONqjKJ/yJkzhhozgKam7q1ji/W0U="",""InverseQ"":""QzsjDBVYCpvHcjvBWTkS1gD1M/R5v5h03rKuCQ8u5p8U2PpzltLjglthjQ/Phn7yvUL7dfxfBasbFTSTYpPB/fXX42cAcCu7cmD5Sppy4v/h61W6Dhq1zH7N5DrGrp8z56EvZKph16xZCPwt1L96R2LaN01wlE9de7ehd3XRGyY="",""D"":""hAG66VvUy9ExO8rMNBiM7gDsc/RDKc9vxJeXutV0xNNOe6v1ePiLzA0Cgn63wvjdToa8Dl3D6LtEmRZ+xXSwAByEVQKUSU8ucOsz6of0E2b363UYiKIiUXLgClxcfb8V2/+NBDNbnllXo9mFUJ+OeDGTZv1kmPu2p5pzq9+k5NGTDTNZgYQmWnqDY44bj2BvtrP28w0TFdLm6zoCrkl8RYx028Nt3Vr2uGqroVef6L56BCH4Z6cbGArYBB7TZwG4qreJ+UcQHkNyzWtx6vHcz24WNyR8ZdD92mPvqrc7rGULEISHFlE67yYn31My6/m1jga3UaJADMMe/CS1eu483Q==""}}}}]";
             var rockContext = new RockContext();
 
             rockContext.Database.ExecuteSqlCommand( $"DELETE Attribute WHERE [Key] = '{SystemSetting.OPEN_ID_CONNECT_RSA_KEYS}'" );
@@ -100,7 +100,7 @@ namespace Rock.Tests.Integration.Security
 
             var rockSigningCredentials = ReflectionHelper.InstantiateInternalObject<IRockOidcSigningCredentials>( "Rock.Oidc.Configuration.RockOidcSigningCredentials", oidcSettings );
             Assert.IsNotNull( rockSigningCredentials );
-            Assert.AreEqual( 2, rockSigningCredentials.SigningKeys.Count );
+            Assert.HasCount( 2, rockSigningCredentials.SigningKeys );
 
             var actualParameters = rockSigningCredentials.SigningKeys[1].ExportParameters( true );
             var actualModulus = Convert.ToBase64String( actualParameters.Modulus, 0, actualParameters.Modulus.Length );
@@ -162,7 +162,7 @@ namespace Rock.Tests.Integration.Security
 
             var rockSigningCredentials = ReflectionHelper.InstantiateInternalObject<IRockOidcSigningCredentials>( "Rock.Oidc.Configuration.RockOidcSigningCredentials", rockOidcSettings );
             Assert.IsNotNull( rockSigningCredentials );
-            Assert.AreEqual( 1, rockSigningCredentials.SigningKeys.Count );
+            Assert.HasCount( 1, rockSigningCredentials.SigningKeys );
 
             var actualParameters = rockSigningCredentials.SigningKeys[0].ExportParameters( true );
             var actualModulus = Convert.ToBase64String( actualParameters.Modulus, 0, actualParameters.Modulus.Length );

@@ -15,6 +15,10 @@
 // </copyright>
 //
 
+export const enum GridFieldName {
+    RowKey = "rowKey"
+}
+
 export const enum NavigationUrlKey {
     RowSelection = "RowSelection"
 }

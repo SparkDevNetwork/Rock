@@ -26,7 +26,6 @@ namespace Rock.Blocks.Cms
         "Additional Content Template",
         Description = "Lava template to use to display additional content on the page. This will be displayed in the sidebar below the section list.",
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
-        EditorTheme = Rock.Web.UI.Controls.CodeEditorTheme.Rock,
         Key = AttributeKey.AdditionalContentTemplate,
         Order = 0 )]
 

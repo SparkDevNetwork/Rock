@@ -24,7 +24,6 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
 
 using static Rock.Tests.Integration.TestData.EventsDataManager;
@@ -166,18 +165,29 @@ namespace Rock.Tests.Integration.Core.Lava
         {
             var effectiveDate = EventsDataManager.Instance.GetDefaultEffectiveDate();
 
-            // Get the first Wednesday of the month, then the next two Wednesdays 4 weeks apart.
-            var date1 = effectiveDate.GetNextWeekday( DayOfWeek.Wednesday );
+            // Get the first Wednesday of the month, then every other wednesday
+            // until we hit the cutoff date of 3 months.
+            var initialDate = effectiveDate.GetNextWeekday( DayOfWeek.Wednesday );
+            var validDates = new List<DateTime>();
+            var invalidDates = new List<DateTime>();
 
-            var date2 = date1.AddDays( 12 * 7 );
-
-            // Staff Meeting recurs every 2 weeks, so our date range of 3 months should not include the first meeting in month 4.
-            var dateInvalid = RockDateTime.New( date1.Year, date1.Month, 1 ).Value.AddMonths( 3 ).GetNextWeekday( DayOfWeek.Wednesday );
+            for ( var date = initialDate; ; date = date.AddDays( 14 ) )
+            {
+                if ( date < effectiveDate.AddMonths( 3 ) )
+                {
+                    validDates.Add( date );
+                }
+                else
+                {
+                    invalidDates.Add( date );
+                    break;
+                }
+            }
 
             AssertTestEventOccurrences( effectiveDate: null,
                 "3m",
-                validDateList: new List<DateTime> { date1, date2 },
-                invalidDateList: new List<DateTime> { dateInvalid } );
+                validDateList: validDates,
+                invalidDateList: invalidDates );
         }
 
         [TestMethod]

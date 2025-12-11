@@ -7,11 +7,12 @@
                 <div class="col-md-3">
                     <DropDownList v-model="benevolenceTypeIdString"
                                   label="Request Type"
-                                  :items="benevolenceRequestTypes"
+                                  :items="benevolenceRequestTypeItemBags"
                                   :enhanceForLongLists="false"
                                   :grouped="false"
                                   :multiple="false"
                                   :showBlankItem="true"
+                                  :disabled="isExistingRequest"
                                   rules="required" />
                 </div>
                 <div class="col-md-3">
@@ -60,19 +61,19 @@
                                   enableSelfSelection />
                 </div>
             </div>
-            <div class="row" v-if="isCampusPickerVisible">
+            <div class="row">
                 <div class="col-md-3">
                     <CampusPicker v-model="selectedCampus"
                                   label="Campus"
-                                  :showBlankItem="true"
-                                  @isVisible="(value) => { isCampusPickerVisible = value; }" />
+                                  :showBlankItem="true" />
                 </div>
             </div>
         </ContentStack>
     </ContentSection>
     <br>
     <ContentSection title="Requester"
-                    icon="ti ti-user-question">
+                    icon="ti ti-user-question"
+                    disableCollapse>
         <ContentStack>
             <div class="row">
                 <div class="col-md-3">
@@ -197,28 +198,29 @@
                      label="Description of Request"
                      textMode="multiline"
                      rules="required" />
-            <Label class="control-label mt-3">Related Documents</Label>
-            <div class="d-flex flex-row mb-2">
-                <FileUploader v-model="currentAttachment"
-                              :binaryFileTypeGuid="props.options.benevolenceDocumentBinaryFileTypeGuid"
-                              :disabled="isSavingAttachment"
-                              :uploadAsTemporary="true"
-                              @update:modelValue="onRequestDocumentAdded" />
-                <div v-if="requestDocuments.length > 0">
-                    <div class="d-flex flex-row flex-wrap">
-                        <div v-for="binaryFileAttachment in requestDocuments">
-                            <div v-if="binaryFileAttachment.isMarkedForDeletion == false" class="fileupload-thumbnail ml-2">
-                                <div class="fileupload-group">
-                                    <div>
-                                        <a :href="`/GetFile.ashx?guid=${binaryFileAttachment.guid}&fileName=${binaryFileAttachment.fileName}`" target="_blank" rel="noopener noreferrer" class="file-link file-exists">{{ binaryFileAttachment.fileName }}</a>
-                                        <div class="fileupload-remove">
-                                            <a :disabled="isSavingAttachment"><i class="ti ti-x remove-file" @click="onRequestDocumentRemoved(binaryFileAttachment)"></i></a>
-                                        </div>
-                                    </div>
+            <div v-if="documentLimit > 0">
+                <Label class="control-label mt-3">Related Documents</Label>
+                <div class="d-flex flex-row mb-2">
+                    <div v-if="requestDocuments.length > 0" class="mr-2">
+                        <div class="d-flex flex-row flex-wrap">
+                            <div v-for="doc in requestDocuments" :key="doc.guid">
+                                <div v-if="doc.isMarkedForDeletion === false" class="fileupload-thumbnail ml-2">
+                                    <FileUploader v-model="doc.listItemBag"
+                                                  :binaryFileTypeGuid="props.options.benevolenceDocumentBinaryFileTypeGuid"
+                                                  :disabled="isSavingAttachment"
+                                                  :uploadAsTemporary="true"
+                                                  @update:modelValue="updatedModelValue => onRequestDocumentModified(doc, updatedModelValue)"
+                                                  @fileRemoved="onRequestDocumentRemoved(doc)" />
                                 </div>
                             </div>
                         </div>
                     </div>
+                    <FileUploader v-if="!isAtDocumentLimit"
+                                  v-model="currentAttachment"
+                                  :binaryFileTypeGuid="props.options.benevolenceDocumentBinaryFileTypeGuid"
+                                  :disabled="isSavingAttachment"
+                                  :uploadAsTemporary="true"
+                                  @update:modelValue="onRequestDocumentAdded" />
                 </div>
             </div>
         </ContentStack>
@@ -255,6 +257,8 @@
     import { PersonBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/personBag";
     import { CampusBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/campusBag";
     import { LocationBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/locationBag";
+    import { PhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/phoneNumberBag";
+    import { PhoneNumberBoxWithSmsControlBag } from "@Obsidian/ViewModels/Controls/phoneNumberBoxWithSmsControlBag";
     import { isNullish, isNotNullish } from "@Obsidian/Utility/util";
     import { Guid } from "@Obsidian/Types";
     import { emptyGuid, areEqual } from "@Obsidian/Utility/guid";
@@ -296,7 +300,14 @@
 
     const invokeBlockAction = useInvokeBlockAction();
 
+    const isExistingRequest = !!props.modelValue.bag?.benevolenceTypeId;
+
     const benevolenceRequestTypes = ref(props.options.benevolenceRequestTypes ?? []);
+    const benevolenceRequestTypeItemBags = ref<ListItemBag[]>(benevolenceRequestTypes.value.map(type => ({
+        text: type.name ?? "",
+        value: type.id?.toString() ?? ""
+    })));
+
     const caseWorkersByRoleCount = ref(props.options.caseWorkersByRole?.length ?? 0);
     const requestStatusValues = ref(props.options.requestStatusValues ?? []);
     const connectionStatusValues = ref(props.options.connectionStatusValues ?? []);
@@ -310,7 +321,20 @@
     const resultSummary = propertyRef(props.modelValue.bag?.resultSummary ?? "", "resultSummary");
     const providedNextSteps = propertyRef(props.modelValue.bag?.providedNextSteps ?? "", "providedNextSteps");
     const campus = propertyRef(props.modelValue.bag?.campus ?? {} as CampusBag, "campus");
-    const requestDocuments = propertyRef(props.modelValue.bag?.requestDocuments ?? [] as BenevolenceDocumentBag[], "requestDocuments");
+    const requestDocuments = propertyRef(
+        (props.modelValue.bag?.requestDocuments ?? []).map(doc => ({
+            ...doc,
+            listItemBag: {
+                text: doc.fileName ?? "Unnamed Document",
+                value: doc.guid ?? ""
+            }
+        })),
+        "requestDocuments"
+    );
+
+    const requesterHomePhoneNumber = ref<PhoneNumberBoxWithSmsControlBag>(getInitialPhoneNumberBag(requester.value.homePhoneNumber ?? undefined));
+    const requesterCellPhoneNumber = ref<PhoneNumberBoxWithSmsControlBag>(getInitialPhoneNumberBag(requester.value.cellPhoneNumber ?? undefined));
+    const requesterWorkPhoneNumber = ref<PhoneNumberBoxWithSmsControlBag>(getInitialPhoneNumberBag(requester.value.workPhoneNumber ?? undefined));
 
     const attributes = ref(props.modelValue.bag?.attributes ?? {});
     const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
@@ -319,10 +343,9 @@
     // objects returned by propertyRef().
     const propRefs = [
         benevolenceTypeId, requestStatusValueId, requestDateTime, requester, caseWorker, requestText, resultSummary,
-        providedNextSteps, campus, requestDocuments, attributes, attributeValues
+        providedNextSteps, campus, requestDocuments, requesterHomePhoneNumber, requesterCellPhoneNumber,
+        requesterWorkPhoneNumber, attributes, attributeValues
     ];
-
-    const isCampusPickerVisible = ref<boolean>(false);
 
     const lastRequesterPersonAliasGuid = ref<Guid>("");
     const isConnectionStatusDisabled = ref<boolean>(false);
@@ -340,6 +363,11 @@
     const currentAttachment = ref<ListItemBag | null | undefined>(undefined);
     const isSavingAttachment = ref<boolean>(false);
     const isSavingPersonRecord = ref<boolean>(false);
+
+    const documentLimit = props.options.benevolenceRequestTypes?.find(type => type.id === benevolenceTypeId.value)?.options?.maximumDocuments ?? 6;
+    const isAtDocumentLimit = computed(() => {
+        return requestDocuments.value.filter(doc => doc.isMarkedForDeletion === false).length >= documentLimit;
+    });
 
     const createRecordError = ref<string>("");
     const createRecordNotes = ref<string>("");
@@ -396,71 +424,6 @@
         }
     });
 
-    const requesterHomePhoneNumber = computed({
-        get() {
-            return requester.value.homePhoneNumber
-                ? {
-                    number: requester.value.homePhoneNumber.number ?? undefined,
-                    countryCode: requester.value.homePhoneNumber.countryCode ?? undefined,
-                    isMessagingEnabled: false,
-                }
-                : { number: undefined, countryCode: undefined, isMessagingEnabled: false };
-        },
-        set(val) {
-            requester.value = {
-                ...requester.value,
-                homePhoneNumber: {
-                    number: val.number,
-                    numberFormatted: val.number,
-                    countryCode: val.countryCode ?? ""
-                }
-            };
-        }
-    });
-
-    const requesterCellPhoneNumber = computed({
-        get() {
-            return requester.value.cellPhoneNumber
-                ? {
-                    number: requester.value.cellPhoneNumber.number ?? undefined,
-                    countryCode: requester.value.cellPhoneNumber.countryCode ?? undefined,
-                    isMessagingEnabled: false,
-                }
-                : { number: undefined, countryCode: undefined, isMessagingEnabled: false };
-        },
-        set(val) {
-            requester.value = {
-                ...requester.value,
-                cellPhoneNumber: {
-                    number: val.number,
-                    numberFormatted: val.number,
-                    countryCode: val.countryCode ?? ""
-                }
-            };
-        }
-    });
-
-    const requesterWorkPhoneNumber = computed({
-        get() {
-            return requester.value.workPhoneNumber
-                ? {
-                    number: requester.value.workPhoneNumber.number ?? undefined,
-                    countryCode: requester.value.workPhoneNumber.countryCode ?? undefined,
-                    isMessagingEnabled: false,
-                }
-                : { number: undefined, countryCode: undefined, isMessagingEnabled: false };
-        },
-        set(val) {
-            requester.value = {
-                ...requester.value,
-                workPhoneNumber: {
-                    number: val.number,
-                    numberFormatted: val.number,
-                    countryCode: val.countryCode ?? ""
-                }
-            };
-        }
-    });
 
     const requesterEmail = computed<string>({
         get: () => requester.value.email ?? "",
@@ -509,7 +472,7 @@
         set: val => {
             requester.value = {
                 ...requester.value,
-                raceGuid: val?.value ?? emptyGuid
+                raceGuid: val?.value && val.value !== "" ? val.value : emptyGuid
             };
         }
     });
@@ -522,7 +485,7 @@
         set: val => {
             requester.value = {
                 ...requester.value,
-                ethnicityGuid: val?.value ?? emptyGuid
+                ethnicityGuid: val?.value && val.value !== "" ? val.value : emptyGuid
             };
         }
     });
@@ -669,12 +632,17 @@
      */
     const requesterConnectionStatusValueIdString = computed({
         get() {
-            return isNotNullish(requester.value.connectionStatusValueId)
-                ? requester.value.connectionStatusValueId.toString()
+            return isNotNullish(requester.value.connectionStatus?.connectionStatusValueId)
+                ? requester.value.connectionStatus!.connectionStatusValueId.toString()
                 : "";
         },
         set(val: string) {
-            requester.value.connectionStatusValueId = val ? parseInt(val) : 0;
+            requester.value.connectionStatus = {
+                ...requester.value.connectionStatus,
+                connectionStatusValueId: val ? parseInt(val) : 0,
+                connectionStatusGuid: requester.value.connectionStatus?.connectionStatusGuid ?? emptyGuid,
+                connectionStatusName: requester.value.connectionStatus?.connectionStatusName ?? null
+            };
         }
     });
 
@@ -737,6 +705,19 @@
     }
 
     /**
+     * Get an initial PhoneNumberBag from an optional source PhoneNumberBag
+     * @param source The source PhoneNumberBag to copy values from (optional)
+     * @returns An initial PhoneNumberBoxWithSmsControlBag created from the source
+     */
+    function getInitialPhoneNumberBag(source?: PhoneNumberBag): PhoneNumberBoxWithSmsControlBag {
+        return {
+            number: source?.numberFormatted ?? "",
+            countryCode: source?.countryCode ?? "",
+            isMessagingEnabled: false,
+        };
+    }
+
+    /**
      * Get a PersonBag from a PersonAliasGuid
      * @param guid The PersonAliasGuid
      * @returns A Promise that resolves to a PersonBag
@@ -795,13 +776,13 @@
      * @param value Whether to disable the fields. Use true to disable, false to enable.
      */
     function disableRequesterFields(value: boolean): void {
-        isConnectionStatusDisabled.value = value && !!requester.value.connectionStatusValueId;
+        isConnectionStatusDisabled.value = value && !!requester.value.connectionStatus && !!requester.value.connectionStatus.connectionStatusValueId;
         isFirstNameDisabled.value = value && !!requester.value.firstName;
         isLastNameDisabled.value = value && !!requester.value.lastName;
-        isHomePhoneDisabled.value = value && !!requester.value.homePhoneNumber;
-        isCellPhoneDisabled.value = value && !!requester.value.cellPhoneNumber;
-        isWorkPhoneDisabled.value = value && !!requester.value.workPhoneNumber;
-        isEmailDisabled.value = value && !!requester.value.email;
+        isHomePhoneDisabled.value = value && (!!requester.value.homePhoneNumber && !!requester.value.homePhoneNumber.isNumberFromPersonRecord);
+        isCellPhoneDisabled.value = value && (!!requester.value.cellPhoneNumber && !!requester.value.cellPhoneNumber.isNumberFromPersonRecord);
+        isWorkPhoneDisabled.value = value && (!!requester.value.workPhoneNumber && !!requester.value.workPhoneNumber.isNumberFromPersonRecord);
+        isEmailDisabled.value = value && (requester.value.email !== null && requester.value.email !== undefined && requester.value.personIdKey !== null && requester.value.personIdKey !== undefined);
         isAddressFieldDisabled.value = value && !!requester.value.location?.addressFields;
         isCreateRecordFromFieldsHidden.value = value && selectedBenevolenceRequester.value.value !== "";
 
@@ -823,12 +804,21 @@
     async function onRequesterSelectionChanged(person: ListItemBag | null | undefined, personIdKey: string | undefined): Promise<void> {
         // If a clear action occurred, re-enable the requester fields.
         if (isNullish(person) && isNullish(personIdKey)) {
-            requester.value.personId = null;
+            requester.value.personIdKey = null;
             requester.value.personAliasId = null;
             requester.value.personAliasGuid = emptyGuid;
+            if (requester.value.homePhoneNumber) {
+                requester.value.homePhoneNumber.isNumberFromPersonRecord = false;
+            }
+            if (requester.value.cellPhoneNumber) {
+                requester.value.cellPhoneNumber.isNumberFromPersonRecord = false;
+            }
+            if (requester.value.workPhoneNumber) {
+                requester.value.workPhoneNumber.isNumberFromPersonRecord = false;
+            }
             lastRequesterPersonAliasGuid.value = "";
-            requesterRace.value = { value: "", text: "" };
-            requesterEthnicity.value = { value: "", text: "" };
+            requesterRace.value = { value: emptyGuid, text: "" };
+            requesterEthnicity.value = { value: emptyGuid, text: "" };
             disableRequesterFields(false);
             return;
         }
@@ -839,6 +829,10 @@
             const newRequester = await getPersonBagFromPersonAliasGuid(person.value ?? "");
 
             lastRequesterPersonAliasGuid.value = person.value ?? "";
+
+            requesterHomePhoneNumber.value = getInitialPhoneNumberBag(newRequester.homePhoneNumber ?? undefined);
+            requesterCellPhoneNumber.value = getInitialPhoneNumberBag(newRequester.cellPhoneNumber ?? undefined);
+            requesterWorkPhoneNumber.value = getInitialPhoneNumberBag(newRequester.workPhoneNumber ?? undefined);
 
             newRequester.governmentId = governmentId ?? "";
             requester.value = newRequester;
@@ -882,10 +876,16 @@
             return;
         }
 
-        const newRequestDocument: BenevolenceDocumentBag = {
+        isSavingAttachment.value = true;
+
+        const newRequestDocument = {
             guid: requestDocument.value ?? "",
             fileName: requestDocument.text ?? "",
             isMarkedForDeletion: false,
+            listItemBag: {
+                text: requestDocument.text ?? "Unnamed Document",
+                value: requestDocument.value ?? ""
+            }
         };
 
         requestDocuments.value = [
@@ -895,28 +895,85 @@
 
         // Clear the attachment uploader.
         currentAttachment.value = null;
+        isSavingAttachment.value = false;
+    }
+
+    /**
+     * Handler for when a document attached to the benevolence request is modified.
+     * @param originalDocument The original document before modification.
+     * @param updatedModelValue The updated ListItemBag representing the modified document.
+     */
+    function onRequestDocumentModified(originalDocument: BenevolenceDocumentBag, updatedModelValue: ListItemBag | null | undefined): void {
+        if (isSavingAttachment.value) {
+            return;
+        }
+
+        isSavingAttachment.value = true;
+
+        if (updatedModelValue) {
+            let updatedDocuments;
+
+            // Mark the original document as deleted
+            updatedDocuments = requestDocuments.value.map(doc => {
+                if (doc.guid === originalDocument.guid) {
+                    return {
+                        ...doc,
+                        isMarkedForDeletion: true
+                    };
+                }
+                return doc;
+            });
+
+            // Add the new document as a new item
+            updatedDocuments = [
+                ...updatedDocuments,
+                {
+                    guid: updatedModelValue.value ?? "",
+                    fileName: updatedModelValue.text ?? "",
+                    isMarkedForDeletion: false,
+                    listItemBag: {
+                        text: updatedModelValue.text ?? "Unnamed Document",
+                        value: updatedModelValue.value ?? ""
+                    }
+                }
+            ];
+
+            requestDocuments.value = updatedDocuments;
+
+            isSavingAttachment.value = false;
+            return;
+        }
+
+        isSavingAttachment.value = false;
     }
 
     /**
      * Handler for when a document is removed from the benevolence request.
      * @param requestDocument The document being removed.
      */
-    async function onRequestDocumentRemoved(requestDocument: BenevolenceDocumentBag | null | undefined): Promise<void> {
-        if (isNullish(requestDocument) || isSavingAttachment.value) {
+    function onRequestDocumentRemoved(documentToRemove: BenevolenceDocumentBag | null | undefined): void {
+        if (!documentToRemove || isSavingAttachment.value) {
             return;
         }
 
-        const updatedDocuments = requestDocuments.value?.map(a => {
-            if (a === requestDocument) {
+        isSavingAttachment.value = true;
+
+        // Mark the original document as deleted
+        const updatedDocuments = (requestDocuments.value ?? []).map(requestDocument => {
+            if (requestDocument === documentToRemove) {
+                isSavingAttachment.value = false;
                 return {
-                    ...a,
+                    ...requestDocument,
                     isMarkedForDeletion: true
                 };
             }
-            return a;
-        }) ?? [];
+            isSavingAttachment.value = false;
+            return requestDocument;
+        });
 
         requestDocuments.value = updatedDocuments;
+        isSavingAttachment.value = false;
+        return;
     }
 
     /**
@@ -927,7 +984,7 @@
             createRecordError.value = "Cannot create a person record without a benevolence request.";
             return;
         }
-        if (isNullish(requester.value.connectionStatusValueId) || requester.value.connectionStatusValueId === 0) {
+        if (isNullish(requester.value.connectionStatus?.connectionStatusValueId) || requester.value.connectionStatus?.connectionStatusValueId === 0) {
             createRecordError.value = "A Connection Status is required to create a person record.";
             return;
         }
@@ -1029,6 +1086,29 @@
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([...propRefs], () => {
+        // Build a shallow copy of requester for emit, including phone numbers from local refs
+        const requesterCopy = {
+            ...requester.value,
+            homePhoneNumber: {
+                number: requesterHomePhoneNumber.value.number,
+                numberFormatted: requesterHomePhoneNumber.value.number, // numberFormatted is not used in backend, so just copy number
+                countryCode: requesterHomePhoneNumber.value.countryCode,
+                isNumberFromPersonRecord: requester.value.homePhoneNumber?.isNumberFromPersonRecord ?? false,
+            },
+            cellPhoneNumber: {
+                number: requesterCellPhoneNumber.value.number,
+                numberFormatted: requesterCellPhoneNumber.value.number, // numberFormatted is not used in backend, so just copy number
+                countryCode: requesterCellPhoneNumber.value.countryCode,
+                isNumberFromPersonRecord: requester.value.cellPhoneNumber?.isNumberFromPersonRecord ?? false,
+            },
+            workPhoneNumber: {
+                number: requesterWorkPhoneNumber.value.number,
+                numberFormatted: requesterWorkPhoneNumber.value.number, // numberFormatted is not used in backend, so just copy number
+                countryCode: requesterWorkPhoneNumber.value.countryCode,
+                isNumberFromPersonRecord: requester.value.workPhoneNumber?.isNumberFromPersonRecord ?? false,
+            }
+        };
+
         const newValue: ValidPropertiesBox<BenevolenceRequestBag> = {
             bag: { ...props.modelValue.bag } as BenevolenceRequestBag
         };
@@ -1036,7 +1116,7 @@
         setPropertiesBoxValue(newValue, "benevolenceTypeId", benevolenceTypeId.value ?? 0);
         setPropertiesBoxValue(newValue, "requestStatusValueId", requestStatusValueId.value ?? 0);
         setPropertiesBoxValue(newValue, "requestDateTime", requestDateTime.value ?? new Date().toISOString());
-        setPropertiesBoxValue(newValue, "requester", requester.value);
+        setPropertiesBoxValue(newValue, "requester", requesterCopy);
         setPropertiesBoxValue(newValue, "caseWorker", caseWorker.value);
         setPropertiesBoxValue(newValue, "requestText", requestText.value);
         setPropertiesBoxValue(newValue, "resultSummary", resultSummary.value);

@@ -39,5 +39,14 @@ namespace Rock.ViewModels.Blocks.Finance.BenevolenceRequestDetail
         /// Gets or sets the formatted representation of the phone number, exluding the country code.
         /// </summary>
         public string NumberFormatted { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the phone number was obtained from the person's record.
+        /// </summary>
+        /// <value>
+        /// A <see cref="bool"/> value that is <c>true</c> if the phone number was sourced from the person's record
+        /// otherwise, <c>false</c> if the phone number was sourced from the entity.
+        /// </value>
+        public bool IsNumberFromPersonRecord { get; set; }
     }
 }

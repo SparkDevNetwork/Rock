@@ -1,0 +1,203 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="id"
+          itemTerm="Personal Device Interaction"
+          :title="config.options?.blockTitle ?? 'Personal Device Interactions'"
+          stickyHeader
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="onGridSettingsClick"
+          :showLaunchWorkflow="false">
+
+        <template #gridHeaderBadges>
+            <span class="header-highlight-label mr-3">
+                <HighlightLabel v-if="isFilteredByDevice && (platform && version)"
+                                labelType="custom"
+                                customClass="label-info d-flex align-items-center"
+                                :iconCssClass="iconCssClass">
+                    <span class="label-value">{{ platform }} {{ version }}</span>
+                </HighlightLabel>
+            </span>
+        </template>
+
+        <DateTimeColumn name="dateTime"
+                        title="Date / Time"
+                        field="dateTime"
+                        width="20%"
+                        :filter="dateValueFilter"
+                        visiblePriority="xs" />
+
+        <PersonColumn name="assignedIndividual"
+                      title="Assigned Individual"
+                      field="assignedIndividual"
+                      width="15%"
+                      :showAsLink="true"
+                      :hideAvatar="true"
+                      :detailField="false"
+                      :hideOnScreen="isFilteredByDevice"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="assignedIndividualFilterValue"
+                      visiblePriority="xs" />
+
+        <TextColumn name="details"
+                    title="Details"
+                    field="details"
+                    :width="isFilteredByDevice ? '80%' : '40%'"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <TextColumn name="deviceType"
+                    title="Device"
+                    field="deviceType"
+                    width="10%"
+                    :hideOnScreen="isFilteredByDevice"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="md">
+            <template #format="{ row }">
+                <span class="device-row-highlight-label">
+                    <HighlightLabel labelType="custom"
+                                    customClass="label-default d-flex align-items-center"
+                                    :iconCssClass="row.deviceTypeIconCssClass">
+                        <span class="label-value">{{ row.deviceType }}</span>
+                    </HighlightLabel>
+                </span>
+            </template>
+        </TextColumn>
+
+        <TextColumn name="platform"
+                    title="Platform"
+                    field="platform"
+                    width="15%"
+                    :hideOnScreen="isFilteredByDevice"
+                    :filter="textValueFilter"
+                    visiblePriority="xs">
+            <template #format="{ row }">
+                <span v-if="row.platform && row.version">
+                    {{ row.platform }} {{ row.version }}
+                </span>
+            </template>
+        </TextColumn>
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings" v-model:visible="isGridSettingsVisible" :defaultSlidingDateRange="defaultSlidingDateRange" />
+</template>
+
+<style>
+.header-highlight-label .label i {
+    font-size: 18px;
+}
+
+.device-row-highlight-label .label i {
+    font-size: 18px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, reactive, ref, watch } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import Grid, { PersonColumn, pickExistingValueFilter, TextColumn, textValueFilter, dateValueFilter, DateTimeColumn } from "@Obsidian/Controls/grid";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { PersonalDeviceInteractionsOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonalDeviceInteractions/personalDeviceInteractionsOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { parseSlidingDateRangeString, slidingDateRangeToString, RangeType, SlidingDateRange, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
+    import { GridSettingsOptions, PreferenceKey } from "./PersonalDeviceInteractions/types.partial";
+    import GridSettingsModal from "./PersonalDeviceInteractions/gridSettingsModal.partial.obs";
+    import { asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+
+    const config = useConfigurationValues<ListBlockBox<PersonalDeviceInteractionsOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+    const isGridSettingsVisible = ref(false);
+
+    const defaultSlidingDateRange: SlidingDateRange = {
+        rangeType: RangeType.Last,
+        timeUnit: TimeUnit.Month,
+        timeValue: 6
+    };
+
+    const gridSettings = ref<GridSettingsOptions>({
+        dateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterDateRange)) ?? defaultSlidingDateRange,
+        showUnassignedDevices: asBooleanOrNull(preferences.getValue(PreferenceKey.FilterShowUnassignedDevices)) ?? false,
+        presentDevices: asBooleanOrNull(preferences.getValue(PreferenceKey.FilterPresentDevices)) ?? false,
+    });
+
+    const isFilteredByDevice = config.options?.isFilteredByDevice;
+    const platform = config.options?.platform ?? "";
+    const version = config.options?.version ?? "";
+    const iconCssClass = config.options?.iconCssClass ?? "";
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * Returns `true` if the grid settings filters are active; otherwise `false`.
+     */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.dateRange // Since we're using a default date range fallback, this will always be true.
+            || !!gridSettings.value.showUnassignedDevices
+            || !!gridSettings.value.presentDevices;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    function assignedIndividualFilterValue(row: Record<string, unknown>): string {
+        const person = row["assignedIndividual"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+    * Called when the grid setting icon is clicked, displays the block filters.
+    */
+    function onGridSettingsClick(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(gridSettings, async () => {
+        const slidingDateRangeString = gridSettings.value.dateRange
+            ? slidingDateRangeToString(gridSettings.value.dateRange)
+            : slidingDateRangeToString(defaultSlidingDateRange);
+
+        preferences.setValue(PreferenceKey.FilterDateRange, slidingDateRangeString);
+        preferences.setValue(PreferenceKey.FilterShowUnassignedDevices, asTrueOrFalseString(gridSettings.value.showUnassignedDevices));
+        preferences.setValue(PreferenceKey.FilterPresentDevices, asTrueOrFalseString(gridSettings.value.presentDevices));
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion Watchers
+
+    gridDataSource.value = loadGridData();
+</script>

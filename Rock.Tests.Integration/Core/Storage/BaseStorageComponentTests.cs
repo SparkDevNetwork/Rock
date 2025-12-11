@@ -25,7 +25,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;
 using Rock.Storage.AssetStorage;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Core.Storage
@@ -409,13 +408,13 @@ namespace Rock.Tests.Integration.Core.Storage
             };
 
             var assetList = assetStorageComponent.ListObjectsInFolder( assetStorageProvider, asset );
-            Assert.IsTrue( assetList.Where( a => a.Type == AssetType.File ).Count() >= 10 );
+            Assert.IsGreaterThanOrEqualTo( 10, assetList.Where( a => a.Type == AssetType.File ).Count() );
             for ( int i = 1; i <= 10; i++ )
             {
                 Assert.IsTrue( assetList.Any( a => a.Name == $"TestFile-{i}.txt" ) );
             }
 
-            Assert.IsTrue( assetList.Where( a => a.Type == AssetType.Folder ).Count() >= 10 );
+            Assert.IsGreaterThanOrEqualTo( 10, assetList.Where( a => a.Type == AssetType.Folder ).Count() );
             for ( int i = 1; i <= 10; i++ )
             {
                 Assert.IsTrue( assetList.Any( a => a.Name == $"TestFolder-{i}" ) );
@@ -435,13 +434,13 @@ namespace Rock.Tests.Integration.Core.Storage
             };
 
             var assetList = assetStorageComponent.ListObjectsInFolder( assetStorageProvider, asset );
-            Assert.IsTrue( assetList.Where( a => a.Type == AssetType.File ).Count() >= 10 );
+            Assert.IsGreaterThanOrEqualTo( 10, assetList.Where( a => a.Type == AssetType.File ).Count() );
             for ( int i = 1; i <= 10; i++ )
             {
                 Assert.IsTrue( assetList.Any( a => a.Name == $"TestFile-{i}.txt" ) );
             }
 
-            Assert.IsTrue( assetList.Where( a => a.Type == AssetType.Folder ).Count() >= 10 );
+            Assert.IsGreaterThanOrEqualTo( 10, assetList.Where( a => a.Type == AssetType.Folder ).Count() );
             for ( int i = 1; i <= 10; i++ )
             {
                 Assert.IsTrue( assetList.Any( a => a.Name == $"TestFolder-{i}" ) );

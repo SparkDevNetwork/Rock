@@ -36,7 +36,7 @@ namespace Rock.Model
     [CodeGenerateRest( DisableEntitySecurity = true )]
     [HideFromReporting]
     [Rock.SystemGuid.EntityTypeGuid( "9C3064C0-CF9C-4549-9A80-022514B7FF83")]
-    public partial class PersistedDataset : Entity<PersistedDataset>, ICacheable
+    public partial class PersistedDataset : Model<PersistedDataset>, ICacheable
     {
         #region Entity Properties
 
@@ -79,7 +79,28 @@ namespace Rock.Model
         /// The refresh interval minutes.
         /// </value>
         [DataMember]
-        public int? RefreshIntervalMinutes { get; set; }
+        [Obsolete( "RefreshIntervalMinutes is obsolete. Use PersistedScheduleIntervalMinutes instead.", error: false )]
+        [RockObsolete( "19.0" )]
+        public int? RefreshIntervalMinutes
+        {
+            get => PersistedScheduleIntervalMinutes;
+            private set
+            {
+                // Preserve backward compatibility if old payloads still set RefreshIntervalMinutes.
+                PersistedScheduleIntervalMinutes = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the persisted schedule interval minutes.
+        /// If this is null, then the DataView is not persisted by an interval
+        /// but it might be persisted by a <see cref="PersistedSchedule"/>.
+        /// </summary>
+        /// <value>
+        /// The persisted schedule interval minutes.
+        /// </value>
+        [DataMember]
+        public int? PersistedScheduleIntervalMinutes { get; set; }
 
         /// <summary>
         /// Gets or sets the persisted last refresh date time.
@@ -199,16 +220,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? ExpireDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the persisted schedule interval minutes.
-        /// If this is null, then the DataView is not persisted.
-        /// </summary>
-        /// <value>
-        /// The persisted schedule interval minutes.
-        /// </value>
-        [DataMember]
-        public int? PersistedScheduleIntervalMinutes { get; set; }
 
         #endregion Entity Properties
 

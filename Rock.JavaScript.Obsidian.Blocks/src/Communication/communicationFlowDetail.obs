@@ -30,7 +30,6 @@
                             v-model:conversionGoalTargetPercent="conversionGoalTargetPercent"
                             v-model:conversionGoalTimeframeInDays="conversionGoalTimeframeInDays"
                             v-model:conversionGoalType="conversionGoalType"
-                            v-model:exitConditionType="exitConditionType"
                             :isActive="isActive"
                             :title="wizardItem.text"
                             @nextStep="onNextStepClicked"

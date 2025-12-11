@@ -29,7 +29,7 @@
                 </div>
 
                 <Rock:DataTextBox ID="tbSubject" runat="server" SourceTypeName="Rock.Model.SystemEmail, Rock" PropertyName="Subject" Help="<small><span class='tip tip-lava'></span></small>" />
-                <Rock:CodeEditor ID="tbBody" EditorHeight="500" Label="Message Body" EditorMode="Lava" EditorTheme="Rock" runat="server" SourceTypeName="Rock.Model.SystemEmail, Rock" PropertyName="Body" Required="true" />
+                <Rock:CodeEditor ID="tbBody" EditorHeight="500" Label="Message Body" EditorMode="Lava" runat="server" SourceTypeName="Rock.Model.SystemEmail, Rock" PropertyName="Body" Required="true" />
 
                 <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Danger" Visible="false" />
 

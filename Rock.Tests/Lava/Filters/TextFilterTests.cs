@@ -197,7 +197,7 @@ namespace Rock.Tests.Lava.Filters
         /// <summary>
         /// PluralizeForQuantity should return correct plural form for negative and positive decimals.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "-2", "degrees" )]
         [DataRow( "-1.5", "degrees" )]
         [DataRow( "-1", "degree" )]
@@ -333,7 +333,7 @@ namespace Rock.Tests.Lava.Filters
         /// <summary>
         /// Various email address formats can be matched using a regular expression.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "ted@rocksolidchurchdemo.com", true )]
         [DataRow( "has_underscore@rocksolidchurchdemo.com", true )]
         [DataRow( "has.dot@rocksolidchurchdemo.com", true )]
@@ -400,7 +400,7 @@ namespace Rock.Tests.Lava.Filters
         /// <summary>
         /// Last instance of search string should be replaced with replacement string.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "Blue, Blue, Red, Red", "Blue, Blue, Red, Green" )]
         [DataRow( "Red, Red, Blue, Blue", "Red, Green, Blue, Blue" )]
         [DataRow( "Red, Blue, Blue, Blue", "Green, Blue, Blue, Blue" )]
@@ -475,7 +475,7 @@ namespace Rock.Tests.Lava.Filters
         /// <remarks>
         /// The default Liquid language behavior for this filter is to remove empty entries.
         /// </remarks>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( ",", "','", "0" )]
         [DataRow( ",", "',',true", "0" )]
         [DataRow( ",", "',',false", "2" )]
@@ -502,7 +502,7 @@ namespace Rock.Tests.Lava.Filters
         /// <remarks>
         /// The default Liquid language behavior for this filter is to remove empty entries.
         /// </remarks>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( ",1,,3,4,5,6,7,,9,", "','", "1+3+4+5+6+7+9" )]
         [DataRow( ",1,,3,4,5,6,7,,9,", "',',true", "1+3+4+5+6+7+9" )]
         [DataRow( ",1,,3,4,5,6,7,,9,", "',','true'", "1+3+4+5+6+7+9" )]
@@ -528,7 +528,7 @@ namespace Rock.Tests.Lava.Filters
         /// Split filter should only return the specified number of substrings if the "count" parameter is specified.
         /// The remainder text is included in the last element of the array.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1,2,3,4,5,6,7,8,9", "',',false,0", "" )]
         [DataRow( "1,2,3,4,5,6,7,8,9", "',',false,1", "1,2,3,4,5,6,7,8,9" )]
         [DataRow( "1,2,3,4,5,6,7,8,9", "',',false,2", "1+2,3,4,5,6,7,8,9" )]
@@ -574,7 +574,7 @@ namespace Rock.Tests.Lava.Filters
         /// ToCssClass filter returns expected output.
         /// </summary>
         ///
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "Community Participant", "community-participant" )]
         [DataRow( "community--participant", "community-participant" )]
         [DataRow( "1234", "-x-1234" )]
@@ -596,7 +596,7 @@ namespace Rock.Tests.Lava.Filters
         /// <summary>
         /// Leading and trailing whitespace should be removed, while internal whitespace is preserved.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "Ted Decker    ", "Ted Decker" )]
         [DataRow( "   Ted Decker", "Ted Decker" )]
         [DataRow( "   Ted Decker    ", "Ted Decker" )]
@@ -612,7 +612,7 @@ namespace Rock.Tests.Lava.Filters
         /// <summary>
         /// Leading and trailing character sequences should be removed, while other characters are preserved.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "Ted#Decker", "#", "Ted#Decker" )]
         [DataRow( "#Ted Decker", "#", "Ted Decker" )]
         [DataRow( "#Ted Decker#", "#", "Ted Decker" )]
@@ -631,7 +631,7 @@ namespace Rock.Tests.Lava.Filters
         /// <summary>
         /// Leading and trailing whitespace should be removed, while internal whitespace is preserved.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "Ted Decker   ", "Ted Decker" )]
         [DataRow( "   Ted Decker", "   Ted Decker" )]
         [DataRow( "   Ted Decker   ", "   Ted Decker" )]
@@ -641,13 +641,13 @@ namespace Rock.Tests.Lava.Filters
         {
             var template = "{{ '" + input + "' | TrimEnd }}";
 
-            TestHelper.AssertTemplateOutput( expected, template, ignoreWhitespace:false );
+            TestHelper.AssertTemplateOutput( expected, template, ignoreWhitespace: false );
         }
 
         /// <summary>
         /// Trailing characters should be removed, while other characters are preserved.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "Ted#Decker", "#", "Ted#Decker" )]
         [DataRow( "Ted Decker#", "#", "Ted Decker" )]
         [DataRow( "#Ted Decker#", "#", "#Ted Decker" )]
@@ -666,7 +666,7 @@ namespace Rock.Tests.Lava.Filters
         /// <summary>
         /// Leading and trailing whitespace should be removed, while internal whitespace is preserved.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "Ted Decker   ", "Ted Decker   " )]
         [DataRow( "   Ted Decker", "Ted Decker" )]
         [DataRow( "   ", "" )]
@@ -681,7 +681,7 @@ namespace Rock.Tests.Lava.Filters
         /// <summary>
         /// Leading characters should be removed, while other characters are preserved.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "Ted*Decker", "*", "Ted*Decker" )]
         [DataRow( "*Ted Decker", "*", "Ted Decker" )]
         [DataRow( "*Ted Decker*", "*", "Ted Decker*" )]

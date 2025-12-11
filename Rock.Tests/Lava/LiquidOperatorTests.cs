@@ -39,7 +39,7 @@ namespace Rock.Tests.Lava
         /// <summary>
         /// Verify the "less than" comparison operator.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1 < 2", true )]
         [DataRow( "'1' < 2", true )]
         [DataRow( "1 < '2'", true )]
@@ -56,7 +56,7 @@ namespace Rock.Tests.Lava
         /// <summary>
         /// Verify the "less than" comparison operator extensions for Fluid.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1 < 1.1", true )]
         [DataRow( "1.1 < 1.2", true )]
         [DataRow( "1.2 < 1.1", false )]
@@ -120,7 +120,7 @@ namespace Rock.Tests.Lava
         /// <summary>
         /// Verify the "Less than" comparison operator.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "'aba' < 'abc'", true )]
         [DataRow( "'' < 'abc'", true )]
         [DataRow( "'' < ' '", true )]
@@ -140,7 +140,7 @@ namespace Rock.Tests.Lava
         /// <summary>
         /// Verify the "less than" comparison operator.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1 <= 1", true )]
         [DataRow( "'1' <= 1", true )]
         [DataRow( "1 <= '1'", true )]
@@ -157,7 +157,7 @@ namespace Rock.Tests.Lava
         /// <summary>
         /// Verify the "less than" comparison operator extensions for Fluid.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1.1 <= 1.1", true )]
         [DataRow( "1.2 <= 1.1", false )]
         public void FluidLessThanOrEqual_IntegerAndOtherOperandType_PerformsIntegerComparison( string expression, bool expectedResult )
@@ -218,7 +218,7 @@ namespace Rock.Tests.Lava
             TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "'aba' <= 'aba'", true )]
         [DataRow( "'' <= ' '", true )]
         [DataRow( "'' <= ''", true )]
@@ -231,7 +231,7 @@ namespace Rock.Tests.Lava
             TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, ignoreWhitespace: true );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "null <= null", false )]
         [DataRow( "1 <= null", false )]
         [DataRow( "'' <= null", false )]
@@ -251,7 +251,7 @@ namespace Rock.Tests.Lava
         /// <summary>
         /// Verify the "Greater than" comparison operator.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "2 > 1", true )]
         [DataRow( "'2' > 1", true )]
         [DataRow( "2 > '1'", true )]
@@ -268,7 +268,7 @@ namespace Rock.Tests.Lava
         /// <summary>
         /// Verify the "Greater than" comparison operator extensions for Fluid.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1.1 > 1", true )]
         [DataRow( "1.2 > 1.1", true )]
         [DataRow( "1.1 > 1.2", false )]
@@ -332,7 +332,7 @@ namespace Rock.Tests.Lava
         /// <summary>
         /// Verify the "Greater than" comparison operator.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "'abc' > 'aba'", true )]
         [DataRow( "'abc' > ''", true )]
         [DataRow( "' ' > ''", true )]
@@ -352,7 +352,7 @@ namespace Rock.Tests.Lava
         /// <summary>
         /// Verify the "Greater than" comparison operator.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1 >= 1", true )]
         [DataRow( "'1' >= 1", true )]
         [DataRow( "1 >= '1'", true )]
@@ -369,7 +369,7 @@ namespace Rock.Tests.Lava
         /// <summary>
         /// Verify the "Greater than" comparison operator extensions for Fluid.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1.1 >= 1.1", true )]
         [DataRow( "1.1 >= 1.2", false )]
         public void FluidGreaterThanOrEqual_IntegerAndOtherOperandType_PerformsIntegerComparison( string expression, bool expectedResult )
@@ -433,7 +433,7 @@ namespace Rock.Tests.Lava
         /// <summary>
         /// Verify the "Greater than" comparison operator.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "'aba' >= 'aba'", true )]
         [DataRow( "' ' >= ''", true )]
         [DataRow( "'' >= ''", true )]
@@ -446,7 +446,7 @@ namespace Rock.Tests.Lava
             TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, ignoreWhitespace: true );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "null >= null", false )]
         [DataRow( "1 >= null", false )]
         [DataRow( "'' >= null", false )]
@@ -466,7 +466,7 @@ namespace Rock.Tests.Lava
         /// <summary>
         /// Verify the "equals" comparison operator.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "blank == 0", false )]
         [DataRow( "empty == 0", false )]
         [DataRow( "null == 0", false )]
@@ -488,7 +488,7 @@ namespace Rock.Tests.Lava
         /// <summary>
         /// Verify the "equals" comparison operator extensions for Fluid.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1.0 == 1.0", true )]
         [DataRow( "1.1 == 1.1", true )]
         [DataRow( "1.2 == 1.1", false )]
@@ -552,7 +552,7 @@ namespace Rock.Tests.Lava
         /// <summary>
         /// Verify the "equals" comparison operator for Enum values.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "DayOfWeekMonday == 1", true )]
         [DataRow( "DayOfWeekMonday == 'Monday'", true )]
         [DataRow( "1 == DayOfWeekMonday", true )]
@@ -575,7 +575,7 @@ namespace Rock.Tests.Lava
         /// <summary>
         /// Verify the "equals" comparison operator.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "'abc' == 'abc'", true )]
         [DataRow( "' ' == ' '", true )]
         [DataRow( "'' == ''", true )]
@@ -595,7 +595,7 @@ namespace Rock.Tests.Lava
         /// <summary>
         /// Verify the "not equals" comparison operator.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1 != 2", true )]
         [DataRow( "'1' != 2", true )]
         [DataRow( "1 != '2'", true )]
@@ -612,7 +612,7 @@ namespace Rock.Tests.Lava
         /// <summary>
         /// Verify the "not equals" comparison operator extensions for Fluid.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1.0 != 2.0", true )]
         [DataRow( "1.1 != 1.2", true )]
         [DataRow( "1.1 != 1.1", false )]
@@ -696,7 +696,7 @@ namespace Rock.Tests.Lava
         /// <summary>
         /// Verify the "not equals" comparison operator.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "'abc' != 'abd'", true )]
         [DataRow( "'' != ' '", true )]
         [DataRow( "' ' != ''", true )]

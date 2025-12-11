@@ -9,7 +9,6 @@ using Moq;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Crm.Attendance
@@ -131,13 +130,12 @@ namespace Rock.Tests.Integration.Crm.Attendance
 
                 // should not be longer than 2 characters
                 // This is a known bug in v7.4 and earlier, and possibly fixed via PR #3071
-                Assert.IsTrue( codeList.OrderBy( x => x.Length ).Last().Length == 2 );
+                Assert.AreEqual( 2, codeList.OrderBy( x => x.Length ).Last().Length );
             }
             catch ( TimeoutException )
             {
                 // An exception in this case is considered better than hanging (since there is 
                 // no actual solution).
-                Assert.IsTrue( true );
             }
         }
 
@@ -162,7 +160,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
                                     .Where( group => group.Count() > 1 )
                                     .Select( group => group.Key );
 
-            Assert.IsTrue( duplicates.Count() == 0 );
+            Assert.AreEqual( 0, duplicates.Count() );
         }
 
         /// <summary>
@@ -186,7 +184,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
                                     .Where( group => group.Count() > 1 )
                                     .Select( group => group.Key );
 
-            Assert.IsTrue( duplicates.Count() == 0 );
+            Assert.AreEqual( 0, duplicates.Count() );
         }
 
         /// <summary>
@@ -214,7 +212,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
                 codeList.Add( code.Code );
             } );
 
-            Assert.AreEqual( 100, codeList.Count );
+            Assert.HasCount( 100, codeList );
         }
 
         [TestMethod]
@@ -285,7 +283,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
                                     .Where( group => group.Count() > 1 )
                                     .Select( group => group.Key );
 
-            Assert.IsTrue( duplicates.Count() == 0 );
+            Assert.AreEqual( 0, duplicates.Count() );
         }
 
         #endregion
@@ -348,13 +346,13 @@ namespace Rock.Tests.Integration.Crm.Attendance
                         .Where( group => group.Count() > 1 )
                         .Select( group => group.Key );
 
-                Assert.IsTrue( duplicates.Count() == 0 );
+                Assert.AreEqual( 0, duplicates.Count() );
             }
             catch ( TimeoutException )
             {
                 // If an infinite loop was detected, but we tried at least 5100 codes then
                 // we'll consider this a pass.
-                Assert.IsTrue( attemptCombination >= 5100 );
+                Assert.IsGreaterThanOrEqualTo( 5100, attemptCombination );
             }
             finally
             {
@@ -410,7 +408,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
             {
                 // If an infinite loop was detected, but we tried at least 596 codes then
                 // we'll consider this a pass.
-                Assert.IsTrue( attemptCombination >= 596 );
+                Assert.IsGreaterThanOrEqualTo( 596, attemptCombination );
             }
             finally
             {

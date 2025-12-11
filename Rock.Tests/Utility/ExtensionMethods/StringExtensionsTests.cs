@@ -3,7 +3,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Tests.Lava;
-using Rock.Tests.Shared;
 
 namespace Rock.Tests.Utility.ExtensionMethods
 {
@@ -288,11 +287,11 @@ namespace Rock.Tests.Utility.ExtensionMethods
         [DataRow( "test&nbsp;test" )]
         [DataRow( "Occurrence=2023-09-28T09:00:00" )]                   // Valid date input.
         [DataRow( "Occurrence%253d2023-09-28T09%25253a00%25253a00" )]   // Valid date input, partially double and triple encoded.
-        [DataTestMethod]
+        [TestMethod]
         public void RedirectUrlContainsXss_ValidInput( string input )
         {
             var output = input.RedirectUrlContainsXss();
-            Assert.AreEqual( output, false );
+            Assert.IsFalse( output );
 
         }
 
@@ -308,11 +307,11 @@ namespace Rock.Tests.Utility.ExtensionMethods
         [DataRow( "&#x6A;&#x61;&#x76;&#x61;&#x73;&#x63;&#x72;&#x69;&#x70;&#x74;&#x3A;" )]
         // javascript: (HTML-encoded decimal character reference, no separators).
         [DataRow( "&#0000106&#0000097&#0000118&#0000097&#0000115&#0000099&#0000114&#0000105&#0000112&#0000116&#0000058&#0000097&#0000108&#0000101&#0000114&#0000116&#0000040&#0000039&#0000088&#0000083&#0000083&#0000039&#0000041" )]
-        [DataTestMethod]
+        [TestMethod]
         public void RedirectUrlContainsXss_RiskyInput( string input )
         {
             var output = input.RedirectUrlContainsXss();
-            Assert.AreEqual( output, true );
+            Assert.IsTrue( output );
         }
 
         #endregion RedirectUrlContainsXss

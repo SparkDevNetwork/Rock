@@ -3,60 +3,90 @@
     <NotificationBox v-if="errorMessage" :text="errorMessage" type="danger" />
     <Panel title="Lava Shortcodes"
            titleIconCssClass="ti ti-cube"
-           type="block">
+           type="block"
+           :headerSecondaryActions="secondaryActions">
         <template #headerActions>
-            <div class="mr-3">
+            <div class="action">
+                <DropDownList v-model="filteredCategory" :items="categories" :blankValue="blankCategory" class="input-width-lg" />
+            </div>
+            <div class="action">
                 <RockButton v-if="canEdit" class="pull-right btn btn-default btn-xs" @click="onAddClick"><i class="ti ti-plus"></i></RockButton>
             </div>
         </template>
 
-        <div class="lava-shortcode-list-filters d-flex justify-content-between mb-3">
-            <Switch v-model="includeInactive" text="Include Inactive" />
-            <DropDownList v-model="filteredCategory" :items="categories" :blankValue="blankCategory" class="input-width-xl" />
-        </div>
-
         <div class="lava-shortcode-list-items">
-            <ExpanderPanel v-for="shortcode in filteredLavaShortcodes"
-                           :key="shortcode.idKey ?? ''"
-                           :panelTitle="shortcode.name ?? ''"
-                           :panelSubtext="shortcode.description ?? ''"
-                           panelClass="panel-shortcodeitem"
-                           :labels="getLabels(shortcode)">
-                <template #default>
-                    <span v-html="shortcode.documentation"></span>
-                </template>
-                <template #footer>
-                    <NotificationBox v-if="isNullOrWhiteSpace(shortcode.idKey) && shortcode.isSystem" alertType="info">
-                        This shortcode is defined in code (versus being stored in the database) and therefore can not be modified.
-                    </NotificationBox>
-                    <div class="d-flex justify-content-end">
-                        <RockButton v-if="canEdit && !isNullOrWhiteSpace(shortcode.idKey)" @click="onEditClick(shortcode)" class="btn btn-xs btn-default">
+            <ContentSectionContainer sidebar>
+                <ContentSection v-for="(shortcode, index) in filteredLavaShortcodes"
+                                :key="`${index}-${shortcode.guid}`"
+                                :title="shortcode.name ?? ''"
+                                :isCollapsed="true"
+                                :order="index">
+                    <template v-if="shortcode.description" #description>
+                        {{ shortcode.description }}
+                    </template>
+
+                    <template #headerActions>
+                        <span v-if="!shortcode.isActive" class="label label-warning">Inactive</span>
+                        <span v-if="shortcode.isSystem" class="label label-default">System</span>
+                        <template v-if="shortcode.categories?.length">
+                            <span v-for="category in shortcode.categories" class="label label-info">
+                                {{ category.text }}
+                            </span>
+                        </template>
+
+                        <button type="button"
+                                class="btn btn-action"
+                                :disabled="!isEditEnabled(shortcode)"
+                                @click.prevent.stop="onEditClick(shortcode)">
                             <i class="ti ti-pencil"></i>
-                        </RockButton>
-                        <RockButton v-if="canEdit && !isNullOrWhiteSpace(shortcode.idKey) && !shortcode.isSystem" @click="onDeleteClick(shortcode)" class="btn btn-xs btn-default ml-1">
-                            <i class="ti ti-x"></i>
-                        </RockButton>
-                    </div>
-                </template>
-            </ExpanderPanel>
+                        </button>
+
+                        <DropDownMenu :items="getDropDownMenuItems(shortcode)"
+                                      align="right"
+                                      anchorButtonCssClass="btn-minimal" />
+                    </template>
+
+                    <template #default>
+                        <ContentStack>
+                            <span v-html="shortcode.documentation"></span>
+
+                            <div class="lava-shortcode-edit-disabled-notification-box">
+                                <NotificationBox v-if="isNullOrWhiteSpace(shortcode.idKey) && shortcode.isSystem" alertType="info">
+                                    This shortcode is defined in code (versus being stored in the database) and therefore can not be modified.
+                                </NotificationBox>
+                            </div>
+                        </ContentStack>
+                    </template>
+                </ContentSection>
+            </ContentSectionContainer>
         </div>
     </Panel>
 </template>
+
+<style scoped>
+.lava-shortcode-edit-disabled-notification-box {
+    margin-top: var(--spacing-large);
+}
+</style>
 
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { confirmDelete } from "@Obsidian/Utility/dialogs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import ExpanderPanel from "@Obsidian/Controls/expanderPanel.obs";
-    import Switch from "@Obsidian/Controls/switch.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { LavaShortcodeListBox } from "@Obsidian/ViewModels/Blocks/Cms/LavaShortcodeList/lavaShortcodeListBox";
     import { computed, ref } from "vue";
     import Panel from "@Obsidian/Controls/panel.obs";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import { LavaShortcodeBag } from "@Obsidian/ViewModels/Blocks/Cms/LavaShortcodeDetail/lavaShortcodeBag";
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { Enumerable } from "@Obsidian/Utility/linq";
 
     const box = useConfigurationValues<LavaShortcodeListBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -73,9 +103,39 @@
     const includeInactive = ref(false);
     const lavaShortcodes = ref(box.lavaShortcodes.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "")));
 
-    // #endregion
+    // #endregion Values
 
     // #region Computed Values
+
+    /**
+     * Gets the list of secondary action items to be included in the panel.
+     */
+    const secondaryActions = computed((): PanelAction[] => {
+        const actions: PanelAction[] = [];
+
+        if (includeInactive.value) {
+            actions.push({
+                title: "Hide Inactive",
+                iconCssClass: "ti ti-eye-off",
+                type: "default",
+                handler: (_: Event) => {
+                    includeInactive.value = false;
+                }
+            });
+        }
+        else {
+            actions.push({
+                title: "Show Inactive",
+                iconCssClass: "ti ti-eye",
+                type: "default",
+                handler: (_: Event) => {
+                    includeInactive.value = true;
+                }
+            });
+        }
+
+        return actions;
+    });
 
     /**
      * Gets the lava shortcodes based on the selected category and include inactive filters.
@@ -84,52 +144,64 @@
     const filteredLavaShortcodes = computed((): LavaShortcodeBag[] => {
         const hasCategoryFilter = filteredCategory.value !== blankCategory.value;
 
-        return lavaShortcodes.value.filter(l => {
-            return (includeInactive.value === true || l.isActive === true)
-                && (hasCategoryFilter === false || l.categories?.some(c => c.value === filteredCategory.value));
-        });
+        return Enumerable
+            .from(
+                lavaShortcodes.value.filter(l => {
+                    return (includeInactive.value || l.isActive)
+                        && (
+                            !hasCategoryFilter
+                            || l.categories?.some(
+                                c => c.value === filteredCategory.value
+                            )
+                        );
+                })
+            )
+            .orderBy(l => l.name ?? "")
+            .toArray();
     });
 
-    // #endregion
+    // #endregion Computed Values
 
     // #region Functions
 
     /**
-     * Gets the labels for a lava shortcode.
+     * Gets whether this shortcode may be edited.
      * @param lavaShortcode The lava shortcode.
-     * @returns The labels for the lava shortcode.
+     * @returns Whether this shortcode may be edited
      */
-    function getLabels(lavaShortcode: LavaShortcodeBag): PanelAction[] {
-        const labels: PanelAction[] = [];
-
-        if (lavaShortcode.isActive === false) {
-            labels.push({
-                title: "Inactive",
-                type: "warning"
-            });
-        }
-
-        if (lavaShortcode.isSystem === true) {
-            labels.push({
-                title: "System",
-                type: "default"
-            });
-        }
-
-        const hasCategories = (lavaShortcode?.categories?.length ?? 0) > 0;
-        if (hasCategories) {
-            lavaShortcode?.categories?.forEach(category => {
-                labels.push({
-                    title: category.text ?? "",
-                    type: "info"
-                });
-            });
-        }
-
-        return labels;
+    function isEditEnabled(lavaShortcode: LavaShortcodeBag): boolean {
+        return canEdit.value && !isNullOrWhiteSpace(lavaShortcode.idKey);
     }
 
-    // #endregion
+    /**
+     * Gets whether this shortcode may be deleted.
+     * @param lavaShortcode The lava shortcode.
+     * @returns Whether this shortcode may be deleted.
+     */
+    function isDeleteEnabled(lavaShortcode: LavaShortcodeBag): boolean {
+        return isEditEnabled(lavaShortcode) && !lavaShortcode.isSystem;
+    }
+
+    /**
+     * Gets the drop down menu items for the lava shortcode.
+     * @param lavaShortCode The lava shortcode.
+     * @returns The drop down menu items for the lava shortcode.
+     */
+    function getDropDownMenuItems(lavaShortCode: LavaShortcodeBag): MenuAction[] {
+        const canDelete = isDeleteEnabled(lavaShortCode);
+
+        return [
+            {
+                iconCssClass: "ti ti-x",
+                title: "Delete",
+                type: canDelete ? "danger" : "default",
+                handler: () => onDeleteClick(lavaShortCode),
+                disabled: !canDelete
+            }
+        ];
+    }
+
+    // #endregion Functions
 
     // #region Event Handlers
 
@@ -173,6 +245,6 @@
         }
     }
 
-    // #endregion
+    // #endregion Event Handlers
 
 </script>

@@ -86,7 +86,6 @@ namespace RockWeb.Blocks.Connection
         "Status Template",
         Description = "Lava Template that can be used to customize what is displayed in the status bar. Includes common merge fields plus ConnectionOpportunities, ConnectionTypes and the default IdleTooltip.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         DefaultValue = StatusTemplateDefaultValue,
         Order = 5,
         Key = AttributeKey.StatusTemplate )]
@@ -95,7 +94,6 @@ namespace RockWeb.Blocks.Connection
         "Opportunity Summary Template",
         Description = "Lava Template that can be used to customize what is displayed in each Opportunity Summary. Includes common merge fields plus the OpportunitySummary and ConnectionOpportunity.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         DefaultValue = OpportunitySummaryTemplateDefaultValue,
         Key = AttributeKey.OpportunitySummaryTemplate,
         Order = 6 )]
@@ -103,7 +101,6 @@ namespace RockWeb.Blocks.Connection
         "Connection Request Status Icons Template",
         Description = "Lava Template that can be used to customize what is displayed for the status icons in the connection request grid.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         DefaultValue = ConnectionRequestStatusIconsTemplateDefaultValue,
         Key = AttributeKey.ConnectionRequestStatusIconsTemplate,
         Order = 7 )]

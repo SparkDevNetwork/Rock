@@ -52,5 +52,14 @@
             "disableOptimisticBPs": true,
             "runtimeExecutable": "npm"
         }
+    ],
+    "compounds": [
+      {
+        "name": "Debug Blocks and Framework",
+        "configurations": [
+          "Debug Blocks",
+          "Debug Framework (Attach to existing Chrome)"
+        ]
+      }
     ]
 }

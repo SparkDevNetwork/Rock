@@ -6,7 +6,7 @@ using Rock.Lava;
 
 namespace Rock.Tests.Utility
 {
-    [TestClass]        
+    [TestClass]
     public class RockSerializableDictionaryTests
     {
         [TestMethod]

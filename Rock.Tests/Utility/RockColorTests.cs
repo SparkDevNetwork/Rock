@@ -445,7 +445,7 @@ namespace Rock.Tests.Utility
         {
             var color = new RockColor( 255, 255, 255 );
 
-            Assert.AreEqual( true, color.IsLight );
+            Assert.IsTrue( color.IsLight );
         }
 
         /// <summary>
@@ -456,7 +456,7 @@ namespace Rock.Tests.Utility
         {
             var color = new RockColor( 0, 0, 0 );
 
-            Assert.AreEqual( false, color.IsLight );
+            Assert.IsFalse( color.IsLight );
         }
 
         #endregion
@@ -471,7 +471,7 @@ namespace Rock.Tests.Utility
         {
             var color = new RockColor( 0, 0, 0 );
 
-            Assert.AreEqual( true, color.IsDark );
+            Assert.IsTrue( color.IsDark );
         }
 
         /// <summary>
@@ -482,7 +482,7 @@ namespace Rock.Tests.Utility
         {
             var color = new RockColor( 255, 255, 255 );
 
-            Assert.AreEqual( false, color.IsDark );
+            Assert.IsFalse( color.IsDark );
         }
 
         #endregion

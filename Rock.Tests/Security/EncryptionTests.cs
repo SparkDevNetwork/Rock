@@ -1,7 +1,4 @@
-﻿using System.Security.Cryptography;
-using System.Text;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Security;
 
@@ -34,7 +31,7 @@ namespace Rock.Tests.Security
             var encryptedPlainText = Encryption.EncryptString( _plainText1 );
             string decryptedPlainText = Encryption.DecryptString( encryptedPlainText );
 
-            Assert.IsTrue( decryptedPlainText == _plainText1 );
+            Assert.AreEqual( _plainText1, decryptedPlainText );
         }
 
         [TestMethod]
@@ -43,7 +40,7 @@ namespace Rock.Tests.Security
             var encryptedPlainText = Encryption.EncryptString( _plainText2 );
             string decryptedPlainText = Encryption.DecryptString( encryptedPlainText );
 
-            Assert.IsTrue( decryptedPlainText == _plainText2 );
+            Assert.AreEqual( _plainText2, decryptedPlainText );
         }
 
         [TestMethod]
@@ -52,15 +49,15 @@ namespace Rock.Tests.Security
             var encryptedPlainText = Encryption.EncryptString( _plainText3 );
             string decryptedPlainText = Encryption.DecryptString( encryptedPlainText );
 
-            Assert.IsTrue( decryptedPlainText == _plainText3 );
+            Assert.AreEqual( _plainText3, decryptedPlainText );
         }
 
         [TestMethod]
         public void EncryptStringWithLegacyMethodAndDecryptWithNewMethod()
         {
-            #pragma warning disable CS0618
+#pragma warning disable CS0618
             var oldMethodEncryptedString = Encryption.EncryptString( _plainText2, _dataEncryptionKey1 );
-            #pragma warning restore CS0618
+#pragma warning restore CS0618
             var decryptedOldMethodStringWithNewMethod = Encryption.DecryptString( oldMethodEncryptedString );
 
             Assert.AreEqual( decryptedOldMethodStringWithNewMethod, _plainText2 );

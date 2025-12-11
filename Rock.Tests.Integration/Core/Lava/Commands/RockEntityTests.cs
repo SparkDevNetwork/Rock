@@ -106,10 +106,10 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 // Verify that the output contains series headings and relevant dates for both schedules.
-                Assert.Contains("<b>Series 1</b>", output );
-                Assert.Contains("<li>Jan 4, 2020 in Meeting Room 1</li>", output );
-                Assert.Contains("<b>Series 2</b>", output );
-                Assert.Contains("<li>Jan 5, 2020 in Meeting Room 2</li>", output );
+                Assert.Contains( "<b>Series 1</b>", output );
+                Assert.Contains( "<li>Jan 4, 2020 in Meeting Room 1</li>", output );
+                Assert.Contains( "<b>Series 2</b>", output );
+                Assert.Contains( "<li>Jan 5, 2020 in Meeting Room 2</li>", output );
             } );
         }
 
@@ -161,8 +161,8 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
 
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
-                Assert.Contains("Of Faith and Firsts (Pete Foster)", output );
-                Assert.Contains("1x8 (Pete Foster)", output );
+                Assert.Contains( "Of Faith and Firsts (Pete Foster)", output );
+                Assert.Contains( "1x8 (Pete Foster)", output );
             } );
         }
 
@@ -288,7 +288,7 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
             } );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( @"LastName == ""Decker"" && NickName ==""Ted""", "Ted Decker" )]
         [DataRow( @"LastName == ""Decker"" && NickName !=""Ted""", "Cindy Decker" )]
         [DataRow( @"LastName == ""Decker"" && NickName ^=""T""", "Ted Decker" )]
@@ -385,9 +385,9 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
 
                 TestHelper.DebugWriteRenderResult( engine, input, output.Text );
 
-                Assert.IsTrue( output.Text.Contains( "No parameters were found in your command." ), "Expected message not found." );
+                Assert.Contains( "No parameters were found in your command.", output.Text, "Expected message not found." );
             } );
-		}
+        }
 
         /// Verify that Lava Entity Block parameter names are case-insensitive.
         /// Parameter names should be parsed and stored internally as lowercase.
@@ -449,7 +449,7 @@ TedDecker<br/>
                 var result = engine.RenderTemplate( input, new LavaRenderParameters { Context = context } );
                 var count = result.Text.AsInteger();
 
-                Assert.IsTrue( count > 0, "Count variable is not set to a non-zero value." );
+                Assert.IsGreaterThan( 0, count, "Count variable is not set to a non-zero value." );
             } );
         }
     }

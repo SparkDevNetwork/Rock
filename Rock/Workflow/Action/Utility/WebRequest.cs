@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -45,7 +45,11 @@ namespace Rock.Workflow.Action
     [TextField( "Basic Auth Password", "The password for basic http authentication.", false, "", "", 5, isPassword: true )]
     [EnumField( "Request Content Type", "", typeof( RequestContentType ), true, "0", order: 6 )]
     [EnumField( "Response Content Type", "", typeof( ResponseContentType ), true, "0", order: 7 )]
-    [CodeEditorField( "Body", "The body to send with the request. <span class='tip tip-lava'></span>", Web.UI.Controls.CodeEditorMode.Lava, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 8 )]
+    [CodeEditorField( "Body",
+        Description = "The body to send with the request. <span class='tip tip-lava'></span>",
+        EditorMode = Web.UI.Controls.CodeEditorMode.Lava,
+        IsRequired = false,
+        Order = 8 )]
     [WorkflowAttribute( "Response Attribute", "An attribute to set to the response from web request.", false, "", "", 9 )]
     [Rock.SystemGuid.EntityTypeGuid( "419C1C35-1B3E-4D36-A8AB-57EA476D7651")]
     public class WebRequest : ActionComponent

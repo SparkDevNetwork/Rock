@@ -1,7 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Model;
-using Rock.Tests.Shared;
 
 namespace Rock.Tests.Model
 {
@@ -55,7 +54,7 @@ namespace Rock.Tests.Model
 
             var result = block.ToJson();
             const string key = "\"Name\":\"Foo\"";
-            Assert.AreNotEqual( result.IndexOf( key ), -1 );
+            Assert.AreNotEqual( -1, result.IndexOf( key ) );
         }
 
         /// <summary>

@@ -176,7 +176,6 @@
                     <CodeEditor v-model="headerContent"
                                 label="Header Content"
                                 mode="lava"
-                                theme="rock"
                                 :editorHeight="400"
                                 help="Additional HTML content to include in the &amp;lt;head&amp;gt; section of the rendered page." />
                 </div>

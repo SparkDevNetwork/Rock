@@ -232,7 +232,6 @@
                         <CodeEditor v-model="cardLavaTemplate"
                                     :editorHeight="200"
                                     mode="lava"
-                                    theme="rock"
                                     label="Card Content Lava Template"
                                     help="The template to use when formatting the summary card for this step." />
                     </div>

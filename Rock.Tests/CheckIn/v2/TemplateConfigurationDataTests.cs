@@ -85,7 +85,7 @@ namespace Rock.Tests.CheckIn.v2
         // Start Lava templates section.
         [DataRow( nameof( TemplateConfigurationData.AbilityLevelSelectHeaderLavaTemplate ), "testtemplate", GroupTypeAttributeKey.CHECKIN_ABILITY_LEVEL_SELECT_HEADER_LAVA_TEMPLATE )]
         [DataRow( nameof( TemplateConfigurationData.ActionSelectHeaderLavaTemplate ), "testtemplate", GroupTypeAttributeKey.CHECKIN_ACTION_SELECT_HEADER_LAVA_TEMPLATE )]
-        [DataRow( nameof(TemplateConfigurationData.CheckoutPersonSelectHeaderLavaTemplate ), "testtemplate", GroupTypeAttributeKey.CHECKIN_CHECKOUT_PERSON_SELECT_HEADER_LAVA_TEMPLATE )]
+        [DataRow( nameof( TemplateConfigurationData.CheckoutPersonSelectHeaderLavaTemplate ), "testtemplate", GroupTypeAttributeKey.CHECKIN_CHECKOUT_PERSON_SELECT_HEADER_LAVA_TEMPLATE )]
         [DataRow( nameof( TemplateConfigurationData.FamilySelectButtonLavaTemplate ), "testtemplate", GroupTypeAttributeKey.CHECKIN_FAMILYSELECT_LAVA_TEMPLATE )]
         [DataRow( nameof( TemplateConfigurationData.GroupSelectHeaderLavaTemplate ), "testtemplate", GroupTypeAttributeKey.CHECKIN_GROUP_SELECT_HEADER_LAVA_TEMPLATE )]
         [DataRow( nameof( TemplateConfigurationData.GroupTypeSelectHeaderLavaTemplate ), "testtemplate", GroupTypeAttributeKey.CHECKIN_GROUP_TYPE_SELECT_HEADER_LAVA_TEMPLATE )]

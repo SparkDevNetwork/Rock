@@ -156,7 +156,7 @@ namespace Rock.Tests.Integration.Reporting.ReportBuilder
 
             var valueCount1 = results1.Data.Select( "[AttributeValue] > ''" ).Count();
 
-            Assert.IsTrue( valueCount1 > 0, "Attribute column must contain at least one value." );
+            Assert.IsGreaterThan( 0, valueCount1, "Attribute column must contain at least one value." );
 
             // Build and verify the report output for the unauthorized user.
             builder.OutputFieldMask = "@@@";
@@ -169,7 +169,7 @@ namespace Rock.Tests.Integration.Reporting.ReportBuilder
 
             var valueCount2 = results2.Data.Select( "[AttributeValue] > '' AND [AttributeValue] <> '@@@'" ).Count();
 
-            Assert.IsTrue( ( valueCount2 == 0 ), "Attribute column contains unauthorized values." );
+            Assert.AreEqual( 0, valueCount2, "Attribute column contains unauthorized values." );
         }
 
         #endregion

@@ -161,7 +161,7 @@ namespace Rock.Tests.Integration.Crm
 
             report = reportBuilder.CreateReport();
 
-            Assert.IsTrue( !report.ChangeEvents.Any( x => x.OldConnectionStatusId != attendeeConnectionStatusId ), "Status found but not expected." );
+            Assert.IsFalse( report.ChangeEvents.Any( x => x.OldConnectionStatusId != attendeeConnectionStatusId ), "Status found but not expected." );
         }
 
         /// <summary>

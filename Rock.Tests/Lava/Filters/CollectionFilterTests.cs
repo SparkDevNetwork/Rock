@@ -25,7 +25,6 @@ using Newtonsoft.Json.Converters;
 
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Tests.Shared;
 
 namespace Rock.Tests.Lava.Filters
 {
@@ -122,7 +121,7 @@ Squashed Fruit: apples, oranges, peaches
             lavaTemplate = lavaTemplate.Replace( "`", "\"" );
 
             // Only the first person of each family in the collection should be returned.
-            TestHelper.AssertTemplateOutput( "TedDecker<br>BillMarble<br>", lavaTemplate, mergeValues, ignoreWhitespace:true );
+            TestHelper.AssertTemplateOutput( "TedDecker<br>BillMarble<br>", lavaTemplate, mergeValues, ignoreWhitespace: true );
         }
 
         [TestMethod]
@@ -215,7 +214,7 @@ Squashed Fruit: apples, oranges, peaches
             TestHelper.AssertTemplateOutput( "Item 1<br>Item 3<br>", lavaTemplate, mergeValues, ignoreWhitespace: true );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "3,5,7", "15" )]
         [DataRow( "3.1,5.1,7.1", "15.3" )]
         [DataRow( "3.1,5.01,7.001", "15.111" )]
@@ -236,7 +235,7 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
         #region Filter Tests: Dictionaries
 
         [TestMethod]
-         public void AddToDictionary_AddMultipleKeyValuePairs_ReturnsUpdatedDictionary()
+        public void AddToDictionary_AddMultipleKeyValuePairs_ReturnsUpdatedDictionary()
         {
             var lavaTemplate = @"
         {% assign dict = '' | AddToDictionary:'key1','value2' %}
@@ -317,7 +316,7 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
         /// <summary>
         /// Searching for strings in a collection returns correct match indicators.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "Ted", true )]
         [DataRow( "Brian", true )]
         [DataRow( "Cynthia", true )]
@@ -357,7 +356,7 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
             Assert.IsTrue( queueCollection is IEnumerable<string>
                 && !( queueCollection is IList ) );
 
-            TestHelper.AssertTemplateOutput( "true", lavaTemplate, mergeValues, ignoreWhitespace:true );
+            TestHelper.AssertTemplateOutput( "true", lavaTemplate, mergeValues, ignoreWhitespace: true );
 
             // IList collection.
             mergeValues["TestEnumerable"] = itemList;
@@ -393,7 +392,7 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
         /// <summary>
         /// Specifying an index of 0 returns the first item in the collection.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( 0, "Item 1" )]
         [DataRow( 1, "Item 2" )]
         [DataRow( 2, "Item 3" )]
@@ -460,7 +459,7 @@ Total: {{{{ '{values}' | Split:',' | Sum }}}}
         [TestMethod]
         public void OrderBy_ExpandoObjectList_CanSortByIntegerPropertyAscending()
         {
-            var mergeValues = new LavaDataDictionary { { "Items", GetOrderByTestCollection() } } ;
+            var mergeValues = new LavaDataDictionary { { "Items", GetOrderByTestCollection() } };
 
             TestHelper.AssertTemplateOutput( "A;B;C;D;",
                 "{% assign items = Items | OrderBy:'Order' %}{% for item in items %}{{ item.Title }};{% endfor %}",

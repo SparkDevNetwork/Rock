@@ -15,10 +15,10 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 
 using Rock.ViewModels.Utility;
-using Rock.Model;
 
 namespace Rock.ViewModels.Blocks.Cms.LavaShortcodeDetail
 {
@@ -27,6 +27,11 @@ namespace Rock.ViewModels.Blocks.Cms.LavaShortcodeDetail
     /// </summary>
     public class LavaShortcodeBag : EntityBagBase
     {
+        /// <summary>
+        /// Gets or sets the unique identifier of the shortcode.
+        /// </summary>
+        public Guid Guid { get; set; }
+
         /// <summary>
         /// Gets or sets the collection of Categories that this Rock.Model.LavaShortcode is associated with.
         /// NOTE: Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime if Categories are modified.
@@ -88,5 +93,13 @@ namespace Rock.ViewModels.Blocks.Cms.LavaShortcodeDetail
         /// The parameters.
         /// </value>
         public List<ListItemBag> Parameters { get; set; }
+
+        /// <summary>
+        /// Gets or sets how variables defined within this shortcode are scoped.
+        /// </summary>
+        /// <value>
+        /// The shortcode scope behavior.
+        /// </value>
+        public string ShortcodeScopeBehavior { get; set; }
     }
 }

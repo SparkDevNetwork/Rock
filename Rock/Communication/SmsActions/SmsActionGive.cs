@@ -107,7 +107,6 @@ namespace Rock.Communication.SmsActions
 
     [CodeEditorField( "Help Response",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         Description = "The response that will be sent if the sender's message doesn't make sense, there is missing information, or an error occurs. <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         IsRequired = true,
         DefaultValue = "To give, text GIVE & amount. Example: GIVE $250. More help at XXXXXXXXXX. Msg & data rates may apply. Reply STOP to cancel.",
@@ -117,7 +116,6 @@ namespace Rock.Communication.SmsActions
 
     [CodeEditorField( "Max Amount Response",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         Description = "The response that will be sent if the sender is trying to give more than the max amount (if configured). <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         IsRequired = false,
         DefaultValue = "Thank you for your generosity but our mobile giving solution cannot process a gift this large. Please give using our website.",
@@ -127,7 +125,6 @@ namespace Rock.Communication.SmsActions
 
     [CodeEditorField( "Setup Response",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         Description = "The response that will be sent if the sender is unknown, does not have a saved account, or requests to edit their giving profile. <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         IsRequired = true,
         DefaultValue = @"{{ 'Global' | Attribute:'OrganizationName'}} text giving alerts: Register here: {% if SetupLink and SetupLink != empty %}{{ SetupLink | CreateShortLink }}{% endif %} Msg & data rates may apply. 1 msg/gift. Reply HELP for help, STOP to cancel",
@@ -137,7 +134,6 @@ namespace Rock.Communication.SmsActions
 
     [CodeEditorField( "Success Response",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         Description = "The response that will be sent if the payment is successful. <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         IsRequired = true,
         DefaultValue = "Thank you! Your {{ 'Global' | Attribute:'OrganizationName'}} text gift of ${{ Amount | Format:'#,##0.00' }} has been received. A confirmation has been sent to the email address you provided.",
@@ -147,7 +143,6 @@ namespace Rock.Communication.SmsActions
 
     [CodeEditorField( "Refund Failure Response",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         Description = "The response that will be sent if the sender's gift cannot be refunded. <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         IsRequired = true,
         DefaultValue = "We are unable to process a refund for your last gift. Please contact us for assistance.",
@@ -157,7 +152,6 @@ namespace Rock.Communication.SmsActions
 
     [CodeEditorField( "Refund Success Response",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         Description = "The response that will be sent if the refund is successful. <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         IsRequired = true,
         DefaultValue = "Your gift for ${{ Amount | Format:'#,##0.00' }} to the {{ AccountName }} has been refunded.",
@@ -167,7 +161,6 @@ namespace Rock.Communication.SmsActions
 
     [CodeEditorField( "Missing Amount Response",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         Description = "The response that will be sent if the amount value is missing from the sender's message. <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         IsRequired = true,
         DefaultValue = "To give, simply respond with a gift amount. For example, '$100' or '$200'.",
@@ -177,7 +170,6 @@ namespace Rock.Communication.SmsActions
 
     [CodeEditorField( "Transaction Failure Response",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         Description = "The response that will be sent if the transaction fails. <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
         IsRequired = true,
         DefaultValue = "Your transaction could not be processed. Please text GIVE & amount (example: GIVE $250) to try again, or text SETUP if you need to change your payment details.",

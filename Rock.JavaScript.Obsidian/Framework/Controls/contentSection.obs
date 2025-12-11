@@ -5,10 +5,15 @@
         <div v-if="title"
              class="contentsection-header"
              @click="onSectionHeaderClick">
-            <h5 class="contentsection-header-title">
-                <i v-if="icon" :class="icon"></i>
-                {{ title }}
-            </h5>
+            <div class="contentsection-header-title-and-description">
+                <h5 class="contentsection-header-title">
+                    <i v-if="icon" :class="icon"></i>
+                    {{ title }}
+                </h5>
+                <div v-if="$slots.description" class="contentsection-header-description">
+                    <slot name="description" />
+                </div>
+            </div>
 
             <div class="contentsection-header-actions">
 
@@ -126,16 +131,25 @@
             type: String as PropType<string>,
             required: false
         },
+
+        /**
+         * The order this section appears in relation to other sections.
+         */
+        order: {
+            type: Number as PropType<number>,
+            default: 0
+        }
     });
 
     // #region Values
-    const isCollapsed = ref(props.disableCollapse ? false : props.isCollapsed);
 
     const title = computed((): string | undefined => props.title);
     const icon = computed((): string | undefined => props.icon);
+    const isCollapsed = ref(props.disableCollapse ? false : props.isCollapsed);
+    const order = ref(props.order);
     const isOverflowCollapsed = ref(true);
 
-    const section = createSection(title, icon, isCollapsed);
+    const section = createSection(title, icon, isCollapsed, order);
     const sectionContainer = useSectionContainer();
 
     // #endregion

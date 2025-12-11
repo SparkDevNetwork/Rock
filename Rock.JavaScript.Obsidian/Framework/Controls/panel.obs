@@ -406,7 +406,7 @@
     });
 
     const panelBodyClass = computed<string[]>(() => {
-        const classes = ["panel-body"];
+        const classes = ["panel-body styled-scroll"];
 
         if (props.panelBodyCssClass) {
             classes.push(props.panelBodyCssClass);

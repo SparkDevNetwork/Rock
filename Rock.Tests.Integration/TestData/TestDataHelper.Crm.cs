@@ -44,7 +44,7 @@ namespace Rock.Tests.Integration.TestData
             {
                 rockContext = rockContext ?? new RockContext();
                 var service = GetEntityService<T>( rockContext );
-                
+
                 var entity = service.GetByIdentifierOrThrow( identifier );
                 return entity;
             }
@@ -293,7 +293,7 @@ namespace Rock.Tests.Integration.TestData
 
                 /// <inheritdoc cref="GroupRequirement.AppliesToDataViewId" />
                 public string AppliesToDataViewIdentifier { get; set; }
- 
+
                 public DueDateType? DueDateRequirementType { get; set; }
                 public int? DueDateGroupAttributeId { get; set; }
                 public DateTime? DueDate { get; set; }
@@ -408,9 +408,9 @@ namespace Rock.Tests.Integration.TestData
                     var groupDueDateAttributeId = AttributeCache.AllForEntityType<Group>()
                         .Where( a => a.EntityTypeQualifierColumn == "GroupType"
                             && a.EntityTypeQualifierValue == groupRequirement.GroupId.GetValueOrDefault().ToString() )
-                        .Select( a=> a.Id )
+                        .Select( a => a.Id )
                         .FirstOrDefault();
-                     groupRequirement.DueDateAttributeId = groupDueDateAttributeId;
+                    groupRequirement.DueDateAttributeId = groupDueDateAttributeId;
                 }
 
                 // Check if a duplicate group requirement type exists for the same group role.

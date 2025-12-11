@@ -40,7 +40,13 @@ namespace Rock.Badge.Component
     [ExportMetadata( "ComponentName", "Alert Note" )]
 
     [NoteTypeField( "Note Types", "The note types you want to look for alerts on.", true, "Rock.Model.Person", "", "", true, Rock.SystemGuid.NoteType.PERSON_TIMELINE_NOTE, order: 0 )]
-    [CodeEditorField( "Badge Content", "", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, "<span class='label label-danger'>Alert Note Exists</span>", order: 1 )]
+    [CodeEditorField( "Badge Content",
+        Description = "",
+        EditorMode = CodeEditorMode.Lava,
+        IsRequired = true,
+        DefaultValue = "<span class='label label-danger'>Alert Note Exists</span>",
+        Order = 1 )]
+
     [Rock.SystemGuid.EntityTypeGuid( "139E9BD6-2159-49F0-B8C8-29C7E251BE50")]
     public class AlertNote : BadgeComponent
     {

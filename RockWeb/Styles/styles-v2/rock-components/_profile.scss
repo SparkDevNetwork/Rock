@@ -440,7 +440,7 @@
     }
 
     .settings {
-      padding: var(--spacing-tiny) var(--spacing-small) var(--spacing-xsmall);
+      padding: var(--spacing-xsmall);
     }
   }
 
@@ -749,23 +749,6 @@ background: currentColor;
 .profile-toggle:hover {
   color: var(--color-interface-strong);
   background-color: var(--color-interface-softer);
-}
-
-.rockbadge-assessment a {
-  display: inline-flex;
-  color: inherit;
-}
-
-.rockbadge-assessment .ti-stacked-1x {
-  color: var(--color-interface-softest) !important;
-}
-
-.rockbadge-assessment .ti-stacked-2x {
-  color: currentColor !important;
-}
-
-.rockbadge-assessment.requested {
-  color: var(--color-link-strong) !important;
 }
 
 .avatar-lg {

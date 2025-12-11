@@ -22,6 +22,7 @@
 //
 
 import { Guid } from "@Obsidian/Types";
+import { BenevolenceTypeBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceTypeBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The additional configuration options for the Benevolence Request Detail block. */
@@ -33,7 +34,7 @@ export type BenevolenceRequestDetailOptionsBag = {
     benevolenceRequestStatementPageAttribute: Guid;
 
     /** Gets or sets the benevolence type. */
-    benevolenceRequestTypes?: ListItemBag[] | null;
+    benevolenceRequestTypes?: BenevolenceTypeBag[] | null;
 
     /** Gets or sets the unique identifier for the case worker role attribute. */
     caseWorkersByRole?: ListItemBag[] | null;

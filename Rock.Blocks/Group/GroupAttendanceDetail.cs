@@ -122,7 +122,6 @@ namespace Rock.Blocks.Group
         DefaultValue = DefaultListItemDetailsTemplate,
         Description = "An optional lava template to appear next to each person in the list.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = false,
         Key = AttributeKey.ListItemDetailsTemplate,

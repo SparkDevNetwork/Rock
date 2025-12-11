@@ -122,6 +122,7 @@
 
                             <Switch v-model="isPersonReport"
                                     text="Person Report"
+                                    help="When enabled, the following actions become available in the result grid: Launch Workflow, Bulk Update, Merge Person Records & Communicate. These options require a 'Person'-type column containing the person's ID. The first matching column will be used."
                                     :disabled="isDisabled" />
 
                             <Switch v-model="enableStickyHeader"
@@ -155,30 +156,25 @@
                                  textMode="multiline"
                                  :rows="1"
                                  class="input-xlarge"
-                                 help="The comma-separated column name(s) that contain a person ID field to use as the recipient for a communication. If left blank, it will assume a column named 'Id' contains the recipient's person Id."
+                                 help="The comma-separated column name(s) that contain a person ID field to use as the recipient for a communication. If left blank, it will assume the first column of type 'Person' contains the recipient's person ID."
                                  :disabled="isDisabled" />
                     </div>
                     <div class="col-md-6">
                         <RockLabel>Grid Actions</RockLabel>
                         <div class="form-group">
-                            <CheckBox v-model="enableExport"
-                                      label="" text="Enable Export"
-                                      :disabled="isDisabled" />
-
                             <CheckBox v-model="enableMergeTemplate"
                                       label=""
                                       text="Merge Template"
                                       :disabled="isDisabled" />
 
-                            <template v-if="isPersonReport">
-                                <CheckBox v-model="enableCommunications"
-                                          label=""
-                                          text="Communications"
-                                          :disabled="isDisabled" />
+                            <CheckBox v-model="enableExport"
+                                      label="" text="Enable Export"
+                                      :disabled="isDisabled" />
 
-                                <CheckBox v-model="enablePersonMerge"
+                            <template v-if="isPersonReport">
+                                <CheckBox v-model="enableLaunchWorkflow"
                                           label=""
-                                          text="Person Merge"
+                                          text="Launch Workflow"
                                           :disabled="isDisabled" />
 
                                 <CheckBox v-model="enableBulkUpdate"
@@ -186,9 +182,14 @@
                                           text="Bulk Update"
                                           :disabled="isDisabled" />
 
-                                <CheckBox v-model="enableLaunchWorkflow"
+                                <CheckBox v-model="enablePersonMerge"
                                           label=""
-                                          text="Launch Workflow"
+                                          text="Merge Person Records"
+                                          :disabled="isDisabled" />
+
+                                <CheckBox v-model="enableCommunications"
+                                          label=""
+                                          text="Communicate"
                                           :disabled="isDisabled" />
                             </template>
                         </div>

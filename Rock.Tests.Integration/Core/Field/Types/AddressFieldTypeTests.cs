@@ -54,7 +54,7 @@ namespace Rock.Tests.Integration.Core.Field.Types
         [TestMethod]
         [DataRow( false )]
         [DataRow( true )]
-        public void GetEditValue_ShouldReturnLocationNullForBlankAddressField(bool isRequired)
+        public void GetEditValue_ShouldReturnLocationNullForBlankAddressField( bool isRequired )
         {
             var addressFieldType = new AddressFieldType();
             var addressControl = new Rock.Web.UI.Controls.AddressControl();

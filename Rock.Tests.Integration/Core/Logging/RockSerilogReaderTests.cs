@@ -20,7 +20,6 @@ using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Logging;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Core.Logging
@@ -54,7 +53,7 @@ namespace Rock.Tests.Integration.Core.Logging
             var pageSize = 1000;
 
             var results = rockReader.GetEvents( currentPageIndex, pageSize );
-            Assert.AreEqual( 0, results.Count );
+            Assert.IsEmpty( results );
         }
 
         [TestMethod]
@@ -80,7 +79,7 @@ namespace Rock.Tests.Integration.Core.Logging
             var pageSize = 1000;
 
             var results = rockReader.GetEvents( currentPageIndex, pageSize );
-            Assert.AreEqual( 0, results.Count );
+            Assert.IsEmpty( results );
         }
 
         [TestMethod]
@@ -159,7 +158,7 @@ namespace Rock.Tests.Integration.Core.Logging
             var pageSize = 1000;
 
             var results = rockReader.GetEvents( currentPageIndex, pageSize );
-            Assert.AreEqual( 0, results.Count );
+            Assert.IsEmpty( results );
         }
 
         [TestMethod]
@@ -182,7 +181,7 @@ namespace Rock.Tests.Integration.Core.Logging
             var pageSize = 19000;
 
             var results = rockReader.GetEvents( currentPageIndex, pageSize );
-            Assert.AreEqual( expectedLogs.Count, results.Count );
+            Assert.HasCount( expectedLogs.Count, results );
         }
 
         [TestMethod]
@@ -209,7 +208,7 @@ namespace Rock.Tests.Integration.Core.Logging
             var pageSize = 100;
 
             var results = rockReader.GetEvents( currentPageIndex, pageSize );
-            Assert.AreEqual( 1, results.Count );
+            Assert.HasCount( 1, results );
             Assert.AreEqual( expectedMessage, results[0].Message );
             Assert.AreEqual( expectedCategory, results[0].Category );
         }

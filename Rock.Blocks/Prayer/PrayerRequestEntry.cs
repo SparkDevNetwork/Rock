@@ -229,7 +229,6 @@ namespace Rock.Blocks.Prayer
     [CodeEditorField( "Save Success Text",
         Description = "Text to display upon successful save. The 'PrayerRequest' merge field will contain the saved PrayerRequest. (Only applies if not navigating to parent page on save.) <span class='tip tip-lava'></span><span class='tip tip-html'></span>",
         EditorMode = CodeEditorMode.Html,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         DefaultValue = "<p>Thank you for allowing us to pray for you.</p>",

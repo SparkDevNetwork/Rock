@@ -48,7 +48,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Person
             var settingsSource = new StepDataViewFilter.FilterSettings();
 
             settingsSource.DataViewGuid = TestGuids.Steps.ProgramSacramentsGuid;
-            
+
             var settingsString = settingsSource.ToSelectionString();
 
             var settingsTarget = new StepDataViewFilter.FilterSettings( settingsString );

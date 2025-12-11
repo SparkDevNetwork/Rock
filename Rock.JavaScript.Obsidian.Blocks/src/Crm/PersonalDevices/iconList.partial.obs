@@ -1,0 +1,213 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="icon-list">
+        <!-- Mobile Device: Show icons only if ALL values are not null -->
+        <template v-if="isMobileDevice && allValuesPresent">
+            <span :title="notificationsTooltip" ref="notificationsElement">
+                <i class="ti ti-bell icon-info" :class="{ 'is-dim': notificationsEnabled === false }"></i>
+            </span>
+
+            <span :title="locationPermissionsTooltip" ref="locationPermissionElement">
+                <i class="ti ti-location" :class="locationPermissionIconClass"></i>
+            </span>
+
+            <span :title="preciseLocationTooltip" ref="preciseLocationElement">
+                <i class="ti ti-current-location icon-info"
+                   :class="{ 'is-dim': isPreciseLocationEnabled === false }"></i>
+            </span>
+
+            <span :title="beaconMonitoringTooltip" ref="beaconElement">
+                <i class="ti ti-bluetooth-connected icon-info"
+                   :class="{ 'is-dim': isBeaconMonitoringEnabled === false }"></i>
+            </span>
+
+            <!-- MAC Address for Mobile Devices: only active if NO other mobile features are enabled -->
+            <span v-if="macAddress" :title="macAddressEnabled ? macAddressTooltip : undefined" ref="macElement">
+                <i class="ti ti-access-point icon-info" :class="{ 'is-dim': !macAddressEnabled }"></i>
+            </span>
+        </template>
+
+        <!-- Desktop/TV: Only show MAC Address if present -->
+        <template v-else-if="macAddress">
+            <span :title="macAddressTooltip" ref="macElement">
+                <i class="ti ti-access-point icon-info"></i>
+            </span>
+        </template>
+    </div>
+</template>
+
+<style scoped>
+.icon-list {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-large);
+}
+
+.icon-list i {
+    font-size: var(--font-size-h4);
+}
+
+.icon-info {
+    color: var(--color-info-strong);
+}
+
+.icon-primary {
+    color: var(--color-critical-strong);
+}
+
+.icon-danger {
+    color: var(--color-danger-strong);
+}
+
+.is-dim {
+    opacity: 0.25;
+}
+</style>
+
+<script setup lang="ts">
+    import { LocationPermissionStatus } from "@Obsidian/Enums/Mobile/locationPermissionStatus";
+    import { PropType, computed, onMounted, onBeforeUnmount, ref } from "vue";
+    import { tooltip, destroyTooltip } from "@Obsidian/Utility/tooltip";
+
+    const props = defineProps({
+        notificationsEnabled: {
+            type: Boolean as PropType<boolean | null>,
+            required: false,
+            default: null
+        },
+
+        locationPermissionStatus: {
+            type: Number as PropType<LocationPermissionStatus | null>,
+            required: false,
+            default: null
+        },
+
+        isPreciseLocationEnabled: {
+            type: Boolean as PropType<boolean | null>,
+            required: false,
+            default: null
+        },
+
+        isBeaconMonitoringEnabled: {
+            type: Boolean as PropType<boolean | null>,
+            required: false,
+            default: null
+        },
+
+        macAddress: {
+            type: String as PropType<string | null>,
+            required: false,
+            default: null
+        },
+
+        isMobileDevice: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const allValuesPresent = computed<boolean>(() => {
+        return props.notificationsEnabled !== null &&
+            props.locationPermissionStatus !== null &&
+            props.isPreciseLocationEnabled !== null &&
+            props.isBeaconMonitoringEnabled !== null &&
+            props.macAddress !== null;
+    });
+
+    const macAddressEnabled = computed<boolean>(() => {
+        if (!allValuesPresent.value || !props.macAddress) return false;
+
+        const locationGranted = props.locationPermissionStatus === LocationPermissionStatus.Always ||
+            props.locationPermissionStatus === LocationPermissionStatus.WhenInUse;
+
+        return !props.notificationsEnabled &&
+            !props.isPreciseLocationEnabled &&
+            !props.isBeaconMonitoringEnabled &&
+            !locationGranted;
+    });
+
+    const locationPermissionIconClass = computed(() => {
+        if (props.locationPermissionStatus === null) {
+            return "";
+        }
+
+        if (props.locationPermissionStatus === LocationPermissionStatus.Always) {
+            return "icon-info";
+        }
+
+        if (props.locationPermissionStatus === LocationPermissionStatus.WhenInUse) {
+            return "icon-primary";
+        }
+
+        // NotGranted or Denied
+        return "icon-danger";
+    });
+
+    const notificationsElement = ref<HTMLElement | null>(null);
+    const locationPermissionElement = ref<HTMLElement | null>(null);
+    const preciseLocationElement = ref<HTMLElement | null>(null);
+    const beaconElement = ref<HTMLElement | null>(null);
+    const macElement = ref<HTMLElement | null>(null);
+
+    const macAddressTooltip = computed(() => {
+        const mac = props.macAddress?.trim();
+        return `MAC Address: ${mac && mac.length > 0 ? mac : "None"}`;
+    });
+
+    const notificationsTooltip = computed(() => {
+        const enabled = props.notificationsEnabled === true;
+        return `Notifications ${enabled ? "Enabled" : "Disabled"}`;
+    });
+
+    const preciseLocationTooltip = computed(() => {
+        const enabled = props.isPreciseLocationEnabled === true;
+        return `Precise Location ${enabled ? "Enabled" : "Disabled"}`;
+    });
+
+    const beaconMonitoringTooltip = computed(() => {
+        const enabled = props.isBeaconMonitoringEnabled === true;
+        return `Beacon Monitoring ${enabled ? "Enabled" : "Disabled"}`;
+    });
+
+    const locationPermissionsTooltip = computed(() => {
+        switch (props.locationPermissionStatus) {
+            case LocationPermissionStatus.Always:
+                return "Location Permissions: Always";
+            case LocationPermissionStatus.WhenInUse:
+                return "Location Permissions: When In Use";
+            case LocationPermissionStatus.NotGranted:
+                return "Location Permissions: Not Granted";
+            case LocationPermissionStatus.Denied:
+                return "Location Permissions: Denied";
+            default:
+                return "Location Permissions: None";
+        }
+    });
+
+    onMounted(() => {
+        const elements = [
+            notificationsElement.value,
+            locationPermissionElement.value,
+            preciseLocationElement.value,
+            beaconElement.value,
+            macElement.value
+        ];
+        elements.forEach(el => {
+            if (el) tooltip(el);
+        });
+    });
+
+    onBeforeUnmount(() => {
+        const elements = [
+            notificationsElement.value,
+            locationPermissionElement.value,
+            preciseLocationElement.value,
+            beaconElement.value,
+            macElement.value
+        ];
+        elements.forEach(el => {
+            if (el) destroyTooltip(el);
+        });
+    });
+</script>

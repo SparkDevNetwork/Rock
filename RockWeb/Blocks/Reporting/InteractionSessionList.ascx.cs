@@ -40,7 +40,14 @@ namespace RockWeb.Blocks.Reporting
 
     [LinkedPage( "Component Detail Page", "Page reference to the component detail page. This will be included as a variable in the Lava.", false, order: 0 )]
     [LinkedPage( "Interaction Detail Page", "Page reference to the interaction detail page. This will be included as a variable in the Lava.", false, order: 1 )]
-    [CodeEditorField( "Default Template", "The Lava template to use as default.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, false, order: 2, defaultValue: @"
+
+    [CodeEditorField( "Default Template",
+        Description = "The Lava template to use as default.",
+        EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
+        EditorHeight = 300,
+        IsRequired = false,
+        Order = 2,
+        DefaultValue = @"
 {% if InteractionChannel != null and InteractionChannel != '' %}
     {% for session in WebSessions %}
         <div class='panel panel-widget pageviewsession'>
@@ -83,7 +90,9 @@ namespace RockWeb.Blocks.Reporting
         </div>
     {% endfor %}
 {% endif %}" )]
+
     [IntegerField( "Session Count", "The number of sessions to show per page.", true, 20, "", 3 )]
+
     [ContextAware( typeof( Person ) )]
     [Rock.SystemGuid.BlockTypeGuid( "EA90EF4F-C783-48CD-B575-AD785DE896E9" )]
     public partial class InteractionSessionList : Rock.Web.UI.RockBlock

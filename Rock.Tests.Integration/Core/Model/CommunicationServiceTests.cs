@@ -73,7 +73,7 @@ namespace Rock.Tests.Integration.Core.Model
                     .AsNoTracking()
                     .ToList();
 
-                Assert.IsTrue( stopwatch.ElapsedMilliseconds < _expectedRuntimeMax, "Query took longer then a second to run." );
+                Assert.IsLessThan( _expectedRuntimeMax, stopwatch.ElapsedMilliseconds, "Query took longer then a second to run." );
                 Assert.IsFalse( qry.Any( c => c.SendDateKey.HasValue ), "Query returned sent communications." );
             }
         }
@@ -301,7 +301,7 @@ namespace Rock.Tests.Integration.Core.Model
             }
         }
 
-        private static List<Rock.Model.Communication> CreateCommunications( int sender, CommunicationStatus communicationStatus, DateTime? reviewedDateTime, DateTime? futureSendDateTime, bool AddPendingRecipient, int? listGroupId )
+        private static List<Rock.Model.Communication> CreateCommunications( int sender, CommunicationStatus communicationStatus, DateTime? reviewedDateTime, DateTime? futureSendDateTime, bool addPendingRecipient, int? listGroupId )
         {
 
             // Create communication with no recipients.
@@ -339,7 +339,7 @@ namespace Rock.Tests.Integration.Core.Model
             };
             foreach ( CommunicationRecipientStatus communicationRecipientStatus in Enum.GetValues( typeof( CommunicationRecipientStatus ) ) )
             {
-                if ( !AddPendingRecipient && communicationRecipientStatus == CommunicationRecipientStatus.Pending )
+                if ( !addPendingRecipient && communicationRecipientStatus == CommunicationRecipientStatus.Pending )
                 {
                     continue;
                 }

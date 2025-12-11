@@ -121,7 +121,6 @@ namespace Rock.Blocks.Group
         Key = AttributeKey.LavaTemplate,
         Description = "The lava template to use to format the group details.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = true,
         DefaultValue = @"
@@ -141,7 +140,6 @@ namespace Rock.Blocks.Group
         Key = AttributeKey.ResultLavaTemplate,
         Description = "The lava template to use to format result message after user has been registered. Will only display if user is not redirected to a Result Page ( previous setting ).",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = true,
         DefaultValue = @"

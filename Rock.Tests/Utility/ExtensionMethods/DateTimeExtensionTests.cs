@@ -18,8 +18,6 @@ using System;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Tests.Shared;
-
 namespace Rock.Tests.Utility.ExtensionMethods
 {
     [TestClass]

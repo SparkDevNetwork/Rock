@@ -23,7 +23,7 @@
                 <ComponentPicker v-model="suggestionType"
                                  label="Suggestion Type"
                                  containerType="Rock.Follow.SuggestionContainer"
-                                 rules="required"/>
+                                 rules="required" />
 
                 <TextBox v-model="reasonNote"
                          label="Reason Note"
@@ -36,18 +36,17 @@
             </div>
 
             <div class="col-md-6">
-                    <AttributeValuesContainer v-model="attributeValues"
-                                              :showCategoryLabel="false"
-                                              :attributes="entityAttributes"
-                                              isEditMode
-                                              showEmptyValues
-                                              :numberOfColumns="1"
-                                              :entityTypeName="entityTypeName" />
+                <AttributeValuesContainer v-model="attributeValues"
+                                          :showCategoryLabel="false"
+                                          :attributes="entityAttributes"
+                                          isEditMode
+                                          showEmptyValues
+                                          :numberOfColumns="1"
+                                          :entityTypeName="entityTypeName" />
             </div>
         </div>
 
         <CodeEditor v-model="entityNotificationFormatLava"
-                    theme="rock"
                     label="Notification Format"
                     mode="lava"
                     :editorHeight="200"

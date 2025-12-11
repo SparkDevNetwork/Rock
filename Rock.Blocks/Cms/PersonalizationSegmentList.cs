@@ -207,8 +207,13 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override GridBuilder<PersonalizationSegmentListBag> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<PersonalizationSegmentListBag>
+            {
+                LavaObject = row => row.PersonalizationSegment
+            };
+
             return new GridBuilder<PersonalizationSegmentListBag>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.PersonalizationSegment.IdKey )
                 .AddField( "guid", a => a.PersonalizationSegment.Guid )
                 .AddField( "isSecurityDisabled", a => !a.PersonalizationSegment.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )

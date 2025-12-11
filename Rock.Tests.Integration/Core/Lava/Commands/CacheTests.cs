@@ -556,7 +556,7 @@ An Entity Set (Id=*) was created and 4 people have been added.
             var entitySet = CreateEntitySet( personIdList, "Person", expiryInMinutes, purposeId, note, parentSetId );
 
             // Verify the number of items in the set.
-            Assert.AreEqual( personList.Count(), entitySet.Items.Count );
+            Assert.HasCount( personList.Count(), entitySet.Items );
 
             return entitySet;
         }

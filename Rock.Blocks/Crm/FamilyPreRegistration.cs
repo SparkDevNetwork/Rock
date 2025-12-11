@@ -195,7 +195,6 @@ namespace Rock.Blocks.Crm
         DefaultValue = "/FamilyPreRegistrationSuccess?FamilyId={{ Family.Id }}&Parents={{ ParentIds }}&Children={{ ChildIds }}&When={{ PlannedVisitDate }}",
         Description = BlockAttributeDescription.RedirectURL,
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         Order = 17 )]

@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Cms;
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
@@ -39,7 +36,7 @@ namespace Rock.Tests.Web.Cache
 
             var rootGroupTypes = groupTypeCache.GetRootGroupTypes( rockContextMock.Object ).ToList();
 
-            Assert.AreEqual( 1, rootGroupTypes.Count );
+            Assert.HasCount( 1, rootGroupTypes );
             Assert.AreEqual( groupTypeMock.Object.Id, rootGroupTypes[0].Id );
         }
 
@@ -65,7 +62,7 @@ namespace Rock.Tests.Web.Cache
             var rootGroupTypes = groupTypeCache.GetRootGroupTypes( rockContextMock.Object ).ToList();
 
             // It should succeed, but in this case there is no logical root to return.
-            Assert.AreEqual( 0, rootGroupTypes.Count );
+            Assert.IsEmpty( rootGroupTypes );
         }
 
         [TestMethod]
@@ -91,7 +88,7 @@ namespace Rock.Tests.Web.Cache
 
             var rootGroupTypes = groupTypeCache.GetRootGroupTypes( rockContextMock.Object ).ToList();
 
-            Assert.AreEqual( 1, rootGroupTypes.Count );
+            Assert.HasCount( 1, rootGroupTypes );
             Assert.AreEqual( groupTypeAMock.Object.Id, rootGroupTypes[0].Id );
         }
 
@@ -120,7 +117,7 @@ namespace Rock.Tests.Web.Cache
 
             var rootGroupTypes = groupTypeCache.GetRootGroupTypes( rockContextMock.Object ).ToList();
 
-            Assert.AreEqual( 1, rootGroupTypes.Count );
+            Assert.HasCount( 1, rootGroupTypes );
             Assert.AreEqual( groupTypeAMock.Object.Id, rootGroupTypes[0].Id );
         }
 
@@ -152,7 +149,7 @@ namespace Rock.Tests.Web.Cache
 
             var rootGroupTypes = groupTypeCache.GetRootGroupTypes( rockContextMock.Object ).ToList();
 
-            Assert.AreEqual( 2, rootGroupTypes.Count );
+            Assert.HasCount( 2, rootGroupTypes );
 
             // It should return A since it is the logical root.
             CollectionAssert.Contains( rootGroupTypes.Select( gt => gt.Id ).ToList(), groupTypeAMock.Object.Id );

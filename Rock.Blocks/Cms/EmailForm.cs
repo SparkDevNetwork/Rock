@@ -88,7 +88,6 @@ namespace Rock.Blocks.Cms
         "HTML Form",
         Description = "The HTML for the form the user will complete.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = false,
         DefaultValue = HTML_FORM_DEFAULT_VALUE,
@@ -99,7 +98,6 @@ namespace Rock.Blocks.Cms
         "Message Body",
         Description = "The email message body.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = false,
         DefaultValue = MESSAGE_BODY_DEFAULT_VALUE,
@@ -110,7 +108,6 @@ namespace Rock.Blocks.Cms
         "Response Message",
         Description = "The message the user will see when they submit the form if no response page if provided. Lava merge fields are available for you to use in your message.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         DefaultValue = @"<div class=""alert alert-info"">

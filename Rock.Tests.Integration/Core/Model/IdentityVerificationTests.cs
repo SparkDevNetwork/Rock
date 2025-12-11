@@ -5,12 +5,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Core.Model
 {
     [TestClass]
-    [Ignore("These tests require additional data. Rows are expected in the IdentityVerificationCode table.")]
+    [Ignore( "These tests require additional data. Rows are expected in the IdentityVerificationCode table." )]
     public class IdentityVerificationTests
     {
 

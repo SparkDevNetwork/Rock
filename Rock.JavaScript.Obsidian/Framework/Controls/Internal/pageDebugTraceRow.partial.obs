@@ -7,7 +7,7 @@
                 <i v-else-if="!isExpanded" class="ti ti-chevron-right fa-fw" @click="isExpanded = true"></i>
                 <i v-else class="ti ti-chevron-down fa-fw" @click="isExpanded = false"></i>
 
-                <span class="trace-name" @click="emit('select', trace)">{{ trace.name }}</span>
+                <span class="trace-name" @click="emit('select', trace)">{{ getTraceName(trace) }}</span>
             </div>
         </td>
 
@@ -133,6 +133,16 @@
         }
 
         return (ms / props.totalMs) * 100;
+    }
+
+    function getTraceName(trace: TraceRecordTreeBag): string {
+        if (!trace.name) {
+            return "Unnamed Trace";
+        }
+
+        const match = /API: POST \/api\/v2\/BlockActions\/[a-z0-9-]+\/[a-z0-9-]+\/([a-zA-Z]+)/.exec(trace.name);
+
+        return match ? `BLOCKACTION: ${match[1]}` : trace.name;
     }
 
     watch(() => props.isExpanded, () => {

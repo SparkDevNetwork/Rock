@@ -42,12 +42,7 @@ export const EditComponent = defineComponent({
             return toNumber(props.configurationValues[ConfigurationValueKey.EditorMode]);
         });
 
-        // The selected code editor theme from the field type's configuration.
-        const editorTheme = computed((): number => {
-            return toNumber(props.configurationValues[ConfigurationValueKey.EditorTheme]);
-        });
-
-        // The selected code editor theme from the field type's configuration.
+        // The selected code editor height from the field type's configuration.
         const editorHeight = computed((): number => {
             const editorHeight = toNumberOrNull(props.configurationValues[ConfigurationValueKey.EditorHeight]) ?? minimumHeight;
             return editorHeight;
@@ -68,13 +63,12 @@ export const EditComponent = defineComponent({
         return {
             internalValue,
             editorMode,
-            editorTheme,
             editorHeight
         };
     },
 
     template: `
-    <CodeEditor v-model="internalValue" :theme="editorTheme" :mode="editorMode" :editorHeight="editorHeight" />
+    <CodeEditor v-model="internalValue" :mode="editorMode" :editorHeight="editorHeight" />
 `
 });
 
@@ -93,19 +87,12 @@ export const ConfigurationComponent = defineComponent({
     setup(props, { emit }) {
         // Define the properties that will hold the current selections.
         const editorMode = ref<string>("");
-        const editorTheme = ref<string>("");
         const editorHeight = ref<number | null>();
 
         // The options for the editor mode dropdown list
         const editorModeOptions = computed((): ListItemBag[] => {
             const editorModeOptions = props.configurationProperties[ConfigurationPropertyKey.EditorModeOptions];
             return editorModeOptions ? JSON.parse(editorModeOptions) as ListItemBag[] : [];
-        });
-
-        // The options for the editor theme dropdown list
-        const editorThemeOptions = computed((): ListItemBag[] => {
-            const editorThemeOptions = props.configurationProperties[ConfigurationPropertyKey.EditorThemeOptions];
-            return editorThemeOptions ? JSON.parse(editorThemeOptions) as ListItemBag[] : [];
         });
 
         /**
@@ -122,12 +109,10 @@ export const ConfigurationComponent = defineComponent({
             // Construct the new value that will be emitted if it is different
             // than the current value.
             newValue[ConfigurationValueKey.EditorMode] = editorMode.value ?? "";
-            newValue[ConfigurationValueKey.EditorTheme] = editorTheme.value ?? "";
             newValue[ConfigurationValueKey.EditorHeight] = editorHeight.value?.toString() ?? "";
 
             // Compare the new value and the old value.
             const anyValueChanged = newValue[ConfigurationValueKey.EditorMode] !== (props.modelValue[ConfigurationValueKey.EditorMode])
-                || newValue[ConfigurationValueKey.EditorTheme] !== (props.modelValue[ConfigurationValueKey.EditorTheme])
                 || newValue[ConfigurationValueKey.EditorHeight] !== (props.modelValue[ConfigurationValueKey.EditorHeight]);
 
             // If any value changed then emit the new model value.
@@ -156,7 +141,6 @@ export const ConfigurationComponent = defineComponent({
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
             editorMode.value = props.modelValue[ConfigurationValueKey.EditorMode] ?? 0;
-            editorTheme.value = props.modelValue[ConfigurationValueKey.EditorTheme] ?? 0;
             editorHeight.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.EditorHeight]);
         }, {
             immediate: true
@@ -164,21 +148,17 @@ export const ConfigurationComponent = defineComponent({
 
         // Watch for changes in properties that only require a local UI update.
         watch(editorMode, () => maybeUpdateConfiguration(ConfigurationValueKey.EditorMode, editorMode.value ?? ""));
-        watch(editorTheme, () => maybeUpdateConfiguration(ConfigurationValueKey.EditorTheme, editorTheme.value ?? ""));
         watch(editorHeight, () => maybeUpdateConfiguration(ConfigurationValueKey.EditorHeight, editorHeight.value?.toString() ?? ""));
 
         return {
             editorMode,
             editorModeOptions,
-            editorTheme,
-            editorThemeOptions,
             editorHeight
         };
     },
 
     template: `
 <DropDownList label="Editor Mode" v-model="editorMode" :items="editorModeOptions" :showBlankItem="false" help="The type of code that will be entered." />
-<DropDownList label="Editor Theme" v-model="editorTheme" :items="editorThemeOptions" :showBlankItem="false" help="The styling theme to use for the code editor." />
 <NumberBox label="Editor Height" v-model="editorHeight" :minimumValue="200" :showBlankItem="false" help="The height of the control in pixels (minimum of 200)" />
 `
 });

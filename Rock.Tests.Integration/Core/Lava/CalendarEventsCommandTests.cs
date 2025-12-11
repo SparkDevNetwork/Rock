@@ -24,7 +24,6 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
 
 namespace Rock.Tests.Integration.Core.Lava

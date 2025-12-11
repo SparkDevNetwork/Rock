@@ -9,7 +9,11 @@
             <div class="mt-4">
                 <div v-if="selectedTab === 'traces'" class="traces-tab">
                     <div class="traces-list">
-                        <table class="table table-bordered table-striped" style="width:100%;">
+                        <div v-if="!traces">
+                            <LoadingIndicator />
+                        </div>
+
+                        <table v-else class="table table-bordered table-striped" style="width:100%;">
                             <thead>
                                 <tr>
                                     <th>Name</th>
@@ -123,10 +127,11 @@
 </style>
 
 <script setup lang="ts">
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import PageDebugTraceRow from "./pageDebugTraceRow.partial.obs";
     import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
-    import { computed, ref } from "vue";
+    import { computed, ref, watch } from "vue";
     import { useHttp } from "@Obsidian/Utility/http";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -154,6 +159,9 @@
     const selectedTab = ref<("traces")>("traces");
     const traces = ref<TraceRecordBag[]>();
     const selectedTrace = ref<TraceRecordTreeBag | null>(null);
+
+    let loadDataTimeout: number | null = null;
+    let loadingDelay = 1000;
 
     // #region Computed Values
 
@@ -237,14 +245,63 @@
         const result = await http.get<TraceRecordBag[]>(`/api/v2/utilities/DebugTraceDetails?traceId=${traceId}`);
 
         if (result.isSuccess && result.data) {
-            traces.value = result.data;
+            if (traces.value) {
+                traces.value = [...traces.value, ...result.data];
+            }
+            else {
+                traces.value = result.data;
+            }
+
+            if (loadDataTimeout) {
+                // Slowly back off the loading interval to reduce server load
+                // until we reach 10 seconds between loads. This makes it more
+                // responsive initially but avoids hammering the server over time.
+                loadingDelay = Math.min(loadingDelay + 1000, 10000);
+                loadDataTimeout = window.setTimeout(() => loadTraceData(), loadingDelay);
+            }
         }
-        else {
+        else if (!traces.value) {
             traces.value = [];
         }
     }
 
+    function initializeOpenButton(): void {
+        const adminFooter = document.getElementById("cms-admin-footer");
+
+        if (!adminFooter) {
+            return;
+        }
+
+        const footers = Array.from(adminFooter.querySelectorAll(".cms-admin-footer-property"))
+            .filter(el => el.textContent?.trim().includes("Page Load Time"));
+
+        if (footers.length === 0) {
+            return;
+        }
+
+        const openButton = document.createElement("i");
+        openButton.classList.add("ml-2", "ti", "ti-external-link", "clickable");
+        openButton.addEventListener("click", () => {
+            showTimingsModal.value = true;
+        });
+
+        footers[0].appendChild(openButton);
+    }
+
     // #endregion
 
-    loadTraceData();
+    watch(showTimingsModal, () => {
+        if (!showTimingsModal.value && loadDataTimeout) {
+            window.clearTimeout(loadDataTimeout);
+            loadDataTimeout = null;
+        }
+
+        if (showTimingsModal.value && !loadDataTimeout) {
+            loadDataTimeout = window.setTimeout(() => loadTraceData(), 1);
+        }
+    });
+
+    loadDataTimeout = window.setTimeout(() => loadTraceData(), 1000);
+
+    initializeOpenButton();
 </script>

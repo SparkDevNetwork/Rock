@@ -16,7 +16,7 @@
                   :title="gridTitle"
                   :exportTitle="gridTitle"
                   :isTitleHidden="isGridTitleHidden"
-                  keyField="uniqueKey"
+                  :keyField="GridFieldName.RowKey"
                   :personKeyField="personKeyField"
                   :communicationRecipientPersonKeyFields="communicationRecipientPersonKeyFields"
                   :liveUpdates="true"
@@ -55,7 +55,7 @@
 
 <script setup lang="ts">
     import { computed, onBeforeUnmount, reactive, ref, watch } from "vue";
-    import { NavigationUrlKey } from "./DynamicData/types.partial";
+    import { GridFieldName, NavigationUrlKey } from "./DynamicData/types.partial";
     import Grid, { BooleanColumn, CurrencyColumn, DateColumn, DateTimeColumn, defaultColumnFilters, DynamicColumns, HtmlColumn, NumberColumn, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn } from "@Obsidian/Controls/grid";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { getRowKey } from "@Obsidian/Core/Controls/grid";
@@ -132,10 +132,6 @@
 
     const isGridTitleHidden = computed((): boolean => {
         return !gridTitle.value;
-    });
-
-    const keyField = computed((): string | undefined => {
-        return gridResults.value?.keyField ?? undefined;
     });
 
     const personKeyField = computed((): string | undefined => {
@@ -354,10 +350,6 @@
         }
 
         if (result.isSuccess && result.data) {
-            if (result.data.rows) {
-                result.data.rows.forEach((d, index) => d.uniqueKey = index);
-            }
-
             gridData = reactive(result.data);
             return gridData;
         }
@@ -392,13 +384,11 @@
             return;
         }
 
-        if (!keyField.value || !rowKey) {
-            // If a key field wasn't defined, we don't know how to find the row;
-            // unable to redirect.
+        if (rowKey) {
             return;
         }
 
-        const row = gridData?.rows?.find(r => getRowKey(r, "uniqueKey") === rowKey);
+        const row = gridData?.rows?.find(r => getRowKey(r, GridFieldName.RowKey) === rowKey);
         if (row) {
             columnKeys.forEach(columnKey => {
                 // Replace each column key with the column value.

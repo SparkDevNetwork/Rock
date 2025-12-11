@@ -11,15 +11,27 @@
 
                 <ul class="dropdown-menu dropdown-menu-right">
                     <li v-if="autoCollapse">
-                        <a href="#" @click.prevent="autoCollapse = false">
+                        <a href="#" @click.prevent="toggleAutoCollapse(false)">
                             <i class="ti ti-viewport-short"></i>
                             Turn Off Auto Collapse
                         </a>
                     </li>
                     <li v-else>
-                        <a href="#" @click.prevent="autoCollapse = true">
+                        <a href="#" @click.prevent="toggleAutoCollapse(true)">
                             <i class="ti ti-viewport-short"></i>
                             Turn On Auto Collapse
+                        </a>
+                    </li>
+                    <li :class="expandCollapseAllClasses">
+                        <a href="#" @click.prevent="onExpandAllClick">
+                            <i class="ti ti-chevrons-down"></i>
+                            Expand All
+                        </a>
+                    </li>
+                    <li :class="expandCollapseAllClasses">
+                        <a href="#" @click.prevent="onCollapseAllClick">
+                            <i class="ti ti-chevrons-up"></i>
+                            Collapse All
                         </a>
                     </li>
                 </ul>
@@ -41,7 +53,7 @@
     import { IContentSectionHolder } from "@Obsidian/Core/Controls/contentSection";
     import { usePersonPreferences } from "@Obsidian/Utility/block";
     import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
-    import { onBeforeMount, onMounted, PropType, ref, watch } from "vue";
+    import { computed, onBeforeMount, onMounted, PropType, ref, watch } from "vue";
 
     const props = defineProps({
         sections: {
@@ -57,7 +69,17 @@
     const autoCollapse = ref(asBooleanOrNull(preferences.getValue("contentsection-auto-collapse")) ?? true);
     const activeSectionId = ref(window.location.hash.replace("#", ""));
 
-    // #endregion
+    // #endregion Values
+
+    // #region Computed Values
+
+    const expandCollapseAllClasses = computed((): string => {
+        return autoCollapse.value
+            ? "disabled"
+            : "";
+    });
+
+    // #endregion Computed Values
 
     // #region Event Handlers
 
@@ -66,7 +88,6 @@
      */
     function onHashChange(): void {
         activeSectionId.value = window.location.hash.replace("#", "");
-
     }
 
     /**
@@ -91,9 +112,63 @@
 
         const url = `${window.location.href.split("#")[0]}#${section.anchor.value}`;
         window.history.replaceState(null, "", url);
+
+        activeSectionId.value = section.anchor.value ?? "";
     }
 
-    // #endregion
+    /**
+     * Toggles the auto-collapse feature on and off.
+     * If turning on auto-collapse and there is an active (previously-selected)
+     * section, all but the active section will be collapsed.
+     *
+     * @param isEnabled Whether the auto-collapse feature is enabled.
+     */
+    function toggleAutoCollapse(isEnabled: boolean): void {
+        autoCollapse.value = isEnabled;
+
+        if (!isEnabled || !activeSectionId.value) {
+            return;
+        }
+
+        // Try to close all but the active section.
+        const activeSection = props.sections.find(s =>
+            s.anchor.value === activeSectionId.value
+        );
+
+        if (activeSection) {
+            onOpenSectionClick(activeSection);
+        }
+    }
+
+    /**
+     * Handles the "Expand All" menu item click.
+     * This will expand all sections.
+     */
+    function onExpandAllClick(): void {
+        if (autoCollapse.value) {
+            return;
+        }
+
+        props.sections.forEach(s => {
+            s.isCollapsed.value = false;
+        });
+    }
+
+    /**
+     * Handles the "Collapse All" menu item click.
+     * This will collapse all sections.
+     */
+    function onCollapseAllClick(): void {
+        if (autoCollapse.value) {
+            return;
+        }
+
+        props.sections.forEach(s => {
+            s.isCollapsed.value = true;
+        });
+    }
+
+    // #endregion Event Handlers
 
     watch(autoCollapse, () => {
         preferences.setValue("contentsection-auto-collapse", autoCollapse.value ? "true" : "false");

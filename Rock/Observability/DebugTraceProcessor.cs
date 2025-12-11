@@ -67,6 +67,13 @@ namespace Rock.Observability
         /// </summary>
         private static ConcurrentDictionary<string, Tracker> _activeTraces = new ConcurrentDictionary<string, Tracker>();
 
+        /// <summary>
+        /// Stores the linked traces so that child traces can be associated
+        /// with their parent traces for retrieval. This does not need to be
+        /// accessed from within the <see cref="_sharedTraceProviderLock"/> lock.
+        /// </summary>
+        private static ConcurrentDictionary<string, string> _linkedTraces = new ConcurrentDictionary<string, string>();
+
         #endregion
 
         #region Constructors
@@ -85,7 +92,14 @@ namespace Rock.Observability
         /// <inheritdoc/>
         public override void OnEnd( Activity data )
         {
-            if ( _activeTraces.TryGetValue( data.TraceId.ToString(), out var tracker ) )
+            var traceId = data.TraceId.ToString();
+
+            if ( _linkedTraces.TryGetValue( traceId, out var parentTraceId ) )
+            {
+                traceId = parentTraceId;
+            }
+
+            if ( _activeTraces.TryGetValue( traceId, out var tracker ) )
             {
                 tracker.Queue.Enqueue( data );
             }
@@ -142,6 +156,32 @@ namespace Rock.Observability
         }
 
         /// <summary>
+        /// Links a child trace to a parent trace so that their activities
+        /// are related and can be retrieved together.
+        /// </summary>
+        /// <param name="childTraceId">The child (current) trace identifier.</param>
+        /// <param name="parentTraceId">The parent trace identifier.</param>
+        public static void LinkTrace( string childTraceId, string parentTraceId )
+        {
+            _linkedTraces.AddOrReplace( childTraceId, parentTraceId );
+        }
+
+        /// <summary>
+        /// Determines if the specified trace has been validated for retrieval.
+        /// </summary>
+        /// <param name="traceId">The identifier of the trace.</param>
+        /// <returns><c>true</c> if the trace has been previously validated; otherwise <c>false</c>.</returns>
+        public static bool IsValidTrace( string traceId )
+        {
+            if ( _activeTraces.TryGetValue( traceId, out var tracker ) )
+            {
+                return tracker.IsValidated;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Requests that tracing be stopped. If this is the last active trace
         /// then the shared trace provider will be disposed after a short delay.
         /// </summary>
@@ -178,6 +218,7 @@ namespace Rock.Observability
                                         _sharedTraceProvider.Dispose();
                                         _sharedTraceProvider = null;
                                         _activeTraces = new ConcurrentDictionary<string, Tracker>();
+                                        _linkedTraces = new ConcurrentDictionary<string, string>();
                                     }
                                 }
                             }

@@ -102,5 +102,10 @@ namespace Rock.ViewModels.Blocks.Finance.BenevolenceRequestDetail
         /// represented as a list of <see cref="ListItemBag"/> objects.
         /// </summary>
         public List<BenevolenceDocumentBag> RequestDocuments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the collection of workflow options available for this request.
+        /// </summary>
+        public List<BenevolenceRequestWorkflowBag> Workflows { get; set; }
     }
 }

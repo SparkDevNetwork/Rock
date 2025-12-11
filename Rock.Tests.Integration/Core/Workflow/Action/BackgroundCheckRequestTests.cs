@@ -4,7 +4,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 using Rock.Workflow.Action;
@@ -12,13 +11,13 @@ using Rock.Workflow.Action;
 namespace Rock.Tests.Integration.Core.Workflow.Action
 {
     [TestClass]
-    [TestCategory("Core.Workflow")]
+    [TestCategory( "Core.Workflow" )]
     public class BackgroundCheckRequestTests : DatabaseTestsBase
     {
         [TestMethod]
         public void CanBeInstantiated()
         {
-            Assert.IsTrue( new BackgroundCheckRequest() != null );
+            Assert.IsNotNull( new BackgroundCheckRequest() );
         }
 
         [TestMethod]

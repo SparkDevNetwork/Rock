@@ -94,6 +94,15 @@
         enableDeselect: {
             type: Boolean,
             default: false
+        },
+
+        /**
+         * When true, the first item in the list will be automatically selected
+         * if no other item is currently selected.
+         */
+        selectFirstByDefault: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -135,6 +144,7 @@
 
             await nextTick();
             scrollToSelectedItem();
+            trySelectFirst();
         }
     };
 
@@ -211,11 +221,39 @@
         }
     };
 
+    /**
+     * Attempts to select the first item if selectFirstByDefault is true and
+     * no item is currently selected.
+     */
+    const trySelectFirst = (): void => {
+        if (!props.selectFirstByDefault || props.modelValue.length > 0 || internalItems.value.length === 0) {
+            return;
+        }
+
+        let itemToSelect: TreeItemBag | null = null;
+
+        for (const item of internalItems.value) {
+            if (props.disableFolderSelection && (item.isFolder || item.hasChildren)) {
+                continue;
+            }
+
+            if (item.value) {
+                itemToSelect = item;
+                break;
+            }
+        }
+
+        if (itemToSelect && itemToSelect.value) {
+            emit("update:modelValue", [itemToSelect.value]);
+        }
+    };
+
     // Watch for a change in our passed items and update our internal list.
     watch(() => props.items, () => {
         // Only update if we don't have a provider.
         if (!props.provider) {
             internalItems.value = props.items ?? [];
+            trySelectFirst();
         }
     });
 

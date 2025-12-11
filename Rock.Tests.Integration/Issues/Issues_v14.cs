@@ -37,7 +37,7 @@ namespace Rock.Tests.Integration.Issues
     /// </remarks>
     /// 
     [TestClass]
-    [RockObsolete("1.14")]
+    [RockObsolete( "1.14" )]
     public class BugFixVerificationTests_v14 : LavaIntegrationTestBase
     {
         [TestMethod]

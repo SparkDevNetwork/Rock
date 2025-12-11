@@ -18,6 +18,7 @@
                   :disableFolderSelection="disableFolderSelection"
                   :autoExpand="autoExpand"
                   :showChildCount="showChildCount"
+                  :selectFirstByDefault="selectFirstByDefault"
                   :isVisible="internalShowPopup" />
 
         <template #innerLabel><span class="selected-names">{{ selectedNames || blankValue }}</span></template>
@@ -131,6 +132,15 @@
             type: String as PropType<string>,
             default: ""
         },
+
+        /**
+         * When true, the first item in the list will be automatically selected
+         * if no other item is currently selected.
+         */
+        selectFirstByDefault: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
     });
 
     const emit = defineEmits<{

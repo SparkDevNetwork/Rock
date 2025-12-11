@@ -1,7 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Model;
-using Rock.Tests.Shared;
 
 namespace Rock.Tests.Model
 {
@@ -23,7 +22,7 @@ namespace Rock.Tests.Model
             var hexString = "ABCDEF0123456789";
 
             var result = StreakTypeService.GetMapFromHexDigitString( hexString );
-            Assert.AreEqual( expectedBytes.Length, result.Length );
+            Assert.HasCount( expectedBytes.Length, result );
 
             for ( var i = 0; i < expectedBytes.Length; i++ )
             {
@@ -65,23 +64,23 @@ namespace Rock.Tests.Model
             var result = StreakTypeService.GetAggregateMap( new byte[][] { map1, map2, map3 } );
 
             // Verify map 1 didn't change
-            Assert.AreEqual( 3, map1.Length );
+            Assert.HasCount( 3, map1 );
             Assert.AreEqual( 0b_1000_0000, map1[0] );
             Assert.AreEqual( 0b_0010_0000, map1[1] );
             Assert.AreEqual( 0b_1000_0100, map1[2] );
 
             // Verify map 2 didn't change
-            Assert.AreEqual( 4, map2.Length );
+            Assert.HasCount( 4, map2 );
             Assert.AreEqual( 0b_1001_0000, map2[0] );
             Assert.AreEqual( 0b_0010_0100, map2[1] );
             Assert.AreEqual( 0b_0000_0100, map2[2] );
             Assert.AreEqual( 0b_1111_0101, map2[3] );
 
             // Verify map3 didn't change
-            Assert.AreEqual( 0, map3.Length );
+            Assert.IsEmpty( map3 );
 
             // Verify that the result is a new array, consisting of bytes OR'ed together
-            Assert.AreEqual( 128, result.Length );
+            Assert.HasCount( 128, result );
             Assert.AreEqual( map1[2] | map2[3], result[128 - 1] );
             Assert.AreEqual( map1[1] | map2[2], result[128 - 2] );
             Assert.AreEqual( map1[0] | map2[1], result[128 - 3] );

@@ -15,16 +15,10 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.ClientService.Core.Category;
-using Rock.ClientService.Core.Category.Options;
-using Rock.Data;
-using Rock.Model;
-using Rock.Security;
 using Rock.SystemGuid;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -38,6 +32,12 @@ namespace Rock.Field.Types
     [FieldTypeGuid( SystemGuid.FieldType.ADAPTIVE_MESSAGE )]
     internal class AdaptiveMessageFieldType : UniversalItemTreePickerFieldType
     {
+        /// <inheritdoc/>
+        protected override string GetRootRestUrl( Dictionary<string, string> privateConfigurationValues )
+        {
+            return "/api/v2/controls/AdaptiveMessagePickerGetAdaptiveMessages";
+        }
+
         /// <inheritdoc/>
         protected override List<ListItemBag> GetItemBags( IEnumerable<string> values, Dictionary<string, string> privateConfigurationValues )
         {
@@ -58,69 +58,6 @@ namespace Rock.Field.Types
         protected override List<string> GetSelectableItemTypes( Dictionary<string, string> privateConfigurationValues )
         {
             return new List<string> { "Item" };
-        }
-
-        /// <inheritdoc/>
-        protected override List<TreeItemBag> GetTreeItems( UniversalItemTreePickerGetItemsOptions options )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var ccService = new CategoryClientService( rockContext, options.RequestContext.CurrentPerson );
-                var amcService = new AdaptiveMessageCategoryService( rockContext );
-                var grant = SecurityGrant.FromToken( options.PickerOptions.SecurityGrantToken );
-                var items = GetAdaptiveMessageChildren( options.PickerOptions.ParentValue.AsGuidOrNull(), ccService, amcService, grant );
-
-                return items;
-            }
-        }
-
-        private List<TreeItemBag> GetAdaptiveMessageChildren( Guid? parent, CategoryClientService ccService, AdaptiveMessageCategoryService amcService, SecurityGrant grant )
-        {
-            var items = ccService.GetCategorizedTreeItems( new CategoryItemTreeOptions
-            {
-                ParentGuid = parent,
-                GetCategorizedItems = true,
-                EntityTypeGuid = EntityTypeCache.Get<Rock.Model.AdaptiveMessageCategory>().Guid,
-                IncludeUnnamedEntityItems = true,
-                IncludeCategoriesWithoutChildren = false,
-                DefaultIconCssClass = "ti ti-list-numbers",
-                LazyLoad = true,
-                SecurityGrant = grant
-            } );
-
-            var messages = new List<TreeItemBag>();
-
-            // Not a folder, so is actually an AdaptiveMessage, except it was loaded as an
-            // AdaptiveMessageCategory so we need to get the Guid of the actual AdaptiveMessage
-            foreach ( var item in items )
-            {
-                if ( !item.IsFolder )
-                {
-                    item.Type = "Item";
-                    // Load the AdaptiveMessageCategory.
-                    var category = amcService.Get( item.Value.AsGuid() );
-                    if ( category != null )
-                    {
-                        // Swap the Guid to the AdaptiveMessage Guid
-                        item.Value = category.AdaptiveMessage.Guid.ToString();
-                    }
-                }
-                else
-                {
-                    item.Type = "Category";
-                }
-
-                // Get Children
-                if ( item.HasChildren )
-                {
-                    item.Children = new List<TreeItemBag>();
-                    item.Children.AddRange( GetAdaptiveMessageChildren( item.Value.AsGuid(), ccService, amcService, grant ) );
-                }
-
-                messages.Add( item );
-            }
-
-            return messages;
         }
     }
 }

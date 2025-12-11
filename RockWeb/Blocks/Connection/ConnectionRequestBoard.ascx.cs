@@ -23,10 +23,7 @@ using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using CSScriptLibrary;
-
 using Newtonsoft.Json;
-//using NuGet;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -84,7 +81,6 @@ namespace RockWeb.Blocks.Connection
         "Status Template",
         Description = "Lava Template that can be used to customize what is displayed in the status bar. Includes common merge fields plus ConnectionOpportunities, ConnectionTypes and the default IdleTooltip.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         DefaultValue = StatusTemplateDefaultValue,
         Order = 5,
         Key = AttributeKey.StatusTemplate )]
@@ -93,7 +89,6 @@ namespace RockWeb.Blocks.Connection
         "Connection Request Status Icons Template",
         Description = "Lava Template that can be used to customize what is displayed for the status icons in the connection request grid.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         DefaultValue = ConnectionRequestStatusIconsTemplateDefaultValue,
         Key = AttributeKey.ConnectionRequestStatusIconsTemplate,
         Order = 6 )]

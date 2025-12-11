@@ -119,7 +119,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
             _firstPersonAliasId = personAlias.First();
             _lastPersonAliasId = personAlias.Last();
         }
-        
+
         /// <summary>
         /// Delete the streak type created by this test class
         /// </summary>
@@ -236,7 +236,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
                 .OrderBy( aa => aa.AchievementAttemptStartDateTime )
                 .ToList();
             Assert.IsNotNull( attempts );
-            Assert.AreEqual( 5, attempts.Count );
+            Assert.HasCount( 5, attempts );
 
             Assert.AreEqual( new DateTime( 2019, 1, 1 ), attempts[0].AchievementAttemptStartDateTime );
             Assert.AreEqual( new DateTime( 2019, 1, 2 ), attempts[0].AchievementAttemptEndDateTime );
@@ -301,7 +301,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
             attemptsQuery = achievementAttemptService
                 .GetOrderedAchieverAttempts( achievementAttemptService.Queryable().AsNoTracking(), achievementTypeCache, _firstPersonAliasId );
             Assert.AreEqual( 1, attemptsQuery.Count() );
-            Assert.IsTrue( attempt.Id > 0 );
+            Assert.IsGreaterThan( 0, attempt.Id );
 
             var streak = new StreakService( _rockContext ).Get( _streakId );
             var component = AchievementContainer.GetComponent( ComponentEntityTypeName );
@@ -315,10 +315,10 @@ namespace Rock.Tests.Integration.Engagement.Achievements
 
             var attempts = achievementAttemptService
                 .GetOrderedAchieverAttempts( achievementAttemptService.Queryable().AsNoTracking(), achievementTypeCache, _firstPersonAliasId )
-                .OrderBy(aa => aa.AchievementAttemptStartDateTime)
+                .OrderBy( aa => aa.AchievementAttemptStartDateTime )
                 .ToList();
             Assert.IsNotNull( attempts );
-            Assert.AreEqual( 5, attempts.Count );
+            Assert.HasCount( 5, attempts );
 
             Assert.AreNotEqual( attempt.Id, attempts[0].Id );
             Assert.AreEqual( new DateTime( 2019, 1, 1 ), attempts[0].AchievementAttemptStartDateTime );
@@ -367,7 +367,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
             var achievementTypeCache = AchievementTypeCache.Get( _achievementTypeId );
             var attemptsQuery = achievementAttemptService
                 .GetOrderedAchieverAttempts( achievementAttemptService.Queryable().AsNoTracking(), achievementTypeCache, _firstPersonAliasId );
-            
+
             // There should be no attempts
             Assert.AreEqual( 0, attemptsQuery.Count() );
 
@@ -403,8 +403,8 @@ namespace Rock.Tests.Integration.Engagement.Achievements
             attemptsQuery = achievementAttemptService
                 .GetOrderedAchieverAttempts( achievementAttemptService.Queryable().AsNoTracking(), achievementTypeCache, _firstPersonAliasId );
             Assert.AreEqual( 2, attemptsQuery.Count() );
-            Assert.IsTrue( attempt1.Id > 0 );
-            Assert.IsTrue( attempt2.Id > 0 );
+            Assert.IsGreaterThan( 0, attempt1.Id );
+            Assert.IsGreaterThan( 0, attempt2.Id );
 
             var originalId1 = attempt1.Id;
             var originalId2 = attempt2.Id;
@@ -418,7 +418,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
             var attempts = achievementAttemptService
                 .GetOrderedAchieverAttempts( achievementAttemptService.Queryable().AsNoTracking(), achievementTypeCache, _firstPersonAliasId );
             Assert.IsNotNull( attempts );
-            Assert.AreEqual( 2, attempts.Count );
+            Assert.HasCount( 2, attempts );
 
             Assert.AreEqual( attempt1.Id, attempts[1].Id );
             Assert.AreEqual( originalId1, attempts[1].Id );

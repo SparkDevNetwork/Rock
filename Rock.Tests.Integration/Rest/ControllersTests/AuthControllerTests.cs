@@ -6,7 +6,6 @@ using System.Web.Http.Controllers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Rest.Controllers;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Rest.ControllersTests

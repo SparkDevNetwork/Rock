@@ -65,7 +65,6 @@
             <CodeEditor v-model="formattedLava"
                         label="Formatted Lava"
                         :editorHeight="400"
-                        theme="rock"
                         mode="lava"
                         help="This will determine how the Matrix Attribute Field will display its formatted value."
                         :disabled="!isEditable" />

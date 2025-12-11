@@ -394,7 +394,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             }
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
@@ -412,7 +412,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.FrequencySensitivityScale ), reasons.Single() );
         }
 
@@ -482,7 +482,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             }
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
@@ -500,7 +500,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.FrequencySensitivityScale ), reasons.Single() );
         }
 
@@ -582,7 +582,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.FrequencySensitivityScale ), reasons.Single() );
         }
 
@@ -644,7 +644,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             }
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
@@ -662,7 +662,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.FrequencySensitivityScale ), reasons.Single() );
         }
 
@@ -734,7 +734,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             }
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
@@ -752,7 +752,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.FrequencySensitivityScale ), reasons.Single() );
         }
 
@@ -849,7 +849,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             Assert.IsNotNull( alerts );
 
 
-            Assert.AreEqual( expectedAlertTypeIds.Length, alerts.Count );
+            Assert.HasCount( expectedAlertTypeIds.Length, alerts );
 
             for ( int i = 0; i < expectedAlertTypeIds.Length; i++ )
             {
@@ -871,7 +871,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
                 var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
                 Assert.IsNotNull( reasons );
-                Assert.AreEqual( 1, reasons.Count );
+                Assert.HasCount( 1, reasons );
                 Assert.AreEqual( nameof( FinancialTransactionAlertType.FrequencySensitivityScale ), reasons.Single() );
             }
         }
@@ -938,7 +938,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             }
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
@@ -956,7 +956,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.FrequencySensitivityScale ), reasons.Single() );
         }
 
@@ -1112,7 +1112,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             }
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( alertCount, alerts.Count );
+            Assert.HasCount( alertCount, alerts );
         }
 
         /// <summary>
@@ -1177,7 +1177,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             }
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 2, alerts.Count );
+            Assert.HasCount( 2, alerts );
 
             Assert.AreEqual( 2, alerts[0].AlertTypeId );
             Assert.AreEqual( 3, alerts[1].AlertTypeId );
@@ -1198,7 +1198,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
                 var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
                 Assert.IsNotNull( reasons );
-                Assert.AreEqual( 1, reasons.Count );
+                Assert.HasCount( 1, reasons );
                 Assert.AreEqual( nameof( FinancialTransactionAlertType.FrequencySensitivityScale ), reasons.Single() );
             }
         }
@@ -1295,7 +1295,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 3, alert.AlertTypeId );
@@ -1315,7 +1315,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.AmountSensitivityScale ), reasons.Single() );
         }
 
@@ -1447,7 +1447,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             Assert.IsNotNull( alerts );
 
-            Assert.AreEqual( expectedAlertTypeIds.Length, alerts.Count );
+            Assert.HasCount( expectedAlertTypeIds.Length, expectedAlertTypeIds );
 
             for ( int i = 0; i < expectedAlertTypeIds.Length; i++ )
             {
@@ -1469,7 +1469,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
                 var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
                 Assert.IsNotNull( reasons );
-                Assert.AreEqual( 1, reasons.Count );
+                Assert.HasCount( 1, reasons );
                 Assert.AreEqual( nameof( FinancialTransactionAlertType.AmountSensitivityScale ), reasons.Single() );
             }
         }
@@ -1555,7 +1555,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 4, alert.AlertTypeId );
@@ -1573,9 +1573,9 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             var reason = reasons.Single();
-            Assert.AreEqual( reason, nameof( FinancialTransactionAlertType.MinimumGiftAmount ) );
+            Assert.AreEqual( nameof( FinancialTransactionAlertType.MinimumGiftAmount ), reason );
         }
 
         /// <summary>
@@ -1658,7 +1658,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 2, alerts.Count );
+            Assert.HasCount( 2, alerts );
 
             foreach ( var alert in alerts )
             {
@@ -1676,7 +1676,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
                 var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
                 Assert.IsNotNull( reasons );
-                Assert.AreEqual( 1, reasons.Count );
+                Assert.HasCount( 1, reasons );
                 Assert.AreEqual( nameof( FinancialTransactionAlertType.AmountSensitivityScale ), reasons.Single() );
             }
 
@@ -1799,7 +1799,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( expectedAlertTypeIds.Length, alerts.Count );
+            Assert.HasCount( expectedAlertTypeIds.Length, alerts );
 
             for ( int i = 0; i < expectedAlertTypeIds.Length; i++ )
             {
@@ -1824,7 +1824,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
                 var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
                 Assert.IsNotNull( reasons );
-                Assert.AreEqual( 1, reasons.Count );
+                Assert.HasCount( 1, reasons );
                 Assert.AreEqual( nameof( FinancialTransactionAlertType.FrequencySensitivityScale ), reasons.Single() );
             }
         }
@@ -1891,7 +1891,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
@@ -1909,7 +1909,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.AmountSensitivityScale ), reasons.Single() );
         }
 
@@ -1976,7 +1976,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
@@ -1994,7 +1994,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.AmountSensitivityScale ), reasons.Single() );
         }
 
@@ -2060,7 +2060,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
@@ -2078,7 +2078,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.AmountSensitivityScale ), reasons.Single() );
         }
 
@@ -2146,7 +2146,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
@@ -2164,7 +2164,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.AmountSensitivityScale ), reasons.Single() );
         }
 
@@ -2234,7 +2234,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
@@ -2252,7 +2252,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.AmountSensitivityScale ), reasons.Single() );
         }
 
@@ -2313,7 +2313,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
@@ -2331,7 +2331,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.AmountSensitivityScale ), reasons.Single() );
         }
 
@@ -2391,7 +2391,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
@@ -2409,7 +2409,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.AmountSensitivityScale ), reasons.Single() );
         }
 
@@ -2541,7 +2541,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             Assert.IsNotNull( alerts );
 
 
-            Assert.AreEqual( expectedAlertCount, alerts.Count );
+            Assert.HasCount( expectedAlertCount, alerts );
         }
 
         /// <summary>
@@ -2648,7 +2648,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( expectedAlertCount, alerts.Count );
+            Assert.HasCount( expectedAlertCount, alerts );
         }
 
         #endregion CreateAlertsForTransaction
@@ -2800,7 +2800,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             Rock.Jobs.GivingAutomation.UpdateGivingUnitClassifications( givingId, people, transactions, mostRecentOldTransactionDate, context, minDate );
 
-            Assert.AreEqual( 0, context.Errors.Count );
+            Assert.IsEmpty( context.Errors );
 
             // Preferred Currency - Defined Type
             var firstPerson = people.First();
@@ -3299,7 +3299,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             Rock.Jobs.GivingAutomation.UpdateGivingUnitClassifications( givingId, people, transactions, mostRecentOldTransactionDate, context, minDate );
 
-            Assert.AreEqual( 0, context.Errors.Count );
+            Assert.IsEmpty( context.Errors );
 
             // Preferred Currency - Defined Type
             var firstPerson = people.First();
@@ -4351,7 +4351,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             Rock.Jobs.GivingAutomation.UpdateGivingUnitClassifications( givingId, people, transactions, mostRecentOldTransactionDate, context, minDate );
 
-            Assert.AreEqual( 0, context.Errors.Count );
+            Assert.IsEmpty( context.Errors );
 
             // Preferred Currency - Defined Type
             var firstPerson = people.First();
@@ -4498,7 +4498,7 @@ namespace Rock.Tests.Integration.Core.Jobs
                 context,
                 minDate );
 
-            Assert.AreEqual( 0, context.Errors.Count );
+            Assert.IsEmpty( context.Errors );
 
             var frequencyLabel1 = GetAttributeValue( people.First(), SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL ).AsIntegerOrNull();
             Assert.AreEqual( frequencyDefinedValueErraticId, frequencyLabel1 );
@@ -4513,7 +4513,7 @@ namespace Rock.Tests.Integration.Core.Jobs
                 context,
                 minDate );
 
-            Assert.AreEqual( 0, context.Errors.Count );
+            Assert.IsEmpty( context.Errors );
 
             var frequencyLabel2 = GetAttributeValue( people.First(), SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL ).AsIntegerOrNull();
             Assert.AreEqual( frequencyDefinedValueMonthlyId, frequencyLabel2 );

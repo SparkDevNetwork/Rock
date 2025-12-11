@@ -29,7 +29,7 @@ namespace Rock.ViewModels.Blocks.Finance.BenevolenceRequestDetail
         /// <summary>
         /// Gets or sets the unique identifier for a person.
         /// </summary>
-        public int? PersonId { get; set; }
+        public string PersonIdKey { get; set; }
 
         /// <summary>
         /// Gets or sets the alias identifier for a person.
@@ -47,7 +47,7 @@ namespace Rock.ViewModels.Blocks.Finance.BenevolenceRequestDetail
         /// <value>
         /// An Id representing the Person's connection status.
         /// </value>
-        public int? ConnectionStatusValueId { get; set; }
+        public ConnectionStatusBag ConnectionStatus { get; set; }
 
         /// <summary>
         /// Gets or sets the URL of the photo associated with the entity.
@@ -90,7 +90,7 @@ namespace Rock.ViewModels.Blocks.Finance.BenevolenceRequestDetail
         /// Gets or sets the Home Phone Number of the person who requested benevolence.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Home Phone Number of the person who requested benevolence.
+        /// A <see cref="PhoneNumberBag"/> representing the Home Phone Number of the person who requested benevolence.
         /// </value>
         public PhoneNumberBag HomePhoneNumber { get; set; }
 
@@ -98,7 +98,7 @@ namespace Rock.ViewModels.Blocks.Finance.BenevolenceRequestDetail
         /// Gets or sets the Cell Phone Number of the person who requested benevolence.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Cell Phone Number of the person who requested benevolence.
+        /// A <see cref="PhoneNumberBag"/> representing the Cell Phone Number of the person who requested benevolence.
         /// </value>
         public PhoneNumberBag CellPhoneNumber { get; set; }
 
@@ -106,7 +106,7 @@ namespace Rock.ViewModels.Blocks.Finance.BenevolenceRequestDetail
         /// Gets or sets the Work Phone Number of the person who requested benevolence.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Work Phone Number of the person who requested benevolence.
+        /// A <see cref="PhoneNumberBag"/> representing the Work Phone Number of the person who requested benevolence.
         /// </value>
         public PhoneNumberBag WorkPhoneNumber { get; set; }
 

@@ -88,6 +88,12 @@
     padding-bottom: var(--spacing-small);
 }
 
+// Adjust spacing when content stack is the only child in a content section
+
+.contentstack:only-child {
+    padding-bottom: 0;
+}
+
 @media (max-width: 767px) {
 
     .contentstack {

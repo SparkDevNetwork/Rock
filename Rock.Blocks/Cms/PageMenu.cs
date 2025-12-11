@@ -24,9 +24,7 @@ using System.Text;
 
 using Rock.Attribute;
 using Rock.Enums.Cms;
-using Rock.Lava;
 using Rock.Model;
-using Rock.Security;
 using Rock.Utility.ExtensionMethods;
 using Rock.Web.Cache;
 
@@ -42,49 +40,50 @@ namespace Rock.Blocks.Cms
         "Template",
         Description = "The lava template to use for rendering. This template would typically be in the theme's \"Assets/Lava\" folder.",
         EditorMode = Web.UI.Controls.CodeEditorMode.Lava,
-        EditorTheme = Web.UI.Controls.CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = true,
         DefaultValue = @"{% include '~~/Assets/Lava/PageNav.lava' %}",
         Order = 0,
         Key = AttributeKey.Template )]
+
     [LavaCommandsField(
         "Enabled Lava Commands",
         Description = "The Lava commands that should be enabled for this content channel item block.",
         IsRequired = false,
         Order = 1,
         Key = AttributeKey.EnabledLavaCommands )]
+
     [LinkedPage(
         "Root Page",
         Description = "The root page to use for the page collection. Defaults to the current page instance if not set.",
         IsRequired = false,
         Key = AttributeKey.RootPage )]
+
     [TextField(
         "Number of Levels",
         Description = "Number of parent-child page levels to display. Default 3.",
         IsRequired = false,
         DefaultValue = "3",
         Key = AttributeKey.NumberofLevels )]
+
     [TextField(
         "CSS File",
         Description = "Optional CSS file to add to the page for styling. Example 'Styles/nav.css' would point the style sheet in the current theme's styles folder.",
         IsRequired = false,
         Key = AttributeKey.CSSFile )]
+
     [BooleanField(
         "Include Current Parameters",
         Description = "Flag indicating if current page's route parameters should be used when building URL for child pages",
         DefaultBooleanValue = false,
         Key = AttributeKey.IncludeCurrentParameters )]
+
     [BooleanField(
         "Include Current QueryString",
         Description = "Flag indicating if current page's QueryString should be used when building URL for child pages",
         DefaultBooleanValue = false,
         Key = AttributeKey.IncludeCurrentQueryString )]
-    [BooleanField(
-        "Is Secondary Block",
-        Description = "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.",
-        DefaultBooleanValue = false,
-        Key = AttributeKey.IsSecondaryBlock )]
+
     [KeyValueListField(
         "Include Page List",
         Description = "List of pages to include in the Lava. Any ~/ will be resolved by Rock. Enable debug for assistance. Example 'Give Now' with '~/page/186' or 'Me' with '~/MyAccount'.",

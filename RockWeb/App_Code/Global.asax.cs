@@ -441,57 +441,13 @@ namespace RockWeb
             foreach ( var blockTypeWithCompiledType in blockTypesWithCompiledType )
             {
                 var type = blockTypeWithCompiledType.CompiledType;
-                var siteTypes = SiteTypeFlags.None;
-
-                // Process the SiteTypeFlags property on the BlockType Table for
-                // each block. This logic was introduce to improve performance.
-                // The SiteTypeFlags column stores the flags related to the
-                // SiteTypes associated with the Block Types which otherwise
-                // needs to be fetched using Reflection.
-                if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
-                {
-                    var blockSiteTypes = type.GetCustomAttribute<SupportedSiteTypesAttribute>();
-
-                    if ( blockSiteTypes != null )
-                    {
-                        foreach ( var blockSiteType in blockSiteTypes.SiteTypes )
-                        {
-                            if ( blockSiteType == SiteType.Web )
-                            {
-                                siteTypes |= SiteTypeFlags.Web;
-                            }
-                            else if ( blockSiteType == SiteType.Mobile )
-                            {
-                                siteTypes |= SiteTypeFlags.Mobile;
-                            }
-                            else if ( blockSiteType == SiteType.Tv )
-                            {
-                                siteTypes |= SiteTypeFlags.Tv;
-                            }
-                        }
-                    }
-                }
-                else if ( typeof( IRockObsidianBlockType ).IsAssignableFrom( type ) )
-                {
-                    siteTypes |= SiteTypeFlags.Web;
-                }
-                else if ( typeof( IRockMobileBlockType ).IsAssignableFrom( type ) )
-                {
-                    siteTypes |= SiteTypeFlags.Mobile;
-                }
+                var siteTypes = BlockTypeService.GetSiteTypeFlagsForType( type );
 
                 var defaultRole = blockTypeWithCompiledType.BlockType.DefaultRole;
 
                 if ( type != null )
                 {
-                    if ( type.GetCustomAttribute<Rock.Cms.DefaultBlockRoleAttribute>() is Rock.Cms.DefaultBlockRoleAttribute blockRoleAttr )
-                    {
-                        defaultRole = blockRoleAttr.DefaultRole;
-                    }
-                    else
-                    {
-                        defaultRole = BlockRole.Content;
-                    }
+                    defaultRole = BlockTypeService.GetDefaultRoleForType( type );
                 }
 
                 if ( blockTypeWithCompiledType.BlockType.SiteTypeFlags != siteTypes || blockTypeWithCompiledType.BlockType.DefaultRole != defaultRole )

@@ -587,7 +587,7 @@ namespace Rock.Tests.Integration.TestData
                     .Select( x => x.Id )
                     .FirstOrDefault();
 
-                Assert.IsTrue( campusId != 0, "Invalid Campus." );
+                Assert.AreNotEqual( 0, campusId, "Invalid Campus." );
 
                 args.CampusIds = new List<int> { campusId };
             }

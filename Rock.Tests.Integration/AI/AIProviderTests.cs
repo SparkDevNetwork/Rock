@@ -18,10 +18,8 @@ using System;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
@@ -31,7 +29,7 @@ namespace Rock.Tests.Integration.AI
     /// Integration tests for AI Features.
     /// </summary>
     [TestClass]
-    [TestCategory("AI")]
+    [TestCategory( "AI" )]
     public class AIProviderTests : DatabaseTestsBase
     {
         private const string _openAiDefaultProviderGuid = "CA71BA8A-A4EB-449F-A94E-53807603D534";

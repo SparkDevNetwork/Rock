@@ -105,7 +105,7 @@
     const apiKey = propertyRef(props.modelValue.bag?.apiKey ?? "", "ApiKey");
     const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");
     const pageViewRetentionDuration = propertyRef(props.modelValue.bag?.pageViewRetentionDuration, "PageViewRetentionDuration");
-    const authenticationPage = propertyRef<PageRouteValueBag | null>({ page: props.modelValue.bag?.loginPage } ?? null, "AuthenticationPage");
+    const authenticationPage = propertyRef<PageRouteValueBag | null>({ page: props.modelValue.bag?.loginPage }, "AuthenticationPage");
     const rokuComponents = propertyRef(props.modelValue.bag?.rokuComponents ?? "", "RokuComponents");
     const showRokuComponents = ref(props.modelValue.bag?.showRokuComponents ?? false);
 

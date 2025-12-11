@@ -159,7 +159,7 @@ namespace Rock.Tests.Lava.Filters
         /// <summary>
         /// Converts an input value to a date/time value.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1-May-2018 6:30 PM", "01/May/2018 06:30 PM" )]
         [DataRow( "May 1, 2018 18:30:00", "01/May/2018 06:30 PM" )]
         public void AsDateTime_UsingKnownDateFormat_ProducesValidDate( string inputString, string result )
@@ -173,7 +173,7 @@ namespace Rock.Tests.Lava.Filters
         /// <summary>
         /// Converts an input value to a date/time value.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "5/1/2018", "May 1, 2018", "en-US" )]
         [DataRow( "5/1/2018", "Jan 5, 2018", "de-DE" )] // Note: Mai is May in German
         public void AsDateTime_UsingAmbiguousDate_ProducesDifferentDates( string input, string expectedResult, string clientCulture )
@@ -188,7 +188,7 @@ namespace Rock.Tests.Lava.Filters
         /// <summary>
         /// Converts an input value to a date/time value.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "5/1/2018", "May 1, 2018", "en-US" )]
         [DataRow( "5/1/2018", "Mai 1, 2018", "de-DE" )] // Note: Mai is May in German
         public void AsDateTime_UsingAmbiguousDate_WithSetCulture_AsInvariant_ProducesSameDate( string input, string expectedResult, string clientCulture )
@@ -288,7 +288,7 @@ namespace Rock.Tests.Lava.Filters
         /// Converts an input value to a date/time value.  We need to specify a time and time zone otherwise
         /// the server's timezone will be used, and the date time will shift.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "5/1/2018 00:00:00 +00:00", "2018-05-01T00:00:00.000+00:00", "en-US" )]
         [DataRow( "5/1/2018 00:00:00 +00:00", "2018-01-05T00:00:00.000+00:00", "de-DE" )] // Would be seen as Jan 5th,
         public void AsDateTimeUtc_UsingAmbiguousDate_ProducesDifferentDates( string input, string expectedResult, string clientCulture )
@@ -332,7 +332,7 @@ namespace Rock.Tests.Lava.Filters
         /// Converts an input value to a date/time value.  We need to specify a time and time zone otherwise
         /// the server's timezone will be used, and the date time will shift.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "5/1/2018 00:00:00 +00:00", "2018-05-01T00:00:00.000+00:00", "en-US" )]
         [DataRow( "5/1/2018 00:00:00 +00:00", "2018-05-01T00:00:00.000+00:00", "de-DE" )] // Should be the same
         public void AsDateTimeUtc_UsingAmbiguousDate_WithSetCulture_AsInvariant_ProducesSameDate( string input, string expectedResult, string clientCulture )
@@ -366,7 +366,7 @@ namespace Rock.Tests.Lava.Filters
         /// <summary>
         /// The Date filter should translate a date input using a standard .NET format string correctly.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "d'/'MMM'/'yy", "1/May/18" )]
         [DataRow( "MMMM dd, yyyy H:mm:ss", "May 01, 2018 18:30:00" )]
         [DataRow( "yyyy-MM-dd HH:mm:ss", "2018-05-01 18:30:00" )]
@@ -397,7 +397,7 @@ namespace Rock.Tests.Lava.Filters
             TestHelper.AssertTemplateOutputDate( _now.ToString( "yyyy-MM-dd" ), "{{ 'Now' | Date:'yyyy-MM-dd' }}" );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1-May-2018 6:30 PM", "5/1/2018", "en-US" )]
         [DataRow( "1-May-2018 6:30 PM", "01.05.2018", "de-DE" )]
         [DataRow( "01/02/2020", "01.02.2020", "de-DE" )] // That is February 1 as dd.MM.yyyy
@@ -411,7 +411,7 @@ namespace Rock.Tests.Lava.Filters
             }, clientCulture );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1-May-2018 6:30 PM", "05/01/2018", "en-US" )]
         [DataRow( "1-May-2018 6:30 PM", "05/01/2018", "de-DE" )]
         [DataRow( "01/02/2020", "01/02/2020", "de-DE" )] // That is January 2
@@ -425,7 +425,7 @@ namespace Rock.Tests.Lava.Filters
             }, clientCulture );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1-May-2018 6:30 PM", "5/1/2018", "en-US" )]
         [DataRow( "1-May-2018 6:30 PM", "01.05.2018", "de-DE" )]
         [DataRow( "01/02/2020", "01.02.2020", "de-DE" )] // That is February 1 as dd.MM.yyyy
@@ -801,23 +801,23 @@ namespace Rock.Tests.Lava.Filters
         {
             // Same date should result in 0 weeks
             TestHelper.AssertTemplateOutput( "0", "{{ '01-Jan-2024' | DateDiff:'01-Jan-2024','w' }}" );
-        
+
             // 7 days apart should result in 1 week
             TestHelper.AssertTemplateOutput( "1", "{{ '01-Jan-2024' | DateDiff:'08-Jan-2024','w' }}" );
-        
+
             // 6 days apart should result in 0 weeks (round down)
             TestHelper.AssertTemplateOutput( "0", "{{ '01-Jan-2024' | DateDiff:'07-Jan-2024','w' }}" );
-        
+
             // 11 days apart should result in 1 week (round down)
             TestHelper.AssertTemplateOutput( "1", "{{ '01-Jan-2024' | DateDiff:'12-Jan-2024','w' }}" );
-        
+
             // 14 days apart should result in 2 weeks
             TestHelper.AssertTemplateOutput( "2", "{{ '01-Jan-2024' | DateDiff:'15-Jan-2024','w' }}" );
-        
+
             // 21 days apart should result in 3 weeks
             TestHelper.AssertTemplateOutput( "3", "{{ '01-Jan-2024' | DateDiff:'22-Jan-2024','w' }}" );
         }
-        
+
         /// <summary>
         /// Requesting the difference between a target date and an earlier date should yield a negative number of weeks.
         /// </summary>
@@ -963,9 +963,9 @@ namespace Rock.Tests.Lava.Filters
                 {
                     var rockDateTimeString = LavaDateTime.ToString( date, "yyyy-MM-dd HH:mm:ss tt" );
 
-                    if ( !output.Contains( $"<li>{ rockDateTimeString }</li>" ) )
+                    if ( !output.Contains( $"<li>{rockDateTimeString}</li>" ) )
                     {
-                        Assert.Fail( $"Lava Output '{ output }' does not contain date string '{ rockDateTimeString }'.\n[SystemDateTime = {DateTime.Now:O}, RockDateTime = {_now:O}]" );
+                        Assert.Fail( $"Lava Output '{output}' does not contain date string '{rockDateTimeString}'.\n[SystemDateTime = {DateTime.Now:O}, RockDateTime = {_now:O}]" );
                     }
                 }
             } );
@@ -975,8 +975,8 @@ namespace Rock.Tests.Lava.Filters
         {
             // Verify that all dates are expressed as Kind=Unspecified. This is to ensure that the caller has intentionally expressed these parameters as calendar dates,
             // rather than specific points in time. 
-            Assert.IsTrue( asAtDateTime.Kind == DateTimeKind.Unspecified, "DateTime parameter must be of Kind 'Unspecified' because it is timezone independent." );
-            Assert.IsTrue( expectedNextDateTime.Kind == DateTimeKind.Unspecified, "DateTime parameter must be of Kind 'Unspecified' because it is timezone independent." );
+            Assert.AreEqual( DateTimeKind.Unspecified, asAtDateTime.Kind, "DateTime parameter must be of Kind 'Unspecified' because it is timezone independent." );
+            Assert.AreEqual( DateTimeKind.Unspecified, expectedNextDateTime.Kind, "DateTime parameter must be of Kind 'Unspecified' because it is timezone independent." );
 
             // Create a schedule with the specified parameters and verify the DatesFromICal filter output.
             var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( firstEventStartDateTime,
@@ -1014,13 +1014,13 @@ namespace Rock.Tests.Lava.Filters
             {
                 var eventDuration = new TimeSpan( 1, 0, 0 );
 
-            // Create a schedule starting on 2020-06-01 04:00am for the current Rock timezone.
-            // The scheduled event has a duration of 1 hour.
-            // If we retrieve the occurrences for the schedule at an effective date of 2020-06-01 07:00am,
-            // the event scheduled for the current day has already passed so the first entry
-            // in the sequence of future occurrences should be 2020-06-02 04:00am.
-            // This should be true for any Rock timezone, regardless of UTC offset.
-            var firstEventStartDate = LavaDateTime.NewDateTime( 2020, 6, 1, 4, 0, 0 );
+                // Create a schedule starting on 2020-06-01 04:00am for the current Rock timezone.
+                // The scheduled event has a duration of 1 hour.
+                // If we retrieve the occurrences for the schedule at an effective date of 2020-06-01 07:00am,
+                // the event scheduled for the current day has already passed so the first entry
+                // in the sequence of future occurrences should be 2020-06-02 04:00am.
+                // This should be true for any Rock timezone, regardless of UTC offset.
+                var firstEventStartDate = LavaDateTime.NewDateTime( 2020, 6, 1, 4, 0, 0 );
                 var asAtDate = firstEventStartDate.AddHours( 3 );
                 var expectedNextDate = firstEventStartDate.AddDays( 1 );
 
@@ -1099,7 +1099,7 @@ namespace Rock.Tests.Lava.Filters
             {
                 // Get the iCalendar and expected datetime for the test time zone.
                 var testDateTime = new DateTime( 2021, 3, 15, 13, 0, 0 );
-                var expectedDateTime = GetNextScheduledWeeklyEventDateTime( testDateTime, DayOfWeek.Saturday, new TimeSpan(17,30,0) );
+                var expectedDateTime = GetNextScheduledWeeklyEventDateTime( testDateTime, DayOfWeek.Saturday, new TimeSpan( 17, 30, 0 ) );
                 var iCalString = GetCalendarWeeklySaturday1630FromDate( testDateTime, timeZone );
 
                 VerifyDatesExistInDatesFromICalResult( iCalString,
@@ -1969,7 +1969,7 @@ namespace Rock.Tests.Lava.Filters
         /// <summary>
         /// Converts an input value to a date/time value.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1-May-2018 3:00 PM", "2018-05-01T00:00", "en-US" )]
         [DataRow( "1-May-2018 3:00 PM", "2018-05-01T00:00", "de-DE" )]
         public void ToMidnight_InputDateHasTimeComponent_YieldsMidnight_WithClientCulture( string input, string expectedResult, string clientCulture )

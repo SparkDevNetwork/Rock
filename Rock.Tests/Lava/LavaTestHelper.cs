@@ -25,7 +25,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
-using Rock.Tests.Shared;
 
 namespace Rock.Tests.Lava
 {
@@ -322,7 +321,7 @@ namespace Rock.Tests.Lava
                 return _fluidEngine;
             }
 
-            throw new Exception( $"Cannot return an instance of engine type \"{ engineType }\"." );
+            throw new Exception( $"Cannot return an instance of engine type \"{engineType}\"." );
         }
 
         /// <summary>
@@ -401,7 +400,7 @@ namespace Rock.Tests.Lava
                 {
                     Debug.Write( $"\n**\n** ERROR\n**\n{ex.Message}" );
 
-                    exceptions.Add( new Exception( $"Engine \"{ engine.EngineName }\" reported an error.", ex ) );
+                    exceptions.Add( new Exception( $"Engine \"{engine.EngineName}\" reported an error.", ex ) );
                 }
             }
 
@@ -606,7 +605,7 @@ namespace Rock.Tests.Lava
 
             WriteOutputToDebug( engine, outputString );
 
-            Assert.IsNotNull( outputDateUtc, $"Template Output does not represent a valid DateTime. [Output=\"{ outputString }\"]" );
+            Assert.IsNotNull( outputDateUtc, $"Template Output does not represent a valid DateTime. [Output=\"{outputString}\"]" );
 
             try
             {
@@ -623,15 +622,15 @@ namespace Rock.Tests.Lava
             {
                 var info = $@"
 Test Environment:
-LavaEngine = { engine.EngineName },
+LavaEngine = {engine.EngineName},
 LocalDateTime = {DateTimeOffset.Now},
 LocalTimeZoneName = {TimeZoneInfo.Local.DisplayName},
-LocalTimeZoneOffset = { TimeZoneInfo.Local.BaseUtcOffset }
-RockDateTime = { LavaDateTime.NowOffset },
-RockTimeZoneName = { RockDateTime.OrgTimeZoneInfo.DisplayName },
-RockTimeZoneOffset = { RockDateTime.OrgTimeZoneInfo.BaseUtcOffset }
+LocalTimeZoneOffset = {TimeZoneInfo.Local.BaseUtcOffset}
+RockDateTime = {LavaDateTime.NowOffset},
+RockTimeZoneName = {RockDateTime.OrgTimeZoneInfo.DisplayName},
+RockTimeZoneOffset = {RockDateTime.OrgTimeZoneInfo.BaseUtcOffset}
 ";
-                throw new Exception( $"Lava Date/Time test failed.\n{ info }", ex );
+                throw new Exception( $"Lava Date/Time test failed.\n{info}", ex );
             }
         }
 

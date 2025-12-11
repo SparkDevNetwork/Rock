@@ -247,7 +247,7 @@ Line 3<br>
 
             var isTemplate = LavaHelper.IsLavaTemplate( input );
 
-            Assert.AreEqual( true, isTemplate );
+            Assert.IsTrue( isTemplate );
         }
 
         [TestMethod]
@@ -262,7 +262,7 @@ Line 3<br>
 
             var isTemplate = LavaHelper.IsLavaTemplate( input );
 
-            Assert.AreEqual( false, isTemplate );
+            Assert.IsFalse( isTemplate );
         }
 
         [TestMethod]
@@ -278,7 +278,7 @@ Line 3<br>
 
             var isTemplate = LavaHelper.IsLavaTemplate( input );
 
-            Assert.AreEqual( false, isTemplate );
+            Assert.IsFalse( isTemplate );
         }
 
         [TestMethod]
@@ -292,7 +292,7 @@ Line 3<br>
 
             var isTemplate = LavaHelper.IsLavaTemplate( input );
 
-            Assert.AreEqual( true, isTemplate );
+            Assert.IsTrue( isTemplate );
         }
 
         [TestMethod]
@@ -304,14 +304,14 @@ Line 3<br>
    echo ""Hello World"" %}
 ";
 
-            Assert.AreEqual( true, LavaHelper.IsLavaTemplate( template ) );
+            Assert.IsTrue( LavaHelper.IsLavaTemplate( template ) );
         }
 
         [TestMethod]
         public void IsLavaTemplate_UnmatchedTag_ReturnsFalse()
         {
-            Assert.AreEqual( false, LavaHelper.IsLavaTemplate( "{% This is not a Lava template." ) );
-            Assert.AreEqual( false, LavaHelper.IsLavaTemplate( "... nor is this %}" ) );
+            Assert.IsFalse( LavaHelper.IsLavaTemplate( "{% This is not a Lava template." ) );
+            Assert.IsFalse( LavaHelper.IsLavaTemplate( "... nor is this %}" ) );
         }
     }
 }

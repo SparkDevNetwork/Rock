@@ -110,7 +110,6 @@ namespace Rock.Migrations.RockStartup
             SystemGuid.ServiceJob.DATA_MIGRATIONS_171_POPULATE_ATTENDANCE_ROOT_GROUP_TYPE.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_171_CHOP_OBSIDIAN_BLOCKS.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_173_UPDATE_ATTENDANCEOCCURRENCE_INDEX.AsGuid(),
-            SystemGuid.ServiceJob.DATA_MIGRATIONS_180_UPDATE_COMMUNICATIONRECIPIENT_INDEX.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_180_DELETE_GROUPLOCATIONHISTORICALSCHEDULE.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_180_CHOP_OBSIDIAN_BLOCKS.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_180_SWAP_OBSIDIAN_BLOCKS.AsGuid(),
@@ -118,7 +117,6 @@ namespace Rock.Migrations.RockStartup
             SystemGuid.ServiceJob.DATA_MIGRATIONS_180_DELETE_SELFSERVICE_KIOSK_SITE_AND_RELATED.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_180_UPDATE_EMAIL_PREFERENCE_ENTRY_BLOCK_MANAGE_MY_ACCOUNT_PAGE.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_181_ADD_FINANCIALBATCH_INDEX.AsGuid(),
-            SystemGuid.ServiceJob.DATA_MIGRATIONS_181_ADD_INDEXES_FOR_COMMUNICATION_PREP.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_190_SWAP_OBSIDIAN_BLOCKS.AsGuid(),
         };
 
@@ -133,7 +131,8 @@ namespace Rock.Migrations.RockStartup
             SystemGuid.ServiceJob.POST_170_UPDATE_HISTORY_ENTITYTYPEID_INDEX.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_173_UPDATE_NAMELESS_SCHEDULES.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_180_UPDATE_NAMELESS_LOCATIONS.AsGuid(),
-            SystemGuid.ServiceJob.DATA_MIGRATIONS_180_MIGRATE_ERA_DATA_TO_STEPS.AsGuid()
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_180_MIGRATE_ERA_DATA_TO_STEPS.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_181_ADD_INDEXES_FOR_COMMUNICATION_PREP.AsGuid(),
         };
 
         /// <summary>

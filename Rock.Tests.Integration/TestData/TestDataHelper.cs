@@ -282,30 +282,30 @@ namespace Rock.Tests.Integration.TestData
                 // Delete Search Key
                 //using ( var rockContext = new RockContext() )
                 //{
-                    var personSearchKeyService = new PersonSearchKeyService( rockContext );
-                    var personSearchKeyQuery = personSearchKeyService.Queryable()
-                        .Where( psk => guidList.Contains( psk.PersonAlias.Person.Guid ) );
-                    personSearchKeyService.DeleteRange( personSearchKeyQuery );
-                    rockContext.SaveChanges();
+                var personSearchKeyService = new PersonSearchKeyService( rockContext );
+                var personSearchKeyQuery = personSearchKeyService.Queryable()
+                    .Where( psk => guidList.Contains( psk.PersonAlias.Person.Guid ) );
+                personSearchKeyService.DeleteRange( personSearchKeyQuery );
+                rockContext.SaveChanges();
                 //}
 
                 // Delete Connection Requests
                 //using ( var rockContext = new RockContext() )
                 //{
-                    var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
-                    var connectionRequestActivityQuery = connectionRequestActivityService.Queryable()
-                        .Where( x => guidList.Contains( x.ConnectorPersonAlias.Person.Guid ) || guidList.Contains( x.ConnectionRequest.PersonAlias.Person.Guid ) );
-                    connectionRequestActivityService.DeleteRange( connectionRequestActivityQuery );
-                    rockContext.SaveChanges();
+                var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
+                var connectionRequestActivityQuery = connectionRequestActivityService.Queryable()
+                    .Where( x => guidList.Contains( x.ConnectorPersonAlias.Person.Guid ) || guidList.Contains( x.ConnectionRequest.PersonAlias.Person.Guid ) );
+                connectionRequestActivityService.DeleteRange( connectionRequestActivityQuery );
+                rockContext.SaveChanges();
                 //}
 
                 //using ( var rockContext = new RockContext() )
                 //{
-                    var connectionRequestService = new ConnectionRequestService( rockContext );
-                    var connectionRequestQuery = connectionRequestService.Queryable()
-                        .Where( x => guidList.Contains( x.ConnectorPersonAlias.Person.Guid ) || guidList.Contains( x.PersonAlias.Person.Guid ) );
-                    connectionRequestService.DeleteRange( connectionRequestQuery );
-                    rockContext.SaveChanges();
+                var connectionRequestService = new ConnectionRequestService( rockContext );
+                var connectionRequestQuery = connectionRequestService.Queryable()
+                    .Where( x => guidList.Contains( x.ConnectorPersonAlias.Person.Guid ) || guidList.Contains( x.PersonAlias.Person.Guid ) );
+                connectionRequestService.DeleteRange( connectionRequestQuery );
+                rockContext.SaveChanges();
                 //}
 
                 // Delete Auths.
@@ -318,20 +318,20 @@ namespace Rock.Tests.Integration.TestData
                 //using ( var rockContext = new RockContext() )
                 //{
                 var personAliasService = new PersonAliasService( rockContext );
-                    var personAliasQuery = personAliasService.Queryable()
-                        .Where( pa => guidList.Contains( pa.Person.Guid ) || guidList.Contains( pa.AliasPerson.Guid ) );
-                    personAliasService.DeleteRange( personAliasQuery );
-                    rockContext.SaveChanges();
+                var personAliasQuery = personAliasService.Queryable()
+                    .Where( pa => guidList.Contains( pa.Person.Guid ) || guidList.Contains( pa.AliasPerson.Guid ) );
+                personAliasService.DeleteRange( personAliasQuery );
+                rockContext.SaveChanges();
                 //}
 
                 // Delete Person
                 //using ( var rockContext = new RockContext() )
                 //{
-                    var personService = new PersonService( rockContext );
-                    var personQuery = personService.Queryable()
-                        .Where( p => guidList.Contains( p.Guid ) );
-                    personService.DeleteRange( personQuery );
-                    rockContext.SaveChanges();
+                var personService = new PersonService( rockContext );
+                var personQuery = personService.Queryable()
+                    .Where( p => guidList.Contains( p.Guid ) );
+                personService.DeleteRange( personQuery );
+                rockContext.SaveChanges();
                 //}
             }
             catch ( Exception ex )

@@ -68,7 +68,26 @@ namespace Rock.Web.Cache
         /// The refresh interval minutes.
         /// </value>
         [DataMember]
-        public int? RefreshIntervalMinutes { get; private set; }
+        [Obsolete( "RefreshIntervalMinutes is obsolete. Use PersistedScheduleIntervalMinutes instead.", error: false )]
+        [RockObsolete( "19.0" )]
+        public int? RefreshIntervalMinutes
+        {
+            get => PersistedScheduleIntervalMinutes;
+            private set
+            {
+                // Preserve backward compatibility if old payloads still set RefreshIntervalMinutes.
+                PersistedScheduleIntervalMinutes = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the refresh interval minutes
+        /// </summary>
+        /// <value>
+        /// The refresh interval minutes.
+        /// </value>
+        [DataMember]
+        public int? PersistedScheduleIntervalMinutes { get; private set; }
 
         /// <summary>
         /// Gets or sets a comma-delimited list of enabled LavaCommands
@@ -319,7 +338,10 @@ namespace Rock.Web.Cache
             AccessKey = persistedDataset.AccessKey;
             Name = persistedDataset.Name;
             Description = persistedDataset.Description;
-            RefreshIntervalMinutes = persistedDataset.RefreshIntervalMinutes;
+#pragma warning disable CS0618 // Type or member is obsolete
+            RefreshIntervalMinutes = persistedDataset.PersistedScheduleIntervalMinutes;
+#pragma warning restore CS0618 // Type or member is obsolete
+            PersistedScheduleIntervalMinutes = persistedDataset.PersistedScheduleIntervalMinutes;
             LastRefreshDateTime = persistedDataset.LastRefreshDateTime;
             EnabledLavaCommands = persistedDataset.EnabledLavaCommands;
             AllowManualRefresh = persistedDataset.AllowManualRefresh;

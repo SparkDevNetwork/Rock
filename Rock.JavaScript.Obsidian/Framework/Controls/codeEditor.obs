@@ -32,51 +32,6 @@
     import { isFullscreen, enterFullscreen, exitFullscreen } from "@Obsidian/Utility/fullscreen";
     import { updateRefValue } from "@Obsidian/Utility/component";
 
-    const aceThemes = {
-        0: "rock",
-        1: "chrome",
-        2: "crimson_editor",
-        3: "dawn",
-        4: "dreamweaver",
-        5: "eclipse",
-        6: "solarized_light",
-        7: "textmate",
-        8: "tomorrow",
-        9: "xcode",
-        10: "github",
-        11: "ambiance",
-        12: "chaos",
-        13: "clouds_midnight",
-        14: "cobalt",
-        15: "idle_fingers",
-        16: "kr_theme",
-        17: "merbivore",
-        18: "merbivore_soft",
-        19: "mono_industrial",
-        20: "monokai",
-        21: "pastel_on_dark",
-        22: "solarized_dark",
-        23: "terminal",
-        24: "tomorrow_night",
-        25: "tomorrow_night_blue",
-        26: "tomorrow_night_bright",
-        27: "tomorrow_night_eighties",
-        28: "twilight",
-        29: "vibrant_ink",
-    } as const;
-
-    const monacoThemes = {
-        0: "vs",
-        1: "vs-dark",
-        2: "hc-light",
-        3: "hc-black"
-    } as const;
-
-    // The valid theme types for intellisense.
-    type AceThemeTypes = keyof typeof aceThemes | typeof aceThemes[keyof typeof aceThemes];
-    type MonacoThemeTypes = keyof typeof monacoThemes | typeof monacoThemes[keyof typeof monacoThemes];
-    type ThemeTypes = AceThemeTypes | MonacoThemeTypes;
-
     const modes = {
         0: "text",
         1: "css",
@@ -108,9 +63,13 @@
             default: "ace"
         },
 
-        /** The name of the theme to use when styling the editor. */
+        /**
+         * The name of the theme to use when styling the editor.
+         *
+         * @deprecated RockVersion( "19.0" ) This is no longer used and will be removed in a future version.
+         */
         theme: {
-            type: [String, Number] as PropType<ThemeTypes>,
+            type: [String, Number] as PropType<string | number>,
             default: "rock"
         },
 
@@ -212,19 +171,7 @@
 
     // Since themes can be passed in as the number or string, we need to convert it to the string version
     const themeName = computed<string>(() => {
-        if ((props.theme === 0 || props.theme === "rock") && props.editor === "ace") {
-            return "github";
-        }
-
-        if (typeof props.theme === "number" && props.editor === "ace") {
-            return aceThemes[props.theme];
-        }
-
-        if (typeof props.theme === "number" && props.editor === "monaco") {
-            return monacoThemes[props.theme];
-        }
-
-        return (props.theme as string)?.toLowerCase() ?? "github";
+        return props.editor === "ace" ? "github" : "vs";
     });
 
     // Since modes can be passed in as the number or string, we need to convert it to the string version

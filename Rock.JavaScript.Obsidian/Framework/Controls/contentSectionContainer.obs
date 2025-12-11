@@ -13,6 +13,7 @@
 <script setup lang="ts">
     import ContentSectionNav from "@Obsidian/Controls/Internal/contentSectionNav.obs";
     import { IContentSectionHolder, IContentSectionContainerHolder, provideSectionContainer } from "@Obsidian/Core/Controls/contentSection";
+    import { Enumerable } from "@Obsidian/Utility/linq";
     import { computed, PropType, shallowRef } from "vue";
 
     const props = defineProps({
@@ -56,12 +57,17 @@
     // #region Computed Values
 
     /**
-     * Filters sections to only include those that have both title and icon.
+     * Filters sections to only include those that have a title.
      */
     const visibleSections = computed((): IContentSectionHolder[] => {
-        return sections.value.filter(section =>
-            section.title.value && section.icon.value
-        );
+        return Enumerable
+            .from(
+                sections.value.filter(s =>
+                    !!s.title.value
+                )
+            )
+            .orderBy(s => s.order.value)
+            .toArray();
     });
 
     /** Determines whether the sidebar should be currently shown. */

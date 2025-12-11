@@ -134,7 +134,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
                     .WithCurrentPerson( TestGuids.TestPeople.TedDecker ) );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( null, "" )]
         [DataRow( "", "" )]
         [DataRow( "abc", "abc" )]

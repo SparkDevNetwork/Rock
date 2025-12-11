@@ -3,7 +3,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Model;
-using Rock.Tests.Shared;
 
 namespace Rock.Tests.Model
 {
@@ -46,7 +45,7 @@ namespace Rock.Tests.Model
 
             var result = pageRoute.ToJson();
             var key = string.Format( "\"Guid\":\"{0}\"", guid );
-            Assert.AreNotEqual(-1, result.IndexOf( key ) );
+            Assert.AreNotEqual( -1, result.IndexOf( key ) );
         }
 
         /// <summary>

@@ -19,7 +19,6 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava.Helpers;
-using Rock.Tests.Shared;
 
 namespace Rock.Tests.Lava.Helpers
 {
@@ -86,7 +85,7 @@ namespace Rock.Tests.Lava.Helpers
             var watchMap = "851,222,4601,5722";
             var (resumePercentage, _) = LavaAppendWatchesHelper.GetResumeInformation( watchMap );
 
-            Assert.AreEqual( 100, resumePercentage);
+            Assert.AreEqual( 100, resumePercentage );
         }
 
         [TestMethod]

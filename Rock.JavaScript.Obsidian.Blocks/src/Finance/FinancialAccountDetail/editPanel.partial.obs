@@ -26,7 +26,6 @@
         <CodeEditor v-model="publicDescription"
                     label="Public Description HTML"
                     mode="lava"
-                    theme="rock"
                     :editorHeight="250"
                     help="Additional HTML content to include with the account." />
 

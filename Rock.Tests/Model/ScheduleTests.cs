@@ -105,7 +105,7 @@ namespace Rock.Tests.Model
 
                 Assert.IsNotNull( endDateReturned );
                 Assert.That.AreEqualDate( endDateSpecified, endDateReturned.Period.StartTime.Date, "Unexpected value for Last Occurrence Date." );
-                Assert.AreEqual( _specificDates.Count, scheduleDates.Count, "Incorrect number of Occurrences returned from Schedule." );
+                Assert.HasCount( _specificDates.Count, scheduleDates, "Incorrect number of Occurrences returned from Schedule." );
             } );
         }
 

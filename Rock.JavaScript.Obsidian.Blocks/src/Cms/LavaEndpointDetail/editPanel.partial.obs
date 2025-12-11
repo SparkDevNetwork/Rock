@@ -52,7 +52,6 @@
 
         <CodeEditor v-model="codeTemplate"
                     label="Code Template"
-                    theme="rock"
                     mode="text"
                     help="Your Lava template. Note that the application's configuration rigging is available as 'ConfigurationRigging'."
                     :editorHeight="600" />

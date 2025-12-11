@@ -41,7 +41,7 @@ namespace Rock.Lava.Shortcodes
     [LavaShortcodeMetadata(
         Name = "Group Finder",
         TagName = "groupfinder",
-        Description = "Provides the group finder logic in a simple to use shortcode..",
+        Description = "Add Rock's Group Finder functionality using a simple shortcode.",
         Documentation = DocumentationMetadata,
         Parameters = ParameterNamesMetadata,
         Categories = "C3270142-E72E-4FBF-BE94-9A2505DE7D54" )]

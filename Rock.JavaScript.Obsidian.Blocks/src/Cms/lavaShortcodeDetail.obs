@@ -78,7 +78,8 @@
         "tagName",
         "tagType",
         "enabledCommands",
-        "parameters"
+        "parameters",
+        "shortcodeScopeBehavior"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(lavaShortcodeEditBag, validProperties, invokeBlockAction), undefined, true);

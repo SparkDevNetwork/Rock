@@ -5,7 +5,6 @@ using System.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Configuration;
-using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Web.Utilities
 {
@@ -38,7 +37,7 @@ namespace Rock.Tests.Integration.Web.Utilities
         [DataRow( 378675, ".NET Framework 4.5.1" )]
         [DataRow( 378389, ".NET Framework 4.5" )]
         [DataRow( 378388, "Unknown" )]
-        public void GetDotNetVersionShouldReturnCorrectString(int releaseNumber, string expectedResult )
+        public void GetDotNetVersionShouldReturnCorrectString( int releaseNumber, string expectedResult )
         {
             var actualResult = Configuration.HostingSettings.GetDotNetVersion( releaseNumber );
             Assert.AreEqual( expectedResult, actualResult );

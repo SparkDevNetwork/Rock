@@ -55,7 +55,7 @@ namespace Rock.Tests.Integration.Rest.ControllersTests
             // Test 1: Add a Following by Id.
             var followResponse1 = controller.Follow( personType.Id, personBillMarble.Id, "Test" );
             Assert.IsTrue( followResponse1.TryGetContentValue<int>( out var followId1 ) );
-            Assert.IsTrue( followId1 != 0 );
+            Assert.AreNotEqual( 0, followId1 );
 
             // Remove the Following by Id.
             controller.Delete( personType.Id, personBillMarble.Id, "Test" );
@@ -63,7 +63,7 @@ namespace Rock.Tests.Integration.Rest.ControllersTests
             // Test 2: Add a Following by Guid
             var followResponse2 = controller.Follow( personType.Guid, personBillMarble.Guid, "Test" );
             Assert.IsTrue( followResponse2.TryGetContentValue<int>( out var followId2 ) );
-            Assert.IsTrue( followId2 != 0 );
+            Assert.AreNotEqual( 0, followId2 );
 
             // Remove the Following by Guid.
             controller.Delete( personType.Guid, personBillMarble.Guid, "Test" );
@@ -108,10 +108,10 @@ namespace Rock.Tests.Integration.Rest.ControllersTests
             }
 
             // Verify that an invalid parameter error is returned.
-            Assert.IsTrue( exception?.Response?.StatusCode == System.Net.HttpStatusCode.BadRequest );
+            Assert.AreEqual( System.Net.HttpStatusCode.BadRequest, exception?.Response?.StatusCode );
             errorMessage = exception.Response.Content.ReadAsStringAsync().Result;
-            Assert.IsTrue( errorMessage.Contains( "Invalid parameter value." ) );
-            Assert.IsTrue( errorMessage.Contains( Guid.Empty.ToString() ) );
+            Assert.Contains( "Invalid parameter value.", errorMessage );
+            Assert.Contains( Guid.Empty.ToString(), errorMessage );
         }
     }
 }

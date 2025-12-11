@@ -15,7 +15,7 @@ using Rock.Web.Cache;
 namespace Rock.Tests.Integration.Performance.Crm.Interactions
 {
     [TestClass]
-    [Ignore("Performance tests. These tests do not contain any Asserts.")]
+    [Ignore( "Performance tests. These tests do not contain any Asserts." )]
     public class PageViewTests : DatabaseTestsBase
     {
         public static List<PageCache> _allPages;
@@ -194,12 +194,12 @@ namespace Rock.Tests.Integration.Performance.Crm.Interactions
         public void PerformanceTest1()
         {
             _allPages = PageCache.All();
-            DoTestRound("Round 1");
+            DoTestRound( "Round 1" );
             DoTestRound( "Round 2" );
             DoTestRound( "Round 3" );
         }
 
-        private void DoTestRound(string roundName)
+        private void DoTestRound( string roundName )
         {
             int[] personAliasIds = new PersonAliasService( new RockContext() ).Queryable().Select( a => a.Id ).ToArray();
 

@@ -18,7 +18,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
 
 namespace Rock.Tests.Integration.Core.Lava.FileSystem
@@ -92,7 +91,7 @@ Included 'a' = b
 Outer 'a' = a
 ";
 
-	            var testEngineFluid = LavaService.NewEngineInstance( typeof( FluidEngine ), new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
+                var testEngineFluid = LavaService.NewEngineInstance( typeof( FluidEngine ), new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
 
                 TestHelper.AssertTemplateOutput( testEngineFluid, expectedOutputFluid, input );
             }

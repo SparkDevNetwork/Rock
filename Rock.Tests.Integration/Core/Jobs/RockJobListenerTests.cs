@@ -18,11 +18,9 @@ using Rock.Communication.Transport;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 
 using SmtpServer;
-using SmtpServer.Mail;
 using SmtpServer.Protocol;
 using SmtpServer.Storage;
 
@@ -70,7 +68,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             Assert.AreEqual( "Exception", actualJob.LastStatus );
 
             var exceptions = new ExceptionLogService( new RockContext() ).Queryable().Where( els => els.Description == expectedExceptionMessage );
-            Assert.IsTrue( exceptions.Count() == 1 );
+            Assert.HasCount( 1, exceptions );
         }
 
         [TestMethod]
@@ -171,7 +169,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             Assert.AreEqual( "Exception", actualJob.LastStatus );
 
             var exceptions = new ExceptionLogService( new RockContext() ).Queryable().Where( els => els.Description.Contains( expectedExceptionMessage ) );
-            Assert.IsTrue( exceptions.Count() > 1 );
+            Assert.IsGreaterThan( 1, exceptions.Count() );
         }
 
         [TestMethod]
@@ -187,7 +185,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             Assert.AreEqual( "Exception", actualJob.LastStatus );
 
             var exceptions = new ExceptionLogService( new RockContext() ).Queryable().Where( els => els.Description == expectedExceptionMessage );
-            Assert.IsTrue( exceptions.Count() == 1 );
+            Assert.HasCount( 1, exceptions );
         }
 
         [TestMethod]
@@ -205,7 +203,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             Assert.AreEqual( "Warning", actualJob.LastStatus );
 
             var exceptions = new ExceptionLogService( new RockContext() ).Queryable().Where( els => els.Description == expectedResultMessage );
-            Assert.IsTrue( exceptions.Count() == 1 );
+            Assert.HasCount( 1, exceptions );
         }
 
         [TestMethod]
@@ -222,7 +220,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             Assert.AreEqual( "Warning", actualJob.LastStatus );
 
             var exceptions = new ExceptionLogService( new RockContext() ).Queryable().Where( els => els.Description == expectedResultMessage );
-            Assert.IsTrue( exceptions.Count() == 1 );
+            Assert.HasCount( 1, exceptions );
         }
 
         [TestMethod]
@@ -239,7 +237,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             Assert.AreEqual( "Warning", actualJob.LastStatus );
 
             var exceptions = new ExceptionLogService( new RockContext() ).Queryable().Where( els => els.Description == expectedResultMessage );
-            Assert.IsTrue( exceptions.Count() == 1 );
+            Assert.HasCount( 1, exceptions );
         }
 
         [TestMethod]

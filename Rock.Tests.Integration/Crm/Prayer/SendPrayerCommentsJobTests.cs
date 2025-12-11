@@ -439,7 +439,7 @@ namespace Rock.Tests.Integration.Crm.Prayer
 
             job.Execute();
 
-            Assert.AreEqual( 1, job.PrayerRequests.Count, "Incorrect Prayer Request count." );
+            Assert.HasCount( 1, job.PrayerRequests, "Incorrect Prayer Request count." );
             Assert.IsTrue( job.Notifications.Any(), "Notifications expected but not found." );
 
             // Repeat the execution, using the system setting for the next start date.            

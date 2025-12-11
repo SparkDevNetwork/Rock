@@ -26,6 +26,7 @@ using System.Threading;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
+using Rock.Blocks;
 using Rock.Cms;
 using Rock.Data;
 using Rock.Enums.Cms;
@@ -243,6 +244,8 @@ namespace Rock.Model
 
                             blockType.Category = Rock.Reflection.GetCategory( type ) ?? string.Empty;
                             blockType.Description = Rock.Reflection.GetDescription( type ) ?? string.Empty;
+                            blockType.SiteTypeFlags = GetSiteTypeFlagsForType( type );
+                            blockType.DefaultRole = GetDefaultRoleForType( type );
 
                             var blockRoleAttribute = type.GetCustomAttribute<DefaultBlockRoleAttribute>( inherit: true );
                             if ( blockRoleAttribute != null )
@@ -272,6 +275,76 @@ namespace Rock.Model
                         }
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets the configured SiteTypeFlags for the given C# type. This is
+        /// used to populate the <see cref="BlockType.SiteTypeFlags"/> value.
+        /// </summary>
+        /// <param name="type">The C# type that represents the block code.</param>
+        /// <returns>The flags the block type should be registered with.</returns>
+        [RockInternal( "18.1", true )]
+        public static SiteTypeFlags GetSiteTypeFlagsForType( Type type )
+        {
+            var siteTypes = SiteTypeFlags.None;
+
+            // Process the SiteTypeFlags property on the BlockType Table for
+            // each block. This logic was introduce to improve performance.
+            // The SiteTypeFlags column stores the flags related to the
+            // SiteTypes associated with the Block Types which otherwise
+            // needs to be fetched using Reflection.
+            if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
+            {
+                var blockSiteTypes = type.GetCustomAttribute<SupportedSiteTypesAttribute>();
+
+                if ( blockSiteTypes != null )
+                {
+                    foreach ( var blockSiteType in blockSiteTypes.SiteTypes )
+                    {
+                        if ( blockSiteType == SiteType.Web )
+                        {
+                            siteTypes |= SiteTypeFlags.Web;
+                        }
+                        else if ( blockSiteType == SiteType.Mobile )
+                        {
+                            siteTypes |= SiteTypeFlags.Mobile;
+                        }
+                        else if ( blockSiteType == SiteType.Tv )
+                        {
+                            siteTypes |= SiteTypeFlags.Tv;
+                        }
+                    }
+                }
+            }
+            else if ( typeof( IRockObsidianBlockType ).IsAssignableFrom( type ) )
+            {
+                siteTypes |= SiteTypeFlags.Web;
+            }
+            else if ( typeof( IRockMobileBlockType ).IsAssignableFrom( type ) )
+            {
+                siteTypes |= SiteTypeFlags.Mobile;
+            }
+
+            return siteTypes;
+        }
+
+        /// <summary>
+        /// Returns the default role for the given block type. This is used to
+        /// populate the <see cref="BlockType.DefaultRole"/> value.
+        /// </summary>
+        /// <param name="type">The C# type that represents the block code.</param>
+        /// <returns>The default role for the block.</returns>
+        [RockInternal( "18.1", true )]
+        public static BlockRole GetDefaultRoleForType( Type type )
+        {
+            if ( type.GetCustomAttribute<Rock.Cms.DefaultBlockRoleAttribute>() is DefaultBlockRoleAttribute blockRoleAttr )
+            {
+                return blockRoleAttr.DefaultRole;
+            }
+            else
+            {
+                return BlockRole.Content;
             }
         }
 

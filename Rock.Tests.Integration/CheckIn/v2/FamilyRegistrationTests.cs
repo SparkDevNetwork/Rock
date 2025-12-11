@@ -59,7 +59,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
 
                 var person = registration.GetPersonBag( tedDecker, null );
 
-                Assert.AreEqual( 1, person.AttributeValues.Count );
+                Assert.HasCount( 1, person.AttributeValues );
                 Assert.AreEqual( "Employer", person.AttributeValues.Keys.First() );
                 Assert.AreEqual( tedDecker.GetAttributeValue( "Employer" ), person.AttributeValues["Employer"] );
             }
@@ -80,7 +80,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
 
                 var person = registration.GetPersonBag( tedDecker, null );
 
-                Assert.AreEqual( 1, person.AttributeValues.Count );
+                Assert.HasCount( 1, person.AttributeValues );
                 Assert.AreEqual( "Employer", person.AttributeValues.Keys.First() );
                 Assert.AreEqual( tedDecker.GetAttributeValue( "Employer" ), person.AttributeValues["Employer"] );
             }
@@ -101,7 +101,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
 
                 var person = registration.GetPersonBag( tedDecker, null );
 
-                Assert.AreEqual( 1, person.AttributeValues.Count );
+                Assert.HasCount( 1, person.AttributeValues );
                 Assert.AreEqual( "Allergy", person.AttributeValues.Keys.First() );
                 Assert.AreEqual( tedDecker.GetAttributeValue( "Allergy" ), person.AttributeValues["Allergy"] );
             }
@@ -122,7 +122,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
 
                 var person = registration.GetPersonBag( tedDecker, null );
 
-                Assert.AreEqual( 1, person.AttributeValues.Count );
+                Assert.HasCount( 1, person.AttributeValues );
                 Assert.AreEqual( "Allergy", person.AttributeValues.Keys.First() );
                 Assert.AreEqual( tedDecker.GetAttributeValue( "Allergy" ), person.AttributeValues["Allergy"] );
             }
@@ -3106,7 +3106,7 @@ DELETE [AV]
 
             registration.UpdatePersonMobilePhoneNumber( person.Object, registrationPerson, false );
 
-            Assert.AreEqual( 1, person.Object.PhoneNumbers.Count );
+            Assert.HasCount( 1, person.Object.PhoneNumbers );
             Assert.IsTrue( person.Object.PhoneNumbers.First().IsMessagingEnabled );
         }
 
@@ -3147,7 +3147,7 @@ DELETE [AV]
 
             registration.UpdatePersonMobilePhoneNumber( person.Object, registrationPerson, true );
 
-            Assert.AreEqual( 1, person.Object.PhoneNumbers.Count );
+            Assert.HasCount( 1, person.Object.PhoneNumbers );
         }
 
         #endregion
@@ -3842,7 +3842,7 @@ DELETE [AV]
 
                 registration.EnsurePeopleNotInPrimaryFamilyHaveAFamily( people, null, saveResult );
 
-                Assert.AreEqual( 1, saveResult.NewFamilyList.Count );
+                Assert.HasCount( 1, saveResult.NewFamilyList );
             }
         }
 

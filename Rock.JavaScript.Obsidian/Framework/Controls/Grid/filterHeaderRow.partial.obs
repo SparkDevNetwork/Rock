@@ -7,6 +7,7 @@
         </div>
 
         <div class="grid-badges mr-3">
+            <slot name="additionalHeaderBadges" />
             <span v-if="countMessage && isCountMessageVisible" class="label label-default">
                 <span class="label-value">{{ countMessage }}</span>
                 <span v-if="selectedRowCount && selectedRowCount > 0" class="badge badge-info">{{ selectedRowCount }}</span>

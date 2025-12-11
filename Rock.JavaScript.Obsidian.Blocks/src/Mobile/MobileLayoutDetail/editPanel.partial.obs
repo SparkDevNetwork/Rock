@@ -14,9 +14,9 @@
                  label="Description"
                  textMode="multiline" />
 
-        <CodeEditor v-model="layoutMobilePhone" label="Phone Layout XAML" theme="rock" mode="xml" :editorHeight="200" />
+        <CodeEditor v-model="layoutMobilePhone" label="Phone Layout XAML" mode="xml" :editorHeight="200" />
 
-        <CodeEditor v-model="layoutMobileTablet" label="Tablet Layout XAML" theme="rock" mode="xml" :editorHeight="200" />
+        <CodeEditor v-model="layoutMobileTablet" label="Tablet Layout XAML" mode="xml" :editorHeight="200" />
 
     </fieldset>
 </template>

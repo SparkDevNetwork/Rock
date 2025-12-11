@@ -75,7 +75,6 @@ namespace Rock.Blocks.Workflow
         Description = "Lava template for determining the title of the block. If not specified, the name of the Workflow Type will be shown.",
         Key = AttributeKey.BlockTitleTemplate,
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
-        EditorTheme = Rock.Web.UI.Controls.CodeEditorTheme.Rock,
         EditorHeight = 100,
         IsRequired = false,
         SiteTypes = SiteTypeFlags.Web,

@@ -169,6 +169,10 @@
     flex-wrap: wrap;
     gap: var(--spacing-xsmall);
 }
+
+:deep(.panel-scrollable-content) {
+    overflow: unset;
+}
 </style>
 
 <script setup lang="ts">

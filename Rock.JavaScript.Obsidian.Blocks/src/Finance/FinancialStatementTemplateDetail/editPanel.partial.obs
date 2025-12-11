@@ -58,9 +58,8 @@
             </div>
         </Panel>
         <Panel title="Report Settings" :modelValue="true" :hasCollapse="true">
-            <CodeEditor v-model="reportTemplate" theme="rock" mode="lava" :editorHeight="400" label="Report Template" />
+            <CodeEditor v-model="reportTemplate" mode="lava" :editorHeight="400" label="Report Template" />
             <CodeEditor v-model="footerTemplateHtmlFragment"
-                        theme="rock"
                         mode="lava"
                         label="Footer Template"
                         :help="footetContentHelpText" />

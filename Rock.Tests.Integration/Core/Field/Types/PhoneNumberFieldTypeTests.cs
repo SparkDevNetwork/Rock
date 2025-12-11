@@ -18,7 +18,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Field.Types;
 using Rock.Tests.Integration.Crm;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web.UI.Controls;
 
@@ -43,7 +42,7 @@ namespace Rock.Tests.Integration.Core.Field.Types
 
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "987 6543", "1", "987-6543", "987-6543" )]
         [DataRow( "987-654-3210", "1", "(987) 654-3210", "(987) 654-3210" )]
         [DataRow( "1 (987) 654-3210", "1", "(987) 654-3210", "(987) 654-3210" )]
@@ -52,7 +51,7 @@ namespace Rock.Tests.Integration.Core.Field.Types
             VerifyParsedPhoneNumberParts( number, countryCodePart, numberPart, formattedValue );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "+81 (11) 2222 3333", "81", "11-2222-3333", "+81 11-2222-3333" )]
         [DataRow( "+82-11 2222 3333", "82", "11-2222-3333", "+82 11-2222-3333" )]
         public void ParsePhoneNumber_InputIncludesNonDefaultCountryCode_ReturnsValueWithCountryCode( string number, string countryCodePart, string numberPart, string formattedValue )
@@ -61,7 +60,7 @@ namespace Rock.Tests.Integration.Core.Field.Types
             VerifyParsedPhoneNumberParts( number, countryCodePart, numberPart, formattedValue );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "+82-112222 3333", "82", "11-2222-3333", "+82 11-2222-3333" )]
         [DataRow( "+82 (11)22223333", "82", "11-2222-3333", "+82 11-2222-3333" )]
         public void ParsePhoneNumber_FormatExpressionIncludesCountryCode_ReturnsValueWithSingleCountryCode( string number, string countryCodePart, string numberPart, string formattedValue )
@@ -69,7 +68,7 @@ namespace Rock.Tests.Integration.Core.Field.Types
             VerifyParsedPhoneNumberParts( number, countryCodePart, numberPart, formattedValue );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "+99 12345678", "99", "12345678", "+99 12345678" )]
         public void ParsePhoneNumber_InputIncludesUndefinedCountryCode_ReturnsInputCountryCode( string number, string countryCodePart, string numberPart, string formattedValue )
         {

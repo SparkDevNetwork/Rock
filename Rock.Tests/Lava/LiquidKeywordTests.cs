@@ -21,7 +21,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Enums.Blocks.Crm.FamilyPreRegistration;
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Tests.Shared;
 
 namespace Rock.Tests.Lava
 {
@@ -102,8 +101,6 @@ First Case matched. Second Case matched.
                 CommunicationPreference = CommunicationPreference.Email
             };
 
-            Assert.AreEqual( 1, (int)CommunicationPreference.Email );
-
             var template = @"
 {{ person.NickName }}, your communication preference is:
 {% case person.CommunicationPreference %} {% when 1 %}Email{% else %}Not Email!{% endcase %}
@@ -127,8 +124,6 @@ Ted, your communication preference is: Email
                 CommunicationPreference = CommunicationPreference.Email
             };
 
-            Assert.AreEqual( 1, ( int ) CommunicationPreference.Email );
-
             var template = @"
 {{ person.NickName }}, your communication preference is:
 {% case person.CommunicationPreference %} {% when 'Email' %}Email{% else %}Not Email!{% endcase %}
@@ -151,8 +146,6 @@ Ted, your communication preference is: Email
                 NickName = "Ted",
                 CommunicationPreference = CommunicationPreference.Email
             };
-
-            Assert.AreEqual( 1, ( int ) CommunicationPreference.Email );
 
             var template = @"
 {{ person.NickName }}, your communication preference is:
@@ -793,7 +786,7 @@ WELCOME TO THE LAVA TAG
             var expectedOutput = @"{{- -}}";
 
             // This only works correctly in the Fluid engine.
-            TestHelper.AssertTemplateOutput( typeof(FluidEngine), expectedOutput, template, ignoreWhitespace: false );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: false );
 
         }
 

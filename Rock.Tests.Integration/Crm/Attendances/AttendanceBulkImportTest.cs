@@ -161,7 +161,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
                 AttendanceService.BulkAttendanceImport( attendancesImport );
 
                 // if this doesn't fail, the test fails
-                Assert.IsTrue( false );
+                Assert.Fail();
             }
             catch ( Exception ex )
             {
@@ -169,7 +169,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
             }
 
             // Test passes if we get a SqlException
-            Assert.IsTrue( exception.Message == "All Attendance records must have either a PersonId or PersonAliasId assigned.", exception.Message );
+            Assert.AreEqual( "All Attendance records must have either a PersonId or PersonAliasId assigned.", exception.Message, exception.Message );
         }
 
         [TestMethod]
@@ -191,7 +191,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
                 AttendanceService.BulkAttendanceImport( attendancesImport );
 
                 // if this doesn't fail, the test fails
-                Assert.IsTrue( false );
+                Assert.Fail();
             }
             catch ( Exception ex )
             {
@@ -214,7 +214,6 @@ namespace Rock.Tests.Integration.Crm.Attendance
             try
             {
                 AttendanceService.BulkAttendanceImport( attendancesImport );
-                Assert.IsTrue( true );
             }
             catch ( Exception ex )
             {
@@ -234,7 +233,6 @@ namespace Rock.Tests.Integration.Crm.Attendance
             try
             {
                 AttendanceService.BulkAttendanceImport( attendancesImport );
-                Assert.IsTrue( true );
             }
             catch ( Exception ex )
             {

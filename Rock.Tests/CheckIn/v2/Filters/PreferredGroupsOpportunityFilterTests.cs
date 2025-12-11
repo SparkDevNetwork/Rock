@@ -7,7 +7,6 @@ using Moq;
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Filters;
 using Rock.Data;
-using Rock.Tests.Shared;
 using Rock.Utility;
 using Rock.ViewModels.CheckIn;
 
@@ -54,7 +53,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             filter.FilterGroups( opportunities );
 
-            Assert.AreEqual( 2, opportunities.Groups.Count );
+            Assert.HasCount( 2, opportunities.Groups );
         }
 
         [TestMethod]
@@ -88,7 +87,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             filter.FilterGroups( opportunities );
 
-            Assert.AreEqual( 1, opportunities.Groups.Count );
+            Assert.HasCount( 1, opportunities.Groups );
             Assert.AreEqual( firstGroupId, IdHasher.Instance.GetId( firstGroupOpportunity.Id ) );
         }
 
@@ -123,7 +122,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             filter.FilterGroups( opportunities );
 
-            Assert.AreEqual( 2, opportunities.Groups.Count );
+            Assert.HasCount( 2, opportunities.Groups );
         }
 
         [TestMethod]
@@ -157,7 +156,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             filter.FilterGroups( opportunities );
 
-            Assert.AreEqual( 2, opportunities.Groups.Count );
+            Assert.HasCount( 2, opportunities.Groups );
         }
 
         #endregion

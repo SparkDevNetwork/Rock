@@ -1735,7 +1735,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
                 Response.Headers.Add( "Critical-CH", "Sec-CH-Prefers-Color-Scheme, Sec-CH-UA-Platform-Version" );
                 Response.Headers.Add( "Permissions-Policy", "ch-ua-platform-version=(self)" );
 
-                if ( Context.Items["Rock:DebugTraceEnabled"] is string tracePageIdKey && tracePageIdKey == _pageCache.IdKey && Activity.Current != null )
+                if ( Context.Items.Contains( "Rock:DebugTraceEnabled" ) && Activity.Current != null )
                 {
                     Page.Trace.Warn( "Initializing Obsidian Page Timings" );
                     Page.Form.Controls.Add( new Literal

@@ -17,7 +17,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import { emptyGuid, toGuidOrNull } from "./guid";
-import { post } from "./http";
+import { useHttp } from "./http";
 import { SiteType } from "@Obsidian/Enums/Cms/siteType";
 import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
 import { CategoryPickerChildTreeItemsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/categoryPickerChildTreeItemsOptionsBag";
@@ -87,6 +87,9 @@ export interface ITreeItemProvider {
  * them inside a tree list.
  */
 export class CategoryTreeItemProvider implements ITreeItemProvider {
+    /** The HTTP client for making API requests. */
+    private readonly http = useHttp();
+
     /**
      * The root category to start pulling categories from. Set to undefined to
      * begin with any category that does not have a parent.
@@ -139,7 +142,7 @@ export class CategoryTreeItemProvider implements ITreeItemProvider {
             includeUnnamedEntityItems: false,
         };
 
-        const response = await post<TreeItemBag[]>("/api/v2/Controls/CategoryPickerChildTreeItems", {}, options);
+        const response = await this.http.post<TreeItemBag[]>("/api/v2/Controls/CategoryPickerChildTreeItems", {}, options);
 
         if (response.isSuccess && response.data) {
             return response.data;
@@ -170,6 +173,9 @@ export class CategoryTreeItemProvider implements ITreeItemProvider {
  * them inside a tree list.
  */
 export class LocationTreeItemProvider implements ITreeItemProvider {
+    /** The HTTP client for making API requests. */
+    private readonly http = useHttp();
+
     /**
      * The security grant token that will be used to request additional access
      * to the category list.
@@ -192,7 +198,7 @@ export class LocationTreeItemProvider implements ITreeItemProvider {
             securityGrantToken: this.securityGrantToken
         };
         const url = "/api/v2/Controls/LocationItemPickerGetActiveChildren";
-        const response = await post<TreeItemBag[]>(url, undefined, options);
+        const response = await this.http.post<TreeItemBag[]>(url, undefined, options);
 
         if (response.isSuccess && response.data) {
             return response.data;
@@ -223,6 +229,9 @@ export class LocationTreeItemProvider implements ITreeItemProvider {
  * them inside a tree list.
  */
 export class DataViewTreeItemProvider implements ITreeItemProvider {
+    /** The HTTP client for making API requests. */
+    private readonly http = useHttp();
+
     /**
      * The entity type unique identifier to restrict results to. Set to undefined
      * to include all categories, regardless of entity type.
@@ -259,7 +268,7 @@ export class DataViewTreeItemProvider implements ITreeItemProvider {
             includeUnnamedEntityItems: false,
         };
 
-        const response = await post<TreeItemBag[]>("/api/v2/Controls/DataViewPickerGetDataViews", {}, options);
+        const response = await this.http.post<TreeItemBag[]>("/api/v2/Controls/DataViewPickerGetDataViews", {}, options);
 
         if (response.isSuccess && response.data) {
             return response.data;
@@ -290,6 +299,9 @@ export class DataViewTreeItemProvider implements ITreeItemProvider {
  * them inside a tree list.
  */
 export class WorkflowTypeTreeItemProvider implements ITreeItemProvider {
+    /** The HTTP client for making API requests. */
+    private readonly http = useHttp();
+
     /**
      * The entity type unique identifier to restrict results to. Set to undefined
      * to include all categories, regardless of entity type.
@@ -321,7 +333,7 @@ export class WorkflowTypeTreeItemProvider implements ITreeItemProvider {
             lazyLoad: false,
         };
 
-        const response = await post<TreeItemBag[]>("/api/v2/Controls/WorkflowTypePickerGetWorkflowTypes", {}, options);
+        const response = await this.http.post<TreeItemBag[]>("/api/v2/Controls/WorkflowTypePickerGetWorkflowTypes", {}, options);
 
         if (response.isSuccess && response.data) {
             return response.data;
@@ -353,6 +365,9 @@ export class WorkflowTypeTreeItemProvider implements ITreeItemProvider {
  * them inside a tree list.
  */
 export class PageTreeItemProvider implements ITreeItemProvider {
+    /** The HTTP client for making API requests. */
+    private readonly http = useHttp();
+
     /**
      * The security grant token that will be used to request additional access
      * to the category list.
@@ -400,7 +415,7 @@ export class PageTreeItemProvider implements ITreeItemProvider {
             expandToValues
         };
         const url = "/api/v2/Controls/PagePickerGetChildren";
-        const response = await post<TreeItemBag[]>(url, undefined, options);
+        const response = await this.http.post<TreeItemBag[]>(url, undefined, options);
 
         if (response.isSuccess && response.data) {
             result = response.data;
@@ -431,7 +446,7 @@ export class PageTreeItemProvider implements ITreeItemProvider {
             securityGrantToken: this.securityGrantToken
         };
         const url = "/api/v2/Controls/PagePickerGetSelectedPageHierarchy";
-        const response = await post<Guid[]>(url, undefined, options);
+        const response = await this.http.post<Guid[]>(url, undefined, options);
 
         if (response.isSuccess && response.data) {
             return response.data;
@@ -492,6 +507,9 @@ export class PageTreeItemProvider implements ITreeItemProvider {
  * them inside a tree list.
  */
 export class ConnectionRequestTreeItemProvider implements ITreeItemProvider {
+    /** The HTTP client for making API requests. */
+    private readonly http = useHttp();
+
     /**
      * The security grant token that will be used to request additional access
      * to the category list.
@@ -502,16 +520,18 @@ export class ConnectionRequestTreeItemProvider implements ITreeItemProvider {
      * Gets the child items from the server.
      *
      * @param parentGuid The parent item whose children are retrieved.
+     * @param expandToValues The values that should be auto-expanded to.
      *
      * @returns A collection of TreeItem objects as an asynchronous operation.
      */
-    private async getItems(parentGuid?: Guid | null): Promise<TreeItemBag[]> {
+    private async getItems(parentGuid?: Guid | null, expandToValues?: string[]): Promise<TreeItemBag[]> {
         const options: ConnectionRequestPickerGetChildrenOptionsBag = {
             parentGuid,
-            securityGrantToken: this.securityGrantToken
+            securityGrantToken: this.securityGrantToken,
+            expandToValues
         };
         const url = "/api/v2/Controls/ConnectionRequestPickerGetChildren";
-        const response = await post<TreeItemBag[]>(url, undefined, options);
+        const response = await this.http.post<TreeItemBag[]>(url, undefined, options);
 
         if (response.isSuccess && response.data) {
             return response.data;
@@ -525,8 +545,8 @@ export class ConnectionRequestTreeItemProvider implements ITreeItemProvider {
     /**
      * @inheritdoc
      */
-    async getRootItems(): Promise<TreeItemBag[]> {
-        return await this.getItems(null);
+    async getRootItems(expandToValues: string[]): Promise<TreeItemBag[]> {
+        return await this.getItems(null, expandToValues);
     }
 
     /**
@@ -543,6 +563,9 @@ export class ConnectionRequestTreeItemProvider implements ITreeItemProvider {
  * them inside a tree list.
  */
 export class GroupTreeItemProvider implements ITreeItemProvider {
+    /** The HTTP client for making API requests. */
+    private readonly http = useHttp();
+
     /** The security grant token that will be used to request additional access to the group list. */
     public securityGrantToken: string | null = null;
 
@@ -581,7 +604,7 @@ export class GroupTreeItemProvider implements ITreeItemProvider {
             expandToValues
         };
         const url = "/api/v2/Controls/GroupPickerGetChildren";
-        const response = await post<TreeItemBag[]>(url, undefined, options);
+        const response = await this.http.post<TreeItemBag[]>(url, undefined, options);
 
         if (response.isSuccess && response.data) {
             return response.data;
@@ -613,6 +636,9 @@ export class GroupTreeItemProvider implements ITreeItemProvider {
  * them inside a tree list.
  */
 export class MergeTemplateTreeItemProvider implements ITreeItemProvider {
+    /** The HTTP client for making API requests. */
+    private readonly http = useHttp();
+
     /** The security grant token that will be used to request additional access to the group list. */
     public securityGrantToken: string | null = null;
 
@@ -635,7 +661,7 @@ export class MergeTemplateTreeItemProvider implements ITreeItemProvider {
             expandToValues
         };
         const url = "/api/v2/Controls/MergeTemplatePickerGetMergeTemplates";
-        const response = await post<TreeItemBag[]>(url, undefined, options);
+        const response = await this.http.post<TreeItemBag[]>(url, undefined, options);
 
         if (response.isSuccess && response.data) {
             return response.data;
@@ -667,6 +693,9 @@ export class MergeTemplateTreeItemProvider implements ITreeItemProvider {
  * them inside a tree list.
  */
 export class MetricCategoryTreeItemProvider implements ITreeItemProvider {
+    /** The HTTP client for making API requests. */
+    private readonly http = useHttp();
+
     /** The security grant token that will be used to request additional access to the group list. */
     public securityGrantToken: string | null = null;
 
@@ -685,7 +714,7 @@ export class MetricCategoryTreeItemProvider implements ITreeItemProvider {
             expandToValues
         };
         const url = "/api/v2/Controls/MetricCategoryPickerGetChildren";
-        const response = await post<TreeItemBag[]>(url, undefined, options);
+        const response = await this.http.post<TreeItemBag[]>(url, undefined, options);
 
         if (response.isSuccess && response.data) {
             return response.data;
@@ -716,6 +745,9 @@ export class MetricCategoryTreeItemProvider implements ITreeItemProvider {
  * them inside a tree list.
  */
 export class MetricItemTreeItemProvider implements ITreeItemProvider {
+    /** The HTTP client for making API requests. */
+    private readonly http = useHttp();
+
     /** The security grant token that will be used to request additional access to the group list. */
     public securityGrantToken: string | null = null;
 
@@ -736,7 +768,7 @@ export class MetricItemTreeItemProvider implements ITreeItemProvider {
             securityGrantToken: this.securityGrantToken
         };
         const url = "/api/v2/Controls/MetricItemPickerGetChildren";
-        const response = await post<TreeItemBag[]>(url, undefined, options);
+        const response = await this.http.post<TreeItemBag[]>(url, undefined, options);
 
         if (response.isSuccess && response.data) {
             return response.data;
@@ -768,6 +800,9 @@ export class MetricItemTreeItemProvider implements ITreeItemProvider {
  * them inside a tree list.
  */
 export class RegistrationTemplateTreeItemProvider implements ITreeItemProvider {
+    /** The HTTP client for making API requests. */
+    private readonly http = useHttp();
+
     /** The security grant token that will be used to request additional access to the group list. */
     public securityGrantToken: string | null = null;
 
@@ -786,7 +821,7 @@ export class RegistrationTemplateTreeItemProvider implements ITreeItemProvider {
             expandToValues
         };
         const url = "/api/v2/Controls/RegistrationTemplatePickerGetChildren";
-        const response = await post<TreeItemBag[]>(url, undefined, options);
+        const response = await this.http.post<TreeItemBag[]>(url, undefined, options);
 
         if (response.isSuccess && response.data) {
             return response.data;
@@ -818,6 +853,9 @@ export class RegistrationTemplateTreeItemProvider implements ITreeItemProvider {
  * them inside a tree list.
  */
 export class ReportTreeItemProvider implements ITreeItemProvider {
+    /** The HTTP client for making API requests. */
+    private readonly http = useHttp();
+
     /** The security grant token that will be used to request additional access to the group list. */
     public securityGrantToken: string | null = null;
 
@@ -844,7 +882,7 @@ export class ReportTreeItemProvider implements ITreeItemProvider {
             expandToValues
         };
         const url = "/api/v2/Controls/ReportPickerGetChildren";
-        const response = await post<TreeItemBag[]>(url, undefined, options);
+        const response = await this.http.post<TreeItemBag[]>(url, undefined, options);
 
         if (response.isSuccess && response.data) {
             return response.data;
@@ -876,6 +914,9 @@ export class ReportTreeItemProvider implements ITreeItemProvider {
  * them inside a tree list.
  */
 export class ScheduleTreeItemProvider implements ITreeItemProvider {
+    /** The HTTP client for making API requests. */
+    private readonly http = useHttp();
+
     /** The security grant token that will be used to request additional access to the group list. */
     public securityGrantToken: string | null = null;
 
@@ -906,7 +947,7 @@ export class ScheduleTreeItemProvider implements ITreeItemProvider {
             expandToValues
         };
         const url = "/api/v2/Controls/SchedulePickerGetChildren";
-        const response = await post<TreeItemBag[]>(url, undefined, options);
+        const response = await this.http.post<TreeItemBag[]>(url, undefined, options);
 
         if (response.isSuccess && response.data) {
             return response.data;
@@ -938,6 +979,9 @@ export class ScheduleTreeItemProvider implements ITreeItemProvider {
  * them inside a tree list.
  */
 export class WorkflowActionTypeTreeItemProvider implements ITreeItemProvider {
+    /** The HTTP client for making API requests. */
+    private readonly http = useHttp();
+
     /** The security grant token that will be used to request additional access to the group list. */
     public securityGrantToken: string | null = null;
 
@@ -959,7 +1003,7 @@ export class WorkflowActionTypeTreeItemProvider implements ITreeItemProvider {
             expandToValues
         };
         const url = "/api/v2/Controls/WorkflowActionTypePickerGetChildren";
-        const response = await post<TreeItemBag[]>(url, undefined, options);
+        const response = await this.http.post<TreeItemBag[]>(url, undefined, options);
 
         if (response.isSuccess && response.data) {
             return response.data;
@@ -990,6 +1034,9 @@ export class WorkflowActionTypeTreeItemProvider implements ITreeItemProvider {
      * them inside a tree list.
      */
 export class MergeFieldTreeItemProvider implements ITreeItemProvider {
+    /** The HTTP client for making API requests. */
+    private readonly http = useHttp();
+
     /**
      * The security grant token that will be used to request additional access
      * to the category list.
@@ -1021,7 +1068,7 @@ export class MergeFieldTreeItemProvider implements ITreeItemProvider {
             additionalFields: this.additionalFields
         };
         const url = "/api/v2/Controls/MergeFieldPickerGetChildren";
-        const response = await post<TreeItemBag[]>(url, undefined, options);
+        const response = await this.http.post<TreeItemBag[]>(url, undefined, options);
 
         if (response.isSuccess && response.data) {
             result = response.data;
@@ -1134,6 +1181,8 @@ export class MergeFieldTreeItemProvider implements ITreeItemProvider {
  * them inside a tree list.
  */
 export class AssetManagerTreeItemProvider implements ITreeItemProvider {
+    /** The HTTP client for making API requests. */
+    private readonly http = useHttp();
 
     /** List of folders that are currently expanded in the tree list. */
     public openFolders: Set<string> = new Set();
@@ -1158,7 +1207,7 @@ export class AssetManagerTreeItemProvider implements ITreeItemProvider {
             userSpecificRoot: this.userSpecificRoot
         };
         const url = "/api/v2/Controls/AssetManagerGetRootFolders";
-        const response = await post<{ tree: TreeItemBag[], updatedExpandedFolders: string[] }>(url, undefined, options);
+        const response = await this.http.post<{ tree: TreeItemBag[], updatedExpandedFolders: string[] }>(url, undefined, options);
 
         if (response.isSuccess && response.data) {
             this.openFolders = new Set(response.data.updatedExpandedFolders);
@@ -1179,7 +1228,7 @@ export class AssetManagerTreeItemProvider implements ITreeItemProvider {
             securityGrantToken: this.securityGrantToken
         };
         const url = "/api/v2/Controls/AssetManagerGetChildren";
-        const response = await post<TreeItemBag[]>(url, undefined, options);
+        const response = await this.http.post<TreeItemBag[]>(url, undefined, options);
 
         if (response.isSuccess && response.data) {
             return response.data;
@@ -1196,6 +1245,9 @@ export class AssetManagerTreeItemProvider implements ITreeItemProvider {
  * them inside a tree list.
  */
 export class AdaptiveMessageTreeItemProvider implements ITreeItemProvider {
+    /** The HTTP client for making API requests. */
+    private readonly http = useHttp();
+
     /**
      * The security grant token that will be used to request additional access
      * to the category list.
@@ -1206,16 +1258,18 @@ export class AdaptiveMessageTreeItemProvider implements ITreeItemProvider {
      * Gets the child items from the server.
      *
      * @param parentGuid The parent item whose children are retrieved.
+     * @param expandToValues The values that should be auto-expanded to.
      *
      * @returns A collection of TreeItem objects as an asynchronous operation.
      */
-    private async getItems(parentGuid?: Guid | null): Promise<TreeItemBag[]> {
+    private async getItems(parentGuid?: Guid | null, expandToValues?: string[]): Promise<TreeItemBag[]> {
         const options: UniversalItemTreePickerOptionsBag = {
             parentValue: parentGuid,
             securityGrantToken: this.securityGrantToken,
+            expandToValues
         };
 
-        const response = await post<TreeItemBag[]>("/api/v2/Controls/AdaptiveMessagePickerGetAdaptiveMessages", {}, options);
+        const response = await this.http.post<TreeItemBag[]>("/api/v2/Controls/AdaptiveMessagePickerGetAdaptiveMessages", {}, options);
 
         if (response.isSuccess && response.data) {
             return response.data;
@@ -1229,8 +1283,8 @@ export class AdaptiveMessageTreeItemProvider implements ITreeItemProvider {
     /**
      * @inheritdoc
      */
-    async getRootItems(): Promise<TreeItemBag[]> {
-        return await this.getItems();
+    async getRootItems(expandToValues: string[]): Promise<TreeItemBag[]> {
+        return await this.getItems(null, expandToValues);
     }
 
     /**

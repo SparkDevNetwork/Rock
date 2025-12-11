@@ -3,7 +3,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Rest.Controllers;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Rest.ControllersTests
@@ -51,7 +50,7 @@ namespace Rock.Tests.Integration.Rest.ControllersTests
             }
             finally
             {
-                Assert.IsTrue( exception.Response.StatusCode == System.Net.HttpStatusCode.BadRequest );
+                Assert.AreEqual( System.Net.HttpStatusCode.BadRequest, exception.Response.StatusCode );
             }
         }
     }

@@ -3,7 +3,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Utility.ExtensionMethods
@@ -113,7 +112,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             var types = type.GetGenericArgumentsOfBaseType( baseType );
 
-            Assert.AreEqual( 2, types.Length );
+            Assert.HasCount( 2, types );
             Assert.AreEqual( typeof( DefinedValueCache ), types[0] );
             Assert.AreEqual( typeof( DefinedValue ), types[1] );
         }

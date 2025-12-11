@@ -519,7 +519,7 @@ namespace Rock.Tests.Integration.Communications
                 .Object
                 .Send( actualEmail, 0, new Dictionary<string, string>(), out var errorMessages );
 
-            Assert.AreEqual( 1, errorMessages.Count );
+            Assert.HasCount( 1, errorMessages );
             Assert.AreEqual( "The specified string is not in the form required for an e-mail address.", errorMessages[0] );
         }
 
@@ -562,7 +562,7 @@ namespace Rock.Tests.Integration.Communications
                 .Object
                 .Send( actualEmail, 0, new Dictionary<string, string>(), out var errorMessages );
 
-            Assert.AreEqual( 1, errorMessages.Count );
+            Assert.HasCount( 1, errorMessages );
             Assert.AreEqual( "A From address was not provided.", errorMessages[0] );
         }
 
@@ -944,7 +944,7 @@ namespace Rock.Tests.Integration.Communications
                 .Object
                 .Send( actualEmail, 0, new Dictionary<string, string>(), out var errorMessages );
 
-            Assert.AreEqual( 0, errorMessages.Count, errorMessages.JoinStrings( ", " ) );
+            Assert.IsEmpty( errorMessages, errorMessages.JoinStrings( ", " ) );
 
             emailTransport
                 .Protected()
@@ -1011,7 +1011,7 @@ namespace Rock.Tests.Integration.Communications
                 .Object
                 .Send( actualEmail, 0, new Dictionary<string, string>(), out var errorMessages );
 
-            Assert.AreEqual( 0, errorMessages.Count, errorMessages.JoinStrings( ", " ) );
+            Assert.IsEmpty( errorMessages, errorMessages.JoinStrings( ", " ) );
 
             emailTransport
                 .Protected()
@@ -1078,7 +1078,7 @@ namespace Rock.Tests.Integration.Communications
                 .Object
                 .Send( actualEmail, 0, new Dictionary<string, string>(), out var errorMessages );
 
-            Assert.AreEqual( 0, errorMessages.Count, errorMessages.JoinStrings( ", " ) );
+            Assert.IsEmpty( errorMessages, errorMessages.JoinStrings( ", " ) );
 
             emailTransport
                 .Protected()
@@ -1146,7 +1146,7 @@ namespace Rock.Tests.Integration.Communications
                 .Object
                 .Send( actualEmail, 0, new Dictionary<string, string>(), out var errorMessages );
 
-            Assert.AreEqual( 0, errorMessages.Count, errorMessages.JoinStrings( ", " ) );
+            Assert.IsEmpty( errorMessages, errorMessages.JoinStrings( ", " ) );
 
             emailTransport
                 .Protected()

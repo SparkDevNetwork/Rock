@@ -54,7 +54,6 @@ namespace Rock.Blocks.Connection
     [CodeEditorField( "Lava Template",
         Description = "Lava template to use to display the response message.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = true,
         DefaultValue = @"{% include '~~/Assets/Lava/OpportunityResponseMessage.lava' %}",

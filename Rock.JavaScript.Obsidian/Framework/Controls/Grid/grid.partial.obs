@@ -12,7 +12,11 @@
                              :countMessage="countMessage"
                              :selectedRowCount="selectedRowCount"
                              :isCountMessageVisible="isCountMessageVisible"
-                             :isSearchVisible="isSearchVisible" />
+                             :isSearchVisible="isSearchVisible">
+                <template #additionalHeaderBadges>
+                    <slot name="gridHeaderBadges" />
+                </template>
+            </FilterHeaderRow>
         </div>
 
         <div class="grid-content-container"

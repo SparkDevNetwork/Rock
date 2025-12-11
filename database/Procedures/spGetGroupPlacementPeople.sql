@@ -1,99 +1,169 @@
 /*
 <doc>
     <summary>
-        This stored procedure retrieves placed and unplaced people for all supported configurations
-        of the Group Placement block in Rock RMS. It supports filtering by template, instance, groups,
-        and entity sets.
+        This stored procedure retrieves placed and unplaced people for all supported
+        configurations of the Group Placement block in Rock RMS. It supports filtering
+        by template, instance, groups, entity sets, demographics, campus, DataView
+        membership, and fee qualifications.
     </summary>
 
     <returns>
-        A result set containing placement people for group placements.
+        A result set containing placement-eligible people along with placement status
+        and contextual registration or group information.
     </returns>
 
     <param name='@RegistrationTemplatePlacementEntityTypeId' datatype='int'>
-		The EntityTypeId for RegistrationTemplatePlacement.
-	</param>
+        The EntityTypeId for RegistrationTemplatePlacement.
+    </param>
+
     <param name='@RegistrationInstanceEntityTypeId' datatype='int'>
         The EntityTypeId for RegistrationInstance.
     </param>
+
     <param name='@PersonEntityTypeId' datatype='int'>
-        The EntityTypeId for Person.
+        The EntityTypeId for Person (used for EntitySetMode).
     </param>
+
     <param name='@SourceEntityTypeId' datatype='int'>
-        Optional. The EntityTypeId for the source entity, such as a source group or entity set.
+        Optional. The EntityTypeId for the source entity (group or entity set).
     </param>
+
     <param name='@TargetEntityTypeId' datatype='int'>
-        The EntityTypeId for the target entity (usually groups).
+        The EntityTypeId of the target entity, typically Group.
     </param>
+
     <param name='@RegistrationTemplateId' datatype='int'>
         Optional. The ID of the registration template.
     </param>
+
     <param name='@RegistrationInstanceId' datatype='int'>
-        Optional. The ID of the registration instance.
+        Optional. The ID of a specific registration instance.
     </param>
+
     <param name='@RegistrationTemplatePlacementId' datatype='int'>
-        Optional. The ID of a specific RegistrationTemplatePlacement.
+        Optional. The ID of a RegistrationTemplatePlacement.
     </param>
+
     <param name='@SourceEntityId' datatype='int'>
-        Optional. The ID of the source entity (e.g., SourceGroupId or EntitySetId).
+        Optional. The ID of the source group or entity set.
     </param>
+
     <param name='@PlacementMode' datatype='varchar(50)'>
-        The placement mode: 
-        - 'TemplateMode': Filter by template and placements
-        - 'InstanceMode': Filter by specific registration instance
-        - 'GroupMode': Use a group as the source.
-        - 'EntitySetMode': Use an entity set of people as the source
+        Determines the retrieval strategy:
+        - 'TemplateMode': Placements based on registration template.
+        - 'InstanceMode': Placements for a single registration instance.
+        - 'GroupMode': People in a source group + destination groups.
+        - 'EntitySetMode': People in an entity set + destination groups.
     </param>
+
     <param name='@IncludedRegistrationInstanceIds' datatype='nvarchar(max)'>
-        Optional. A comma-delimited list of RegistrationInstanceIds to include in the results.
+        Optional. Comma-delimited list of RegistrationInstanceIds to include.
     </param>
+
     <param name='@IncludeFees' datatype='bit'>
-        If 1, includes registration fees in the filtering logic.
+        If 1, fee-based filtering is applied.
     </param>
+
     <param name='@IncludedFeeItemIds' datatype='nvarchar(max)'>
-        Optional. A comma-delimited list of specific fee item IDs to include.
+        Optional. Comma-delimited list of specific fee item IDs to include.
     </param>
+
     <param name='@DestinationGroupTypeId' datatype='int'>
-        Optional. The GroupTypeId of groups that are eligible as placement destinations.
+        Optional. Limits eligible destination groups to a specific GroupType.
     </param>
+
     <param name='@DestinationGroupIds' datatype='nvarchar(max)'>
-        Optional. A comma-delimited list of specific GroupIds that can be used as placement targets.
+        Optional. Comma-delimited list of explicit destination GroupIds.
     </param>
+
     <param name='@DisplayedCampusGuid' datatype='uniqueidentifier'>
-        Optional. If provided, filters people and/or destination groups by campus.
+        Optional. Filters people or groups to those matching a specific campus.
     </param>
+
     <param name='@PurposeKey' datatype='nvarchar(max)'>
-        Optional. A high-level purpose key to scope placements.
+        Optional. Used when matching RelatedEntities for Group or EntitySet modes.
     </param>
+
     <param name='@RegistrationTemplatePurposeKey' datatype='nvarchar(max)'>
-        Optional. Purpose key for the RegistrationTemplate to further filter.
+        Optional. Used for TemplateMode group relationships.
     </param>
+
     <param name='@RegistrationInstancePurposeKey' datatype='nvarchar(max)'>
-        Optional. Purpose key for the RegistrationInstance to further filter.
+        Optional. Used for InstanceMode group relationships.
+    </param>
+
+    <param name='@FilterAppliesTo' datatype='int'>
+        Determines which subset demographic filters apply to:
+        - 0 = Unplaced only
+        - 1 = Placed only
+        - 2 = Both placed and unplaced
+    </param>
+
+    <param name='@Gender' datatype='int'>
+        Optional. Rock numeric gender value. Filters placed/unplaced depending on @FilterAppliesTo.
+    </param>
+
+    <param name='@CampusGuids' datatype='nvarchar(max)'>
+        Optional. Comma-delimited list of campus GUIDs to filter PrimaryCampusId.
+    </param>
+
+    <param name='@AgeComparisonType' datatype='int'>
+        Optional. Comparison operator from Rock DataFilter ExpressionType.
+    </param>
+
+    <param name='@AgeLow' datatype='int'>
+        Optional. Lower bound for between-age comparisons.
+    </param>
+
+    <param name='@AgeHigh' datatype='int'>
+        Optional. Value used for most age comparison types.
+    </param>
+
+    <param name='@GradeComparisonType' datatype='int'>
+        Optional. Grade-level comparison operator from Rock DataFilter ExpressionType.
+    </param>
+
+    <param name='@CurrentSchoolYear' datatype='int'>
+        Required for grade comparisons. The current academic year.
+    </param>
+
+    <param name='@GradeOffset' datatype='int'>
+        Grade offset representing the grade level.
+    </param>
+
+    <param name='@NextGradeOffset' datatype='int'>
+        Grade offset for the next grade. Used in range comparison logic.
+    </param>
+
+    <param name='@PersistedDataViewGuids' datatype='nvarchar(max)'>
+        Optional. Comma-delimited list of persisted DataView GUIDs.
+        Only people included in at least one of these DataViews are allowed.
     </param>
 
     <remarks>
-        This procedure is used internally by the Group Placement block to retrieve people who are 
-        candidates for group placement or people who have already been placed into any of the Destination
-		Groups. The combination of input parameters determines the retrieval strategy.
+        This procedure powers the Group Placement block in Rock RMS. It retrieves
+        registrants, group members, entity set members, or combinations thereof,
+        depending on the placement mode. It also supports demographic filters,
+        campus filters, DataView filters, fee filters, and placement-status filters.
     </remarks>
 
     <code>
         -- Example usage:
         EXEC dbo.spGetGroupPlacementPeople
-			@RegistrationTemplatePlacementEntityTypeId = 591,
-			@RegistrationInstanceEntityTypeId = 260,
-			@TargetEntityTypeId = 16,
-			@RegistrationTemplateId = 3,
-			@RegistrationTemplatePlacementId = 1,
-			@PlacementMode = 'TemplateMode',
-			@IncludeFees = 0,
-			@DestinationGroupTypeId = 26,
-			@RegistrationTemplatePurposeKey = 'PLACEMENT-TEMPLATE',
-			@RegistrationInstancePurposeKey = 'PLACEMENT'
+            @RegistrationTemplatePlacementEntityTypeId = 591,
+            @RegistrationInstanceEntityTypeId = 260,
+            @TargetEntityTypeId = 16,
+            @RegistrationTemplateId = 3,
+            @RegistrationTemplatePlacementId = 1,
+            @PlacementMode = 'TemplateMode',
+            @IncludeFees = 0,
+            @DestinationGroupTypeId = 26,
+            @RegistrationTemplatePurposeKey = 'PLACEMENT-TEMPLATE',
+            @RegistrationInstancePurposeKey = 'PLACEMENT'
     </code>
 </doc>
 */
+
 
 ALTER PROCEDURE [dbo].[spGetGroupPlacementPeople]
     @RegistrationTemplatePlacementEntityTypeId INT = NULL,
@@ -114,7 +184,18 @@ ALTER PROCEDURE [dbo].[spGetGroupPlacementPeople]
 	@DisplayedCampusGuid UNIQUEIDENTIFIER = NULL,
 	@PurposeKey NVARCHAR(MAX) = NULL,
 	@RegistrationTemplatePurposeKey NVARCHAR(MAX) = NULL,
-	@RegistrationInstancePurposeKey NVARCHAR(MAX) = NULL
+	@RegistrationInstancePurposeKey NVARCHAR(MAX) = NULL,
+	@FilterAppliesTo INT = 0,
+	@Gender INT = NULL,
+	@CampusGuids NVARCHAR(MAX) = NULL,
+	@AgeComparisonType INT = NULL,
+	@AgeLow INT = NULL,
+	@AgeHigh INT = NULL,
+	@GradeComparisonType INT = NULL,
+	@CurrentSchoolYear INT = NULL,
+	@GradeOffset INT = NULL,
+	@NextGradeOffset INT = NULL,
+	@PersistedDataViewGuids NVARCHAR(MAX) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -123,6 +204,28 @@ BEGIN
         GroupId INT PRIMARY KEY,
         GroupTypeId INT
     );
+
+	DECLARE @IncludedCampuses TABLE (Id INT PRIMARY KEY);
+
+	INSERT INTO @IncludedCampuses (Id)
+	SELECT c.Id
+	FROM Campus c
+	INNER JOIN (
+		SELECT TRY_CAST(value AS uniqueidentifier) AS Guid
+		FROM STRING_SPLIT(@CampusGuids, ',')
+		WHERE value <> ''
+	) x ON c.Guid = x.Guid;
+
+	DECLARE @IncludedPersistedDataViews TABLE (Id INT PRIMARY KEY);
+
+	INSERT INTO @IncludedPersistedDataViews (Id)
+	SELECT d.Id
+	FROM DataView d
+	INNER JOIN (
+		SELECT TRY_CAST(value AS uniqueidentifier) AS Guid
+		FROM STRING_SPLIT(@PersistedDataViewGuids, ',')
+		WHERE value <> ''
+	) x ON d.Guid = x.Guid;
 
 	DECLARE @Registrants TABLE (
 		RegistrationInstanceId INT, 
@@ -229,63 +332,323 @@ BEGIN
 			FROM GroupMember gm
 			INNER JOIN Person p ON gm.PersonId = p.Id
 			LEFT JOIN #DestinationGroups g ON gm.GroupId = g.GroupId
+			CROSS APPLY (
+				SELECT CASE
+					WHEN @FilterAppliesTo = 0 AND g.GroupId = @SourceEntityId THEN 1 -- unplaced subset
+					WHEN @FilterAppliesTo = 1 AND g.GroupId <> @SourceEntityId AND g.GroupId IS NOT NULL THEN 1 -- placed subset
+					WHEN @FilterAppliesTo = 2 THEN 1 -- all people
+					ELSE 0
+				END AS FilterTarget
+			) ft
 			WHERE gm.IsArchived = 0
 			AND gm.GroupMemberStatus != 0
 			AND (
 				gm.GroupId = @SourceEntityId
 				OR gm.GroupId IN (SELECT GroupId FROM #DestinationGroups)
 			)
+			AND (
+				ft.FilterTarget = 0        -- person is NOT part of the filtered subset => always allow
+				OR @Gender IS NULL         -- no gender filter applied at all
+				OR p.Gender = @Gender      -- person IS in the filtered subset => must match gender
+			)
+			AND (
+				ft.FilterTarget = 0
+				OR NOT EXISTS (SELECT 1 FROM @IncludedCampuses)
+				OR p.PrimaryCampusId IN (SELECT Id FROM @IncludedCampuses)
+			)
+			AND (
+				ft.FilterTarget = 0
+				OR @AgeComparisonType IS NULL
+				OR (
+					@AgeComparisonType NOT IN (32, 64, 4096) -- NOT Is Null / Is Not Null / Between
+					AND @AgeHigh IS NULL                     -- AND missing value => skip filter
+				)
+				OR (
+					@AgeComparisonType = 4096
+					AND (
+						@AgeLow IS NULL 
+						OR @AgeHigh IS NULL
+					)
+				)
+				OR (
+					CASE @AgeComparisonType
+						WHEN 1      THEN CASE WHEN p.Age = @AgeHigh THEN 1 END
+						WHEN 2      THEN CASE WHEN p.Age <> @AgeHigh THEN 1 END
+						WHEN 128    THEN CASE WHEN p.Age > @AgeHigh THEN 1 END
+						WHEN 256    THEN CASE WHEN p.Age >= @AgeHigh THEN 1 END
+						WHEN 512    THEN CASE WHEN p.Age < @AgeHigh THEN 1 END
+						WHEN 1024   THEN CASE WHEN p.Age <= @AgeHigh THEN 1 END
+						WHEN 4096   THEN CASE WHEN p.Age BETWEEN @AgeLow AND @AgeHigh THEN 1 END
+						WHEN 32     THEN CASE WHEN p.Age IS NULL THEN 1 END
+						WHEN 64     THEN CASE WHEN p.Age IS NOT NULL THEN 1 END
+					END = 1
+				)
+			)
+			AND (
+				ft.FilterTarget = 0
+				OR @GradeComparisonType IS NULL
+				OR (
+					@GradeComparisonType NOT IN (32, 64)
+					AND @GradeOffset IS NULL
+				)
+				OR (
+					CASE @GradeComparisonType
+						-- Equal To
+						WHEN 1 THEN 
+							CASE 
+								WHEN (p.GraduationYear - @CurrentSchoolYear) <= @GradeOffset
+									AND (p.GraduationYear - @CurrentSchoolYear) >  @NextGradeOffset 
+								THEN 1 
+							END
+						-- Not Equal To
+						WHEN 2 THEN
+							CASE 
+								WHEN ( (p.GraduationYear - @CurrentSchoolYear) <= @NextGradeOffset
+									OR (p.GraduationYear - @CurrentSchoolYear) >  @GradeOffset )
+									AND (p.GraduationYear - @CurrentSchoolYear) >= 0 
+								THEN 1 
+							END
+						-- Less Than
+						WHEN 512 THEN
+							CASE 
+								WHEN (p.GraduationYear - @CurrentSchoolYear) > @GradeOffset 
+								THEN 1 
+							END
+						-- Less Than Or Equal To
+						WHEN 1024 THEN
+							CASE 
+								WHEN (p.GraduationYear - @CurrentSchoolYear) > @NextGradeOffset 
+								THEN 1 
+							END
+						-- Greater Than
+						WHEN 128 THEN
+							CASE 
+								WHEN (p.GraduationYear - @CurrentSchoolYear) <= @NextGradeOffset
+									AND (p.GraduationYear - @CurrentSchoolYear) >= 0 
+								THEN 1 
+							END
+
+						-- Greater Than Or Equal To
+						WHEN 256 THEN
+							CASE 
+								WHEN (p.GraduationYear - @CurrentSchoolYear) <= @GradeOffset
+									AND (p.GraduationYear - @CurrentSchoolYear) >= 0 
+								THEN 1 
+							END
+						-- Is Blank
+						WHEN 32 THEN
+							CASE 
+								WHEN p.GraduationYear IS NULL 
+									OR (p.GraduationYear - @CurrentSchoolYear) < 0
+								THEN 1 
+							END
+
+						-- Is Not Blank
+						WHEN 64 THEN
+							CASE 
+								WHEN p.GraduationYear IS NOT NULL
+									AND (p.GraduationYear - @CurrentSchoolYear) >= 0
+								THEN 1 
+							END
+					END = 1
+				)
+			)
+			AND (
+				ft.FilterTarget = 0
+				OR NOT EXISTS (SELECT 1 FROM @IncludedPersistedDataViews)
+				OR EXISTS (
+						SELECT 1
+						FROM @IncludedPersistedDataViews dv
+						INNER JOIN DataViewPersistedValue dpv
+							ON dpv.DataViewId = dv.Id
+						WHERE dpv.EntityId = p.Id
+					)
+			)
 
 	END
 	ELSE IF @PlacementMode = 'EntitySetMode'
     BEGIN
-		-- People in the entity set
-		SELECT 
-			NULL AS GroupId, 
-			NULL AS GroupTypeId, 
-			NULL AS GroupMemberId, 
-			NULL AS GroupRoleId, 
-			p.Id AS PersonId, 
-			p.FirstName, 
-			p.NickName, 
-			p.LastName, 
-			p.Gender, 
-			p.PhotoId, 
-			p.Age, 
-			p.RecordTypeValueId, 
-			p.AgeClassification, 
-			esi.CreatedDateTime,
-			NULL AS DateTimeAdded
-		FROM Person p
-		INNER JOIN EntitySetItem esi ON p.Id = esi.EntityId
-		INNER JOIN EntitySet es ON esi.EntitySetId = es.Id
-		WHERE es.EntityTypeId = @PersonEntityTypeId 
-			AND es.Id = @SourceEntityId
+		SELECT
+			ep.*
+		FROM (
+			-- People in the entity set
+			SELECT 
+				NULL AS GroupId, 
+				NULL AS GroupTypeId, 
+				NULL AS GroupMemberId, 
+				NULL AS GroupRoleId, 
+				p.Id AS PersonId, 
+				p.FirstName, 
+				p.NickName, 
+				p.LastName, 
+				p.Gender, 
+				p.PhotoId, 
+				p.Age, 
+				p.RecordTypeValueId, 
+				p.AgeClassification, 
+				esi.CreatedDateTime,
+				NULL AS DateTimeAdded,
+				p.PrimaryCampusId,
+				p.GraduationYear
+			FROM Person p
+			INNER JOIN EntitySetItem esi ON p.Id = esi.EntityId
+			INNER JOIN EntitySet es ON esi.EntitySetId = es.Id
+			WHERE es.EntityTypeId = @PersonEntityTypeId 
+				AND es.Id = @SourceEntityId
 
-		UNION
+			UNION
 
-		-- People in the Destination Groups
-		SELECT 
-			g.GroupId, 
-			g.GroupTypeId, 
-			gm.Id AS GroupMemberId, 
-			gm.GroupRoleId, 
-			p.Id AS PersonId, 
-			p.FirstName, 
-			p.NickName, 
-			p.LastName, 
-			p.Gender, 
-			p.PhotoId, 
-			p.Age, 
-			p.RecordTypeValueId, 
-			p.AgeClassification, 
-			NULL AS CreatedDateTime,
-			gm.DateTimeAdded
-		FROM Person p
-		INNER JOIN [GroupMember] gm ON p.Id = gm.PersonId
-		INNER JOIN #DestinationGroups g ON gm.GroupId = g.GroupId
-		WHERE gm.IsArchived = 0
-		AND gm.GroupMemberStatus != 0
+			-- People in the Destination Groups
+			SELECT 
+				g.GroupId, 
+				g.GroupTypeId, 
+				gm.Id AS GroupMemberId, 
+				gm.GroupRoleId, 
+				p.Id AS PersonId, 
+				p.FirstName, 
+				p.NickName, 
+				p.LastName, 
+				p.Gender, 
+				p.PhotoId, 
+				p.Age, 
+				p.RecordTypeValueId, 
+				p.AgeClassification, 
+				NULL AS CreatedDateTime,
+				gm.DateTimeAdded,
+				p.PrimaryCampusId,
+				p.GraduationYear
+			FROM Person p
+			INNER JOIN [GroupMember] gm ON p.Id = gm.PersonId
+			INNER JOIN #DestinationGroups g ON gm.GroupId = g.GroupId
+			WHERE gm.IsArchived = 0
+			AND gm.GroupMemberStatus != 0
+		) ep
+		CROSS APPLY (
+			SELECT CASE
+				WHEN @FilterAppliesTo = 0 AND ep.GroupId IS NULL THEN 1 -- unplaced subset
+				WHEN @FilterAppliesTo = 1 AND ep.GroupId IS NOT NULL THEN 1 -- placed subset
+				WHEN @FilterAppliesTo = 2 THEN 1 -- all people
+				ELSE 0
+			END AS FilterTarget
+		) ft
+		WHERE (
+				ft.FilterTarget = 0        -- person is NOT part of the filtered subset => always allow
+				OR @Gender IS NULL         -- no gender filter applied at all
+				OR ep.Gender = @Gender      -- person IS in the filtered subset => must match gender
+		)
+		AND (
+				ft.FilterTarget = 0
+				OR NOT EXISTS (SELECT 1 FROM @IncludedCampuses)
+				OR ep.PrimaryCampusId IN (SELECT Id FROM @IncludedCampuses)
+		  )
+		  AND (
+				ft.FilterTarget = 0
+				OR @AgeComparisonType IS NULL
+				OR (
+					@AgeComparisonType NOT IN (32, 64, 4096) -- NOT Is Null / Is Not Null / Between
+					AND @AgeHigh IS NULL                     -- AND missing value => skip filter
+				)
+				OR (
+					@AgeComparisonType = 4096
+					AND (
+						@AgeLow IS NULL 
+						OR @AgeHigh IS NULL
+					)
+				)
+				OR (
+					CASE @AgeComparisonType
+						WHEN 1      THEN CASE WHEN ep.Age = @AgeHigh THEN 1 END
+						WHEN 2      THEN CASE WHEN ep.Age <> @AgeHigh THEN 1 END
+						WHEN 128    THEN CASE WHEN ep.Age > @AgeHigh THEN 1 END
+						WHEN 256    THEN CASE WHEN ep.Age >= @AgeHigh THEN 1 END
+						WHEN 512    THEN CASE WHEN ep.Age < @AgeHigh THEN 1 END
+						WHEN 1024   THEN CASE WHEN ep.Age <= @AgeHigh THEN 1 END
+						WHEN 4096   THEN CASE WHEN ep.Age BETWEEN @AgeLow AND @AgeHigh THEN 1 END
+						WHEN 32     THEN CASE WHEN ep.Age IS NULL THEN 1 END
+						WHEN 64     THEN CASE WHEN ep.Age IS NOT NULL THEN 1 END
+					END = 1
+				)
+			)
+			AND (
+				ft.FilterTarget = 0
+				OR @GradeComparisonType IS NULL
+				OR (
+					@GradeComparisonType NOT IN (32, 64)
+					AND @GradeOffset IS NULL
+				)
+				OR (
+					CASE @GradeComparisonType
+						-- Equal To
+						WHEN 1 THEN 
+							CASE 
+								WHEN (ep.GraduationYear - @CurrentSchoolYear) <= @GradeOffset
+									AND (ep.GraduationYear - @CurrentSchoolYear) >  @NextGradeOffset 
+								THEN 1 
+							END
+						-- Not Equal To
+						WHEN 2 THEN
+							CASE 
+								WHEN ( (ep.GraduationYear - @CurrentSchoolYear) <= @NextGradeOffset
+									OR (ep.GraduationYear - @CurrentSchoolYear) >  @GradeOffset )
+									AND (ep.GraduationYear - @CurrentSchoolYear) >= 0 
+								THEN 1 
+							END
+						-- Less Than
+						WHEN 512 THEN
+							CASE 
+								WHEN (ep.GraduationYear - @CurrentSchoolYear) > @GradeOffset 
+								THEN 1 
+							END
+						-- Less Than Or Equal To
+						WHEN 1024 THEN
+							CASE 
+								WHEN (ep.GraduationYear - @CurrentSchoolYear) > @NextGradeOffset 
+								THEN 1 
+							END
+						-- Greater Than
+						WHEN 128 THEN
+							CASE 
+								WHEN (ep.GraduationYear - @CurrentSchoolYear) <= @NextGradeOffset
+									AND (ep.GraduationYear - @CurrentSchoolYear) >= 0 
+								THEN 1 
+							END
+
+						-- Greater Than Or Equal To
+						WHEN 256 THEN
+							CASE 
+								WHEN (ep.GraduationYear - @CurrentSchoolYear) <= @GradeOffset
+									AND (ep.GraduationYear - @CurrentSchoolYear) >= 0 
+								THEN 1 
+							END
+						-- Is Blank
+						WHEN 32 THEN
+							CASE 
+								WHEN ep.GraduationYear IS NULL 
+									OR (ep.GraduationYear - @CurrentSchoolYear) < 0
+								THEN 1 
+							END
+
+						-- Is Not Blank
+						WHEN 64 THEN
+							CASE 
+								WHEN ep.GraduationYear IS NOT NULL
+									AND (ep.GraduationYear - @CurrentSchoolYear) >= 0
+								THEN 1 
+							END
+					END = 1
+				)
+			)
+			AND (
+				ft.FilterTarget = 0
+				OR NOT EXISTS (SELECT 1 FROM @IncludedPersistedDataViews)
+				OR EXISTS (
+						SELECT 1
+						FROM @IncludedPersistedDataViews dv
+						INNER JOIN DataViewPersistedValue dpv
+							ON dpv.DataViewId = dv.Id
+						WHERE dpv.EntityId = ep.PersonId
+					)
+			)
 
 	END
     ELSE IF @PlacementMode = 'TemplateMode'
@@ -389,6 +752,14 @@ BEGIN
 			AND gm.GroupMemberStatus != 0
 		LEFT JOIN #DestinationGroups g ON gm.GroupId = g.GroupId
 		LEFT JOIN FeeData fd ON fd.RegistrationRegistrantId = x.RegistrantId
+		CROSS APPLY (
+			SELECT CASE
+				WHEN @FilterAppliesTo = 0 AND g.GroupId IS NULL THEN 1 -- unplaced subset
+				WHEN @FilterAppliesTo = 1 AND g.GroupId IS NOT NULL THEN 1 -- placed subset
+				WHEN @FilterAppliesTo = 2 THEN 1 -- all people
+				ELSE 0
+			END AS FilterTarget
+		) ft
         WHERE (
 			  g.GroupId IS NOT NULL OR (
 				  NOT EXISTS (SELECT 1 FROM IncludedInstanceIds)
@@ -403,7 +774,125 @@ BEGIN
 				WHERE fd.RegistrationRegistrantId = x.RegistrantId
 					AND fd.FeeItemId IN (SELECT Id FROM IncludedFeeItemIds)
 			)
-		 )
+		  )
+		  AND (
+				ft.FilterTarget = 0        -- person is NOT part of the filtered subset => always allow
+				OR @Gender IS NULL         -- no gender filter applied at all
+				OR p.Gender = @Gender      -- person IS in the filtered subset => must match gender
+		  )
+		  AND (
+				ft.FilterTarget = 0
+				OR NOT EXISTS (SELECT 1 FROM @IncludedCampuses)
+				OR p.PrimaryCampusId IN (SELECT Id FROM @IncludedCampuses)
+		  )
+		  AND (
+				ft.FilterTarget = 0
+				OR @AgeComparisonType IS NULL
+				OR (
+					@AgeComparisonType NOT IN (32, 64, 4096) -- NOT Is Null / Is Not Null / Between
+					AND @AgeHigh IS NULL                     -- AND missing value => skip filter
+				)
+				OR (
+					@AgeComparisonType = 4096
+					AND (
+						@AgeLow IS NULL 
+						OR @AgeHigh IS NULL
+					)
+				)
+				OR (
+					CASE @AgeComparisonType
+						WHEN 1      THEN CASE WHEN p.Age = @AgeHigh THEN 1 END
+						WHEN 2      THEN CASE WHEN p.Age <> @AgeHigh THEN 1 END
+						WHEN 128    THEN CASE WHEN p.Age > @AgeHigh THEN 1 END
+						WHEN 256    THEN CASE WHEN p.Age >= @AgeHigh THEN 1 END
+						WHEN 512    THEN CASE WHEN p.Age < @AgeHigh THEN 1 END
+						WHEN 1024   THEN CASE WHEN p.Age <= @AgeHigh THEN 1 END
+						WHEN 4096   THEN CASE WHEN p.Age BETWEEN @AgeLow AND @AgeHigh THEN 1 END
+						WHEN 32     THEN CASE WHEN p.Age IS NULL THEN 1 END
+						WHEN 64     THEN CASE WHEN p.Age IS NOT NULL THEN 1 END
+					END = 1
+				)
+			)
+			AND (
+				ft.FilterTarget = 0
+				OR @GradeComparisonType IS NULL
+				OR (
+					@GradeComparisonType NOT IN (32, 64)
+					AND @GradeOffset IS NULL
+				)
+				OR (
+					CASE @GradeComparisonType
+						-- Equal To
+						WHEN 1 THEN 
+							CASE 
+								WHEN (p.GraduationYear - @CurrentSchoolYear) <= @GradeOffset
+									AND (p.GraduationYear - @CurrentSchoolYear) >  @NextGradeOffset 
+								THEN 1 
+							END
+						-- Not Equal To
+						WHEN 2 THEN
+							CASE 
+								WHEN ( (p.GraduationYear - @CurrentSchoolYear) <= @NextGradeOffset
+									OR (p.GraduationYear - @CurrentSchoolYear) >  @GradeOffset )
+									AND (p.GraduationYear - @CurrentSchoolYear) >= 0 
+								THEN 1 
+							END
+						-- Less Than
+						WHEN 512 THEN
+							CASE 
+								WHEN (p.GraduationYear - @CurrentSchoolYear) > @GradeOffset 
+								THEN 1 
+							END
+						-- Less Than Or Equal To
+						WHEN 1024 THEN
+							CASE 
+								WHEN (p.GraduationYear - @CurrentSchoolYear) > @NextGradeOffset 
+								THEN 1 
+							END
+						-- Greater Than
+						WHEN 128 THEN
+							CASE 
+								WHEN (p.GraduationYear - @CurrentSchoolYear) <= @NextGradeOffset
+									AND (p.GraduationYear - @CurrentSchoolYear) >= 0 
+								THEN 1 
+							END
+
+						-- Greater Than Or Equal To
+						WHEN 256 THEN
+							CASE 
+								WHEN (p.GraduationYear - @CurrentSchoolYear) <= @GradeOffset
+									AND (p.GraduationYear - @CurrentSchoolYear) >= 0 
+								THEN 1 
+							END
+						-- Is Blank
+						WHEN 32 THEN
+							CASE 
+								WHEN p.GraduationYear IS NULL 
+									OR (p.GraduationYear - @CurrentSchoolYear) < 0
+								THEN 1 
+							END
+
+						-- Is Not Blank
+						WHEN 64 THEN
+							CASE 
+								WHEN p.GraduationYear IS NOT NULL
+									AND (p.GraduationYear - @CurrentSchoolYear) >= 0
+								THEN 1 
+							END
+					END = 1
+				)
+			)
+			AND (
+				ft.FilterTarget = 0
+				OR NOT EXISTS (SELECT 1 FROM @IncludedPersistedDataViews)
+				OR EXISTS (
+						SELECT 1
+						FROM @IncludedPersistedDataViews dv
+						INNER JOIN DataViewPersistedValue dpv
+							ON dpv.DataViewId = dv.Id
+						WHERE dpv.EntityId = p.Id
+					)
+			)
 
     END
     ELSE IF @PlacementMode = 'InstanceMode'
@@ -501,6 +990,14 @@ BEGIN
 			AND gm.GroupMemberStatus != 0
 		LEFT JOIN #DestinationGroups g ON gm.GroupId = g.GroupId
 		LEFT JOIN FeeData fd ON fd.RegistrationRegistrantId = X.RegistrantId
+		CROSS APPLY (
+			SELECT CASE
+				WHEN @FilterAppliesTo = 0 AND g.GroupId IS NULL THEN 1 -- unplaced subset
+				WHEN @FilterAppliesTo = 1 AND g.GroupId IS NOT NULL THEN 1 -- placed subset
+				WHEN @FilterAppliesTo = 2 THEN 1 -- all people
+				ELSE 0
+			END AS FilterTarget
+		) ft
 		WHERE (
 			NOT EXISTS (SELECT 1 FROM IncludedFeeItemIds)
 			OR EXISTS (
@@ -510,6 +1007,124 @@ BEGIN
 					AND fd.FeeItemId IN (SELECT Id FROM IncludedFeeItemIds)
 			)
 		 )
+		 AND (
+				ft.FilterTarget = 0        -- person is NOT part of the filtered subset => always allow
+				OR @Gender IS NULL         -- no gender filter applied at all
+				OR p.Gender = @Gender      -- person IS in the filtered subset => must match gender
+		  )
+		  AND (
+				ft.FilterTarget = 0
+				OR NOT EXISTS (SELECT 1 FROM @IncludedCampuses)
+				OR p.PrimaryCampusId IN (SELECT Id FROM @IncludedCampuses)
+		  )
+		  AND (
+				ft.FilterTarget = 0
+				OR @AgeComparisonType IS NULL
+				OR (
+					@AgeComparisonType NOT IN (32, 64, 4096) -- NOT Is Null / Is Not Null / Between
+					AND @AgeHigh IS NULL                     -- AND missing value => skip filter
+				)
+				OR (
+					@AgeComparisonType = 4096
+					AND (
+						@AgeLow IS NULL 
+						OR @AgeHigh IS NULL
+					)
+				)
+				OR (
+					CASE @AgeComparisonType
+						WHEN 1      THEN CASE WHEN p.Age = @AgeHigh THEN 1 END
+						WHEN 2      THEN CASE WHEN p.Age <> @AgeHigh THEN 1 END
+						WHEN 128    THEN CASE WHEN p.Age > @AgeHigh THEN 1 END
+						WHEN 256    THEN CASE WHEN p.Age >= @AgeHigh THEN 1 END
+						WHEN 512    THEN CASE WHEN p.Age < @AgeHigh THEN 1 END
+						WHEN 1024   THEN CASE WHEN p.Age <= @AgeHigh THEN 1 END
+						WHEN 4096   THEN CASE WHEN p.Age BETWEEN @AgeLow AND @AgeHigh THEN 1 END
+						WHEN 32     THEN CASE WHEN p.Age IS NULL THEN 1 END
+						WHEN 64     THEN CASE WHEN p.Age IS NOT NULL THEN 1 END
+					END = 1
+				)
+			)
+			AND (
+				ft.FilterTarget = 0
+				OR @GradeComparisonType IS NULL
+				OR (
+					@GradeComparisonType NOT IN (32, 64)
+					AND @GradeOffset IS NULL
+				)
+				OR (
+					CASE @GradeComparisonType
+						-- Equal To
+						WHEN 1 THEN 
+							CASE 
+								WHEN (p.GraduationYear - @CurrentSchoolYear) <= @GradeOffset
+									AND (p.GraduationYear - @CurrentSchoolYear) >  @NextGradeOffset 
+								THEN 1 
+							END
+						-- Not Equal To
+						WHEN 2 THEN
+							CASE 
+								WHEN ( (p.GraduationYear - @CurrentSchoolYear) <= @NextGradeOffset
+									OR (p.GraduationYear - @CurrentSchoolYear) >  @GradeOffset )
+									AND (p.GraduationYear - @CurrentSchoolYear) >= 0 
+								THEN 1 
+							END
+						-- Less Than
+						WHEN 512 THEN
+							CASE 
+								WHEN (p.GraduationYear - @CurrentSchoolYear) > @GradeOffset 
+								THEN 1 
+							END
+						-- Less Than Or Equal To
+						WHEN 1024 THEN
+							CASE 
+								WHEN (p.GraduationYear - @CurrentSchoolYear) > @NextGradeOffset 
+								THEN 1 
+							END
+						-- Greater Than
+						WHEN 128 THEN
+							CASE 
+								WHEN (p.GraduationYear - @CurrentSchoolYear) <= @NextGradeOffset
+									AND (p.GraduationYear - @CurrentSchoolYear) >= 0 
+								THEN 1 
+							END
+
+						-- Greater Than Or Equal To
+						WHEN 256 THEN
+							CASE 
+								WHEN (p.GraduationYear - @CurrentSchoolYear) <= @GradeOffset
+									AND (p.GraduationYear - @CurrentSchoolYear) >= 0 
+								THEN 1 
+							END
+						-- Is Blank
+						WHEN 32 THEN
+							CASE 
+								WHEN p.GraduationYear IS NULL 
+									OR (p.GraduationYear - @CurrentSchoolYear) < 0
+								THEN 1 
+							END
+
+						-- Is Not Blank
+						WHEN 64 THEN
+							CASE 
+								WHEN p.GraduationYear IS NOT NULL
+									AND (p.GraduationYear - @CurrentSchoolYear) >= 0
+								THEN 1 
+							END
+					END = 1
+				)
+			)
+			AND (
+				ft.FilterTarget = 0
+				OR NOT EXISTS (SELECT 1 FROM @IncludedPersistedDataViews)
+				OR EXISTS (
+						SELECT 1
+						FROM @IncludedPersistedDataViews dv
+						INNER JOIN DataViewPersistedValue dpv
+							ON dpv.DataViewId = dv.Id
+						WHERE dpv.EntityId = p.Id
+					)
+			)
     END
 
 	DROP TABLE #DestinationGroups;

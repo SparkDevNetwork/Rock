@@ -40,6 +40,9 @@ export interface IContentSectionHolder {
      * This is used to control the visibility of the section content.
      */
     readonly isCollapsed: Ref<boolean>;
+
+    /** The order of the section in relation to other sections. */
+    readonly order: Ref<number>;
 }
 
 /**
@@ -90,10 +93,12 @@ export function useSectionContainer(): IContentSectionContainerHolder {
  *
  * @param title The title of the section.
  * @param icon The icon for the section, if any.
+ * @param isCollapsed Indicates whether the section is collapsed or expanded.
+ * @param order The order of the section in relation to other sections.
  *
  * @returns A new content section holder to be registered with the content section container.
  */
-export function createSection(title: Readonly<Ref<string | undefined>>, icon: Readonly<Ref<string | undefined>>, isCollapsed: Readonly<Ref<boolean>>): IContentSectionHolder {
+export function createSection(title: Readonly<Ref<string | undefined>>, icon: Readonly<Ref<string | undefined>>, isCollapsed: Readonly<Ref<boolean>>, order: Readonly<Ref<number>>): IContentSectionHolder {
     const anchor = ref<string>();
 
     const holder: IContentSectionHolder = {
@@ -101,6 +106,7 @@ export function createSection(title: Readonly<Ref<string | undefined>>, icon: Re
         icon,
         anchor,
         isCollapsed,
+        order,
     };
 
     return holder;

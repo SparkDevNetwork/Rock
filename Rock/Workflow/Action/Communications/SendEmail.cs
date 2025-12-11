@@ -91,7 +91,6 @@ namespace Rock.Workflow.Action
         Key = AttributeKey.Body,
         Description = "The body of the email that should be sent. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
         EditorMode = Web.UI.Controls.CodeEditorMode.Html,
-        EditorTheme = Web.UI.Controls.CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         Order = 6 )]

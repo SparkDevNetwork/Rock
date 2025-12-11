@@ -1,0 +1,215 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<!--
+ /*
+    12/10/2025 - N.A.
+
+    This block's design and layout are somewhat based on the communicationSaturationReport.obs
+    for consistency with the behavior of that block (and the possibility of needing additional
+    'tabs' for this block in the future).
+
+    Reason: Align with the patterns established for easier implementation and review.
+*/
+-->
+<template>
+    <Grid :definition="config ?? undefined"
+          :data="gridData ?? undefined"
+          personKeyField="personGuid"
+          tooltipField="personEmail"
+          stickyHeader
+          keyField="personId"
+          exportTitle="PledgeAnalytics"
+          itemTerm="Item"
+          title="&nbsp;"
+          @selectItem="onSelectItem"
+          liveUpdates
+          @filteredRowsChanged="onFilteredRowsChanged"
+          disablePreferences>
+        <SelectColumn />
+
+        <Column name="id"
+                title="ID"
+                field="personId"
+                :hideOnScreen="true" />
+
+        <TextColumn name="personFullNameReversed"
+                    title="Person"
+                    field="personFullNameReversed"
+                    :filter="textValueFilter" />
+
+        <TextColumn name="personEmail"
+                    title="Email"
+                    field="personEmail"
+                    :hideOnScreen="true" />
+
+        <CurrencyColumn name="pledgeTotal"
+                        title="Pledge Total"
+                        field="pledgeTotal"
+                        :filter="numberValueFilter"
+                        visiblePriority="xs">
+            <template #format="{ row }">
+                {{ toCurrencyOrNull(row.pledgeTotal, currencyInfo) }}
+            </template>
+        </CurrencyColumn>
+
+        <CurrencyColumn name="totalGivingAmount"
+                        title="Total Giving Amount"
+                        field="totalGivingAmount"
+                        :filter="numberValueFilter"
+                        visiblePriority="xs">
+            <template #format="{ row }">
+                {{ toCurrencyOrNull(row.totalGivingAmount, currencyInfo) }}
+            </template>
+        </CurrencyColumn>
+
+        <Column name="percentComplete"
+                title="Percent Complete"
+                field="percentComplete"
+                :headerClass="'grid-column-header-number'"
+                :itemClass="'justify-content-end text-right'"
+                :filter="numberValueFilter"
+                :filterValue="getPercentCompleteFilterValue"
+                :quickFilterValue="getPercentCompleteFilterValueAsText">
+            <template #format="{ row }">
+                <template v-if="!isNullish(row.percentComplete)">
+                    {{ row.percentComplete.toLocaleString(undefined, { style: 'percent' }) }}
+                </template>
+            </template>
+        </Column>
+
+        <NumberColumn name="givingCount"
+                      title="Giving Count"
+                      field="givingCount"
+                      itemClass="justify-content-end text-right"
+                      :filter="numberValueFilter" />
+
+        <template #gridFooterAppend>
+            <div class="d-flex" style="background-color: var(--color-interface-softest); padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
+                <div style="flex-grow: 4;"></div>
+                <div style="flex-grow: 1;">
+                    <SectionHeader title="Total Results" />
+                    <div class="row">
+                        <div class="col-xs-8">Total Amount Pledged:</div>
+                        <div class="col-xs-4 text-right"> {{ toCurrencyOrNull(totalAmountPledged, currencyInfo) }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-8">Total Amount Given:</div>
+                        <div class="col-xs-4 text-right">{{ toCurrencyOrNull(totalAmountGiven, currencyInfo) }}</div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import Grid, { Column, CurrencyColumn, NumberColumn, TextColumn, numberValueFilter, textValueFilter, SelectColumn } from "@Obsidian/Controls/grid";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import { IGridState } from "@Obsidian/Types/Controls/grid";
+    import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
+
+    const props = defineProps({
+        config: {
+            type: Object as PropType<GridDefinitionBag>,
+            required: false
+        },
+        currencyInfo: {
+            type: Object as PropType<CurrencyInfoBag | null>,
+            required: false
+        },
+        gridData: {
+            type: Object as PropType<GridDataBag | Promise<GridDataBag> | null>,
+            required: false
+        }
+    });
+
+    const totalAmountPledged = ref(0);
+    const totalAmountGiven = ref(0);
+
+    watch(() => props.gridData, async () => {
+
+        if (isPromise(props.gridData)) {
+            // Don't need to await here. The loadGridData function in the parent component never resolves the promise.
+            // Rather, it just reassigns the prop to the value.
+        }
+        else {
+            if ((props.gridData?.rows?.length ?? 0) > 0 && props.gridData) {
+                calculateTotals(props.gridData.rows as Record<string, unknown>[]);
+            }
+        }
+    }, { immediate: true });
+
+    // #region Functions
+
+    /**
+    * Gets the quick filter value to use for the Percent column as text.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPercentCompleteFilterValueAsText(row: Record<string, unknown>): string {
+        let filterValue = row.percentComplete as number * 100;
+        return String(filterValue + "%");
+    }
+
+    /**
+     * Gets the filter value to use for the Percent column.
+     *
+     * @param row The row to be filtered.
+     */
+    function getPercentCompleteFilterValue(row: Record<string, unknown>): number {
+        return row.percentComplete as number * 100;
+    }
+
+    /**
+    * Calculates the pledge summary totals at the bottom of the grid.
+    *
+    * @param rows The rows that will be used for the calculation.
+    */
+    function calculateTotals(rows: Record<string, unknown>[]): void {
+
+        totalAmountPledged.value = 0;
+        totalAmountGiven.value = 0;
+
+        for (const row of rows as Record<string, unknown>[]) {
+            if (row.pledgeTotal && !isNullOrUndefined(row.pledgeTotal as number)) {
+                totalAmountPledged.value += row.pledgeTotal as number;
+            }
+            if (row.totalGivingAmount && !isNullOrUndefined(row.totalGivingAmount as number)) {
+                totalAmountGiven.value += row.totalGivingAmount as number;
+            }
+        }
+    }
+
+    function isNullOrUndefined(value: number | null | undefined): boolean {
+        return value === null || value === undefined;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+    /**
+     * Called when the rows that match the user filters have changed.
+     *
+     * @param state The state object that describes the grid.
+     */
+    function onFilteredRowsChanged(state: IGridState): void {
+        calculateTotals(state.filteredRows as Record<string, unknown>[]);
+    }
+
+    /**
+     * Called when a row has been selected.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        window.location.href = makeUrlRedirectSafe(`/Person/${key}/Contributions`);
+    }
+    // #endregion
+
+</script>

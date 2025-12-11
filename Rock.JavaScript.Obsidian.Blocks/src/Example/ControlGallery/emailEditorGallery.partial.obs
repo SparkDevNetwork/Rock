@@ -16,35 +16,41 @@
             <div class="settings">
                 <ContentSection title="Settings">
                     <ContentStack title="General">
-                        <div class="autolayout">
-                            <div>
+                        <div class="row">
+                            <div class="col-md-6">
                                 <p>Since this editor does not automatically save changes, they must be requested on demand when the updated HTML is needed.</p>
-                                <div class="button-wrapper">
-                                    <RockButton btnType="primary" help="The Email Editor value is only updated on demand. Click this button to get its current value." @click="onGetHtmlClicked">Get HTML</RockButton>
-                                </div>
+                                <RockButton btnType="primary" help="The Email Editor value is only updated on demand. Click this button to get its current value." @click="onGetHtmlClicked">Get HTML</RockButton>
                             </div>
 
-                            <Switch v-model="ltr"
-                                    help="Enable left-to-right layout for the editor and side panel."
-                                    label="Left to Right"
-                                    :text="ltr ? 'Yes' : 'No'" />
+                            <div class="col-md-6">
+                                <Switch v-model="ltr"
+                                        help="Enable left-to-right layout for the editor and side panel."
+                                        label="Left to Right"
+                                        :text="ltr ? 'Yes' : 'No'" />
+                            </div>
                         </div>
                     </ContentStack>
 
                     <ContentStack title="Blocks > Paragraph">
-                        <div class="autolayout">
-                            <ValueList v-model="mergeFields"
-                                       label="Merge Fields"
-                                       help="The merge fields that are available for selection in the Merge Field toolbar button of the Paragraph block. If this is not set, then the Merge Field button will be hidden in the editor toolbar." />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ValueList v-model="mergeFields"
+                                        label="Merge Fields"
+                                        help="The merge fields that are available for selection in the Merge Field toolbar button of the Paragraph block. If this is not set, then the Merge Field button will be hidden in the editor toolbar." />
+                                </div>
                         </div>
                     </ContentStack>
 
                     <ContentStack title="Styles > Body Settings">
-                        <CheckBoxList v-model="simulateValues"
-                                      label="Simulate"
-                                      :items="simulateOptions"
-                                      horizontal
-                                      :repeatColumns="4" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <CheckBoxList v-model="simulateValues"
+                                            label="Simulate"
+                                            :items="simulateOptions"
+                                            horizontal
+                                            :repeatColumns="4" />
+                            </div>
+                        </div>
                     </ContentStack>
                 </ContentSection>
             </div>
@@ -58,20 +64,9 @@
     height: 600px;
 }
 
-.button-wrapper {
-    display: flex;
-    align-items: center;
-}
-
 .settings {
     max-height: 350px;
     overflow: auto;
-}
-
-.autolayout {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    column-gap: var(--spacing-small);
 }
 </style>
 

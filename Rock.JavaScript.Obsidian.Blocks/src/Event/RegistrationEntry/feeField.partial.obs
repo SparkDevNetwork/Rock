@@ -20,7 +20,7 @@
     import { NumberUpDownGroupOption } from "@Obsidian/Types/Controls/numberUpDownGroup";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { areEqual } from "@Obsidian/Utility/guid";
-    import { asFormattedString, toCurrencyOrNull} from "@Obsidian/Utility/numberUtils";
+    import { asFormattedString, toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { RegistrationEntryFeeBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFeeBag";
     import { RegistrationEntryFeeItemBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFeeItemBag";
@@ -196,17 +196,17 @@
 
     const dropDownListOptions = computed((): ListItemBag[] => {
         return props.fee.items
-            ?.filter(i => !props.fee.hideWhenNoneRemaining || i.countRemaining === null || i.countRemaining === undefined || (i.countRemaining + internalValue.value[i.guid] ?? 0) > 0)
+            ?.filter(i => !props.fee.hideWhenNoneRemaining || i.countRemaining === null || i.countRemaining === undefined || (i.countRemaining + (internalValue.value[i.guid] ?? 0)) > 0)
             .map(i => ({
                 text: getItemLabel(i),
                 value: i.guid,
-                disabled: i.countRemaining !== null && i.countRemaining !== undefined && (i.countRemaining + internalValue.value[i.guid] ?? 0) === 0
+                disabled: i.countRemaining !== null && i.countRemaining !== undefined && (i.countRemaining + (internalValue.value[i.guid] ?? 0)) === 0
             })) ?? [];
     });
 
     const numberUpDownGroupOptions = computed((): NumberUpDownGroupOption[] => {
         return props.fee.items
-            ?.filter(i => !props.fee.hideWhenNoneRemaining || i.countRemaining === null || i.countRemaining === undefined || (i.countRemaining + internalValue.value[i.guid] ?? 0) > 0)
+            ?.filter(i => !props.fee.hideWhenNoneRemaining || i.countRemaining === null || i.countRemaining === undefined || (i.countRemaining + (internalValue.value[i.guid] ?? 0)) > 0)
             .map(i => ({
                 key: i.guid,
                 label: getItemLabel(i),

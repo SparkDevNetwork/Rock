@@ -74,7 +74,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
             Assert.IsNotNull( _interactionComponent, "Interaction component for Internal website not found." );
 
             var existing = _interactionService.Queryable().Where( i =>
-                _personAliasIds.Contains( i.PersonAliasId.Value) &&
+                _personAliasIds.Contains( i.PersonAliasId.Value ) &&
                 i.InteractionComponentId == _interactionComponent.Id
             );
 
@@ -189,7 +189,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
         {
             var attemptsQuery = new AchievementAttemptService( _rockContext ).Queryable()
                 .AsNoTracking()
-                .Where( saa => saa.AchievementTypeId == _achievementTypeId &&  _personAliasIds.Contains( saa.AchieverEntityId) )
+                .Where( saa => saa.AchievementTypeId == _achievementTypeId && _personAliasIds.Contains( saa.AchieverEntityId ) )
                 .OrderBy( saa => saa.AchievementAttemptStartDateTime );
 
             // There should be no attempts
@@ -204,7 +204,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
 
             var attempts = attemptsQuery.ToList();
             Assert.IsNotNull( attempts );
-            Assert.AreEqual( 1, attempts.Count );
+            Assert.HasCount( 1, attempts );
 
             // The database stores progress with only 9 digits beyond the decimal
             var progress = decimal.Divide( COUNT, NUMBER_TO_ACHIEVE );
@@ -212,7 +212,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
 
             Assert.AreEqual( RockDateTime.Today, attempts[0].AchievementAttemptStartDateTime );
             Assert.AreEqual( RockDateTime.Today, attempts[0].AchievementAttemptEndDateTime );
-            Assert.IsTrue( progressDifference < .000000001m );
+            Assert.IsLessThan( .000000001m, progressDifference );
             Assert.IsFalse( attempts[0].IsClosed );
             Assert.IsFalse( attempts[0].IsSuccessful );
         }

@@ -22,7 +22,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
 using Rock.Web.Cache;
 

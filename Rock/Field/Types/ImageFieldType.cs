@@ -287,7 +287,6 @@ namespace Rock.Field.Types
             codeEditorImageTabTemplate.Help = "The Lava template to use when rendering as an html img tag.";
             codeEditorImageTabTemplate.EditorHeight = "100";
             codeEditorImageTabTemplate.EditorMode = CodeEditorMode.Lava;
-            codeEditorImageTabTemplate.EditorTheme = CodeEditorTheme.Rock;
             controls.Add( codeEditorImageTabTemplate );
 
             return controls;

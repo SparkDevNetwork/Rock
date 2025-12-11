@@ -1,0 +1,255 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DisplayCard :title="theTitle" :description="thePersonalDevice.name"
+                 :iconCssClass="thePersonalDevice.iconCssClass ?? 'ti ti-help'" iconLabelType="info">
+
+        <template #middleSection>
+            <IconList :notificationsEnabled="notificationsEnabled" :locationPermissionStatus="locationPermissionStatus"
+                      :isPreciseLocationEnabled="isPreciseLocationEnabled"
+                      :isBeaconMonitoringEnabled="isBeaconMonitoringEnabled" :macAddress="macAddress"
+                      :isMobileDevice="isMobileDevice" />
+        </template>
+
+        <template #rightMiddleSection>
+            <div class="right-middle-container">
+                <div v-if="discoveredInfo.hasValue" class="dateInfo" ref="discoveredElement" :title="discoveredTooltip">
+                    <i class="ti ti-calendar-plus"></i>
+                    <span>Discovered: {{ discoveredInfo.date }}</span>
+                </div>
+                <div v-if="showDeviceLastSeenDateTime && lastSeenInfo.hasValue" class="dateInfo" ref="lastSeenElement"
+                     :title="lastSeenTooltip">
+                    <i class="ti ti-eye"></i>
+                    <span>Last Seen: {{ lastSeenInfo.date }}</span>
+                </div>
+            </div>
+        </template>
+
+        <template #actions>
+            <RockButton @click="onClickViewInteractions">
+                <span class="btn-interactions">
+                    <i class="ti ti-activity"></i>
+                    <span>View Interactions</span>
+                    <i class="ti ti-chevron-right"></i>
+                </span>
+            </RockButton>
+
+            <RockButton isSquare btnSize="sm" btnType="default" tooltip="Delete" @click="onDelete">
+                <i class="ti ti-x"></i>
+            </RockButton>
+        </template>
+
+    </DisplayCard>
+</template>
+
+<style scoped>
+.right-middle-container {
+    display: flex;
+    gap: var(--spacing-xlarge);
+    justify-content: center;
+    align-items: center;
+}
+
+.dateInfo {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-tiny);
+    color: var(--color-interface-medium);
+}
+
+.dateInfo i {
+    font-size: var(--font-size-h4);
+}
+
+.btn-interactions {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+}
+
+.btn-interactions .ti-activity {
+    margin-top: 3px;
+}
+
+.btn-interactions .ti-chevron-right {
+    margin-top: 4px;
+}
+
+:deep(.displaycard-aside + .displaycard-actions) {
+    margin-left: calc(var(--spacing-tiny) - var(--spacing-large));
+}
+
+@media (max-width: 767px) {
+    :deep(.displaycard-aside + .displaycard-actions) {
+        margin-left: 0;
+    }
+
+    .right-middle-container {
+        flex-direction: column;
+        gap: var(--spacing-tiny);
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, onBeforeUnmount, onMounted, PropType, ref } from "vue";
+    import { PersonalDeviceListItemBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonalDevices/personalDeviceListItemBag";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import IconList from "./iconList.partial.obs";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { tooltip, destroyTooltip } from "@Obsidian/Utility/tooltip";
+    import { useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert, confirmDelete } from "@Obsidian/Utility/dialogs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<PersonalDeviceListItemBag>,
+            required: true
+        },
+
+        showDeviceLastSeenDateTime: {
+            type: Boolean as PropType<boolean>,
+            required: true,
+        },
+
+        duplicateIndex: {
+            type: Number as PropType<number>,
+            required: false,
+            default: 1
+        }
+    });
+
+    // #region Values
+
+    const thePersonalDevice: PersonalDeviceListItemBag = props.modelValue;
+    const notificationsEnabled = thePersonalDevice.notificationsEnabled ?? false;
+    const locationPermissionStatus = thePersonalDevice.locationPermissionStatus ?? null;
+    const isPreciseLocationEnabled = thePersonalDevice.isPreciseLocationEnabled ?? false;
+    const isBeaconMonitoringEnabled = thePersonalDevice.isBeaconMonitoringEnabled ?? false;
+    const macAddress = thePersonalDevice.macAddress ?? null;
+
+    const discoveredElement = ref<HTMLElement | null>(null);
+    const lastSeenElement = ref<HTMLElement | null>(null);
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const theTitle = computed((): string => {
+        const hasPlatform = !!thePersonalDevice.platform?.text;
+        const hasVersion = !!thePersonalDevice.deviceVersion;
+
+        const baseTitle = hasPlatform && hasVersion
+            ? `${thePersonalDevice.platform?.text} ${thePersonalDevice.deviceVersion}`
+            : "Unknown Device";
+
+        return props.duplicateIndex > 1
+            ? `${baseTitle} - ${props.duplicateIndex}`
+            : baseTitle;
+    });
+
+    const isMobileDevice = computed((): boolean => {
+        return thePersonalDevice.deviceType?.value?.toUpperCase() === DefinedValue.PersonalDeviceTypeMobile;
+    });
+
+    const discoveredInfo = computed(() => {
+        const fullDateTime = thePersonalDevice.createdDateTime;
+        if (!fullDateTime) {
+            return { hasValue: false, date: "", dateTime: "" };
+        }
+
+        const dt = RockDateTime.parseISO(fullDateTime);
+        return {
+            hasValue: true,
+            date: dt?.toASPString("MM-dd-yyyy") ?? "",
+            dateTime: dt?.toASPString("MM-dd-yyyy hh:mm tt") ?? ""
+        };
+    });
+
+    const lastSeenInfo = computed(() => {
+        const fullDateTime = thePersonalDevice.lastSeenDateTime;
+        if (!fullDateTime) {
+            return { hasValue: false, date: "", dateTime: "" };
+        }
+
+        const dt = RockDateTime.parseISO(fullDateTime);
+        return {
+            hasValue: true,
+            date: dt?.toASPString("MM-dd-yyyy") ?? "",
+            dateTime: dt?.toASPString("MM-dd-yyyy hh:mm tt") ?? ""
+        };
+    });
+
+    const discoveredTooltip = computed((): string => {
+        return discoveredInfo.value.hasValue ? `Discovered: ${discoveredInfo.value.dateTime}` : "";
+    });
+
+    const lastSeenTooltip = computed((): string => {
+        return lastSeenInfo.value.hasValue ? `Last Seen: ${lastSeenInfo.value.dateTime}` : "";
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    async function onDelete(): Promise<void> {
+        const additionalMessage = "This will remove all related page views and interactions.";
+        const confirmed = await confirmDelete("personal device", additionalMessage);
+        if (!confirmed) {
+            return;
+        }
+
+        const result = await invokeBlockAction<string>("DeletePersonalDevice", {
+            key: thePersonalDevice.guid
+        });
+
+        if (result.isSuccess) {
+            reloadBlock();
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete personal device.");
+        }
+    }
+
+    async function onClickViewInteractions(): Promise<void> {
+        const result = await invokeBlockAction<string>("GetInteractionsUrl", {
+            key: thePersonalDevice.guid
+        });
+
+        if (result.isSuccess && result.data) {
+            window.location.href = result.data;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to load interactions page.");
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        if (discoveredElement.value && discoveredTooltip.value) {
+            tooltip(discoveredElement.value);
+        }
+
+        if (lastSeenElement.value && lastSeenTooltip.value) {
+            tooltip(lastSeenElement.value);
+        }
+    });
+
+    onBeforeUnmount(() => {
+        if (discoveredElement.value) {
+            destroyTooltip(discoveredElement.value);
+        }
+
+        if (lastSeenElement.value) {
+            destroyTooltip(lastSeenElement.value);
+        }
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

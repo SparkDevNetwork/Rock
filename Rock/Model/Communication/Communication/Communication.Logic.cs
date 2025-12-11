@@ -563,6 +563,20 @@ WHERE r.[RowNumber] > 1;";
                 return;
             }
 
+            if ( ( rockContext.Database.CommandTimeout ?? 0 ) < 90 )
+            {
+                /*
+                    12/1/2025 - JPH
+
+                    We're increasing this timeout from the default of 30 seconds to give the following
+                    pre-send task more time to complete.
+
+                    Reason: Communications with a large number of recipients time out and don't send.
+                    https://github.com/SparkDevNetwork/Rock/issues/5651
+                */
+                rockContext.Database.SetCommandTimeout( 90 );
+            }
+
             using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Prepare Recipient List > Refresh Communication Recipient List" ) )
             {
                 /*

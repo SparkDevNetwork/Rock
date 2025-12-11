@@ -149,7 +149,7 @@ namespace Rock.Tests.Integration.TestData.Crm
                 HistoryService.SaveChanges( dataContext, typeof( Person ), global::Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, historyChanges, true, adminPerson.PrimaryAliasId, _TestDataSourceOfChange );
             }
 
-            Debug.Print( $"Create Data completed: { entriesAdded } history entries created." );
+            Debug.Print( $"Create Data completed: {entriesAdded} history entries created." );
         }
 
         /// <summary>
@@ -222,7 +222,7 @@ namespace Rock.Tests.Integration.TestData.Crm
                 HistoryService.SaveChanges( dataContext, typeof( Person ), global::Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, historyChanges, true, adminPerson.PrimaryAliasId, _TestDataSourceOfChange );
             }
 
-            Debug.Print( $"Create Data completed: { entriesAdded } history entries created." );
+            Debug.Print( $"Create Data completed: {entriesAdded} history entries created." );
         }
 
         /// <summary>

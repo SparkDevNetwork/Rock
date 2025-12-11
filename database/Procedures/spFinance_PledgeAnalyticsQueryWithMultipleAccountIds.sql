@@ -17,6 +17,8 @@ ALTER PROCEDURE [dbo].[spFinance_PledgeAnalyticsQueryWithMultipleAccountIds]
 	, @MaxAmountGiven decimal(18,2) = NULL
 	, @IncludePledges bit = 1
 	, @IncludeGifts bit = 0
+	, @GivingStartDate date = NULL
+	, @GivingEndDate date = NULL
 
 AS
 
@@ -25,6 +27,19 @@ BEGIN
 	-- SET NOCOUNT ON added to prevent extra result sets from
 	-- interfering with SELECT statements.
 	SET NOCOUNT ON;
+
+	DECLARE @GivingStartKey INT = NULL
+	DECLARE @GivingEndKey   INT = NULL
+
+	IF @GivingStartDate IS NOT NULL
+	BEGIN
+		SET @GivingStartKey = CAST(CONVERT(VARCHAR(8), @GivingStartDate, 112) AS INT)
+	END
+
+	IF @GivingEndDate IS NOT NULL
+	BEGIN
+		SET @GivingEndKey = CAST(CONVERT(VARCHAR(8), @GivingEndDate, 112) AS INT)
+	END
 
 	IF @StartDate IS NULL
 	BEGIN
@@ -83,7 +98,29 @@ BEGIN
 		INNER JOIN [CTE_ACCOUNTS] [a] ON [a].[Id] = [ftd].[AccountId]
 		INNER JOIN [FinancialTransaction] [ft] ON [ft].[Id] = [ftd].[TransactionId]
 		INNER JOIN [PersonAlias] [pa] ON [pa].[Id] = [ft].[AuthorizedPersonAliasId]
-		INNER JOIN [Person] [p] ON [p].[Id] = [pa].[PersonId]
+		INNER JOIN [Person] [p] ON [p].[Id] = [pa].[PersonId]'
+
+		-- Only add a WHERE when a giving bound exists
+		IF @GivingStartKey IS NOT NULL OR @GivingEndKey IS NOT NULL
+		BEGIN
+			SET @Sql = @Sql + '
+				WHERE '
+
+			IF @GivingStartKey IS NOT NULL AND @GivingEndKey IS NOT NULL
+			BEGIN
+				-- Inclusive day range: start..end
+				SET @Sql = @Sql + '[ft].[TransactionDateKey] BETWEEN ' + CAST(@GivingStartKey AS VARCHAR) + ' AND ' + CAST(@GivingEndKey AS VARCHAR)
+			END
+			ELSE IF @GivingStartKey IS NOT NULL
+			BEGIN
+				SET @Sql = @Sql + '[ft].[TransactionDateKey] >= ' + CAST(@GivingStartKey AS VARCHAR)
+			END
+			ELSE -- only end key present
+			BEGIN
+				SET @Sql = @Sql + '[ft].[TransactionDateKey] <= ' + CAST(@GivingEndKey AS VARCHAR)
+			END
+		END
+		SET @Sql = @Sql + '
 	),
 
 	CTE1

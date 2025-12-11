@@ -177,7 +177,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
 
             var attempts = attemptsQuery.ToList();
             Assert.IsNotNull( attempts );
-            Assert.AreEqual( 1, attempts.Count );
+            Assert.HasCount( 1, attempts );
 
             // The database stores progress with only 2 digits beyond the decimal
             var progress = decimal.Divide( COMPLETE_COUNT, STEP_TYPE_COUNT );
@@ -185,7 +185,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
 
             Assert.AreEqual( RockDateTime.Today, attempts[0].AchievementAttemptStartDateTime );
             Assert.AreEqual( RockDateTime.Today, attempts[0].AchievementAttemptEndDateTime );
-            Assert.IsTrue( progressDifference < .01m );
+            Assert.IsLessThan( .01m, progressDifference );
             Assert.IsFalse( attempts[0].IsClosed );
             Assert.IsFalse( attempts[0].IsSuccessful );
         }

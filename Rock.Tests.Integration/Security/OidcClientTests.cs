@@ -10,7 +10,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security.ExternalAuthentication;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
@@ -205,10 +204,10 @@ namespace Rock.Tests.Integration.Security
         [DataRow( "", "", "", "", "85003", "" )]
         public void HandleOidcUserAddUpdate_NewUserAddressIsCreatedCorrectly( string street1, string street2, string city, string state, string postalCode, string country )
         {
-            var countryProperty = country.IsNullOrWhiteSpace() ? string.Empty : $"\"country\":\"{ country }\",";
-            var postalCodeProperty = postalCode.IsNullOrWhiteSpace() ? string.Empty : $"\"postal_code\":\"{ postalCode }\",";
-            var stateProperty = state.IsNullOrWhiteSpace() ? string.Empty : $"\"region\":\"{ state }\",";
-            var cityProperty = city.IsNullOrWhiteSpace() ? string.Empty : $"\"locality\":\"{ city }\",";
+            var countryProperty = country.IsNullOrWhiteSpace() ? string.Empty : $"\"country\":\"{country}\",";
+            var postalCodeProperty = postalCode.IsNullOrWhiteSpace() ? string.Empty : $"\"postal_code\":\"{postalCode}\",";
+            var stateProperty = state.IsNullOrWhiteSpace() ? string.Empty : $"\"region\":\"{state}\",";
+            var cityProperty = city.IsNullOrWhiteSpace() ? string.Empty : $"\"locality\":\"{city}\",";
             var streetCodeProperty = street1.IsNullOrWhiteSpace() ? string.Empty : $@"""street_address"":""{street1 + ( street2.IsNotNullOrWhiteSpace() ? "\r\n" + street2 : "" )}"",";
 
             var addressJson = $@"{{

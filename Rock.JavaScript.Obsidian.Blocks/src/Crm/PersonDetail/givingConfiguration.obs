@@ -11,22 +11,19 @@
             <hr class="separator" />
 
             <!-- Text-To-Give Settings -->
-            <div>
+            <div class="content-section">
                 <div class="row">
                     <div class="col-sm-10">
                         <h5 class="my-0">Text-To-Give Settings</h5>
                     </div>
-                    <div class="col-sm-12">
-                        <button v-if="!showTextToGive" class="btn btn-default btn-square btn-xs mt-3 mb-2 pull-right" type="button" title="Add Text-To-Give Configuration" @click.prevent="addTextToGiveSettings">
-                            <i class="ti ti-plus"></i>
-                        </button>
-                        <button v-else-if="!isEditingTextToGive" class="btn btn-default btn-square btn-xs pull-right" title="Edit Text-To-Give Configuration" @click.prevent="toggleEditTextToGive">
+                    <div class="col-sm-2">
+                        <button v-if="!isEditingTextToGive && showTextToGive" class="btn btn-default btn-square btn-xs pull-right" title="Edit Text-To-Give Configuration" @click.prevent="toggleEditTextToGive">
                             <i class="ti ti-pencil"></i>
                         </button>
                     </div>
                 </div>
 
-                <div v-if="showTextToGive">
+                <div>
                     <div v-if="!isEditingTextToGive">
                         <div class="row">
                             <div class="col-md-6 col-sm-12">
@@ -36,6 +33,13 @@
                             <div class="col-md-6 col-sm-12">
                                 <strong class="d-block text-sm">Saved Account</strong>
                                 <span class="d-block text-sm text-muted">{{ savedAccount }}</span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <button v-if="!showTextToGive" class="btn btn-default btn-square btn-xs pull-right" type="button" title="Add Text-To-Give Configuration" @click.prevent="addTextToGiveSettings">
+                                    <i class="ti ti-plus"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -70,7 +74,7 @@
             <div class="mb-3">
                 <div class="d-flex justify-content-between align-items-start">
                     <h5 class="my-0">Scheduled Transactions</h5>
-                    <button v-if="hasInactiveTransactions" class="text-sm showinactive" @click.prevent="toggleShowInactive">
+                    <button v-if="hasInactiveTransactions" class="text-left text-sm showinactive" @click.prevent="toggleShowInactive">
                         {{ showInactiveText }}
                     </button>
                 </div>
@@ -242,52 +246,6 @@
     </Panel>
 </template>
 
-<style scoped>
-.panel-heading {
-    background-color: #f5f5f5;
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-}
-
-.panel-title {
-    font-size: 1.25em;
-    margin: 0;
-}
-
-.rollover-container-nested {
-    transition: background-color 0.3s;
-}
-
-.rollover-container-nested:hover {
-    background-color: #ffffff;
-}
-
-.btn-link {
-    color: #007bff;
-    text-decoration: none;
-}
-
-.btn-link:hover {
-    color: #0056b3;
-    text-decoration: underline;
-}
-
-.showinactive {
-    background-color: white;
-    border: none;
-    color: #006dcc;
-}
-
-.separator {
-    margin-top: 2px;
-    margin-bottom: 24px;
-    border: 0;
-    border-top: 1px solid #eee;
-    width: calc(100% + 40px);
-    margin-left: -20px;
-}
-</style>
-
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import { useInvokeBlockAction, useConfigurationValues, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
@@ -362,6 +320,7 @@
         const result = await invokeBlockAction("GetTextToGiveDetails");
 
         if (result.isSuccess) {
+            isEditingTextToGive.value = false;
             const data = result.data as { defaultAccountName: string; savedAccountName: string; defaultFinancialAccountGuid: string; savedAccountId: string };
             defaultAccount.value = data.defaultAccountName || "None";
             savedAccount.value = data.savedAccountName || "None";
@@ -432,7 +391,7 @@
     }
 
     function editScheduledTransaction(transaction: FinancialScheduledTransactionBag): void {
-        const editScheduledTransactionPageUrl = `${config?.navigationUrls?.[NavigationUrlKey.ScheduledTransactionDetailPage]}${transaction.guid}` ?? "";
+        const editScheduledTransactionPageUrl = `${config?.navigationUrls?.[NavigationUrlKey.ScheduledTransactionDetailPage]}${transaction.guid}`;
 
         if (editScheduledTransactionPageUrl) {
             window.location.href = editScheduledTransactionPageUrl;

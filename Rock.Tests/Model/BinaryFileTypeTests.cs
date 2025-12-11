@@ -17,7 +17,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Model;
-using Rock.Tests.Shared;
 
 namespace Rock.Tests.Model
 {

@@ -4,7 +4,8 @@
                     formGroupClasses="connection-request-item-picker"
                     iconCssClass="ti ti-plug"
                     :provider="itemProvider"
-                    :multiple="multiple" />
+                    :multiple="multiple"
+                    autoExpand />
 </template>
 
 <script setup lang="ts">

@@ -151,16 +151,6 @@
     // #region Functions
 
     /**
-     * Determines if the provided value is a properly formatted currency entry.
-     * @param value The string value to validate.
-     * @returns True if the value is a proper currency format, otherwise false.
-     */
-    function isProperCurrencyEntry(value: string): boolean {
-        const currencyRegex = /^\d+(\.\d{2})$/;
-        return currencyRegex.test(value);
-    }
-
-    /**
      * Closes the Add Result modal and clears all input values.
      */
     function closeAndClearResult(): void {

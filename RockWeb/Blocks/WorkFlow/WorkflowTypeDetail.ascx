@@ -91,13 +91,13 @@
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <Rock:CodeEditor ID="ceNoActionMessage" runat="server" EditorMode="Lava" EditorTheme="Rock" EditorHeight="100" Label="No Action Message"
+                                <Rock:CodeEditor ID="ceNoActionMessage" runat="server" EditorMode="Lava" EditorHeight="100" Label="No Action Message"
                                     Help="The text to be displayed when a workflow of this type is active, but does not have an active user entry form. <span class='tip tip-lava'></span> <span class='tip tip-html'>" />
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <Rock:CodeEditor ID="ceSummaryViewText" runat="server" EditorMode="Lava" EditorTheme="Rock" EditorHeight="500" Label="Summary View"
+                                <Rock:CodeEditor ID="ceSummaryViewText" runat="server" EditorMode="Lava" EditorHeight="500" Label="Summary View"
                                     Help="The summary view text to be displayed when a workflow of this type has no user entry form or the workflow has been completed. <span class='tip tip-lava'></span> <span class='tip tip-html'>" />
                             </div>
                         </div>

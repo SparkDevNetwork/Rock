@@ -127,14 +127,14 @@ namespace Rock.Tests.Integration.Crm.Notes
             ExecuteSendNoteNotificationsJob( settings: null, sendResults: out var sendResults, logEvents: out _ );
 
             // Verify that an email is sent to Staff2, but not Staff1 as the author of the message.
-            Assert.AreEqual( 1, sendResults.Count );
+            Assert.HasCount( 1, sendResults );
 
             var recipientEmail = sendResults.First()?.EmailMessage.To.First()?.Address;
 
             Assert.AreEqual( personStaff2.Email, recipientEmail, "Incorrect recipient." );
 
             var messageText = sendResults.First()?.RockMessage.Message;
-            Assert.IsTrue( messageText.Contains( note1.Guid.ToString() ), "Reference to Note1 expected but not found." );
+            Assert.Contains( note1.Guid.ToString(), messageText, "Reference to Note1 expected but not found." );
         }
 
         [TestMethod]
@@ -188,9 +188,9 @@ namespace Rock.Tests.Integration.Crm.Notes
             var message = sendResults.First().RockMessage;
             var messageText = message.Message;
 
-            Assert.IsTrue( messageText.Contains( note1.Guid.ToString() ), "Reference to Note1 expected but not found." );
-            Assert.IsTrue( messageText.Contains( note2.Guid.ToString() ), "Reference to Note2 expected but not found." );
-            Assert.IsFalse( messageText.Contains( note3.Guid.ToString() ), "Reference to Note3 found but not expected." );
+            Assert.Contains( note1.Guid.ToString(), messageText, "Reference to Note1 expected but not found." );
+            Assert.Contains( note2.Guid.ToString(), messageText, "Reference to Note2 expected but not found." );
+            Assert.DoesNotContain( note3.Guid.ToString(), messageText, "Reference to Note3 found but not expected." );
         }
 
         [TestMethod]
@@ -235,8 +235,8 @@ namespace Rock.Tests.Integration.Crm.Notes
             var message = sendResults.First().RockMessage;
             var messageText = message.Message;
 
-            Assert.IsTrue( messageText.Contains( note1.Guid.ToString() ), "Reference to Note1 expected but not found." );
-            Assert.IsFalse( messageText.Contains( note2.Guid.ToString() ), "Reference to Note2 found but not expected." );
+            Assert.Contains( note1.Guid.ToString(), messageText, "Reference to Note1 expected but not found." );
+            Assert.DoesNotContain( note2.Guid.ToString(), messageText, "Reference to Note2 found but not expected." );
         }
 
         [TestMethod]
@@ -284,8 +284,8 @@ namespace Rock.Tests.Integration.Crm.Notes
             var message = sendResults.First().RockMessage;
             var messageText = message.Message;
 
-            Assert.IsTrue( messageText.Contains( note1.Guid.ToString() ), "Reference to Note1 expected but not found." );
-            Assert.IsFalse( messageText.Contains( note2.Guid.ToString() ), "Reference to Note2 found but not expected." );
+            Assert.Contains( note1.Guid.ToString(), messageText, "Reference to Note1 expected but not found." );
+            Assert.DoesNotContain( note2.Guid.ToString(), messageText, "Reference to Note2 found but not expected." );
         }
 
         [TestMethod]
@@ -333,7 +333,7 @@ namespace Rock.Tests.Integration.Crm.Notes
             var message = sendResults.First().RockMessage;
             var messageText = message.Message;
 
-            Assert.IsTrue( messageText.Contains( note11.Guid.ToString() ), "Reference to Note11 expected but not found." );
+            Assert.Contains( note11.Guid.ToString(), messageText, "Reference to Note11 expected but not found." );
         }
 
         #endregion

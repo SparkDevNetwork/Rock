@@ -17,29 +17,29 @@
         <div class="row">
             <div class="col-md-12">
                 <TextBox v-model="description"
-                        label="Description"
-                        textMode="multiline" />
+                         label="Description"
+                         textMode="multiline" />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-6">
                 <ComponentPicker label="Event Type"
-                    rules="required"
-                    v-model="entityType"
-                    :containerType="containerType" />
+                                 rules="required"
+                                 v-model="entityType"
+                                 :containerType="containerType" />
                 <CheckBox v-model="isNoticeRequired"
-                    label="Notice Required"
-                    help="Select this option to force user to get notified of this event for people they follow. Unselect this option if users should be able to decide whether to get notified or not." />
+                          label="Notice Required"
+                          help="Select this option to force user to get notified of this event for people they follow. Unselect this option if users should be able to decide whether to get notified or not." />
                 <CheckBox v-model="sendOnFriday"
-                    label="Send Weekend Notices on Friday"
-                    help="Should any notices that would normally be sent on a weekend be sent on preceding Friday instead?" />
+                          label="Send Weekend Notices on Friday"
+                          help="Should any notices that would normally be sent on a weekend be sent on preceding Friday instead?" />
             </div>
 
             <div class="col-md-6">
                 <CheckBox v-if="entityType?.value?.toUpperCase() == EntityType.PersonPrayerRequest"
-                    v-model="includeNonPublicRequests"
-                    label="Include Non-Public Requests" />
+                          v-model="includeNonPublicRequests"
+                          label="Include Non-Public Requests" />
 
                 <AttributeValuesContainer v-model="attributeValues" showCategoryLabel :attributes="attributes" isEditMode />
             </div>
@@ -47,8 +47,8 @@
 
         <div class="row">
             <div class="col-md-12">
-                <CodeEditor v-model="entityNotificationFormatLava" label="Notification Format" theme="rock" mode="lava" :editorHeight="200"
-                    help="How the entity should be formatted in the following event notification email when this event occurs for the entity. The entity is available to Lava as an 'Entity' object." />
+                <CodeEditor v-model="entityNotificationFormatLava" label="Notification Format" mode="lava" :editorHeight="200"
+                            help="How the entity should be formatted in the following event notification email when this event occurs for the entity. The entity is available to Lava as an 'Entity' object." />
             </div>
         </div>
     </fieldset>
@@ -87,7 +87,7 @@
     // #region Values
 
     const attributes = computed(() => {
-        if(!props.modelValue.attributes) {
+        if (!props.modelValue.attributes) {
             return {};
         }
         const attributes = props.modelValue.attributes;

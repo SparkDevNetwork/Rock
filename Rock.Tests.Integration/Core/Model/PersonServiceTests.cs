@@ -8,7 +8,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Utility.Enums;
 using Rock.Web.Cache;
@@ -16,7 +15,7 @@ using Rock.Web.Cache;
 namespace Rock.Tests.Integration.Core.Model
 {
     [TestClass]
-    [TestCategory("Core.Crm.Person")]
+    [TestCategory( "Core.Crm.Person" )]
     public class PersonServiceTests : DatabaseTestsBase
     {
         #region Setup

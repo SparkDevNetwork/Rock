@@ -3,7 +3,7 @@
     <ContentDropDownPicker v-bind="formFieldProps"
                            :modelValue="pickerValue"
                            iconCssClass="ti ti-map-pin"
-                           :showClear="!!pickerValue"
+                           :showClear="!isPickerEmpty"
                            @primaryButtonClicked="select"
                            @secondaryButtonClicked="cancel"
                            @clearButtonClicked="clear"
@@ -77,9 +77,11 @@
     const controlValue = ref({});
 
     // This Picker
-    const pickerValue = ref({});
+    const pickerValue = ref<AddressControlBag>(getEmptyAddressControlBag());
     const pickerLabel = ref("");
+
     const errors = ref<FormError[]>([]);
+
     const isLoading = ref(false);
     const internalShowPopup = useVModelPassthrough(props, "showPopup", emit);
 
@@ -89,11 +91,34 @@
 
     // #region Computed Values
 
+    const isPickerEmpty = computed(() => {
+        return !pickerValue.value.street1
+            && !pickerValue.value.city
+            && !pickerValue.value.state
+            && !pickerValue.value.postalCode
+            && !pickerValue.value.country;
+    });
+
     const isRequired = computed(() => {
         return containsRequiredRule(props.rules);
     });
 
     // #endregion
+
+    // #region Functions
+
+    function getEmptyAddressControlBag(): AddressControlBag {
+        return {
+            street1: "",
+            street2: "",
+            city: "",
+            state: "",
+            postalCode: "",
+            country: ""
+        };
+    }
+
+    // #endregion Functions
 
     // #region Event Handlers
 
@@ -126,7 +151,7 @@
     }
 
     function clear(): void {
-        pickerValue.value = {};
+        pickerValue.value = getEmptyAddressControlBag();
         pickerLabel.value = "";
     }
 

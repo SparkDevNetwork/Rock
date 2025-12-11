@@ -49,7 +49,7 @@ namespace Rock.Tests.Integration.Core.Model
             [DataRow( "\"very.(),:;<>[]\\\".VERY.\\\"very@\\\\ \\\"very\\\".unusual\"@strange.example.com", "" )]
         */
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "simple@example.com", "" )]
         [DataRow( "very.common@example.co.uk", "multiple sub-domains in host-part" )]
         [DataRow( "user_name1234@email-provider.net", "dash in host-part" )]
@@ -95,7 +95,7 @@ namespace Rock.Tests.Integration.Core.Model
             [DataRow( "1234567890123456789012345678901234567890123456789012345678901234+x@example.com", "local-part is longer than 64 characters" )]
         */
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "abc.example.com", "no @ character to separate local-part and domain-part" )]
         [DataRow( "a@b@c@example.com", "only one @ is allowed outside quotation marks" )]
         [DataRow( "a\"b(c)d,e:f;g<h>i[j\\k]l@example.com", "none of the special characters in this local-part are allowed outside quotation marks" )]

@@ -79,7 +79,7 @@ namespace Rock.Tests.Integration.Core.Model
             // Only instances after the current date should be returned in the list of active items.
             var staffEvent = events.FirstOrDefault( x => x.Name == "Staff Meeting" );
 
-            Assert.IsNotNull( staffEvent, "Expected event not found in result set." ); 
+            Assert.IsNotNull( staffEvent, "Expected event not found in result set." );
         }
 
         /// <summary>
@@ -106,15 +106,15 @@ namespace Rock.Tests.Integration.Core.Model
                 .HasOccurrencesOnOrAfterDate( effectiveDate )
                 .ToList();
 
-            Assert.IsTrue( validEvents.Count() == 1, "Expected Event not found." );
+            Assert.AreEqual( 1, validEvents.Count(), "Expected Event not found." );
 
             // ... but no event occurrences for the following month.
             var invalidEvents = eventItemService.Queryable()
                 .Where( x => x.Name == "Warrior Youth Event" )
-                .HasOccurrencesOnOrAfterDate( effectiveDate.AddMonths(1) )
+                .HasOccurrencesOnOrAfterDate( effectiveDate.AddMonths( 1 ) )
                 .ToList();
 
-            Assert.IsTrue( invalidEvents.Count() == 0, "Unexpected Event found." );
+            Assert.AreEqual( 0, invalidEvents.Count(), "Unexpected Event found." );
         }
 
         private void ForceUpdateScheduleEffectiveDates( RockContext rockContext, EventItem eventItem )
@@ -380,7 +380,7 @@ namespace Rock.Tests.Integration.Core.Model
             // Deserialize the calendar output and verify the results.
             var events1 = CalendarCollection.Load( calendarString1 )?.FirstOrDefault()?.Events;
 
-            Assert.IsTrue( events1.Count > 0,
+            Assert.IsNotEmpty( events1,
                 "Expected result not found. Filter returned no Events." );
             Assert.IsTrue( events1.Any( x => x.Location == "Meeting Room 2" ),
                 "Expected result not found. Event with Campus/Location not found." );
@@ -405,7 +405,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             // Deserialize the calendar output and verify the results.
             var events1 = CalendarCollection.Load( calendarString1 )?.FirstOrDefault()?.Events;
-            Assert.IsTrue( events1.Count > 0,
+            Assert.IsNotEmpty( events1,
                 "Expected result not found. Filter returned no Events." );
             Assert.IsNull( events1.FirstOrDefault( x => !x.Categories.Contains( "Men" ) ),
                 "Event with unexpected Audience found." );
@@ -548,7 +548,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             var events = CalendarCollection.Load( calendarString )?.FirstOrDefault()?.Events;
 
-            Assert.AreEqual( specificDates.Count, events.Count, "Unexpected event count." );
+            Assert.HasCount( specificDates.Count, events, "Unexpected event count." );
 
             foreach ( var specificDate in specificDates )
             {
@@ -624,7 +624,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             var events = CalendarCollection.Load( calendarString )?.FirstOrDefault()?.Events;
 
-            Assert.AreEqual( specificDates.Count, events.Count, "Unexpected event count." );
+            Assert.HasCount( specificDates.Count, events, "Unexpected event count." );
 
             foreach ( var specificDate in specificDates )
             {
@@ -775,7 +775,7 @@ namespace Rock.Tests.Integration.Core.Model
                 .FirstOrDefault( e => e.Summary == $"{eventName} [Updated]" );
 
             Assert.IsNotNull( calendarEvent2, "Expected Event not found." );
-            Assert.IsTrue( calendarEvent2.Sequence > calendarEvent1.Sequence, $"Event2 Sequence number is not greater than Event 1. [Event1={calendarEvent1.Sequence}, Event2={calendarEvent2.Sequence}]" );
+            Assert.IsGreaterThan( calendarEvent1.Sequence, calendarEvent2.Sequence, $"Event2 Sequence number is not greater than Event 1. [Event1={calendarEvent1.Sequence}, Event2={calendarEvent2.Sequence}]" );
         }
 
         /// <summary>
@@ -866,7 +866,7 @@ namespace Rock.Tests.Integration.Core.Model
                 .FirstOrDefault( e => e.Summary == eventName );
 
             Assert.IsNotNull( calendarEvent2, "Expected Event not found." );
-            Assert.IsTrue( calendarEvent2.Sequence > calendarEvent1.Sequence, $"Event2 Sequence number is not greater than Event 1. [Event1={calendarEvent1.Sequence}, Event2={calendarEvent2.Sequence}]" );
+            Assert.IsGreaterThan( calendarEvent1.Sequence, calendarEvent2.Sequence, $"Event2 Sequence number is not greater than Event 1. [Event1={calendarEvent1.Sequence}, Event2={calendarEvent2.Sequence}]" );
         }
 
         /// <summary>
@@ -947,7 +947,7 @@ namespace Rock.Tests.Integration.Core.Model
                 .FirstOrDefault( e => e.Summary == eventName );
 
             Assert.IsNotNull( calendarEvent2, "Expected Event not found." );
-            Assert.IsTrue( calendarEvent2.Sequence > calendarEvent1.Sequence, $"Event2 Sequence number is not greater than Event 1. [Event1={calendarEvent1.Sequence}, Event2={calendarEvent2.Sequence}]" );
+            Assert.IsGreaterThan( calendarEvent1.Sequence, calendarEvent2.Sequence, $"Event2 Sequence number is not greater than Event 1. [Event1={calendarEvent1.Sequence}, Event2={calendarEvent2.Sequence}]" );
         }
 
         private Schedule AddOrUpdateScheduleForConsecutiveSpecifiedDays( string testScheduleGuid, DateTime firstDate, int repeatCount )

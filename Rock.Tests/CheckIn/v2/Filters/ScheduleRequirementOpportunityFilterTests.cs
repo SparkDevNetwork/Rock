@@ -191,7 +191,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var isIncluded = filter.IsGroupValid( groupOpportunity );
 
             Assert.IsTrue( isIncluded );
-            Assert.AreEqual( 1, groupOpportunity.Locations.Count );
+            Assert.HasCount( 1, groupOpportunity.Locations );
             Assert.AreEqual( IdHasher.Instance.GetHash( 200 ), groupOpportunity.Locations[0].LocationId );
         }
 
@@ -239,7 +239,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var isIncluded = filter.IsGroupValid( groupOpportunity );
 
             Assert.IsTrue( isIncluded );
-            Assert.AreEqual( 1, groupOpportunity.OverflowLocations.Count );
+            Assert.HasCount( 1, groupOpportunity.OverflowLocations );
             Assert.AreEqual( IdHasher.Instance.GetHash( 200 ), groupOpportunity.OverflowLocations[0].LocationId );
         }
 
@@ -297,7 +297,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var isIncluded = filter.IsGroupValid( groupOpportunity );
 
             Assert.IsTrue( isIncluded );
-            Assert.AreEqual( 1, filter.Person.PreSelectedOpportunities.Count );
+            Assert.HasCount( 1, filter.Person.PreSelectedOpportunities );
             Assert.AreEqual( IdHasher.Instance.GetHash( 200 ), filter.Person.PreSelectedOpportunities[0].Location.Id );
         }
 
@@ -340,7 +340,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var isIncluded = filter.IsGroupValid( groupOpportunity );
 
             Assert.IsTrue( isIncluded );
-            Assert.AreEqual( 0, filter.Person.PreSelectedOpportunities.Count );
+            Assert.IsEmpty( filter.Person.PreSelectedOpportunities );
         }
 
         [TestMethod]
@@ -398,7 +398,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var isIncluded = filter.IsGroupValid( groupOpportunity );
 
             Assert.IsTrue( isIncluded );
-            Assert.AreEqual( 0, filter.Person.PreSelectedOpportunities.Count );
+            Assert.IsEmpty( filter.Person.PreSelectedOpportunities );
         }
 
         [TestMethod]
@@ -472,7 +472,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var isIncluded = filter.IsGroupValid( groupOpportunity );
 
             Assert.IsTrue( isIncluded );
-            Assert.AreEqual( 1, filter.Person.PreSelectedOpportunities.Count );
+            Assert.HasCount( 1, filter.Person.PreSelectedOpportunities );
             Assert.AreEqual( "OriginalSelection", filter.Person.PreSelectedOpportunities[0].Group.Name );
         }
 
@@ -547,7 +547,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var isIncluded = filter.IsGroupValid( groupOpportunity );
 
             Assert.IsTrue( isIncluded );
-            Assert.AreEqual( 2, filter.Person.PreSelectedOpportunities.Count );
+            Assert.HasCount( 2, filter.Person.PreSelectedOpportunities );
         }
 
         #endregion

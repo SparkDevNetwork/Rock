@@ -129,7 +129,25 @@ namespace Rock.WebStartup
             LogStartupMessage( "Checking for EntityFramework Migrations" );
             var runMigrationFileInfo = new FileInfo( System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data\\Run.Migration" ) );
             bool hasPendingEFMigrations = runMigrationFileInfo.Exists || HasPendingEFMigrations();
+            var (isNewInstallation, installationDateTime) = IsNewInstallation();
+
+            // If we have an install datetime and this is not a new installation,
+            // then we need to set the installation datetime before running
+            // migrations. This way they know it is an upgrade.
+            if ( installationDateTime.HasValue && !isNewInstallation )
+            {
+                SetInstallationDateTime( installationDateTime.Value );
+            }
+
             bool ranEFMigrations = MigrateDatabase( hasPendingEFMigrations );
+
+            // If we have an install datetime and this IS a new installation,
+            // then we set the install datetime after running migrations so
+            // that the migrations know it is a new install.
+            if ( installationDateTime.HasValue && isNewInstallation )
+            {
+                SetInstallationDateTime( installationDateTime.Value );
+            }
 
             if ( ranEFMigrations )
             {
@@ -545,6 +563,77 @@ namespace Rock.WebStartup
         }
 
         /// <summary>
+        /// <para>
+        /// Determines whether this startup is for a new installation. This is
+        /// done by checking if the RockInstanceId attribute exists and has a
+        /// CreatedDateTime. If not then we do some additional checks on when the
+        /// Person table was created to determine if this is a new installation.
+        /// </para>
+        /// <para>
+        /// If a DateTime value is returned, it should be used to set the
+        /// installation date time for this instance. In this case, if <c>true</c>
+        /// is returned, then the CreatedDateTime value should be set after all
+        /// the migrations have run. If <c>false</c> is returned, then the value
+        /// should be set before the migrations have run.
+        /// </para>
+        /// </summary>
+        /// <returns><c>true</c> if this is a new installation, along with a DateTime value to use for the installation.</returns>
+        private static (bool, DateTime?) IsNewInstallation()
+        {
+            try
+            {
+                // Check if we already have an install datetime saved in the
+                // database. If so, then this is not a new installation.
+                var installDateTime = DbService.ExecuteScalar(
+                    @"SELECT [CreatedDateTime]
+                    FROM [Attribute]
+                    WHERE [Key] = 'RockInstanceId' AND [EntityTypeQualifierColumn] = 'SystemSetting'" ) as DateTime?;
+
+                if ( installDateTime.HasValue )
+                {
+                    return (false, null);
+                }
+
+                // No existing value. This means we are either a new installation,
+                // or an existing installation that is being started for the
+                // first time with this new logic. To determine which, check when
+                // the Person table was created compared to the current SQL time.
+                installDateTime = DbService.ExecuteScalar(
+                    @"SELECT [create_date]
+                    FROM [sys].[tables]
+                    WHERE [name] = 'Person';" ) as DateTime?;
+                var sqlDateTime = DbService.ExecuteScalar( "SELECT GETDATE();" ) as DateTime?;
+
+                // If the Person table was created within the last 2 hours,
+                // then assume this is a new installation.
+                if ( installDateTime.HasValue && sqlDateTime.HasValue )
+                {
+                    var timeDifference = sqlDateTime.Value - installDateTime.Value;
+
+                    if ( timeDifference.TotalMinutes <= 120 )
+                    {
+                        return (true, installDateTime.Value);
+                    }
+                    else
+                    {
+                        return (false, installDateTime.Value);
+                    }
+                }
+
+                // If the Person table has not been created, then this is for
+                // sure a new installation.
+                return (false, RockDateTime.Now);
+            }
+            catch
+            {
+                // If we run into an error, then assume it is a new installation
+                // since the error probably indicates that the database is not yet
+                // initialized.
+                return (true, RockDateTime.Now);
+            }
+        }
+
+        /// <summary>
         /// uses Reflection and a query on __MigrationHistory to determine whether we need to check for pending EF Migrations
         /// </summary>
         /// <returns>
@@ -561,10 +650,10 @@ namespace Rock.WebStartup
              */
 
             // First see if the _MigrationHistory table exists. If it doesn't, then this is probably an empty database.
-            var _migrationHistoryTableExists = false;
+            var migrationHistoryTableExists = false;
             try
             {
-                _migrationHistoryTableExists = DbService.ExecuteScalar(
+                migrationHistoryTableExists = DbService.ExecuteScalar(
                     @"SELECT convert(bit, 1) [Exists] 
                     FROM INFORMATION_SCHEMA.TABLES
                     WHERE TABLE_SCHEMA = 'dbo'
@@ -576,7 +665,7 @@ namespace Rock.WebStartup
                 {
                     // This pretty much means the database does not exist, so we'll need to assume there are pending migrations
                     // (such as the create database migration) that need to run first.
-                    _migrationHistoryTableExists = false;
+                    migrationHistoryTableExists = false;
                 }
                 else
                 {
@@ -584,7 +673,7 @@ namespace Rock.WebStartup
                 }
             }
 
-            if ( !_migrationHistoryTableExists )
+            if ( !migrationHistoryTableExists )
             {
                 // _MigrationHistory table doesn't exist, so we need to run EF Migrations
                 return true;
@@ -602,6 +691,26 @@ namespace Rock.WebStartup
 
             // if they aren't the same, run EF Migrations
             return lastDbMigrationId != lastRockMigrationId;
+        }
+
+        /// <summary>
+        /// Sets the installation date and time for the Rock instance in the system settings database.
+        /// </summary>
+        /// <remarks>This method updates the 'CreatedDateTime' field for the system setting identified by
+        /// 'RockInstanceId'. Use this method to initialize or modify the installation timestamp for the application
+        /// instance.</remarks>
+        /// <param name="installationDateTime">The date and time to record as the installation timestamp. Represents the value to be stored in the
+        /// database.</param>
+        private static void SetInstallationDateTime( DateTime installationDateTime )
+        {
+            DbService.ExecuteCommand( @"UPDATE [Attribute]
+                SET [CreatedDateTime] = @Date
+                WHERE [Key] = 'RockInstanceId' AND [EntityTypeQualifierColumn] = 'SystemSetting'",
+                System.Data.CommandType.Text,
+                new Dictionary<string, object>
+                {
+                    ["@Date"] = installationDateTime
+                } );
         }
 
         /// <summary>
@@ -718,8 +827,17 @@ namespace Rock.WebStartup
             // will be logged and stop running any more migrations for that assembly
             foreach ( var pluginMigration in pluginAssemblies )
             {
-                bool ranPluginMigration = RunPluginMigrations( pluginMigration );
-                migrationsWereRun = migrationsWereRun || ranPluginMigration;
+                try
+                {
+                    bool ranPluginMigration = RunPluginMigrations( pluginMigration );
+                    migrationsWereRun = migrationsWereRun || ranPluginMigration;
+                }
+                catch ( Exception ex )
+                {
+                    // Don't throw exceptions caused by plugins, just log them
+                    // and keep going so we don't prevent Rock from starting.
+                    ExceptionLogService.LogException( ex );
+                }
             }
 
             return migrationsWereRun;

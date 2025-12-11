@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Linq;
 using System.Web;
 
 using Microsoft.Extensions.Logging;
@@ -144,6 +145,7 @@ namespace Rock.Web.HttpModules
             }
 
             var tracingEnabled = EnableDebugTracing( context );
+            var linkedActivity = GetLinkedActivity( context );
 
             Activity activity;
 
@@ -199,6 +201,25 @@ namespace Rock.Web.HttpModules
                                                     ?? context.Request.ServerVariables["REMOTE_ADDR"]
                                                     ?? string.Empty );
 
+                // If we have a linked activity from the request headers then
+                // link it to the current activity.
+                if ( linkedActivity.HasValue )
+                {
+                    activity.AddLink( linkedActivity.Value );
+
+                    // If the linked activity is being traced by the debug
+                    // processor, then start tracing this activity as well.
+                    if ( DebugTraceProcessor.IsValidTrace( linkedActivity.Value.Context.TraceId.ToString() ) )
+                    {
+                        DebugTraceProcessor.BeginTracing();
+                        DebugTraceProcessor.LinkTrace( activity.TraceId.ToString(), linkedActivity.Value.Context.TraceId.ToString() );
+
+                        context.AddOrReplaceItem( "Rock:DebugTraceEnabled", true );
+
+                        activity.SetCustomProperty( "rock.full_trace", true );
+                    }
+                }
+
                 // Begin monitoring for this trace if it was enabled.
                 if ( tracingEnabled )
                 {
@@ -233,7 +254,7 @@ namespace Rock.Web.HttpModules
 
             try
             {
-                if ( context.Items["Rock:DebugTraceEnabled"] is string tracePageKey && tracePageKey != null )
+                if ( context.Items.Contains( "Rock:DebugTraceEnabled" ) )
                 {
                     DebugTraceProcessor.EndTracing();
                     context.Items.Remove( "Rock:DebugTraceEnabled" );
@@ -280,13 +301,34 @@ namespace Rock.Web.HttpModules
                 {
                     DebugTraceProcessor.BeginTracing();
 
-                    context.AddOrReplaceItem( "Rock:DebugTraceEnabled", pageIdKey );
+                    context.AddOrReplaceItem( "Rock:DebugTraceEnabled", true );
 
                     return true;
                 }
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Gets the linked activity from the request headers if available.
+        /// </summary>
+        /// <param name="context">The context that describes the current request.</param>
+        /// <returns>An instance of <see cref="ActivityLink"/> if there was a valid traceparent header, otherwise <c>null</c>.</returns>
+        private ActivityLink? GetLinkedActivity( HttpContext context )
+        {
+            var traceParent = context.Request.Headers["traceparent"]?.Split( '-' );
+
+            if ( traceParent != null && traceParent.Length == 4 )
+            {
+                var traceId = traceParent[1];
+                var spanId = traceParent[2];
+                var traceFlags = traceParent[3].ConvertToEnum<ActivityTraceFlags>( ActivityTraceFlags.None );
+
+                return new ActivityLink( new ActivityContext( ActivityTraceId.CreateFromString( traceId.ToArray() ), ActivitySpanId.CreateFromString( spanId.ToArray() ), traceFlags ) );
+            }
+
+            return null;
         }
 
         #endregion Observability

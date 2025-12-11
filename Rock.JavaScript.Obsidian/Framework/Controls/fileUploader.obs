@@ -126,6 +126,7 @@
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: ListItemBag | undefined): void;
+        (e: "fileRemoved"): void;
         (e: "error", value: string): void;
     }>();
 
@@ -242,6 +243,7 @@
             }
 
             internalValue.value = null;
+            emit("fileRemoved");
         }
     };
 

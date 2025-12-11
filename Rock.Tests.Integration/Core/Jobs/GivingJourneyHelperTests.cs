@@ -153,7 +153,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             // with NULL giving JourneySettings, all the results should be null and not what they would be if not null
             Assert.AreNotEqual( unExpectedGivingJourneyStage, givingJourneyStage );
-            Assert.AreEqual( null, givingJourneyStage );
+            Assert.IsNull( givingJourneyStage );
         }
 
         /// <summary>
@@ -181,7 +181,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         // Just started giving, and started giving consistently, but only 2 times. So they might look like a new giver. However, if NewFirstGiftInTheLastDays is null,
         // They would fall into Consistent Giver instead of FirstTime giver.
         // This is a situation where they really shouldn't be called a consistent giver, because they only gave 2 times.  But since New isn't configured, they end up here.
-        [DataRow( GivingJourneyStage.Consistent, 7, 14)]
+        [DataRow( GivingJourneyStage.Consistent, 7, 14 )]
 
         [DataRow( GivingJourneyStage.Occasional, 40, 120, 190 )]
         [DataRow( GivingJourneyStage.Occasional, 40, 120, ( 120 + 93 ) )]

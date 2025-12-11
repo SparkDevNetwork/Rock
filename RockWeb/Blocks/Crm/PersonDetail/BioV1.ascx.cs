@@ -61,7 +61,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         Key = AttributeKey.AdditionalCustomActions,
         Description = BlockAttributeDescription.AdditionalCustomActions,
         EditorMode = CodeEditorMode.Html,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         Order = 2 )]
@@ -112,7 +111,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         Key = AttributeKey.CustomContent,
         Description = "Custom Content will be rendered after the person's demographic information <span class='tip tip-lava'></span>.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         Order = 9 )]

@@ -33,6 +33,9 @@ export type PhoneNumberBag = {
      */
     countryCode?: string | null;
 
+    /** Gets or sets a value indicating whether the phone number was obtained from the person's record. */
+    isNumberFromPersonRecord: boolean;
+
     /**
      * Gets or sets the phone number.
      * This should be the local portion of the phone number, excluding the country code.

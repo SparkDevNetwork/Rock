@@ -35,15 +35,32 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Member RemoveFrom URL" )]
     [Category( "Groups" )]
     [Description( "Removes a person from a group based on inputs from the URL query string (GroupId, PersonGuid)." )]
+
     [GroupField("Default Group", "The default group to use if one is not passed through the query string (optional).", false, order:0)]
-    [CodeEditorField("Success Message", "Lava template to display when person has been added to the group.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, true, @"<div class='alert alert-success'>
+
+    [CodeEditorField("Success Message",
+        Description = "Lava template to display when person has been added to the group.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 300,
+        IsRequired = true,
+        DefaultValue = @"<div class='alert alert-success'>
     {{ Person.NickName }} has been removed from the group '{{ Group.Name }}'.
-</div>", order: 1)]
-    [CodeEditorField( "Not In Group Message", "Lava template to display when person is not in the group.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, true, @"<div class='alert alert-warning'>
+</div>",
+        Order = 1)]
+
+    [CodeEditorField( "Not In Group Message",
+        Description = "Lava template to display when person is not in the group.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 300,
+        IsRequired = true,
+        DefaultValue = @"<div class='alert alert-warning'>
     {{ Person.NickName }} was not in the group '{{ Group.Name }}'.
-</div>", order: 2 )]
+</div>",
+        Order = 2 )]
+
     [BooleanField("Warn When Not In Group", "Determines if the 'Not In Group Message' should be shown if the person is not in the group. Otherwise the success message will be shown", true, order: 3)]
     [BooleanField("Inactivate Instead of Remove", "Inactivates the person in the group instead of removing them.", false, key:"Inactivate", order: 4)]
+
     [Rock.SystemGuid.BlockTypeGuid( "0159CE20-7B41-4D53-985C-81877ED75767" )]
     public partial class GroupMemberRemoveFromUrl : Rock.Web.UI.RockBlock
     {

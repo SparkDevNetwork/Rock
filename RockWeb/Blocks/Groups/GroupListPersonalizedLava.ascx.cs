@@ -73,7 +73,6 @@ namespace RockWeb.Blocks.Groups
         Key = AttributeKey.LavaTemplate,
         Description = "The lava template to use to format the group list.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = true,
         DefaultValue = "{% include '~~/Assets/Lava/GroupListSidebar.lava' %}",

@@ -93,7 +93,7 @@ namespace Rock.Tests.Integration.Core.Model
                     var binaryFile = binaryFileService.AddFileFromStream( stream, mimeType, contentLength, fileName, binaryFileTypeGuid, imageGuid );
 
                     Assert.IsNotNull( binaryFile );
-                    Assert.IsTrue( binaryFile?.Id > 0 );
+                    Assert.IsGreaterThan( 0, binaryFile.Id );
 
                 }
             }
@@ -130,9 +130,9 @@ namespace Rock.Tests.Integration.Core.Model
                 var binaryFile = binaryFileService.AddFileFromStream( stream, mimeType, contentLength, fileName, binaryFileTypeGuid, imageGuid );
 
                 Assert.IsNotNull( binaryFile );
-                Assert.IsTrue( binaryFile?.Id > 0 );
-                Assert.IsTrue( binaryFile.Width == maxWidth );
-                Assert.IsTrue( binaryFile.Height == maxWidth );
+                Assert.IsGreaterThan( 0, binaryFile.Id );
+                Assert.AreEqual( maxWidth, binaryFile.Width );
+                Assert.AreEqual( maxWidth, binaryFile.Height );
             }
         }
 
@@ -167,9 +167,9 @@ namespace Rock.Tests.Integration.Core.Model
                 var binaryFile = binaryFileService.AddFileFromStream( stream, mimeType, contentLength, fileName, binaryFileTypeGuid, imageGuid );
 
                 Assert.IsNotNull( binaryFile );
-                Assert.IsTrue( binaryFile?.Id > 0 );
-                Assert.IsTrue( binaryFile.Height == maxHeight );
-                Assert.IsTrue( binaryFile.Width == maxHeight );
+                Assert.IsGreaterThan( 0, binaryFile.Id );
+                Assert.AreEqual( maxHeight, binaryFile.Height );
+                Assert.AreEqual( maxHeight, binaryFile.Width );
             }
         }
 
@@ -207,9 +207,9 @@ namespace Rock.Tests.Integration.Core.Model
                 var binaryFile = binaryFileService.AddFileFromStream( stream, mimeType, contentLength, fileName, binaryFileTypeGuid, imageGuid );
 
                 Assert.IsNotNull( binaryFile );
-                Assert.IsTrue( binaryFile?.Id > 0 );
-                Assert.IsTrue( binaryFile.Height == maxHeight );
-                Assert.IsTrue( binaryFile.Width == maxHeight );
+                Assert.IsGreaterThan( 0, binaryFile.Id );
+                Assert.AreEqual( maxHeight, binaryFile.Height );
+                Assert.AreEqual( maxHeight, binaryFile.Width );
             }
         }
 
@@ -247,9 +247,9 @@ namespace Rock.Tests.Integration.Core.Model
                 var binaryFile = binaryFileService.AddFileFromStream( stream, mimeType, contentLength, fileName, binaryFileTypeGuid, imageGuid );
 
                 Assert.IsNotNull( binaryFile );
-                Assert.IsTrue( binaryFile?.Id > 0 );
-                Assert.IsTrue( binaryFile.Height == maxWidth );
-                Assert.IsTrue( binaryFile.Width == maxWidth );
+                Assert.IsGreaterThan( 0, binaryFile.Id );
+                Assert.AreEqual( maxWidth, binaryFile.Height );
+                Assert.AreEqual( maxWidth, binaryFile.Width );
             }
         }
 

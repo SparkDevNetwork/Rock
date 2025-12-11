@@ -35,7 +35,6 @@ namespace Rock.Communication.Medium
     [CodeEditorField( "Unsubscribe HTML",
         Description = "The HTML to inject into email contents when the communication is a Bulk Communication.  Contents will be placed wherever the 'Unsubscribe HTML' merge field is used, or if not used, at the end of the email in email contents. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         Key = AttributeKey.UnsubscribeHTML,
@@ -46,7 +45,6 @@ namespace Rock.Communication.Medium
     [CodeEditorField( "Non-HTML Content",
         Description = "The text to display for email clients that do not support html content. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         DefaultValue = @"

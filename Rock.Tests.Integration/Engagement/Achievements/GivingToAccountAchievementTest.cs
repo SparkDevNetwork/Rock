@@ -109,7 +109,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
             Guid guid,
             string name,
             string key,
-            int? parentAccountId = null)
+            int? parentAccountId = null )
         {
             var account = _accountService.GetByGuids( new List<Guid> { guid } ).FirstOrDefault();
 
@@ -271,7 +271,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
                 }
 
                 // Dates are going backwards in time, adjuect start
-                if (transactionDateTime < _startDate)
+                if ( transactionDateTime < _startDate )
                 {
                     _startDate = transactionDateTime;
                 }
@@ -404,7 +404,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
             bool isActive = true,
             int maxAllowed = 1,
             bool allowOver = false,
-            int numberToAccumulate = 1)
+            int numberToAccumulate = 1 )
         {
             var achievement = new AchievementType
             {
@@ -489,7 +489,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
             int attemptCount,
             int accumulateCount,
             int achievementId,
-            List<int> allowedAccountIds)
+            List<int> allowedAccountIds )
         {
             var attemptsQuery = new AchievementAttemptService( _rockContext ).Queryable()
                 .AsNoTracking()
@@ -512,7 +512,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
                 var transactionAccountIds = ft.TransactionDetails.Select( d => d.AccountId ).Distinct();
                 foreach ( var accountId in transactionAccountIds )
                 {
-                    Assert.IsTrue( allowedAccountIds.Contains( accountId ) );
+                    Assert.Contains( accountId, allowedAccountIds );
                 }
 
                 // See Rock.Model.Engagement.AchievementType.AchievementTypeService
@@ -526,15 +526,15 @@ namespace Rock.Tests.Integration.Engagement.Achievements
 
             var attempts = attemptsQuery.ToList();
             Assert.IsNotNull( attempts );
-            Assert.AreEqual( attemptCount, attempts.Count );
+            Assert.HasCount( attemptCount, attempts );
 
             if ( attemptCount > 0 )
             {
                 for ( int i = 0; i < attempts.Count(); i++ )
                 {
-                    Assert.IsTrue( attempts[i].Progress >= 0m );
+                    Assert.IsGreaterThanOrEqualTo( 0m, attempts[i].Progress );
 
-                    if (attempts[i].Progress >= 1m)
+                    if ( attempts[i].Progress >= 1m )
                     {
                         Assert.IsTrue( attempts[i].IsClosed );
                         Assert.IsTrue( attempts[i].IsSuccessful );

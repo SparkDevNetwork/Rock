@@ -6,7 +6,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Core.EntitySearch;
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.ViewModels.Core;
 
 namespace Rock.Tests.Core.EntitySearch
@@ -63,7 +62,7 @@ namespace Rock.Tests.Core.EntitySearch
             var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
             var items = results.Items.Cast<dynamic>().ToList();
 
-            Assert.AreEqual( 1, results.Items.Count );
+            Assert.HasCount( 1, results.Items );
             Assert.AreEqual( 2, ( int ) items[0].Id );
         }
 
@@ -79,7 +78,7 @@ namespace Rock.Tests.Core.EntitySearch
 
             var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
 
-            Assert.AreEqual( 0, results.Items.Count );
+            Assert.IsEmpty( results.Items );
         }
 
         #endregion
@@ -131,7 +130,7 @@ namespace Rock.Tests.Core.EntitySearch
 
             var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
 
-            Assert.AreEqual( 2, results.Items.Count );
+            Assert.HasCount( 2, results.Items );
         }
 
         [TestMethod]
@@ -164,7 +163,7 @@ namespace Rock.Tests.Core.EntitySearch
             var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
             var items = results.Items.Cast<dynamic>().ToList();
 
-            Assert.AreEqual( 2, results.Items.Count );
+            Assert.HasCount( 2, results.Items );
             Assert.AreEqual( 1, ( int ) items[0].GroupTypeId );
             Assert.AreEqual( 2, ( int ) items[1].GroupTypeId );
             Assert.AreEqual( groupType1Count, ( int ) items[0].Count );
@@ -263,7 +262,7 @@ namespace Rock.Tests.Core.EntitySearch
 
             var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
 
-            Assert.AreEqual( queryable.Count(), results.Items.Count );
+            Assert.HasCount( queryable.Count(), results.Items );
         }
 
         #endregion

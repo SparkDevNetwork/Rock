@@ -172,7 +172,7 @@ namespace Rock.Tests.Integration.Communications
 
             message.FromNumber = fromNumber;
 
-            message.Message = $"Test Message { RockDateTime.Now:dd-MMM-yy hh:mm:ss}";
+            message.Message = $"Test Message {RockDateTime.Now:dd-MMM-yy hh:mm:ss}";
 
             return message;
         }

@@ -288,7 +288,6 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.ViewTemplate,
         Description = "The lava template to use to format the view details.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = true,
         DefaultValue = "{% include '~/Assets/Lava/PublicProfile.lava' %}",

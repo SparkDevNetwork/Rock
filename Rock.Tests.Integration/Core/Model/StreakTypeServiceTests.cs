@@ -167,7 +167,7 @@ namespace Rock.Tests.Integration.Core.Model
             Assert.AreEqual( 1, result.CurrentStreakCount );
             Assert.AreEqual( new DateTime( 2019, 2, 4 ), result.CurrentStreakStartDate );
 
-            Assert.AreEqual( 4, result.ComputedStreaks.Count );
+            Assert.HasCount( 4, result.ComputedStreaks );
 
             Assert.AreEqual( 1, result.ComputedStreaks[0].Count );
             Assert.AreEqual( new DateTime( 2019, 1, 1 ), result.ComputedStreaks[0].StartDate );
@@ -213,7 +213,7 @@ namespace Rock.Tests.Integration.Core.Model
             Assert.AreEqual( 0, result.CurrentStreakCount );
             Assert.IsNull( result.CurrentStreakStartDate );
 
-            Assert.AreEqual( 0, result.ComputedStreaks.Count );
+            Assert.IsEmpty( result.ComputedStreaks );
 
             Assert.AreEqual( 0, result.EngagementsThisMonth );
             Assert.AreEqual( 0, result.EngagementsThisYear );
@@ -426,7 +426,7 @@ namespace Rock.Tests.Integration.Core.Model
         /// Checks if bits are set in the byte map that is weekly occurrences
         /// </summary>
         [TestMethod]
-        [Ignore("Fix needed. This test appears to be failing due to changes in how the first day of the week is specified.")]
+        [Ignore( "Fix needed. This test appears to be failing due to changes in how the first day of the week is specified." )]
         public void IsBitSetIsCorrectForWeeklyMap()
         {
             var startDate = new DateTime( 2019, 1, 6 );
@@ -535,7 +535,7 @@ namespace Rock.Tests.Integration.Core.Model
             Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
             Assert.AreNotSame( result, map ); // Verify memory allocation occurred for new array
             var newLength = 128;
-            Assert.IsTrue( result.Length == newLength ); // Verify the array grew to the next multiple of 128            
+            Assert.HasCount( newLength, result ); // Verify the array grew to the next multiple of 128            
             Assert.AreEqual( 0, result[newLength - 1] ); // Verify no additional changes
             Assert.AreEqual( byte1, result[newLength - 2] ); // Verify no changes
             Assert.AreEqual( byte0, result[newLength - 3] ); // Verify no changes
@@ -602,7 +602,7 @@ namespace Rock.Tests.Integration.Core.Model
             Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no errors
             Assert.AreNotSame( result, map ); // Verify memory allocation occurred for new array
             var newLength = 128;
-            Assert.IsTrue( result.Length == newLength ); // Verify the array grew to the next multiple of 128            
+            Assert.HasCount( newLength, result ); // Verify the array grew to the next multiple of 128            
             Assert.AreEqual( 0, result[newLength - 1] ); // Verify no additional changes
             Assert.AreEqual( byte1, result[newLength - 2] ); // Verify no changes
             Assert.AreEqual( byte0, result[newLength - 3] ); // Verify no changes
@@ -679,7 +679,7 @@ namespace Rock.Tests.Integration.Core.Model
             Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
             Assert.AreNotSame( result, map ); // Verify memory allocation occurred for new array
             var newLength = 128;
-            Assert.IsTrue( result.Length == newLength ); // Verify the array grew to the next multiple of 128            
+            Assert.HasCount( newLength, result ); // Verify the array grew to the next multiple of 128            
             Assert.AreEqual( byte2 | lsb, result[newLength - 1] ); // Verify no additional changes
             Assert.AreEqual( byte1, result[newLength - 2] ); // Verify no changes
             Assert.AreEqual( byte0 | msb, result[newLength - 3] ); // Verify no additional changes
@@ -757,7 +757,7 @@ namespace Rock.Tests.Integration.Core.Model
             Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no errors
             Assert.AreNotSame( result, map ); // Verify memory allocation occurred for new array
             var newLength = 128;
-            Assert.IsTrue( result.Length == newLength ); // Verify the array grew to the next multiple of 128            
+            Assert.HasCount( newLength, result ); // Verify the array grew to the next multiple of 128            
             Assert.AreEqual( byte2 | lsb, result[newLength - 1] ); // Verify no additional changes
             Assert.AreEqual( byte1, result[newLength - 2] ); // Verify no changes
             Assert.AreEqual( byte0 | msb, result[newLength - 3] ); // Verify no additional changes

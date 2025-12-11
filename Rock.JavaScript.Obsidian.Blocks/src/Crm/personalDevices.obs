@@ -1,0 +1,141 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Block :title="config.bag?.personName ?? 'Personal Devices'">
+        <NotificationBox v-if="config.errorMessage" alertType="danger">
+            {{ config.errorMessage }}
+        </NotificationBox>
+
+        <div class="row">
+            <div class="col-md-2">
+                <DropDownList label="Filter By"
+                              v-model="deviceTypeFilter"
+                              :items="deviceTypeOptions"
+                              :showBlankItem="false"
+                              :multiple="false" />
+            </div>
+            <div class="col-md-2">
+                <DropDownList label="Sort By"
+                              v-model="sortBy"
+                              :items="sortByOptions"
+                              :showBlankItem="false"
+                              :multiple="false" />
+            </div>
+        </div>
+
+        <DisplayCardContainer>
+            <PersonalDevice v-for="item in filteredPersonalDevices"
+                            :key="item.personalDevice.guid"
+                            :modelValue="item.personalDevice"
+                            :duplicateIndex="item.duplicateIndex"
+                            :showDeviceLastSeenDateTime="showDeviceLastSeenDateTime" />
+        </DisplayCardContainer>
+    </Block>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import Block from "@Obsidian/Templates/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { PersonalDevicesBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonalDevices/personalDevicesBag";
+    import { PersonalDevicesOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonalDevices/personalDevicesOptionsBag";
+    import { PersonalDeviceListItemBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonalDevices/personalDeviceListItemBag";
+    import PersonalDevice from "./PersonalDevices/personalDevice.partial.obs";
+    import DisplayCardContainer from "@Obsidian/Controls/displayCardContainer.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    const enum SortOption {
+        Newest = "newest",
+        Oldest = "oldest"
+    }
+
+    // #region Values
+
+    const config = useConfigurationValues<CustomBlockBox<PersonalDevicesBag, PersonalDevicesOptionsBag>>();
+    const reloadBlock = useReloadBlock();
+
+    const personalDevices = ref<PersonalDeviceListItemBag[]>(config.bag?.personalDevices ?? []);
+
+    const showDeviceLastSeenDateTime = config.options?.showDeviceLastSeenDateTime ?? false;
+
+    const deviceTypeFilter = ref<string>("");
+    const deviceTypeOptions: ListItemBag[] = [
+        { text: "All Devices", value: "" },
+        ...(config.options?.deviceTypeOptions ?? []),
+        { text: "Other", value: "other" }
+    ];
+
+    const sortBy = ref<string>(SortOption.Newest);
+    const sortByOptions: ListItemBag[] = [
+        { text: "Date Discovered (Newest First)", value: SortOption.Newest },
+        { text: "Date Discovered (Oldest First)", value: SortOption.Oldest },
+    ];
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const filteredPersonalDevices = computed((): { personalDevice: PersonalDeviceListItemBag; duplicateIndex: number }[] => {
+        let devices = personalDevices.value;
+
+        if (deviceTypeFilter.value === "other") {
+            devices = devices.filter(pd => {
+                const deviceTypeValue = pd.deviceType?.value?.toUpperCase();
+                return deviceTypeValue !== DefinedValue.PersonalDeviceTypeComputer.toUpperCase() &&
+                    deviceTypeValue !== DefinedValue.PersonalDeviceTypeMobile.toUpperCase() &&
+                    deviceTypeValue !== DefinedValue.PersonalDeviceTypeTv.toUpperCase();
+            });
+        }
+        else if (deviceTypeFilter.value) {
+            devices = devices.filter(pd => pd.deviceType?.value === deviceTypeFilter.value);
+        }
+
+        // ^^^ if deviceTypeFilter is set to "All Devices", .value will be empty, and therefore won't filter by anything.
+
+        if (sortBy.value === SortOption.Newest) {
+            devices = [...devices].sort((a, b) => {
+                const timeA = new Date(a.createdDateTime || 0).getTime();
+                const timeB = new Date(b.createdDateTime || 0).getTime();
+                return timeB - timeA;
+            });
+        }
+        else if (sortBy.value === SortOption.Oldest) {
+            devices = [...devices].sort((a, b) => {
+                const timeA = new Date(a.createdDateTime || 0).getTime();
+                const timeB = new Date(b.createdDateTime || 0).getTime();
+                return timeA - timeB;
+            });
+        }
+
+        /*
+            12/2/2025 - MSE
+
+            When multiple devices share the same platform and version, each device requires a unique
+            identifier. We track how many times each platform/version pair appears and assign a
+            duplicateIndex value to represent its sequence. This index is then considered to build the
+            display name within the .partial file.
+        */
+        const counts = new Map<string, number>();
+        const out: { personalDevice: PersonalDeviceListItemBag; duplicateIndex: number }[] = [];
+
+        for (const pd of devices) {
+            const platformText = (pd.platform?.text ?? "").trim().toLowerCase();
+            const versionText = (pd.deviceVersion ?? "").trim().toLowerCase();
+            const key = `${platformText}||${versionText}`;
+
+            const current = (counts.get(key) ?? 0) + 1;
+            counts.set(key, current);
+
+            out.push({ personalDevice: pd, duplicateIndex: current });
+        }
+
+        return out;
+    });
+
+    // #endregion Computed Values
+
+    onConfigurationValuesChanged(reloadBlock);
+</script>

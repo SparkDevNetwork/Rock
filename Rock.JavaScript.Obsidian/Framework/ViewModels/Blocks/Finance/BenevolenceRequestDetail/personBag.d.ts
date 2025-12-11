@@ -22,6 +22,7 @@
 //
 
 import { Guid } from "@Obsidian/Types";
+import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/connectionStatusBag";
 import { LocationBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/locationBag";
 import { PhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/phoneNumberBag";
 
@@ -34,7 +35,7 @@ export type PersonBag = {
     cellPhoneNumber?: PhoneNumberBag | null;
 
     /** Gets or sets the Id representing the Person's connection status */
-    connectionStatusValueId?: number | null;
+    connectionStatus?: ConnectionStatusBag | null;
 
     /** Gets or sets the email address of the person requesting benevolence. */
     email?: string | null;
@@ -67,7 +68,7 @@ export type PersonBag = {
     personAliasId?: number | null;
 
     /** Gets or sets the unique identifier for a person. */
-    personId?: number | null;
+    personIdKey?: string | null;
 
     /** Gets or sets the URL of the photo associated with the entity. */
     photoUrl?: string | null;

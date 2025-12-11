@@ -57,7 +57,7 @@ namespace Rock.Tests.Integration.Core.UniversalSearch.IndexModels
             groupMembers.AddRange( groupMemberService.GetByGroupId( largeGroup.Id ).Take( 50 ) );
             groupMembers.AddRange( groupMemberService.GetByGroupId( veryLargeGroup.Id ).Take( 10 ) );
 
-            foreach( var gm in groupMembers )
+            foreach ( var gm in groupMembers )
             {
                 gm.GroupMemberStatus = GroupMemberStatus.Inactive;
                 rockContext.SaveChanges();

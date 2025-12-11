@@ -51,6 +51,7 @@ namespace Rock.Utility
             sparkLinkRequest.RockInstanceId = Rock.Web.SystemSettings.GetRockInstanceId();
             sparkLinkRequest.VersionIds = installedPackages.Select( i => i.VersionId ).ToList();
             sparkLinkRequest.RockVersion = VersionInfo.VersionInfo.GetRockSemanticVersionNumber();
+            sparkLinkRequest.InstallDateTime = Rock.Web.SystemSettings.GetRockInstallationDateTime();
 
             var globalAttributes = GlobalAttributesCache.Get();
             sparkLinkRequest.OrganizationName = globalAttributes.GetValue( "OrganizationName" );
@@ -212,6 +213,11 @@ namespace Rock.Utility
             /// The plugin block types.
             /// </value>
             public List<PluginBlockType> PluginBlockTypes { get; set; }
+
+            /// <summary>
+            /// The date and time the Rock instance was installed.
+            /// </summary>
+            public DateTime InstallDateTime { get; set; }
         }
 
         /// <summary>

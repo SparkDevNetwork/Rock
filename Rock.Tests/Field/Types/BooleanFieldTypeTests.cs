@@ -10,7 +10,7 @@ namespace Rock.Tests.Field.Tests
     public class BooleanFieldTypeTests
     {
         [TestMethod()]
-        public void ShouldReturnEmptyStringWhenPrivateValueIsNull ()
+        public void ShouldReturnEmptyStringWhenPrivateValueIsNull()
         {
             var expectedText = string.Empty;
             string privateBooleanValue = null;
@@ -20,7 +20,7 @@ namespace Rock.Tests.Field.Tests
         }
 
         [TestMethod()]
-        public void ShouldReturnTrueTextWhenPrivateValueIsTrue ()
+        public void ShouldReturnTrueTextWhenPrivateValueIsTrue()
         {
             var trueText = "True Text";
             var falseText = "False Text";

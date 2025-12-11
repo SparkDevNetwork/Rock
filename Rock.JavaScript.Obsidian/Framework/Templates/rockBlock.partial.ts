@@ -229,8 +229,24 @@ export default defineComponent({
 
         // #region Functions
 
-        const httpCall = async <T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined, cancellationToken?: ICancellationToken): Promise<HttpResult<T>> => {
-            return await doApiCall<T>(method, url, params, data, cancellationToken);
+        const httpCall = async <T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined, options?: { headers?: Record<string, string> }, cancellationToken?: ICancellationToken): Promise<HttpResult<T>> => {
+            const headers: Record<string, string> = options?.headers ? { ...options.headers } : {};
+
+            if (props.config.parentTrace) {
+                headers["traceparent"] = props.config.parentTrace;
+            }
+
+            return await doApiCall<T>(method, url, params, data, { headers }, cancellationToken);
+        };
+
+        const streamingHttpCall = async <T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined, options?: { headers?: Record<string, string> }, cancellationToken?: ICancellationToken): Promise<HttpResult<T>> => {
+            const headers: Record<string, string> = options?.headers ? { ...options.headers } : {};
+
+            if (props.config.parentTrace) {
+                headers["traceparent"] = props.config.parentTrace;
+            }
+
+            return await doStreamingApiCall<T>(method, url, params, data, { headers }, cancellationToken);
         };
 
         const get = async <T>(url: string, params: HttpUrlParams = undefined): Promise<HttpResult<T>> => {
@@ -238,7 +254,7 @@ export default defineComponent({
         };
 
         const post = async <T>(url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined, cancellationToken?: ICancellationToken): Promise<HttpResult<T>> => {
-            return await httpCall<T>("POST", url, params, data, cancellationToken);
+            return await httpCall<T>("POST", url, params, data, undefined, cancellationToken);
         };
 
         const invokeBlockAction = createInvokeBlockAction(post, store.state.pageGuid, toGuidOrNull(props.config.blockGuid) ?? emptyGuid, store.state.pageParameters, store.state.sessionGuid, store.state.interactionGuid);
@@ -431,8 +447,8 @@ export default defineComponent({
         });
 
         provideHttp({
-            doApiCall,
-            doStreamingApiCall,
+            doApiCall: httpCall,
+            doStreamingApiCall: streamingHttpCall,
             get,
             post
         });

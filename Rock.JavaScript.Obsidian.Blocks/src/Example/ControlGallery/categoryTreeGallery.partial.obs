@@ -4,7 +4,11 @@
                       :exampleCode="exampleCode"
                       enableReflection>
 
-        <CategoryTree v-model="value" :multiple="multiple" :entityTypeGuid="entityTypeGuid" :enableDeselect="enableDeselect" />
+        <CategoryTree v-model="value"
+                      :multiple="multiple"
+                      :entityTypeGuid="entityTypeGuid"
+                      :enableDeselect="enableDeselect"
+                      :selectFirstByDefault="selectFirstByDefault" />
 
         <template #settings>
             <div class="row">
@@ -13,6 +17,7 @@
                 </div>
                 <div class="col-md-4">
                     <CheckBox label="Enable Deselection" v-model="enableDeselect" />
+                    <CheckBox label="Select First By Default" v-model="selectFirstByDefault" />
                 </div>
                 <div class="col-md-4">
                     <EntityTypePicker label="For Entity Type" v-model="entityType" enhanceForLongLists showBlankItem />
@@ -96,6 +101,13 @@
                         <td>200px</td>
                         <td>CSS length value for defining how tall the box is.</td>
                     </tr>
+                    <tr>
+                        <td><code>selectFirstByDefault</code></td>
+                        <td>Boolean</td>
+                        <td>false</td>
+                        <td>When true, the first item in the list will be automatically selected if no other item is
+                            currently selected.</td>
+                    </tr>
                 </tbody>
             </table>
         </template>
@@ -120,6 +132,7 @@
 
     const multiple = ref(false);
     const enableDeselect = ref(false);
+    const selectFirstByDefault = ref(false);
     const value = ref(null);
     const importCode = getSfcControlImportPath("categoryTree");
     const exampleCode = computed(() => `<CategoryTree v-model="value"${multiple.value ? " multiple" : ""}${entityTypeGuid.value ? ` entityTypeGuid="${entityTypeGuid.value}"` : ""} />`);

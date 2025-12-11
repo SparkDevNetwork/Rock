@@ -310,14 +310,18 @@
     padding: var(--spacing-xsmall);
 }
 
+.grid-body {
+    background-color: var(--color-interface-softest);
+}
+
 .grid-row {
     display: flex;
-    background-color: var(--color-interface-softest);
     transition: background-color 70ms cubic-bezier(0, 0, .38, .9);
 }
 
 .grid-row.grid-row-selectable {
     cursor: pointer;
+    background-color: var(--color-interface-softer);
 }
 
 .grid-striped .grid-row.grid-row-even .grid-cell {
@@ -335,7 +339,7 @@
     line-height: 1.4;
     align-self: stretch;
     word-break: break-word;
-    background-color: inherit;
+    background-color: var(--color-interface-softest);
     text-overflow: ellipsis;
     overflow: hidden;
     min-width: 120px;

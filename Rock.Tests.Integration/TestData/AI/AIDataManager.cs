@@ -20,7 +20,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.TestData.AI

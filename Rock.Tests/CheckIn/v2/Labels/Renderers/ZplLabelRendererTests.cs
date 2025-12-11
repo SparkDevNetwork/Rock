@@ -13,7 +13,6 @@ using Rock.CheckIn.v2.Labels;
 using Rock.CheckIn.v2.Labels.Renderers;
 using Rock.Enums.CheckIn.Labels;
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.ViewModels.CheckIn.Labels;
 

@@ -53,7 +53,6 @@ namespace RockWeb.Blocks.Connection
                             <p><strong>ConnectionRequests, ConnectionOpportunity, DetailPage</strong>)</p>
                          </i>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = false,
         DefaultValue = Lava.ConnectionRequests,

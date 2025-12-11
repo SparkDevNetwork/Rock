@@ -72,7 +72,7 @@ Text (lower) = {{ text }}, Text (upper) = {{ TEXT }}
         }
 
         [TestMethod]
-        [Ignore("Not supported in Fluid. The empty output tag throws a parsing error.")]
+        [Ignore( "Not supported in Fluid. The empty output tag throws a parsing error." )]
         public void Whitespace_TrimInEmptyOutputTag_RemovesWhitespace()
         {
             var input = @"{{- -}}";
@@ -125,7 +125,7 @@ Slow
             TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "true | AsBoolean", true )]
         [DataRow( "'true'", true )]
         [DataRow( "''", true )]
@@ -158,7 +158,7 @@ Slow
 
             var options = new LavaTestRenderOptions();
             options.MergeFields = new Dictionary<string, object> { { "value", null } };
-            TestHelper.AssertTemplateOutput( "false", input, options  );
+            TestHelper.AssertTemplateOutput( "false", input, options );
         }
 
         [TestMethod]
@@ -294,7 +294,7 @@ Slow
                 var context = engine.NewRenderContext();
                 var settings = LavaElementAttributes.NewFromMarkup( parameterString, context );
 
-                Assert.AreEqual( "ContentChannelId == 1 && Title == `Blog Posts`".Replace("`", @""""), settings.GetStringOrNull( "where" ) );
+                Assert.AreEqual( "ContentChannelId == 1 && Title == `Blog Posts`".Replace( "`", @"""" ), settings.GetStringOrNull( "where" ) );
                 Assert.AreEqual( "items", settings.GetStringOrNull( "iterator" ) );
                 Assert.AreEqual( "StartDateTime", settings.GetStringOrNull( "sort" ) );
             } );

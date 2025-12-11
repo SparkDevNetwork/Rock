@@ -25,7 +25,6 @@
 
         <CodeEditor v-model="requestLavaTemplate"
                     label="Request Lava Template"
-                    theme="rock"
                     mode="text"
                     :editorHeight="200"
                     help="Used to show personalized resources or instructions based on the information on the request. The request will be provided in the <strong>'BenevolenceRequest'</strong> merge field." />

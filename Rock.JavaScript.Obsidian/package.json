@@ -54,9 +54,9 @@
     "ts-loader": "^9.5.4",
     "ts-node": "^10.9.2",
     "ttypescript": "^1.5.15",
-    "typescript": "^5.2.2",
+    "typescript": "^5.9.3",
     "vue-eslint-parser": "^9.4.3",
-    "vue-tsc": "^1.8.27",
+    "vue-tsc": "^2.1.6",
     "webpack": "^5.102.1",
     "webpack-cli": "^5.1.4"
   },

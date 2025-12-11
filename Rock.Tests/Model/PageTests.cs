@@ -5,7 +5,6 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Model

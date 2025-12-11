@@ -40,7 +40,7 @@
     import Cap, { CapWidget } from "@Obsidian/Libs/capjs";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import { newGuid } from "@Obsidian/Utility/guid";
-    import http from "@Obsidian/Utility/http";
+    import { useHttp } from "@Obsidian/Utility/http";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
     import { containsRequiredRule, normalizeRules } from "@Obsidian/ValidationRules";
@@ -91,6 +91,8 @@
         refreshToken,
         validateToken
     });
+
+    const http = useHttp();
 
     const widgetEl = ref<CapWidget | null>(null);
 

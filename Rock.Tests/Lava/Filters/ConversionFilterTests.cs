@@ -16,8 +16,6 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Tests.Shared;
-
 namespace Rock.Tests.Lava.Filters
 {
     [TestClass]
@@ -54,7 +52,7 @@ namespace Rock.Tests.Lava.Filters
         /// <summary>
         /// Common text representations of Guid values should return a Guid.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "FB464E73-9F0A-4D08-A95C-3AE8D1BC2344", DisplayName = "Standard Format" )]
         [DataRow( "FB464E739F0A4D08A95C3AE8D1BC2344", DisplayName = "No Separators" )]
         [DataRow( "00000000-0000-0000-0000-000000000000", DisplayName = "Empty Guid" )]
@@ -71,7 +69,7 @@ namespace Rock.Tests.Lava.Filters
         /// <summary>
         /// Input that cannot be parsed as a Guid value should return an empty string.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "FB464E73-9F0A-4D08-A95C-3AE8D1BC234", DisplayName = "Invalid Length" )]
         [DataRow( "FB464E73^9F0A^4D08^A95C^3AE8D1BC234", DisplayName = "Invalid Separator" )]
         [DataRow( "ABCDEFGH-IJKL-MNOP-QRST-UVWXYZABCDE", DisplayName = "Invalid Values" )]

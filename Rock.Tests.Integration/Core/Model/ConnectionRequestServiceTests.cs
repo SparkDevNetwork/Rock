@@ -166,7 +166,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
             PersonService.SaveNewPerson( personJerryJenkins, rockContext );
             rockContext.SaveChanges();
 
-// Problem person?
+            // Problem person?
             var personBarryBop = new Person
             {
                 FirstName = "Barry",
@@ -177,13 +177,13 @@ namespace Rock.Tests.Integration.Modes.Core.Model
 
             //try
             //{
-                rockContext = new RockContext();
-                PersonService.SaveNewPerson( personBarryBop, rockContext );
-                rockContext.SaveChanges();
+            rockContext = new RockContext();
+            PersonService.SaveNewPerson( personBarryBop, rockContext );
+            rockContext.SaveChanges();
             //}
             //catch (Exception ex)
             //{
-                //LogHelper.LogError( ex.Message );
+            //LogHelper.LogError( ex.Message );
             //}
 
             //personService.Add( personJerryJenkins );
@@ -732,7 +732,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
                     ShowConnectButton = true
                 }, ConnectionTypeCache.Get( TypeCareTeamId ) );
 
-            Assert.AreEqual( false, result );
+            Assert.IsFalse( result );
         }
 
         /// <summary>
@@ -758,7 +758,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
                 },
                 ConnectionTypeCache.Get( TypeCareTeamId ) );
 
-            Assert.AreEqual( true, result );
+            Assert.IsTrue( result );
         }
 
         /// <summary>
@@ -783,7 +783,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
                 },
                 ConnectionTypeCache.Get( TypeYouthProgramId ) );
 
-            Assert.AreEqual( true, result );
+            Assert.IsTrue( result );
         }
 
         /// <summary>
@@ -807,7 +807,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
                     ShowConnectButton = true
                 }, ConnectionTypeCache.Get( TypeYouthProgramId ) );
 
-            Assert.AreEqual( false, result );
+            Assert.IsFalse( result );
         }
 
         #endregion CanConnect
@@ -827,7 +827,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
             var result = service.DoesStatusChangeCauseWorkflows( CareTeamOpportunityHospitalVisitorId, CareTeamStatusAlphaId, CareTeamStatusBravoId );
             Assert.IsNotNull( result );
 
-            Assert.AreEqual( false, result.DoesCauseWorkflows );
+            Assert.IsFalse( result.DoesCauseWorkflows );
             Assert.AreEqual( "Care Team Status: Alpha", result.FromStatusName );
             Assert.AreEqual( "Care Team Status: Bravo", result.ToStatusName );
         }
@@ -845,7 +845,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
             var result = service.DoesStatusChangeCauseWorkflows( CareTeamOpportunityHospitalVisitorId, CareTeamStatusBravoId, CareTeamStatusAlphaId );
             Assert.IsNotNull( result );
 
-            Assert.AreEqual( true, result.DoesCauseWorkflows );
+            Assert.IsTrue( result.DoesCauseWorkflows );
             Assert.AreEqual( "Care Team Status: Bravo", result.FromStatusName );
             Assert.AreEqual( "Care Team Status: Alpha", result.ToStatusName );
         }
@@ -863,7 +863,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
             var result = service.DoesStatusChangeCauseWorkflows( CareTeamOpportunityHospitalVisitorId, CareTeamStatusBravoId, CareTeamStatusCharlieId );
             Assert.IsNotNull( result );
 
-            Assert.AreEqual( true, result.DoesCauseWorkflows );
+            Assert.IsTrue( result.DoesCauseWorkflows );
             Assert.AreEqual( "Care Team Status: Bravo", result.FromStatusName );
             Assert.AreEqual( "Care Team Status: Charlie", result.ToStatusName );
         }
@@ -881,7 +881,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
             var result = service.DoesStatusChangeCauseWorkflows( CareTeamOpportunityHospitalVisitorId, CareTeamStatusAlphaId, CareTeamStatusCharlieId );
             Assert.IsNotNull( result );
 
-            Assert.AreEqual( true, result.DoesCauseWorkflows );
+            Assert.IsTrue( result.DoesCauseWorkflows );
             Assert.AreEqual( "Care Team Status: Alpha", result.FromStatusName );
             Assert.AreEqual( "Care Team Status: Charlie", result.ToStatusName );
         }
@@ -899,7 +899,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
             var result = service.DoesStatusChangeCauseWorkflows( CareTeamOpportunityHospitalVisitorId, CareTeamStatusCharlieId, CareTeamStatusAlphaId );
             Assert.IsNotNull( result );
 
-            Assert.AreEqual( false, result.DoesCauseWorkflows );
+            Assert.IsFalse( result.DoesCauseWorkflows );
             Assert.AreEqual( "Care Team Status: Charlie", result.FromStatusName );
             Assert.AreEqual( "Care Team Status: Alpha", result.ToStatusName );
         }
@@ -917,7 +917,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
             var result = service.DoesStatusChangeCauseWorkflows( CareTeamOpportunityPrayerPartnerId, CareTeamStatusBravoId, CareTeamStatusAlphaId );
             Assert.IsNotNull( result );
 
-            Assert.AreEqual( false, result.DoesCauseWorkflows );
+            Assert.IsFalse( result.DoesCauseWorkflows );
             Assert.AreEqual( "Care Team Status: Bravo", result.FromStatusName );
             Assert.AreEqual( "Care Team Status: Alpha", result.ToStatusName );
         }
@@ -935,7 +935,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
             var result = service.DoesStatusChangeCauseWorkflows( CareTeamOpportunityPrayerPartnerId, CareTeamStatusBravoId, CareTeamStatusCharlieId );
             Assert.IsNotNull( result );
 
-            Assert.AreEqual( true, result.DoesCauseWorkflows );
+            Assert.IsTrue( result.DoesCauseWorkflows );
             Assert.AreEqual( "Care Team Status: Bravo", result.FromStatusName );
             Assert.AreEqual( "Care Team Status: Charlie", result.ToStatusName );
         }
@@ -975,8 +975,8 @@ namespace Rock.Tests.Integration.Modes.Core.Model
                     cr.ConnectionOpportunityId == opportunityId );
 
                 Assert.IsNotNull( statusViewModel.Requests );
-                Assert.AreEqual( maxRequestsPerCol, statusViewModel.Requests.Count );
-                Assert.AreEqual( actualCount, statusViewModel.RequestCount );
+                Assert.HasCount( maxRequestsPerCol, statusViewModel.Requests );
+                Assert.AreEqual( statusViewModel.RequestCount, actualCount );
             }
         }
 
@@ -998,12 +998,12 @@ namespace Rock.Tests.Integration.Modes.Core.Model
                 args );
 
             Assert.IsNotNull( result );
-            Assert.IsTrue( result.Count > 0 );
+            Assert.IsNotEmpty( result );
 
             foreach ( var statusViewModel in result )
             {
                 Assert.IsNotNull( statusViewModel.Requests );
-                Assert.AreEqual( 0, statusViewModel.Requests.Count );
+                Assert.IsEmpty( statusViewModel.Requests );
             }
         }
 
@@ -1026,12 +1026,12 @@ namespace Rock.Tests.Integration.Modes.Core.Model
                 args );
 
             Assert.IsNotNull( result );
-            Assert.IsTrue( result.Count > 0 );
+            Assert.IsNotEmpty( result );
 
             foreach ( var statusViewModel in result )
             {
                 Assert.IsNotNull( statusViewModel.Requests );
-                Assert.IsTrue( statusViewModel.Requests.Count > 0 );
+                Assert.IsNotEmpty( statusViewModel.Requests );
 
                 foreach ( var request in statusViewModel.Requests )
                 {
@@ -1060,12 +1060,12 @@ namespace Rock.Tests.Integration.Modes.Core.Model
                 args );
 
             Assert.IsNotNull( result );
-            Assert.IsTrue( result.Count > 0 );
+            Assert.IsNotEmpty( result );
 
             foreach ( var statusViewModel in result )
             {
                 Assert.IsNotNull( statusViewModel.Requests );
-                Assert.IsTrue( statusViewModel.Requests.Count > 0 );
+                Assert.IsNotEmpty( statusViewModel.Requests );
                 Assert.IsTrue( statusViewModel.Requests.Any( r => r.ConnectorPersonAliasId != PersonAliasKathyKoleId ) );
             }
         }
@@ -1091,12 +1091,12 @@ namespace Rock.Tests.Integration.Modes.Core.Model
                 args );
 
             Assert.IsNotNull( result );
-            Assert.IsTrue( result.Count > 0 );
+            Assert.IsNotEmpty( result );
 
             foreach ( var statusViewModel in result )
             {
                 Assert.IsNotNull( statusViewModel.Requests );
-                Assert.IsTrue( statusViewModel.Requests.Count > 0 );
+                Assert.IsNotEmpty( statusViewModel.Requests );
 
                 foreach ( var request in statusViewModel.Requests )
                 {
@@ -1129,12 +1129,12 @@ namespace Rock.Tests.Integration.Modes.Core.Model
                 args );
 
             Assert.IsNotNull( result );
-            Assert.IsTrue( result.Count > 0 );
+            Assert.IsNotEmpty( result );
 
             foreach ( var statusViewModel in result )
             {
                 Assert.IsNotNull( statusViewModel.Requests );
-                Assert.IsTrue( statusViewModel.Requests.Count > 0 );
+                Assert.IsNotEmpty( statusViewModel.Requests );
 
                 foreach ( var request in statusViewModel.Requests )
                 {
@@ -1164,7 +1164,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
 
             var midnightToday = RockDateTime.Today.AddDays( 1 );
             Assert.IsNotNull( result );
-            Assert.IsTrue( result.Count > 0 );
+            Assert.IsNotEmpty( result );
 
             var foundFutureFollowup = false;
             var foundOtherState = false;
@@ -1172,7 +1172,7 @@ namespace Rock.Tests.Integration.Modes.Core.Model
             foreach ( var statusViewModel in result )
             {
                 Assert.IsNotNull( statusViewModel.Requests );
-                Assert.IsTrue( statusViewModel.Requests.Count > 0 );
+                Assert.IsNotEmpty( statusViewModel.Requests );
 
                 foreach ( var request in statusViewModel.Requests )
                 {
@@ -1215,12 +1215,12 @@ namespace Rock.Tests.Integration.Modes.Core.Model
                 args );
 
             Assert.IsNotNull( result );
-            Assert.IsTrue( result.Count > 0 );
+            Assert.IsNotEmpty( result );
 
             foreach ( var statusViewModel in result )
             {
                 Assert.IsNotNull( statusViewModel.Requests );
-                Assert.IsTrue( statusViewModel.Requests.Count > 0 );
+                Assert.IsNotEmpty( statusViewModel.Requests );
 
                 foreach ( var request in statusViewModel.Requests )
                 {
@@ -1251,12 +1251,12 @@ namespace Rock.Tests.Integration.Modes.Core.Model
                 args );
 
             Assert.IsNotNull( result );
-            Assert.IsTrue( result.Count > 0 );
+            Assert.IsNotEmpty( result );
 
             foreach ( var statusViewModel in result )
             {
                 Assert.IsNotNull( statusViewModel.Requests );
-                Assert.IsTrue( statusViewModel.Requests.Count > 0 );
+                Assert.IsNotEmpty( statusViewModel.Requests );
 
                 foreach ( var request in statusViewModel.Requests )
                 {
@@ -1287,12 +1287,12 @@ namespace Rock.Tests.Integration.Modes.Core.Model
                 args );
 
             Assert.IsNotNull( result );
-            Assert.IsTrue( result.Count > 0 );
+            Assert.IsNotEmpty( result );
 
             foreach ( var statusViewModel in result )
             {
                 Assert.IsNotNull( statusViewModel.Requests );
-                Assert.IsTrue( statusViewModel.Requests.Count > 0 );
+                Assert.IsNotEmpty( statusViewModel.Requests );
 
                 foreach ( var request in statusViewModel.Requests )
                 {
@@ -1324,12 +1324,12 @@ namespace Rock.Tests.Integration.Modes.Core.Model
                 args );
 
             Assert.IsNotNull( result );
-            Assert.IsTrue( result.Count > 0 );
+            Assert.IsNotEmpty( result );
 
             foreach ( var statusViewModel in result )
             {
                 Assert.IsNotNull( statusViewModel.Requests );
-                Assert.IsTrue( statusViewModel.Requests.Count > 0 );
+                Assert.IsNotEmpty( statusViewModel.Requests );
 
                 foreach ( var request in statusViewModel.Requests )
                 {
@@ -1359,12 +1359,12 @@ namespace Rock.Tests.Integration.Modes.Core.Model
                 args );
 
             Assert.IsNotNull( result );
-            Assert.IsTrue( result.Count > 0 );
+            Assert.IsNotEmpty( result );
 
             foreach ( var statusViewModel in result )
             {
                 Assert.IsNotNull( statusViewModel.Requests );
-                Assert.IsTrue( statusViewModel.Requests.Count > 0 );
+                Assert.IsNotEmpty( statusViewModel.Requests );
 
                 foreach ( var request in statusViewModel.Requests )
                 {

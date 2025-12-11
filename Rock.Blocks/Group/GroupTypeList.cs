@@ -167,8 +167,13 @@ namespace Rock.Blocks.Group
         /// <inheritdoc/>
         protected override GridBuilder<GroupTypeWithGroupCounts> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<GroupTypeWithGroupCounts>
+            {
+                LavaObject = row => row.GroupType
+            };
+
             return new GridBuilder<GroupTypeWithGroupCounts>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.GroupType.IdKey )
                 .AddTextField( "purpose", a => a.GroupTypePurpose )
                 .AddField( "groupsCount", a => a.GroupsCount )

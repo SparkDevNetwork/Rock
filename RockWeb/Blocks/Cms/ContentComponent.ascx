@@ -47,10 +47,10 @@
                     <Rock:PanelWidget ID="pwAdvanced" runat="server" Title="Advanced">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:CodeEditor ID="cePreHtml" runat="server" Label="Pre-HTML" Help="HTML Content to render before the block <span class='tip tip-lava'></span>." EditorMode="Lava" EditorTheme="Rock" EditorHeight="100" />
+                                <Rock:CodeEditor ID="cePreHtml" runat="server" Label="Pre-HTML" Help="HTML Content to render before the block <span class='tip tip-lava'></span>." EditorMode="Lava" EditorHeight="100" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:CodeEditor ID="cePostHtml" runat="server" Label="Post-HTML" Help="HTML Content to render after the block <span class='tip tip-lava'></span>." EditorMode="Lava" EditorTheme="Rock" EditorHeight="100" />
+                                <Rock:CodeEditor ID="cePostHtml" runat="server" Label="Post-HTML" Help="HTML Content to render after the block <span class='tip tip-lava'></span>." EditorMode="Lava" EditorHeight="100" />
                             </div>
                         </div>
                     </Rock:PanelWidget>

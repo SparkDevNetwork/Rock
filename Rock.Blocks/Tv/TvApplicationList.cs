@@ -194,11 +194,6 @@ namespace Rock.Blocks.Tv
                 return ActionBadRequest( $"Not authorized to delete {Site.FriendlyTypeName}." );
             }
 
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
-            {
-                return ActionBadRequest( errorMessage );
-            }
-
             var sitePages = new List<int> {
                     entity.DefaultPageId ?? -1,
                     entity.LoginPageId ?? -1,
@@ -226,6 +221,11 @@ namespace Rock.Blocks.Tv
             layoutService.DeleteRange( layoutQry );
 
             RockContext.SaveChanges( true );
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
 
             entityService.Delete( entity );
             RockContext.SaveChanges();

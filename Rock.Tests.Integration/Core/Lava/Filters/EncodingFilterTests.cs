@@ -103,7 +103,7 @@ Hello Ted! Your Id is <Id>, and your IdHash is'<IdHash>'.
             TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "" )]
         [DataRow( "abc" )]
         [DataRow( "123abc" )]
@@ -145,7 +145,7 @@ Hello Ted!
             TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "" )]
         [DataRow( "abc" )]
         public void FromIdHash_WithInvalidHashInput_ReturnsEmptyOutput( string inputHash )
@@ -205,10 +205,10 @@ The encrypted message is: *
 The decrypted message is: This is my secret!
 ";
 
-            TestHelper.AssertTemplateOutput( typeof(FluidEngine), expectedOutput, inputTemplate, new LavaTestRenderOptions { Wildcards = new List<string> { "*" } } );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, inputTemplate, new LavaTestRenderOptions { Wildcards = new List<string> { "*" } } );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "" )]
         [DataRow( null )]
         [DataRow( "This is my secret!" )]

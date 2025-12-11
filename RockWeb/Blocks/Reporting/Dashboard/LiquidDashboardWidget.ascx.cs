@@ -31,10 +31,17 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [DisplayName( "Lava Dashboard Widget" )]
     [Category( "Reporting > Dashboard" )]
     [Description( "Dashboard Widget from Lava using YTD metric values" )]
+
     [EntityField( "Series Partition", "Select the series partition entity (Campus, Group, etc) to be used to limit the metric values for the selected metrics.", "Either select a specific {0} or leave {0} blank to get it from the page context.", false, Key = "Entity", Order = 3 )]
     [MetricCategoriesField( "Metric", "Select the metric(s) to be made available to Lava", Key = "MetricCategories", Order = 4 )]
     [BooleanField( "Round Values", "Round Y values to the nearest whole number. For example, display 25.00 as 25.", true, Order = 5 )]
-    [CodeEditorField( "Lava Template", "The text (or HTML) to display as a dashboard widget", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, Order = 6, DefaultValue =
+
+    [CodeEditorField( "Lava Template",
+        Description = "The text (or HTML) to display as a dashboard widget",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 200,
+        Order = 6,
+        DefaultValue =
 @"
 {% for metric in Metrics %}
     <h1>{{ metric.Title }}</h1>
@@ -53,7 +60,8 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         </div>
     </div>
 {% endfor %}
-" , Key="LiquidTemplate")]
+" ,
+        Key = "LiquidTemplate" )]
 
     [Rock.SystemGuid.BlockTypeGuid( "AC19A4F3-2E88-487E-8E88-377C1C20DBD5" )]
     public partial class LiquidDashboardWidget : DashboardWidget

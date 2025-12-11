@@ -51,7 +51,6 @@ namespace Rock.Blocks.Finance
     [CodeEditorField( "Lava Template",
         Description = "The lava template to use for the results",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         DefaultValue = @"{% include '~~/Assets/Lava/FundraisingList.lava' %}",
         Order = 3,
         Key = AttributeKey.LavaTemplate )]

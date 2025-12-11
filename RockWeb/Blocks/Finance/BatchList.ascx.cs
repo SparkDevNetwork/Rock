@@ -40,7 +40,11 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Detail Page", order: 0 )]
     [BooleanField( "Show Accounting Code", "Should the accounting code column be displayed.", false, "", 1 )]
     [BooleanField( "Show Accounts Column", "Should the accounts column be displayed.", true, "", 2 )]
-    [CodeEditorField( "Summary Lava Template", "The lava template for display the content for summary", CodeEditorMode.Lava, CodeEditorTheme.Rock, order: 3, defaultValue: @"
+    [CodeEditorField( "Summary Lava Template",
+        Description = "The lava template for display the content for summary",
+        EditorMode = CodeEditorMode.Lava,
+        Order = 3,
+        DefaultValue = @"
          <div class=""panel panel-block"">
             <div class=""panel-heading"">
                 <h1 class=""panel-title"">Total Results</h1>

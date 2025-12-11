@@ -47,6 +47,9 @@ namespace Rock.Migrations
 
         public const string AdultAttendanceMetricGuid = "0D126800-2FDA-4B34-96FD-9BAE76F3A89A";
         public const string WeekendAttendanceMetricGuid = "89553EEE-91F3-4169-9D7C-04A17471E035";
+        public const string VolunteerAttendanceMetricGuid = "4F965AE3-D455-4346-988F-2A2B5E236C0C";
+        public const string ChildrenAttendanceMetricGuid = "1747F42D-791D-41D5-BFFC-49D6C31B9549";
+        public const string StudentAttendanceMetricGuid = "310E5B92-E744-4E69-A832-9E395191A91C";
 
         public const string WeekendAttendanceMetricSourceSql = @"DECLARE @StartDate DATETIME = CONVERT(DATE, DATEADD(DAY, -7, dbo.RockGetDate()));
 DECLARE @EndDate DATETIME = CONVERT(DATE, dbo.RockGetDate());
@@ -106,6 +109,65 @@ WHERE
 GROUP BY
     CampusPartition.[EntityId],
     SchedulePartition.[EntityId];";
+
+        public const string VolunteerAttendanceMetricSourceSql = @"
+DECLARE @STARTDATE DATETIME = DATEADD(DAY, -7, GETDATE())
+DECLARE @ENDDATE DATETIME = GETDATE()
+DECLARE @ServiceAreaDefinedValueId INT = (SELECT Id FROM dbo.[DefinedValue] WHERE [Guid] = '36A554CE-7815-41B9-A435-93F3D52A2828')
+
+SELECT COUNT(1) as AttendanceCount, a.[CampusId], oa.[ScheduleId]
+FROM [Attendance] a
+INNER JOIN [AttendanceOccurrence] oa ON oa.Id = a.[OccurrenceId]
+INNER JOIN [Group] g ON g.Id = oa.[GroupId]
+INNER JOIN [GroupType] gt ON gt.[Id] = g.[GroupTypeId]
+WHERE
+   gt.[GroupTypePurposeValueId] = @ServiceAreaDefinedValueId
+   AND a.[DidAttend] = 1 
+   AND a.[StartDateTime] BETWEEN @STARTDATE AND @ENDDATE
+GROUP BY a.[CampusId], oa.[ScheduleId]
+";
+
+        public const string ChildrenAttendanceMetricSourceSql = @"
+-- Feel free to replace this with your own SQL or updated Check-in Areas below.
+DECLARE @STARTDATE DATETIME = CONVERT(date, DATEADD(DAY, -7, dbo.RockGetDate()))
+DECLARE @ENDDATE DATETIME = CONVERT(date, dbo.RockGetDate())
+
+SELECT COUNT(1) as AttendanceCount, a.[CampusId], oa.[ScheduleId]
+FROM [Attendance] a
+INNER JOIN [AttendanceOccurrence] oa ON oa.Id = a.[OccurrenceId]
+INNER JOIN [Group] g ON g.Id = oa.[GroupId]
+INNER JOIN [GroupType] gt ON gt.[Id] = g.[GroupTypeId]
+WHERE
+    gt.[AttendanceCountsAsWeekendService] = 1
+    AND a.[DidAttend] = 1 
+    AND CONVERT(date, a.[StartDateTime]) BETWEEN @STARTDATE AND @ENDDATE
+    AND gt.[Guid] IN (
+          'CADB2D12-7836-44BC-8EEA-3C6AB22FD5E8' -- Nursery/Preschool Area
+        , 'E3C8F7D6-5CEB-43BB-802F-66C3E734049E' -- Elementary Area
+    )
+GROUP BY a.[CampusId], oa.[ScheduleId]
+";
+
+        public const string StudentAttendanceMetricSourceSql = @"
+-- Feel free to replace this with your own SQL or updated Check-in Areas below.
+DECLARE @STARTDATE DATETIME = CONVERT(date, DATEADD(DAY, -7, dbo.RockGetDate()))
+DECLARE @ENDDATE DATETIME = CONVERT(date, dbo.RockGetDate())
+
+SELECT COUNT(1) as AttendanceCount, a.[CampusId], oa.[ScheduleId]
+FROM [Attendance] a
+INNER JOIN [AttendanceOccurrence] oa ON oa.Id = a.[OccurrenceId]
+INNER JOIN [Group] g ON g.Id = oa.[GroupId]
+INNER JOIN [GroupType] gt ON gt.[Id] = g.[GroupTypeId]
+WHERE
+    gt.[AttendanceCountsAsWeekendService] = 1
+    AND a.[DidAttend] = 1 
+    AND CONVERT(date, a.[StartDateTime]) BETWEEN @STARTDATE AND @ENDDATE
+    AND gt.[Guid] IN (
+          '7A17235B-69AD-439B-BAB0-1A0A472DB96F' -- Jr High Area
+        , '9A88743B-F336-4404-B877-2A623689195D' -- High School Area
+    )
+GROUP BY a.[CampusId], oa.[ScheduleId]
+";
 
         public const string WeeklyMetricsCategoryGuid = "64B29ADE-144D-4E84-96CC-A79398589733";
 
@@ -314,6 +376,404 @@ END
                 "Total Adult Attendance",
                 "This metric measures the total adult service attendance for the given week. This metric should be partitioned by Campus > Service (Schedule).",
                  AdultAttendanceMeasurementGuid );
+
+            // Create the Weekly Metrics Category if it is missing.
+            Sql( $@"
+IF NOT EXISTS (
+    SELECT 1
+    FROM [dbo].[Category]
+    WHERE [Guid] = '{WeeklyMetricsCategoryGuid}'
+)
+BEGIN
+    INSERT INTO [dbo].[Category]
+    (
+          [IsSystem]
+        , [EntityTypeId]
+        , [Name]
+        , [IconCssClass]
+        , [Description]
+        , [Order]
+        , [Guid]
+        , [ParentCategoryId]
+    )
+    VALUES
+    (
+          1
+        , (SELECT [Id] FROM [EntityType] WHERE [Guid] = '3D35C859-DF37-433F-A20A-0FFD0FCB9862')
+        , 'Weekly Metrics'
+        , 'icon-fw fa fa-calendar-week'
+        , ''
+        , 0
+        , '{WeeklyMetricsCategoryGuid}'
+        , NULL
+    );
+END" );
+
+            // Create the Volunteer Attendance Metric if it is missing
+            Sql( $@"
+DECLARE @MetricId [int];
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM [dbo].[Metric]
+    WHERE [Guid] = '{VolunteerAttendanceMetricGuid}'
+)
+BEGIN
+    DECLARE @ScheduleId INT;
+
+    SET @ScheduleId = (
+        SELECT [Id]
+        FROM [dbo].[Schedule]
+        WHERE [Guid] = 'C31DF106-D7C8-4B64-81E7-5C4AB20DBA7B'
+    );
+
+    IF @ScheduleId IS NULL
+    BEGIN
+        INSERT INTO [dbo].[Schedule] (
+            [Name],
+            [Description],
+            [iCalendarContent],
+            [CategoryId],
+            [Guid],
+            [IsActive],
+            [IsPublic]
+        )
+        VALUES (
+            'Weekly Metric Schedule',
+            NULL,
+            '{WeeklySchedule}',
+            (SELECT [Id] FROM [dbo].[Category] WHERE [Guid] = '5A794741-5444-43F0-90D7-48E47276D426'),
+            'C31DF106-D7C8-4B64-81E7-5C4AB20DBA7B',
+            1,
+            0
+        );
+
+        SET @ScheduleId = SCOPE_IDENTITY();
+    END
+
+    INSERT INTO [dbo].[Metric] (
+        [IsSystem],
+        [Title],
+        [Description],
+        [IsCumulative],
+        [SourceValueTypeId],
+        [SourceSql],
+        [ScheduleId],
+        [CreatedDateTime],
+        [ModifiedDateTime],
+        [Guid],
+        [NumericDataType],
+        [EnableAnalytics],
+        [MeasurementClassificationValueId]
+    )
+    VALUES (
+        0,
+        'Total Volunteer Attendance',
+        'This metric represents attendance records (total for the week) for any group(s) per campus of GroupTypes that have a Purpose of Serving Area.',
+        0,
+        (SELECT [Id] FROM [DefinedValue] WHERE [Guid] = '6A1E1A1B-A636-4E12-B90C-D7FD1BDAE764'),
+        '{VolunteerAttendanceMetricSourceSql.Replace( "'", "''" )}',
+        @ScheduleId,
+        SYSDATETIME(),
+        SYSDATETIME(),
+        '{VolunteerAttendanceMetricGuid}',
+        1,
+        0,
+        (SELECT [Id] FROM [DefinedValue] WHERE [Guid] = '{VolunteerAttendanceMeasurementGuid}')
+    );
+
+    SET @MetricId = SCOPE_IDENTITY();
+
+    INSERT INTO [dbo].[MetricCategory] (
+        [MetricId],
+        [CategoryId],
+        [Order],
+        [Guid]
+    )
+    VALUES (
+        @MetricId,
+        (SELECT [Id] FROM [Category] WHERE [Guid] = '{WeeklyMetricsCategoryGuid}'),
+        0,
+        NEWID()
+    );
+
+    INSERT INTO [dbo].[MetricPartition] (
+        [MetricId],
+        [Label],
+        [EntityTypeId],
+        [IsRequired],
+        [Order],
+        [CreatedDateTime],
+        [ModifiedDateTime],
+        [Guid]
+    )
+    VALUES 
+    (
+        @MetricId,
+        'Campus',
+        (SELECT [Id] FROM [EntityType] WHERE [Guid] = '00096BED-9587-415E-8AD4-4E076AE8FBF0'),
+        1,
+        0,
+        SYSDATETIME(),
+        SYSDATETIME(),
+        NEWID()
+    ),
+    (
+        @MetricId,
+        'Schedule',
+        (SELECT [Id] FROM [EntityType] WHERE [Guid] = '0B2C38A7-D79C-4F85-9757-F1B045D32C8A'),
+        1,
+        1,
+        SYSDATETIME(),
+        SYSDATETIME(),
+        NEWID()
+    )
+END
+" );
+
+            // Create the Total Children's Attendance Metric if it is missing
+            Sql( $@"
+DECLARE @MetricId [int];
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM [dbo].[Metric]
+    WHERE [Guid] = '{ChildrenAttendanceMetricGuid}'
+)
+BEGIN
+    DECLARE @ScheduleId INT;
+
+    SET @ScheduleId = (
+        SELECT [Id]
+        FROM [dbo].[Schedule]
+        WHERE [Guid] = 'C31DF106-D7C8-4B64-81E7-5C4AB20DBA7B'
+    );
+
+    IF @ScheduleId IS NULL
+    BEGIN
+        INSERT INTO [dbo].[Schedule] (
+            [Name],
+            [Description],
+            [iCalendarContent],
+            [CategoryId],
+            [Guid],
+            [IsActive],
+            [IsPublic]
+        )
+        VALUES (
+            'Weekly Metric Schedule',
+            NULL,
+            '{WeeklySchedule}',
+            (SELECT [Id] FROM [dbo].[Category] WHERE [Guid] = '5A794741-5444-43F0-90D7-48E47276D426'),
+            'C31DF106-D7C8-4B64-81E7-5C4AB20DBA7B',
+            1,
+            0
+        );
+
+        SET @ScheduleId = SCOPE_IDENTITY();
+    END
+
+    INSERT INTO [dbo].[Metric] (
+        [IsSystem],
+        [Title],
+        [Description],
+        [IsCumulative],
+        [SourceValueTypeId],
+        [SourceSql],
+        [ScheduleId],
+        [CreatedDateTime],
+        [ModifiedDateTime],
+        [Guid],
+        [NumericDataType],
+        [EnableAnalytics],
+        [MeasurementClassificationValueId]
+    )
+    VALUES (
+        0,
+        'Total Children''s Attendance',
+        'This metric represents attendance records (total for the week) for any group(s) per campus of GroupTypes that have the Weekend Service field checked and are part of the Children''s Check-in Areas (Nursery/Preschool Area and Elementary Area).',
+        0,
+        (SELECT [Id] FROM [DefinedValue] WHERE [Guid] = '6A1E1A1B-A636-4E12-B90C-D7FD1BDAE764'),
+        '{ChildrenAttendanceMetricSourceSql.Replace( "'", "''" )}',
+        @ScheduleId,
+        SYSDATETIME(),
+        SYSDATETIME(),
+        '{ChildrenAttendanceMetricGuid}',
+        1,
+        0,
+        (SELECT [Id] FROM [DefinedValue] WHERE [Guid] = '{ChildrenAttendanceMeasurementGuid}')
+    );
+
+    SET @MetricId = SCOPE_IDENTITY();
+
+    INSERT INTO [dbo].[MetricCategory] (
+        [MetricId],
+        [CategoryId],
+        [Order],
+        [Guid]
+    )
+    VALUES (
+        @MetricId,
+        (SELECT [Id] FROM [Category] WHERE [Guid] = '{WeeklyMetricsCategoryGuid}'),
+        0,
+        NEWID()
+    );
+
+    INSERT INTO [dbo].[MetricPartition] (
+        [MetricId],
+        [Label],
+        [EntityTypeId],
+        [IsRequired],
+        [Order],
+        [CreatedDateTime],
+        [ModifiedDateTime],
+        [Guid]
+    )
+    VALUES 
+    (
+        @MetricId,
+        'Campus',
+        (SELECT [Id] FROM [EntityType] WHERE [Guid] = '00096BED-9587-415E-8AD4-4E076AE8FBF0'),
+        1,
+        0,
+        SYSDATETIME(),
+        SYSDATETIME(),
+        NEWID()
+    ),
+    (
+        @MetricId,
+        'Schedule',
+        (SELECT [Id] FROM [EntityType] WHERE [Guid] = '0B2C38A7-D79C-4F85-9757-F1B045D32C8A'),
+        1,
+        1,
+        SYSDATETIME(),
+        SYSDATETIME(),
+        NEWID()
+    )
+END
+" );
+
+            // Create the Total Student's Attendance Metric if it is missing
+            Sql( $@"
+DECLARE @MetricId [int];
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM [dbo].[Metric]
+    WHERE [Guid] = '{StudentAttendanceMetricGuid}'
+)
+BEGIN
+    DECLARE @ScheduleId INT;
+
+    SET @ScheduleId = (
+        SELECT [Id]
+        FROM [dbo].[Schedule]
+        WHERE [Guid] = 'C31DF106-D7C8-4B64-81E7-5C4AB20DBA7B'
+    );
+
+    IF @ScheduleId IS NULL
+    BEGIN
+        INSERT INTO [dbo].[Schedule] (
+            [Name],
+            [Description],
+            [iCalendarContent],
+            [CategoryId],
+            [Guid],
+            [IsActive],
+            [IsPublic]
+        )
+        VALUES (
+            'Weekly Metric Schedule',
+            NULL,
+            '{WeeklySchedule}',
+            (SELECT [Id] FROM [dbo].[Category] WHERE [Guid] = '5A794741-5444-43F0-90D7-48E47276D426'),
+            'C31DF106-D7C8-4B64-81E7-5C4AB20DBA7B',
+            1,
+            0
+        );
+
+        SET @ScheduleId = SCOPE_IDENTITY();
+    END
+
+    INSERT INTO [dbo].[Metric] (
+        [IsSystem],
+        [Title],
+        [Description],
+        [IsCumulative],
+        [SourceValueTypeId],
+        [SourceSql],
+        [ScheduleId],
+        [CreatedDateTime],
+        [ModifiedDateTime],
+        [Guid],
+        [NumericDataType],
+        [EnableAnalytics],
+        [MeasurementClassificationValueId]
+    )
+    VALUES (
+        0,
+        'Total Students Attendance',
+        'This metric represents attendance records (total for the week) for any group(s) per campus of GroupTypes that have the Weekend Service field checked and are part of the Students Check-in Areas (Jr High Area and High School Area).',
+        0,
+        (SELECT [Id] FROM [DefinedValue] WHERE [Guid] = '6A1E1A1B-A636-4E12-B90C-D7FD1BDAE764'),
+        '{StudentAttendanceMetricSourceSql.Replace( "'", "''" )}',
+        @ScheduleId,
+        SYSDATETIME(),
+        SYSDATETIME(),
+        '{StudentAttendanceMetricGuid}',
+        1,
+        0,
+        (SELECT [Id] FROM [DefinedValue] WHERE [Guid] = '{StudentAttendanceMeasurementGuid}')
+    );
+
+    SET @MetricId = SCOPE_IDENTITY();
+
+    INSERT INTO [dbo].[MetricCategory] (
+        [MetricId],
+        [CategoryId],
+        [Order],
+        [Guid]
+    )
+    VALUES (
+        @MetricId,
+        (SELECT [Id] FROM [Category] WHERE [Guid] = '{WeeklyMetricsCategoryGuid}'),
+        0,
+        NEWID()
+    );
+
+    INSERT INTO [dbo].[MetricPartition] (
+        [MetricId],
+        [Label],
+        [EntityTypeId],
+        [IsRequired],
+        [Order],
+        [CreatedDateTime],
+        [ModifiedDateTime],
+        [Guid]
+    )
+    VALUES 
+    (
+        @MetricId,
+        'Campus',
+        (SELECT [Id] FROM [EntityType] WHERE [Guid] = '00096BED-9587-415E-8AD4-4E076AE8FBF0'),
+        1,
+        0,
+        SYSDATETIME(),
+        SYSDATETIME(),
+        NEWID()
+    ),
+    (
+        @MetricId,
+        'Schedule',
+        (SELECT [Id] FROM [EntityType] WHERE [Guid] = '0B2C38A7-D79C-4F85-9757-F1B045D32C8A'),
+        1,
+        1,
+        SYSDATETIME(),
+        SYSDATETIME(),
+        NEWID()
+    )
+END
+" );
 
             // Update the Adult Attendance Metric
             Sql( $@"

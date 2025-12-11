@@ -318,8 +318,13 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override GridBuilder<NoteWatchRow> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<NoteWatchRow>
+            {
+                LavaObject = row => row.NoteWatch
+            };
+
             return new GridBuilder<NoteWatchRow>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddField( "id", a => a.NoteWatch.Id )
                 .AddTextField( "idKey", a => a.NoteWatch.IdKey )
                 .AddField( "isWatching", a => a.NoteWatch.IsWatching )

@@ -389,6 +389,71 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Adaptive Message Picker
+
+        /// <summary>
+        /// Gets the adaptive messages and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which data views to load.</param>
+        /// <returns>A collection of <see cref="TreeItemBag"/> objects that represent a tree of adaptive messages.</returns>
+        [HttpPost]
+        [Route( "AdaptiveMessagePickerGetAdaptiveMessages" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<TreeItemBag> ) )]
+        [Rock.SystemGuid.RestActionGuid( "3484A62B-8A52-423A-8154-909D9176E4B6" )]
+        public IActionResult AdaptiveMessagePickerGetAdaptiveMessages( [FromBody] UniversalItemTreePickerOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                var parentGuid = options.ParentValue.AsGuidOrNull();
+
+                var queryOptions = new CategoryItemTreeOptions
+                {
+                    ParentGuid = parentGuid,
+                    GetCategorizedItems = parentGuid.HasValue,
+                    EntityTypeGuid = EntityTypeCache.Get<Rock.Model.AdaptiveMessageCategory>().Guid,
+                    IncludeUnnamedEntityItems = true,
+                    IncludeCategoriesWithoutChildren = false,
+                    DefaultIconCssClass = "ti ti-list-numbers",
+                    LazyLoad = true,
+                    SecurityGrant = grant,
+                    ExpandToCategoryGuids = AdaptiveMessagePickerGetExpandToCategoryGuids( options.ExpandToValues )
+                };
+
+                var items = clientService.GetCategorizedTreeItems( queryOptions );
+
+                return Ok( items );
+            }
+        }
+
+        /// <summary>
+        /// Gets the unique category identifiers that need to be expanded to in order to display the selected adaptive
+        /// message values.
+        /// </summary>
+        /// <param name="selectedValues">The currently selected values in the picker.</param>
+        /// <returns>A list of unique identifiers that represent the categories that need to be expanded to.</returns>
+        private List<Guid> AdaptiveMessagePickerGetExpandToCategoryGuids( List<string> selectedValues )
+        {
+            if ( selectedValues == null )
+            {
+                return new List<Guid>();
+            }
+
+            var selectedCategories = selectedValues
+                .Select( v => AdaptiveMessageCache.Get( v.AsGuid() ) )
+                .Where( am => am != null )
+                .SelectMany( am => am.Categories );
+
+            return GetExpandToCategoryGuids( selectedCategories );
+        }
+
+        #endregion
+
         #region Address Control
 
         /// <summary>
@@ -3300,124 +3365,322 @@ namespace Rock.Rest.v2
 
             using ( var rockContext = new RockContext() )
             {
-                string service = null;
+                var connectionTypeService = new ConnectionTypeService( rockContext );
+                var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
+                var connectionRequestService = new ConnectionRequestService( rockContext );
 
-                /*
-                 * Determine what type of resource the GUID we received is so we know what types of
-                 * children to query for.
-                 */
-                if ( options.ParentGuid == null )
-                {
-                    // Get the root Connection Types
-                    service = "type";
-                }
-                else
-                {
-                    var conOpp = new ConnectionOpportunityService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( op => op.Guid == options.ParentGuid )
-                        .ToList()
-                        .Where( op => op.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( op, Security.Authorization.VIEW ) == true );
+                var expandToConnectionGuids = ConnectionRequestPickerGetAutoExpandGuids(
+                    options.ExpandToValues,
+                    connectionTypeService,
+                    connectionOpportunityService,
+                    connectionRequestService );
 
-                    if ( conOpp.Any() )
-                    {
-                        // Get the Connection Requests
-                        service = "request";
-                    }
-                    else
-                    {
-                        var conType = new ConnectionTypeService( rockContext )
-                            .Queryable().AsNoTracking()
-                            .Where( t => t.Guid == options.ParentGuid )
-                            .ToList()
-                            .Where( t => t.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( t, Security.Authorization.VIEW ) == true );
+                var connectionTreeItems = ConnectionRequestPickerGetChildrenInternal(
+                    options.ParentGuid,
+                    connectionTypeService,
+                    connectionOpportunityService,
+                    connectionRequestService,
+                    expandToConnectionGuids,
+                    grant,
+                    0 );
 
-                        if ( conType.Any() )
-                        {
-                            // Get the Connection Opportunities
-                            service = "opportunity";
-                        }
-                    }
-                }
-
-                /*
-                 * Fetch the children
-                 */
-                var list = new List<TreeItemBag>();
-
-                if ( service == "type" )
-                {
-                    // Get the Connection Types
-                    var connectionTypes = new ConnectionTypeService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .OrderBy( ct => ct.Name )
-                        .ToList()
-                        .Where( ct => ct.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( ct, Security.Authorization.VIEW ) == true );
-
-                    foreach ( var connectionType in connectionTypes )
-                    {
-                        var item = new TreeItemBag();
-                        item.Value = connectionType.Guid.ToString();
-                        item.Text = connectionType.Name;
-                        item.HasChildren = connectionType.ConnectionOpportunities.Any();
-                        item.IconCssClass = connectionType.IconCssClass;
-                        list.Add( item );
-                    }
-                }
-                else if ( service == "opportunity" )
-                {
-                    // Get the Connection Opportunities
-                    var opportunities = new ConnectionOpportunityService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( op => op.ConnectionType.Guid == options.ParentGuid )
-                        .OrderBy( op => op.Name )
-                        .ToList()
-                        .Where( op => op.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( op, Security.Authorization.VIEW ) == true );
-
-                    foreach ( var opportunity in opportunities )
-                    {
-                        var item = new TreeItemBag();
-                        item.Value = opportunity.Guid.ToString();
-                        item.Text = opportunity.Name;
-                        item.HasChildren = opportunity.ConnectionRequests
-                            .Any( r =>
-                                r.ConnectionState == ConnectionState.Active ||
-                                r.ConnectionState == ConnectionState.FutureFollowUp );
-                        item.IconCssClass = opportunity.IconCssClass;
-                        list.Add( item );
-                    }
-                }
-                else if ( service == "request" )
-                {
-                    var requests = new ConnectionRequestService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( r =>
-                            r.ConnectionOpportunity.Guid == options.ParentGuid &&
-                            r.PersonAlias != null &&
-                            r.PersonAlias.Person != null )
-                        .OrderBy( r => r.PersonAlias.Person.LastName )
-                        .ThenBy( r => r.PersonAlias.Person.NickName )
-                        .ToList()
-                        .Where( op => op.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( op, Security.Authorization.VIEW ) == true );
-
-                    foreach ( var request in requests )
-                    {
-                        var item = new TreeItemBag();
-                        item.Value = request.Guid.ToString();
-                        item.Text = request.PersonAlias.Person.FullName;
-                        item.HasChildren = false;
-                        item.IconCssClass = "ti ti-user";
-                        list.Add( item );
-                    }
-                }
-                else
-                {
-                    // service type wasn't set, so we don't know where to look
-                    return NotFound();
-                }
-
-                return Ok( list );
+                return Ok( connectionTreeItems );
             }
+        }
+
+        /// <summary>
+        /// A POCO to represent the connection type and opportunity GUIDs to expand to within a tree picker control.
+        /// </summary>
+        private class ExpandToConnectionGuids
+        {
+            /// <summary>
+            /// The unique identifiers of the connection types to expand to.
+            /// </summary>
+            public HashSet<Guid> ConnectionTypeGuids { get; } = new HashSet<Guid>();
+
+            /// <summary>
+            /// The unique identifiers of the connection opportunities to expand to.
+            /// </summary>
+            public HashSet<Guid> ConnectionOpportunityGuids { get; } = new HashSet<Guid>();
+        }
+
+        /// <summary>
+        /// Gets the connection type and opportunity GUIDs to expand to based on the selected values.
+        /// </summary>
+        /// <param name="selectedValues">The currently selected values in the picker.</param>
+        /// <param name="connectionTypeService">The service to use when loading connection types.</param>
+        /// <param name="connectionOpportunityService">The service to use when loading connection opportunities.</param>
+        /// <param name="connectionRequestService">The service to use when loading connection requests.</param>
+        /// <returns>The connection type and opportunity GUIDs to expand to.</returns>
+        private ExpandToConnectionGuids ConnectionRequestPickerGetAutoExpandGuids(
+            List<string> selectedValues,
+            ConnectionTypeService connectionTypeService,
+            ConnectionOpportunityService connectionOpportunityService,
+            ConnectionRequestService connectionRequestService )
+        {
+            var expandToConnectionGuids = new ExpandToConnectionGuids();
+
+            var selectedGuids = selectedValues?.AsGuidList();
+            if ( selectedGuids?.Any() != true )
+            {
+                return expandToConnectionGuids;
+            }
+
+            var selectedConnectionTypes = connectionTypeService
+                .Queryable()
+                .AsNoTracking()
+                .Where( ct => selectedGuids.Contains( ct.Guid ) )
+                .ToList();
+
+            var selectedConnectionOpportunities = connectionOpportunityService
+                .Queryable()
+                .AsNoTracking()
+                .Include( co => co.ConnectionType )
+                .Where( co => selectedGuids.Contains( co.Guid ) )
+                .ToList();
+
+            var selectedConnectionRequests = connectionRequestService
+                .Queryable()
+                .AsNoTracking()
+                .Include( cr => cr.ConnectionOpportunity.ConnectionType )
+                .Where( cr => selectedGuids.Contains( cr.Guid ) )
+                .ToList();
+
+            foreach ( var selectedGuid in selectedGuids )
+            {
+                // Try to find a matching connection type.
+                var selectedConnectionType = selectedConnectionTypes
+                    .FirstOrDefault( ct => ct.Guid.Equals( selectedGuid ) );
+
+                if ( selectedConnectionType != null )
+                {
+                    expandToConnectionGuids.ConnectionTypeGuids.Add( selectedConnectionType.Guid );
+
+                    continue;
+                }
+
+                // Try to find a matching connection opportunity.
+                var selectedConnectionOpportunity = selectedConnectionOpportunities
+                    .FirstOrDefault( co => co.Guid.Equals( selectedGuid ) );
+
+                if ( selectedConnectionOpportunity != null )
+                {
+                    expandToConnectionGuids.ConnectionOpportunityGuids.Add( selectedConnectionOpportunity.Guid );
+
+                    selectedConnectionType = selectedConnectionOpportunity.ConnectionType;
+                    expandToConnectionGuids.ConnectionTypeGuids.Add( selectedConnectionType.Guid );
+
+                    continue;
+                }
+
+                // Try to find a matching connection request.
+                var selectedConnectionRequest = selectedConnectionRequests
+                    .FirstOrDefault( cr => cr.Guid.Equals( selectedGuid ) );
+
+                if ( selectedConnectionRequest != null )
+                {
+                    selectedConnectionOpportunity = selectedConnectionRequest.ConnectionOpportunity;
+                    expandToConnectionGuids.ConnectionOpportunityGuids.Add( selectedConnectionOpportunity.Guid );
+
+                    selectedConnectionType = selectedConnectionOpportunity.ConnectionType;
+                    expandToConnectionGuids.ConnectionTypeGuids.Add( selectedConnectionType.Guid );
+                }
+            }
+
+            return expandToConnectionGuids;
+        }
+
+        /// <summary>
+        /// Gets the recursive child items for the connection request picker.
+        /// </summary>
+        /// <param name="parentGuid">The unique identifier of the parent (connection type or opportunity).</param>
+        /// <param name="connectionTypeService">The service to use when loading connection types.</param>
+        /// <param name="connectionOpportunityService">The service to use when loading connection opportunities.</param>
+        /// <param name="connectionRequestService">The service to use when loading connection requests.</param>
+        /// <param name="expandToConnectionGuids">The unique identifiers of the connection types and opportunities to expand to.</param>
+        /// <param name="grant">The security grant to use when checking authorization.</param>
+        /// <param name="depth">The current depth for recursion safety.</param>
+        /// <returns>A list of tree items.</returns>
+        private List<TreeItemBag> ConnectionRequestPickerGetChildrenInternal(
+            Guid? parentGuid,
+            ConnectionTypeService connectionTypeService,
+            ConnectionOpportunityService connectionOpportunityService,
+            ConnectionRequestService connectionRequestService,
+            ExpandToConnectionGuids expandToConnectionGuids,
+            SecurityGrant grant,
+            int depth )
+        {
+            if ( depth > 50 )
+            {
+                // Null will cause a lazy load to be attempted later.
+                return null;
+            }
+
+            string level = null;
+
+            // Determine the type of resource for the GUID we received so we know what type of children to query for.
+            if ( parentGuid == null )
+            {
+                // Get the root connection types.
+                level = "type";
+            }
+            else
+            {
+                var opportunities = connectionOpportunityService
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( co => co.Guid == parentGuid )
+                    .ToList()
+                    .Where( co =>
+                        co.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                        || grant?.IsAccessGranted( co, Authorization.VIEW ) == true
+                    );
+
+                if ( opportunities.Any() )
+                {
+                    // Get the connection requests.
+                    level = "request";
+                }
+                else
+                {
+                    var connectionTypes = connectionTypeService
+                        .Queryable()
+                        .AsNoTracking()
+                        .Where( ct => ct.Guid == parentGuid )
+                        .ToList()
+                        .Where( ct =>
+                            ct.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                            || grant?.IsAccessGranted( ct, Authorization.VIEW ) == true
+                        );
+
+                    if ( connectionTypes.Any() )
+                    {
+                        // Get the connection opportunities.
+                        level = "opportunity";
+                    }
+                }
+            }
+
+            // Fetch the children.
+            var connectionTreeItems = new List<TreeItemBag>();
+
+            if ( level == "type" )
+            {
+                // Get the connection types.
+                var connectionTypes = connectionTypeService
+                    .Queryable()
+                    .AsNoTracking()
+                    .Include( ct => ct.ConnectionOpportunities )
+                    .OrderBy( ct => ct.Name )
+                    .ToList()
+                    .Where( ct =>
+                        ct.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                        || grant?.IsAccessGranted( ct, Authorization.VIEW ) == true
+                    );
+
+                foreach ( var connectionType in connectionTypes )
+                {
+                    var connectionTypeTreeItem = new TreeItemBag
+                    {
+                        Value = connectionType.Guid.ToString(),
+                        Text = connectionType.Name,
+                        HasChildren = connectionType.ConnectionOpportunities.Any(),
+                        IconCssClass = connectionType.IconCssClass
+                    };
+
+                    connectionTreeItems.Add( connectionTypeTreeItem );
+
+                    if ( expandToConnectionGuids.ConnectionTypeGuids.Contains( connectionType.Guid ) )
+                    {
+                        connectionTypeTreeItem.Children = ConnectionRequestPickerGetChildrenInternal(
+                            connectionType.Guid,
+                            connectionTypeService,
+                            connectionOpportunityService,
+                            connectionRequestService,
+                            expandToConnectionGuids,
+                            grant,
+                            depth + 1 );
+                    }
+                }
+            }
+            else if ( level == "opportunity" )
+            {
+                // Get the connection opportunities.
+                var opportunities = connectionOpportunityService
+                    .Queryable()
+                    .AsNoTracking()
+                    .Include( co => co.ConnectionRequests )
+                    .Where( co => co.ConnectionType.Guid == parentGuid )
+                    .OrderBy( co => co.Name )
+                    .ToList()
+                    .Where( co =>
+                        co.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                        || grant?.IsAccessGranted( co, Authorization.VIEW ) == true
+                    );
+
+                foreach ( var opportunity in opportunities )
+                {
+                    var connectionOpportunityTreeItem = new TreeItemBag
+                    {
+                        Value = opportunity.Guid.ToString(),
+                        Text = opportunity.Name,
+                        HasChildren = opportunity.ConnectionRequests
+                            .Any( cr =>
+                                cr.ConnectionState == ConnectionState.Active
+                                || cr.ConnectionState == ConnectionState.FutureFollowUp
+                            ),
+                        IconCssClass = opportunity.IconCssClass
+                    };
+
+                    connectionTreeItems.Add( connectionOpportunityTreeItem );
+
+                    if ( expandToConnectionGuids.ConnectionOpportunityGuids.Contains( opportunity.Guid ) )
+                    {
+                        connectionOpportunityTreeItem.Children = ConnectionRequestPickerGetChildrenInternal(
+                            opportunity.Guid,
+                            connectionTypeService,
+                            connectionOpportunityService,
+                            connectionRequestService,
+                            expandToConnectionGuids,
+                            grant,
+                            depth + 1 );
+                    }
+                }
+            }
+            else if ( level == "request" )
+            {
+                // Get the connection requests.
+                var requests = connectionRequestService
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( cr =>
+                        cr.ConnectionOpportunity.Guid == parentGuid
+                        && cr.PersonAlias != null
+                        && cr.PersonAlias.Person != null
+                    )
+                    .OrderBy( r => r.PersonAlias.Person.LastName )
+                    .ThenBy( r => r.PersonAlias.Person.NickName )
+                    .ToList()
+                    .Where( co =>
+                        co.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                        || grant?.IsAccessGranted( co, Authorization.VIEW ) == true
+                    );
+
+                foreach ( var request in requests )
+                {
+                    var connectionRequestTreeItem = new TreeItemBag
+                    {
+                        Value = request.Guid.ToString(),
+                        Text = request.PersonAlias.Person.FullName,
+                        HasChildren = false,
+                        IconCssClass = "ti ti-user"
+                    };
+
+                    connectionTreeItems.Add( connectionRequestTreeItem );
+                }
+            }
+
+            return connectionTreeItems;
         }
 
         #endregion
@@ -6346,7 +6609,7 @@ namespace Rock.Rest.v2
 
             var autoExpandGroups = selectedValues
                 .Select( v => GroupCache.Get( v.AsGuid() ) )
-                .Where( v => v != null );
+                .Where( g => g != null );
 
             foreach ( var selectedGroup in autoExpandGroups )
             {
@@ -7024,7 +7287,7 @@ namespace Rock.Rest.v2
 
             var autoExpandLocations = selectedValues
                 .Select( v => NamedLocationCache.Get( v.AsGuid() ) )
-                .Where( v => v != null );
+                .Where( l => l != null );
 
             foreach ( var selectedLocation in autoExpandLocations )
             {
@@ -7741,8 +8004,8 @@ namespace Rock.Rest.v2
     Url: {{ campus.Url }}<br/>
     Phone Number: {{ campus.PhoneNumber }}<br/>
     Service Times:
-    {% for serviceTime in campus.ServiceTimes %}
-        {{ serviceTime.Day }} {{ serviceTime.Time }},
+    {% for campusSchedule in campus.CampusSchedules %}
+        {{ campusSchedule.Schedule.FriendlyScheduleText }},
     {% endfor %}
     <br/>
 {% endfor %}
@@ -8704,7 +8967,7 @@ namespace Rock.Rest.v2
         /// <summary>
         /// Gets the items that should be automatically expanded based on the selected values.
         /// </summary>
-        /// <param name="selectedValues">The currently selected values in the picker.
+        /// <param name="selectedValues">The currently selected values in the picker.</param>
         /// <returns>A list of unique identifiers for the items that should be eager loaded.</returns>
         private List<Guid> PagePickerGetAutoExpandGuids( List<string> selectedValues )
         {
@@ -8717,7 +8980,7 @@ namespace Rock.Rest.v2
 
             var autoExpandPages = selectedValues
                 .Select( v => PageCache.Get( v.AsGuid() ) )
-                .Where( v => v != null );
+                .Where( p => p != null );
 
             foreach ( var selectedPage in autoExpandPages )
             {
@@ -10942,6 +11205,34 @@ namespace Rock.Rest.v2
                 var depth = 0;
 
                 for ( var category = CategoryCache.Get( categorized.CategoryId.Value ); category != null; category = category.ParentCategory )
+                {
+                    autoExpandedGuids.Add( category.Guid );
+
+                    if ( depth++ > 50 )
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return autoExpandedGuids;
+        }
+
+        /// <summary>
+        /// Gets the unique identifiers of the <see cref="Category"/> items that should be automatically expanded to
+        /// within the tree, based on the given <see cref="CategoryCache"/> items.
+        /// </summary>
+        /// <param name="categoryCaches">The currently selected categories in the picker.</param>
+        /// <returns>A list of unique identifiers for the categories that should be eager loaded.</returns>
+        private List<Guid> GetExpandToCategoryGuids( IEnumerable<CategoryCache> categoryCaches )
+        {
+            var autoExpandedGuids = new List<Guid>();
+
+            foreach ( var categoryCache in categoryCaches )
+            {
+                var depth = 0;
+
+                for ( var category = categoryCache; category != null; category = category.ParentCategory )
                 {
                     autoExpandedGuids.Add( category.Guid );
 

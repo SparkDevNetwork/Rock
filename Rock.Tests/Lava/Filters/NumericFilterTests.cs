@@ -46,7 +46,7 @@ Guess 1 was 32 from the target number.<br>
 Guess 2 was 13 from the target number.<br>
 Guess 3 was 0.5 from the target number!<br>
 ";
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, inputTemplate, ignoreWhitespace:true );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, inputTemplate, ignoreWhitespace: true );
         }
 
         [TestMethod]
@@ -99,8 +99,8 @@ Guess 3 was 0.5 from the target number!<br>
         /// <summary>
         /// The Format filter should format a numeric input using a recognized .NET format string correctly.
         /// </summary>
-        [DataTestMethod]
-        [DataRow( "1234567.89", "#,##0.00", "1,234,567.89",   "en-US" )]
+        [TestMethod]
+        [DataRow( "1234567.89", "#,##0.00", "1,234,567.89", "en-US" )]
         [DataRow( "1234567.89", "#,##0.00", "123.456.789,00", "de-DE" )]
         public void Format_UsingValidDotNetCustomFormatString_ProducesValidNumber_AgainstClientCulture( string input, string format, string expectedResult, string clientCulture )
         {
@@ -114,7 +114,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// <summary>
         /// The Format filter should format a numeric input using a recognized .NET format string correctly.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1234567.89", "#,##0.00", "1,234,567.89", "en-US" )]
         [DataRow( "1234567.89", "#,##0.00", "1,234,567.89", "de-DE" )]
         public void Format_WithSetCulture_AsInvariant_UsingValidDotNetCustomFormatString_ProducesValidNumber_AgainstClientCulture( string input, string format, string expectedResult, string clientCulture )
@@ -129,7 +129,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// <summary>
         /// The Format filter should format a numeric input using a recognized .NET format string correctly.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1234567.89", "#,##0.00", "1,234,567.89", "en-US" )]
         [DataRow( "1234567.89", "#,##0.00", "123.456.789,00", "de-DE" )]
         public void Format_WithSetCulture_AsClient_UsingValidDotNetCustomFormatString_ProducesValidNumber_AgainstClientCulture( string input, string format, string expectedResult, string clientCulture )
@@ -149,7 +149,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings?redirectedfrom=MSDN
         /// Test output assumes culture setting is "en-US".
         /// </remarks>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "123.456", "C", "$123.46" )]
         [DataRow( "123.456", "C3", "$123.456" )]
         [DataRow( "'123.456'", "C3", "$123.456" )]
@@ -270,7 +270,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// <summary>
         /// Common text equivalents of True should return a value of True.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "true" )]
         [DataRow( "T" )]
         [DataRow( "yes" )]
@@ -285,7 +285,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// Common text equivalents of False or unrecognized text should return a value of False.
         /// The purpose of this theory is to assure that none of these known or unknown inputs return True.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "false" )]
         [DataRow( "F" )]
         [DataRow( "no" )]
@@ -300,7 +300,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// <summary>
         /// Common text representations of decimal values should return a decimal.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "0.1234", 0.1234 )]
         [DataRow( "1.1", 1.1 )]
         [DataRow( "1,234,567.89", 1234567.89 )]
@@ -327,7 +327,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// Representations of decimal values should return the decimal value below when run against a client culture
         /// (such as Germany) that uses a comma as the decimal separator.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "0.1234", 1234, "de-DE" )]
         [DataRow( "1.1", 11, "de-DE" )]
         //[DataRow( "1,234,567.89", null, "de-DE" )] // This is not a valid decimal in de-DE.
@@ -348,7 +348,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// Representations of decimal values should return the correct (invariant) decimal regardless of the culture when using
         /// the setculture Lava command.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "0.1234", 0.1234, "de-DE" )]
         [DataRow( "1.1", 1.1, "de-DE" )]
         [DataRow( "1,234,567.89", 1234567.89, "de-DE" )]
@@ -369,7 +369,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// Representations of decimal values should return the decimal when using
         /// the setculture Lava command with input that is in the client culture.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "0,1234", 0.1234, "de-DE" )]
         [DataRow( "1,1", 1.1, "de-DE" )]
         [DataRow( "1.234.567,89", 1234567.89, "de-DE" )]
@@ -389,7 +389,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// <summary>
         /// Common text representations of double-precision values should return a double.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "0.1234", 0.1234 )]
         [DataRow( "1.1", 1.1 )]
         [DataRow( "1,234,567.89", 1234567.89 )]
@@ -413,7 +413,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// Representations of double-precision values should return the double value below when run against a client culture
         /// (such as Germany) that uses a comma as the decimal separator.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "0.1234", "0.1234", "en-US" )]
         [DataRow( "0.1234", "1234", "de-DE" )]
         [DataRow( "1.1", "1.1", "en-US" )]
@@ -437,7 +437,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// Representations of double values should return the double when using
         /// the setculture Lava command with input that is in the client culture.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "0.1234", "0.1234", "en-US" )]
         [DataRow( "0.1234", "0.1234", "de-DE" )]
         [DataRow( "1.1", "1.1", "en-US" )]
@@ -461,7 +461,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// Representations of double values should return the double when using
         /// the setculture Lava command with input that is in the client culture.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "0,1234", 0.1234, "de-DE" )]
         [DataRow( "1,1", 1.1, "de-DE" )]
         [DataRow( "1.234.567,89", 1234567.89, "de-DE" )]
@@ -487,7 +487,7 @@ Guess 3 was 0.5 from the target number!<br>
         ///       since it's really about testing the functionality of the setculture command to reset the culture
         ///       back to the original client culture after the setculture command is used.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1.1", "1.1 and 1.1", "en-US" )]
         [DataRow( "1.1", "1.1 and 11", "de-DE" )]
         public void AsDouble_WithSetCulture_AsInvariant_AgainstClientCulture_AndBackToClient( string input, string expectedResult, string clientCulture )
@@ -504,7 +504,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// <summary>
         /// Common text representations of integer values should return an integer.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "123", 123 )]
         [DataRow( "-987", -987 )]
         [DataRow( "0", 0 )]
@@ -529,7 +529,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// Representations of integer values should return the integer value below when run against a client culture 
         /// (such as Germany) that uses a comma as the decimal separator.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         //[DataRow( "123", 123, "de-DE" )]
         //[DataRow( "-987", -987, "de-DE" )]
         //[DataRow( "0", 0, "de-DE" )]
@@ -558,7 +558,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// Representations of integer values should return the integer value when using
         /// the setculture Lava command with input that is in the client culture.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "10.4", "10", "en-US" )]
         [DataRow( "10.4", "10", "de-DE" )]
         [DataRow( "10,4", "104", "de-DE" )] // because 10,4 → 104, when parsing with invariant
@@ -580,7 +580,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// Invalid representations of integer values should return "" run against a client culture 
         /// (such as Germany) that uses a comma as the decimal separator or vice versa.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1,234.99", "", "de-DE" )] // This is not a valid number in the German culture.
         [DataRow( "1.234,99", "", "en-US" )] // This is not a valid number in the English culture.
         public void AsInteger_WithInvalidStrings_AgainstClientCulture( string input, string expectedResult, string clientCulture )
@@ -595,7 +595,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// <summary>
         /// Should divide two strings (containing mixed integers and decimals) and return the values below depending on the culture.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "6", "2", "3", "de-DE" )]
         [DataRow( "6.0", "2.0", "3", "en-US" )]
         [DataRow( "6.0", "2.0", "3", "de-DE" )]
@@ -615,7 +615,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// <summary>
         /// Valid numeric values should return a numeric result.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "3", "2", "1" )]
         [DataRow( "3.0", "2.0", "1.0" )]
         [DataRow( "3.1", "2", "1.1" )]
@@ -628,7 +628,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// <summary>
         /// String representations of valid numeric values should return a numeric result.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "3", "2", "1" )]
         [DataRow( "3.0", "2.0", "1.0" )]
         public void Minus_ValidNumericStringOperands_ReturnsNumericResult( string input1, string input2, string expectedResult )
@@ -641,7 +641,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// Should subtract two strings (containing mixed integers and decimals) and return the correct int or decimal using
         /// the given client culture.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "3", "2", "1", "de-DE" )]
         [DataRow( "3.0", "2.0", "10", "de-DE" )] // 3.0 → 30, 2.0 → 20 → 30-20=10 (de-DE uses comma, so parsed as int)
         [DataRow( "3", "2.0", "-17", "de-DE" )]  // 3 → 3, 2.0 → 20 → 3-20 = -17
@@ -659,7 +659,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// Should subtract two strings (converted to AsDecimal) and return the expected int or decimal
         /// regardless of the running culture.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "5", "2", "3", "de-DE" )]
         [DataRow( "5.0", "2.0", "3.0", "en-US" )] // should preserve the decimal
         [DataRow( "5.0", "2.0", "3.0", "de-DE" )] // should preserve the decimal
@@ -670,7 +670,7 @@ Guess 3 was 0.5 from the target number!<br>
         {
             TestConfigurationHelper.ExecuteWithCulture<object>( () =>
             {
-                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'invariant' %}{% assign operand = '"+input2+"' | AsDecimal %}{{ '" + input1 + "' |  AsDecimal | Minus: operand }}{% endsetculture %}" );
+                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'invariant' %}{% assign operand = '" + input2 + "' | AsDecimal %}{{ '" + input1 + "' |  AsDecimal | Minus: operand }}{% endsetculture %}" );
                 return null;
             }, clientCulture );
         }
@@ -678,7 +678,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// <summary>
         /// Should subtract two numbers (converted to AsDecimal) and return the value in the test for the given culture.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "5", "2", "3", "de-DE" )]
         [DataRow( "5.0", "2.0", "3.0", "en-US" )] // should preserve the decimal
         [DataRow( "5.0", "2.0", "30", "de-DE" )] // 5.0 → 50, 2.0 → 20 → 50-20=30 (de-DE uses comma, so parsed as int)
@@ -698,7 +698,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// <summary>
         /// Valid numeric values should return a numeric result.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "3", "2", "5" )]
         [DataRow( "3.0", "2.0", "5.0" )]
         [DataRow( "3.1", "2", "5.1" )]
@@ -711,7 +711,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// <summary>
         /// String representations of valid numeric values should return a numeric result.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "3", "2", "5" )]
         [DataRow( "3.0", "2.0", "5.0" )]
         public void Plus_ValidNumericStringOperands_ReturnsNumericResult( string input1, string input2, string expectedResult )
@@ -723,7 +723,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// <summary>
         /// Valid numeric values should return a numeric result.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "3", "2", "6" )]
         [DataRow( "3.1", "2.1", "6.51" )]
         [DataRow( "3.0", "2.0", "6.0" )] // We're not even certain this is correct, but it's how Fluid 2.25 behaves now.
@@ -735,7 +735,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// <summary>
         /// String representations of valid numeric values should return a numeric result.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "3", "2", "6" )]
         [DataRow( "3.1", "2.1", "6.51" )]
         [DataRow( "3.0", "2.0", "6.0" )] // We're not even certain this is correct, but it's how Fluid 2.25 behaves now.
@@ -748,7 +748,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// <summary>
         /// String representations of valid numeric values should return a numeric result.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "Repeat", "3", "RepeatRepeatRepeat" )]
         [DataRow( "NoRepeat", "0", "" )]
         public void Times_StringAndNumericOperand_ReturnsRepeatedString( string input1, string input2, string expectedResult )
@@ -760,7 +760,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// <summary>
         /// Should multiply two strings (containing mixed integers and decimals) and return the value below depending on the culture.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "3", "2", "6", "de-DE" )]
         [DataRow( "3.0", "2.0", "6.0", "en-US" )] // You might expect this to be 6 or 6.0 but it is 6.00 in Fluid 2.5 and 6.0 in Fluid 2.25. (C# preserves the scale (number of decimals) based on the operands' scales.)
         [DataRow( "3.0", "2.0", "600", "de-DE" )] // 3.0 → 30, 2.0 → 20 → 30*20 = 600 (de-DE uses comma, so parsed as int)
@@ -782,7 +782,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// <summary>
         /// The Floor filter should work as it has in the past.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "3.1", "en-US", "3" )]
         [DataRow( "3.1", "de-DE", "31" )]
         public void Floor_ProducesExpectedValue( string input, string runAsClientCulture, string expectedResult )
@@ -791,7 +791,7 @@ Guess 3 was 0.5 from the target number!<br>
 
             TestConfigurationHelper.ExecuteWithCulture( () =>
             {
-                  TestHelper.AssertTemplateOutput( expectedResult, template );
+                TestHelper.AssertTemplateOutput( expectedResult, template );
             }
             , runAsClientCulture );
         }
@@ -799,7 +799,7 @@ Guess 3 was 0.5 from the target number!<br>
         /// <summary>
         /// The Floor filter should work as expected when using the setculture Lava command and the AsDecimal.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "3.1", "client", "en-US", "3" )]
         [DataRow( "3.1", "client", "de-DE", "31" )]
         [DataRow( "3.1", "invariant", "de-DE", "3" )]

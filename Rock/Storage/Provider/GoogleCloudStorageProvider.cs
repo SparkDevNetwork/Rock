@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -242,7 +242,7 @@ namespace Rock.Storage.Provider
                 Name = name,
                 Bucket = bucketName,
                 Size = Convert.ToUInt64( binaryFile.FileSize ),
-                Updated = binaryFile.ModifiedDateTime,
+                UpdatedDateTimeOffset = binaryFile.ModifiedDateTime?.ToRockDateTimeOffset(),
                 ContentType = System.Web.MimeMapping.GetMimeMapping( binaryFile.FileName )
             };
         }

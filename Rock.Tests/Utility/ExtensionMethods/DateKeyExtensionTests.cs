@@ -18,8 +18,6 @@ using System;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Tests.Shared;
-
 namespace Rock.Tests.Utility.ExtensionMethods
 {
     [TestClass]
@@ -41,7 +39,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
                 Assert.AreEqual( test.Expected, test.Date.ToDateKey() );
             }
 
-            Assert.AreEqual( null, ( ( DateTime? ) null ).ToDateKey() );
+            Assert.IsNull( ( ( DateTime? ) null ).ToDateKey() );
         }
 
         /// <summary>

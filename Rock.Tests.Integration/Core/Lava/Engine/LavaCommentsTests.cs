@@ -19,7 +19,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
 
 namespace Rock.Tests.Integration.Core.Lava.Engine
@@ -61,7 +60,7 @@ namespace Rock.Tests.Integration.Core.Lava.Engine
         public void CommentBlock_ContainingInvalidTag_IsIgnored()
         {
             // This Lava template would throw an error in the default Fluid parser, but should process successfully here.
-            TestHelper.AssertTemplateOutput( typeof(FluidEngine), string.Empty, "{% comment %} This comment contains an {% unknown_tag %} {% endcomment %}" );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), string.Empty, "{% comment %} This comment contains an {% unknown_tag %} {% endcomment %}" );
         }
 
         /// <summary>
@@ -141,7 +140,7 @@ Line 1
 </div>
 ";
 
-            input = input.Replace("`", @"""");
+            input = input.Replace( "`", @"""" );
             expectedOutput = expectedOutput.Replace( "`", @"""" );
 
             TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { IgnoreWhiteSpace = true, Wildcards = new List<string> { "<guid>" } } );
@@ -304,7 +303,7 @@ Value 3<br>
 Example End<br>
 ";
 
-            TestHelper.AssertTemplateOutput( typeof(FluidEngine), expectedOutput, input );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, input );
         }
 
         [TestMethod]

@@ -5,11 +5,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Core.Model
 {
+    [TestClass]
     public class DeviceTests : DatabaseTestsBase
     {
         /* These DbGeography calls require the SqlServerTypes package on machines without full SQL Server.
@@ -17,7 +17,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         [TestMethod]
         [Ignore( "Need the SqlServerTypes library to resolve" )]
-       
+
         public void FallsWithinGeoFence()
         {
             var deviceWithGeoFence = BufferedDevice();
@@ -31,7 +31,8 @@ namespace Rock.Tests.Integration.Core.Model
             Assert.IsTrue( pointInside.Intersects( deviceWithGeoFence.Location.GeoFence ) );
         }
 
-        [TestMethod] [Ignore( "Need the SqlServerTypes library to resolve" )]
+        [TestMethod]
+        [Ignore( "Need the SqlServerTypes library to resolve" )]
         public void FallsOutsideGeoFence()
         {
             var deviceWithGeoFence = BufferedDevice();
@@ -49,7 +50,8 @@ namespace Rock.Tests.Integration.Core.Model
         /// <summary>
         /// Should verify the device isn't empty.
         /// </summary>
-        [TestMethod] [Ignore( "Need the SqlServerTypes library to resolve" )]
+        [TestMethod]
+        [Ignore( "Need the SqlServerTypes library to resolve" )]
         public void NotEmpty()
         {
             var device = StandardDevice();
@@ -60,7 +62,8 @@ namespace Rock.Tests.Integration.Core.Model
         /// <summary>
         /// Should serialize the Device into a non-empty string.
         /// </summary>
-        [TestMethod] [Ignore( "Need the SqlServerTypes library to resolve" )]
+        [TestMethod]
+        [Ignore( "Need the SqlServerTypes library to resolve" )]
         public void ToJson()
         {
             var device = StandardDevice();
@@ -68,14 +71,15 @@ namespace Rock.Tests.Integration.Core.Model
             var result = device.ToJson();
             string key1 = "\"GeoPoint\": {";
             string key2 = "\"WellKnownText\": ";
-            Assert.AreNotEqual( result.IndexOf( key1 ), -1 );
-            Assert.AreNotEqual( result.IndexOf( key2 ), -1 );
+            Assert.AreNotEqual( -1, result.IndexOf( key1 ) );
+            Assert.AreNotEqual( -1, result.IndexOf( key2 ) );
         }
 
         /// <summary>
         /// Should take a JSON string and copy its contents to a new Device
         /// </summary>
-        [TestMethod] [Ignore( "Need the SqlServerTypes library to resolve" )]
+        [TestMethod]
+        [Ignore( "Need the SqlServerTypes library to resolve" )]
         public void FromJson()
         {
             var device = StandardDevice();

@@ -1,34 +1,82 @@
 <template>
-    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      :scriptSetupCode="scriptSetupCode"
+                      enableReflection>
 
         <RockButton :btnSize="btnSize" :btnType="btnType" @click="onClick" :isLoading="isLoading" :autoLoading="autoLoading" :autoDisable="autoDisable" :loadingText="loadingText" :isSquare="isSquare">
             <i class="ti ti-cross" v-if="isSquare"></i>
-            <template v-else>Click Here to Fire Async Operation</template>
+            <template v-else>{{ buttonText }}</template>
         </RockButton>
 
         <template #settings>
-            <div class="row">
-                <DropDownList formGroupClasses="col-md-3" label="Button Size" v-model="btnSize" :items="sizeOptions" :showBlankItem="false" />
-                <DropDownList formGroupClasses="col-md-3" label="Button Type" v-model="btnType" :items="typeOptions" :showBlankItem="false" />
-                <CheckBox formGroupClasses="col-md-3" label="Auto Loading Indicator" v-model="autoLoading" />
-                <CheckBox formGroupClasses="col-md-3" label="Auto Disable" v-model="autoDisable" />
-            </div>
-            <div class="row">
-                <CheckBox formGroupClasses="col-md-3" label="Force Loading" v-model="isLoading" />
-                <CheckBox formGroupClasses="col-md-3" label="Square" v-model="isSquare" />
-                <TextBox formGroupClasses="col-md-3" label="Loading Text" v-model="loadingText" />
-            </div>
+            <ContentSection title="Rock Button Settings">
+                <ContentStack title="Button Styling">
+                    <div class="row">
+                        <DropDownList v-model="btnSize"
+                                      label="Button Size"
+                                      help="Sets the overall size and presence of the button. Defaults to Default."
+                                      :items="sizeOptions"
+                                      :showBlankItem="false"
+                                      formGroupClasses="col-md-3" />
+                        <DropDownList
+                                      v-model="btnType"
+                                      label="Button Type"
+                                      help="Sets the visual style of the button. Defaults to Default."
+                                      :items="typeOptions"
+                                      :showBlankItem="false"
+                                      formGroupClasses="col-md-3" />
+                        <CheckBox
+                                  v-model="isSquare"
+                                  label="Square"
+                                  help="Displays the button as a square button with an icon."
+                                  formGroupClasses="col-md-3" />
+                        <TextBox
+                                 v-model="buttonText"
+                                 label="Button Text"
+                                 help="Text displayed on the button."
+                                 formGroupClasses="col-md-3" />
+                    </div>
+                </ContentStack>
+                <ContentStack title="Button Loading Behavior">
+                    <div class="row">
+                        <CheckBox
+                                  v-model="autoLoading"
+                                  label="Auto Loading Indicator"
+                                  help="Automatically shows loading text (Defaults to 'Loading...') and loading indicator while async click handler is running."
+                                  formGroupClasses="col-md-3" />
+                        <CheckBox
+                                  v-model="autoDisable"
+                                  label="Auto Disable"
+                                  help="Automatically disables button while async click handler is running."
+                                  formGroupClasses="col-md-3" />
+                        <CheckBox
+                                  v-model="isLoading"
+                                  label="Force Loading"
+                                  help="Force button to enter the loading state."
+                                  formGroupClasses="col-md-3" />
+                        <TextBox
+                                 v-model="loadingText"
+                                 label="Loading Text"
+                                 help="Text shown when button is loading."
+                                 formGroupClasses="col-md-3" />
+                    </div>
+                </ContentStack>
+            </ContentSection>
         </template>
     </GalleryAndResult>
 </template>
 
 <script setup lang="ts">
-    import { ref } from "vue";
+    import { ref, computed } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import { getSfcControlImportPath, ComponentUsage } from "./common/utils.partial";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -52,26 +100,77 @@
 
     const btnSize = ref(BtnSize.Default);
     const btnType = ref(BtnType.Default);
-    const onClick = (): Promise<void> => {
-        return new Promise((res) => setTimeout(() => {
-            res(undefined);
-            alert("done");
-        }, 3000));
-    };
     const autoLoading = ref(false);
     const autoDisable = ref(false);
     const isLoading = ref(false);
     const isSquare = ref(false);
+    const buttonText = ref("Button Text");
     const loadingText = ref("Loading...");
-    const importCode = `import RockButton, { BtnType, BtnSize } from "@Obsidian/Controls/rockButton.obs";`;
-    const exampleCode = `<RockButton
-    :btnSize="BtnSize.Default"
-    :btnType="BtnType.Default"
-    @click="onClick"
-    :isLoading="isLoading"
-    :autoLoading="autoLoading"
-    :autoDisable="autoDisable"
-    :loadingText="loadingText">
-    Button Text
-</RockButton>`;
+
+    async function onClick(): Promise<void> {
+        return new Promise((response) => setTimeout(() => {
+            response(undefined);
+            alert("Button Clicked!");
+        }, 3000));
+    }
+
+    const importCode = getSfcControlImportPath("rockButton");
+    const exampleCode = computed(() => {
+        const usage = new ComponentUsage("RockButton");
+
+        const btnSizeKey = Object.keys(BtnSize).find(k => BtnSize[k] === btnSize.value);
+        const btnTypeKey = Object.keys(BtnType).find(k => BtnType[k] === btnType.value);
+
+        const btnSizeDefaultKey = Object.keys(BtnSize).find(k => BtnSize[k] === BtnSize.Default);
+        const btnTypeDefaultKey = Object.keys(BtnType).find(k => BtnType[k] === BtnType.Default);
+
+        usage.addAttribute(`btnSize`, `BtnSize.${btnSizeKey}`, `BtnSize.${btnSizeDefaultKey}`);
+        usage.addAttribute(`btnType`, `BtnType.${btnTypeKey}`, `BtnType.${btnTypeDefaultKey}`);
+        usage.addAttribute(`@click="onClick"`, true, false);
+        usage.addAttribute(`isLoading="isLoading"`, isLoading.value !== false, false);
+        usage.addAttribute(`autoLoading="autoLoading"`, autoLoading.value !== false, false);
+        usage.addAttribute(`autoDisable="autoDisable"`, autoDisable.value !== false, false);
+        usage.addAttribute(`loadingText="loadingText"`, loadingText.value !== "Loading...", false);
+        usage.addAttribute(`isSquare="isSquare"`, isSquare.value !== false, false);
+
+        if (isSquare.value) {
+            usage.addBody('<i class="ti ti-cross" v-if="isSquare"></i>');
+            usage.addBody(`<template v-else>${buttonText.value}</template>`);
+        }
+        else {
+            usage.addBody(buttonText.value);
+        }
+
+        return usage.toString();
+    });
+    const scriptSetupCode = computed(() => {
+        const usage = new ComponentUsage("PageTree");
+
+        usage.addScriptImport('import { BtnType } from "@Obsidian/Enums/Controls/btnType";');
+        usage.addScriptImport('import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";');
+
+        usage.addScriptBody("async function onClick(): Promise<void> {\n    // Your async operation logic here\n    }");
+
+        if (isLoading.value) {
+            usage.addScriptBody("const isLoading = ref<boolean>(false);");
+        }
+
+        if (autoLoading.value) {
+            usage.addScriptBody("const autoLoading = ref<boolean>(false);");
+        }
+
+        if (autoDisable.value) {
+            usage.addScriptBody("const autoDisable = ref<boolean>(false);");
+        }
+
+        if (loadingText.value !== "Loading...") {
+            usage.addScriptBody('const loadingText = ref<string>("Loading...");');
+        }
+
+        if (isSquare.value) {
+            usage.addScriptBody("const isSquare = ref<boolean>(false);");
+        }
+
+        return usage.toScriptSetupString();
+    });
 </script>

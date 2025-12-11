@@ -24,7 +24,6 @@ using Rock.Cms.Utm;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData.Cms;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -250,7 +249,7 @@ namespace Rock.Tests.Integration.Core.Model
             Assert.AreEqual( "banner_image", utmSettings.UtmContent );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "/give?param1=1&param2=2#howtogive", "google", "/give?param1=1&param2=2&utm_source=google#howtogive" )]
         [DataRow( "~/blog#entry123", "google", "~/blog?utm_source=google#entry123" )]
         [DataRow( "https://prealpha.rocksolidchurchdemo.com/watch", null, "https://prealpha.rocksolidchurchdemo.com/watch" )]
@@ -262,7 +261,7 @@ namespace Rock.Tests.Integration.Core.Model
             Assert.AreEqual( expectedOutput, shortlink.UrlWithUtm );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "google", null, null, null, null, "utm_source=google" )]
         [DataRow( null, "post", null, null, null, "utm_medium=post" )]
         [DataRow( null, null, _testCampaignNameBlog, null, null, "utm_campaign=blog%20promotion" )]

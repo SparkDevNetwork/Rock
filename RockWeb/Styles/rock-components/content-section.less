@@ -56,12 +56,25 @@
     pointer-events: auto;
 }
 
+.contentsection-header-title-and-description {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
 .contentsection-header-title {
     display: flex;
     align-items: center;
     gap: var(--spacing-tiny);
     color: var(--color-interface-strong);
     margin: 0;
+}
+
+.contentsection-header-description {
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-xsmall);
+    line-height: var(--line-height-tight);
+    margin-top: var(--spacing-tiny);
 }
 
 .contentsection .contentsection-header-actions .ti-chevron-up {

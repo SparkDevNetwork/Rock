@@ -22,11 +22,9 @@ using Http.TestLibrary;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Storage.AssetStorage;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Core.Storage
@@ -127,7 +125,7 @@ namespace Rock.Tests.Integration.Core.Storage
             {
                 var assetStorageProvider = GetAssetStorageProvider();
                 var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
-                
+
                 Asset asset = new Asset();
                 asset.Type = AssetType.File;
                 asset.Key = ( "TestFolder/TestFolderA/TestUploadObjectByKey.jpg" );
@@ -146,7 +144,7 @@ namespace Rock.Tests.Integration.Core.Storage
             {
                 var assetStorageProvider = GetAssetStorageProvider();
                 var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
-                
+
                 Asset asset = new Asset();
                 asset.Type = AssetType.File;
                 asset.Name = ( "TestFolderA/TestUploadObjectByName.jpg" );
@@ -165,7 +163,7 @@ namespace Rock.Tests.Integration.Core.Storage
             {
                 var assetStorageProvider = GetAssetStorageProvider();
                 var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
-                
+
                 var assets = fileSystemComponent.ListFoldersInFolder( assetStorageProvider, new Asset { Key = "~/TestFolder", Type = AssetType.Folder } );
 
                 Assert.IsTrue( assets.Any( a => a.Key == "~/TestFolder/TestFolderA/" ) );
@@ -190,7 +188,7 @@ namespace Rock.Tests.Integration.Core.Storage
             {
                 var assetStorageProvider = GetAssetStorageProvider();
                 var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
-                
+
                 var assets = fileSystemComponent.ListFilesInFolder( assetStorageProvider, new Asset { Key = "TestFolder/TestFolderA", Type = AssetType.Folder } );
 
                 Assert.IsTrue( assets.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
@@ -210,7 +208,7 @@ namespace Rock.Tests.Integration.Core.Storage
             {
                 var assetStorageProvider = GetAssetStorageProvider();
                 var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
-                
+
                 var assets = fileSystemComponent.ListObjects( assetStorageProvider );
 
                 Assert.IsTrue( assets.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
@@ -241,7 +239,7 @@ namespace Rock.Tests.Integration.Core.Storage
             {
                 var assetStorageProvider = GetAssetStorageProvider();
                 var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
-                
+
                 var assets = fileSystemComponent.ListObjectsInFolder( assetStorageProvider, new Asset { Key = "TestFolder/TestFolderA", Type = AssetType.Folder } );
 
                 Assert.IsTrue( assets.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
@@ -260,7 +258,7 @@ namespace Rock.Tests.Integration.Core.Storage
             {
                 var assetStorageProvider = GetAssetStorageProvider();
                 var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
-                
+
                 var asset = new Asset();
                 asset.Type = AssetType.File;
                 asset.Key = "TestFolder/TestFolderA/TestUploadObjectByKey.jpg";
@@ -278,7 +276,7 @@ namespace Rock.Tests.Integration.Core.Storage
             {
                 var assetStorageProvider = GetAssetStorageProvider();
                 var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
-                
+
                 var asset = new Asset();
                 asset.Type = AssetType.File;
                 asset.Key = "TestFolder/TestFolderA/TestUploadObjectByKeyRenamed.jpg";
@@ -300,7 +298,7 @@ namespace Rock.Tests.Integration.Core.Storage
             {
                 var assetStorageProvider = GetAssetStorageProvider();
                 var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
-                
+
                 var asset = new Asset();
                 asset.Type = AssetType.File;
                 asset.Key = "TestFolder/TestFolderA/TestUploadObjectByKeyRenamed.jpg";
@@ -323,7 +321,7 @@ namespace Rock.Tests.Integration.Core.Storage
             {
                 var assetStorageProvider = GetAssetStorageProvider();
                 var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
-                
+
                 var asset = new Asset();
                 asset.Type = AssetType.File;
                 asset.Key = "TestFolder/DELETEFILE.jpg";
@@ -341,7 +339,7 @@ namespace Rock.Tests.Integration.Core.Storage
             {
                 var assetStorageProvider = GetAssetStorageProvider();
                 var fileSystemComponent = assetStorageProvider.GetAssetStorageComponent();
-                
+
                 var asset = new Asset();
                 asset.Type = AssetType.Folder;
                 asset.Key = "TestFolder/TestFolderDELETEME";

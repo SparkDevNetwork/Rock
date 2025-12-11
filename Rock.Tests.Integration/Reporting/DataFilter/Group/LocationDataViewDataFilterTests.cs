@@ -80,12 +80,12 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Group
 
             var results = groupQuery.ToList();
 
-            Assert.IsTrue( results.Count > 0, "The result set must contain at least one group." );
+            Assert.IsNotEmpty( results, "The result set must contain at least one group." );
 
             // Verify all Groups have at least one Location where State = "AZ".
             var countOfGroupsNotInArizona = results.Where( x => !x.GroupLocations.Any( gl => gl.Location.State == "AZ" ) ).Count();
 
-            Assert.IsTrue( countOfGroupsNotInArizona == 0, "The result set contains one or more groups that do not match the location filter." );
+            Assert.AreEqual( 0, countOfGroupsNotInArizona, "The result set contains one or more groups that do not match the location filter." );
         }
 
         /// <summary>
@@ -101,12 +101,12 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Group
 
             var results = groupQuery.ToList();
 
-            Assert.IsTrue( results.Count > 0, "The result set must contain at least one group." );
+            Assert.IsNotEmpty( results, "The result set must contain at least one group." );
 
             // Verify that there are no Groups in the result set having any Location where State = "AZ".
             var countOfGroupsInArizona = results.Where( x => x.GroupLocations.Any( gl => gl.Location.State == "AZ" ) ).Count();
 
-            Assert.IsTrue( countOfGroupsInArizona == 0, "The result set contains one or more groups that do not match the location filter." );
+            Assert.AreEqual( 0, countOfGroupsInArizona, "The result set contains one or more groups that do not match the location filter." );
         }
 
         /// <summary>

@@ -9155,7 +9155,7 @@ END
         /// <param name="isDatasetSystem">Indicates if the persisted dataset is a system dataset.</param>
         /// <param name="isDatasetActive">Indicates if the persisted dataset is active.</param>
         /// <param name="enabledLavaCommands">The enabled Lava commands for the persisted dataset.</param>
-        /// <param name="refreshIntervalMinutes">The refresh interval in minutes for the persisted dataset.</param>
+        /// <param name="persistedScheduleIntervalMinutes">The persisted schedule refresh interval in minutes for the persisted dataset.</param>
         public void AddOrUpdatePersistedDatasetWithRefreshInterval(
             string datasetGuid,
             string datasetAccessKey,
@@ -9168,7 +9168,7 @@ END
             bool isDatasetSystem,
             bool isDatasetActive,
             string enabledLavaCommands,
-            int refreshIntervalMinutes )
+            int persistedScheduleIntervalMinutes )
         {
             Migration.Sql( $@"
     IF NOT EXISTS(SELECT 1 FROM [PersistedDataset] WHERE [Guid] = '{datasetGuid}')
@@ -9184,7 +9184,7 @@ END
             [IsSystem],
             [IsActive],
             [EnabledLavaCommands],
-            [RefreshIntervalMinutes],
+            [PersistedScheduleIntervalMinutes],
             [Guid]
         )
         VALUES (
@@ -9198,7 +9198,7 @@ END
             {(isDatasetSystem ? 1 : 0)},
             {(isDatasetActive ? 1 : 0)},
             '{enabledLavaCommands}',
-            {refreshIntervalMinutes},
+            {persistedScheduleIntervalMinutes},
             '{datasetGuid}'
         );
     END
@@ -9215,7 +9215,7 @@ END
             [IsSystem] = {(isDatasetSystem ? 1 : 0)},
             [IsActive] = {(isDatasetActive ? 1 : 0)},
             [EnabledLavaCommands] = '{enabledLavaCommands}',
-            [RefreshIntervalMinutes] = {refreshIntervalMinutes}
+            [PersistedScheduleIntervalMinutes] = {persistedScheduleIntervalMinutes}
         WHERE [Guid] = '{datasetGuid}';
     END" );
         }

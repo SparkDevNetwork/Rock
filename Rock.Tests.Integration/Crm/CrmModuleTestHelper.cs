@@ -39,7 +39,7 @@ namespace Rock.Tests.Integration.Crm
             dataContext = dataContext ?? new RockContext();
             var personService = new PersonService( dataContext );
 
-            Assert.IsNotNull( person.Guid, "Person.Guid is a required value." );
+            Assert.AreNotEqual( Guid.Empty, person.Guid, "Person.Guid is a required value." );
 
             var existingPerson = personService.Get( person.Guid );
             if ( existingPerson != null )

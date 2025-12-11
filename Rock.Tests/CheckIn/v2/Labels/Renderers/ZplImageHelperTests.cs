@@ -61,7 +61,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
 
                 var imageCache = ZplImageHelper.CreateImage( ms, options );
 
-                Assert.AreEqual( expectedDataSize, imageCache.ImageData.Length );
+                Assert.HasCount( expectedDataSize, imageCache.ImageData );
             }
         }
 
@@ -84,7 +84,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
 
                 var imageCache = ZplImageHelper.CreateImage( ms, options );
 
-                Assert.AreEqual( expectedDataSize, imageCache.ImageData.Length );
+                Assert.HasCount( expectedDataSize, imageCache.ImageData );
             }
         }
 
@@ -108,7 +108,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
 
                 var imageCache = ZplImageHelper.CreateImage( ms, options );
 
-                Assert.AreEqual( expectedDataSize, imageCache.ImageData.Length );
+                Assert.HasCount( expectedDataSize, imageCache.ImageData );
                 Assert.AreEqual( expectedWidth, imageCache.Width );
                 Assert.AreEqual( expectedHeight, imageCache.Height );
             }
@@ -134,7 +134,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
 
                 var imageCache = ZplImageHelper.CreateImage( ms, options );
 
-                Assert.AreEqual( expectedDataSize, imageCache.ImageData.Length );
+                Assert.HasCount( expectedDataSize, imageCache.ImageData );
                 Assert.AreEqual( expectedWidth, imageCache.Width );
                 Assert.AreEqual( expectedHeight, imageCache.Height );
             }

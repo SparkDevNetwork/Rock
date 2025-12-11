@@ -19,7 +19,6 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
@@ -47,13 +46,13 @@ namespace Rock.Tests.Integration.Core.Model
             SetGradeTransitionDateGlobalAttribute( tomorrow.Month, tomorrow.Day );
 
             int thisYear = RockDateTime.Now.Year;
-            var Person = new Person();
+            var person = new Person();
 
             // set the GraduationYear to this year using GradeOffset
-            Person.GradeOffset = 0;
+            person.GradeOffset = 0;
 
             // Grade Transition isn't until tomorrow, so if their GradeOffset is 0,they should graduation day should be this year
-            Assert.IsTrue( Person.GraduationYear == thisYear );
+            Assert.AreEqual( thisYear, person.GraduationYear );
         }
 
         [TestMethod]
@@ -63,13 +62,13 @@ namespace Rock.Tests.Integration.Core.Model
             SetGradeTransitionDateGlobalAttribute( yesterday.Month, yesterday.Day );
 
             int nextYear = RockDateTime.Now.Year + 1;
-            var Person = new Person();
+            var person = new Person();
 
             // set the GraduationYear to this year using GradeOffset
-            Person.GradeOffset = 0;
+            person.GradeOffset = 0;
 
             // Grade Transition was yesterday, so if their GradeOffset is 0, they should graduate next year
-            Assert.IsTrue( Person.GraduationYear == nextYear );
+            Assert.AreEqual( nextYear, person.GraduationYear );
         }
 
         private static void SetGradeTransitionDateGlobalAttribute( int month, int day )
@@ -102,7 +101,7 @@ namespace Rock.Tests.Integration.Core.Model
             var person = new Person();
             person.SetBirthDate( null );
 
-            Assert.AreEqual( null, person.DaysToBirthdayOrNull );
+            Assert.IsNull( person.DaysToBirthdayOrNull );
         }
 
         [TestMethod]
@@ -125,7 +124,7 @@ namespace Rock.Tests.Integration.Core.Model
             var person = new Person();
             person.AnniversaryDate = null;
 
-            Assert.AreEqual( null, person.DaysToAnniversaryOrNull );
+            Assert.IsNull( person.DaysToAnniversaryOrNull );
         }
 
         [TestMethod]
@@ -140,7 +139,7 @@ namespace Rock.Tests.Integration.Core.Model
             Assert.IsFalse( anniversaryThisWeek || anniversaryNextWeek );
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "30-06", "2020-06-29", 1, DisplayName = "Anniversary is the next day." )]
         [DataRow( "30-06", "2020-06-30", 0, DisplayName = "Anniversary is the same day." )]
         [DataRow( "30-06", "2020-07-01", 364, DisplayName = "Anniversary is the previous day." )]

@@ -1405,9 +1405,8 @@
 
     startRealTime();
 
-    // On initialization, if the communication is new, then copy fields from the template.
     onMounted(async () => {
-        if (!communicationId.value || !communicationTemplateGuid.value) {
+        if (config.shouldApplyTemplateToCommunication) {
             if (communicationTemplateDetail.value) {
                 populateFromCommunicationTemplateDetail(communicationTemplateDetail.value);
             }
