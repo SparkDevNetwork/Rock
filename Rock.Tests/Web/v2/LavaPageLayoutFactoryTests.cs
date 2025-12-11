@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Moq;
 
-using Rock.Configuration;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Tests.Shared;
@@ -19,7 +14,7 @@ using Rock.Web.v2;
 namespace Rock.Tests.Web.v2
 {
     [TestClass]
-    public class LavaPageLayoutFactoryTests
+    public class LavaPageLayoutFactoryTests : LavaPageTestsBase
     {
         [TestMethod]
         public void PerfTest()
@@ -209,7 +204,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
 ";
 
             var fileProvider = GetMockFileProvider(
-                new[] { "\\Themes\\RockNextGen\\Layouts\\SiteMaster.lava", mainLava },
+                new[] { "\\Themes\\RockNextGen\\/Layouts/SiteMaster.lava", mainLava },
                 new[] { "\\Themes\\Layouts\\RockNextGen\\FullWidth.lava", fullWidthLava }
             );
 
@@ -253,6 +248,8 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
             }
         }
 
+        #region GetLayout
+
         [TestMethod]
         public void GetLayout_WithSameFile_UsesCache()
         {
@@ -280,6 +277,306 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 Assert.AreSame( layout, layout2 );
             }
         }
+
+        #endregion
+
+        #region RockPageIcon
+
+        [TestMethod]
+        public void RockPageIcon_WithIcon_RendersIcon()
+        {
+            var mainLava = @"<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body id=""body"">
+    <Rock:PageIcon></Rock:PageIcon>
+</body>
+</html>
+";
+
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", mainLava }
+            );
+
+            using ( TestHelper.CreateScopedRockApp( ConfigureServices ) )
+            {
+                var builder = new LavaPageLayoutFactory( fileProvider );
+                var engine = new FluidEngine();
+                var renderContext = engine.NewRenderContext();
+
+                renderContext.SetMergeField( "Page", new Dictionary<string, object>
+                {
+                    ["PageDisplayIcon"] = true
+                } );
+                renderContext.SetMergeField( "PageIconCssClass", "ti ti-home" );
+
+                var layout = builder.GetLayout( "/main.lava", "RockNextGen", engine );
+                var renderResult = engine.RenderTemplate( layout.Template, renderContext );
+
+                Assert.Contains( "ti ti-home", renderResult.Text );
+            }
+        }
+
+        [TestMethod]
+        public void RockPageIcon_WithEmptyIcon_DoesNotRenderIcon()
+        {
+            var mainLava = @"<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body id=""body"">
+    <Rock:PageIcon></Rock:PageIcon>
+</body>
+</html>
+";
+
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", mainLava }
+            );
+
+            using ( TestHelper.CreateScopedRockApp( ConfigureServices ) )
+            {
+                var builder = new LavaPageLayoutFactory( fileProvider );
+                var engine = new FluidEngine();
+                var renderContext = engine.NewRenderContext();
+
+                renderContext.SetMergeField( "Page", new Dictionary<string, object>
+                {
+                    ["PageDisplayIcon"] = true
+                } );
+                renderContext.SetMergeField( "PageIconCssClass", "" );
+
+                var layout = builder.GetLayout( "/main.lava", "RockNextGen", engine );
+                var renderResult = engine.RenderTemplate( layout.Template, renderContext );
+
+                Assert.DoesNotContain( "page-icon", renderResult.Text );
+            }
+        }
+
+        [TestMethod]
+        public void RockPageIcon_WithNullIcon_DoesNotRenderIcon()
+        {
+            var mainLava = @"<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body id=""body"">
+    <Rock:PageIcon></Rock:PageIcon>
+</body>
+</html>
+";
+
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", mainLava }
+            );
+
+            using ( TestHelper.CreateScopedRockApp( ConfigureServices ) )
+            {
+                var builder = new LavaPageLayoutFactory( fileProvider );
+                var engine = new FluidEngine();
+                var renderContext = engine.NewRenderContext();
+
+                renderContext.SetMergeField( "Page", new Dictionary<string, object>
+                {
+                    ["PageDisplayIcon"] = true
+                } );
+                renderContext.SetMergeField( "PageIconCssClass", null );
+
+                var layout = builder.GetLayout( "/main.lava", "RockNextGen", engine );
+                var renderResult = engine.RenderTemplate( layout.Template, renderContext );
+
+                Assert.DoesNotContain( "page-icon", renderResult.Text );
+            }
+        }
+
+        [TestMethod]
+        public void RockPageIcon_WithoutPageDisplayIcon_DoesNotRenderIcon()
+        {
+            var mainLava = @"<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body id=""body"">
+    <Rock:PageIcon></Rock:PageIcon>
+</body>
+</html>
+";
+
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", mainLava }
+            );
+
+            using ( TestHelper.CreateScopedRockApp( ConfigureServices ) )
+            {
+                var builder = new LavaPageLayoutFactory( fileProvider );
+                var engine = new FluidEngine();
+                var renderContext = engine.NewRenderContext();
+
+                renderContext.SetMergeField( "Page", new Dictionary<string, object>
+                {
+                    ["PageDisplayIcon"] = false
+                } );
+                renderContext.SetMergeField( "PageIconCssClass", "ti ti-home" );
+
+                var layout = builder.GetLayout( "/main.lava", "RockNextGen", engine );
+                var renderResult = engine.RenderTemplate( layout.Template, renderContext );
+
+                Assert.DoesNotContain( "page-icon", renderResult.Text );
+            }
+        }
+
+        #endregion
+
+        #region RockPageTitle
+
+        [TestMethod]
+        public void RockPageTitle_WithTitle_RendersTitle()
+        {
+            var mainLava = @"<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body id=""body"">
+    <Rock:PageTitle></Rock:PageTitle>
+</body>
+</html>
+";
+
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", mainLava }
+            );
+
+            using ( TestHelper.CreateScopedRockApp( ConfigureServices ) )
+            {
+                var builder = new LavaPageLayoutFactory( fileProvider );
+                var engine = new FluidEngine();
+                var renderContext = engine.NewRenderContext();
+
+                renderContext.SetMergeField( "Page", new Dictionary<string, object>
+                {
+                    ["PageDisplayTitle"] = true
+                } );
+                renderContext.SetMergeField( "PageTitle", "homepage" );
+
+                var layout = builder.GetLayout( "/main.lava", "RockNextGen", engine );
+                var renderResult = engine.RenderTemplate( layout.Template, renderContext );
+
+                Assert.Contains( "homepage", renderResult.Text );
+            }
+        }
+
+        [TestMethod]
+        public void RockPageTitle_WithEmptyTitle_DoesNotRenderTitle()
+        {
+            var mainLava = @"<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body id=""body"">
+    AA<Rock:PageIcon></Rock:PageIcon>ZZ
+</body>
+</html>
+";
+
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", mainLava }
+            );
+
+            using ( TestHelper.CreateScopedRockApp( ConfigureServices ) )
+            {
+                var builder = new LavaPageLayoutFactory( fileProvider );
+                var engine = new FluidEngine();
+                var renderContext = engine.NewRenderContext();
+
+                renderContext.SetMergeField( "Page", new Dictionary<string, object>
+                {
+                    ["PageDisplayTitle"] = true
+                } );
+                renderContext.SetMergeField( "PageTitle", "" );
+
+                var layout = builder.GetLayout( "/main.lava", "RockNextGen", engine );
+                var renderResult = engine.RenderTemplate( layout.Template, renderContext );
+
+                Assert.Contains( "AAZZ", renderResult.Text );
+            }
+        }
+
+        [TestMethod]
+        public void RockPageTitle_WithNullTitle_DoesNotRenderTitle()
+        {
+            var mainLava = @"<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body id=""body"">
+    AA<Rock:PageIcon></Rock:PageIcon>ZZ
+</body>
+</html>
+";
+
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", mainLava }
+            );
+
+            using ( TestHelper.CreateScopedRockApp( ConfigureServices ) )
+            {
+                var builder = new LavaPageLayoutFactory( fileProvider );
+                var engine = new FluidEngine();
+                var renderContext = engine.NewRenderContext();
+
+                renderContext.SetMergeField( "Page", new Dictionary<string, object>
+                {
+                    ["PageDisplayTitle"] = true
+                } );
+                renderContext.SetMergeField( "PageTitle", null );
+
+                var layout = builder.GetLayout( "/main.lava", "RockNextGen", engine );
+                var renderResult = engine.RenderTemplate( layout.Template, renderContext );
+
+                Assert.Contains( "AAZZ", renderResult.Text );
+            }
+        }
+
+        [TestMethod]
+        public void RockPageTitle_WithoutPageDisplayTitle_DoesNotRenderTitle()
+        {
+            var mainLava = @"<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body id=""body"">
+    <Rock:PageIcon></Rock:PageIcon>
+</body>
+</html>
+";
+
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", mainLava }
+            );
+
+            using ( TestHelper.CreateScopedRockApp( ConfigureServices ) )
+            {
+                var builder = new LavaPageLayoutFactory( fileProvider );
+                var engine = new FluidEngine();
+                var renderContext = engine.NewRenderContext();
+
+                renderContext.SetMergeField( "Page", new Dictionary<string, object>
+                {
+                    ["PageDisplayTitle"] = false
+                } );
+                renderContext.SetMergeField( "PageTitle", "homepage" );
+
+                var layout = builder.GetLayout( "/main.lava", "RockNextGen", engine );
+                var renderResult = engine.RenderTemplate( layout.Template, renderContext );
+
+                Assert.DoesNotContain( "homepage", renderResult.Text );
+            }
+        }
+
+        #endregion
+
+        #region RenderBody
 
         [TestMethod]
         public void RenderBody_WithoutChildLayout_RendersDefaultBody()
@@ -327,8 +624,8 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
 </Rock:ParentLayout>";
 
             var fileProvider = GetMockFileProvider(
-                new[] { "\\main.lava", mainLava },
-                new[] { "\\layout.lava", layoutLava }
+                new[] { "/main.lava", mainLava },
+                new[] { "/layout.lava", layoutLava }
             );
 
             using ( TestHelper.CreateScopedRockApp( ConfigureServices ) )
@@ -336,12 +633,16 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 var builder = new LavaPageLayoutFactory( fileProvider );
                 var engine = GetMockLavaEngine();
 
-                var layout = builder.CreateLayout( "\\layout.lava", "RockNextGen", engine );
+                var layout = builder.CreateLayout( "/layout.lava", "RockNextGen", engine );
 
                 Assert.Contains( "<div>child</div>", layout.Source );
                 Assert.DoesNotContain( "<div>parent</div>", layout.Source );
             }
         }
+
+        #endregion
+
+        #region RenderSection
 
         [TestMethod]
         public void RenderSection_WithDefinedSection_RendersSectionContent()
@@ -363,8 +664,8 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
 </Rock:ParentLayout>";
 
             var fileProvider = GetMockFileProvider(
-                new[] { "\\main.lava", mainLava },
-                new[] { "\\layout.lava", layoutLava }
+                new[] { "/main.lava", mainLava },
+                new[] { "/layout.lava", layoutLava }
             );
 
             using ( TestHelper.CreateScopedRockApp( ConfigureServices ) )
@@ -372,7 +673,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 var builder = new LavaPageLayoutFactory( fileProvider );
                 var engine = GetMockLavaEngine();
 
-                var layout = builder.CreateLayout( "\\layout.lava", "RockNextGen", engine );
+                var layout = builder.CreateLayout( "/layout.lava", "RockNextGen", engine );
 
                 Assert.Contains( "<div>child</div>", layout.Source );
                 Assert.DoesNotContain( "<div>parent</div>", layout.Source );
@@ -435,6 +736,10 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
             }
         }
 
+        #endregion
+
+        #region ParentLayout
+
         [TestMethod]
         public void ParentLayout_WithoutSource_RendersEmpty()
         {
@@ -458,6 +763,10 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 Assert.IsEmpty( layout.Source );
             }
         }
+
+        #endregion
+
+        #region RockZone
 
         [TestMethod]
         public void RockZone_WithClass_DefinesZoneWithClass()
@@ -483,61 +792,9 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
             }
         }
 
-        internal static void ConfigureServices( ServiceCollection services )
-        {
-            var hostingMock = new Mock<IHostingSettings>( MockBehavior.Loose );
+        #endregion
 
-            hostingMock.Setup( a => a.ApplicationStartDateTime )
-                .Returns( DateTime.Now );
-            hostingMock.Setup( a => a.VirtualRootPath ).Returns( " / " );
-            hostingMock.Setup( a => a.WebRootPath ).Returns( "/" );
-            hostingMock.Setup( a => a.NodeName ).Returns( "TestNode" );
-
-            services.AddSingleton( hostingMock.Object );
-        }
-
-        internal static IFileProvider GetMockFileProvider( params string[][] filesAndContents )
-        {
-            var fileProviderMock = new Mock<IFileProvider>();
-
-            fileProviderMock.Setup( m => m.GetFileInfo( It.IsAny<string>() ) ).Returns<string>( path =>
-            {
-                var fileInfoMock = new Mock<IFileInfo>();
-
-                for ( int i = 0; i < filesAndContents.Length; i++ )
-                {
-                    if ( filesAndContents[i][0] != path )
-                    {
-                        continue;
-                    }
-
-                    var stream = new MemoryStream();
-
-                    using ( var writer = new StreamWriter( stream, Encoding.UTF8, 4096, true ) )
-                    {
-                        writer.Write( filesAndContents[i][1].Replace( "\r\n", "\n" ) );
-                    }
-
-                    fileInfoMock.Setup( m => m.Exists ).Returns( true );
-                    fileInfoMock.Setup( m => m.CreateReadStream() ).Returns( () =>
-                    {
-                        var fileStream = new MemoryStream();
-
-                        stream.Position = 0;
-                        stream.CopyTo( fileStream );
-                        fileStream.Position = 0;
-
-                        return fileStream;
-                    } );
-                }
-
-                fileInfoMock.Setup( m => m.Exists ).Returns( false );
-
-                return fileInfoMock.Object;
-            } );
-
-            return fileProviderMock.Object;
-        }
+        #region Support Classes and Methods
 
         private static ILavaEngine GetMockLavaEngine()
         {
@@ -548,5 +805,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
 
             return engineMock.Object;
         }
+
+        #endregion
     }
 }

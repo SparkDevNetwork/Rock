@@ -20,18 +20,13 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Routing;
 
-using AngleSharp;
 using AngleSharp.Dom;
-using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
-using AngleSharp.Text;
 
 using Microsoft.Extensions.DependencyInjection;
-
-using OpenXmlPowerTools;
 
 using Rock;
 using Rock.Blocks;
@@ -44,6 +39,7 @@ using Rock.Security;
 using Rock.Utility.ExtensionMethods;
 using Rock.ViewModels.Crm;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Web.v2
 {
@@ -76,14 +72,37 @@ namespace Rock.Web.v2
 
         internal async Task<string> RenderAsync()
         {
-            // Add a temporary shim to support Sys.Application.add_load();
+            // Add a temporary shim to support "Sys.Application.add_load();".
             _rockRequestContext.Response.AddScriptToHead( "RockSysApplication", @"(function() {
     window.Sys = window.Sys || {};
     window.Sys.Application = window.Sys.Application || {};
-    window.Sys.Application.add_load = window.Sys.Application.add_load || ((fn) => {
+    window.Sys.Application.add_load = ((fn) => {
         setTimeout(fn, 0);
     });
 })();" );
+
+            // Add a temporary shim to support "Sys.WebForms.PageRequestManager".
+            _rockRequestContext.Response.AddScriptToHead( "RockSysWebForms", @"(function() {
+    window.Sys = window.Sys || {};
+    window.Sys.WebForms = window.Sys.WebForms || {};
+    window.Sys.WebForms.PageRequestManager = window.Sys.WebForms.PageRequestManager || {};
+    window.Sys.WebForms.PageRequestManager.getInstance = (() => {
+        return {
+            get_isInAsyncPostBack() { return false; },
+            add_initializeRequest() { },
+            remove_initializeRequest() { },
+            add_beginRequest() { },
+            remove_beginRequest() { },
+            add_pageLoading() { },
+            remove_pageLoading() { },
+            add_pageLoaded() { },
+            remove_pageLoaded() { },
+            add_endRequest() { },
+            remove_endRequest() { }
+        };
+    });
+})();" );
+
             _rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Scripts/Bundles/RockLibs" ), true );
             _rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Scripts/Bundles/RockUi" ), true );
             // DSH: In my quick testing on WebForms the validation.js part isn't actually used, and ajaxClientErrorHandler doesn't apply to non-WebForms.
@@ -92,6 +111,8 @@ namespace Rock.Web.v2
             var mergeFields = _rockRequestContext.GetCommonMergeFields();
 
             mergeFields.Add( "Page", _rockRequestContext.Page );
+            mergeFields.Add( "PageIconCssClass", _rockRequestContext.Page.IconCssClass );
+            mergeFields.Add( "PageTitle", _rockRequestContext.Page.PageTitle );
 
             var context = _engine.NewRenderContext();
 
@@ -117,7 +138,7 @@ namespace Rock.Web.v2
             }
 
             var headEndContent = string.Empty;
-            var bodyEndContent = string.Empty;
+            var bodyEndContent = "<div id=\"updateProgress\"></div>";
 
             if ( _rockRequestContext.Response is RockResponseBase responseBase )
             {

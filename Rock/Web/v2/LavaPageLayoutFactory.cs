@@ -197,6 +197,7 @@ namespace Rock.Web.v2
         /// <param name="maxDepth">The maximum depth allowed for recursion.</param>
         private void ProcessNodes( IDocument document, IElement container, LavaPageLayoutContext context, int maxDepth )
         {
+            ProcessContentNodes( document, container, context );
             ProcessSectionNodes( container, context );
             ProcessRenderBodyNode( container, context );
             ProcessRenderSectionNodes( container, context );
@@ -205,6 +206,29 @@ namespace Rock.Web.v2
             if ( maxDepth > 0 )
             {
                 ProcessParentLayoutNodes( container, context, maxDepth );
+            }
+        }
+
+        private void ProcessContentNodes( IDocument document, IElement container, LavaPageLayoutContext context )
+        {
+            var pageIconElements = container.QuerySelectorAll( "Rock\\:PageIcon" );
+
+            foreach ( var pageIconElement in pageIconElements )
+            {
+                var nodes = context.Parser.ParseFragment( "{% if Page.PageDisplayIcon == true and PageIconCssClass != null and PageIconCssClass != empty %}<div class=\"page-icon\"><i class=\"{{ PageIconCssClass }}\"></i></div>{% endif %}", document.Body ).ToArray();
+
+                pageIconElement.InsertBefore( nodes );
+                pageIconElement.Remove();
+            }
+
+            var pageTitleElements = container.QuerySelectorAll( "Rock\\:PageTitle" );
+
+            foreach ( var pageTitleElement in pageTitleElements )
+            {
+                var nodes = context.Parser.ParseFragment( "{% if Page.PageDisplayTitle and PageTitle != empty %}{{ PageTitle }}{% endif %}", document.Body ).ToArray();
+
+                pageTitleElement.InsertBefore( nodes );
+                pageTitleElement.Remove();
             }
         }
 

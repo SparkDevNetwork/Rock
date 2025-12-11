@@ -27,6 +27,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.Bus.Message;
 using Rock.Cms.Utm;
+using Rock.Configuration;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Net;
@@ -352,14 +353,36 @@ namespace Rock.Web
                 
                 try
                 {
-                    if ( requestContext.HttpContext.Request.QueryString["engine"] == "lava" )
+                    var useLavaEngine = false;
+
+                    if ( requestContext.HttpContext.Request.Cookies[".ROCK_PAGE_ENGINE"]?.Value == "lava" )
+                    {
+                        useLavaEngine = true;
+                    }
+
+                    if ( requestContext.HttpContext.Request.QueryString["pageengine"] == "lava" )
+                    {
+                        requestContext.HttpContext.Response.Cookies.Add( new HttpCookie( ".ROCK_PAGE_ENGINE", "lava" ) );
+                        useLavaEngine = true;
+                    }
+                    else if ( requestContext.HttpContext.Request.QueryString["pageengine"] == "legacy" )
+                    {
+                        requestContext.HttpContext.Response.Cookies.Add( new HttpCookie( ".ROCK_PAGE_ENGINE", "legacy" )
+                        {
+                            Expires = DateTime.Now.AddDays( -1 )
+                        } );
+                        useLavaEngine = false;
+                    }
+
+                    if ( useLavaEngine )
                     {
                         var requestWrapper = new HttpRequestBaseWrapper( requestContext.HttpContext.Request );
                         var responseWrapper = new RockResponseBase();
                         var user = UserLoginService.GetCurrentUser( false );
                         var rockRequestContext = new RockRequestContext( requestWrapper, responseWrapper, user );
-                        var filePath = requestContext.HttpContext.Server.MapPath( layoutPath ).Replace( ".aspx", ".lava" );
+                        var filePath = RockApp.Current.MapPath( layoutPath ).Replace( ".aspx", ".lava" );
 
+                        new PageReference( page.Id, routeId, parms, routeHttpRequest.QueryString );
                         rockRequestContext.PrepareRequestForPage( page );
 
                         return new LavaPageHandler( filePath, rockRequestContext );
