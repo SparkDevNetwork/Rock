@@ -1,10 +1,10 @@
 <Rock:ParentLayout src="~~/Layouts/SiteMaster.lava">
     <!-- Page Title -->
-    <section id="secPageTitle" class="page-header fullwidth">
+    <section id="main_secPageTitle" class="page-header fullwidth">
         <div class="page-title">
-            <h1 class="title"><Rock:PageIcon /> <Rock:PageTitle /></h1>
-            <Rock:PageBreadCrumbs />
-            <Rock:PageDescription />
+            <h1 class="title"><Rock:PageIcon></Rock:PageIcon> <Rock:PageTitle></Rock:PageTitle></h1>
+            <Rock:PageBreadCrumbs></Rock:PageBreadCrumbs>
+            <Rock:PageDescription></Rock:PageDescription>
         </div>
         <Rock:Zone Name="Context" CssClass="zone-context"></Rock:Zone>
     </section>
