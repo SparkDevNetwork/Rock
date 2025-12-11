@@ -16,6 +16,7 @@ using Rock.Blocks;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
+using Rock.Lava.Fluid;
 using Rock.Model;
 using Rock.Net;
 using Rock.Security;
@@ -58,12 +59,12 @@ namespace Rock.Tests.Web.v2
                 var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
                 var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
                 var requestContext = new Net.RockRequestContext( new RockResponseBase() );
-                var p1 = PageCache.Get( 1 );
-                var p2 = PageCache.All();
+
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
-                var renderer = new LavaPageRenderer( $"{{{{ '{expectedUrl}' | AddCssLink }}}}", engine, requestContext );
+                RenderTemplate( engine, requestContext, $"{{{{ '{expectedUrl}' | AddCssLink }}}}" );
 
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
                 var output = await renderer.RenderAsync();
 
                 var link = new HtmlParser()
@@ -87,8 +88,9 @@ namespace Rock.Tests.Web.v2
                 var requestContext = new Net.RockRequestContext( new RockResponseBase() );
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
-                var renderer = new LavaPageRenderer( $"{{{{ '{expectedUrl}' | AddScriptLink }}}}", engine, requestContext );
+                RenderTemplate(engine, requestContext, $"{{{{ '{expectedUrl}' | AddScriptLink }}}}" );
 
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
                 var output = await renderer.RenderAsync();
 
                 var link = new HtmlParser()
@@ -105,15 +107,13 @@ namespace Rock.Tests.Web.v2
         {
             using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc ) ) )
             {
-                var expectedUrl = "https://localhost/testmarker.min.js";
-
                 var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
                 var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
                 var response = new RockResponseBase();
                 var requestContext = new Net.RockRequestContext( response );
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
-                var renderer = new LavaPageRenderer( $"{{{{ '{expectedUrl}' | AddScriptLink }}}}", engine, requestContext );
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
 
                 response.AddScript( "test-marker", "console.log('test-marker');" );
 
@@ -147,7 +147,16 @@ namespace Rock.Tests.Web.v2
                 var requestContext = new Net.RockRequestContext( response );
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
-                var renderer = new LavaPageRenderer( "<html><body><Rock:Zone Name=\"Main\"></Rock:Zone></body></html>", engine, requestContext );
+                var zones = new List<LavaPageZone>
+                {
+                    new LavaPageZone
+                    {
+                        Key = "Main",
+                        Name = "Main"
+                    },
+                };
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine, zones ), engine, requestContext );
 
                 var content = await renderer.RenderAsync();
 
@@ -174,16 +183,25 @@ namespace Rock.Tests.Web.v2
                 var requestContext = new Net.RockRequestContext( response );
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
-                var renderer = new LavaPageRenderer( "", engine, requestContext );
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
 
-                var document = new HtmlParser().ParseDocument( "<html><body><Rock:Zone Name=\"Main\"></Rock:Zone></body></html>" );
-                var zones = document.QuerySelectorAll( "rock\\:zone" );
+                var zones = new List<LavaPageZone>
+                {
+                    new LavaPageZone
+                    {
+                        Key = "Main",
+                        Name = "Main"
+                    },
+                };
 
-                await renderer.RenderBlocksAsync( document, zones );
+                var result = await renderer.RenderBlocksAsync( zones );
 
-                var mainZone = zones[0];
+                Assert.IsTrue( result.ContainsKey( "Main" ) );
 
-                Assert.AreEqual( 2, mainZone.ChildNodes.Count( n => n.TextContent.Contains( "mock-obsidian-block" ) ) );
+                var mainZone = result["Main"];
+
+                Assert.Contains( "bid_1", mainZone );
+                Assert.Contains( "bid_2", mainZone );
             }
         }
 
@@ -210,16 +228,21 @@ namespace Rock.Tests.Web.v2
                 var requestContext = new Net.RockRequestContext( response );
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
-                var renderer = new LavaPageRenderer( "", engine, requestContext );
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
 
-                var document = new HtmlParser().ParseDocument( "<html><body><Rock:Zone Name=\"Main\"></Rock:Zone></body></html>" );
-                var zones = document.QuerySelectorAll( "rock\\:zone" );
+                var zones = new List<LavaPageZone>
+                {
+                    new LavaPageZone
+                    {
+                        Key = "Main",
+                        Name = "Main"
+                    },
+                };
 
-                await renderer.RenderBlocksAsync( document, zones );
+                var result = await renderer.RenderBlocksAsync( zones );
 
-                var mainZone = zones[0];
-
-                Assert.AreEqual( 0, mainZone.ChildNodes.Count( n => n.TextContent.Contains( "mock-obsidian-block" ) ) );
+                Assert.IsFalse( result.ContainsKey( "Main" ) );
+                Assert.IsEmpty( result );
             }
         }
 
@@ -246,16 +269,24 @@ namespace Rock.Tests.Web.v2
                 var requestContext = new Net.RockRequestContext( response );
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
-                var renderer = new LavaPageRenderer( "", engine, requestContext );
+                var zones = new List<LavaPageZone>
+                {
+                    new LavaPageZone
+                    {
+                        Key = "Main",
+                        Name = "Main"
+                    },
+                };
 
-                var document = new HtmlParser().ParseDocument( "<html><body><Rock:Zone Name=\"Main\"></Rock:Zone></body></html>" );
-                var zones = document.QuerySelectorAll( "rock\\:zone" );
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine, zones ), engine, requestContext );
 
-                await renderer.RenderBlocksAsync( document, zones );
+                var result = await renderer.RenderBlocksAsync( zones );
 
-                var mainZone = zones[0];
+                Assert.IsTrue( result.ContainsKey( "Main" ) );
 
-                Assert.AreEqual( 1, mainZone.ChildNodes.Count( n => n.TextContent.Contains( "mock-obsidian-block" ) ) );
+                var mainZone = result["Main"];
+
+                Assert.Contains( "bid_1", mainZone );
             }
         }
 
@@ -282,16 +313,24 @@ namespace Rock.Tests.Web.v2
                 var requestContext = new Net.RockRequestContext( response );
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
-                var renderer = new LavaPageRenderer( "", engine, requestContext );
+                var zones = new List<LavaPageZone>
+                {
+                    new LavaPageZone
+                    {
+                        Key = "Main",
+                        Name = "Main"
+                    },
+                };
 
-                var document = new HtmlParser().ParseDocument( "<html><body><Rock:Zone Name=\"Main\"></Rock:Zone></body></html>" );
-                var zones = document.QuerySelectorAll( "rock\\:zone" );
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine, zones ), engine, requestContext );
 
-                await renderer.RenderBlocksAsync( document, zones );
+                var result = await renderer.RenderBlocksAsync( zones );
 
-                var mainZone = zones[0];
+                Assert.IsTrue( result.ContainsKey( "Main" ) );
 
-                Assert.AreEqual( 1, mainZone.ChildNodes.Count( n => n.TextContent.Contains( "mock-obsidian-block" ) ) );
+                var mainZone = result["Main"];
+
+                Assert.Contains( "bid_1", mainZone );
             }
         }
 
@@ -318,16 +357,24 @@ namespace Rock.Tests.Web.v2
                 var requestContext = new Net.RockRequestContext( response );
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
-                var renderer = new LavaPageRenderer( "", engine, requestContext );
+                var zones = new List<LavaPageZone>
+                {
+                    new LavaPageZone
+                    {
+                        Key = "Main",
+                        Name = "Main"
+                    },
+                };
 
-                var document = new HtmlParser().ParseDocument( "<html><body><Rock:Zone Name=\"Main\"></Rock:Zone></body></html>" );
-                var zones = document.QuerySelectorAll( "rock\\:zone" );
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine, zones ), engine, requestContext );
 
-                await renderer.RenderBlocksAsync( document, zones );
+                var result = await renderer.RenderBlocksAsync( zones );
 
-                var mainZone = zones[0];
+                Assert.IsTrue( result.ContainsKey( "Main" ) );
 
-                Assert.AreEqual( 1, mainZone.ChildNodes.Count( n => n.TextContent.Contains( "mock-obsidian-block" ) ) );
+                var mainZone = result["Main"];
+
+                Assert.Contains( "bid_1", mainZone );
             }
         }
 
@@ -352,16 +399,11 @@ namespace Rock.Tests.Web.v2
                 var requestContext = new Net.RockRequestContext( response );
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
-                var renderer = new LavaPageRenderer( "", engine, requestContext );
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine, null ), engine, requestContext );
 
-                var document = new HtmlParser().ParseDocument( "<html><body><Rock:Zone Name=\"WrongZone\"></Rock:Zone></body></html>" );
-                var zones = document.QuerySelectorAll( "rock\\:zone" );
+                var result = await renderer.RenderBlocksAsync( Array.Empty<LavaPageZone>() );
 
-                await renderer.RenderBlocksAsync( document, zones );
-
-                var mainZone = zones[0];
-
-                Assert.AreEqual( 0, mainZone.ChildNodes.Count( n => n.TextContent.Contains( "mock-obsidian-block" ) ) );
+                Assert.IsEmpty( result );
             }
         }
 
@@ -372,6 +414,68 @@ namespace Rock.Tests.Web.v2
             serviceCollection.AddSingleton<IRockContextFactory>( new MockRockContextFactory( configureRockContext ) );
             serviceCollection.AddSingleton( new ObsidianFingerprintManager( 0 ) );
             serviceCollection.AddScoped( sp => sp.GetRequiredService<IRockContextFactory>().CreateRockContext() );
+
+            LavaPageLayoutFactoryTests.ConfigureServices( serviceCollection );
+        }
+
+        /// <summary>
+        /// Create a base layout that will be used by tests. This is an empty
+        /// layout that has an optional list of zones to render blocks into.
+        /// </summary>
+        /// <param name="engine">The lava engine to use when parsing.</param>
+        /// <param name="zones">The list of zones to inject into the body.</param>
+        /// <returns>The page layout object.</returns>
+        private static LavaPageLayout CreateBaseLayout( ILavaEngine engine, List<LavaPageZone> zones = null )
+        {
+            var zoneHtml = zones?.Select( z => $"<Rock:Zone Name=\"{z.Name}\" />" ).ToList().AsDelimited( "" );
+
+            var mainLava = $@"<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body id=""body"">
+{zoneHtml}
+</body>
+</html>
+";
+
+            var fileProvider = LavaPageLayoutFactoryTests.GetMockFileProvider(
+                new[] { "/main.lava", mainLava }
+            );
+
+            var builder = new LavaPageLayoutFactory( fileProvider );
+            var renderContext = engine.NewRenderContext();
+
+            return builder.GetLayout( "/main.lava", "RockNextGen", engine );
+        }
+
+        /// <summary>
+        /// Renders a lava template using the request context and the engine.
+        /// </summary>
+        /// <param name="engine">The engine to render the template with.</param>
+        /// <param name="requestContext">The request context to use for the base merge fields.</param>
+        /// <param name="template">The template to render.</param>
+        /// <returns>The result text from the rendered template.</returns>
+        private static string RenderTemplate( ILavaEngine engine, RockRequestContext requestContext, string template )
+        {
+            var mergeFields = requestContext.GetCommonMergeFields();
+            var context = engine.NewRenderContext();
+
+            foreach ( var kvp in mergeFields )
+            {
+                if ( kvp.Key.StartsWith( LavaHelper.InternalMergeFieldPrefix ) )
+                {
+                    context.SetInternalField( kvp.Key, kvp.Value );
+                }
+                else
+                {
+                    context.SetMergeField( kvp.Key, kvp.Value );
+                }
+            }
+
+            context.SetEnabledCommands( "", "," );
+
+            return engine.RenderTemplate( engine.ParseTemplate( template ).Template, context ).Text;
         }
 
         private static Mock<Auth> CreateAuthMock( int entityTypeId, int entityId, string action, bool allow, SpecialRole specialRole = SpecialRole.None )

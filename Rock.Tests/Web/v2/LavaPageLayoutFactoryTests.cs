@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,13 +12,14 @@ using Moq;
 
 using Rock.Configuration;
 using Rock.Lava;
+using Rock.Lava.Fluid;
 using Rock.Tests.Shared;
 using Rock.Web.v2;
 
 namespace Rock.Tests.Web.v2
 {
     [TestClass]
-    public class LavaPageLayoutBuilderTests
+    public class LavaPageLayoutFactoryTests
     {
         [TestMethod]
         public void PerfTest()
@@ -481,7 +483,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
             }
         }
 
-        private void ConfigureServices( ServiceCollection services )
+        internal static void ConfigureServices( ServiceCollection services )
         {
             var hostingMock = new Mock<IHostingSettings>( MockBehavior.Loose );
 
@@ -494,7 +496,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
             services.AddSingleton( hostingMock.Object );
         }
 
-        private IFileProvider GetMockFileProvider( params string[][] filesAndContents )
+        internal static IFileProvider GetMockFileProvider( params string[][] filesAndContents )
         {
             var fileProviderMock = new Mock<IFileProvider>();
 
@@ -537,7 +539,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
             return fileProviderMock.Object;
         }
 
-        private ILavaEngine GetMockLavaEngine()
+        private static ILavaEngine GetMockLavaEngine()
         {
             var engineMock = new Mock<ILavaEngine>( MockBehavior.Strict );
 
