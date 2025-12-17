@@ -230,7 +230,7 @@ namespace Rock.Web.v2
 
             foreach ( var pageTitleElement in pageTitleElements )
             {
-                var nodes = context.Parser.ParseFragment( "{% if Page.PageDisplayTitle and PageTitle != empty %}{{ PageTitle }}{% endif %}", document.Body ).ToArray();
+                var nodes = context.Parser.ParseFragment( "{% if Page.PageDisplayTitle and PageTitle != null and PageTitle != empty %}{{ PageTitle }}{% endif %}", document.Body ).ToArray();
 
                 pageTitleElement.InsertBefore( nodes );
                 pageTitleElement.Remove();
@@ -240,10 +240,20 @@ namespace Rock.Web.v2
 
             foreach ( var pageBreadCrumbsElement in pageBreadCrumbsElements )
             {
-                var nodes = context.Parser.ParseFragment( "<ol class=\"breadcrumb\">{% for crumb in BreadCrumbs %}{% if crumb.Active == true %}<li class=\"breadcrumb-item\"><a href=\"{{ crumb.Url }}\" rel=\"rocknofollow\">{{ crumb.Name }}</a></li>{% else %}<li class=\"breadcrumb-item\">{{ crumb.Name }}</li>{% endif %}{% endfor %}</ol>", document.Body ).ToArray();
+                var nodes = context.Parser.ParseFragment( "<ol class=\"breadcrumb\">{% for crumb in BreadCrumbs %}<li class=\"breadcrumb-item\">{% if crumb.Active == false %}<a href=\"{{ crumb.Url }}\" rel=\"rocknofollow\">{{ crumb.Name }}</a>{% else %}{{ crumb.Name }}{% endif %}</li>{% endfor %}</ol>", document.Body ).ToArray();
 
                 pageBreadCrumbsElement.InsertBefore( nodes );
                 pageBreadCrumbsElement.Remove();
+            }
+
+            var pageDescriptionElements = container.QuerySelectorAll( "Rock\\:PageDescription" );
+
+            foreach ( var pageDescriptionElement in pageDescriptionElements )
+            {
+                var nodes = context.Parser.ParseFragment( "{% if Page.PageDisplayDescription and Page.Description != null and Page.Description != empty %}<div class=\"pageoverview-description\">{{ Page.Description }}</div>{% endif %}", document.Body ).ToArray();
+
+                pageDescriptionElement.InsertBefore( nodes );
+                pageDescriptionElement.Remove();
             }
         }
 

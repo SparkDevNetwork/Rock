@@ -20,6 +20,7 @@ using Rock.Security;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Utility.ExtensionMethods;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.v2;
 
@@ -424,16 +425,17 @@ namespace Rock.Tests.Web.v2
             {
                 var builder = new LavaPageLayoutFactory( fileProvider );
                 var engine = new FluidEngine();
-                var response = new RockResponseBase();
-                var requestContext = new Net.RockRequestContext( response );
-                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
                 var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
-                var renderer = new LavaPageRenderer( layout, engine, requestContext );
+                var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+                {
+                    { "Page", PageCache.Get( 1 ) }
+                } );
 
-                var output = await renderer.RenderAsync();
+                var result = engine.RenderTemplate( layout.Template, lavaContext );
 
-                Assert.Contains( "ti ti-home", output );
+                Assert.IsFalse( result.HasErrors );
+                Assert.Contains( "ti ti-home", result.Text );
             }
         }
 
@@ -469,16 +471,17 @@ namespace Rock.Tests.Web.v2
             {
                 var builder = new LavaPageLayoutFactory( fileProvider );
                 var engine = new FluidEngine();
-                var response = new RockResponseBase();
-                var requestContext = new Net.RockRequestContext( response );
-                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
                 var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
-                var renderer = new LavaPageRenderer( layout, engine, requestContext );
+                var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+                {
+                    { "Page", PageCache.Get( 1 ) }
+                } );
 
-                var output = await renderer.RenderAsync();
+                var result = engine.RenderTemplate( layout.Template, lavaContext );
 
-                Assert.DoesNotContain( "page-icon", output );
+                Assert.IsFalse( result.HasErrors );
+                Assert.DoesNotContain( "page-icon", result.Text );
             }
         }
 
@@ -514,16 +517,17 @@ namespace Rock.Tests.Web.v2
             {
                 var builder = new LavaPageLayoutFactory( fileProvider );
                 var engine = new FluidEngine();
-                var response = new RockResponseBase();
-                var requestContext = new Net.RockRequestContext( response );
-                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
                 var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
-                var renderer = new LavaPageRenderer( layout, engine, requestContext );
+                var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+                {
+                    { "Page", PageCache.Get( 1 ) }
+                } );
 
-                var output = await renderer.RenderAsync();
+                var result = engine.RenderTemplate( layout.Template, lavaContext );
 
-                Assert.DoesNotContain( "page-icon", output );
+                Assert.IsFalse( result.HasErrors );
+                Assert.DoesNotContain( "page-icon", result.Text );
             }
         }
 
@@ -559,16 +563,17 @@ namespace Rock.Tests.Web.v2
             {
                 var builder = new LavaPageLayoutFactory( fileProvider );
                 var engine = new FluidEngine();
-                var response = new RockResponseBase();
-                var requestContext = new Net.RockRequestContext( response );
-                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
                 var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
-                var renderer = new LavaPageRenderer( layout, engine, requestContext );
+                var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+                {
+                    { "Page", PageCache.Get( 1 ) }
+                } );
 
-                var output = await renderer.RenderAsync();
+                var result = engine.RenderTemplate( layout.Template, lavaContext );
 
-                Assert.DoesNotContain( "page-icon", output );
+                Assert.IsFalse( result.HasErrors );
+                Assert.DoesNotContain( "page-icon", result.Text );
             }
         }
 
@@ -608,16 +613,17 @@ namespace Rock.Tests.Web.v2
             {
                 var builder = new LavaPageLayoutFactory( fileProvider );
                 var engine = new FluidEngine();
-                var response = new RockResponseBase();
-                var requestContext = new Net.RockRequestContext( response );
-                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
                 var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
-                var renderer = new LavaPageRenderer( layout, engine, requestContext );
+                var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+                {
+                    { "Page", PageCache.Get( 1 ) }
+                } );
 
-                var output = await renderer.RenderAsync();
+                var result = engine.RenderTemplate( layout.Template, lavaContext );
 
-                Assert.Contains( "homepage", output );
+                Assert.IsFalse( result.HasErrors );
+                Assert.Contains( "homepage", result.Text );
             }
         }
 
@@ -629,7 +635,7 @@ namespace Rock.Tests.Web.v2
 <head>
 </head>
 <body id=""body"">
-    AA<Rock:PageIcon></Rock:PageIcon>ZZ
+    AA<Rock:PageTitle></Rock:PageTitle>ZZ
 </body>
 </html>
 ";
@@ -653,16 +659,17 @@ namespace Rock.Tests.Web.v2
             {
                 var builder = new LavaPageLayoutFactory( fileProvider );
                 var engine = new FluidEngine();
-                var response = new RockResponseBase();
-                var requestContext = new Net.RockRequestContext( response );
-                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
                 var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
-                var renderer = new LavaPageRenderer( layout, engine, requestContext );
+                var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+                {
+                    { "Page", PageCache.Get( 1 ) }
+                } );
 
-                var output = await renderer.RenderAsync();
+                var result = engine.RenderTemplate( layout.Template, lavaContext );
 
-                Assert.Contains( "AAZZ", output );
+                Assert.IsFalse( result.HasErrors );
+                Assert.Contains( "AAZZ", result.Text );
             }
         }
 
@@ -674,7 +681,7 @@ namespace Rock.Tests.Web.v2
 <head>
 </head>
 <body id=""body"">
-    AA<Rock:PageIcon></Rock:PageIcon>ZZ
+    AA<Rock:PageTitle></Rock:PageTitle>ZZ
 </body>
 </html>
 ";
@@ -698,16 +705,17 @@ namespace Rock.Tests.Web.v2
             {
                 var builder = new LavaPageLayoutFactory( fileProvider );
                 var engine = new FluidEngine();
-                var response = new RockResponseBase();
-                var requestContext = new Net.RockRequestContext( response );
-                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
                 var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
-                var renderer = new LavaPageRenderer( layout, engine, requestContext );
+                var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+                {
+                    { "Page", PageCache.Get( 1 ) }
+                } );
 
-                var output = await renderer.RenderAsync();
+                var result = engine.RenderTemplate( layout.Template, lavaContext );
 
-                Assert.Contains( "AAZZ", output );
+                Assert.IsFalse( result.HasErrors );
+                Assert.Contains( "AAZZ", result.Text );
             }
         }
 
@@ -719,7 +727,7 @@ namespace Rock.Tests.Web.v2
 <head>
 </head>
 <body id=""body"">
-    <Rock:PageIcon></Rock:PageIcon>
+    <Rock:PageTitle></Rock:PageTitle>
 </body>
 </html>
 ";
@@ -743,16 +751,17 @@ namespace Rock.Tests.Web.v2
             {
                 var builder = new LavaPageLayoutFactory( fileProvider );
                 var engine = new FluidEngine();
-                var response = new RockResponseBase();
-                var requestContext = new Net.RockRequestContext( response );
-                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
                 var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
-                var renderer = new LavaPageRenderer( layout, engine, requestContext );
+                var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+                {
+                    { "Page", PageCache.Get( 1 ) }
+                } );
 
-                var output = await renderer.RenderAsync();
+                var result = engine.RenderTemplate( layout.Template, lavaContext );
 
-                Assert.DoesNotContain( "homepage", output );
+                Assert.IsFalse( result.HasErrors );
+                Assert.DoesNotContain( "homepage", result.Text );
             }
         }
 
@@ -777,38 +786,341 @@ namespace Rock.Tests.Web.v2
                 new[] { "/main.lava", mainLava }
             );
 
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc ) ) )
+            {
+                var builder = new LavaPageLayoutFactory( fileProvider );
+                var engine = new FluidEngine();
+
+                var breadcrumbs = new List<LavaDataObject>
+                {
+                    new LavaDataObject( new BreadCrumbLink( "parent-page", "/page/1", false ) ),
+                    new LavaDataObject( new BreadCrumbLink( "child-page", "/page/2", true ) ),
+                };
+                var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
+                var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+                {
+                    { "BreadCrumbs", breadcrumbs }
+                } );
+
+                var result = engine.RenderTemplate( layout.Template, lavaContext );
+
+                Assert.IsFalse( result.HasErrors );
+                Assert.Contains( "parent-page", result.Text);
+                Assert.Contains( "child-page", result.Text );
+            }
+        }
+
+        [TestMethod]
+        public async Task RockPageBreadCrumbs_WithActiveBreadCrumb_DoesNotRenderLink()
+        {
+            var mainLava = @"<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body id=""body"">
+    <Rock:PageBreadCrumbs></Rock:PageBreadCrumbs>
+</body>
+</html>
+";
+
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", mainLava }
+            );
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc ) ) )
+            {
+                var builder = new LavaPageLayoutFactory( fileProvider );
+                var engine = new FluidEngine();
+
+                var breadcrumbs = new List<LavaDataObject>
+                {
+                    new LavaDataObject( new BreadCrumbLink( "parent-page", "/page/1", true ) ),
+                };
+                var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
+                var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+                {
+                    { "BreadCrumbs", breadcrumbs }
+                } );
+
+                var result = engine.RenderTemplate( layout.Template, lavaContext );
+
+                Assert.IsFalse( result.HasErrors );
+                Assert.Contains( "parent-page", result.Text );
+                Assert.DoesNotContain( "/page/1", result.Text );
+            }
+        }
+
+        [TestMethod]
+        public async Task RockPageBreadCrumbs_WithInactiveBreadCrumb_RendersLink()
+        {
+            var mainLava = @"<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body id=""body"">
+    <Rock:PageBreadCrumbs></Rock:PageBreadCrumbs>
+</body>
+</html>
+";
+
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", mainLava }
+            );
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc ) ) )
+            {
+                var builder = new LavaPageLayoutFactory( fileProvider );
+                var engine = new FluidEngine();
+
+                var breadcrumbs = new List<LavaDataObject>
+                {
+                    new LavaDataObject( new BreadCrumbLink( "parent-page", "/page/1", false ) ),
+                };
+                var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
+                var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+                {
+                    { "BreadCrumbs", breadcrumbs }
+                } );
+
+                var result = engine.RenderTemplate( layout.Template, lavaContext );
+
+                Assert.IsFalse( result.HasErrors );
+                Assert.Contains( "parent-page", result.Text );
+                Assert.Contains( "/page/1", result.Text );
+            }
+        }
+
+        #endregion
+
+        #region RockPageDescription
+
+        [TestMethod]
+        public async Task RockPageDescription_WithDescription_RendersDescription()
+        {
+            var mainLava = @"<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body id=""body"">
+    <Rock:PageDescription></Rock:PageDescription>
+</body>
+</html>
+";
+
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", mainLava }
+            );
+
             void configureRockContext( Mock<RockContext> rockContextMock )
             {
-                var parentPageMock = MockDatabaseHelper.CreateEntityMock<Rock.Model.Page>( 1, new Guid( "fdd9603f-85c0-4813-86aa-a3bc0d5e533b" ) );
-                var childPageMock = MockDatabaseHelper.CreateEntityMock<Rock.Model.Page>( 2, new Guid( "e8a72ab0-5ba9-4c1d-b959-a4208acb99cc" ) );
+                var pageMock = MockDatabaseHelper.CreateEntityMock<Rock.Model.Page>( 1, new Guid( "fdd9603f-85c0-4813-86aa-a3bc0d5e533b" ) );
 
-                childPageMock.Object.LayoutId = 1;
-                childPageMock.Object.ParentPageId = 1;
-                childPageMock.Object.BreadCrumbDisplayName = true;
-                childPageMock.Object.PageTitle = "child-page";
-                parentPageMock.Object.LayoutId = 1;
-                parentPageMock.Object.BreadCrumbDisplayName = true;
-                parentPageMock.Object.PageTitle = "parent-page";
+                pageMock.Object.LayoutId = 1;
+                pageMock.Object.PageDisplayDescription = true;
+                pageMock.Object.Description = "homepage";
 
-                rockContextMock.SetupDbSet( childPageMock.Object, parentPageMock.Object );
+                rockContextMock.SetupDbSet( pageMock.Object );
             }
 
             using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext ) ) )
             {
                 var builder = new LavaPageLayoutFactory( fileProvider );
                 var engine = new FluidEngine();
-                var renderContext = engine.NewRenderContext();
-                var response = new RockResponseBase();
-                var requestContext = new Net.RockRequestContext( response );
-                requestContext.PrepareRequestForPage( PageCache.Get( 2 ) );
 
                 var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
-                var renderer = new LavaPageRenderer( layout, engine, requestContext );
+                var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+                {
+                    { "Page", PageCache.Get( 1 ) }
+                } );
 
-                var output = await renderer.RenderAsync();
+                var result = engine.RenderTemplate( layout.Template, lavaContext );
 
-                Assert.Contains( "parent-page", output );
-                Assert.Contains( "child-page", output );
+                Assert.IsFalse( result.HasErrors );
+                Assert.Contains( "homepage", result.Text );
+            }
+        }
+
+        [TestMethod]
+        public async Task RockPageDescription_WithHtmlDescription_EscapesHtmlContent()
+        {
+            var mainLava = @"<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body id=""body"">
+    <Rock:PageDescription></Rock:PageDescription>
+</body>
+</html>
+";
+
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", mainLava }
+            );
+
+            void configureRockContext( Mock<RockContext> rockContextMock )
+            {
+                var pageMock = MockDatabaseHelper.CreateEntityMock<Rock.Model.Page>( 1, new Guid( "fdd9603f-85c0-4813-86aa-a3bc0d5e533b" ) );
+
+                pageMock.Object.LayoutId = 1;
+                pageMock.Object.PageDisplayDescription = true;
+                pageMock.Object.Description = "home<page";
+
+                rockContextMock.SetupDbSet( pageMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext ) ) )
+            {
+                var builder = new LavaPageLayoutFactory( fileProvider );
+                var engine = new FluidEngine();
+
+                var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
+                var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+                {
+                    { "Page", PageCache.Get( 1 ) }
+                } );
+
+                var result = engine.RenderTemplate( layout.Template, lavaContext );
+
+                Assert.IsFalse( result.HasErrors );
+                Assert.Contains( "home&lt;page", result.Text );
+            }
+        }
+
+        [TestMethod]
+        public async Task RockPageDescription_WithEmptyDescription_DoesNotRenderDescription()
+        {
+            var mainLava = @"<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body id=""body"">
+    AA<Rock:PageDescription></Rock:PageDescription>ZZ
+</body>
+</html>
+";
+
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", mainLava }
+            );
+
+            void configureRockContext( Mock<RockContext> rockContextMock )
+            {
+                var pageMock = MockDatabaseHelper.CreateEntityMock<Rock.Model.Page>( 1, new Guid( "fdd9603f-85c0-4813-86aa-a3bc0d5e533b" ) );
+
+                pageMock.Object.LayoutId = 1;
+                pageMock.Object.PageDisplayDescription = true;
+                pageMock.Object.Description = "";
+
+                rockContextMock.SetupDbSet( pageMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext ) ) )
+            {
+                var builder = new LavaPageLayoutFactory( fileProvider );
+                var engine = new FluidEngine();
+
+                var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
+                var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+                {
+                    { "Page", PageCache.Get( 1 ) }
+                } );
+
+                var result = engine.RenderTemplate( layout.Template, lavaContext );
+
+                Assert.IsFalse( result.HasErrors );
+                Assert.Contains( "AAZZ", result.Text );
+            }
+        }
+
+        [TestMethod]
+        public async Task RockPageDescription_WithNullDescription_DoesNotRenderDescription()
+        {
+            var mainLava = @"<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body id=""body"">
+    AA<Rock:PageDescription></Rock:PageDescription>ZZ
+</body>
+</html>
+";
+
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", mainLava }
+            );
+
+            void configureRockContext( Mock<RockContext> rockContextMock )
+            {
+                var pageMock = MockDatabaseHelper.CreateEntityMock<Rock.Model.Page>( 1, new Guid( "fdd9603f-85c0-4813-86aa-a3bc0d5e533b" ) );
+
+                pageMock.Object.LayoutId = 1;
+                pageMock.Object.PageDisplayDescription = true;
+                pageMock.Object.Description = null;
+
+                rockContextMock.SetupDbSet( pageMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext ) ) )
+            {
+                var builder = new LavaPageLayoutFactory( fileProvider );
+                var engine = new FluidEngine();
+
+                var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
+                var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+                {
+                    { "Page", PageCache.Get( 1 ) }
+                } );
+
+                var result = engine.RenderTemplate( layout.Template, lavaContext );
+
+                Assert.IsFalse( result.HasErrors );
+                Assert.Contains( "AAZZ", result.Text );
+            }
+        }
+
+        [TestMethod]
+        public async Task RockPageDescription_WithoutPageDisplayDescription_DoesNotRenderDescription()
+        {
+            var mainLava = @"<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body id=""body"">
+    <Rock:PageDescription></Rock:PageDescription>
+</body>
+</html>
+";
+
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", mainLava }
+            );
+
+            void configureRockContext( Mock<RockContext> rockContextMock )
+            {
+                var pageMock = MockDatabaseHelper.CreateEntityMock<Rock.Model.Page>( 1, new Guid( "fdd9603f-85c0-4813-86aa-a3bc0d5e533b" ) );
+
+                pageMock.Object.LayoutId = 1;
+                pageMock.Object.PageDisplayDescription = false;
+                pageMock.Object.Description = "homepage";
+
+                rockContextMock.SetupDbSet( pageMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext ) ) )
+            {
+                var builder = new LavaPageLayoutFactory( fileProvider );
+                var engine = new FluidEngine();
+
+                var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
+                var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+                {
+                    { "Page", PageCache.Get( 1 ) }
+                } );
+
+                var result = engine.RenderTemplate( layout.Template, lavaContext );
+
+                Assert.IsFalse( result.HasErrors );
+                Assert.DoesNotContain( "homepage", result.Text );
             }
         }
 
