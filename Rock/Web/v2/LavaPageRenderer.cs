@@ -31,11 +31,13 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Net;
+using Rock.Observability;
 using Rock.Security;
 using Rock.Utility;
 using Rock.Utility.ExtensionMethods;
 using Rock.ViewModels.Crm;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Web.v2
 {
@@ -221,8 +223,15 @@ namespace Rock.Web.v2
 
         private async Task<string> RenderBlockAsync( BlockCache block, bool canEdit, bool canAdministrate )
         {
+            var activity = ObservabilityHelper.StartActivity( $"BLOCK LOAD {block.BlockType.Name} - {block.Name}" );
+
             try
             {
+                activity?.AddTag( "rock.otel_type", "rock-block" );
+                activity?.AddTag( "rock.blocktype.name", block.BlockType.Name );
+                activity?.AddTag( "rock.blocktype.id", block.BlockType.Id );
+                activity?.AddTag( "rock.node", RockApp.Current.HostingSettings.NodeName );
+
                 if ( !string.IsNullOrWhiteSpace( block.BlockType.Path ) )
                 {
                     return $"<div>WebForms block '{block.BlockType.Name.EncodeHtml()}' is not supported.</div>";
@@ -276,6 +285,10 @@ namespace Rock.Web.v2
                 }
 
                 return $"<div class=\"alert alert-danger system-error\"><strong>Error Loading Block: {block.Name}</strong> {ex.Message.EncodeHtml()}<pre>{ex.StackTrace.EncodeHtml()}</pre>";
+            }
+            finally
+            {
+                activity?.Dispose();
             }
         }
 
