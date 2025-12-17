@@ -25,6 +25,15 @@ namespace Rock.Lava
     public abstract class LavaRenderContextBase : ILavaRenderContext
     {
         /// <summary>
+        /// The merge field prefix for internal merge fields. These merge fields
+        /// will be marked as internal so they are not available to Lava template
+        /// itself but can be used by filters and such. This prefix is only checked
+        /// when first initializing the render context. It is not checked on every
+        /// call to SetMergeField or SetMergeFields.
+        /// </summary>
+        internal static readonly string InternalMergeFieldPrefix = "$_";
+
+        /// <summary>
         /// Gets a named value that is for internal use only, by other components of the Lava engine.
         /// Internal values are not available to be resolved in the Lava Template.
         /// </summary>

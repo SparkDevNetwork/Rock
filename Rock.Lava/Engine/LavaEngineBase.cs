@@ -153,11 +153,31 @@ namespace Rock.Lava
 
             if ( mergeFields is IDictionary<string, object> dictionary )
             {
-                context.SetMergeFields( dictionary );
+                foreach ( var kvp in dictionary )
+                {
+                    if ( kvp.Key.StartsWith( LavaRenderContextBase.InternalMergeFieldPrefix ) )
+                    {
+                        context.SetInternalField( kvp.Key, kvp.Value );
+                    }
+                    else
+                    {
+                        context.SetMergeField( kvp.Key, kvp.Value );
+                    }
+                }
             }
             else if ( mergeFields is ILavaDataDictionary ldd )
             {
-                context.SetMergeFields( ldd );
+                foreach ( var key in ldd.AvailableKeys )
+                {
+                    if ( key.StartsWith( LavaRenderContextBase.InternalMergeFieldPrefix ) )
+                    {
+                        context.SetInternalField( key, ldd.GetValue( key ) );
+                    }
+                    else
+                    {
+                        context.SetMergeField( key, ldd.GetValue( key ) );
+                    }
+                }
             }
 
             InitializeRenderContext( context, enabledCommands ?? this.DefaultEnabledCommands );
