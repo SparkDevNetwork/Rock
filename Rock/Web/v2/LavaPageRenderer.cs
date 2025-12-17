@@ -45,13 +45,16 @@ namespace Rock.Web.v2
     {
         private const string LegacyBlockTypeSuffix = "(Legacy)";
 
+        private readonly Lazy<string> _rockVersion = new Lazy<string>( () =>
+        {
+            return $"Rock v{typeof( Rock.Web.UI.RockPage ).Assembly.GetName().Version}";
+        } );
+
         private readonly LavaPageLayout _layout;
 
         private readonly ILavaEngine _engine;
 
         private readonly RockRequestContext _rockRequestContext;
-
-        private readonly HtmlParser _htmlParser;
 
         private bool _pageHasObsidianBlock = false;
 
@@ -64,14 +67,16 @@ namespace Rock.Web.v2
             _layout = layout;
             _engine = engine;
             _rockRequestContext = rockRequestContext;
-
-            _htmlParser = new HtmlParser( new HtmlParserOptions() );
         }
 
         internal async Task<string> RenderAsync()
         {
             AddLegacyWebFormSupport();
             AddDefaultPageScripts();
+            AddPageMetaTags();
+
+            // Add configuration specific to Rock Page to the observability activity.
+            RockPageHelper.ConfigureActivity( Activity.Current, _rockRequestContext );
 
             var mergeFields = _rockRequestContext.GetCommonMergeFields();
 
@@ -412,11 +417,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
         /// <returns>A collection of data objects that represent the breadcrumbs.</returns>
         private IReadOnlyCollection<LavaDataObject> GetPageBreadCrumbs()
         {
-            var pageReference = new PageReference( _rockRequestContext.Page.Id,
-                0,
-                _rockRequestContext.GetPageParameters() as Dictionary<string, string>,
-                _rockRequestContext.QueryString );
-            var pageReferences = PageReference.GetBreadCrumbPageReferences( null, _rockRequestContext.Page, pageReference, null );
+            var pageReferences = PageReference.GetBreadCrumbPageReferences( null, _rockRequestContext.Page, _rockRequestContext.PageReference, null );
 
             // Get the breadcrumbs and convert them into a lava object.
             return pageReferences.SelectMany( pr => pr.BreadCrumbs )
@@ -470,8 +471,8 @@ Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
         /// </summary>
         private void AddDefaultPageScripts()
         {
-            _rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Scripts/Bundles/RockLibs" ), true );
-            _rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Scripts/Bundles/RockUi" ), true );
+            _rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Scripts/Bundles/RockLibs" ), false );
+            _rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Scripts/Bundles/RockUi" ), false );
 
             // DSH: In my quick testing on WebForms the validation.js part isn't actually used, and ajaxClientErrorHandler doesn't apply to non-WebForms.
             //_rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Scripts/Bundles/RockValidation" ), true );
@@ -512,6 +513,24 @@ Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
                 sb.Append( "</" );
                 sb.Append( responseElement.Name );
                 sb.Append( ">" );
+            }
+        }
+
+        /// <summary>
+        /// Adds standard meta tags to the page.
+        /// </summary>
+        internal void AddPageMetaTags()
+        {
+            _rockRequestContext.Response.AddMetaTag( "generator", null, _rockVersion.Value );
+
+            if ( _rockRequestContext.Page.Description.IsNotNullOrWhiteSpace() )
+            {
+                _rockRequestContext.Response.AddMetaTag( "description", null, _rockRequestContext.Page.Description );
+            }
+
+            if ( _rockRequestContext.Page.KeyWords.IsNotNullOrWhiteSpace() )
+            {
+                _rockRequestContext.Response.AddMetaTag( "keywords", null, _rockRequestContext.Page.KeyWords.Trim() );
             }
         }
 

@@ -34,9 +34,8 @@ namespace Rock.Web
         /// </summary>
         /// <param name="activity">The activity to be updated, this may be null.</param>
         /// <param name="requestContext">The context that contains information about the request.</param>
-        /// <param name="pageReference">The page reference that contains the routing details for the request.</param>
         /// <param name="isPostBack">If set to <c>true</c> then this is a legacy WebForms postback.</param>
-        public static void ConfigureActivity( Activity activity, RockRequestContext requestContext, PageReference pageReference, bool isPostBack )
+        public static void ConfigureActivity( Activity activity, RockRequestContext requestContext, bool isPostBack = false )
         {
             if ( activity == null )
             {
@@ -44,9 +43,9 @@ namespace Rock.Web
             }
 
             // If the route has parameters show the route slug, otherwise use the request path
-            if ( pageReference.Parameters.Count > 0 )
+            if ( requestContext.PageReference.Parameters.Count > 0 )
             {
-                activity.DisplayName = $"PAGE: {requestContext.HttpMethod} {pageReference.Route}";
+                activity.DisplayName = $"PAGE: {requestContext.HttpMethod} {requestContext.PageReference.Route}";
             }
             else
             {

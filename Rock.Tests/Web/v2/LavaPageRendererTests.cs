@@ -66,7 +66,7 @@ namespace Rock.Tests.Web.v2
                 var requestContext = new Net.RockRequestContext( new RockResponseBase() );
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
-                RenderTemplate(engine, requestContext, $"{{{{ '{expectedUrl}' | AddScriptLink }}}}" );
+                RenderTemplate( engine, requestContext, $"{{{{ '{expectedUrl}' | AddScriptLink }}}}" );
 
                 var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
                 var output = await renderer.RenderAsync();
@@ -384,6 +384,229 @@ namespace Rock.Tests.Web.v2
                 var result = await renderer.RenderBlocksAsync( Array.Empty<LavaPageZone>() );
 
                 Assert.IsEmpty( result );
+            }
+        }
+
+        #endregion
+
+        #region AddPageMetaTags
+
+        [TestMethod]
+        public void AddPageMetaTags_AddsRockVersion()
+        {
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                renderer.AddPageMetaTags();
+
+                var element = response.GetHtmlElements()
+                    .SingleOrDefault( e => e.Name == "meta" && e.Attributes["name"] == "generator" );
+
+                // Don't test the specific value, just that it has something. We
+                // don't want the test to fail just because we changed the format.
+                Assert.IsNotNull( element );
+                Assert.IsNotEmpty( element.Attributes["content"] );
+            }
+        }
+
+        [TestMethod]
+        public void AddPageMetaTags_WithDescription_AddsMetaTag()
+        {
+            void configureRockContext( Mock<RockContext> rockContextMock )
+            {
+                var pageMock = MockDatabaseHelper.CreateEntityMock<Rock.Model.Page>( 1, new Guid( "fdd9603f-85c0-4813-86aa-a3bc0d5e533b" ) );
+
+                pageMock.Object.LayoutId = 1;
+                pageMock.Object.Description = "test value";
+
+                rockContextMock.SetupDbSet( pageMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                renderer.AddPageMetaTags();
+
+                var element = response.GetHtmlElements()
+                    .SingleOrDefault( e => e.Name == "meta" && e.Attributes["name"] == "description" );
+
+                Assert.IsNotNull( element );
+                Assert.AreEqual( "test value", element.Attributes["content"] );
+            }
+        }
+
+        [TestMethod]
+        public void AddPageMetaTags_WithNullDescription_DoesNotAddMetaTag()
+        {
+            void configureRockContext( Mock<RockContext> rockContextMock )
+            {
+                var pageMock = MockDatabaseHelper.CreateEntityMock<Rock.Model.Page>( 1, new Guid( "fdd9603f-85c0-4813-86aa-a3bc0d5e533b" ) );
+
+                pageMock.Object.LayoutId = 1;
+                pageMock.Object.Description = null;
+
+                rockContextMock.SetupDbSet( pageMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                renderer.AddPageMetaTags();
+
+                var element = response.GetHtmlElements()
+                    .SingleOrDefault( e => e.Name == "meta" && e.Attributes["name"] == "description" );
+
+                Assert.IsNull( element );
+            }
+        }
+
+        [TestMethod]
+        public void AddPageMetaTags_WithEmptyDescription_DoesNotAddMetaTag()
+        {
+            void configureRockContext( Mock<RockContext> rockContextMock )
+            {
+                var pageMock = MockDatabaseHelper.CreateEntityMock<Rock.Model.Page>( 1, new Guid( "fdd9603f-85c0-4813-86aa-a3bc0d5e533b" ) );
+
+                pageMock.Object.LayoutId = 1;
+                pageMock.Object.Description = string.Empty;
+
+                rockContextMock.SetupDbSet( pageMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                renderer.AddPageMetaTags();
+
+                var element = response.GetHtmlElements()
+                    .SingleOrDefault( e => e.Name == "meta" && e.Attributes["name"] == "description" );
+
+                Assert.IsNull( element );
+            }
+        }
+
+        [TestMethod]
+        public void AddPageMetaTags_WithKeyWords_AddsMetaTag()
+        {
+            void configureRockContext( Mock<RockContext> rockContextMock )
+            {
+                var pageMock = MockDatabaseHelper.CreateEntityMock<Rock.Model.Page>( 1, new Guid( "fdd9603f-85c0-4813-86aa-a3bc0d5e533b" ) );
+
+                pageMock.Object.LayoutId = 1;
+                pageMock.Object.KeyWords = "test value";
+
+                rockContextMock.SetupDbSet( pageMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                renderer.AddPageMetaTags();
+
+                var element = response.GetHtmlElements()
+                    .SingleOrDefault( e => e.Name == "meta" && e.Attributes["name"] == "keywords" );
+
+                Assert.IsNotNull( element );
+                Assert.AreEqual( "test value", element.Attributes["content"] );
+            }
+        }
+
+        [TestMethod]
+        public void AddPageMetaTags_WithNullKeyWords_DoesNotAddMetaTag()
+        {
+            void configureRockContext( Mock<RockContext> rockContextMock )
+            {
+                var pageMock = MockDatabaseHelper.CreateEntityMock<Rock.Model.Page>( 1, new Guid( "fdd9603f-85c0-4813-86aa-a3bc0d5e533b" ) );
+
+                pageMock.Object.LayoutId = 1;
+                pageMock.Object.KeyWords = null;
+
+                rockContextMock.SetupDbSet( pageMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                renderer.AddPageMetaTags();
+
+                var element = response.GetHtmlElements()
+                    .SingleOrDefault( e => e.Name == "meta" && e.Attributes["name"] == "keywords" );
+
+                Assert.IsNull( element );
+            }
+        }
+
+        [TestMethod]
+        public void AddPageMetaTags_WithEmptyKeyWords_DoesNotAddMetaTag()
+        {
+            void configureRockContext( Mock<RockContext> rockContextMock )
+            {
+                var pageMock = MockDatabaseHelper.CreateEntityMock<Rock.Model.Page>( 1, new Guid( "fdd9603f-85c0-4813-86aa-a3bc0d5e533b" ) );
+
+                pageMock.Object.LayoutId = 1;
+                pageMock.Object.KeyWords = string.Empty;
+
+                rockContextMock.SetupDbSet( pageMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                renderer.AddPageMetaTags();
+
+                var element = response.GetHtmlElements()
+                    .SingleOrDefault( e => e.Name == "meta" && e.Attributes["name"] == "keywords" );
+
+                Assert.IsNull( element );
             }
         }
 

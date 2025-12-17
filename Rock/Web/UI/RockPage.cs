@@ -805,7 +805,7 @@ namespace Rock.Web.UI
             {
                 try
                 {
-                    RequestContext.PrepareRequestForPage( _pageCache );
+                    RequestContext.PrepareRequestForPage( _pageCache, PageReference );
                 }
                 catch
                 {
@@ -1748,7 +1748,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
                 }
 
                 // Add configuration specific to Rock Page to the observability activity.
-                RockPageHelper.ConfigureActivity( Activity.Current, RequestContext, PageReference, IsPostBack );
+                RockPageHelper.ConfigureActivity( Activity.Current, RequestContext, IsPostBack );
             }
         }
 

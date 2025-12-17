@@ -381,9 +381,9 @@ namespace Rock.Web
                         var user = UserLoginService.GetCurrentUser( false );
                         var rockRequestContext = new RockRequestContext( requestWrapper, responseWrapper, user );
                         var filePath = RockApp.Current.MapPath( layoutPath ).Replace( ".aspx", ".lava" );
+                        var pageReference = new PageReference( page.Id, routeId, parms, routeHttpRequest.QueryString );
 
-                        new PageReference( page.Id, routeId, parms, routeHttpRequest.QueryString );
-                        rockRequestContext.PrepareRequestForPage( page );
+                        rockRequestContext.PrepareRequestForPage( page, pageReference );
 
                         return new LavaPageHandler( filePath, rockRequestContext );
                     }

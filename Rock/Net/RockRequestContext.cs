@@ -29,6 +29,7 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Net
@@ -232,6 +233,12 @@ namespace Rock.Net
         internal PageCache Page => _pageCache;
 
         /// <summary>
+        /// Gets the <see cref="PageReference"/> that represents this page and
+        /// how it was originally loaded, such as the route used.
+        /// </summary>
+        internal PageReference PageReference { get; private set; }
+
+        /// <summary>
         /// <para>
         /// The unique identifier of the interaction related to the original
         /// page request. For block actions, this will be the interaction of
@@ -418,10 +425,14 @@ namespace Rock.Net
         /// example block actions or loading of the main page HTML.
         /// </summary>
         /// <param name="page">The page being loaded.</param>
-        internal void PrepareRequestForPage( PageCache page )
+        /// <param name="pageReference">The reference that identifies how this page was originally loaded.</param>
+        internal void PrepareRequestForPage( PageCache page, PageReference pageReference = null )
         {
             _pageCache = page ?? throw new ArgumentNullException( nameof( page ) );
             _siteCache = SiteCache.Get( page.SiteId );
+
+            PageReference = pageReference
+                ?? new PageReference( page.Id, 0, PageParameters as Dictionary<string, string>, QueryString );
 
             if ( _siteCache?.EnablePersonalization == true )
             {
