@@ -565,6 +565,11 @@ Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
             {
                 _rockRequestContext.Response.AddMetaTag( "keywords", null, _rockRequestContext.Page.KeyWords.Trim() );
             }
+
+            if ( !_rockRequestContext.Page.AllowIndexing || !_rockRequestContext.Page.Layout.Site.AllowIndexing )
+            {
+                _rockRequestContext.Response.AddMetaTag( "robots", null, "noindex, nofollow" );
+            }
         }
 
         [ExcludeFromCodeCoverage]

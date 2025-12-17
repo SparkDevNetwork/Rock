@@ -392,7 +392,7 @@ namespace Rock.Tests.Web.v2
         #region AddPageMetaTags
 
         [TestMethod]
-        public void AddPageMetaTags_AddsRockVersion()
+        public void AddPageMetaTags_AddsMetaGenerator()
         {
             using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc ) ) )
             {
@@ -417,7 +417,7 @@ namespace Rock.Tests.Web.v2
         }
 
         [TestMethod]
-        public void AddPageMetaTags_WithDescription_AddsMetaTag()
+        public void AddPageMetaTags_WithDescription_AddsMetaDescription()
         {
             void configureRockContext( Mock<RockContext> rockContextMock )
             {
@@ -450,7 +450,7 @@ namespace Rock.Tests.Web.v2
         }
 
         [TestMethod]
-        public void AddPageMetaTags_WithNullDescription_DoesNotAddMetaTag()
+        public void AddPageMetaTags_WithNullDescription_DoesNotAddMetaDescription()
         {
             void configureRockContext( Mock<RockContext> rockContextMock )
             {
@@ -482,7 +482,7 @@ namespace Rock.Tests.Web.v2
         }
 
         [TestMethod]
-        public void AddPageMetaTags_WithEmptyDescription_DoesNotAddMetaTag()
+        public void AddPageMetaTags_WithEmptyDescription_DoesNotAddMetaDescription()
         {
             void configureRockContext( Mock<RockContext> rockContextMock )
             {
@@ -514,7 +514,7 @@ namespace Rock.Tests.Web.v2
         }
 
         [TestMethod]
-        public void AddPageMetaTags_WithKeyWords_AddsMetaTag()
+        public void AddPageMetaTags_WithKeyWords_AddsMetaKeywords()
         {
             void configureRockContext( Mock<RockContext> rockContextMock )
             {
@@ -547,7 +547,7 @@ namespace Rock.Tests.Web.v2
         }
 
         [TestMethod]
-        public void AddPageMetaTags_WithNullKeyWords_DoesNotAddMetaTag()
+        public void AddPageMetaTags_WithNullKeyWords_DoesNotAddMetaKeywords()
         {
             void configureRockContext( Mock<RockContext> rockContextMock )
             {
@@ -579,7 +579,7 @@ namespace Rock.Tests.Web.v2
         }
 
         [TestMethod]
-        public void AddPageMetaTags_WithEmptyKeyWords_DoesNotAddMetaTag()
+        public void AddPageMetaTags_WithEmptyKeyWords_DoesNotAddMetaKeywords()
         {
             void configureRockContext( Mock<RockContext> rockContextMock )
             {
@@ -605,6 +605,124 @@ namespace Rock.Tests.Web.v2
 
                 var element = response.GetHtmlElements()
                     .SingleOrDefault( e => e.Name == "meta" && e.Attributes["name"] == "keywords" );
+
+                Assert.IsNull( element );
+            }
+        }
+
+        [TestMethod]
+        public void AddPageMetaTags_WithoutPageAllowIndex_AddsMetaRobot()
+        {
+            void configureRockContext( Mock<RockContext> rockContextMock )
+            {
+                var siteMock = MockDatabaseHelper.CreateEntityMock<Site>( 1, new Guid( "f1141648-44b5-4dcc-9eed-6f0981faf3d6" ) );
+                var pageMock = MockDatabaseHelper.CreateEntityMock<Rock.Model.Page>( 1, new Guid( "fdd9603f-85c0-4813-86aa-a3bc0d5e533b" ) );
+
+                pageMock.Object.LayoutId = 1;
+                pageMock.Object.AllowIndexing = false;
+
+                siteMock.Setup( m => m.DefaultDomainUri ).Returns( new Uri( "http://localhost" ) );
+                siteMock.Setup( m => m.SiteDomains ).Returns( new List<SiteDomain>() );
+                siteMock.Object.AllowIndexing = true;
+
+                rockContextMock.SetupDbSet( pageMock.Object );
+                rockContextMock.SetupDbSet( siteMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                renderer.AddPageMetaTags();
+
+                var element = response.GetHtmlElements()
+                    .SingleOrDefault( e => e.Name == "meta" && e.Attributes["name"] == "robots" );
+
+                Assert.IsNotNull( element );
+                Assert.Contains( "noindex", element.Attributes["content"] );
+                Assert.Contains( "nofollow", element.Attributes["content"] );
+            }
+        }
+
+        [TestMethod]
+        public void AddPageMetaTags_WithoutSiteAllowIndex_AddsMetaRobot()
+        {
+            void configureRockContext( Mock<RockContext> rockContextMock )
+            {
+                var siteMock = MockDatabaseHelper.CreateEntityMock<Site>( 1, new Guid( "f1141648-44b5-4dcc-9eed-6f0981faf3d6" ) );
+                var pageMock = MockDatabaseHelper.CreateEntityMock<Rock.Model.Page>( 1, new Guid( "fdd9603f-85c0-4813-86aa-a3bc0d5e533b" ) );
+
+                pageMock.Object.LayoutId = 1;
+                pageMock.Object.AllowIndexing = true;
+
+                siteMock.Setup( m => m.DefaultDomainUri ).Returns( new Uri( "http://localhost" ) );
+                siteMock.Setup( m => m.SiteDomains ).Returns( new List<SiteDomain>() );
+                siteMock.Object.AllowIndexing = false;
+
+                rockContextMock.SetupDbSet( pageMock.Object );
+                rockContextMock.SetupDbSet( siteMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                renderer.AddPageMetaTags();
+
+                var element = response.GetHtmlElements()
+                    .SingleOrDefault( e => e.Name == "meta" && e.Attributes["name"] == "robots" );
+
+                Assert.IsNotNull( element );
+                Assert.Contains( "noindex", element.Attributes["content"] );
+                Assert.Contains( "nofollow", element.Attributes["content"] );
+            }
+        }
+
+        [TestMethod]
+        public void AddPageMetaTags_WithSiteAndPageAllowIndex_DoesNotAddMetaRobot()
+        {
+            void configureRockContext( Mock<RockContext> rockContextMock )
+            {
+                var siteMock = MockDatabaseHelper.CreateEntityMock<Site>( 1, new Guid( "f1141648-44b5-4dcc-9eed-6f0981faf3d6" ) );
+                var pageMock = MockDatabaseHelper.CreateEntityMock<Rock.Model.Page>( 1, new Guid( "fdd9603f-85c0-4813-86aa-a3bc0d5e533b" ) );
+
+                pageMock.Object.LayoutId = 1;
+                pageMock.Object.AllowIndexing = true;
+
+                siteMock.Setup( m => m.DefaultDomainUri ).Returns( new Uri( "http://localhost" ) );
+                siteMock.Setup( m => m.SiteDomains ).Returns( new List<SiteDomain>() );
+                siteMock.Object.AllowIndexing = true;
+
+                rockContextMock.SetupDbSet( pageMock.Object );
+                rockContextMock.SetupDbSet( siteMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                renderer.AddPageMetaTags();
+
+                var element = response.GetHtmlElements()
+                    .SingleOrDefault( e => e.Name == "meta" && e.Attributes["name"] == "robots" );
 
                 Assert.IsNull( element );
             }
