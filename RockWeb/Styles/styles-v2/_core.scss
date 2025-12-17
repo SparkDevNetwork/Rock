@@ -74,10 +74,10 @@
 @import 'rock-components/ace-editor';               // Fully Format. There are Some hard coded value.
 @import 'rock-components/group-list';               // Fully Format. There are Some hard coded value.
 @import 'rock-components/code-editor';              // Fully Format.
-@import 'rock-components/labels';                   // Fully Format.
+@import 'rock-components/labels-extensions';        // Fully Format.
 @import 'rock-components/pagelist';                 // Fully Format. There are Some hard coded value.
 @import 'rock-components/panel-helper';             // Fully Format.
-@import 'rock-components/panel';                    // Fully Format. The hard coded is the num of row and col
+@import 'rock-components/panels-extensions';        // Fully Format. The hard coded is the num of row and col
 @import 'rock-components/person-list';              // Fully Format. There are Some hard coded value.
 @import 'rock-components/photo-frame';              // Fully Format. There are Some hard coded value.
 @import 'rock-components/picker-time';              // Fully Format. There are Some hard coded value.
@@ -112,7 +112,7 @@
 @import 'rock-components/kpi';                      // Fully Format. There are Some hard coded value.
 @import 'rock-components/key-value';                // Fully Format.
 @import 'rock-components/billboard';                // Fully Format. There are Some hard coded value.
-@import 'rock-components/modal';                    // Fully Format. Must import below the bootstrap modal.
+@import 'rock-components/modals-extensions';        // Fully Format. Must import below the bootstrap modal.
 @import 'rock-components/pickers';                  // Fully Format. There are Some hard coded value.
 @import 'rock-components/person-program-step';      // Fully Format.
 @import 'rock-components/card';                     // Fully Format.
@@ -142,6 +142,9 @@
 @import 'rock-components/_monaco-editor';
 @import 'rock-components/sankey';
 @import 'rock-components/quick-filter.scss';
+@import 'rock-components/button-groups-extensions.scss';
+@import 'rock-components/panels-extensions.scss';
+
 
 /* ===================== BLOCK =================== */
 @import 'blocks/blocks-core';                       // Fully Format. There are Some hard coded value.

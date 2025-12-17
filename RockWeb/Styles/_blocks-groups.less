@@ -336,6 +336,48 @@
   }
 }
 
+.card-schedule {
+  min-height: @card-schedule-height;
+  margin-bottom: @card-schedule-margin;
+  border-radius: @card-schedule-border-radius;
+
+  .card-body {
+    padding-right: 0;
+  }
+
+  .card-title {
+    font-size: @card-schedule-title-size;
+  }
+
+  .schedule-date {
+    font-weight: @font-weight-semibold;
+  }
+
+  .schedule-occurrence,
+  .schedule-occurrence-schedule {
+    display: block;
+  }
+
+  .schedule-confirm {
+    display: flex;
+    flex-basis: @card-schedule-confirmation-width;
+    flex-wrap: wrap;
+    align-items: center;
+    align-self: center;
+    justify-content: flex-end;
+    margin-right: @card-sm-spacer-x;
+
+    .btn-primary,
+    .btn-success {
+      margin: 4px 0 4px 8px;
+    }
+  }
+
+  &.schedule-unavailable {
+    background: @card-schedule-pending-bg;
+  }
+}
+
 .featured-content {
   .group-scheduler-v2 {
     .panel-body {

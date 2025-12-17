@@ -19829,6 +19829,316 @@ iframe.file-browser {
   border-radius: 0;
 }
 
+.btn-group .btn.btn-primary:focus, .btn-group .btn.btn-primary:not(:disabled):not(.disabled):active:focus {
+  box-shadow: none;
+}
+
+.panel-parent > .panel-body {
+  padding: 0;
+}
+.panel-parent .panel {
+  margin-bottom: 0;
+  border: 0;
+}
+.panel-parent .panel .panel-heading,
+.panel-parent .panel .panel-header {
+  display: none;
+}
+
+/* use e("/") to escape the forward slash during compilation. */
+.panel-with-sidebar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-medium);
+  box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+  background: var(--color-interface-softest);
+  border: 1px solid var(--color-interface-soft);
+  border-radius: var(--rounded-small);
+  margin-bottom: var(--spacing-large);
+  /* The sidebar panel content spans 1 of the 4 columns of the 1st row. */
+  /* The main panel content spans 3 of the 4 columns of the 1st row. */
+  /* Remove background and borders for main panel headers. */
+  /* The footer spans all 4 columns of the 2nd row. */
+}
+.panel-with-sidebar > .panel-sidebar-content {
+  grid-column: 1;
+  grid-row: 1;
+  /* Include margins for the top and left. */
+  margin-top: var(--spacing-medium);
+  margin-left: var(--spacing-medium);
+}
+.panel-with-sidebar > .panel {
+  grid-column: 2/span 3;
+  grid-row: 1;
+  border: 0;
+  box-shadow: none;
+}
+.panel-with-sidebar .panel-block > .panel-heading > .panel-sub-header,
+.panel-with-sidebar .panel-block > .panel-header > .panel-sub-header {
+  border-bottom: 0;
+  background-color: var(--color-interface-softest);
+}
+.panel-with-sidebar .sidebar-footer {
+  grid-column: 1/span 4;
+  grid-row: 2;
+  /* The actions footer items uses a sub grid with a single row and 2 columns. */
+}
+.panel-with-sidebar .sidebar-footer > div.actions {
+  display: grid;
+  justify-items: start;
+  grid-template-columns: repeat(2, 1fr);
+  margin: var(--spacing-medium);
+  /* justify the secondary footer actions to the right-hand side (end) of the grid. */
+}
+.panel-with-sidebar .sidebar-footer > div.actions div.footer-actions {
+  grid-column: 1;
+  /* Child buttons should have margins */
+}
+.panel-with-sidebar .sidebar-footer > div.actions div.footer-actions > * {
+  margin-right: var(--spacing-xsmall);
+}
+.panel-with-sidebar .sidebar-footer > div.actions div.footer-secondary-actions {
+  grid-column: 2;
+  justify-self: end;
+  /* Child buttons should have margins */
+}
+.panel-with-sidebar .sidebar-footer > div.actions div.footer-secondary-actions > * {
+  margin-left: var(--spacing-tiny);
+}
+
+.panel.panel-body-flush > .panel-body {
+  padding: 0;
+}
+.panel.panel-body-flush > .panel-body .actions:last-of-type {
+  margin: inherit;
+}
+
+.panel .panel-body .actions + .alert {
+  margin-top: var(--spacing-small);
+}
+
+.panel-block {
+  position: relative;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  min-width: 0;
+}
+.panel-block > .panel-heading,
+.panel-block > .panel-header {
+  border-bottom: 1px solid var(--color-interface-softer);
+}
+.panel-block > .panel-body {
+  -ms-flex: 1 1 auto;
+  flex: 1 1 auto;
+}
+.is-fullscreen .panel-block {
+  height: 100vh !important;
+  margin: 0;
+  overflow: auto;
+  background-color: var(--color-interface-softest);
+  border-radius: 0;
+}
+.is-fullscreen .panel-block .panel-block {
+  height: auto !important;
+  margin-bottom: var(--spacing-large);
+  overflow: visible;
+}
+.panel-block .wizard {
+  padding: var(--spacing-medium) 0;
+  margin: 0;
+  background: var(--color-interface-softest);
+  border-bottom: 1px solid var(--color-interface-soft);
+}
+.panel-block .treeview-actions {
+  display: flex;
+  margin: -6px -12px -6px 0 !important;
+}
+.panel-block .treeview-actions .btn-link {
+  width: 28px;
+  padding: 6px 0;
+  margin-bottom: 0;
+  font-size: var(--font-size-small);
+  color: var(--color-interface-medium);
+  border: 0;
+}
+.panel-block .treeview-actions .btn-link:hover {
+  color: var(--color-link);
+}
+.panel-block .treeview-actions .btn-link.aspNetDisabled {
+  cursor: not-allowed !important;
+  opacity: 0.4 !important;
+}
+
+.panel-block {
+  position: relative;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  min-width: 0;
+}
+.panel-block > .panel-heading,
+.panel-block > .panel-header {
+  border-bottom: 1px solid var(--color-interface-soft);
+  background-color: var(--color-interface-softest);
+  padding-left: var(--spacing-medium);
+  height: 56px;
+}
+.panel-block > .panel-heading .panel-title,
+.panel-block > .panel-header .panel-title {
+  font-size: var(--font-size-h5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: var(--line-height-normal);
+}
+.panel-block > .panel-heading .panel-title .label,
+.panel-block > .panel-header .panel-title .label {
+  margin-left: var(--spacing-xsmall);
+}
+.panel-block > .panel-heading > .panel-header-actions:has(div:only-child > .label),
+.panel-block > .panel-header > .panel-header-actions:has(div:only-child > .label) {
+  margin-right: var(--spacing-medium);
+}
+.panel-block > .panel-body {
+  -ms-flex: 1 1 auto;
+  flex: 1 1 auto;
+}
+.is-fullscreen .panel-block {
+  height: 100vh !important;
+  margin: 0;
+  overflow: auto;
+  background-color: var(--color-interface-softest);
+  border-radius: 0;
+}
+.is-fullscreen .panel-block .panel-block {
+  height: auto !important;
+  margin-bottom: var(--spacing-large);
+  overflow: visible;
+}
+.panel-block .wizard {
+  padding: var(--spacing-medium) 0;
+  margin: 0;
+  background: var(--color-interface-softest);
+  border-bottom: 1px solid var(--color-interface-soft);
+}
+.panel-block .treeview-actions {
+  display: flex;
+  margin: -6px -12px -6px 0 !important;
+}
+.panel-block .treeview-actions .btn-link {
+  width: 28px;
+  padding: 6px 0;
+  margin-bottom: 0;
+  font-size: var(--font-size-small);
+  color: var(--color-interface-strong);
+  border: 0;
+}
+.panel-block .treeview-actions .btn-link:hover {
+  color: var(--color-interface-stronger);
+}
+.panel-block .treeview-actions .btn-link.aspNetDisabled {
+  cursor: not-allowed !important;
+  opacity: 0.4 !important;
+}
+
+.panel-block > .panel-heading,
+.panel-block > .panel-header,
+.panel-section > .panel-heading,
+.panel-section > .panel-header,
+.panel-note > .panel-heading,
+.panel-note > .panel-header {
+  display: -ms-flexbox;
+  display: flex;
+  align-content: center;
+  align-items: center;
+  border-top-left-radius: var(--rounded-medium);
+  border-top-right-radius: var(--rounded-medium);
+}
+.panel-block > .panel-heading .row,
+.panel-block > .panel-header .row,
+.panel-section > .panel-heading .row,
+.panel-section > .panel-header .row,
+.panel-note > .panel-heading .row,
+.panel-note > .panel-header .row {
+  width: 100%;
+}
+.panel-block > .panel-heading > .panel-title,
+.panel-block > .panel-header > .panel-title,
+.panel-section > .panel-heading > .panel-title,
+.panel-section > .panel-header > .panel-title,
+.panel-note > .panel-heading > .panel-title,
+.panel-note > .panel-header > .panel-title {
+  margin-right: auto;
+}
+.panel-block > .panel-heading .filter-toggle,
+.panel-block > .panel-header .filter-toggle,
+.panel-section > .panel-heading .filter-toggle,
+.panel-section > .panel-header .filter-toggle,
+.panel-note > .panel-heading .filter-toggle,
+.panel-note > .panel-header .filter-toggle {
+  margin-top: 0;
+}
+.panel-block > .panel-heading > .panel-labels,
+.panel-block > .panel-heading > .pull-right,
+.panel-block > .panel-header > .panel-labels,
+.panel-block > .panel-header > .pull-right,
+.panel-section > .panel-heading > .panel-labels,
+.panel-section > .panel-heading > .pull-right,
+.panel-section > .panel-header > .panel-labels,
+.panel-section > .panel-header > .pull-right,
+.panel-note > .panel-heading > .panel-labels,
+.panel-note > .panel-heading > .pull-right,
+.panel-note > .panel-header > .panel-labels,
+.panel-note > .panel-header > .pull-right {
+  margin-left: auto;
+  text-align: right;
+}
+.panel-block > .panel-heading > .panel-labels,
+.panel-block > .panel-header > .panel-labels,
+.panel-section > .panel-heading > .panel-labels,
+.panel-section > .panel-header > .panel-labels,
+.panel-note > .panel-heading > .panel-labels,
+.panel-note > .panel-header > .panel-labels {
+  margin-top: calc(var(--spacing-xsmall) * -1);
+  margin-bottom: calc(var(--spacing-xsmall) * -1);
+}
+.panel-block > .panel-heading > .panel-labels .btn,
+.panel-block > .panel-header > .panel-labels .btn,
+.panel-section > .panel-heading > .panel-labels .btn,
+.panel-section > .panel-header > .panel-labels .btn,
+.panel-note > .panel-heading > .panel-labels .btn,
+.panel-note > .panel-header > .panel-labels .btn {
+  vertical-align: baseline;
+}
+.panel-block > .panel-heading > .description,
+.panel-block > .panel-header > .description,
+.panel-section > .panel-heading > .description,
+.panel-section > .panel-header > .description,
+.panel-note > .panel-heading > .description,
+.panel-note > .panel-header > .description {
+  display: block;
+}
+
+.drawer-pull {
+  padding: 6px 8px;
+  color: var(--color-interface-strong);
+  cursor: pointer;
+  border-bottom: 1px solid var(--color-interface-soft);
+}
+.drawer-pull:before, .drawer-pull:after {
+  display: table;
+  content: " ";
+}
+.drawer-pull:after {
+  clear: both;
+}
+.drawer-pull i {
+  float: right;
+}
+
 /* ===================== BLOCK =================== */
 .rock-fullscreen-toggle {
   position: absolute;

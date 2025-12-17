@@ -107,3 +107,26 @@
 .panel-block:has(.file-asset-manager) {
   margin-top: var(--spacing-medium);
 }
+
+
+.panel-worksurface > .panel-body {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.panel-worksurface .panel-scrollable-content {
+    flex-grow: 1;
+    overflow: hidden auto;
+}
+
+.panel-footer-content {
+    padding: var(--panel-body-padding);
+    background: var(--color-interface-softer);
+    border-top: 1px solid var(--color-interface-soft);
+}
+
+.panel-sidebar-footer-content {
+    grid-column: ~"1 / span 4";
+}

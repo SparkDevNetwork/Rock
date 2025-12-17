@@ -1,0 +1,12 @@
+// imported by styles-v2/_core.scss
+
+// Override Bootstrap Button Group Styles
+
+.btn-group {
+  .btn.btn-primary {
+    &:focus,
+    &:not(:disabled):not(.disabled):active:focus {
+      box-shadow: none;
+    }
+  }
+}

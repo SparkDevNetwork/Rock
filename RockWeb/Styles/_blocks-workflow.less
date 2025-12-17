@@ -1,5 +1,5 @@
 /*
-    Used to manage styles for specific blocks.
+    Used to manage styles for Workflow blocks.
 
     1. User Entry
     2.
@@ -12,5 +12,15 @@
 .workflow-entry-panel {
   & > h1:first-of-type {
     margin-top: 0;
+  }
+}
+
+// Override list group item styles to add flex and remove table styles
+.panel-workflowitem .list-group-item {
+  display: flex;
+  justify-content: space-between;
+  &::before,
+  &::after {
+    all: unset;
   }
 }
