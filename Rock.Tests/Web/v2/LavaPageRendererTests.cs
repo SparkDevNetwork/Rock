@@ -730,6 +730,97 @@ namespace Rock.Tests.Web.v2
 
         #endregion
 
+        #region AddSiteIcons
+
+        [TestMethod]
+        public void AddSiteIcons_WithoutFavIcon_DoesNotAddLinks()
+        {
+            void configureRockContext( Mock<RockContext> rockContextMock )
+            {
+                var siteMock = MockDatabaseHelper.CreateEntityMock<Site>( 1, new Guid( "f1141648-44b5-4dcc-9eed-6f0981faf3d6" ) );
+
+                siteMock.Setup( m => m.DefaultDomainUri ).Returns( new Uri( "http://localhost" ) );
+                siteMock.Setup( m => m.SiteDomains ).Returns( new List<SiteDomain>() );
+                siteMock.Object.FavIconBinaryFileId = null;
+                siteMock.Object.AllowIndexing = true;
+
+                rockContextMock.SetupDbSet( siteMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                renderer.AddSiteIcons();
+
+                var elements = response.GetHtmlElements()
+                    .Where( e => e.Name == "link"
+                        && e.Attributes.ContainsKey( "rel" )
+                        && e.Attributes.ContainsKey( "sizes" )
+                        && e.Attributes.ContainsKey( "href" ) )
+                    .ToList();
+
+                Assert.IsEmpty( elements );
+            }
+        }
+
+        [TestMethod]
+        public void AddSiteIcons_WithFavIcon_AddsLinks()
+        {
+            void configureRockContext( Mock<RockContext> rockContextMock )
+            {
+                var siteMock = MockDatabaseHelper.CreateEntityMock<Site>( 1, new Guid( "f1141648-44b5-4dcc-9eed-6f0981faf3d6" ) );
+
+                siteMock.Setup( m => m.DefaultDomainUri ).Returns( new Uri( "http://localhost" ) );
+                siteMock.Setup( m => m.SiteDomains ).Returns( new List<SiteDomain>() );
+                siteMock.Object.FavIconBinaryFileId = 1;
+                siteMock.Object.AllowIndexing = true;
+
+                rockContextMock.SetupDbSet( siteMock.Object );
+
+                // Required for the FileUrlHelper to get the default security
+                // settings.
+                var securityAttribute = MockDatabaseHelper.CreateEntityMock<Rock.Model.Attribute>( 1, new Guid( "86683833-d0cd-4af5-82e6-2f56d3c9c1b6" ) );
+                securityAttribute.Object.EntityTypeQualifierColumn = Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER;
+                securityAttribute.Object.EntityTypeQualifierValue = string.Empty;
+                securityAttribute.Object.Key = Rock.SystemKey.SystemSetting.ROCK_SECURITY_SETTINGS;
+                securityAttribute.Object.DefaultValue = "{}";
+
+                rockContextMock.SetupDbSet<Group>();
+                rockContextMock.SetupDbSet( securityAttribute.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                renderer.AddSiteIcons();
+
+                var elements = response.GetHtmlElements()
+                    .Where( e => e.Name == "link"
+                        && e.Attributes.ContainsKey( "rel" )
+                        && e.Attributes.ContainsKey( "sizes" )
+                        && e.Attributes.ContainsKey( "href" ) )
+                    .ToList();
+
+                Assert.IsNotEmpty( elements );
+            }
+        }
+
+        #endregion
+
         /// <summary>
         /// Create a base layout that will be used by tests. This is an empty
         /// layout that has an optional list of zones to render blocks into.

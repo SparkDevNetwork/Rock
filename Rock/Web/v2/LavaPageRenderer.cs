@@ -32,6 +32,7 @@ using Rock.Lava;
 using Rock.Model;
 using Rock.Net;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Utility.ExtensionMethods;
 using Rock.ViewModels.Crm;
 using Rock.Web.Cache;
@@ -71,6 +72,7 @@ namespace Rock.Web.v2
             AddLegacyWebFormSupport();
             AddDefaultPageScripts();
             AddPageMetaTags();
+            AddSiteIcons();
 
             // Add configuration specific to Rock Page to the observability activity.
             RockPageHelper.ConfigureActivity( Activity.Current, _rockRequestContext );
@@ -281,8 +283,6 @@ namespace Rock.Web.v2
         {
             _rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Obsidian/obsidian-core.js" ), true );
             _rockRequestContext.Response.AddCssLink( _rockRequestContext.ResolveRockUrl( "~/Obsidian/obsidian-vendor.min.css" ), true );
-
-            //Page.Trace.Warn( "Initializing Obsidian" );
 
             var currentPersonJson = "null";
             var isAnonymousVisitor = false;
@@ -570,6 +570,50 @@ Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
             {
                 _rockRequestContext.Response.AddMetaTag( "robots", null, "noindex, nofollow" );
             }
+        }
+
+        /// <summary>
+        /// Adds the site "favicon" icon links to the page. This includes both
+        /// the standard web one and the Apple iOS ones.
+        /// </summary>
+        internal void AddSiteIcons()
+        {
+            var binaryFileId = _rockRequestContext.Page.Layout.Site.FavIconBinaryFileId;
+
+            if ( !binaryFileId.HasValue )
+            {
+                return;
+            }
+
+            AddSiteIconLink( binaryFileId.Value, 192, "shortcut icon" );
+            AddSiteIconLink( binaryFileId.Value, 16, "apple-touch-icon-precomposed" );
+            AddSiteIconLink( binaryFileId.Value, 32, "apple-touch-icon-precomposed" );
+            AddSiteIconLink( binaryFileId.Value, 144, "apple-touch-icon-precomposed" );
+            AddSiteIconLink( binaryFileId.Value, 180, "apple-touch-icon-precomposed" );
+            AddSiteIconLink( binaryFileId.Value, 192, "apple-touch-icon-precomposed" );
+        }
+
+        /// <summary>
+        /// Adds a single site "favicon" link to the page based on the parameters.
+        /// </summary>
+        /// <param name="binaryFileId">The identifier of the file that holds the icon.</param>
+        /// <param name="size">The width and height of the icon.</param>
+        /// <param name="rel">The <c>rel</c> attribute value that specifies the exact purpose of this link.</param>
+        private void AddSiteIconLink( int binaryFileId, int size, string rel )
+        {
+            var baseUrl = FileUrlHelper.GetImageUrl( binaryFileId );
+            var url = _rockRequestContext.ResolveRockUrl( $"{baseUrl}&width={size}&height={size}&mode=crop&format=png" );
+
+            _rockRequestContext.Response.AddHtmlElement( $"favicon-{size}-{rel}",
+                "link",
+                null,
+                new Dictionary<string, string>
+                {
+                    ["rel"] = rel,
+                    ["sizes"] = $"{size}x{size}",
+                    ["href"] = url,
+                },
+                Enums.Net.ResponseElementLocation.Header );
         }
 
         [ExcludeFromCodeCoverage]
