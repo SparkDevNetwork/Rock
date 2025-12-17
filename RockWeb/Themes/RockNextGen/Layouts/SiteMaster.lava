@@ -22,10 +22,6 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
     <meta charset="utf-8">
     <title></title>
 
-    <script src="{{ '~/Scripts/Bundles/RockJQueryLatest' | ResolveRockUrl }}"></script>
-
-
-
     <!-- Set the viewport width to device width for mobile -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 

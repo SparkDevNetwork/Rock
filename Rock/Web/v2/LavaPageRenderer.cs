@@ -22,9 +22,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using AngleSharp.Dom;
-using AngleSharp.Html.Parser;
-
 using Microsoft.Extensions.DependencyInjection;
 
 using Rock;
@@ -47,7 +44,7 @@ namespace Rock.Web.v2
 
         private readonly Lazy<string> _rockVersion = new Lazy<string>( () =>
         {
-            return $"Rock v{typeof( Rock.Web.UI.RockPage ).Assembly.GetName().Version}";
+            return $"Rock v{typeof( LavaPageRenderer ).Assembly.GetName().Version}";
         } );
 
         private readonly LavaPageLayout _layout;
@@ -88,7 +85,7 @@ namespace Rock.Web.v2
 
             if ( _pageNeedsObsidian )
             {
-                InjectObsidian( null );
+                InjectObsidian();
             }
 
             var headEndContentBuilder = new StringBuilder();
@@ -280,7 +277,7 @@ namespace Rock.Web.v2
             }
         }
 
-        private void InjectObsidian( IDocument document )
+        private void InjectObsidian()
         {
             _rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Obsidian/obsidian-core.js" ), true );
             _rockRequestContext.Response.AddCssLink( _rockRequestContext.ResolveRockUrl( "~/Obsidian/obsidian-vendor.min.css" ), true );
@@ -345,12 +342,13 @@ Obsidian.onReady(() => {{
 Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
 ";
 
-            if ( _pageHasObsidianBlock && document != null )
-            {
-                var bodyElement = document.QuerySelector( "body" );
+            // TODO: Add this to some property that contains body CSS class data.
+            //if ( _pageHasObsidianBlock )
+            //{
+            //    var bodyElement = document.QuerySelector( "body" );
 
-                bodyElement.ClassList.Add( "obsidian-loading" );
-            }
+            //    bodyElement.ClassList.Add( "obsidian-loading" );
+            //}
 
             _rockRequestContext.Response.AddScriptToHead( "rock-obsidian-init", script );
         }
@@ -471,11 +469,46 @@ Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
         /// </summary>
         private void AddDefaultPageScripts()
         {
-            _rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Scripts/Bundles/RockLibs" ), false );
-            _rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Scripts/Bundles/RockUi" ), false );
+            AddScriptBundle( "~/Scripts/Bundles/RockJQueryLatest" );
+            AddScriptBundle( "~/Scripts/Bundles/RockLibs" );
+            AddScriptBundle( "~/Scripts/Bundles/RockUi" );
 
-            // DSH: In my quick testing on WebForms the validation.js part isn't actually used, and ajaxClientErrorHandler doesn't apply to non-WebForms.
-            //_rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Scripts/Bundles/RockValidation" ), true );
+            var isAdministratorLike = _canAdministrateBlockOnPage
+                || _rockRequestContext.Page.IsAuthorized( Authorization.ADMINISTRATE, _rockRequestContext.CurrentPerson )
+                || _rockRequestContext.Page.IsAuthorized( Authorization.EDIT, _rockRequestContext.CurrentPerson );
+
+            if ( _rockRequestContext.Page.IncludeAdminFooter && isAdministratorLike )
+            {
+                AddScriptBundle( "~/Scripts/Bundles/RockAdmin" );
+            }
+
+            // DSH: In my quick testing on WebForms the validation.js part
+            // isn't actually used, and ajaxClientErrorHandler doesn't apply
+            // to non-WebForms.
+            // AddScriptBundle( "~/Scripts/Bundles/RockValidation" );
+        }
+
+        /// <summary>
+        /// Adds a script bundle link to the page header. This requires some
+        /// special consideration so that we can get the cache-busting URL
+        /// when the content changes.
+        /// </summary>
+        /// <param name="path">The virtual path to the bundle.</param>
+        private void AddScriptBundle( string path )
+        {
+#if WEBFORMS
+            // Cover any unit tests that don't provide an HttpContext.
+            if ( System.Web.HttpContext.Current != null )
+            {
+                var resolver = new System.Web.Optimization.BundleResolver( System.Web.Optimization.BundleTable.Bundles );
+
+                path = resolver.GetBundleUrl( path );
+            }
+
+            _rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( path ), false );
+#else
+            _rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( path ), false );
+#endif
         }
 
         /// <summary>
