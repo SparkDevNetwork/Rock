@@ -21,7 +21,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web.Routing;
 
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
@@ -39,7 +38,6 @@ using Rock.Security;
 using Rock.Utility.ExtensionMethods;
 using Rock.ViewModels.Crm;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 
 namespace Rock.Web.v2
 {
@@ -72,41 +70,8 @@ namespace Rock.Web.v2
 
         internal async Task<string> RenderAsync()
         {
-            // Add a temporary shim to support "Sys.Application.add_load();".
-            _rockRequestContext.Response.AddScriptToHead( "RockSysApplication", @"(function() {
-    window.Sys = window.Sys || {};
-    window.Sys.Application = window.Sys.Application || {};
-    window.Sys.Application.add_load = ((fn) => {
-        setTimeout(fn, 0);
-    });
-})();" );
-
-            // Add a temporary shim to support "Sys.WebForms.PageRequestManager".
-            _rockRequestContext.Response.AddScriptToHead( "RockSysWebForms", @"(function() {
-    window.Sys = window.Sys || {};
-    window.Sys.WebForms = window.Sys.WebForms || {};
-    window.Sys.WebForms.PageRequestManager = window.Sys.WebForms.PageRequestManager || {};
-    window.Sys.WebForms.PageRequestManager.getInstance = (() => {
-        return {
-            get_isInAsyncPostBack() { return false; },
-            add_initializeRequest() { },
-            remove_initializeRequest() { },
-            add_beginRequest() { },
-            remove_beginRequest() { },
-            add_pageLoading() { },
-            remove_pageLoading() { },
-            add_pageLoaded() { },
-            remove_pageLoaded() { },
-            add_endRequest() { },
-            remove_endRequest() { }
-        };
-    });
-})();" );
-
-            _rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Scripts/Bundles/RockLibs" ), true );
-            _rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Scripts/Bundles/RockUi" ), true );
-            // DSH: In my quick testing on WebForms the validation.js part isn't actually used, and ajaxClientErrorHandler doesn't apply to non-WebForms.
-            //_rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Scripts/Bundles/RockValidation" ), true );
+            AddLegacyWebFormSupport();
+            AddDefaultPageScripts();
 
             var mergeFields = _rockRequestContext.GetCommonMergeFields();
 
@@ -114,77 +79,31 @@ namespace Rock.Web.v2
             mergeFields.Add( "PageIconCssClass", _rockRequestContext.Page.IconCssClass );
             mergeFields.Add( "PageTitle", _rockRequestContext.Page.PageTitle );
             mergeFields.Add( "BreadCrumbs", GetPageBreadCrumbs() );
-
-            var context = _engine.NewRenderContext();
-
-            foreach ( var kvp in mergeFields )
-            {
-                if ( kvp.Key.StartsWith( LavaHelper.InternalMergeFieldPrefix ) )
-                {
-                    context.SetInternalField( kvp.Key, kvp.Value );
-                }
-                else
-                {
-                    context.SetMergeField( kvp.Key, kvp.Value );
-                }
-            }
-
-            context.SetEnabledCommands( "", "," );
-
-            context.SetMergeField( "Zones", await RenderBlocksAsync( _layout.Zones ) );
+            mergeFields.Add( "Zones", await RenderBlocksAsync( _layout.Zones ) );
 
             if ( _pageNeedsObsidian )
             {
                 InjectObsidian( null );
             }
 
-            var headEndContent = string.Empty;
-            var bodyEndContent = "<div id=\"updateProgress\"></div>";
+            var headEndContentBuilder = new StringBuilder();
+            var bodyEndContentBuilder = new StringBuilder();
+
+            // Add support for JavaScript that tries to access the WebForms progress div.
+            bodyEndContentBuilder.AppendLine( "<div id=\"updateProgress\"></div>" );
 
             if ( _rockRequestContext.Response is RockResponseBase responseBase )
             {
                 foreach ( var responseElement in responseBase.GetHtmlElements() )
                 {
-                    var sb = new StringBuilder();
-
-                    sb.Append( $"<{responseElement.Name}" );
-
-                    if ( responseElement.Attributes != null )
-                    {
-                        foreach ( var attr in responseElement.Attributes )
-                        {
-                            sb.Append( $" {attr.Key}=\"{attr.Value.EncodeXml( true ) }\"" );
-                        }
-                    }
-
-                    sb.Append( ">" );
-
-                    if ( responseElement.Name != "link" )
-                    {
-                        if ( responseElement.Content.IsNotNullOrWhiteSpace() )
-                        {
-                            sb.Append( responseElement.Content );
-                        }
-
-                        sb.Append( "</" );
-                        sb.Append( responseElement.Name );
-                        sb.Append( ">" );
-                    }
-
-                    if ( responseElement.Location == Enums.Net.ResponseElementLocation.Header )
-                    {
-                        headEndContent += sb.ToString();
-                    }
-                    else
-                    {
-                        bodyEndContent += sb.ToString();
-                    }
+                    ProcessResponseElement( responseElement, headEndContentBuilder, bodyEndContentBuilder );
                 }
             }
 
-            context.SetMergeField( "HeadEndContent", headEndContent );
-            context.SetMergeField( "BodyEndContent", bodyEndContent );
+            mergeFields.Add( "HeadEndContent", headEndContentBuilder.ToString() );
+            mergeFields.Add( "BodyEndContent", bodyEndContentBuilder.ToString() );
 
+            var context = _engine.NewRenderContext( mergeFields, Array.Empty<string>() );
             var parameters = LavaRenderParameters.WithContext( context );
             parameters.ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Throw;
 
@@ -485,6 +404,12 @@ Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
             return str.ToString();
         }
 
+        /// <summary>
+        /// Gets the breadcrumbs for the current page as a collection of Lava
+        /// data objects. These can be used to render breadcrumb navigation in
+        /// the page output.
+        /// </summary>
+        /// <returns>A collection of data objects that represent the breadcrumbs.</returns>
         private IReadOnlyCollection<LavaDataObject> GetPageBreadCrumbs()
         {
             var pageReference = new PageReference( _rockRequestContext.Page.Id,
@@ -497,6 +422,97 @@ Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
             return pageReferences.SelectMany( pr => pr.BreadCrumbs )
                 .Select( b => new LavaDataObject( b ) )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Add required shims to allow JavaScript code that expects WebForms
+        /// to not throw errors. This does not mean they will work completely,
+        /// but it does provide some basic functionality to allow a transition
+        /// period.
+        /// </summary>
+        private void AddLegacyWebFormSupport()
+        {
+            // Add a temporary shim to support "Sys.Application.add_load();".
+            _rockRequestContext.Response.AddScriptToHead( "RockSysApplication", @"(function() {
+    window.Sys = window.Sys || {};
+    window.Sys.Application = window.Sys.Application || {};
+    window.Sys.Application.add_load = ((fn) => {
+        setTimeout(fn, 0);
+    });
+})();" );
+
+            // Add a temporary shim to support "Sys.WebForms.PageRequestManager".
+            _rockRequestContext.Response.AddScriptToHead( "RockSysWebForms", @"(function() {
+    window.Sys = window.Sys || {};
+    window.Sys.WebForms = window.Sys.WebForms || {};
+    window.Sys.WebForms.PageRequestManager = window.Sys.WebForms.PageRequestManager || {};
+    window.Sys.WebForms.PageRequestManager.getInstance = (() => {
+        return {
+            get_isInAsyncPostBack() { return false; },
+            add_initializeRequest() { },
+            remove_initializeRequest() { },
+            add_beginRequest() { },
+            remove_beginRequest() { },
+            add_pageLoading() { },
+            remove_pageLoading() { },
+            add_pageLoaded() { },
+            remove_pageLoaded() { },
+            add_endRequest() { },
+            remove_endRequest() { }
+        };
+    });
+})();" );
+        }
+
+        /// <summary>
+        /// Adds the default page JavaScript libraries that must be included on
+        /// every page.
+        /// </summary>
+        private void AddDefaultPageScripts()
+        {
+            _rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Scripts/Bundles/RockLibs" ), true );
+            _rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Scripts/Bundles/RockUi" ), true );
+
+            // DSH: In my quick testing on WebForms the validation.js part isn't actually used, and ajaxClientErrorHandler doesn't apply to non-WebForms.
+            //_rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Scripts/Bundles/RockValidation" ), true );
+        }
+
+        /// <summary>
+        /// Processes a single response element and appends it to the appropriate
+        /// content builder.
+        /// </summary>
+        /// <param name="responseElement">The element being processed.</param>
+        /// <param name="headEndContentBuilder">The builder for content at the end of the 'head' tag.</param>
+        /// <param name="bodyEndContentBuilder">The builder for content at the end of the 'body' tag.</param>
+        private void ProcessResponseElement( ResponseHtmlElement responseElement, StringBuilder headEndContentBuilder, StringBuilder bodyEndContentBuilder )
+        {
+            var sb = responseElement.Location == Enums.Net.ResponseElementLocation.Header
+               ? headEndContentBuilder
+               : bodyEndContentBuilder;
+
+            sb.Append( $"<{responseElement.Name}" );
+
+            if ( responseElement.Attributes != null )
+            {
+                foreach ( var attr in responseElement.Attributes )
+                {
+                    sb.Append( $" {attr.Key}=\"{attr.Value.EncodeXml( true )}\"" );
+                }
+            }
+
+            sb.Append( ">" );
+
+            if ( responseElement.Name != "link" )
+            {
+                if ( responseElement.Content.IsNotNullOrWhiteSpace() )
+                {
+                    sb.Append( responseElement.Content );
+                }
+
+                sb.Append( "</" );
+                sb.Append( responseElement.Name );
+                sb.Append( ">" );
+            }
         }
 
         [ExcludeFromCodeCoverage]
