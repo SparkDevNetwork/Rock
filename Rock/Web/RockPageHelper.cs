@@ -15,10 +15,16 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
+using Microsoft.Extensions.DependencyInjection;
+
+using Rock.Configuration;
 using Rock.Net;
 using Rock.Observability;
+using Rock.ViewModels.Crm;
 
 namespace Rock.Web
 {
@@ -75,6 +81,73 @@ namespace Rock.Web
             activity.AddTag( "rock.page.id", requestContext.Page?.Id );
             activity.AddTag( "rock.page.ispostback", isPostBack );
             activity.AddTag( "rock.page.issystem", requestContext.Page?.IsSystem );
+        }
+
+        /// <summary>
+        /// Gets the JavaScript block that is required to initialize the Obsidian
+        /// environment. The Obsidian script bundles must also be imported manually.
+        /// </summary>
+        /// <param name="requestContext">The context that describes the current request.</param>
+        /// <returns>A string of text that should be rendered inside a <c>&lt;script&gt;</c> block.</returns>
+        public static string GetObsidianInitScript( RockRequestContext requestContext )
+        {
+            var currentPersonJson = "null";
+            var isAnonymousVisitor = false;
+            var currentPerson = requestContext.CurrentPerson;
+
+            if ( currentPerson != null && currentPerson.Guid != new Guid( SystemGuid.Person.GIVER_ANONYMOUS ) )
+            {
+                currentPersonJson = new CurrentPersonBag
+                {
+                    IdKey = currentPerson.IdKey,
+                    Guid = currentPerson.Guid,
+                    PrimaryAliasIdKey = currentPerson.PrimaryAlias.IdKey,
+                    PrimaryAliasGuid = currentPerson.PrimaryAlias.Guid,
+                    FirstName = currentPerson.FirstName,
+                    NickName = currentPerson.NickName,
+                    LastName = currentPerson.LastName,
+                    FullName = currentPerson.FullName,
+                    Email = currentPerson.Email,
+                }.ToCamelCaseJson( false, false );
+            }
+            else if ( currentPerson != null )
+            {
+                isAnonymousVisitor = true;
+            }
+
+            // Prevent XSS attacks in page parameters.
+            var sanitizedPageParameters = new Dictionary<string, string>();
+            foreach ( var pageParam in requestContext.PageParameters )
+            {
+                var sanitizedKey = pageParam.Key.Replace( "</", "<\\/" );
+                var sanitizedValue = pageParam.Value.ToStringSafe().Replace( "</", "<\\/" );
+
+                sanitizedPageParameters.AddOrReplace( sanitizedKey, sanitizedValue );
+            }
+
+            var trailblazerMode = SystemSettings.GetValue( SystemKey.SystemSetting.TRAILBLAZER_MODE ).AsBoolean();
+            var fingerprint = RockApp.Current.GetRequiredService<ObsidianFingerprintManager>().GetFingerprint();
+
+            return $@"
+Obsidian.onReady(() => {{
+    System.import('@Obsidian/Templates/rockPage.js').then(module => {{
+        module.initializePage({{
+            executionStartTime: new Date().getTime(),
+            pageId: {requestContext.Page.Id},
+            pageGuid: '{requestContext.Page.Guid}',
+            pageParameters: {sanitizedPageParameters.ToJson()},
+            sessionGuid: '{requestContext.SessionGuid}',
+            interactionGuid: '{requestContext.RelatedInteractionGuid}',
+            currentPerson: {currentPersonJson},
+            isAnonymousVisitor: {( isAnonymousVisitor ? "true" : "false" )},
+            loginUrlWithReturnUrl: '{requestContext.Page.Layout.Site.GetLoginUrlWithReturnUrl()}',
+            trailblazerMode: {( trailblazerMode ? "true" : "false" )}
+        }});
+    }});
+}});
+
+Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
+";
         }
     }
 }

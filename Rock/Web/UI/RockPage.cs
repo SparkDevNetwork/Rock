@@ -1416,62 +1416,7 @@ Rock.settings.initialize({{
 
                         if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-init" ) )
                         {
-                            var currentPersonJson = "null";
-                            var isAnonymousVisitor = false;
-
-                            if ( CurrentPerson != null && CurrentPerson.Guid != new Guid( SystemGuid.Person.GIVER_ANONYMOUS ) )
-                            {
-                                currentPersonJson = new CurrentPersonBag
-                                {
-                                    IdKey = CurrentPerson.IdKey,
-                                    Guid = CurrentPerson.Guid,
-                                    PrimaryAliasIdKey = CurrentPerson.PrimaryAlias.IdKey,
-                                    PrimaryAliasGuid = CurrentPerson.PrimaryAlias.Guid,
-                                    FirstName = CurrentPerson.FirstName,
-                                    NickName = CurrentPerson.NickName,
-                                    LastName = CurrentPerson.LastName,
-                                    FullName = CurrentPerson.FullName,
-                                    Email = CurrentPerson.Email,
-                                }.ToCamelCaseJson( false, false );
-                            }
-                            else if ( CurrentPerson != null )
-                            {
-                                isAnonymousVisitor = true;
-                            }
-
-                            // Prevent XSS attacks in page parameters.
-                            var sanitizedPageParameters = new Dictionary<string, string>();
-                            foreach ( var pageParam in PageParameters() )
-                            {
-                                var sanitizedKey = pageParam.Key.Replace( "</", "<\\/" );
-                                var sanitizedValue = pageParam.Value.ToStringSafe().Replace( "</", "<\\/" );
-
-                                sanitizedPageParameters.AddOrReplace( sanitizedKey, sanitizedValue );
-                            }
-
-                            var trailblazerMode = SystemSettings.GetValue( SystemKey.SystemSetting.TRAILBLAZER_MODE ).AsBoolean();
-                            var fingerprint = RockApp.Current.GetRequiredService<ObsidianFingerprintManager>().GetFingerprint();
-
-                            var script = $@"
-Obsidian.onReady(() => {{
-    System.import('@Obsidian/Templates/rockPage.js').then(module => {{
-        module.initializePage({{
-            executionStartTime: new Date().getTime(),
-            pageId: {_pageCache.Id},
-            pageGuid: '{_pageCache.Guid}',
-            pageParameters: {sanitizedPageParameters.ToJson()},
-            sessionGuid: '{RequestContext.SessionGuid}',
-            interactionGuid: '{RequestContext.RelatedInteractionGuid}',
-            currentPerson: {currentPersonJson},
-            isAnonymousVisitor: {( isAnonymousVisitor ? "true" : "false" )},
-            loginUrlWithReturnUrl: '{GetLoginUrlWithReturnUrl()}',
-            trailblazerMode: {( trailblazerMode ? "true" : "false" )}
-        }});
-    }});
-}});
-
-Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
-";
+                            var script = RockPageHelper.GetObsidianInitScript( RequestContext );
 
                             if ( _pageHasObsidianBlock )
                             {
