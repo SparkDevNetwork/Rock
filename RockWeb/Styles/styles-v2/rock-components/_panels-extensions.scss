@@ -1,14 +1,99 @@
+// imported by _core.scss
 
-
-// Panel Helper (Rock Components)
+// Panels Extensions (Rock Components)
 
 
 // =============================================================
 // Table of Content
+//  + Panel Title
+//  + Panel Collapsed
 //  + Panel Parent
 //  + Panel with Sidebar
+//  + Panel Block
+//  + Panel Toolbar
+//  + Panel Worksurface
+//  + Drawer Pull
+//  + Panel Footer Content
+//  + Panel Help
 // =============================================================
 
+
+// ======================== PANEL TITLE ========================
+
+.panel-title {
+  line-height:    var(--line-height-normal);
+}
+
+// ======================= END PANEL TITLE ======================
+
+// ===================== PANEL COLLAPSED =====================
+.panel {
+  // When a panel is in a collapsed state
+  &.panel-collapsed {
+    .panel-heading,
+    .panel-header,
+    .panel-sub-header,
+    .panel-action-help {
+      border-radius: var(--rounded-medium);
+      border-bottom: none;
+    }
+    .panel-drawer,
+    .tabbed-bar {
+      border-radius: var(--rounded-medium);
+    }
+    .panel-drawer > .drawer-pull {
+      border-bottom: none;
+    }
+    .panel-heading + .panel-help,
+    .panel-header + .panel-help {
+      border-top: 1px solid var(--color-interface-soft);
+    }
+    .panel-help + .tabbed-bar {
+      border-top: 1px solid var(--color-interface-soft);
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+  }
+  &.panel-note:not(:has(.note-new)) {
+    .panel-heading,
+    .panel-header {
+      border-bottom: none;
+      border-radius: var(--rounded-medium);
+    }
+  }
+
+  // If a panel is collapsed and has a tabbed bar, drawer, or sub-header, the border should stay.
+  &.panel-collapsed:has(.tabbed-bar) .panel-heading,
+  &.panel-collapsed:has(.panel-drawer) .panel-heading,
+  &.panel-collapsed:has(.panel-sub-header) .panel-heading,
+  &.panel-collapsed:has(.tabbed-bar) .panel-header,
+  &.panel-collapsed:has(.panel-drawer) .panel-header,
+  &.panel-collapsed:has(.panel-sub-header) .panel-header {
+    border-bottom: 1px solid var(--color-interface-soft);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  // Remove heading bottom border if collapsed state only has help-content.
+  &.panel-collapsed:has(.panel-heading + .panel-help) .panel-heading,
+  &.panel-collapsed:has(.panel-header + .panel-help) .panel-header {
+    border-bottom: none;
+  }
+
+  &.panel-collapsed:has(.tabbed-bar) .panel-drawer > .drawer-pull,
+  &.panel-collapsed:has(.tabbed-bar) .panel-sub-header,
+  &.panel-collapsed:has(.panel-drawer) .panel-sub-header,
+  &.panel-collapsed:has(.panel-help) .panel-sub-header,
+  &.panel-collapsed:has(.panel-drawer) .panel-help {
+    border-bottom: 1px solid var(--color-interface-soft);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top: none;
+  }
+
+}
+
+// ================== END PANEL COLLAPSED ===================
 
 // ======================== PANEL PARENT ========================
 .panel-parent {
@@ -174,7 +259,7 @@
   }
 }
 // ====================== END PANEL WITH SIDEBAR ======================
-
+// ======================== PANEL BLOCK ========================
 
 .panel-block {
   position:           relative;
@@ -259,6 +344,20 @@
       }
     }
   }
+
+  .panel-body {
+    .panel-fullwidth,
+    .grid.grid-panel {
+      .table-bordered {
+        & > tfoot > tr > td {
+          &.grid-actions {
+            border-top: 1px solid var(--color-interface-soft);
+          }
+        }
+      }
+    }
+  }
+
 }
 
 .panel-block,
@@ -307,6 +406,55 @@
   }
 }
 
+// ======================= END PANEL BLOCK ======================
+
+// ======================= PANEL TOOLBAR ======================
+
+.panel-toolbar {
+
+    .btn-group {
+      .btn-tool {
+        padding: 1px var(--spacing-tiny);
+        color: var(--color-interface-strong);
+        font-size: var(--font-size-xsmall);
+        font-weight: var(--font-weight-semibold);
+        line-height: 24px;
+        background: transparent;
+        border: 1px solid transparent;
+
+        &:focus,
+        &:hover,
+        &:active,
+        &.active {
+            background: var(--color-interface-soft);
+        }
+      }
+    }
+
+}
+
+// ======================= END PANEL TOOLBAR ======================
+
+
+// ======================= PANEL WORKSURFACE ======================
+
+.panel-worksurface > .panel-body {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.panel-worksurface .panel-scrollable-content {
+    flex-grow: 1;
+    overflow: hidden auto;
+}
+
+// ====================== END PANEL WORKSURFACE ======================
+
+
+// ======================= DRAWER PULL ======================
+
 .drawer-pull {
   padding: 6px 8px;
   color: var(--color-interface-strong);
@@ -327,3 +475,28 @@
   }
 }
 
+// ======================= END DRAWER PULL ======================
+
+// ======================= PANEL FOOTER CONTENT =======================
+
+.panel-footer-content {
+  padding: var(--spacing-medium);
+  background: var(--color-interface-softer);
+  border-top: 1px solid var(--color-interface-soft);
+  border-bottom-left-radius: var(--rounded-medium);
+  border-bottom-right-radius: var(--rounded-medium);
+}
+
+.panel-sidebar-footer-content {
+    grid-column: 1 / span 4;
+}
+
+// ===================== END PANEL FOOTER CONTENT =====================
+
+// ===================== PANEL HELP =====================
+
+.help-content {
+  padding: var(--spacing-tiny) var(--spacing-medium);
+}
+
+// ===================== END PANEL HELP =====================

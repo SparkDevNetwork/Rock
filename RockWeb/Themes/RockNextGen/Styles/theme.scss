@@ -530,6 +530,66 @@ body.navbar-side-open {
 
 }
 
+// ======================== REMINDERS / BOOKMARKS ========================
+
+a.rock-bookmark {
+  color: var(--color-interface-strong);
+}
+.rock-bookmark {
+  --size: 32px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size);
+  height: var(--size);
+  margin: 0 0 0 var(--spacing-small);
+  font-size: calc(var(--size) * 0.5);
+  background-color: var(--color-interface-softer);
+  border: 1px solid var(--color-interface-soft);
+  border-radius: 999px;
+  transition: .15s ease-in-out,box-shadow .15s ease-in-out;
+
+  &:hover {
+    color: var(--color-interface-stronger);
+  }
+
+  &:focus {
+    box-shadow: var(--input-focus-box-shadow) !important;
+    i {
+      color: var(--color-primary) !important;
+    }
+  }
+
+  @media (min-width: $screen-small) {
+    --size: 40px;
+    padding: 20px;
+  }
+}
+
+.rock-top-header .rock-bookmark.active.has-reminders > .indicator-bottom {
+  position: absolute;
+  top: 0px;
+  right: 2px;
+  background-color: var(--color-primary);
+  border: 1px solid var(--color-interface-softest);
+  width: 8px;
+  height: 8px;
+  border-radius: var(--rounded-xsmall);
+
+  @media (min-width: $screen-small) {
+    top: 2px;
+    right: 2px;
+    border: none
+  }
+}
+
+.rock-top-header .rock-bookmark:hover {
+  border: 1px solid var(--color-interface-medium);
+}
+
+// ======================== END REMINDERS / BOOKMARKS ========================
+
 // Side Nav
 .navbar-static-side {
   --nav-childpages-bg: var(--navbarside-background-color);
@@ -582,6 +642,13 @@ body.navbar-side-open {
         .nav-childpages {
           display: inline-block;
           box-shadow: var(--popup-box-shadow);
+        }
+        .item-title,
+        .nav-childpages li.title {
+          color: var(--color-interface-stronger);
+          i {
+            color: var(--color-interface-strong);
+          }
         }
         @media (min-width: $screen-xsmall) {
           .item-title {

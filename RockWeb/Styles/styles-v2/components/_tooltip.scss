@@ -128,28 +128,3 @@
   border-style: solid;
 }
 // ====================== END INNER & ARROW ======================
-
-// ======================== CUSTOM STYLES ========================
-
-.tip {
-  padding: var(--spacing-tiny);
-  font-size: var(--font-size-xsmall);
-  color: var(--color-interface-softest);
-  background-color: var(--color-interface-stronger);
-  border-radius: var(--rounded-xsmall);
-}
-
-.tip-liquid,
-.tip-lava {
-  &::after {
-    content: "{{ Lava }}";
-    background-color: var(--color-info-strong);
-  }
-}
-
-
-.tip-html {
-  &::after {
-    content: "< HTML />";
-  }
-}

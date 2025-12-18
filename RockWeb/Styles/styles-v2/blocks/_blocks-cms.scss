@@ -13,6 +13,7 @@
 //  + Asset Manager - Used for managing media assets
 //  + Control Gallery
 //  + SMS Pipeline - Used for managing SMS communications
+//  + Active Users - Used for displaying active users on internal homepage
 // =============================================================
 
 
@@ -944,3 +945,13 @@ li.L9 { background: var(--color-interface-softer) }
 }
 
 // ======================== END SMS PIPELINE ========================
+
+// ===================== ACTIVE USERS =====================
+
+ul.activeusers {
+    list-style: none;
+    margin-left: 0px;
+    padding-left: 0px;
+}
+
+// ==================== END ACTIVE USERS =====================

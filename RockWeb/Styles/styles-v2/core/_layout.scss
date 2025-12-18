@@ -1,0 +1,24 @@
+
+
+// CORE LAYOUT STYLES
+// Use for layout specific styles that should be shared across themes.
+
+
+// =============================================================
+// Table of Content
+//  + Base style
+// =============================================================
+
+.page-wrapper {
+  // Moved from theme.less and refactor from having its own class to joining this class
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  // =============
+
+  @media (min-width: $screen-medium) {
+    padding-top: $navbar-top-height;
+    height: 100vh;
+  }
+
+}

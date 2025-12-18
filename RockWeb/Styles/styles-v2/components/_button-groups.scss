@@ -38,13 +38,8 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-xsmall);
-    justify-content: center;
-
-    &:hover {
-      text-decoration: none;
-    }
-
   }
+
   .btn + .btn,
   .btn + .btn-group,
   .btn-group + .btn,
@@ -56,14 +51,6 @@
     &:focus,
     &:not(:disabled):not(.disabled):active:focus {
       box-shadow: none;
-    }
-  }
-  .btn-tool {
-    background-color: var(--color-interface-soft);
-    border-color:     var(--color-interface-soft);
-    color:            var(--color-interface-stronger);
-    &:hover {
-      border-color:   var(--color-interface-medium);
     }
   }
 

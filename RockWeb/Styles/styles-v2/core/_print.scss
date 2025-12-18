@@ -95,17 +95,3 @@
     }
   }
 }
-
-.page-wrapper {
-  // Moved from theme.less and refactor from having its own class to joining this class
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  // =============
-
-  @media (min-width: $screen-medium) {
-    padding-top: $navbar-top-height;
-    height: 100vh;
-  }
-
-}

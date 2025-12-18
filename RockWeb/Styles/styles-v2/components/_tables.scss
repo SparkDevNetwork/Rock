@@ -261,11 +261,6 @@ td.wrap-contents {
   }
 }
 
-// Table - No Borders
-.table-no-border {
-  overflow-x: auto;
-}
-
 // Core Table
 .table-wrapper {
   .btn-toolbar {
@@ -584,15 +579,6 @@ tr.row-highlight {
   }
   .grid-table {
     border: 0 !important;
-
-    // If there is no table footer, round the bottom corners of the last row, first and last cell to match the rounded grid panel.
-    &:not(:has(tfoot)) tr:last-child,
-    &:not(:has(tfoot)) tr:last-child > td:first-child {
-      border-bottom-left-radius: var(--rounded-medium);
-    }
-    &:not(:has(tfoot)) tr:last-child > td:last-child {
-      border-bottom-right-radius: var(--rounded-medium);
-    }
   }
 
   tfoot > tr:last-child {
@@ -879,18 +865,9 @@ td.grid-col-actions {
 
 }
 
-.grid-actions:has(.btn-grid-custom-action) {
-    padding-top: var(--spacing-xsmall) !important;
-    border-bottom-left-radius: var(--rounded-medium);
-    border-bottom-right-radius: var(--rounded-medium);
-  }
-
 td.grid-actions {
   padding: 0 !important;
   font-size: 1em;
-  .form-control {
-    border-bottom-left-radius: var(--rounded-medium); // If there's a dropdown in the action column, make sure the corners are rounded
-  }
 }
 
 // If the grid has a filter, make sure there's space for the filter toggle
@@ -1138,16 +1115,4 @@ td.grid-actions {
 }
 // ===================== END PRINT STYLES (OBSIDIAN) =====================
 
-// ======================= MISC =======================
 
-table tbody tr td .required-indicator::after {
-  margin-left: var(--spacing-tiny);
-  background-color: var(--color-danger-strong);
-  width: 6px;
-  height: 6px;
-  display: inline-block;
-  border-radius: 50%;
-  content: "";
-  position: relative;
-  transform: translateY(-30%);
-}

@@ -1,0 +1,74 @@
+// imported by _core.scss
+
+// NAV EXTENSIONS
+
+
+// =============================================================
+// Table of Contents
+//  + Nav Tabs
+//  + Nav Pills
+// =============================================================
+
+// ===================== NAV TABS =====================
+
+.nav-tabs {
+  border:           1px solid var(--color-interface-soft);
+  border-radius:    var(--rounded-medium);
+  background-color: var(--color-interface-softest);
+  padding: var(--spacing-small);
+
+  > li {
+  // Actual tabs (as links)
+    > a {
+      color: var(--color-interface-strong);
+      font-weight: var(--font-weight-medium);
+      background-color: var(--color-interface-softer);
+      border: none; // remove bootstrap border
+
+      &:hover {
+        border-color: transparent; // override bootstrap hover border
+        background-color: var(--color-primary-soft);
+        color: var(--color-primary);
+      }
+
+    }
+
+    &.active > a {
+      &,
+      &:hover,
+      &:focus {
+        border: none; // remove bootstrap border
+        border-bottom-color: unset; // remove bootstrap border
+      }
+    }
+  }
+
+}
+
+.nav-tabs + .tab-content {
+  margin-top: var(--spacing-small);
+}
+
+.panel:has(.nav-tabs) .nav-tabs {
+    border:           none;
+    border-radius:    0;
+    padding:          0;
+  }
+
+// =================== END NAV TABS =====================
+
+// ===================== NAV PILLS =====================
+
+.nav-pills {
+    > li {
+      > a {
+        color: var(--color-interface-strong);
+      }
+      > a:hover {
+            color: var(--color-primary);
+            background-color: var(--color-primary-soft);
+        }
+    }
+}
+
+// ====================== END NAV PILLS =============================
