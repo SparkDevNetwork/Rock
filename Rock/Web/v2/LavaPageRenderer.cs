@@ -172,13 +172,13 @@ namespace Rock.Web.v2
                 sb.Append( " can-configure" );
             }
 
-            sb.Append( "\"" );
-
             if ( zone.Classes.IsNotNullOrWhiteSpace() )
             {
                 sb.Append( " " );
                 sb.Append( zone.Classes );
             }
+
+            sb.Append( "\"" );
 
             sb.Append( ">" );
 
@@ -297,71 +297,13 @@ namespace Rock.Web.v2
             _rockRequestContext.Response.AddScriptLinkToHead( _rockRequestContext.ResolveRockUrl( "~/Obsidian/obsidian-core.js" ), true );
             _rockRequestContext.Response.AddCssLink( _rockRequestContext.ResolveRockUrl( "~/Obsidian/obsidian-vendor.min.css" ), true );
 
-            var currentPersonJson = "null";
-            var isAnonymousVisitor = false;
-            var currentPerson = _rockRequestContext.CurrentPerson;
-
-            if ( currentPerson != null && currentPerson.Guid != new Guid( SystemGuid.Person.GIVER_ANONYMOUS ) )
-            {
-                currentPersonJson = new CurrentPersonBag
-                {
-                    IdKey = currentPerson.IdKey,
-                    Guid = currentPerson.Guid,
-                    PrimaryAliasIdKey = currentPerson.PrimaryAlias.IdKey,
-                    PrimaryAliasGuid = currentPerson.PrimaryAlias.Guid,
-                    FirstName = currentPerson.FirstName,
-                    NickName = currentPerson.NickName,
-                    LastName = currentPerson.LastName,
-                    FullName = currentPerson.FullName,
-                    Email = currentPerson.Email,
-                }.ToCamelCaseJson( false, false );
-            }
-            else if ( currentPerson != null )
-            {
-                isAnonymousVisitor = true;
-            }
-
-            // Prevent XSS attacks in page parameters.
-            var sanitizedPageParameters = new Dictionary<string, string>();
-            foreach ( var pageParam in _rockRequestContext.PageParameters )
-            {
-                var sanitizedKey = pageParam.Key.Replace( "</", "<\\/" );
-                var sanitizedValue = pageParam.Value.ToStringSafe().Replace( "</", "<\\/" );
-
-                sanitizedPageParameters.AddOrReplace( sanitizedKey, sanitizedValue );
-            }
-
-            var trailblazerMode = SystemSettings.GetValue( SystemKey.SystemSetting.TRAILBLAZER_MODE ).AsBoolean();
-            var fingerprint = RockApp.Current.GetRequiredService<ObsidianFingerprintManager>().GetFingerprint();
-
-            var script = $@"
-Obsidian.onReady(() => {{
-    System.import('@Obsidian/Templates/rockPage.js').then(module => {{
-        module.initializePage({{
-            executionStartTime: new Date().getTime(),
-            pageId: {_rockRequestContext.Page.Id},
-            pageGuid: '{_rockRequestContext.Page.Guid}',
-            pageParameters: {sanitizedPageParameters.ToJson()},
-            sessionGuid: '{_rockRequestContext.SessionGuid}',
-            interactionGuid: '{_rockRequestContext.RelatedInteractionGuid}',
-            currentPerson: {currentPersonJson},
-            isAnonymousVisitor: {( isAnonymousVisitor ? "true" : "false" )},
-            loginUrlWithReturnUrl: '{_rockRequestContext.Page.Layout.Site.GetLoginUrlWithReturnUrl()}',
-            trailblazerMode: {( trailblazerMode ? "true" : "false" )}
-        }});
-    }});
-}});
-
-Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
-";
+            var script = RockPageHelper.GetObsidianInitScript( _rockRequestContext );
 
             // TODO: Add this to some property that contains body CSS class data.
-            //if ( _pageHasObsidianBlock )
-            //{
-            //    var bodyElement = document.QuerySelector( "body" );
-
-            //    bodyElement.ClassList.Add( "obsidian-loading" );
-            //}
+            if ( _pageHasObsidianBlock )
+            {
+                //script = "document.body.classList.add(\"obsidian-loading\")\n" + script;
+            }
 
             _rockRequestContext.Response.AddScriptToHead( "rock-obsidian-init", script );
         }
@@ -370,9 +312,9 @@ Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
         {
             var str = new StringBuilder();
 
-            var blockTypeCss = block.BlockType != null
-                ? block.BlockType.Name.ReplaceCaseInsensitive( LegacyBlockTypeSuffix, string.Empty ).Trim()
-                : string.Empty;
+            var blockTypeCss = block.BlockType.Name
+                .ReplaceCaseInsensitive( LegacyBlockTypeSuffix, string.Empty )
+                .Trim();
 
             var parts = blockTypeCss.Split( new char[] { '>' } );
 
@@ -390,7 +332,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
             str.Append( "\" class=\"block-instance js-block-instance " );
             str.Append( blockTypeCss );
             str.Append( " block-role-" );
-            str.Append( ( block.Role ?? block.BlockType?.DefaultRole ).ToStringSafe().ToLower() );
+            str.Append( ( block.Role ?? block.BlockType.DefaultRole ).ToStringSafe().ToLower() );
 
             if ( block.CssClass.IsNotNullOrWhiteSpace() )
             {
@@ -507,6 +449,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
         /// when the content changes.
         /// </summary>
         /// <param name="path">The virtual path to the bundle.</param>
+        [ExcludeFromCodeCoverage]
         private void AddScriptBundle( string path )
         {
 #if WEBFORMS

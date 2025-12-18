@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,10 @@ namespace Rock.Tests.Web.v2
     [TestClass]
     public class LavaPageRendererTests : LavaPageTestsBase
     {
+        #region Tests That Should Go Elsewhere
+
+        // These tests really don't test LavaPageRenderer directly.
+
         [TestMethod]
         public async Task AddCssLinkFilter_AddsLinkTag()
         {
@@ -107,6 +112,10 @@ namespace Rock.Tests.Web.v2
             }
         }
 
+        #endregion
+
+        #region RenderAsync
+
         [TestMethod]
         public async Task RenderAsync_WithObsidianBlock_RendersObsidianStartupCode()
         {
@@ -141,6 +150,8 @@ namespace Rock.Tests.Web.v2
                 Assert.Contains( "/Obsidian/obsidian-core.js", content );
             }
         }
+
+        #endregion
 
         #region RenderBlocksAsync
 
@@ -384,6 +395,128 @@ namespace Rock.Tests.Web.v2
                 var result = await renderer.RenderBlocksAsync( Array.Empty<LavaPageZone>() );
 
                 Assert.IsEmpty( result );
+            }
+        }
+
+        #endregion
+
+        #region RenderZone
+
+        [TestMethod]
+        public async Task RenderZone_WithCustomClass_RendersClass()
+        {
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                var zone = new LavaPageZone
+                {
+                    Key = "Main",
+                    Name = "Main",
+                    Classes = "custom-class",
+                };
+
+                var parser = new HtmlParser();
+                var dom = parser.ParseDocument( "<html><body></body></html>" );
+
+                var output = renderer.RenderZone( zone, string.Empty );
+
+                var fragments = parser.ParseFragment( output, dom.Body );
+
+                Assert.ContainsSingle( fragments );
+                var element = Assert.IsInstanceOfType<IHtmlElement>( fragments[0] );
+                Assert.Contains( "custom-class", element.GetAttribute( "class" ) );
+            }
+        }
+
+        [TestMethod]
+        public async Task RenderZone_WithAdministrateAccess_RendersCanConfigureClass()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var pageMock = MockDatabaseHelper.CreateEntityMock<Page>( 1, new Guid( "fdd9603f-85c0-4813-86aa-a3bc0d5e533b" ) );
+                var authAdministrateMock = CreateAuthMock( EntityTypeIds.Page, 1, Authorization.ADMINISTRATE, true, SpecialRole.AllUsers );
+
+                pageMock.Setup( m => m.TypeId ).Returns( EntityTypeIds.Page );
+                pageMock.Object.LayoutId = 1;
+
+                rockContextMock.SetupDbSet( pageMock.Object );
+                rockContextMock.SetupDbSet( authAdministrateMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext: ConfigureRockContextForTest ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                var zone = new LavaPageZone
+                {
+                    Key = "Main",
+                    Name = "Main",
+                };
+
+                var parser = new HtmlParser();
+                var dom = parser.ParseDocument( "<html><body></body></html>" );
+
+                var output = renderer.RenderZone( zone, string.Empty );
+
+                var fragments = parser.ParseFragment( output, dom.Body );
+
+                Assert.ContainsSingle( fragments );
+                var element = Assert.IsInstanceOfType<IHtmlElement>( fragments[0] );
+                Assert.Contains( "can-configure", element.GetAttribute( "class" ) );
+            }
+        }
+
+        [TestMethod]
+        public async Task RenderZone_WithAdministrateAccess_RendersZoneConfiguration()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var pageMock = MockDatabaseHelper.CreateEntityMock<Page>( 1, new Guid( "fdd9603f-85c0-4813-86aa-a3bc0d5e533b" ) );
+                var authAdministrateMock = CreateAuthMock( EntityTypeIds.Page, 1, Authorization.ADMINISTRATE, true, SpecialRole.AllUsers );
+
+                pageMock.Setup( m => m.TypeId ).Returns( EntityTypeIds.Page );
+                pageMock.Object.LayoutId = 1;
+
+                rockContextMock.SetupDbSet( pageMock.Object );
+                rockContextMock.SetupDbSet( authAdministrateMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext: ConfigureRockContextForTest ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                var zone = new LavaPageZone
+                {
+                    Key = "Main",
+                    Name = "Main",
+                };
+
+                var parser = new HtmlParser();
+                var dom = parser.ParseDocument( "<html><body></body></html>" );
+
+                var output = renderer.RenderZone( zone, string.Empty );
+
+                var fragments = parser.ParseFragment( output, dom.Body );
+
+                Assert.ContainsSingle( fragments );
+                var element = Assert.IsInstanceOfType<IHtmlElement>( fragments[0] );
+                Assert.IsNotNull( element.QuerySelector( ".zone-configuration" ) );
             }
         }
 

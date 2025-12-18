@@ -28,6 +28,7 @@ namespace Rock.Tests.Web.v2
         {
             public const int GlobalDefault = 1;
             public const int Site = 2;
+            public const int Page = 3;
             public const int Block = 10;
             public const int MockBlock = 11;
         }
@@ -171,7 +172,8 @@ namespace Rock.Tests.Web.v2
 
                 var globalDefaultEntityTypeMock = MockDatabaseHelper.CreateEntityMock<EntityType>( EntityTypeIds.GlobalDefault, new Guid( "3c6f0a1b-4d5e-6f7a-8b9c-0d1e2f3a4b5c" ) );
                 var siteEntityTypeMock = MockDatabaseHelper.CreateEntityMock<EntityType>( EntityTypeIds.Site, new Guid( "1d5b9f0c-2d3e-4f4f-8f4e-5f5e5f5e5f5e" ) );
-                var blockEntityTypeMock = MockDatabaseHelper.CreateEntityMock<EntityType>( EntityTypeIds.Block, new Guid( "1d5b9f0c-2d3e-4f4f-8f4e-5f5e5f5e5f5e" ) );
+                var blockEntityTypeMock = MockDatabaseHelper.CreateEntityMock<EntityType>( EntityTypeIds.Block, new Guid( "aed118e1-ef81-4eb2-8ece-bb40ae062998" ) );
+                var pageEntityTypeMock = MockDatabaseHelper.CreateEntityMock<EntityType>( EntityTypeIds.Page, new Guid( "7a6d19e2-14aa-4319-8448-c17fb8f8cee6" ) );
                 var mockBlockEntityTypeMock = MockDatabaseHelper.CreateEntityMock<EntityType>( EntityTypeIds.MockBlock, new Guid( "9c204cd0-1233-41c5-818a-dfb6ab01c0f2" ) );
 
                 globalDefaultEntityTypeMock.Object.Name = "Rock.Security.GlobalDefault";
@@ -202,7 +204,7 @@ namespace Rock.Tests.Web.v2
                 rockContextMock.SetupDbSet( blockTypeMock.Object );
                 rockContextMock.SetupDbSet<GroupType>();
                 rockContextMock.SetupDbSet<Auth>();
-                rockContextMock.SetupDbSet( globalDefaultEntityTypeMock.Object, siteEntityTypeMock.Object, blockEntityTypeMock.Object, mockBlockEntityTypeMock.Object );
+                rockContextMock.SetupDbSet( globalDefaultEntityTypeMock.Object, siteEntityTypeMock.Object, pageEntityTypeMock.Object, blockEntityTypeMock.Object, mockBlockEntityTypeMock.Object );
 
                 configureMock?.Invoke( rockContextMock );
 
