@@ -240,7 +240,7 @@ namespace Rock.Web.v2
 
             foreach ( var pageBreadCrumbsElement in pageBreadCrumbsElements )
             {
-                var nodes = context.Parser.ParseFragment( "<ol class=\"breadcrumb\">{% for crumb in BreadCrumbs %}<li class=\"breadcrumb-item\">{% if crumb.Active == false %}<a href=\"{{ crumb.Url }}\" rel=\"rocknofollow\">{{ crumb.Name | Escape }}</a>{% else %}{{ crumb.Name | Escape }}{% endif %}</li>{% endfor %}</ol>", document.Body ).ToArray();
+                var nodes = context.Parser.ParseFragment( "<ol class=\"breadcrumb\">{% for crumb in BreadCrumbs %}<li class=\"breadcrumb-item\">{% if crumb.Active == false %}<a href=\"{{ crumb.Url }}\" rel=\"rocknofollow\">{{ crumb.Name }}</a>{% else %}{{ crumb.Name }}{% endif %}</li>{% endfor %}</ol>", document.Body ).ToArray();
 
                 pageBreadCrumbsElement.InsertBefore( nodes );
                 pageBreadCrumbsElement.Remove();

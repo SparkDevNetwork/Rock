@@ -884,7 +884,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
         #region RockPageBreadCrumbs
 
         [TestMethod]
-        public async Task RockPageBreadCrumbs_WithHtmlName_EscapesHtmlContent()
+        public async Task RockPageBreadCrumbs_WithHtmlName_DoesNotEscapeHtmlContent()
         {
             var fileProvider = GetMockFileProvider(
                 new[] { "/main.lava", GetEmptyLayout( "<Rock:PageBreadCrumbs></Rock:PageBreadCrumbs>" ) }
@@ -907,8 +907,13 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
 
                 var result = engine.RenderTemplate( layout.Template, lavaContext );
 
+                // The current Rock page logic will encode the page icon into the
+                // breadcrumb text. This happens in PageCache.BreadCrumbText property
+                // so it might be worth revisiting that in the future to deprecate
+                // that property and instead have the PageReference itself provide
+                // the icon as a new property of the breadcrumb.
                 Assert.IsFalse( result.HasErrors );
-                Assert.Contains( "parent&lt;page", result.Text );
+                Assert.Contains( "parent<page", result.Text );
             }
         }
 
