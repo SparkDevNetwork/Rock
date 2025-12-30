@@ -42,6 +42,7 @@
             </Grid>
         </div>
         <Modal v-model="isAttributeModalOpen" title="Matrix Template Attributes" saveText="Save" @save="onSaveAttribute">
+            <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
             <AttributeEditor v-model="templateAttribute" :reservedKeyNames="reservedKeyNames" />
         </Modal>
 
@@ -79,6 +80,7 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
+    import { areEqual } from "@Obsidian/Utility/guid";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -121,7 +123,7 @@
     }>();
 
     // #region Values
-
+    const errorMessage = ref("");
     const attributes = ref(props.modelValue?.bag?.attributes ?? {});
     const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
     const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
@@ -251,7 +253,18 @@
     };
 
     function onSaveAttribute(): void {
+
+        errorMessage.value = "";
+        console.log(templateAttribute.value);
+        console.log(FieldType.Matrix);
+
         if (templateAttribute.value) {
+            // Check for illegal field type usage
+            if (areEqual(templateAttribute.value.fieldTypeGuid, FieldType.Matrix)) {
+                errorMessage.value = "An Attribute Matrix Template cannot have an attribute that uses the Matrix field type.";
+                return;
+            }
+
             const index = templateAttributes.value.findIndex(a => a.guid === templateAttribute.value?.guid);
             if (index !== -1) {
                 // Get the updated attribute and rowItem.

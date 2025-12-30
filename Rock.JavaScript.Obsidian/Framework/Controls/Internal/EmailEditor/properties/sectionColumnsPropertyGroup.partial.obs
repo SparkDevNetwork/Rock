@@ -7,7 +7,7 @@
                         btnSize="xs"
                         btnType="link"
                         @click="$emit('add')">
-                <i class="fa fa-plus" aria-hidden="true"></i> Add Column
+                <i class="ti ti-plus" aria-hidden="true"></i> Add Column
             </RockButton>
         </div>
 

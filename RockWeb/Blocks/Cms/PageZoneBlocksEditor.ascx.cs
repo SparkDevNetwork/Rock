@@ -78,19 +78,27 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            int pageId;
+            string pageId;
             string zoneName;
 
             if ( !Page.IsPostBack )
             {
                 // Get the settings from the query string.
-                pageId = PageParameter( PageParameterKey.Page ).AsInteger();
+                pageId = PageParameter( PageParameterKey.Page );
+                if ( pageId == null )
+                {
+                    pageId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.Page ) ).ToString();
+                }
                 zoneName = PageParameter( PageParameterKey.ZoneName );
             }
             else
             {
                 // Get the settings from the current page state.
-                pageId = hfPageId.Value.AsInteger();
+                pageId = hfPageId.Value;
+                if ( pageId == null )
+                {
+                    pageId = Rock.Utility.IdHasher.Instance.GetId( hfPageId.Value ).ToString();
+                }
                 zoneName = ddlZones.SelectedValue;
             }
 
@@ -150,7 +158,7 @@ namespace RockWeb.Blocks.Cms
                 var rockContext = new RockContext();
                 var blockService = new BlockService( rockContext );
                 var block = blockService.Get( blockId.Value );
-                var page = PageCache.Get( hfPageId.Value.AsInteger() );
+                var page = PageCache.Get(hfPageId.Value, true);
                 if ( block != null && page != null )
                 {
                     List<Block> zoneBlocks = null;
@@ -207,11 +215,11 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="pageId">The page identifier.</param>
         /// <param name="zoneName">Name of the zone.</param>
-        private void ShowDetail( int pageId, string zoneName )
+        private void ShowDetail( string pageId, string zoneName )
         {
             // Store the page reference and determine if it is valid.
-            hfPageId.Value = pageId.ToString();
-            var page = PageCache.Get( pageId );
+            hfPageId.Value = pageId;
+            var page = PageCache.Get( pageId, true );
 
             this.Visible = page != null;
 
@@ -238,13 +246,13 @@ namespace RockWeb.Blocks.Cms
         /// <param name="zoneName">Name of the zone.</param>
         private void ShowDetailForZone( string zoneName )
         {
-            int pageId = hfPageId.Value.AsInteger();
-            var page = PageCache.Get( pageId );
+            string pageId = hfPageId.Value;
+            var page = PageCache.Get( pageId, true );
 
             hlInvalidZoneWarning.Visible = _invalidPageZones != null && _invalidPageZones.Contains( zoneName );
 
             lZoneTitle.Text = string.Format( "{0} Zone", zoneName );
-            lZoneIcon.Text = "<i class='fa fa-th-large'></i>";
+            lZoneIcon.Text = "<i class='ti ti-border-all'></i>";
             if ( page != null )
             {
                 // Refresh ZoneList's "Count" text
@@ -311,14 +319,14 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         public void LoadDropDowns()
         {
-            int pageId = hfPageId.Value.AsInteger();
+            string pageId = hfPageId.Value;
 
             var selectedZoneValue = ddlZones.SelectedValue;
             var selectedMoveValue = ddlMoveToZoneList.SelectedValue;
             ddlZones.Items.Clear();
             ddlMoveToZoneList.Items.Clear();
 
-            var page = PageCache.Get( pageId );
+            var page = PageCache.Get( pageId, true ); ;
             if ( page != null )
             {
                 // get the valid zones from the Layout for this page
@@ -483,7 +491,7 @@ namespace RockWeb.Blocks.Cms
                 var customActionsBlock = ( IHasCustomActions ) Activator.CreateInstance( blockCompiledType );
                 var canEdit = BlockCache.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 var canAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
-                var page = PageCache.Get( hfPageId.Value.AsInteger() );
+                var page = PageCache.Get( hfPageId.Value, true );
 
                 var configActions = customActionsBlock.GetCustomActions( canEdit, canAdministrate );
 
@@ -504,7 +512,7 @@ namespace RockWeb.Blocks.Cms
 
             // Block Properties
             Literal btnBlockProperties = new Literal();
-            btnBlockProperties.Text = string.Format( @"<a title='Block Properties' class='btn btn-sm btn-default btn-square properties' id='aBlockProperties' href='javascript: Rock.controls.modal.show($(this), ""/BlockProperties/{0}?t=Block Properties"")' height='500px'><i class='fa fa-cog'></i></a>", block.Id );
+            btnBlockProperties.Text = string.Format( @"<a title='Block Properties' class='btn btn-sm btn-default btn-square properties' id='aBlockProperties' href='javascript: Rock.controls.modal.show($(this), ""/BlockProperties/{0}?t=Block Properties"")' height='500px'><i class='ti ti-settings'></i></a>", block.Id );
             pnlAdminButtons.Controls.Add( btnBlockProperties );
 
             // Block Security
@@ -519,7 +527,7 @@ namespace RockWeb.Blocks.Cms
             btnMoveBlock.CommandName = "BlockId";
             btnMoveBlock.CommandArgument = block.Id.ToString();
             btnMoveBlock.CssClass = "btn btn-sm btn-default btn-square";
-            btnMoveBlock.Text = "<i class='fa fa-external-link'></i>";
+            btnMoveBlock.Text = "<i class='ti ti-external-link'></i>";
             btnMoveBlock.ToolTip = "Move Block";
             btnMoveBlock.Click += btnMoveBlock_Click;
             pnlAdminButtons.Controls.Add( btnMoveBlock );
@@ -530,7 +538,7 @@ namespace RockWeb.Blocks.Cms
             btnDeleteBlock.CommandName = "BlockId";
             btnDeleteBlock.CommandArgument = block.Id.ToString();
             btnDeleteBlock.CssClass = "btn btn-sm btn-square btn-danger";
-            btnDeleteBlock.Text = "<i class='fa fa-times'></i>";
+            btnDeleteBlock.Text = "<i class='ti ti-x'></i>";
             btnDeleteBlock.ToolTip = "Delete Block";
             btnDeleteBlock.Click += btnDeleteBlock_Click;
             btnDeleteBlock.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Block.FriendlyTypeName );
@@ -615,7 +623,7 @@ namespace RockWeb.Blocks.Cms
 
                 if ( block != null )
                 {
-                    int? pageId = block.PageId;
+                    string pageId = block.PageId.ToString();
                     int? layoutId = block.LayoutId;
                     blockService.Delete( block );
                     rockContext.SaveChanges();
@@ -648,7 +656,7 @@ namespace RockWeb.Blocks.Cms
                     ddlMoveToZoneList.SetValue( block.Zone );
                     cblBlockMovePageLayoutOrSite.Items.Clear();
 
-                    var page = PageCache.Get( hfPageId.Value.AsInteger() );
+                    var page = PageCache.Get( hfPageId.Value, true );
 
                     var listItemPage = new ListItem();
                     listItemPage.Text = "Page: " + page.ToString();
@@ -689,7 +697,7 @@ namespace RockWeb.Blocks.Cms
 
                 lPanelHeading.Text = string.Format(
                     @"<div class='panel-heading'>
-                        <a class='btn btn-link btn-xs panel-widget-reorder js-stop-immediate-propagation'><i class='fa fa-bars'></i></a>
+                        <a class='btn btn-link btn-xs panel-widget-reorder js-stop-immediate-propagation'><i class='ti ti-menu-2'></i></a>
                         <span>{0} ({1})</span>
 
                         <div class='block-config-buttons pull-right'>
@@ -735,7 +743,7 @@ namespace RockWeb.Blocks.Cms
         protected void btnAddBlock_Click( object sender, EventArgs e )
         {
             tbNewBlockName.Text = string.Empty;
-            var siteType = PageCache.Get( hfPageId.Value.AsInteger() ).Layout.Site.SiteType;
+            var siteType = PageCache.Get( hfPageId.Value, true ).Layout.Site.SiteType;
 
             // Load the block types
             using ( var rockContext = new RockContext() )
@@ -749,9 +757,8 @@ namespace RockWeb.Blocks.Cms
                     // ignore
                 }
 
-                // If the IsDebuggingEnabled happens to be true, show all the obsidian blocks. This is done for testing purposes.
-                // This flag needs to be removed once all the blocks are migrated to obsidian.
-                var blockTypes = BlockTypeService.BlockTypesToDisplay( siteType, HttpContext.Current.IsDebuggingEnabled )
+                // Show all the Web blocks and even ones with SiteTypeFlags set to None.
+                var blockTypes = BlockTypeService.BlockTypesToDisplay( siteType, true )
                     .Select( b => new
                     {
                         b.Id,
@@ -797,7 +804,7 @@ namespace RockWeb.Blocks.Cms
 
             rblAddBlockLocation.Items.Clear();
 
-            var page = PageCache.Get( hfPageId.Value.AsInteger() );
+            var page = PageCache.Get( hfPageId.Value, true );
 
             var listItemPage = new ListItem();
             listItemPage.Text = string.Format( "Page ({0})", page.ToString() );
@@ -833,7 +840,7 @@ namespace RockWeb.Blocks.Cms
             var blockService = new BlockService( rockContext );
             var block = blockService.Get( blockId );
 
-            var page = PageCache.Get( hfPageId.Value.AsInteger() );
+            var page = PageCache.Get( hfPageId.Value, true );
 
             if ( block != null )
             {
@@ -873,7 +880,7 @@ namespace RockWeb.Blocks.Cms
             {
                 BlockService blockService = new BlockService( rockContext );
 
-                var page = PageCache.Get( hfPageId.Value.AsInteger() );
+                var page = PageCache.Get(hfPageId.Value, true);
 
                 Block block = new Rock.Model.Block();
                 block.Zone = ddlZones.SelectedValue;

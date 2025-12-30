@@ -89,13 +89,21 @@
     // #region Computed Values
 
     const filteredAttendances = computed((): ReprintAttendanceBag[] => {
-        var lowerTerm = searchTerm.value.toLowerCase();
+        const lowerTerm = searchTerm.value.toLowerCase();
+        const splitTerms = lowerTerm.split(" ").filter(t => t !== "");
 
-        return attendances.value.filter(a => a.nickName?.toLowerCase().includes(lowerTerm)
-            || a.lastName?.toLowerCase().includes(lowerTerm)
-            || a.location?.name?.toLowerCase().includes(lowerTerm)
-            || a.group?.name?.toLowerCase().includes(lowerTerm)
-            || a.schedule?.name?.toLowerCase().includes(lowerTerm));
+        // If multiple terms were specified, then ensure that all terms are found
+        // somewhere in the attendance record.
+        return attendances.value.filter(f => {
+            return splitTerms.every(term =>
+                f.nickName?.toLowerCase().includes(term)
+                || f.lastName?.toLowerCase().includes(term)
+                || f.securityCode?.toLowerCase().includes(term)
+                || f.location?.name?.toLowerCase().includes(term)
+                || f.group?.name?.toLowerCase().includes(term)
+                || f.schedule?.name?.toLowerCase().includes(term)
+            );
+        });
     });
 
     // #endregion

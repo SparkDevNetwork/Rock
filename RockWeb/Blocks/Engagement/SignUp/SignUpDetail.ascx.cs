@@ -410,6 +410,8 @@ namespace RockWeb.Blocks.Engagement.SignUp
             nbNotAuthorizedToView.Text = EditModeMessage.NotAuthorizedToView( Group.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Group ) ).Id;
 
+            dvpRecordSource.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() )?.Id;
+
             gMemberAttributesInherited.Actions.ShowAdd = false;
             gMemberAttributesInherited.EmptyDataText = Server.HtmlEncode( None.Text );
             gMemberAttributesInherited.GridRebind += gMemberAttributesInherited_GridRebind;
@@ -595,6 +597,8 @@ namespace RockWeb.Blocks.Engagement.SignUp
                     group = new GroupService( rockContext ).GetNoTracking( this.GroupId );
                 }
 
+                BuildRecordSourceControls( group );
+
                 group.GroupTypeId = this.GroupTypeId;
                 group.LoadAttributes();
 
@@ -689,6 +693,16 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 }
 
                 group.GroupType = new GroupTypeService( rockContext ).Get( this.GroupTypeId );
+
+                if ( group.GroupType?.AllowGroupSpecificRecordSource == true )
+                {
+                    group.GroupMemberRecordSourceValueId = dvpRecordSource.SelectedValueAsInt();
+                }
+                else
+                {
+                    group.GroupMemberRecordSourceValueId = null;
+                }
+
                 group.Name = tbName.Text;
                 group.IsActive = cbIsActive.Checked;
                 group.Description = tbDescription.Text;
@@ -1252,7 +1266,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             GroupRequirement requirement = e.Row.DataItem as GroupRequirement;
             if ( requirement != null )
             {
-                lAppliesToDataViewId.Text = requirement.AppliesToDataViewId.HasValue ? "<i class=\"fa fa-check\"></i>" : string.Empty;
+                lAppliesToDataViewId.Text = requirement.AppliesToDataViewId.HasValue ? "<i class=\"ti ti-check\"></i>" : string.Empty;
             }
         }
 
@@ -2646,6 +2660,8 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 ddlGroupType.Visible = false;
             }
 
+            BuildRecordSourceControls( group );
+
             cpCampus.SelectedCampusId = group.CampusId;
             SetIsCampusRequired();
 
@@ -2803,6 +2819,23 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 .ChildGroupTypes
                 .Select( t => t.Id )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Builds the record source controls.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        private void BuildRecordSourceControls( Group group )
+        {
+            if ( this.CurrentGroupType?.AllowGroupSpecificRecordSource == true )
+            {
+                dvpRecordSource.SetValue( group.GroupMemberRecordSourceValueId );
+                dvpRecordSource.Visible = true;
+            }
+            else
+            {
+                dvpRecordSource.Visible = false;
+            }
         }
 
         /// <summary>

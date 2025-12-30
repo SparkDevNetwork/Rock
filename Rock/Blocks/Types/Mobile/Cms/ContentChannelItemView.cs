@@ -36,7 +36,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [DisplayName( "Content Channel Item View" )]
     [Category( "Mobile > Cms" )]
     [Description( "Displays a content channel item by formatting it with XAML." )]
-    [IconCssClass( "fa fa-chalkboard" )]
+    [IconCssClass( "ti ti-chalkboard" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
@@ -307,12 +307,24 @@ namespace Rock.Blocks.Types.Mobile.Cms
             }
 
             var mediumType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_CONTENTCHANNEL.AsGuid() );
-            var interactionTransaction = new InteractionTransaction(
-                mediumType,
-                contentChannelItem.ContentChannel,
-                contentChannelItem,
-                new InteractionTransactionInfo { InteractionSummary = contentChannelItem.Title, PersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId } );
+            if ( mediumType == null )
+            {
+                return;
+            }
 
+            var info = new InteractionTransactionInfo
+            {
+                ChannelTypeMediumValueId = mediumType.Id,
+                ChannelEntityId = contentChannelItem.ContentChannel.Id,
+                ChannelName = contentChannelItem.ContentChannel.ToString(),
+                ComponentEntityTypeId = contentChannelItem.TypeId,
+                ComponentEntityId = contentChannelItem.Id,
+                ComponentName = contentChannelItem.ToString(),
+                InteractionSummary = contentChannelItem.Title,
+                PersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId
+            };
+
+            var interactionTransaction = new InteractionTransaction( info );
             interactionTransaction.Enqueue();
         }
 

@@ -42,6 +42,12 @@ export type SystemPhoneNumberBag = {
     /** Gets or sets the description. */
     description?: string | null;
 
+    /**
+     * Gets or sets whether to prevent Rock from updating an individual's SMS status when they opt in or out of
+     * receiving SMS messages.
+     */
+    disableSmsOptInOutTracking: boolean;
+
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
@@ -84,4 +90,7 @@ export type SystemPhoneNumberBag = {
      * SMS message is received on this number.
      */
     smsReceivedWorkflowType?: ListItemBag | null;
+
+    /** Gets or sets whether to prevent Rock from sending automatic SMS replies to opt-in or opt-out messages. */
+    suppressSmsOptInOutAutoReplies: boolean;
 };

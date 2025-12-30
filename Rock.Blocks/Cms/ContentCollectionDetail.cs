@@ -46,7 +46,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Content Collection Detail" )]
     [Category( "CMS" )]
     [Description( "Displays the details of a particular content collection." )]
-    [IconCssClass( "fa fa-book-open" )]
+    [IconCssClass( "ti ti-book" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -455,7 +455,7 @@ namespace Rock.Blocks.Cms
                     .Where( cci => cci.ContentChannelId == contentChannel.Id )
                     .Count();
                 color = "#009ce3";
-                iconCssClass = contentChannel.IconCssClass.ToStringOrDefault( "fa fa-bullhorn" );
+                iconCssClass = contentChannel.IconCssClass.ToStringOrDefault( "ti ti-speakerphone" );
             }
 
             // Process the entity as an event calendar source.
@@ -474,7 +474,7 @@ namespace Rock.Blocks.Cms
                     .Where( cci => cci.EventCalendarId == eventCalendar.Id )
                     .Count();
                 color = "#09ae77";
-                iconCssClass = eventCalendar.IconCssClass.ToStringOrDefault( "fa fa-calendar-alt" );
+                iconCssClass = eventCalendar.IconCssClass.ToStringOrDefault( "ti ti-calendar-month" );
             }
             else
             {

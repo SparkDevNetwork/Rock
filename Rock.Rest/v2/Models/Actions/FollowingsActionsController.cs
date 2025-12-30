@@ -19,8 +19,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 
-using Microsoft.AspNetCore.Mvc;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -28,7 +26,6 @@ using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.ViewModels.Rest.Models;
 using Rock.Security;
-
 
 #if WEBFORMS
 using IActionResult = System.Web.Http.IHttpActionResult;
@@ -57,10 +54,10 @@ namespace Rock.Rest.v2.Models.Actions
         [Authenticate]
         [Secured( Security.Authorization.VIEW )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ItemIdentifierBag> ) )]
-        [ProducesResponseType( HttpStatusCode.BadRequest )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ItemIdentifierBag> ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "802af5c2-c880-42d4-8043-33a43ad27965" )]
         public IActionResult GetFollowed( string entityTypeId )
         {

@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, ref } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import RockFormField from "./rockFormField.obs";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { standardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
@@ -153,6 +153,15 @@
         }
 
         return rules;
+    });
+
+    //#endregion
+
+    //#region Watchers
+
+    watch(internalItemsForDisplay, () => {
+        // If the selected item is no longer in the list of possible items, then remove it from the selection.
+        internalValue.value = internalValue.value.filter(c => internalItemsForDisplay.value.some(i => props.compareValue(c, i.rawColor)));
     });
 
     //#endregion

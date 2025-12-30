@@ -3,7 +3,7 @@
     <div class="rock-header">
         <div class="d-flex flex-wrap justify-content-between">
             <div>
-                <h3 v-if="props.title" class="title">{{ props.title }}</h3>
+                <h4 v-if="props.title" class="title">{{ props.title }}</h4>
                 <p v-if="description" class="description">{{ description }}</p>
             </div>
             <div v-if="$slots.actions" class="section-header-actions align-self-end">

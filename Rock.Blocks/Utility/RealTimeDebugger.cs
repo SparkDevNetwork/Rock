@@ -36,7 +36,7 @@ namespace Rock.Blocks.Utility
     [DisplayName( "RealTime Debugger" )]
     [Category( "Utility" )]
     [Description( "Provides a simple way to debug RealTime events." )]
-    [IconCssClass( "fa fa-bug" )]
+    [IconCssClass( "ti ti-bug" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

@@ -16,12 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Web;
-using DotLiquid;
-using Rock.Lava.DotLiquid;
+
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -38,7 +36,6 @@ namespace Rock.Lava
         private static ILavaEngine _engine = null;
 
         private static object _initializationLock = new object();
-        private static bool _rockLiquidIsEnabled = true;
 
         /// <summary>
         /// A flag indicating if RockLiquid Lava processing is enabled.
@@ -46,20 +43,16 @@ namespace Rock.Lava
         /// This flag is used to implement custom Lava processing in the Rock codebase that is only compatible with the implementation of Lava prior to Rock v13.
         /// If RockLiquid is enabled, it is the primary Lava renderer. If a Lava engine is also initialized, it will operate in background verification mode.
         /// </summary>
+        [Obsolete( "This property is deprecated and will always return false." )]
+        [RockObsolete( "18.0" )]
         public static bool RockLiquidIsEnabled
         {
             get
             {
-                return _rockLiquidIsEnabled;
+                return false;
             }
             set
             {
-                _rockLiquidIsEnabled = value;
-
-                if ( _rockLiquidIsEnabled )
-                {
-                    ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Throw;
-                }
             }
         }
 
@@ -101,12 +94,6 @@ namespace Rock.Lava
 
                     // Assign the current instance.
                     _engine = engine;
-
-                    // If RockLiquid is enabled, set the Lava Engine to throw exceptions so they can be logged.
-                    if ( RockLiquidIsEnabled )
-                    {
-                        ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Throw;
-                    }
                 }
             }
         }
@@ -151,7 +138,7 @@ namespace Rock.Lava
             {
                 _engine = engine;
 
-                // Reset the exception strategy to ensure that it is aligned with the RockLiquidIsEnabled setting.
+                // Reset the exception strategy to ensure that it is aligned with the current engine.
                 ExceptionHandlingStrategy = _engine.ExceptionHandlingStrategy;
             }
         }
@@ -434,24 +421,9 @@ namespace Rock.Lava
         /// The rendered output of the template.
         /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
         /// </returns>
-        /// <remarks>This render method is compatible with the legacy DotLiquid implementation.</remarks>
         public static LavaRenderResult RenderTemplate( string inputTemplate )
         {
-            LavaRenderResult result;
-
-            if ( _engine == null && _rockLiquidIsEnabled )
-            {
-                // If a Lava engine is not initialized, fall back to legacy DotLiquid.
-                result = new LavaRenderResult();
-
-                result.Text = inputTemplate.ResolveMergeFields( new Dictionary<string, object>() );
-
-                return result;
-            }
-
-            result = RenderTemplate( inputTemplate, LavaRenderParameters.Default );
-
-            return result;
+            return RenderTemplate( inputTemplate, LavaRenderParameters.Default );
         }
 
         /// <summary>
@@ -463,25 +435,9 @@ namespace Rock.Lava
         /// The rendered output of the template.
         /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
         /// </returns>
-        /// <remarks>This render method is compatible with the legacy DotLiquid implementation.</remarks>
         public static LavaRenderResult RenderTemplate( string inputTemplate, IDictionary<string, object> mergeFields )
         {
-            LavaRenderResult result;
-
-            if ( _engine == null && _rockLiquidIsEnabled )
-            {
-                // If a Lava engine is not initialized, fall back to legacy DotLiquid.
-                // This allows developers to use a single method for basic template rendering that is backward-compatible with the RockLiquid implementation.
-                result = new LavaRenderResult();
-
-                result.Text = inputTemplate.ResolveMergeFields( mergeFields );
-
-                return result;
-            }
-
-            result = RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( _engine.NewRenderContext( mergeFields ) ) );
-
-            return result;
+            return RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( _engine.NewRenderContext( mergeFields ) ) );
         }
 
         /// <summary>
@@ -512,33 +468,6 @@ namespace Rock.Lava
         {
             if ( _engine == null )
             {
-                if ( _rockLiquidIsEnabled )
-                {
-                    // If a Lava engine is not initialized, fall back to legacy DotLiquid.
-                    // This allows developers to use a single method for basic template rendering that is backward-compatible with the RockLiquid implementation.
-                    var result = new LavaRenderResult();
-
-                    var context = parameters.Context as RockLiquidRenderContext;
-                    if ( context != null )
-                    {
-                        var innerTemplate = Template.Parse( inputTemplate );
-                        using ( TextWriter writer = new StringWriter() )
-                        {
-                            List<Exception> errors;
-                            innerTemplate.Render( writer, new RenderParameters { Context = context.DotLiquidContext }, out errors );
-
-                            result.Text = writer.ToString();
-
-                            if ( errors.Any() )
-                            {
-                                result.Error = new AggregateException( errors );
-                            }
-                        }
-                    }
-
-                    return result;
-                }
-
                 return new LavaRenderResult { Error = new Exception( "Lava engine is not initialized." ) };
             }
 
@@ -812,14 +741,6 @@ namespace Rock.Lava
             {
                 if ( _engine == null )
                 {
-                    return;
-                }
-
-                // If RockLiquid is enabled, set the Lava Engine to throw exceptions so they can be logged.
-                if ( RockLiquidIsEnabled )
-                {
-                    _engine.ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Throw;
-
                     return;
                 }
 

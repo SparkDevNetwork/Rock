@@ -87,7 +87,7 @@
                 itemClass="grid-columncommand"
                 width="57px">
             <template #format="{ row }">
-                <a v-if="row.personId" class='btn btn-default btn-sm' :href="`/person/${row.personId}`"><i class='fa fa-user'></i></a>
+                <a v-if="row.personId" class='btn btn-default btn-sm' :href="`/person/${row.personId}`"><i class='ti ti-user'></i></a>
                 <span v-else>{{ row.achiever }}</span>
             </template>
         </Column>

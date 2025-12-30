@@ -62,7 +62,7 @@
                 <Rock:Lava ID="siteNameLava" runat="server">
                 {% if CurrentPerson %}
                 <div class="navbar-toggle navbar-toggle-side-left collapsed" data-toggle="collapse" data-target=".navbar-static-side">
-                    <i class="fa fa-bars"></i>
+                    <i class="ti ti-menu-2"></i>
                 </div>
                 {% endif %}
 
@@ -78,7 +78,7 @@
 
             <nav class="navbar-default navbar-static-side collapse d-print-none" role="navigation">
                 <div class="navbar-toggle-side-left" data-toggle="collapse" data-target=".navbar-static-side">
-                    <i class="fa fa-bars"></i>
+                    <i class="ti ti-menu-2"></i>
                 </div>
                 <Rock:Zone Name="Navigation" runat="server" />
             </nav>

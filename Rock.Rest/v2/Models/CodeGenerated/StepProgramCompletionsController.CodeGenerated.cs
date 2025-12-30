@@ -24,8 +24,6 @@
 using System.Collections.Generic;
 using System.Net;
 
-using Microsoft.AspNetCore.Mvc;
-
 using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Core;
@@ -43,6 +41,10 @@ namespace Rock.Rest.v2.Models
     using HttpPutAttribute = System.Web.Http.HttpPutAttribute;
     using HttpPatchAttribute = System.Web.Http.HttpPatchAttribute;
     using HttpDeleteAttribute = System.Web.Http.HttpDeleteAttribute;
+#else
+    using Microsoft.AspNetCore.Mvc;
+
+    using RoutePrefixAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 #endif
 
     /// <summary>
@@ -62,10 +64,10 @@ namespace Rock.Rest.v2.Models
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Rock.Model.StepProgramCompletion ) )]
-        [ProducesResponseType( HttpStatusCode.BadRequest )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( Rock.Model.StepProgramCompletion ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "df40529e-af79-5713-9b28-52224c42c3a7" )]
         public IActionResult GetItem( string id )
         {
@@ -86,10 +88,10 @@ namespace Rock.Rest.v2.Models
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
-        [ProducesResponseType( HttpStatusCode.Created, Type = typeof( CreatedAtResponseBag ) )]
-        [ProducesResponseType( HttpStatusCode.BadRequest )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.Created, Type = typeof( CreatedAtResponseBag ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "b56b426d-9e52-5b9e-8e23-7b8c1535b534" )]
         public IActionResult PostItem( [FromBody] Rock.Model.StepProgramCompletion value )
         {
@@ -112,10 +114,10 @@ namespace Rock.Rest.v2.Models
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
-        [ProducesResponseType( HttpStatusCode.NoContent )]
-        [ProducesResponseType( HttpStatusCode.BadRequest )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.NoContent )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "bf140937-9559-5c2c-9348-049c7d4ff3e3" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.StepProgramCompletion value )
         {
@@ -138,10 +140,10 @@ namespace Rock.Rest.v2.Models
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
-        [ProducesResponseType( HttpStatusCode.NoContent )]
-        [ProducesResponseType( HttpStatusCode.BadRequest )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.NoContent )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "3b9aea02-b2f0-5ae3-8379-5c9daf37c239" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
@@ -162,10 +164,10 @@ namespace Rock.Rest.v2.Models
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
-        [ProducesResponseType( HttpStatusCode.NoContent )]
-        [ProducesResponseType( HttpStatusCode.BadRequest )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.NoContent )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "9781eca9-ac8e-5ca4-84d3-0c9fad64559b" )]
         public IActionResult DeleteItem( string id )
         {
@@ -186,10 +188,10 @@ namespace Rock.Rest.v2.Models
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Dictionary<string, ModelAttributeValueBag> ) )]
-        [ProducesResponseType( HttpStatusCode.BadRequest )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( Dictionary<string, ModelAttributeValueBag> ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "342c112b-38fb-501d-8053-b21f0e825b7a" )]
         public IActionResult GetAttributeValues( string id )
         {
@@ -212,10 +214,10 @@ namespace Rock.Rest.v2.Models
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
-        [ProducesResponseType( HttpStatusCode.NoContent )]
-        [ProducesResponseType( HttpStatusCode.BadRequest )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.NoContent )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "81413a2e-3a8c-5ee4-b980-da3e870307a7" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
@@ -236,7 +238,7 @@ namespace Rock.Rest.v2.Models
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( object ) )]
         [SystemGuid.RestActionGuid( "904fc456-e7c8-5ec2-b0bf-9657dd747c46" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
@@ -255,9 +257,9 @@ namespace Rock.Rest.v2.Models
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( object ) )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "0643cd54-450f-5432-801a-ce2f74adf4c7" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
@@ -279,10 +281,10 @@ namespace Rock.Rest.v2.Models
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
-        [ProducesResponseType( HttpStatusCode.BadRequest )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( object ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "80df5b09-ba72-5007-abe5-44d24904a172" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {

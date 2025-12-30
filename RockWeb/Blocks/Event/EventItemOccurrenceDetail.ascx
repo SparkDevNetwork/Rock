@@ -14,7 +14,7 @@
             <asp:HiddenField ID="hfEventItemOccurrenceId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-clock-o"></i>
+                <h1 class="panel-title"><i class="ti ti-clock"></i>
                     <asp:Literal ID="lActionTitle" runat="server" /></h1>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
@@ -83,12 +83,12 @@
                                                 runat="server"
                                                 CssClass="btn btn-default btn-xs"
                                                 OnCommand="lbEditRegistration_Command"
-                                                CommandArgument='<%# Eval("GroupMapId") %>'><i class="fa fa-pencil"></i></asp:LinkButton>
+                                                CommandArgument='<%# Eval("GroupMapId") %>'><i class="ti ti-pencil"></i></asp:LinkButton>
                                             <asp:LinkButton ID="lbDeleteRegistration"
                                                 runat="server"
                                                 CssClass="btn btn-danger btn-xs"
                                                 OnCommand="lbDeleteRegistration_Command"
-                                                CommandArgument='<%# Eval("GroupMapId") %>'><i class="fa fa-times"></i></asp:LinkButton>
+                                                CommandArgument='<%# Eval("GroupMapId") %>'><i class="ti ti-x"></i></asp:LinkButton>
                                         </td>
                                     </tr>
                                 </ItemTemplate>
@@ -99,7 +99,7 @@
                                             <asp:LinkButton ID="lbCreateNewRegistration"
                                                 runat="server"
                                                 CssClass="btn btn-primary btn-xs margin-t-sm margin-b-md"
-                                                Text="<i class='fa fa-plus'></i> Add Linkage"
+                                                Text="<i class='ti ti-plus'></i> Add Linkage"
                                                 OnClick="lbCreateNewRegistration_Click" />
                                         </div>
                                     </div>

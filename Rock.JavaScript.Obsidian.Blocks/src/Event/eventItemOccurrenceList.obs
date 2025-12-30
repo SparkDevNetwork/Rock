@@ -125,7 +125,7 @@
 
         <ButtonColumn name="copy"
                       title="Copy"
-                      iconClass="fa fa-clone"
+                      iconClass="ti ti-copy"
                       visiblePriority="xs"
                       :excludeFromExport="true"
                       width="65"

@@ -75,6 +75,13 @@ namespace Rock.Workflow.Action
         IsRequired = false,
         Order = 5 )]
 
+    [WorkflowAttribute( "Group Member",
+        Description = "An optional GroupMember attribute to store the group member that is added.",
+        Key = AttributeKey.GroupMember,
+        IsRequired = false,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.GroupMemberFieldType" },
+        Order = 6 )]
+
     [Rock.SystemGuid.EntityTypeGuid( "BD53F375-78A2-4A54-B1D1-2D805F3FCD44")]
     public class AddPersonToGroupWFAttribute : ActionComponent
     {
@@ -82,6 +89,7 @@ namespace Rock.Workflow.Action
         {
             public const string PersonKey = "Person";
             public const string GroupKey = "Group";
+            public const string GroupMember = "GroupMember";
             public const string DisableSecurityGroups = "DisableSecurityGroups";
             public const string LimitToGroupsOfType = "LimitToGroupsOfType";
             public const string LimitToGroupsUnderSpecificParentGroup = "LimitToGroupsUnderSpecificParentGroup";
@@ -244,6 +252,16 @@ namespace Rock.Workflow.Action
                     }
 
                     rockContext.SaveChanges();
+
+                    // If group member attribute was specified, set the attribute's value
+                    Guid? groupMemberAttributeGuid = GetAttributeValue( action, AttributeKey.GroupMember ).AsGuidOrNull();
+                    if ( groupMemberAttributeGuid.HasValue )
+                    {
+                        if ( groupMember != null )
+                        {
+                            SetWorkflowAttributeValue( action, groupMemberAttributeGuid.Value, groupMember.Guid.ToString() );
+                        }
+                    }
                 }
                 else
                 {

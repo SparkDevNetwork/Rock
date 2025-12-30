@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,8 +20,11 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Person
@@ -32,7 +35,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the names of the Person's Children" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Children's Names" )]
-    [Rock.SystemGuid.EntityTypeGuid( "8DE06919-D68C-4A29-989B-359A0379F1F3")]
+    [Rock.SystemGuid.EntityTypeGuid( "8DE06919-D68C-4A29-989B-359A0379F1F3" )]
     public class ChildNamesSelect : DataSelectComponent, IRecipientDataSelect
     {
         #region Properties
@@ -205,6 +208,47 @@ namespace Rock.Reporting.DataSelect.Person
 
         #endregion
 
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Person/childNamesSelect.obs" ),
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            string[] selectionValues = selection.Split( '|' );
+
+            if ( selectionValues.Length >= 3 )
+            {
+                return new Dictionary<string, string>
+                {
+                    ["includeGender"] = selectionValues[0],
+                    ["includeAge"] = selectionValues[1],
+                    ["includeGrade"] = selectionValues[2]
+                };
+            }
+
+            return new Dictionary<string, string>();
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var includeGender = data.GetValueOrDefault( "includeGender", "False" );
+            var includeAge = data.GetValueOrDefault( "includeAge", "False" );
+            var includeGrade = data.GetValueOrDefault( "includeGrade", "False" );
+
+            return $"{includeGender}|{includeAge}|{includeGrade}";
+        }
+
+        #endregion
+
         #region Methods
 
         /// <summary>
@@ -219,7 +263,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             return "Children's Names";
         }
-        
+
         /// <summary>
         /// Gets the expression.
         /// </summary>
@@ -243,7 +287,7 @@ namespace Rock.Reporting.DataSelect.Person
                     .Where( m => m.GroupRole.Guid == childGuid )
                     .OrderBy( m => m.Group.Members.FirstOrDefault( x => x.PersonId == p.Id ).GroupOrder ?? int.MaxValue )
                     .ThenBy( m => m.Person.BirthYear ).ThenBy( m => m.Person.BirthMonth ).ThenBy( m => m.Person.BirthDay )
-                    .Select( m => new KidInfo 
+                    .Select( m => new KidInfo
                     {
                         NickName = m.Person.NickName,
                         LastName = m.Person.LastName,
@@ -252,7 +296,7 @@ namespace Rock.Reporting.DataSelect.Person
                         BirthDate = m.Person.BirthDate,
                         DeceasedDate = m.Person.DeceasedDate,
                         GraduationYear = m.Person.GraduationYear
-                    }).AsEnumerable() );
+                    } ).AsEnumerable() );
 
             var selectChildrenExpression = SelectExpressionExtractor.Extract( personChildrenQuery, entityIdProperty, "p" );
 
@@ -342,6 +386,7 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         #endregion
+
         #region IRecipientDataSelect implementation
 
         /// <summary>

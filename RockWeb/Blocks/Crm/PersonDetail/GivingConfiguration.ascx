@@ -26,7 +26,7 @@
             <div class="panel panel-block">
                 <div class="panel-heading">
                     <h1 class="panel-title">
-                        <i class="fa fa-clipboard-check"></i>
+                        <i class="ti ti-clipboard-check"></i>
                         Giving Configuration</h1>
                 </div>
                 <div class="">
@@ -41,7 +41,7 @@
                                 <h5 class="my-0">Text-To-Give Settings</h5>
                             </div>
                             <div class="col-sm-2">
-                                <asp:LinkButton ID="btnEditTextToGive" runat="server" data-shortcut-key="e" ToolTip="Edit Text-To-Give Settings" Text="<i class='fa fa-pencil'></i>" CssClass="btn btn-default btn-square btn-xs pull-right" OnClick="btnEditTextToGive_Click" CausesValidation="false" />
+                                <asp:LinkButton ID="btnEditTextToGive" runat="server" data-shortcut-key="e" ToolTip="Edit Text-To-Give Settings" Text="<i class='ti ti-pencil'></i>" CssClass="btn btn-default btn-square btn-xs pull-right" OnClick="btnEditTextToGive_Click" CausesValidation="false" />
                             </div>
                         </div>
 
@@ -82,7 +82,7 @@
                                     runat="server"
                                     CssClass="btn btn-default btn-square btn-xs mt-3 pull-right"
                                     ToolTip="Add Text-To-Give Configuration"
-                                    Text="<i class='fa fa-plus'></i>"
+                                    Text="<i class='ti ti-plus'></i>"
                                     OnClick="btnEditTextToGive_Click"
                                     CausesValidation="false" />
                             </div>
@@ -123,10 +123,10 @@
                                             <div class="rollover-item">
                                                 <div class="d-flex mt-3">
                                                     <asp:LinkButton ID="btnScheduledTransactionEdit" runat="server" OnCommand="rptScheduledTransaction_Edit" CssClass="btn btn-sm btn-link text-muted py-0 px-1">
-                                                    <i class="fa fa-pencil"></i>
+                                                    <i class="ti ti-pencil"></i>
                                                     </asp:LinkButton>
                                                     <asp:LinkButton runat="server" ID="btnScheduledTransactionInactivate" OnCommand="rptScheduledTransaction_Inactivate" CssClass="btn btn-sm btn-link text-muted py-0 px-1 ml-1 js-inactivate-scheduled-transaction" Visible="true">
-                                                        <i class="fa fa-times"></i>
+                                                        <i class="ti ti-x"></i>
                                                     </asp:LinkButton>
                                                 </div>
                                             </div>
@@ -142,7 +142,7 @@
                                     runat="server"
                                     CssClass="btn btn-default btn-square btn-xs mt-3 pull-right"
                                     ToolTip="Add Scheduled Transaction"
-                                    Text="<i class='fa fa-plus'></i>"
+                                    Text="<i class='ti ti-plus'></i>"
                                     OnClick="lbAddScheduledTransaction_Click" />
                             </div>
                         </div>
@@ -168,7 +168,7 @@
                                             <span class="d-block"><asp:Literal ID="lSavedAccountStatusHtml" runat="server" /></span>
                                             <div class="rollover-item">
                                             <asp:LinkButton runat="server" ID="btnSavedAccountDelete" OnCommand="rptSavedAccounts_Delete" CssClass="btn btn-sm btn-link text-muted py-0 px-1 js-delete-saved-account">
-                                                <i class="fa fa-times"></i>
+                                                <i class="ti ti-x"></i>
                                             </asp:LinkButton>
                                             </div>
                                         </td>
@@ -198,10 +198,10 @@
                                             <div class="rollover-item">
                                                 <div class="d-flex justify-content-end">
                                                     <asp:LinkButton runat="server" ID="btnPledgeEdit" OnCommand="rptPledges_Edit" CssClass="btn btn-sm btn-link text-muted py-0 px-1">
-                                                    <i class="fa fa-pencil"></i>
+                                                    <i class="ti ti-pencil"></i>
                                                     </asp:LinkButton>
                                                     <asp:LinkButton runat="server" ID="btnPledgeDelete"  OnCommand="rptPledges_Delete" CssClass="btn btn-sm btn-link text-muted py-0 px-1 ml-1 js-delete-pledge">
-                                                    <i class="fa fa-times"></i>
+                                                    <i class="ti ti-x"></i>
                                                     </asp:LinkButton>
                                                 </div>
                                             </div>
@@ -216,7 +216,7 @@
                                     runat="server"
                                     CssClass="btn btn-default btn-square btn-xs mt-3 pull-right"
                                     Tooltip="Add Pledge"
-                                    Text="<i class='fa fa-plus'></i>"
+                                    Text="<i class='ti ti-plus'></i>"
                                     OnClick="lbAddPledge_Click" />
                             </div>
                         </div>

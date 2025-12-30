@@ -47,7 +47,7 @@ namespace Rock.Web.UI.Controls
             ItemRestUrlExtraParams = "?getCategorizedItems=true&showUnnamedEntityItems=true&showCategoriesThatHaveNoChildren=false";
             ItemRestUrlExtraParams += "&entityTypeId=" + EntityTypeCache.Get( Rock.SystemGuid.EntityType.WORKFLOW_TYPE.AsGuid() ).Id;
             ItemRestUrlExtraParams += "&includeInactiveItems=" + ShowInactive + "&lazyLoad=false";
-            this.IconCssClass = "fa fa-cogs";
+            this.IconCssClass = "ti ti-settings-cog";
             base.OnInit( e );
         }
 

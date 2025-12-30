@@ -5,7 +5,7 @@
 
         <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block" Visible="false">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-list-ul"></i> <asp:Literal ID="ltTitle" runat="server"></asp:Literal></h1>
+                <h1 class="panel-title"><i class="ti ti-list"></i> <asp:Literal ID="ltTitle" runat="server"></asp:Literal></h1>
             </div>
             <div class="panel-body">
                 <asp:Panel ID="pnlView" runat="server">

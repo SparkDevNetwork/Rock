@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -27,7 +28,6 @@ using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Security.UserLoginList;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -39,7 +39,7 @@ namespace Rock.Blocks.Security
     [DisplayName( "User Login List" )]
     [Category( "Security" )]
     [Description( "Block for displaying logins.  By default displays all logins, but can be configured to use person context to display logins for a specific person." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [ContextAware]
@@ -100,6 +100,7 @@ namespace Rock.Blocks.Security
 
             var personId = RequestContext.GetContextEntity<Person>()?.Id;
             var queryable = new UserLoginService( rockContext ).Queryable()
+                .Include( l => l.Person )
                 .Where( l => !personId.HasValue || l.PersonId == personId.Value );
 
             return queryable;
@@ -315,7 +316,7 @@ namespace Rock.Blocks.Security
 
                 if ( !entity.PersonId.HasValue )
                 {
-                    return ActionBadRequest("No person selected, or the person you are editing has no person Id.");
+                    return ActionBadRequest( "No person selected, or the person you are editing has no person Id." );
                 }
 
                 entityService.Add( entity );

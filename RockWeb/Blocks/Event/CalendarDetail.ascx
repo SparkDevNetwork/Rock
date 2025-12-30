@@ -20,7 +20,7 @@
                         data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Feed URL to Clipboard"
                         class="btn btn-info btn-xs btn-copy-to-clipboard"
                         onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
-                        <i class="fa fa-calendar-alt"></i> Export Calendar Feed
+                        <i class="ti ti-calendar-month"></i> Export Calendar Feed
                     </button>
                 </div>
             </div>

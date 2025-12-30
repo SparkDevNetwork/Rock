@@ -49,8 +49,8 @@
                             Theme Documentation
                         </div>
 
-                        <i v-if="isThemeHelpVisible" class="align-self-center fa fa-chevron-up"></i>
-                        <i v-else class="align-self-center fa fa-chevron-down"></i>
+                        <i v-if="isThemeHelpVisible" class="align-self-center ti ti-chevron-up"></i>
+                        <i v-else class="align-self-center ti ti-chevron-down"></i>
                     </div>
 
                     <TransitionVerticalCollapse>

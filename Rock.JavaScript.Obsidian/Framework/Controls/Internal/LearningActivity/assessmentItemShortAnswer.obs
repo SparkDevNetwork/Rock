@@ -96,7 +96,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, computed, ref, toValue, watch } from "vue";
+    import { PropType, computed, ref, toValue, watch, onUnmounted } from "vue";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import { ComponentScreen } from "./learningActivity";
@@ -238,6 +238,10 @@
 
     watch(() => props.weightsValidationKey, () => {
         updateWeightErrorState();
+    });
+
+    onUnmounted(() => {
+        formState?.setError(validationId, question.value, "");
     });
 
     /** CSS classes for the panel. */

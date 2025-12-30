@@ -1,0 +1,52 @@
+<template>
+    <div class="row">
+        <div class="col-md-6">
+            <RegistrationTemplatePicker v-model="templates"
+                                        label="Registration Template(s)"
+                                        help="Select the registration templates that you want the registrants for. Leaving this blank will not restrict results to a registration template."
+                                        multiple
+                                        enhanceForLongLists />
+            <InlineCheckBox v-model="includeInactive"
+                            label="Include Inactive Registration Instances" />
+        </div>
+        <div class="col-md-6">
+            <Panel title="Advanced Filters" hasCollapse>
+                <SlidingDateRangePicker v-model="dateRange"
+                                        label="Date Registered"
+                                        help="Select the date range that the person was registered. Leaving this blank will not restrict results to a date range." />
+            </Panel>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import RegistrationTemplatePicker from "@Obsidian/Controls/registrationTemplatePicker.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { parseSlidingDateRangeString, SlidingDateRange, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { SlidingDateRangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const templates = ref<ListItemBag[]>(safeParseJson(props.modelValue.templates) ?? []);
+    const includeInactive = ref<boolean>(asBoolean(props.modelValue.includeInactive));
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
+
+    watch([templates, includeInactive, dateRange], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            templates: JSON.stringify(templates.value),
+            includeInactive: `${includeInactive.value ?? ""}`,
+            dateRange: slidingDateRangeToString(dateRange.value ?? { rangeType: SlidingDateRangeType.All }),
+        });
+    });
+</script>

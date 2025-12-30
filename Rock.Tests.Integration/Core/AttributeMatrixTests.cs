@@ -131,9 +131,9 @@ namespace Rock.Tests.Integration.Core
 
             item.SaveAttributeValues( rockContext );
 
-            // Wait to allow the history records to be added, because
-            // they are processed on a background thread.
-            Task.Delay( 1000 ).Wait();
+            // Drain the queue so that the transaction that creates the history
+            // entries is processed.
+            Rock.Transactions.RockQueue.Drain( _ => { } );
 
             // Verify that a new history entry has been added.
             var postUpdateHistoryItems = historyService.Queryable()

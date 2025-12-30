@@ -2,11 +2,11 @@
 <template>
     <NotificationBox v-if="errorMessage" :text="errorMessage" type="danger" />
     <Panel title="Lava Shortcodes"
-           titleIconCssClass="fa fa-cube"
+           titleIconCssClass="ti ti-cube"
            type="block">
         <template #headerActions>
             <div class="mr-3">
-                <RockButton v-if="canEdit" class="pull-right btn btn-default btn-xs" @click="onAddClick"><i class="fa fa-plus"></i></RockButton>
+                <RockButton v-if="canEdit" class="pull-right btn btn-default btn-xs" @click="onAddClick"><i class="ti ti-plus"></i></RockButton>
             </div>
         </template>
 
@@ -31,10 +31,10 @@
                     </NotificationBox>
                     <div class="d-flex justify-content-end">
                         <RockButton v-if="canEdit && !isNullOrWhiteSpace(shortcode.idKey)" @click="onEditClick(shortcode)" class="btn btn-xs btn-default">
-                            <i class="fa fa-pencil"></i>
+                            <i class="ti ti-pencil"></i>
                         </RockButton>
                         <RockButton v-if="canEdit && !isNullOrWhiteSpace(shortcode.idKey) && !shortcode.isSystem" @click="onDeleteClick(shortcode)" class="btn btn-xs btn-default ml-1">
-                            <i class="fa fa-times"></i>
+                            <i class="ti ti-x"></i>
                         </RockButton>
                     </div>
                 </template>

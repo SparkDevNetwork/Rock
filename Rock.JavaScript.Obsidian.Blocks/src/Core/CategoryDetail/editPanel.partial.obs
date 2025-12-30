@@ -22,8 +22,8 @@
                          textMode="multiline" />
             </div>
             <div class="col-md-6">
-                <TextBox v-model="iconCssClass"
-                         label="Icon CSS Class" />
+                <IconPicker v-model="iconCssClass"
+                            label="Icon CSS Class" />
             </div>
             <div class="col-md-6">
                 <ColorPicker v-model="highlightColor"
@@ -55,6 +55,7 @@
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import Checkbox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";

@@ -8,8 +8,8 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-map-marker"></i>&nbsp;Dynamic Map</h1>
-                <div class="panel-labels"><a class="btn btn-xs btn-square btn-default" onclick="javascript: toggleOptions()"><i title="Options" class="fa fa-gear"></i></a></div>
+                <h1 class="panel-title"><i class="ti ti-map-pin"></i>&nbsp;Dynamic Map</h1>
+                <div class="panel-labels"><a class="btn btn-xs btn-square btn-default" onclick="javascript: toggleOptions()"><i title="Options" class="ti ti-settings"></i></a></div>
             </div>
             <asp:Panel ID="pnlOptions" runat="server" Title="Options" CssClass="panel-body js-options" Style="display: none">
                 <div class="row">
@@ -32,13 +32,13 @@
             <div class="margin-all-md">
                 <div class="pull-right js-heatmap-actions">
                     <asp:Panel ID="pnlPieSlicer" runat="server" CssClass="btn btn-default btn-xs js-createpieshape">
-                        <i class='fa fa-pie-chart' title="Create pie slices from selected circle"></i>
+                        <i class='ti ti-chart-pie' title="Create pie slices from selected circle"></i>
                     </asp:Panel>
                     <asp:Panel ID="pnlSaveShape" runat="server" CssClass="btn btn-default btn-xs js-saveshape">
-                        <i class='fa fa-floppy-o' title="Save selected shape to a named location"></i>
+                        <i class='ti ti-device-floppy' title="Save selected shape to a named location"></i>
                     </asp:Panel>
 
-                    <div class="btn btn-danger btn-xs js-deleteshape" style="display:none"><i class='fa fa-times' title="Delete selected shape"></i></div>
+                    <div class="btn btn-danger btn-xs js-deleteshape" style="display:none"><i class='ti ti-x' title="Delete selected shape"></i></div>
                 </div>
             </div>
             <div class="panel-body">

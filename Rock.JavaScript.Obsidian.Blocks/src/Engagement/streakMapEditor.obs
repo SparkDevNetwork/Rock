@@ -9,7 +9,7 @@
                                     :enabledTimeUnits="[TimeUnit.Day, TimeUnit.Week, TimeUnit.Month, TimeUnit.Year]"
                                     :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]" />
             <RockButton btnType="default" btnSize="xs" @click="refreshCheckboxData">
-                <i class="fa fa-refresh"></i> Update
+                <i class="ti ti-refresh"></i> Update
             </RockButton>
         </div>
         <CheckBoxList :label="checkBoxListLabel"
@@ -36,7 +36,6 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { useStore } from "@Obsidian/PageState";
 
     const box = useConfigurationValues<StreakMapEditorBag>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -66,7 +65,7 @@
     // #region Computed Values
 
     const isBlockVisible = computed((): boolean => {
-        return useStore().state.areSecondaryBlocksShown && !isPanelHidden.value;
+        return !isPanelHidden.value;
     });
 
     // #endregion

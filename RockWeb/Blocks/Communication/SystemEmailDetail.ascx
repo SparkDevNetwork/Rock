@@ -7,7 +7,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-envelope"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
+                <h1 class="panel-title"><i class="ti ti-mail"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">

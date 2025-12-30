@@ -1,0 +1,77 @@
+<template>
+    <DropDownList v-model="program" :items="programOptions" label="Program" showBlankItem rules="required" />
+
+    <DropDownList v-model="course" :items="courseOptions" label="Course" showBlankItem rules="required" />
+
+    <SlidingDateRangePicker v-model="dateRange" label="Date Range" />
+
+    <CheckBoxList v-model="status" :items="statusOptions" label="with Course Status (optional)" />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { HasCompletedCourseSelectGetCoursesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/hasCompletedCourseSelectGetCoursesOptionsBag";
+    import { parseSlidingDateRangeString, SlidingDateRange, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { SlidingDateRangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const programOptions = safeParseJson<ListItemBag[]>(props.options.programOptions) ?? [];
+    const program = ref<string>(props.modelValue.program ?? "");
+
+    const courseOptions = ref(safeParseJson<ListItemBag[]>(props.options.courseOptions) ?? []);
+    const course = ref<string>(props.modelValue.course ?? "");
+
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
+
+    const statusOptions = safeParseJson<ListItemBag[]>(props.options.statusOptions) ?? [];
+    const status = ref<string[]>(safeParseJson(props.modelValue.status) ?? []);
+
+    watch(program, async () => {
+        courseOptions.value = [];
+
+        if (program.value) {
+            courseOptions.value = await loadCourses();
+        }
+    });
+
+    async function loadCourses(): Promise<ListItemBag[]> {
+        const options: HasCompletedCourseSelectGetCoursesOptionsBag = {
+            programGuid: program.value,
+        };
+
+        const response = await props.executeRequest({
+            action: "GetCourses",
+            options: JSON.stringify(options)
+        });
+
+        const courseOptions = safeParseJson<ListItemBag[]>(response?.courseOptions) ?? [];
+
+        if (Array.isArray(courseOptions)) {
+            return courseOptions;
+        }
+        else {
+            console.error("Error fetching items from server", response?.Message);
+            return [];
+        }
+    }
+
+    watch([program, course, dateRange, status], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            program: program.value,
+            course: course.value,
+            dateRange: slidingDateRangeToString(dateRange.value ?? { rangeType: SlidingDateRangeType.All }),
+            status: JSON.stringify(status.value),
+        });
+    });
+</script>

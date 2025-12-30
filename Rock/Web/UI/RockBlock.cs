@@ -1401,7 +1401,7 @@ namespace Rock.Web.UI
                 configControls.Add( aAttributes );
                 HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
                 aAttributes.Controls.Add( iAttributes );
-                iAttributes.Attributes.Add( "class", "fa fa-cog" );
+                iAttributes.Attributes.Add( "class", "ti ti-settings" );
 
                 // Security
                 HtmlGenericControl aSecureBlock = new HtmlGenericControl( "a" );
@@ -1414,7 +1414,7 @@ namespace Rock.Web.UI
                 configControls.Add( aSecureBlock );
                 HtmlGenericControl iSecureBlock = new HtmlGenericControl( "i" );
                 aSecureBlock.Controls.Add( iSecureBlock );
-                iSecureBlock.Attributes.Add( "class", "fa fa-lock" );
+                iSecureBlock.Attributes.Add( "class", "ti ti-lock" );
 
                 var pageCache = PageCache.Get( RockPage.PageId );
                 if ( pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
@@ -1430,7 +1430,7 @@ namespace Rock.Web.UI
                     configControls.Add( aMoveBlock );
                     HtmlGenericControl iMoveBlock = new HtmlGenericControl( "i" );
                     aMoveBlock.Controls.Add( iMoveBlock );
-                    iMoveBlock.Attributes.Add( "class", "fa fa-external-link" );
+                    iMoveBlock.Attributes.Add( "class", "ti ti-external-link" );
                 }
 
                 // Delete
@@ -1454,7 +1454,7 @@ namespace Rock.Web.UI
 
                 HtmlGenericControl iDeleteBlock = new HtmlGenericControl( "i" );
                 aDeleteBlock.Controls.Add( iDeleteBlock );
-                iDeleteBlock.Attributes.Add( "class", "fa fa-times-circle-o" );
+                iDeleteBlock.Attributes.Add( "class", "ti ti-circle-x" );
             }
 
             return configControls;

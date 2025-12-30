@@ -56,8 +56,8 @@
                          help="The path to use for the HTML editor's image folder root (e.g. '~/content/my_channel_images' ) " />
             </div>
             <div class="col-md-6">
-                <TextBox v-model="iconCssClass"
-                         label="Icon CSS Class" />
+                <IconPicker v-model="iconCssClass"
+                            label="Icon CSS Class" />
                 <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
                 <CheckBoxList v-model="settings" :items="settingsOptions" label="Settings" />
             </div>
@@ -187,6 +187,7 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import Grid, { EditColumn, TextColumn, DeleteColumn, BooleanColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import Modal from "@Obsidian/Controls/modal.obs";

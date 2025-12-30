@@ -118,7 +118,7 @@
                     }
 
                     $warning.append('<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>')
-                        .append('<strong><i class="fa fa-exclamation-triangle"></i> Warning </strong>')
+                        .append('<strong><i class="ti ti-alert-triangle"></i> Warning </strong>')
                         .append(msg);
                     $warning.insertBefore($el);
                 }

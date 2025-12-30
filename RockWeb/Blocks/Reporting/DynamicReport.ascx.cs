@@ -40,10 +40,10 @@ namespace RockWeb.Blocks.Reporting
     [BooleanField( "Show 'Communications' action on grid", "", defaultValue: true, key: "ShowGridCommunicationsAction" )]
 
     // CustomSetting Dialog
-    [TextField( "ResultsIconCssClass", "Title for the results list.", false, "fa fa-list", "CustomSetting" )]
+    [TextField( "ResultsIconCssClass", "Title for the results list.", false, "ti ti-list", "CustomSetting" )]
     [TextField( "ResultsTitle", "Title for the results list.", false, "Results", "CustomSetting" )]
     [TextField( "FilterTitle", "Title for the results list.", false, "Filters", "CustomSetting" )]
-    [TextField( "FilterIconCssClass", "Title for the results list.", false, "fa fa-filter", "CustomSetting" )]
+    [TextField( "FilterIconCssClass", "Title for the results list.", false, "ti ti-filter", "CustomSetting" )]
     [TextField( "Report", "The report to use for this block", false, "", "CustomSetting" )]
 
     // NOTE: attribute names should have been called *DataFilter* not *DataField*, but probably can't change to keep backward compat :(
@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Reporting
         "Use Obsidian Components",
         Key = AttributeKey.UseObsidianComponents,
         Description = "Switches the filter components to use Obsidian if supported.",
-        DefaultBooleanValue = true,
+        DefaultBooleanValue = false,
         Category = "Advanced" )]
 
     [Rock.SystemGuid.BlockTypeGuid( "C7C069DB-9EEE-4245-9DF2-34E3A1FF4CCB" )]
@@ -74,6 +74,7 @@ namespace RockWeb.Blocks.Reporting
         private List<Guid> _configurableDataFilterGuids = null;
         private List<Guid> _togglableDataFilterGuids = null;
         private Dictionary<Guid, DataFilterPrePostHtmlConfig> _dataFiltersPrePostHtmlConfig = null;
+        private HashSet<Guid> _processedFilterGuids = new HashSet<Guid>();
 
         /// <summary>
         /// Gets the settings tool tip.
@@ -180,51 +181,47 @@ namespace RockWeb.Blocks.Reporting
         protected void ShowFilters( bool setSelection )
         {
             nbFiltersError.Visible = false;
-            try
+            var rockContext = new RockContext();
+            var reportService = new ReportService( rockContext );
+
+            var reportGuid = this.GetAttributeValue( "Report" ).AsGuidOrNull();
+            Report report = null;
+            if ( reportGuid.HasValue )
             {
-                var rockContext = new RockContext();
-                var reportService = new ReportService( rockContext );
+                report = reportService.Get( reportGuid.Value );
+            }
 
-                var reportGuid = this.GetAttributeValue( "Report" ).AsGuidOrNull();
-                Report report = null;
-                if ( reportGuid.HasValue )
-                {
-                    report = reportService.Get( reportGuid.Value );
-                }
+            if ( report == null )
+            {
+                nbConfigurationWarning.Visible = true;
+                nbConfigurationWarning.Text = "A report needs to be configured in block settings";
+                pnlView.Visible = false;
+                return;
+            }
 
-                if ( report == null )
+            nbConfigurationWarning.Visible = false;
+
+            if ( report.DataView != null && report.DataView.DataViewFilter != null )
+            {
+                try
                 {
-                    nbConfigurationWarning.Visible = true;
-                    nbConfigurationWarning.Text = "A report needs to be configured in block settings";
-                    pnlView.Visible = false;
-                }
-                else
-                {
-                    nbConfigurationWarning.Visible = false;
-                    if ( report.DataView != null && report.DataView.DataViewFilter != null )
+                    phFilters.Controls.Clear();
+                    if ( report.DataView.DataViewFilter != null && report.EntityTypeId.HasValue )
                     {
-                        phFilters.Controls.Clear();
-                        if ( report.DataView.DataViewFilter != null && report.EntityTypeId.HasValue )
-                        {
-                            CreateFilterControl(
-                                phFilters,
-                                report.DataView.DataViewFilter,
-                                report.EntityType,
-                                setSelection,
-                                rockContext );
-                        }
+                        CreateFilterControl(
+                            phFilters,
+                            report.DataView.DataViewFilter,
+                            report.EntityType,
+                            setSelection,
+                            rockContext );
                     }
-
                     // only show the filter and button if there visible filters
                     pnlFilter.Visible = phFilters.ControlsOfTypeRecursive<FilterField>().Any( a => a.Visible );
                 }
-            }
-            catch ( Exception ex )
-            {
-                this.LogException( ex );
-                nbFiltersError.Text = "An error occurred trying to load the filters. Click on 'Set Default' to try again with the default filter.";
-                nbFiltersError.Details = "see the exception log for additional details";
-                nbFiltersError.Visible = true;
+                catch ( Exception ex )
+                {
+                    HandleConfigurationError( ex );
+                }
             }
         }
 
@@ -245,6 +242,11 @@ namespace RockWeb.Blocks.Reporting
         {
             try
             {
+                if ( !_processedFilterGuids.Add( filter.Guid ) )
+                {
+                    // this filter has already been processed, so skip it
+                    return;
+                }
                 var preferences = GetBlockPersonPreferences();
                 var filteredEntityTypeName = EntityTypeCache.Get( reportEntityType ).Name;
                 if ( filter.ExpressionType == FilterExpressionType.Filter )
@@ -333,10 +335,16 @@ namespace RockWeb.Blocks.Reporting
                                 }
                             }
 
-                            if ( component is Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters )
+                            if ( component is Rock.Reporting.DataFilter.IUpdateSelectionFromRockRequestContext )
+                            {
+                                selection = ( component as Rock.Reporting.DataFilter.IUpdateSelectionFromRockRequestContext ).UpdateSelectionFromRockRequestContext( selection, RequestContext, rockContext );
+                            }
+#pragma warning disable CS0618 // Type or member is obsolete
+                            else if ( component is Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters )
                             {
                                 selection = ( component as Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters ).UpdateSelectionFromPageParameters( selection, this );
                             }
+#pragma warning restore CS0618 // Type or member is obsolete
 
                             try
                             {
@@ -511,6 +519,8 @@ namespace RockWeb.Blocks.Reporting
 
             preferences.Save();
 
+            _processedFilterGuids.Clear();
+
             ShowFilters( true );
         }
 
@@ -534,24 +544,27 @@ namespace RockWeb.Blocks.Reporting
                 nbConfigurationWarning.Visible = true;
                 nbConfigurationWarning.Text = "A report needs to be configured in block settings";
                 pnlView.Visible = false;
+                return;
             }
-            else if ( report.DataView == null )
+            if ( report.DataView == null )
             {
                 nbConfigurationWarning.Visible = true;
                 nbConfigurationWarning.Text = string.Format( "The {0} report does not have a dataview", report );
                 pnlView.Visible = false;
+                return;
             }
-            else if ( report.DataView.EntityTypeId != report.EntityTypeId )
+            if ( report.DataView.EntityTypeId != report.EntityTypeId )
             {
                 nbConfigurationWarning.Visible = true;
                 nbConfigurationWarning.Text = string.Format( "The {0} report's EntityType doesn't match the dataview's EntityType", report );
                 pnlView.Visible = false;
+                return;
             }
-            else
+
+            nbConfigurationWarning.Visible = false;
+
+            try
             {
-                nbConfigurationWarning.Visible = false;
-
-
                 DataViewFilterOverrides dataViewFilterOverrides = ReportingHelper.GetFilterOverridesFromControls( report.DataView, phFilters );
 
                 ReportingHelper.BindGridOptions bindGridOptions = new ReportingHelper.BindGridOptions
@@ -562,51 +575,23 @@ namespace RockWeb.Blocks.Reporting
                     IsCommunication = isCommunication
                 };
 
-
                 nbReportErrors.Visible = false;
 
-                try
-                {
-                    bindGridOptions.ReportDbContext = Reflection.GetDbContextForEntityType( EntityTypeCache.Get( report.EntityTypeId.Value ).GetEntityType() );
-                    ReportingHelper.BindGrid( report, gReport, bindGridOptions );
+                bindGridOptions.ReportDbContext = Reflection.GetDbContextForEntityType( EntityTypeCache.Get( report.EntityTypeId.Value ).GetEntityType() );
+                ReportingHelper.BindGrid( report, gReport, bindGridOptions );
 
-                    if ( report.EntityTypeId != EntityTypeCache.GetId<Rock.Model.Person>() )
+                if ( report.EntityTypeId != EntityTypeCache.GetId<Rock.Model.Person>() )
+                {
+                    var personColumn = gReport.ColumnsOfType<BoundField>().Where( a => a.HeaderText == personIdField ).FirstOrDefault();
+                    if ( personColumn != null )
                     {
-                        var personColumn = gReport.ColumnsOfType<BoundField>().Where( a => a.HeaderText == personIdField ).FirstOrDefault();
-                        if ( personColumn != null )
-                        {
-                            gReport.PersonIdField = personColumn.SortExpression;
-                        }
+                        gReport.PersonIdField = personColumn.SortExpression;
                     }
                 }
-                catch ( Exception ex )
-                {
-                    ExceptionLogService.LogException( ex );
-                    var sqlTimeoutException = ReportingHelper.FindSqlTimeoutException( ex );
-
-                    if ( sqlTimeoutException != null )
-                    {
-                        nbReportErrors.NotificationBoxType = NotificationBoxType.Warning;
-                        nbReportErrors.Text = "This report did not complete in a timely manner.";
-                    }
-                    else
-                    {
-                        if ( ex is RockDataViewFilterExpressionException )
-                        {
-                            RockDataViewFilterExpressionException rockDataViewFilterExpressionException = ex as RockDataViewFilterExpressionException;
-                            nbReportErrors.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( ( IDataViewDefinition ) report.DataView );
-                        }
-                        else
-                        {
-                            nbReportErrors.Text = "There was a problem with one of the filters for this report's dataview.";
-                        }
-
-                        nbReportErrors.NotificationBoxType = NotificationBoxType.Danger;
-
-                        nbReportErrors.Details = ex.Message;
-                        nbReportErrors.Visible = true;
-                    }
-                }
+            }
+            catch ( Exception ex )
+            {
+                HandleConfigurationError( ex, report );
             }
         }
 
@@ -717,6 +702,7 @@ namespace RockWeb.Blocks.Reporting
             _selectedDataFilterGuids = null;
             _togglableDataFilterGuids = null;
             _dataFiltersPrePostHtmlConfig = new Dictionary<Guid, DataFilterPrePostHtmlConfig>();
+            mdConfigure.ServerSaveLink.Disabled = false;
             BindDataFiltersGrid();
         }
 
@@ -739,31 +725,38 @@ namespace RockWeb.Blocks.Reporting
 
             if ( report != null && report.DataView != null && report.DataView.DataViewFilter != null )
             {
-                var filters = ReportingHelper.GetFilterInfoList( report.DataView );
-
-                // remove the top level group filter if it is just a GROUPALL
-                filters = filters.Where( a => a.ParentFilter != null || a.FilterExpressionType != FilterExpressionType.GroupAll ).ToList();
-
-                // set the Title and Summary of Grouped Filters based on the GroupFilter's child filter titles
-                foreach ( var groupedFilter in filters.Where( a => a.FilterExpressionType != FilterExpressionType.Filter ) )
+                try
                 {
-                    groupedFilter.Title = string.Format( "[{0}]", groupedFilter.FilterExpressionType.ConvertToString() );
-                }
+                    var filters = ReportingHelper.GetFilterInfoList( report.DataView );
 
-                ddlPersonIdField.Visible = report.EntityTypeId != EntityTypeCache.GetId<Rock.Model.Person>();
-                ddlPersonIdField.Items.Clear();
-                ddlPersonIdField.Items.Add( new ListItem() );
-                ddlPersonIdField.Items.Add( new ListItem( "Id", "Id" ) );
-                foreach ( var reportField in report.ReportFields )
+                    // remove the top level group filter if it is just a GROUPALL
+                    filters = filters.Where( a => a.ParentFilter != null || a.FilterExpressionType != FilterExpressionType.GroupAll ).ToList();
+
+                    // set the Title and Summary of Grouped Filters based on the GroupFilter's child filter titles
+                    foreach ( var groupedFilter in filters.Where( a => a.FilterExpressionType != FilterExpressionType.Filter ) )
+                    {
+                        groupedFilter.Title = string.Format( "[{0}]", groupedFilter.FilterExpressionType.ConvertToString() );
+                    }
+
+                    ddlPersonIdField.Visible = report.EntityTypeId != EntityTypeCache.GetId<Rock.Model.Person>();
+                    ddlPersonIdField.Items.Clear();
+                    ddlPersonIdField.Items.Add( new ListItem() );
+                    ddlPersonIdField.Items.Add( new ListItem( "Id", "Id" ) );
+                    foreach ( var reportField in report.ReportFields )
+                    {
+                        ddlPersonIdField.Items.Add( new ListItem( reportField.ColumnHeaderText, reportField.ColumnHeaderText ) );
+                    }
+
+                    rptDataFilters.Visible = true;
+                    mdConfigure.ServerSaveLink.Disabled = false;
+                    rptDataFilters.DataSource = filters;
+
+                    rptDataFilters.DataBind();
+                }
+                catch ( Exception ex )
                 {
-                    ddlPersonIdField.Items.Add( new ListItem( reportField.ColumnHeaderText, reportField.ColumnHeaderText ) );
+                    HandleConfigurationError( ex, report );
                 }
-
-                rptDataFilters.Visible = true;
-                mdConfigure.ServerSaveLink.Disabled = false;
-                rptDataFilters.DataSource = filters;
-
-                rptDataFilters.DataBind();
             }
             else
             {
@@ -898,6 +891,59 @@ namespace RockWeb.Blocks.Reporting
 
         #endregion Configuration Classes
 
+        /// <summary>
+        /// Centralized method to handle configuration-related and runtime exceptions.
+        /// </summary>
+        /// <param name="ex">The exception to handle.</param>
+        /// <param name="report">Optional report instance for context-specific error messages.</param>
+        private void HandleConfigurationError( Exception ex, Report report = null )
+        {
+            this.LogException( ex );
 
+            if ( ex is RockCircularReferenceException || ex is RockReportingException )
+            {
+                nbConfigurationWarning.Visible = true;
+                nbConfigurationWarning.Text = ex.Message;
+                nbConfigurationWarning.NotificationBoxType = NotificationBoxType.Danger;
+
+                phFilters.Controls.Clear();
+                rptDataFilters.Visible = false;
+                rptDataFilters.DataSource = null;
+                rptDataFilters.DataBind();
+
+                pnlView.Visible = false;
+                mdConfigure.ServerSaveLink.Disabled = true;
+            }
+            else
+            {
+                var sqlTimeoutException = ReportingHelper.FindSqlTimeoutException( ex );
+                nbReportErrors.Visible = true;
+
+                if ( sqlTimeoutException != null )
+                {
+                    nbReportErrors.NotificationBoxType = NotificationBoxType.Warning;
+                    nbReportErrors.Text = "This report did not complete in a timely manner.";
+                }
+                else if ( ex is RockDataViewFilterExpressionException rockDataViewFilterExpressionException )
+                {
+                    nbReportErrors.NotificationBoxType = NotificationBoxType.Danger;
+                    if ( report?.DataView != null )
+                    {
+                        nbReportErrors.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( ( IDataViewDefinition ) report.DataView );
+                    }
+                    else
+                    {
+                        nbReportErrors.Text = "There was a problem with one of the filters for this report's dataview.";
+                    }
+                    nbReportErrors.Details = ex.Message;
+                }
+                else
+                {
+                    nbReportErrors.NotificationBoxType = NotificationBoxType.Danger;
+                    nbReportErrors.Text = "There was a problem with one of the filters for this report's dataview.";
+                    nbReportErrors.Details = ex.Message;
+                }
+            }
+        }
     }
 }

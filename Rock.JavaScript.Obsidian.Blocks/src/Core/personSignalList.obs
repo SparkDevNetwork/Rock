@@ -4,6 +4,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Person Signal"
+          title="Signals"
           :entityTypeGuid="EntityType.PersonSignal"
           stickyHeader
           liveUpdates

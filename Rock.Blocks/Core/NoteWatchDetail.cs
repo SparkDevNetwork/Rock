@@ -41,7 +41,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Note Watch Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a note watch." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

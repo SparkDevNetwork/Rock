@@ -37,7 +37,10 @@ export type CommunicationEntryEmailMediumOptionsBag = {
     bulkEmailThreshold?: number | null;
 
     /** Gets or sets the document folder root. */
-    documentFolderRoot?: string | null;
+    encryptedDocumentFolderRoot?: string | null;
+
+    /** Gets or sets the image folder root. */
+    encryptedImageFolderRoot?: string | null;
 
     /** Gets or sets the address of the sender. */
     fromAddress?: string | null;
@@ -47,9 +50,6 @@ export type CommunicationEntryEmailMediumOptionsBag = {
 
     /** Gets or sets a value indicating whether this medium has an active transport. */
     hasActiveTransport: boolean;
-
-    /** Gets or sets the image folder root. */
-    imageFolderRoot?: string | null;
 
     /** Gets or sets a value indicating whether the attachment uploader is shown. */
     isAttachmentUploaderShown: boolean;

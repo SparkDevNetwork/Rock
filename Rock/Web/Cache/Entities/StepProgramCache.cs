@@ -20,6 +20,7 @@ using System.Linq;
 using System.Linq.Dynamic;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Engagement;
 using Rock.Model;
 using static Rock.Model.StepProgram;
 
@@ -70,6 +71,12 @@ namespace Rock.Web.Cache
         [DataMember]
         public ViewMode DefaultListView { get; private set; }
 
+        /// <summary>
+        /// Gets or sets how the steps in a program are ordered and how prerequisites are handled.
+        /// </summary>
+        [DataMember]
+        public CompletionFlow CompletionFlow { get; private set; }
+
         #endregion Properties
 
         #region Related Caches
@@ -103,6 +110,7 @@ namespace Rock.Web.Cache
             IconCssClass = sourceModel.IconCssClass;
             CategoryId = sourceModel.CategoryId;
             DefaultListView = sourceModel.DefaultListView;
+            CompletionFlow = sourceModel.CompletionFlow;
         }
 
         /// <summary>

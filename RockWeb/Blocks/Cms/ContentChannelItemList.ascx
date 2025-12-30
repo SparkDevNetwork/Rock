@@ -11,7 +11,7 @@
                 </h1>
 
                 <div class="panel-labels">
-                    <Rock:BootstrapButton ID="bDownloadFromLibrary" runat="server" CssClass="btn btn-xs btn-default" OnClick="bDownloadFromLibrary_Click"><i class="fa fa-download"></i> Download from Library</Rock:BootstrapButton>
+                    <Rock:BootstrapButton ID="bDownloadFromLibrary" runat="server" CssClass="btn btn-xs btn-default" OnClick="bDownloadFromLibrary_Click"><i class="ti ti-download"></i> Download from Library</Rock:BootstrapButton>
                 </div>
             </div>
 
@@ -41,9 +41,9 @@
                             <Rock:BoolField DataField="Occurrences" HeaderText="Event Occurrences" SortExpression="Occurrences" />
                             <Rock:RockTemplateField  ID="rtfContentLibrary" HeaderText="Library" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-columncommand">
                                 <ItemTemplate >
-                                    <Rock:BootstrapButton ID="lbDownloadFromContentLibrary" runat="server" OnCommand="lbDownloadFromContentLibrary_Command" CommandArgument='<%# "{ \"Id\": " + Eval( "Id" ) + ", \"Name\": \"" + Eval( "Title" ) + "\", \"LicenseGuid\": \"" + Eval( "ContentLibraryLicenseTypeGuid" ) + "\" }" %>' ToolTip="Re-download" CssClass="btn btn-default btn-sm text-success" Visible="false"><i class="fa fa-download"></i></Rock:BootstrapButton>
-                                    <Rock:BootstrapButton ID="lbUploadToContentLibrary" runat="server" OnCommand="lbUploadToContentLibrary_Command" CommandArgument='<%# "{ \"Id\": " + Eval( "Id" ) + ", \"Name\": \"" + Eval( "Title" ) + "\", \"LicenseGuid\": \"" + Eval( "ContentLibraryLicenseTypeGuid" ) + "\" }" %>' ToolTip="Upload" CssClass="btn btn-default btn-sm text-muted" Visible="false"><i class="fa fa-upload"></i></Rock:BootstrapButton>
-                                    <Rock:BootstrapButton ID="lbUpdateToContentLibrary" runat="server" OnCommand="lbUpdateToContentLibrary_Command" CommandArgument='<%# "{ \"Id\": " + Eval( "Id" ) + ", \"Name\": \"" + Eval( "Title" ) + "\", \"LicenseGuid\": \"" + Eval( "ContentLibraryLicenseTypeGuid" ) + "\" }" %>' ToolTip="Update" CssClass="btn btn-default btn-sm text-info" Visible="false"><i class="fa fa-upload"></i></Rock:BootstrapButton>
+                                    <Rock:BootstrapButton ID="lbDownloadFromContentLibrary" runat="server" OnCommand="lbDownloadFromContentLibrary_Command" CommandArgument='<%# "{ \"Id\": " + Eval( "Id" ) + ", \"Name\": \"" + Eval( "Title" ) + "\", \"LicenseGuid\": \"" + Eval( "ContentLibraryLicenseTypeGuid" ) + "\" }" %>' ToolTip="Re-download" CssClass="btn btn-default btn-sm text-success" Visible="false"><i class="ti ti-download"></i></Rock:BootstrapButton>
+                                    <Rock:BootstrapButton ID="lbUploadToContentLibrary" runat="server" OnCommand="lbUploadToContentLibrary_Command" CommandArgument='<%# "{ \"Id\": " + Eval( "Id" ) + ", \"Name\": \"" + Eval( "Title" ) + "\", \"LicenseGuid\": \"" + Eval( "ContentLibraryLicenseTypeGuid" ) + "\" }" %>' ToolTip="Upload" CssClass="btn btn-default btn-sm text-muted" Visible="false"><i class="ti ti-upload"></i></Rock:BootstrapButton>
+                                    <Rock:BootstrapButton ID="lbUpdateToContentLibrary" runat="server" OnCommand="lbUpdateToContentLibrary_Command" CommandArgument='<%# "{ \"Id\": " + Eval( "Id" ) + ", \"Name\": \"" + Eval( "Title" ) + "\", \"LicenseGuid\": \"" + Eval( "ContentLibraryLicenseTypeGuid" ) + "\" }" %>' ToolTip="Update" CssClass="btn btn-default btn-sm text-info" Visible="false"><i class="ti ti-upload"></i></Rock:BootstrapButton>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
                         </Columns>

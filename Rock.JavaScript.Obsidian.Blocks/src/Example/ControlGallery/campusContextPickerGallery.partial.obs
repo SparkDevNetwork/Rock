@@ -1,0 +1,63 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      demoMode>
+        <div class="row">
+            <div class="col-md-4">
+                <CampusContextPicker :forceVisible="forceVisible"
+                                     :includeInactive="includeInactive"
+                                     :campusTypeFilter="campusTypeFilter?.value ?? undefined"
+                                     :campusStatusFilter="campusStatusFilter?.value ?? undefined" />
+            </div>
+        </div>
+
+        <template #settings>
+            <div class="automatic-layout">
+                <CheckBox label="Force Visible" v-model="forceVisible" />
+                <CheckBox label="Include Inactive" v-model="includeInactive" />
+                <DefinedValuePicker label="Campus Type Filter"
+                                    v-model="campusTypeFilter"
+                                    :definedTypeGuid="DefinedType.CampusType"
+                                    showBlankItem />
+                <DefinedValuePicker label="Campus Status Filter"
+                                    v-model="campusStatusFilter"
+                                    :definedTypeGuid="DefinedType.CampusStatus"
+                                    showBlankItem />
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CampusContextPicker from "@Obsidian/Controls/campusContextPicker.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import { computed, ref } from "vue";
+    import { ComponentUsage, getSfcControlImportPath } from "./common/utils.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+
+    const forceVisible = ref(false);
+    const includeInactive = ref(false);
+    const campusTypeFilter = ref<ListItemBag>();
+    const campusStatusFilter = ref<ListItemBag>();
+
+    const importCode = getSfcControlImportPath("campusContextPicker");
+    const exampleCode = computed(() => {
+        const usage = new ComponentUsage("CampusContextPicker");
+
+        usage.addAttribute("forceVisible", forceVisible.value, false);
+        usage.addAttribute("includeInactive", includeInactive.value, false);
+
+        if (campusTypeFilter.value) {
+            usage.addAttribute("campusTypeFilter", campusTypeFilter.value.value);
+        }
+
+        if (campusStatusFilter.value) {
+            usage.addAttribute("campusStatusFilter", campusStatusFilter.value.value);
+        }
+
+        return usage.toString();
+    });
+</script>

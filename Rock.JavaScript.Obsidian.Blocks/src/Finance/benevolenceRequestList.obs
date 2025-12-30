@@ -5,6 +5,7 @@
           keyField="idKey"
           :customActions="customActions"
           itemTerm="Benevolence Request"
+          title="Benevolence Requests"
           :entityTypeGuid="EntityType.BenevolenceRequest"
           stickyHeader
           liveUpdates
@@ -21,12 +22,14 @@
                     :filter="dateValueFilter"
                     headerClass="title-right"
                     itemClass="justify-content-end text-right"
+                    width="5%"
                     visiblePriority="xs" />
 
         <TextColumn v-if="!config.options?.columnsToHide?.includes(ColumnKey.Campus)"
                     name="campus"
                     title="Campus"
                     field="campus"
+                    width="5%"
                     :filter="pickExistingValueFilter"
                     visiblePriority="md" />
 
@@ -35,10 +38,16 @@
                 field="requestedBy"
                 :filter="pickExistingValueFilter"
                 :filterValue="getPersonNameFilterValue"
+                :quickFilterValue="getPersonNameFilterValue"
+                :exportValue="getPersonNameExportValue"
+                sortValue="{{ row.firstName }} {{  row.lastName }}"
                 visiblePriority="xs">
             <template #format="{ row }">
-                <span v-if="row.requestedBy"><a :href="`/person/${row.requestedByIdKey}`">{{ row.requestedByFullName }}</a></span>
-                <span v-else>{{ row.firstName }} {{ row.lastName }}</span>
+                <div class="flex-grow-1">
+                    <span v-if="row.requestedBy"><a :href="`/person/${row.requestedByIdKey}`"><strong>{{ row.requestedByFullName }}</strong></a></span>
+                    <span v-else><strong>{{ row.firstName }} {{ row.lastName }}</strong></span>
+                    <div class="text-muted">{{ row.connectionStatus }}</div>
+                </div>
             </template>
 
             <template #skeleton>
@@ -50,6 +59,7 @@
                     title="Connection Status"
                     field="connectionStatus"
                     :filter="pickExistingValueFilter"
+                    :hideOnScreen="true"
                     visiblePriority="md" />
 
         <TextColumn v-if="!config.options?.columnsToHide?.includes(ColumnKey.GovernmentId)"
@@ -57,12 +67,14 @@
                     title="Government ID"
                     field="governmentId"
                     :filter="textValueFilter"
-                    visiblePriority="md" />
+                    headerClass="break-word"
+                    visiblePriority="lg" />
 
         <TextColumn name="requestText"
                     title="Request"
                     field="requestText"
                     :filter="textValueFilter"
+                    width="60%"
                     visiblePriority="xs" />
 
         <PersonColumn v-if="!config.options?.columnsToHide?.includes(ColumnKey.AssignedTo)"
@@ -78,20 +90,23 @@
         <TextColumn name="resultSummary"
                     title="Result Summary"
                     field="resultSummary"
+                    disableSort
                     :filter="textValueFilter"
-                    visiblePriority="md" />
+                    visiblePriority="lg" />
 
         <Column name="resultSpecifics"
                 title="Result Specifics"
                 :filter="textValueFilter"
                 :filterValue="getResultSpecificsFilterValue"
-                visiblePriority="md"
-                width="20%">
+                :quickFilterValue="getResultSpecificsFilterValue"
+                :exportValue="getResultSpecificsExportValue"
+                width="5%"
+                visiblePriority="md">
             <template #format="{ row }">
-                <div class="text-lg">
+                <div class="flex-grow-1">
                     <div v-for="result of row.resultSpecifics">
                         <div v-if="result.amount">{{ result.result }} ({{ toCurrencyOrNull(result.amount, config.options?.currencyInfo) }})</div>
-                        <div v-else="result.amount">{{ result.result }}</div>
+                        <div v-else>{{ result.result }}</div>
                     </div>
                 </div>
             </template>
@@ -106,6 +121,7 @@
                 field="requestStatus"
                 :filter="pickExistingValueFilter"
                 :filterValue="getRequestStatusFilterValue"
+                width="5%"
                 visiblePriority="md">
             <template #format="{ row }">
                 <div>
@@ -125,6 +141,7 @@
                         :filter="numberValueFilter"
                         headerClass="title-right"
                         itemClass="justify-content-end text-right"
+                        width="5%"
                         visiblePriority="md" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
@@ -132,7 +149,7 @@
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
 
         <template v-if="!config.options?.columnsToHide?.includes(ColumnKey.TotalResults)" #gridFooterAppend>
-            <div class="d-flex" style="background-color: #faf7f5; padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
+            <div class="d-flex" style="background-color: var(--color-interface-softest); padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
                 <div style="flex-grow: 4;"></div>
                 <div style="flex-grow: 1;">
                     <SectionHeader title="Total Results" />
@@ -160,6 +177,10 @@
 <style>
 .title-right .grid-column-title {
     text-align: right;
+}
+
+.break-word {
+    word-break: normal;
 }
 </style>
 
@@ -223,7 +244,7 @@
         if (config.options?.canAdministrate == true) {
             actions.push({
                 title: "Options",
-                iconCssClass: "fa fa-gear",
+                iconCssClass: "ti ti-settings",
                 handler: onBenevolenceTypesClick
             });
         }
@@ -303,10 +324,10 @@
         const requestedBy = row.requestedBy as PersonFieldBag;
 
         if (requestedBy) {
-            return row.requestedByFullName as string;
+            return row.requestedByFullName + ` ${row.connectionStatus}` as string;
         }
         else {
-            return `${row.firstName} ${row.lastName}`;
+            return `${row.firstName} ${row.lastName} ${row.connectionStatus}`;
         }
     }
 
@@ -318,6 +339,47 @@
     function getAssignedToFilterValue(row: Record<string, unknown>): string {
         const person = row["caseWorker"] as PersonFieldBag;
         return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+     * Gets the export value text to use for the person/requested-by name column.
+     *
+     * @param row The row to be exported.
+     */
+    function getPersonNameExportValue(row: Record<string, unknown>): string {
+        const requestedBy = row.requestedBy as PersonFieldBag;
+
+        if (requestedBy) {
+            return row.requestedByFullName as string;
+        }
+        else {
+            return `${row.firstName} ${row.lastName}`;
+        }
+    }
+
+    /**
+     * Gets the export value text to use for the ResultSpecifics column.
+     *
+     * @param row The row to be exported.
+     */
+    function getResultSpecificsExportValue(row: Record<string, unknown>): string {
+
+        const accounts = row.resultSpecifics as BenevolenceResultBag[];
+        let exportValue = "";
+
+        accounts.forEach((account, index) => {
+            const amountStr = toCurrencyOrNull(account.amount, config.options?.currencyInfo);
+
+            exportValue += account.amount != null
+                ? `${account.result} (${amountStr})`
+                : `${account.result}`;
+
+            if (index < accounts.length - 1) {
+                exportValue += "\r\n";
+            }
+        });
+
+        return exportValue;
     }
 
     /**
@@ -333,7 +395,7 @@
         for (const row of rows) {
             for (const result of row.resultSpecifics as BenevolenceResultBag[]) {
                 if (result.result && !isNullOrUndefined(result.amount)) {
-                    if (result.result in resultTotals) {
+                    if (result.result in resultTotals.value) {
                         resultTotals.value[result.result] += result.amount ?? 0;
                     }
                     else {

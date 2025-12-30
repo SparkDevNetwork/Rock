@@ -68,7 +68,7 @@ $('.checklist-item label strong, .checklist-desc-toggle').on('click', function (
     $(this).closest('.panel-widget').toggleClass('collapsed');
     var $header = $(this).closest('header');
     $header.siblings('.panel-body').slideToggle();
-    $header.find('i').toggleClass('fa-chevron-up fa-chevron-down');
+    $header.find('i').toggleClass('ti-chevron-up ti-chevron-down');
 });
 ";
             ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "DefinedValueChecklistScript", script, true );

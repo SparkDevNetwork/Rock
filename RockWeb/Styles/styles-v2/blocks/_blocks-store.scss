@@ -1,0 +1,173 @@
+/* Used to manage styles related to Rock's store */
+
+//  ROCK STORE
+
+// =============================================================
+// Table of Contents
+//  + Promo Rotator
+//  + Package Summary
+//  + Package Detail
+//  + Components
+//  + Purchased Package
+//  + Store Categories
+// =============================================================
+
+.promotionrotator {
+  margin-bottom: 48px;
+}
+
+.promotionrotator .carousel-inner img {
+  width: 100%;
+}
+
+.promotionrotator .carousel-indicators {
+  bottom: -35px;
+}
+
+.promotionrotator .carousel-indicators li {
+  border-color: var(--color-interface-medium);
+}
+
+.promotionrotator .carousel-indicators .active {
+  background-color: var(--color-interface-medium);
+}
+
+.promotionrotator .carousel-control .ti-chevron-right {
+  right: 20px;
+}
+
+.promotionrotator .carousel-control .ti-chevron-left {
+  left: 20px;
+}
+
+/* Package Summary */
+.packagesummary {
+  position: relative;
+  max-width: 282px;
+  height: 100%;
+  margin-right: auto;
+  margin-left: auto;
+  cursor: pointer;
+  background-color: var(--color-interface-softest);
+  border: 1px solid var(--color-interface-soft);
+  border-radius: var(--rounded-medium);
+  overflow: clip;
+}
+
+.packagesummary .packagesummary-body {
+  padding: var(--spacing-medium);
+  background-color: var(--color-interface-softest);
+}
+
+.packagesummary .packagesummary-body h2 {
+  margin: 0;
+  overflow: hidden;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.packagesummary .packagesummary-body .vendor {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.packagesummary-footer {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  background-color: var(--color-interface-softest);
+  border-top: 1px solid var(--color-interface-soft);
+}
+
+/* Package Detail */
+.packagedetail-image {
+  width: 100%;
+}
+
+.packagedetail-additionalversions {
+  display: none;
+}
+
+.btn-install {
+  width: 100%;
+}
+
+/* Components */
+.rating-bg {
+  position: absolute;
+  right: 0;
+  left: 0;
+  margin: 0 auto;
+  opacity: .08;
+}
+
+.pricelabel {
+  padding: 10px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  text-align: center;
+  border-radius: 4px;
+}
+
+.pricelabel.cost {
+  color: var(--color-success-strong);
+  background-color: var(--color-success-soft);
+  border-color: var(--color-success-strong);
+}
+
+.pricelabel.free {
+  color: var(--color-info-strong);
+  background-color: var(--color-info-soft);
+  border-color: var(--color-info-strong);
+}
+
+.pricelabel h4 {
+  font-size: 24px;
+  font-weight: 700;
+  color: inherit;
+}
+
+.store-categories h4 {
+  margin-top: 0;
+  font-weight: 700;
+}
+
+/* Purchased Package */
+.purchasedpackage h1 {
+  margin-top: 0;
+  overflow: hidden;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.purchasedpackage .purchasedpackage-install a {
+  width: 100%;
+}
+
+.store-category-list > li {
+  margin: 0 12px 6px 0;
+}
+
+@media (max-width: 1199px) {
+  .store-category-list > li {
+    margin-right: 8px;
+  }
+
+  .store-category-list > li a {
+    padding: 5px 8px;
+    font-size: 14px;
+  }
+}
+
+.store-category-list > li + li {
+  margin-left: 0 !important;
+}

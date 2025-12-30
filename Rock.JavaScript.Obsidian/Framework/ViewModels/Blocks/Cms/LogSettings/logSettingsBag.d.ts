@@ -57,12 +57,6 @@ export type LogSettingsBag = {
      */
     isLocalLoggingEnabled: boolean;
 
-    /**
-     * Gets or sets a value indicating whether Rock will write logs to the
-     * Observability framework.
-     */
-    isObservabilityLoggingEnabled: boolean;
-
     /** Gets or sets the maximum size of the file. */
     maxFileSize?: string | null;
 

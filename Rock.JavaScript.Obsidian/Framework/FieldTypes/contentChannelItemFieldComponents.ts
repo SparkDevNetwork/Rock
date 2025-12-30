@@ -35,12 +35,7 @@ export const EditComponent = defineComponent({
         // The internal value used by the text editor.
         const internalValue = ref<ListItemBag | null>();
         // The selected content channel configuration value.
-        const contentChannelGuid = ref<string>(props.configurationValues[ConfigurationValueKey.ContentChannel]);
-
-        // Watch for changes to the configuration values and update the text editor.
-        watch(() => props.configurationValues, () => {
-            contentChannelGuid.value = props.configurationValues[ConfigurationValueKey.ContentChannel];
-        });
+        const contentChannelGuid = computed(() => props.configurationValues[ConfigurationValueKey.ContentChannel]);
 
         // Watch for changes from the parent component and update the text editor.
         watch(() => props.modelValue, () => {

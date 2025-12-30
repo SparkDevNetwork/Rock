@@ -79,7 +79,7 @@
                             </div>
                             <div class="col-sm-10">
                                 <asp:HyperLink ID="lbProfilePage" runat="server" CssClass="small pull-right">
-                                <i class="fa fa-user"></i>
+                                <i class="ti ti-user"></i>
                                 Person Profile
                                 </asp:HyperLink>
                                 <h3 class="mt-0 mb-3">
@@ -321,7 +321,7 @@
                                 <tr title="">
                                     <td class="grid-actions" colspan="6">
                                         <asp:LinkButton ID="lbActivityAdd" runat="server" data-shortcut-key="n" ToolTip="Alt+N" CssClass="btn btn-grid-action btn-add btn-default btn-sm" OnClick="lbActivityAdd_Click">
-                                            <i class="fa fa-plus-circle fa-fw"></i>
+                                            <i class="ti ti-circle-plus ti-fw"></i>
                                         </asp:LinkButton>
                                     </td>
                                 </tr>

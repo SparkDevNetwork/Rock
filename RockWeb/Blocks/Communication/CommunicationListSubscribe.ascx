@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-bullhorn"></i>Email Preferences</h1>
+                <h1 class="panel-title"><i class="ti ti-speakerphone"></i>Email Preferences</h1>
             </div>
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbNoCommunicationLists" runat="server" NotificationBoxType="Info" Text="You are not subscribed to any communication lists." Visible="false" />

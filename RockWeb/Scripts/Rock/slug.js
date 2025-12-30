@@ -73,7 +73,7 @@
                 '<div class="input-group js-input-slug-group input-group-edit">' +
                 '<input class="form-control js-slug-input" name="slugInput" />' +
                 '<span class="input-group-addon">' +
-                '<a class="js-slug-save" href="#"><i class="fa fa-check"></i></a>' +
+                '<a class="js-slug-save" href="#"><i class="ti ti-check"></i></a>' +
                 '</span>' +
                 '</div >' +
                 '</div >';
@@ -168,7 +168,7 @@
             '<div class="input-group js-input-slug-group input-group-edit">' +
             '<input class="form-control js-slug-input" Value="' + slug + '" />' +
             '<span class="input-group-addon">' +
-            '<a class="js-slug-save" href="#"><i class="fa fa-check"></i></a>' +
+            '<a class="js-slug-save" href="#"><i class="ti ti-check"></i></a>' +
             '</span>' +
             '</div >';
         $(row).find(_selectors.slugId).after(html);
@@ -182,8 +182,8 @@
         $(row).find(_selectors.inputGroup).remove();
         var html = '<span class="js-slug-literal">' + slug + '</span>' +
             '<div class="rollover-item control-actions pull-right">' +
-            '<a class="js-slug-edit margin-r-md" href="#"><i class="fa fa-pencil"></i></a>' +
-            '<a class="js-slug-remove" href="#"><i class="fa fa-close"></i></a>' +
+            '<a class="js-slug-edit margin-r-md" href="#"><i class="ti ti-pencil"></i></a>' +
+            '<a class="js-slug-remove" href="#"><i class="ti ti-x"></i></a>' +
             '</div >';
         $(row).find(_selectors.slugId).after(html);
         subscribeToEvents();

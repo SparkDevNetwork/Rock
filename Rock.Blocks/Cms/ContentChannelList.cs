@@ -39,7 +39,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Content Channel List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of content channels." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
@@ -133,8 +133,13 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override GridBuilder<ContentChannelListBag> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<ContentChannelListBag>
+            {
+                LavaObject = row => row.ContentChannel
+            };
+
             return new GridBuilder<ContentChannelListBag>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
                 .AddTextField( "contentChannelType", a => a.ContentChannelType )

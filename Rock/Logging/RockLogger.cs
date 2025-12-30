@@ -239,7 +239,7 @@ namespace Rock.Logging
                      rollingInterval: RollingInterval.Infinite,
                      buffered: true,
                      shared: false,
-                     flushToDiskInterval: TimeSpan.FromSeconds( 10 ),
+                     flushToDiskInterval: TimeSpan.FromSeconds( 2.5 ),
                      retainedFileCountLimit: configuration.NumberOfLogFiles,
                      rollOnFileSizeLimit: true,
                      fileSizeLimitBytes: fileSizeMB * 1024 * 1024 )

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,8 +21,12 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,7 +38,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the phone numbers of the parents of a person." )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Parents' Phone Numbers" )]
-    [Rock.SystemGuid.EntityTypeGuid( "CDE54D9E-CA91-4E13-920A-24EC01F75C1E")]
+    [Rock.SystemGuid.EntityTypeGuid( "CDE54D9E-CA91-4E13-920A-24EC01F75C1E" )]
     public class ParentsPhoneNumberSelect : DataSelectComponent
     {
         #region Properties
@@ -131,6 +135,40 @@ namespace Rock.Reporting.DataSelect.Person
         {
             // disable sorting on this column since it is an IEnumerable
             return string.Empty;
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var phoneNumberTypeOptions = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Value )
+                .Select( a => new ListItemBag { Text = a.Value.EndsWith( "Phone" ) ? a.Value : a.Value + " Phone", Value = a.Guid.ToString() } );
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Person/parentPhoneNumberSelect.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    ["phoneNumberTypeOptions"] = phoneNumberTypeOptions.ToCamelCaseJson( false, true ),
+                }
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new Dictionary<string, string> { ["phoneNumberType"] = selection };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return data.GetValueOrDefault( "phoneNumberType", "" );
         }
 
         #endregion

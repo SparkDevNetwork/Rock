@@ -11,7 +11,7 @@
                         class="btn btn-default"
                         title="Reset to default"
                         @click="onResetValue">
-                    <i class="fa fa-refresh"></i>
+                    <i class="ti ti-refresh"></i>
                 </button>
             </span>
         </template>
@@ -64,8 +64,8 @@
     }
 
     watch(internalValue, () => {
-        if (props.field.variable) {
-            emit("updateValue", props.field.variable, internalValue.value);
+        if (props.field.key) {
+            emit("updateValue", props.field.key, internalValue.value);
         }
     });
 

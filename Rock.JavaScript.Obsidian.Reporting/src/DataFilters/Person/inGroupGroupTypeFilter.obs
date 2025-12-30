@@ -1,0 +1,68 @@
+<template>
+    <GroupTypePicker v-model="groupType"
+                     label="GroupType"
+                     showBlankItem
+                     enhanceForLongLists />
+
+    <GroupRolePicker v-if="groupType?.value"
+                     v-model="groupRoles"
+                     :groupTypeGuid="groupType.value"
+                     :displayStyle="PickerDisplayStyle.List"
+                     :columnCount="1"
+                     multiple />
+
+    <DropDownList v-model="groupStatus" label="with Group Status"
+                  :items="groupStatusOptions"
+                  showBlankItem
+                  enhanceForLongLists />
+
+    <DropDownList v-model="groupMemberStatus"
+                  :items="groupMemberStatusOptions"
+                  label="with Group Member Status"
+                  help="Select a specific group member status to only include group members with that status. Leaving this blank will return all members."
+                  showBlankItem
+                  enhanceForLongLists />
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
+    import GroupRolePicker from "@Obsidian/Controls/groupRolePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { GroupMemberStatusDescription } from "@Obsidian/Enums/Group/groupMemberStatus";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const groupType = ref(safeParseJson<ListItemBag>(props.modelValue.groupType) ?? null);
+    const groupRoles = ref(safeParseJson<ListItemBag>(props.modelValue.groupRoles) ?? null);
+    const groupStatus = ref(props.modelValue.groupStatus ?? "");
+    const groupMemberStatus = ref(props.modelValue.groupMemberStatus ?? "");
+
+    const groupStatusOptions = [
+        { value: "True", text: "Active" },
+        { value: "False", text: "Inactive" },
+    ];
+    const groupMemberStatusOptions = enumToListItemBag(GroupMemberStatusDescription);
+
+    watch(groupType, () => {
+        groupRoles.value = null;
+    });
+
+    watch([groupType, groupRoles, groupStatus, groupMemberStatus], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            groupType: JSON.stringify(groupType.value),
+            groupRoles: JSON.stringify(groupRoles.value),
+            groupStatus: groupStatus.value,
+            groupMemberStatus: groupMemberStatus.value
+        });
+    });
+</script>

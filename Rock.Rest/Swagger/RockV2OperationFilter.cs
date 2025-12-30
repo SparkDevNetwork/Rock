@@ -14,7 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Linq;
+using System.Net;
 using System.Web.Http.Description;
 
 using Swashbuckle.Swagger;
@@ -40,6 +42,21 @@ namespace Rock.Rest.Swagger
             operation.produces = operation.produces?.Where( a => a == "application/json" ).ToList();
             operation.operationId = apiDescription.ID.Replace( '/', '_' ).RemoveSpecialCharacters();
 
+            var responseAttributes = apiDescription.ActionDescriptor
+                .GetCustomAttributes<ProducesResponseAttribute>()
+                .OrderBy( a => a.StatusCode );
+
+            foreach ( var attr in responseAttributes )
+            {
+                var statusCode = attr.StatusCode.ToString();
+
+                operation.responses[statusCode] = new Response
+                {
+                    description = attr.Description ?? GetDefaultDescription( statusCode ),
+                    schema = attr.Type != null ? schemaRegistry.GetOrRegister( attr.Type ) : null
+                };
+            }
+
             // If the operation has both a 200-OK and another 2xx response code
             // and the 200-OK looks like the default empty response type, then
             // remove the 200-OK.
@@ -50,6 +67,16 @@ namespace Rock.Rest.Swagger
                     operation.responses.Remove( "200" );
                 }
             }
+        }
+
+        private static string GetDefaultDescription( string statusCode )
+        {
+            if ( Enum.TryParse<HttpStatusCode>( statusCode, true, out var enumValue ) )
+            {
+                return enumValue.ToString();
+            }
+
+            return null;
         }
     }
 }

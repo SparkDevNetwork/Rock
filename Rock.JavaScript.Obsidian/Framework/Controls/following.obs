@@ -57,7 +57,7 @@
     });
 
     const iconClass = computed((): string => {
-        return isEntityFollowed.value ? "fa fa-star" : "fa fa-star-o";
+        return isEntityFollowed.value ? "ti ti-star-filled" : "ti ti-star";
     });
 
     const tooltip = computed((): string | undefined => {

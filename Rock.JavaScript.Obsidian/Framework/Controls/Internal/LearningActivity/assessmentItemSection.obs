@@ -27,6 +27,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { ComponentScreen } from "./learningActivity";
     import { AssessmentItem } from "./assessmentLearningActivity.partial";
+    import { ContentArticleItem } from "./contentArticleLearningActivity.partial";
 
     const props = defineProps({
         disabled: {
@@ -36,7 +37,7 @@
 
         /** The assessment item's configuration. */
         modelValue: {
-            type: Object as PropType<AssessmentItem>,
+            type: Object as PropType<AssessmentItem | ContentArticleItem>,
             required: true
         },
 
@@ -47,7 +48,7 @@
     });
 
     const emit = defineEmits<{
-        (event: "update:modelValue", value: AssessmentItem): void
+        (event: "update:modelValue", value: AssessmentItem | ContentArticleItem): void
     }>();
 
     const title = ref(props.modelValue.title ?? "");

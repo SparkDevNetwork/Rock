@@ -10,7 +10,7 @@
                v-model.lazy="internalValue"
                :disabled="disabled" />
         <span v-show="!isNative" class="input-group-addon">
-            <i class="fa fa-calendar"></i>
+            <i class="ti ti-calendar"></i>
         </span>
         <input v-if="isNative"
                type="date"
@@ -240,14 +240,14 @@
     watch(asRockDateOrNull, () => {
         nativeDatePickerValue.value = asRockDateOrNull.value ?? "";
         emit("update:modelValue", asRockDateOrNull.value);
-    });
+    }, { immediate: true });
 
     // #endregion
 
     // #region Lifecycle
 
     onMounted(() => {
-        // Bit of a back to make sure all our props are set correctly.
+        // Bit of a hack to make sure all our props are set correctly.
         nextTick(() => {
             initializePopup();
         });

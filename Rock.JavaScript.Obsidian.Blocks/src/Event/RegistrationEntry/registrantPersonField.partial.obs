@@ -165,6 +165,7 @@
 
             case RegistrationPersonFieldType.MobilePhone:
                 componentProps.label = "Mobile Phone";
+                componentProps.hideSms = !registrationEntryState.viewModel.showSmsOptIn;
                 break;
 
             case RegistrationPersonFieldType.Race:

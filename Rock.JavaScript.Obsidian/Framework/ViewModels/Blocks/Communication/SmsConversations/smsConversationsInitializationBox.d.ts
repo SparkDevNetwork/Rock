@@ -47,6 +47,9 @@ export type SmsConversationsInitializationBox = {
     /** Gets or sets the list of available note types. */
     noteTypes?: NoteTypeBag[] | null;
 
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
+
     /** Gets or sets the list of available snippets. */
     snippets?: SnippetBag[] | null;
 

@@ -11,7 +11,7 @@
 
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-praying-hands"></i> Prayer Requests</h1>
+                    <h1 class="panel-title"><i class="ti ti-pray"></i> Prayer Requests</h1>
                 </div>
                 <div class="panel-body">
                     <div class="grid grid-panel">

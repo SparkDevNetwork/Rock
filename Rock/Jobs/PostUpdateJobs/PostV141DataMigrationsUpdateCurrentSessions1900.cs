@@ -17,6 +17,8 @@
 
 using System.ComponentModel;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -57,7 +59,7 @@ namespace Rock.Jobs
 
             using ( var rockContext = new Rock.Data.RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
 
                 // Update current sessions that might have 1900-01-01 set as the DurationLastCalculatedDateTime
                 rockContext.Database.ExecuteSqlCommand( "update InteractionSession set DurationLastCalculatedDateTime = null where DurationLastCalculatedDateTime = '1900-01-01'" );

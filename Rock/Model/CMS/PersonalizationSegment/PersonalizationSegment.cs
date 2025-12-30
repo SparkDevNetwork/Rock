@@ -17,6 +17,7 @@
 using Rock.Data;
 using Rock.Web.Cache;
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -115,6 +116,29 @@ namespace Rock.Model
         [DataMember]
         public double? TimeToUpdateDurationMilliseconds { get; set; }
 
+        /// <summary>
+        /// Gets or sets the schedule id for persistence.
+        /// </summary>
+        [DataMember]
+        public int? PersistedScheduleId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the interval in minutes for persistence.
+        /// </summary>
+        [DataMember]
+        public int? PersistedScheduleIntervalMinutes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last refresh datetime for persistence.
+        /// </summary>
+        [DataMember]
+        public DateTime? PersistedLastRefreshDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last run duration in milliseconds for persistence.
+        /// </summary>
+        [DataMember]
+        public int? PersistedLastRunDurationMilliseconds { get; set; }
 
         #endregion Entity Properties
 
@@ -126,6 +150,12 @@ namespace Rock.Model
         /// <value>The filter data view.</value>
         [DataMember]
         public virtual DataView FilterDataView { get; set; }
+
+        /// <summary>
+        /// Gets or sets the persisted schedule.
+        /// </summary>
+        [DataMember]
+        public virtual Schedule PersistedSchedule { get; set; }
 
         /// <summary>
         /// Gets or sets the collection of <see cref="Rock.Model.Category">Categories</see> that this <see cref="PersonalizationSegment"/> is associated with.
@@ -175,6 +205,7 @@ namespace Rock.Model
         public SegmentConfiguration()
         {
             this.HasOptional( a => a.FilterDataView ).WithMany().HasForeignKey( a => a.FilterDataViewId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.PersistedSchedule ).WithMany().HasForeignKey( a => a.PersistedScheduleId ).WillCascadeOnDelete( false );
             this.HasMany( a => a.Categories )
                 .WithMany()
                 .Map( a =>

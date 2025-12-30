@@ -66,5 +66,11 @@ namespace Rock.ViewModels.Blocks.Communication.SmsConversations
         /// Gets or sets the value indicating whether the logged in person can Edit or Administrate.
         /// </summary>
         public bool CanEditOrAdministrate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security grant token.
+        /// </summary>
+        /// <value>The security grant token.</value>
+        public string SecurityGrantToken { get; set; }
     }
 }

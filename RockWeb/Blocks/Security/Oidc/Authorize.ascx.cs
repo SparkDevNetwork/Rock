@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Linq.Dynamic;
 using System.Web;
 
 using AspNet.Security.OpenIdConnect.Primitives;
@@ -29,11 +28,11 @@ using Owin;
 using Owin.Security.OpenIdConnect.Extensions;
 
 using Rock;
-using Rock.CheckIn;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Model;
 using Rock.Oidc.Authorization;
+using Rock.Utility;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security.Oidc
@@ -73,9 +72,13 @@ namespace RockWeb.Blocks.Security.Oidc
 
         #endregion Keys
 
+        #region Fields
+
         private const string AntiXsrfTokenKey = "__AntiXsrfToken";
         protected string _antiXsrfTokenValue;
         private const string ScopeCookiePrefix = ".ROCK-OidcScopeApproval-";
+
+        #endregion Fields
 
         #region Base Control Methods
 
@@ -195,7 +198,7 @@ namespace RockWeb.Blocks.Security.Oidc
             }
 
             // Check if this client has already approved the scopes. We'll look for the cookie and check that the scopes have not changed.
-            var scopesApprovalCookieValue = RockPage.GetCookie( $"{ScopeCookiePrefix}{authClient.Guid}" )?.Value;
+            var scopesApprovalCookieValue = RockPage.GetCookie( GetScopeCookieName( authClient ) )?.Value;
             var scopesPreviouslyApproved = Rock.Security.Encryption.DecryptString( scopesApprovalCookieValue ) == authClient.AllowedScopes.ToString();
 
             // We have to use querystring, because something in the .net postback chain writes to the Response object which breaks the auth call.
@@ -363,6 +366,22 @@ namespace RockWeb.Blocks.Security.Oidc
 
         #region Private Methods
 
+        /// <summary>
+        /// Gets the scope cookie name for the current <see cref="AuthClient"/> and <see cref="UserLogin"/> combination.
+        /// </summary>
+        /// <param name="authClient">The <see cref="AuthClient"/> for which authorization is being requested.</param>
+        /// <returns>
+        /// The scope cookie name for the current <see cref="AuthClient"/> and <see cref="UserLogin"/> combination.
+        /// </returns>
+        private string GetScopeCookieName( AuthClient authClient )
+        {
+            return $"{ScopeCookiePrefix}{IdHasher.Instance.GetHash( authClient.Id )}-{IdHasher.Instance.GetHash( CurrentUser.Id )}";
+        }
+
+        /// <summary>
+        /// Adds a cookie indicating that the individual has authorized the requested scopes and continues the OIDC
+        /// authentication process.
+        /// </summary>
         private void AcceptAuthorization()
         {
             var owinContext = Context.GetOwinContext();
@@ -404,7 +423,7 @@ namespace RockWeb.Blocks.Security.Oidc
 
             // Set cookie to remember the fact that this individual as approved the scopes.
             var cookieValue = $"{Rock.Security.Encryption.EncryptString( authClient.AllowedScopes.ToString() )}";
-            RockPage.AddOrUpdateCookie( $"{ScopeCookiePrefix}{authClient.Guid}", cookieValue, RockDateTime.Now.AddDays( authClient.ScopeApprovalExpiration ) );
+            RockPage.AddOrUpdateCookie( GetScopeCookieName( authClient ), cookieValue, RockDateTime.Now.AddDays( authClient.ScopeApprovalExpiration ) );
 
             // Returning a SignInResult will ask ASOS to serialize the specified identity
             // to build appropriate tokens. You should always make sure the identities

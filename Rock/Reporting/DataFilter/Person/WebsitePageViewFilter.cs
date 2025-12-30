@@ -16,14 +16,17 @@
 //
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -66,6 +69,77 @@ namespace Rock.Reporting.DataFilter.Interaction
 
         #endregion
 
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var websiteGuid = SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid();
+            var activeSiteIds = SiteCache.All().Where( s => s.IsActive ).Select( s => s.Id );
+
+            var siteOptions = new InteractionChannelService( rockContext )
+                .Queryable()
+                .Where( ic => ic.ChannelTypeMediumValue.Guid == websiteGuid && ic.IsActive && activeSiteIds.Contains( ic.ChannelEntityId.Value ) )
+                .Select( x => new ListItemBag() { Text = x.Name, Value = x.Guid.ToString() } )
+                .OrderBy( m => m.Text )
+                .ToList();
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/websitePageViewFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "siteOptions", siteOptions.ToCamelCaseJson( false, true ) }
+                },
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = SelectionConfig.Parse( selection );
+
+            if ( config == null )
+            {
+                return new Dictionary<string, string>();
+            }
+
+            var sites = InteractionChannelCache.GetMany( config.WebsiteIds ).Select( dv => dv.Guid );
+
+            return new Dictionary<string, string>
+            {
+                { "sites", sites.ToCamelCaseJson( false, true ) },
+                { "comparisonType", config.ComparisonValue },
+                { "count", config.ViewsCount.ToString() },
+                { "dateRange", config.DelimitedDateRangeValues },
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var count = data.GetValueOrNull( "count" );
+            if ( count.IsNullOrWhiteSpace() )
+            {
+                count = "1";
+            }
+
+            var siteGuids = data.GetValueOrNull( "sites" ).FromJsonOrNull<List<Guid>>() ?? new List<Guid>();
+            var siteIds = InteractionChannelCache.GetMany( siteGuids ).Select( dv => dv.Id ).ToList();
+
+            var selectionConfig = new SelectionConfig
+            {
+                WebsiteIds = siteIds,
+                ComparisonValue = data.GetValueOrDefault( "comparisonType", ComparisonType.EqualTo.ConvertToInt().ToString() ),
+                ViewsCount = count.AsInteger(),
+                DelimitedDateRangeValues = data.GetValueOrDefault( "dateRange", "All||||" ),
+            };
+
+            return selectionConfig.ToJson();
+        }
+
+        #endregion
+
         #region Public Methods
 
         /// <summary>
@@ -95,11 +169,11 @@ namespace Rock.Reporting.DataFilter.Interaction
         {
             return @"
 function() {
-  
+
     var result = 'Interactions';
 
     var websiteNames = $('.js-websites', $content).find(':selected');
-console.log(websiteNames);
+
     if ( websiteNames.length > 0 ) {
         var websiteNamesDelimitedList = websiteNames.map(function() {{ return $(this).text() }}).get().join(', ');
         result += "" with: "" + websiteNamesDelimitedList +""."";
@@ -162,6 +236,8 @@ console.log(websiteNames);
             return result;
         }
 
+#if WEBFORMS
+
         /// <summary>
         /// Creates the model representation of the child controls used to display and edit the filter settings.
         /// Implement this version of CreateChildControls if your DataFilterComponent works the same in all filter modes
@@ -223,20 +299,6 @@ console.log(websiteNames);
             controls.Add( slidingDateRangePicker );
 
             return controls.ToArray();
-        }
-
-        private List<ListItem> GetInteractionChannelListItems()
-        {
-            var websiteGuid = SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid();
-            var activeSiteIds = SiteCache.All().Where( s => s.IsActive ).Select( s => s.Id );
-
-            var channels = new InteractionChannelService( new RockContext() )
-                .Queryable()
-                .Where( ic => ic.ChannelTypeMediumValue.Guid == websiteGuid && ic.IsActive && activeSiteIds.Contains( ic.ChannelEntityId.Value ) )
-                .Select( x => new ListItem() { Text = x.Name, Value = x.Id.ToString() } )
-                .ToList();
-
-            return channels.OrderBy( m => m.Text ).ToList();
         }
 
         /// <summary>
@@ -345,6 +407,21 @@ console.log(websiteNames);
             dateRange.DelimitedValues = selectionConfig.DelimitedDateRangeValues;
         }
 
+#endif
+        private List<ListItem> GetInteractionChannelListItems()
+        {
+            var websiteGuid = SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid();
+            var activeSiteIds = SiteCache.All().Where( s => s.IsActive ).Select( s => s.Id );
+
+            var channels = new InteractionChannelService( new RockContext() )
+                .Queryable()
+                .Where( ic => ic.ChannelTypeMediumValue.Guid == websiteGuid && ic.IsActive && activeSiteIds.Contains( ic.ChannelEntityId.Value ) )
+                .Select( x => new ListItem() { Text = x.Name, Value = x.Id.ToString() } )
+                .ToList();
+
+            return channels.OrderBy( m => m.Text ).ToList();
+        }
+
         /// <summary>
         /// Creates a Linq Expression that can be applied to an IQueryable to filter the result set.
         /// </summary>
@@ -411,6 +488,15 @@ console.log(websiteNames);
         /// <summary>
         /// Get and set the filter settings from DataViewFilter.Selection
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>
+        ///         You CANNOT change these property names unless you also
+        ///         write a migration to change them for all the saved values in
+        ///         the Selection column of the DataViewFilter table.
+        ///         </strong>
+        ///     </para>
+        /// </remarks>
         protected class SelectionConfig
         {
             /// <summary>
@@ -421,11 +507,15 @@ console.log(websiteNames);
             }
 
             /// <summary>
-            /// Gets or sets the note type identifiers.
+            /// Gets or sets the InteractionChannel Ids for the corresponding
+            /// SiteIds.
             /// </summary>
             /// <value>
-            /// The note type identifiers.
+            /// A list of InteractionChannelIds
             /// </value>
+            /// <remarks>
+            /// FYI: The InteractionChannel.ChannelEntityId holds the value of the SiteId.
+            /// </remarks>
             public List<int> WebsiteIds { get; set; }
 
             /// <summary>
@@ -461,7 +551,7 @@ console.log(websiteNames);
         }
 
         /// <summary>
-        /// Viewmodel for interaction channels 
+        /// Viewmodel for interaction channels
         /// </summary>
         private sealed class InteractionChannelViewModel
         {

@@ -2,8 +2,9 @@
 <template>
     <TreeItemPicker v-model="internalValue"
                     formGroupClasses="location-item-picker"
-                    iconCssClass="fa fa-bar-chart-o"
+                    iconCssClass="ti ti-chart-bar"
                     :provider="itemProvider"
+                    autoExpand
                     :multiple="multiple"
                     disableFolderSelection />
 </template>

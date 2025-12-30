@@ -314,7 +314,7 @@ namespace RockWeb.Blocks.Core
                     }
 
                     lbCommand.CommandName = "uninstall";
-                    lbCommand.Text = "<i class='fa fa-times'></i> &nbsp; Uninstall";
+                    lbCommand.Text = "<i class='ti ti-x'></i> &nbsp; Uninstall";
                     lbCommand.AddCssClass( "btn-warning" );
                 }
                 else
@@ -322,7 +322,7 @@ namespace RockWeb.Blocks.Core
                     lblVersion.Visible = true;
                     lblVersion.Text += package.Version;
                     lbCommand.CommandName = "Install";
-                    lbCommand.Text = "<i class='fa fa-download'></i> &nbsp; Install";
+                    lbCommand.Text = "<i class='ti ti-download'></i> &nbsp; Install";
                 }
 
                 lbCommand.CommandArgument = lbUpdate.CommandArgument = lbView.CommandArgument = e.Row.RowIndex.ToString();

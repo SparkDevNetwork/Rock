@@ -45,7 +45,7 @@ namespace Rock.Blocks.Lms
     [DisplayName( "Learning Course Detail" )]
     [Category( "LMS" )]
     [Description( "Displays the details of a particular learning requiredCourse." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -577,7 +577,11 @@ namespace Rock.Blocks.Lms
                 entity.LearningProgramId = learningProgramId;
             }
 
-            RockContext.SaveChanges();
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                entity.SaveAttributeValues( RockContext );
+            } );
 
             // Ensure navigation properties will work now.
             entity = entityService.GetCourseWithRequirements( entity.Id );

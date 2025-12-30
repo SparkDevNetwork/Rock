@@ -551,15 +551,7 @@ namespace Rock.CheckIn.v2
             attendance.SearchTypeValueId = GetSearchTypeValueId( request.SearchMode );
             attendance.SearchValue = request.SearchTerm;
             attendance.SearchResultGroupId = request.FamilyId;
-
-            if ( Session.AttendanceSourceValueId.HasValue )
-            {
-                attendance.SourceValueId = Session.AttendanceSourceValueId.Value;
-            }
-            else
-            {
-                attendance.SourceValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.ATTENDANCE_SOURCE_KIOSK.AsGuid(), Session.RockContext )?.Id;
-            }
+            attendance.SourceValueId = request.SourceValueId;
 
             if ( request.IsPending )
             {
@@ -921,6 +913,9 @@ namespace Rock.CheckIn.v2
             // Get the person performing the check-in if we can.
             var checkedInByPersonAliasId = GetCheckedInByPersonAliasId( sessionRequest );
 
+            // Get the check-in source if we have one.
+            var sourceValueId = GetSourceValueId( sessionRequest );
+
             return requests
                 .Select( r => new PreparedAttendanceRequest
                 {
@@ -950,9 +945,33 @@ namespace Rock.CheckIn.v2
                     ClientIpAddress = clientIpAddress,
                     CheckedInByPersonAliasId = checkedInByPersonAliasId,
                     StartDateTime = now,
+                    SourceValueId = sourceValueId,
                     Note = r.Note
                 } )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Gets the check-in source value identifier that should be used when
+        /// writing attendance records.
+        /// </summary>
+        /// <param name="sessionRequest">The session request data.</param>
+        /// <returns>The value to use for the check-in source.</returns>
+        protected int? GetSourceValueId( AttendanceSessionRequest sessionRequest )
+        {
+            var valueId = Session.AttendanceSourceValueId;
+
+            if ( !valueId.HasValue && sessionRequest.SourceValueId.IsNotNullOrWhiteSpace() )
+            {
+                valueId = DefinedValueCache.GetByIdKey( sessionRequest.SourceValueId, Session.RockContext )?.Id;
+            }
+
+            if ( !valueId.HasValue )
+            {
+                valueId = DefinedValueCache.Get( SystemGuid.DefinedValue.ATTENDANCE_SOURCE_KIOSK.AsGuid(), Session.RockContext )?.Id;
+            }
+
+            return valueId;
         }
 
         #endregion

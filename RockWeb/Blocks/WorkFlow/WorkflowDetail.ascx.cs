@@ -39,6 +39,8 @@ namespace RockWeb.Blocks.WorkFlow
     [DisplayName( "Workflow Detail" )]
     [Category( "WorkFlow" )]
     [Description( "Displays the details of a workflow instance." )]
+
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.BlockTypeGuid( "4A9D62CE-5822-490F-B9EE-6D80037B4F5F" )]
     public partial class WorkflowDetail : RockBlock
     {

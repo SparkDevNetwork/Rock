@@ -15,7 +15,7 @@
                     <div class="panel-labels treeview-actions" id="divTreeviewActions" runat="server">
                         <div class="btn-group">
                             <button type="button" class="btn btn-link btn-xs dropdown-toggle" data-toggle="dropdown">
-                                <i class="fa fa-plus"></i>
+                                <i class="ti ti-plus"></i>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-right" role="menu">
                                 <li><asp:LinkButton ID="lbAddLocationRoot" OnClick="lbAddLocationRoot_Click" Text="Add Top-Level" runat="server"></asp:LinkButton></li>

@@ -79,8 +79,51 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-    <CheckBoxList v-if="!enhancedSelection" v-model="internalValue" :items="options" :horizontal="true" :repeatColumns="numberOfColumns" />
-    <DropDownList v-else v-model="internalValue" :items="options" :showBlankItem="true" enhanceForLongLists multiple />
+    <CheckBoxList v-if="!enhancedSelection" v-model="internalValue" :items="options" horizontal :repeatColumns="numberOfColumns" />
+    <DropDownList v-else v-model="internalValue" :items="options" showBlankItem enhanceForLongLists multiple />
+`
+});
+
+export const FilterComponent = defineComponent({
+    name: "BadgesField.Filter",
+
+    components: {
+        CheckBoxList,
+        DropDownList
+    },
+
+    props: getFieldEditorProps(),
+
+    setup(props, { emit }) {
+        // The internal value used by the text editor.
+        const internalValue = ref<string>("");
+
+        // The options to choose from.
+        const options = computed((): ListItemBag[] => {
+            const selectedBadges = JSON.parse(props.configurationValues[ConfigurationValueKey.ClientValues] || "[]") as ListItemBag[];
+            return selectedBadges;
+        });
+
+        // Watch for changes from the parent component and update the text editor.
+        watch(() => props.modelValue, () => {
+            updateRefValue(internalValue, props.modelValue ?? "");
+        }, {
+            immediate: true
+        });
+
+        // Watch for changes from the text editor and update the parent component.
+        watch(internalValue, () => {
+            emit("update:modelValue", internalValue.value);
+        });
+
+        return {
+            internalValue,
+            options
+        };
+    },
+
+    template: `
+    <DropDownList v-model="internalValue" :items="options" :showBlankItem="false" enhanceForLongLists />
 `
 });
 

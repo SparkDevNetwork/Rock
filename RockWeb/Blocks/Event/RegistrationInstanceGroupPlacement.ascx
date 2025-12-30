@@ -21,7 +21,7 @@
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <asp:Literal ID="lGroupPlacementGroupTypeIconHtml" runat="server">
-                        <i class="fa fa-star"></i>
+                        <i class="ti ti-star"></i>
                     </asp:Literal>
                     <asp:Literal ID="lGroupPlacementGroupTypeName" Text="Group Type ..." runat="server" />
                 </h1>
@@ -29,13 +29,13 @@
                 <div class="panel-labels">
                     <asp:LinkButton ID="btnAddPlacementGroup" runat="server" CssClass="js-autoschedule btn btn-default btn-xs" OnClick="btnAddPlacementGroup_Click">
                         <asp:Literal ID="lAddPlacementGroupButtonIconHtml" runat="server">
-                            <i class="fa fa-star"></i>
+                            <i class="ti ti-star"></i>
                         </asp:Literal>
                         <asp:Literal ID="lAddPlacementGroupButtonText" Text="Add ..." runat="server" />
                     </asp:LinkButton>
-                    <asp:LinkButton ID="btnConfiguration" runat="server" CssClass="btn btn-default btn-square btn-xs" OnClick="btnConfiguration_Click"><i class="fa fa-gear"></i></asp:LinkButton>
+                    <asp:LinkButton ID="btnConfiguration" runat="server" CssClass="btn btn-default btn-square btn-xs" OnClick="btnConfiguration_Click"><i class="ti ti-settings"></i></asp:LinkButton>
                     <button type="button" class="btn btn-default btn-xs btn-square js-toggle-group-details">
-                        <i class="fa fa-angle-double-up"></i>
+                        <i class="ti ti-chevrons-up"></i>
                     </button>
                 </div>
             </div>
@@ -103,23 +103,23 @@
 
                                         <div class="panel-heading">
                                             <h1 class="panel-title">
-                                                <i class="fa fa-user"></i>
+                                                <i class="ti ti-user"></i>
                                                 Registrants
                                             </h1>
 
                                             <div class="panel-labels">
                                                 <div class="btn btn-xs btn-square btn-default js-toggle-registrant-details toggle-registrant-details ">
-                                                    <i class="fa fa-angle-double-down"></i>
+                                                    <i class="ti ti-chevrons-down"></i>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div class="panel-body padding-all-none">
-                                            <Rock:RockTextBox ID="sfRegistrant" runat="server" CssClass="registrant-search js-registrant-search" PrependText="<i class='fa fa-search'></i>" Placeholder="Search" spellcheck="false" />
+                                            <Rock:RockTextBox ID="sfRegistrant" runat="server" CssClass="registrant-search js-registrant-search" PrependText="<i class='ti ti-search'></i>" Placeholder="Search" spellcheck="false" />
 
                                             <div class="scroll-list">
                                                 <%-- loading indicator --%>
-                                                <i class="fa fa-refresh fa-spin margin-l-md js-loading-notification" style="display: none; opacity: .4;"></i>
+                                                <i class="ti ti-refresh ti-spin margin-l-md js-loading-notification" style="display: none; opacity: .4;"></i>
 
                                                 <%-- container for list of registrants --%>
                                                 <asp:Panel ID="pnlRegistrantListContainer" CssClass="js-group-placement-registrant-container group-placement-registrant-container dropzone" data-empty-label="No People Available" runat="server">
@@ -144,7 +144,7 @@
                                             <div class="person-container">
                                                 <span class="person-name js-groupmember-name"></span>
                                                 <div class="dropdown js-groupmember-actions hide-dragging">
-                                                    <button class="btn btn-overflow" type="button" data-toggle="dropdown"><i class="fa fa-ellipsis-v"></i></button>
+                                                    <button class="btn btn-overflow" type="button" data-toggle="dropdown"><i class="ti ti-dots-vertical"></i></button>
                                                     <ul class="dropdown-menu">
                                                         <li><a class="js-edit-group-member">Edit</a></li>
                                                         <li><a class="js-remove-group-member">Remove</a></li>
@@ -171,7 +171,7 @@
 
                                                 <div class="panel panel-block placement-group">
                                                     <div class="alert alert-danger js-alert js-placement-group-error" style="display: none">
-                                                        <button type="button" class="close js-hide-alert" aria-hidden="true"><i class="fa fa-times"></i></button>
+                                                        <button type="button" class="close js-hide-alert" aria-hidden="true"><i class="ti ti-x"></i></button>
                                                         <span class="js-placement-group-error-text"></span>
                                                     </div>
                                                     <div class="panel-heading">
@@ -183,7 +183,7 @@
                                                         <div class="panel-labels">
                                                             <div class="dropdown js-group-actions hide-dragging pull-right">
                                                                 <div class="btn btn-square btn-overflow btn-xs" data-toggle="dropdown">
-                                                                    <i class="fa fa-ellipsis-v"></i>
+                                                                    <i class="ti ti-dots-vertical"></i>
                                                                 </div>
                                                                 <ul class="dropdown-menu">
                                                                     <li><a class="js-edit-group">Edit</a></li>
@@ -193,7 +193,7 @@
                                                                 </ul>
                                                             </div>
                                                             <div class="btn btn-default btn-xs btn-square pull-right js-placement-group-toggle-visibility placement-group-toggle-visibility">
-                                                                <i class="fa fa-chevron-up"></i>
+                                                                <i class="ti ti-chevron-up"></i>
                                                             </div>
                                                             <div class="placement-status-labels pull-right">
                                                                 <Rock:HighlightLabel runat="server" LabelType="Info" ID="hlInstanceName" CssClass="margin-r-sm" Visible="false" />
@@ -232,7 +232,7 @@
                                                                                 </div>
                                                                             </asp:Panel>                                                                        </div>
                                                                         <div class="alert alert-danger js-alert js-placement-place-registrant-error margin-all-md" style="display: none">
-                                                                            <button type="button" class="close js-hide-alert" aria-hidden="true"><i class="fa fa-times"></i></button>
+                                                                            <button type="button" class="close js-hide-alert" aria-hidden="true"><i class="ti ti-x"></i></button>
                                                                             <span class="js-placement-place-registrant-error-text"></span>
                                                                         </div>
                                                                         <div class="panel-body js-group-role-container group-role-container dropzone droppable" data-empty-label="Drag and Drop Here"></div>

@@ -53,6 +53,7 @@ namespace Rock.CheckIn.v2
             FamilyId = requestBag.FamilyId;
             SearchMode = requestBag.SearchMode;
             SearchTerm = requestBag.SearchTerm;
+            SourceValueId = requestBag.SourceValueId;
             PerformedByPersonId = requestBag.PerformedByPersonId;
         }
 

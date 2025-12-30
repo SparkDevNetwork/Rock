@@ -202,7 +202,7 @@ namespace Rock.Web.UI.Controls
             ItemRestUrlExtraParams = string.Empty;
             base.OnInit( e );
 
-            this.IconCssClass = "fa fa-file";
+            this.IconCssClass = "ti ti-file";
 
             var sm = ScriptManager.GetCurrent( this.Page );
             EnsureChildControls();
@@ -503,7 +503,7 @@ namespace Rock.Web.UI.Controls
                 _btnSelectCurrentPage = new LinkButton();
                 _btnSelectCurrentPage.ID = this.ID + "_btnSelectCurrentPage";
                 _btnSelectCurrentPage.CssClass = "btn btn-xs btn-link pull-right";
-                _btnSelectCurrentPage.Text = "<i class='fa fa-file-o'></i>";
+                _btnSelectCurrentPage.Text = "<i class='ti ti-file'></i>";
                 _btnSelectCurrentPage.ToolTip = "Select Current Page";
                 _btnSelectCurrentPage.CausesValidation = false;
                 _btnSelectCurrentPage.Click += _btnSelectCurrentPage_Click;

@@ -1,0 +1,129 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DisplayCard v-if="channel.idKey"
+                 :title="channel.name"
+                 :description="description">
+        <template #actions>
+            <div class="email-preference-entry-unsubscribe-actions">
+
+                <Toggle v-if="showCommunicationPreference"
+                        v-model="isEmailCommunicationPreference"
+                        trueText="Email"
+                        falseText="SMS"
+                        :btnSize="BtnSize.Small"
+                        :disabled="disabled"
+                        @update:modelValue="onUpdateCommunicationPreference" />
+
+                <RockButton :btnType="BtnType.Link"
+                            :disabled="disabled"
+                            @click="onUnsubscribeClick">
+                    Unsubscribe
+                </RockButton>
+
+            </div>
+        </template>
+    </DisplayCard>
+</template>
+
+<style scoped>
+.email-preference-entry-unsubscribe-actions {
+    display: flex;
+    gap: var(--spacing-tiny);
+}
+
+.email-preference-entry-unsubscribe-actions .btn {
+    font-weight: var(--font-weight-semibold);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import { ManageChannelSubscriptionEvent, UpdateCommunicationPreferenceEvent } from "./types.partial";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationChannelBag } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/communicationChannelBag";
+
+    const props = defineProps({
+        channel: {
+            type: Object as PropType<CommunicationChannelBag>,
+            required: true
+        },
+
+        messageCountWindowDays: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "unsubscribe", event: ManageChannelSubscriptionEvent): void;
+        (e: "updateCommunicationPreference", event: UpdateCommunicationPreferenceEvent): void;
+    }>();
+
+    // #region Values
+
+    const showCommunicationPreference = ref(!isNullish(props.channel.communicationPreference));
+    const isEmailCommunicationPreference = ref(props.channel.communicationPreference === CommunicationType.Email);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const description = computed((): string => {
+        const dayCount = props.messageCountWindowDays;
+        const messageCount = props.channel.messagesReceivedCount;
+
+        if (dayCount <= 0 || isNullish(messageCount)) {
+            return "";
+        }
+
+        const messageCountString = asFormattedString(messageCount);
+        const messageLabel = pluralize("Message", messageCount);
+
+        const dayCountString = asFormattedString(dayCount);
+        const dayLabel = pluralize("Day", dayCount);
+
+        return `${messageCountString} ${messageLabel} Last ${dayCountString} ${dayLabel}`;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Handles the communication preference toggle update.
+     */
+    function onUpdateCommunicationPreference(): void {
+        emit("updateCommunicationPreference", {
+            idKey: props.channel.idKey!,
+            channelType: props.channel.communicationChannelType,
+            preference: isEmailCommunicationPreference.value
+                ? CommunicationType.Email
+                : CommunicationType.SMS
+        });
+    }
+
+    /**
+     * Handles the "Unsubscribe" button click.
+     */
+    function onUnsubscribeClick(): void {
+        emit("unsubscribe", {
+            idKey: props.channel.idKey!,
+            channelType: props.channel.communicationChannelType
+        });
+    }
+
+    // #endregion Event Handlers
+</script>

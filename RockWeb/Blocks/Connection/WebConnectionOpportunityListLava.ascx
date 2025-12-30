@@ -8,7 +8,7 @@
                 <asp:Literal ID="lTitle" runat="server"></asp:Literal>
                 <div class="row options-filter-row">
                     <div class="col-xs-12">
-                        <asp:LinkButton ID="lbOptions" runat="server" CssClass="text-muted text-semibold pull-right mb-2 pr-1" OnClick="lbOptions_Click"><i class="fa fa-sliders"></i>&nbsp;&nbsp;Options</asp:LinkButton>
+                        <asp:LinkButton ID="lbOptions" runat="server" CssClass="text-muted text-semibold pull-right mb-2 pr-1" OnClick="lbOptions_Click"><i class="ti ti-adjustments"></i>&nbsp;&nbsp;Options</asp:LinkButton>
                     </div>
                 </div>
 

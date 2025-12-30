@@ -39,7 +39,7 @@ const configurationComponent = defineAsyncComponent(async () => {
 });
 
 export class GroupTypeGroupField extends FieldTypeBase {
-    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
+    public override getTextValue(value: string): string {
         return value;
     }
 

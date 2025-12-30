@@ -50,8 +50,8 @@
                                         </span>
                                     </div>
                                     <div class="text-right">
-                                        <asp:LinkButton ID="btnSms" runat="server" Visible="false" OnClick="btnSms_Click" CssClass="btn btn-sm btn-square btn-default my-1" Text="<i class='fa fa-sms'></i>" />
-                                        <a class="btn btn-sm btn-square btn-default my-1" href="tel:<%# Eval("Number") %>"> <i class="fa fa-phone"></i></a>
+                                        <asp:LinkButton ID="btnSms" runat="server" Visible="false" OnClick="btnSms_Click" CssClass="btn btn-sm btn-square btn-default my-1" Text="<i class='ti ti-device-mobile-message'></i>" />
+                                        <a class="btn btn-sm btn-square btn-default my-1" href="tel:<%# Eval("Number") %>"> <i class="ti ti-phone"></i></a>
                                     </div>
                                 </div>
                             </ItemTemplate>

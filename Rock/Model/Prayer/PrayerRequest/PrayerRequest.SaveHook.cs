@@ -292,7 +292,7 @@ namespace Rock.Model
                 var workflowTypeGuid = moderationWorkflow?.Guid ?? Guid.Empty;
                 if ( prayerRequest.ModerationFlags > 0 && workflowTypeGuid != null && !workflowTypeGuid.IsEmpty() )
                 {
-                    var currentPersonAliasId = DbContext.GetCurrentPersonAlias()?.Id;
+                    var currentPersonAliasId = DbContext.GetCurrentPersonAliasId();
                     var workflowAttributes = new Dictionary<string, string>
                     {
                         { "IsHate", moderations.ModerationsResponseCategories.IsHate.ToString() },

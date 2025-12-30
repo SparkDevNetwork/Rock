@@ -17,7 +17,7 @@
 
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-credit-card"></i> <asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
+                    <h1 class="panel-title"><i class="ti ti-credit-card"></i> <asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
 
                     <div class="pull-right">
                         <Rock:ButtonDropDownList ID="bddlOptions" runat="server" FormGroupCssClass="panel-options pull-right dropdown-right" Title="Options" SelectionStyle="Checkmark" OnSelectionChanged="bddlOptions_SelectionChanged">

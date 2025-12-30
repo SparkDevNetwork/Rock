@@ -25,6 +25,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Bus.Message;
 using Rock.Data;
@@ -1008,7 +1010,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         {
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = context.SqlCommandTimeoutSeconds;
+                rockContext.Database.SetCommandTimeout( context.SqlCommandTimeoutSeconds );
 
                 // Get the alert types
                 var alertTypeService = new FinancialTransactionAlertTypeService( rockContext );
@@ -1046,7 +1048,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             // the "late gift" alert, which needs to find people based on the absence of a gift.
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = context.SqlCommandTimeoutSeconds;
+                rockContext.Database.SetCommandTimeout( context.SqlCommandTimeoutSeconds );
                 var financialTransactionService = new FinancialTransactionService( rockContext );
 
                 // This is the people that have given since the last run date or the configured old gift date point.
@@ -1076,7 +1078,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             // These ranges will be updated in the Giving Automation system settings.
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = context.SqlCommandTimeoutSeconds;
+                rockContext.Database.SetCommandTimeout( context.SqlCommandTimeoutSeconds );
                 var minDate = context.Now.AddMonths( -12 );
 
                 var financialTransactionService = new FinancialTransactionService( rockContext );
@@ -1150,7 +1152,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         {
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = context.SqlCommandTimeoutSeconds;
+                rockContext.Database.SetCommandTimeout( context.SqlCommandTimeoutSeconds );
 
                 // Get the gifts from the past 12 months for the giving group
                 var financialTransactionService = new FinancialTransactionService( rockContext );
@@ -2109,7 +2111,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        rockContext.Database.CommandTimeout = context.SqlCommandTimeoutSeconds;
+                        rockContext.Database.SetCommandTimeout( context.SqlCommandTimeoutSeconds );
                         new FinancialTransactionAlertService( rockContext ).AddRange( lateAlertsForAlertType );
                         context.AlertsCreated += lateAlertsForAlertType.Count;
                         rockContext.SaveChanges();
@@ -2133,7 +2135,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             List<int> alertAccountIds = GetAlertTypeAccountIds( lateGiftAlertType );
 
             var rockContext = new RockContext();
-            rockContext.Database.CommandTimeout = context.SqlCommandTimeoutSeconds;
+            rockContext.Database.SetCommandTimeout( context.SqlCommandTimeoutSeconds );
             var financialTransactionService = new FinancialTransactionService( rockContext );
 
             var givingAutomationSourceTransactionQueryForAlertType = financialTransactionService
@@ -2535,7 +2537,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 SqlCommandTimeoutSeconds = AttributeDefaultValue.CommandTimeout;
                 MaxDaysSinceLastGift = AttributeDefaultValue.MaxDaysSinceLastGift;
                 DataViewPersonQueriesRockContext = new RockContext();
-                DataViewPersonQueriesRockContext.Database.CommandTimeout = SqlCommandTimeoutSeconds;
+                DataViewPersonQueriesRockContext.Database.SetCommandTimeout( SqlCommandTimeoutSeconds );
                 LateAlertsByGivingId = new Dictionary<string, List<(int AlertTypeId, bool ContinueIfMatched)>>();
             }
 

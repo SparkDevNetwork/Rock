@@ -47,8 +47,7 @@
     import { PersonalLinkSectionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalLinkSectionList/personalLinkSectionListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey, GridSettingsOptions, PreferenceKey } from "./PersonalLinkSectionList/types.partial";
-    import { computed, reactive, ref, watch } from "vue";
-    import { ColumnFilter } from "@Obsidian/Types/Controls/grid";
+    import { reactive, ref, watch } from "vue";
     import GridSettingsModal from "./PersonalLinkSectionList/gridSettingsModal.partial.obs";
 
     const config = useConfigurationValues<ListBlockBox<PersonalLinkSectionListOptionsBag>>();

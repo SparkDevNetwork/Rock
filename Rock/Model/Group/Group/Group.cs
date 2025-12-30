@@ -25,6 +25,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
 using Rock.Lava;
 using Rock.Security;
@@ -615,12 +616,44 @@ namespace Rock.Model
         public bool? IsChatChannelAlwaysShownOverride { get; set; }
 
         /// <summary>
+        /// Gets or sets the chat channel avatar binary file identifier. This is the image that will be shown in the
+        /// external chat application for this channel.
+        /// </summary>
+        [DataMember]
+        public int? ChatChannelAvatarBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ChatNotificationMode"/> to control how push notifications are sent for this chat
+        /// channel. If set to <see langword="null"/>, then the value of <see cref="GroupType.ChatPushNotificationMode"/>
+        /// will be used. This should only be used when editing the group. Call the <see cref="GetChatPushNotificationMode"/>
+        /// method instead to determine how push notifications are sent, as that method will also check the
+        /// <see cref="GroupType.ChatPushNotificationMode"/> property.
+        /// </summary>
+        [DataMember]
+        public ChatNotificationMode? ChatPushNotificationModeOverride { get; set; }
+
+        /// <summary>
         /// Gets or sets the identifier of the chat channel in the external chat service. No assumptions should be made
         /// that if this value is set the channel still exists in the external chat service.
         /// </summary>
         [MaxLength( 100 )]
         [DataMember]
         public string ChatChannelKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing
+        /// the source of <see cref="GroupMember"/>s added to this <see cref="Group"/>. If set to <see langword="null"/>
+        /// (or if <see cref="GroupType.AllowGroupSpecificRecordSource"/> is not <see langword="true"/>), then the value
+        /// of <see cref="GroupType.GroupMemberRecordSourceValueId"/> will be used. This should only be used when editing
+        /// the group. Call the <see cref="GetGroupMemberRecordSourceValueId"/> method instead to get the value, as that
+        /// method will also check the <see cref="GroupType.GroupMemberRecordSourceValueId"/> property.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.RECORD_SOURCE_TYPE )]
+        public int? GroupMemberRecordSourceValueId { get; set; }
 
         #endregion
 
@@ -831,6 +864,30 @@ namespace Rock.Model
 
         private Dictionary<string, string> _supportedActions;
 
+        /// <summary>
+        /// Gets or sets the chat channel avatar binary file. This is the image that will be shown in the external chat
+        /// application for this channel.
+        /// </summary>
+        /// <value>
+        /// The image binary file.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile ChatChannelAvatarBinaryFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing the source
+        /// of <see cref="GroupMember"/>s added to this <see cref="Group"/>. If set to <see langword="null"/> (or if
+        /// <see cref="GroupType.AllowGroupSpecificRecordSource"/> is not <see langword="true"/>), then the value of
+        /// <see cref="GroupType.GroupMemberRecordSourceValue"/> will be used. This should only be used when editing the
+        /// group. Call the <see cref="GetGroupMemberRecordSourceValue"/> method instead to get the value, as that
+        /// method will also check the <see cref="GroupType.GroupMemberRecordSourceValue"/> property.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.DefinedValue"/> representing the Record Source Type.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue GroupMemberRecordSourceValue { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -872,6 +929,8 @@ namespace Rock.Model
             this.HasOptional( p => p.ScheduleCoordinatorPersonAlias ).WithMany().HasForeignKey( p => p.ScheduleCoordinatorPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.InactiveReasonValue ).WithMany().HasForeignKey( p => p.InactiveReasonValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RSVPReminderSystemCommunication ).WithMany().HasForeignKey( p => p.RSVPReminderSystemCommunicationId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ChatChannelAvatarBinaryFile ).WithMany().HasForeignKey( p => p.ChatChannelAvatarBinaryFileId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.GroupMemberRecordSourceValue ).WithMany().HasForeignKey( p => p.GroupMemberRecordSourceValueId ).WillCascadeOnDelete( false );
 
             // Tell EF that we never want archived groups. 
             // This will prevent archived members from being included in any Group queries.

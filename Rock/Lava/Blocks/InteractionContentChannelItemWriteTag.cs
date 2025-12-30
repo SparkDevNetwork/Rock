@@ -122,7 +122,7 @@ namespace Rock.Lava.Blocks
                 ChannelTypeMediumValueId = mediumType.Id,
                 ChannelEntityId = contentChannel.Id,
                 ChannelName = contentChannel.ToString(),
-                ComponentEntityTypeId = contentChannel.TypeId,
+                ComponentEntityTypeId = contentChannelItem.TypeId,
                 ComponentEntityId = contentChannelItem.Id,
                 ComponentName = contentChannelItem.ToString(),
                 InteractionOperation = operation,

@@ -21,8 +21,13 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
+
 /** Contains the details required for general system configuration. */
 export type GeneralConfigurationBag = {
+    /** Gets or sets the defined value GUIDs for countries from which access will be restricted to all pages. */
+    countriesRestrictedFromAccessing?: Guid[] | null;
+
     /** Gets or sets a value indicating whether [enable keep alive]. */
     enableKeepAlive: boolean;
 
@@ -37,6 +42,13 @@ export type GeneralConfigurationBag = {
 
     /** Gets or sets the personalization cookie cache length minutes. */
     personalizationCookieCacheLengthMinutes?: number | null;
+
+    /**
+     * The hostname to use for connections to the Rock RealTime system.
+     * If not set then the hostname connected to by the client for other
+     * web requests will be used.
+     */
+    realTimeHostname?: string | null;
 
     /** Gets or sets the visitor cookie persistence length days. */
     visitorCookiePersistenceLengthDays?: number | null;

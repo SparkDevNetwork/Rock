@@ -24,7 +24,7 @@
     <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
         <Panel type="block" :title="panelName" :headerSecondaryActions="blockLabels">
             <template v-if="siteViewBag?.idKey" #headerActions>
-                <a :href="siteUrl" target="_blank"><span class="label label-info" @click="onVisitSite">Visit Site</span></a>
+                <button class="btn btn-info" @click.prevent="onVisitSite" style="margin-right: 15px;"><i class="ti ti-world"></i> Visit Site</button>
             </template>
             <template #default>
                 <ViewPanel v-if="panelMode == DetailPanelMode.View"
@@ -64,7 +64,8 @@
                                 @click="onEdit">
                         Edit
                     </RockButton>
-                    <RockButton :btnSize="BtnSize.Default"
+                    <RockButton v-if="!config.entity?.isSystem"
+                                :btnSize="BtnSize.Default"
                                 :btnType="BtnType.Link"
                                 @click="onDelete">
                         Delete
@@ -102,7 +103,7 @@
     import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
-    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock, hideBlockRole, showBlockRole } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./SiteDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { SiteBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteDetail/siteBag";
@@ -111,11 +112,10 @@
     import { confirmDelete } from "@Obsidian/Utility/dialogs";
     import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
-    import { useStore } from "@Obsidian/PageState";
+    import { BlockRole } from "@Obsidian/Enums/Cms/blockRole";
 
     const config = useConfigurationValues<DetailBlockBox<SiteBag, SiteDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const store = useStore();
 
     // #region Values
 
@@ -262,7 +262,7 @@
 
         isConfirmDeleteVisible.value = true;
         isActionButtonsVisible.value = false;
-        store.setAreSecondaryBlocksShown(true);
+        await showBlockRole(BlockRole.Secondary);
     }
 
     /**
@@ -313,7 +313,7 @@
             };
             config.options = result.data.options;
             panelMode.value = DetailPanelMode.Edit;
-            store.setAreSecondaryBlocksShown(false);
+            await hideBlockRole(BlockRole.Secondary);
         }
     }
 
@@ -339,7 +339,7 @@
                 window.location.href = makeUrlRedirectSafe(result.data);
             }
 
-            store.setAreSecondaryBlocksShown(true);
+            await showBlockRole(BlockRole.Secondary);
         }
         else {
             errorMessage.value = result.errorMessage ?? "Unknown error while trying to save site.";
@@ -366,10 +366,11 @@
 
     onMounted(() => {
         if (config.entity?.idKey) {
-            store.setAreSecondaryBlocksShown(true);
+            showBlockRole(BlockRole.Secondary);
+
         }
         else {
-            store.setAreSecondaryBlocksShown(false);
+            hideBlockRole(BlockRole.Secondary);
         }
     });
 </script>

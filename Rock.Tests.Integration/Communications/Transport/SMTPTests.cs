@@ -28,9 +28,14 @@ namespace Rock.Tests.Integration.Communications.Transport
             _newServerAttributeValueGuid = newAttributeValueGuid;
         }
 
-        [ClassCleanup]
+        [ClassCleanup( ClassCleanupBehavior.EndOfClass )]
         public static void Cleanup()
         {
+            if ( IsContainersEnabled )
+            {
+                return;
+            }
+
             if ( !_newServerAttributeValueGuid.IsEmpty() )
             {
                 // Delete it.

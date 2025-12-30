@@ -433,7 +433,7 @@ namespace Rock.Web.UI.Controls
                         cell.Controls.Add( lbDelete );
 
                         HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
-                        buttonIcon.Attributes.Add( "class", "fa fa-times" );
+                        buttonIcon.Attributes.Add( "class", "ti ti-x" );
                         lbDelete.Controls.Add( buttonIcon );
 
                         lbDelete.Click += lbDelete_Click;
@@ -446,7 +446,7 @@ namespace Rock.Web.UI.Controls
                         headerSummary.Attributes.Add( "data-person-id", mergeField.PersonId.ToString() );
 
                         var i = new HtmlGenericControl( "i" );
-                        i.Attributes.Add( "class", "header-checkbox-icon js-header-checkbox-icon fa fa-2x " + ( mergeField.IsPrimaryPerson ? "fa-check-square-o" : "fa-square-o" ) );
+                        i.Attributes.Add( "class", "header-checkbox-icon js-header-checkbox-icon ti ti-2x " + ( mergeField.IsPrimaryPerson ? "ti-square-check" : "ti-square" ) );
                         headerSummary.Controls.Add( i );
 
                         headerSummary.Controls.Add( new LiteralControl( mergeField.HeaderContent ) );

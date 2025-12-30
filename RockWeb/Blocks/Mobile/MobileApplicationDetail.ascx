@@ -27,7 +27,7 @@
         <asp:Panel ID="pnlOverview" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
                 <h3 class="panel-title">
-                    <i class="fa fa-mobile"></i>
+                    <i class="ti ti-device-mobile"></i>
                     <asp:Literal ID="ltAppName" runat="server" />
                 </h3>
                 <div class="panel-labels">
@@ -85,7 +85,7 @@
                                     <asp:LinkButton ID="lbEdit" runat="server" CssClass="btn btn-primary" Text="Edit" OnClick="lbEdit_Click" data-shortcut-key="e" AccessKey="m" ToolTip="Alt+e" />
                                     <asp:LinkButton ID="lbCancel" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="lbCancel_Click" CausesValidation="false" data-shortcut-key="c" ToolTip="Alt+c" />
                                     <div class="pull-right">
-                                        <asp:LinkButton ID="lbDeploy" runat="server" CssClass="btn btn-default" OnClick="lbDeploy_Click" OnClientClick="Rock.dialogs.confirmPreventOnCancel( event, 'Are you sure you wish to replace the current package and deploy a new one?');"><i class="fa fa-upload"></i> Deploy</asp:LinkButton>
+                                        <asp:LinkButton ID="lbDeploy" runat="server" CssClass="btn btn-default" OnClick="lbDeploy_Click" OnClientClick="Rock.dialogs.confirmPreventOnCancel( event, 'Are you sure you wish to replace the current package and deploy a new one?');"><i class="ti ti-upload"></i> Deploy</asp:LinkButton>
                                     </div>
                                 </div>
 
@@ -101,7 +101,7 @@
                                         <div>
                                             <div class="rock-header">
                                                 <h3 class="title">Interface Colors</h3>
-                                                <p class="body mb-2 text-gray-700">Design your main interface with these colors. The colors you provide will be available as custom CSS variables and utility classes.</p>
+                                                <p class="body mb-2">Design your main interface with these colors. The colors you provide will be available as custom CSS variables and utility classes.</p>
                                                 <hr class="section-header-hr" />
                                             </div>
 
@@ -121,7 +121,7 @@
                                         <div>
                                             <div class="rock-header">
                                                 <h3 class="title">Accent Colors</h3>
-                                                <p class="body mb-2 text-gray-700">Choose accent colors for enhancing your interface's look. The colors you provide will be available as custom CSS variables and utility classes.</p>
+                                                <p class="body mb-2">Choose accent colors for enhancing your interface's look. The colors you provide will be available as custom CSS variables and utility classes.</p>
                                                 <hr class="section-header-hr" />
                                             </div>
 
@@ -147,7 +147,7 @@
                                         <div>
                                             <div class="rock-header">
                                                 <h3 class="title">Functional Colors</h3>
-                                                <p class="body mb-2 text-gray-700">Customize status colors in your application. The colors you provide will be available as custom CSS variables and utility classes.</p>
+                                                <p class="body mb-2">Customize status colors in your application. The colors you provide will be available as custom CSS variables and utility classes.</p>
                                                 <hr class="section-header-hr" />
                                             </div>
 
@@ -179,7 +179,7 @@
                                 <div>
                                     <div class="rock-header">
                                         <h3 class="title" style="margin-top: 24px;">User Interface Settings</h3>
-                                        <p class="body mb-2 text-gray-700">Customize settings for different sections of the application's interface.</p>
+                                        <p class="body mb-2">Customize settings for different sections of the application's interface.</p>
                                         <hr class="section-header-hr" />
                                     </div>
 
@@ -203,7 +203,7 @@
                                 <asp:Panel runat="server" ID="pnlLegacyStyles">
                                     <div class="rock-header">
                                         <h3 class="title">Legacy (Xamarin Forms) Settings</h3>
-                                        <p class="body mb-2 text-gray-700">Use these settings to help maintain backward compatibility with your shell. This only applies to applications published on V5 and earlier. See <a href="https://mobiledocs.rockrms.com/essentials/tips-and-tricks-1/migrating-to-.net-maui-v6">Migrating to .NET MAUI</a> for more information.</p>
+                                        <p class="body mb-2">Use these settings to help maintain backward compatibility with your shell. This only applies to applications published on V5 and earlier. See <a href="https://mobiledocs.rockrms.com/essentials/tips-and-tricks-1/migrating-to-.net-maui-v6">Migrating to .NET MAUI</a> for more information.</p>
                                         <hr class="section-header-hr" />
                                     </div>
 
@@ -300,7 +300,7 @@
 
                                 <div class="actions margin-t-md">
                                     <Rock:BootstrapButton ID="lbStylesEditSave" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="lbStylesEditSave_Click"
-                                        DataLoadingText="&lt;i class='fa fa-refresh fa-spin'&gt;&lt;/i&gt; Saving"
+                                        DataLoadingText="&lt;i class='ti ti-refresh ti-spin'&gt;&lt;/i&gt; Saving"
                                         CompletedText="Saved"
                                         CompletedMessage="<div class='margin-t-md alert alert-success'>Changes have been saved.</div>"
                                         CompletedDuration="5"></Rock:BootstrapButton>

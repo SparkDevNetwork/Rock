@@ -93,8 +93,6 @@
             valueBuilder.addTextValue("Categories", "");
         }
 
-        valueBuilder.addTextValue("Observability", props.modelValue.isObservabilityLoggingEnabled ? "Enabled" : "Disabled");
-
         return valueBuilder.build();
     });
 

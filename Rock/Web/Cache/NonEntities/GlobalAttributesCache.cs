@@ -351,7 +351,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the legacy global attribute values as merge fields for dotLiquid merging.
+        /// Gets the legacy global attribute values as merge fields for Lava merging.
         /// Note: You should use LavaHelper.GetCommonMergeFields instead of this
         /// </summary>
         /// <param name="currentPerson">The current person.</param>

@@ -75,7 +75,7 @@ namespace Rockweb.Blocks.Crm
         Key = AttributeKey.SetPageIcon,
         Description = "The css class name to use for the heading icon.",
         IsRequired = false,
-        DefaultValue = "fa fa-handshake",
+        DefaultValue = "ti ti-heart-handshake",
         Order = 3 )]
 
     [IntegerField(
@@ -87,6 +87,7 @@ namespace Rockweb.Blocks.Crm
         Order = 4 )]
     #endregion Block Attributes
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.CONFLICT_PROFILE )]
     public partial class ConflictProfile : Rock.Web.UI.RockBlock
     {

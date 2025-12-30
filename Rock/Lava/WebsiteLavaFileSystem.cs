@@ -18,6 +18,8 @@ using System;
 using System.IO;
 using System.Web;
 
+using Rock.Configuration;
+using Rock.Net;
 using Rock.Web.Cache;
 
 namespace Rock.Lava
@@ -167,6 +169,23 @@ namespace Rock.Lava
 	            Reason: Update Persisted Datasets Job with Lava includes.
             */
 
+            if ( templatePath.StartsWith( "~~" ) )
+            {
+                var rockPage = RockRequestContextAccessor.Current.Page;
+
+                if ( rockPage == null && HttpContext.Current?.Items?.Contains( "Rock:PageId" ) == true )
+                {
+                    rockPage = PageCache.Get( HttpContext.Current.Items["Rock:PageId"].ToString().AsInteger() );
+                }
+
+                return RockApp.Current.MapPath( templatePath, rockPage.Layout.Site.Theme ?? "Rock" );
+            }
+            else if ( templatePath.StartsWith( "~" ) )
+            {
+                return RockApp.Current.MapPath( templatePath );
+            }
+
+#if WEBFORMS
             if ( HttpContext.Current != null )
             {
                 if ( templatePath.StartsWith( "~~" ) &&
@@ -184,6 +203,7 @@ namespace Rock.Lava
 
                 return HttpContext.Current.Server.MapPath( templatePath );
             }
+#endif
 
             return Path.Combine( AppDomain.CurrentDomain.BaseDirectory, templatePath.Replace( "~~", "Themes/Rock" ).Replace( "~/", "" ) );
         }

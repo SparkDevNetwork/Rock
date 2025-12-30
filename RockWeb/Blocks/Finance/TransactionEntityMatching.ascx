@@ -8,13 +8,13 @@
             <asp:HiddenField ID="hfDataViewId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-check-square-o"></i>&nbsp;<asp:Literal ID="lPanelTitle" runat="server" /></h1>
+                <h1 class="panel-title"><i class="ti ti-square-check"></i>&nbsp;<asp:Literal ID="lPanelTitle" runat="server" /></h1>
             </div>
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbBlockConfigurationWarning" runat="server" NotificationBoxType="Warning" Text="Please set the Entity Type in block settings" Visible="false" />
                 <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" Visible="false" />
                 <div class="row">
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <Rock:DataViewItemPicker ID="dvpDataView" runat="server" Label="Dataview" OnSelectItem="FilterChanged" />
                         <Rock:RockDropDownList ID="ddlBatch" runat="server" Label="Open Batches" AutoPostBack="true" OnSelectedIndexChanged="FilterChanged" EnhanceForLongLists="true" />
                     </div>

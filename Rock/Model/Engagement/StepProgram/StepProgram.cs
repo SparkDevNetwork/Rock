@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Engagement;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -89,6 +90,26 @@ namespace Rock.Model
             get => _stepTerm.IsNullOrWhiteSpace() ? DefaultStepTerm : _stepTerm;
             set => _stepTerm = value;
         }
+
+        /// <summary>
+        /// Gets or sets how the steps in a program are ordered and how prerequisites are handled.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Enum"/> for the completion flow (i.e Linear Required, Linear Preferred, Non-Linear).
+        /// </value>
+        [Required]
+        [DataMember]
+        public CompletionFlow CompletionFlow { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this Step Program is part of the Rock core system/framework. This property is required.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this Step Program is part of the Rock core system/framework; otherwise <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public bool IsSystem { get; set; }
 
         #endregion Entity Properties
 

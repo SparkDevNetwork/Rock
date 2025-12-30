@@ -81,7 +81,7 @@ namespace Rock.Web.UI.Controls
             DataNavigateUrlFields = new[] { grid.PersonIdField };
 
             DataNavigateUrlFormatString = linkedPageUrl;
-            DataTextFormatString = "<i class='fa fa-user'></i>";
+            DataTextFormatString = "<i class='ti ti-user'></i>";
             DataTextField = grid.PersonIdField;
 
             return base.Initialize( sortingEnabled, control );

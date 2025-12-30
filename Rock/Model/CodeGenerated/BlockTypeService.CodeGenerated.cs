@@ -131,6 +131,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.Category = source.Category;
+            target.DefaultRole = source.DefaultRole;
             target.Description = source.Description;
             target.EntityTypeId = source.EntityTypeId;
             target.ForeignGuid = source.ForeignGuid;

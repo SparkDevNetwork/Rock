@@ -5,7 +5,7 @@
         <div class="row">
             <div class="col-md-12">
                 <asp:LinkButton ID="btnAddCampaignRequests" runat="server" OnClick="btnAddCampaignRequests_Click" CssClass="btn btn-default btn-sm margin-b-md pull-right">
-            <i class="fa fa-plus"></i>
+            <i class="ti ti-plus"></i>
             Campaign Requests
                 </asp:LinkButton>
             </div>

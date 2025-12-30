@@ -42,7 +42,7 @@ namespace Rock.Blocks.Utility
     [DisplayName( "RealTime Visualizer" )]
     [Category( "Utility" )]
     [Description( "Displays RealTime events from Rock with custom formatting options." )]
-    [IconCssClass( "fa fa-chart-bar" )]
+    [IconCssClass( "ti ti-chart-bar" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -279,7 +279,7 @@ namespace Rock.Blocks.Utility
             {
                 actions.Add( new BlockCustomActionBag
                 {
-                    IconCssClass = "fa fa-edit",
+                    IconCssClass = "ti ti-edit",
                     Tooltip = "Settings",
                     ComponentFileUrl = "/Obsidian/Blocks/Utility/realTimeVisualizerCustomSettings.obs"
                 } );

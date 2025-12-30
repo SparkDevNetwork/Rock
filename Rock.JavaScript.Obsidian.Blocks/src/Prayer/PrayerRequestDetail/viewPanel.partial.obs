@@ -10,9 +10,9 @@
                     <span ref="flagCountRef" v-if="props.modelValue?.flagCount" class="label label-warning" tabindex="-1" data-toggle="tooltip"
                           data-placement="auto" data-container="body" data-html="true"
                           data-original-title="To clear the flags you'll have to re-approve this request.">
-                        <i class="fa fa-flag"></i> flagged {{ props.modelValue?.flagCount }} times
+                        <i class="ti ti-flag"></i> flagged {{ props.modelValue?.flagCount }} times
                     </span>
-                    <span v-if="props.modelValue?.isUrgent" class="label label-danger"><i class="fa fa-exclamation-circle"></i> Urgent</span>
+                    <span v-if="props.modelValue?.isUrgent" class="label label-danger"><i class="ti ti-exclamation-circle"></i> Urgent</span>
                     <span ref="prayerCountRef" v-if="props.modelValue?.prayerCount" class="badge" title="" data-toggle="tooltip"
                           :data-original-title="props.modelValue?.prayerCount + ' prayers offered by the team for this request.'">
                         {{ props.modelValue?.prayerCount }} prayers
@@ -93,7 +93,7 @@
 
         const email = props.modelValue?.email ?? "";
         if (email) {
-            valueBuilder.addHtmlValue("Email", `<a hRockLabel ref="mailto:${email}">${email}</a>`);
+            valueBuilder.addHtmlValue("Email", `<a href="mailto:${email}">${email}</a>`);
         }
 
         if (props.modelValue?.campus?.text) {

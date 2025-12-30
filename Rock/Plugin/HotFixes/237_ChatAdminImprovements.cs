@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -81,18 +81,18 @@ namespace Rock.Plugin.HotFixes
                 inheritedGroupTypeGuid: null,
                 locationSelectionMode: 0, // None
                 groupTypePurposeValueGuid: null,
-                guid: Rock.SystemGuid.GroupType.GROUPTYPE_HIDDEN_APPLICATION_GROUP,
+                guid: "2C6F2847-B404-4595-AB35-CE42F2303868",
                 isSystem: true );
 
-            RockMigrationHelper.AddGroupTypeAssociation( Rock.SystemGuid.GroupType.GROUPTYPE_HIDDEN_APPLICATION_GROUP, Rock.SystemGuid.GroupType.GROUPTYPE_HIDDEN_APPLICATION_GROUP );
+            RockMigrationHelper.AddGroupTypeAssociation( "2C6F2847-B404-4595-AB35-CE42F2303868", "2C6F2847-B404-4595-AB35-CE42F2303868" );
 
             // Add default "Member" group type role to the "Hidden Application Group" group type.
-            RockMigrationHelper.UpdateGroupTypeRole( Rock.SystemGuid.GroupType.GROUPTYPE_HIDDEN_APPLICATION_GROUP, "Member", "Member of a group", order: 0, maxCount: null, minCount: null, guid: Rock.SystemGuid.GroupRole.GROUP_ROLE_HIDDEN_APPLICATION_GROUP_MEMBER, isSystem: true, isLeader: false, isDefaultGroupTypeRole: true );
+            RockMigrationHelper.UpdateGroupTypeRole( "2C6F2847-B404-4595-AB35-CE42F2303868", "Member", "Member of a group", order: 0, maxCount: null, minCount: null, guid: "2008B263-CD41-45F0-8033-26D949FC0DA7", isSystem: true, isLeader: false, isDefaultGroupTypeRole: true );
 
             // Change any existing, "Chat Ban List" members to have this new role.
             Sql( $@"
 DECLARE @OldGroupRoleId INT = (SELECT [Id] FROM [GroupTypeRole] WHERE [Guid] = '{Rock.SystemGuid.GroupRole.GROUP_ROLE_APPLICATION_GROUP_MEMBER}');
-DECLARE @NewGroupRoleId INT = (SELECT [Id] FROM [GroupTypeRole] WHERE [Guid] = '{Rock.SystemGuid.GroupRole.GROUP_ROLE_HIDDEN_APPLICATION_GROUP_MEMBER}');
+DECLARE @NewGroupRoleId INT = (SELECT [Id] FROM [GroupTypeRole] WHERE [Guid] = '2008B263-CD41-45F0-8033-26D949FC0DA7');
 
 UPDATE [GroupMember]
 SET [GroupRoleId] = @NewGroupRoleId
@@ -102,7 +102,7 @@ WHERE [GroupRoleId] = @OldGroupRoleId;" );
             // Also clear out its parent group (previously "Chat Shared Channels").
             RockMigrationHelper.UpdateGroup(
                 parentGroupGuid: null,
-                groupTypeGuid: Rock.SystemGuid.GroupType.GROUPTYPE_HIDDEN_APPLICATION_GROUP,
+                groupTypeGuid: "2C6F2847-B404-4595-AB35-CE42F2303868",
                 name: "Chat Ban List",
                 description: "Used to identify individuals who are globally banned from chat. Anyone who belongs to this group will be unable to access Rock chat, even if they belong to chat-enabled groups.",
                 campusGuid: null,
@@ -121,7 +121,7 @@ WHERE [GroupRoleId] = @OldGroupRoleId;" );
         {
             // Revert changes to existing, "Chat Ban List" members.
             Sql( $@"
-DECLARE @OldGroupRoleId INT = (SELECT [Id] FROM [GroupTypeRole] WHERE [Guid] = '{Rock.SystemGuid.GroupRole.GROUP_ROLE_HIDDEN_APPLICATION_GROUP_MEMBER}');
+DECLARE @OldGroupRoleId INT = (SELECT [Id] FROM [GroupTypeRole] WHERE [Guid] = '2008B263-CD41-45F0-8033-26D949FC0DA7');
 DECLARE @NewGroupRoleId INT = (SELECT [Id] FROM [GroupTypeRole] WHERE [Guid] = '{Rock.SystemGuid.GroupRole.GROUP_ROLE_APPLICATION_GROUP_MEMBER}');
 
 UPDATE [GroupMember]
@@ -143,8 +143,8 @@ WHERE [GroupRoleId] = @OldGroupRoleId;" );
             );
 
             // Delete the "Hidden Application Group" group type and role.
-            RockMigrationHelper.DeleteGroupTypeRole( Rock.SystemGuid.GroupRole.GROUP_ROLE_HIDDEN_APPLICATION_GROUP_MEMBER );
-            RockMigrationHelper.DeleteGroupType( Rock.SystemGuid.GroupType.GROUPTYPE_HIDDEN_APPLICATION_GROUP );
+            RockMigrationHelper.DeleteGroupTypeRole( "2008B263-CD41-45F0-8033-26D949FC0DA7" );
+            RockMigrationHelper.DeleteGroupType( "2C6F2847-B404-4595-AB35-CE42F2303868" );
         }
 
         /// <summary>

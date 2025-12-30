@@ -40,6 +40,8 @@ namespace Rock.Model
         {
             private History.HistoryChangeList HistoryChangeList { get; set; }
             private bool _FamilyCampusIsChanged = false;
+            private List<int> _GroupMemberIdsToReactivate;
+            private DateTime? _NewInactiveDateTimeForReactivation;
 
             /// <summary>
             /// Called before the save operation is executed.
@@ -50,6 +52,8 @@ namespace Rock.Model
 
                 var rockContext = ( RockContext ) this.RockContext;
                 _FamilyCampusIsChanged = false;
+                _GroupMemberIdsToReactivate = null;
+                _NewInactiveDateTimeForReactivation = null;
 
                 switch ( State )
                 {
@@ -216,6 +220,16 @@ namespace Rock.Model
                     PersonService.UpdatePrimaryFamilyByGroup( Entity.Id, rockContext );
                 }
 
+                if ( _GroupMemberIdsToReactivate?.Any() ?? false )
+                {
+                    var idsToReactivate = _GroupMemberIdsToReactivate.ToList();
+                    var newInactiveDateTime = _NewInactiveDateTimeForReactivation;
+
+                    // Run validation logic in a separate thread so we don't hold up the UI, as it takes a while if there are a lot of members to process.
+                    // The current validation logic downstream from IsValidGroupMember() is very expensive, and is due for refresh.
+                    Task.Run( async () => await ValidateAndReactivateGroupMembers( idsToReactivate, newInactiveDateTime ) );
+                }
+
                 if ( RockContext.IsRockToChatSyncEnabled && ChatHelper.IsChatEnabled )
                 {
                     Task.Run( async () =>
@@ -258,26 +272,27 @@ namespace Rock.Model
                 if ( newActiveStatus == false )
                 {
                     // group was changed to from Active to Inactive, so change all Active/Pending GroupMembers to Inactive and stamp their inactivate DateTime to be the same as the group's inactive DateTime.
-                    foreach ( var groupMember in groupMemberQuery.Where( a => a.GroupMemberStatus != GroupMemberStatus.Inactive ).ToList() )
+                    var membersToInactivateQuery = groupMemberQuery.Where( a => a.GroupMemberStatus != GroupMemberStatus.Inactive );
+
+                    rockContext.BulkUpdate( membersToInactivateQuery, m => new GroupMember
                     {
-                        groupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
-                        groupMember.InactiveDateTime = newInactiveDateTime;
-                    }
+                        GroupMemberStatus = GroupMemberStatus.Inactive,
+                        InactiveDateTime = newInactiveDateTime
+                    } );
                 }
                 else if ( originalInactiveDateTime.HasValue )
                 {
                     // group was changed to from Inactive to Active, so change all Inactive GroupMembers to Active if their InactiveDateTime is within 24 hours of the Group's InactiveDateTime
-                    foreach ( var groupMember in groupMemberQuery.Where( a => a.GroupMemberStatus == GroupMemberStatus.Inactive && a.InactiveDateTime.HasValue && Math.Abs( SqlFunctions.DateDiff( "hour", a.InactiveDateTime.Value, originalInactiveDateTime.Value ).Value ) < 24 ).ToList() )
-                    {
-                        groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                        groupMember.InactiveDateTime = newInactiveDateTime;
+                    var membersToReactivateIds = groupMemberQuery
+                        .AsNoTracking()
+                        .Where( a => a.GroupMemberStatus == GroupMemberStatus.Inactive
+                                     && a.InactiveDateTime.HasValue
+                                     && Math.Abs( SqlFunctions.DateDiff( "hour", a.InactiveDateTime.Value, originalInactiveDateTime.Value ).Value ) < 24 )
+                        .Select( a => a.Id )
+                        .ToList();
 
-                        if ( !groupMember.IsValidGroupMember( rockContext ) )
-                        {
-                            // Don't fail the entire operation for a single invalid member's reactivation attempt.
-                            rockContext.Entry( groupMember ).State = EntityState.Detached;
-                        }
-                    }
+                    _GroupMemberIdsToReactivate = membersToReactivateIds;
+                    _NewInactiveDateTimeForReactivation = newInactiveDateTime;
                 }
             }
 
@@ -305,21 +320,84 @@ namespace Rock.Model
                 if ( newIsArchived )
                 {
                     // group IsArchived was changed from false to true, so change all archived GroupMember's IsArchived to true and stamp their IsArchivedDateTime to be the same as the group's IsArchivedDateTime.
-                    foreach ( var groupMember in groupMemberQuery.Where( a => a.IsArchived == false ).ToList() )
+                    var membersToArchiveQuery = groupMemberQuery.Where( a => !a.IsArchived );
+
+                    rockContext.BulkUpdate( membersToArchiveQuery, m => new GroupMember
                     {
-                        groupMember.IsArchived = true;
-                        groupMember.ArchivedDateTime = newArchivedDateTime;
-                    }
+                        IsArchived = true,
+                        ArchivedDateTime = newArchivedDateTime
+                    } );
                 }
                 else if ( originalArchivedDateTime.HasValue )
                 {
                     // group IsArchived was changed from true to false, so change all archived GroupMember's IsArchived if their ArchivedDateTime is within 24 hours of the Group's ArchivedDateTime
-                    foreach ( var groupMember in groupMemberQuery.Where( a => a.IsArchived == true && a.ArchivedDateTime.HasValue && Math.Abs( SqlFunctions.DateDiff( "hour", a.ArchivedDateTime.Value, originalArchivedDateTime.Value ).Value ) < 24 ).ToList() )
+                    var membersToUnarchiveQuery = groupMemberQuery.Where( a => a.IsArchived && a.ArchivedDateTime.HasValue && Math.Abs( SqlFunctions.DateDiff( "hour", a.ArchivedDateTime.Value, originalArchivedDateTime.Value ).Value ) < 24 );
+
+                    rockContext.BulkUpdate( membersToUnarchiveQuery, m => new GroupMember
                     {
-                        groupMember.IsArchived = false;
-                        groupMember.ArchivedDateTime = newArchivedDateTime;
+                        IsArchived = false,
+                        ArchivedDateTime = newArchivedDateTime
+                    } );
+                }
+            }
+
+            private Task ValidateAndReactivateGroupMembers( List<int> membersToReactivateIds, DateTime? newInactiveDateTime )
+            {
+                try
+                {
+                    const int validationBatchSize = 1000;
+
+                    for ( int i = 0; i < membersToReactivateIds.Count; i += validationBatchSize )
+                    {
+                        var batchIds = membersToReactivateIds.Skip( i ).Take( validationBatchSize ).ToList();
+                        var validMemberIds = new List<int>();
+
+                        try
+                        {
+                            using ( var batchContext = new RockContext() )
+                            {
+                                batchContext.Database.CommandTimeout = 180;
+                                var groupMemberService = new GroupMemberService( batchContext );
+
+                                var batchMembers = groupMemberService.Queryable()
+                                    .AsNoTracking()
+                                    .Where( m => batchIds.Contains( m.Id ) )
+                                    .ToList();
+
+                                foreach ( var member in batchMembers )
+                                {
+                                    if ( member.IsValidGroupMember( batchContext ) )
+                                    {
+                                        validMemberIds.Add( member.Id );
+                                    }
+                                }
+
+                                if ( validMemberIds.Any() )
+                                {
+                                    var membersToReactivateQuery = new GroupMemberService( batchContext )
+                                        .Queryable()
+                                        .Where( m => validMemberIds.Contains( m.Id ) );
+
+                                    batchContext.BulkUpdate( membersToReactivateQuery, m => new GroupMember
+                                    {
+                                        GroupMemberStatus = GroupMemberStatus.Active,
+                                        InactiveDateTime = newInactiveDateTime
+                                    } );
+                                }
+                            }
+                        }
+                        catch ( Exception ex )
+                        {
+                            ExceptionLogService.LogException( ex );
+                        }
                     }
                 }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                }
+
+                return Task.CompletedTask;
             }
         }
     }

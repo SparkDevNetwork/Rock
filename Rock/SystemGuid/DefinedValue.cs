@@ -26,19 +26,29 @@ namespace Rock.SystemGuid
         #region Attendance
 
         /// <summary>
-        /// The attendance record came from a legacy kiosk.
-        /// </summary>
-        public const string ATTENDANCE_SOURCE_LEGACY_KIOSK = "0B25A627-679B-4B73-AA84-305DEF24815A";
-
-        /// <summary>
         /// The attendance record came from a kiosk.
         /// </summary>
         public const string ATTENDANCE_SOURCE_KIOSK = "9A21D7EB-BCB5-4466-B62F-70EC5008B6B9";
 
         /// <summary>
+        /// The attendance record came from a legacy kiosk.
+        /// </summary>
+        public const string ATTENDANCE_SOURCE_LEGACY_KIOSK = "0B25A627-679B-4B73-AA84-305DEF24815A";
+
+        /// <summary>
         /// The attendance record came from a mobile check-in.
         /// </summary>
         public const string ATTENDANCE_SOURCE_MOBILE = "972E8841-A3C9-4DDD-BD24-A414C0290331";
+
+        /// <summary>
+        /// The attendance record from from a proximity (bluetooth low energy) check-in.
+        /// </summary>
+        public const string ATTENDANCE_SOURCE_PROXIMITY = "799e6fa9-33d8-44aa-93dc-3dbaf25fe9f1";
+
+        /// <summary>
+        /// The attendance record came from a physical token, such as NFC or QR Code scan.
+        /// </summary>
+        public const string ATTENDANCE_SOURCE_TOKEN = "8059cc0a-bd93-4d35-9458-6e6dff2fa3e3";
 
         #endregion
 
@@ -722,6 +732,35 @@ namespace Rock.SystemGuid
         /// Metric values are populated from custom Lava
         /// </summary>
         public const string METRIC_SOURCE_VALUE_TYPE_LAVA = "2868A3E8-4632-4966-84CD-EDB8B775D66C";
+
+        #endregion
+
+        #region Measurement Classifications
+
+        /// <summary>
+        /// The measurement classification for metrics that measure weekend attendance.
+        /// </summary>
+        public const string MEASUREMENT_TOTAL_WEEKEND_ATTENDANCE = "B24ACB41-8B75-41DC-9B47-F289D8C9F04F";
+
+        /// <summary>
+        /// The measurement classification for metrics that measure student attendance.
+        /// </summary>
+        public const string MEASUREMENT_TOTAL_STUDENTS_ATTENDANCE = "8EC797E4-7DCE-4A70-B1E8-9B21192476C3";
+
+        /// <summary>
+        /// The measurement classification for metrics that measure children attendance.
+        /// </summary>
+        public const string MEASUREMENT_TOTAL_CHILDRENS_ATTENDANCE = "9B16A979-48B1-4180-B44F-57FCD38A103A";
+
+        /// <summary>
+        /// The measurement classification for metrics that measure volunteer attendance.
+        /// </summary>
+        public const string MEASUREMENT_TOTAL_VOLUNTEER_ATTENDANCE = "6A2621BF-E600-428A-94C2-CCB79645FA27";
+
+        /// <summary>
+        /// The measurement classification for metrics that measure adult attendance.
+        /// </summary>
+        public const string MEASUREMENT_TOTAL_ADULT_ATTENDANCE = "66C649EF-7569-4CE2-8EA0-FB9851F9A598";
 
         #endregion
 
@@ -1538,6 +1577,128 @@ namespace Rock.SystemGuid
         /// Website Nextgen
         /// </summary>
         public const string THEME_PURPOSE_WEBSITE_NEXTGEN = "B177E07F-7E07-4D7B-AFA7-9DE163797659";
+
+        #endregion
+
+        #region Record Source
+
+        /// <summary>
+        /// The external website record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_EXTERNAL_WEBSITE = "8F2394AE-AFF1-4773-8BF8-E4B9C9D5E978";
+
+        /// <summary>
+        /// The prayer record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_PRAYER = "2B8DF7D7-FA3A-4A56-A72B-DB4CAAB2DF32";
+
+        /// <summary>
+        /// The event registration record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_EVENT_REGISTRATION = "8C461A53-160D-4693-A394-154673E83D17";
+
+        /// <summary>
+        /// The workflow record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_WORKFLOW = "42BA3F0C-00B5-4104-A9F8-C4C092BA2E0C";
+
+        /// <summary>
+        /// The group registration record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_GROUP_REGISTRATION = "A0F69572-B5C3-4195-8FD1-6FC72BB84FC8";
+
+        /// <summary>
+        /// The giving record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_GIVING = "A6677492-5AA5-4A09-9854-D9C54705C67D";
+
+        /// <summary>
+        /// The pledge record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_PLEDGE = "59EAB321-27D7-4D57-A1EE-38287416E840";
+
+        /// <summary>
+        /// The sign-up record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_SIGN_UP = "D0163E35-4065-4097-B018-D7D8092C86F7";
+
+        /// <summary>
+        /// The check-in record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_CHECK_IN = "12A138E7-6D93-4D84-B99A-545395694553";
+
+        /// <summary>
+        /// The family registration record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_FAMILY_REGISTRATION = "264C0969-55EA-4DF2-8FFD-2E3AAB311601";
+
+        /// <summary>
+        /// The mobile app record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_MOBILE_APP = "D465F0B7-4519-46B8-A4FF-11A207F9D86F";
+
+        /// <summary>
+        /// The Apple TV app record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_APPLE_TV_APP = "96884743-3C6B-41D9-A8FD-5DDEE65A7983";
+
+        /// <summary>
+        /// The Roku TV app record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_ROKU_TV_APP = "1849A5FB-1434-45AA-AD78-D403A3C7685A";
+
+        /// <summary>
+        /// The Serving Connection record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_SERVING_CONNECTION = "2CF9DE9F-14D5-4036-B329-85B192A63A9B";
+
+        #endregion
+
+        #region Chat Reaction
+
+        /// <summary>
+        /// The default 'Love' reaction for chat messages.
+        /// </summary>
+        public const string CHAT_REACTION_LOVE = "BC0D5463-93F6-4087-9D94-C8F393B969E6";
+
+        /// <summary>
+        /// The default 'Haha' reaction for chat messages.
+        /// </summary>
+        public const string CHAT_REACTION_HAHA = "A71E5E19-BF17-4424-BCC0-9CE87544DAA5";
+
+        /// <summary>
+        /// The default 'Like' reaction for chat messages.
+        /// </summary>
+        public const string CHAT_REACTION_LIKE = "DEE11D1A-4AC2-4264-8E33-235C0D177626";
+
+        /// <summary>
+        /// The default 'Sad' reaction for chat messages.
+        /// </summary>
+        public const string CHAT_REACTION_SAD = "94214A68-A5E0-4B44-8194-E0B91F00CF9E";
+
+        /// <summary>
+        /// The default 'Wow' reaction for chat messages.
+        /// </summary>
+        public const string CHAT_REACTION_WOW = "304DF5A2-142E-494D-8EEE-D4DBE81B1579";
+
+        #endregion
+
+        #region Organizational Objective
+
+        /// <summary>
+        /// The outreach organizational objective.
+        /// </summary>
+        public const string ORGANIZATIONAL_OBJECTIVE_TYPE_OUTREACH = "396B3980-EB66-446F-86B4-6C6E95FC74A7";
+
+        /// <summary>
+        /// The discipleship organizational objective.
+        /// </summary>
+        public const string ORGANIZATIONAL_OBJECTIVE_TYPE_DISCIPLESHIP = "9DFD8F1E-922E-420D-AE00-F640A2EFF405";
+
+        /// <summary>
+        /// The activation organizational objective.
+        /// </summary>
+        public const string ORGANIZATIONAL_OBJECTIVE_TYPE_ACTIVATION = "283BC4AC-CCCD-4FCF-8C94-9848B6B5E734";
 
         #endregion
     }

@@ -18,3 +18,15 @@
 export const enum NavigationUrlKey {
     ParentPage = "ParentPage"
 }
+
+
+export type Row = {
+    idKey: string;
+
+    id: number;
+
+    name: string;
+
+    totalAmount: number;
+
+};

@@ -15,6 +15,9 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+
 namespace Rock.ViewModels.Blocks.Administration.SystemConfiguration
 {
     /// <summary>
@@ -55,6 +58,13 @@ namespace Rock.ViewModels.Blocks.Administration.SystemConfiguration
         public string PDFExternalRenderEndpoint { get; set; }
 
         /// <summary>
+        /// The hostname to use for connections to the Rock RealTime system.
+        /// If not set then the hostname connected to by the client for other
+        /// web requests will be used.
+        /// </summary>
+        public string RealTimeHostname { get; set; }
+
+        /// <summary>
         /// Gets or sets the visitor cookie persistence length days.
         /// </summary>
         /// <value>
@@ -69,5 +79,13 @@ namespace Rock.ViewModels.Blocks.Administration.SystemConfiguration
         /// The personalization cookie cache length minutes.
         /// </value>
         public int? PersonalizationCookieCacheLengthMinutes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the defined value GUIDs for countries from which access will be restricted to all pages.
+        /// </summary>
+        /// <value>
+        /// The defined value GUIDs for countries from which access will be restricted to all pages.
+        /// </value>
+        public List<Guid> CountriesRestrictedFromAccessing { get; set; }
     }
 }

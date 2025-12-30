@@ -2,7 +2,7 @@
 <template>
     <div class="gm-container" :class="isExpanded ? 'expanded-map-size' : 'static-map-size'">
         <!-- Our custom clear button that we add to the map for deleting polygons. -->
-        <button type="button" ref="clearButton" v-show="isClearButtonEnabled" @click.prevent="deleteSelectedShape()" class="gm-clear-button" title="Delete selected shape" aria-label="Delete selected shape"><i class="fa fa-times"></i></button>
+        <button type="button" ref="clearButton" v-show="isClearButtonEnabled" @click.prevent="deleteSelectedShape()" class="gm-clear-button" title="Delete selected shape" aria-label="Delete selected shape"><i class="ti ti-x"></i></button>
         <!-- This is where the Google Map (with Drawing Tools) will go. -->
         <Loading :isLoading="!isReady" :class="isExpanded ? 'expanded-map-size' : 'static-map-size'">
             <div ref="mapContainer" :class="isExpanded ? 'expanded-map-size' : 'static-map-size'" class="gm-map"></div>
@@ -566,7 +566,7 @@
     background: white;
 }
 
-.gm-clear-button i.fa {
+.gm-clear-button i.ti {
     font-size: 16px;
     padding: 0 2.5px;
 }

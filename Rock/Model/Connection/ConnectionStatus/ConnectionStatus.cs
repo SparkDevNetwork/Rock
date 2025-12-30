@@ -43,7 +43,7 @@ namespace Rock.Model
         /// <summary>
         /// The default highlight color
         /// </summary>
-        public static readonly string DefaultHighlightColor = "#ddd";
+        public static readonly string DefaultHighlightColor = "var(--color-interface-softer)";
 
         #endregion Constants
 

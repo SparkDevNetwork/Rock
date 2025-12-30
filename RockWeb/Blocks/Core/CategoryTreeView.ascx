@@ -14,11 +14,11 @@
 
                     <div class="panel-labels treeview-actions" id="divTreeviewActions" runat="server">
                         <asp:LinkButton ID="lbAddItem" runat="server" CssClass="add btn btn-xs btn-link" ToolTip="Add Item" CausesValidation="false" OnClick="lbAddItem_Click">
-                            <i class="fa fa-plus"></i>
+                            <i class="ti ti-plus"></i>
                         </asp:LinkButton>
                         <div class="btn-group">
                             <button type="button" class="btn btn-link btn-xs dropdown-toggle" data-toggle="dropdown" title='<asp:Literal ID="ltAddCategory" runat="server" Text="Add Category" />'>
-                                <i class="fa fa-folder-plus"></i>
+                                <i class="ti ti-folder-plus"></i>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-right" role="menu">
                                 <li>
@@ -27,12 +27,12 @@
                                     <asp:LinkButton ID="lbAddCategoryChild" OnClick="lbAddCategoryChild_Click" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
                             </ul>
                             <asp:LinkButton ID="lbSearchCategories" runat="server" class="btn btn-link btn-xs" OnClientClick="$(this).closest('.js-categorytreeview').find('.js-category-search').slideToggle();$(this).closest('.js-categorytreeview').find('.js-categorytreeview-search').focus();">
-                                <i class="fa fa-search"></i>
+                                <i class="ti ti-search"></i>
                             </asp:LinkButton>
                         </div>
 
                         <button type="button" id="pnlRolloverConfig" class="btn btn-link btn-xs clickable js-show-config" onclick="$(this).closest('.js-categorytreeview').find('.js-config-panel').slideToggle()" runat="server">
-                            <i class="fa fa-ellipsis-v"></i>
+                            <i class="ti ti-dots-vertical"></i>
                         </button>
                     </div>
                 </div>
@@ -42,7 +42,7 @@
                         <asp:Panel ID="pnlSearch" runat="server" DefaultButton="btnSearch" CssClass="input-group">
                             <asp:TextBox ID="tbSearch" runat="server" placeholder="Quick Find" CssClass="form-control input-sm js-categorytreeview-search" />
                             <span class="input-group-btn">
-                                <asp:LinkButton ID="btnSearch" runat="server" CssClass="btn btn-default btn-sm" OnClick="btnSearch_Click"><i class="fa fa-search"></i></asp:LinkButton>
+                                <asp:LinkButton ID="btnSearch" runat="server" CssClass="btn btn-default btn-sm" OnClick="btnSearch_Click"><i class="ti ti-search"></i></asp:LinkButton>
                             </span>
                         </asp:Panel>
                     </div>

@@ -113,7 +113,7 @@ namespace Rock.Model
                 caption,
                 typeof( PersonSearchKey ),
                 Id,
-                dbContext.GetCurrentPersonAlias()?.Id,
+                dbContext.GetCurrentPersonAliasId(),
                 dbContext.SourceOfChange );
         }
 

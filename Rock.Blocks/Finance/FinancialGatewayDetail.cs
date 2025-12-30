@@ -39,7 +39,7 @@ namespace Rock.Blocks.Finance
     [DisplayName( "Gateway Detail" )]
     [Category( "Finance" )]
     [Description( "Displays the details of the given financial gateway." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

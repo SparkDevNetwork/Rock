@@ -142,6 +142,8 @@ namespace Rock.Tasks
                     ( int ) CommunicationType.Email,
                     ( int ) CommunicationType.SMS,
                     ( int ) CommunicationType.PushNotification,
+                    systemCommunication,
+                    person,
                     templateCommunicationPreference,
                     groupMember.CommunicationPreference,
                     person.CommunicationPreference );

@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.BlockIconCssClass,
         Description = "The icon CSS class for the block.",
         IsRequired = false,
-        DefaultValue = "fa fa-desktop",
+        DefaultValue = "ti ti-device-desktop",
         Order = 3)]
 
     [TextField(
@@ -73,7 +73,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.BlockIconCssClass,
         Description = "The icon CSS class for the block.",
         IsRequired = false,
-        DefaultValue = "fa fa-desktop",
+        DefaultValue = "ti ti-device-desktop",
         Order = 3 )]
 
     [BooleanField( "Show Delete Column",
@@ -161,7 +161,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( !Page.IsPostBack )
             {
-                lBlockIcon.Text = string.Format( @"<i class=""fa {0}""></i>", GetAttributeValue( AttributeKey.BlockIconCssClass ) );
+                lBlockIcon.Text = string.Format( @"<i class=""ti {0}""></i>", GetAttributeValue( AttributeKey.BlockIconCssClass ) );
                 lBlockTitle.Text = GetAttributeValue( AttributeKey.BlockTitle );
 
                 BindGrid();

@@ -43,7 +43,7 @@
         <!-- Edit Panel -->
         <asp:Panel ID="pnlEditDetail" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
-                <h1 class="panel-title pull-left"><i class="fa fa-paste"></i>Benevolence Request</h1>
+                <h1 class="panel-title pull-left"><i class="ti ti-clipboard-text"></i>Benevolence Request</h1>
 
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlEditStatus" runat="server" LabelType="Default" Text="Pending" />
@@ -176,7 +176,7 @@
         <!-- View Panel -->
         <asp:Panel ID="pnlViewDetail" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-plug"></i>Benevolence Request</h1>
+                <h1 class="panel-title"><i class="ti ti-plug"></i>Benevolence Request</h1>
 
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlViewBenevolenceType" runat="server" LabelType="Type" />
@@ -322,7 +322,7 @@
                 <div class="actions">
                     <asp:LinkButton ID="lbViewEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="lbViewEdit_Click" />
                     <asp:LinkButton ID="lbViewCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="lbViewCancel_Click" />
-                    <asp:LinkButton ID="lbViewPrint" runat="server" Text="<i class='fa fa-print'></i>" CssClass="btn btn-sm btn-default btn-square pull-right" OnClick="lbViewPrint_Click" />
+                    <asp:LinkButton ID="lbViewPrint" runat="server" Text="<i class='ti ti-printer'></i>" CssClass="btn btn-sm btn-default btn-square pull-right" OnClick="lbViewPrint_Click" />
                 </div>
             </div>
 

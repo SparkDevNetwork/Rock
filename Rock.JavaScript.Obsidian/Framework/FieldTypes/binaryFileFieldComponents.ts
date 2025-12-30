@@ -17,50 +17,43 @@
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
-import BinaryFilePicker from "@Obsidian/Controls/binaryFilePicker.obs";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ConfigurationValueKey } from "./binaryFileField.partial";
-import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+import { safeParseJson } from "@Obsidian/Utility/stringUtils";
 
 export const EditComponent = defineComponent({
     name: "BinaryFileField.Edit",
 
     components: {
-        BinaryFilePicker
+        DropDownList
     },
 
     props: getFieldEditorProps(),
 
     setup(props, { emit }) {
-        // The internal value used by the text editor.
-        const internalValue = ref<ListItemBag>({});
-
-        // The selected binary file type configuration value.
-        const binaryFileType = computed((): string => {
-            const fileType = JSON.parse(props.configurationValues[ConfigurationValueKey.BinaryFileType] || "{}") as ListItemBag;
-            return fileType.value ?? BinaryFiletype.Default;
+        const binaryFileOptions = computed((): ListItemBag[] => {
+            return safeParseJson<ListItemBag[]>(props.configurationValues[ConfigurationValueKey.BinaryFileOptions] || "[]") ?? [];
         });
 
-        // Watch for changes from the parent component and update the text editor.
-        watch(() => props.modelValue, () => {
-            internalValue.value = JSON.parse(props.modelValue || "{}");
-        }, {
-            immediate: true
-        });
-
-        // Watch for changes from the text editor and update the parent component.
-        watch(internalValue, () => {
-            emit("update:modelValue", JSON.stringify(internalValue.value));
+        const internalValue = computed({
+            get() {
+                return safeParseJson<ListItemBag>(props.modelValue || "{}")?.value;
+            },
+            set(value) {
+                const itemBag = binaryFileOptions.value.find(o => o.value === value);
+                emit("update:modelValue", JSON.stringify(itemBag));
+            }
         });
 
         return {
             internalValue,
-            binaryFileType
+            binaryFileOptions
         };
     },
 
     template: `
-<BinaryFilePicker v-model="internalValue" :binaryFileTypeGuid="binaryFileType" showBlankItem />
+<DropDownList v-model="internalValue" :items="binaryFileOptions" showBlankItem />
 `
 });
 
@@ -115,6 +108,7 @@ export const ConfigurationComponent = defineComponent({
         const maybeUpdateConfiguration = (key: string, value: string): void => {
             if (maybeUpdateModelValue()) {
                 emit("updateConfigurationValue", key, value);
+                emit("updateConfiguration");
             }
         };
 

@@ -41,7 +41,7 @@ namespace Rock.Blocks.Prayer
     [DisplayName( "Prayer Request List" )]
     [Category( "Prayer" )]
     [Description( "Displays a list of prayer requests." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

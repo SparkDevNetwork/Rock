@@ -37,7 +37,7 @@ namespace Rock.Blocks.Example
     [DisplayName( "Obsidian Gallery List" )]
     [Category( "Example" )]
     [Description( "Demonstrates the various parts of the Obsidian List blocks." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "4315fd92-f9f1-4038-abdc-a2d661b9dedf" )]

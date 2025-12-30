@@ -1,0 +1,97 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="internalModelValue"
+           :title="titleText"
+           saveText="Delete"
+           @save="onDeleteClicked"
+           @close="onCancelClicked">
+        <div class="modal-main">
+            <slot name="warning">
+                <div v-if="warningText" class="modal-warning">
+                    {{ warningText }}
+                </div>
+            </slot>
+
+            <slot name="message">
+                <div class="modal-message">
+                    {{ internalMessageText }}
+                </div>
+            </slot>
+        </div>
+
+    </Modal>
+</template>
+
+<style scoped>
+.modal-warning {
+    margin-bottom: var(--spacing-small);
+    color: var(--color-warning-strong);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { DeleteTextArgs } from "./types.partial";
+    import { formatDeleteConfirmation } from "./utils.partial";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        messageText: {
+            type: String as PropType<string | DeleteTextArgs>,
+            required: true
+        },
+
+        titleText: {
+            type: String as PropType<string>,
+            default: "Delete"
+        },
+
+        warningText: {
+            type: String as PropType<string | null | undefined>
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "cancel"): void;
+        (e: "delete"): void;
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    // #region Values
+
+    const internalModelValue = useVModelPassthrough(props, "modelValue", emit);
+
+    // #endregion Values
+
+    // #region Computed Properties
+    
+    const internalMessageText = computed(() => {
+        if (typeof props.messageText === "object") {
+            const args = props.messageText as DeleteTextArgs;
+            return formatDeleteConfirmation(args);
+        }
+
+        return props.messageText;
+    });
+
+    // #endregion Computed Properties
+
+    // #region Event Handlers
+
+    function onCancelClicked(): void {
+        emit("cancel");
+    }
+
+    function onDeleteClicked(): void {
+        internalModelValue.value = false;
+        emit("delete");
+    }
+
+    //#endregion Event Handlers
+</script>

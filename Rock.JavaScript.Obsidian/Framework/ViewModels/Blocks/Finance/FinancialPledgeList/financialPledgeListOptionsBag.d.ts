@@ -21,7 +21,12 @@
 // </copyright>
 //
 
+import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
+
 export type FinancialPledgeListOptionsBag = {
+    /** Gets or sets the currency information. */
+    currencyInfo?: CurrencyInfoBag | null;
+
     /** Determines if the amount column should be displayed. */
     hideAmount: boolean;
 

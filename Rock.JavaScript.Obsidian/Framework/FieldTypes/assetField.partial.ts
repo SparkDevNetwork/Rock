@@ -18,7 +18,6 @@ import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 import { escapeHtml } from "@Obsidian/Utility/stringUtils";
-import { FileAsset } from "@Obsidian/ViewModels/Controls/fileAsset";
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
@@ -38,7 +37,7 @@ export class AssetFieldType extends FieldTypeBase {
         if (value) {
             try {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
-                const asset = JSON.parse(value) as Partial<{Url: string}>;
+                const asset = JSON.parse(value) as Partial<{ Url: string }>;
 
                 return asset?.Url ?? "";
             }

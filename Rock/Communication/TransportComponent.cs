@@ -19,14 +19,21 @@ using System.Linq;
 
 using Rock.Extension;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Communication
 {
     /// <summary>
-    /// Base class for components that perform actions for a workflow
+    /// Base class for components that perform actions for a communication transport.
     /// </summary>
     public abstract class TransportComponent : Component
     {
+        /// <summary>
+        /// The friendly error message that will be returned if we can detect that an SMS recipient has previously
+        /// unsubscribed from messages at the transport level.
+        /// </summary>
+        internal static readonly string UnsubscribedSmsRecipientMessage = "This number previously replied STOP to our messages.";
+
         /// <summary>
         /// Gets a value indicating whether transport has ability to track recipients opening the communication.
         /// </summary>
@@ -72,10 +79,18 @@ namespace Rock.Communication
             var person = recipient?.PersonAlias?.Person;
             if ( person != null )
             {
+                var inactiveValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE )?.Id;
+
                 if ( person.IsDeceased )
                 {
                     recipient.Status = CommunicationRecipientStatus.Failed;
                     recipient.StatusNote = "Person is deceased";
+                    valid = false;
+                }
+                else if ( inactiveValueId.HasValue && person.RecordStatusValueId == inactiveValueId )
+                {
+                    recipient.Status = CommunicationRecipientStatus.Failed;
+                    recipient.StatusNote = "Person is inactive";
                     valid = false;
                 }
                 else if ( recipient.Communication.ListGroupId.HasValue )

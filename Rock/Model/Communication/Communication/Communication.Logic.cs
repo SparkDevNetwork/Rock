@@ -24,9 +24,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Communication;
 using Rock.Data;
 using Rock.Observability;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -704,6 +707,64 @@ WHERE r.[RowNumber] > 1;";
         /// Refresh the recipients list.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockObsolete( "19.0" )]
+        [Obsolete( "Use RefreshCommunicationRecipientList instead." )]
+        internal void RefreshCommunicationRecipientListInternal( RockContext rockContext )
+        {
+            if ( !ListGroupId.HasValue )
+            {
+                return;
+            }
+
+            if ( ( rockContext.Database.CommandTimeout ?? 0 ) < 90 )
+            {
+                /*
+                    12/1/2025 - JPH
+
+                    We're increasing this timeout from the default of 30 seconds to give the following
+                    pre-send task more time to complete.
+
+                    Reason: Communications with a large number of recipients time out and don't send.
+                    https://github.com/SparkDevNetwork/Rock/issues/5651
+                */
+                rockContext.Database.SetCommandTimeout( 90 );
+            }
+
+            using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Prepare Recipient List > Refresh Communication Recipient List" ) )
+            {
+                /*
+                    10/16/2025 - JPH
+
+                    For communications created by the Legacy Communication Entry Wizard block, we must continue supporting
+                    the slower, legacy method of refreshing the recipient list, since it supports data view segments with
+                    queries that are built using EF LINQ expressions. The newer, faster stored procedure-based approach
+                    only supports personalization segments (or legacy communications that don't have any segments at all).
+
+                    Reason: Improve refresh communication recipient list performance when possible.
+                */
+
+                if ( Segments.IsNotNullOrWhiteSpace() )
+                {
+                    RefreshCommunicationRecipientList( rockContext );
+                    return;
+                }
+
+                rockContext.Database.ExecuteSqlCommand( "EXEC [dbo].[spCommunication_SynchronizeListRecipients] @CommunicationId", new SqlParameter( "@CommunicationId", Id ) );
+            }
+        }
+
+        /// <summary>
+        /// Refresh the recipients list.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public void RefreshCommunicationRecipientList( RockContext rockContext )
         {
@@ -855,10 +916,16 @@ WHERE r.[RowNumber] > 1;";
         /// this method will determine which medium entity type id should be used and return that id.
         /// </summary>
         /// <remarks>
-        ///  NOTE: For the given communicationTypePreferences parameters array, in the event that CommunicationType.RecipientPreference is given,
-        ///  the logic below will use the *next* given CommunicationType to determine which medium/type is selected/returned. If none is available,
-        ///  it will return the email medium entity type id.  Typically is expected that the ordered params list eventually has either
-        ///  CommunicationType.Email, CommunicationType.SMS or CommunicationType.PushNotification.
+        /// <list type="bullet">
+        ///  <item>NOTE 1: If you have a SystemCommunication, we recommend using the DetermineMediumEntityTypeId overload that
+        ///          accepts a SystemCommunication parameter because it performs more checks to ensure that the SMS
+        ///          and/or Push mediums are valid for the given communication.</item>
+        ///          
+        ///  <item>NOTE 2: For the given communicationTypePreferences parameters array, in the event that CommunicationType.RecipientPreference is given,
+        ///          the logic below will use the *next* given CommunicationType to determine which medium/type is selected/returned.
+        ///          If none is available, it will return the email medium entity type id.  Typically is expected that the ordered
+        ///          params list eventually has either CommunicationType.Email, CommunicationType.SMS or CommunicationType.PushNotification.</item>
+        /// </list>
         /// </remarks>
         /// <param name="emailMediumEntityTypeId">The email medium entity type identifier.</param>
         /// <param name="smsMediumEntityTypeId">The SMS medium entity type identifier.</param>
@@ -898,6 +965,107 @@ WHERE r.[RowNumber] > 1;";
         }
 
         /// <summary>
+        /// Determines the medium entity type identifier taking into account whether the Medium (SMS and Push) is active and
+        /// whether the communication has the required values set for that type.  For example, if the SMS Medium is active,
+        /// but the communication does not have an SMS From System Phone Number set, then it will not be returned as the
+        /// medium entity type id.
+        /// 
+        /// Given the email, SMS medium, and Push entity type ids, along with the available communication preferences,
+        /// this method will determine which medium entity type id should be used and return that id.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// NOTES:
+        ///     <list type="bullet">
+        ///     <item>If the person does not have an SMS number then SMS is not available for sending.</item>
+        ///     <item>If a medium is not active, then it is not available for sending.</item>
+        ///     <item>For the given communicationTypePreferences parameters array, in the event that CommunicationType.RecipientPreference is given,
+        ///       the logic below will use the *next* given CommunicationType to determine which medium/type is selected/returned.
+        ///     </item>
+        ///     <item>If no suitable medium entity type could be selected, it will fall back to Email.</item>
+        ///     </list>
+        /// </remarks>
+        /// <param name="emailMediumEntityTypeId">The email medium entity type identifier.</param>
+        /// <param name="smsMediumEntityTypeId">The SMS medium entity type identifier.</param>
+        /// <param name="pushMediumEntityTypeId">The push medium entity type identifier.</param>
+        /// <param name="communication">The <see cref="Rock.Model.SystemCommunication"/> that is intended to be sent.</param>
+        /// <param name="person">The <see cref="Rock.Model.Person"/> that the communication is being sent to.</param>
+        /// <param name="communicationTypePreference">An array of ordered communication type preferences.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">Unexpected CommunicationType: {currentCommunicationPreference.ConvertToString()} - communicationTypePreference</exception>
+        /// <exception cref="Exception">Unexpected CommunicationType: " + currentCommunicationPreference.ConvertToString()</exception>
+        public static int DetermineMediumEntityTypeId( int emailMediumEntityTypeId, int smsMediumEntityTypeId, int pushMediumEntityTypeId, SystemCommunication communication, Person person, params CommunicationType[] communicationTypePreference )
+        {
+            var isSmsActive = MediumContainer.HasActiveSmsTransport();
+            var isPushActive = MediumContainer.HasActivePushTransport();
+
+            // Only check for the person's SMS number if SMS is one of the possible communications types being considered.
+            string personSmsNumber = string.Empty;
+            if ( communicationTypePreference.Contains( CommunicationType.SMS ) )
+            {
+                personSmsNumber = person?.PhoneNumbers != null
+                    ? person.PhoneNumbers.GetFirstSmsNumber()
+                    : null;
+            }
+
+            var isSmsAvailableForCommunication = communication.SmsFromSystemPhoneNumberId.HasValue && !string.IsNullOrWhiteSpace( personSmsNumber );
+            var isPushAvailableForCommunication = !( string.IsNullOrWhiteSpace( communication.PushMessage ) && string.IsNullOrWhiteSpace( communication.PushTitle ));
+
+            for ( var i = 0; i < communicationTypePreference.Length; i++ )
+            {
+                var currentCommunicationPreference = communicationTypePreference[i];
+                var hasNextCommunicationPreference = ( i + 1 ) < communicationTypePreference.Length;
+
+                switch ( currentCommunicationPreference )
+                {
+                    case CommunicationType.Email:
+                        return emailMediumEntityTypeId;
+
+                    case CommunicationType.SMS:
+                        if ( isSmsActive && isSmsAvailableForCommunication )
+                        {
+                            return smsMediumEntityTypeId;
+                        }
+                        if ( hasNextCommunicationPreference )
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            continue;
+                        }
+
+                    case CommunicationType.PushNotification:
+                        if ( isPushActive && isPushAvailableForCommunication )
+                        {
+                            return pushMediumEntityTypeId;
+                        }
+                        if ( hasNextCommunicationPreference )
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            continue;
+                        }
+
+                    case CommunicationType.RecipientPreference:
+                        if ( hasNextCommunicationPreference )
+                        {
+                            break;
+                        }
+
+                        return emailMediumEntityTypeId;
+
+                    default:
+                        throw new ArgumentException( $"Unexpected CommunicationType: {currentCommunicationPreference.ConvertToString()}", "communicationTypePreference" );
+                }
+            }
+
+            return emailMediumEntityTypeId;
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -918,68 +1086,7 @@ WHERE r.[RowNumber] > 1;";
         /// <param name="communication">The communication.</param>
         public static void Send( Rock.Model.Communication communication )
         {
-            if ( communication == null || communication.Status != CommunicationStatus.Approved )
-            {
-                return;
-            }
-
-            // only alter the Recipient list if it the communication hasn't sent a message to any recipients yet
-            if ( communication.SendDateTime.HasValue == false )
-            {
-                using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Send > Prepare Recipient List" ) )
-                {
-                    activity?.AddTag( "rock.communication.id", communication.Id );
-                    activity?.AddTag( "rock.communication.name", communication.Name );
-
-                    using ( var rockContext = new RockContext() )
-                    {
-                        /*
-                            1/2/2024 - JPH
-
-                            We're increasing this timeout from the default of 30 seconds to give the following
-                            pre-send tasks more time to complete, as the sending of communications with a large
-                            number of recipients is most often done as a background task, and shouldn't risk
-                            tying up the UI.
-
-                            Reason: Communications with a large number of recipients time out and don't send.
-                            https://github.com/SparkDevNetwork/Rock/issues/5651
-                        */
-                        rockContext.Database.CommandTimeout = 90;
-
-                        if ( communication.ListGroupId.HasValue )
-                        {
-                            communication.RefreshCommunicationRecipientList( rockContext );
-                        }
-
-                        if ( communication.ExcludeDuplicateRecipientAddress )
-                        {
-                            communication.RemoveRecipientsWithDuplicateAddress( rockContext );
-                        }
-
-                        communication.RemoveDuplicatePersonRecipients( rockContext );
-                    }
-                }
-            }
-
-            foreach ( var medium in communication.GetMediums() )
-            {
-                medium.Send( communication );
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var dbCommunication = new CommunicationService( rockContext ).Get( communication.Id );
-
-                dbCommunication.UpdateSendingRecipients();
-
-                if ( !dbCommunication.HasPendingRecipients( rockContext ) )
-                {
-                    // Set the SendDateTime of the Communication
-                    dbCommunication.SendDateTime = RockDateTime.Now;
-                }
-
-                rockContext.SaveChanges();
-            }
+            AsyncHelper.RunSync( () => SendAsync( communication ) );
         }
 
         /// <summary>
@@ -993,16 +1100,18 @@ WHERE r.[RowNumber] > 1;";
                 return;
             }
 
-            // only alter the Recipient list if it the communication hasn't sent a message to any recipients yet
-            if ( communication.SendDateTime.HasValue == false )
+            // Only alter the recipient list if Rock hasn't already begun sending to recipients.
+            using ( var rockContext = new RockContext() )
             {
-                using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Send Async > Prepare Recipient List" ) )
-                {
-                    activity?.AddTag( "rock.communication.id", communication.Id );
-                    activity?.AddTag( "rock.communication.name", communication.Name );
+                var hasSendingBegun = GetOrSetHasSendingBegun( communication.Id, rockContext );
 
-                    using ( var rockContext = new RockContext() )
+                if ( !communication.SendDateTime.HasValue && !hasSendingBegun )
+                {
+                    using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Send Async > Prepare Recipient List" ) )
                     {
+                        activity?.AddTag( "rock.communication.id", communication.Id );
+                        activity?.AddTag( "rock.communication.name", communication.Name );
+
                         /*
                             1/2/2024 - JPH
 
@@ -1014,7 +1123,7 @@ WHERE r.[RowNumber] > 1;";
                             Reason: Communications with a large number of recipients time out and don't send.
                             https://github.com/SparkDevNetwork/Rock/issues/5651
                         */
-                        rockContext.Database.CommandTimeout = 90;
+                        rockContext.Database.SetCommandTimeout( 90 );
 
                         if ( communication.ListGroupId.HasValue )
                         {
@@ -1077,6 +1186,40 @@ WHERE r.[RowNumber] > 1;";
 
                 rockContext.SaveChanges();
             }
+        }
+
+        /// <summary>
+        /// Gets whether Rock has already begun sending this communication to any of its recipients.
+        /// </summary>
+        /// <param name="communicationId">The communication identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>Whether Rock has already begun sending this communication to any of its recipients.</returns>
+        /// <remarks>
+        /// If sending hasn't already begun, one of the recipient's <see cref="CommunicationRecipient.FirstSendAttemptDateTime"/>
+        /// will be set to <see cref="RockDateTime.Now"/> to indicate that sending has begun.
+        /// </remarks>
+        public static bool GetOrSetHasSendingBegun( int communicationId, RockContext rockContext )
+        {
+            var communicationRecipient = new CommunicationRecipientService( rockContext )
+                .Queryable()
+                .Where( cr =>
+                    cr.CommunicationId == communicationId
+                )
+                .OrderByDescending( cr => cr.FirstSendAttemptDateTime.HasValue )
+                .FirstOrDefault();
+
+            if ( communicationRecipient?.FirstSendAttemptDateTime.HasValue == true )
+            {
+                return true;
+            }
+
+            if ( communicationRecipient != null )
+            {
+                communicationRecipient.FirstSendAttemptDateTime = RockDateTime.Now;
+                rockContext.SaveChanges();
+            }
+
+            return false;
         }
 
         /// <summary>

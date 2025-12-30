@@ -37,7 +37,7 @@ namespace Rock.Blocks.Tv
     [DisplayName( "Apple TV Page List (Obsolete)" )]
     [Category( "TV > TV Apps" )]
     [Description( "Lists pages for TV apps (Apple or other)." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
     [RockObsolete( "17.1" )]
     [Obsolete( "This block type has been replaced by the TvPageList block." )]

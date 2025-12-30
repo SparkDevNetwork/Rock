@@ -21,6 +21,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Data;
 using Rock.Observability;
 using Rock.Web.Cache.NonEntities;
@@ -150,11 +152,11 @@ namespace Rock.Lava.Blocks
                         var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
 
                         // Save the orginal command timeout as we're about to change it
-                        var originalCommandTimeout = rockContext.Database.CommandTimeout;
+                        var originalCommandTimeout = rockContext.Database.GetCommandTimeout();
 
                         if ( sqlTimeout != null )
                         {
-                            rockContext.Database.CommandTimeout = sqlTimeout;
+                            rockContext.Database.SetCommandTimeout( sqlTimeout );
                         }
 
                         var numOfRowsAffected = 0;
@@ -169,7 +171,7 @@ namespace Rock.Lava.Blocks
                         finally
                         {
                             // Put the command timeout back to the setting before we changed it... there is nothing to see here... move along...
-                            rockContext.Database.CommandTimeout = originalCommandTimeout;
+                            rockContext.Database.SetCommandTimeout( originalCommandTimeout );
                         }
                         if ( queryException != null )
                         {

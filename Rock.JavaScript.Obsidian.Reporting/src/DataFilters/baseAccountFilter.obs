@@ -1,0 +1,26 @@
+<template>
+    <div class="row">
+        <div class="col-sm-6">
+            <AccountPicker v-model="accounts" label="Account" multiple class="input-md" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const accounts = ref<ListItemBag[]>(safeParseJson(props.modelValue.accounts) ?? []);
+
+    watch(accounts, () => {
+        emit("update:modelValue", { ...props.modelValue, accounts: JSON.stringify(accounts.value) });
+    });
+</script>

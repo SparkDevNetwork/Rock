@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,13 +15,17 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -33,7 +37,7 @@ namespace Rock.Reporting.DataSelect.Group
     [Description( "Select the Location of the Group" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Group's Location" )]
-    [Rock.SystemGuid.EntityTypeGuid( "8533C1A1-01E6-4791-B653-C3D0774818BA")]
+    [Rock.SystemGuid.EntityTypeGuid( "8533C1A1-01E6-4791-B653-C3D0774818BA" )]
     public class LocationSelect : DataSelectComponent
     {
         #region Properties
@@ -108,6 +112,42 @@ namespace Rock.Reporting.DataSelect.Group
 
         #endregion
 
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var options = new Dictionary<string, string>();
+            var locationTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() )
+                .DefinedValues
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Value );
+
+            var locationTypeBags = locationTypes.ToListItemBagList();
+
+            options.AddOrReplace( "locationTypes", locationTypeBags.ToCamelCaseJson( false, true ) );
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Group/locationSelect.obs" ),
+                Options = options,
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new Dictionary<string, string> { { "locationType", selection } };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return data.GetValueOrDefault( "locationType", "" );
+        }
+
+        #endregion
+
         #region Methods
 
         /// <summary>
@@ -135,7 +175,7 @@ namespace Rock.Reporting.DataSelect.Group
             Guid? groupLocationTypeValueGuid = selection.AsGuid();
 
             var groupLocationQuery = new GroupService( context ).Queryable()
-                .Select( p => p.GroupLocations.Where( gl => gl.GroupLocationTypeValue.Guid == groupLocationTypeValueGuid).Select( gl => gl.Location).FirstOrDefault());
+                .Select( p => p.GroupLocations.Where( gl => gl.GroupLocationTypeValue.Guid == groupLocationTypeValueGuid ).Select( gl => gl.Location ).FirstOrDefault() );
 
             var selectExpression = SelectExpressionExtractor.Extract( groupLocationQuery, entityIdProperty, "p" );
 

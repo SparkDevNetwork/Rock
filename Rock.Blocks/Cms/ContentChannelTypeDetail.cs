@@ -41,7 +41,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Content Channel Type Detail" )]
     [Category( "CMS" )]
     [Description( "Displays the details for a content channel type." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

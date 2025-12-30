@@ -855,7 +855,7 @@ if (window.RockCheckinNative && window.RockCheckinNative.PrintV2Labels) {{
         /// <returns></returns>
         protected string GetCheckboxClass( bool selected )
         {
-            return selected ? "fa fa-check-square" : "fa fa-square-o";
+            return selected ? "ti ti-square-check" : "ti ti-square";
         }
 
         /// <summary>

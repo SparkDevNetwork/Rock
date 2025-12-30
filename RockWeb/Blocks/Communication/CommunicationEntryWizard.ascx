@@ -12,7 +12,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading panel-follow">
-                <h1 class="panel-title"><i class="fa fa-comment"></i>&nbsp;<asp:Literal ID="lTitle" runat="server" /></h1>
+                <h1 class="panel-title"><i class="ti ti-message"></i>&nbsp;<asp:Literal ID="lTitle" runat="server" /></h1>
 
                 <div class="pull-right">
                     <asp:Panel ID="pnlHeadingLabels" runat="server">
@@ -37,11 +37,13 @@
             <div class="panel-body">
                 <%-- List Selection --%>
                 <asp:Panel ID="pnlListSelection" CssClass="js-navigation-panel h-100 d-flex flex-column" runat="server">
+                    <Rock:NotificationBox ID="nbUpgradeMessage" runat="server" NotificationBoxType="Warning" Title="You're Using the Legacy Communication Wizard" Visible="false" />
+
                     <div class="panel-fill-body position-relative flex-fill styled-scroll">
                         <div class="position-absolute inset-0 overflow-auto">
                             <div class="panel-body">
                                 <div>
-                                    <h1 class="step-title text-break">List Selection</h1>
+                                    <h4 class="step-title text-break">List Selection</h4>
 
                                     <Rock:NotificationBox ID="nbCommunicationNotWizardCompatible" runat="server" NotificationBoxType="Info">
                                         This communication uses a template that is not compatible with the email wizard. You can continue with the email wizard, but the main content of the email will be replaced when the Email Wizard compatible template is selected. To keep the content, click 'Use Simple Editor' to use the simple communication editor.
@@ -223,9 +225,9 @@
                     <%-- Recipient Summary Panel --%>
                     <asp:Panel ID="pnlIndividualRecipientSummary" runat="server" Visible="false" CssClass="margin-t-md">
                         <div class="position-relative flex-fill" style="min-height: 200px;">
-                            
+
                                 <asp:Literal ID="lRecipientSummary" runat="server" />
-                            
+
                         </div>
                     </asp:Panel>
 
@@ -306,7 +308,7 @@
                                 </Rock:ModalDialog>
                                 <div>
                                 <asp:LinkButton runat="server" ID="lbScheduleSend" CssClass="btn btn-link pl-0 mb-4" OnClick="lbScheduleSend_Click">
-                                    <i class='fa fa-calendar' aria-hidden='true'></i> Send: Immediately
+                                    <i class='ti ti-calendar' aria-hidden='true'></i> Send: Immediately
                                 </asp:LinkButton>
                                 </div>
                             </div>
@@ -381,7 +383,7 @@
                             <div id="emaileditor-designer" style="visibility:hidden;opacity: 0;">
                                 <iframe id="ifEmailDesigner" name="emaileditor-iframe" class="emaileditor-iframe js-emaileditor-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0"></iframe>
                             </div>
-                            <div id="emaileditor-properties" class="position-absolute top-0 right-0 bottom-0 overflow-auto">
+                            <div id="emaileditor-properties" class="position-absolute top-0 right-0 bottom-0">
                                     <div class="js-email-sendtest-inputs" style="display: none">
                                         <Rock:EmailBox ID="tbTestEmailAddress" runat="server" Label="Email" ValidationGroup="vgEmailEditorSendTest" Required="true" AllowMultiple="false" Help="This will temporarily change your email address during the test, but it will be changed back after the test is complete." />
                                         <asp:LinkButton ID="btnEmailSendTest" runat="server" CssClass="btn btn-xs btn-primary js-saveeditorhtml" Text="Send Test" CausesValidation="true" ValidationGroup="vgEmailEditorSendTest" OnClick="btnEmailSendTest_Click" />
@@ -495,7 +497,7 @@
                                                         ModalSaveButtonCssClass="js-singleselect aspNetDisabled"
                                                         ModalCssClass="js-AssetManager-modal"
                                                         ButtonTextTemplate="Select Asset"
-                                                        ModalTitle="Asset Manager" 
+                                                        ModalTitle="Asset Manager"
                                                         ShowSelectNoneButton="true">
                                                     </Rock:ItemFromBlockPicker>
                                                     </ContentTemplate>
@@ -598,14 +600,14 @@
                                                 <div class="form-group">
                                                     <label class="control-label" for="component-video-url">
                                                         Source Video URL
-                                                        <asp:LinkButton ID="lbVideoUrlHelpText" Text="<i class='fa fa-info-circle'></i>" TabIndex="-1"  runat="server" CssClass="help"
+                                                        <asp:LinkButton ID="lbVideoUrlHelpText" Text="<i class='ti ti-info-circle'></i>" TabIndex="-1"  runat="server" CssClass="help"
                                                             data-toggle="tooltip" data-placement="auto" data-container="body" data-html="true"
                                                             data-original-title="The URL to the source video. This will be used to generate the preview thumbnail and will be the default target link. Preview images are generated automatically for "/>
                                                     </label>
                                                     <div class="input-group">
-                                                        <span class="input-group-addon" id="component-video-addon-pre"><i class="fa fa-link"></i></span>
+                                                        <span class="input-group-addon" id="component-video-addon-pre"><i class="ti ti-link"></i></span>
                                                         <input class="form-control" id="component-video-url" type="url" />
-                                                        <span class="input-group-addon" id="component-video-addon"><i class="fa fa-arrow-right"></i></span>
+                                                        <span class="input-group-addon" id="component-video-addon"><i class="ti ti-arrow-right"></i></span>
                                                     </div>
                                                 </div>
                                                 <div id="component-video-error" class="alert alert-warning" role="alert">
@@ -619,12 +621,12 @@
                                                 <div class="form-group">
                                                     <label class="control-label" for="component-video-url">
                                                         Link Target URL
-                                                        <asp:LinkButton ID="lbTargetUrlHelpText" Text="<i class='fa fa-info-circle'></i>" TabIndex="-1"  runat="server" CssClass="help"
+                                                        <asp:LinkButton ID="lbTargetUrlHelpText" Text="<i class='ti ti-info-circle'></i>" TabIndex="-1"  runat="server" CssClass="help"
                                                             data-toggle="tooltip" data-placement="auto" data-container="body" data-html="true"
                                                             data-original-title="The URL the video will load when it is clicked. This can be different from the source video if you're embedding the video on your website."/>
                                                     </label>
                                                     <div class="input-group">
-                                                        <span class="input-group-addon" id="component-target-addon"><i class="fa fa-link"></i></span>
+                                                        <span class="input-group-addon" id="component-target-addon"><i class="ti ti-link"></i></span>
                                                         <input class="form-control" id="component-target-url" type="url" />
                                                     </div>
                                                 </div>
@@ -871,7 +873,7 @@
                                         <div class="form-group">
                                             <label class="control-label" for="component-button-buttonurl">URL</label>
                                             <div class="input-group">
-                                                <span class="input-group-addon"><i class="fa fa-link"></i></span>
+                                                <span class="input-group-addon"><i class="ti ti-link"></i></span>
                                                 <input class="form-control" id="component-button-buttonurl" placeholder="http://yourlink.com">
                                             </div>
                                         </div>
@@ -972,7 +974,7 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label class="control-label" for="component-button-buttonradius">Border Radius<a class="help" href="#" tabindex="-1" data-toggle="tooltip" data-placement="auto" data-container="body" data-html="true" title="Outlook and Windows Mail email clients do not support rounded corners."><i class="fa fa-info-circle"></i></a></label>
+                                                    <label class="control-label" for="component-button-buttonradius">Border Radius<a class="help" href="#" tabindex="-1" data-toggle="tooltip" data-placement="auto" data-container="body" data-html="true" title="Outlook and Windows Mail email clients do not support rounded corners."><i class="ti ti-info-circle"></i></a></label>
                                                     <input class="form-control" id="component-button-buttonradius">
                                                 </div>
                                             </div>
@@ -1150,35 +1152,35 @@
                                 <div class="js-editor-toolbar-content">
 
                                     <div class="component component-text" data-content="<h1>Title</h1><p> Can't wait to see what you have to say!</p>" data-state="template">
-                                        <i class="fa fa-align-justify"></i>
+                                        <i class="ti ti-align-justified"></i>
                                         <br />
                                         Text
                                     </div>
                                     <div class="component component-image" data-content="<img src='<%= VirtualPathUtility.ToAbsolute("~/Assets/Images/image-placeholder.jpg") %>' style='width: 100%;' data-imgcsswidth='full' alt='' />" data-state="template">
-                                        <i class="fa fa-picture-o"></i>
+                                        <i class="ti ti-photo-scan"></i>
                                         <br />
                                         Image
                                     </div>
                                     <div class="component component-video" data-content="<a href=''><img src='<%= VirtualPathUtility.ToAbsolute("~/Assets/Images/video-placeholder.jpg") %>' style='width: 100%;' data-imgcsswidth='full' /></a>" data-state="template">
-					                    <i class="fa fa-play-circle-o"></i> <br /> Video
+					                    <i class="ti ti-player-play"></i> <br /> Video
 				                    </div>
                                     <div class="component component-divider" data-content="<hr style='margin-top: 20px; margin-bottom: 20px; border: 0; height: 4px; background: #c4c4c4;' />" data-state="template">
-                                        <i class="fa fa-minus"></i>
+                                        <i class="ti ti-minus"></i>
                                         <br />
                                         Divider
                                     </div>
                                     <div class="component component-code" data-content="Add your code here..." data-state="template">
-                                        <i class="fa fa-code"></i>
+                                        <i class="ti ti-code"></i>
                                         <br />
                                         HTML
                                     </div>
                                     <div class="component component-button v2" data-content="<table class='button-outerwrap' border='0' cellpadding='0' cellspacing='0' width='100%' style='min-width:100%;'><tbody><tr><td valign='top' align='center' class='button-innerwrap'><table border='0' cellpadding='0' cellspacing='0' class='button-shell'><tbody><tr><td align='center' valign='middle' class='button-content' style='border-radius: 3px;background-color:#2baadf' ><a class='button-link' title='Push Me' href='http://' target='_blank' rel='noopener noreferrer' style='display: inline-block; font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: #ffffff;background-color: #2baadf; padding: 15px; border: 1px solid #2baadf; border-radius: 3px;'>Push Me</a></td></tr></tbody></table></td></tr></tbody></table>" data-state="template">
-                                        <i class="fa fa-square-o"></i>
+                                        <i class="ti ti-square"></i>
                                         <br />
                                         Button
                                     </div>
                                     <div class="component component-rsvp" data-content="<table class='rsvp-outerwrap' border='0' cellpadding='0' width='100%' style='min-width:100%;'><tbody><tr><td style='padding-top:0; padding-right:0; padding-bottom:0; padding-left:0;' valign='top' align='center' class='rsvp-innerwrap'><table border='0' cellpadding='0' cellspacing='0'><tr><td><table border='0' cellpadding='0' cellspacing='0' class='accept-button-shell' style='display: inline-table; border-collapse: separate !important; border-radius: 3px; background-color: #16C98D;'><tbody><tr><td align='center' valign='middle' class='rsvp-accept-content' style='font-family: Arial; font-size: 16px; padding: 15px;'><a class='rsvp-accept-link' title='Accept' href='http://' target='_blank' rel='noopener noreferrer' style='font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: #FFFFFF;'>Accept</a></td></tr></tbody></table></td><td style='padding-left: 10px;'><table border='0' cellpadding='0' cellspacing='0' class='decline-button-shell' style='display: inline-table; border-collapse: separate !important; border-radius: 3px; background-color: #D4442E;'><tbody><tr><td align='center' valign='middle' class='rsvp-decline-content' style='font-family: Arial; font-size: 16px; padding: 15px;'><a class='rsvp-decline-link' title='Decline' href='http://' target='_blank' style='font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: #FFFFFF;'>Decline</a></td></tr></tbody></table></td></tr></table></td></tr></tbody></table><input type='hidden' class='rsvp-group-id' /><input type='hidden' class='rsvp-occurrence-value' />" data-state="template">
-                                        <i class="fa fa-user-check"></i>
+                                        <i class="ti ti-user-check"></i>
                                         <br />
                                         RSVP
                                     </div>
@@ -1230,8 +1232,8 @@
                                 <Content>
                                     <div class="text-center margin-v-md">
                                         <div class="btn-group" role="group">
-                                            <button type="button" class="btn btn-default js-preview-desktop"><i class="fa fa-desktop"></i> Desktop</button>
-                                            <button type="button" class="btn btn-default js-preview-mobile"><i class="fa fa-mobile"></i> Mobile</button>
+                                            <button type="button" class="btn btn-default js-preview-desktop"><i class="ti ti-device-desktop"></i> Desktop</button>
+                                            <button type="button" class="btn btn-default js-preview-mobile"><i class="ti ti-device-mobile"></i> Mobile</button>
                                         </div>
                                     </div>
                                     <div id="pnlEmailPreviewContainer" runat="server" class="email-preview js-email-preview device-browser center-block">
@@ -1523,7 +1525,7 @@
                         </div>
                         <div class="panel-body">
                             <div>
-                                <span class="mr-1"><i class="fa fa-spinner fa-spin"></i></span>
+                                <span class="mr-1"><i class="ti ti-rotate-clockwise-2 ti-spin"></i></span>
                                 <span id="_TaskActivityMessage">Working...</span>
                             </div>
                             <div id="_TaskActivityBar" class="mt-1 js-global-task-progress-long-running" style="display: none">

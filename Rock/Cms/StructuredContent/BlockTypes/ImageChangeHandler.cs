@@ -83,7 +83,7 @@ namespace Rock.Cms.StructuredContent.BlockTypes
             /*
              * 2025-08-13 - DSH
              * 
-             * We used to mark removed finary files as temporary so they would
+             * We used to mark removed binary files as temporary so they would
              * be cleaned up by the Rock Cleanup job. However, this is no longer
              * the case. Instead, we will just leave them in the database.
              *

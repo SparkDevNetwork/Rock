@@ -22,6 +22,8 @@ using System.Web.UI.WebControls;
 
 using EF6.TagWith;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -176,7 +178,7 @@ namespace Rock.Reporting
             var databaseTimeoutSeconds = dataViewGetQueryArgs.DatabaseTimeoutSeconds;
             if ( databaseTimeoutSeconds.HasValue )
             {
-                dbContext.Database.CommandTimeout = databaseTimeoutSeconds.Value;
+                dbContext.Database.SetCommandTimeout( databaseTimeoutSeconds.Value );
             }
 
             var dataViewFilterOverrides = dataViewGetQueryArgs.DataViewFilterOverrides;

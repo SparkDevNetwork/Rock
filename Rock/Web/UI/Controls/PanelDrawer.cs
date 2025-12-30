@@ -145,8 +145,8 @@ $('.js-drawerpull').on('click', function () {
     $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
 
     var icon = $( this ).find( 'i' );
-    var iconOpenClass = icon.attr( 'data-icon-open' ) || 'fa fa-chevron-up';
-    var iconCloseClass = icon.attr( 'data-icon-closed' ) || 'fa fa-chevron-down';
+    var iconOpenClass = icon.attr( 'data-icon-open' ) || 'ti ti-chevron-up';
+    var iconCloseClass = icon.attr( 'data-icon-closed' ) || 'ti ti-chevron-down';
 
     if ($( this ).closest( '.panel-drawer' ).hasClass( 'open' )) {
         icon.attr( 'class', iconOpenClass );
@@ -216,7 +216,7 @@ $('.js-date-rollover').tooltip();
         ///                  </div>
         ///              </div>
         ///          </div>
-        ///          <div class="drawer-pull js-drawerpull"><i class="fa fa-chevron-down" data-icon-closed="fa fa-chevron-down" data-icon-open="fa fa-chevron-up"></i></div>
+        ///          <div class="drawer-pull js-drawerpull"><i class="ti ti-chevron-down" data-icon-closed="ti ti-chevron-down" data-icon-open="ti ti-chevron-up"></i></div>
         ///       </div>
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
@@ -300,12 +300,12 @@ $('.js-date-rollover').tooltip();
                 // drawer-pull div
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "drawer-pull js-drawerpull" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "ti ti-chevron-up" : "ti ti-chevron-down" );
 
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
 
-                writer.AddAttribute( "data-icon-closed", "fa fa-chevron-down" );
-                writer.AddAttribute( "data-icon-open", "fa fa-chevron-up" );
+                writer.AddAttribute( "data-icon-closed", "ti ti-chevron-down" );
+                writer.AddAttribute( "data-icon-open", "ti ti-chevron-up" );
                 writer.RenderEndTag();
                 writer.RenderEndTag(); // end drawer-pull div
 

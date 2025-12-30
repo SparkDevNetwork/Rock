@@ -1,0 +1,125 @@
+<template>
+    <Modal v-model="isVisible"
+           title="Placement Configuration"
+           cancelText="Cancel"
+           saveText="Save"
+           @save="onSave">
+        <div class="row">
+            <div class="col-md-3">
+                <CampusPicker v-model="campus" label="Campus Filter" includeInactive showBlankItem :forceVisible="true" />
+            </div>
+        </div>
+        <Panel v-if="placementMode === PlacementMode.TemplateMode"
+               :modelValue="true"
+               title="Registration Template Configuration"
+               :hasCollapse="true">
+            <CheckBox v-model="showRegistrationInstanceName" label="Show Registration Instance Name" />
+            <CheckBoxList v-model="includedRegistrationInstanceIds"
+                          label="Included Registration Instances"
+                          :items="placementConfigurationSettingOptions.registrationInstances ?? []"
+                          :enhanceForLongLists="true" />
+        </Panel>
+        <Panel :modelValue="true"
+               v-if="placementMode !== PlacementMode.EntitySetMode"
+               title="People To Place Configuration"
+               :hasCollapse="true">
+            <CheckBox v-if="placementMode === PlacementMode.TemplateMode || placementMode === PlacementMode.InstanceMode"
+                      v-model="areFeesDisplayed"
+                      label="Show Fees" />
+            <DropDownList v-model="sourceAttributesToDisplay"
+                          label="Displayed Source Attributes"
+                          :items="placementConfigurationSettingOptions.sourceAttributes ?? []"
+                          :enhanceForLongLists="true"
+                          :multiple="true" />
+            <CheckBox v-model="areSourceAttributesDisplayedOnDestinationGroupMembers" text="Display Source Attributes on Destination Group Members" label="" />
+        </Panel>
+        <Panel :modelValue="true"
+               title="Destination Group Configuration"
+               :hasCollapse="true">
+            <div class="row">
+                <div class="col-md-6">
+                    <DropDownList v-model="destinationGroupAttributesToDisplay"
+                                  label="Displayed Group Attributes"
+                                  :items="placementConfigurationSettingOptions.destinationGroupAttributes ?? []"
+                                  :enhanceForLongLists="true"
+                                  :multiple="true" />
+                </div>
+                <div class="col-md-6">
+                    <CheckBox v-model="areFullGroupsHidden" label="Hide Full Groups" />
+                </div>
+            </div>
+            <DropDownList v-model="destinationGroupMemberAttributesToDisplay"
+                          label="Displayed Group Member Attributes"
+                          :items="placementConfigurationSettingOptions.destinationGroupMemberAttributes ?? []"
+                          :enhanceForLongLists="true"
+                          :multiple="true" />
+        </Panel>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PlacementConfigurationSettingOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingOptionsBag";
+    import { PlacementConfigurationSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { PropType, ref } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+        placementConfigurationSettings: {
+            type: Object as PropType<PlacementConfigurationSettingsBag>,
+            required: true
+        },
+        placementConfigurationSettingOptions: {
+            type: Object as PropType<PlacementConfigurationSettingOptionsBag>,
+            required: true
+        },
+        placementMode: {
+            type: Number as PropType<PlacementMode | null>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "save", value: PlacementConfigurationSettingsBag): void;
+        // (e: "dismissMessage"): void
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "modelValue", emit);
+    const campus = ref<ListItemBag>(props.placementConfigurationSettings.displayedCampus ?? {});
+    const areFeesDisplayed = ref<boolean>(props.placementConfigurationSettings.areFeesDisplayed ?? false);
+    const sourceAttributesToDisplay = ref<string[]>(props.placementConfigurationSettings.sourceAttributesToDisplay ?? []);
+    const areSourceAttributesDisplayedOnDestinationGroupMembers = ref<boolean>(props.placementConfigurationSettings.areSourceAttributesDisplayedOnDestinationGroupMembers ?? false);
+    const destinationGroupAttributesToDisplay = ref<string[]>(props.placementConfigurationSettings.destinationGroupAttributesToDisplay ?? []);
+    const areFullGroupsHidden = ref<boolean>(props.placementConfigurationSettings.areFullGroupsHidden ?? false);
+    const destinationGroupMemberAttributesToDisplay = ref<string[]>(props.placementConfigurationSettings.destinationGroupMemberAttributesToDisplay ?? []);
+    const showRegistrationInstanceName = ref<boolean>(props.placementConfigurationSettings.showRegistrationInstanceName ?? false);
+    const includedRegistrationInstanceIds = ref<string[]>(props.placementConfigurationSettings.includedRegistrationInstanceIds ?? []);
+
+    function onSave(): void {
+        const updatedSettings: PlacementConfigurationSettingsBag = {
+            displayedCampus: campus.value,
+            areFeesDisplayed: areFeesDisplayed.value,
+            sourceAttributesToDisplay: sourceAttributesToDisplay.value,
+            areSourceAttributesDisplayedOnDestinationGroupMembers: areSourceAttributesDisplayedOnDestinationGroupMembers.value,
+            destinationGroupAttributesToDisplay: destinationGroupAttributesToDisplay.value,
+            areFullGroupsHidden: areFullGroupsHidden.value,
+            destinationGroupMemberAttributesToDisplay: destinationGroupMemberAttributesToDisplay.value,
+            showRegistrationInstanceName: showRegistrationInstanceName.value,
+            includedRegistrationInstanceIds: includedRegistrationInstanceIds.value
+        };
+
+        emit("save", updatedSettings);
+    }
+</script>

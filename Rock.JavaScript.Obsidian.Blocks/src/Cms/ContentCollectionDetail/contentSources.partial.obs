@@ -5,7 +5,7 @@
             <template #actions>
                 <div :class="addSourceDropdownClass">
                     <button type="button" class="btn btn-default btn-sm dropdown-toggle" @click.prevent.stop="onAddSourceClick">
-                        <i class="fa fa-plus"></i> <span class="caret"></span>
+                        <i class="ti ti-plus"></i> <span class="caret"></span>
                     </button>
 
                     <ul ref="addSourceMenuRef" class="dropdown-menu dropdown-menu-right">
@@ -88,7 +88,7 @@
                 <tr>
                     <td class="grid-actions" colspan="6">
                         <a class="btn btn-grid-action btn-add btn-default btn-sm" accesskey="n" title="Alt+N" href="#" @click.prevent="onAddCustomFieldClick">
-                            <i class="fa fa-plus-circle fa-fw"></i>
+                            <i class="ti ti-circle-plus ti-fw"></i>
                         </a>
                     </td>
                 </tr>

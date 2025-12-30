@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Event
 
                     var copyField = new LinkButtonField();
                     copyField.HeaderText = "Copy";
-                    copyField.CssClass = "btn btn-default btn-sm fa fa-clone";
+                    copyField.CssClass = "btn btn-default btn-sm ti ti-copy";
                     copyField.HeaderStyle.HorizontalAlign = HorizontalAlign.Center;
                     copyField.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
                     gCalendarItemOccurrenceList.Columns.Add( copyField );

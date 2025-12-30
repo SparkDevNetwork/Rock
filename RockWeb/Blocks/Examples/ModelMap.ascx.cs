@@ -271,7 +271,7 @@ namespace RockWeb.Blocks.Examples
                     if ( entityCategory == null )
                     {
                         entityCategory = new MCategory { Guid = Guid.NewGuid(), Name = category, RockEntityIds = new List<int>() };
-                        entityCategory.IconCssClass = categoryIcons.ContainsKey( category ) ? categoryIcons[category] : "fa fa-network-wired";
+                        entityCategory.IconCssClass = categoryIcons.ContainsKey( category ) ? categoryIcons[category] : "ti ti-schema";
                         entityCategories.Add( entityCategory );
                     }
 
@@ -460,7 +460,7 @@ namespace RockWeb.Blocks.Examples
                         pageReference.QueryString = new System.Collections.Specialized.NameValueCollection();
                         pageReference.QueryString["EntityType"] = entityType.Guid.ToString();
 
-                        lClassName.Text = mClass.IsObsolete ? $"<span>{mClass.Name}</span><p><i class='fa fa-ban fa-fw text-danger' title='no longer supported'></i><i>{mClass.ObsoleteMessage}</i></p>" : mClass.Name;
+                        lClassName.Text = mClass.IsObsolete ? $"<span>{mClass.Name}</span><p><i class='ti ti-ban ti-fw text-danger' title='no longer supported'></i><i>{mClass.ObsoleteMessage}</i></p>" : mClass.Name;
                         lActualTableName.Text = "";
 
                         // Check if there is a TableAttribute.
@@ -557,12 +557,12 @@ namespace RockWeb.Blocks.Examples
                             HttpUtility.HtmlEncode( property.Name ), // 1
                             ( property.Comment != null && !string.IsNullOrWhiteSpace( property.Comment.Summary ) ) ? " " + property.Comment.Summary : string.Empty, // 2
                             property.Required ? "required-indicator" : string.Empty, // 3
-                            property.IsLavaInclude ? " <i class='fa fa-bolt fa-fw text-warning unselectable'></i> " : string.Empty, // 4
-                            property.IsAttributeQualifier ? " <i class='fa fa-filter fa-fw text-info unselectable'></i> " : string.Empty, // 5
+                            property.IsLavaInclude ? " <i class='ti ti-bolt ti-fw text-warning unselectable'></i> " : string.Empty, // 4
+                            property.IsAttributeQualifier ? " <i class='ti ti-filter ti-fw text-info unselectable'></i> " : string.Empty, // 5
                             property.IsInherited ? "inherited" : string.Empty, // 6
                             Environment.NewLine, // 7
-                            property.NotMapped || property.IsVirtual ? "<i class='fa fa-square fa-fw o-20'></i> " : "<i class='fa fa-database fa-fw'></i> ", // 8
-                            property.IsObsolete ? "<i class='fa fa-ban fa-fw text-danger' title='no longer supported'></i> <span class='small text-danger'>" + property.ObsoleteMessage + " </span> " : string.Empty, // 9
+                            property.NotMapped || property.IsVirtual ? "<i class='ti ti-square ti-fw o-20'></i> " : "<i class='ti ti-database ti-fw'></i> ", // 8
+                            property.IsObsolete ? "<i class='ti ti-ban ti-fw text-danger' title='no longer supported'></i> <span class='small text-danger'>" + property.ObsoleteMessage + " </span> " : string.Empty, // 9
                             ( property.IsEnum || property.IsDefinedValue ) && property.KeyValues != null ? GetStringFromKeyValues( property.KeyValues ) : string.Empty, // 10
                             property.IsObsolete ? "class='o-50' title='Obsolete'" : "class=''", // 11
                             ( property.IsEnum || property.IsDefinedValue ) ? GetStringForEnumOrDefinedType( property ) : string.Empty // 12
@@ -591,7 +591,7 @@ namespace RockWeb.Blocks.Examples
                             "js-model hidden ",
                             method.IsInherited ? " (inherited)" : string.Empty,
                             Environment.NewLine, // 5
-                            method.IsObsolete ? "<i class='fa fa-ban fa-fw text-danger' title='no longer supported'></i> <i>" + method.ObsoleteMessage + " </i> " : string.Empty  /*6*/ );
+                            method.IsObsolete ? "<i class='ti ti-ban ti-fw text-danger' title='no longer supported'></i> <i>" + method.ObsoleteMessage + " </i> " : string.Empty  /*6*/ );
                     }
 
                     sb.AppendLine( "</ul>" );
@@ -956,7 +956,7 @@ namespace RockWeb.Blocks.Examples
                 value += "</tr>";
             }
 
-            return string.Format( "<br/><span class='js-show-values btn btn-default btn-xs mt-2 mb-3'><span>Show Values</span> <i class='fa fa-chevron-down'></i></span><div class='js-value-table' style='display:none'><table class='table table-condensed w-75 mb-3'>{0}</table></div>", value );
+            return string.Format( "<br/><span class='js-show-values btn btn-default btn-xs mt-2 mb-3'><span>Show Values</span> <i class='ti ti-chevron-down'></i></span><div class='js-value-table' style='display:none'><table class='table table-condensed w-75 mb-3'>{0}</table></div>", value );
         }
 
         #endregion

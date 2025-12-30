@@ -221,7 +221,7 @@ namespace Rock.Jobs
             if ( jobPreferredCommunicationType != CommunicationType.Email && string.IsNullOrWhiteSpace( systemCommunication.SMSMessage ) )
             {
                 var warning = $"The job is configured to send reminders via SMS, but no SMS message "
-                    + $"was found in system communication {systemCommunication.Title}.  Reminders for "
+                    + $"was found in system communication '{systemCommunication.Title}'.  Reminders for "
                     + $"group type {groupType.Name} will be sent by email.";
                 _jobWarnings.Add( warning );
                 Logger.LogWarning( warning );
@@ -493,6 +493,8 @@ namespace Rock.Jobs
                     ( int ) CommunicationType.Email,
                     ( int ) CommunicationType.SMS,
                     ( int ) CommunicationType.PushNotification,
+                    systemCommunication,
+                    leader.Person,
                     jobPreferredCommunicationType,
                     leader.CommunicationPreference,
                     leader.Person.CommunicationPreference );

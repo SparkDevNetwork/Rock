@@ -405,7 +405,7 @@ namespace Rock.Communication
                 var btnRevertLavaValue = new Literal { ID = "btnRevertLavaValue_" + keyValue.Key };
                 var defaultValue = lavaFieldsDefaultDictionary.GetValueOrNull( keyValue.Key );
                 var visibility = keyValue.Value != defaultValue ? "visible" : "hidden";
-                btnRevertLavaValue.Text = string.Format( "<div class='btn js-revertlavavalue' title='Revert to default' data-value-control='{0}' data-default='{1}' style='visibility:{2}'><i class='fa fa-times'></i></div>", lavaValueControl.ClientID, defaultValue, visibility );
+                btnRevertLavaValue.Text = string.Format( "<div class='btn js-revertlavavalue' title='Revert to default' data-value-control='{0}' data-default='{1}' style='visibility:{2}'><i class='ti ti-x'></i></div>", lavaValueControl.ClientID, defaultValue, visibility );
                 rcwLavaValue.Controls.Add( btnRevertLavaValue );
             }
         }

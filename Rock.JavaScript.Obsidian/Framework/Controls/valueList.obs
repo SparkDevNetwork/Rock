@@ -12,11 +12,11 @@
                                 <option v-for="option in options" :value="option.value" :key="option.value ?? 0">{{ option.text }}</option>
                             </select>
                             <TextBox v-else v-model="value.value" :inputClasses="valueInputClasses" :placeholder="valuePrompt" :allowHtml="allowHtml" />
-                            <a href="#" @click.prevent="onRemoveClick(valueIndex)" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a>
+                            <a href="#" @click.prevent="onRemoveClick(valueIndex)" class="btn btn-sm btn-danger"><i class="ti ti-x"></i></a>
                         </div>
                     </span>
                     <div class="control-actions">
-                        <a class="btn btn-action btn-square btn-xs" href="#" @click.prevent="onAddClick"><i class="fa fa-plus-circle"></i></a>
+                        <a class="btn btn-action btn-square btn-xs" href="#" @click.prevent="onAddClick"><i class="ti ti-circle-plus"></i></a>
                     </div>
                 </span>
             </div>

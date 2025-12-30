@@ -4,7 +4,7 @@
         <template #headerActions>
             <span class="action clickable"
                   @click="onClearClick">
-                <i class="fa fa-eraser" title="Clear message buffer."></i>
+                <i class="ti ti-eraser" title="Clear message buffer."></i>
             </span>
         </template>
 

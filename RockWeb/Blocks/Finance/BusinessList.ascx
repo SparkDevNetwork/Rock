@@ -8,7 +8,7 @@
         <asp:Panel ID="pnlBusinessList" CssClass="panel panel-block" runat="server">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-briefcase"></i> Business List</h1>
+                <h1 class="panel-title"><i class="ti ti-briefcase"></i> Business List</h1>
             </div>
             <div class="panel-body">
 

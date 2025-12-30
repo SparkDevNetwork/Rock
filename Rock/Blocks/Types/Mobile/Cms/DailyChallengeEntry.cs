@@ -35,7 +35,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [DisplayName( "Daily Challenge Entry" )]
     [Category( "Mobile > Cms" )]
     [Description( "Displays a set of challenges for the individual to complete today." )]
-    [IconCssClass( "fa fa-tasks" )]
+    [IconCssClass( "ti ti-list-check" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

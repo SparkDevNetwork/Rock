@@ -85,7 +85,7 @@ export const EditComponent = defineComponent({
             try {
                 const valueOptions = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ValueItem[];
                 addedOptions.value.forEach(addedOption => {
-                    if(valueOptions.find(a=>a.value == addedOption.value) == null){
+                    if (valueOptions.find(a => a.value == addedOption.value) == null) {
                         valueOptions.push(addedOption);
                     }
                 });
@@ -158,7 +158,7 @@ export const EditComponent = defineComponent({
                 return;
             }
 
-            addedOptions.value.push({value: newValue.value ?? "", text: newValue.text ?? "", description: ""});
+            addedOptions.value.push({ value: newValue.value ?? "", text: newValue.text ?? "", description: "" });
             if (isMultiple.value) {
                 if (Array.isArray(internalValues.value)) {
                     internalValues.value.push(newValue.value ?? "");
@@ -177,7 +177,7 @@ export const EditComponent = defineComponent({
             }
 
             const selectableValues = (props.configurationValues[ConfigurationValueKey.SelectableValues]?.split(",") ?? []).filter(s => s !== "");
-            if(selectableValues.length > 0 && newValue.value){
+            if (selectableValues.length > 0 && newValue.value) {
                 selectableValues.push(newValue.value);
 
                 emit("updateConfigurationValue", "selectableValues", selectableValues.join(","));
@@ -220,20 +220,20 @@ export const EditComponent = defineComponent({
             <DropDownList v-if="!isMultiple" :multiple="isMultiple" v-model="internalValue" :items="options">
                 <template #inputGroupAppend v-if="allowAdd">
                     <span class="input-group-btn">
-                        <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
+                        <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="ti ti-plus" aria-hidden></i></RockButton>
                     </span>
                 </template>
             </DropDownList>
             <DropDownList v-else-if="isMultiple && enhanceForLongLists" :multiple="isMultiple" v-model="internalValues" enhanceForLongLists :items="options">
                 <template #inputGroupAppend v-if="allowAdd">
                     <span class="input-group-btn">
-                        <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
+                        <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="ti ti-plus" aria-hidden></i></RockButton>
                     </span>
                 </template>
             </DropDownList>
             <CheckBoxList v-else v-model="internalValues" :items="options" horizontal :repeatColumns="repeatColumns">
                 <template #append v-if="allowAdd">
-                    <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
+                    <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="ti ti-plus" aria-hidden></i></RockButton>
                 </template>
             </CheckBoxList>
         </div>

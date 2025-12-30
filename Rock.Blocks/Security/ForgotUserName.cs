@@ -102,6 +102,7 @@ namespace Rock.Blocks.Security
 
     #endregion
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "5BBEE600-781E-4480-8144-36F8D01C7F09" )]
     [Rock.SystemGuid.BlockTypeGuid( "16CD7562-BE31-4823-9C4D-F365AB0AA5C4" )]
     public class ForgotUserName : RockBlockType

@@ -47,7 +47,7 @@
 
 // Advanced Label with Slot
 <RockLiteral labelCssClass="text-primary">
-    <template #label><i class="fa fa-cross"></i> <strong>My Custom Label</strong></template>
+    <template #label><i class="ti ti-cross"></i> <strong>My Custom Label</strong></template>
     My content beneath the label.
 </RockLiteral>`;
 </script>

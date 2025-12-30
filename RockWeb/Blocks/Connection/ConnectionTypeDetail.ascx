@@ -42,7 +42,7 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
-                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square" Text="<i class='fa fa-clone'></i>" OnClick="btnCopy_Click" ToolTip="Copy Connection Type" />
+                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square" Text="<i class='ti ti-copy'></i>" OnClick="btnCopy_Click" ToolTip="Copy Connection Type" />
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
                         </span>
                     </div>
@@ -342,6 +342,18 @@
                         <Rock:RockDropDownList ID="ddlSecondaryQualifier" runat="server" Visible="false" ValidationGroup="ConnectionWorkflow" />
                     </div>
                     <div class="col-md-6">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <Rock:RockRadioButtonList ID="rblAppliesToAgeClassification" runat="server" Label="Applies to Age Classification" RepeatDirection="Horizontal" Help="Restrict this workflow to requests for people of a certain age classification (All, Adults, Children)." />
+                    </div>
+                    <div class="col-md-4">
+                        <Rock:DataViewItemPicker ID="dvpIncludeDataView" runat="server" Label="Include Data View Filter" Help="Only show this workflow for requests where the person is included in this Data View. Leave blank for no filter." />
+                    </div>
+                    <div class="col-md-4">
+                        <Rock:DataViewItemPicker ID="dvpExcludeDataView" runat="server" Label="Exclude Data View Filter" Help="Hide this workflow for requests where the person is included in this Data View. Leave blank for no filter." />
                     </div>
                 </div>
 

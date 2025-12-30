@@ -15,7 +15,7 @@
                         </span>
                     </div>
                 </a>
-                <a v-if="internalValue" class="btn picker-select-none js-picker-select-none" @click.prevent="internalValue = undefined"><i class="fa fa-times"></i></a>
+                <a v-if="internalValue" class="btn picker-select-none js-picker-select-none" @click.prevent="internalValue = undefined"><i class="ti ti-x"></i></a>
             </div>
         </div>
         <Modal v-model="isShown"

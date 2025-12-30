@@ -38,7 +38,7 @@ namespace Rock.Blocks.CheckIn.Configuration
     [DisplayName( "Check-in Label List" )]
     [Category( "Check-in > Configuration" )]
     [Description( "Displays a list of check in labels." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

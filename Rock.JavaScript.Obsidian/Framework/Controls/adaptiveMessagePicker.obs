@@ -3,7 +3,7 @@
     <TreeItemPicker v-model="internalValue"
                     v-bind="standardProps"
                     formGroupClasses="category-picker"
-                    iconCssClass="fa fa-folder-open"
+                    iconCssClass="ti ti-folder-open"
                     :provider="itemProvider"
                     :multiple="multiple"
                     disableFolderSelection />

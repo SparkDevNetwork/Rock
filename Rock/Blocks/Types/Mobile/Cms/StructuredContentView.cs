@@ -35,7 +35,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [DisplayName( "Structured Content View" )]
     [Category( "Mobile > Cms" )]
     [Description( "Displays a structured content channel item for the user to view and fill out." )]
-    [IconCssClass( "fa fa-list-alt" )]
+    [IconCssClass( "ti ti-list-details" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

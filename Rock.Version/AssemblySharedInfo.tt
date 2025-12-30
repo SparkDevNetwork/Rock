@@ -3,9 +3,9 @@
 <# // NOTE: if this generates file with a numeric suffix (AssemblySharedInfo1.cs) , see https://stackoverflow.com/a/1943084/1755417 #>
 <#@ output extension=".cs" #>
 <#
-     int major = 17; 
-     int minor = 4; 
-     int build = 1; 
+     int major = 18; 
+     int minor = 1; 
+     int build = 0; 
   
      try
      {

@@ -10,7 +10,7 @@
                 <asp:Panel ID="pnlPayments" runat="server" CssClass="panel panel-block">
                     <div class="panel-heading">
                         <h1 class="panel-title">
-                            <i class="fa fa-credit-card"></i>
+                            <i class="ti ti-credit-card"></i>
                             Payments
                         </h1>
                     </div>

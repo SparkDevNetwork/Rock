@@ -23,6 +23,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Media;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Reporting.DataFilter.ContentChannelItem;
@@ -46,13 +47,14 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Media Folder List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of media folders." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the media folder details.",
         Key = AttributeKey.DetailPage )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "af4fa9d1-c8e7-47a6-a522-d40a7370517c" )]
     [Rock.SystemGuid.BlockTypeGuid( "75133c37-547f-47fa-991c-6d957b2ea92d" )]
     [CustomizedGrid]
@@ -132,8 +134,28 @@ namespace Rock.Blocks.Cms
         private bool GetIsAddEnabled()
         {
             var entity = new MediaFolder();
+            var mediaAccountComponent = GetMediaAccountComponent();
 
-            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            bool canAddEditDelete = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            return canAddEditDelete && mediaAccountComponent != null && mediaAccountComponent.AllowsManualEntry;
+        }
+
+        /// <summary>
+        /// Gets the media account component.
+        /// </summary>
+        /// <returns></returns>
+        private MediaAccountComponent GetMediaAccountComponent()
+        {
+            var mediaAccount = GetMediaAccount();
+            var componentEntityTypeId = mediaAccount != null ? mediaAccount.ComponentEntityTypeId : ( int? ) null;
+
+            if ( componentEntityTypeId.HasValue )
+            {
+                var componentEntityType = EntityTypeCache.Get( componentEntityTypeId.Value );
+                return componentEntityType == null ? null : MediaAccountContainer.GetComponent( componentEntityType.Name );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -188,9 +210,9 @@ namespace Rock.Blocks.Cms
             // Load all the batches into memory.
             var items = queryable.ToList();
 
-            // Load any attribute column configuration.
-            var gridAttributeIds = _gridAttributes.Value.Select( a => a.Id ).ToList();
-            Helper.LoadFilteredAttributes( items.Select( d => d.MediaFolder ).ToList(), rockContext, a => gridAttributeIds.Contains( a.Id ) );
+            // Load attribute values for the grid-selected attributes.
+            GridAttributeLoader.LoadFor( items, a => a.MediaFolder, _gridAttributes.Value, rockContext );
+            
             var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.MEDIA_EVENTS.AsGuid() );
             var mediaElementQry = new MediaElementService( rockContext ).Queryable();
             var interactionComponentQry = new InteractionComponentService( rockContext )
@@ -208,6 +230,12 @@ namespace Rock.Blocks.Cms
             }
 
             return items;
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<MediaFolderData> GetOrderedListQueryable( IQueryable<MediaFolderData> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( a => a.MediaFolder.Name );
         }
 
         /// <inheritdoc/>

@@ -38,11 +38,7 @@
     display: flex;
     align-items: flex-start;
     width: 100%;
-
-    margin-top: calc(0px - var(--panel-body-padding));
-    margin-bottom: calc(0px - var(--panel-body-padding));
-    padding: var(--panel-body-padding);
-
+    padding: var(--spacing-medium);
     background-color: var(--color-interface-soft);
 }
 
@@ -54,14 +50,14 @@
 
 .email-preview {
     width: 100%;
-
-    background-color: white;
-    border: 2px solid white;
+    padding-right: var(--spacing-medium);
 }
 
 .email-header {
     flex: 0;
     padding: var(--spacing-large);
+    background-color: var(--color-interface-softest);
+    border-bottom: var(--color-interface-soft) 1px solid;
 }
 
 .email-header h3 {

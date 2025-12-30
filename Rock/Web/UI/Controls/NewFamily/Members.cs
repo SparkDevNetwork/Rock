@@ -159,7 +159,7 @@ namespace Rock.Web.UI.Controls
             _lbAddGroupMember.CausesValidation = false;
 
             var iAddFilter = new HtmlGenericControl( "i" );
-            iAddFilter.AddCssClass("fa fa-user");
+            iAddFilter.AddCssClass("ti ti-user");
             _lbAddGroupMember.Controls.Add( iAddFilter );
 
             var spanAddFilter = new HtmlGenericControl("span");

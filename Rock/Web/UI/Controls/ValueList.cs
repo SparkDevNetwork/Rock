@@ -412,7 +412,7 @@ namespace Rock.Web.UI.Controls
             {
                 valueHtml.AppendFormat( @"<input class=""form-control js-value-list-input"" type=""text"" placeholder=""{0}""></input>", ValuePrompt );
             }
-            valueHtml.Append( @"<a href=""#"" class=""btn btn-danger btn-square value-list-remove""><i class=""fa fa-times""></i></a></div>" );
+            valueHtml.Append( @"<a href=""#"" class=""btn btn-danger btn-square value-list-remove""><i class=""ti ti-x""></i></a></div>" );
 
             var hfValueHtml = new HtmlInputHidden();
             hfValueHtml.AddCssClass( "js-value-list-html" );
@@ -459,7 +459,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-sm btn-danger value-list-remove" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute(HtmlTextWriterAttribute.Class, "fa fa-times" );
+                writer.AddAttribute(HtmlTextWriterAttribute.Class, "ti ti-x" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();
@@ -486,7 +486,7 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
-            writer.AddAttribute(HtmlTextWriterAttribute.Class, "fa fa-plus-circle");
+            writer.AddAttribute(HtmlTextWriterAttribute.Class, "ti ti-circle-plus");
             writer.RenderBeginTag( HtmlTextWriterTag.I );
 
             writer.RenderEndTag();

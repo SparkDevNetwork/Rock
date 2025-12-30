@@ -1,11 +1,14 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="email-editor-step">
-        <Panel :hasFullscreen="true"
-               :headerSecondaryActions="[{
-                title: 'Save As Template', type: 'default',
-                handler: onSaveAsTemplate
-            }]"
+        <Panel hasFullscreen
+               :headerSecondaryActions="[
+                {
+                    title: 'Save As Template', type: 'default',
+                    handler: onSaveAsTemplate
+                }
+            ]"
+               hasNoBodyPadding
                panelBodyCssClass="panel-body-wizard"
                type="block">
             <template #title>
@@ -16,7 +19,7 @@
                                         labelType="success">
                             The communication has been saved.
                             <button type="button" class="close btn-dismiss-alert" aria-label="Hide This Alert" @click.prevent="isSaveSuccessMessageShown = false">
-                                <i class="fa fa-times" aria-hidden="true"></i>
+                                <i class="ti ti-x" aria-hidden="true"></i>
                             </button>
                         </HighlightLabel>
 
@@ -26,12 +29,12 @@
                                         @dismiss="isSendTestErrorMessageShown = false">
                             <div v-html="sendTestErrorMessage" style="font-weight: var(--font-weight-regular)"></div>
                             <button type="button" class="close btn-dismiss-alert" aria-label="Hide This Alert" @click.prevent="isSendTestErrorMessageShown = false">
-                                <i class="fa fa-times" aria-hidden="true"></i>
+                                <i class="ti ti-x" aria-hidden="true"></i>
                             </button>
                         </HighlightLabel>
 
                         <HighlightLabel labelType="info">
-                            <template v-if="isFetchingRecipients"><i class="fas fa-spinner fa-pulse"></i> Recipients</template>
+                            <template v-if="isFetchingRecipients"><i class="ti ti-rotate-clockwise-2 ti-pulse"></i> Recipients</template>
                             <template v-else>{{ recipientsLabel }}</template>
                         </HighlightLabel>
                     </div>
@@ -45,7 +48,7 @@
                     <i ref="previewElement"
                        data-toggle="tooltip"
                        title="Preview"
-                       class="fa fa-eye"></i>
+                       class="ti ti-eye"></i>
                 </span>
 
                 <span class="action panel-action-save clickable"
@@ -54,7 +57,7 @@
                     <i ref="saveElement"
                        data-toggle="tooltip"
                        title="Save Draft"
-                       class="fa fa-save"></i>
+                       class="ti ti-device-floppy"></i>
                 </span>
             </template>
 
@@ -87,7 +90,7 @@
             <template #footerSecondaryActions>
                 <RockButton :disabled="isDisabled"
                             @click="isSendTestModalShown = true">
-                    <i class="fa fa-paper-plane-o"></i> Send Test
+                    <i class="ti ti-send"></i> Send Test
                 </RockButton>
 
                 <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowRight'"
@@ -99,11 +102,19 @@
 
         <Modal v-model="isPreviewOpen" title="Email Preview">
             <div class="preview">
-                <ButtonGroup v-model="previewDevice"
-                             :items="[
-                                { text: 'Desktop', value: 'desktop' },
-                                { text: 'Mobile', value: 'mobile' }
-                            ]" />
+                <div class="preview-toolbar">
+                    <PreviewAs v-model:previewAsType="internalPreviewAsType"
+                               v-model:previewAsPersonAlias="internalPreviewAsPersonAlias"
+                               v-model:personalizationSegment="internalPreviewAsPersonalizationSegment"
+                               :isPreviewLoading="isPreviewLoading"
+                               :personalizationSegments="personalizationSegments" />
+
+                    <ButtonGroup v-model="previewDevice"
+                                 :items="[
+                                    { text: 'Desktop', value: 'desktop' },
+                                    { text: 'Mobile', value: 'mobile' }
+                                ]" />
+                </div>
 
                 <div :class="previewDevice === 'desktop' ? 'device-browser' : 'device-mobile'">
                     <iframe :srcdoc="previewHtml"></iframe>
@@ -131,7 +142,6 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    padding: 0;
 }
 
 .panel-body-contents {
@@ -156,6 +166,14 @@
 }
 
 .preview > .btn-group {
+    width: 100%;
+}
+
+.preview-toolbar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
     width: 100%;
 }
 
@@ -204,7 +222,8 @@
     import { computed, onMounted, onUnmounted, PropType, ref, watch } from "vue";
     import EmailEditor, { EmailEditorApi, GetHtmlRequest } from "@Obsidian/Controls/emailEditor";
     import LoadingOverlay from "./loadingOverlay.partial.obs";
-    import { BlockActionCallbacks } from "./types.partial";
+    import PreviewAs from "./previewAs.partial.obs";
+    import { BlockActionCallbacks, PreviewAsType } from "./types.partial";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import { GetHtmlResponse } from "@Obsidian/Controls/emailEditor";
@@ -215,9 +234,10 @@
     import { vShortcut } from "@Obsidian/Directives/shortcut";
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { isPromise } from "@Obsidian/Utility/promiseUtils";
     import { tooltip } from "@Obsidian/Utility/tooltip";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 
     const props = defineProps({
         areNavigationShortcutsDisabled: {
@@ -260,8 +280,28 @@
             required: true
         },
 
+        personalizationSegments: {
+            type: Array as PropType<ListItemBag[] | null | undefined>,
+            required: true,
+        },
+
+        previewAsPersonAlias: {
+            type: Object as PropType<ListItemBag | null | undefined>,
+            required: true
+        },
+
+        previewAsPersonalizationSegment: {
+            type: Object as PropType<ListItemBag | null | undefined>,
+            required: true
+        },
+
+        previewAsType: {
+            type: String as PropType<PreviewAsType>,
+            required: true
+        },
+
         previewHtmlProcessor: {
-            type: Object as PropType<((previewHtml: string) => string | null | undefined | Promise<string | null | undefined>) | undefined>,
+            type: Object as PropType<((previewHtml: string, previewAsPersonGuid?: Guid | null | undefined, previewAsPersonalizationSegmentId?: number | null | undefined) => Promise<string | null | undefined>)>,
             required: true
         },
 
@@ -319,6 +359,9 @@
         (e: "update:message", value: string): void;
         (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
         (e: "update:testEmailAddress", value: string): void;
+        (e: "update:previewAsPersonAlias", value: ListItemBag | null | undefined): void;
+        (e: "update:previewAsPersonalizationSegment", value: ListItemBag | null | undefined): void;
+        (e: "update:previewAsType", value: PreviewAsType): void;
     }>();
 
     // #region Values
@@ -342,6 +385,10 @@
     // Initialize html to the message value.
     const html = ref<string>(props.message);
 
+    const internalPreviewAsType = useVModelPassthrough(props, "previewAsType", emit);
+    const internalPreviewAsPersonalizationSegment = useVModelPassthrough(props, "previewAsPersonalizationSegment", emit);
+    const internalPreviewAsPersonAlias = useVModelPassthrough(props, "previewAsPersonAlias", emit);
+
     // Communication state.
     const internalTestEmailAddress = useVModelPassthrough(props, "testEmailAddress", emit);
 
@@ -351,6 +398,12 @@
 
     const isDisabled = computed<boolean>(() => {
         return isSaving.value || isSendingTest.value || isPreviewLoading.value;
+    });
+
+    const refreshPreviewRequestKey = computed<string>(() => {
+        return internalPreviewAsType.value === "Preview As Person"
+            ? `person:${internalPreviewAsPersonAlias.value?.value ?? ""}`
+            : `segment:${internalPreviewAsPersonalizationSegment.value?.value ?? ""}`;
     });
 
     // #endregion Computed Values
@@ -443,7 +496,7 @@
         };
     }
 
-    function onClickPreview(): void {
+    function updatePreview(): void {
         // Deselect component before generating preview.
         selectedComponentElement.value = null;
 
@@ -453,21 +506,26 @@
             async onSuccess({ html }): Promise<void> {
                 emit("update:message", html);
 
-                if (props.previewHtmlProcessor) {
-                    let result = props.previewHtmlProcessor(html);
+                const previewAsPersonAliasGuid: Guid | null | undefined =
+                    internalPreviewAsType.value === PreviewAsType.Person
+                        ? toGuidOrNull(internalPreviewAsPersonAlias.value?.value)
+                        : null;
+                const previewAsPersonalizationSegmentId: number | null | undefined =
+                    internalPreviewAsType.value === PreviewAsType.Segment
+                        ? toNumberOrNull(internalPreviewAsPersonalizationSegment.value?.value)
+                        : null;
 
-                    if (isPromise(result)) {
-                        result = await result;
-                    }
+                const result = await props.previewHtmlProcessor(html, previewAsPersonAliasGuid, previewAsPersonalizationSegmentId);
 
-                    html = result ?? "An error occurred.";
-                }
-
-                previewHtml.value = html;
+                previewHtml.value = result ?? "";
                 isPreviewOpen.value = true;
                 isPreviewLoading.value = false;
             }
         };
+    }
+
+    function onClickPreview(): void {
+        updatePreview();
     }
 
     function onKeyDownEscape(event: KeyboardEvent): void {
@@ -478,9 +536,13 @@
         }
     }
 
-    // #endregion
+    // #endregion Event Handlers
 
     // #region Watchers
+
+    watch(refreshPreviewRequestKey, () => {
+        updatePreview();
+    });
 
     watch(saveElement, element => {
         if (element) {

@@ -688,6 +688,8 @@ namespace Rock.Data
         /// Creates a DotLiquid compatible dictionary that represents the current entity object.
         /// </summary>
         /// <returns>DotLiquid compatible dictionary.</returns>
+        [Obsolete( "DotLiquid is no longer supported." )]
+        [RockObsolete( "18.0" )]
         public object ToLiquid()
         {
             return this;

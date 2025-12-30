@@ -34,7 +34,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
     [DisplayName( "Answer To Prayer" )]
     [Category( "Mobile > Prayer" )]
     [Description( "Displays an existing prayer request and allows the user to enter the answer to prayer." )]
-    [IconCssClass( "fa fa-reply" )]
+    [IconCssClass( "ti ti-arrow-back-up" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

@@ -55,6 +55,8 @@ namespace RockWeb.Blocks.Finance
         DefaultBooleanValue = false,
         Order = 6,
         Key = AttributeKey.EnableForeignCurrency )]
+
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.BlockTypeGuid( "1DE16F87-4A49-4A3C-A03E-B8488ECBEEBE" )]
     public partial class TransactionDetail : Rock.Web.UI.RockBlock
     {

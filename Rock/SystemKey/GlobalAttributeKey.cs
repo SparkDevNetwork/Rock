@@ -14,12 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Rock.SystemKey
 {
     /// <summary>
@@ -27,6 +21,29 @@ namespace Rock.SystemKey
     /// </summary>
     public class GlobalAttributeKey
     {
+        #region Organization
+
+        /// <summary>
+        /// The organization abbreviation.
+        /// </summary>
+        public const string ORGANIZATION_ABBREVATION = "OrganizationAbbreviation";
+
+        /// <summary>
+        /// The organization email.
+        /// </summary>
+        public const string ORGANIZATION_EMAIL = "OrganizationEmail";
+
+        /// <summary>
+        /// The organization name.
+        /// </summary>
+        public const string ORGANIZATION_NAME = "OrganizationName";
+
+        /// <summary>
+        /// The organization phone.
+        /// </summary>
+        public const string ORGANIZATION_PHONE = "OrganizationPhone";
+
+        #endregion Organization
 
         /// <summary>
         /// List of Exceptions to be filtered out from the Exception Log

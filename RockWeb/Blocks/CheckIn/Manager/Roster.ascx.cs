@@ -21,6 +21,8 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
 
+using Humanizer;
+
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
@@ -470,7 +472,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             lElapsedCheckInTime.Text = string.Format(
                 "<span title='{0}'>{1}</span>",
                 attendee.CheckInTime.ToShortTimeString(),
-                RockFilters.HumanizeTimeSpan( attendee.CheckInTime, RockDateTime.Now, unit: "Second" ) );
+                HumanizeTimeSpanToSeconds( attendee.CheckInTime, RockDateTime.Now ) );
 
             // Show how it has been since they were marked present
             if ( attendee.PresentDateTime.HasValue )
@@ -478,7 +480,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 lElapsedPresentTime.Text = string.Format(
                     "<span title='{0}'>{1}</span>",
                     attendee.PresentDateTime?.ToShortTimeString(),
-                    RockFilters.HumanizeTimeSpan( attendee.PresentDateTime.Value, RockDateTime.Now, unit: "Second" ) );
+                    HumanizeTimeSpanToSeconds( attendee.PresentDateTime.Value, RockDateTime.Now ) );
             }
 
             if ( attendee.CheckOutTime.HasValue )
@@ -489,7 +491,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 lElapsedCheckedOutTime.Text = string.Format(
                     "<span title='{0}'>{1}</span>",
                     attendee.CheckOutTime.Value.ToShortTimeString(),
-                    RockFilters.HumanizeTimeSpan( attendee.CheckOutTime.Value, RockDateTime.Now, unit: "Second" ) );
+                    HumanizeTimeSpanToSeconds( attendee.CheckOutTime.Value, RockDateTime.Now ) );
             }
 
             lElapsedCheckInTime.Visible = _dataBoundRosterStatusFilter == RosterStatusFilter.CheckedIn;
@@ -499,6 +501,18 @@ namespace RockWeb.Blocks.CheckIn.Manager
             // Desktop only.
             var lStatusTag = e.Row.FindControl( "lStatusTag" ) as Literal;
             lStatusTag.Text = attendee.GetStatusIconHtmlTag( false );
+        }
+
+        private string HumanizeTimeSpanToSeconds( DateTime startDate, DateTime endDate )
+        {
+            var difference = endDate - startDate;
+
+            if ( difference.TotalSeconds >= 0 && difference.TotalSeconds < 1 )
+            {
+                return "just now";
+            }
+
+            return difference.Humanize( minUnit: Humanizer.Localisation.TimeUnit.Second );
         }
 
         /// <summary>

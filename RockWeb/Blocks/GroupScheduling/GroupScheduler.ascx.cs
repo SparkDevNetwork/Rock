@@ -617,11 +617,11 @@ btnCopyToClipboard.ClientID );
             btnShowChildGroups.Attributes["show-child-groups"] = showChildGroups.ToJavaScriptValue();
             if ( showChildGroups )
             {
-                btnShowChildGroups.Text = "<i class='fa fa-check-square'></i> Show Child Groups";
+                btnShowChildGroups.Text = "<i class='ti ti-checkbox'></i> Show Child Groups";
             }
             else
             {
-                btnShowChildGroups.Text = "<i class='fa fa-square-o'></i> Show Child Groups";
+                btnShowChildGroups.Text = "<i class='ti ti-square'></i> Show Child Groups";
             }
         }
 
@@ -688,7 +688,7 @@ btnCopyToClipboard.ClientID );
 
             var endOfWeekDate = hfWeekSundayDate.Value.AsDateTime() ?? RockDateTime.Now.EndOfWeek( RockDateTime.FirstDayOfWeek );
 
-            lWeekFilterText.Text = string.Format( "<i class='fa fa-calendar-alt'></i> Week: {0}", endOfWeekDate.ToShortDateString() );
+            lWeekFilterText.Text = string.Format( "<i class='ti ti-calendar-month'></i> Week: {0}", endOfWeekDate.ToShortDateString() );
 
             var preferences = GetBlockPersonPreferences();
 
@@ -737,7 +737,7 @@ btnCopyToClipboard.ClientID );
                 }
             }
 
-            lScheduleFilterText.Text = string.Format( "<i class='fa fa-clock-o'></i>  {0}", selectedSchedulesText );
+            lScheduleFilterText.Text = string.Format( "<i class='ti ti-clock'></i>  {0}", selectedSchedulesText );
 
             var resourceListSourceType = ( GroupSchedulerResourceListSourceType ) hfSchedulerResourceListSourceType.Value.AsInteger();
             var groupMemberFilterType = ( SchedulerResourceGroupMemberFilterType ) hfResourceGroupMemberFilterType.Value.AsInteger();
@@ -838,7 +838,7 @@ btnCopyToClipboard.ClientID );
                     selectedLocations.Count() );
             }
 
-            lSelectedLocationFilterText.Text = string.Format( "<i class='fa fa-building'></i> {0}", selectedLocationFilterText );
+            lSelectedLocationFilterText.Text = string.Format( "<i class='ti ti-building'></i> {0}", selectedLocationFilterText );
 
             var locationButtons = rptLocationSelector.ControlsOfTypeRecursive<LinkButton>().ToList();
             var locationService = new LocationService( rockContext );
@@ -852,7 +852,7 @@ btnCopyToClipboard.ClientID );
                     {
                         if ( selectedLocationIds.Contains( locationId.Value ) )
                         {
-                            locationButton.Text = string.Format( "<i class='fa fa-check'></i> {0}", location.ToString( true ).EncodeHtml() );
+                            locationButton.Text = string.Format( "<i class='ti ti-check'></i> {0}", location.ToString( true ).EncodeHtml() );
                         }
                         else
                         {
@@ -865,7 +865,7 @@ btnCopyToClipboard.ClientID );
                     // all locations button
                     if ( selectAllLocations )
                     {
-                        locationButton.Text = "<i class='fa fa-check'></i> All Locations";
+                        locationButton.Text = "<i class='ti ti-check'></i> All Locations";
                     }
                     else
                     {
@@ -1673,11 +1673,11 @@ btnCopyToClipboard.ClientID );
                 var btnMultiGroupModeColumnSelectedGroup = e.Item.FindControl( "btnMultiGroupModeColumnSelectedGroup" ) as LinkButton;
                 if ( isSelectedColumn )
                 {
-                    btnMultiGroupModeColumnSelectedGroup.Text = "<i class='fa fa-check-square'></i>";
+                    btnMultiGroupModeColumnSelectedGroup.Text = "<i class='ti ti-checkbox'></i>";
                 }
                 else
                 {
-                    btnMultiGroupModeColumnSelectedGroup.Text = "<i class='fa fa-square-o'></i>";
+                    btnMultiGroupModeColumnSelectedGroup.Text = "<i class='ti ti-square'></i>";
                 }
 
                 btnMultiGroupModeColumnSelectedGroup.Attributes["data-group-id"] = occurrenceColumnItem.Group.Id.ToString();

@@ -154,7 +154,7 @@ namespace Rock.Web.UI.Controls
             _btnAddFilterFieldCriteria = new LinkButton();
             _btnAddFilterFieldCriteria.ID = this.ID + "_btnAddFilterFieldCriteria";
             _btnAddFilterFieldCriteria.CssClass = "btn btn-xs btn-action add-action";
-            _btnAddFilterFieldCriteria.Text = "<i class='fa fa-filter'></i> Add Criteria";
+            _btnAddFilterFieldCriteria.Text = "<i class='ti ti-filter'></i> Add Criteria";
             _btnAddFilterFieldCriteria.Click += _btnAddFilterFieldCriteria_Click;
             _pnlFilterActions.Controls.Add( _btnAddFilterFieldCriteria );
 
@@ -464,7 +464,7 @@ namespace Rock.Web.UI.Controls
             {
                 ID = $"_btnDeleteRule_{fieldVisibilityRule.Guid.ToString( "N" )}",
                 CssClass = "btn btn-danger btn-square",
-                Text = "<i class='fa fa-times'></i>"
+                Text = "<i class='ti ti-x'></i>"
             };
 
             btnDeleteRule.Click += btnDeleteRule_Click;

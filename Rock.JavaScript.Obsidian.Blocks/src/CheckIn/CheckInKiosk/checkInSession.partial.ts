@@ -605,8 +605,34 @@ export class CheckInSession {
      * @returns A new CheckInSession object.
      */
     public withSelectedAttendees(attendeeIds: string[]): CheckInSession {
+        let possibleSchedules = this.possibleSchedules ?? [];
+        const selectedAttendees = this.attendees
+            ?.filter(a => a.person?.id && attendeeIds.includes(a.person.id))
+            ?? [];
+
+        // If any of the selected attendees have possible schedules then we
+        // need to update our list of possible schedules to use only those that
+        // are available to the selected attendees.
+        if (selectedAttendees.filter(a => a.possibleSchedules).length > 0) {
+            const attendeeScheduleIds: string[] = [];
+
+            // Find all the possible schedules that are available across all
+            // selected attendees. This may give us duplicate values at this point.
+            for (const attendee of selectedAttendees) {
+                if (attendee.possibleSchedules) {
+                    attendeeScheduleIds.push(...attendee.possibleSchedules.map(s => s.id ?? ""));
+                }
+            }
+
+            // Filter the session's possible schedules to only those that are
+            // available to the selected attendees.
+            possibleSchedules = (this.possibleSchedules ?? [])
+                .filter(s => attendeeScheduleIds.includes(s.id ?? ""));
+        }
+
         return new CheckInSession(this, {
-            selectedAttendeeIds: attendeeIds
+            selectedAttendeeIds: attendeeIds,
+            possibleSchedules: possibleSchedules
         });
     }
 
@@ -1818,6 +1844,13 @@ export class CheckInSession {
 
         // If we have more than 1 area to pick from then show the area screen.
         if (areas.length !== 1) {
+            // If the "Select All Schedules Automatically" option is enabled
+            // then we will not show the area select screen if there are no areas.
+            // Instead just skip the individual in that case.
+            if (areas.length === 0 && this.options.areAllSchedulesSelectedAutomatically) {
+                return newSession.withNextScreenBySkippingAttendee();
+            }
+
             return Promise.resolve(newSession.withScreen(Screen.AreaSelect));
         }
 

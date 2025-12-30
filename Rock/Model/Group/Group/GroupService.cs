@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.DTO;
 using Rock.Data;
+using Rock.Core.Geography.Classes;
 using Rock.Model.Groups.Group.Options;
 using Rock.Web.Cache;
 
@@ -409,54 +410,78 @@ namespace Rock.Model
         /// </summary>
         /// <param name="point"></param>
         /// <param name="groupTypeId"></param>
-        /// <param name="maxResults"></param>
         /// <param name="returnOnlyClosestLocationPerGroup"></param>
         /// <param name="maxDistance"></param>
         /// <returns></returns>
-        public IQueryable<GroupLocation> GetNearestGroups( DbGeography point, int groupTypeId, int maxResults = 10, bool returnOnlyClosestLocationPerGroup = true, int? maxDistance = null )
+        public IQueryable<GroupLocation> GetNearestGroups( DbGeography point, int groupTypeId, bool returnOnlyClosestLocationPerGroup = true, int? maxDistance = null )
         {
-            var rockContext = ( RockContext ) this.Context;
-            var personService = new PersonService( rockContext );
-            
-            if ( point != null )
-            {
-                var groupLocation = this.Queryable()
-                    .Where( g =>
-                        g.GroupTypeId.Equals( groupTypeId ) )
-                    .SelectMany( g =>
-                        g.GroupLocations
-                            .Where( gl =>
-                                gl.Location != null &&
-                                gl.Location.GeoPoint != null
-                            )
-                    );
-
-                if  (maxDistance.HasValue )
-                {
-                    groupLocation = groupLocation.Where( gl => gl.Location.GeoPoint.Distance( point ) <= maxDistance );
-                }
-
-                // Return all locations
-                if( returnOnlyClosestLocationPerGroup == false )
-                { 
-                    return groupLocation
-                            .OrderBy( gl => gl.Location.GeoPoint.Distance( point ) )
-                            .Take( maxResults );
-                }
-
-                // Return just the closest location
-                var closestLocationPerGroup = groupLocation
-                    .GroupBy( x => x.GroupId )
-                    .Select( g => g.OrderBy( x => x.Location.GeoPoint.Distance( point ) ).FirstOrDefault() );
-
-                return closestLocationPerGroup
-                        .OrderBy( gl => gl.Location.GeoPoint.Distance( point ) )
-                        .Take( maxResults );
-            }
-
-            return null;
+            return GetNearestGroups( GeographyPoint.FromDatabase( point ) , new List<int> { groupTypeId }, returnOnlyClosestLocationPerGroup, maxDistance );
         }
 
+        /// <summary>
+        /// Get's a list of the nearest groups to the person.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="groupTypeId"></param>
+        /// <param name="returnOnlyClosestLocationPerGroup"></param>
+        /// <param name="maxDistance"></param>
+        /// <returns></returns>
+        public IQueryable<GroupLocation> GetNearestGroups( GeographyPoint point, int groupTypeId, bool returnOnlyClosestLocationPerGroup = true, int? maxDistance = null )
+        {
+            return GetNearestGroups( point, new List<int> { groupTypeId }, returnOnlyClosestLocationPerGroup, maxDistance );
+        }
+
+        /// <summary>
+        /// Get's a list of the nearest groups to the person filtered by the provided group types.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="groupTypeIds"></param>
+        /// <param name="returnOnlyClosestLocationPerGroup"></param>
+        /// <param name="maxDistance"></param>
+        /// <returns></returns>
+        public IQueryable<GroupLocation> GetNearestGroups( GeographyPoint point, List<int> groupTypeIds, bool returnOnlyClosestLocationPerGroup = true, int? maxDistance = null )
+        {
+            var rockContext = ( RockContext ) this.Context;
+
+            if ( point == null )
+            {
+                return null;
+            }
+
+            // Convert GeographyPoint to DbGeography
+            var efPoint = point.ToDatabase();
+
+            // Get all locations for the selected group type(s)
+            var groupLocation = this.Queryable()
+                .Where( g =>
+                    groupTypeIds.Contains( g.GroupTypeId ) )
+                .SelectMany( g =>
+                    g.GroupLocations
+                        .Where( gl =>
+                            gl.Location != null &&
+                            gl.Location.GeoPoint != null
+                        )
+                );
+
+            // Filter by max distance
+            if ( maxDistance.HasValue )
+            {
+                groupLocation = groupLocation.Where( gl => gl.Location.GeoPoint.Distance( efPoint ) <= maxDistance );
+            }
+
+            // Return all locations
+            if ( returnOnlyClosestLocationPerGroup == false )
+            {
+                return groupLocation;
+            }
+
+            // Return just the closest location
+            var closestLocationPerGroup = groupLocation
+                .GroupBy( x => x.GroupId )
+                .Select( g => g.OrderBy( x => x.Location.GeoPoint.Distance( efPoint ) ).FirstOrDefault() );
+
+            return closestLocationPerGroup;
+        }
         #endregion
 
         /// <summary>
@@ -1810,6 +1835,47 @@ namespace Rock.Model
             groupMember = groupMemberService.AsNoFilter().Where( a => a.IsArchived == false && a.GroupId == group.Id && a.PersonId == personId && a.GroupRoleId == groupRoleId ).FirstOrDefault();
             return groupMember != null;
         }
+
+        #region Group Placement Methods
+
+        /// <summary>
+        /// Gets the placement groups for a specific sourceGroup
+        /// </summary>
+        /// <param name="sourceGroup">The source group for placement.</param>
+        /// <returns></returns>
+        public IQueryable<Group> GetSourceGroupPlacementPlacementGroups( Group sourceGroup )
+        {
+            return this.RelatedEntities.GetRelatedToSourceEntity<Group>( sourceGroup.Id, RelatedEntityPurposeKey.GroupPlacement );
+        }
+
+        /// <summary>
+        /// Adds the source group placement group. Returns false if the group is already a placement group for this source group Placement
+        /// </summary>
+        /// <param name="sourceGroup">The source group placement.</param>
+        /// <param name="group">The group.</param>
+        /// <returns></returns>
+        public bool AddGroupPlacementPlacementGroup( Group sourceGroup, Group group )
+        {
+            if ( !this.RelatedEntities.RelatedToSourceEntityAlreadyExists( sourceGroup.Id, group, RelatedEntityPurposeKey.GroupPlacement ) )
+            {
+                this.RelatedEntities.AddRelatedToSourceEntity( sourceGroup.Id, group, RelatedEntityPurposeKey.GroupPlacement );
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Deletes (detaches) the destination group for the given source group ID.
+        /// </summary>
+        /// <param name="sourceGroup">The source group.</param>
+        /// <param name="group">The group.</param>
+        public void DetachDestinationGroupFromSourceGroup( Group sourceGroup, Group group )
+        {
+            this.RelatedEntities.DeleteTargetEntityFromSourceEntity( sourceGroup.Id, group, RelatedEntityPurposeKey.GroupPlacement );
+        }
+
+        #endregion
 
         #region Group Copy Methods
 

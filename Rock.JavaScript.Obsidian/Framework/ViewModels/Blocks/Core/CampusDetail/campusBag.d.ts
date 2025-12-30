@@ -37,6 +37,9 @@ export type CampusBag = {
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
+    /** Gets or sets the campus average weekend attendance. */
+    averageWeekendAttendance?: number | null;
+
     /** Gets or sets the campus schedules. */
     campusSchedules?: CampusScheduleBag[] | null;
 

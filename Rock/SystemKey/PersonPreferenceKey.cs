@@ -25,5 +25,16 @@ namespace Rock.SystemKey
         /// The source phone type the user would like to originate calls to
         /// </summary>
         public const string ORIGINATE_CALL_SOURCE = "Core_OriginateCallSource";
+
+        /// <summary>
+        /// The default SMS phone number to use when sending SMS messages. This
+        /// is stored as the integer identifier of the <see cref="Model.SystemPhoneNumber"/>.
+        /// </summary>
+        public const string DEFAULT_SMS_PHONE_NUMBER = "default-sms-phone-number";
+
+        /// <summary>
+        /// The closing phrase when drafting e-mails automatically.
+        /// </summary>
+        public const string EMAIL_CLOSING_PHRASE = "email-closing-phrase";
     }
 }

@@ -160,14 +160,22 @@ namespace Rock.SendGrid.Webhook
         [JsonProperty( PropertyName = "attempt" )]
         public string DeliveryAttemptCount { get; set; }
 
-        /// <summary>
-        /// Gets or sets the category.
-        /// </summary>
-        /// <value>
-        /// The category.
-        /// </value>
-        [JsonProperty( PropertyName = "category" )]
-        public string Category { get; set; }
+        /*
+         * 2025-08-19 - DSH
+         * 
+         * This category property was removed because SendGrid now sends this
+         * data as an array (or maybe always did?). If it is filled in then the
+         * decode fails with an exception. Since we don't actually use this
+         * category value anywhere, it was decided to just remove it.
+         */
+        ///// <summary>
+        ///// Gets or sets the category.
+        ///// </summary>
+        ///// <value>
+        ///// The category.
+        ///// </value>
+        //[JsonProperty( PropertyName = "category" )]
+        //public string Category { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the bounce.

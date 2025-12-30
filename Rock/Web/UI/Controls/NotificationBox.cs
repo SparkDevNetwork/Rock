@@ -139,7 +139,7 @@ namespace Rock.Web.UI.Controls
 
                     if ( this.Dismissable )
                     {
-                        writer.Write( @"<button type='button' class='close' data-dismiss='alert' aria-hidden='true'><i class='fa fa-times'></i></button>" );
+                        writer.Write( @"<button type='button' class='close' data-dismiss='alert' aria-hidden='true'><i class='ti ti-x'></i></button>" );
                     }
 
                     if ( !string.IsNullOrWhiteSpace( this.Heading ) )

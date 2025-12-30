@@ -35,7 +35,7 @@ namespace Rock.Blocks.Lms
     [DisplayName( "Public Learning Course List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of public learning courses." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [CodeEditorField( "Lava Template",
@@ -165,7 +165,7 @@ namespace Rock.Blocks.Lms
                         
                     {% else %}
                         <div class=""d-flex justify-content-center align-items-center card-img-top card-img-h"">
-                            <i class=""fa fa-image fa-2x text-gray-200""></i>
+                            <i class=""ti ti-photo ti-2x text-gray-200""></i>
                         </div>
                         
                 {% endif %}
@@ -211,7 +211,19 @@ namespace Rock.Blocks.Lms
                             
                             {% elseif course.LearningCompletionStatus == 'Pass' %}
                                 <div class=""d-flex align-items-center"">
-                                    <h4 class=""m-0""><span class=""label label-success"">Passed</span></h4>
+                                    <h4 class=""m-0"">
+                                        <span class=""label label-success"">
+                                            {% if course.IsCompletionOnly == true %}
+                                                {% if course.CompletionScaleName != empty %}
+                                                    {{ course.CompletionScaleName }}
+                                                    {% else %}
+                                                    Completed
+                                                {% endif %}
+                                                {% else %}
+                                                Passed
+                                            {% endif %}
+                                        </span>
+                                    </h4>
                                 </div>
                         {% endif %}
     

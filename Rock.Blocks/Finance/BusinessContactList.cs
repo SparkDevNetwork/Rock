@@ -36,13 +36,14 @@ namespace Rock.Blocks.Finance
     [DisplayName( "Business Contact List" )]
     [Category( "Finance" )]
     [Description( "Displays the list of contacts for a business." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Person Profile Page",
         Description = "The page used to view the details of a business contact.",
         Key = AttributeKey.PersonProfilePage )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [SystemGuid.EntityTypeGuid( "49ef69c9-b893-4684-be71-8d8bc8905b06" )]
     [SystemGuid.BlockTypeGuid( "5e72c18d-f459-4226-820b-b47f88efeb0f" )]
     public class BusinessContactList : RockEntityListBlockType<Person>

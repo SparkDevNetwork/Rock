@@ -37,13 +37,14 @@ namespace Rock.Blocks.Lms
     [DisplayName( "Learning Course List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of learning courses." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the learning course details.",
         Key = AttributeKey.DetailPage )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "e882d582-bc31-4b68-945b-d0d44a2ce5bc" )]
     [Rock.SystemGuid.BlockTypeGuid( "d0afdf98-4afc-4e4f-a6e2-07ca4e7358e8" )]
     [CustomizedGrid]

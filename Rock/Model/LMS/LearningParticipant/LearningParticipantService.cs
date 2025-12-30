@@ -342,6 +342,7 @@ namespace Rock.Model
                 .Select( p => new
                 {
                     p.Id,
+                    p.PersonId,
                     p.Person.Email,
                     IsFacilitator = p.GroupRole.IsLeader,
                     p.Person.NickName,
@@ -353,6 +354,7 @@ namespace Rock.Model
                 .ToList()
                 .Select( p => new LearningActivityParticipantBag
                 {
+                    PersonId = p.PersonId,
                     Email = p.Email,
                     Guid = p.Guid,
                     IdKey = Utility.IdHasher.Instance.GetHash( p.Id ),
@@ -488,6 +490,11 @@ namespace Rock.Model
         /// <returns>A <c>Queryable</c> of <see cref="Model.LearningClassActivityCompletion"/> - one for each <see cref="LearningClassActivity"/> in the class.</returns>
         private List<LearningClassActivityCompletion> GetStudentLearningPlan( LearningParticipant student )
         {
+            if ( student == null )
+            {
+                return new List<LearningClassActivityCompletion>();
+            }
+
             // Get the activities for this class
             // excluding those created after a student completed.
             var activities = Queryable()

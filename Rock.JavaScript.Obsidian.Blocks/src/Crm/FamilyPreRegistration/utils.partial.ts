@@ -557,7 +557,7 @@ export function required(value: unknown, params?: unknown[]): ValidationResult {
 /**
  * Validates whether a name can include special characters.
  */
-export function noSpecialCharacters (value: unknown): ValidationResult {
+export function noSpecialCharacters(value: unknown): ValidationResult {
     if (typeof value === "string") {
         // Checks if a string contains special characters
         if (getSpecialCharacterPattern().test(value)) {
@@ -571,7 +571,7 @@ export function noSpecialCharacters (value: unknown): ValidationResult {
 /**
  * Validates whether a name can emojis or special fonts.
  */
-export function noEmojisOrSpecialFonts (value: unknown): ValidationResult {
+export function noEmojisOrSpecialFonts(value: unknown): ValidationResult {
     if (typeof value === "string") {
         // Checks if a string contains emojis or special fonts.
         if (getEmojiPattern().test(value) || getSpecialFontPattern().test(value)) {
@@ -665,7 +665,7 @@ function isNumeric(value: unknown): boolean {
  * Validates that a value does not equal another value.
  */
 export function createNotEqualRule(compare: unknown): ValidationRuleFunction {
-    return (value: unknown, params?: unknown[]): ValidationResult => {
+    return (value: unknown): ValidationResult => {
         if (isNumeric(value) && isNumeric(compare)) {
             if (convertToNumber(value) !== convertToNumber(compare)) {
                 return true;

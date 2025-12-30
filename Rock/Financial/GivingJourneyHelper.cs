@@ -20,6 +20,8 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility.Settings.Giving;
@@ -99,7 +101,7 @@ namespace Rock.Financial
             var givingAnalyticsSetting = GivingAutomationSettings.LoadGivingAutomationSettings();
 
             var rockContext = new RockContext();
-            rockContext.Database.CommandTimeout = this.SqlCommandTimeout;
+            rockContext.Database.SetCommandTimeout( this.SqlCommandTimeout );
             var personService = new PersonService( rockContext );
 
             // Limit to only Business and Person type records.
@@ -295,11 +297,11 @@ NoneOfTheAboveCount: {noneOfTheAboveGiverGivingIds.Count}
             {
                 givingIdGivingJourneyStage = GivingJourneyStage.New;
             }
-            else if ( IsOccasionalGiver( givingJourneySettings, medianDaysBetween ) )
+            else if ( IsOccasionalGiver( givingJourneySettings, medianDaysBetween, daysSinceMostRecentTransaction ) )
             {
                 givingIdGivingJourneyStage = GivingJourneyStage.Occasional;
             }
-            else if ( IsConsistentGiver( givingJourneySettings, medianDaysBetween ) )
+            else if ( IsConsistentGiver( givingJourneySettings, medianDaysBetween, daysSinceMostRecentTransaction ) )
             {
                 givingIdGivingJourneyStage = GivingJourneyStage.Consistent;
             }
@@ -369,7 +371,7 @@ NoneOfTheAboveCount: {noneOfTheAboveGiverGivingIds.Count}
                     {
                         using ( var rockContext = new RockContext() )
                         {
-                            rockContext.Database.CommandTimeout = this.SqlCommandTimeout;
+                            rockContext.Database.SetCommandTimeout( this.SqlCommandTimeout );
                             var personService = new PersonService( rockContext );
 
                             var person = personService.Get( personId );
@@ -426,8 +428,9 @@ NoneOfTheAboveCount: {noneOfTheAboveGiverGivingIds.Count}
         /// </summary>
         /// <param name="givingJourneySettings">The giving journey settings.</param>
         /// <param name="medianDaysBetween">The median days between.</param>
+        /// <param name="daysSinceMostRecentTransaction">The days since most recent transaction.</param>
         /// <returns><c>true</c> if [is consistent giver] [the specified giving journey settings]; otherwise, <c>false</c>.</returns>
-        private static bool IsConsistentGiver( GivingJourneySettings givingJourneySettings, int? medianDaysBetween )
+        private static bool IsConsistentGiver( GivingJourneySettings givingJourneySettings, int? medianDaysBetween, double daysSinceMostRecentTransaction )
         {
             if ( !medianDaysBetween.HasValue )
             {
@@ -440,7 +443,9 @@ NoneOfTheAboveCount: {noneOfTheAboveGiverGivingIds.Count}
                 return false;
             }
 
-            if ( medianDaysBetween < givingJourneySettings.ConsistentGiverMedianLessThanDays )
+            var threshold = givingJourneySettings.ConsistentGiverMedianLessThanDays.Value;
+
+            if ( medianDaysBetween.Value < threshold && daysSinceMostRecentTransaction < threshold )
             {
                 return true;
             }
@@ -453,8 +458,9 @@ NoneOfTheAboveCount: {noneOfTheAboveGiverGivingIds.Count}
         /// </summary>
         /// <param name="givingJourneySettings">The giving journey settings.</param>
         /// <param name="medianDaysBetween">The median days between.</param>
+        /// <param name="daysSinceMostRecentTransaction">The days since most recent transaction.</param>
         /// <returns><c>true</c> if [is occasional giver] [the specified giving journey settings]; otherwise, <c>false</c>.</returns>
-        private static bool IsOccasionalGiver( GivingJourneySettings givingJourneySettings, int? medianDaysBetween )
+        private static bool IsOccasionalGiver( GivingJourneySettings givingJourneySettings, int? medianDaysBetween, double daysSinceMostRecentTransaction )
         {
             if ( !medianDaysBetween.HasValue )
             {
@@ -467,12 +473,41 @@ NoneOfTheAboveCount: {noneOfTheAboveGiverGivingIds.Count}
                 return false;
             }
 
-            var medianDaysMin = givingJourneySettings.OccasionalGiverMedianFrequencyDaysMinimum.Value;
-            var medianDaysMax = givingJourneySettings.OccasionalGiverMedianFrequencyDaysMaximum.Value;
+            var min = givingJourneySettings.OccasionalGiverMedianFrequencyDaysMinimum.Value;
+            var max = givingJourneySettings.OccasionalGiverMedianFrequencyDaysMaximum.Value;
 
-            if ( medianDaysBetween.Value >= medianDaysMin && medianDaysBetween.Value <= medianDaysMax )
+            if ( medianDaysBetween.Value >= min && medianDaysBetween.Value <= max && daysSinceMostRecentTransaction <= max)
             {
                 return true;
+            }
+
+            /*
+                 8/20/2025 - MSE
+
+                 We are now applying the daysSinceMostRecentTransaction check to both the
+                 Occasional Giver and Consistent Giver classifications to address this issue:
+                 https://github.com/SparkDevNetwork/Rock/issues/6383
+
+                 In doing so, we concluded that our giving classification is due for refresh
+                 and identified several gaps in the current logic.
+
+                 Below is a temporary solution to handle an edge case where an individual's
+                 medianDaysBetween would fall into the Consistent Giver range, but their
+                 most recent transaction is greater than that threshold. Without this, the
+                 individual would not fall into any classification.
+
+                 Reason: Prevents gaps in classification when a consistent giver takes a temporary break
+                 from consistent giving patterns.
+            */
+            if ( givingJourneySettings.ConsistentGiverMedianLessThanDays.HasValue )
+            {
+                var consistentGiverThreshold = givingJourneySettings.ConsistentGiverMedianLessThanDays.Value;
+                if ( medianDaysBetween.Value <= consistentGiverThreshold
+                    && daysSinceMostRecentTransaction >= consistentGiverThreshold
+                    && daysSinceMostRecentTransaction <= max )
+                {
+                    return true;
+                }
             }
 
             return false;

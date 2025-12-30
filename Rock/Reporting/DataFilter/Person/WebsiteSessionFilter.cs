@@ -16,14 +16,18 @@
 //
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Rest.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -66,6 +70,89 @@ namespace Rock.Reporting.DataFilter.Interaction
 
         #endregion
 
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var websiteGuid = SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid();
+            var activeSiteIds = SiteCache.All().Where( s => s.IsActive ).Select( s => s.Id );
+
+            var siteOptions = new InteractionChannelService( rockContext )
+                .Queryable()
+                .Where( ic => ic.ChannelTypeMediumValue.Guid == websiteGuid && ic.IsActive && activeSiteIds.Contains( ic.ChannelEntityId.Value ) )
+                .Select( x => new ListItemBag() { Text = x.Name, Value = x.Guid.ToString() } )
+                .OrderBy( m => m.Text )
+                .ToList();
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/websiteSessionFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "siteOptions", siteOptions.ToCamelCaseJson( false, true ) },
+                }
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = SelectionConfig.Parse( selection );
+
+            if ( config == null )
+            {
+                return new Dictionary<string, string>();
+            }
+
+            var sites = InteractionChannelCache.GetMany( config.WebsiteIds ).Select( dv => dv.Guid );
+
+            var pages = PageCache.GetMany( config.PageIds )
+                .Select( dv => new PageRouteValueBag
+                {
+                    Page = new ListItemBag { Text = dv.InternalName, Value = dv.Guid.ToString() }
+                } );
+
+            return new Dictionary<string, string>
+            {
+                { "sites", sites.ToCamelCaseJson( false, true ) },
+                { "comparisonType", config.ComparisonValue },
+                { "count", selection.IsNullOrWhiteSpace() ? "" : config.ViewsCount.ToString() },
+                { "dateRange", config.DelimitedDateRangeValues },
+                { "pages", pages.ToCamelCaseJson( false, true ) },
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var count = data.GetValueOrNull( "count" );
+            if ( count.IsNullOrWhiteSpace() )
+            {
+                count = "1";
+            }
+
+            var siteGuids = data.GetValueOrNull( "sites" )?.FromJsonOrNull<List<Guid>>() ?? new List<Guid>();
+            var siteIds = InteractionChannelCache.GetMany( siteGuids ).Select( dv => dv.Id ).ToList();
+
+            var pageBags = data.GetValueOrNull( "pages" )?.FromJsonOrNull<List<PageRouteValueBag>>() ?? new List<PageRouteValueBag>();
+            var pageGuids = pageBags.Select( x => x.Page?.Value?.AsGuid() ?? Guid.Empty ).ToList();
+            var pageIds = PageCache.GetMany( pageGuids ).Select( dv => dv.Id ).ToList();
+
+            var selectionConfig = new SelectionConfig
+            {
+                WebsiteIds = siteIds,
+                ComparisonValue = data.GetValueOrDefault( "comparisonType", ComparisonType.EqualTo.ConvertToInt().ToString() ),
+                ViewsCount = count.AsInteger(),
+                DelimitedDateRangeValues = data.GetValueOrDefault( "dateRange", "All||||" ),
+                PageIds = pageIds
+            };
+
+            return selectionConfig.ToJson();
+        }
+
+        #endregion
+
         #region Public Methods
 
         /// <summary>
@@ -95,7 +182,7 @@ namespace Rock.Reporting.DataFilter.Interaction
         {
             return @"
 function() {
-  
+
     var result = 'Interactions';
 
     var websiteNames = $('.js-websites', $content).find(':selected');
@@ -182,6 +269,8 @@ function() {
 
             return result;
         }
+
+#if WEBFORMS
 
         /// <summary>
         /// Creates the model representation of the child controls used to display and edit the filter settings.
@@ -394,6 +483,8 @@ function() {
             ppPages.SetValues( selectionConfig.PageIds );
         }
 
+#endif
+
         /// <summary>
         /// Creates a Linq Expression that can be applied to an IQueryable to filter the result set.
         /// </summary>
@@ -410,17 +501,34 @@ function() {
             var selectionConfig = SelectionConfig.Parse( selection );
             var comparisonType = selectionConfig.ComparisonValue.ConvertToEnumOrNull<ComparisonType>();
             var rockContext = ( RockContext ) serviceInstance.Context;
-            rockContext.Database.Log = s => Debug.WriteLine( s );
 
             IQueryable<Rock.Model.Interaction> interactionQry;
 
+            /*
+                10/30/2025 - NA
+
+                This filter, along with the WebsitePageViewFilter, stores InteractionChannelIds
+                ("WebsiteIds") in its configuration. However, the methods GetPageViewsByPage()
+                and GetPageViewsBySite() expect Site.Id values, not InteractionChannelIds.
+                Therefore, we convert the stored ChannelIds to SiteIds using the ChannelEntityId
+                of each InteractionChannel.
+
+                Reason: Ensures compatibility with existing DataViewFilter configuration data.
+            */
+            var siteIds = InteractionChannelCache.GetMany( selectionConfig.WebsiteIds )
+                .Select( ic => ic.ChannelEntityId )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .Distinct()
+                .ToArray();
+
             if ( selectionConfig.PageIds.Count > 0 )
             {
-                interactionQry = new InteractionService( rockContext ).GetPageViewsByPage( selectionConfig.WebsiteIds.ToArray(), selectionConfig.PageIds.ToArray() );
+                interactionQry = new InteractionService( rockContext ).GetPageViewsByPage( siteIds, selectionConfig.PageIds.ToArray() );
             }
             else
             {
-                interactionQry = new InteractionService( rockContext ).GetPageViewsBySite( selectionConfig.WebsiteIds.ToArray() );
+                interactionQry = new InteractionService( rockContext ).GetPageViewsBySite( siteIds );
             }
 
             if ( selectionConfig.DelimitedDateRangeValues.IsNotNullOrWhiteSpace() )
@@ -428,12 +536,12 @@ function() {
                 var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( selectionConfig.DelimitedDateRangeValues );
                 if ( dateRange.Start.HasValue )
                 {
-                    interactionQry = interactionQry.Where( n => n.CreatedDateTime >= dateRange.Start.Value );
+                    interactionQry = interactionQry.Where( n => n.InteractionDateTime >= dateRange.Start.Value );
                 }
 
                 if ( dateRange.End.HasValue )
                 {
-                    interactionQry = interactionQry.Where( n => n.CreatedDateTime <= dateRange.End.Value );
+                    interactionQry = interactionQry.Where( n => n.InteractionDateTime <= dateRange.End.Value );
                 }
             }
 
@@ -444,19 +552,19 @@ function() {
                 switch ( comparisonType )
                 {
                     case ComparisonType.EqualTo:
-                        personQry = personQry.Where( p => interactionQry.Where( i => i.PersonAliasId == p.Id ).GroupBy( a => a.InteractionSessionId ).Count() == selectionConfig.ViewsCount );
+                        personQry = personQry.Where( p => interactionQry.Where( i => i.PersonAlias.PersonId == p.Id ).GroupBy( a => a.InteractionSessionId ).Count() == selectionConfig.ViewsCount );
                         break;
                     case ComparisonType.LessThan:
-                        personQry = personQry.Where( p => interactionQry.Where( i => i.PersonAliasId == p.Id ).GroupBy( a => a.InteractionSessionId ).Count() < selectionConfig.ViewsCount );
+                        personQry = personQry.Where( p => interactionQry.Where( i => i.PersonAlias.PersonId == p.Id ).GroupBy( a => a.InteractionSessionId ).Count() < selectionConfig.ViewsCount );
                         break;
                     case ComparisonType.LessThanOrEqualTo:
-                        personQry = personQry.Where( p => interactionQry.Where( i => i.PersonAliasId == p.Id ).GroupBy( a => a.InteractionSessionId ).Count() <= selectionConfig.ViewsCount );
+                        personQry = personQry.Where( p => interactionQry.Where( i => i.PersonAlias.PersonId == p.Id ).GroupBy( a => a.InteractionSessionId ).Count() <= selectionConfig.ViewsCount );
                         break;
                     case ComparisonType.GreaterThan:
-                        personQry = personQry.Where( p => interactionQry.Where( i => i.PersonAliasId == p.Id ).GroupBy( a => a.InteractionSessionId ).Count() > selectionConfig.ViewsCount );
+                        personQry = personQry.Where( p => interactionQry.Where( i => i.PersonAlias.PersonId == p.Id ).GroupBy( a => a.InteractionSessionId ).Count() > selectionConfig.ViewsCount );
                         break;
                     case ComparisonType.GreaterThanOrEqualTo:
-                        personQry = personQry.Where( p => interactionQry.Where( i => i.PersonAliasId == p.Id ).GroupBy( a => a.InteractionSessionId ).Count() >= selectionConfig.ViewsCount );
+                        personQry = personQry.Where( p => interactionQry.Where( i => i.PersonAlias.PersonId == p.Id ).GroupBy( a => a.InteractionSessionId ).Count() >= selectionConfig.ViewsCount );
                         break;
                 }
             }
@@ -469,6 +577,15 @@ function() {
         /// <summary>
         /// Get and set the filter settings from DataViewFilter.Selection
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>
+        ///         You CANNOT change these property names unless you also
+        ///         write a migration to change them for all the saved values in
+        ///         the Selection column of the DataViewFilter table.
+        ///         </strong>
+        ///     </para>
+        /// </remarks>
         protected class SelectionConfig
         {
             /// <summary>
@@ -479,18 +596,22 @@ function() {
             }
 
             /// <summary>
-            /// Gets or sets the note type identifiers.
+            /// Gets or sets the InteractionChannel Ids for the corresponding
+            /// SiteIds.
             /// </summary>
             /// <value>
-            /// The note type identifiers.
+            /// A list of InteractionChannelIds
             /// </value>
+            /// <remarks>
+            /// FYI: The InteractionChannel.ChannelEntityId holds the value of the SiteId.
+            /// </remarks>
             public List<int> WebsiteIds { get; set; }
 
             /// <summary>
-            /// Gets or sets the note type identifiers.
+            /// Gets or sets list of PageIds to match.
             /// </summary>
             /// <value>
-            /// The note type identifiers.
+            /// A list of PageIds
             /// </value>
             public List<int> PageIds { get; set; }
 

@@ -172,6 +172,7 @@ namespace Rock.Model
             target.IsCheckInAllowed = source.IsCheckInAllowed;
             target.IsExcludedFromPeerNetwork = source.IsExcludedFromPeerNetwork;
             target.IsLeader = source.IsLeader;
+            target.IsPublic = source.IsPublic;
             target.IsSystem = source.IsSystem;
             target.MaxCount = source.MaxCount;
             target.MinCount = source.MinCount;

@@ -37,7 +37,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [DisplayName( "Schedule Unavailability" )]
     [Category( "Mobile > Groups" )]
     [Description( "Allows a user to schedule the dates that they are unavailable to serve." )]
-    [IconCssClass( "fa fa-user-times" )]
+    [IconCssClass( "ti ti-user-x" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

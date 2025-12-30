@@ -1,0 +1,288 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel v-if="hasData"
+           title="Message Instance vs. Flow Average">
+        <BarChart :series="data.series"
+                  :labels="data.labels"
+                  :barLabels="barLabels"
+                  hideLegend
+                  type="percent" />
+    </Panel>
+
+    <NothingToShowPartial v-else title="Message Instance vs. Flow Average" />
+</template>
+
+<style scoped>
+:deep(.chart-container) {
+    height: 265px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import NothingToShowPartial from "./nothingToShow.partial.obs";
+    import BarChart from "@Obsidian/Controls/barChart.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { BarLabelsConfig, BarSeries } from "@Obsidian/Core/Controls/chart";
+    import { Enumerable, GroupedEnumerable } from "@Obsidian/Utility/linq";
+    import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceBag";
+    import { CommunicationFlowInstanceCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceCommunicationBag";
+    import { RecipientMetricsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/recipientMetricsBag";
+
+    /**
+     *  Purpose: "How does this instance of this message compare across all instances of this flow?"
+     */
+
+    enum SeriesName {
+        Instance = "Instance",
+        Average = "Average"
+    }
+
+    const props = defineProps({
+        allCommunicationFlowInstanceCommunications: {
+            type: Array as PropType<CommunicationFlowInstanceCommunicationBag[]>,
+            required: true
+        },
+
+        allCommunicationFlowInstances: {
+            type: Array as PropType<CommunicationFlowInstanceBag[]>,
+            required: true
+        },
+
+        allUniquePersonCount: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        isConversionGoalTrackingEnabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        selectedCommunicationFlowInstanceRecipientMetrics: {
+            type: Array as PropType<RecipientMetricsBag[]>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    const barLabels = computed<BarLabelsConfig>(() => {
+        return {
+            inside: {
+                formatter: ({ formattedValue, value }) => {
+                    return formattedValue ?? value.toLocaleString(undefined, { style: "percent", maximumFractionDigits: 0 });
+                }
+            },
+            outside: {
+                formatter: ({ seriesName }) => seriesName
+            }
+        };
+    });
+
+    const hasData = computed<boolean>(() => {
+        return Enumerable.from(data.value.series).any(s => !!s.data.length);
+    });
+
+    const selectedInstanceMetricsByPerson = computed(() => {
+        return Enumerable
+            .from(props.selectedCommunicationFlowInstanceRecipientMetrics)
+            .groupBy(m => m.personAliasIdKey)
+            .ofType((g): g is GroupedEnumerable<string, RecipientMetricsBag> => !!g.key)
+            .toArray();
+    });
+
+    const selectedInstanceUniquePersonCount = computed<number>(() => {
+        return Enumerable
+            .from(selectedInstanceMetricsByPerson.value)
+            .count();
+    });
+
+    const selectedInstanceConversionRate = computed((): number => {
+        if (selectedInstanceUniquePersonCount.value === 0) {
+            return 0;
+        }
+
+        const selectedConversionCount = Enumerable
+            .from(selectedInstanceMetricsByPerson.value)
+            .count(g => g.any(m => !!m.conversionDate));
+
+        return selectedConversionCount / selectedInstanceUniquePersonCount.value;
+    });
+
+    const selectedInstanceUnsubscribeRate = computed((): number => {
+        if (selectedInstanceUniquePersonCount.value === 0) {
+            return 0;
+        }
+
+        const selectedUnsubscribeCount = Enumerable
+            .from(selectedInstanceMetricsByPerson.value)
+            .count(g => g.any(m => !!m.unsubscribeDate));
+
+        return selectedUnsubscribeCount / selectedInstanceUniquePersonCount.value;
+    });
+
+    const selectedInstanceOpenRate = computed((): number => {
+        if (selectedInstanceUniquePersonCount.value === 0) {
+            return 0;
+        }
+
+        const selectedOpenCount = Enumerable
+            .from(selectedInstanceMetricsByPerson.value)
+            .count(g => g.any(m => !!m.openedDate));
+
+        return selectedOpenCount / selectedInstanceUniquePersonCount.value;
+    });
+
+    const selectedInstanceClickRate = computed((): number => {
+        if (selectedInstanceUniquePersonCount.value === 0) {
+            return 0;
+        }
+
+        const selectedClickCount = Enumerable
+            .from(selectedInstanceMetricsByPerson.value)
+            .count(g => g.any(m => !!m.clickedDate));
+
+        return selectedClickCount / selectedInstanceUniquePersonCount.value;
+    });
+
+    const allInstanceMetricsByPerson = computed(() => {
+        return Enumerable
+            .from(props.allCommunicationFlowInstanceCommunications)
+            .selectMany(cfic => cfic.recipientMetrics ?? [])
+            .groupBy(m => m.personAliasIdKey)
+            .ofType((g): g is GroupedEnumerable<string, RecipientMetricsBag> => !!g.key)
+            .toArray();
+    });
+
+    const allInstanceUniquePersonCount = computed<number>(() => {
+        return Enumerable
+            .from(allInstanceMetricsByPerson.value)
+            .count();
+    });
+
+    const averageInstanceConversionRate = computed((): number => {
+        if (allInstanceUniquePersonCount.value === 0) {
+            return 0;
+        }
+
+        const allConversionCount = Enumerable
+            .from(allInstanceMetricsByPerson.value)
+            .count(g => g.any(m => !!m.conversionDate));
+
+        return allConversionCount / allInstanceUniquePersonCount.value;
+    });
+
+    const averageInstanceUnsubscribeRate = computed((): number => {
+        if (allInstanceUniquePersonCount.value === 0) {
+            return 0;
+        }
+
+        const allUnsubscribeCount = Enumerable
+            .from(allInstanceMetricsByPerson.value)
+            .count(g => g.any(m => !!m.unsubscribeDate));
+
+        return allUnsubscribeCount / allInstanceUniquePersonCount.value;
+    });
+
+    const averageInstanceOpenRate = computed((): number => {
+        if (allInstanceUniquePersonCount.value === 0) {
+            return 0;
+        }
+
+        const allOpenCount = Enumerable
+            .from(allInstanceMetricsByPerson.value)
+            .count(g => g.any(m => !!m.openedDate));
+
+        return allOpenCount / allInstanceUniquePersonCount.value;
+    });
+
+    const averageInstanceClickRate = computed((): number => {
+        if (allInstanceUniquePersonCount.value === 0) {
+            return 0;
+        }
+
+        const allClickCount = Enumerable
+            .from(allInstanceMetricsByPerson.value)
+            .count(g => g.any(m => !!m.clickedDate));
+
+        return allClickCount / allInstanceUniquePersonCount.value;
+    });
+
+    const data = computed<{ series: BarSeries[]; labels: string[]; }>(() => {
+        const hasConversionRates = averageInstanceConversionRate.value > 0 || selectedInstanceConversionRate.value > 0;
+        const hasOpenRates = averageInstanceOpenRate.value > 0 || selectedInstanceOpenRate.value > 0;
+        const hasClickRates = averageInstanceClickRate.value > 0 || selectedInstanceClickRate.value > 0;
+        const hasUnsubscribeRates = averageInstanceUnsubscribeRate.value > 0 || selectedInstanceUnsubscribeRate.value > 0;
+
+        const labels: string[] = [];
+
+        if (props.isConversionGoalTrackingEnabled && hasConversionRates) {
+            labels.push("Conversion Rate");
+        }
+        if (hasOpenRates) {
+            labels.push("Open Rate");
+        }
+        if (hasClickRates) {
+            labels.push("Click-Through Rate");
+        }
+        if (hasUnsubscribeRates) {
+            labels.push("Unsubscribe Rate");
+        }
+
+        const instanceColors: string[] = [];
+        const instanceSeries: BarSeries = {
+            label: SeriesName.Instance,
+            data: [],
+            color: instanceColors
+        };
+
+        if (props.isConversionGoalTrackingEnabled && hasConversionRates) {
+            instanceSeries.data.push(selectedInstanceConversionRate.value);
+            instanceColors.push("#2F855A");
+        }
+        if (hasOpenRates) {
+            instanceSeries.data.push(selectedInstanceOpenRate.value);
+            instanceColors.push("#3182CE");
+        }
+        if (hasClickRates) {
+            instanceSeries.data.push(selectedInstanceClickRate.value);
+            instanceColors.push("#DD6B20");
+        }
+        if (hasUnsubscribeRates) {
+            instanceSeries.data.push(selectedInstanceUnsubscribeRate.value);
+            instanceColors.push("#C53030");
+        }
+
+        const averageColors: string[] = [];
+        const averageSeries: BarSeries = {
+            label: SeriesName.Average,
+            data: [],
+            color: averageColors
+        };
+
+        if (props.isConversionGoalTrackingEnabled && hasConversionRates) {
+            averageSeries.data.push(averageInstanceConversionRate.value);
+            averageColors.push("#9AE6B4");
+        }
+        if (hasOpenRates) {
+            averageSeries.data.push(averageInstanceOpenRate.value);
+            averageColors.push("#90CDF4");
+        }
+        if (hasClickRates) {
+            averageSeries.data.push(averageInstanceClickRate.value);
+            averageColors.push("#FBD38D");
+        }
+        if (hasUnsubscribeRates) {
+            averageSeries.data.push(averageInstanceUnsubscribeRate.value);
+            averageColors.push("#FEB2B2");
+        }
+
+        return {
+            labels,
+            series: [instanceSeries, averageSeries]
+        };
+    });
+
+    // #endregion Computed Values
+</script>

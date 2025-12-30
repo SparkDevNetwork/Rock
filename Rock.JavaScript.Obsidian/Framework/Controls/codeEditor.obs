@@ -93,7 +93,7 @@
     } as const;
 
     // The valid mode types for intellisense.
-    type ModeTypes = keyof typeof modes | typeof modes[keyof typeof modes];
+    type ModeTypes = keyof typeof modes | typeof modes[keyof typeof modes] | "json";
 
     const props = defineProps({
         /** The text value of the code editor. */
@@ -132,6 +132,16 @@
             required: false
         },
 
+        /*
+         * If set, then the editor will automatically resize to fit the content
+         * up to the maximum height specified by `maxEditorHeight`. Only supported
+         * by the monaco editor.
+         */
+        maxEditorHeight: {
+            type: Number as PropType<number | undefined>,
+            default: undefined
+        },
+
         /** A list of merge fields to make available. Not currently used! */
         mergeFields: {
             type: Array as PropType<string[]>,
@@ -160,6 +170,7 @@
     const internalValue = ref(props.modelValue);
     const uniqueId = newGuid();
     const editorWrapper = ref<HTMLDivElement>();
+    const lineCount = ref(1);
 
     // #region Computed Values
 
@@ -187,6 +198,13 @@
 
         if (hasMergeFields.value) {
             height -= 40;
+        }
+
+        if (props.editor === "monaco" && props.maxEditorHeight) {
+            // Give an extra 2 lines of height to account for the editor's extra
+            // space as well as some extra bottom padding inside the editor.
+            height = Math.max(height, (lineCount.value + 2) * 19);
+            height = Math.min(height, props.maxEditorHeight);
         }
 
         return height;
@@ -222,6 +240,11 @@
 
         if (theMode === "lava" && props.editor === "monaco") {
             theMode = "liquid";
+        }
+
+        if (theMode === "json" && props.editor !== "monaco") {
+            // ACE does not have a JSON mode, so we use the text mode instead.
+            theMode = "text";
         }
 
         return theMode;
@@ -260,6 +283,7 @@
     watch(() => props.editor, initialize);
 
     watch(internalValue, () => {
+        lineCount.value = internalValue.value.split("\n").length;
         emit("update:modelValue", internalValue.value);
     });
 

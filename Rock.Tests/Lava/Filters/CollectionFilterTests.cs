@@ -215,16 +215,20 @@ Squashed Fruit: apples, oranges, peaches
             TestHelper.AssertTemplateOutput( "Item 1<br>Item 3<br>", lavaTemplate, mergeValues, ignoreWhitespace: true );
         }
 
-        [TestMethod]
-        public void Sum_AppliedToArrayOfIntegers_ReturnsSumOfIntegers()
+        [DataTestMethod]
+        [DataRow( "3,5,7", "15" )]
+        [DataRow( "3.1,5.1,7.1", "15.3" )]
+        [DataRow( "3.1,5.01,7.001", "15.111" )]
+        [DataRow( "A,B,C", "0" )]
+        public void Sum_AppliedToArrayOfNumbers_ReturnsSumOfValues( string values, string sumValue )
         {
-            var lavaTemplate = @"
-Total: {{ '3,5,7' | Split:',' | Sum }}
+            var lavaTemplate = $@"
+Total: {{{{ '{values}' | Split:',' | Sum }}}}
 ";
 
             lavaTemplate = lavaTemplate.Replace( "`", "\"" );
 
-            TestHelper.AssertTemplateOutput( "Total:15", lavaTemplate, LavaRenderParameters.Default, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( $"Total:{sumValue}", lavaTemplate, LavaRenderParameters.Default, ignoreWhitespace: true );
         }
 
         #endregion

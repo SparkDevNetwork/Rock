@@ -13,6 +13,7 @@
 </template>
 
 <script setup lang="ts">
+    import { FilterMode } from "@Obsidian/Enums/Reporting/filterMode";
     import { computed, useSlots } from "vue";
     import { PropType } from "vue";
 
@@ -20,12 +21,15 @@
         compareLabel: {
             type: String as PropType<string>
         },
+        filterMode: {
+            type: Number as PropType<FilterMode>
+        }
     });
 
     const slots = useSlots();
 
     /** True if the compare column should be displayed. */
-    const hasCompareColumn = computed((): boolean => !!slots.compare || !!props.compareLabel);
+    const hasCompareColumn = computed((): boolean => (!!slots.compare || !!props.compareLabel) && props.filterMode !== FilterMode.SimpleFilter);
 
     /** True if we have a plain text label to display in the compare column. */
     const hasCompareLabel = computed((): boolean => !!props.compareLabel);

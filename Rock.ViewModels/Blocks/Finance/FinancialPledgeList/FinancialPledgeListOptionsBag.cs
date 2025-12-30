@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeList
 {
     /// <summary>
@@ -22,6 +24,14 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeList
     /// </summary>
     public class FinancialPledgeListOptionsBag
     {
+        /// <summary>
+        /// Gets or sets the currency information.
+        /// </summary>
+        /// <value>
+        /// The currency information.
+        /// </value>
+        public CurrencyInfoBag CurrencyInfo { get; set; }
+
         /// <summary>
         /// Determines if the accounts column should be displayed.
         /// </summary>

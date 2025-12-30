@@ -40,7 +40,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     [DisplayName( "Live Experience" )]
     [Category( "Event > Interactive Experiences" )]
     [Description( "Displays a live interactive experience" )]
-    [IconCssClass( "fa fa-tv" )]
+    [IconCssClass( "ti ti-device-tv" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

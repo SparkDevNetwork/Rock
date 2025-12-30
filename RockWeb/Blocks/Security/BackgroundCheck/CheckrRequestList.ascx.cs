@@ -355,7 +355,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                                 "<span class='label label-success'>No</span>" ) :
                             string.Empty,
                         HasResponseData = !string.IsNullOrWhiteSpace( b.ResponseData ),
-                        ResponseDocumentText = b.ResponseDocumentId.HasValue ? "<i class='fa fa-file-pdf-o fa-lg'></i>" : "",
+                        ResponseDocumentText = b.ResponseDocumentId.HasValue ? "<i class='ti ti-file-description ti-lg'></i>" : "",
                     ResponseId = b.ResponseId,
                     ReportStatus = b.Status.SplitCase()
                     } ).ToList();

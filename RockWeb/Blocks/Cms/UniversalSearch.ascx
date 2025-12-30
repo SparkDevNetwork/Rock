@@ -20,14 +20,14 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block" DefaultButton="btnSearch">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-search"></i> Universal Search</h1>
+                <h1 class="panel-title"><i class="ti ti-search"></i> Universal Search</h1>
             </div>
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbWarnings" runat="server" NotificationBoxType="Warning" />
 
                 <asp:Literal ID="lPreHtml" runat="server" />
                 <div class="input-group searchbox">
-                    <div class="input-group-addon"><i class="fa fa-search"></i></div>
+                    <div class="input-group-addon"><i class="ti ti-search"></i></div>
                     <asp:TextBox id="tbSearch" runat="server" CssClass="form-control" Placeholder="Search" />
 
                     <span id="spanButtonGroup" runat="server" class="input-group-btn">
@@ -83,7 +83,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:RockTextBox ID="tbResultsPerPage" runat="server" Label="Results Per Page" CssClass="input-width-sm" />
-                                    <Rock:RockCheckBox ID="cbShowRefinedSearch" runat="server" Label="Show Refinded Search Options" />
+                                    <Rock:RockCheckBox ID="cbShowRefinedSearch" runat="server" Label="Show Refined Search Options" />
                                     <Rock:RockCheckBox ID="cbShowScores" runat="server" Label="Show Scores" Help="Enables the display of scores for help with debugging." />
                                     <Rock:RockCheckBox ID="cbUseCustomResults" runat="server" Label="Use Custom Results Template" Help="Determines if the custom Lava results template should be used." />
                                     <Rock:RockCheckBox ID="cbShowFilter" runat="server" Label="Show Model Filter" />

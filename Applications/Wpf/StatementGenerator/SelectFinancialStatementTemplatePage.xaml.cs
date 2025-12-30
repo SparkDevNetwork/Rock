@@ -21,6 +21,8 @@ using System.Windows.Controls;
 
 using RestSharp;
 
+using Rock.Apps.StatementGenerator.Client;
+
 namespace Rock.Apps.StatementGenerator
 {
     /// <summary>
@@ -116,7 +118,7 @@ namespace Rock.Apps.StatementGenerator
             }
 
             var rockConfig = RockConfig.Load();
-            var financialStatementTemplate = selected?.Tag as Rock.Client.FinancialStatementTemplate;
+            var financialStatementTemplate = selected?.Tag as FinancialStatementTemplate;
             rockConfig.FinancialStatementTemplateGuid = financialStatementTemplate?.Guid;
             rockConfig.Save();
 

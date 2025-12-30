@@ -40,7 +40,7 @@ namespace Rock.Blocks.Prayer
     [DisplayName( "Prayer Request Detail" )]
     [Category( "Prayer" )]
     [Description( "Displays the details of a particular prayer request." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -246,6 +246,19 @@ namespace Rock.Blocks.Prayer
                     box.Entity.AllowComments = GetAttributeValue( AttributeKey.DefaultAllowCommentsChecked ).AsBooleanOrNull() ?? true;
                     box.Entity.IsPublic = GetAttributeValue( AttributeKey.DefaultToPublic ).AsBoolean();
 
+                    /*
+                        7/15/2025 - MSE
+
+                        We now set `IsUrgent` to false by default to prevent it from being null when saving a Prayer Request.
+                        This ensures consistent sorting in blocks and Lava when urgency is used as a sort field.
+
+                        We chose not to create a migration to update existing null values to false.
+
+                        Reason: Null `IsUrgent` values caused Prayer Requests to sort incorrectly.
+                        https://github.com/SparkDevNetwork/Rock/issues/6373
+                    */
+                    box.Entity.IsUrgent = false;
+
                     // Check for PersonId page 
                     var personId = RequestContext.PageParameterAsId( PageParameterKey.PersonId );
                     if ( personId > 0 )
@@ -257,18 +270,24 @@ namespace Rock.Blocks.Prayer
                             box.Entity.FirstName = person.NickName;
                             box.Entity.LastName = person.LastName;
                             box.Entity.Email = person.Email;
+
+                            var campus = person.GetFamily( rockContext )?.Campus;
+                            box.Entity.Campus = campus?.ToListItemBag();
                         }
                     }
                     else
                     {
                         // if no PersonId is specified, then set the current person as the requester if the block setting is enabled
-                        var CurrentPerson = this.GetCurrentPerson();
-                        if ( CurrentPerson != null && GetAttributeValue( AttributeKey.SetCurrentPersonToRequester ).AsBoolean() )
+                        var currentPerson = this.GetCurrentPerson();
+                        if ( currentPerson != null && GetAttributeValue( AttributeKey.SetCurrentPersonToRequester ).AsBoolean() )
                         {
-                            box.Entity.RequestedByPersonAlias = CurrentPerson.PrimaryAlias.ToListItemBag();
-                            box.Entity.FirstName = CurrentPerson.NickName;
-                            box.Entity.LastName = CurrentPerson.LastName;
-                            box.Entity.Email = CurrentPerson.Email;
+                            box.Entity.RequestedByPersonAlias = currentPerson.PrimaryAlias.ToListItemBag();
+                            box.Entity.FirstName = currentPerson.NickName;
+                            box.Entity.LastName = currentPerson.LastName;
+                            box.Entity.Email = currentPerson.Email;
+
+                            var campus = currentPerson.GetFamily( rockContext )?.Campus;
+                            box.Entity.Campus = campus?.ToListItemBag();
                         }
                     }
 
@@ -637,10 +656,18 @@ namespace Rock.Blocks.Prayer
                     return actionError;
                 }
 
+                var wasApproved = entity.IsApproved ?? false;
+
                 // Update the entity instance from the information in the bag.
                 if ( !UpdateEntityFromBox( entity, box, rockContext ) )
                 {
                     return ActionBadRequest( "Invalid data." );
+                }
+
+                if (entity.IsApproved == true && !wasApproved)
+                {
+                    entity.ApprovedOnDateTime = RockDateTime.Now;
+                    entity.ApprovedByPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
                 }
 
                 // Ensure everything is valid before saving.

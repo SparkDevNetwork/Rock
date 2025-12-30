@@ -147,8 +147,8 @@ $('.workflow-activity > header').on('click', function () {
     $expanded = $(this).children('input.filter-expanded');
     $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
 
-    $('i.workflow-activity-state', this).toggleClass('fa-chevron-down');
-    $('i.workflow-activity-state', this).toggleClass('fa-chevron-up');
+    $('i.workflow-activity-state', this).toggleClass('ti-chevron-down');
+    $('i.workflow-activity-state', this).toggleClass('ti-chevron-up');
 });
 
 // fix so that the Remove button will fire its event, but not the parent event
@@ -164,8 +164,8 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
     $expanded = $header.children('input.filter-expanded');
     $expanded.val('True');
 
-    $('i.workflow-activity-state', $header).removeClass('fa-chevron-down');
-    $('i.workflow-activity-state', $header).addClass('fa-chevron-up');
+    $('i.workflow-activity-state', $header).removeClass('ti-chevron-down');
+    $('i.workflow-activity-state', $header).addClass('ti-chevron-up');
 
     return false;
 });
@@ -388,7 +388,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             _lbDeleteActivityType.ID = this.ID + "_lbDeleteActivityType";
             _lbDeleteActivityType.CssClass = "btn btn-xs btn-square btn-danger js-activity-delete";
             _lbDeleteActivityType.Click += lbDeleteActivityType_Click;
-            _lbDeleteActivityType.Controls.Add( new LiteralControl { Text = "<i class='fa fa-times'></i>" } );
+            _lbDeleteActivityType.Controls.Add( new LiteralControl { Text = "<i class='ti ti-x'></i>" } );
 
             _cbActivityIsComplete = new RockCheckBox { Text = "Complete" };
             Controls.Add( _cbActivityIsComplete );
@@ -481,8 +481,8 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right activity-controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link'><i class='workflow-activity-state fa {0}'></i></a>",
-                Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" ) );
+            writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link'><i class='workflow-activity-state ti {0}'></i></a>",
+                Expanded ? "ti-chevron-up" : "ti-chevron-down" ) );
 
             if ( CanEdit && IsDeleteEnabled )
             {

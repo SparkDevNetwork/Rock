@@ -20,13 +20,14 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
-using Rock;
 using Rock.Web.Cache;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Reporting.DataSelect.Person
 {
@@ -36,7 +37,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Selects Last Contribution Date for a Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person Last Contribution" )]
-    [Rock.SystemGuid.EntityTypeGuid( "2F7330D9-04FF-4F8B-9B7D-1479F9027C5D")]
+    [Rock.SystemGuid.EntityTypeGuid( "2F7330D9-04FF-4F8B-9B7D-1479F9027C5D" )]
     public class LastContributionSelect : FirstLastContributionSelect
     {
         /// <summary>
@@ -57,7 +58,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Selects First Contribution Date for a Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person First Contribution" )]
-    [Rock.SystemGuid.EntityTypeGuid( "6C7C6C7A-3355-4FBF-9D39-AEB50E46A7C1")]
+    [Rock.SystemGuid.EntityTypeGuid( "6C7C6C7A-3355-4FBF-9D39-AEB50E46A7C1" )]
     public class FirstContributionSelect : FirstLastContributionSelect
     {
         /// <summary>
@@ -165,6 +166,58 @@ namespace Rock.Reporting.DataSelect.Person
 
         #endregion
 
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Person/firstLastContributionSelect.obs" ),
+                Options = new Dictionary<string, string> { ["firstOrLast"] = FirstOrLast.ConvertToString().ToLower() },
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+            string[] selections = selection.Split( '|' );
+
+            if ( selections.Count() > 0 )
+            {
+                var selectionAccountGuidValues = selections[0].Split( ',' ).ToList().Select( a => a.AsGuidOrNull() ?? Guid.Empty ).ToList();
+
+                var accounts = FinancialAccountCache.GetMany( selectionAccountGuidValues, rockContext )
+                    .Select( a => new ListItemBag { Text = a.Name, Value = a.Guid.ToString() } )
+                    .ToList();
+
+                data.Add( "accounts", accounts.ToCamelCaseJson( false, true ) );
+            }
+
+            if ( selections.Count() > 1 )
+            {
+                data.Add( "useSundayDate", selections[1].AsBoolean().ToString() );
+            }
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var accounts = data.GetValueOrDefault( "accounts", "[]" )
+                .FromJsonOrNull<List<ListItemBag>>()
+                ?.Select( a => a.Value )
+                ?.JoinStrings( "," );
+
+            var useSundayDate = data.GetValueOrDefault( "useSundayDate", "False" );
+
+            return $"{accounts}|{useSundayDate}";
+        }
+
+        #endregion
+
         #region Methods
 
         /// <summary>
@@ -249,9 +302,9 @@ namespace Rock.Reporting.DataSelect.Person
             }
 
             // t => t.Transaction.AuthorizedPersonId == Convert(p.Id)
-            var compare = new Expression[] { 
-                    Expression.Constant(transactionDetails), 
-                    Expression.Lambda<Func<FinancialTransactionDetail, bool>>( whereClause, new ParameterExpression[] { transactionDetailParameter } ) 
+            var compare = new Expression[] {
+                    Expression.Constant(transactionDetails),
+                    Expression.Lambda<Func<FinancialTransactionDetail, bool>>( whereClause, new ParameterExpression[] { transactionDetailParameter } )
                 };
 
             // transactions.Where( t => t.Transaction.AuthorizedPersonId == Convert(p.Id)
@@ -321,7 +374,7 @@ namespace Rock.Reporting.DataSelect.Person
                 AccountPicker accountPicker = controls[0] as AccountPicker;
                 if ( accountPicker != null )
                 {
-                    var accountIds = accountPicker.SelectedValues.AsIntegerList(); 
+                    var accountIds = accountPicker.SelectedValues.AsIntegerList();
                     var accountGuids = FinancialAccountCache.GetByIds( accountIds ).Select( a => a.Guid );
                     delimitedAccountGuids = accountGuids.Select( a => a.ToString() ).ToList().AsDelimited( "," );
                 }

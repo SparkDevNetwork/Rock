@@ -138,6 +138,8 @@ namespace Rock.Model
             target.Note = source.Note;
             target.Order = source.Order;
             target.PersonAliasId = source.PersonAliasId;
+            target.RelatedEntityId = source.RelatedEntityId;
+            target.RelatedEntityTypeId = source.RelatedEntityTypeId;
             target.StartDateTime = source.StartDateTime;
             target.StepProgramCompletionId = source.StepProgramCompletionId;
             target.StepStatusId = source.StepStatusId;

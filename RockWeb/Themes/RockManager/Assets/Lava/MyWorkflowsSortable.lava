@@ -27,7 +27,7 @@
               <span class="label label-info">{{ action.Activity.Workflow.Status }}</span>
               {% endif %}
             </td>
-            <td><i class="fa-fw {{ action.Activity.Workflow.WorkflowType.IconCssClass }}"></i> {{ action.Activity.Workflow.WorkflowType.Name }}</td>
+            <td><i class="ti-fw {{ action.Activity.Workflow.WorkflowType.IconCssClass }}"></i> {{ action.Activity.Workflow.WorkflowType.Name }}</td>
             <td data-dateformat="M/D/YY">{{ action.Activity.Workflow | Attribute:'DueDate' | Date:'M/d/yy' }}</td>
           </tr>
           {% endfor %}

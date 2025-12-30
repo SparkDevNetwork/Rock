@@ -19,7 +19,30 @@ import { standardColumnProps } from "@Obsidian/Core/Controls/grid";
 import { Component, defineComponent, PropType } from "vue";
 import CurrencyCell from "../Cells/currencyCell.partial.obs";
 import CurrencySkeletonCell from "../Cells/currencySkeletonCell.partial.obs";
-import { ColumnDefinition, ExportValueFunction } from "@Obsidian/Types/Controls/grid";
+import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+import { ColumnDefinition, QuickFilterValueFunction, ExportValueFunction } from "@Obsidian/Types/Controls/grid";
+
+/**
+ * Gets the value to use when displaying a cell of this column.
+ *
+ * @param row The row that will be displayed.
+ * @param column The column that will be displayed.
+ *
+ * @returns A string value or undefined if the cell has no value.
+ */
+
+function getDisplayedValue(row: Record<string, unknown>, column: ColumnDefinition): string | undefined {
+    if (!column.field) {
+        return undefined;
+    }
+    const value = row[column.field];
+
+    if (typeof value !== "number") {
+        return undefined;
+    }
+
+    return toCurrencyOrNull(value) ?? "";
+}
 
 /**
  * Gets the value to use when exporting a cell of this column.
@@ -58,6 +81,11 @@ export default defineComponent({
         skeletonComponent: {
             type: Object as PropType<Component>,
             default: CurrencySkeletonCell
+        },
+
+        quickFilterValue: {
+            type: Function as PropType<QuickFilterValueFunction>,
+            default: getDisplayedValue
         },
 
         exportValue: {

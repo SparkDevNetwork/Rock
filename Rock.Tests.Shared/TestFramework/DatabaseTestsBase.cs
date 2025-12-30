@@ -106,7 +106,7 @@ namespace Rock.Tests.Shared.TestFramework
         /// Called after every test in the class has finished executing.
         /// </summary>
         /// <returns>A task that indicates when the cleanup has completed.</returns>
-        [ClassCleanup( InheritanceBehavior.BeforeEachDerivedClass )]
+        [ClassCleanup( InheritanceBehavior.BeforeEachDerivedClass, ClassCleanupBehavior.EndOfClass )]
         public static async Task ContainerClassCleanup()
         {
             // Make sure we shut down the container at the end of all tests

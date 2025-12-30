@@ -46,7 +46,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
     [DisplayName( "Connection Request Detail" )]
     [Category( "Mobile > Connection" )]
     [Description( "Displays the details of the given connection request for editing state, status, etc." )]
-    [IconCssClass( "fa fa-id-card" )]
+    [IconCssClass( "ti ti-id" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

@@ -81,17 +81,20 @@
     padding: 12px;
   }
 
-  .fa-stack {
+  .fa-stack,
+  .ti-stacked {
     width: 1em;
     height: 1em;
     line-height: 1em;
   }
 
-  .fa-stack-1x {
+  .fa-stack-1x,
+  .ti-stacked-1x {
     font-size: .5em;
   }
 
-  .fa-stack-2x {
+  .fa-stack-2x,
+  .ti-stacked-2x {
     font-size: 1em;
   }
 }
@@ -349,11 +352,10 @@
   height: 1em;
 
   .badge-icon {
-    position: absolute;
     top: 0;
     right: 0;
     left: 0;
-    font-size: inherit;
+    font-size: 1.25em;
     line-height: 1.15em;
     text-align: center;
   }
@@ -379,7 +381,7 @@
   }
 
   .badge-content {
-    font-size: .888em;
+    font-size: 1em;
     color: @badge-lastvisitonsite-color;
 
     &.today {
@@ -407,15 +409,25 @@
 }
 
 .rockbadge-signal .metric-value {
-  top: .6em;
-  bottom: .6em;
+  top:      .35em;
+  bottom:   .65em;
 }
 
-.rockbadge-personaldevice {
-  width: .6em;
+.rockbadge-personaldevice,
+.rockbadge-lastvisitonsite {
+  width:  .9em;
   .badge-content .metric-value {
-    top: .7142em;
+    bottom: 1em;
   }
+}
+
+.rockbadge-personaldevice .badge-content .metric-value {
+  font-size: .3em;
+}
+
+.rockbadge-lastvisitonsite .badge-content .metric-value {
+  font-size: .4em;
+  top:       .4em;
 }
 
 .rockbadge-assessment {
@@ -424,11 +436,13 @@
     color: inherit;
   }
 
-  .fa-stack-1x {
+  .fa-stack-1x,
+  .ti-stacked-1x {
     color: #fff;
   }
 
-  .fa-stack-2x {
+  .fa-stack-2x,
+  .ti-stacked-2x {
     color: currentColor;
   }
 

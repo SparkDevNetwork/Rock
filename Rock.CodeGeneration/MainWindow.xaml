@@ -9,7 +9,7 @@
         Title="Rock Code Generation"
         Icon="Resources\Rock.ico"
         Height="550"
-        Width="800"
+        Width="1200"
         MinWidth="600"
         MinHeight="550">
     <Grid>

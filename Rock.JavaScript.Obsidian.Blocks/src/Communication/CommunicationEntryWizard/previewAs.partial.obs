@@ -1,0 +1,147 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="preview-as">
+        <template v-if="personalizationSegments?.length">
+            <ButtonDropDownList v-model="internalPreviewAsType"
+                                btnType="link"
+                                :items="previewAsTypes" />
+
+            <PersonPicker v-if="previewAsType === PreviewAsType.Person"
+                          v-model="previewAsPersonAliasOrUndefined" />
+
+            <div v-else-if="previewAsType === PreviewAsType.Segment"
+                 class="preview-as-segment">
+                <DropDownList v-model="previewAsPersonalizationSegmentIdOrEmptyString"
+                              :items="personalizationSegments ?? []"
+                              :showBlankItem="false" />
+
+                <template v-if="!isPreviewLoading">
+                    <div v-if="previewAsPersonAlias" class="preview-as-segment-hint">Previewing As: {{ previewAsPersonAlias.text }}
+                        <HelpBlock text="If a segment is selected, a random person from that segment will be used for preview. This person may not be an actual email recipient and might belong to other segments, which could affect personalization based on your settings." />
+                    </div>
+
+                    <div v-else class="preview-as-segment-error">
+                        <i class="ti ti-alert-circle"></i> Empty personalization segment
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <template v-else>
+            <RockLabel>Preview As Person</RockLabel>
+
+            <PersonPicker v-if="previewAsType === PreviewAsType.Person"
+                          v-model="previewAsPersonAliasOrUndefined" />
+        </template>
+    </div>
+</template>
+
+<style scoped>
+.preview-as {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-small);
+}
+
+.preview-as-segment {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-large);
+}
+
+.preview-as-segment-hint {
+    font-size: var(--font-size-small);
+    color: var(--color-interface-medium);
+}
+
+.preview-as-segment-error {
+    font-size: var(--font-size-small);
+    color: var(--color-danger-strong);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { PreviewAsType } from "./types.partial";
+    import ButtonDropDownList from "@Obsidian/Controls/buttonDropDownList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        isPreviewLoading: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        personalizationSegment: {
+            type: Object as PropType<ListItemBag | null | undefined>,
+            required: true
+        },
+
+        personalizationSegments: {
+            type: Array as PropType<ListItemBag[] | null | undefined>,
+            required: true,
+        },
+
+        previewAsType: {
+            type: String as PropType<PreviewAsType>,
+            required: true
+        },
+
+        previewAsPersonAlias: {
+            type: Object as PropType<ListItemBag | null | undefined>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:personalizationSegment", value: ListItemBag | null | undefined): void;
+        (e: "update:previewAsPersonAlias", value: ListItemBag | null | undefined): void;
+        (e: "update:previewAsType", value: PreviewAsType): void;
+    }>();
+
+    // #region Values
+
+    const internalPreviewAsPersonAlias = useVModelPassthrough(props, "previewAsPersonAlias", emit);
+    const internalPreviewAsType = useVModelPassthrough(props, "previewAsType", emit);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const previewAsPersonalizationSegmentIdOrEmptyString = computed<string>({
+        get(): string {
+            return props.personalizationSegment?.value ?? "";
+        },
+        set(value: string) {
+            const segment = props.personalizationSegments?.find(s => s.value === value);
+            emit("update:personalizationSegment", segment);
+        }
+    });
+
+    const previewAsTypes = computed<ListItemBag[]>(() => {
+        return Enumerable
+            .from([PreviewAsType.Person, PreviewAsType.Segment])
+            .select<ListItemBag>(i => ({ text: i, value: i }))
+            .toArray();
+    });
+
+    const previewAsPersonAliasOrUndefined = computed<ListItemBag | undefined>({
+        get(): ListItemBag | undefined {
+            return internalPreviewAsPersonAlias.value ?? undefined;
+        },
+        set(value: ListItemBag | undefined) {
+            internalPreviewAsPersonAlias.value = value;
+        }
+    });
+
+    // #endregion Computed Values
+
+</script>

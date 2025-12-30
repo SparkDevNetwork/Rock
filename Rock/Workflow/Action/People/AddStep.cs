@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -154,19 +154,11 @@ namespace Rock.Workflow.Action
                 return LogMessagesForExit( action, errorMessages );
             }
 
-            var personService = new PersonService( rockContext );
-            var person = personService.Queryable( "Aliases" ).AsNoTracking()
-                .FirstOrDefault( p => p.Guid == personGuid.Value || p.Aliases.Any( pa => pa.Guid == personGuid.Value ) );
+            var primaryAliasId = GetPersonFromAttributeGuid( personGuid.Value, rockContext );
 
-            if ( person == null )
+            if ( !primaryAliasId.HasValue )
             {
-                errorMessages.Add( $"The person with the guid '{personGuid.Value}' was not found" );
-                return LogMessagesForExit( action, errorMessages );
-            }
-
-            if ( !person.PrimaryAliasId.HasValue )
-            {
-                errorMessages.Add( $"{person.FullName} does not have a primary alias identifier" );
+                errorMessages.Add( $"No person alias or person with the guid '{personGuid.Value}' was found, or the person does not have a primary alias identifier" );
                 return LogMessagesForExit( action, errorMessages );
             }
 
@@ -224,7 +216,7 @@ namespace Rock.Workflow.Action
             var step = new Step
             {
                 StepTypeId = stepType.Id,
-                PersonAliasId = person.PrimaryAliasId.Value,
+                PersonAliasId = primaryAliasId.Value,
                 StartDateTime = startDate,
                 EndDateTime = endDate,
                 CompletedDateTime = completedDate,
@@ -268,6 +260,38 @@ namespace Rock.Workflow.Action
             }
 
             return LogMessagesForExit( action, errorMessages );
+        }
+
+        /// <summary>
+        /// This method will get the primary person alias id based on the attribute's value. The value should be a person alias guid but we'll
+        /// also fallback to check for a person guid if the alias query does not find a person. The original logic supported this
+        /// so we don't want to break this. This method was created to fix a performance problem where we were trying to do both
+        /// lookups in one query (see below).
+        /// .FirstOrDefault( p => p.Guid == personGuid.Value || p.Aliases.Any( pa => pa.Guid == personGuid.Value ) );
+        /// </summary>
+        /// <param name="attributeGuid">The unique identifier of the <see cref="PersonAlias"/> or <see cref="Person"/>.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The primary <see cref="PersonAlias"/> identifier.</returns>
+        private int? GetPersonFromAttributeGuid( Guid attributeGuid, RockContext rockContext )
+        {
+            // First assume that the guid value is a person alias guid. This is what the field type
+            // expects it to be and is the correct value.
+            var primaryAliasId = new PersonAliasService( rockContext ).Queryable()
+                .Where( pa => pa.Guid == attributeGuid )
+                .Select( pa => pa.Person.PrimaryAliasId )
+                .FirstOrDefault();
+
+            if ( primaryAliasId.HasValue )
+            {
+                return primaryAliasId;
+            }
+
+            // If we did not find it using the person alias guid then find it by the person guid.
+            // This is technically not the correct way but the older code allowed for this.
+            return new PersonService( rockContext ).Queryable()
+                .Where( p => p.Guid == attributeGuid )
+                .Select( p => p.PrimaryAliasId )
+                .FirstOrDefault();
         }
 
         /// <summary>

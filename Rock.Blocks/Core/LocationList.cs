@@ -35,7 +35,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Location List" )]
     [Category( "Core" )]
     [Description( "Displays a list of locations." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

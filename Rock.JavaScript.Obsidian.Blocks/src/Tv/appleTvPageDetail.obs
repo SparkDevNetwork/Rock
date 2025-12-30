@@ -8,7 +8,7 @@
 
         <template #headerActions>
             <span class="action clickable text-info" v-if="appleTvPageEditBag?.bag?.idKey" title="Copy Page Guid to Clipboard" @click="onExportClick">
-                <i class="fa fa-clipboard"></i>
+                <i class="ti ti-clipboard"></i>
             </span>
         </template>
 

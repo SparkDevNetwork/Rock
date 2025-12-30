@@ -22,11 +22,12 @@
     import CopyButton from "@Obsidian/Controls/copyButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { getSfcControlImportPath } from "./common/utils.partial";
 
     const tooltip = ref("Copy");
     const value = ref("To God Be The Glory");
-    const buttonSize = ref("md");
+    const buttonSize = ref<BtnSize>("");
     const sizeOptions = [
         { value: "lg", text: "Large" },
         { value: "md", text: "Medium" },

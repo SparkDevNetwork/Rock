@@ -7,7 +7,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-bullhorn"></i> Content Channels
+                    <i class="ti ti-speakerphone"></i> Content Channels
                 </h1>
             </div>
 

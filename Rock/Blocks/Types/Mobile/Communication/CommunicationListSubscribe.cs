@@ -37,7 +37,7 @@ namespace Rock.Blocks.Types.Mobile.Events
     [DisplayName( "Communication List Subscribe" )]
     [Category( "Mobile > Communication" )]
     [Description( "Allows the user to subscribe or unsubscribe from specific communication lists." )]
-    [IconCssClass( "fa fa-at" )]
+    [IconCssClass( "ti ti-at" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
@@ -81,6 +81,13 @@ namespace Rock.Blocks.Types.Mobile.Events
         Key = AttributeKeys.AlwaysIncludeSubscribedLists,
         Order = 5 )]
 
+    [BooleanField( "Included Inactive List",
+        Description = "Should the inactive communication list be displayed as an option for subscribing?",
+        IsRequired = false,
+        DefaultBooleanValue = true,
+        Key = AttributeKeys.IncludedInactiveList,
+        Order = 6 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_EVENTS_COMMUNICATION_LIST_SUBSCRIBE_BLOCK_TYPE )]
@@ -123,6 +130,11 @@ namespace Rock.Blocks.Types.Mobile.Events
             /// The always include subscribed lists key.
             /// </summary>
             public const string AlwaysIncludeSubscribedLists = "AlwaysIncludeSubscribedLists";
+
+            /// <summary>
+            /// The included inactive list key.
+            /// </summary>
+            public const string IncludedInactiveList = "IncludedInactiveList";
         }
 
         /// <summary>
@@ -165,6 +177,7 @@ namespace Rock.Blocks.Types.Mobile.Events
                 ShowDescription = this.ShowDescription,
                 ShowMediumPreference = GetAttributeValue( AttributeKeys.ShowMediumPreference ).AsBoolean(),
                 ShowPushNotificationsAsMediumPreference = GetAttributeValue( AttributeKeys.ShowPushNotificationsAsMediumPreference ).AsBoolean(),
+                IncludedInactiveList = GetAttributeValue( AttributeKeys.IncludedInactiveList ).AsBoolean(),
             };
         }
 
@@ -291,11 +304,18 @@ namespace Rock.Blocks.Types.Mobile.Events
             // Get all the communication lists, excluding those from the above
             // query about synced groups.
             //
-            var communicationLists = new GroupService( rockContext )
+            var communicationListsQry = new GroupService( rockContext )
                .Queryable()
                .Where( a => a.GroupTypeId == communicationListGroupTypeId )
-               .Where( a => !commGroupSyncsForDefaultRole.Contains( a.Id ) )
-               .ToList();
+               .Where( a => !commGroupSyncsForDefaultRole.Contains( a.Id ) );
+
+            if ( !GetAttributeValue( AttributeKeys.IncludedInactiveList ).AsBoolean() )
+            {
+                communicationListsQry = communicationListsQry.Where( a => a.IsActive );
+            }
+
+            var communicationLists = communicationListsQry
+                .ToList();
 
             var categoryGuids = CommunicationListCategories;
 
@@ -350,7 +370,7 @@ namespace Rock.Blocks.Types.Mobile.Events
                 var alwaysIncludeSubscribed = GetAttributeValue( AttributeKeys.AlwaysIncludeSubscribedLists ).AsBoolean();
                 var contextCampus = RequestContext.GetContextEntity<Campus>();
 
-                if( contextCampus != null )
+                if ( contextCampus != null )
                 {
                     // We're going to do two steps of filtering here.
                     viewableCommunicationLists = viewableCommunicationLists.Where( x =>

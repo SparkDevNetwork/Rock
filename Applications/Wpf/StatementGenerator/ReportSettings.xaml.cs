@@ -23,7 +23,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Newtonsoft.Json;
 using RestSharp;
-using Rock.Client;
+
+using Rock.Apps.StatementGenerator.Client;
 
 namespace Rock.Apps.StatementGenerator
 {
@@ -79,8 +80,8 @@ namespace Rock.Apps.StatementGenerator
                     MaxStatementsPerChapter = 500,
                     MinimumContributionAmount = 1.00M,
                     PreventSplittingPrimarySortValuesAcrossChapters = true,
-                    PrimarySortOrder = Client.Enums.FinancialStatementOrderBy.PostalCode,
-                    SecondarySortOrder = Client.Enums.FinancialStatementOrderBy.LastName,
+                    PrimarySortOrder = FinancialStatementOrderBy.PostalCode,
+                    SecondarySortOrder = FinancialStatementOrderBy.LastName,
                     SplitFilesOnPrimarySortValue = true,
                     CreatedDateTime = DateTime.Now,
                     Guid = Guid.NewGuid()
@@ -165,9 +166,9 @@ namespace Rock.Apps.StatementGenerator
 
             // Get the previous record and set up the one to be stored
             var isPost = true;
-            var getStatementGeneratorConfig = new RestRequest( $"api/Attributes?$filter=Guid eq guid'{Rock.Client.SystemGuid.Attribute.STATEMENT_GENERATOR_CONFIG}'" );
-            var storedSetting = restClient.Execute<List<Rock.Client.Attribute>>( getStatementGeneratorConfig ).Data.FirstOrDefault();
-            var systemSetting = new AttributeEntity()
+            var getStatementGeneratorConfig = new RestRequest( $"api/Attributes?$filter=Guid eq guid'{SystemGuid.STATEMENT_GENERATOR_CONFIG}'" );
+            var storedSetting = restClient.Execute<List<Client.Attribute>>( getStatementGeneratorConfig ).Data.FirstOrDefault();
+            var systemSetting = new Client.Attribute()
             {
                 IsSystem = false,
                 FieldTypeId = 1,
@@ -182,7 +183,7 @@ namespace Rock.Apps.StatementGenerator
                 IsGridColumn = false,
                 IsMultiValue = false,
                 IsRequired = false,
-                Guid = Rock.Client.SystemGuid.Attribute.STATEMENT_GENERATOR_CONFIG.AsGuid()
+                Guid = SystemGuid.STATEMENT_GENERATOR_CONFIG.AsGuid()
             };
 
             if ( null != storedSetting )

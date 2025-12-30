@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
             <asp:HiddenField ID="hfClonedThemeName" runat="server" />
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-picture-o "></i> Themes</h1>
+                <h1 class="panel-title"><i class="ti ti-photo-scan"></i> Themes</h1>
             </div>
             <div class="panel-body">
 
@@ -19,8 +19,8 @@
                             <Rock:RockBoundField DataField="Purpose" HeaderText="Purpose" SortExpression="Purpose" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" HeaderStyle-HorizontalAlign="Center"  ItemStyle-HorizontalAlign="Center"/>
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" HeaderStyle-HorizontalAlign="Center"  ItemStyle-HorizontalAlign="Center"/>
-                            <Rock:LinkButtonField HeaderText="Compile" CssClass="btn btn-default btn-sm" Text="<i class='fa fa-refresh'></i>" OnClick="gCompileTheme_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>
-                            <Rock:LinkButtonField HeaderText="Copy" CssClass="btn btn-default btn-sm" Text="<i class='fa fa-clone'></i>" OnClick="gCloneTheme_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>
+                            <Rock:LinkButtonField HeaderText="Compile" CssClass="btn btn-default btn-sm" Text="<i class='ti ti-refresh'></i>" OnClick="gCompileTheme_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>
+                            <Rock:LinkButtonField HeaderText="Copy" CssClass="btn btn-default btn-sm" Text="<i class='ti ti-copy'></i>" OnClick="gCloneTheme_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>
                             <Rock:DeleteField OnClick="gThemes_Delete" />
                         </Columns>
                     </Rock:Grid>

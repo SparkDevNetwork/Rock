@@ -22,8 +22,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
@@ -91,6 +95,71 @@ namespace Rock.Reporting.DataFilter.Person
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var options = new Dictionary<string, string>();
+
+            var sites = SiteCache.GetAllActiveSites().ToList();
+            var siteOptions = sites.Select( s => new ListItemBag { Text = s.Name, Value = s.Guid.ToString() } ).ToList();
+            options.Add( "siteOptions", siteOptions.ToCamelCaseJson( false, true ) );
+
+            var platforms = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM.AsGuid() )
+                .DefinedValues
+                .Where( pdp => pdp.IsActive )
+                .OrderBy( pdp => pdp.Order )
+                .ThenBy( pdp => pdp.Value ).ToList();
+            var platformOptions = platforms.Select( pdp => new ListItemBag { Text = pdp.Value, Value = pdp.Guid.ToString() } ).ToList();
+            options.Add( "platformOptions", platformOptions.ToCamelCaseJson( false, true ) );
+
+            var deviceTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_TYPE.AsGuid() )
+                .DefinedValues
+                .Where( pdp => pdp.IsActive )
+                .OrderBy( pdp => pdp.Order )
+                .ThenBy( pdp => pdp.Value ).ToList();
+            var deviceTypeOptions = deviceTypes.Select( pdp => new ListItemBag { Text = pdp.Value, Value = pdp.Guid.ToString() } ).ToList();
+            options.Add( "deviceTypeOptions", deviceTypeOptions.ToCamelCaseJson( false, true ) );
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/personalDevicesFilter.obs" ),
+                Options = options
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = DataComponentSettingsHelper.DeserializeFilterSettings( selection, new FilterSettings() );
+            var data = new Dictionary<string, string>
+            {
+                { "sites", settings.SiteGuids.ToCamelCaseJson( false, true ) },
+                { "platforms", settings.DevicePlatformGuids.ToCamelCaseJson( false, true ) },
+                { "deviceTypes", settings.DeviceTypeGuids.ToCamelCaseJson( false, true ) },
+                { "notificationsEnabled", settings.NotificationsEnabled?.ToTrueFalse() ?? string.Empty },
+            };
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = new FilterSettings();
+
+            settings.SiteGuids = data.GetValueOrNull( "sites" )?.FromJsonOrNull<List<Guid>>() ?? new List<Guid>();
+            settings.NotificationsEnabled = data.GetValueOrDefault( "notificationsEnabled", "" ).AsBooleanOrNull();
+            settings.DevicePlatformGuids = data.GetValueOrNull( "platforms" )?.FromJsonOrNull<List<Guid>>() ?? new List<Guid>();
+            settings.DeviceTypeGuids = data.GetValueOrNull( "deviceTypes" )?.FromJsonOrNull<List<Guid>>() ?? new List<Guid>();
+
+            var json = DataComponentSettingsHelper.SerializeFilterSettings( settings );
+            return json;
         }
 
         #endregion

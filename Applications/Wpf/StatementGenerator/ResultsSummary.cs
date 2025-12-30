@@ -21,7 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 
-using Rock.Client;
+using Rock.Apps.StatementGenerator.Client;
 
 namespace Rock.Apps.StatementGenerator
 {

@@ -33,7 +33,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [DisplayName( "Content" )]
     [Category( "Mobile > Cms" )]
     [Description( "Displays custom XAML content on the page." )]
-    [IconCssClass( "fa fa-align-center" )]
+    [IconCssClass( "ti ti-align-center" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

@@ -17,16 +17,17 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Blocks;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Reporting;
 using Rock.Security;
 using Rock.Utility;
@@ -84,11 +85,11 @@ namespace RockWeb.Blocks.Reporting
         "Use Obsidian Components",
         Key = AttributeKey.UseObsidianComponents,
         Description = "Switches the filter components to use Obsidian if supported.",
-        DefaultBooleanValue = true,
-        Category = "Advanced")]
+        DefaultBooleanValue = false,
+        Category = "Advanced" )]
 
     [Rock.SystemGuid.BlockTypeGuid( "EB279DF9-D817-4905-B6AC-D9883F0DA2E4" )]
-    public partial class DataViewDetail : RockBlock
+    public partial class DataViewDetail : RockBlock, IRockBlockType
     {
         #region Attribute Keys
 
@@ -128,6 +129,28 @@ namespace RockWeb.Blocks.Reporting
         }
 
         #endregion ViewStateKey
+
+        #region IRockBlockType
+
+        /// <inheritdoc/>
+        int IRockBlockType.BlockId => ( ( IRockBlockType ) this ).BlockCache.Id;
+
+        /// <inheritdoc/>
+        BlockCache IRockBlockType.BlockCache { get; set; }
+
+        /// <inheritdoc/>
+        PageCache IRockBlockType.PageCache { get; set; }
+
+        /// <inheritdoc/>
+        RockRequestContext IRockBlockType.RequestContext { get; set; }
+
+        /// <inheritdoc/>
+        System.Threading.Tasks.Task<object> IRockBlockType.GetBlockInitializationAsync( RockClientType clientType )
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
 
         #region Control Methods
 
@@ -172,10 +195,15 @@ $(document).ready(function() {
         {
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( PageParameterKey.DataViewId );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                string dataViewId = PageParameter( PageParameterKey.DataViewId ).AsIntegerOrNull()?.ToString() ?? string.Empty;
+                if ( string.IsNullOrEmpty( dataViewId ) )
                 {
-                    ShowDetail( itemId.AsInteger(), PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull() );
+                    dataViewId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.DataViewId ) ).ToStringSafe();
+                }
+
+                if ( !string.IsNullOrWhiteSpace( dataViewId ) )
+                {
+                    ShowDetail( dataViewId.AsInteger(), PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull() );
                 }
                 else
                 {
@@ -476,8 +504,12 @@ $(document).ready(function() {
 
             if ( dataViewId == 0 )
             {
-                // If not, check if we are editing a new copy of an existing Data View.
-                dataViewId = PageParameter( PageParameterKey.DataViewId ).AsInteger();
+                // If it's 0, check if we were editing an about-to-be-created "copy" of an existing Data View; so we return back to viewing that one.
+                dataViewId = PageParameter( PageParameterKey.DataViewId ).ToIntSafe();
+                if ( dataViewId == 0 )
+                {
+                    dataViewId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.DataViewId ) ).ToIntSafe();
+                }
             }
 
             if ( dataViewId == 0 )
@@ -657,15 +689,6 @@ $(document).ready(function() {
             }
 
             ddlTransform.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
-        }
-
-        /// <summary>
-        /// Shows the detail.
-        /// </summary>
-        /// <param name="dataViewId">The data view identifier.</param>
-        public void ShowDetail( int dataViewId )
-        {
-            ShowDetail( dataViewId, null );
         }
 
         /// <summary>
@@ -1140,17 +1163,17 @@ $(document).ready(function() {
             {
                 return;
             }
-            else if ( dataView.PersistedScheduleId != null || dataView.PersistedScheduleIntervalMinutes != null  )
+            else if ( dataView.PersistedScheduleId != null || dataView.PersistedScheduleIntervalMinutes != null )
             {
                 // This is a persisted data view...
-                if ( ! dataView.PersistedLastRunDurationMilliseconds.HasValue )
+                if ( !dataView.PersistedLastRunDurationMilliseconds.HasValue )
                 {
                     return;
                 }
 
                 isPersisted = true;
             }
-            else if ( ! dataView.TimeToRunDurationMilliseconds.HasValue )
+            else if ( !dataView.TimeToRunDurationMilliseconds.HasValue )
             {
                 // Otherwise it is not persisted data view, but there is no 'time to run duration' to show.
                 return;
@@ -1355,6 +1378,7 @@ $(document).ready(function() {
         {
             FilterGroup groupControl = sender as FilterGroup;
             FilterField filterField = new FilterField();
+            filterField.UseObsidian = GetAttributeValue( AttributeKey.UseObsidianComponents ).AsBoolean();
             filterField.ValidationGroup = this.BlockValidationGroup;
             filterField.IsFilterTypeEnhancedForLongLists = true;
             filterField.DataViewFilterGuid = Guid.NewGuid();
@@ -1363,7 +1387,6 @@ $(document).ready(function() {
             filterField.ID = string.Format( "ff_{0}", filterField.DataViewFilterGuid.ToString( "N" ) );
             filterField.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
             filterField.Expanded = true;
-            filterField.UseObsidian = GetAttributeValue( AttributeKey.UseObsidianComponents ).AsBoolean();
 
             // This is required for Obsidian filters so they can initialize any
             // data that must be sent from C# to Obsidian.
@@ -1488,13 +1511,13 @@ $(document).ready(function() {
                 if ( filter.ExpressionType == FilterExpressionType.Filter )
                 {
                     var filterControl = new FilterField();
+                    filterControl.UseObsidian = GetAttributeValue( AttributeKey.UseObsidianComponents ).AsBoolean();
                     filterControl.ValidationGroup = this.BlockValidationGroup;
                     filterControl.IsFilterTypeEnhancedForLongLists = true;
                     parentControl.Controls.Add( filterControl );
                     filterControl.DataViewFilterGuid = filter.Guid;
                     filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
                     filterControl.FilteredEntityTypeName = filteredEntityTypeName;
-                    filterControl.UseObsidian = GetAttributeValue( AttributeKey.UseObsidianComponents ).AsBoolean();
                     if ( filter.EntityTypeId.HasValue )
                     {
                         var entityTypeCache = EntityTypeCache.Get( filter.EntityTypeId.Value, rockContext );
@@ -1740,6 +1763,34 @@ $(document).ready(function() {
         {
             Unique = 0,
             NamedSchedule = 1
+        }
+
+        #endregion
+
+        #region Block Actions
+
+        /// <summary>
+        /// Executes a request from the UI component to be processed by the
+        /// server component. This is used to load additional information after
+        /// the component has been initialized.
+        /// </summary>
+        /// <param name="componentGuid">The unique identifier of the component that will handle the request.</param>
+        /// <param name="request">The object that describes the parameters of the request.</param>
+        /// <param name="securityGrantToken">The security grant token that was created when the component was initialized.</param>
+        /// <returns>The response from the server component.</returns>
+        [BlockAction]
+        public BlockActionResult ExecuteComponentRequest( Guid componentGuid, Dictionary<string, string> request, string securityGrantToken )
+        {
+            var securityGrant = SecurityGrant.FromToken( securityGrantToken ) ?? new SecurityGrant();
+            var filterEntityType = EntityTypeCache.Get( componentGuid );
+            var component = Rock.Reporting.DataFilterContainer.GetComponent( filterEntityType?.GetEntityType()?.FullName );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var result = component?.ExecuteComponentRequest( request, securityGrant, rockContext, RequestContext );
+
+                return new BlockActionResult( System.Net.HttpStatusCode.OK, result );
+            }
         }
 
         #endregion

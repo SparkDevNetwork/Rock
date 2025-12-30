@@ -1,0 +1,375 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSectionContainer sidebar>
+        <ContentSection title="Initialization" icon="ti ti-layout" :disableCollapse="true">
+            <ContentStack>
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="name"
+                                 label="Name"
+                                 rules="required" />
+                    </div>
+                    <div class="col-md-6">
+                        <CheckBox v-model="isActive"
+                                  label="Active" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="requestFilterKey"
+                                 label="Key"
+                                 rules="required" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="siteValue"
+                                      :items="siteItems"
+                                      label="Site"
+                                      :showBlankItem="true"
+                                      help="Site - Optional site to limit the request filter to." />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <!-- Previous Activity -->
+        <ContentSection title="Previous Activity" icon="ti ti-user">
+            <ContentStack>
+                <CheckBoxList v-model="previousActivityTypes" :items="previousActivityItems" label="Visitor Type" :horizontal="true" :repeatColumns="4" />
+            </ContentStack>
+        </ContentSection>
+
+        <!-- Device Types -->
+        <ContentSection title="Device Types" icon="ti ti-devices">
+            <ContentStack>
+                <CheckBoxList v-model="deviceTypes" :items="deviceTypeItems" label="Device Type" :horizontal="true" :repeatColumns="4" />
+            </ContentStack>
+        </ContentSection>
+
+        <!-- Query String Filters -->
+        <ContentSection title="Query String Filter" icon="ti ti-key">
+            <ContentStack>
+                <QueryStringFilter v-model="queryStringFilter" />
+            </ContentStack>
+        </ContentSection>
+
+        <!-- Cookie Filters -->
+        <ContentSection title="Cookie" icon="ti ti-cookie">
+            <ContentStack>
+                <CookieFilter v-model="cookieFilter" />
+            </ContentStack>
+        </ContentSection>
+
+        <!-- Browser Filters -->
+        <ContentSection title="Browser" icon="ti ti-brand-safari">
+            <ContentStack>
+                <BrowserFilter v-model="browserFilter" />
+            </ContentStack>
+        </ContentSection>
+
+        <!-- Ip Address Filters -->
+        <ContentSection title="IP Addresses" icon="ti ti-server">
+            <ContentStack>
+                <IpAddressFilter v-model="ipAddressFilter" />
+            </ContentStack>
+        </ContentSection>
+
+        <!-- Geolocation Filters -->
+        <ContentSection title="Geolocation" icon="ti ti-world">
+            <ContentStack>
+                <GeolocationFilter v-model="geolocationFilter" />
+            </ContentStack>
+        </ContentSection>
+
+        <!-- Environment -->
+        <ContentSection title="Environment" icon="ti ti-calendar-time">
+            <ContentStack>
+                <CheckBoxList v-model="daysOfWeek" :items="daysOfWeekItems" label="Days of Week" :horizontal="true" :repeatColumns="7" />
+                <label class="control-label">Time of Day</label>
+                <div class="form-control-group">
+                    <div class="form-row">
+                        <TimePicker v-model="beginningTimeOfDay" />
+                        <div class="input-group form-control-static">to</div>
+                        <TimePicker v-model="endingTimeOfDay" />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <!-- Attributes -->
+        <ContentSection v-if="hasAttributes" title="Extended Attributes" icon="ti ti-adjustments-plus">
+            <ContentStack>
+                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+            </ContentStack>
+        </ContentSection>
+    </ContentSectionContainer>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch, computed } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { RequestFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/RequestFilterDetail/requestFilterBag";
+    import { RequestFilterDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/RequestFilterDetail/requestFilterDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { DayOfWeekDescription } from "@Obsidian/Enums/Controls/dayOfWeek";
+    import { PreviousActivityType, PreviousActivityTypeDescription } from "@Obsidian/Enums/Cms/Personalization/PersonalizationRequestFilters/previousActivityType";
+    import { DeviceType, DeviceTypeDescription } from "@Obsidian/Enums/Cms/Personalization/PersonalizationRequestFilters/deviceType";
+    import { TimePickerValue } from "@Obsidian/ViewModels/Controls/timePickerValue";
+    import TimePicker from "@Obsidian/Controls/timePicker.obs";
+    import QueryStringFilter from "./queryStringFilter.partial.obs";
+    import CookieFilter from "./cookieFilter.partial.obs";
+    import BrowserFilter from "./browserFilter.partial.obs";
+    import IpAddressFilter from "./ipAddressFilter.partial.obs";
+    import GeolocationFilter from "./geolocationFilter.partial.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import { AdditionalFilterConfigurationBag } from "@Obsidian/ViewModels/Blocks/Cms/RequestFilterDetail/additionalFilterConfigurationBag.js";
+    import { QueryStringRequestFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/RequestFilterDetail/queryStringRequestFilterBag.js";
+    import { CookieRequestFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/RequestFilterDetail/cookieRequestFilterBag";
+    import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
+    import { BrowserRequestFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/RequestFilterDetail/browserRequestFilterBag";
+    import { IPAddressRequestFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/RequestFilterDetail/ipAddressRequestFilterBag";
+    import { GeolocationRequestFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/RequestFilterDetail/geolocationRequestFilterBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<RequestFilterBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<RequestFilterDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<RequestFilterBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const requestFilterKey = propertyRef(props.modelValue.bag?.requestFilterKey ?? "", "RequestFilterKey");
+    const siteValue = propertyRef(props.modelValue.bag?.site?.value ?? "", "Site");
+    const siteItems = ref<ListItemBag[]>(props.options?.sites ?? []);
+    const previousActivityItems = enumToListItemBag(PreviousActivityTypeDescription);
+    const deviceTypeItems = enumToListItemBag(DeviceTypeDescription);
+    const daysOfWeekItems = enumToListItemBag(DayOfWeekDescription);
+    const additionalFilterConfiguration = propertyRef(props.modelValue.bag?.additionalFilterConfiguration as AdditionalFilterConfigurationBag ?? "", "AdditionalFilterConfiguration");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [isActive, name, requestFilterKey, siteValue, additionalFilterConfiguration];
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const previousActivityTypes = computed<string[]>({
+        get() {
+            return (additionalFilterConfiguration.value?.previousActivityRequestFilter?.previousActivityTypes ?? []).map((n: number) => n.toString());
+        },
+        set(value: string[]) {
+            additionalFilterConfiguration.value = {
+                ...additionalFilterConfiguration.value,
+                previousActivityRequestFilter: { previousActivityTypes: value.map((n: string) => Number(n)) as PreviousActivityType[] }
+            };
+        }
+    });
+
+    const deviceTypes = computed<string[]>({
+        get() {
+            return (additionalFilterConfiguration.value.deviceTypeRequestFilter?.deviceTypes ?? []).map((n: number) => n.toString());
+        },
+        set(val: string[]) {
+            additionalFilterConfiguration.value = {
+                ...additionalFilterConfiguration.value,
+                deviceTypeRequestFilter: { deviceTypes: val.map((n: string) => Number(n)) as DeviceType[] }
+            };
+        }
+    });
+
+    const queryStringFilter = computed({
+        get() {
+            return {
+                queryStringRequestFilterExpressionType: additionalFilterConfiguration.value?.queryStringRequestFilterExpressionType ?? FilterExpressionType.GroupAny,
+                queryStringRequestFilters: additionalFilterConfiguration.value?.queryStringRequestFilters as QueryStringRequestFilterBag[] ?? []
+            };
+        },
+        set(value) {
+            additionalFilterConfiguration.value = {
+                ...additionalFilterConfiguration.value,
+                queryStringRequestFilterExpressionType: value.queryStringRequestFilterExpressionType,
+                queryStringRequestFilters: value.queryStringRequestFilters
+            };
+        }
+    });
+
+    const cookieFilter = computed({
+        get() {
+            return {
+                cookieRequestFilterExpressionType: additionalFilterConfiguration.value?.cookieRequestFilterExpressionType ?? FilterExpressionType.GroupAny,
+                cookieRequestFilters: additionalFilterConfiguration.value?.cookieRequestFilters as CookieRequestFilterBag[] ?? []
+            };
+        },
+        set(value) {
+            additionalFilterConfiguration.value = {
+                ...additionalFilterConfiguration.value,
+                cookieRequestFilterExpressionType: value.cookieRequestFilterExpressionType,
+                cookieRequestFilters: value.cookieRequestFilters
+            };
+        }
+    });
+
+    const browserFilter = computed({
+        get() {
+            return {
+                browserRequestFilters: additionalFilterConfiguration.value?.browserRequestFilters as BrowserRequestFilterBag[] ?? []
+            };
+        },
+        set(value) {
+            additionalFilterConfiguration.value = {
+                ...additionalFilterConfiguration.value,
+                browserRequestFilters: value.browserRequestFilters
+            };
+        }
+    });
+
+    const ipAddressFilter = computed({
+        get() {
+            return {
+                ipAddressRequestFilters: additionalFilterConfiguration.value?.ipAddressRequestFilters as IPAddressRequestFilterBag[] ?? []
+            };
+        },
+        set(value) {
+            additionalFilterConfiguration.value = {
+                ...additionalFilterConfiguration.value,
+                ipAddressRequestFilters: value.ipAddressRequestFilters
+            };
+        }
+    });
+
+    const geolocationFilter = computed({
+        get() {
+            return {
+                geolocationRequestFilters: additionalFilterConfiguration.value?.geolocationRequestFilters as GeolocationRequestFilterBag[] ?? []
+            };
+        },
+        set(value) {
+            additionalFilterConfiguration.value = {
+                ...additionalFilterConfiguration.value,
+                geolocationRequestFilters: value.geolocationRequestFilters
+            };
+        }
+    });
+
+    const daysOfWeek = computed({
+        get() {
+            return (additionalFilterConfiguration.value?.environmentRequestFilter?.daysOfWeek ?? []).map((n: number) => n.toString());
+        },
+        set(value: string[]) {
+            additionalFilterConfiguration.value = {
+                ...additionalFilterConfiguration.value,
+                environmentRequestFilter: {
+                    ...additionalFilterConfiguration.value?.environmentRequestFilter,
+                    daysOfWeek: (value ?? []).map((n: string) => Number(n))
+                }
+            };
+        }
+    });
+
+    const beginningTimeOfDay = computed({
+        get() {
+            return additionalFilterConfiguration.value?.environmentRequestFilter?.beginningTimeOfDay as TimePickerValue ?? {};
+        },
+        set(value) {
+            additionalFilterConfiguration.value = {
+                ...additionalFilterConfiguration.value,
+                environmentRequestFilter: {
+                    ...additionalFilterConfiguration.value?.environmentRequestFilter,
+                    beginningTimeOfDay: value ? { hour: value.hour, minute: value.minute } : null
+                }
+            };
+        }
+    });
+
+    const endingTimeOfDay = computed({
+        get() {
+            return additionalFilterConfiguration.value?.environmentRequestFilter?.endingTimeOfDay as TimePickerValue ?? {};
+        },
+        set(value) {
+            additionalFilterConfiguration.value = {
+                ...additionalFilterConfiguration.value,
+                environmentRequestFilter: {
+                    ...additionalFilterConfiguration.value?.environmentRequestFilter,
+                    endingTimeOfDay: value ? { hour: value.hour, minute: value.minute } : null
+                }
+            };
+        }
+    });
+
+    const hasAttributes = computed((): boolean => {
+        return Object.keys(attributes.value).length > 0;
+    });
+
+    // #endregion Computed Values
+
+    // #region Watchers
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? false);
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(requestFilterKey, props.modelValue.bag?.requestFilterKey ?? "");
+        updateRefValue(siteValue, props.modelValue.bag?.site?.value ?? "");
+        updateRefValue(siteItems, props.options?.sites ?? []);
+
+        updateRefValue(additionalFilterConfiguration, props.modelValue.bag?.additionalFilterConfiguration as AdditionalFilterConfigurationBag ?? {});
+    });
+
+    // Autofill key when editing the name field
+    watch(name, (newVal) => {
+        updateRefValue(requestFilterKey, newVal.replace(/[^a-zA-Z0-9_.-]/g, ""));
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<RequestFilterBag> = {
+            bag: { ...props.modelValue.bag } as RequestFilterBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "requestFilterKey", requestFilterKey.value);
+        const selectedSite = (siteItems.value || []).find(x => x.value === siteValue.value);
+        setPropertiesBoxValue(newValue, "site", selectedSite);
+        setPropertiesBoxValue(newValue, "additionalFilterConfiguration", additionalFilterConfiguration.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    // #endregion Watchers
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

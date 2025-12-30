@@ -8,7 +8,7 @@
             <asp:HiddenField ID="hfMetricCategoryId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-signal"></i>
+                <h1 class="panel-title"><i class="ti ti-antenna-bars-5"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
 
                 <div class="panel-labels">
@@ -75,13 +75,13 @@
                                 <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" AutoPostBack="true" OnSelectedIndexChanged="ddlSourceType_SelectedIndexChanged" />
 
                                 <asp:Panel ID="pnlSQLSourceType" runat="server">
-                                    <label>Source SQL</label><a class="help" href="javascript: $('.js-sourcesql-help').toggle;"><i class="fa fa-question-circle"></i></a>
+                                    <label>Source SQL</label><a class="help" href="javascript: $('.js-sourcesql-help').toggle;"><i class="ti ti-zoom-question"></i></a>
                                     <div class="alert alert-info js-sourcesql-help" id="nbSQLHelp" runat="server" style="display: none;"></div>
                                     <Rock:CodeEditor ID="ceSourceSql" runat="server" EditorMode="Sql" />
                                 </asp:Panel>
 
                                 <asp:Panel ID="pnlLavaSourceType" runat="server">
-                                    <label>Source Lava</label><a class="help" href="javascript: $('.js-sourcelava-help').toggle;"><i class="fa fa-question-circle"></i></a>
+                                    <label>Source Lava</label><a class="help" href="javascript: $('.js-sourcelava-help').toggle;"><i class="ti ti-zoom-question"></i></a>
                                     <div class="alert alert-info js-sourcelava-help" id="nbLavaHelp" runat="server" style="display: none;"></div>
                                     <Rock:CodeEditor ID="ceSourceLava" runat="server" EditorMode="Lava" />
                                 </asp:Panel>
@@ -112,7 +112,7 @@
                     <Rock:ModalAlert ID="mdMetricPartitionsGridWarning" runat="server" />
 
                     <Rock:NotificationBox ID="mdMetricPartitionsEntityTypeWarning" runat="server" NotificationBoxType="Danger" Visible="false" />
-                    <Rock:PanelWidget ID="pwMetricPartitions" runat="server" Title="Series Partitions" TitleIconCssClass="fa fa-pause">
+                    <Rock:PanelWidget ID="pwMetricPartitions" runat="server" Title="Series Partitions" TitleIconCssClass="ti ti-player-pause">
                         <Rock:NotificationBox ID="nbMetricValuesWarning" runat="server" NotificationBoxType="Info" CssClass="margin-t-md" />
                         <Rock:Grid ID="gMetricPartitions" runat="server" AllowSorting="false" AllowPaging="false" DisplayType="Light" DataKeyNames="Guid" OnRowSelected="gMetricPartitions_RowSelected" RowItemText="Series Partition">
                             <Columns>
@@ -162,7 +162,7 @@
                             <Rock:HighlightLabel ID="hlDataView" runat="server" CssClass="" />
                             &nbsp;
                             <Rock:ModalAlert ID="mdManualRunInfo" runat="server" />
-                            <asp:LinkButton ID="btnManualRun" runat="server" CssClass="btn btn-sm btn-square btn-default" OnClick="btnManualRun_Click" ToolTip="Run Now"><i class="fa fa-play"></i></asp:LinkButton>
+                            <asp:LinkButton ID="btnManualRun" runat="server" CssClass="btn btn-sm btn-square btn-default" OnClick="btnManualRun_Click" ToolTip="Run Now"><i class="ti ti-player-play"></i></asp:LinkButton>
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
                         </div>
                     </div>

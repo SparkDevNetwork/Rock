@@ -22,8 +22,6 @@ using System.IO;
 using System.Linq;
 using System.Web.Hosting;
 
-using DotLiquid;
-
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -45,7 +43,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Site Detail" )]
     [Category( "CMS" )]
     [Description( "Displays the details of a particular site." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -233,6 +231,71 @@ namespace Rock.Blocks.Cms
                 Theme = entity.Theme,
                 SiteUrl = $"{this.RequestContext.ResolveRockUrl( "~/page/" )}{entity.DefaultPageId}"
             };
+
+            #region Utilize Route Pages
+            // Existing entities that have a Route proceed with the route's page instead
+
+            if ( entity.ChangePasswordPageRoute != null )
+            {
+                Rock.Model.Page page = entity.ChangePasswordPageRoute.Page;
+                bag.ChangePasswordPage.Value = page.Guid.ToString();
+                if ( entity.ChangePasswordPageRoute.Id != 0 )
+                {
+                    bag.ChangePasswordPage.Text = page.InternalName;
+                }
+            }
+
+            if ( entity.CommunicationPageRoute != null )
+            {
+                Rock.Model.Page page = entity.CommunicationPageRoute.Page;
+                bag.CommunicationPage.Value = page.Guid.ToString();
+                if ( entity.CommunicationPageRoute.Id != 0 )
+                {
+                    bag.CommunicationPage.Text = page.InternalName;
+                }
+            }
+
+            if ( entity.DefaultPageRoute != null )
+            {
+                Rock.Model.Page page = entity.DefaultPageRoute.Page;
+                bag.DefaultPage.Value = page.Guid.ToString();
+                if ( entity.DefaultPageRoute.Id != 0 )
+                {
+                    bag.DefaultPage.Text = page.InternalName;
+                }
+            }
+
+            if ( entity.LoginPageRoute != null )
+            {
+                Rock.Model.Page page = entity.LoginPageRoute.Page;
+                bag.LoginPage.Value = page.Guid.ToString();
+                if ( entity.LoginPageRoute.Id != 0 )
+                {
+                    bag.LoginPage.Text = page.InternalName;
+                }
+            }
+
+            if ( entity.PageNotFoundPageRoute != null )
+            {
+                Rock.Model.Page page = entity.PageNotFoundPageRoute.Page;
+                bag.PageNotFoundPage.Value = page.Guid.ToString();
+                if ( entity.PageNotFoundPageRoute.Id != 0 )
+                {
+                    bag.PageNotFoundPage.Text = page.InternalName;
+                }
+            }
+
+            if ( entity.RegistrationPageRoute != null )
+            {
+                Rock.Model.Page page = entity.RegistrationPageRoute.Page;
+                bag.RegistrationPage.Value = page.Guid.ToString();
+                if ( entity.RegistrationPageRoute.Id != 0 )
+                {
+                    bag.RegistrationPage.Text = page.InternalName;
+                }
+            }
+
+            #endregion Utilize Route Pages
 
             if ( entity.SiteDomains != null )
             {
@@ -767,6 +830,11 @@ namespace Rock.Blocks.Cms
             if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
                 return actionError;
+            }
+
+            if ( entity.IsSystem )
+            {
+                return ActionBadRequest( "System sites cannot be deleted." );
             }
 
             var pageService = new PageService( RockContext );

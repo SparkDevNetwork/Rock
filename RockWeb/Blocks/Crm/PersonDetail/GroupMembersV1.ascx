@@ -11,12 +11,12 @@
                 <asp:Panel ID="pnlGroup" runat="server" CssClass="persondetails-group js-persondetails-group panel-widget">
                     <asp:HiddenField ID="hfGroupId" runat="server" Value='<%# Eval("Id") %>' />
                     <header>
-                        <a id="lReorderIcon" runat="server" class="btn btn-link btn-xs panel-widget-reorder align-self-center pull-left js-stop-immediate-propagation"><i class="fa fa-bars"></i></a>
+                        <a id="lReorderIcon" runat="server" class="btn btn-link btn-xs panel-widget-reorder align-self-center pull-left js-stop-immediate-propagation"><i class="ti ti-menu-2"></i></a>
                         <h1><%# FormatAsHtmlTitle(Eval("Name").ToString()) %></h1>
 
                         <div class="action-wrapper">
-                            <asp:HyperLink ID="hlShowMoreAttributes" runat="server" CssClass="action js-show-more-family-attributes"><i class="fa fa-chevron-down"></i></asp:HyperLink>
-                            <asp:HyperLink ID="hlEditGroup" runat="server" AccessKey="O" ToolTip="Alt+O" CssClass="action"><i class="fa fa-pencil"></i></asp:HyperLink>
+                            <asp:HyperLink ID="hlShowMoreAttributes" runat="server" CssClass="action js-show-more-family-attributes"><i class="ti ti-chevron-down"></i></asp:HyperLink>
+                            <asp:HyperLink ID="hlEditGroup" runat="server" AccessKey="O" ToolTip="Alt+O" CssClass="action"><i class="ti ti-pencil"></i></asp:HyperLink>
                         </div>
                     </header>
 
@@ -48,17 +48,17 @@
                                         <li class="address rollover-container clearfix">
                                             <h4><%# FormatAddressType(Eval("GroupLocationTypeValue.Value")) %></h4>
                                             <a id="aMap" runat="server" title="Map This Address" class="map" target="_blank" rel="noopener noreferrer">
-                                                <i class="fa fa-map-marker"></i>
+                                                <i class="ti ti-map-pin"></i>
                                             </a>
                                             <div class="address">
                                                 <%# FormatAddress(Eval("Location")) %>
                                             </div>
                                             <div class="pull-left rollover-item">
                                                 <asp:LinkButton ID="lbVerify" runat="server" CommandName="verify" ToolTip="Verify Address">
-                                                    <i class="fa fa-globe"></i>
+                                                    <i class="ti ti-globe"></i>
                                                 </asp:LinkButton>
                                                 <asp:LinkButton ID="lbLocationSettings" runat="server" CommandName="settings" ToolTip="Configure Location">
-                                                    <i class="fa fa-gear"></i>
+                                                    <i class="ti ti-settings"></i>
                                                 </asp:LinkButton>
                                             </div>
                                         </li>

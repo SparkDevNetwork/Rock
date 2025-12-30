@@ -615,7 +615,7 @@ namespace Rock.Web.UI.Controls
             _btnSelectNone.Attributes["aria-label"] = "Clear selection";
             _btnSelectNone.Attributes["class"] = "btn picker-select-none";
             _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ClientID );
-            _btnSelectNone.InnerHtml = "<i class='fa fa-times'></i>";
+            _btnSelectNone.InnerHtml = "<i class='ti ti-x'></i>";
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
 
@@ -688,14 +688,14 @@ namespace Rock.Web.UI.Controls
 
                 writer.Write( string.Format( @"
                     <a class='picker-label' href='#'>
-                        <i class='fa fa-map-marker'></i>
+                        <i class='ti ti-map-pin'></i>
                         <span id='selectedGeographyLabel_{0}'>{1}</span>", this.ClientID, this.GeoDisplayName ) );
                 writer.WriteLine();
 
                 _btnSelectNone.RenderControl( writer );
 
                 writer.Write( @"
-                        <b class='fa fa-caret-down'></b>
+                        <b class='ti ti-chevron-down'></b>
                     </a>" );
                 writer.WriteLine();
 
@@ -717,11 +717,11 @@ namespace Rock.Web.UI.Controls
 
                 // map
                 writer.Write( @"
-                    <div class='picker-search-header'><h4>Geography Picker</h4> <a class='pull-right ml-auto btn btn-link btn-minimal' title='Toggle Fullscreen' id='btnExpandToggle_{0}'><i class='fa fa-expand'></i></a></div>
+                    <div class='picker-search-header'><h4>Geography Picker</h4> <a class='pull-right ml-auto btn btn-link btn-minimal' title='Toggle Fullscreen' id='btnExpandToggle_{0}'><i class='ti ti-maximize'></i></a></div>
                     <!-- Our custom delete button that we add to the map for deleting polygons. -->
                     <div style='display:none; z-index: 10; position: absolute; left: 200px; margin-top: 5px; line-height:0;' id='gmnoprint-delete-button_{0}'>
                         <div onmouseover=""this.style.background='WhiteSmoke';"" onmouseout=""this.style.background='white';"" style='direction: ltr; overflow: hidden; text-align: left; position: relative; color: rgb(140, 75, 75); font-family: Arial, sans-serif; font-size: 13px; background-color: rgb(255, 255, 255); padding: 4px; border-radius: 2px; -webkit-background-clip: padding-box; background-clip: padding-box; -webkit-box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; font-weight: 500; background-position: initial initial; background-repeat: initial initial;' title='Delete selected shape'>
-                            <span style='display: inline-block;'><div style='width: 16px; height: 16px; overflow: hidden; position: relative;'><i class='fa fa-times' style='font-size: 16px; padding-left: 2px; color: #aaa;'></i></div></span>
+                            <span style='display: inline-block;'><div style='width: 16px; height: 16px; overflow: hidden; position: relative;'><i class='ti ti-x' style='font-size: 16px; padding-left: 2px; color: #aaa;'></i></div></span>
                         </div>
                     </div>
                     <!-- This is where the Google Map (with Drawing Tools) will go. -->
@@ -758,7 +758,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 LinkButton linkButton = new LinkButton();
                 linkButton.CssClass = "picker-label";
-                linkButton.Text = string.Format( "<i class='{1}'></i><span>{0}</span>", this.GeoDisplayName, "fa fa-map-marker" );
+                linkButton.Text = string.Format( "<i class='{1}'></i><span>{0}</span>", this.GeoDisplayName, "ti ti-map-pin" );
                 linkButton.Enabled = false;
                 linkButton.RenderControl( writer );
                 writer.WriteLine();

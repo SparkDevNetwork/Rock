@@ -4,9 +4,7 @@
                title="Styles">
         <AccordionGroup>
             <Accordion title="Body Settings">
-                <CommunicationTemplateProperty v-if="communicationTemplates"
-                                               v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
-                                               :communicationTemplates="communicationTemplates" />
+                <slot name="bodySettingsPrepend"></slot>
 
                 <RangeSliderProperty label="Body Width"
                                      :min="480"
@@ -73,7 +71,7 @@
                         <FontPropertyGroup :element="document.body"
                                            :styleSheetMode="{
                                                styleCssClass: RockStylesCssClass,
-                                               rulesetCssSelector: GlobalStylesCssSelectors.globalTextStyling
+                                               rulesetCssSelector: `.${GlobalCssClasses.fontGlobal}`
                                            }" />
                     </Accordion>
 
@@ -82,27 +80,27 @@
                         <FontPropertyGroup :element="document.body"
                                            :styleSheetMode="{
                                                styleCssClass: RockStylesCssClass,
-                                               rulesetCssSelector: GlobalStylesCssSelectors.heading1TextStyling
+                                               rulesetCssSelector: `.${GlobalCssClasses.fontHeading1}`
                                            }" />
 
                         <PaddingProperty label="Margin"
                                          :element="document.body"
                                          :styleSheetMode="{
                                              styleCssClass: RockStylesCssClass,
-                                             rulesetCssSelector: GlobalStylesCssSelectors.heading1Margin
+                                             rulesetCssSelector: `.${GlobalCssClasses.marginHeading1}`
                                          }" />
 
                         <PaddingProperty label="Padding"
                                          :element="document.body"
                                          :styleSheetMode="{
                                              styleCssClass: RockStylesCssClass,
-                                             rulesetCssSelector: GlobalStylesCssSelectors.heading1Padding
+                                             rulesetCssSelector: `.${GlobalCssClasses.paddingHeading1}`
                                          }" />
 
                         <BorderPropertyGroup :element="document.body"
                                              :styleSheetMode="{
                                                  styleCssClass: RockStylesCssClass,
-                                                 rulesetCssSelector: GlobalStylesCssSelectors.heading1BorderStyling
+                                                 rulesetCssSelector: `.${GlobalCssClasses.borderHeading1}`
                                              }" />
                     </Accordion>
 
@@ -111,27 +109,27 @@
                         <FontPropertyGroup :element="document.body"
                                            :styleSheetMode="{
                                                styleCssClass: RockStylesCssClass,
-                                               rulesetCssSelector: GlobalStylesCssSelectors.heading2TextStyling
+                                               rulesetCssSelector: `.${GlobalCssClasses.fontHeading2}`
                                            }" />
 
                         <PaddingProperty label="Margin"
                                          :element="document.body"
                                          :styleSheetMode="{
                                              styleCssClass: RockStylesCssClass,
-                                             rulesetCssSelector: GlobalStylesCssSelectors.heading2Margin
+                                             rulesetCssSelector: `.${GlobalCssClasses.marginHeading2}`
                                          }" />
 
                         <PaddingProperty label="Padding"
                                          :element="document.body"
                                          :styleSheetMode="{
                                              styleCssClass: RockStylesCssClass,
-                                             rulesetCssSelector: GlobalStylesCssSelectors.heading2Padding
+                                             rulesetCssSelector: `.${GlobalCssClasses.paddingHeading2}`
                                          }" />
 
                         <BorderPropertyGroup :element="document.body"
                                              :styleSheetMode="{
                                                  styleCssClass: RockStylesCssClass,
-                                                 rulesetCssSelector: GlobalStylesCssSelectors.heading2BorderStyling
+                                                 rulesetCssSelector: `.${GlobalCssClasses.borderHeading2}`
                                              }" />
                     </Accordion>
 
@@ -140,27 +138,27 @@
                         <FontPropertyGroup :element="document.body"
                                            :styleSheetMode="{
                                                styleCssClass: RockStylesCssClass,
-                                               rulesetCssSelector: GlobalStylesCssSelectors.heading3TextStyling
+                                               rulesetCssSelector: `.${GlobalCssClasses.fontHeading3}`
                                            }" />
 
                         <PaddingProperty label="Margin"
                                          :element="document.body"
                                          :styleSheetMode="{
                                              styleCssClass: RockStylesCssClass,
-                                             rulesetCssSelector: GlobalStylesCssSelectors.heading3Margin
+                                             rulesetCssSelector: `.${GlobalCssClasses.marginHeading3}`
                                          }" />
 
                         <PaddingProperty label="Padding"
                                          :element="document.body"
                                          :styleSheetMode="{
                                              styleCssClass: RockStylesCssClass,
-                                             rulesetCssSelector: GlobalStylesCssSelectors.heading3Padding
+                                             rulesetCssSelector: `.${GlobalCssClasses.paddingHeading3}`
                                          }" />
 
                         <BorderPropertyGroup :element="document.body"
                                              :styleSheetMode="{
                                                  styleCssClass: RockStylesCssClass,
-                                                 rulesetCssSelector: GlobalStylesCssSelectors.heading3BorderStyling
+                                                 rulesetCssSelector: `.${GlobalCssClasses.borderHeading3}`
                                              }" />
                     </Accordion>
 
@@ -169,17 +167,14 @@
                         <FontPropertyGroup :element="document.body"
                                            :styleSheetMode="{
                                                styleCssClass: RockStylesCssClass,
-                                               rulesetCssSelector: GlobalStylesCssSelectors.paragraphTextStyling
-                                           }"
-                                           :visibilityOptions="{
-                                               isJustifyTextHidden: true
+                                               rulesetCssSelector: `.${GlobalCssClasses.fontParagraph}`
                                            }" />
 
                         <PaddingProperty label="Margin"
                                          :element="document.body"
                                          :styleSheetMode="{
                                              styleCssClass: RockStylesCssClass,
-                                             rulesetCssSelector: GlobalStylesCssSelectors.paragraphMargin
+                                             rulesetCssSelector: `.${GlobalCssClasses.marginParagraph}`
                                          }" />
                     </Accordion>
                 </AccordionGroup>
@@ -262,11 +257,11 @@
                 </div>
 
                 <RangeSliderProperty label="Divider Width"
-                                                 :min="5"
-                                                 :max="100"
-                                                 :showValueBar="true"
-                                                 valueSuffix="%"
-                                                 :valueProvider="getGlobalDividerWidthProvider(document)" />
+                                     :min="5"
+                                     :max="100"
+                                     :showValueBar="true"
+                                     valueSuffix="%"
+                                     :valueProvider="getGlobalDividerWidthProvider(document)" />
 
                 <HorizontalAlignmentProperty label="Horizontal Alignment"
                                              :valueProvider="getGlobalDividerHorizontalAlignmentProvider(document)" />
@@ -292,7 +287,6 @@
     import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
     import ButtonWidthProperty from "../properties/buttonWidthProperty.partial.obs";
     import ColorPickerProperty from "../properties/colorPickerProperty.partial.obs";
-    import CommunicationTemplateProperty from "../properties/communicationTemplateProperty.partial.obs";
     import DividerColorProperty from "../properties/dividerColorProperty.partial.obs";
     import DividerStyleProperty from "../properties/dividerStyleProperty.partial.obs";
     import DividerThicknessProperty from "../properties/dividerThicknessProperty.partial.obs";
@@ -313,42 +307,18 @@
     } from "../providers.partial";
     import {
         EmailWrapperCssClass,
+        GlobalCssClasses,
         GlobalStylesCssSelectors,
         RockStylesCssClass
     } from "../utils.partial";
-    import { Guid } from "@Obsidian/Types";
-    import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { isHTMLElement } from "@Obsidian/Utility/dom";
 
     const props = defineProps({
         document: {
             type: Object as PropType<Document>,
             required: true
-        },
-
-        communicationTemplateGuid: {
-            type: String as PropType<Guid | null | undefined>,
-            required: false
-        },
-
-        communicationTemplates: {
-            type: Object as PropType<ListItemBag[] | null | undefined>,
-            required: false
         }
     });
-
-    const emit = defineEmits<{
-        (e: "complete"): void;
-        (e: "delete"): void;
-        (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
-    }>();
-
-    // #region Values
-
-    const internalCommunicationTemplateGuid = useVModelPassthrough(props, "communicationTemplateGuid", emit);
-
-    // #endregion Values
 
     // #region Computed Values
 

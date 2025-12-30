@@ -15,15 +15,15 @@
                         <div v-for="(value, valueIndex) in internalValues" class="controls controls-row form-control-group list-item-row" :key="value.key ?? ''">
                             <div class="input-group">
                                 <span class="reorder-handle input-group-addon">
-                                    <i class="fa fa-bars"></i>
+                                    <i class="ti ti-menu-2"></i>
                                 </span>
                                 <input v-model="value.value" class="key-value-value form-control input-width-lg" type="text" :placeholder="valuePrompt">
                             </div>
-                            <a href="#" @click.prevent="onRemoveClick(valueIndex)" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a>
+                            <a href="#" @click.prevent="onRemoveClick(valueIndex)" class="btn btn-sm btn-danger"><i class="ti ti-x"></i></a>
                         </div>
                     </span>
                     <div class="control-actions">
-                        <a class="btn btn-action btn-square btn-xs" href="#" @click.prevent="onAddClick"><i class="fa fa-plus-circle"></i></a>
+                        <a class="btn btn-action btn-square btn-xs" href="#" @click.prevent="onAddClick"><i class="ti ti-circle-plus"></i></a>
                     </div>
                 </span>
             </div>

@@ -26,6 +26,13 @@
  * universal item search picker.
  */
 export type UniversalItemSearchPickerOptionsBag = {
+    /**
+     * Gets or sets the general purpose context provided by the field
+     * type control. We also recommend you encode any context data as a
+     * JSON string to future proof yourself from changes you might need to make.
+     */
+    context?: string | null;
+
     /** Gets or sets a value indicating whether inactive records should be included. */
     isInactiveIncluded: boolean;
 

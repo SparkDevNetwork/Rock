@@ -191,7 +191,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 string acctProtectionLevel = $@"
                     <div class=""protection-profile"">
                         <span class=""profile-label"">Protection Profile: {Person.AccountProtectionProfile.ConvertToString( true )}</span>
-                        <i class=""fa fa-fw fa-lock"" onmouseover=""$(this).parent().addClass('is-hovered')"" onmouseout=""$(this).parent().removeClass('is-hovered')""></i>
+                        <i class=""ti ti-fw ti-lock"" onmouseover=""$(this).parent().addClass('is-hovered')"" onmouseout=""$(this).parent().removeClass('is-hovered')""></i>
                     </div>";
 
                 litAccountProtectionLevel.Text = acctProtectionLevel;
@@ -274,7 +274,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 $@"<div class=""dropdown dropdown-family"">
 <a href=""#"" class=""profile-toggle"" data-toggle=""dropdown"" aria-haspopup=""true"" aria-expanded=""true"">
 {personNameHtml}
-<i class=""fa fa-chevron-down ml-2""></i>
+<i class=""ti ti-chevron-down ml-2""></i>
 </a>
 <ul class=""dropdown-menu"">" );
 

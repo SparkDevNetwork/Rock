@@ -156,7 +156,7 @@
 
   // create button
   var button = ui.button({
-    contents: '<i class="fa fa-file-word-o"/>',
+    contents: '<i class="ti ti-file-word"/>',
     className: 'js-rockpastefromword',
     tooltip: 'Paste from Word',
     click: function (a) {

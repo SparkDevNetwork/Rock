@@ -41,8 +41,8 @@ namespace Rock.Blocks.Finance
     [DisplayName( "Benevolence Request List" )]
     [Category( "Finance" )]
     [Description( "Block used to list Benevolence Requests." )]
-    [IconCssClass( "fa fa-list" )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [IconCssClass( "ti ti-list" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the benevolence request details.",
@@ -78,6 +78,7 @@ namespace Rock.Blocks.Finance
         RepeatColumns = 3,
         Key = AttributeKey.FilterBenevolenceTypesAttributeKey )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "d1245f63-a9ba-4289-bd82-44a489f9da9a" )]
     [Rock.SystemGuid.BlockTypeGuid( "8adb5c0d-9a4f-4396-ab0f-deb552c094e1" )]
     [CustomizedGrid]
@@ -250,7 +251,7 @@ namespace Rock.Blocks.Finance
             var benevolenceRequestService = new BenevolenceRequestService( rockContext );
 
             var benevolenceRequests = benevolenceRequestService
-                .Queryable( "BenevolenceResults,RequestedByPersonAlias,RequestedByPersonAlias.Person,CaseWorkerPersonAlias,CaseWorkerPersonAlias.Person,RequestStatusValue,ConnectionStatusValue,Campus" ).AsNoTracking();
+                .Queryable( "BenevolenceResults,BenevolenceResults.ResultTypeValue,RequestedByPersonAlias,RequestedByPersonAlias.Person,CaseWorkerPersonAlias,CaseWorkerPersonAlias.Person,RequestStatusValue,ConnectionStatusValue,Campus,BenevolenceType" ).AsNoTracking();
 
             var benevolenceTypeFilter = GetAttributeValue( AttributeKey.FilterBenevolenceTypesAttributeKey )?.Split( ',' ).Where( v => v.IsNotNullOrWhiteSpace() ).Select( v => new Guid( v ) );
 
@@ -267,7 +268,7 @@ namespace Rock.Blocks.Finance
                 // Filter by First Name 
                 if ( !string.IsNullOrWhiteSpace( FilterFirstName ) )
                 {
-                    benevolenceRequests = benevolenceRequests.Where( b => b.FirstName.StartsWith( FilterFirstName ) );
+                    benevolenceRequests = benevolenceRequests.Where( b => b.FirstName.StartsWith( FilterFirstName ) || b.RequestedByPersonAlias.Person.NickName.StartsWith( FilterFirstName ) );
                 }
 
                 // Filter by Last Name 

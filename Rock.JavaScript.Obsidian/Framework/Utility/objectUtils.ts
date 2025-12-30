@@ -28,7 +28,7 @@ export function fromEntries(entries: Iterable<[PropertyKey, string]>): Record<st
  * Clone an object/array. Only works with values that can be converted to JSON, which means no
  * functions, self-/circular references, etc.
  */
-export function clone<T>(obj:T) : T {
+export function clone<T>(obj: T): T {
     return JSON.parse(JSON.stringify(obj));
 }
 
@@ -41,7 +41,7 @@ export function clone<T>(obj:T) : T {
  *
  * @return A list of ListItemBags.
  */
-export function toListItemBagList (obj: Record<string, unknown>): ListItemBag[] {
+export function toListItemBagList(obj: Record<string, unknown>): ListItemBag[] {
     return Object.entries(obj).map(([key, value]) => {
         return {
             text: key,
@@ -104,4 +104,32 @@ export function getValueFromPath(object: Record<string, unknown>, path: string):
 
     // If we somehow got here, return `undefined`.
     return;
+}
+
+/**
+ * Gets the member name of a type.
+ *
+ * This is useful for ensuring that the property name is valid and exists on the type.
+ *
+ * @param memberName The member name to get. This should be a key of the type `T`.
+ * @template T The type to get the member name from.
+ * @returns The member name as a key of the type `T`.
+ */
+export function getTypeMemberName<T, K extends keyof T>(memberName: K): K {
+    return memberName;
+}
+
+/**
+ * Returns a function to get the member name of a type.
+ *
+ * @example
+ * const getMemberName = useGetTypeMemberName<MyType>();
+ * const memberName = getMemberName("myProperty"); // returns "myProperty" as a key of MyType
+ *
+ * @returns A function that takes a member name and returns it as a key of the type `T`.
+ */
+export function useGetTypeMemberName<T>(): <K extends keyof T>(memberName: K) => K {
+    return <K extends keyof T>(memberName: K): K => {
+        return getTypeMemberName<T, K>(memberName);
+    };
 }

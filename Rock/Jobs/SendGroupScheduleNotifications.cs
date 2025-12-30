@@ -18,6 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -138,7 +141,7 @@ namespace Rock.Jobs
             List<Person> personsScheduled = new List<Person>();
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeoutSeconds;
+                rockContext.Database.SetCommandTimeout( commandTimeoutSeconds );
                 List<int> groupIds = new List<int>();
                 var groupService = new GroupService( rockContext );
                 var attendanceService = new AttendanceService( rockContext );

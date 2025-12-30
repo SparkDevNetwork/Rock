@@ -10,6 +10,19 @@
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
+        <!-- The following columns will only appear in the Excel/CSV Export -->
+
+        <Column name="id"
+                title="Id"
+                field="id"
+                :hideOnScreen="true" />
+
+        <BooleanColumn name="allowManualRefresh"
+                       title="Allow Manual Refresh"
+                       field="allowManualRefresh"
+                       :hideOnScreen="true" />
+
+        <!-- Most of these columns appear on screen -->
         <TextColumn name="name"
                     title="Name"
                     field="name"
@@ -24,51 +37,55 @@
                     visiblePriority="xs"
                     width="5%" />
 
-        <TextColumn name="timeToBuildMS"
-                    title="Time To Build (ms)"
-                    field="timeToBuildMS"
-                    :filter="textValueFilter"
-                    visiblePriority="xs"
-                    width="5%" />
+        <NumberColumn name="timeToBuildMS"
+                      title="Time To Build (ms)"
+                      field="timeToBuildMS"
+                      :filter="numberValueFilter"
+                      visiblePriority="xs"
+                      headerClass="text-right"
+                      itemClass="justify-content-end text-right"
+                      width="5%" />
 
         <NumberColumn name="resultSize"
                       title="Result Size (KB)"
                       field="resultSize"
                       :filter="numberValueFilter"
                       visiblePriority="xs"
+                      headerClass="text-right"
+                      itemClass="justify-content-end text-right"
                       width="2%" />
 
         <DateTimeColumn name="lastRefreshDateTime"
                         title="Last Refresh Date"
                         field="lastRefreshDateTime"
                         visiblePriority="xs"
+                        headerClass="text-right"
+                        itemClass="justify-content-end text-right"
                         width="10%" />
+
+        <BooleanColumn name="isActive"
+                       title="Active"
+                       field="isActive"
+                       :filter="booleanValueFilter"
+                       visiblePriority="xs"
+                       headerClass="text-center"
+                       itemClass="justify-content-center text-center"
+                       width="2%" />
 
         <ButtonColumn name="refresh"
                       tooltip="Refresh"
-                      iconClass="fa fa-sync-alt"
+                      iconClass="ti ti-refresh"
                       :excludeFromExport="true"
+                      :disabled="row => !row.allowManualRefresh"
                       @click="onRefreshClick" />
 
         <ButtonColumn name="preview"
-                      tooltip="Preview"
-                      iconClass="fa fa-search"
+                      tooltip="Preview (does not save results)"
+                      iconClass="ti ti-search"
                       :excludeFromExport="true"
                       @click="onPreviewClick" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
-
-        <!-- The following columns will only appear in the Excel/CSV Export -->
-
-        <Column name="id"
-                title="Id"
-                field="id"
-                :hideOnScreen="true" />
-
-        <BooleanColumn name="allowManualRefresh"
-                       title="Allow Manual Refresh"
-                       field="allowManualRefresh"
-                       :hideOnScreen="true" />
 
     </Grid>
 
@@ -88,7 +105,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { Column, NumberColumn, BooleanColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, DateTimeColumn, ButtonColumn } from "@Obsidian/Controls/grid";
+    import Grid, { Column, NumberColumn, BooleanColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, DateTimeColumn, ButtonColumn, booleanValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PersistedDatasetListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PersistedDatasetList/persistedDatasetListOptionsBag";

@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Communication;
@@ -37,7 +39,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
     [DisplayName( "SMS Conversation List" )]
     [Category( "Mobile > Communication" )]
     [Description( "Displays a list of SMS conversations that the individual can interact with." )]
-    [IconCssClass( "fa fa-sms" )]
+    [IconCssClass( "ti ti-device-mobile-message" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
@@ -223,7 +225,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
+                    rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
 
                     var months = GetAttributeValue( AttributeKey.ShowConversationsFromMonthsAgo ).AsInteger();
                     var startDateTime = RockDateTime.Now.AddMonths( -months );

@@ -66,7 +66,7 @@
             valueBuilder.addTextValue("Streak Type", props.modelValue.streakType.text);
         }
 
-        valueBuilder.addTextValue("Location", props.modelValue.location?.text ?? "Unspecified");
+        valueBuilder.addTextValue("Exclusion Location", props.modelValue.location?.text ?? "No Location");
 
         return valueBuilder.build();
     });

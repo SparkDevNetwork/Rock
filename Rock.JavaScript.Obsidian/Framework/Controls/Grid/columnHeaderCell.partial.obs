@@ -1,12 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div ref="columnHeaderElement" class="grid-column-header" :class="additionalHeaderClass" :style="additionalHeaderStyle">
+    <div ref="columnHeaderElement" class="grid-column-header" :class="[additionalHeaderClass, columnTypeClass]" :style="additionalHeaderStyle">
         <component v-if="column.headerComponent" :is="column.headerComponent" :column="column" :grid="grid" />
         <span v-else-if="column.title" :class="titleClass" @click.prevent="onSortClick">{{ column.title }}</span>
 
         <span v-if="isSorted" class="grid-sort-direction" :class="additionalSortClass" @click.prevent="onSortClick">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 21">
-                <path fill="var(--color-info)" d="M9.95 9.36H3.1a.53.53 0 0 1-.37-.9l3.42-3.43c.2-.2.55-.2.75 0l3.43 3.43c.33.33.1.9-.38.9Z" />
+                <path fill="var(--color-info-strong)" d="M9.95 9.36H3.1a.53.53 0 0 1-.37-.9l3.42-3.43c.2-.2.55-.2.75 0l3.43 3.43c.33.33.1.9-.38.9Z" />
                 <path fill="currentColor" style="opacity:.4;" d="M3.1 12.49h6.85c.47 0 .7.57.37.9L6.9 16.82c-.2.2-.54.2-.75 0l-3.42-3.43a.53.53 0 0 1 .37-.9Z" />
             </svg>
         </span>
@@ -105,6 +105,10 @@
     // #endregion
 
     // #region Computed Values
+
+    const columnTypeClass = computed((): string => {
+        return `grid-column-header-${props.column.columnType}`;
+    });
 
     /** Will be `true` if we have a filter and it should be visible. */
     const isFilterVisible = computed((): boolean => {

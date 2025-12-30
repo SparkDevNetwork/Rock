@@ -330,13 +330,13 @@ namespace RockWeb.Blocks.Store
 
             for ( int i = 0; i < rating; i++ )
             {
-                starMarkup.Append( "<i class='fa fa-rating-on'></i>" );
+                starMarkup.Append( "<i class='ti ti-star-filled'></i>" );
                 starCounter++;
             }
 
             for ( int i = starCounter; i <= 5; i++ )
             {
-                starMarkup.Append( "<i class='fa fa-rating-off'></i>" );
+                starMarkup.Append( "<i class='ti ti-star'></i>" );
             }
 
             return starMarkup.ToString();

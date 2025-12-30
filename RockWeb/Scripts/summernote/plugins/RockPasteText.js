@@ -91,7 +91,7 @@
 
   // create button
   var button = ui.button({
-    contents: '<i class="fa fa-clipboard"/>',
+    contents: '<i class="ti ti-clipboard"/>',
     className: 'js-rockpastetext',
     tooltip: 'Paste Text',
     click: function (a) {

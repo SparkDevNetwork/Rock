@@ -16,6 +16,8 @@
 //
 using System;
 
+using Rock.Utility;
+
 namespace Rock
 {
     /// <summary>
@@ -48,7 +50,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Returns a formated string of the memory size.
+        /// Returns a formatted string of the memory size.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="unit">The unit.</param>
@@ -247,5 +249,15 @@ namespace Rock
         /// Memory size suffixes
         /// </summary>
         static readonly string[] SizeSuffixes = { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
+
+        /// <summary>
+        /// Returns a hashed identifier that represents the provided integer value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>A hashed identifier that represents the provided integer value.</returns>
+        internal static string AsIdKey( this int value )
+        {
+            return IdHasher.Instance.GetHash( value );
+        }
     }
 }

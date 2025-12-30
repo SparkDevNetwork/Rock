@@ -36,7 +36,7 @@ namespace Rock.Blocks.Security
     [DisplayName( "Rest Key List" )]
     [Category( "Security" )]
     [Description( "Lists all the REST API Keys" )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

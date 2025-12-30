@@ -40,10 +40,10 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-tachometer"></i>Cache Manager</h1>
+                <h1 class="panel-title"><i class="ti ti-brand-speedtest"></i>Cache Manager</h1>
                 <div class="panel-labels">
                     <asp:LinkButton ID="btnClearCache" runat="server" CssClass="btn btn-primary btn-xs" OnClick="btnClearCache_Click" CausesValidation="false">
-                        <i class="fa fa-repeat"></i> Clear Cache
+                        <i class="ti ti-repeat"></i> Clear Cache
                     </asp:LinkButton>
                 </div>
             </div>
@@ -61,7 +61,7 @@
                                 <Rock:RockBoundField DataField="TagName" HeaderText="Tag Name" SortExpression="TagName" />
                                 <Rock:RockBoundField DataField="TagDescription" HeaderText="Description" SortExpression="TagDescription" TruncateLength="255" HtmlEncode="false" />
                                 <Rock:RockBoundField DataField="LinkedKeys" HeaderText="Linked Keys" SortExpression="LinkedKeys" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
-                                <Rock:LinkButtonField ToolTip="Flushes all items from cache that are tied to this tag." Text="<i class='fa fa-eraser'></i>" CssClass="btn btn-default btn-sm btn-square" OnClick="gCacheTagList_ClearCacheTag" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
+                                <Rock:LinkButtonField ToolTip="Flushes all items from cache that are tied to this tag." Text="<i class='ti ti-eraser'></i>" CssClass="btn btn-default btn-sm btn-square" OnClick="gCacheTagList_ClearCacheTag" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                             </Columns>
                         </Rock:Grid>
                     </div>

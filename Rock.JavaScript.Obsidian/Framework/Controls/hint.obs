@@ -1,0 +1,25 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+   <span :class="hintClass"></span>
+</template>
+
+<script setup lang="ts">
+   import { computed, PropType } from "vue";
+   import { HintType } from "@Obsidian/Enums/Controls/hintType";
+   import { LiteralUnion } from "@Obsidian/Types/Utility/support";
+
+   const props = defineProps({
+      hintType: {
+         type: String as PropType<LiteralUnion<HintType>>,
+         default: HintType.AI
+      }
+   });
+
+   // #region Computed Values
+
+   const hintClass = computed((): string => {
+      return `hint hint-${props.hintType}`;
+   });
+
+   // #endregion Computed Values
+</script>

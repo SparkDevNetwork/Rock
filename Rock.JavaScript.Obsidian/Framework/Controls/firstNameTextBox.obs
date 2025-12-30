@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <TextBox v-model="internalValue" v-bind="fieldProps" :rules="rules" />
+    <TextBox v-model="internalValue" v-bind="fieldProps" :rules="rules" @update:modelValue="emit('update:baseModelValue', $event)" />
 </template>
 
 <script setup lang="ts">
@@ -26,7 +26,8 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: ListItemBag): void
+        (e: "update:modelValue", value: ListItemBag): void;
+        (e: "update:baseModelValue", value: string): void;
     }>();
 
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
@@ -34,7 +35,7 @@
     const fieldProps = useStandardRockFormFieldProps(props);
 
     const disallowedStrings = computed(() => {
-        const strings = ["&", " and ", "-and-", "_and_", " plus ", "+"];
+        const strings = ["&", " and ", "-and-", "_and_", " plus ", "+", "/"];
         strings.push(...props.notAllowed);
         return strings;
     });

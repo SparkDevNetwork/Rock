@@ -8,7 +8,7 @@
         <div class="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-truck"></i> Update Individuals</h1>
+                <h1 class="panel-title"><i class="ti ti-truck"></i> Update Individuals</h1>
             </div>
 
             <div class="panel-body">
@@ -38,7 +38,7 @@
                                 <asp:Repeater ID="rptIndividuals" runat="server" OnItemCommand="rptIndividuals_ItemCommand">
                                     <ItemTemplate>
                                         <li class='individual'><%# Eval("PersonName") %>
-                                            <asp:LinkButton ID="lbRemoveIndividual" runat="server" CommandArgument='<%# Eval("PersonId") %>' CausesValidation="false"><i class="fa fa-times"></i></asp:LinkButton></li>
+                                            <asp:LinkButton ID="lbRemoveIndividual" runat="server" CommandArgument='<%# Eval("PersonId") %>' CausesValidation="false"><i class="ti ti-x"></i></asp:LinkButton></li>
                                     </ItemTemplate>
                                 </asp:Repeater>
                             </ul>
@@ -51,7 +51,7 @@
                         </div>
                     </div>
 
-                    <Rock:PanelWidget ID="pwWorkFlows" runat="server" Title="Workflows" TitleIconCssClass="fa fa-cogs"  Expanded="false">
+                    <Rock:PanelWidget ID="pwWorkFlows" runat="server" Title="Workflows" TitleIconCssClass="ti ti-settings"  Expanded="false">
                         <div class="row">
                             <div class="col-sm-6">
                                 <Rock:RockListBox ID="rlbWorkFlowType" runat="server" DisplayDropAsAbsolute="true" Placeholder="Select a workflow..." />
@@ -59,7 +59,7 @@
                         </div>
                     </Rock:PanelWidget>
 
-                    <Rock:PanelWidget ID="pwIndividualDetails" runat="server" Title="Individual Details" TitleIconCssClass="fa fa-user" Expanded="false" CssClass="fade-inactive">
+                    <Rock:PanelWidget ID="pwIndividualDetails" runat="server" Title="Individual Details" TitleIconCssClass="ti ti-user" Expanded="false" CssClass="fade-inactive">
 
                         <div class="row">
                             <div class="col-sm-6">
@@ -126,9 +126,9 @@
                             </div>
                             <div class="col-sm-6">
                                 <Rock:DefinedValuePicker ID="dvpReviewReason" runat="server" Enabled="false"
-                                    Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Review Reason" />
+                                    Label="<span class='js-select-item'><i class='ti ti-circle'></i></span> Review Reason" />
                                 <Rock:RockTextBox ID="tbReviewReasonNote" runat="server" Enabled="false"
-                                    Label="<span class='js-select-item'><i class='fa fa-circle-o'></i></span> Review Reason Note" TextMode="MultiLine" Rows="2"></Rock:RockTextBox>
+                                    Label="<span class='js-select-item'><i class='ti ti-circle'></i></span> Review Reason Note" TextMode="MultiLine" Rows="2"></Rock:RockTextBox>
                             </div>
                         </div>
 
@@ -143,7 +143,7 @@
                         </div>
                     </div>
 
-                    <Rock:PanelWidget ID="pwNote" runat="server" Title="Add note" TitleIconCssClass="fa fa-file-text-o" Expanded="false">
+                    <Rock:PanelWidget ID="pwNote" runat="server" Title="Add note" TitleIconCssClass="ti ti-file-type-txt" Expanded="false">
                         <div class="panel-noteentry">
                             <Rock:RockDropDownList ID="ddlNoteType" runat="server" Label="Note Type" />
                             <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" Rows="3" />
@@ -156,7 +156,7 @@
                         </div>
                     </Rock:PanelWidget>
 
-                    <Rock:PanelWidget ID="pwGroup" runat="server" Title="Group" TitleIconCssClass="fa fa-users" Expanded="false">
+                    <Rock:PanelWidget ID="pwGroup" runat="server" Title="Group" TitleIconCssClass="ti ti-users" Expanded="false">
                         <div class="row">
                             <div class="col-sm-6">
                                 <Rock:RockDropDownList ID="ddlGroupAction" runat="server" Label="Action" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupAction_SelectedIndexChanged" >
@@ -179,7 +179,7 @@
                         </asp:Panel>
                     </Rock:PanelWidget>
 
-                    <Rock:PanelWidget ID="pwTag" runat="server" Title="Tag" TitleIconCssClass="fa fa-tags" Expanded="false">
+                    <Rock:PanelWidget ID="pwTag" runat="server" Title="Tag" TitleIconCssClass="ti ti-tags" Expanded="false">
                         <div class="row">
                             <div class="col-sm-6">
                                 <Rock:RockDropDownList ID="ddlTagAction" runat="server" Label="Action" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupAction_SelectedIndexChanged" >
@@ -191,7 +191,7 @@
                         </div>
                     </Rock:PanelWidget>
 
-                    <Rock:PanelWidget ID="pwSteps" runat="server" Title="Steps" TitleIconCssClass="fa fa-walking" Expanded="false">
+                    <Rock:PanelWidget ID="pwSteps" runat="server" Title="Steps" TitleIconCssClass="ti ti-walk" Expanded="false">
 
                         <div class="row">
 

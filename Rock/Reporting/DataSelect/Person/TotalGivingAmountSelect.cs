@@ -23,7 +23,11 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
+using Rock.Enums.Controls;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -35,9 +39,11 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the total giving amount of the person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Total Giving Amount" )]
-    [Rock.SystemGuid.EntityTypeGuid( "680C50EC-2815-4390-9BCD-6EE0D2496E34")]
+    [Rock.SystemGuid.EntityTypeGuid( "680C50EC-2815-4390-9BCD-6EE0D2496E34" )]
     public class TotalGivingAmountSelect : DataSelectComponent
     {
+        #region Properties
+
         /// <summary>
         /// Gets the name of the entity type. Filter should be an empty string
         /// if it applies to all entities
@@ -94,6 +100,90 @@ namespace Rock.Reporting.DataSelect.Person
                 return "Total Giving";
             }
         }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var comparisonOptions = new List<ListItemBag>
+            {
+                new ListItemBag { Text = "Equal To", Value = ComparisonType.EqualTo.ConvertToInt().ToString() },
+                new ListItemBag { Text = "Greater Than or Equal To", Value = ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() },
+                new ListItemBag { Text = "Less Than", Value = ComparisonType.LessThan.ConvertToInt().ToString() },
+            };
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Person/totalGivingAmountSelect.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    ["comparisonOptions"] = comparisonOptions.ToCamelCaseJson( false, true ),
+                }
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+            string[] selectionValues = selection.Split( '|' );
+            if ( selectionValues.Length >= 4 )
+            {
+                data.Add( "comparison", selectionValues[0] );
+                data.Add( "amount", selectionValues[1].AsDecimal().ToString( "F2" ) );
+
+
+                if ( selectionValues.Length >= 7 )
+                {
+                    data.Add( "dateRange", selectionValues[6].Replace( ',', '|' ) );
+                }
+                else
+                {
+                    var dateRange = string.Format( "{0}|||{1}|{2}", SlidingDateRangeType.DateRange, selectionValues[2].AsDateTime(), selectionValues[3].AsDateTime() );
+                    data.Add( "dateRange", dateRange );
+                }
+
+                if ( selectionValues.Length >= 5 )
+                {
+                    var accountGuids = selectionValues[4].Split( ',' ).Select( a => a.AsGuid() );
+                    var accounts = FinancialAccountCache.GetByGuids( accountGuids ).Select( a => new ListItemBag { Text = a.Name, Value = a.Guid.ToString() } );
+                    data.Add( "accounts", accounts.ToCamelCaseJson( false, true ) );
+                }
+
+                if ( selectionValues.Length >= 6 )
+                {
+                    data.Add( "combineGiving", selectionValues[5] );
+                }
+
+                if ( selectionValues.Length >= 8 )
+                {
+                    data.Add( "useAnalytics", selectionValues[7] );
+                }
+            }
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+
+            var comparison = data.GetValueOrDefault( "comparison", ComparisonType.EqualTo.ToString() );
+            var amount = data.GetValueOrDefault( "amount", "0.00" );
+            var accounts = data.GetValueOrDefault( "accounts", "[]" ).FromJsonOrNull<List<ListItemBag>>()?.Select( a => a.Value ).ToList().AsDelimited( "," );
+            var dateRange = data.GetValueOrDefault( "dateRange", "All||||" ).Replace( "|", "," );
+            var combineGiving = data.GetValueOrDefault( "combineGiving", "false" ).AsBoolean().ToTrueFalse();
+            var useAnalytics = data.GetValueOrDefault( "useAnalytics", "false" ).AsBoolean().ToTrueFalse();
+
+            return $"{comparison}|{amount}|||{accounts}|{combineGiving}|{dateRange}|{useAnalytics}";
+        }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Gets the title.
@@ -542,5 +632,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             return selectExpression;
         }
+
+        #endregion
     }
 }

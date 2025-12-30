@@ -367,7 +367,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public string AddIconCSSClass
         {
-            get { return ViewState["AddIconCSSClass"] as string ?? "fa fa-plus"; }
+            get { return ViewState["AddIconCSSClass"] as string ?? "ti ti-plus"; }
             set { ViewState["AddIconCSSClass"] = value; }
         }
 
@@ -611,7 +611,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _lbShowMore );
 
             var iDownPre = new HtmlGenericControl( "i" );
-            iDownPre.Attributes.Add( "class", "fa fa-angle-down" );
+            iDownPre.Attributes.Add( "class", "ti ti-chevron-down" );
             _lbShowMore.Controls.Add( iDownPre );
 
             var spanDown = new HtmlGenericControl( "span" );
@@ -619,7 +619,7 @@ namespace Rock.Web.UI.Controls
             _lbShowMore.Controls.Add( spanDown );
 
             var iDownPost = new HtmlGenericControl( "i" );
-            iDownPost.Attributes.Add( "class", "fa fa-angle-down" );
+            iDownPost.Attributes.Add( "class", "ti ti-chevron-down" );
             _lbShowMore.Controls.Add( iDownPost );
         }
 
@@ -1023,7 +1023,7 @@ namespace Rock.Web.UI.Controls
 
             if ( !string.IsNullOrWhiteSpace( AddIconCSSClass ) )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-plus" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "ti ti-plus" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
             }

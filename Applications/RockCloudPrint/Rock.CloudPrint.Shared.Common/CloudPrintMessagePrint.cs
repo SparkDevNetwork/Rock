@@ -29,6 +29,12 @@ namespace Rock.CloudPrint.Shared
         public string Address { get; set; } = string.Empty;
 
         /// <summary>
+        /// The number of labels contained in the extra data after the message.
+        /// All of the data will be sent to the printer in a single operation.
+        /// </summary>
+        public int Count { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CloudPrintMessagePrint"/> class.
         /// </summary>
         public CloudPrintMessagePrint()

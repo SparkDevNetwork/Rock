@@ -230,6 +230,15 @@ namespace Rock.Model
         [DataMember]
         public int? BeaconId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the average weekend attendance.
+        /// </summary>
+        /// <value>
+        /// The average weekend attendance.
+        /// </value>
+        [DataMember]
+        public int? AverageWeekendAttendance { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties

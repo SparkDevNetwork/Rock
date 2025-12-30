@@ -81,7 +81,6 @@
 
         if (result.isSuccess && result.data) {
             loadedItems.value = result.data;
-
             return loadedItems.value ?? [];
         }
         else {
@@ -95,7 +94,10 @@
 
     // #region Watchers
 
-    watch(() => props.registrationTemplateGuid, () => loadedItems.value = null);
+    watch(() => props.registrationTemplateGuid, () => {
+        loadedItems.value = null;
+        internalValue.value = null;
+    });
 
     // #endregion
 </script>

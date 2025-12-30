@@ -59,7 +59,7 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// <value>
         /// The document folder root.
         /// </value>
-        public string DocumentFolderRoot { get; set; }
+        public string EncryptedDocumentFolderRoot { get; set; }
 
         /// <summary>
         /// Gets or sets the image folder root.
@@ -67,7 +67,7 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// <value>
         /// The image folder root.
         /// </value>
-        public string ImageFolderRoot { get; set; }
+        public string EncryptedImageFolderRoot { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the root is user specific.

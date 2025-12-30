@@ -280,6 +280,47 @@ namespace Rock.Model
             launchWorkflowsTransaction.Enqueue();
         }
 
+        #region Entity Set Placement Methods
+
+        /// <summary>
+        /// Gets the placement groups for a specific entitySet
+        /// </summary>
+        /// <param name="entitySet">The entity set for placement.</param>
+        /// <returns></returns>
+        public IQueryable<Group> GetEntitySetPlacementPlacementGroups( EntitySet entitySet )
+        {
+            return this.RelatedEntities.GetRelatedToSourceEntity<Group>( entitySet.Id, RelatedEntityPurposeKey.EntitySetPlacement );
+        }
+
+        /// <summary>
+        /// Adds the entity set placement group. Returns false if the group is already a placement group for this entity set placement
+        /// </summary>
+        /// <param name="entitySet">The entity set placement.</param>
+        /// <param name="group">The group.</param>
+        /// <returns></returns>
+        public bool AddEntitySetPlacementGroup( EntitySet entitySet, Group group )
+        {
+            if ( !this.RelatedEntities.RelatedToSourceEntityAlreadyExists( entitySet.Id, group, RelatedEntityPurposeKey.EntitySetPlacement ) )
+            {
+                this.RelatedEntities.AddRelatedToSourceEntity( entitySet.Id, group, RelatedEntityPurposeKey.EntitySetPlacement );
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Deletes (detaches) the destination group for the given entity set ID.
+        /// </summary>
+        /// <param name="entitySet">The entity set.</param>
+        /// <param name="group">The group.</param>
+        public void DetachDestinationGroupFromEntitySet( EntitySet entitySet, Group group )
+        {
+            this.RelatedEntities.DeleteTargetEntityFromSourceEntity( entitySet.Id, group, RelatedEntityPurposeKey.EntitySetPlacement );
+        }
+
+        #endregion
+
         /// <summary>
         /// Creates an entity set from a list of entity item IDs and an entity type ID.
         /// </summary>

@@ -1,7 +1,7 @@
 <template>
     <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" :value="gridData">
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <Grid v-if="isVisible" :data="gridData" keyField="key" liveUpdates light @addItem="onAddItem" :showExport="showExport">
                     <ReorderColumn />
                     <TextColumn name="name"

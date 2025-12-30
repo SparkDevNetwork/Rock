@@ -38,7 +38,7 @@ namespace Rock.Blocks.Lms
     [DisplayName( "Learning Program Completion List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of learning program completions." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

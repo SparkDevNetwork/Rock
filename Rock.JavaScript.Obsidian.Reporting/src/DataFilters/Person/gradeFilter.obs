@@ -1,0 +1,53 @@
+<template>
+    <div class="row">
+        <div class="col-md-4">
+            <DropDownList v-model="comparisonType" :items="comparisonItems" disableLabel :showBlankItem="false" />
+        </div>
+        <div class="col-md-8">
+            <GradePicker v-if="showGradePicker" v-model="grade" disableLabel showBlankItem useGuidAsValue />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import GradePicker from "@Obsidian/Controls/gradePicker.obs";
+    import { computed, ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/comparisonTypeOptions";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const comparisonType = ref<`${ComparisonType}`>((props.modelValue.comparisonType as `${ComparisonType}`) ?? `${ComparisonType.EqualTo}`);
+    const grade = ref<ListItemBag | null | undefined>(safeParseJson(props.modelValue.grade));
+
+    const comparisonItems = getFilteredComparisonTypeOptions(
+        ComparisonType.EqualTo,
+        ComparisonType.NotEqualTo,
+        ComparisonType.IsBlank,
+        ComparisonType.IsNotBlank,
+        ComparisonType.GreaterThan,
+        ComparisonType.GreaterThanOrEqualTo,
+        ComparisonType.LessThan,
+        ComparisonType.LessThanOrEqualTo
+    );
+
+    const showGradePicker = computed(() => {
+        return comparisonType.value !== ComparisonType.IsBlank.toString()
+            && comparisonType.value !== ComparisonType.IsNotBlank.toString();
+    });
+
+    watch([comparisonType, grade], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            comparisonType: comparisonType.value,
+            grade: JSON.stringify(grade.value),
+        });
+    });
+</script>

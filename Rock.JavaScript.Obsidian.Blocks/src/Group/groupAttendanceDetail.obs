@@ -17,9 +17,9 @@
             <template v-if="config.isCampusFilteringAllowed" #headerActions>
                 <div class="mr-2">
                     <CampusFilter v-model="campusFilter"
-                        v-model:campusGuid="campusGuid"
-                        :campusStatusFilter="config.campusStatusFilter"
-                        :campusTypeFilter="config.campusTypeFilter" />
+                                  v-model:campusGuid="campusGuid"
+                                  :campusStatusFilter="config.campusStatusFilter"
+                                  :campusTypeFilter="config.campusTypeFilter" />
                 </div>
             </template>
 
@@ -149,12 +149,12 @@
                                                         btnSize="sm"
                                                         :btnType="isNotesShown ? 'primary' : 'default'"
                                                         :disabled="!isAutoSaveOn"
-                                                        @click="onShowNotesClicked()"><i class="fa fa-pencil-alt"></i> Add Note</RockButton>
+                                                        @click="onShowNotesClicked()"><i class="ti ti-pencil"></i> Add Note</RockButton>
                                             <RockButton v-if="config.isRosterDownloadShown"
                                                         btnType="default"
                                                         btnSize="sm"
                                                         :disabled="!isAutoSaveOn"
-                                                        @click="onPrintAttendanceRosterClicked()"><i class="fa fa-file-download"></i> Roster</RockButton>
+                                                        @click="onPrintAttendanceRosterClicked()"><i class="ti ti-file-download"></i> Roster</RockButton>
                                         </div>
                                     </div>
                                 </div>

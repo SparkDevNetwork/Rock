@@ -4,7 +4,7 @@
         <TextBox label="Credit Card" v-model="cardNumber" :maxLength="16">
             <template #inputGroupPrepend>
                 <div class="input-group-addon">
-                    <i class="fa fa-credit-card"></i>
+                    <i class="ti ti-credit-card"></i>
                 </div>
             </template>
         </TextBox>

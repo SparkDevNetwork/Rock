@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { AdultsOrChildrenSelectionMode } from "@Obsidian/Enums/CheckIn/adultsOrChildrenSelectionMode";
 import { RequirementLevel } from "@Obsidian/Enums/Controls/requirementLevel";
 import { RegistrationFamilyBag } from "@Obsidian/ViewModels/CheckIn/registrationFamilyBag";
 import { RegistrationPersonBag } from "@Obsidian/ViewModels/CheckIn/registrationPersonBag";
@@ -57,17 +58,47 @@ export type EditFamilyResponseBag = {
     /** Determines how the grade will be displayed for children. */
     displayGradeForChildren: RequirementLevel;
 
+    /**
+     * Determines the requirement level for displaying the mobile phone
+     * input on children. The field can be set to be hidden, be visible
+     * but optional, or be visible and required.
+     */
+    displayMobilePhoneForChildren: RequirementLevel;
+
     /** Determines how the race will be displayed for adults. */
     displayRaceForAdults: RequirementLevel;
 
     /** Determines how the race will be displayed for children. */
     displayRaceForChildren: RequirementLevel;
 
+    /**
+     * Determines for which people the name suffix should be displayed
+     * when adding a new individual.
+     */
+    displaySuffix: AdultsOrChildrenSelectionMode;
+
     /** The details of the family that is being edited. */
     family?: ValidPropertiesBox<RegistrationFamilyBag> | null;
 
     /** The attributes that can be viewed and edited on the family. */
     familyAttributes?: Record<string, PublicAttributeBag> | null;
+
+    /**
+     * Forces the selection of known relationship types when adding a new
+     * child to a family in the check-in registration process. Normally the
+     * "Child" option is selected by default, but this setting can be used
+     * to require the user to explicitly select a relationship type.
+     */
+    forceSelectionOfKnownRelationshipType: boolean;
+
+    /**
+     * Defines the minimum age for a child to be considered at an age where
+     * the grade is expected to be filled in. If a child is greater than or
+     * equal to this age and a grade has not been filled in, then a dialog
+     * should pop up to prompt the person to either fill in a grade or to
+     * verify that the child is not yet in school.
+     */
+    gradeConfirmationAge?: number | null;
 
     /** Determines if the Alternate Id field is visible when editing adults. */
     isAlternateIdFieldVisibleForAdults: boolean;

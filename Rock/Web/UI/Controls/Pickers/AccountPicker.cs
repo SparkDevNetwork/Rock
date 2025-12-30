@@ -235,8 +235,8 @@ function doPostBack() {{
                 Text = "Show Inactive",
                 CssClass = "picker-show-inactive",
                 ContainerCssClass = "js-picker-show-inactive",
-                SelectedIconCssClass = "fa fa-check-square-o",
-                UnSelectedIconCssClass = "fa fa-square-o",
+                SelectedIconCssClass = "ti ti-square-check",
+                UnSelectedIconCssClass = "ti ti-square",
                 CausesValidation = false,
                 AutoPostBack = true,
             };
@@ -300,8 +300,8 @@ function doPostBack() {{
 
                 writer.Write( "<a class='btn btn-xs btn-link picker-cancel mr-auto' id='btnCancel_{0}'>Cancel</a>", this.ClientID );
 
-                writer.Write( "<a class='btn btn-link btn-xs picker-preview' id='btnPreviewSelection_{0}' title='Preview'><i class='fa fa-list'></i></a>", this.ClientID );
-                writer.Write( "<a class='btn btn-link btn-xs picker-treeview' id='btnTreeView_{0}' title='Tree View'><i class='fa fa-sitemap'></i></a>", this.ClientID );
+                writer.Write( "<a class='btn btn-link btn-xs picker-preview' id='btnPreviewSelection_{0}' title='Preview'><i class='ti ti-list'></i></a>", this.ClientID );
+                writer.Write( "<a class='btn btn-link btn-xs picker-treeview' id='btnTreeView_{0}' title='Tree View'><i class='ti ti-sitemap'></i></a>", this.ClientID );
             }
             else
             {
@@ -355,7 +355,7 @@ function doPostBack() {{
                 this.AddCssClass( "picker-lg" );
             }
 
-            base.IconCssClass = "fa fa-building-o";
+            base.IconCssClass = "ti ti-building";
             base.PickerMenuCssClasses = "picker-menu dropdown-menu picker-menu-w500 styled-scroll";
             CustomDataItems = "[{\"itemKey\":\"glCode\",\"itemValueKey\":\"GlCode\"},{\"itemKey\":\"path\",\"itemValueKey\":\"Path\"}]";
 

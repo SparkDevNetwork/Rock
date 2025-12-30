@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.WorkFlow
             /// <summary>
             /// The panel icon
             /// </summary>
-            public const string PanelIcon = "fa fa-cog";
+            public const string PanelIcon = "ti ti-settings";
 
             /// <summary>
             /// The allow multiple workflow launches

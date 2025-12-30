@@ -42,7 +42,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Adaptive Message Adaptation Detail" )]
     [Category( "CMS" )]
     [Description( "Displays the details of a particular adaptive message adaptation." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

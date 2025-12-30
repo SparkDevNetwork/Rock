@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.Reporting
                     
                         {% if InteractionChannel.Name != '' %}<h1 class='panel-title pull-left'>{{ interaction.InteractionDateTime }}</h1>{% endif %}
                         
-                        <div class='pull-right'><i class='fa fa-chevron-right'></i></div>
+                        <div class='pull-right'><i class='ti ti-chevron-right'></i></div>
                     </div>
                 </div>
                 

@@ -74,7 +74,7 @@ namespace Rockweb.Blocks.Crm
         Key = AttributeKey.SetPageIcon,
         Description = "The css class name to use for the heading icon.",
         IsRequired = false,
-        DefaultValue = "fa fa-theater-masks",
+        DefaultValue = "ti ti-masks-theater",
         Order = 3 )]
 
     [IntegerField(
@@ -86,6 +86,7 @@ namespace Rockweb.Blocks.Crm
         Order = 4 )]
     #endregion Block Attributes
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.EQ_INVENTORY )]
     public partial class EQInventory : Rock.Web.UI.RockBlock
     {

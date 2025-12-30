@@ -15,25 +15,26 @@
 // </copyright>
 //
 
-import { BlockEvent, InvokeBlockActionFunc, SecurityGrant } from "@Obsidian/Types/Utility/block";
+import { BlockEvent, InvokeBlockActionFunc, InvokeStreamingBlockActionFunc, SecurityGrant } from "@Obsidian/Types/Utility/block";
 import { IBlockPersonPreferencesProvider, IPersonPreferenceCollection } from "@Obsidian/Types/Core/personPreferences";
 import { ExtendedRef } from "@Obsidian/Types/Utility/component";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { inject, provide, Ref, ref, watch } from "vue";
 import { RockDateTime } from "./rockDateTime";
 import { Guid } from "@Obsidian/Types";
-import { HttpBodyData, HttpPostFunc, HttpResult } from "@Obsidian/Types/Utility/http";
+import { HttpBodyData, HttpDoStreamingApiCallFunc, HttpPostFunc, HttpResult } from "@Obsidian/Types/Utility/http";
 import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
 import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 import { IEntity } from "@Obsidian/ViewModels/entity";
 import { debounce } from "./util";
 import { BrowserBus, useBrowserBus } from "./browserBus";
 import { ICancellationToken } from "./cancellation";
+import { BlockRole, BlockRoleDescription } from "@Obsidian/Enums/Cms/blockRole";
 
 const blockReloadSymbol = Symbol();
+const blockRoleActionsSymbol = Symbol("block-role-actions");
 const configurationValuesChangedSymbol = Symbol();
 const staticContentSymbol = Symbol("static-content");
-const blockBrowserBusSymbol = Symbol("block-browser-bus");
 
 // TODO: Change these to use symbols
 
@@ -110,6 +111,62 @@ export function createInvokeBlockAction(post: HttpPostFunc, pageGuid: Guid, bloc
         context.sessionGuid = sessionGuid;
 
         return await post<T>(
+            `/api/v2/BlockActions/${pageGuid}/${blockGuid}/${actionName}`,
+            undefined,
+            {
+                __context: context,
+                ...data
+            },
+            cancellationToken);
+    }
+
+    return invokeBlockAction;
+}
+
+/**
+ * Gets the function that will be used to invoke block actions.
+ *
+ * @returns An instance of @see {@link InvokeStreamingBlockActionFunc}.
+ */
+export function useInvokeStreamingBlockAction(): InvokeStreamingBlockActionFunc {
+    const result = inject<InvokeStreamingBlockActionFunc>("invokeStreamingBlockAction");
+
+    if (result === undefined) {
+        throw "Attempted to access block action invocation outside of a RockBlock.";
+    }
+
+    return result;
+}
+
+/**
+ * Creates a function that can be provided to the block that allows calling
+ * block actions and returning streaming data.
+ *
+ * @private This should not be used by plugins.
+ *
+ * @param post The function to handle the post operation.
+ * @param pageGuid The unique identifier of the page.
+ * @param blockGuid The unique identifier of the block.
+ * @param pageParameters The parameters to include with the block action calls.
+ * @param sessionGuid The unique identifier of the session from the original page request.
+ * @param interactionGuid The unique identifier of the interaction from the original page request.
+ *
+ * @returns A function that can be used to provide the invoke block action.
+ */
+export function createInvokeStreamingBlockAction(doStreamingApiCall: HttpDoStreamingApiCallFunc, pageGuid: Guid, blockGuid: Guid, pageParameters: Record<string, string>, sessionGuid: Guid, interactionGuid: Guid): InvokeStreamingBlockActionFunc {
+    async function invokeBlockAction<T>(actionName: string, data: HttpBodyData | undefined = undefined, actionContext: BlockActionContextBag | undefined = undefined, cancellationToken?: ICancellationToken): Promise<HttpResult<ReadableStream<T>>> {
+        let context: BlockActionContextBag = {};
+
+        if (actionContext) {
+            context = { ...actionContext };
+        }
+
+        context.pageParameters = pageParameters;
+        context.interactionGuid = interactionGuid;
+        context.sessionGuid = sessionGuid;
+
+        return await doStreamingApiCall<T>(
+            "POST",
             `/api/v2/BlockActions/${pageGuid}/${blockGuid}/${actionName}`,
             undefined,
             {
@@ -206,16 +263,6 @@ export function useStaticContent(): Node[] {
 }
 
 /**
- * Provides the browser bus configured to publish messages for the current
- * block.
- *
- * @param bus The browser bus.
- */
-export function provideBlockBrowserBus(bus: BrowserBus): void {
-    provide(blockBrowserBusSymbol, bus);
-}
-
-/**
  * Gets the browser bus configured for use by the current block. If available
  * this will be properly configured to publish messages with the correct block
  * and block type. If this is called outside the context of a block then a
@@ -224,7 +271,13 @@ export function provideBlockBrowserBus(bus: BrowserBus): void {
  * @returns An instance of {@link BrowserBus}.
  */
 export function useBlockBrowserBus(): BrowserBus {
-    return inject<BrowserBus>(blockBrowserBusSymbol, () => useBrowserBus(), true);
+    const blockTypeGuid = useBlockTypeGuid();
+    const blockGuid = useBlockGuid();
+
+    return useBrowserBus({
+        blockType: blockTypeGuid,
+        block: blockGuid
+    });
 }
 
 
@@ -440,23 +493,30 @@ const securityGrantSymbol = Symbol();
  * useSecurityGrant() function instead.
  *
  * @param token The token provided by the server.
+ * @param renewTokenCallback An optional function that overrides the default token renewal callback.
  *
  * @returns A reference to the security grant that will be updated automatically when it has been renewed.
  */
-export function getSecurityGrant(token: string | null | undefined): SecurityGrant {
+export function getSecurityGrant(token: string | null | undefined, renewTokenCallback?: (() => Promise<string | null> | string | null)): SecurityGrant {
     // Use || so that an empty string gets converted to null.
     const tokenRef = ref(token || null);
-    const invokeBlockAction = useInvokeBlockAction();
+    const invokeBlockAction = !renewTokenCallback ? useInvokeBlockAction() : null;
     let renewalTimeout: NodeJS.Timeout | null = null;
 
     // Internal function to renew the token and re-schedule renewal.
     const renewToken = async (): Promise<void> => {
-        const result = await invokeBlockAction<string>("RenewSecurityGrantToken");
-
-        if (result.isSuccess && result.data) {
-            tokenRef.value = result.data;
-
+        if (renewTokenCallback) {
+            tokenRef.value = await renewTokenCallback();
             scheduleRenewal();
+        }
+        else if (invokeBlockAction) {
+            const result = await invokeBlockAction<string>("RenewSecurityGrantToken");
+
+            if (result.isSuccess && result.data) {
+                tokenRef.value = result.data;
+
+                scheduleRenewal();
+            }
         }
     };
 
@@ -731,6 +791,189 @@ export function providePersonPreferences(provider: IBlockPersonPreferencesProvid
 export function usePersonPreferences(): IBlockPersonPreferencesProvider {
     return inject<IBlockPersonPreferencesProvider>(blockPreferenceProviderSymbol)
         ?? emptyPreferenceProvider;
+}
+
+// #endregion
+
+// #region Block Registration and Actions
+
+/**
+ * The registration information for block actions.
+ */
+type BlockRegistration = {
+    /** The action handlers for the block. */
+    actions: IBlockActions;
+
+    /** The role of the block on the page. */
+    role: BlockRole;
+
+    /** The number of times the block has been hidden without being unhidden. */
+    hideCount: number;
+};
+
+/** The list of block registrations for the current page. */
+const registeredBlocks: BlockRegistration[] = [];
+
+/** The block roles that are currently hidden. */
+const hiddenBlockRoles: Set<BlockRole> = new Set<BlockRole>();
+
+/**
+ * The block actions that can be performed on a block.
+ */
+export interface IBlockActions {
+    /** Called when the block should hide itself. */
+    hideBlock?(): Promise<void>;
+
+    /** Called when the block should show itself. */
+    showBlock?(): Promise<void>;
+
+    /** Called when the block should reload itself. */
+    reloadBlock?(): Promise<void>;
+}
+
+/**
+ * Registers a block with the specified actions and role.
+ *
+ * **This is an internal function that should not be called by plugins.**
+ *
+ * @param actions The actions that can be performed on the block.
+ * @param role The role of the block on the page.
+ */
+export function registerBlock(actions: IBlockActions, role: BlockRole): void {
+    const block: BlockRegistration = {
+        actions,
+        role,
+        hideCount: 0
+    };
+
+    if (hiddenBlockRoles.has(role)) {
+        block.hideCount = 1;
+
+        if (block.actions.hideBlock) {
+            block.actions.hideBlock();
+        }
+    }
+
+    registeredBlocks.push(block);
+}
+
+/**
+ * Unregisters a block with the specified actions and role.
+ *
+ * **This is an internal function that should not be called by plugins.**
+ *
+ * @param actions The actions that can be performed on the block.
+ * @param role The role of the block on the page.
+ */
+export function unregisterBlock(actions: IBlockActions, role: BlockRole): void {
+    const index = registeredBlocks.findIndex(
+        (entry) => entry.actions === actions && entry.role === role
+    );
+
+    if (index !== -1) {
+        registeredBlocks.splice(index, 1);
+    }
+}
+
+/**
+ * Provides the block actions that will be used by child components
+ * to access the actions associated with their block.
+ *
+ * **This is an internal function that should not be called by plugins.**
+ *
+ * @param actions The actions that can be performed on the block.
+ */
+export function provideBlockActions(actions: IBlockActions): void {
+    provide(blockRoleActionsSymbol, actions);
+}
+
+/**
+ * Gets the block actions that can be used by child components
+ * to access the actions associated with their block.
+ *
+ * @returns An object that implements {@link IBlockActions}.
+ */
+export function useBlockActions(): IBlockActions {
+    return inject<IBlockActions>(blockRoleActionsSymbol) ?? {};
+}
+
+/**
+ * Hides the blocks on the page that match the specified role.
+ *
+ * @param role The role to use when deciding which blocks to hide.
+ */
+export async function hideBlockRole(role: BlockRole): Promise<void> {
+    const roleName = BlockRoleDescription[role]?.toLowerCase();
+
+    // Support for static blocks and non-Obsidian blocks.
+    if (roleName) {
+        window.document.body.classList.add(`hide-block-role-${roleName}`);
+    }
+
+    const promises: Promise<void>[] = [];
+
+    for (const entry of registeredBlocks) {
+        if (entry.role === role) {
+            entry.hideCount++;
+
+            if (entry.hideCount === 1 && entry.actions.hideBlock) {
+                promises.push(entry.actions.hideBlock());
+            }
+        }
+    }
+
+    hiddenBlockRoles.add(role);
+
+    await Promise.all(promises);
+}
+
+/**
+ * Shows the blocks on the page that match the specified role.
+ *
+ * @param role The role to use when deciding which blocks to show.
+ */
+export async function showBlockRole(role: BlockRole): Promise<void> {
+    const roleName = BlockRoleDescription[role]?.toLowerCase();
+
+    // Support for static blocks and non-Obsidian blocks.
+    if (roleName) {
+        window.document.body.classList.remove(`hide-block-role-${roleName}`);
+    }
+
+    const promises: Promise<void>[] = [];
+
+    for (const entry of registeredBlocks) {
+        if (entry.role === role) {
+            if (entry.hideCount > 0) {
+                entry.hideCount--;
+            }
+
+            if (entry.hideCount === 0 && entry.actions.showBlock) {
+                promises.push(entry.actions.showBlock());
+            }
+        }
+    }
+
+    hiddenBlockRoles.delete(role);
+
+    await Promise.all(promises);
+}
+
+/**
+ * Reloads the blocks on the page that match the specified role.
+ *
+ * @param role The role to use when deciding which blocks to reload.
+ */
+export async function reloadBlockRole(role: BlockRole): Promise<void> {
+    const promises: Promise<void>[] = [];
+
+    for (const entry of registeredBlocks) {
+        if (entry.role === role && entry.actions.reloadBlock) {
+            promises.push(entry.actions.reloadBlock());
+        }
+    }
+
+    await Promise.all(promises);
 }
 
 // #endregion

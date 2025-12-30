@@ -22,6 +22,8 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -155,7 +157,7 @@ namespace Rock.Jobs
         {
             errorMessages = new List<string>();
             var rockContextGetList = new RockContext();
-            rockContextGetList.Database.CommandTimeout = _sqlCommandTimeoutSeconds;
+            rockContextGetList.Database.SetCommandTimeout( _sqlCommandTimeoutSeconds );
 
             // Steps are created with a status of "complete", so if we need to know the status id
             var stepStatusId = stepTypeView.CompletedStepStatusIds.FirstOrDefault();
@@ -330,7 +332,7 @@ namespace Rock.Jobs
         {
             var personEntityTypeId = EntityTypeCache.Get<Person>().Id;
             var rockContext = new RockContext();
-            rockContext.Database.CommandTimeout = _sqlCommandTimeoutSeconds;
+            rockContext.Database.SetCommandTimeout( _sqlCommandTimeoutSeconds );
             var stepTypeService = new StepTypeService( rockContext );
 
             var views = stepTypeService.Queryable().AsNoTracking()

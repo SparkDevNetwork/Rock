@@ -39,7 +39,7 @@ namespace Rock.Blocks.Event
     [DisplayName( "Registration Instance Active List" )]
     [Category( "Event" )]
     [Description( "Displays a list of registration instances." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

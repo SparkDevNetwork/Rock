@@ -45,7 +45,7 @@
                         </li>
                     </ItemTemplate>
                 </asp:Repeater>
-                <li class="pull-right pill-help"><a data-toggle="collapse" href="#security-details" class=""><i class="fa fa-question-circle"></i></a></li>
+                <li class="pull-right pill-help"><a data-toggle="collapse" href="#security-details" class=""><i class="ti ti-zoom-question"></i></a></li>
             </ul>
         </div>
 

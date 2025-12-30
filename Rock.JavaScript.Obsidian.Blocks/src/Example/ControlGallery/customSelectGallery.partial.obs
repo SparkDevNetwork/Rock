@@ -4,7 +4,7 @@
         <CustomSelect v-model="value" :items="items" itemKey="id" label="Custom Select" wrapperClass="my-select" itemClass="my-item">
             <template #default="{ item }">
                 <div class="d-flex align-items-center">
-                    <i :class="`fa ${item.icon} fa-lg mr-3 ${value === item ? 'text-primary' : 'text-muted'}`"></i>
+                    <i :class="`ti ${item.icon} ti-lg mr-3 ${value === item ? 'text-primary' : 'text-muted'}`"></i>
                     <div>
                         <h3 class="my-0">{{ item.title }}</h3>
                         <p class="text-muted">{{ item.description }}</p>
@@ -130,7 +130,7 @@
     transition: background-color 0.15s ease-in-out;
 }
 
-.my-item .fa {
+.my-item .ti {
     transition: color 0.15s ease-in-out;
 }
 
@@ -152,10 +152,10 @@
     import { getSfcControlImportPath } from "./common/utils.partial";
 
     const items = ref([
-        { id: "matthew", title: "Matthew", description: "The gospel according to Matthew", isDisabled: false, icon: "fa-book" },
-        { id: "mark", title: "Mark", description: "The gospel according to Mark", isDisabled: false, icon: "fa-cross" },
-        { id: "luke", title: "Luke", description: "The gospel according to Luke", isDisabled: false, icon: "fa-church" },
-        { id: "john", title: "John", description: "The gospel according to John", isDisabled: true, icon: "fa-praying-hands" }
+        { id: "matthew", title: "Matthew", description: "The gospel according to Matthew", isDisabled: false, icon: "ti-book" },
+        { id: "mark", title: "Mark", description: "The gospel according to Mark", isDisabled: false, icon: "ti-cross" },
+        { id: "luke", title: "Luke", description: "The gospel according to Luke", isDisabled: false, icon: "ti-building-church" },
+        { id: "john", title: "John", description: "The gospel according to John", isDisabled: true, icon: "ti-pray" }
     ]);
 
     const value = ref(null);
@@ -164,7 +164,7 @@
     const exampleCode = computed(() => `<CustomSelect v-model="value" :items="items" itemKey="id">
 <template #default="{ item }">
     <div class="d-flex align-items-center">
-        <i :class="\`fa \${item.icon} fa-lg mr-3 \${value === item ? 'text-primary' : 'text-muted'}\`"></i>
+        <i :class="\`ti \${item.icon} ti-lg mr-3 \${value === item ? 'text-primary' : 'text-muted'}\`"></i>
         <div>
             <h3 class="my-0">{{ item.title }}</h3>
             <p class="text-muted">{{ item.description }}</p>
@@ -182,7 +182,7 @@
     transition: background-color 0.15s ease-in-out;
 }
 
-.my-item .fa {
+.my-item .ti {
     transition: color 0.15s ease-in-out;
 }
 

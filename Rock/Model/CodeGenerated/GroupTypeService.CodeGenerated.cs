@@ -180,9 +180,11 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this GroupType target, GroupType source )
         {
             target.Id = source.Id;
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.AdministratorTerm = source.AdministratorTerm;
             target.AllowAnyChildGroupType = source.AllowAnyChildGroupType;
             target.AllowedScheduleTypes = source.AllowedScheduleTypes;
+            target.AllowGroupSpecificRecordSource = source.AllowGroupSpecificRecordSource;
             target.AllowGroupSync = source.AllowGroupSync;
             target.AllowMultipleLocations = source.AllowMultipleLocations;
             target.AllowSpecificGroupMemberAttributes = source.AllowSpecificGroupMemberAttributes;
@@ -195,6 +197,7 @@ namespace Rock.Model
             target.AttendanceReminderSendStartOffsetMinutes = source.AttendanceReminderSendStartOffsetMinutes;
             target.AttendanceReminderSystemCommunicationId = source.AttendanceReminderSystemCommunicationId;
             target.AttendanceRule = source.AttendanceRule;
+            target.ChatPushNotificationMode = source.ChatPushNotificationMode;
             target.DefaultGroupRoleId = source.DefaultGroupRoleId;
             target.Description = source.Description;
             target.EnableGroupHistory = source.EnableGroupHistory;
@@ -208,6 +211,7 @@ namespace Rock.Model
             target.GroupAttendanceRequiresLocation = source.GroupAttendanceRequiresLocation;
             target.GroupAttendanceRequiresSchedule = source.GroupAttendanceRequiresSchedule;
             target.GroupCapacityRule = source.GroupCapacityRule;
+            target.GroupMemberRecordSourceValueId = source.GroupMemberRecordSourceValueId;
             target.GroupMemberTerm = source.GroupMemberTerm;
             target.GroupsRequireCampus = source.GroupsRequireCampus;
             target.GroupStatusDefinedTypeId = source.GroupStatusDefinedTypeId;

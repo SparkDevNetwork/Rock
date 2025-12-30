@@ -6,7 +6,7 @@
 
         <div class="panel panel-block js-pipeline-panel">
             <div class="panel-heading">
-                <h1 class="panel-title pull-left"><i class="fa fa-sms"></i>&nbsp;SMS Pipeline Detail</h1>
+                <h1 class="panel-title pull-left"><i class="ti ti-device-mobile-message"></i>&nbsp;SMS Pipeline Detail</h1>
 
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlInactive" runat="server" CssClass="js-inactivepipeline-label" LabelType="Danger" Text="Inactive" />
@@ -58,11 +58,11 @@
 
         <div class="panel panel-block sms-main-panel" runat="server" id="divSmsActionsPanel" ClientIDMode="Static">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-sms"></i>&nbsp;SMS Pipeline Actions</h1>
+                <h1 class="panel-title"><i class="ti ti-device-mobile-message"></i>&nbsp;SMS Pipeline Actions</h1>
 
                 <div class="panel-labels">
                     <a href="#" class="btn btn-xs btn-square btn-default" onclick="$('.js-test-results').slideToggle( function () { $('#hfIsTestingDrawerOpen').val( $('#divTestingDrawer').css('display') !== 'none' ) } )">
-                        <i class='fa fa-cog'></i>
+                        <i class='ti ti-settings'></i>
                     </a>
                 </div>
             </div>
@@ -129,8 +129,8 @@
                                         <i class="<%# Eval( "Component.IconCssClass" ) %>"></i>
                                         <%# Eval( "Name" ) %>
                                         <div class="pull-right">
-                                            <i class="fa fa-arrow-alt-circle-down<%# Eval( "ContinueAfterProcessing" ).ToString() == "True" ? "" : " hidden" %>"></i>
-                                            <i class="fa fa-bars reorder js-reorder"></i>
+                                            <i class="ti ti-circle-arrow-down<%# Eval( "ContinueAfterProcessing" ).ToString() == "True" ? "" : " hidden" %>"></i>
+                                            <i class="ti ti-menu-2 reorder js-reorder"></i>
                                             <asp:LinkButton ID="lbEditAction" runat="server" CssClass="js-edit-button hidden" CommandName="EditAction" CommandArgument='<%# Eval( "Id" ) %>' />
                                         </div>
                                     </li>

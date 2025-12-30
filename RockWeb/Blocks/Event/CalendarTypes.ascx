@@ -5,11 +5,11 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-th-large"></i> Event Calendars</h1>
+                <h1 class="panel-title"><i class="ti ti-border-all"></i> Event Calendars</h1>
 
                 <div class="panel-labels">
-                    <asp:LinkButton ID="lbEventCalenderAttributes" runat="server" CssClass="btn btn-default btn-xs btn-square" OnClick="lbEventCalenderAttributes_Click" CausesValidation="false" ToolTip="Calendar Attributes"><i class="fa fa-gear"></i></asp:LinkButton>
-                    <asp:LinkButton ID="lbAddEventCalendar" runat="server" CssClass="btn btn-default btn-xs btn-square" OnClick="lbAddEventCalendar_Click" CausesValidation="false" ToolTip="Add Event Calendar"><i class="fa fa-plus"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbEventCalenderAttributes" runat="server" CssClass="btn btn-default btn-xs btn-square" OnClick="lbEventCalenderAttributes_Click" CausesValidation="false" ToolTip="Calendar Attributes"><i class="ti ti-settings"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbAddEventCalendar" runat="server" CssClass="btn btn-default btn-xs btn-square" OnClick="lbAddEventCalendar_Click" CausesValidation="false" ToolTip="Add Event Calendar"><i class="ti ti-plus"></i></asp:LinkButton>
                 </div>
             </div>
             <div class="panel-body">

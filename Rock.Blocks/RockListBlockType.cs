@@ -28,6 +28,7 @@ namespace Rock.Blocks
     /// Base for a standard List block type. This is a block that will
     /// display a list of items and usually links to a detail page.
     /// </summary>
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     public abstract class RockListBlockType<T> : RockBlockType
         where T : class
     {

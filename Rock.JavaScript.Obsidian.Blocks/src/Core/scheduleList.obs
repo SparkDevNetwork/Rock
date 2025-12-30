@@ -5,6 +5,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Schedule"
+          title="Schedules"
           :entityTypeGuid="EntityType.Schedule"
           stickyHeader
           liveUpdates
@@ -48,7 +49,7 @@
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ScheduleListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduleList/scheduleListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey} from "./ScheduleList/types.partial";
+    import { NavigationUrlKey } from "./ScheduleList/types.partial";
     import { reactive, ref } from "vue";
 
     const config = useConfigurationValues<ListBlockBox<ScheduleListOptionsBag>>();

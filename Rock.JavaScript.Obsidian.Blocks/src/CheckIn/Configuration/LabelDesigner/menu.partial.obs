@@ -20,51 +20,51 @@
         </div>
 
         <div v-if="!isComponentMenuSelected" class="control-list">
-            <ControlButton icon="fa fa-user"
+            <ControlButton icon="ti ti-user"
                            title="Attendee Info"
                            :type="LabelFieldType.Text"
                            :subtype="TextFieldSubType.AttendeeInfo" />
 
-            <ControlButton icon="fa fa-calendar-check"
+            <ControlButton icon="ti ti-calendar-check"
                            title="Check-in Info"
                            :type="LabelFieldType.Text"
                            :subtype="TextFieldSubType.CheckInInfo" />
 
-            <ControlButton icon="fa fa-medal"
+            <ControlButton icon="ti ti-medal"
                            title="Achievement Info"
                            :type="LabelFieldType.Text"
                            :subtype="TextFieldSubType.AchievementInfo" />
 
-            <ControlButton icon="fa fa-font"
+            <ControlButton icon="ti ti-typography"
                            title="Text"
                            :type="LabelFieldType.Text"
                            :subtype="TextFieldSubType.Custom" />
 
-            <ControlButton icon="fa fa-grip-lines"
+            <ControlButton icon="ti ti-equal"
                            title="Line"
                            :type="LabelFieldType.Line" />
 
-            <ControlButton icon="fa fa-square"
+            <ControlButton icon="ti ti-square"
                            title="Rectangle"
                            :type="LabelFieldType.Rectangle" />
 
-            <ControlButton icon="fa fa-circle"
+            <ControlButton icon="ti ti-circle"
                            title="Ellipse"
                            :type="LabelFieldType.Ellipse" />
 
-            <ControlButton icon="fa fa-icons"
+            <ControlButton icon="ti ti-icons"
                            title="Icon"
                            :type="LabelFieldType.Icon" />
 
-            <ControlButton icon="fa fa-image"
+            <ControlButton icon="ti ti-photo"
                            title="Image"
                            :type="LabelFieldType.Image" />
 
-            <ControlButton icon="fa fa-id-badge"
+            <ControlButton icon="ti ti-id-badge"
                            title="Attendee Photo"
                            :type="LabelFieldType.AttendeePhoto" />
 
-            <ControlButton icon="fa fa-qrcode"
+            <ControlButton icon="ti ti-qrcode"
                            title="Barcode"
                            :type="LabelFieldType.Barcode" />
         </div>
@@ -93,7 +93,7 @@
 
                 <div class="d-flex justify-content-end">
                     <RockButton btnType="default" btnSize="sm" @click="onConditionalSettingsClick">
-                        <i class="fa fa-pencil"></i>
+                        <i class="ti ti-pencil"></i>
                     </RockButton>
                 </div>
             </Panel>
@@ -130,12 +130,12 @@
 }
 
 .menu-item {
-    background-color: var(--theme-lightest);
+    background-color: var(--color-interface-softest);
     color: var(--theme-dark);
     font-weight: bold;
-    border-left: 1px solid var(--theme-light);
-    border-right: 1px solid var(--theme-light);
-    border-bottom: 1px solid var(--theme-light);
+    border-left: 1px solid var(--color-interface-soft);
+    border-right: 1px solid var(--color-interface-soft);
+    border-bottom: 1px solid var(--color-interface-soft);
     padding-left: 24px;
     padding-right: 24px;
 }
@@ -145,7 +145,7 @@
 }
 
 .menu-item.active {
-    background-color: var(--color-white);
+    background-color: var(--color-interface-softest);
     color: var(--color-primary);
     border: 0;
 }
@@ -160,8 +160,8 @@
 .menu-fill {
     flex-grow: 1;
     height: 100%;
-    background-color: var(--theme-lightest);
-    border: 1px solid var(--theme-light);
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
     border-top-width: 0;
 }
 
@@ -186,6 +186,8 @@
 
 .menu > .alert {
     margin-top: auto;
+    margin-right: var(--spacing-small);
+    margin-left: var(--spacing-small);
 }
 </style>
 

@@ -2,7 +2,7 @@
 <template>
     <div v-if="hasMultiplePages" class="grid-page-picker">
         <button :class="prevButtonCssClass" @click.prevent="onPrevButtonClick">
-            <i class="fa fa-chevron-left"></i>
+            <i class="ti ti-chevron-left"></i>
         </button>
 
         <button v-for="pageButton in pageButtons" :class="getPageButtonCssClass(pageButton)" @click.prevent="onPageButtonClick(pageButton)">
@@ -10,7 +10,7 @@
         </button>
 
         <button :class="nextButtonCssClass" @click.prevent="onNextButtonClick">
-            <i class="fa fa-chevron-right"></i>
+            <i class="ti ti-chevron-right"></i>
         </button>
     </div>
 </template>

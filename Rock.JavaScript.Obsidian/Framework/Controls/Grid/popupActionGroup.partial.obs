@@ -5,7 +5,7 @@
         <button type="button"
                 class="btn btn-grid-action"
                 @click.prevent="onGroupClick">
-            <i class="fa fa-ellipsis-v fa-fw"></i>
+            <i class="ti ti-dots-vertical ti-fw"></i>
         </button>
 
         <Teleport v-if="isPopupOpen"

@@ -20,10 +20,12 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Web.Cors;
 
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.Owin;
+using Microsoft.Owin.Cors;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -33,6 +35,7 @@ using Owin;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.HttpModules;
 
 namespace Rock.RealTime.AspNet
@@ -93,6 +96,11 @@ namespace Rock.RealTime.AspNet
 
             app.Map( "/rock-rt", subApp =>
             {
+                subApp.UseCors( new CorsOptions
+                {
+                    PolicyProvider = new CorsPolicyProvider()
+                } );
+
                 // Register some logic to handle adding a claim for the anonymous
                 // person identifier if we have one.
                 subApp.Use( RegisterSignalRClaims );
@@ -351,6 +359,51 @@ namespace Rock.RealTime.AspNet
                 {
                     [descriptor.Name] = descriptor
                 };
+            }
+        }
+
+        /// <summary>
+        /// Provides a Cross-Origin Resource Sharing (CORS) policy for incoming requests.
+        /// </summary>
+        /// <remarks>
+        /// This provider dynamically generates a CORS policy for each request, allowing any
+        /// header and method, and supporting credentials. The allowed origins are determined
+        /// based on the site domain names and any additional domains defined in the
+        /// REST API Allowed Domains defined type.
+        /// </remarks>
+        private class CorsPolicyProvider : ICorsPolicyProvider
+        {
+            public Task<CorsPolicy> GetCorsPolicyAsync( IOwinRequest request )
+            {
+                // The entire policy could be cached, but we currently don't
+                // have a way to invalidate the cache if the domains or sites
+                // change. Until then we have to re-build the policy on each
+                // request. However, these requests don't happen all that often
+                // so it should be fine. And this code takes about 0.01ms.
+                var policy = new CorsPolicy
+                {
+                    AllowAnyHeader = true,
+                    AllowAnyMethod = true,
+                    SupportsCredentials = true
+                };
+
+                foreach ( var domain in SiteCache.All().SelectMany( s => s.SiteDomainNames ) )
+                {
+                    policy.Origins.Add( $"http://{domain}" );
+                    policy.Origins.Add( $"https://{domain}" );
+                }
+
+                var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.REST_API_ALLOWED_DOMAINS.AsGuid() );
+
+                if ( definedType != null )
+                {
+                    foreach ( var definedValue in definedType.DefinedValues )
+                    {
+                        policy.Origins.Add( definedValue.Value );
+                    }
+                }
+
+                return Task.FromResult( policy );
             }
         }
 

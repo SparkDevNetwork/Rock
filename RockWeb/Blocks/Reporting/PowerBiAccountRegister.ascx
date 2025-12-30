@@ -7,7 +7,7 @@
 
             <div class="panel-heading panel-follow">
                 <h1 class="panel-title">
-                    <i class="fa fa-bar-chart"></i> Power BI Account Register
+                    <i class="ti ti-chart-bar"></i> Power BI Account Register
                 </h1>
             </div>
 

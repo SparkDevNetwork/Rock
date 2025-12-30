@@ -30,7 +30,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
-using Rock.Rest.Utility;
 using Rock.Web.Cache;
 
 #if WEBFORMS

@@ -4,7 +4,7 @@
     <ContentTemplate>
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-building"></i> Convert Business</h1>
+                <h1 class="panel-title"><i class="ti ti-building"></i> Convert Business</h1>
             </div>
 
             <div class="panel-body">

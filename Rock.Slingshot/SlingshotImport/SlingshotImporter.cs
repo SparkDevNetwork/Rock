@@ -27,6 +27,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+
 using CsvHelper;
 
 using Rock;
@@ -962,7 +963,8 @@ namespace Rock.Slingshot
             {
                 var campusIdHasValue = ( slingshotFinancialBatch.CampusId.HasValue && this.CampusLookupByForeignId.ContainsKey( slingshotFinancialBatch.CampusId.Value ) );
                 int? campusId = campusIdHasValue ? this.CampusLookupByForeignId[slingshotFinancialBatch.CampusId.Value]?.Id : null;
-                var newFinancialBatchImport = BulkImporter.ConvertModelWithLogging<Model.FinancialBatchImport>( slingshotFinancialBatch, () => {
+                var newFinancialBatchImport = BulkImporter.ConvertModelWithLogging<Model.FinancialBatchImport>( slingshotFinancialBatch, () =>
+                {
                     var financialBatchImport = new Model.FinancialBatchImport()
                     {
                         FinancialBatchForeignId = slingshotFinancialBatch.Id,
@@ -1440,11 +1442,14 @@ namespace Rock.Slingshot
 
                     // Attribute Values
                     groupImport.AttributeValues = new List<Model.AttributeValueImport>();
+                    string groupAttributeDictionaryKey = string.Empty;
+                    string groupTypeIdString = this.GroupTypeLookupByForeignId[slingshotGroup.GroupTypeId].Id.ToStringSafe();
                     foreach ( var slingshotGroupAttributeValue in slingshotGroup.Attributes )
                     {
-                        if ( this.GroupAttributeKeyLookup.ContainsKey( slingshotGroupAttributeValue.AttributeKey ) )
+                        groupAttributeDictionaryKey = BuildGroupAttributeDictionaryKey( groupTypeIdString, slingshotGroupAttributeValue.AttributeKey );
+                        if ( this.GroupAttributeKeyLookup.ContainsKey( groupAttributeDictionaryKey ) )
                         {
-                            int attributeId = this.GroupAttributeKeyLookup[slingshotGroupAttributeValue.AttributeKey].Id;
+                            int attributeId = this.GroupAttributeKeyLookup[groupAttributeDictionaryKey].Id;
                             groupImport.AttributeValues.Add( CreateAttributeValueImport( attributeId, slingshotGroupAttributeValue.AttributeValue ) );
                         }
                     }
@@ -2158,6 +2163,10 @@ namespace Rock.Slingshot
             }
 
             rockContext.SaveChanges();
+
+            // Add any new GroupTypes to the GroupTypeLookupByForeignId dictionary because we need
+            // them later when adding new GroupType attributes.
+            this.GroupTypeLookupByForeignId = groupTypeService.Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == this.ForeignSystemKey ).ToList().Select( a => GroupTypeCache.Get( a ) ).ToDictionary( k => k.ForeignId.Value, v => v );
         }
 
         /// <summary>
@@ -2368,25 +2377,37 @@ namespace Rock.Slingshot
             var entityTypeIdAttribute = EntityTypeCache.GetId<Rock.Model.Attribute>().Value;
             var attributeCategoryList = new CategoryService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdAttribute ).ToList();
 
+            string groupAttributeDictionaryKey = string.Empty;
+            int slingshotGroupTypeId;
+            string groupTypeIdString = string.Empty;
+
             // Add any Group Attributes to Rock that aren't in Rock yet
             foreach ( var slingshotGroupAttribute in this.SlingshotGroupAttributes )
             {
-                slingshotGroupAttribute.Key = slingshotGroupAttribute.Key;
+                slingshotGroupTypeId = this.SlingshotGroupTypeList.FirstOrDefault( gt => gt.Name.Equals( slingshotGroupAttribute.Category ) )?.Id ?? -1;
+                // Now convert that to an actual Rock GroupTypeId
+                //groupTypeIdString = this.GroupTypeLookupByForeignId[slingshotGroupTypeId]?.Id.ToStringSafe();
+                groupTypeIdString = this.GroupTypeLookupByForeignId.TryGetValue( slingshotGroupTypeId, out var groupTypeCache )
+                ? groupTypeCache.Id.ToStringSafe()
+                : null;
 
-                if ( !this.GroupAttributeKeyLookup.Keys.Any( a => a.Equals( slingshotGroupAttribute.Key, StringComparison.OrdinalIgnoreCase ) ) )
+                groupAttributeDictionaryKey = BuildGroupAttributeDictionaryKey( groupTypeIdString, slingshotGroupAttribute.Key );
+
+                if ( !this.GroupAttributeKeyLookup.Keys.Any( a => a.Equals( groupAttributeDictionaryKey, StringComparison.OrdinalIgnoreCase ) ) )
                 {
                     var newGroupAttribute = BulkImporter.ConvertModelWithLogging<Rock.Model.Attribute>( slingshotGroupAttribute, () =>
                     {
                         // the group attribute category targets the grouptype
                         var rockGroupAttribute = new Rock.Model.Attribute()
                         {
-                            Key = slingshotGroupAttribute.Key,
+                            Key = slingshotGroupAttribute.Key, // Here, we use just the regular given (unqualified) key.
                             Name = slingshotGroupAttribute.Name,
                             Guid = Guid.NewGuid(),
                             EntityTypeId = entityTypeIdGroup,
                             EntityTypeQualifierColumn = "GroupTypeId",
-                            EntityTypeQualifierValue = this.SlingshotGroupTypeList.FirstOrDefault( gt => gt.Name.Equals( slingshotGroupAttribute.Category ) )?.Id.ToString(),
+                            EntityTypeQualifierValue = groupTypeIdString,
                             FieldTypeId = this.FieldTypeLookup[slingshotGroupAttribute.FieldType].Id
+                            //ForeignKey = this.ForeignSystemKey // We don't set this because there is no ForeignId/ForeignGuid given.
                         };
 
                         if ( !string.IsNullOrWhiteSpace( slingshotGroupAttribute.Category ) )
@@ -2881,7 +2902,19 @@ namespace Rock.Slingshot
 
             // Group Attributes
             var groupAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdGroup ).Select( a => a.Id ).ToList().Select( a => AttributeCache.Get( a ) ).ToList();
-            this.GroupAttributeKeyLookup = groupAttributes.ToDictionary( k => k.Key, v => v, StringComparer.OrdinalIgnoreCase );
+            try
+            {
+                this.GroupAttributeKeyLookup = groupAttributes.ToDictionary(
+                    k => BuildGroupAttributeDictionaryKey( k.EntityTypeQualifierValue, k.Key ),
+                    v => v,
+                    StringComparer.OrdinalIgnoreCase
+                );
+            }
+            catch ( System.ArgumentException ex )
+            {
+                var duplicateKey = groupAttributes.GroupBy( a => a.Key ).FirstOrDefault( g => g.Count() > 1 ).Key;
+                throw new Exception( $"Duplicate Group Attribute Key found existing in Rock: {duplicateKey}. Please ensure all Group Attributes have unique keys.", ex );
+            }
 
             // GroupTypes
             this.GroupTypeLookupByForeignId = new GroupTypeService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == this.ForeignSystemKey ).ToList().Select( a => GroupTypeCache.Get( a ) ).ToDictionary( k => k.ForeignId.Value, v => v );
@@ -2932,6 +2965,19 @@ namespace Rock.Slingshot
                 Value = value,
                 Description = description
             };
+        }
+
+        /// <summary>
+        /// Builds the key used with the GroupAttributeKeyLookup Dictionary which is a combination
+        /// of the EntityTypeQualifierValue and the given attributeKey. This is done to avoid
+        /// key collision since Rock group attribute keys can be the same for different GroupTypes.
+        /// </summary>
+        /// <param name="entityTypeQualifierValue"></param>
+        /// <param name="attributeKey"></param>
+        /// <returns></returns>
+        private static string BuildGroupAttributeDictionaryKey( string entityTypeQualifierValue, string attributeKey )
+        {
+            return $"{entityTypeQualifierValue}|{attributeKey}";
         }
     }
 

@@ -9,11 +9,11 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-comment-alt"></i>
+                    <i class="ti ti-message"></i>
                     Giving Alerts</h1>
                 <div class="panel-labels">
                     <asp:LinkButton ID="lbConfig" runat="server" CssClass="btn btn-xs btn-square btn-default pull-right" OnClick="lbConfig_Click" CausesValidation="false">
-                        <i title="Options" class="fa fa-gear"></i>
+                        <i title="Options" class="ti ti-settings"></i>
                     </asp:LinkButton>
                 </div>
             </div>

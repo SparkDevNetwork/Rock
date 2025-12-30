@@ -35,6 +35,7 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// <summary>
         /// Gets or sets the email message.
         /// </summary>
+        /// <remarks>Lava has already been resolved.</remarks>
         public string Message { get; set; }
 
         /// <summary>
@@ -45,6 +46,7 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// <summary>
         /// Gets or sets the from email.
         /// </summary>
+        /// <remarks>Lava has already been resolved.</remarks>
         public string FromEmail { get; set; }
 
         /// <summary>
@@ -60,11 +62,13 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// <summary>
         /// Gets or sets the reply to email.
         /// </summary>
+        /// <remarks>Lava has already been resolved.</remarks>
         public string ReplyToEmail { get; set; }
 
         /// <summary>
         /// Gets or sets the email from name.
         /// </summary>
+        /// <remarks>Lava has already been resolved.</remarks>
         public string FromName { get; set; }
 
         /// <summary>

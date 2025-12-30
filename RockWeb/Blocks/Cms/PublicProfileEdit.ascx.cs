@@ -864,7 +864,7 @@ namespace RockWeb.Blocks.Cms
                 Location currentAddress = new Location();
                 acAddress.Required = true;
                 acAddress.GetValues( currentAddress );
-                lPreviousAddress.Text = string.Format( "<strong>Previous Address</strong><br />{0}", currentAddress.FormattedHtmlAddress );
+                lPreviousAddress.Text = string.Format( "&nbsp;<strong>(Previous)</strong><br />{0}", currentAddress.FormattedHtmlAddress );
 
                 acAddress.Street1 = string.Empty;
                 acAddress.Street2 = string.Empty;
@@ -1427,6 +1427,15 @@ namespace RockWeb.Blocks.Cms
 
                 if ( phoneNumber.NumberTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() )
                 {
+                    var cbSms = e.Item.FindControl( "cbSms" ) as RockCheckBox;
+                    if ( cbSms != null )
+                    {
+                        var smsOptInText = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
+                        cbSms.Text = string.IsNullOrWhiteSpace( smsOptInText )
+                            ? "I would like to receive important text messages"
+                            : smsOptInText;
+                    }
+
                     if ( GetAttributeValue( AttributeKey.HighlightMobilePhone ).AsBoolean() )
                     {
                         var hightlightTitle = ( Literal ) e.Item.FindControl( "litHighlightTitle" );

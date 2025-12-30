@@ -336,6 +336,52 @@ namespace Rock.Field.Types
             return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
         }
 
+        /// <summary>
+        /// Gets a filter expression for an entity property value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="propertyType">Type of the property.</param>
+        /// <returns></returns>
+        public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType )
+        {
+            if ( propertyType != typeof( int ) && propertyType != typeof( int? ) )
+            {
+                return base.PropertyFilterExpression( configurationValues, filterValues, parameterExpression, propertyName, propertyType );
+            }
+
+            if ( filterValues.Count < 1 )
+            {
+                return Expression.Constant( true );
+            }
+
+            List<Guid> selectedGuids = filterValues[0].SplitDelimitedValues().AsGuidList();
+
+            if ( selectedGuids.Count == 0 )
+            {
+                return Expression.Constant( true );
+            }
+
+            List<int?> campusIds = selectedGuids
+                .Select( g => CampusCache.Get( g )?.Id )
+                .Where( id => id.HasValue )
+                .Distinct()
+                .ToList();
+
+            if ( campusIds.Count == 0 )
+            {
+                return Expression.Constant( true );
+            }
+
+            MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
+
+            ConstantExpression constantExpression = Expression.Constant( campusIds, typeof( List<int?> ) );
+
+            return Expression.Call( constantExpression, typeof( List<int?> ).GetMethod( "Contains", new Type[] { typeof( int? ) } ), propertyExpression );
+        }
+
         #endregion
 
         #region Entity Methods

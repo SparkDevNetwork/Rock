@@ -38,7 +38,7 @@ namespace Rock.Blocks.CheckIn
     [DisplayName( "Cloud Print Monitor" )]
     [Category( "Check-in" )]
     [Description( "Monitors the cloud printing connections in Rock." )]
-    [IconCssClass( "fa fa-print" )]
+    [IconCssClass( "ti ti-printer" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

@@ -6,7 +6,7 @@
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-poll-h"></i> Form Builder Template List</h1>
+                <h1 class="panel-title"><i class="ti ti-notes"></i> Form Builder Template List</h1>
             </div>
             <div class="panel-body">
                 <div class="grid grid-panel">

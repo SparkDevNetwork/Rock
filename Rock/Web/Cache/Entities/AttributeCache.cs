@@ -1046,6 +1046,8 @@ namespace Rock.Web.Cache
         /// </remarks>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Obsolete( "Use ContainsKey(string) instead." )]
+        [RockObsolete( "18.0" )]
         public override bool ContainsKey( object key )
         {
             return ContainsKey( key.ToStringSafe() );

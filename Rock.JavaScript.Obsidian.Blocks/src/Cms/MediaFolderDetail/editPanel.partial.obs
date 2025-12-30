@@ -5,11 +5,15 @@
             <div class="col-md-6">
                 <TextBox v-model="name"
                          label="Name"
+                         :disabled="!isAllowManualEntry"
+                         :isReadOnly="!isAllowManualEntry"
                          rules="required" />
             </div>
             <div class="col-md-12">
                 <TextBox v-model="description"
                          label="Description"
+                         :disabled="!isAllowManualEntry"
+                         :isReadOnly="!isAllowManualEntry"
                          textMode="multiline" />
             </div>
             <div class="col-md-4">
@@ -116,6 +120,10 @@
 
     const contentChannelItemAttributes = computed((): ListItemBag[] => contentChannelAttributes.value[contentChannelValue.value]);
 
+    const isAllowManualEntry = computed((): boolean => {
+        return (props.modelValue.isAllowsManualEntry);
+    });
+
     // #endregion
 
     // #region Functions
@@ -148,6 +156,7 @@
             description: description.value,
             name: name.value,
             isContentChannelSyncEnabled: isContentChannelSyncEnabled.value,
+            isAllowsManualEntry: isAllowManualEntry.value,
             contentChannel: { value: contentChannelValue.value },
             contentChannelItemStatus: contentChannelItemStatus.value,
             contentChannelAttribute: { value: contentChannelAttributeValue.value },

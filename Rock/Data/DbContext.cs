@@ -28,9 +28,12 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Web;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Bus.Message;
 using Rock.Model;
 using Rock.Net;
+using Rock.Observability;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.UniversalSearch;
@@ -335,13 +338,13 @@ namespace Rock.Data
 
             SaveErrorMessages = new List<string>();
 
-            // Try to get the current person alias and id
-            PersonAlias personAlias = GetCurrentPersonAlias();
+            // Try to get the current person alias id
+            var  personAliasId = GetCurrentPersonAliasId();
 
             bool enableAuditing = GlobalAttributesCache.Value( "EnableAuditing" ).AsBoolean();
 
             // Evaluate the current context for items that have changes
-            var updatedItems = RockPreSave( this, personAlias, enableAuditing );
+            var updatedItems = RockPreSave( this, personAliasId, enableAuditing );
 
             // If update was not cancelled by triggered workflow
             if ( updatedItems != null )
@@ -363,7 +366,7 @@ namespace Rock.Data
                 // If any items changed process audit and triggers
                 if ( updatedItems.Any() )
                 {
-                    RockPostSave( updatedItems, personAlias, enableAuditing );
+                    RockPostSave( updatedItems, enableAuditing );
 
                     if ( args.IsAchievementsEnabled )
                     {
@@ -427,7 +430,9 @@ namespace Rock.Data
         /// <summary>
         /// Gets the current person alias.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The primary alias</returns>
+        [Obsolete( "Use GetCurrentPersonAliasId() instead." )]
+        [RockObsolete( "18.0" )]
         internal PersonAlias GetCurrentPersonAlias()
         {
             if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
@@ -448,20 +453,51 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets the current person alias Id.
+        /// </summary>
+        /// <returns>The Id of the current person's primary alias.</returns>
+        internal int? GetCurrentPersonAliasId()
+        {
+            if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+            {
+                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
+                if ( currentPerson != null && currentPerson.PrimaryAliasId != null )
+                {
+                    return currentPerson.PrimaryAliasId;
+                }
+            }
+
+            if ( Net.RockRequestContextAccessor.Current != null )
+            {
+                return Net.RockRequestContextAccessor.Current.CurrentPerson?.PrimaryAliasId;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Updates the Created/Modified data for any model being created or modified
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="personAlias">The person alias.</param>
         /// <param name="enableAuditing">if set to <c>true</c> [enable auditing].</param>
         /// <returns></returns>
+        [Obsolete( "Use RockPreSave( DbContext dbContext, int? PersonAliasId, bool enableAuditing ) instead." )]
+        [RockObsolete( "18.0" )]
         protected virtual List<ContextItem> RockPreSave( DbContext dbContext, PersonAlias personAlias, bool enableAuditing = false )
         {
-            int? personAliasId = null;
-            if ( personAlias != null )
-            {
-                personAliasId = personAlias.Id;
-            }
+            return RockPreSave( dbContext, personAlias?.Id, enableAuditing );
+        }
 
+        /// <summary>
+        /// Updates the Created/Modified data for any model being created or modified
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="personAliasId">The person alias Id.</param>
+        /// <param name="enableAuditing">if set to <c>true</c> [enable auditing].</param>
+        /// <returns></returns>
+        protected virtual List<ContextItem> RockPreSave( DbContext dbContext, int? personAliasId, bool enableAuditing = false )
+        {
             // This triggers the change detection, so it must be called before
             // we check for the implied relationship changes.
             var entries = dbContext.ChangeTracker.Entries().ToList();
@@ -539,7 +575,7 @@ namespace Rock.Data
                         // instead of passing "true" the trigger model and UI would support a
                         // on-value-changed checkbox (or perhaps it should be the default/only behavior)
                         // and its value would be passed in to the onValueChange
-                        if ( !TriggerWorkflows( contextItem, WorkflowTriggerType.PreSave, personAlias ) )
+                        if ( !TriggerWorkflows( contextItem, WorkflowTriggerType.PreSave ) )
                         {
                             // If any workflow has aborted the save operation
                             // then let all the save hooks know the save was
@@ -595,7 +631,7 @@ namespace Rock.Data
                     }
                     else if ( entry.State == EntityState.Deleted )
                     {
-                        if ( !TriggerWorkflows( contextItem, WorkflowTriggerType.PreDelete, personAlias ) )
+                        if ( !TriggerWorkflows( contextItem, WorkflowTriggerType.PreDelete ) )
                         {
                             // Let all the hooks that were called know that
                             // the save was aborted.
@@ -651,9 +687,21 @@ namespace Rock.Data
         /// Creates audit logs and/or triggers workflows for items that were changed
         /// </summary>
         /// <param name="updatedItems">The updated items.</param>
-        /// <param name="personAlias">The person alias.</param>
+        /// <param name="personAlias">The person alias (NOT USED; hasn't been used in years).</param>
         /// <param name="enableAuditing">if set to <c>true</c> [enable auditing].</param>
+        [Obsolete( "Use RockPostSave( List<ContextItem> updatedItems, bool enableAuditing = false ) instead." )]
+        [RockObsolete( "18.0" )]
         protected virtual void RockPostSave( List<ContextItem> updatedItems, PersonAlias personAlias, bool enableAuditing = false )
+        {
+            RockPostSave( updatedItems, enableAuditing );
+        }
+
+        /// <summary>
+        /// Creates audit logs and/or triggers workflows for items that were changed
+        /// </summary>
+        /// <param name="updatedItems">The updated items.</param>
+        /// <param name="enableAuditing">if set to <c>true</c> [enable auditing].</param>
+        protected virtual void RockPostSave( List<ContextItem> updatedItems, bool enableAuditing = false )
         {
             // Triggers when the post-save actions have completed.
             var tcsPostSave = new TaskCompletionSource<bool>();
@@ -698,17 +746,17 @@ namespace Rock.Data
 
                     if ( item.State == EntityContextState.Detached || item.State == EntityContextState.Deleted )
                     {
-                        TriggerWorkflows( item, WorkflowTriggerType.PostDelete, personAlias );
+                        TriggerWorkflows( item, WorkflowTriggerType.PostDelete );
                     }
                     else
                     {
                         if ( item.PreSaveState == EntityContextState.Added )
                         {
-                            TriggerWorkflows( item, WorkflowTriggerType.PostAdd, personAlias );
+                            TriggerWorkflows( item, WorkflowTriggerType.PostAdd );
                         }
 
-                        TriggerWorkflows( item, WorkflowTriggerType.ImmediatePostSave, personAlias );
-                        TriggerWorkflows( item, WorkflowTriggerType.PostSave, personAlias );
+                        TriggerWorkflows( item, WorkflowTriggerType.ImmediatePostSave );
+                        TriggerWorkflows( item, WorkflowTriggerType.PostSave );
                     }
 
                     if ( item.Entity is IEntity entity )
@@ -764,6 +812,15 @@ namespace Rock.Data
                 ExecuteAfterCommit( () =>
                 {
                     CallPostSaveHooks( updatedItems );
+
+                    using ( var activity = ObservabilityHelper.StartActivity( "Processing Change Monitors" ) )
+                    {
+                        foreach ( var item in updatedItems )
+                        {
+                            Core.Automation.Triggers.EntityChangeMonitor.ProcessEntity( item );
+                        }
+                    }
+
                     tcsPostSave.SetResult( true );
                 } );
             }
@@ -1065,7 +1122,7 @@ namespace Rock.Data
 
             // ensure CreatedDateTime and ModifiedDateTime is set
             var currentDateTime = RockDateTime.Now;
-            var currentPersonAliasId = this.GetCurrentPersonAlias()?.Id;
+            var currentPersonAliasId = this.GetCurrentPersonAliasId();
 
             foreach ( var record in records )
             {
@@ -1090,9 +1147,9 @@ namespace Rock.Data
 
             // if the CommandTimeout is less than 5 minutes (or null with a default of 30 seconds), set timeout to 5 minutes
             int minTimeout = 300;
-            if ( this.Database.CommandTimeout.HasValue && this.Database.CommandTimeout.Value > minTimeout )
+            if ( this.Database.GetCommandTimeout().HasValue && this.Database.GetCommandTimeout().Value > minTimeout )
             {
-                EntityFramework.Utilities.Configuration.BulkCopyTimeout = this.Database.CommandTimeout.Value;
+                EntityFramework.Utilities.Configuration.BulkCopyTimeout = this.Database.GetCommandTimeout().Value;
             }
             else
             {
@@ -1136,12 +1193,12 @@ namespace Rock.Data
         public virtual int BulkUpdate<T>( IQueryable<T> queryable, Expression<Func<T, T>> updateFactory ) where T : class
         {
             var currentDateTime = RockDateTime.Now;
-            PersonAlias currentPersonAlias = this.GetCurrentPersonAlias();
-            var rockExpressionVisitor = new RockBulkUpdateExpressionVisitor( currentDateTime, currentPersonAlias );
+            var currentPersonAliasId = this.GetCurrentPersonAliasId();
+            var rockExpressionVisitor = new RockBulkUpdateExpressionVisitor( currentDateTime, currentPersonAliasId );
             var updatedExpression = rockExpressionVisitor.Visit( updateFactory ) as Expression<Func<T, T>> ?? updateFactory;
             int recordsUpdated = queryable.Update( updatedExpression, batchUpdateBuilder =>
             {
-                batchUpdateBuilder.Executing = ( e ) => { e.CommandTimeout = this.Database.CommandTimeout ?? 30; };
+                batchUpdateBuilder.Executing = ( e ) => { e.CommandTimeout = this.Database.GetCommandTimeout() ?? 30; };
             } );
             return recordsUpdated;
         }
@@ -1151,7 +1208,7 @@ namespace Rock.Data
         /// Example: rockContext.BulkDelete( groupMembersToDeleteQuery );
         /// NOTES:
         /// - This bypasses the Rock and a bunch of the EF Framework and automatically commits the changes to the database.
-        /// - This will use the Database.CommandTimeout value.
+        /// - This will use the Database.GetCommandTimeout() value.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="queryable">The queryable for the records to delete</param>
@@ -1171,7 +1228,7 @@ namespace Rock.Data
             return queryable.Delete( d =>
             {
                 d.BatchSize = batchSize ?? 1500;
-                d.Executing = ( e ) => { e.CommandTimeout = this.Database.CommandTimeout ?? 30; };
+                d.Executing = ( e ) => { e.CommandTimeout = this.Database.GetCommandTimeout() ?? 30; };
             } );
         }
 
@@ -1182,9 +1239,8 @@ namespace Rock.Data
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="triggerType">Type of the trigger.</param>
-        /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
-        private bool TriggerWorkflows( ContextItem item, WorkflowTriggerType triggerType, PersonAlias personAlias )
+        private bool TriggerWorkflows( ContextItem item, WorkflowTriggerType triggerType  )
         {
             IEntity entity = item.Entity;
             Dictionary<string, PropertyInfo> properties = null;
@@ -1806,6 +1862,10 @@ namespace Rock.Data
 
                         return modifiedProperties;
                     } );
+                }
+                else
+                {
+                    _lazyModifiedProperties = new Lazy<IReadOnlyList<string>>( () => null );
                 }
             }
         }

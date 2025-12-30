@@ -36,7 +36,7 @@ namespace Rock.Model
     [DataContract]
     [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CONNECTION_OPPORTUNITY )]
-    public partial class ConnectionOpportunity : Model<ConnectionOpportunity>, IHasActiveFlag, IOrdered
+    public partial class ConnectionOpportunity : Model<ConnectionOpportunity>, IHasActiveFlag, IOrdered, IHasAdditionalSettings
     {
 
         #region Entity Properties
@@ -156,6 +156,12 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool ShowCampusOnTransfer { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the additional settings as a JSON document.
+        /// </summary>
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
 
         #endregion
 

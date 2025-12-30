@@ -8,7 +8,7 @@
                         :class="`align-self-start left-scroll-button btn btn-lg btn-${getBtnType(isAnyActiveInitialFilterOverflowingToLeft)}`"
                         ref="leftScrollButtonElement"
                         type="button"
-                        @click="onScrollLeftClicked"><i class="fa fa-angle-left"></i></button>
+                        @click="onScrollLeftClicked"><i class="ti ti-chevron-left"></i></button>
                     <button v-for="(initial, index) in initials"
                         :class="`btn btn-lg btn-${getBtnType(initialsFilters.hasFilter(getOrCreateInitialFilter(initial)))}`"
                         :ref="(element) => (setInitialComponent(index, element, initial))"
@@ -18,7 +18,7 @@
                         :class="`align-self-end right-scroll-button btn btn-lg btn-${getBtnType(isAnyActiveInitialFilterOverflowingToRight)}`"
                         ref="rightScrollButtonElement"
                         type="button"
-                        @click="onScrollRightClicked"><i class="fa fa-angle-right"></i>
+                        @click="onScrollRightClicked"><i class="ti ti-chevron-right"></i>
                     </button>
                 </div>
             </div>

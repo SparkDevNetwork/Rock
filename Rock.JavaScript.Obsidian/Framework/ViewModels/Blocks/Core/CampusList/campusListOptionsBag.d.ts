@@ -22,4 +22,6 @@
 //
 
 export type CampusListOptionsBag = {
+    /** Gets or sets whether the Campus Phone Number column should be shown. */
+    showCampusPhoneNumber: boolean;
 };

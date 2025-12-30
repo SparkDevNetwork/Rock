@@ -51,7 +51,7 @@
         </Column>
 
         <ButtonColumn name="preview"
-                      iconClass="fa fa-search"
+                      iconClass="ti ti-search"
                       visiblePriority="xs"
                       @click="onPreviewClick"
                       width="57" />

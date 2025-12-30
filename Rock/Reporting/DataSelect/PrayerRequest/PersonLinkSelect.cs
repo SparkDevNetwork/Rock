@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,28 +15,34 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
 
 namespace Rock.Reporting.DataSelect.PrayerRequest
 {
     /// <summary>
     /// Report Field for Group Member Person.
     /// </summary>
-    [Description("Show person's name as an optional link that navigates to the person's record")]
-    [Export(typeof(DataSelectComponent))]
-    [ExportMetadata("ComponentName", "Select Person Name")]
-    [BooleanField("Show As Link", "", true)]
-    [CustomRadioListField("Display Order", "", "0^FirstName LastName,1^LastName&#44; FirstName", true, "0")]
-    [Rock.SystemGuid.EntityTypeGuid( "1EEC14BE-330E-4F94-9198-E33886DEEA55")]
+    [Description( "Show person's name as an optional link that navigates to the person's record" )]
+    [Export( typeof( DataSelectComponent ) )]
+    [ExportMetadata( "ComponentName", "Select Person Name" )]
+    [BooleanField( "Show As Link", "", true )]
+    [CustomRadioListField( "Display Order", "", "0^FirstName LastName,1^LastName&#44; FirstName", true, "0" )]
+    [Rock.SystemGuid.EntityTypeGuid( "1EEC14BE-330E-4F94-9198-E33886DEEA55" )]
     public class PersonLinkSelect : DataSelectComponent, IRecipientDataSelect
     {
+        #region Properties
+
         /// <summary>
         /// Gets the name of the entity type. Filter should be an empty string
         /// if it applies to all entities
@@ -48,7 +54,7 @@ namespace Rock.Reporting.DataSelect.PrayerRequest
         {
             get
             {
-                return typeof(Rock.Model.PrayerRequest).FullName;
+                return typeof( Rock.Model.PrayerRequest ).FullName;
             }
         }
 
@@ -80,13 +86,52 @@ namespace Rock.Reporting.DataSelect.PrayerRequest
             }
         }
 
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/PrayerRequest/personLinkSelect.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = selection.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+
+            return new Dictionary<string, string>
+            {
+                ["showAsLink"] = settings.GetValueOrDefault( "ShowAsLink", string.Empty ),
+                ["displayOrder"] = settings.GetValueOrDefault( "DisplayOrder", string.Empty )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new Dictionary<string, string>
+            {
+                ["ShowAsLink"] = data.GetValueOrDefault( "showAsLink", string.Empty ).AsBooleanOrNull().ToStringSafe(),
+                ["DisplayOrder"] = data.GetValueOrDefault( "displayOrder", string.Empty ).ToIntSafe().ToStringSafe()
+            }.ToJson();
+        }
+
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Gets the grid field.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override System.Web.UI.WebControls.DataControlField GetGridField(Type entityType, string selection)
+        public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
         {
             var result = new BoundField();
 
@@ -104,11 +149,11 @@ namespace Rock.Reporting.DataSelect.PrayerRequest
         /// <value>
         /// The sort expression.
         /// </value>
-        public override string SortProperties(string selection)
+        public override string SortProperties( string selection )
         {
-            int displayOrder = this.GetAttributeValueFromSelection("DisplayOrder", selection).AsIntegerOrNull() ?? 0;
+            int displayOrder = this.GetAttributeValueFromSelection( "DisplayOrder", selection ).AsIntegerOrNull() ?? 0;
 
-            if (displayOrder == 0)
+            if ( displayOrder == 0 )
             {
                 return "RequestedByPersonAlias.Person.NickName,RequestedByPersonAlias.Person.LastName";
             }
@@ -125,43 +170,45 @@ namespace Rock.Reporting.DataSelect.PrayerRequest
         /// <param name="entityIdProperty">The entity identifier property.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression(RockContext context, MemberExpression entityIdProperty, string selection)
+        public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-            bool showAsLink = this.GetAttributeValueFromSelection("ShowAsLink", selection).AsBooleanOrNull() ?? false;
-            int displayOrder = this.GetAttributeValueFromSelection("DisplayOrder", selection).AsIntegerOrNull() ?? 0;
+            bool showAsLink = this.GetAttributeValueFromSelection( "ShowAsLink", selection ).AsBooleanOrNull() ?? false;
+            int displayOrder = this.GetAttributeValueFromSelection( "DisplayOrder", selection ).AsIntegerOrNull() ?? 0;
 
-            var memberQuery = new PrayerRequestService(context).Queryable();
+            var memberQuery = new PrayerRequestService( context ).Queryable();
 
             IQueryable<string> personLinkQuery;
 
-            if (showAsLink)
+            if ( showAsLink )
             {
                 // Return a string in the format: <a href='/person/{personId}'>LastName, NickName</a>
-                if (displayOrder == 0)
+                if ( displayOrder == 0 )
                 {
-                    personLinkQuery = memberQuery.Select(gm => "<a href='/person/" + gm.RequestedByPersonAlias.AliasPersonId.ToString() + "'>" + gm.RequestedByPersonAlias.Person.NickName + " " + gm.RequestedByPersonAlias.Person.LastName + "</a>");
+                    personLinkQuery = memberQuery.Select( gm => "<a href='/person/" + gm.RequestedByPersonAlias.AliasPersonId.ToString() + "'>" + gm.RequestedByPersonAlias.Person.NickName + " " + gm.RequestedByPersonAlias.Person.LastName + "</a>" );
                 }
                 else
                 {
-                    personLinkQuery = memberQuery.Select(gm => "<a href='/person/" + gm.RequestedByPersonAlias.AliasPersonId.ToString() + "'>" + gm.RequestedByPersonAlias.Person.LastName + ", " + gm.RequestedByPersonAlias.Person.NickName + "</a>");
+                    personLinkQuery = memberQuery.Select( gm => "<a href='/person/" + gm.RequestedByPersonAlias.AliasPersonId.ToString() + "'>" + gm.RequestedByPersonAlias.Person.LastName + ", " + gm.RequestedByPersonAlias.Person.NickName + "</a>" );
                 }
             }
             else
             {
-                if (displayOrder == 0)
+                if ( displayOrder == 0 )
                 {
-                    personLinkQuery = memberQuery.Select(gm => gm.RequestedByPersonAlias.Person.NickName + " " + gm.RequestedByPersonAlias.Person.LastName);
+                    personLinkQuery = memberQuery.Select( gm => gm.RequestedByPersonAlias.Person.NickName + " " + gm.RequestedByPersonAlias.Person.LastName );
                 }
                 else
                 {
-                    personLinkQuery = memberQuery.Select(gm => gm.RequestedByPersonAlias.Person.LastName + ", " + gm.RequestedByPersonAlias.Person.NickName);
+                    personLinkQuery = memberQuery.Select( gm => gm.RequestedByPersonAlias.Person.LastName + ", " + gm.RequestedByPersonAlias.Person.NickName );
                 }
             }
 
-            var exp = SelectExpressionExtractor.Extract(personLinkQuery, entityIdProperty, "gm");
+            var exp = SelectExpressionExtractor.Extract( personLinkQuery, entityIdProperty, "gm" );
 
             return exp;
         }
+
+        #endregion
 
         #region IRecipientDataSelect implementation
 
@@ -173,7 +220,7 @@ namespace Rock.Reporting.DataSelect.PrayerRequest
         /// </value>
         public Type RecipientColumnFieldType
         {
-            get { return typeof(int); }
+            get { return typeof( int ); }
         }
 
         /// <summary>
@@ -183,13 +230,13 @@ namespace Rock.Reporting.DataSelect.PrayerRequest
         /// <param name="entityIdProperty">The entity identifier property.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public Expression GetRecipientPersonIdExpression(System.Data.Entity.DbContext dbContext, MemberExpression entityIdProperty, string selection)
+        public Expression GetRecipientPersonIdExpression( System.Data.Entity.DbContext dbContext, MemberExpression entityIdProperty, string selection )
         {
             var rockContext = dbContext as RockContext;
-            if (rockContext != null)
+            if ( rockContext != null )
             {
-                var memberQuery = new PrayerRequestService(rockContext).Queryable().Select(p => p.RequestedByPersonAlias.AliasPersonId);
-                var exp = SelectExpressionExtractor.Extract(memberQuery, entityIdProperty, "p");
+                var memberQuery = new PrayerRequestService( rockContext ).Queryable().Select( p => p.RequestedByPersonAlias.AliasPersonId );
+                var exp = SelectExpressionExtractor.Extract( memberQuery, entityIdProperty, "p" );
                 return exp;
             }
 

@@ -7,7 +7,7 @@
     </PopupPicker>
 
     <NotificationBox v-if="attachmentErrorMessage" alertType="warning">
-        <strong><i class="fa fa-exclamation-triangle"></i> Warning </strong>
+        <strong><i class="ti ti-alert-triangle"></i> Warning </strong>
         <span>{{ attachmentErrorMessage }}</span>
     </NotificationBox>
 

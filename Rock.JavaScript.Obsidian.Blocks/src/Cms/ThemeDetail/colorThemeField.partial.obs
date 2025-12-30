@@ -10,7 +10,7 @@
                         title="Reset to default"
                         :disabled="internalValue === null"
                         @click="onResetValue">
-                    <i class="fa fa-refresh"></i>
+                    <i class="ti ti-refresh"></i>
                 </button>
             </span>
         </template>
@@ -59,13 +59,13 @@
     }
 
     watch(internalValue, () => {
-        if (props.field.variable) {
-            emit("updateValue", props.field.variable, internalValue.value);
+        if (props.field.key) {
+            emit("updateValue", props.field.key, internalValue.value);
         }
     });
 
     watch([() => props.field, () => props.value], () => {
-        if (props.field.variable) {
+        if (props.field.key) {
             internalValue.value = props.value;
         }
     });

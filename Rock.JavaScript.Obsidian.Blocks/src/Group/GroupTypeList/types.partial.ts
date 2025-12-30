@@ -15,8 +15,6 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
 }

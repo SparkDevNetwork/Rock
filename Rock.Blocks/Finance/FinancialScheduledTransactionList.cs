@@ -45,7 +45,7 @@ namespace Rock.Blocks.Finance
     [DisplayName( "Financial Scheduled Transaction List" )]
     [Category( "Finance" )]
     [Description( "Displays a list of financial scheduled transactions." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "View Page",
@@ -143,6 +143,15 @@ namespace Rock.Blocks.Finance
         }
 
         #endregion Keys
+
+        #region Fields
+
+        /// <summary>
+        /// The scheduled transaction attributes configured to show on the grid.
+        /// </summary>
+        private readonly Lazy<List<AttributeCache>> _gridAttributes = new System.Lazy<List<AttributeCache>>( BuildGridAttributes );
+
+        #endregion
 
         #region Fields
 
@@ -433,6 +442,8 @@ namespace Rock.Blocks.Finance
                 }
             }
 
+            GridAttributeLoader.LoadFor( items, i => i.FinancialScheduledTransaction, _gridAttributes.Value, rockContext );
+
             return items;
         }
 
@@ -441,8 +452,12 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         protected override GridBuilder<FinancialScheduledTransactionData> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<FinancialScheduledTransactionData>
+            {
+                LavaObject = row => row.FinancialScheduledTransaction
+            };
             return new GridBuilder<FinancialScheduledTransactionData>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.FinancialScheduledTransaction.IdKey )
                 .AddTextField( "id", a => a.FinancialScheduledTransaction.Id.ToString() )
                 .AddPersonField( "authorized", a => a.FinancialScheduledTransaction.AuthorizedPersonAlias?.Person )
@@ -456,7 +471,20 @@ namespace Rock.Blocks.Finance
                 .AddDateTimeField( "nextPayment", a => a.FinancialScheduledTransaction.NextPaymentDate )
                 .AddTextField( "currencyType", a => a.FinancialScheduledTransaction.FinancialPaymentDetail.CurrencyTypeValue?.Value )
                 .AddField( "accounts", a => a.Accounts )
-                .AddField( "isActive", a => a.FinancialScheduledTransaction.IsActive );
+                .AddField( "isActive", a => a.FinancialScheduledTransaction.IsActive )
+                .AddAttributeFieldsFrom( a => a.FinancialScheduledTransaction, _gridAttributes.Value );
+        }
+
+        private static List<AttributeCache> BuildGridAttributes()
+        {
+            var entityTypeId = EntityTypeCache.Get<FinancialScheduledTransaction>( false )?.Id;
+
+            if ( entityTypeId.HasValue )
+            {
+                return AttributeCache.GetOrderedGridAttributes( entityTypeId.Value, string.Empty, string.Empty );
+            }
+
+            return new List<AttributeCache>();
         }
 
         /// <summary>

@@ -32,7 +32,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
     [DisplayName( "Transaction List" )]
     [Category( "Mobile > Finance" )]
     [Description( "The Transaction List block." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

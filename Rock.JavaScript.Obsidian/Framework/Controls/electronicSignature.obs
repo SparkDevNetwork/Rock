@@ -16,7 +16,7 @@
                         </div>
 
                         <div class="signature-entry-clear-col">
-                            <a class="btn btn-link p-1 p-md-2 text-color" title="Clear Signature" @click.prevent="onClearClick"><i class="fa fa-2x fa-undo"></i></a>
+                            <a class="btn btn-link p-1 p-md-2 text-color" title="Clear Signature" @click.prevent="onClearClick"><i class="ti ti-2x ti-arrow-back-up"></i></a>
                         </div>
                     </div>
                 </div>

@@ -34,7 +34,7 @@ namespace Rock.Blocks.Types.Mobile.Events
     [DisplayName( "Prayer Session Setup" )]
     [Category( "Mobile > Prayer" )]
     [Description( "Displays a page to configure and prepare a prayer session." )]
-    [IconCssClass( "fa fa-pray" )]
+    [IconCssClass( "ti ti-pray" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

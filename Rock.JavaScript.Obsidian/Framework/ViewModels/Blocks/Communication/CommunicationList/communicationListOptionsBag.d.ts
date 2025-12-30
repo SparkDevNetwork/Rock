@@ -25,15 +25,21 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The additional configuration options for the Communication List block. */
 export type CommunicationListOptionsBag = {
-    /** Gets or sets a value indicating whether the current user can approve new communications. */
-    canApprove: boolean;
+    /** Gets or sets whether an active email transport exists. */
+    hasActiveEmailTransport: boolean;
 
-    /** Gets or sets the communication types for the communication type filter dropdown. */
-    communicationTypeItems?: ListItemBag[] | null;
+    /** Gets or sets whether an active push transport exists. */
+    hasActivePushTransport: boolean;
 
-    /** Gets or sets the current person. */
-    currentPerson?: ListItemBag | null;
+    /** Gets or sets whether an active SMS transport exists. */
+    hasActiveSmsTransport: boolean;
 
-    /** Gets or sets the status types for the status filter dropdown. */
-    statusItems?: ListItemBag[] | null;
+    /** Gets or sets whether to show the "sent by" filter controls. */
+    showSentByFilter: boolean;
+
+    /**
+     * Gets or sets the list of communication topic defined value items - both active and inactive - that the
+     * individual can filter by.
+     */
+    topicItems?: ListItemBag[] | null;
 };

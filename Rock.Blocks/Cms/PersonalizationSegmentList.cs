@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -38,7 +39,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Personalization Segment List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of personalization segments." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
@@ -65,6 +66,15 @@ namespace Rock.Blocks.Cms
 
         #endregion Keys
 
+        #region Fields
+
+        /// <summary>
+        /// The PersonalizationSegment attributes configured to show on the grid.
+        /// </summary>
+        private readonly Lazy<List<AttributeCache>> _gridAttributes = new System.Lazy<List<AttributeCache>>( BuildGridAttributes );
+
+        #endregion
+
         #region Methods
 
         /// <inheritdoc/>
@@ -74,7 +84,7 @@ namespace Rock.Blocks.Cms
             var builder = GetGridBuilder();
 
             box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = true;
+            box.IsDeleteEnabled = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -121,82 +131,118 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override IQueryable<PersonalizationSegmentListBag> GetListQueryable( RockContext rockContext )
         {
-            return GetGridDataSourceList( rockContext );
+            var personalizationSegmentService = new PersonalizationSegmentService( rockContext );
+            var personAliasPersonalizationsSegmentsQry = personalizationSegmentService.GetPersonAliasPersonalizationSegmentQuery();
+            var anonymousVisitorPersonId = new PersonService( rockContext ).GetOrCreateAnonymousVisitorPersonId();
+
+            var personalizationSegmentList = personalizationSegmentService.Queryable()
+                .AsNoTracking()
+                .Include( s => s.FilterDataView )
+                .Include( s => s.Categories );
+
+            var scheduleIds = personalizationSegmentList
+                .Where( ps => ps.PersistedScheduleId.HasValue )
+                .Select( ps => ps.PersistedScheduleId.Value )
+                .Distinct()
+                .ToList();
+
+            var schedules = new ScheduleService( rockContext )
+                .GetByIds( scheduleIds )
+                .ToDictionary( s => s.Id, s => s );
+
+            // Server-side projection only (EF-translatable).
+            var sqlProjection = personalizationSegmentList
+                .Select( a => new
+            {
+                PersonalizationSegment = a,
+                KnownIndividualsCount = a.IsDirty ? -1 : personAliasPersonalizationsSegmentsQry.Where( p => p.PersonalizationEntityId == a.Id && p.PersonAlias.PersonId != anonymousVisitorPersonId ).Count(),
+                AnonymousIndividualsCount = a.IsDirty ? -1 : personAliasPersonalizationsSegmentsQry.Where( p => p.PersonalizationEntityId == a.Id && p.PersonAlias.PersonId == anonymousVisitorPersonId ).Count(),
+                TimeToUpdateDurationMilliseconds = a.TimeToUpdateDurationMilliseconds ?? 0,
+                Categories = a.Categories.Select( c => c.Name ).ToList(),
+                FilterDataViewName = a.FilterDataViewId.HasValue ? a.FilterDataView.Name : null,
+                PersistedScheduleIntervalMinutes = a.PersistedScheduleIntervalMinutes,
+                PersistedScheduleId = a.PersistedScheduleId,
+            } );
+
+            var currentPerson = GetCurrentPerson();
+
+            // Client-side only to format the PersistedScheduleInfo string (not SQL-translatable).
+            var personalizationSegmentItemQuery = sqlProjection
+            .AsEnumerable()
+            .Where( a => a.PersonalizationSegment.IsAuthorized( Authorization.VIEW, currentPerson ) )
+            .Select( a => new PersonalizationSegmentListBag
+            {
+                PersonalizationSegment = a.PersonalizationSegment,
+                KnownIndividualsCount = a.KnownIndividualsCount,
+                AnonymousIndividualsCount = a.AnonymousIndividualsCount,
+                TimeToUpdateDurationMilliseconds = a.TimeToUpdateDurationMilliseconds,
+                Categories = a.Categories,
+                FilterDataViewName = a.FilterDataViewName,
+                PersistedScheduleInfo = a.PersistedScheduleId.HasValue
+                        ? schedules[a.PersistedScheduleId.Value].FriendlyScheduleText
+                        : a.PersistedScheduleIntervalMinutes.HasValue
+                            ? $"Every {new Rock.Utility.TimeIntervalSetting( a.PersistedScheduleIntervalMinutes, null )}"
+                            : "Not Persisted"
+            } );
+
+            return personalizationSegmentItemQuery.AsQueryable();
         }
 
+        /// <inheritdoc/>
         protected override IQueryable<PersonalizationSegmentListBag> GetOrderedListQueryable( IQueryable<PersonalizationSegmentListBag> queryable, RockContext rockContext )
         {
-            return queryable.OrderBy( a => a.Name );
+            return queryable.OrderBy( a => a.PersonalizationSegment.Name );
+        }
+
+        /// <inheritdoc/>
+        protected override List<PersonalizationSegmentListBag> GetListItems( IQueryable<PersonalizationSegmentListBag> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+
+            GridAttributeLoader.LoadFor( items, a => a.PersonalizationSegment, _gridAttributes.Value, rockContext );
+
+            return items;
         }
 
         /// <inheritdoc/>
         protected override GridBuilder<PersonalizationSegmentListBag> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<PersonalizationSegmentListBag>
+            {
+                LavaObject = row => row.PersonalizationSegment
+            };
+
             return new GridBuilder<PersonalizationSegmentListBag>()
-                .WithBlock( this )
-                .AddTextField( "idKey", a => a.IdKey )
-                .AddField( "guid", a => a.Guid )
-                .AddField( "isSecurityDisabled", a => a.IsSecurityDisabled )
-                .AddTextField( "name", a => a.Name )
-                .AddTextField( "description", a => a.Description )
+                .WithBlock( this, blockOptions )
+                .AddTextField( "idKey", a => a.PersonalizationSegment.IdKey )
+                .AddField( "guid", a => a.PersonalizationSegment.Guid )
+                .AddField( "isSecurityDisabled", a => !a.PersonalizationSegment.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddTextField( "name", a => a.PersonalizationSegment.Name )
+                .AddTextField( "description", a => a.PersonalizationSegment.Description )
                 .AddTextField( "filterDataViewName", a => a.FilterDataViewName )
-                .AddTextField( "knownIndividualsCount", a => a.KnownIndividualsCount )
-                .AddTextField( "anonymousIndividualsCount", a => a.AnonymousIndividualsCount )
-                .AddField( "timeToUpdateDurationMilliseconds", a => a.TimeToUpdateDurationMilliseconds )
+                .AddTextField( "persistedScheduleInfo", a => a.PersistedScheduleInfo )
+                .AddField( "knownIndividualsCount", a => a.KnownIndividualsCount )
+                .AddField( "anonymousIndividualsCount", a => a.AnonymousIndividualsCount )
+                .AddField( "timeToUpdateDurationMilliseconds", a => a.TimeToUpdateDurationMilliseconds.HasValue ? Math.Round( ( double ) a.TimeToUpdateDurationMilliseconds ) : a.TimeToUpdateDurationMilliseconds )
                 .AddField( "categories", a => a.Categories )
-                .AddField( "isActive", a => a.IsActive );
+                .AddField( "isActive", a => a.PersonalizationSegment.IsActive )
+                .AddAttributeFieldsFrom( a => a.PersonalizationSegment, _gridAttributes.Value );
         }
 
         /// <summary>
-        /// Gets the grid data source list (ordered)
+        /// Builds the list of grid attributes that should be included on the Grid.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        private IQueryable<PersonalizationSegmentListBag> GetGridDataSourceList( RockContext rockContext )
+        /// <returns>A list of <see cref="AttributeCache"/> objects.</returns>
+        private static List<AttributeCache> BuildGridAttributes()
         {
-            var personalizationSegmentService = new PersonalizationSegmentService( rockContext );
-            var personAliasPersonalizationsSegmentsQry = personalizationSegmentService.GetPersonAliasPersonalizationSegmentQuery();
-            var anonymousVisitorPersonId = new PersonService( rockContext ).GetOrCreateAnonymousVisitorPersonId();
+            var entityTypeId = EntityTypeCache.Get<PersonalizationSegment>( false )?.Id;
 
-            var knownIndividualCounts = personAliasPersonalizationsSegmentsQry
-                .Where( p => p.PersonAlias.PersonId != anonymousVisitorPersonId )
-                .GroupBy( p => p.PersonalizationEntityId )
-                .ToDictionary( grp => grp.Key, grp => grp.Count() );
-
-            var anonymousIndividualCounts = personAliasPersonalizationsSegmentsQry
-                .Where( p => p.PersonAlias.PersonId == anonymousVisitorPersonId )
-                .GroupBy( p => p.PersonalizationEntityId )
-                .ToDictionary( grp => grp.Key, grp => grp.Count() );
-
-            var personalizationSegmentList = personalizationSegmentService.Queryable().ToList();
-
-            foreach ( var personalizationSegment in personalizationSegmentList )
+            if ( entityTypeId.HasValue )
             {
-                if ( personalizationSegment.TimeToUpdateDurationMilliseconds.HasValue )
-                {
-                    // Round values to a single digit.
-                    personalizationSegment.TimeToUpdateDurationMilliseconds = Math.Round( personalizationSegment.TimeToUpdateDurationMilliseconds.Value, 1 );
-                }
+                return AttributeCache.GetOrderedGridAttributes( entityTypeId.Value, string.Empty, string.Empty );
             }
 
-            var personalizationSegmentItemQuery = personalizationSegmentList.Select( a => new PersonalizationSegmentListBag
-            {
-                IdKey = a.IdKey,
-                Guid = a.Guid,
-                Name = a.Name,
-                Description = a.Description,
-                FilterDataViewName = a.FilterDataViewId.HasValue ? a.FilterDataView.Name : null,
-                IsActive = a.IsActive,
-                KnownIndividualsCount = a.IsDirty ? "Loading..." : knownIndividualCounts.ContainsKey( a.Id ) ? knownIndividualCounts[a.Id].ToString() : "0",
-                AnonymousIndividualsCount = a.IsDirty ? "Loading..." : anonymousIndividualCounts.ContainsKey( a.Id ) ? anonymousIndividualCounts[a.Id].ToString() : "0",
-                TimeToUpdateDurationMilliseconds = a.TimeToUpdateDurationMilliseconds,
-                CanDelete = a.IsAuthorized( Authorization.DELETE, this.GetCurrentPerson() ),
-                CanEdit = a.IsAuthorized( Authorization.EDIT, this.GetCurrentPerson() ),
-                IsSecurityDisabled = !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ),
-                Categories = a.Categories.Select( c => c.Name ).ToList(),
-            } );
-
-            return personalizationSegmentItemQuery.AsQueryable();
+            return new List<AttributeCache>();
         }
 
         #endregion
@@ -244,31 +290,19 @@ namespace Rock.Blocks.Cms
         /// </summary>
         public class PersonalizationSegmentListBag
         {
-            public string IdKey { get; set; }
-
-            public Guid Guid { get; set; }
-
-            public string Name { get; set; }
-
-            public string Description { get; set; }
+            public PersonalizationSegment PersonalizationSegment { get; set; }
 
             public string FilterDataViewName { get; set; }
 
-            public bool IsActive { get; set; }
+            public int? KnownIndividualsCount { get; set; }
 
-            public string KnownIndividualsCount { get; set; }
-
-            public string AnonymousIndividualsCount { get; set; }
+            public int? AnonymousIndividualsCount { get; set; }
 
             public double? TimeToUpdateDurationMilliseconds { get; set; }
 
-            public bool CanDelete { get; set; }
-
-            public bool CanEdit { get; set; }
-
-            public bool IsSecurityDisabled { get; set; }
-
             public List<string> Categories { get; set; }
+
+            public string PersistedScheduleInfo { get; set; }
         }
 
         #endregion

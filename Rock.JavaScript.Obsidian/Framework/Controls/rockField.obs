@@ -117,7 +117,7 @@
     const isEditMode = computed(() => props.isEditMode);
 
     /** The label to display above the value or editor. */
-    const label = computed(() => props.attribute.name);
+    const label = computed(() => props.showLabel ? props.attribute.name : undefined);
 
     /** The help text to display in the help bubble when in edit mode. */
     const helpText = computed(() => props.attribute.description);

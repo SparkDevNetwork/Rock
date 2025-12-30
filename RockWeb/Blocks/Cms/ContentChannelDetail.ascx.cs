@@ -990,7 +990,7 @@ namespace RockWeb.Blocks.Cms
             string cssIcon = contentChannel.IconCssClass;
             if ( string.IsNullOrWhiteSpace( cssIcon ) )
             {
-                cssIcon = "fa fa-bullhorn";
+                cssIcon = "ti ti-speakerphone";
             }
             lIcon.Text = string.Format( "<i class='{0}'></i>", cssIcon );
             lTitle.Text = title.FormatAsHtmlTitle();

@@ -99,6 +99,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public string Description { get; private set; }
 
+        /// <inheritdoc cref="BlockType.DefaultRole"/>
+        [DataMember]
+        public BlockRole DefaultRole { get; private set; }
+
         /// <summary>
         /// Gets or sets the category of the BlockType.  Blocks will be grouped by category when displayed to user
         /// </summary>
@@ -213,6 +217,7 @@ namespace Rock.Web.Cache
             EntityTypeId = blockType.EntityTypeId;
             Name = blockType.Name;
             Description = blockType.Description;
+            DefaultRole = blockType.DefaultRole;
             Category = blockType.Category;
             IsInstancePropertiesVerified = false;
             SiteTypeFlags = blockType.SiteTypeFlags;

@@ -136,6 +136,7 @@ namespace Rock.Model
                 , [ImageBinaryFileId]
                 , [Url]
                 , [PublicDescription]
+                , [UsesCampusChildAccounts]
                 , [IsPublic]
                 , [ForeignGuid]
                 , [ForeignId]

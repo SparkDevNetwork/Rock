@@ -20,7 +20,6 @@
 
 <script setup lang="ts">
     import Modal from "@Obsidian/Controls/modal.obs";
-    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import { ref, PropType, watch } from "vue";
     import { GridSettingsOptions } from "./types.partial";

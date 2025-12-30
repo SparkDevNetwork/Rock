@@ -31,19 +31,60 @@ export function setInnerHTML(element: HTMLElement, html: string): void {
         return;
     }
 
+    // Set the innerHTML of the target element. Vue will not execute scripts
+    // that are added this way, so we need to handle them manually.
     element.innerHTML = html;
 
-    Array.from(element.querySelectorAll("script"))
-        .forEach(oldScriptEl => {
-            const newScriptEl = document.createElement("script");
+    // Collect all external scripts (those with a `src` attribute).
+    const externalScriptEls: HTMLScriptElement[] = [];
 
+    // Collect inline scripts (those without a `src` attribute).
+    const inlineScriptEls: HTMLScriptElement[] = [];
+
+    Array.from(element.querySelectorAll("script"))
+        .forEach(scriptEl => {
+            if (scriptEl.src) {
+                externalScriptEls.push(scriptEl);
+            }
+            else {
+                inlineScriptEls.push(scriptEl);
+            }
+        });
+
+    // Load the external scripts one by one and wait for them to load.
+    const loadPromises = externalScriptEls.map(oldScriptEl => {
+        return new Promise<void>((resolve, reject) => {
+            const newScriptEl = document.createElement("script");
             Array.from(oldScriptEl.attributes).forEach(attr => {
                 newScriptEl.setAttribute(attr.name, attr.value);
             });
 
-            const scriptText = document.createTextNode(oldScriptEl.innerHTML);
-            newScriptEl.appendChild(scriptText);
+            // When the script has loaded, resolve the promise.
+            newScriptEl.onload = () => resolve();
+            newScriptEl.onerror = () => reject(new Error(`Failed to load script: ${oldScriptEl.src}`));
 
+            // Append the new script to the target element to trigger loading.
             oldScriptEl.parentNode?.replaceChild(newScriptEl, oldScriptEl);
+        });
+    });
+
+    // Once all external scripts are loaded, execute the inline scripts.
+    Promise.all(loadPromises)
+        .then(() => {
+            inlineScriptEls.forEach(oldScriptEl => {
+                const newScriptEl = document.createElement("script");
+                Array.from(oldScriptEl.attributes).forEach(attr => {
+                    newScriptEl.setAttribute(attr.name, attr.value);
+                });
+
+                const scriptText = document.createTextNode(oldScriptEl.innerHTML);
+                newScriptEl.appendChild(scriptText);
+
+                // Append the inline script to the target element.
+                oldScriptEl.parentNode?.replaceChild(newScriptEl, oldScriptEl);
+            });
+        })
+        .catch(error => {
+            console.error(error);
         });
 }

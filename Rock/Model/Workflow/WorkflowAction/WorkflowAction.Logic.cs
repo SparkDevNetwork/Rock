@@ -581,7 +581,6 @@ namespace Rock.Model
         /// <summary>
         /// Special class for adding form attributes to liquid
         /// </summary>
-        [DotLiquid.LiquidType( "Name", "Key", "Value", "IsVisible", "IsReadOnly", "IsRequired", "HideLabel", "PreHtml", "PostHtml", "Url" )]
         [LavaType( "Name", "Key", "Value", "IsVisible", "IsReadOnly", "IsRequired", "HideLabel", "PreHtml", "PostHtml", "Url" )]
         public class LiquidFormAttribute
         {

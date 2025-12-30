@@ -36,19 +36,21 @@ export const EditComponent = defineComponent({
         // The internal value used by the text editor.
         const internalValue = ref<string>("");
 
+        const connectionType = computed(() => {
+            return JSON.parse(props.configurationValues[ConfigurationValueKey.ConnectionTypeFilter] || "{}") as ListItemBag;
+        });
+
         // If a filter has been selected then there is no need to group the options since they all belong to the same group.
-        const grouped = computed((): boolean => {
-            const connectionType = JSON.parse(props.configurationValues[ConfigurationValueKey.ConnectionTypeFilter] || "{}") as ListItemBag;
-            return isNullOrWhiteSpace(connectionType.value);
+        const isGrouped = computed((): boolean => {
+            return isNullOrWhiteSpace(connectionType.value.value);
         });
 
         // The ConnectionActivityTypes to choose from.
         const options = computed((): ListItemBag[] => {
             let clientValues = JSON.parse(props.configurationValues[ConfigurationValueKey.ClientValues] || "[]") as ListItemBag[];
-            const connectionType = JSON.parse(props.configurationValues[ConfigurationValueKey.ConnectionTypeFilter] || "{}") as ListItemBag;
 
-            if (connectionType.value) {
-                clientValues = clientValues.filter(c => c.category === connectionType.text);
+            if (connectionType.value.value) {
+                clientValues = clientValues.filter(c => c.category === connectionType.value.text);
             }
 
             return clientValues;
@@ -69,12 +71,12 @@ export const EditComponent = defineComponent({
         return {
             internalValue,
             options,
-            grouped
+            isGrouped
         };
     },
 
     template: `
-    <DropDownList v-model="internalValue" :items="options" showBlankItem :grouped="grouped" />
+    <DropDownList v-model="internalValue" :items="options" showBlankItem :grouped="isGrouped" />
 `
 });
 
@@ -92,13 +94,17 @@ export const ConfigurationComponent = defineComponent({
 
     setup(props, { emit }) {
         // Define the properties that will hold the current selections.
-        const connectionTypeValue = ref<string>("");
+        const connectionType = ref<string>("");
         const includeInactive = ref<boolean>();
 
         // The options for the connection type dropdown list
         const options = computed((): ListItemBag[] => {
             const connectionTypeOptions = props.configurationProperties[ConfigurationPropertyKey.ConnectionTypeOptions];
             return connectionTypeOptions ? JSON.parse(connectionTypeOptions) as ListItemBag[] : [];
+        });
+
+        const connectionTypeBagSerialized = computed(() => {
+            return JSON.stringify(options.value.find(o => o.value == connectionType.value));
         });
 
         /**
@@ -111,11 +117,10 @@ export const ConfigurationComponent = defineComponent({
          */
         const maybeUpdateModelValue = (): boolean => {
             const newValue: Record<string, string> = {};
-            const connectionType = options.value.find(o => o.value == connectionTypeValue.value);
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.ConnectionTypeFilter] = JSON.stringify(connectionType) ?? "";
+            newValue[ConfigurationValueKey.ConnectionTypeFilter] = connectionTypeBagSerialized.value ?? "";
             newValue[ConfigurationValueKey.IncludeInactive] = asTrueOrFalseString(includeInactive.value);
             newValue[ConfigurationValueKey.ClientValues] = props.modelValue[ConfigurationValueKey.ClientValues];
 
@@ -148,8 +153,8 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            const connectionType = JSON.parse(props.modelValue[ConfigurationValueKey.ConnectionTypeFilter] || "{}") as ListItemBag;
-            connectionTypeValue.value = connectionType.value ?? "";
+            const connectionTypeBag = JSON.parse(props.modelValue[ConfigurationValueKey.ConnectionTypeFilter] || "{}") as ListItemBag;
+            connectionType.value = connectionTypeBag.value ?? "";
             includeInactive.value = asBoolean(props.modelValue[ConfigurationValueKey.IncludeInactive]);
         }, {
             immediate: true
@@ -164,11 +169,11 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(connectionTypeValue, () => maybeUpdateConfiguration(ConfigurationValueKey.ConnectionTypeFilter, connectionTypeValue.value));
-        watch(includeInactive, () => maybeUpdateConfiguration(ConfigurationValueKey.IncludeInactive, asTrueOrFalseString(connectionTypeValue.value)));
+        watch(connectionTypeBagSerialized, () => maybeUpdateConfiguration(ConfigurationValueKey.ConnectionTypeFilter, connectionTypeBagSerialized.value));
+        watch(includeInactive, () => maybeUpdateConfiguration(ConfigurationValueKey.IncludeInactive, asTrueOrFalseString(connectionType.value)));
 
         return {
-            connectionTypeValue,
+            connectionType,
             includeInactive,
             options
         };
@@ -177,7 +182,7 @@ export const ConfigurationComponent = defineComponent({
     template: `
     <CheckBox label="Include Inactive" v-model="includeInactive" help="When set, inactive activity types will be included in the list." />
     <DropDownList label="Connection Type"
-        v-model="connectionTypeValue"
+        v-model="connectionType"
         :items="options"
         showBlankItem
         help="Select a Connection Type to limit selection to a specific connection type. Leave blank to allow selection of activity types from any connection type." />

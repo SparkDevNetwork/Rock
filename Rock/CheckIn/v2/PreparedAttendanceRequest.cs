@@ -129,6 +129,12 @@ namespace Rock.CheckIn.v2
         public string SearchTerm { get; set; }
 
         /// <summary>
+        /// The identifier of the check-in source that will be used when creating
+        /// the attendance records for this session.
+        /// </summary>
+        public int? SourceValueId { get; set; }
+
+        /// <summary>
         /// Gets or sets the note to put on the attendance record. If an existing
         /// attendance record is updated then this will replace the note value.
         /// </summary>

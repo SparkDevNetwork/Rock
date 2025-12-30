@@ -76,7 +76,13 @@ namespace Rock.Model
 
                 if ( HistoryChanges?.Any() == true )
                 {
-                    var caption = $"{Entity.Student.Person.FullName} - {Entity.LearningClassActivity.Name}";
+                    var caption = $"LearningClassActivityCompletion {this.Entity.Id}";
+
+                    if ( Entity.Student?.Person?.FullName != null && Entity.LearningClassActivity?.Name != null )
+                    {
+                        caption = $"{Entity.Student.Person.FullName} - {Entity.LearningClassActivity.Name}";
+                    }
+
                     HistoryService.SaveChanges(
                         this.RockContext,
                         typeof( LearningClassActivityCompletion ),
@@ -198,11 +204,19 @@ namespace Rock.Model
                         // Some activities (assessment) may not clearly indicate if the Facilitator must
                         // grade the activity before it can be considered complete.
                         // Therefore; we are always evaluating grades until the class is considered over.
-                        ClassEndDate = a.LearningClassActivity.LearningClass.LearningSemester.EndDate,
+                        ClassEndDate = a.LearningClassActivity.LearningClass.LearningSemester?.EndDate,
                     } )
                     .ToList();
 
                 var anyCompletionRecord = completionDetails.FirstOrDefault();
+
+                // If there are no completion records then there's nothing to do.
+                // This situation can/will happen if a student is being removed from a class.
+                if ( anyCompletionRecord == null )
+                {
+                    return;
+                }
+
                 var participant = anyCompletionRecord.Student;
                 var isClassOver = anyCompletionRecord.ClassEndDate.HasValue && anyCompletionRecord.ClassEndDate.Value.IsPast();
                 var hasIncompleteAssignments = completionDetails.Any( a => !a.IsStudentOrFacilitatorCompleted );
@@ -244,25 +258,19 @@ namespace Rock.Model
 
                 // Set the LearningParticipant current class grade values.
                 participant.LearningGradePercent = gradePercent;
-                participant.LearningGradingSystemScaleId = gradeScaleEarned.Id;
+                participant.LearningGradingSystemScaleId = gradeScaleEarned?.Id;
                 participant.LearningCompletionStatus = hasIncompleteAssignments || hasUngradedAssignments ? Enums.Lms.LearningCompletionStatus.Incomplete : currentGradePassFailStatus;
 
                 RockContext.SaveChanges();
 
                 var wasCourseCompleted = participant.LearningCompletionStatus != Enums.Lms.LearningCompletionStatus.Incomplete;
-                var currentPersonAliasId = DbContext.GetCurrentPersonAlias()?.Id;
+                var currentPersonAliasId = DbContext.GetCurrentPersonAliasId();
 
                 // If it was determined that the activity was completed and should launch a workflow
                 // then launch that workflow before the Course completion workflow (if any).
                 if ( ActivityCompletionWorkflowToLaunch != null )
                 {
-                    var workflowAttributes = new Dictionary<string, string>
-                    {
-                        {"Entity", Entity.ToJson()},
-                        {"Student", participant.ToJson()}
-                    };
-
-                    participant.LaunchWorkflow( ActivityCompletionWorkflowToLaunch.Id, ActivityCompletionWorkflowToLaunch.Name, workflowAttributes, currentPersonAliasId );
+                    Entity.LaunchWorkflow( ActivityCompletionWorkflowToLaunch.Id, ActivityCompletionWorkflowToLaunch.Name, null, currentPersonAliasId );
                 }
 
                 // Launch the Course Completion workflow (if any).

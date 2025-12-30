@@ -10,7 +10,7 @@
                         :btnType="itemButtonType('left')"
                         title="Left"
                         @click="selectValue('left')">
-                <i class="fa fa-align-left"></i>
+                <i class="ti ti-align-left"></i>
             </RockButton>
 
             <RockButton :disabled="disabled"
@@ -18,7 +18,7 @@
                         :btnType="itemButtonType('center')"
                         title="Center"
                         @click="selectValue('center')">
-                <i class="fa fa-align-center"></i>
+                <i class="ti ti-align-center"></i>
             </RockButton>
 
             <RockButton :disabled="disabled"
@@ -26,7 +26,7 @@
                         :btnType="itemButtonType('right')"
                         title="Right"
                         @click="selectValue('right')">
-                <i class="fa fa-align-right"></i>
+                <i class="ti ti-align-right"></i>
             </RockButton>
 
             <RockButton :disabled="disabled"
@@ -34,7 +34,7 @@
                         :btnType="itemButtonType('justify')"
                         title="Justify"
                         @click="selectValue('justify')">
-                <i class="fa fa-align-justify"></i>
+                <i class="ti ti-align-justified"></i>
             </RockButton>
         </template>
     </SingleSelectButtonGroup>

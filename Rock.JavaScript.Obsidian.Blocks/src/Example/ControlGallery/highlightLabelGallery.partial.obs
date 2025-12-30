@@ -10,7 +10,7 @@
                     <TextBox v-if="labelType == 'custom'" label="Custom Class" v-model="customClass" help="When using a custom label type, you need to pass in a custom class to style it." />
                 </div>
                 <div class="col-md-3">
-                    <TextBox label="Icon Class" v-model="iconCssClass" help="If you want to show an icon in front of the main content put an icon class name in here. For example 'fa fa-flag' to show a flag." />
+                    <TextBox label="Icon Class" v-model="iconCssClass" help="If you want to show an icon in front of the main content put an icon class name in here. For example 'ti ti-flag' to show a flag." />
                 </div>
                 <div class="col-md-3">
                     <TextBox label="Tooltip" v-model="tooltip" help="Show this message when hovering the label." />

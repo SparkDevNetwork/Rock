@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -44,7 +45,7 @@ namespace Rock.Bus.Message
         /// <summary>
         /// The data to be printed.
         /// </summary>
-        public byte[] Data { get; set; }
+        public List<byte[]> Labels { get; set; }
 
         /// <summary>
         /// Gets as debug string.
@@ -61,16 +62,16 @@ namespace Rock.Bus.Message
         /// </summary>
         /// <param name="proxyDeviceId">The identifier of the <see cref="Model.Device"/> that represents the proxy.</param>
         /// <param name="printerId">The identifier of the <see cref="Model.Device"/> that represents the printer.</param>
-        /// <param name="data">The data to be printed.</param>
+        /// <param name="labels">The label data to be printed.</param>
         /// <param name="cancellationToken">A token that will abort the request and cancel the task.</param>
         /// <returns>The response returned by the node handling the command.</returns>
-        internal static async Task<Response> RequestAsync( int proxyDeviceId, int printerId, byte[] data, CancellationToken cancellationToken = default )
+        internal static async Task<Response> RequestAsync( int proxyDeviceId, int printerId, List<byte[]> labels, CancellationToken cancellationToken = default )
         {
             var message = new CloudPrintLabelMessage
             {
                 ProxyDeviceId = proxyDeviceId,
                 PrinterDeviceId = printerId,
-                Data = data
+                Labels = labels
             };
 
             var queueName = $"rock-cloud-print-command-queue-{proxyDeviceId}";

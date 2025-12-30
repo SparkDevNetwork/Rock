@@ -2,7 +2,7 @@
 <template>
     <RockFormField v-bind="formFieldProps"
                    :modelValue="internalValue"
-                   formGroupClasses="number-up-down"
+                   :formGroupClasses="'number-up-down ' + formGroupClasses"
                    name="numberupdown">
         <template #default="{ uniqueId, field }">
             <div class="control-wrapper">

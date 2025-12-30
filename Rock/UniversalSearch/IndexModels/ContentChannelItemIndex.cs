@@ -146,7 +146,7 @@ namespace Rock.UniversalSearch.IndexModels
                 iconCssClass = value;
             }
         }
-        private string iconCssClass = "fa fa-bullhorn";
+        private string iconCssClass = "ti ti-speakerphone";
 
         /// <summary>
         /// Loads the indexable document from the ContentChannelItem.
@@ -167,7 +167,7 @@ namespace Rock.UniversalSearch.IndexModels
             contentChannelItemIndex.StartDate = contentChannelItem.StartDateTime;
             contentChannelItemIndex.ExpireDate = contentChannelItem.ExpireDateTime;
             contentChannelItemIndex.Permalink = contentChannelItem.Permalink;
-            contentChannelItemIndex.IconCssClass = string.IsNullOrWhiteSpace( contentChannelItem.ContentChannel.IconCssClass ) ? "fa fa-bullhorn" : contentChannelItem.ContentChannel.IconCssClass;
+            contentChannelItemIndex.IconCssClass = string.IsNullOrWhiteSpace( contentChannelItem.ContentChannel.IconCssClass ) ? "ti ti-speakerphone" : contentChannelItem.ContentChannel.IconCssClass;
             contentChannelItemIndex.IsApproved = false;
             contentChannelItemIndex.ContentChannel = contentChannelItem.ContentChannel.Name;
             contentChannelItemIndex.DocumentName = contentChannelItem.Title;

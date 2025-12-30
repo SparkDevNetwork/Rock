@@ -1,7 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div>
-        <button class="btn btn-default btn-sm"
+        <button v-if="isVisible"
+                class="btn btn-default btn-sm"
                 :title="title"
                 :disabled="isDisabled"
                 @click.prevent.stop="onClick">
@@ -18,6 +19,14 @@
     const props = defineProps(standardCellProps);
 
     const isRunning = ref(false);
+
+    const isVisible = computed((): boolean => {
+        if (typeof props.column.props.visible === "function") {
+            return props.column.props.visible(props.row);
+        }
+
+        return true;
+    });
 
     const isDisabled = computed((): boolean => {
         if (typeof props.column.props.disabled === "function") {

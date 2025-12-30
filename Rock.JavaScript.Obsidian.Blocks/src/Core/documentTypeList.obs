@@ -4,6 +4,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Document Type"
+          title="Document Types"
           :entityTypeGuid="EntityType.DocumentType"
           :showLaunchWorkflow="false"
           stickyHeader

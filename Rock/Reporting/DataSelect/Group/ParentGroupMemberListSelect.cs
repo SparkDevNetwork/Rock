@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,8 +21,12 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Group
@@ -33,7 +37,7 @@ namespace Rock.Reporting.DataSelect.Group
     [Description( "Select a comma-delimited list of members of the group's parent group" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Parent Group Member List" )]
-    [Rock.SystemGuid.EntityTypeGuid( "3909997E-E096-4B17-A864-E0D0953FE576")]
+    [Rock.SystemGuid.EntityTypeGuid( "3909997E-E096-4B17-A864-E0D0953FE576" )]
     public class ParentGroupMemberListSelect : DataSelectComponent
     {
         #region Properties
@@ -180,6 +184,44 @@ namespace Rock.Reporting.DataSelect.Group
             {
                 return "Parent Group Member List";
             }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var showAsLinkTypes = new List<ListItemBag>
+            {
+                new ListItemBag { Text = "Show Name Only", Value = ShowAsLinkType.NameOnly.ConvertToInt().ToString() },
+                new ListItemBag { Text = "Show as Person Link", Value = ShowAsLinkType.PersonLink.ConvertToInt().ToString() },
+                new ListItemBag { Text = "Show as Group Member Link", Value = ShowAsLinkType.GroupMemberLink.ConvertToInt().ToString() },
+            };
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Group/parentGroupMemberListSelect.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "showAsLinkTypeOptions", showAsLinkTypes.ToCamelCaseJson(false, true) },
+                },
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var result = new Dictionary<string, string> { { "showAsLinkType", selection } };
+
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return data.GetValueOrDefault( "showAsLinkType", string.Empty );
         }
 
         #endregion

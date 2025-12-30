@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
         
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-share-square"></i> Share Workflow</h1>
+                <h1 class="panel-title"><i class="ti ti-share"></i> Share Workflow</h1>
             </div>
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" />
@@ -42,13 +42,13 @@
 
                         <Rock:RockTemplateField HeaderText="Critical" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" SortExpression="IsCritical">
                             <ItemTemplate>
-                                <%# (bool)Eval("IsCritical") == true ? "<i class='fa fa-check'></i>" : string.Empty %>
+                                <%# (bool)Eval("IsCritical") == true ? "<i class='ti ti-check'></i>" : string.Empty %>
                             </ItemTemplate>
                         </Rock:RockTemplateField>
 
                         <Rock:RockTemplateField HeaderText="New Guid" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" SortExpression="IsNewGuid">
                             <ItemTemplate>
-                                <%# (bool)Eval("IsNewGuid") == true ? "<i class='fa fa-check'></i>" : string.Empty %>
+                                <%# (bool)Eval("IsNewGuid") == true ? "<i class='ti ti-check'></i>" : string.Empty %>
                             </ItemTemplate>
                         </Rock:RockTemplateField>
                     </Columns>

@@ -40,7 +40,7 @@ namespace Rock.Badge.Component
     [ExportMetadata( "ComponentName", "In Data View" )]
 
     [DataViewField( "Data View", "The dataview to use as the source for the query. Only those people in the DataView will be given the badge.", true, entityTypeName: "Rock.Model.Person", order: 0 )]
-    [CodeEditorField( "Badge Content", "The text or HTML of the badge to display. <span class='tip tip-lava'></span>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, "<div class='badge badge-icon'><i class='fa fa-smile-o'></i></div>", order: 1 )]
+    [CodeEditorField( "Badge Content", "The text or HTML of the badge to display. <span class='tip tip-lava'></span>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, "<div class='badge badge-icon'><i class='ti ti-mood-smile'></i></div>", order: 1 )]
     [Rock.SystemGuid.EntityTypeGuid( "DF4A569D-9368-4CF4-94D5-AB08E6F5A8D4")]
     public class InDataView : BadgeComponent
     {

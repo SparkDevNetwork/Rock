@@ -108,6 +108,7 @@ namespace RockWeb.Blocks.Finance
         Order = 9 )]
     #endregion
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.BlockTypeGuid( "34275D0E-BC7E-4A9C-913E-623D086159A1" )]
     public partial class BenevolenceRequestDetailView : RockBlock
     {
@@ -295,11 +296,10 @@ namespace RockWeb.Blocks.Finance
                 BenevolenceResultService benevolenceResultService = new BenevolenceResultService( rockContext );
 
                 BenevolenceRequest benevolenceRequest = null;
-                int benevolenceRequestId = PageParameter( PageParameterKey.BenevolenceRequestId ).AsInteger();
 
                 if ( _isExistingRecord )
                 {
-                    benevolenceRequest = benevolenceRequestService.Get( benevolenceRequestId );
+                    benevolenceRequest = benevolenceRequestService.Get( _benevolenceRequestId );
                 }
 
                 if ( benevolenceRequest == null )
@@ -1866,7 +1866,38 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void SetPageParameters()
         {
-            _benevolenceRequestId = PageParameter( PageParameterKey.BenevolenceRequestId ).AsInteger();
+            var benevolenceRequestKey = PageParameter( PageParameterKey.BenevolenceRequestId );
+
+            var benevolenceRequestId = benevolenceRequestKey.AsIntegerOrNull();
+
+            /*
+                7/16/2025 - NA
+
+                When converting this block to Obsidian, do not follow this existing convention. At that point,
+                this should be greatly simplified.  In fact, this whole block should not be structured
+                like this one.
+
+                Reason: Current approach is overly complex and not suitable for Obsidian conversion as-is.
+            */
+
+            // Fallback, try IdKey and all
+            if ( benevolenceRequestId == null )
+            {
+                var benevolenceRequest = new BenevolenceRequestService( new RockContext() ).Get( benevolenceRequestKey, !PageCache.Layout.Site.DisablePredictableIds );
+                if ( benevolenceRequest == null )
+                {
+                    _benevolenceRequestId = 0;
+                }
+                else
+                {
+                    _benevolenceRequestId = benevolenceRequest.Id;
+                }
+            }
+            else
+            {
+                _benevolenceRequestId = benevolenceRequestId.Value;
+            }
+
             _isNewRecord = _benevolenceRequestId == 0;
             _isExistingRecord = _benevolenceRequestId > 0;
         }

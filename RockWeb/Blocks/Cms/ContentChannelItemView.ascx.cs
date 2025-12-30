@@ -957,11 +957,25 @@ Guid - ContentChannelItem Guid";
 
             var contentChannelItem = GetContentChannelItem( GetContentChannelItemParameterValue() );
 
-            var interactionTransaction = new InteractionTransaction(
-                DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_CONTENTCHANNEL.AsGuid() ),
-                contentChannelItem.ContentChannel,
-                contentChannelItem, new InteractionTransactionInfo { InteractionSummary = contentChannelItem.Title } );
+            var mediumType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_CONTENTCHANNEL.AsGuid() );
+            if ( mediumType == null )
+            {
+                return;
+            }
 
+            var info = new InteractionTransactionInfo
+            {
+                ChannelTypeMediumValueId = mediumType.Id,
+                ChannelEntityId = contentChannelItem.ContentChannel.Id,
+                ChannelName = contentChannelItem.ContentChannel.ToString(),
+                ComponentEntityTypeId = contentChannelItem.TypeId,
+                ComponentEntityId = contentChannelItem.Id,
+                ComponentName = contentChannelItem.ToString(),
+                InteractionSummary = contentChannelItem.Title,
+                PersonAliasId = this.CurrentPerson?.PrimaryAliasId
+            };
+
+            var interactionTransaction = new InteractionTransaction( info );
             interactionTransaction.Enqueue();
 
             InteractionService.RegisterIntentInteractions( EntityIntentCache.GetIntentValueIds<ContentChannelItem>( contentChannelItem.Id ) );

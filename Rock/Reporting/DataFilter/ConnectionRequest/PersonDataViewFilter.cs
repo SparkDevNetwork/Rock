@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,9 +22,13 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Utility;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
@@ -37,7 +41,7 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
     [Description( "Select all the requests where the requester is the same person as the people returned from this other data view." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Data View" )]
-    [Rock.SystemGuid.EntityTypeGuid( "8C05C3F9-4AB4-41D1-9311-214A9AD6BCE0")]
+    [Rock.SystemGuid.EntityTypeGuid( "8C05C3F9-4AB4-41D1-9311-214A9AD6BCE0" )]
     public class PersonDataViewFilter : DataFilterComponent, IRelatedChildDataView
     {
         #region Properties
@@ -62,6 +66,52 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
         public override string Section
         {
             get { return "Related Data Views"; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/ConnectionRequest/personDataViewFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = new SelectSettings( selection );
+            var data = new Dictionary<string, string>();
+
+            if ( !settings.IsValid )
+            {
+                return data;
+            }
+
+            var dataView = new DataViewService( rockContext ).Get( settings.DataViewGuid.GetValueOrDefault() );
+
+            data.AddOrReplace( "dataView", dataView?.ToListItemBag().ToCamelCaseJson( false, true ) );
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var dataView = "";
+            var dataViewJson = data.GetValueOrNull( "dataView" );
+
+            if ( dataViewJson != null )
+            {
+                var dataViewBag = dataViewJson.FromJsonOrNull<ListItemBag>();
+                dataView = dataViewBag.Value ?? string.Empty;
+            }
+
+            return dataView;
         }
 
         #endregion
@@ -180,6 +230,8 @@ function ()
 
         private const string _CtlDataView = "dvpDataView";
 
+#if WEBFORMS
+
         /// <summary>
         /// Creates the model representation of the child controls used to display and edit the filter settings.
         /// Implement this version of CreateChildControls if your DataFilterComponent works the same in all filter modes
@@ -277,6 +329,9 @@ function ()
 
             return ddlDataView.SelectedValueAsId();
         }
+
+#endif
+
         #endregion
 
         #region Settings

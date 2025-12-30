@@ -30,7 +30,7 @@
 
         iconCssClass: {
             type: String as PropType<string>,
-            default: "fa fa-pencil"
+            default: "ti ti-pencil"
         }
     });
 

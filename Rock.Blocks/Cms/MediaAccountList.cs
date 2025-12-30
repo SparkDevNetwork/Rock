@@ -42,7 +42,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Media Account List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of media accounts." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
@@ -178,6 +178,16 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
+        protected override List<MediaAccountData> GetListItems( IQueryable<MediaAccountData> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+
+            GridAttributeLoader.LoadFor( items, a => a.MediaAccount, _gridAttributes.Value, rockContext );
+
+            return items;
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<MediaAccountData> GetGridBuilder()
         {
             var blockOptions = new GridBuilderGridOptions<MediaAccountData>
@@ -186,7 +196,7 @@ namespace Rock.Blocks.Cms
             };
 
             return new GridBuilder<MediaAccountData>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.MediaAccount.IdKey )
                 .AddTextField( "name", a => a.MediaAccount.Name )
                 .AddTextField( "componentEntityType", a => a.MediaAccount.ComponentEntityType?.FriendlyName )

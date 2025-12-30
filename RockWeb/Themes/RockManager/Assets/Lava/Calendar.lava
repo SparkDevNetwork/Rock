@@ -15,11 +15,11 @@
       <div class="pull-right">
         {% if eventItemOccurrence.DetailPage != null %}
         <a href="{{ eventItemOccurrence.DetailPage }}">
-          View Details <i class="fa fa-chevron-right"></i>
+          View Details <i class="ti ti-chevron-right"></i>
         </a>
 		{% else %}
 		<a href="{{ DetailsPage }}?EventOccurrenceId={{ eventItemOccurrence.EventItemOccurrence.Id }}">
-            View Details <i class="fa fa-chevron-right"></i>
+            View Details <i class="ti ti-chevron-right"></i>
         </a>
         {% endif %}
       </div>

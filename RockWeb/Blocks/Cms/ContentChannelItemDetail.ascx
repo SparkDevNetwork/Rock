@@ -102,14 +102,14 @@
                                                     <input id="slugId" class="js-slug-id" type="hidden" value="<%# Eval("Id") %>" />
                                                     <span class="js-slug-literal"><%# Eval("Slug") %></span>
                                                     <div class="rollover-item control-actions pull-right">
-                                                        <a class="js-slug-edit margin-r-md" href="#"><i class="fa fa-pencil"></i></a>
-                                                        <a class="js-slug-remove" href="#"><i class="fa fa-close"></i></a>
+                                                        <a class="js-slug-edit margin-r-md" href="#"><i class="ti ti-pencil"></i></a>
+                                                        <a class="js-slug-remove" href="#"><i class="ti ti-x"></i></a>
                                                     </div>
                                                 </div>
                                             </ItemTemplate>
                                         </asp:Repeater>
                                         <a id="lbAdd" title="Add Slug" class="btn btn-xs btn-action btn-square">
-                                            <i class="fa fa-plus-circle"></i>
+                                            <i class="ti ti-circle-plus"></i>
                                         </a>
                                     </div>
                                 </Rock:RockControlWrapper>
@@ -139,7 +139,7 @@
                                     <div class="form-group rollover-container">
                                         <asp:Label ID="lblItemGlobalKey" runat="server"></asp:Label>
                                         <div class="rollover-item control-actions pull-right">
-                                            <asp:LinkButton ID="lbRefreshItemGlobalKey" runat="server" CssClass="btn btn-default btn-sm" OnClick="lbRefreshItemGlobalKey_Click" OnClientClick="Rock.dialogs.confirmPreventOnCancel( event, 'Are you sure you wish to update the item identifier? If the current value is being used elsewhere it will break the link.');"><i class="fa fa-redo"></i></asp:LinkButton>
+                                            <asp:LinkButton ID="lbRefreshItemGlobalKey" runat="server" CssClass="btn btn-default btn-sm" OnClick="lbRefreshItemGlobalKey_Click" OnClientClick="Rock.dialogs.confirmPreventOnCancel( event, 'Are you sure you wish to update the item identifier? If the current value is being used elsewhere it will break the link.');"><i class="ti ti-arrow-forward-up"></i></asp:LinkButton>
                                         </div>
                                     </div>
                                 </Rock:RockControlWrapper>

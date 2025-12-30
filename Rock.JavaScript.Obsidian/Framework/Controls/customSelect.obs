@@ -23,8 +23,8 @@
             </div>
             <Transition name="fade">
                 <div class="custom-select-expand-icon" v-if="!isExpanded" @click="onItemClick(null)">
-                    <i class="fa fa-angle-up"></i><br>
-                    <i class="fa fa-angle-down"></i>
+                    <i class="ti ti-chevron-up"></i><br>
+                    <i class="ti ti-chevron-down"></i>
                 </div>
             </Transition>
         </div>

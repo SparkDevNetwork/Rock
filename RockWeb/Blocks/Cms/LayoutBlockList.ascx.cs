@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.Cms
             {
                 var blockPropertyUrl = ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", blockId ) );
 
-                return string.Format( "<a class=\"btn btn-default btn-sm\" href=\"javascript: Rock.controls.modal.show($(this), '{0}')\" title=\"Block Properties\"><i class=\"fa fa-cog\"></i></a>",
+                return string.Format( "<a class=\"btn btn-default btn-sm\" href=\"javascript: Rock.controls.modal.show($(this), '{0}')\" title=\"Block Properties\"><i class=\"ti ti-settings\"></i></a>",
                     blockPropertyUrl );
             }
             else

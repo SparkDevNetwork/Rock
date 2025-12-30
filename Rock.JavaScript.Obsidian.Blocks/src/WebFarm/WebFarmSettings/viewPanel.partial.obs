@@ -223,16 +223,16 @@
     };
 
     const getLeaderIcon = (isLeader: boolean): string => {
-        return isLeader ? "<span class='node-type-icon' title='Leader'><i class='fa fa-user-tie'></i></span>" : "";
+        return isLeader ? "<span class='node-type-icon' title='Leader'><i class='ti ti-speakerphone'></i></span>" : "";
     };
 
     const getCurrentJobRunnerIcon = (isCurrentJobRunner: boolean): string => {
-        return isCurrentJobRunner ? "<span class='node-type-icon' title='Job Runner'><i class='fa fa-cog'></i></span>" : "";
+        return isCurrentJobRunner ? "<span class='node-type-icon' title='Job Runner'><i class='ti ti-settings'></i></span>" : "";
     };
 
     const getHeaderHTML = (node: WebFarmNodeBag): string => {
         return `<span class="server-meta" title='Polling Interval: ${node.currentLeadershipPollingIntervalSeconds}'>
-                                <i class="${node.isActive ? "fa fa-server" : "fa fa-exclamation-triangle"}"></i>
+                                <i class="${node.isActive ? "ti ti-server" : "ti ti-alert-triangle"}"></i>
                                 <span class="node-name text-truncate">
                                     ${node.nodeName}
                                 </span>

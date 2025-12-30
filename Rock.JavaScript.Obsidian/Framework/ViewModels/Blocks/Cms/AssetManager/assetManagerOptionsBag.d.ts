@@ -41,8 +41,8 @@ export type AssetManagerOptionsBag = {
     /** If `IsStaticHeight` is true, this will be the CSS length value that dictates how tall the block will be. */
     height?: string | null;
 
-    /** Set this to true to be able to set a CSS height value dictating how tall the block will be. Otherwise, it will grow with the content. */
-    isStaticHeight: boolean;
+    /** "static" lets you set a CSS height vie the Height property to determine the height of the block. "flexible" will grow with the content. "full" is designed to fill up a full worksurface page layout. */
+    heightMode?: string | null;
 
     /** The root file manager folder to browse; encrypted */
     rootFolder?: string | null;

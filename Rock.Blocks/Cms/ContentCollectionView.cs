@@ -45,7 +45,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Content Collection View" )]
     [Category( "CMS" )]
     [Description( "Displays the search results of a particular content collection." )]
-    [IconCssClass( "fa fa-book-open" )]
+    [IconCssClass( "ti ti-book" )]
     [SupportedSiteTypes( Model.SiteType.Web, Model.SiteType.Mobile )]
 
     #region Block Attributes
@@ -1321,7 +1321,7 @@ namespace Rock.Blocks.Cms
             {
                 actions.Add( new BlockCustomActionBag
                 {
-                    IconCssClass = "fa fa-edit",
+                    IconCssClass = "ti ti-edit",
                     Tooltip = "Settings",
                     ComponentFileUrl = "/Obsidian/Blocks/CMS/contentCollectionViewCustomSettings.obs"
                 } );

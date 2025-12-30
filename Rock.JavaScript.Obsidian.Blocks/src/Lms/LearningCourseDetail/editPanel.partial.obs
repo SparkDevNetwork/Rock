@@ -79,7 +79,7 @@
                                         </span>
                                         <div class="col-xs-12 col-md-2 grid-columncommand justify-content-end">
                                             <button aria-label="Remove this requirement" class="btn btn-danger btn-sm" @click.prevent="removeRequirement(row)">
-                                                <i class="fa fa-times" aria-hidden="true"></i>
+                                                <i class="ti ti-x" aria-hidden="true"></i>
                                             </button>
                                         </div>
                                     </template>

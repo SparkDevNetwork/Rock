@@ -31,16 +31,29 @@ namespace Rock.Data
     {
         private DateTime _currentDateTime;
         private PersonAlias _currentPersonAlias;
+        private int? _currentPersonAliasId;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RockBulkUpdateExpressionVisitor"/> class.
         /// </summary>
         /// <param name="currentDateTime">The current date time.</param>
         /// <param name="currentPersonAlias">The current person alias.</param>
+        [Obsolete( "Use RockBulkUpdateExpressionVisitor( DateTime currentDateTime, int? currentPersonAliasId ) instead" )]
+        [RockObsolete( "18.0" )]
         public RockBulkUpdateExpressionVisitor( DateTime currentDateTime, PersonAlias currentPersonAlias )
         {
             _currentDateTime = currentDateTime;
             _currentPersonAlias = currentPersonAlias;
+            if ( currentPersonAlias != null )
+            {
+                _currentPersonAliasId = currentPersonAlias.Id;
+            }
+        }
+
+        public RockBulkUpdateExpressionVisitor( DateTime currentDateTime, int? currentPersonAliasId )
+        {
+            _currentDateTime = currentDateTime;
+            _currentPersonAliasId = currentPersonAliasId;
         }
 
         /// <summary>
@@ -64,9 +77,9 @@ namespace Rock.Data
                     }
 
                     MemberInfo modifiedByPersonAliasIdMemberInfo = typeof( Rock.Data.IModel ).GetMember( "ModifiedByPersonAliasId" ).FirstOrDefault();
-                    if ( modifiedByPersonAliasIdMemberInfo != null && _currentPersonAlias != null )
+                    if ( modifiedByPersonAliasIdMemberInfo != null && ( _currentPersonAliasId.HasValue || _currentPersonAlias != null ) )
                     {
-                        currentBindings.Add( Expression.Bind( modifiedByPersonAliasIdMemberInfo, Expression.Constant( _currentPersonAlias.Id ) ) );
+                        currentBindings.Add( Expression.Bind( modifiedByPersonAliasIdMemberInfo, Expression.Constant( _currentPersonAliasId.Value ) ) );
                     }
 
                     node = node.Update( node.NewExpression, currentBindings );

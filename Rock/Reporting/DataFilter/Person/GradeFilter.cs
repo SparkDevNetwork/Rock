@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,9 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -36,7 +39,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on based on the current grade" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Grade" )]
-    [Rock.SystemGuid.EntityTypeGuid( "7311CCCF-BBFB-4FF7-AFD0-3D7F2D466C1B")]
+    [Rock.SystemGuid.EntityTypeGuid( "7311CCCF-BBFB-4FF7-AFD0-3D7F2D466C1B" )]
     public class GradeFilter : DataFilterComponent
     {
         #region Properties
@@ -61,6 +64,70 @@ namespace Rock.Reporting.DataFilter.Person
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/gradeFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionValues = selection.Split( '|' );
+
+            if ( selectionValues.Length > 1 )
+            {
+                var gradeGuid = selectionValues[1].AsGuidOrNull();
+                ListItemBag grade = null;
+
+                if ( gradeGuid != null )
+                {
+                    var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+                    if ( schoolGrades != null )
+                    {
+                        var selectedGrade = schoolGrades.DefinedValues.Find( g => g.Guid == gradeGuid );
+                        if ( selectedGrade != null )
+                        {
+                            grade = new ListItemBag
+                            {
+                                Value = selectedGrade.Guid.ToString(),
+                                Text = selectedGrade.Description
+                            };
+                        }
+                    }
+                }
+
+                return new Dictionary<string, string>
+                {
+                    { "comparisonType", selectionValues[0] },
+                    { "grade", grade?.ToCamelCaseJson(false, true) },
+                };
+            }
+
+            return new Dictionary<string, string>();
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var gradeBag = data.GetValueOrNull( "grade" )?.FromJsonOrNull<ListItemBag>();
+            var grade = string.Empty;
+
+            if ( gradeBag != null && gradeBag.Value != null )
+            {
+                grade = gradeBag.Value;
+            }
+
+            return $"{data.GetValueOrDefault( "comparisonType", ComparisonType.EqualTo.ConvertToInt().ToString() )}|{grade}";
         }
 
         #endregion
@@ -109,7 +176,7 @@ function() {{
 
   return result;
 }}
-", GetGlobalGradeLabel().EscapeQuotes());
+", GetGlobalGradeLabel().EscapeQuotes() );
 
         }
 
@@ -203,7 +270,7 @@ function() {{
             ddlCompare.RenderControl( writer );
             writer.RenderEndTag();
 
-            ComparisonType comparisonType = (ComparisonType)ddlCompare.SelectedValue.AsInteger();
+            ComparisonType comparisonType = ( ComparisonType ) ddlCompare.SelectedValue.AsInteger();
             ddlGradeDefinedValue.Style[HtmlTextWriterStyle.Display] = ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank ) ? "none" : string.Empty;
 
             writer.AddAttribute( "class", "col-md-8" );
@@ -268,7 +335,7 @@ function() {{
             DefinedValueCache gradeDefinedValue = gradeDefinedType.DefinedValues.FirstOrDefault( a => a.Guid == gradeDefinedValueGuid );
             int? gradeOffset = gradeDefinedValue != null ? gradeDefinedValue.Value.AsIntegerOrNull() : null;
 
-            var personGradeQuery = new PersonService( (RockContext)serviceInstance.Context ).Queryable();
+            var personGradeQuery = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable();
             int currentSchoolYear = PersonService.GetCurrentGraduationYear();
 
             if ( hasGradeTransitionDate && gradeOffset.HasValue )
@@ -378,7 +445,7 @@ function() {{
 
                     case ComparisonType.IsBlank:
                         // only return people that don't have a graduation year, or have already graduated
-                        personGradeQuery = personGradeQuery.Where( p => !p.GraduationYear.HasValue || (p.GraduationYear - currentSchoolYear) < 0 );
+                        personGradeQuery = personGradeQuery.Where( p => !p.GraduationYear.HasValue || ( p.GraduationYear - currentSchoolYear ) < 0 );
                         break;
 
                     case ComparisonType.IsNotBlank:

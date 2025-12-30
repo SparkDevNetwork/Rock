@@ -6,7 +6,7 @@
         <div class="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-search-plus"></i> Universal Search</h1>
+                <h1 class="panel-title"><i class="ti ti-zoom-in"></i> Universal Search</h1>
 
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlblEnabled" runat="server" LabelType="Danger" Text="Disabled" />
@@ -26,8 +26,8 @@
 
                 <div class="panel-actions">
                     <!--
-                    <asp:LinkButton ID="lbClearIndex" runat="server" CssClass="btn btn-default"><i class="fa fa-refresh"></i> Clear Index</asp:LinkButton>
-                    <asp:LinkButton ID="lbBulkLoad" runat="server" CssClass="btn btn-default"><i class="fa fa-download"></i> Bulk Load Entities</asp:LinkButton>
+                    <asp:LinkButton ID="lbClearIndex" runat="server" CssClass="btn btn-default"><i class="ti ti-refresh"></i> Clear Index</asp:LinkButton>
+                    <asp:LinkButton ID="lbBulkLoad" runat="server" CssClass="btn btn-default"><i class="ti ti-download"></i> Bulk Load Entities</asp:LinkButton>
                     -->
                 </div>
             </div>
@@ -37,7 +37,7 @@
         <div class="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-search"></i> Smart Search Settings</h1>
+                <h1 class="panel-title"><i class="ti ti-search"></i> Smart Search Settings</h1>
             </div>
             <div class="panel-body">
                 <asp:Panel ID="pnlSmartSearchView" runat="server">
@@ -81,7 +81,7 @@
         <div class="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-square"></i> Indexable Entities</h1>
+                <h1 class="panel-title"><i class="ti ti-square"></i> Indexable Entities</h1>
             </div>
             <div class="panel-body">
 
@@ -90,8 +90,8 @@
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Entity Name" SortExpression="Name" />
                             <Rock:BoolField DataField="IsIndexingEnabled" HeaderText="Indexing Enabled" SortExpression="IsIndexingEnabled" />
-                            <Rock:LinkButtonField CssClass="btn btn-default" HeaderText="Bulk Load Documents" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" Text="<i class='fa fa-download'></i>" OnClick="gBulkLoad_Click" OnDataBound="gEntityList_BulkLoadDocuments_DataBound" />
-                            <Rock:LinkButtonField CssClass="btn btn-default" HeaderText="Recreate Index" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" Text="<i class='fa fa-refresh'></i>" OnClick="gRefresh_Click" OnDataBound="gEntityList_RecreateIndex_DataBound" />
+                            <Rock:LinkButtonField CssClass="btn btn-default" HeaderText="Bulk Load Documents" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" Text="<i class='ti ti-download'></i>" OnClick="gBulkLoad_Click" OnDataBound="gEntityList_BulkLoadDocuments_DataBound" />
+                            <Rock:LinkButtonField CssClass="btn btn-default" HeaderText="Recreate Index" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" Text="<i class='ti ti-refresh'></i>" OnClick="gRefresh_Click" OnDataBound="gEntityList_RecreateIndex_DataBound" />
                         </Columns>
                     </Rock:Grid>
                 </div>

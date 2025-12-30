@@ -28,6 +28,14 @@
 
                                 </div>
                             </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <CheckBox
+                                              v-model="enforcePublicSecurity"
+                                              label="Enforce Public Security"
+                                              help="When enabled, programs and courses will only be visible to users who have view authorization or are enrolled in an active class." />
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -65,11 +73,10 @@
                                          label="Highlight Color"
                                          help="The color to use to differentiate from other learning programs." />
 
-                            <TextBox
-                                     v-model="iconCssClass"
-                                     :maxLength="100"
-                                     class="input-width-xl"
-                                     label="Icon CSS Class" />
+                            <IconPicker
+                                        v-model="iconCssClass"
+                                        class="input-width-xl"
+                                        label="Icon CSS Class" />
 
                             <!-- <NumberBox
                                        v-model="absencesWarningCount"
@@ -151,6 +158,7 @@
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
 
     const props = defineProps({
         modelValue: {
@@ -205,6 +213,7 @@
     const imageBinaryFile = propertyRef(props.modelValue.bag?.imageBinaryFile ?? null, "ImageBinaryFile");
     const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");
     const isPublic = propertyRef(props.modelValue.bag?.isPublic ?? false, "IsPublic");
+    const enforcePublicSecurity = propertyRef(props.modelValue.bag?.enforcePublicSecurity ?? false, "EnforcePublicSecurity");
     const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
     const publicName = propertyRef(props.modelValue.bag?.publicName ?? name.value, "PublicName");
 
@@ -225,6 +234,7 @@
         imageBinaryFile,
         isActive,
         isPublic,
+        enforcePublicSecurity,
         name,
         publicName,
         gradingSystem
@@ -251,6 +261,7 @@
         updateRefValue(description, props.modelValue.bag?.description ?? "");
         updateRefValue(isActive, props.modelValue.bag?.isActive ?? false);
         updateRefValue(isPublic, props.modelValue.bag?.isPublic ?? false);
+        updateRefValue(enforcePublicSecurity, props.modelValue.bag?.enforcePublicSecurity ?? false);
         updateRefValue(isCompletionStatusTracked, props.modelValue.bag?.isCompletionStatusTracked ?? false);
         updateRefValue(name, props.modelValue.bag?.name ?? "");
         updateRefValue(publicName, props.modelValue.bag?.name ?? "");
@@ -289,6 +300,7 @@
         setPropertiesBoxValue(newValue, "completionWorkflowType", completionWorkflowType.value);
         setPropertiesBoxValue(newValue, "isActive", isActive.value);
         setPropertiesBoxValue(newValue, "isPublic", isPublic.value);
+        setPropertiesBoxValue(newValue, "enforcePublicSecurity", enforcePublicSecurity.value);
         setPropertiesBoxValue(newValue, "highlightColor", highlightColor.value);
         setPropertiesBoxValue(newValue, "iconCssClass", iconCssClass.value);
         setPropertiesBoxValue(newValue, "imageBinaryFile", imageBinaryFile.value);

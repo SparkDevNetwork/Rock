@@ -73,7 +73,7 @@ namespace Rock.Storage.AssetStorage
 
         /// <summary>
         /// Specify the font awesome icon for the AssetStorageComponent here. It will display in the folder tree.
-        /// Default is fa fa-server.
+        /// Default is ti ti-server.
         /// </summary>
         /// <value>
         /// The component icon path.
@@ -82,13 +82,13 @@ namespace Rock.Storage.AssetStorage
         {
             get
             {
-                return "fa fa-server";
+                return "ti ti-server";
             }
 
             set
             {
                 /* 2020-05-12 MDP
-                 *  This used to set a private variable, but it was never ends up getting used since the getter is hardcoded to return "fa fa-server"
+                 *  This used to set a private variable, but it was never ends up getting used since the getter is hardcoded to return "ti ti-server"
                  */
             }
         }

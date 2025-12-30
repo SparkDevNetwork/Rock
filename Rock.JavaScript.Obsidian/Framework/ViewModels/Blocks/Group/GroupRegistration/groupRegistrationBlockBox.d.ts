@@ -27,6 +27,9 @@ export type GroupRegistrationBlockBox = {
     /** Gets or sets a value indicating whether /[automatic fill]. */
     autoFill: boolean;
 
+    /** Gets or sets whether to disable captcha support for the block. */
+    disableCaptchaSupport: boolean;
+
     /** Gets or sets the entity. */
     entity?: GroupRegistrationBag | null;
 

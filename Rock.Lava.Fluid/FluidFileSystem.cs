@@ -88,6 +88,12 @@ namespace Rock.Lava
                 exists = _fileSystem.FileExists( filePath );
             }
 
+            var filePathLower = filePath.ToLowerInvariant();
+            if ( filePathLower.Contains( "web.config" ) || filePathLower.Contains( "web~1.con" ) || filePathLower.Contains( "web.connectionstrings.config" ) || filePathLower.Contains( "webcon~1.con" ) )
+            {
+                throw new LavaException( "File Load Failed. File \"{0}\" could not be accessed.", filePath );
+            }
+
             // This method is called directly by the Fluid framework.
             // Therefore, we need to load the Lava template from the file and convert it to Liquid-compatible syntax before returning it to the Fluid engine.
             var lavaText = exists ? _fileSystem.ReadTemplateFile( null, filePath ) : string.Empty;

@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="checkbox">
+    <div class="checkbox" v-if="showCheckbox">
         <label title="">
             <input type="checkbox" class="select-all" :checked="isChecked" @change="onValueChange">
             <span class="label-text">&nbsp;</span>
@@ -10,25 +10,45 @@
 
 <script setup lang="ts">
     import { standardHeaderCellProps } from "@Obsidian/Core/Controls/grid";
-    import {  onUnmounted, ref } from "vue";
+    import { onUnmounted, ref } from "vue";
 
     const props = defineProps(standardHeaderCellProps);
+
+    const showCheckbox = ref(false);
+    if (props.column.props.enableRowExclusions) {
+        showCheckbox.value = !!props.column.props.forceAllowSelectAll;
+    }
+    else {
+        showCheckbox.value = true;
+    }
 
     const isChecked = ref(false);
 
     /**
      * Called when the checkbox value has been changed by the individual.
      */
-    function onValueChange(): void {
-        if (isChecked.value) {
+    function onValueChange(event: Event): void {
+        const checked = (event.target as HTMLInputElement).checked;
+        if (!checked) {
             // Deselect all selected rows.
             props.grid.selectedKeys = [];
         }
         else {
-            // Select all rows that have a key.
-            props.grid.selectedKeys = props.grid.filteredRows
-                .map(r => props.grid.getRowKey(r))
-                .filter(k => k !== undefined) as string[];
+            if (props.column.props.enableRowExclusions && props.column.props.forceAllowSelectAll) {
+                // Select all rows that have a SelectCell with a checkbox
+                props.grid.selectedKeys = props.grid.filteredRows
+                    .filter(r => {
+                        return (props.column.props.excludeRow as ((row: unknown) => boolean))(r);
+                    })
+                    .map(r => props.grid.getRowKey(r))
+                    .filter(k => k !== undefined) as string[];
+            }
+            else { // If not using row exclusions, just select all rows.
+                // Select all rows that have a key.
+                props.grid.selectedKeys = props.grid.filteredRows
+                    .map(r => props.grid.getRowKey(r))
+                    .filter(k => k !== undefined) as string[];
+            }
         }
     }
 

@@ -70,6 +70,7 @@
                     <DropDownList v-if="config.mode === Mode.Full"
                                   v-model="templateGuidOrEmptyString"
                                   :disabled="disabled"
+                                  :enhanceForLongLists="true"
                                   :items="mediumOptions.templates ?? undefined"
                                   label="Template" />
                 </div>
@@ -191,6 +192,8 @@
                         :enableAssetManager="config.enableAssetManager"
                         :help="`${config.isLavaEnabled ? '<span class=\'tip tip-lava\'></span> ' : ''}<span class='tip tip-html'>`"
                         label="Message"
+                        :encryptedDocumentRootFolder="mediumOptions.encryptedDocumentFolderRoot ?? undefined"
+                        :encryptedImageRootFolder="mediumOptions.encryptedImageFolderRoot ?? undefined"
                         :mergeFields="messageMergeFields" />
 
             <div class="actions">

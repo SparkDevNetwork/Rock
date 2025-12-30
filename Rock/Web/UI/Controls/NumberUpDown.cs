@@ -402,7 +402,7 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-number-down numberincrement-down " + disabledMinCss );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-minus " );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "ti ti-minus " );
             writer.RenderBeginTag( HtmlTextWriterTag.I );
             writer.RenderEndTag();
             writer.RenderEndTag();
@@ -423,7 +423,7 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-number-up numberincrement-up " + disabledMaxCss );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-plus " );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "ti ti-plus " );
             writer.RenderBeginTag( HtmlTextWriterTag.I );
             writer.RenderEndTag();
             writer.RenderEndTag();

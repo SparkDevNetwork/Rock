@@ -580,6 +580,7 @@ namespace RockWeb.Blocks.Crm
                         primaryPerson.RecordTypeValueId = GetNewIntValue( "RecordType" );
                         primaryPerson.RecordStatusValueId = GetNewIntValue( "RecordStatus" );
                         primaryPerson.RecordStatusReasonValueId = GetNewIntValue( "RecordStatusReason" );
+                        primaryPerson.RecordSourceValueId = GetNewIntValue( "RecordSource" );
                         primaryPerson.ConnectionStatusValueId = GetNewIntValue( "ConnectionStatus" );
                         primaryPerson.IsDeceased = GetNewBoolValue( "Deceased" ) ?? false;
                         primaryPerson.Gender = ( Gender ) GetNewEnumValue( "Gender", typeof( Gender ) );
@@ -606,7 +607,9 @@ namespace RockWeb.Blocks.Crm
                             string oldValue = phoneNumber != null ? phoneNumber.Number : string.Empty;
 
                             string key = "phone_" + phoneType.Id.ToString();
-                            string newValue = GetNewStringValue( key );
+                            var selectedValue = GetNewValue( key );
+                            string newValue = selectedValue != null ? selectedValue.Value : string.Empty;
+
                             bool phoneNumberDeleted = false;
 
                             if ( !oldValue.Equals( newValue, StringComparison.OrdinalIgnoreCase ) )
@@ -622,8 +625,30 @@ namespace RockWeb.Blocks.Crm
                                         primaryPerson.PhoneNumbers.Add( phoneNumber );
                                     }
 
-                                    // Update phone number
-                                    phoneNumber.Number = newValue;
+                                    string selectedCountryCode = null;
+                                    string selectedNumberOnly = null;
+
+                                    var parts = newValue.Split( '|' );
+                                    if ( parts.Length == 2 )
+                                    {
+                                        selectedCountryCode = parts[0];
+                                        selectedNumberOnly = parts[1];
+                                    }
+                                    else
+                                    {
+                                        selectedNumberOnly = newValue;
+                                    }
+
+                                    phoneNumber.Number = PhoneNumber.CleanNumber( selectedNumberOnly );
+
+                                    if ( !string.IsNullOrWhiteSpace( selectedCountryCode ) )
+                                    {
+                                        phoneNumber.CountryCode = PhoneNumber.CleanNumber( selectedCountryCode );
+                                    }
+                                    else if ( string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
+                                    {
+                                        phoneNumber.CountryCode = PhoneNumber.DefaultCountryCode();
+                                    }
                                 }
                                 else
                                 {
@@ -1425,6 +1450,20 @@ namespace RockWeb.Blocks.Crm
             var maxAccountProtectionProfile = canMergeResult.MaxAccountProtectionProfile;
             var maxElevatedSecurityLevel = canMergeResult.MaxElevatedSecurityLevel;
 
+            if ( AreSelectedPersonsInSameLMSClass() )
+            {
+                nbWarning.Visible = true;
+                nbWarning.Heading = "Unable to Merge";
+                nbWarning.Text = "More than one of the selected individuals is enrolled in the same LMS class. To proceed, ensure that the individual is enrolled in only one instance of the class.";
+                lbMerge.Enabled = false;
+                return;
+            }
+            else
+            {
+                nbWarning.Visible = false;
+                lbMerge.Enabled = true;
+            }
+
             if ( maxAccountProtectionProfile == AccountProtectionProfile.Medium && !hasDifferentEmailAddresses && !hasDifferentEmailAddresses )
             {
                 // Medium AccountProtectionProfile, but not email or phone issues, so just a friendly warning
@@ -1573,6 +1612,17 @@ namespace RockWeb.Blocks.Crm
             }
         }
 
+        private bool AreSelectedPersonsInSameLMSClass()
+        {
+            var personIds = MergeData.People.Select( a => a.Id ).ToArray();
+
+            return new LearningParticipantService( new RockContext() )
+                .Queryable()
+                .Where( a => personIds.Contains( a.PersonId ) )
+                .GroupBy( lp => lp.LearningClassId )
+                .Any( g => g.Select( lp => lp.PersonId ).Distinct().Count() >= 2 );
+        }
+
         /// <summary>
         /// Show or hide the Attributes security warning.
         /// </summary>
@@ -1586,7 +1636,19 @@ namespace RockWeb.Blocks.Crm
             var showWarning = conflictingHiddenProperties.Any();
             nbPermissionNotice.Visible = showWarning;
 
-            var conflictingGroupMemberProperties = MergeData.GroupMemberProperties.Where( p => p.Values.Select( v => v.Value ).Distinct().Count() > 1 || !p.Values.Any( v => v.PersonId == MergeData.PrimaryPersonId ) ).ToList();
+            /*
+                10/6/2025 - MSE
+
+                A conflict should only be flagged when merge candidates have different
+                values for an attribute, within the same group.
+
+                Do not flag conflicts for the attribute when:
+                1) Candidates are in different groups (even if the attribute key matches across those groups).
+                2) Candidates have matching values for the attribute within the same group.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/6473
+            */
+            var conflictingGroupMemberProperties = MergeData.GroupMemberProperties.Where( p => p.Values.Select( v => v.Value ).Distinct().Count() > 1 ).ToList();
 
             nbGroupMemberAttributeConflict.Visible = conflictingGroupMemberProperties.Count > 0;
             if ( conflictingGroupMemberProperties.Count > 0 )
@@ -1784,7 +1846,7 @@ INNER JOIN [GroupMember] GMN ON GMN.[GroupId] = GMO.[GroupId]
 		)
 WHERE GMO.[PersonId] = @OldId
 	AND (
-		(
+		    (
 			-- old person' group member status is Active but new person's status is not, so delete the new person's groupmember record so that we can set the old record to the new person id
 			gmn.GroupMemberStatus != @GroupMemberStatusActive
 			AND gmo.GroupMemberStatus = @GroupMemberStatusActive
@@ -1795,7 +1857,9 @@ WHERE GMO.[PersonId] = @OldId
 			AND gmo.GroupMemberStatus = @GroupMemberStatusPending
 			)
 		)
-
+/*
+ * Handle RegistrationRegistrant records
+ */
 -- NULL out RegistrationRegistrant Records for the @LessActiveGroupMembersIdsToDelete
 UPDATE [RegistrationRegistrant]
 SET [GroupMemberId] = NULL
@@ -1804,6 +1868,9 @@ WHERE [GroupMemberId] IN (
 		FROM @LessActiveGroupMembersIdsToDelete
 		)
 
+/*
+ * Handle GroupMemberAssignment records
+ */
 -- Delete the GroupMemberAssignment Records for the @LessActiveGroupMembersIdsToDelete
 DELETE FROM [GroupMemberAssignment]
 WHERE [GroupMemberId] IN (
@@ -1842,6 +1909,9 @@ WHERE GMO.[PersonId] = @OldId
 	AND GMN.[Id] IS NULL
 	and GMO.Id NOT IN (SELECT [Id] FROM @GroupMembersIdsToArchive)
 
+/*
+ * Handle RegistrationRegistrant records
+ */
 -- Update any registrant groups that point to a group member about to be deleted 
 UPDATE [RegistrationRegistrant]
 SET [GroupMemberId] = NULL 
@@ -1851,7 +1921,9 @@ WHERE [GroupMemberId] IN (
 	WHERE [PersonId] = @OldId
 )
 
-
+/*
+ * Handle GroupMemberAssignment records
+ */
 -- Delete any Group Assignments that point to a group member about to be deleted
 DELETE FROM [GroupMemberAssignment]
 WHERE [GroupMemberId] IN (
@@ -1859,7 +1931,6 @@ WHERE [GroupMemberId] IN (
 	FROM [GroupMember]
 	WHERE [PersonId] = @OldId
 )
-
 
 -- If there is GroupMemberHistory, we can't delete, so add any other GroupMemberIds for the old PersonId to our @GroupMembersIdsToArchive list
 INSERT INTO @GroupMembersIdsToArchive 
@@ -2348,15 +2419,16 @@ AND Attendance.Id != @FirstTimeRecordId
 
                         if ( phoneNumber.IsUnlisted )
                         {
-                            iconHtml += " <span class='label label-info' title='Unlisted' data-toggle='tooltip' data-placement='top'><i class='fa fa-phone-slash'></i></span>";
+                            iconHtml += " <span class='label label-info' title='Unlisted' data-toggle='tooltip' data-placement='top'><i class='ti ti-phone-off'></i></span>";
                         }
 
                         if ( phoneNumber.IsMessagingEnabled )
                         {
-                            iconHtml += " <span class='label label-success' title='SMS Enabled' data-toggle='tooltip' data-placement='top'><i class='fa fa-sms'></i></span>";
+                            iconHtml += " <span class='label label-success' title='SMS Enabled' data-toggle='tooltip' data-placement='top'><i class='ti ti-device-mobile-message'></i></span>";
                         }
 
-                        AddProperty( key, phoneType.Value, person.Id, phoneNumber.Number, phoneNumber.NumberFormatted + iconHtml );
+                        var countryCodeAndNumber = string.Format( "{0}|{1}", phoneNumber.CountryCode, phoneNumber.Number );
+                        AddProperty( key, phoneType.Value, person.Id, countryCodeAndNumber, phoneNumber.NumberFormatted + iconHtml );
                     }
                     else
                     {
@@ -2397,12 +2469,12 @@ AND Attendance.Id != @FirstTimeRecordId
 
                             if ( address.IsMailingLocation )
                             {
-                                iconHtml += " <span class='label label-info' title='Mailing' data-toggle='tooltip' data-placement='top'><i class='fa fa-envelope'></i></span>";
+                                iconHtml += " <span class='label label-info' title='Mailing' data-toggle='tooltip' data-placement='top'><i class='ti ti-mail'></i></span>";
                             }
 
                             if ( address.IsMappedLocation )
                             {
-                                iconHtml += " <span class='label label-success' title='Mapped' data-toggle='tooltip' data-placement='top'><i class='fa fa-map-marker'></i></span>";
+                                iconHtml += " <span class='label label-success' title='Mapped' data-toggle='tooltip' data-placement='top'><i class='ti ti-map-pin'></i></span>";
                             }
 
                             var addressKey = key;
@@ -2460,7 +2532,8 @@ AND Attendance.Id != @FirstTimeRecordId
                         var hasViewPermission = attribute.Value.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson )
                                                 || grantPermissionForAllAttributes;
 
-                        AddGroupMemberProperty( "gm_attr_" + attribute.Key, attribute.Value.Name, groupMember, value, formattedValue, hasViewPermission, selected: false, attribute: attribute.Value );
+                        var theKey = $"gm_{groupMember.GroupId}_attr_{attribute.Key}";
+                        AddGroupMemberProperty( theKey, attribute.Value.Name, groupMember, value, formattedValue, hasViewPermission, selected: false, attribute: attribute.Value );
                     }
                 }
             }
@@ -2720,6 +2793,7 @@ AND Attendance.Id != @FirstTimeRecordId
             AddProperty( "RecordType", person.Id, person.RecordTypeValue );
             AddProperty( "RecordStatus", person.Id, person.RecordStatusValue );
             AddProperty( "RecordStatusReason", person.Id, person.RecordStatusReasonValue );
+            AddProperty( "RecordSource", person.Id, person.RecordSourceValue );
             AddProperty( "ConnectionStatus", person.Id, person.ConnectionStatusValue );
             AddProperty( "Deceased", person.Id, person.IsDeceased );
             AddProperty( "Gender", person.Id, person.Gender );

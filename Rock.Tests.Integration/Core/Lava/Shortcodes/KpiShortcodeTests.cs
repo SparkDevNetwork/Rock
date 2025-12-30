@@ -28,6 +28,32 @@ namespace Rock.Tests.Integration.Core.Lava.Shortcodes
     public class KpiShortcodeTests : LavaIntegrationTestBase
     {
         [TestMethod]
+        public void KpiShortcode_WithFontAwesomeIcon_RendersFontAwesomePrefix()
+        {
+            var template = "{[kpis]}[[ kpi icon:'fa-user' value:'0' label:'Test' ]][[ endkpi ]]{[endkpis]}";
+
+            TestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var result = engine.RenderTemplate( template );
+
+                Assert.Contains( "class=\"fa fa-fw fa-user\"", result.Text );
+            } );
+        }
+
+        [TestMethod]
+        public void KpiShortcode_WithTablerIcon_RendersTablerPrefix()
+        {
+            var template = "{[kpis]}[[ kpi icon:'ti-user' value:'0' label:'Test' ]][[ endkpi ]]{[endkpis]}";
+
+            TestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var result = engine.RenderTemplate( template );
+
+                Assert.Contains( "class=\"ti ti-fw ti-user\"", result.Text );
+            } );
+        }
+
+        [TestMethod]
         public void KpiShortcode_WithShortcodeParametersSpecified_RendersExpectedOutput()
         {
             TestHelper.AssertRenderTestIsValid( GetTestCaseForShortcodeParameters1() );
@@ -365,7 +391,7 @@ namespace Rock.Tests.Integration.Core.Lava.Shortcodes
     <div class=""kpi  kpi-card has-icon-bg "" style=""color:orange;border-color:rgba(255, 165, 0, 0.5)"" >
             <div class=""kpi-icon"">
                 <img class=""svg-placeholder"" src=""data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'&gt;&lt;/svg&gt;"">
-                <div class=""kpi-content""><i class=""xyz fa-fw icon-class""></i></div>
+                <div class=""kpi-content""><i class=""xyz ti-fw icon-class""></i></div>
             </div><div class=""kpi-stat "">
                 
                 <span class=""kpi-value text-color"">789</span>

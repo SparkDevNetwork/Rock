@@ -123,7 +123,11 @@ namespace RockWeb.Blocks.Reporting
         {
             if ( !Page.IsPostBack )
             {
-                var dataViewId = this.PageParameter( PageParameterKey.DataViewId ).AsIntegerOrNull();
+                var dataViewId = PageParameter( PageParameterKey.DataViewId ).AsIntegerOrNull();
+                if ( dataViewId == null )
+                {
+                    dataViewId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.DataViewId ) ).ToIntSafe();
+                }
                 hfDataViewId.Value = dataViewId.ToString();
                 BindGrid();
             }
@@ -224,14 +228,14 @@ namespace RockWeb.Blocks.Reporting
 
             if ( showResults )
             {
-                btnToggleResults.Text = "Hide Results <i class='fa fa-chevron-up'></i>";
+                btnToggleResults.Text = "Hide Results <i class='ti ti-chevron-up'></i>";
                 btnToggleResults.ToolTip = "Hide Results";
                 btnToggleResults.RemoveCssClass( "btn-primary" );
                 btnToggleResults.AddCssClass( "btn-default" );
             }
             else
             {
-                btnToggleResults.Text = "Show Results <i class='fa fa-chevron-down'></i>";
+                btnToggleResults.Text = "Show Results <i class='ti ti-chevron-down'></i>";
                 btnToggleResults.RemoveCssClass( "btn-default" );
                 btnToggleResults.AddCssClass( "btn-primary" );
                 btnToggleResults.ToolTip = "Show Results";

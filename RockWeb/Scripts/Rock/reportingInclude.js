@@ -42,8 +42,8 @@
         $expanded = $(this).children('input.filter-expanded');
         $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
 
-        $('a.filter-view-state > i', this).toggleClass('fa-chevron-down');
-        $('a.filter-view-state > i', this).toggleClass('fa-chevron-up');
+        $('a.filter-view-state > i', this).toggleClass('ti-chevron-down');
+        $('a.filter-view-state > i', this).toggleClass('ti-chevron-up');
     });
 
     // fix so that the Remove button will fire its event, but not the parent event

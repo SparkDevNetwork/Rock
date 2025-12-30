@@ -66,7 +66,7 @@ namespace Rock.Web.UI
                 HtmlGenericControl iEdit = new HtmlGenericControl( "i" );
                 lbEdit.Controls.Add( iEdit );
                 lbEdit.CausesValidation = false;
-                iEdit.Attributes.Add( "class", "fa fa-edit" );
+                iEdit.Attributes.Add( "class", "ti ti-edit" );
 
                 // will toggle the block config so they are no longer showing
                 lbEdit.Attributes["onclick"] = "Rock.admin.pageAdmin.showBlockConfig()";

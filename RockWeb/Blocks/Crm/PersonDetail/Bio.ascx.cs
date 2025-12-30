@@ -449,10 +449,10 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             var showCountryCode = GetAttributeValue( AttributeKey.DisplayCountryCode ).AsBoolean();
 
             var phoneType = DefinedValueCache.Get( phoneNumber.NumberTypeValueId ?? 0 ).Value;
-            var messaging = phoneNumber.IsMessagingEnabled ? @"<i class=""fa fa-comment text-muted text-sm ml-1""></i>" : string.Empty;
+            var messaging = phoneNumber.IsMessagingEnabled ? @"<i class=""ti ti-message text-muted text-sm ml-1""></i>" : string.Empty;
             var formattedOptOutDate = phoneNumber.MessagingOptedOutDateTime?.ToString( "MMMM d, yyyy" );
             var optedOutTooltip = phoneNumber.MessagingOptedOutDateTime != null ? $@"{phoneNumber.Person.NickName} opted out from messaging on {formattedOptOutDate}" : $"{phoneNumber.Person.NickName} opted out from messaging.";
-            var optedOut = phoneNumber.IsMessagingOptedOut ? $@"<i class=""fa fa-ban text-danger text-sm ml-1"" data-toggle=""tooltip"" data-placement=""top"" title=""{optedOutTooltip}"" aria-label=""{optedOutTooltip}""></i>" : string.Empty;
+            var optedOut = phoneNumber.IsMessagingOptedOut ? $@"<i class=""ti ti-ban text-danger text-sm ml-1"" data-toggle=""tooltip"" data-placement=""top"" title=""{optedOutTooltip}"" aria-label=""{optedOutTooltip}""></i>" : string.Empty;
             string formattedNumber = phoneNumber.IsUnlisted ? "Unlisted" : PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number, showCountryCode );
 
             var phoneMarkup = formattedNumber;
@@ -485,7 +485,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             <dd>{phoneType}</dd>
                         </dl>
                         <span class=""profile-row-icon"">
-                            <i class=""fa fa-phone""></i>
+                            <i class=""ti ti-phone""></i>
                         </span>
                     </div>";
             }
@@ -521,7 +521,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 string acctProtectionLevel = $@"
                     <div class=""protection-profile"">
                         <span class=""profile-label"">Protection Profile: {Person.AccountProtectionProfile.ConvertToString( true )}</span>
-                        <i class=""fa fa-fw fa-lock"" onmouseover=""$(this).parent().addClass('is-hovered')"" onmouseout=""$(this).parent().removeClass('is-hovered')""></i>
+                        <i class=""ti ti-fw ti-lock"" onmouseover=""$(this).parent().addClass('is-hovered')"" onmouseout=""$(this).parent().removeClass('is-hovered')""></i>
                     </div>";
 
                 litAccountProtectionLevel.Text = acctProtectionLevel;
@@ -704,7 +704,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
             }
 
-            lSmsButton.Text = $@"<a href='{smsLink}' class='btn btn-default btn-go btn-square stretched-link' title='Send a SMS' aria-label='Send a SMS'><i class='fa fa-comment-alt'></i></a><span>Text</span>";
+            lSmsButton.Text = $@"<a href='{smsLink}' class='btn btn-default btn-go btn-square stretched-link' title='Send a SMS' aria-label='Send a SMS'><i class='ti ti-message'></i></a><span>Text</span>";
         }
 
         private void ShowEmailButton()
@@ -748,7 +748,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             var emailButtonTitle = Person.EmailPreference == EmailPreference.NoMassEmails ? @"Email Preference is set to ""No Mass Emails""" : "Send an email";
 
-            lEmailButton.Text = $@"<a href='{emailLink}' class='btn btn-default btn-go btn-square stretched-link' title='{emailButtonTitle}' aria-label='{emailButtonTitle}'><i class='fa fa-envelope'></i></a><span>Email</span>";
+            lEmailButton.Text = $@"<a href='{emailLink}' class='btn btn-default btn-go btn-square stretched-link' title='{emailButtonTitle}' aria-label='{emailButtonTitle}'><i class='ti ti-mail'></i></a><span>Email</span>";
         }
 
         /// <summary>
@@ -810,7 +810,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 {
                     string url = string.Format( "~/WorkflowEntry/{0}?PersonId={1}", workflowType.Id, Person.Id );
                     sbActions.AppendFormat(
-                        "<li><a href='{0}'><i class='fa-fw {1}'></i> {2}</a></li>",
+                        "<li><a href='{0}'><i class='ti-fw {1}'></i> {2}</a></li>",
                         ResolveRockUrl( url ),
                         workflowType.IconCssClass,
                         workflowType.Name );
@@ -968,9 +968,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 {
                     url = r.Value.Value,
                     name = r.QualifierValues[NAME_KEY].Value,
-                    icon = r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value.Contains( "fa-fw" ) ?
+                    icon = r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value.Contains( "ti-fw" ) ?
                         r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value :
-                        r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value + " fa-fw",
+                        r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value + " ti-fw",
                     color = r.Attribute.QualifierValues[COLOR_KEY].Value,
                 } )
                 .ToList();

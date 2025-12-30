@@ -64,7 +64,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                 {% if NoteOptions.DisplayType == "Light" or NoteOptions.UsePersonIcon and note.CreatedByPersonId %}
                     <a href="/person/{{ note.CreatedByPersonId }}" class="avatar avatar-{{ avatarSize }}"><img src="{{ note.CreatedByPersonPhotoUrl }}" alt="{{ note.CreatedByPersonName }}"></a>
                 {% else %}
-                    <div class="avatar avatar-icon avatar-{{ avatarSize }}" {% if note.IsAlert or note.NoteType.FontColor != '' %}style="{% if note.IsAlert %}color: var(--state-danger-text,#fcf2f1);{% else %}{{ fontStyle }}{% endif %}"{% endif %}><i class="{{ note.NoteType.IconCssClass | Default:'fa fa-comment' }}"></i></div>
+                    <div class="avatar avatar-icon avatar-{{ avatarSize }}" {% if note.IsAlert or note.NoteType.FontColor != '' %}style="{% if note.IsAlert %}color: var(--state-danger-text,#fcf2f1);{% else %}{{ fontStyle }}{% endif %}"{% endif %}><i class="{{ note.NoteType.IconCssClass | Default:'ti ti-message' }}"></i></div>
                 {% endif %}
             </div>
             <div class="meta-body">
@@ -103,7 +103,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
             {% assign canEdit = note | HasRightsTo:'Edit' %}
             {% if canEdit or canReply or allowsWatching %}
                 <div class="dropdown">
-                    <button id="{{ note.Id }}-options" class="btn btn-link btn-overflow" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></button>
+                    <button id="{{ note.Id }}-options" class="btn btn-link btn-overflow" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="ti ti-dots-vertical"></i></button>
                     <ul class="dropdown-menu dropdown-menu-right" id="{{ note.Id }}-optionsmenu" aria-labelledby="{{ note.Id }}-options">
                         <li><button type="button" class="dropdown-item btn-link js-replynote">Reply</button></li>
                         {% if canEdit %}

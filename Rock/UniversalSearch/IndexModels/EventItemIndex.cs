@@ -130,7 +130,7 @@ namespace Rock.UniversalSearch.IndexModels
                 iconCssClass = value;
             }
         }
-        private string iconCssClass = "fa fa-calendar-alt";
+        private string iconCssClass = "ti ti-calendar-month";
 
         /// <summary>
         /// Loads the indexable document from the EventItem.

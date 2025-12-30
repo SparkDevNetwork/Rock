@@ -4,6 +4,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Assessment Type"
+          title="Assessment Types"
           :entityTypeGuid="EntityType.AssessmentType"
           stickyHeader
           liveUpdates

@@ -156,6 +156,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AssignedToPersonAliasId = source.AssignedToPersonAliasId;
             target.Description = source.Description;
+            target.DisableSmsOptInOutTracking = source.DisableSmsOptInOutTracking;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
@@ -168,6 +169,7 @@ namespace Rock.Model
             target.ProviderIdentifier = source.ProviderIdentifier;
             target.SmsNotificationGroupId = source.SmsNotificationGroupId;
             target.SmsReceivedWorkflowTypeId = source.SmsReceivedWorkflowTypeId;
+            target.SuppressSmsOptInOutAutoReplies = source.SuppressSmsOptInOutAutoReplies;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

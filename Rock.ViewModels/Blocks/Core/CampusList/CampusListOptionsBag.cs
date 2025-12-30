@@ -22,5 +22,9 @@ namespace Rock.ViewModels.Blocks.Core.CampusList
     /// </summary>
     public class CampusListOptionsBag
     {
+        /// <summary>
+        /// Gets or sets whether the Campus Phone Number column should be shown.
+        /// </summary>
+        public bool ShowCampusPhoneNumber { get; set; }
     }
 }

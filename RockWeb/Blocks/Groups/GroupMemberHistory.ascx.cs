@@ -200,7 +200,7 @@ namespace RockWeb.Blocks.Groups
                     + groupMember.ToString();
 
                 string personUrl = this.ResolveUrl( string.Format( "~/Person/{0}", groupMember.PersonId ) );
-                lPersonProfileLink.Text = string.Format( @"<a href='{0}'><div class='btn btn-default btn-sm'><i class='fa fa-user'></i></div></a>", personUrl );
+                lPersonProfileLink.Text = string.Format( @"<a href='{0}'><div class='btn btn-default btn-sm'><i class='ti ti-user'></i></div></a>", personUrl );
             }
         }
 

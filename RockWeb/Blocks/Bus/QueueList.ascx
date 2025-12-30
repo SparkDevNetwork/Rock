@@ -7,7 +7,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-code-branch"></i>
+                    <i class="ti ti-git-branch"></i>
                     Queues
                 </h1>
             </div>

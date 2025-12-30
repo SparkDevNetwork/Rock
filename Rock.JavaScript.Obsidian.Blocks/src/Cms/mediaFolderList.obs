@@ -4,7 +4,8 @@
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          :itemTerm="config?.options?.mediaAccountName + ' Folders'"
+          :title="config?.options?.mediaAccountName + ' Folders'"
+          itemTerm="Folders"
           :entityTypeGuid="EntityType.MediaFolder"
           stickyHeader
           liveUpdates

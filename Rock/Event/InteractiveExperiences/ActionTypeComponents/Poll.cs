@@ -62,7 +62,7 @@ namespace Rock.Event.InteractiveExperiences.ActionTypeComponents
         #region Properties
 
         /// <inheritdoc/>
-        public override string IconCssClass => "fa fa-list";
+        public override string IconCssClass => "ti ti-list";
 
         /// <inheritdoc/>
         public override bool IsModerationSupported => false;

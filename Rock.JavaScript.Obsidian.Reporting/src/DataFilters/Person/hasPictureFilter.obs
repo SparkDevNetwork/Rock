@@ -1,0 +1,27 @@
+<template>
+    <RadioButtonList v-model="hasPicture" :items="hasPictureOptions" horizontal />
+</template>
+
+<script setup lang="ts">
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const hasPicture = ref<string>(props.modelValue.hasPicture ?? "1");
+    const hasPictureOptions = ref([
+        { value: "1", text: "Yes" },
+        { value: "0", text: "No" },
+    ]);
+
+    watch(hasPicture, () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            hasPicture: hasPicture.value,
+        });
+    });
+</script>

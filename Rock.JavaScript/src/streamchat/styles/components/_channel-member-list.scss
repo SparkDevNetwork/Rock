@@ -1,0 +1,41 @@
+.rocktheme-community {
+    .channel-members-content {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .channel-member-list-item {
+        display: flex;
+        gap: var(--message-gap);
+        padding: 0px 12px;
+
+        .member-button {
+            width: 100%;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        &:hover {
+            background-color: var(--color-interface-soft);
+        }
+
+        .channel-member-list-item-layout {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--color-interface-soft);
+            width: 100%;
+
+            .channel-member-name {
+                font-weight: 600;
+                color: var(--color-interface-stronger, #222);
+                font-size: 16px;
+            }
+        }
+
+    }
+}

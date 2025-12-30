@@ -10,7 +10,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title pull-left">
-                    <i class="fa fa-check-square-o"></i>
+                    <i class="ti ti-square-check"></i>
                     <asp:Literal ID="lHeading" runat="server" Text="Group Attendance" />
                 </h1>
                 <Rock:ButtonDropDownList ID="bddlCampus" runat="server" FormGroupCssClass="panel-options pull-right dropdown-right" Title="All Campuses" SelectionStyle="Checkmark"
@@ -72,7 +72,7 @@
                                     <Rock:PersonPicker ID="ppAddPerson" runat="server" OnSelectPerson="ppAddPerson_SelectPerson" />
                                 </div>
                                 <div class="pull-left margin-b-lg">
-                                    <asp:LinkButton ID="lbAddMember" runat="server" CssClass="btn btn-default" OnClick="lbAddMember_Click" CausesValidation="false" Visible="false"><i class="fa fa-plus"></i> Add Group Member</asp:LinkButton>
+                                    <asp:LinkButton ID="lbAddMember" runat="server" CssClass="btn btn-default" OnClick="lbAddMember_Click" CausesValidation="false" Visible="false"><i class="ti ti-plus"></i> Add Group Member</asp:LinkButton>
                                 </div>
                             </div>
 
@@ -87,7 +87,7 @@
                                         <div class="form-group">
                                             <asp:HiddenField ID="hfMember" runat="server" Value='<%# Eval("Id") %>' />
                                             <asp:Label ID="lName" runat="server" Text='<%# Eval("FullName") %>' />
-                                            <asp:LinkButton ID="lbAdd" runat="server" ToolTip="Add Person to Group" CausesValidation="false" CommandName="Add" CommandArgument='<%# Eval("Id") %>' CssClass="js-add-member"><i class="fa fa-plus"></i></asp:LinkButton>
+                                            <asp:LinkButton ID="lbAdd" runat="server" ToolTip="Add Person to Group" CausesValidation="false" CommandName="Add" CommandArgument='<%# Eval("Id") %>' CssClass="js-add-member"><i class="ti ti-plus"></i></asp:LinkButton>
                                         </div>
                                     </ItemTemplate>
                                 </asp:ListView>
@@ -108,7 +108,7 @@
                     <div class="actions">
                         <asp:LinkButton ID="lbSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" CausesValidation="false" />
                         <asp:LinkButton ID="lbCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" OnClick="lbCancel_Click" CausesValidation="false"></asp:LinkButton>
-                        <asp:LinkButton ID="lbPrintAttendanceRoster" runat="server" ToolTip="Print Attendance Roster" CssClass="btn btn-default btn-sm btn-square pull-right" OnClick="lbPrintAttendanceRoster_Click" CausesValidation="false"><i class="fa fa-print"></i></asp:LinkButton>
+                        <asp:LinkButton ID="lbPrintAttendanceRoster" runat="server" ToolTip="Print Attendance Roster" CssClass="btn btn-default btn-sm btn-square pull-right" OnClick="lbPrintAttendanceRoster_Click" CausesValidation="false"><i class="ti ti-printer"></i></asp:LinkButton>
                     </div>
 
                 </asp:Panel>

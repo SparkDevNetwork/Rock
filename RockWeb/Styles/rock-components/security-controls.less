@@ -3,6 +3,13 @@
 // --------------------------------------------------
 
 .loginstatus {
+  .dropdown-toggle.navbar-link {
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    gap: var(--spacing-xsmall);
+  }
+
   & > li {
     min-width: 160px;
     text-align: right;
@@ -11,4 +18,11 @@
       text-align: left;
     }
   }
+}
+
+
+.splash-form-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }

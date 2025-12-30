@@ -14,9 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Personalization;
@@ -182,9 +184,17 @@ namespace Rock.Lava
                     var requestFilters = RequestFilterCache.All().Where( a => a.IsActive );
                     foreach ( var requestFilter in requestFilters )
                     {
-                        if ( requestFilter.RequestMeetsCriteria( httpRequest, null ) )
+                        try
                         {
-                            requestFilterIdList.Add( requestFilter.Id );
+                            if ( requestFilter.RequestMeetsCriteria( httpRequest, null ) )
+                            {
+                                requestFilterIdList.Add( requestFilter.Id );
+                            }
+                        }
+                        catch ( Exception ex )
+                        {
+                            ExceptionLogService.LogException( new Exception( $"Error processing personalization request filter: {requestFilter.Name ?? requestFilter.RequestFilterKey}.", ex ) );
+                            throw;
                         }
                     }
                 }

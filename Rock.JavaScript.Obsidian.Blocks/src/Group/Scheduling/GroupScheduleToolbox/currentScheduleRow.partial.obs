@@ -45,7 +45,7 @@
                             class="btn btn-link btn-overflow dropdown-toggle"
                             data-toggle="dropdown"
                             :disabled="isRowDisabled">
-                        <i class="fa fa-ellipsis-v"></i>
+                        <i class="ti ti-dots-vertical"></i>
                     </button>
                     <ul class="dropdown-menu">
                         <li>

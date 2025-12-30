@@ -347,7 +347,7 @@ namespace Rock.Web.UI.Controls
                     Controls.Add( linkButton );
 
                     var icon = new HtmlGenericControl( "i" );
-                    icon.Attributes.Add( "class", config.IconCssClass.IsNullOrWhiteSpace() ? "fa fa-cog fa-fw" : config.IconCssClass );
+                    icon.Attributes.Add( "class", config.IconCssClass.IsNullOrWhiteSpace() ? "ti ti-settings ti-fw" : config.IconCssClass );
 
                     linkButton.Controls.Add( icon );
                     index++;
@@ -365,7 +365,7 @@ namespace Rock.Web.UI.Controls
             _lbBusinessMerge.PreRender += lb_PreRender;
             Controls.Add( _lbBusinessMerge );
             HtmlGenericControl iBusinessMerge = new HtmlGenericControl( "i" );
-            iBusinessMerge.Attributes.Add( "class", "fa fa-sign-in-alt fa-fw" );
+            iBusinessMerge.Attributes.Add( "class", "ti ti-login-2 ti-fw" );
             _lbBusinessMerge.Controls.Add( iBusinessMerge );
 
             // control for communicate
@@ -379,7 +379,7 @@ namespace Rock.Web.UI.Controls
             _lbCommunicate.PreRender += lb_PreRender;
             Controls.Add( _lbCommunicate );
             HtmlGenericControl iCommunicate = new HtmlGenericControl( "i" );
-            iCommunicate.Attributes.Add( "class", "fa fa-comment fa-fw" );
+            iCommunicate.Attributes.Add( "class", "ti ti-message ti-fw" );
             _lbCommunicate.Controls.Add( iCommunicate );
 
             // control for person merge
@@ -393,7 +393,7 @@ namespace Rock.Web.UI.Controls
             _lbPersonMerge.PreRender += lb_PreRender;
             Controls.Add( _lbPersonMerge );
             HtmlGenericControl iPersonMerge = new HtmlGenericControl( "i" );
-            iPersonMerge.Attributes.Add( "class", "fa fa-users fa-fw" );
+            iPersonMerge.Attributes.Add( "class", "ti ti-users ti-fw" );
             _lbPersonMerge.Controls.Add( iPersonMerge );
 
             // control for bulk update
@@ -407,7 +407,7 @@ namespace Rock.Web.UI.Controls
             _lbBulkUpdate.PreRender += lb_PreRender;
             Controls.Add( _lbBulkUpdate );
             HtmlGenericControl iBulkUpdate = new HtmlGenericControl( "i" );
-            iBulkUpdate.Attributes.Add( "class", "fa fa-truck fa-fw" );
+            iBulkUpdate.Attributes.Add( "class", "ti ti-truck ti-fw" );
             _lbBulkUpdate.Controls.Add( iBulkUpdate );
 
             // control for default launch workflow
@@ -420,7 +420,7 @@ namespace Rock.Web.UI.Controls
             _lbDefaultLaunchWorkflow.PreRender += lb_PreRender;
             Controls.Add( _lbDefaultLaunchWorkflow );
             var iLaunchWorkflow = new HtmlGenericControl( "i" );
-            iLaunchWorkflow.Attributes.Add( "class", "fa fa-cog fa-fw" );
+            iLaunchWorkflow.Attributes.Add( "class", "ti ti-settings ti-fw" );
             _lbDefaultLaunchWorkflow.Controls.Add( iLaunchWorkflow );
 
             // controls for excel export
@@ -440,7 +440,7 @@ namespace Rock.Web.UI.Controls
             _lbExcelExport.CausesValidation = false;
             Controls.Add( _lbExcelExport );
             HtmlGenericControl iExcelExport = new HtmlGenericControl( "i" );
-            iExcelExport.Attributes.Add( "class", "fa fa-table fa-fw" );
+            iExcelExport.Attributes.Add( "class", "ti ti-table ti-fw" );
             _lbExcelExport.Controls.Add( iExcelExport );
 
             // control for merge template
@@ -454,7 +454,7 @@ namespace Rock.Web.UI.Controls
             _lbMergeTemplate.PreRender += lb_PreRender;
             Controls.Add( _lbMergeTemplate );
             HtmlGenericControl iMergeTemplate = new HtmlGenericControl( "i" );
-            iMergeTemplate.Attributes.Add( "class", "fa fa-files-o fa-fw" );
+            iMergeTemplate.Attributes.Add( "class", "ti ti-files ti-fw" );
             _lbMergeTemplate.Controls.Add( iMergeTemplate );
 
             // controls for add
@@ -464,7 +464,7 @@ namespace Rock.Web.UI.Controls
             _aAdd.Attributes.Add( "href", "#" );
             _aAdd.Attributes.Add( "class", "btn btn-grid-action btn-add btn-default btn-sm" );
 
-            _aAdd.InnerHtml = "<i class='fa fa-plus-circle fa-fw'></i>";
+            _aAdd.InnerHtml = "<i class='ti ti-circle-plus ti-fw'></i>";
 
             _lbAdd = new LinkButton();
             Controls.Add( _lbAdd );
@@ -477,7 +477,7 @@ namespace Rock.Web.UI.Controls
             _lbAdd.Attributes.Add("data-shortcut-key", "n");
             Controls.Add( _lbAdd );
             HtmlGenericControl iAdd = new HtmlGenericControl( "i" );
-            iAdd.Attributes.Add( "class", "fa fa-plus-circle fa-fw" );
+            iAdd.Attributes.Add( "class", "ti ti-circle-plus ti-fw" );
             _lbAdd.Controls.Add( iAdd );
         }
 

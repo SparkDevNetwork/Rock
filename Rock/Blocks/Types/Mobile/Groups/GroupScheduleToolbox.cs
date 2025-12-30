@@ -37,7 +37,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [DisplayName( "Schedule Toolbox" )]
     [Category( "Mobile > Groups" )]
     [Description( "Allows management of group scheduling for a specific person (worker)." )]
-    [IconCssClass( "fa fa-user-check" )]
+    [IconCssClass( "ti ti-user-check" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

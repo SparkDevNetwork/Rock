@@ -1,0 +1,122 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSectionWrapper :sidebar="false">
+        <ContentSection light>
+            <ContentStack>
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="name"
+                                 label="Name"
+                                 rules="required" />
+                    </div>
+                </div>
+
+                <TextBox v-model="description"
+                         label="Description"
+                         textMode="multiline" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Instructions"
+                        icon="ti ti-info-circle"
+                        overflowText="Help">
+            <ContentStack>
+                <InstructionList v-model="instructions" />
+            </ContentStack>
+
+            <template #overflow>
+                <p>
+                    Instructions are used to provide additional context to the
+                    language model about how to use this tool.
+                </p>
+
+                <ul>
+                    <li>Purpose - Describes the basic purpose of the skill.</li>
+                    <li>Usage - Provides details on usage instructions for the skill.</li>
+                    <li>Guardrail - Provides instructions around how to safely call the skill (like warnings that data will be updated or deleted.)</li>
+                </ul>
+            </template>
+        </ContentSection>
+    </ContentSectionWrapper>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionWrapper from "@Obsidian/Controls/contentSectionWrapper.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import InstructionList from "./instructionList.partial.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { AISkillBag } from "@Obsidian/ViewModels/Blocks/AI/AISkillDetail/aiSkillBag";
+    import { AISkillDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/AI/AISkillDetail/aiSkillDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { InstructionItem, InstructionTypes } from "./types.partial";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<AISkillBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<AISkillDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<AISkillBag>): void
+    }>();
+
+    // #region Values
+
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const instructions = ref<InstructionItem[]>(props.modelValue.bag?.instructions
+        ?.map(i => ({ id: newGuid(), type: i.text as InstructionTypes, text: i.value ?? "" }))
+        ?? []);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, name];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(instructions, props.modelValue.bag?.instructions
+            ?.map(i => ({ id: i.category || newGuid(), type: i.text as InstructionTypes, text: i.value ?? "" }))
+            ?? []);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs, instructions], () => {
+        const newValue: ValidPropertiesBox<AISkillBag> = {
+            bag: { ...props.modelValue.bag } as AISkillBag
+        };
+
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "instructions", instructions.value.map(i => ({ text: i.type, value: i.text, category: i.id })));
+
+        emit("update:modelValue", newValue);
+    });
+</script>

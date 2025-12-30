@@ -186,8 +186,21 @@ namespace Rock.Workflow.Action
 
                 var smsEnabled = GetBooleanFromSelectedAttribute( AttributeKey.SMSEnabled, action );
 
-                // TODO handle country code here
-                businessPhoneNumber.Number = PhoneNumber.CleanNumber( phoneNumber );
+                string parsedCountryCode;
+                string parsedNumber;
+
+                var parsedOk = PhoneNumber.TryParseNumber( phoneNumber, out parsedCountryCode, out parsedNumber );
+                if ( parsedOk )
+                {
+                    businessPhoneNumber.CountryCode = PhoneNumber.CleanNumber( parsedCountryCode );
+                    businessPhoneNumber.Number = PhoneNumber.CleanNumber( parsedNumber );
+                }
+                else
+                {
+                    businessPhoneNumber.CountryCode = PhoneNumber.DefaultCountryCode();
+                    businessPhoneNumber.Number = PhoneNumber.CleanNumber( phoneNumber );
+                }
+
                 if ( smsEnabled.HasValue )
                 {
                     businessPhoneNumber.IsMessagingEnabled = smsEnabled.Value;

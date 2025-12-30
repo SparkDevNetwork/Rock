@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.Cms
     <div class=""panel-heading"">
         <h4 class=""panel-title"">Links</h4>
         {% if AllowedActions.Edit == true %}
-            <span class=""pull-right""><a href=""#"" onclick=""{{ '' | Postback:'EditList' }}""><i class='fa fa-gear'></i></a></span>
+            <span class=""pull-right""><a href=""#"" onclick=""{{ '' | Postback:'EditList' }}""><i class='ti ti-settings'></i></a></span>
         {% endif %}
     </div>
     <div class=""block-content"">

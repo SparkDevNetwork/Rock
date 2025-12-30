@@ -37,7 +37,7 @@ namespace Rock.ViewModels.Rest.Controls
         /// specify their own IconCssClass value.
         /// </summary>
         /// <value>The default icon CSS class.</value>
-        public string DefaultIconCssClass { get; set; } = "fa fa-bar-chart-o";
+        public string DefaultIconCssClass { get; set; } = "ti ti-chart-bar";
 
         /// <summary>
         /// Gets or sets the security grant token to use when performing

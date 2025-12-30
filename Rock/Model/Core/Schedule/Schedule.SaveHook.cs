@@ -28,6 +28,12 @@ namespace Rock.Model
             {
                 this.Entity.EnsureEffectiveStartEndDates();
 
+                // If this is a Nameless Schedule, then set the Description to a friendly text representation of the schedule.
+                if ( this.Entity.Name.IsNullOrWhiteSpace() )
+                {
+                    this.Entity.Description = this.Entity.ToFriendlyScheduleText( true );
+                }
+
                 base.PreSave();
             }
 
