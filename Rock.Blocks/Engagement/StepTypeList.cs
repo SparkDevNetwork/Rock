@@ -250,6 +250,10 @@ namespace Rock.Blocks.Engagement
         protected override List<StepTypeWithCounts> GetListItems( IQueryable<StepTypeWithCounts> queryable, RockContext rockContext )
         {
             var items = queryable.ToList();
+
+            // Load attribute values for the grid-selected attributes.
+            GridAttributeLoader.LoadFor( items, a => a.StepType, _gridAttributes.Value, rockContext );
+
             return items.Where( st => st.StepType.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ).ToList();
         }
 

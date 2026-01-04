@@ -146,6 +146,15 @@ namespace Rock.Blocks.Finance
 
         #region Fields
 
+        /// <summary>
+        /// The scheduled transaction attributes configured to show on the grid.
+        /// </summary>
+        private readonly Lazy<List<AttributeCache>> _gridAttributes = new System.Lazy<List<AttributeCache>>( BuildGridAttributes );
+
+        #endregion
+
+        #region Fields
+
         private Person _person;
 
         #endregion
@@ -433,6 +442,8 @@ namespace Rock.Blocks.Finance
                 }
             }
 
+            GridAttributeLoader.LoadFor( items, i => i.FinancialScheduledTransaction, _gridAttributes.Value, rockContext );
+
             return items;
         }
 
@@ -456,7 +467,20 @@ namespace Rock.Blocks.Finance
                 .AddDateTimeField( "nextPayment", a => a.FinancialScheduledTransaction.NextPaymentDate )
                 .AddTextField( "currencyType", a => a.FinancialScheduledTransaction.FinancialPaymentDetail.CurrencyTypeValue?.Value )
                 .AddField( "accounts", a => a.Accounts )
-                .AddField( "isActive", a => a.FinancialScheduledTransaction.IsActive );
+                .AddField( "isActive", a => a.FinancialScheduledTransaction.IsActive )
+                .AddAttributeFieldsFrom( a => a.FinancialScheduledTransaction, _gridAttributes.Value );
+        }
+
+        private static List<AttributeCache> BuildGridAttributes()
+        {
+            var entityTypeId = EntityTypeCache.Get<FinancialScheduledTransaction>( false )?.Id;
+
+            if ( entityTypeId.HasValue )
+            {
+                return AttributeCache.GetOrderedGridAttributes( entityTypeId.Value, string.Empty, string.Empty );
+            }
+
+            return new List<AttributeCache>();
         }
 
         /// <summary>

@@ -269,6 +269,7 @@
     grid-template-columns: repeat(auto-fill, minmax(200px, 250px));
     grid-template-rows: auto auto auto auto auto;
     gap: var(--spacing-large);
+    padding-left: 2px; /* Adjustment for focus state & border */
 
 }
 
@@ -347,10 +348,6 @@
     flex: 1;
     overflow-x: hidden;
     overflow-y: auto;
-    &:has(.mediums-section) {
-        overflow-x: unset;
-        overflow-y: unset;
-    }
 }
 </style>
 

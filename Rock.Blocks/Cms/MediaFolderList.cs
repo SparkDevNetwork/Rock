@@ -210,9 +210,9 @@ namespace Rock.Blocks.Cms
             // Load all the batches into memory.
             var items = queryable.ToList();
 
-            // Load any attribute column configuration.
-            var gridAttributeIds = _gridAttributes.Value.Select( a => a.Id ).ToList();
-            Helper.LoadFilteredAttributes( items.Select( d => d.MediaFolder ).ToList(), rockContext, a => gridAttributeIds.Contains( a.Id ) );
+            // Load attribute values for the grid-selected attributes.
+            GridAttributeLoader.LoadFor( items, a => a.MediaFolder, _gridAttributes.Value, rockContext );
+            
             var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.MEDIA_EVENTS.AsGuid() );
             var mediaElementQry = new MediaElementService( rockContext ).Queryable();
             var interactionComponentQry = new InteractionComponentService( rockContext )

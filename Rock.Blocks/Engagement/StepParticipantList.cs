@@ -292,6 +292,9 @@ namespace Rock.Blocks.Engagement
         {
             var stepParticipantData = queryable.ToList();
 
+            // Load attribute values for the grid-selected attributes.
+            GridAttributeLoader.LoadFor( stepParticipantData, a => a.Step, GetGridAttributes(), rockContext );
+
             foreach ( var participant in stepParticipantData )
             {
                 participant.Person.IdKey = IdHasher.Instance.GetHash( participant.Person.Id );

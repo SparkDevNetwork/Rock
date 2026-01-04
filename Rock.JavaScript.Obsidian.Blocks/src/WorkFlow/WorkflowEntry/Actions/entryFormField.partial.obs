@@ -1,24 +1,22 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <template v-if="isVisible">
-        <RockField v-if="field.attribute && field.attribute.fieldTypeGuid !== emptyGuid"
-                   :modelValue="value"
-                   :attribute="field.attribute"
-                   :showLabel="!field.isLabelHidden"
-                   :requiredOverride="field.isRequired"
-                   isEditMode
-                   @update:modelValue="onValueUpdated" />
-        <div v-else class="form-group static-control">
-            <RockLabel v-if="field.attribute?.name && !field.isLabelHidden"
-                       :help="field.attribute?.description ?? undefined">
-                {{ field.attribute?.name }}
-            </RockLabel>
+    <RockField v-if="field.attribute && field.attribute.fieldTypeGuid !== emptyGuid"
+               :modelValue="value"
+               :attribute="field.attribute"
+               :showLabel="!field.isLabelHidden"
+               :requiredOverride="field.isRequired"
+               isEditMode
+               @update:modelValue="onValueUpdated" />
+    <div v-else class="form-group static-control">
+        <RockLabel v-if="field.attribute?.name && !field.isLabelHidden"
+                   :help="field.attribute?.description ?? undefined">
+            {{ field.attribute?.name }}
+        </RockLabel>
 
-            <div class="control-wrapper">
-                <div class="form-control-static" v-html="value"></div>
-            </div>
+        <div class="control-wrapper">
+            <div class="form-control-static" v-html="value"></div>
         </div>
-    </template>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -27,7 +25,6 @@
     import { emptyGuid } from "@Obsidian/Utility/guid";
     import { EntryFormFieldBag } from "@Obsidian/ViewModels/Workflow/entryFormFieldBag";
     import { computed, PropType } from "vue";
-    import { EntryFormFilterContext, EntryFormFilterFunctionBuilder } from "./conditional.partial";
 
     const props = defineProps({
         field: {
@@ -39,18 +36,11 @@
             type: Object as PropType<Record<string, string>>,
             required: true
         },
-
-        filterContext: {
-            type: Object as PropType<EntryFormFilterContext>,
-            required: true
-        }
     });
 
     const emit = defineEmits<{
         (e: "updateFieldValue", attributeGuid: string, value: string): void;
     }>();
-
-    const visbilityFilter = new EntryFormFilterFunctionBuilder();
 
     /** The current value from the field values for this field. */
     const value = computed((): string => {
@@ -59,18 +49,6 @@
         }
 
         return props.fieldValues[props.field.attribute.attributeGuid] ?? "";
-    });
-
-    /**
-     * Determines if this field is currently visible based on conditional
-     * visibility rules.
-     */
-    const isVisible = computed((): boolean => {
-        if (!props.field.visibilityRule) {
-            return true;
-        }
-
-        return visbilityFilter.isMatch(props.filterContext, props.field.visibilityRule);
     });
 
     /**

@@ -308,9 +308,6 @@
                     else if (allowedMediums.value.includes(CommunicationType.SMS)) {
                         return "SMS Editor";
                     }
-                    else if (allowedMediums.value.includes(CommunicationType.PushNotification)) {
-                        return "Push Notification Editor";
-                    }
                     else {
                         return null;
                     }
@@ -324,9 +321,6 @@
             if (communicationType.value === CommunicationType.RecipientPreference) {
                 if (allowedMediums.value.includes(CommunicationType.SMS)) {
                     return "SMS Editor";
-                }
-                else if (allowedMediums.value.includes(CommunicationType.PushNotification)) {
-                    return "Push Notification Editor";
                 }
                 else {
                     return "Review & Confirm";

@@ -274,6 +274,9 @@ namespace Rock.Blocks.Cms
             // Load all the Short Links into memory.
             var items = queryable.ToList();
 
+            // Load attribute values for the grid-selected attributes.
+            GridAttributeLoader.LoadFor( items, a => a.PageShortLink, _gridAttributes.Value, rockContext );
+
             // Get all SiteIds referenced by the short links
             var siteIds = items
                 .Select( x => x.PageShortLink.SiteId )
