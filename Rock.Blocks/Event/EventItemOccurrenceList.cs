@@ -38,7 +38,7 @@ namespace Rock.Blocks.Event
     [DisplayName( "Calendar Event Item Occurrence List" )]
     [Category( "Event" )]
     [Description( "Displays the occurrence details for a given calendar event item." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
@@ -63,6 +63,7 @@ namespace Rock.Blocks.Event
         IsRequired = true,
         Order = 3 )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "ab765c53-424b-4824-afd6-1174228fd92f" )]
     [Rock.SystemGuid.BlockTypeGuid( "ddc28e7a-e6c0-4081-b4b9-7cd6475e9046" )]
     [CustomizedGrid]

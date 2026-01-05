@@ -15,7 +15,7 @@ namespace Rock.Blocks.Communication
     [DisplayName( "NCOA Process" )]
     [Category( "Communication" )]
     [Description( "Displays the NCOA Process Steps." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
 
     [Rock.SystemGuid.EntityTypeGuid( "AFE1B685-B24C-41A2-BFDE-5F921EE75063" )]
     [Rock.SystemGuid.BlockTypeGuid( "C3B61806-9F45-4CCF-8866-07D116E629A5" )]

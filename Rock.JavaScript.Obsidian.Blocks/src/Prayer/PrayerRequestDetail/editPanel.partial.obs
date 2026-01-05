@@ -39,7 +39,7 @@
                 <HighlightLabel v-if="props.modelValue?.flagCount"
                                 labelType="warning" tooltip="Re-approve the request to clear the flags."
                                 tooltipPlacement="top"
-                                iconCssClass="fa fa-flag">
+                                iconCssClass="ti ti-flag">
                     flagged {{ props.modelValue?.flagCount }} times
                 </HighlightLabel>
             </div>

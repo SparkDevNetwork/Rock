@@ -11,7 +11,7 @@
         </div>
         <div class="panel panel-block list-as-blocks">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-bullhorn"></i> My Content</h1>
+                <h1 class="panel-title"><i class="ti ti-speakerphone"></i> My Content</h1>
 
                 <div class="panel-labels">
                     <Rock:Toggle ID="tglStatus" runat="server" OnText="Pending" ActiveButtonCssClass="btn-success" ButtonSizeCssClass="btn-xs" OffText="All Items" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />
@@ -42,7 +42,7 @@
         <div class="panel panel-block js-grid-header" id="divItemPanel" runat="server" visible="false">
             <div class="panel-heading">
                 <div class="panel-title">
-                    <i class="fa fa-bullhorn"></i> <asp:Literal ID="lContentChannelItems" runat="server"></asp:Literal></h1>
+                    <i class="ti ti-speakerphone"></i> <asp:Literal ID="lContentChannelItems" runat="server"></asp:Literal></h1>
                 </div>
             </div>
             <div class="panel-body">

@@ -40,7 +40,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Media Account Detail" )]
     [Category( "CMS" )]
     [Description( "Displays the details of a particular media account." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -399,7 +399,7 @@ namespace Rock.Blocks.Cms
                 }
 
                 var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
-                var breadCrumb = new BreadCrumbLink( name ?? "New Media Account", breadCrumbPageRef );
+                var breadCrumb = new BreadCrumbLink( $"{name}'s Media" ?? "New Media Account", breadCrumbPageRef );
 
                 return new BreadCrumbResult
                 {

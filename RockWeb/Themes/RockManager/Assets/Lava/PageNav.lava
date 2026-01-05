@@ -11,7 +11,7 @@
                 {%- endif -%}
 
                 <a href="{{ menuUrl }}">
-                    <i class="fa-fw {{ childPage.IconCssClass }}"></i> {{ childPage.Title }}
+                    <i class="ti-fw {{ childPage.IconCssClass }}"></i> {{ childPage.Title }}
                 </a>
             </li>
         {%- endfor -%}

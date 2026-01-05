@@ -7,7 +7,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-envelope"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
+                <h1 class="panel-title"><i class="ti ti-mail"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
@@ -33,7 +33,7 @@
                     </div>
                 </div>
 
-                <Rock:PanelWidget ID="pnlEmailTemplate" Title="Email" TitleIconCssClass="fa fa-envelope" CssClass="js-email-template" runat="server" Expanded="true">
+                <Rock:PanelWidget ID="pnlEmailTemplate" Title="Email" TitleIconCssClass="ti ti-mail" CssClass="js-email-template" runat="server" Expanded="true">
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="tbFromName" runat="server" SourceTypeName="Rock.Model.SystemCommunication, Rock" PropertyName="FromName" Label="From Name" Help="<small><span class='tip tip-lava'></span></small>" />
@@ -76,7 +76,7 @@
                             <div class="row">
                                 <div class="col-md-8">
                                     <div class="js-help-container">
-                                        <a class="help" href="javascript: $('.js-template-help').toggle;"><i class="fa fa-question-circle"></i></a>
+                                        <a class="help" href="javascript: $('.js-template-help').toggle;"><i class="ti ti-zoom-question"></i></a>
                                         <div class="alert alert-info js-template-help" id="nbTemplateHelp" runat="server" style="display: none;"></div>
                                     </div>
                                     <Rock:CodeEditor ID="ceEmailTemplate" EditorHeight="500" Label="Message Body" EditorMode="Html" EditorTheme="Rock" runat="server" SourceTypeName="Rock.Model.SystemCommunication, Rock" PropertyName="Body" />
@@ -105,11 +105,11 @@
 
                                                     <div class="btn-group" role="group">
                                                         <button type="button" class="btn btn-xs btn-info active js-preview-desktop">
-                                                            <i class="fa fa-desktop"></i>
+                                                            <i class="ti ti-device-desktop"></i>
                                                             Desktop
                                                         </button>
                                                         <button type="button" class="btn btn-xs btn-default js-preview-mobile">
-                                                            <i class="fa fa-mobile"></i>
+                                                            <i class="ti ti-device-mobile"></i>
                                                             Mobile
                                                         </button>
                                                     </div>
@@ -135,7 +135,7 @@
 
                 </Rock:PanelWidget>
 
-                <Rock:PanelWidget ID="pnlSMSTemplate" Title="SMS" TitleIconCssClass="fa fa-comments" CssClass="js-sms-template" runat="server">
+                <Rock:PanelWidget ID="pnlSMSTemplate" Title="SMS" TitleIconCssClass="ti ti-messages" CssClass="js-sms-template" runat="server">
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:SystemPhoneNumberPicker ID="spnpSMSFrom" runat="server" Label="From" Help="The number to originate message from (configured under Admin Tools > Communications > System Phone Numbers)." />
@@ -152,7 +152,7 @@
                     </div>
                 </Rock:PanelWidget>
 
-                <Rock:PanelWidget ID="pnlPushNotification" Title="Push" TitleIconCssClass="fa fa-mobile-phone" CssClass="js-push-template" runat="server">
+                <Rock:PanelWidget ID="pnlPushNotification" Title="Push" TitleIconCssClass="ti ti-device-mobile" CssClass="js-push-template" runat="server">
                     <div class="row">
                         <div class="col-md-12">
                             <asp:PlaceHolder ID="phPushNotification" runat="server" />

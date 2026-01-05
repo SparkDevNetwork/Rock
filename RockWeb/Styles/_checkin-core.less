@@ -383,9 +383,15 @@ body {
     line-height: 92px;
   }
 
-  &.active i::before {
+  // Legacy in case anything still uses the FontAwesome icon
+  &.active i.fa::before {
     // checked icon
     content: @fa-var-check-square;
+  }
+
+  &.active i.ti::before {
+    // checkbox icon
+    content: "\eba6";
   }
 }
 

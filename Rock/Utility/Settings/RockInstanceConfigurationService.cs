@@ -190,18 +190,11 @@ namespace Rock.Utility.Settings
 
                 if ( engine == null )
                 {
-                    return "DotLiquid";
+                    return "Fluid";
                 }
                 else
                 {
-                    var engineName = engine.EngineName;
-
-                    if ( LavaService.RockLiquidIsEnabled )
-                    {
-                        engineName = $"DotLiquid (with {engineName} verification)";
-                    }
-
-                    return engineName;
+                    return engine.EngineName;
                 }
             }
         }

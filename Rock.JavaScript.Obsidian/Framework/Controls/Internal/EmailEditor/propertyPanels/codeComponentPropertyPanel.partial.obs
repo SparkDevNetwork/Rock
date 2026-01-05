@@ -3,6 +3,7 @@
     <ComponentPropertyPanelBase :componentElement="componentElement"
                                 :componentMigrationHelper="codeComponentHelper"
                                 :hasPaddedBody="true"
+                                :ltr="ltr"
                                 title="Lava"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
@@ -49,6 +50,11 @@
         componentElement: {
             type: Object as PropType<HTMLElement>,
             required: true
+        },
+
+        ltr: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         mergeFields: {

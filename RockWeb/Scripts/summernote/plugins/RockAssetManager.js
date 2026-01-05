@@ -2,7 +2,7 @@
     var ui = $.summernote.ui;
 
     var button = ui.button({
-        contents: '<i class="fa fa-folder-open"/>',
+        contents: '<i class="ti ti-folder-open"/>',
         tooltip: 'Asset Manager',
         click: function () {
             context.invoke('editor.saveRange');

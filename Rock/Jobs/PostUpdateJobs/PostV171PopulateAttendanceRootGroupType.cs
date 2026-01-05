@@ -18,6 +18,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -72,7 +74,7 @@ namespace Rock.Jobs.PostUpdateJobs
 
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
 
                 // Get all the distinct group identifiers that have attendance
                 // associated with them. This has an index on it so it should be
@@ -118,7 +120,7 @@ namespace Rock.Jobs.PostUpdateJobs
         {
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
 
                 // Get all the attendance occurrences for this group
                 var attendanceOccurrenceQry = new AttendanceOccurrenceService( rockContext )

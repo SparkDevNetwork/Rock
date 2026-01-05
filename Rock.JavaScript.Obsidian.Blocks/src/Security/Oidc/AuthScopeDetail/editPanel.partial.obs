@@ -1,0 +1,122 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required"
+                         :disabled="isSystem" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActiveChecked"
+                          label="Active"
+                          :disabled="isSystem" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="publicName"
+                         label="Public Name" />
+            </div>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { AuthScopeBag } from "@Obsidian/ViewModels/Blocks/Security/Oidc/AuthScopeDetail/authScopeBag";
+    import { AuthScopeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/Oidc/AuthScopeDetail/authScopeDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<AuthScopeBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<AuthScopeDetailOptionsBag>,
+            required: true
+        },
+
+        isSystem: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<AuthScopeBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const publicName = propertyRef(props.modelValue.bag?.publicName ?? "", "PublicName");
+    const isSystem = propertyRef(props.modelValue.bag?.isSystem ?? false, "IsSystem");
+
+    // If the entity is new (idKey === "0"), then we always want the active
+    // checkbox to be checked by default.
+    const isActiveChecked = props.modelValue?.bag?.idKey === ""
+                            ? true
+                            : propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive").value;
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [isActive, name, publicName, isSystem];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? false);
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(publicName, props.modelValue.bag?.publicName ?? "");
+        updateRefValue(isSystem, props.modelValue.bag?.isSystem ?? false);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<AuthScopeBag> = {
+            bag: { ...props.modelValue.bag } as AuthScopeBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "publicName", publicName.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

@@ -8,7 +8,7 @@
         <div class="panel panel-block" runat="server" id="divMain" visible="false">
 
             <div class="panel-heading panel-follow">
-                <h1 class="panel-title"><i class="fa fa-comments"></i>SMS Conversations</h1>
+                <h1 class="panel-title"><i class="ti ti-messages"></i>SMS Conversations</h1>
 
 
                 <div class="panel-labels m-0">
@@ -18,7 +18,7 @@
                     <Rock:RockDropDownList ID="ddlSmsNumbers" runat="server" Label="" AutoPostBack="true" OnSelectedIndexChanged="ddlSmsNumbers_SelectedIndexChanged" CssClass="pull-left input-width-lg input-xs" />
 
                     <a href="#" class="btn btn-xs btn-default btn-square ml-2 pull-left" style="display: none" onclick="$('.js-sms-configuration').slideToggle()">
-                        <i class="fa fa-cog"></i>
+                        <i class="ti ti-settings"></i>
                     </a>
                 </div>
                 <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
@@ -39,8 +39,8 @@
                     <div class="conversation-list d-flex flex-column">
                         <div class="header">
                             <div class="clearfix">
-                                <asp:LinkButton ID="btnCreateNewMessage" runat="server" CssClass="btn btn-default btn-sm btn-square" OnClick="btnCreateNewMessage_Click" ToolTip="New Message"><i class="fa fa-edit"></i></asp:LinkButton>
-                                <asp:LinkButton ID="lbPersonFilter" runat="server" CssClass="btn btn-default btn-sm btn-square pull-right" OnClientClick="$('.js-person-filter').slideToggle(); return false;"><i class="fa fa-filter"></i></asp:LinkButton>
+                                <asp:LinkButton ID="btnCreateNewMessage" runat="server" CssClass="btn btn-default btn-sm btn-square" OnClick="btnCreateNewMessage_Click" ToolTip="New Message"><i class="ti ti-edit"></i></asp:LinkButton>
+                                <asp:LinkButton ID="lbPersonFilter" runat="server" CssClass="btn btn-default btn-sm btn-square pull-right" OnClientClick="$('.js-person-filter').slideToggle(); return false;"><i class="ti ti-filter"></i></asp:LinkButton>
                             </div>
                             <div id="divPersonFilter" runat="server" class="js-person-filter" style="display: none;">
                                 <Rock:PersonPicker ID="ppPersonFilter" runat="server" Label="Recipient" OnSelectPerson="ppPersonFilter_SelectPerson" FormGroupCssClass="mt-2 mb-0" />
@@ -84,7 +84,7 @@
                             <Rock:HiddenFieldWithClass ID="hfSelectedPhoneNumber" runat="server" CssClass="js-selected-phone-number" />
                             <div class="header">
                                 <a href="#" class="conversation-back js-back pull-left mr-3">
-                                    <i class="fa fa-chevron-left"></i>
+                                    <i class="ti ti-chevron-left"></i>
                                 </a>
                                 <asp:Literal ID="litSelectedRecipientDescription" runat="server"></asp:Literal>
                                 <asp:LinkButton ID="lbLinkConversation" runat="server" Text="Link To Person" Visible="false" CausesValidation="false" CssClass="btn btn-default btn-xs pull-right" OnClick="lbLinkConversation_Click"></asp:LinkButton>
@@ -116,7 +116,7 @@
                                     </div>
                                 </div>
                                 <div class="js-send-image sms-image-uploader-container" style="display: none;">
-                                    <asp:LinkButton ID="lbDismiss" runat="server" CssClass="close" OnClientClick="$('.js-send-image').slideToggle(); return false;"><i class="fa fa-times"></i></asp:LinkButton>
+                                    <asp:LinkButton ID="lbDismiss" runat="server" CssClass="close" OnClientClick="$('.js-send-image').slideToggle(); return false;"><i class="ti ti-x"></i></asp:LinkButton>
                                     <div class="sms-image-uploader">
                                         <Rock:ImageUploader ID="ImageUploaderConversation" runat="server" BinaryFileTypeGuid="<%# new Guid( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT ) %>" Help="Optional image to include in the message." Label="Image" />
                                     </div>
@@ -129,8 +129,8 @@
                             <div class="footer">
                                 <Rock:RockTextBox ID="tbNewMessage" runat="server" TextMode="multiline" Rows="1" Placeholder="Type a message" CssClass="js-input-message rounded-0" Visible="false" autofocus></Rock:RockTextBox>
                                 <div class="actions">
-                                    <asp:LinkButton ID="btnEditNote" runat="server" CssClass="btn btn-default btn-square edit-note-button" OnClick="btnEditNote_Click" ToolTip="Add Note" ><i class="fa fa-edit"></i></asp:LinkButton>
-                                    <asp:LinkButton ID="lbShowImagePicker" runat="server" CssClass="btn btn-default image-button btn-square" OnClientClick="$('.js-send-image').slideToggle(); return false;"><i class="fa fa-camera"></i></asp:LinkButton>
+                                    <asp:LinkButton ID="btnEditNote" runat="server" CssClass="btn btn-default btn-square edit-note-button" OnClick="btnEditNote_Click" ToolTip="Add Note" ><i class="ti ti-edit"></i></asp:LinkButton>
+                                    <asp:LinkButton ID="lbShowImagePicker" runat="server" CssClass="btn btn-default image-button btn-square" OnClientClick="$('.js-send-image').slideToggle(); return false;"><i class="ti ti-camera"></i></asp:LinkButton>
                                     <Rock:BootstrapButton ID="btnSend" runat="server" CssClass="btn btn-primary send-button js-send-text-button" Text="Send" DataLoadingText="Sending..." OnClick="btnSend_Click" Visible="false" />
                                 </div>
                             </div>

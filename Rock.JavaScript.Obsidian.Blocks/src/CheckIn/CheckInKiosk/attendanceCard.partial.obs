@@ -97,13 +97,13 @@
             const expectedHalfItemProgress = (i / achievement.targetCount) + halfItemProgress;
 
             if (isProgressOkay(achievement.progress, expectedItemProgress)) {
-                items.push("fa fa-star completion-item-full");
+                items.push("ti ti-star-filled completion-item-full");
             }
             else if (isProgressOkay(achievement.progress, expectedHalfItemProgress)) {
-                items.push("fa fa-star-half-alt completion-item-half");
+                items.push("ti ti-star-half completion-item-half");
             }
             else {
-                items.push("fa fa-star-o completion-item-empty");
+                items.push("ti ti-star completion-item-empty");
             }
         }
 

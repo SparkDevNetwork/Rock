@@ -20,7 +20,7 @@ import { NumberFilterMethod } from "@Obsidian/Enums/Core/Grid/numberFilterMethod
 import { DateFilterMethod } from "@Obsidian/Enums/Core/Grid/dateFilterMethod";
 import { PickExistingFilterMethod } from "@Obsidian/Enums/Core/Grid/pickExistingFilterMethod";
 import { TextFilterMethod } from "@Obsidian/Enums/Core/Grid/textFilterMethod";
-import { ColumnFilter, ColumnDefinition, IGridState, StandardFilterProps, StandardCellProps, IGridCache, IGridRowCache, ColumnSort, SortValueFunction, FilterValueFunction, QuickFilterValueFunction, StandardColumnProps, StandardHeaderCellProps, EntitySetOptions, ExportValueFunction, StandardSkeletonCellProps, GridLength, BooleanSearchBag, FilterValuesFunction } from "@Obsidian/Types/Controls/grid";
+import { ColumnFilter, ColumnDefinition, IGridState, StandardFilterProps, StandardCellProps, IGridCache, IGridRowCache, ColumnSort, SortValueFunction, FilterValueFunction, QuickFilterValueFunction, StandardColumnProps, StandardHeaderCellProps, EntitySetOptions, ExportValueFunction, StandardSkeletonCellProps, GridLength, BooleanSearchBag, FilterValuesFunction, TooltipFunction } from "@Obsidian/Types/Controls/grid";
 import { ICancellationToken } from "@Obsidian/Utility/cancellation";
 import { extractText, getVNodeProp, getVNodeProps } from "@Obsidian/Utility/component";
 import { DayOfWeek, RockDateTime } from "@Obsidian/Utility/rockDateTime";
@@ -207,6 +207,16 @@ export const standardColumnProps: StandardColumnProps = {
     },
 
     disableSort: {
+        type: Boolean as PropType<boolean>,
+        default: false
+    },
+
+    tooltip: {
+        type: [String, Function] as PropType<string | TooltipFunction>,
+        required: false
+    },
+
+    tooltipHtml: {
         type: Boolean as PropType<boolean>,
         default: false
     },
@@ -909,6 +919,7 @@ function buildAttributeColumns(columns: ColumnDefinition[], node: VNode): void {
             },
             wrapped: false,
             disableSort: false,
+            tooltipHtml: false,
             props: {},
             slots: {},
             data: {}
@@ -1004,6 +1015,7 @@ function insertCustomColumns(columns: ColumnDefinition[], customColumns: CustomC
             },
             wrapped: false,
             disableSort: false,
+            tooltipHtml: false,
             props: {},
             slots: {},
             data: {}
@@ -1053,6 +1065,8 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
     const width = getVNodeProp<string>(node, "width");
     const wrapped = getVNodeProp<boolean>(node, "wrapped") || false;
     const disableSort = getVNodeProp<boolean>(node, "disableSort") || false;
+    const tooltip = getVNodeProp<string | TooltipFunction>(node, "tooltip");
+    const tooltipHtml = getVNodeProp<boolean>(node, "tooltipHtml") ?? false;
     const filterPrependComponent = node.children?.["filterPrepend"] as Component | undefined;
 
     // Get the function that will provide the sort value.
@@ -1210,6 +1224,8 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
         headerClass,
         itemClass,
         wrapped,
+        tooltip,
+        tooltipHtml,
         props: getVNodeProps(node),
         slots: node.children as Record<string, Component> ?? {},
         data: {}

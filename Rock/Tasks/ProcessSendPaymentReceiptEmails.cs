@@ -71,9 +71,10 @@ namespace Rock.Tasks
                     {
                         if ( detail.Account != null && detail.Amount > 0 )
                         {
+                            var accountName = string.IsNullOrWhiteSpace( detail.Account.PublicName ) ? detail.Account.Name : detail.Account.PublicName;
                             var accountAmount = new Dictionary<string, object>();
                             accountAmount.Add( "AccountId", detail.Account.Id );
-                            accountAmount.Add( "AccountName", detail.Account.Name );
+                            accountAmount.Add( "AccountName", accountName );
                             accountAmount.Add( "Amount", detail.Amount );
                             accountAmounts.Add( accountAmount );
 

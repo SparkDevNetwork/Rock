@@ -5,13 +5,13 @@
                     :modelValue="(pagePickerValue as ListItemBag[])"
                     @update:modelValue="updatePage"
                     formGroupClasses="location-item-picker"
-                    iconCssClass="fa fa-file"
+                    iconCssClass="ti ti-file"
                     :provider="itemProvider"
                     :multiple="multiple"
                     :autoExpand="true">
 
         <template #customPickerActions v-if="showSelectCurrentPage">
-            <RockButton @click="selectCurrentPage" :btnSize="BtnSize.ExtraSmall" :btnType="BtnType.Link" title="Select Current Page"><i class="fa fa-file-o"></i></RockButton>
+            <RockButton @click="selectCurrentPage" :btnSize="BtnSize.ExtraSmall" :btnType="BtnType.Link" title="Select Current Page"><i class="ti ti-file"></i></RockButton>
         </template>
 
         <template #append>

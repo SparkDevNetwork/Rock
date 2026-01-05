@@ -22,16 +22,16 @@ import { HttpResult } from "@Obsidian/Types/Utility/http";
 import { useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
 import { ICancellationToken } from "@Obsidian/Utility/cancellation";
 import { toGuidOrNull } from "@Obsidian/Utility/guid";
+import { CommunicationEntryWizardCheckShortLinkTokenBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCheckShortLinkTokenBag";
 import { CommunicationEntryWizardCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationBag";
 import { CommunicationEntryWizardCommunicationTemplateDetailBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateDetailBag";
-import { CommunicationEntryWizardGetEmailPreviewHtmlBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardGetEmailPreviewHtmlBag";
+import { CommunicationEntryWizardGetPreviewBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardGetPreviewBag";
 import { CommunicationEntryWizardRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardRecipientBag";
 import { CommunicationEntryWizardSaveCommunicationTemplateResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardSaveCommunicationTemplateResponseBag";
 import { CommunicationEntryWizardSaveMetricsReminderRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardSaveMetricsReminderRequestBag";
 import { CommunicationEntryWizardSaveResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardSaveResponseBag";
 import { CommunicationEntryWizardSendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardSendResponseBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { CommunicationEntryWizardCheckShortLinkTokenBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCheckShortLinkTokenBag";
 
 const breakpointHelperInjectionKey: InjectionKey<ComputedRef<BreakpointHelper>> = Symbol("breakpoint-helper");
 
@@ -113,6 +113,36 @@ export function useInvokeBlockActionHelper(): InvokeBlockActionHelper {
             );
         },
 
+        getEmailPreviewHtml(bag: CommunicationEntryWizardCommunicationBag, previewAsPersonAliasGuid?: Guid | null | undefined, previewAsPersonalizationSegmentId?: number | null | undefined): Promise<HttpResult<CommunicationEntryWizardGetPreviewBag | null | undefined>> {
+            return invokeBlockAction<CommunicationEntryWizardGetPreviewBag | null | undefined>(
+                "GetEmailPreviewHtml",
+                {
+                    bag,
+                    previewAsPersonAliasGuid,
+                    previewAsPersonalizationSegmentId
+                });
+        },
+
+        getPushPreview(bag: CommunicationEntryWizardCommunicationBag, previewAsPersonAliasGuid?: Guid | null | undefined, previewAsPersonalizationSegmentId?: number | null | undefined): Promise<HttpResult<CommunicationEntryWizardGetPreviewBag | null | undefined>> {
+            return invokeBlockAction<CommunicationEntryWizardGetPreviewBag | null | undefined>(
+                "GetPushPreview",
+                {
+                    bag,
+                    previewAsPersonAliasGuid,
+                    previewAsPersonalizationSegmentId
+                });
+        },
+
+        getSmsPreview(bag: CommunicationEntryWizardCommunicationBag, previewAsPersonAliasGuid?: Guid | null | undefined, previewAsPersonalizationSegmentId?: number | null | undefined): Promise<HttpResult<CommunicationEntryWizardGetPreviewBag | null | undefined>> {
+            return invokeBlockAction<CommunicationEntryWizardGetPreviewBag | null | undefined>(
+                "GetSmsPreview",
+                {
+                    bag,
+                    previewAsPersonAliasGuid,
+                    previewAsPersonalizationSegmentId
+                });
+        },
+
         getRecipient(personAliasGuid: Guid): Promise<HttpResult<CommunicationEntryWizardRecipientBag>> {
             return invokeBlockAction<CommunicationEntryWizardRecipientBag>("GetRecipient", { personAliasGuid });
         },
@@ -126,18 +156,18 @@ export function useInvokeBlockActionHelper(): InvokeBlockActionHelper {
             );
         },
 
-        subscribeToRealTime(request: {
-            connectionId: string | null,
-            communicationGuid: Guid
-        }): Promise<HttpResult<void>> {
-            return invokeBlockAction("SubscribeToRealTime", request);
-        },
-
         getSegmentDataViews(communicationListGroupGuid: Guid | null | undefined): Promise<HttpResult<ListItemBag[]>> {
             return invokeBlockAction<ListItemBag[]>(
                 "GetSegmentDataViews",
                 { communicationListGroupGuid }
             );
+        },
+
+        subscribeToRealTime(request: {
+            connectionId: string | null,
+            communicationGuid: Guid
+        }): Promise<HttpResult<void>> {
+            return invokeBlockAction("SubscribeToRealTime", request);
         },
 
         sendTest(bag: CommunicationEntryWizardCommunicationBag): Promise<HttpResult<void>> {
@@ -146,10 +176,6 @@ export function useInvokeBlockActionHelper(): InvokeBlockActionHelper {
 
         save(bag: CommunicationEntryWizardCommunicationBag): Promise<HttpResult<CommunicationEntryWizardSaveResponseBag>> {
             return invokeBlockAction<CommunicationEntryWizardSaveResponseBag>("Save", { bag });
-        },
-
-        getEmailPreviewHtml(bag: CommunicationEntryWizardCommunicationBag): Promise<HttpResult<CommunicationEntryWizardGetEmailPreviewHtmlBag | null | undefined>> {
-            return invokeBlockAction<CommunicationEntryWizardGetEmailPreviewHtmlBag | null | undefined>("GetEmailPreviewHtml", { bag });
         },
 
         send(bag: CommunicationEntryWizardCommunicationBag) {

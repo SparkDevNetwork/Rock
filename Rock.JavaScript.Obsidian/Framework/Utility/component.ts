@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-import { AsyncComponentLoader, Component, ComponentPublicInstance, defineAsyncComponent as vueDefineAsyncComponent, ExtractPropTypes, PropType, reactive, ref, Ref, VNode, watch, WatchOptions, render, createVNode } from "vue";
+import { AsyncComponentLoader, Component, ComponentPublicInstance, defineAsyncComponent as vueDefineAsyncComponent, ExtractPropTypes, PropType, reactive, ref, Ref, VNode, watch, WatchOptions, render, createVNode, markRaw } from "vue";
 import { deepEqual } from "./util";
 import { useSuspense } from "./suspense";
 import { newGuid } from "./guid";
@@ -23,6 +23,7 @@ import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle"
 import { FilterMode } from "@Obsidian/Enums/Reporting/filterMode";
 import { ExtendedRef, ExtendedRefContext } from "@Obsidian/Types/Utility/component";
 import type { RulesPropType, ValidationRule } from "@Obsidian/Types/validationRules";
+import type { DynamicComponentDefinitionBag } from "@Obsidian/ViewModels/Controls/dynamicComponentDefinitionBag";
 import { toNumberOrNull } from "./numberUtils";
 
 type Prop = { [key: string]: unknown };
@@ -389,17 +390,92 @@ export function useStandardAsyncPickerProps(props: ExtractPropTypes<StandardAsyn
 
 // #endregion
 
-// #region Data View Filters
+// #region Dynamic Components
 
-type DataViewFilterProps = {
-    /**
-     * The component data value from the C# component class.
-     */
+export type StandardDynamicComponentProps = {
     modelValue: {
-        type: PropType<Record<string, string | undefined | null>>,
+        type: PropType<Record<string, string | null | undefined>>,
         required: true
     },
 
+    options: {
+        type: PropType<Record<string, string | null | undefined>>,
+        required: true
+    },
+
+    executeRequest: {
+        type: PropType<(request: Record<string, string | null | undefined>) => Promise<Record<string, string | null | undefined> | null>>,
+        required: true
+    }
+};
+
+/**
+ * The standard props that are available to an instantiated component by the
+ * dynamicComponent.obs component.
+ */
+export const standardDynamicComponentProps: StandardDynamicComponentProps = {
+    modelValue: {
+        type: Object as PropType<Record<string, string | null | undefined>>,
+        required: true
+    },
+
+    options: {
+        type: Object as PropType<Record<string, string | null | undefined>>,
+        required: true
+    },
+
+    executeRequest: {
+        type: Function as PropType<(request: Record<string, string | null | undefined>) => Promise<Record<string, string | null | undefined> | null>>,
+        required: true
+    }
+};
+
+/**
+ * This is used to pre-load the URL in the definition so that it is ready for
+ * immediate display when passed to the dynamic component. This can be used to
+ * delay the display of the dynamic component container until the actual
+ * component is loaded into memory and ready to be displayed.
+ *
+ * @param definition The dynamic component definition that contains the URL to load.
+ */
+export async function loadDynamicComponentDefinition(definition: DynamicComponentDefinitionBag): Promise<void> {
+    if (!definition || !definition.url) {
+        return;
+    }
+
+    try {
+        const controlComponentModule = await import(definition.url);
+        const controlModule = controlComponentModule
+            ? (controlComponentModule.default || controlComponentModule)
+            : null;
+
+        if (controlModule) {
+            Object.defineProperty(definition, "__component", {
+                value: markRaw(controlModule),
+                writable: false,
+                enumerable: false
+            });
+        }
+    }
+    catch (e) {
+        console.error(e);
+    }
+    finally {
+        if (!("__component" in definition)) {
+            Object.defineProperty(definition, "__componentError", {
+                value: `Could not load the control for '${definition.url}'`,
+                writable: false,
+                enumerable: false
+            });
+        }
+    }
+}
+
+// #endregion
+
+// #region Data View Filters
+
+type DataViewFilterProps = StandardDynamicComponentProps & {
     /**
      * The mode this filter is operating in.
      */
@@ -411,10 +487,7 @@ type DataViewFilterProps = {
 
 /** The standard component props that will be passed to DataView Filter components. */
 export const dataViewFilterProps: DataViewFilterProps = {
-    modelValue: {
-        type: Object as PropType<Record<string, string | undefined | null>>,
-        required: true
-    },
+    ...standardDynamicComponentProps,
 
     filterMode: {
         type: Number as PropType<FilterMode>,
@@ -426,23 +499,10 @@ export const dataViewFilterProps: DataViewFilterProps = {
 
 // #region Data View Selects
 
-type DataViewSelectProps = {
-    /**
-     * The component data value from the C# component class.
-     */
-    modelValue: {
-        type: PropType<Record<string, string | undefined | null>>,
-        required: true
-    }
-};
+type DataViewSelectProps = StandardDynamicComponentProps;
 
 /** The standard component props that will be passed to DataView Select components. */
-export const dataViewSelectProps: DataViewSelectProps = {
-    modelValue: {
-        type: Object as PropType<Record<string, string | undefined | null>>,
-        required: true
-    }
-};
+export const dataViewSelectProps: DataViewSelectProps = standardDynamicComponentProps;
 
 // #endregion
 

@@ -120,36 +120,38 @@ namespace Rock.Rest.Controllers
                     errorMessage = "Account is not confirmed.";
                     return false;
                 }
-            }
 
-            var component = AuthenticationContainer.GetComponent( userLogin.EntityType.Name );
-            if ( component == null || !component.IsActive )
-            {
-                errorMessage = "Account type is inactive.";
-                return false;
-            }
+                var component = AuthenticationContainer.GetComponent( userLogin.EntityType.Name );
+                if ( component == null || !component.IsActive )
+                {
+                    errorMessage = "Account type is inactive.";
+                    return false;
+                }
 
-            if ( component is Rock.Security.Authentication.PINAuthentication )
-            {
-                // Don't allow PIN authentications.
-                errorMessage = "Account type is not supported.";
-                return false;
-            }
+                if ( component is Rock.Security.Authentication.PINAuthentication )
+                {
+                    // Don't allow PIN authentications.
+                    errorMessage = "Account type is not supported.";
+                    return false;
+                }
 
-            bool isAuthenticated;
-            if ( isAuthenticatedFromToken )
-            {
-                isAuthenticated = true;
-            }
-            else
-            {
-                isAuthenticated = component.Authenticate( userLogin, loginParameters.Password );
-            }
+                bool isAuthenticated;
+                if ( isAuthenticatedFromToken )
+                {
+                    isAuthenticated = true;
+                }
+                else
+                {
+                    isAuthenticated = component.AuthenticateAndTrack( userLogin, loginParameters.Password );
 
-            errorMessage = !isAuthenticated ? "Invalid user name or password." : null;
-            userName = userLogin?.UserName;
+                    rockContext.SaveChanges();
+                }
 
-            return isAuthenticated;
+                errorMessage = !isAuthenticated ? "Invalid user name or password." : null;
+                userName = userLogin?.UserName;
+
+                return isAuthenticated;
+            }
         }
     }
 }

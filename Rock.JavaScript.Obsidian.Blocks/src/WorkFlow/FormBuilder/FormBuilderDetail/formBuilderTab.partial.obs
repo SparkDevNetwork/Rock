@@ -458,7 +458,7 @@
             return "";
         }
 
-        return "fa fa-gear";
+        return "ti ti-settings";
     });
 
     /** The form header content specified in the template. */

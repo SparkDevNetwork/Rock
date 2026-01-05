@@ -546,7 +546,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
                 if ( _hasGroupRequirements && _groupMemberIdsNotMeetingRequirements.Contains( groupMember.Id ) )
                 {
-                    nameHtml.Append( $"<i class='fa fa-exclamation-triangle text-warning unmet-group-requirements margin-r-md' data-tip='{GetUnmetRequirementsTooltipId( groupMember.Id )}'></i>{GetUnmetRequirementsTooltip( groupMember.Id )}" );
+                    nameHtml.Append( $"<i class='ti ti-alert-triangle text-warning unmet-group-requirements margin-r-md' data-tip='{GetUnmetRequirementsTooltipId( groupMember.Id )}'></i>{GetUnmetRequirementsTooltip( groupMember.Id )}" );
                 }
 
                 nameHtml.Append( $"<div class=\"photo-icon photo-round photo-round-xs margin-r-sm js-person-popover\" personid=\"{groupMember.PersonId}\" data-original=\"{groupMember.Person.PhotoUrl}&w=50\" style=\"background-image: url( 'ResolveUrl( \"~/Assets/Images/person-no-photo-unknown.svg\" )' ); background-size: cover; background-repeat: no-repeat;\"></div>" );
@@ -559,7 +559,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
                 if ( groupMember.Note.IsNotNullOrWhiteSpace() )
                 {
-                    nameHtml.Append( $" <span class='js-group-member-note' data-toggle='tooltip' data-placement='top' title='{groupMember.Note.EncodeHtml()}'><i class='fa fa-file-text-o text-info'></i></span>" );
+                    nameHtml.Append( $" <span class='js-group-member-note' data-toggle='tooltip' data-placement='top' title='{groupMember.Note.EncodeHtml()}'><i class='ti ti-file-type-txt text-info'></i></span>" );
                 }
 
                 lNameWithHtml.Text = nameHtml.ToString();
@@ -631,13 +631,13 @@ namespace RockWeb.Blocks.Engagement.SignUp
                     if ( _groupTypeRoleIdsWithGroupSync.Contains( groupMember.GroupRoleId ) )
                     {
                         deleteButton.Enabled = false;
-                        buttonIcon.Attributes["class"] = "fa fa-exchange";
+                        buttonIcon.Attributes["class"] = "ti ti-switch-3";
                         var groupTypeRole = _groupTypeCache.Roles.FirstOrDefault( a => a.Id == groupMember.GroupRoleId );
                         deleteButton.ToolTip = string.Format( "Managed by group sync for role \"{0}\".", groupTypeRole );
                     }
                     else if ( _groupTypeCache.EnableGroupHistory == true && _groupMembersWithGroupMemberHistory.Contains( groupMember.Id ) )
                     {
-                        buttonIcon.Attributes["class"] = "fa fa-archive";
+                        buttonIcon.Attributes["class"] = "ti ti-archive";
                         deleteButton.AddCssClass( "btn-danger" );
                         deleteButton.ToolTip = "Archive";
                         e.Row.AddCssClass( "js-has-grouphistory" );

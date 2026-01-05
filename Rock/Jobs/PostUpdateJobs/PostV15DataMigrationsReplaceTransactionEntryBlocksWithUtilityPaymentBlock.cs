@@ -14,15 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Text;
+
+using Microsoft.EntityFrameworkCore;
+
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
-using System.Linq;
-using System;
 
 namespace Rock.Jobs
 {
@@ -279,7 +283,7 @@ DELETE [Block] WHERE [Id] = @BlockToBeReplacedBlockId
 
             using ( var rockContext = new Rock.Data.RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
 
                 // BlockType to be replaced
                 var transactionEntryBlockTypeGuid = "74EE3481-3E5A-4971-A02E-D463ABB45591".AsGuid();

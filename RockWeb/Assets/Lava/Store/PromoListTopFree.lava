@@ -1,6 +1,6 @@
 <div class="panel panel-block">
     <div class="panel-heading">
-        <h1 class="panel-title"><i class="fa fa-comments"></i> Top Free</h1>
+        <h1 class="panel-title"><i class="ti ti-messages"></i> Top Free</h1>
     </div>
     <div class="panel-body">
         <div class="row d-flex flex-wrap">

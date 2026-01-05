@@ -10,7 +10,7 @@
         </script>
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-check-square-o"></i>&nbsp;Event Registration Matching</h1>
+                <h1 class="panel-title"><i class="ti ti-square-check"></i>&nbsp;Event Registration Matching</h1>
             </div>
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" Visible="false" />

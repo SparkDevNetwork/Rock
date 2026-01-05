@@ -14,7 +14,7 @@
         <asp:Panel ID="pnlSelection" CssClass="panel panel-block" runat="server">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-credit-card"></i>
+                <h1 class="panel-title"><i class="ti ti-credit-card"></i>
                     <asp:Literal ID="lPanelTitle1" runat="server" /></h1>
             </div>
             <div class="panel-body">
@@ -243,7 +243,7 @@
         <asp:Panel ID="pnlConfirmation" CssClass="panel panel-block contribution-confirmation" runat="server" Visible="false">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-credit-card"></i>
+                <h1 class="panel-title"><i class="ti ti-credit-card"></i>
                     <asp:Literal ID="lPanelTitle2" runat="server" /></h1>
             </div>
 

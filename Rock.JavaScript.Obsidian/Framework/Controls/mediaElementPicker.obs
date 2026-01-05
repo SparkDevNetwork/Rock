@@ -5,14 +5,14 @@
         <BaseAsyncPicker v-if="internalMediaAccount && !hideFolderPicker" v-model="internalMediaFolder" v-bind="standardProps" rules="" help="" label="Folder" :multiple="false" :items="mediaFolderItems" showBlankItem :lazyMode="ControlLazyMode.Eager" :enhanceForLongLists="enhanceMediaFolderPickerForLongLists">
             <template #inputGroupAppend v-if="!hideRefreshButtons">
                 <span class="input-group-addon">
-                    <RockButton isSquare @click.prevent="fetchMediaFolders"><i class="fa fa-refresh"></i></RockButton>
+                    <RockButton isSquare @click.prevent="fetchMediaFolders"><i class="ti ti-refresh"></i></RockButton>
                 </span>
             </template>
         </BaseAsyncPicker>
         <BaseAsyncPicker v-if="internalMediaFolder && !hideMediaPicker" v-model="internalMediaElement" v-bind="standardProps" help="" :label="mediaElementLabel" :items="mediaElementItems" showBlankItem :lazyMode="ControlLazyMode.Eager" :enhanceForLongLists="enhanceMediaElementPickerForLongLists">
             <template #inputGroupAppend v-if="!hideRefreshButtons">
                 <span class="input-group-addon">
-                    <RockButton isSquare @click.prevent="fetchMediaElements"><i class="fa fa-refresh"></i></RockButton>
+                    <RockButton isSquare @click.prevent="fetchMediaElements"><i class="ti ti-refresh"></i></RockButton>
                 </span>
             </template>
         </BaseAsyncPicker>

@@ -99,7 +99,7 @@ function isNumeric(value: unknown): boolean {
  * Validates that a value does not equal another value.
  */
 export function createNotEqualRule(compare: unknown): ValidationRuleFunction {
-    return (value: unknown, params?: unknown[]): ValidationResult => {
+    return (value: unknown): ValidationResult => {
         if (isNumeric(value) && isNumeric(compare)) {
             if (convertToNumber(value) !== convertToNumber(compare)) {
                 return true;

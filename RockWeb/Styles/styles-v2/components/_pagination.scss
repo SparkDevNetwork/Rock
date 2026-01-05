@@ -1,0 +1,141 @@
+// PAGINATION STYLE
+
+
+// =============================
+// Table of Content           
+//  + Base Style
+//  + Sizing
+// =============================
+
+
+// ======================= BASE STYLE =======================
+.pagination {
+  display:        inline-block;
+  padding-left:   0;
+  margin:         var(--spacing-large) 0;
+  border-radius:  var(--rounded-medium);
+
+  > li {
+    display:  inline; // Remove list-style and block-level defaults
+    > a,
+    > span {
+      position:           relative;
+      float:              left; // Collapse white-space
+      padding:            var(--spacing-xsmall) 12px; // Need to hard code to fix spacing for the pagination 
+      margin-left:        -1px;
+      line-height:        16px; // Need to hard code to fix spacing for the pagination 
+      color:              var(--color-interface-stronger);
+      text-decoration:    none;
+      background-color:   var(--color-interface-softest);
+      border:             1px solid var(--color-interface-soft);
+
+      &:hover,
+      &:focus {
+        z-index:          2;
+        color:            var(--color-interface-stronger);
+        background-color: var(--color-interface-softer);
+        border-color:     var(--color-interface-soft);
+      }
+    }
+    &:first-child {
+      > a,
+      > span {
+        margin-left: 0;
+        border-top-left-radius:     var(--rounded-small);
+        border-bottom-left-radius:  var(--rounded-small);
+      }
+    }
+    &:last-child {
+      > a,
+      > span {
+        border-top-right-radius:    var(--rounded-small);
+        border-bottom-right-radius: var(--rounded-small);
+      }
+    }
+  }
+
+  > .active > a,
+  > .active > span {
+    &,
+    &:hover,
+    &:focus {
+      z-index: 3;
+      color:            var(--color-interface-strong);
+      background-color: var(--color-interface-softer);
+      border-color:     var(--color-interface-soft);
+      cursor:           default;
+    }
+  }
+
+  > .disabled {
+    > span,
+    > span:hover,
+    > span:focus,
+    > a,
+    > a:hover,
+    > a:focus {
+      color:            var(--color-interface-soft);
+      background-color: var(--color-interface-softest);
+      border-color:     transparent;
+      cursor:           not-allowed;
+    }
+  }
+}
+// ===================== BASE STYLE =====================
+
+
+// ======================= SIZING =======================
+// Large
+.pagination-lg {
+  > li {
+    > a,
+    > span {
+      padding:      var(--spacing-xsmall) var(--rounded-xlarge);
+      font-size:    var(--font-size-h5);
+      line-height:  var(--line-height-normal);
+    }
+    &:first-child {
+      > a,
+      > span {
+        border-top-left-radius:     var(--rounded-small);
+        border-bottom-left-radius:  var(--rounded-small);
+      }
+    }
+    &:last-child {
+      > a,
+      > span {
+        border-top-left-radius:     var(--rounded-small);
+        border-bottom-left-radius:  var(--rounded-small);
+      }
+    }
+  }
+}
+
+// Small
+.pagination-sm {
+  > li {
+    > a,
+    > span {
+      padding:      var(--spacing-xsmall) var(--rounded-medium);
+      font-size:    var(--font-size-small);
+      line-height:  var(--line-height-normal);
+    }
+    &:first-child {
+      > a,
+      > span {
+        border-top-left-radius:     var(--rounded-tiny);
+        border-bottom-left-radius:  var(--rounded-tiny);
+      }
+    }
+    &:last-child {
+      > a,
+      > span {
+        border-top-left-radius:     var(--rounded-tiny);
+        border-bottom-left-radius:  var(--rounded-tiny);
+      }
+    }
+  }
+}
+// ===================== END SIZING =====================
+
+

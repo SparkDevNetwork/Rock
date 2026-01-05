@@ -292,6 +292,16 @@ namespace Rock.Model
         public int? PersonEntryRecordStatusValueId { get; set; }
 
         /// <summary>
+        /// Gets or sets the person entry record source value identifier.
+        /// </summary>
+        /// <value>
+        /// The person entry record source value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.RECORD_SOURCE_TYPE )]
+        public int? PersonEntryRecordSourceValueId { get; set; }
+
+        /// <summary>
         /// Gets or sets the person entry address type value identifier.
         /// </summary>
         /// <value>
@@ -467,6 +477,15 @@ namespace Rock.Model
         public virtual DefinedValue PersonEntryRecordStatusValue { get; set; }
 
         /// <summary>
+        /// Gets or sets the person entry record source value identifier.
+        /// </summary>
+        /// <value>
+        /// The person entry record source value identifier.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue PersonEntryRecordSourceValue { get; set; }
+
+        /// <summary>
         /// Gets or sets the person entry address type value identifier.
         /// </summary>
         /// <value>
@@ -519,6 +538,7 @@ namespace Rock.Model
 
             this.HasOptional( f => f.PersonEntryConnectionStatusValue ).WithMany().HasForeignKey( f => f.PersonEntryConnectionStatusValueId ).WillCascadeOnDelete( false );
             this.HasOptional( f => f.PersonEntryRecordStatusValue ).WithMany().HasForeignKey( f => f.PersonEntryRecordStatusValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( f => f.PersonEntryRecordSourceValue ).WithMany().HasForeignKey( f => f.PersonEntryRecordSourceValueId ).WillCascadeOnDelete( false );
             this.HasOptional( f => f.PersonEntryGroupLocationTypeValue ).WithMany().HasForeignKey( f => f.PersonEntryGroupLocationTypeValueId ).WillCascadeOnDelete( false );
 
             this.HasOptional( f => f.PersonEntryCampusStatusValue).WithMany().HasForeignKey( f => f.PersonEntryCampusStatusValueId ).WillCascadeOnDelete( false );

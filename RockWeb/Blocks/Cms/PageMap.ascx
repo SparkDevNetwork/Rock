@@ -16,7 +16,7 @@
                     <asp:Panel ID="divTreeviewActions" CssClass="panel-labels treeview-actions" runat="server">
                         <div id="divAddPage" runat="server" class="btn-group">
                             <button type="button" class="btn btn-link btn-xs dropdown-toggle" data-toggle="dropdown" title="<asp:Literal ID="ltAddPage" runat="server" Text=" Add Page" />">
-                                <i class="fa fa-plus"></i>
+                                <i class="ti ti-plus"></i>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-right" role="menu">
                                 <li>

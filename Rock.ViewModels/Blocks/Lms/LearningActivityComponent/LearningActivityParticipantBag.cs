@@ -50,5 +50,10 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityComponent
         /// Gets or sets the name of the role this participant has in the class.
         /// </summary>
         public string RoleName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Person Id of the related participant.
+        /// </summary>
+        public int PersonId { get; set; }
     }
 }

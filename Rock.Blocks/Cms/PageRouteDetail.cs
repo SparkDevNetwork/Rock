@@ -39,7 +39,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Route Detail" )]
     [Category( "CMS" )]
     [Description( "Displays the details of a particular page route." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

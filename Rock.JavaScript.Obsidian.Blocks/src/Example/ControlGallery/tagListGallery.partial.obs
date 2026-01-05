@@ -17,7 +17,7 @@
                 </div>
                 <div class="col-md-3">
                     <CheckBox label="Delay Saving Value" v-model="delaySave" help="If checked, creating new tags, adding tags and removing tags is not saved to the server until the component's <code>saveTagValues</code> method is called." />
-                    <RockButton v-if="delaySave" :btnType="btnType" type="button" @click="control?.saveTagValues()"><i class="fa fa-save" /> Save Values</RockButton>
+                    <RockButton v-if="delaySave" :btnType="btnType" type="button" @click="control?.saveTagValues()"><i class="ti ti-device-floppy" /> Save Values</RockButton>
                 </div>
                 <div class="col-md-3">
                     <CheckBox label="Disallow New Tags" v-model="disallowNewTags" help="If checked, no new tags can be created, though you can still add existing tags" />
@@ -38,27 +38,27 @@
                 <tr>
                     <th scope="row"><code>entityTypeGuid</code></th>
                     <td>GUID String</td>
-                    <td class="text-center"><i class="fa fa-check text-success"></i></td>
+                    <td class="text-center"><i class="ti ti-check text-success"></i></td>
                 </tr>
                 <tr>
                     <th scope="row"><code>entityKey</code></th>
                     <td>String</td>
-                    <td class="text-center"><i class="fa fa-check text-success"></i></td>
+                    <td class="text-center"><i class="ti ti-check text-success"></i></td>
                 </tr>
                 <tr>
                     <th scope="row"><code>categoryGuid</code></th>
                     <td>GUID String</td>
-                    <td class="text-center"><i class="fa fa-ban text-danger"></i></td>
+                    <td class="text-center"><i class="ti ti-ban text-danger"></i></td>
                 </tr>
                 <tr>
                     <th scope="row"><code>entityQualifierColumn</code></th>
                     <td>String</td>
-                    <td class="text-center"><i class="fa fa-ban text-danger"></i></td>
+                    <td class="text-center"><i class="ti ti-ban text-danger"></i></td>
                 </tr>
                 <tr>
                     <th scope="row"><code>entityQualifierValue</code></th>
                     <td>String</td>
-                    <td class="text-center"><i class="fa fa-ban text-danger"></i></td>
+                    <td class="text-center"><i class="ti ti-ban text-danger"></i></td>
                 </tr>
             </table>
         </template>

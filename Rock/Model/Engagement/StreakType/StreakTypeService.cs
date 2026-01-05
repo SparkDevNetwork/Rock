@@ -105,6 +105,23 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Retrieves the engagement occurrences for a specified streak over a given number of units.
+        /// </summary>
+        /// <remarks>The method calculates the engagement occurrences by considering the provided streak
+        /// type and streak instance. It uses an aggregate exclusion map to filter out excluded occurrences.</remarks>
+        /// <param name="streakType">The type of streak to evaluate, which defines the engagement criteria.</param>
+        /// <param name="streak">The specific streak instance for which to retrieve engagement data.</param>
+        /// <param name="unitCount">The number of units to consider when retrieving engagement occurrences.</param>
+        /// <returns>An array of <see cref="OccurrenceEngagement"/> objects representing the engagement occurrences for the
+        /// specified streak.</returns>
+        public OccurrenceEngagement[] GetEngagmentBitsForStreak( StreakTypeCache streakType, Streak streak, int unitCount )
+        {
+            var aggregateExclusionMap = GetAggregateExclusionMap( new List<Streak> { streak }, streakType, streak.LocationId );
+
+            return GetMostRecentOccurrences( streakType, streak.EngagementMap, aggregateExclusionMap, 24 );
+        }
+
+        /// <summary>
         /// Get the most recent engagement bits where there were occurrences for the person
         /// </summary>
         /// <param name="streakTypeId"></param>

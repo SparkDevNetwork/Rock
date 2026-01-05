@@ -70,10 +70,20 @@ namespace Rock.CheckIn.v2.Labels
         public GroupTypeCache Area { get; }
 
         /// <summary>
+        /// The campus used during the check-in for this attendance.
+        /// </summary>
+        public CampusCache Campus { get; }
+
+        /// <summary>
         /// The person that checked this individual in. May be <c>null</c> in
         /// cases where this is not known.
         /// </summary>
         public Person CheckedInByPerson => _checkedInByPersonLazy.Value;
+
+        /// <summary>
+        /// The device used during the check-in for this attendance.
+        /// </summary>
+        public DeviceCache Device { get; }
 
         /// <summary>
         /// The group used during the check-in for this attendance.
@@ -97,9 +107,20 @@ namespace Rock.CheckIn.v2.Labels
         public List<GroupMember> GroupMembers => _groupMembersLazy.Value;
 
         /// <summary>
+        /// The type of search that was used to find this person during
+        /// the check-in process for this attendance.
+        /// </summary>
+        public DefinedValueCache SearchType { get; }
+
+        /// <summary>
         /// The security code that was assigned to this person for check-in.
         /// </summary>
         public string SecurityCode { get; }
+
+        /// <summary>
+        /// The source of this check-in attendance record.
+        /// </summary>
+        public DefinedValueCache Source { get; }
 
         /// <summary>
         /// The details of any achievements that were completed during this
@@ -187,6 +208,12 @@ namespace Rock.CheckIn.v2.Labels
             } );
 
             Area = areaCache;
+            Campus = attendance.CampusId.HasValue
+                ? CampusCache.Get( attendance.CampusId.Value, rockContext )
+                : null;
+            Device = attendance.DeviceId.HasValue
+                ? DeviceCache.Get( attendance.DeviceId.Value, rockContext )
+                : null;
             EndDateTime = attendance.EndDateTime;
             Group = groupCache;
             InProgressAchievements = attendanceBag?.InProgressAchievements ?? new List<AchievementBag>();
@@ -196,7 +223,13 @@ namespace Rock.CheckIn.v2.Labels
             Person = attendance.PersonAlias?.Person;
             PreviouslyCompletedAchievements = attendanceBag?.PreviouslyCompletedAchievements ?? new List<AchievementBag>();
             Schedule = scheduleCache;
+            SearchType = attendance.SearchTypeValueId.HasValue
+                ? DefinedValueCache.Get( attendance.SearchTypeValueId.Value )
+                : null;
             SecurityCode = attendance.AttendanceCode?.Code ?? string.Empty;
+            Source = attendance.SourceValueId.HasValue
+                ? DefinedValueCache.Get( attendance.SourceValueId.Value )
+                : null;
             StartDateTime = attendance.StartDateTime;
         }
     }

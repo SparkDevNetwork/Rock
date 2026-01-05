@@ -12,7 +12,7 @@
 
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-list-ul"></i> Attribute List</h1>
+                    <h1 class="panel-title"><i class="ti ti-list"></i> Attribute List</h1>
                     <div class="form-inline panel-labels">
                         <Rock:EntityTypePicker ID="ddlEntityType" runat="server" Label="Entity Type" IncludeGlobalOption="true" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged"  />
                     </div>

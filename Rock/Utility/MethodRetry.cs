@@ -151,13 +151,13 @@ namespace Rock.Utility
             while ( numberOfAttempts < MaximumNumberOfTries )
             {
                 var response = await methodToRetry().ConfigureAwait( false );
-                numberOfAttempts++;
 
                 if ( isValid( response ) || numberOfAttempts >= MaximumNumberOfTries )
                 {
                     return response;
                 }
 
+                numberOfAttempts++;
                 var waitFor = this.GetNextWaitInterval( numberOfAttempts );
                 await Task.Delay( waitFor ).ConfigureAwait( false );
             }

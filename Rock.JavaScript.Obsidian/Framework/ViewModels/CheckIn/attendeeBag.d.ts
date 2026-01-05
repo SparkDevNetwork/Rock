@@ -23,6 +23,7 @@
 
 import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
 import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
+import { ScheduleOpportunityBag } from "@Obsidian/ViewModels/CheckIn/scheduleOpportunityBag";
 
 /** Details about a single attendee being considered for check-in. */
 export type AttendeeBag = {
@@ -43,6 +44,9 @@ export type AttendeeBag = {
 
     /** Gets or sets the person represented by this item. */
     person?: PersonBag | null;
+
+    /** Gets all possible schedules that are available to this attendee. */
+    possibleSchedules?: ScheduleOpportunityBag[] | null;
 
     /** Gets or sets the selected opportunities for this attendee. */
     selectedOpportunities?: OpportunitySelectionBag[] | null;

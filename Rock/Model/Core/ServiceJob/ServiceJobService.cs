@@ -31,6 +31,7 @@ using CronExpressionDescriptor;
 using Rock.Attribute;
 using System.Collections.Generic;
 using Rock.ViewModels.Utility;
+using Rock.ViewModels.Blocks.Core.ServiceJobDetail;
 
 namespace Rock.Model
 {
@@ -329,7 +330,7 @@ namespace Rock.Model
         /// <summary>
         /// Get the job types
         /// </summary>
-        internal static List<ListItemBag> GetJobTypes()
+        internal static List<ServiceJobOptionsBag> GetJobTypeOptions()
         {
 #pragma warning disable CS0618 // Type or member is obsolete
             var jobs = Rock.Reflection.FindTypes( typeof( Quartz.IJob ) ).Values
@@ -349,13 +350,24 @@ namespace Rock.Model
                 }
             }
 
-            var jobTypes = new List<ListItemBag>();
+            var jobTypeOptions = new List<ServiceJobOptionsBag>();
             foreach ( var job in jobsList.OrderBy( a => a.FullName ) )
             {
-                jobTypes.Add( new ListItemBag { Text = GetJobTypeFriendlyName( job.FullName ), Value = job.FullName } );
+                var friendlyName = GetJobTypeFriendlyName( job.FullName );
+                var description = Rock.Reflection.GetDescription( job ) ?? string.Empty;
+                jobTypeOptions.Add( new ServiceJobOptionsBag
+                {
+                    JobType = new ListItemBag
+                    {
+                        Text = friendlyName,
+                        Value = job.FullName
+                    },
+                    DefaultName = friendlyName,
+                    DefaultDescription = description
+                } );
             }
 
-            return jobTypes;
+            return jobTypeOptions;
         }
 
         /// <summary>

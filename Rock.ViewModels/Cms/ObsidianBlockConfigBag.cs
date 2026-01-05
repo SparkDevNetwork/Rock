@@ -100,5 +100,11 @@ namespace Rock.ViewModels.Cms
         /// </summary>
         /// <value>The reload mode.</value>
         public BlockReloadMode ReloadMode { get; set; }
+
+        /// <summary>
+        /// The role this block plays on the page. This is used to show and
+        /// hide certain blocks in response to user actions.
+        /// </summary>
+        public BlockRole Role { get; set; }
     }
 }

@@ -368,6 +368,8 @@ namespace Rock.CheckIn
                 return;
             }
 
+            RockPage.AddCSSLink( "~/Styles/styles-v2/icons/tabler-icon.css", true );
+
             // Tell the browsers to not cache any pages that have a block that inherits from CheckinBlock. This will help prevent browser using stale copy of checkin pages which could cause labels to get reprinted, and other expected things.
             Page.Response.Cache.SetCacheability( System.Web.HttpCacheability.NoCache );
             Page.Response.Cache.SetExpires( DateTime.UtcNow.AddHours( -1 ) );

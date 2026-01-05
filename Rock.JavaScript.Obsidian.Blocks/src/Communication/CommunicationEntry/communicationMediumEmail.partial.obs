@@ -70,6 +70,7 @@
                     <DropDownList v-if="config.mode === Mode.Full"
                                   v-model="templateGuidOrEmptyString"
                                   :disabled="disabled"
+                                  :enhanceForLongLists="true"
                                   :items="mediumOptions.templates ?? undefined"
                                   label="Template" />
                 </div>

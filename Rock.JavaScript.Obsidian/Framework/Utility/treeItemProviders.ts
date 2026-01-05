@@ -183,10 +183,11 @@ export class LocationTreeItemProvider implements ITreeItemProvider {
      *
      * @returns A collection of TreeItem objects as an asynchronous operation.
      */
-    private async getItems(parentGuid?: Guid | null): Promise<TreeItemBag[]> {
+    private async getItems(parentGuid?: Guid | null, expandToValues?: string[]): Promise<TreeItemBag[]> {
         const options: LocationItemPickerGetActiveChildrenOptionsBag = {
             guid: toGuidOrNull(parentGuid) ?? emptyGuid,
             rootLocationGuid: emptyGuid,
+            expandToValues: expandToValues,
             securityGrantToken: this.securityGrantToken
         };
         const url = "/api/v2/Controls/LocationItemPickerGetActiveChildren";
@@ -204,8 +205,8 @@ export class LocationTreeItemProvider implements ITreeItemProvider {
     /**
      * @inheritdoc
      */
-    async getRootItems(): Promise<TreeItemBag[]> {
-        return await this.getItems(null);
+    async getRootItems(expandToValues: string[]): Promise<TreeItemBag[]> {
+        return await this.getItems(null, expandToValues);
     }
 
     /**

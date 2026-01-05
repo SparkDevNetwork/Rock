@@ -8,7 +8,7 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-file-alt"></i>
+                    <i class="ti ti-file"></i>
                     <asp:Literal ID="lBlockTitle" runat="server" />
                 </h1>
             </div>

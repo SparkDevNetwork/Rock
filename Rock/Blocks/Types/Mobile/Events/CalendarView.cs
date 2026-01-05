@@ -40,7 +40,7 @@ namespace Rock.Blocks.Types.Mobile.Events
     [DisplayName( "Calendar View" )]
     [Category( "Mobile > Events" )]
     [Description( "Views events from a calendar." )]
-    [IconCssClass( "fa fa-calendar-alt" )]
+    [IconCssClass( "ti ti-calendar-month" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

@@ -7,7 +7,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title pull-left">
-                    <i class="fa fa-check-square-o"></i>
+                    <i class="ti ti-square-check"></i>
                     Check-in Areas
                 </h1>
                 <Rock:ButtonDropDownList ID="bddlCampus" runat="server" FormGroupCssClass="panel-options pull-right dropdown-right" Title="All Campuses" SelectionStyle="Checkmark" OnSelectionChanged="bddlCampus_SelectionChanged" DataTextField="Name" DataValueField="Id" />

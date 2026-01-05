@@ -52,7 +52,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-credit-card"></i>
+                    <i class="ti ti-credit-card"></i>
                     Gateway Migration Utility
                 </h1>
             </div>

@@ -141,6 +141,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the entity.
         /// </value>
+        [DataMember]
         public virtual EntityType EntityType { get; set; }
 
         #endregion Navigation Properties

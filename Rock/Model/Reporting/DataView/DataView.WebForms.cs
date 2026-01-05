@@ -21,6 +21,9 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Web.UI.WebControls;
 using EF6.TagWith;
+
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Data;
 using Rock.Reporting;
 using Rock.Web.Cache;
@@ -74,7 +77,7 @@ namespace Rock.Model
             var databaseTimeoutSeconds = dataViewGetQueryArgs.DatabaseTimeoutSeconds;
             if ( databaseTimeoutSeconds.HasValue )
             {
-                dbContext.Database.CommandTimeout = databaseTimeoutSeconds.Value;
+                dbContext.Database.SetCommandTimeout( databaseTimeoutSeconds.Value );
             }
 
             var dataViewFilterOverrides = dataViewGetQueryArgs.DataViewFilterOverrides;

@@ -67,15 +67,24 @@
 
             <Loading :isLoading="isRegistering">
                 <div v-if="anyEligibleRegistrants" class="actions">
-                    <RockButton type="submit" :btnType="BtnType.Primary" :disabled="isRegistering">{{ submitButtonText }}</RockButton>
+                    <div class="captcha-container">
+                        <Captcha v-if="!config.disableCaptchaSupport" ref="captchaElement" validationTitle="Captcha" />
+                    </div>
+                    <RockButton type="submit" :btnType="BtnType.Primary" :disabled="isRegistering || !isCaptchaComplete">{{ submitButtonText }}</RockButton>
                 </div>
             </Loading>
         </RockForm>
     </div>
 </template>
 
+<style scoped>
+.captcha-container {
+    margin-bottom: var(--spacing-small);
+}
+</style>
+
 <script setup lang="ts">
-    import { computed, provide, ref } from "vue";
+    import { computed, onMounted, provide, ref } from "vue";
     import { MemberAttributes, MemberOpportunityAttributes } from "./types.partial";
     import RegisterAnonymous from "./SignUpRegister/registerAnonymous.partial.obs";
     import RegisterFamily from "./SignUpRegister/registerFamily.partial.obs";
@@ -84,6 +93,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import Captcha from "@Obsidian/Controls/captcha.obs";
     import { RegisterMode } from "@Obsidian/Enums/Blocks/Engagement/SignUp/registerMode";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
@@ -95,6 +105,7 @@
     import { SignUpRegistrantBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegistrantBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
 
     const config = useConfigurationValues<SignUpRegisterInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -119,6 +130,10 @@
 
     // We'll set this value on initial load + whenever a registration attempt is succesful.
     const submitButtonText = ref(getSubmitButtonText(config.registrants));
+
+    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
+    const captchaToken = ref<string | undefined>();
+    const isCaptchaComplete = ref(false);
 
     // #endregion
 
@@ -157,6 +172,17 @@
 
     // #region Functions
 
+    async function waitForCaptcha(): Promise<void> {
+        if (config.disableCaptchaSupport || !captchaElement.value) {
+            isCaptchaComplete.value = true;
+            return;
+        }
+
+        const token = await captchaElement.value.getToken();
+        isCaptchaComplete.value = !!token;
+        captchaToken.value = token;
+    }
+
     /**
      * Gets the text to use for the submit button:
      * "Register" if there are not any registrants who were already registered.
@@ -190,7 +216,17 @@
             registrants: registrants.value
         };
 
-        const result: HttpResult<SignUpRegisterResponseBag> = await invokeBlockAction("Register", { bag });
+        const actionContext: BlockActionContextBag = {};
+        if (!config.disableCaptchaSupport && captchaElement.value) {
+            actionContext.captcha = captchaToken.value;
+        }
+
+        const result: HttpResult<SignUpRegisterResponseBag> = await invokeBlockAction("Register", { bag }, actionContext);
+
+        if (!config.disableCaptchaSupport && captchaElement.value) {
+            captchaElement.value.refreshToken();
+        }
+
         isRegistering.value = false;
 
         if (!result.isSuccess) {
@@ -208,6 +244,14 @@
     }
 
     // #endregion
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        waitForCaptcha();
+    });
+
+    // #endregion Lifecycle Hooks
 
     provide(MemberAttributes, memberAttributes);
     provide(MemberOpportunityAttributes, memberOpportunityAttributes);

@@ -98,7 +98,7 @@
 
                     // Display a wait indicator to show that the search is now running.
                     if ($('.js-searching-notification').length == 0) {
-                        $searchResults.prepend('<i class="fa fa-refresh fa-spin margin-l-md js-searching-notification" style="display: none; opacity: .4;"></i>');
+                        $searchResults.prepend('<i class="ti ti-refresh ti-spin margin-l-md js-searching-notification" style="display: none; opacity: .4;"></i>');
                     }
                     $('.js-searching-notification').fadeIn(800);
 
@@ -169,7 +169,7 @@
                     var $div = $('<div/>').attr('class', 'radio'),
 
                         $label = $('<label/>')
-                            .html('<span class="label-text">' + item.Name + inactiveWarning + quickSummaryInfo + '</span><i class="fa fa-refresh fa-spin margin-l-md loading-notification" style="display: none; opacity: .4;"></i>')
+                            .html('<span class="label-text">' + item.Name + inactiveWarning + quickSummaryInfo + '</span><i class="ti ti-refresh ti-spin margin-l-md loading-notification" style="display: none; opacity: .4;"></i>')
                             .prependTo($div),
 
                         $radio = $('<input type="radio" name="person-id" />')

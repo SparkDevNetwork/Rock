@@ -32,13 +32,13 @@
                         Add Family
                     </asp:LinkButton>
 
-                    <asp:LinkButton ID="btnFilter" runat="server" CssClass="btn btn-xs btn-square btn-default" OnClick="btnFilter_Click"><i class="fa fa-gear" title="Filter Accounts"></i></asp:LinkButton>
+                    <asp:LinkButton ID="btnFilter" runat="server" CssClass="btn btn-xs btn-square btn-default" OnClick="btnFilter_Click"><i class="ti ti-settings" title="Filter Accounts"></i></asp:LinkButton>
                 </div>
                 <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
             </div>
 
             <div class="panel-body styled-scroll">
-                <Rock:NotificationBox ID="nbNoUnmatchedTransactionsRemaining" runat="server" NotificationBoxType="Success" Text="<i class='fa fa-check-circle'></i> There are no more unmatched transactions in this batch. Click “Done” to change the batch status from 'Pending' to 'Open' and return to batch details to close this batch." />
+                <Rock:NotificationBox ID="nbNoUnmatchedTransactionsRemaining" runat="server" NotificationBoxType="Success" Text="<i class='ti ti-circle-check'></i> There are no more unmatched transactions in this batch. Click “Done” to change the batch status from 'Pending' to 'Open' and return to batch details to close this batch." />
 
                 <div class="actions">
                     <asp:LinkButton ID="lbFinish" runat="server" CssClass="btn btn-default" OnClick="lbFinish_Click">Done</asp:LinkButton>
@@ -68,7 +68,7 @@
                                             style="position: relative; top: -58px; left: 10px"></span>
 
                                         <div>
-                                            <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" FormGroupCssClass="pull-left" Help="Select a new person to match to the bank account." IncludeBusinesses="true" OnSelectPerson="ppSelectNew_SelectPerson" ExpandSearchOptions="true" />
+                                            <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" Help="Select a new person to match to the bank account." IncludeBusinesses="true" OnSelectPerson="ppSelectNew_SelectPerson" ExpandSearchOptions="true" />
                                             <Rock:RockControlWrapper ID="rcwEnvelope" runat="server" Label="Envelope #" Help="Select a person based on their assigned envelope number">
                                                 <Rock:RockTextBox ID="tbEnvelopeNumber" runat="server" CssClass="input-width-sm pull-left" />
                                                 <asp:LinkButton ID="btnFindByEnvelopeNumber" runat="server" CssClass="btn btn-default margin-l-sm" Text="Find" OnClick="btnFindByEnvelopeNumber_Click" />
@@ -173,7 +173,7 @@
                         <asp:LinkButton ID="btnPrevious" runat="server" data-shortcut-key="arrowleft" Text="Previous" ToolTip="Alt+🡄" CssClass="btn btn-default" OnClick="btnPrevious_Click">Previous</asp:LinkButton>
                         <div class="pull-right">
                             <asp:LinkButton ID="btnCancel" runat="server" CssClass="btn btn-default" Visible="false" OnClick="btnCancel_Click">Cancel</asp:LinkButton>
-                            <asp:LinkButton ID="btnNext" runat="server" data-shortcut-key="arrowright" Text="Next" ToolTip="Alt+🡆" CssClass="btn btn-primary" OnClick="btnNext_Click">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                            <asp:LinkButton ID="btnNext" runat="server" data-shortcut-key="arrowright" Text="Next" ToolTip="Alt+🡆" CssClass="btn btn-primary" OnClick="btnNext_Click">Next <i class="ti ti-chevron-right"></i></asp:LinkButton>
                         </div>
                     </div>
 

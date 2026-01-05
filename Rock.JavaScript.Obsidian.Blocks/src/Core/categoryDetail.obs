@@ -58,7 +58,7 @@
 
                             <template #gridFooterAppend>
                                 <div class="add-button pull-right">
-                                    <i class="fa fa-plus-circle" @click.prevent="onNewChildCategoryClick"></i>
+                                    <i class="ti ti-circle-plus" @click.prevent="onNewChildCategoryClick"></i>
                                 </div>
                             </template>
                         </Grid>
@@ -74,7 +74,7 @@
 </template>
 
 <style scoped>
-.add-button > i.fa-plus-circle {
+.add-button > i.ti-circle-plus {
     color: var(--color-interface-soft);
     padding: 8px;
     cursor: pointer;

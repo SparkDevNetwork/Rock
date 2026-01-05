@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -119,7 +119,7 @@ namespace Rock.Communication.SmsActions
         /// <value>
         /// The icon CSS class used to identify this component type.
         /// </value>
-        public override string IconCssClass => "fa fa-gears";
+        public override string IconCssClass => "ti ti-settings-cog";
 
         /// <summary>
         /// Gets the description of this SMS Action.

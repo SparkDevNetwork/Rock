@@ -9,7 +9,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-truck"></i>
+                    <i class="ti ti-truck"></i>
                     Step Bulk Entry
                 </h1>
             </div>

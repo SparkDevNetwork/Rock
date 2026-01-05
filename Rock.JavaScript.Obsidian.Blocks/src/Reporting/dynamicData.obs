@@ -65,8 +65,8 @@
     import { Guid } from "@Obsidian/Types";
     import { ColumnFilter, FilterValueFunction } from "@Obsidian/Types/Controls/grid";
     import { Message, QueryStringChangedData } from "@Obsidian/Types/Utility/browserBus";
-    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
-    import { PageMessages, useBrowserBus } from "@Obsidian/Utility/browserBus";
+    import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { PageMessages } from "@Obsidian/Utility/browserBus";
     import { CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
     import { getValueFromPath } from "@Obsidian/Utility/objectUtils";
     import { addQuickReturn } from "@Obsidian/Utility/page";
@@ -82,7 +82,7 @@
     const config = useConfigurationValues<DynamicDataInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
     const reloadBlock = useReloadBlock();
-    const browserBus = useBrowserBus();
+    const browserBus = useBlockBrowserBus();
 
     const columnComponents = {
         "boolean": BooleanColumn,

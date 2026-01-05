@@ -17,7 +17,7 @@
             <div class="grading-configuration-section d-flex flex-column">
                 <div class="d-flex flex-row flex-fill mb-2">
                     <SectionHeader title="Grading Configuration" description="" :isSeparatorHidden="true" />
-                    <a href="#" @click.prevent="showGradingHelpText = !showGradingHelpText" class="clickable-help"><i class="fa fa-info-circle text-info"></i></a>
+                    <a href="#" @click.prevent="showGradingHelpText = !showGradingHelpText" class="clickable-help"><i class="ti ti-info-circle text-info"></i></a>
                 </div>
                 <TransitionVerticalCollapse>
                     <div v-if="showGradingHelpText" class="row">
@@ -62,17 +62,17 @@
                                 :disabled="disabled"
                                 class="btn btn-default btn-xs align-items-center add-assessment-item-button"
                                 @click.prevent="addAssessmentItem(0)">
-                            <i class="fa fa-plus" aria-hidden="true"></i> Add Item
+                            <i class="ti ti-plus" aria-hidden="true"></i> Add Item
                         </button>
                     </div>
                 </div>
                 <div class="assessment-items-container" v-dragSource="dragOptions" v-dragTarget="dragOptions">
                     <div class="well well-sm assessment-item-container" v-for="(item, index) in items" :key="item.uniqueId">
                         <div class="assessment-item assessment-item-reorder-section">
-                            <i class="fa fa-bars reorder-handle" :style="reorderIconStyle"></i>
+                            <i class="ti ti-menu-2 reorder-handle" :style="reorderIconStyle"></i>
 
                             <button aria-label="Remove this item" :disabled="disabled" class="btn btn-default btn-square remove-item-button" @click.prevent="items.splice(index, 1)">
-                                <i class="fa fa-times" aria-hidden="true"></i>
+                                <i class="ti ti-x" aria-hidden="true"></i>
                             </button>
                         </div>
                         <div class="assessment-item assessment-item-type-section">
@@ -100,7 +100,7 @@
                             :disabled="disabled"
                             class="btn btn-default btn-xs align-items-center add-assessment-item-button"
                             @click.prevent="addAssessmentItem(items.length - 1)">
-                        <i class="fa fa-plus" aria-hidden="true"></i> Add Item
+                        <i class="ti ti-plus" aria-hidden="true"></i> Add Item
                     </button>
                 </div>
             </div>

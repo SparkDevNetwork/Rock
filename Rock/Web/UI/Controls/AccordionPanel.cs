@@ -340,7 +340,7 @@ namespace Rock.Web.UI.Controls
                         writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
                         writer.RenderBeginTag( HtmlTextWriterTag.A );
                         {
-                            writer.Write( $"<i class='fa { ( Collapsed ? "fa-chevron-down" : "fa-chevron-up" ) }'></i>" );
+                            writer.Write( $"<i class='ti { ( Collapsed ? "ti-chevron-down" : "ti-chevron-up" ) }'></i>" );
                         }
                         writer.RenderEndTag();
                     }
@@ -401,8 +401,8 @@ namespace Rock.Web.UI.Controls
         var $icon = $panel.find('> .panel-heading .js-accordion-panel-chevron > i');
 
         $body.slideToggle(400);
-        $icon.toggleClass('fa-chevron-down').toggleClass('fa-chevron-up');
-        $('#{0}').val($icon.hasClass('fa-chevron-down'));
+        $icon.toggleClass('ti-chevron-down').toggleClass('ti-chevron-up');
+        $('#{0}').val($icon.hasClass('ti-chevron-down'));
     }});
 }})();
 ",

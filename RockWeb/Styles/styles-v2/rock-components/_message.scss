@@ -1,0 +1,65 @@
+.conversation .message {
+    box-sizing: border-box;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    -webkit-align-content: flex-start;
+    align-content: flex-start;
+    -webkit-align-items: flex-start;
+    align-items: flex-start;
+    -webkit-box-orient: vertical;
+    -webkit-box-align: start;
+}
+
+.conversation .message .bubble {
+    display: inline-block;
+    max-width: 75%;
+    padding: 10px 14px;
+    color: var(--color-interface-stronger);
+    word-break: break-word;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-line;
+    background-color: var(--color-interface-soft);
+    border-radius: 20px;
+}
+
+.conversation .message.outbound .bubble {
+    color: var(--base-interface-softest);
+    background-color: #0084ff;
+}
+
+.conversation .message .message-meta {
+    padding: 4px 14px 8px;
+    font-size: 12px;
+    color: var(--color-interface-medium);
+}
+
+.conversation .message .message-meta .date {
+    text-transform: capitalize;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.conversation .message .sender-name::after {
+    content: " - ";
+}
+
+.conversation .message.inbound .sender-name {
+    display: none;
+}
+
+.conversation .message .sms-image {
+    width: 200px;
+    min-height: 100px;
+    margin-top: 5px;
+    border-radius: 10px;
+}
+
+.conversation .message.outbound {
+    -webkit-align-content: flex-end;
+    align-content: flex-end;
+    -webkit-align-items: flex-end;
+    align-items: flex-end;
+    -webkit-box-align: end;
+}

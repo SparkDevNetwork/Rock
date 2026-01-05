@@ -20,12 +20,12 @@
 		<ul class="pager">
             {% if PreviousItem -%}
                 <li class="previous">
-                    <a href="{{ PreviousItem.detailPageUrl }}"><i class="fa fa-angle-double-left"></i> Previous</a>
+                    <a href="{{ PreviousItem.detailPageUrl }}"><i class="ti ti-chevrons-left"></i> Previous</a>
                 </li>
             {% endif -%}
             {% if NextItem -%}
                 <li class="next">
-                    <a href="{{ NextItem.detailPageUrl }}">Next <i class="fa fa-angle-double-right"></i> </a>
+                    <a href="{{ NextItem.detailPageUrl }}">Next <i class="ti ti-chevrons-right"></i> </a>
                 </li>
             {% endif -%}
         </ul>

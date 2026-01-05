@@ -391,7 +391,8 @@
     box-shadow: none !important;
     -webkit-bot-shadow: none !important;
 
-    .panel-heading {
+    .panel-heading,
+    .panel-header {
       padding: 8px 16px;
       background-color: fade(@panel-heading-bg, 80%);
       border-top: 1px solid @panel-default-border;
@@ -404,7 +405,9 @@
   }
 
   .panel-drawer + .group-role-members .panel-heading,
-  .group-role-members:first-child .panel-heading {
+  .panel-drawer + .group-role-members .panel-header,
+  .group-role-members:first-child .panel-heading,
+  .group-role-members:first-child .panel-header {
     border-top: 0;
   }
 
@@ -412,7 +415,8 @@
   .btn-overflow {
     color: @text-muted;
 
-    .panel-heading & {
+    .panel-heading &,
+    .panel-header & {
       width: 20px !important;
       text-align: right;
     }

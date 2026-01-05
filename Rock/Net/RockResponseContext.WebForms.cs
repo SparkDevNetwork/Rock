@@ -20,8 +20,10 @@ using System.Text;
 using System.Web;
 using System.Web.UI.HtmlControls;
 
+using Rock.Configuration;
 using Rock.Enums.Net;
 using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace Rock.Net
@@ -92,24 +94,61 @@ namespace Rock.Net
                 Expires = cookie.Expires ?? DateTime.MinValue
             };
 
-            switch ( cookie.SameSite )
+            if ( cookie.Path.IsNullOrWhiteSpace() )
             {
-                case CookieSameSiteMode.None:
-                    webFormsCookie.SameSite = SameSiteMode.None;
-                    break;
+                webFormsCookie.Path = RockApp.Current.ResolveRockUrl( "~" );
+            }
 
-                case CookieSameSiteMode.Lax:
+            if ( cookie.SameSite == CookieSameSiteMode.Unspecified )
+            {
+                var sameSiteCookieSetting = GlobalAttributesCache.Get()
+                    .GetValue( "core_SameSiteCookieSetting" )
+                    .ConvertToEnumOrNull<Rock.Security.Authorization.SameSiteCookieSetting>() ?? Rock.Security.Authorization.SameSiteCookieSetting.Lax;
+
+                if ( sameSiteCookieSetting == Security.Authorization.SameSiteCookieSetting.None )
+                {
+                    webFormsCookie.SameSite = SameSiteMode.None;
+                }
+                else if ( sameSiteCookieSetting == Security.Authorization.SameSiteCookieSetting.Lax )
+                {
                     webFormsCookie.SameSite = SameSiteMode.Lax;
-                    break;
-
-                case CookieSameSiteMode.Strict:
+                }
+                else
+                {
                     webFormsCookie.SameSite = SameSiteMode.Strict;
-                    break;
+                }
+            }
+            else
+            {
+                switch ( cookie.SameSite )
+                {
+                    case CookieSameSiteMode.None:
+                        webFormsCookie.SameSite = SameSiteMode.None;
+                        break;
 
-                case CookieSameSiteMode.Unspecified:
-                default:
-                    webFormsCookie.SameSite = SameSiteMode.None;
-                    break;
+                    case CookieSameSiteMode.Lax:
+                        webFormsCookie.SameSite = SameSiteMode.Lax;
+                        break;
+
+                    case CookieSameSiteMode.Strict:
+                        webFormsCookie.SameSite = SameSiteMode.Strict;
+                        break;
+
+                    case CookieSameSiteMode.Unspecified:
+                    default:
+                        webFormsCookie.SameSite = SameSiteMode.None;
+                        break;
+                }
+            }
+
+            if ( !cookie.Secure )
+            {
+                // If IsSecureConnection is false then check the scheme in case the web server is behind a load balancer.
+                // The server could use unencrypted traffic to the balancer, which would encrypt it before sending to the browser.
+                if ( _page.Request.IsSecureConnection || _page.Request.UrlProxySafe().Scheme == "https" )
+                {
+                    webFormsCookie.Secure = true;
+                }
             }
 
             _page.Response.SetCookie( webFormsCookie );

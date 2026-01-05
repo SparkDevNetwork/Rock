@@ -147,7 +147,7 @@ namespace Rock.Obsidian.UI
                     {
                         if ( htmlValue == "Y" )
                         {
-                            htmlValue = "<i class=\"fa fa-check\"></i>";
+                            htmlValue = "<i class=\"ti ti-check\"></i>";
                         }
                         else
                         {

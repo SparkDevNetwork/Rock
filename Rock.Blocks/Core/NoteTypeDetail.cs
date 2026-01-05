@@ -38,7 +38,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Note Type Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a particular note type." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

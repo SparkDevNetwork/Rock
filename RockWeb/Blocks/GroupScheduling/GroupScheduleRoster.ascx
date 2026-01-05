@@ -40,17 +40,17 @@
             </span>
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-calendar-check-o"></i>
+                    <i class="ti ti-calendar-check"></i>
                     Group Schedule Roster
                 </h1>
 
                 <div class="panel-labels d-print-none">
-                    <asp:Literal ID="lLiveUpdateEnabled" runat="server" Visible="false"><i class='fa fa-check-square-o'></i></asp:Literal>
-                    <asp:Literal ID="lLiveUpdateDisabled" runat="server" Visible="true"><i class='fa fa-square-o'></i></asp:Literal>
+                    <asp:Literal ID="lLiveUpdateEnabled" runat="server" Visible="false"><i class='ti ti-square-check'></i></asp:Literal>
+                    <asp:Literal ID="lLiveUpdateDisabled" runat="server" Visible="true"><i class='ti ti-square'></i></asp:Literal>
                     <span class="js-live-update-label">
                         <asp:Literal ID="lLiveUpdateLabel" runat="server" Text="Live Update" />
                     </span>
-                    <asp:LinkButton ID="btnConfiguration" runat="server" CssClass="btn btn-default btn-square btn-xs" CausesValidation="false" OnClick="btnConfiguration_Click"><i class="fa fa-gear"></i></asp:LinkButton>
+                    <asp:LinkButton ID="btnConfiguration" runat="server" CssClass="btn btn-default btn-square btn-xs" CausesValidation="false" OnClick="btnConfiguration_Click"><i class="ti ti-settings"></i></asp:LinkButton>
                 </div>
             </div>
             <div class="locations js-scheduled-occurrences">

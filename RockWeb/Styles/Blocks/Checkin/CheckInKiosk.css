@@ -1,6 +1,11 @@
 ﻿
 
 /* These are default styles to be moved to the theme or something. */
+
+html body {
+   overflow: hidden;
+}
+
 .check-in-page {
     width: 100vw;
     height: 100vh;
@@ -28,6 +33,10 @@
 .check-in-page .btn-default {
     background-color: var(--color-interface-softer);
     color: var(--color-interface-strong);
+}
+
+.check-in-page .grid-obsidian .btn-default {
+    background-color:  transparent;
 }
 
 .check-in-page  .btn.btn-default.check-in-button {

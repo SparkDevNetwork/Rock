@@ -21,7 +21,7 @@
         class="add pull-right"
         :disabled="disabled"
         @click="onAddChildClicked">
-        <i class="fa fa-user"></i>
+        <i class="ti ti-user"></i>
         <span> Add {{ childLabel }}</span>
     </RockButton>
 </template>

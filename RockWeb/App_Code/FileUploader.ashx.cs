@@ -285,6 +285,7 @@ namespace RockWeb
             var response = new
             {
                 Id = string.Empty,
+                Guid = new Guid(),
                 FileName = Path.Combine( untrustedRelativeFolderPath, scrubbedFileName )
             };
 

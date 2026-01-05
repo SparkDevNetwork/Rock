@@ -37,7 +37,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Asset Storage Provider List" )]
     [Category( "Core" )]
     [Description( "Displays a list of asset storage providers." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

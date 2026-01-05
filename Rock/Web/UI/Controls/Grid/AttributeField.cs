@@ -151,7 +151,7 @@ namespace Rock.Web.UI.Controls
                             var columnIndex = grid.GetColumnIndex( this );
                             row.Cells[columnIndex].AddCssClass( "grid-bool-field" );
                             var boolValue = rawValue.AsBoolean();
-                            return boolValue ? "<i class=\"fa fa-check\"></i>" : string.Empty;
+                            return boolValue ? "<i class=\"ti ti-check\"></i>" : string.Empty;
                         }
 
                         string resultHtml = attrib.FieldType.Field.FormatValueAsHtml( null, attrib.EntityTypeId, dataItem.Id, rawValue, attrib.QualifierValues, condensed );

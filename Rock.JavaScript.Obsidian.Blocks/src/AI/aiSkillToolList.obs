@@ -1,0 +1,223 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid v-if="isBlockVisible"
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridData"
+          keyField="idKey"
+          itemTerm="AI Skill Tool"
+          :entityTypeGuid="EntityType.AiSkillTool"
+          stickyHeader
+          liveUpdates
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined">
+        <SelectColumn />
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    width="30%"
+                    visiblePriority="xs" />
+
+        <TextColumn name="description"
+                    title="Description"
+                    field="description"
+                    :filter="textValueFilter"
+                    width="70%"
+                    visiblePriority="xs" />
+
+        <TextColumn name="toolType"
+                    title="Type"
+                    field="toolType"
+                    :filter="pickExistingValueFilter"
+                    width="160px"
+                    visiblePriority="md">
+            <template #format="{ row }">
+                {{ getToolTypeName(row.toolType) }}
+            </template>
+        </TextColumn>
+
+        <EditColumn :rowDisabled="row => !!row.isCodeType"
+                    @click="onEditItem" />
+
+        <SecurityColumn itemTitle="name" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled"
+                      :rowDisabled="row => !!row.isCodeType"
+                      @click="onDeleteClick" />
+    </Grid>
+
+    <Modal v-model="isEditToolVisible"
+           title="Skill Tool"
+           @save="onSaveTool"
+           saveText="Save">
+        <ToolEditor v-model="editToolValue" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import ToolEditor from "./AISkillToolList/toolEditor.partial.obs";
+    import Grid, { pickExistingValueFilter, TextColumn, textValueFilter, DeleteColumn, SelectColumn, EditColumn, SecurityColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { onConfigurationValuesChanged, setPropertiesBoxValue, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { ToolType, ToolTypeDescription } from "@Obsidian/Enums/AI/Agent/toolType";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { AISkillToolListOptionsBag } from "@Obsidian/ViewModels/Blocks/AI/AISkillToolList/aiSkillToolListOptionsBag";
+    import { reactive, ref } from "vue";
+    import { BlockMessages } from "@Obsidian/Utility/browserBus";
+    import { AISkillToolBag } from "@Obsidian/ViewModels/Blocks/AI/AISkillToolList/aiSkillToolBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const config = useConfigurationValues<ListBlockBox<AISkillToolListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const browserBus = useBlockBrowserBus();
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload tool instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const isBlockVisible = ref(true);
+    const gridData = reactive(config.options?.gridData ?? { rows: [] });
+
+    const isEditToolVisible = ref(false);
+    let editToolKey: string | undefined = undefined;
+    const editToolValue = ref<AISkillToolBag>({} as AISkillToolBag);
+
+    // #endregion
+
+    // #region Functions
+
+    function getToolTypeName(toolType: unknown): string {
+        if (typeof toolType !== "number") {
+            return "";
+        }
+
+        return ToolTypeDescription[toolType] ?? "";
+    }
+
+    async function editTool(key: string): Promise<void> {
+        const result = await invokeBlockAction<ValidPropertiesBox<AISkillToolBag>>("Edit", {
+            key
+        });
+
+        if (result.isSuccess && result.data?.bag) {
+            editToolKey = result.data.bag.idKey ?? undefined;
+            editToolValue.value = result.data.bag;
+            isEditToolVisible.value = true;
+        }
+        else {
+            await alert(result.errorMessage || "Unknown error while trying to load AI skill tool for editing.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the edit button on a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    async function onEditItem(key: string): Promise<void> {
+        await editTool(key);
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete ai skill tool.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the individual.
+     */
+    async function onAddItem(): Promise<void> {
+        editTool("");
+    }
+
+    async function onSaveTool(): Promise<void> {
+        const box: ValidPropertiesBox<AISkillToolBag> = {};
+
+        setPropertiesBoxValue(box, "idKey", editToolKey ?? "");
+        setPropertiesBoxValue(box, "name", editToolValue.value.name);
+        setPropertiesBoxValue(box, "toolType", editToolValue.value.toolType);
+        setPropertiesBoxValue(box, "description", editToolValue.value.description);
+        setPropertiesBoxValue(box, "preamble", editToolValue.value.preamble);
+        setPropertiesBoxValue(box, "instructions", editToolValue.value.instructions);
+        setPropertiesBoxValue(box, "preRenderLava", editToolValue.value.preRenderLava);
+        setPropertiesBoxValue(box, "temperature", editToolValue.value.temperature);
+        setPropertiesBoxValue(box, "maxTokens", editToolValue.value.maxTokens);
+        setPropertiesBoxValue(box, "prompt", editToolValue.value.prompt);
+        setPropertiesBoxValue(box, "promptParameters", editToolValue.value.promptParameters);
+
+        const result = await invokeBlockAction<ValidPropertiesBox<AISkillToolBag>>("Save", {
+            box
+        });
+
+        if (result.isSuccess && result.data?.bag) {
+            const idKey = result.data.bag.idKey;
+            const existingRow = gridData.rows?.find(r => r["idKey"] === idKey);
+
+            if (existingRow) {
+                existingRow.name = result.data.bag.name;
+                existingRow.description = result.data.bag.description;
+                existingRow.toolType = result.data.bag.toolType;
+            }
+            else {
+                gridData.rows?.push({
+                    idKey: idKey,
+                    name: result.data.bag.name,
+                    description: result.data.bag.description,
+                    toolType: result.data.bag.toolType,
+                    isCodeType: result.data.bag.toolType === ToolType.ExecuteCode
+                });
+            }
+
+            isEditToolVisible.value = false;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to save skill tool.");
+        }
+    }
+
+    /**
+     * Called when the Skill Detail block begins editing.
+     */
+    function onBeginEdit(): void {
+        isBlockVisible.value = false;
+    }
+
+    /**
+     * Called when the Skill Detail block ends editing.
+     */
+    function onEndEdit(): void {
+        isBlockVisible.value = true;
+    }
+
+    // #endregion
+
+    browserBus.subscribeToBlockType(BlockMessages.BeginEdit, "b8b8cee9-c058-45d3-a1c7-647cad96fd1e", onBeginEdit);
+    browserBus.subscribeToBlockType(BlockMessages.EndEdit, "b8b8cee9-c058-45d3-a1c7-647cad96fd1e", onEndEdit);
+</script>

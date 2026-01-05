@@ -36,7 +36,7 @@ namespace Rock.Blocks.Finance
     [DisplayName( "Business List" )]
     [Category( "Finance" )]
     [Description( "Displays a list of businesses." )]
-    [IconCssClass( "fa fa-building" )]
+    [IconCssClass( "ti ti-building" )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the business details.",

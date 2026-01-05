@@ -34,7 +34,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Notes" )]
     [Category( "Core" )]
     [Description( "Context aware block for adding notes to an entity." )]
-    [IconCssClass( "fa fa-note" )]
+    [IconCssClass( "ti ti-note" )]
     [SupportedSiteTypes( SiteType.Web )]
     [Rock.Web.UI.ContextAware]
 
@@ -132,6 +132,7 @@ namespace Rock.Blocks.Core
 
     #endregion
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "33566B2B-D74F-4148-B962-1897D418C6DF" )]
     [Rock.SystemGuid.BlockTypeGuid( "D87B84DC-7AD9-42A2-B18D-88B7E71DADA8" )]
     public class Notes : RockBlockType

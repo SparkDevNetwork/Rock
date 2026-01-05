@@ -162,7 +162,7 @@ SELECT
     {% endif %}
 
         <li class=`margin-b-sm`>
-            <i class='fa-li {{ item.NoteTypeIcon }}' data-toggle=`tooltip` data-placement=`top` title=`{{ item.NoteType }}`></i>
+            <i class='ti-list {{ item.NoteTypeIcon }}' data-toggle=`tooltip` data-placement=`top` title=`{{ item.NoteType }}`></i>
             {{ item.ReleaseNote }}
 
             {% if item.IssueFixes and item.IssueFixes != `` %}

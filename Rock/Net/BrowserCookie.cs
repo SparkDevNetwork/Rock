@@ -25,6 +25,8 @@ namespace Rock.Net
     /// </summary>
     public sealed class BrowserCookie
     {
+        #region Properties
+
         /// <summary>
         /// Gets or sets the name of the cookie.
         /// </summary>
@@ -104,5 +106,36 @@ namespace Rock.Net
         /// The value for the SameSite attribute of the cookie.
         /// </value>
         public CookieSameSiteMode SameSite { get; set; } = CookieSameSiteMode.Unspecified;
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BrowserCookie"/> class.
+        /// </summary>
+        public BrowserCookie()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BrowserCookie"/> class by
+        /// copying the properties from another <see cref="BrowserCookie"/> instance.
+        /// </summary>
+        /// <param name="other">The <see cref="BrowserCookie"/> instance to copy. Cannot be <see langword="null"/>.</param>
+        public BrowserCookie( BrowserCookie other )
+        {
+            Name = other.Name;
+            Value = other.Value;
+            Domain = other.Domain;
+            Path = other.Path;
+            Secure = other.Secure;
+            HttpOnly = other.HttpOnly;
+            IsEssential = other.IsEssential;
+            Expires = other.Expires;
+            SameSite = other.SameSite;
+        }
+
+        #endregion
     }
 }

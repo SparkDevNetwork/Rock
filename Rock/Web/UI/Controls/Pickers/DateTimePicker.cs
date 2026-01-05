@@ -571,7 +571,7 @@ namespace Rock.Web.UI.Controls
                 _date.RenderControl( writer );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group-addon" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                writer.Write( "<i class='fa fa-calendar'></i>" );
+                writer.Write( "<i class='ti ti-calendar'></i>" );
                 writer.RenderEndTag();
                 writer.RenderEndTag();
 
@@ -580,7 +580,7 @@ namespace Rock.Web.UI.Controls
                 _time.RenderControl( writer );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group-addon" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                writer.Write( "<span class='add-on'><i class='fa fa-clock-o'></i></span>" );
+                writer.Write( "<span class='add-on'><i class='ti ti-clock'></i></span>" );
                 writer.RenderEndTag();
                 writer.RenderEndTag();
 

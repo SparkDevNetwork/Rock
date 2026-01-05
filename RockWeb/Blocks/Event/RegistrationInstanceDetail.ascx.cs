@@ -57,7 +57,17 @@ namespace RockWeb.Blocks.Event
         IsRequired = false,
         Order = 1 )]
 
+    [LinkedPage(
+        "Group Placement Page",
+        Key = AttributeKey.GroupPlacementPage,
+        DefaultValue = Rock.SystemGuid.Page.GROUP_PLACEMENT + "," + Rock.SystemGuid.PageRoute.GROUP_PLACEMENT,
+        Description = "The page for managing group placements.",
+        IsRequired = false,
+        Order = 2 )]
+
     #endregion Block Attributes
+
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.BlockTypeGuid( "22B67EDB-6D13-4D29-B722-DF45367AA3CB" )]
     public partial class RegistrationInstanceDetail : RegistrationInstanceBlock
     {
@@ -74,6 +84,8 @@ namespace RockWeb.Blocks.Event
             public const string DefaultAccount = "DefaultAccount";
 
             public const string PaymentReminderPage = "PaymentReminderPage";
+
+            public const string GroupPlacementPage = "GroupPlacementPage";
         }
 
         #endregion Attribute Keys
@@ -756,6 +768,38 @@ namespace RockWeb.Blocks.Event
 
             bool hasPayments = registrationInstance.Registrations.Any( r => r.PaymentPlanFinancialScheduledTransaction != null && r.PaymentPlanFinancialScheduledTransaction.IsActive );
             hfHasPayments.Value = hasPayments.ToString();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var placementService = new RegistrationTemplatePlacementService( rockContext );
+
+                var rawPlacements = placementService
+                    .Queryable()
+                    .Where( p => p.RegistrationTemplateId == registrationInstance.RegistrationTemplateId )
+                    .Select( p => new { p.Id, p.Name } )
+                    .ToList();
+
+                var templatePlacements = rawPlacements
+                    .Select( p => new
+                    {
+                        Name = p.Name,
+                        Url = LinkedPageUrl( AttributeKey.GroupPlacementPage, new Dictionary<string, string>
+                        {
+                { PageParameterKey.RegistrationInstanceId, registrationInstance.Id.ToString() },
+                { "RegistrationTemplatePlacementId", p.Id.ToString() },
+                { "ReturnUrl", GetCurrentPageUrl() }
+                        } )
+                    } )
+                    .Where( p => !string.IsNullOrWhiteSpace( p.Url ) )
+                    .ToList();
+
+                if ( templatePlacements.Count == 0 )
+                {
+                    lGroupPlacements.Visible = false;
+                }
+                rptGroupPlacements.DataSource = templatePlacements;
+                rptGroupPlacements.DataBind();
+            }
         }
 
         /// <summary>

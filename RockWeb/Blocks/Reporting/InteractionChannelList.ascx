@@ -7,7 +7,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-random"></i>
+                    <i class="ti ti-arrows-shuffle"></i>
                     Interaction Channels
                 </h1>
             </div>

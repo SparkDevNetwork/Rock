@@ -13,8 +13,8 @@
                                 <span class="card-title"><%# FormatAsHtmlTitle(Eval("Name").ToString()) %></span>
 
                                 <div class="panel-labels">
-                                    <a id="lReorderIcon" runat="server" class="btn btn-link btn-xs js-stop-immediate-propagation panel-widget-reorder"><i class="fa fa-bars"></i></a>
-                                    <asp:HyperLink ID="hlEditGroup" runat="server" AccessKey="O" ToolTip="Alt+O" CssClass="btn btn-default btn-xs btn-square"><i class="fa fa-pencil"></i></asp:HyperLink>
+                                    <a id="lReorderIcon" runat="server" class="btn btn-link btn-xs js-stop-immediate-propagation panel-widget-reorder"><i class="ti ti-menu-2"></i></a>
+                                    <asp:HyperLink ID="hlEditGroup" runat="server" AccessKey="O" ToolTip="Alt+O" CssClass="btn btn-default btn-xs btn-square"><i class="ti ti-pencil"></i></asp:HyperLink>
                                 </div>
                             </div>
 
@@ -45,10 +45,10 @@
 
                                 <div class="group-hover-item group-hover-show ml-auto">
                                     <asp:LinkButton ID="lbVerify" runat="server" CssClass="btn btn-xs btn-square btn-default" CommandName="verify" ToolTip="Verify Address">
-                                        <i class="fa fa-globe"></i>
+                                        <i class="ti ti-globe"></i>
                                     </asp:LinkButton>
                                     <asp:LinkButton ID="lbLocationSettings" runat="server" CssClass="btn btn-xs btn-square btn-default" CommandName="settings" ToolTip="Configure Location">
-                                        <i class="fa fa-gear"></i>
+                                        <i class="ti ti-settings"></i>
                                     </asp:LinkButton>
                                 </div>
                                 </div><%--This is the ending of the div that begins in litAddress--%>
@@ -107,10 +107,10 @@
                         var $moreAttributes = $pnl.find('.js-more-group-attributes').first();
                         if ($moreAttributes.is(':visible')) {
                             $moreAttributes.slideUp();
-                            $(this).html('<i class="fa fa-chevron-down"></i>');
+                            $(this).html('<i class="ti ti-chevron-down"></i>');
                         } else {
                             $moreAttributes.slideDown();
-                            $(this).html('<i class="fa fa-chevron-up"></i>');
+                            $(this).html('<i class="ti ti-chevron-up"></i>');
                         }
                     });
                 }

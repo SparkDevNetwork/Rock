@@ -1,0 +1,201 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DropDownList v-model="ruleType"
+                  label="Filter"
+                  :items="ruleTypeItems"
+                  rules="required" />
+
+    <GroupTypePicker v-if="isChannelTypeRule"
+                     v-model="groupTypes"
+                     label="Message Sent Within Channel Types"
+                     :groupTypes="groupTypeGuids"
+                     :displayStyle="PickerDisplayStyle.List"
+                     :columnCount="2"
+                     isSortedByName
+                     multiple
+                     rules="required" />
+
+    <GroupPicker v-else-if="isChannelRule"
+                 v-model="groups"
+                 label="Message Sent Within Channels"
+                 :includedGroupTypeGuids="groupTypeGuids"
+                 multiple
+                 rules="required" />
+
+    <TextBox v-else-if="isMessageContainsRule"
+             v-model="messageContains"
+             label="Message Contains Case-Insensitive Value"
+             rules="required" />
+
+    <TextBox v-else
+             v-model="messagePattern"
+             label="Message Matches Regex Pattern"
+             rules="required">
+
+        <template #inputGroupPrepend>
+            <div class="input-group-addon">
+                @"
+            </div>
+        </template>
+
+        <template #inputGroupAppend>
+            <div class="input-group-addon">
+                "
+            </div>
+        </template>
+
+    </TextBox>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import { ChatMessageCriteriaRuleType, ChatMessageCriteriaRuleTypeDescription } from "@Obsidian/Enums/Core/Automation/Triggers/chatMessageCriteriaRuleType";
+    import { Guid } from "@Obsidian/Types";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ChatMessageCriteriaRuleBag } from "@Obsidian/ViewModels/Core/Automation/Triggers/chatMessageCriteriaRuleBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const ruleTypeItems = enumToListItemBag(ChatMessageCriteriaRuleTypeDescription);
+
+    const props = defineProps({
+        /**F
+         * The single rule to be edited by this component.
+         */
+        modelValue: {
+            type: Object as PropType<ChatMessageCriteriaRuleBag | null>,
+            required: false
+        },
+
+        /**
+         * The list of group type Guids that can be used in the rule.
+         */
+        groupTypeGuids: {
+            type: Array as PropType<Guid[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ChatMessageCriteriaRuleBag): void
+    }>();
+
+    // #region Values
+
+    const ruleType = ref(ChatMessageCriteriaRuleType.ChannelType.toString());
+
+    const groupTypes = ref<ListItemBag[]>([]);
+    const groups = ref<ListItemBag[]>([]);
+    const messageContains = ref("");
+    const messagePattern = ref("");
+
+    // #endregion Values
+
+    // #region Computed
+
+    const isChannelTypeRule = computed((): boolean => {
+        return ruleType.value === ChatMessageCriteriaRuleType.ChannelType.toString();
+    });
+
+    const isChannelRule = computed((): boolean => {
+        return ruleType.value === ChatMessageCriteriaRuleType.Channel.toString();
+    });
+
+    const isMessageContainsRule = computed((): boolean => {
+        return ruleType.value === ChatMessageCriteriaRuleType.MessageContains.toString();
+    });
+
+    // #endregion Computed
+
+    // #region Functions
+
+    /**
+     * Sets the values of the rule based on the model value.
+     */
+    function setValues(): void {
+        let groupTypesValue: ListItemBag[] = [];
+        let groupsValue: ListItemBag[] = [];
+        let messageContainsValue = "";
+        let messagePatternValue = "";
+
+        const ruleTypeValue = props.modelValue?.ruleType ?? ChatMessageCriteriaRuleType.ChannelType;
+
+        switch (ruleTypeValue) {
+            case ChatMessageCriteriaRuleType.ChannelType:
+                groupTypesValue = safeParseJson<ListItemBag[]>(props.modelValue?.criteriaValue) ?? [];
+                break;
+            case ChatMessageCriteriaRuleType.Channel:
+                groupsValue = safeParseJson<ListItemBag[]>(props.modelValue?.criteriaValue) ?? [];
+                break;
+            case ChatMessageCriteriaRuleType.MessageContains:
+                messageContainsValue = props.modelValue?.criteriaValue ?? "";
+                break;
+            case ChatMessageCriteriaRuleType.MessagePattern:
+                messagePatternValue = props.modelValue?.criteriaValue ?? "";
+                break;
+        }
+
+        groupTypes.value = groupTypesValue;
+        groups.value = groupsValue;
+        messageContains.value = messageContainsValue;
+        messagePattern.value = messagePatternValue;
+
+        ruleType.value = ruleTypeValue.toString();
+    }
+
+    // #endregion Functions
+
+    watch([groupTypes, groups, messageContains, messagePattern], () => {
+        let ruleTypeValue: ChatMessageCriteriaRuleType;
+        let criteriaValue: string;
+        let friendlyCriteriaValue: string;
+
+        if (isChannelTypeRule.value) {
+            ruleTypeValue = ChatMessageCriteriaRuleType.ChannelType;
+            criteriaValue = JSON.stringify(groupTypes.value);
+            const groupTypeNames = groupTypes.value
+                ?.filter(gt => gt.text)
+                ?.map(gt => gt.text!);
+            friendlyCriteriaValue = groupTypeNames.length
+                ? groupTypeNames.join(", ")
+                : "";
+        }
+        else if (isChannelRule.value) {
+            ruleTypeValue = ChatMessageCriteriaRuleType.Channel;
+            criteriaValue = JSON.stringify(groups.value);
+            const groupNames = groups.value
+                ?.filter(gt => gt.text)
+                ?.map(gt => gt.text!);
+            friendlyCriteriaValue = groupNames.length
+                ? groupNames.join(", ")
+                : "";
+        }
+        else if (isMessageContainsRule.value) {
+            ruleTypeValue = ChatMessageCriteriaRuleType.MessageContains;
+            criteriaValue = messageContains.value;
+            friendlyCriteriaValue = messageContains.value;
+        }
+        else {
+            ruleTypeValue = ChatMessageCriteriaRuleType.MessagePattern;
+            criteriaValue = messagePattern.value;
+            friendlyCriteriaValue = messagePattern.value;
+        }
+
+        const newValue: ChatMessageCriteriaRuleBag = {
+            guid: props.modelValue?.guid ?? newGuid(),
+            ruleType: ruleTypeValue,
+            criteriaValue,
+            friendlyCriteriaValue
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    setValues();
+</script>

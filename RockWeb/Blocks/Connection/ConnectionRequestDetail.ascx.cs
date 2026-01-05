@@ -190,11 +190,11 @@ namespace RockWeb.Blocks.Connection
                                 <small class=""text-muted mr-2 "" title=""{{ connectionRequestActivity.CreatedDateTime }}"">{{ connectionRequestActivity.CreatedDateTime | Date:'sd' }}</small>
                                 {% if canEdit %}
                                     <a title=""Delete"" class=""btn btn-danger btn-sm btn-square grid-delete-button"" href=""#"" onclick=""{{ connectionRequestActivity.Id | Postback:'DeleteActivity' }}"">
-                                        <i class=""fa fa-times""></i>
+                                        <i class=""ti ti-x""></i>
                                     </a>
                                 {% else %}
                                     <a title=""Delete"" class=""btn btn-danger btn-sm btn-square grid-delete-button aspNetDisabled"" href=""#"">
-                                        <i class=""fa fa-times""></i>
+                                        <i class=""ti ti-x""></i>
                                     </a>
                                 {% endif %}
                     </div>
@@ -939,10 +939,17 @@ namespace RockWeb.Blocks.Connection
                     pnlTransferDetails.Visible = true;
 
                     ddlTransferOpportunity.Items.Clear();
-                    foreach ( var opportunity in connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities
-                        .Where( o => o.IsActive )
+
+                    // Filter opportunities to only those associated with the current request's campus
+                    var currentCampusId = connectionRequest.CampusId;
+                    var associatedCampusOpportunities = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities
+                        .Where( 
+                            o => o.IsActive && 
+                            o.ConnectionOpportunityCampuses.Any( c => currentCampusId.HasValue && c.CampusId == currentCampusId.Value ) )
                         .OrderBy( o => o.Order )
-                        .ThenBy( o => o.Name ) )
+                        .ThenBy( o => o.Name );
+
+                    foreach ( var opportunity in associatedCampusOpportunities )
                     {
                         ddlTransferOpportunity.Items.Add( new ListItem( opportunity.Name, opportunity.Id.ToString().ToUpper() ) );
                     }
@@ -1172,6 +1179,7 @@ namespace RockWeb.Blocks.Connection
                     if ( newOpportunityId.HasValue && transferredActivityId > 0 )
                     {
                         var newOpportunity = new ConnectionOpportunityService( rockContext ).Get( newOpportunityId.Value );
+
                         ConnectionRequestActivity connectionRequestActivity = new ConnectionRequestActivity();
                         connectionRequestActivity.ConnectionRequestId = connectionRequest.Id;
                         connectionRequestActivity.ConnectionOpportunityId = newOpportunityId.Value;
@@ -2188,7 +2196,7 @@ namespace RockWeb.Blocks.Connection
                         var smsLink = LinkedPageUrl(
                             AttributeKeys.SmsLinkPage,
                             new Dictionary<string, string> { { "Person", person.Id.ToString() } } );
-                        smsAnchor = string.Format( @"<a href=""{0}""><i class=""fa fa-comments""></i></a>", smsLink );
+                        smsAnchor = string.Format( @"<a href=""{0}""><i class=""ti ti-messages""></i></a>", smsLink );
                     }
 
                     contactList.Add(
@@ -2301,11 +2309,20 @@ namespace RockWeb.Blocks.Connection
                             w.TriggerType == ConnectionWorkflowTriggerType.Manual &&
                             w.WorkflowType != null
                             && ( w.ManualTriggerFilterConnectionStatusId == null || w.ManualTriggerFilterConnectionStatusId == connectionRequest.ConnectionStatusId ) )
-                        .OrderBy( w => w.WorkflowType.Name )
                         .Distinct();
 
+                    var workflowTypeOrder = connectionRequest.ConnectionOpportunity.GetAdditionalSettingsOrNull<List<int>>( "WorkflowTypeOrder" ) ?? new List<int>();
+                    
+                    var orderedManualWorkflows = manualWorkflows
+                        .OrderBy( w =>
+                        {
+                            var index = workflowTypeOrder.IndexOf( w.WorkflowTypeId ?? -1 );
+                            return index == -1 ? int.MaxValue : index;
+                        } )
+                        .ThenBy( w => w.WorkflowType.Name );
+
                     var authorizedWorkflows = new List<ConnectionWorkflow>();
-                    foreach ( var manualWorkflow in manualWorkflows )
+                    foreach ( var manualWorkflow in orderedManualWorkflows )
                     {
                         if ( ( manualWorkflow.WorkflowType.IsActive ?? true ) && manualWorkflow.WorkflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                         {
@@ -2443,6 +2460,9 @@ namespace RockWeb.Blocks.Connection
             rblStatus.SelectedValue = connectionRequest.ConnectionStatusId.ToString();
 
             // Campus
+            var campusIds = connectionRequest.ConnectionOpportunity.ConnectionOpportunityCampuses.Select(c => c.CampusId).ToList();
+            var campuses = CampusCache.All(false).Where(c => campusIds.Contains(c.Id) && (c.IsActive ?? false)).ToList();
+            cpCampus.Campuses = campuses;
             cpCampus.SelectedCampusId = connectionRequest.CampusId;
 
             hfGroupMemberAttributeValues.Value = connectionRequest.AssignedGroupMemberAttributeValues;
@@ -2981,6 +3001,12 @@ namespace RockWeb.Blocks.Connection
             if ( connectionOpportunity.ShowCampusOnTransfer )
             {
                 cpTransferCampus.IncludeInactive = false;
+
+                // Filter campuses to only those associated with the selected connection opportunity for transfer
+                var campusIds = connectionOpportunity.ConnectionOpportunityCampuses.Select( c => c.CampusId ).ToList();
+                var availableCampuses = CampusCache.All().Where( c => campusIds.Contains( c.Id ) && ( c.IsActive ?? false ) ).ToList();
+                cpTransferCampus.Campuses = availableCampuses;
+
                 cpTransferCampus.SetValue( connectionRequest.CampusId );
             }
         }

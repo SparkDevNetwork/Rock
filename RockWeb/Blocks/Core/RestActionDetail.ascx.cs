@@ -33,8 +33,8 @@ namespace RockWeb.Blocks.Administration
     [DisplayName( "REST Action Detail (Legacy)" )]
     [Category( "Core" )]
     [Description( "Detail block for a REST Action that can be used to test the REST action." )]
-    [Obsolete( "This block is no longer used." )]
     [RockObsolete( "18.0" )]
+    [Obsolete( "This block type has been deprecated." )]
     [Rock.SystemGuid.BlockTypeGuid( "5BB83A28-CED2-4B40-9FDA-9C3D21FD6A83" )]
     public partial class RestActionDetail : RockBlock
     {

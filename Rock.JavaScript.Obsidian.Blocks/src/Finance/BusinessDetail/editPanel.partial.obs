@@ -28,36 +28,30 @@
 
                 <TextBox label="Name" v-model="businessName" rules="required" />
 
-                <div class="panel panel-section">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Address</h3>
-                    </div>
-                    <div class="panel-body">
-                        <AddressControl label="Address" v-model="address" />
-                        <CheckBox label="Save Former Address As Previous Address" v-model="saveFormerAddress" />
-                    </div>
-                </div>
+                <SectionContainer title="Address">
+                    <AddressControl label="Address" v-model="address" />
+                    <CheckBox label="Save Former Address As Previous Address" v-model="saveFormerAddress" />
+                </SectionContainer>
 
-                <div class="panel panel-section">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Contact Information</h3>
-                    </div>
-                    <div class="panel-body">
-                        <div class="row">
-                            <div class="col-xs-12 col-sm-6">
-                                <PhoneNumberBox label="Phone Number" v-model="phoneNumber" v-model:countryCode="countryCode" />
-                            </div>
-                            <div class="col-xs-3">
-                                <CheckBox label="SMS" v-model="isSms" />
-                            </div>
-                            <div class="col-xs-3">
-                                <CheckBox label="Unlisted" v-model="isUnlisted" />
-                            </div>
+                <SectionContainer title="Contact Information">
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-6">
+                            <PhoneNumberBox label="Phone Number" v-model="phoneNumber" v-model:countryCode="countryCode" />
                         </div>
-                        <EmailBox label="Email" v-model="email" rules="email" />
-                        <RadioButtonList label="Email Preference" v-model="emailPreference" :items="emailPreferences" horizontal :repeatColumns="0" />
+                        <div class="col-xs-3">
+                            <CheckBox label="SMS" v-model="isSms" />
+                        </div>
+                        <div class="col-xs-3">
+                            <CheckBox label="Unlisted" v-model="isUnlisted" />
+                        </div>
                     </div>
-                </div>
+                    <EmailBox label="Email" v-model="email" rules="email" />
+                    <RadioButtonList label="Email Preference" v-model="emailPreference" :items="emailPreferences" horizontal :repeatColumns="0" />
+                </SectionContainer>
+
+                <SectionContainer title="Attributes" v-if="hasAttributes">
+                    <AttributeValuesContainer v-model="attributeValues" :showCategoryLabel="false" :attributes="attributes" isEditMode :numberOfColumns="2" />
+                </SectionContainer>
 
                 <Panel :v-model="false"
                        :isDrawerOpen="false"
@@ -88,7 +82,6 @@
                     </Grid>
                 </Panel>
 
-                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
             </div>
 
         </div>
@@ -139,6 +132,7 @@
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import Grid, { TextColumn, DeleteColumn } from "@Obsidian/Controls/grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
 
     const props = defineProps({
         modelValue: {
@@ -191,6 +185,7 @@
     // #endregion
 
     // #region Computed Values
+    const hasAttributes = ref(props.modelValue?.bag?.attributeValues ?? false);
 
     const isReasonVisible = computed((): boolean => {
         return recordStatus.value.value?.toUpperCase() == DefinedValue.PersonRecordStatusInactive;

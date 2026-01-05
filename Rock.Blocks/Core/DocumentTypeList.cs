@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -37,7 +38,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Document Type List" )]
     [Category( "Core" )]
     [Description( "Displays a list of document types." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
@@ -116,7 +117,9 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<DocumentType> GetListQueryable( RockContext rockContext )
         {
-            return base.GetListQueryable( rockContext );
+            return base.GetListQueryable( rockContext )
+                .Include( d => d.BinaryFileType )
+                .Include( d => d.EntityType );
         }
 
         /// <inheritdoc/>

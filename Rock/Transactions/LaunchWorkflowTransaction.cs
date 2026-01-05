@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 
 using Rock.Data;
+using Rock.Logging;
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Transactions
@@ -26,6 +28,7 @@ namespace Rock.Transactions
     /// Launches a workflow and optionally sets the name and attribute values
     /// </summary>
     /// <seealso cref="Rock.Transactions.ITransaction" />
+    [RockLoggingCategory]
     public class LaunchWorkflowTransaction : ITransaction
     {
         /// <summary>
@@ -113,32 +116,43 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-            using ( var rockContext = new RockContext() )
+            try
             {
-                WorkflowTypeCache workflowType = null;
-                if ( WorkflowTypeGuid.HasValue )
+                using ( var rockContext = new RockContext() )
                 {
-                    workflowType = WorkflowTypeCache.Get( WorkflowTypeGuid.Value );
-                }
-
-                if ( workflowType == null && WorkflowTypeId.HasValue )
-                {
-                    workflowType = WorkflowTypeCache.Get( WorkflowTypeId.Value );
-                }
-
-                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
-                {
-                    var workflow = Rock.Model.Workflow.Activate( workflowType, WorkflowName );
-                    workflow.InitiatorPersonAliasId = InitiatorPersonAliasId;
-
-                    foreach ( var keyVal in WorkflowAttributeValues )
+                    WorkflowTypeCache workflowType = null;
+                    if ( WorkflowTypeGuid.HasValue )
                     {
-                        workflow.SetAttributeValue( keyVal.Key, keyVal.Value );
+                        workflowType = WorkflowTypeCache.Get( WorkflowTypeGuid.Value );
                     }
 
-                    List<string> workflowErrors;
-                    new Rock.Model.WorkflowService( rockContext ).Process( workflow, GetEntity(), out workflowErrors );
+                    if ( workflowType == null && WorkflowTypeId.HasValue )
+                    {
+                        workflowType = WorkflowTypeCache.Get( WorkflowTypeId.Value );
+                    }
+
+                    if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                    {
+                        var workflow = Rock.Model.Workflow.Activate( workflowType, WorkflowName );
+                        workflow.InitiatorPersonAliasId = InitiatorPersonAliasId;
+
+                        foreach ( var keyVal in WorkflowAttributeValues )
+                        {
+                            workflow.SetAttributeValue( keyVal.Key, keyVal.Value );
+                        }
+
+                        List<string> workflowErrors;
+                        new Rock.Model.WorkflowService( rockContext ).Process( workflow, GetEntity(), out workflowErrors );
+                    }
                 }
+            }
+            catch ( Exception ex )
+            {
+                var workflowIdentifier = this.WorkflowTypeId != null
+                    ? this.WorkflowTypeId.ToString()
+                    : this.WorkflowTypeGuid.ToString();
+
+                ExceptionLogService.LogException( new Exception( $"Exception while executing workflow ({workflowIdentifier}) {this.ToJson()}", ex ), null );
             }
         }
 

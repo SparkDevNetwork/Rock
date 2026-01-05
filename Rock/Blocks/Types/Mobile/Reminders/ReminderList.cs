@@ -36,7 +36,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
     [DisplayName( "Reminder List" )]
     [Category( "Reminders" )]
     [Description( "Allows management of the current person's reminders." )]
-    [IconCssClass( "fa fa-list-alt" )]
+    [IconCssClass( "ti ti-list-details" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     [LinkedPage(

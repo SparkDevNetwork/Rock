@@ -45,7 +45,7 @@ namespace Rock.Blocks.Lms
     [DisplayName( "Learning Class List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of learning classes." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -84,6 +84,7 @@ namespace Rock.Blocks.Lms
 
     #endregion
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "ab72d147-d4ca-4ff5-ab49-696319cb9844" )]
     [Rock.SystemGuid.BlockTypeGuid( "340f6cc1-8c38-4579-9383-a6168680194a" )]
     [CustomizedGrid]

@@ -15,8 +15,7 @@
 // </copyright>
 //
 
-import { onBeforeUnmount } from "vue";
-import { getUniqueCssSelector } from "./dom";
+import { getUniqueCssSelector, isElement } from "./dom";
 import { getFullscreenElement, isFullscreen } from "./fullscreen";
 
 // NOTE: Do not make this public yet. This is essentially temporary and
@@ -142,11 +141,11 @@ export function tooltip(node: Element | Element[], options?: TooltipOptions): vo
 
     applyTooltip(getContainer());
 
-    $(document).on("click", ".tooltip", function(e: Event) {
+    $(document).on("click", ".tooltip", function (e: Event) {
         e.stopPropagation();
     });
 
-    $node?.on("mouseleave", function(this: Element) {
+    $node?.on("mouseleave", function (this: Element) {
         if (!$(this).data("tooltip-pinned")) {
             $node?.tooltip("hide");
         }
@@ -182,8 +181,36 @@ export function hideTooltip(node: Element): void {
  *
  * @param node The node for which to destroy a tooltip.
  */
-export function destroyTooltip(node: Element): void {
+export function destroyTooltip(node: Element | Element[]): void {
     if (typeof $ === "function") {
         $(node).tooltip("destroy");
+    }
+}
+
+/**
+ * Reset a tooltip by destroying the existing one and adding a new tooltip on
+ *
+ * @param node The node or nodes to have tooltips configured on.
+ * @param options The options that describe how the tooltips should behave.
+ */
+export function resetTooltip(node: Element | Element[], options?: TooltipOptions): Promise<void> {
+    return new Promise(res => {
+        destroyTooltip(node);
+
+        setTimeout(() => {
+            tooltip(node, options);
+            res();
+        }, 151);
+    });
+}
+
+/**
+ * Applies a tooltip to an element. The element should have an `data-original-title` attribute containing the tooltip text.
+ *
+ * Typical use, `:ref="applyTooltip"`
+ */
+export function applyTooltip(el: unknown, options?: TooltipOptions): void {
+    if (isElement(el)) {
+        tooltip(el, options);
     }
 }

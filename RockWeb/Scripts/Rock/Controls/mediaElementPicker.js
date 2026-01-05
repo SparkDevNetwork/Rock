@@ -16,7 +16,7 @@
                     }
 
                     $picker.find('.js-media-element-picker-refresh').addClass('disabled');
-                    $(this).find('i.fa').addClass('fa-spin');
+                    $(this).find('i.ti').addClass('ti-spin');
 
                     window.location = 'javascript:' + options.refreshScript;
 

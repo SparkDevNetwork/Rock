@@ -129,9 +129,14 @@ namespace Rock.Tests.Integration.Core.Model
         /// <summary>
         /// Runs after all tests in this class is executed.
         /// </summary>
-        [ClassCleanup]
+        [ClassCleanup( ClassCleanupBehavior.EndOfClass )]
         public static void ClassCleanup()
         {
+            if ( IsContainersEnabled )
+            {
+                return;
+            }
+
             DeleteStreakTypeData();
             _rockContext = null;
             _streakTypeService = null;

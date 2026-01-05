@@ -7,7 +7,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-gift"></i>
+                    <i class="ti ti-gift"></i>
                     Purchased Packages
                 </h1>
 

@@ -120,7 +120,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
     [DisplayName( "Communication Entry" )]
     [Category( "Mobile > Communication" )]
     [Description( "Allows you to send communications to a set of recipients." )]
-    [IconCssClass( "fa fa-comment-o" )]
+    [IconCssClass( "ti ti-message" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     // This block uses a unique security action that determines whether someone can send out communications immediately or has

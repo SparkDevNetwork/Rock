@@ -468,7 +468,7 @@ namespace RockWeb.Blocks.Finance
                                 lbDelete.CausesValidation = false;
                                 lbDelete.Click += lbDelete_Click;
                                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
-                                buttonIcon.Attributes.Add( "class", "fa fa-close" );
+                                buttonIcon.Attributes.Add( "class", "ti ti-x" );
                                 lbDelete.Controls.Add( buttonIcon );
                                 tdEntityControls.Controls.Add( lbDelete );
                                 lbDelete.Visible = financialTransactionDetail.EntityTypeId == registrationEntityTypeId && financialTransactionDetail.EntityId.HasValue;
@@ -543,7 +543,7 @@ namespace RockWeb.Blocks.Finance
             ddlBatch.Items.Add( new ListItem() );
             foreach ( var batch in financialBatchList )
             {
-                ddlBatch.Items.Add( new ListItem( string.Format( "#{0} {1} ({2})", batch.Id, batch.Name, batch.BatchStartDateTime.Value.ToString( "d" ) ), batch.Id.ToString() ) );
+                ddlBatch.Items.Add( new ListItem( string.Format( "#{0} {1} ({2})", batch.Id, batch.Name, batch.BatchStartDateTime.HasValue ? batch.BatchStartDateTime.Value.ToString( "d" ) : "missing date" ), batch.Id.ToString() ) );
             }
         }
 

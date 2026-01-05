@@ -209,7 +209,7 @@ namespace Rock.Web.UI.Controls
             LinkButtonAddDefinedValue.ID = this.ID + "_lbAddDefinedValue";
             LinkButtonAddDefinedValue.CssClass = "btn btn-default btn-square flex-shrink-0 js-button-add-defined-value";
             LinkButtonAddDefinedValue.OnClientClick = linkButtonClickJs;
-            LinkButtonAddDefinedValue.Controls.Add( new HtmlGenericControl { InnerHtml = "<i class='fa fa-plus'></i>" } );
+            LinkButtonAddDefinedValue.Controls.Add( new HtmlGenericControl { InnerHtml = "<i class='ti ti-plus'></i>" } );
             Controls.Add( LinkButtonAddDefinedValue );
 
             if ( this.Required )

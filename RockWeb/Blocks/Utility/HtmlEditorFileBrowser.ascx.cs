@@ -539,7 +539,7 @@ namespace RockWeb.Blocks.Utility
                     {
                         string url = editFilePage + "?RelativeFilePath=" + HttpUtility.UrlEncode( imagePath );
 
-                        editHtml = $"<a data-href='{url}' title='Edit' class='btn btn-xs btn-square btn-default js-edit-file action'><i class='fa fa-pencil'></i></a>";
+                        editHtml = $"<a data-href='{url}' title='Edit' class='btn btn-xs btn-square btn-default js-edit-file action'><i class='ti ti-pencil'></i></a>";
                     }
 
                     string nameHtmlFormat = @"
@@ -547,10 +547,10 @@ namespace RockWeb.Blocks.Utility
     <div class='rollover-container'>
         <div class='rollover-item actions'>
             <a title='Delete' class='btn btn-xs btn-square btn-danger js-delete-file action'>
-                <i class='fa fa-times'></i>
+                <i class='ti ti-x'></i>
             </a>
             <a href='{3}' target='_blank' rel='noopener noreferrer' title='Download' class='btn btn-xs btn-square btn-default js-download-file action'>
-                <i class='fa fa-download'></i>
+                <i class='ti ti-download'></i>
             </a>
             {4}
         </div>

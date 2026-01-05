@@ -156,6 +156,7 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.HideTransactionsInPendingBatches
         )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.BlockTypeGuid( "E04320BC-67C3-452D-9EF6-D74D8C177154" )]
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler, ICustomGridColumns
     {
@@ -465,7 +466,7 @@ namespace RockWeb.Blocks.Finance
             {
                 var script = string.Format( @"
     $('#{0}').on('change', function( e ){{
-        var count = $(""#{1} input[id$='_cbSelect_0']:checked"").length;
+        var count = $(""#{1} input[id*='_cbSelect_']:checked"").length;
         if (count == 0) {{
             $('#{3}').val($ddl.val());
             window.location = ""javascript:{2}"";

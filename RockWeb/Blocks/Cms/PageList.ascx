@@ -6,7 +6,7 @@
             <asp:HiddenField runat="server" ID="hfSiteId" />
             
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-files-o"></i> Page List</h1>
+                <h1 class="panel-title"><i class="ti ti-files"></i> Page List</h1>
             </div>
             <div class="panel-body">
 

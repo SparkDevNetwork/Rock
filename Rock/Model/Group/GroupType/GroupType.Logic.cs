@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
 
@@ -38,6 +39,7 @@ namespace Rock.Model
         /// Gets or sets the attendance reminder followup days list.  This is the logical representation of <see cref="AttendanceReminderFollowupDays"/>.
         /// </summary>
         /// <value>The attendance reminder followup days list.</value>
+        [NotMapped]
         public List<int> AttendanceReminderFollowupDaysList
         {
             get

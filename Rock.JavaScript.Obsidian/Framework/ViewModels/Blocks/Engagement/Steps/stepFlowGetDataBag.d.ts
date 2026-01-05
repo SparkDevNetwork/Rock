@@ -29,6 +29,9 @@ export type StepFlowGetDataBag = {
     /** Gets or sets the list of edges */
     edges?: SankeyDiagramEdgeBag[] | null;
 
+    /** Gets or sets the legend HTML */
+    legendHtml?: string | null;
+
     /** Gets or sets the list of nodes */
     nodes?: SankeyDiagramNodeBag[] | null;
 };

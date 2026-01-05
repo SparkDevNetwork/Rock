@@ -40,10 +40,10 @@ namespace RockWeb.Blocks.Reporting
     [BooleanField( "Show 'Communications' action on grid", "", defaultValue: true, key: "ShowGridCommunicationsAction" )]
 
     // CustomSetting Dialog
-    [TextField( "ResultsIconCssClass", "Title for the results list.", false, "fa fa-list", "CustomSetting" )]
+    [TextField( "ResultsIconCssClass", "Title for the results list.", false, "ti ti-list", "CustomSetting" )]
     [TextField( "ResultsTitle", "Title for the results list.", false, "Results", "CustomSetting" )]
     [TextField( "FilterTitle", "Title for the results list.", false, "Filters", "CustomSetting" )]
-    [TextField( "FilterIconCssClass", "Title for the results list.", false, "fa fa-filter", "CustomSetting" )]
+    [TextField( "FilterIconCssClass", "Title for the results list.", false, "ti ti-filter", "CustomSetting" )]
     [TextField( "Report", "The report to use for this block", false, "", "CustomSetting" )]
 
     // NOTE: attribute names should have been called *DataFilter* not *DataField*, but probably can't change to keep backward compat :(
@@ -335,10 +335,16 @@ namespace RockWeb.Blocks.Reporting
                                 }
                             }
 
-                            if ( component is Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters )
+                            if ( component is Rock.Reporting.DataFilter.IUpdateSelectionFromRockRequestContext )
+                            {
+                                selection = ( component as Rock.Reporting.DataFilter.IUpdateSelectionFromRockRequestContext ).UpdateSelectionFromRockRequestContext( selection, RequestContext, rockContext );
+                            }
+#pragma warning disable CS0618 // Type or member is obsolete
+                            else if ( component is Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters )
                             {
                                 selection = ( component as Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters ).UpdateSelectionFromPageParameters( selection, this );
                             }
+#pragma warning restore CS0618 // Type or member is obsolete
 
                             try
                             {

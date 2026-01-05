@@ -38,7 +38,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [DisplayName( "Group Edit" )]
     [Category( "Mobile > Groups" )]
     [Description( "Edits the basic settings of a group." )]
-    [IconCssClass( "fa fa-users-cog" )]
+    [IconCssClass( "ti ti-user-cog" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

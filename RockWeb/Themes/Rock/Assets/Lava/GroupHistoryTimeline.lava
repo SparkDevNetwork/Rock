@@ -244,15 +244,15 @@
                     <div class="timeline-icon">
                     {%- case historySummaryListByEntityTypeAndVerb.Verb -%}
                         {%- when 'ADD' -%}
-                        <i class="fa fa-users"></i>
+                        <i class="ti ti-users"></i>
                         {%- when 'ADDEDTOGROUP' -%}
-                        <i class="fa fa-user-plus"></i>
+                        <i class="ti ti-user-plus"></i>
                         {%- when 'REMOVEDFROMGROUP' -%}
-                        <i class="fa fa-user-times"></i>
+                        <i class="ti ti-user-x"></i>
                         {%- when 'MODIFY' -%}
-                        <i class="fa fa-pencil-alt"></i>
+                        <i class="ti ti-pencil"></i>
                         {%- else -%}
-                        <i class="fa fa-calendar"></i>
+                        <i class="ti ti-calendar"></i>
                     {%- endcase -%}
                     </div>
 

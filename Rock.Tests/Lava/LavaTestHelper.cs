@@ -24,6 +24,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
 using Rock.Lava.Fluid;
+using Rock.Model;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Lava
@@ -52,6 +53,7 @@ namespace Rock.Tests.Lava
                 _fluidEngine = LavaService.NewEngineInstance( typeof( FluidEngine ), engineOptions );
 
                 RegisterFilters( _fluidEngine );
+                RegisterBlocks( _fluidEngine );
             }
         }
 
@@ -274,6 +276,39 @@ namespace Rock.Tests.Lava
             } );
         }
 
+        private static void RegisterBlocks( ILavaEngine engine )
+        {
+            // Get all blocks and call OnStartup methods
+            try
+            {
+                var blockTypes = Reflection.FindTypes( typeof( ILavaBlock ) ).Select( a => a.Value ).ToList();
+
+                foreach ( var blockType in blockTypes )
+                {
+                    var blockInstance = Activator.CreateInstance( blockType ) as ILavaBlock;
+
+                    engine.RegisterBlock( blockInstance.SourceElementName, ( blockName ) =>
+                    {
+                        return Activator.CreateInstance( blockType ) as ILavaBlock;
+                    } );
+
+                    try
+                    {
+                        blockInstance.OnStartup( engine );
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex, null );
+                    }
+
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
+        }
+
         private static void RegisterFilters( ILavaEngine engine )
         {
             engine.RegisterFilters( typeof( global::Rock.Lava.Filters.TemplateFilters ) );
@@ -364,7 +399,7 @@ namespace Rock.Tests.Lava
                 }
                 catch ( Exception ex )
                 {
-                    Debug.Write( $"**\n** ERROR\n**\n{ex.Message}" );
+                    Debug.Write( $"\n**\n** ERROR\n**\n{ex.Message}" );
 
                     exceptions.Add( new Exception( $"Engine \"{ engine.EngineName }\" reported an error.", ex ) );
                 }

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,8 +23,13 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.ConnectionRequest
@@ -35,7 +40,7 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
     [Description( "Filter connnection request on whether they have attended the selected placement group(s) a specified number of times." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Attendance In Placement Group Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "97438F23-A178-4FEE-9545-D1DE96107D16")]
+    [Rock.SystemGuid.EntityTypeGuid( "97438F23-A178-4FEE-9545-D1DE96107D16" )]
     public class AttendanceInPlacementGroup : DataFilterComponent
     {
         private class GroupAttendanceFilterSelection
@@ -75,6 +80,76 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/ConnectionRequest/attendanceInPlacementGroupFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = selection.FromJsonOrNull<GroupAttendanceFilterSelection>() ?? new GroupAttendanceFilterSelection();
+
+            var groupBags = config.GroupGuids
+                .Select( guid => GroupCache.Get( guid )?.ToListItemBag() )
+                .Where( bag => bag != null )
+                .ToList();
+
+            var scheduleService = new ScheduleService( rockContext );
+            var scheduleBags = scheduleService.GetByIds( config.ScheduleIds )
+                .ToList()
+                .Select( sch => sch.ToListItemBag() )
+                .ToList();
+
+            var isBlank = selection.Trim() == string.Empty;
+
+            return new Dictionary<string, string>
+            {
+                { "groups", groupBags.ToCamelCaseJson(false, true) },
+                { "includeChildGroups", config.IncludeChildGroups.ToTrueFalse() },
+                { "comparisonType", (isBlank ? ComparisonType.GreaterThanOrEqualTo : config.IntegerCompare).ConvertToInt().ToString() },
+                { "attendedCount", isBlank ? "4" : config.AttendedCount.ToString() },
+                { "dateRange", config.SlidingDateRangeDelimitedValues },
+                { "schedules", scheduleBags.ToCamelCaseJson(false, true) },
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var groupGuids = data.GetValueOrDefault( "groups", "[]" )
+                .FromJsonOrNull<List<ListItemBag>>()
+                ?.Select( c => c.Value?.AsGuidOrNull() ?? Guid.Empty )
+                .Where( g => g != Guid.Empty )
+                .ToList();
+
+            var scheduleService = new ScheduleService( rockContext );
+            var scheduleIds = data.GetValueOrDefault( "schedules", "[]" )
+                .FromJsonOrNull<List<ListItemBag>>()
+                ?.Select( s => scheduleService.Get( s.Value.AsGuid() ).Id )
+                .ToList();
+
+            var groupAttendanceFilterSelection = new GroupAttendanceFilterSelection
+            {
+                GroupGuids = groupGuids,
+                IncludeChildGroups = data.GetValueOrDefault( "includeChildGroups", "False" ).AsBoolean(),
+                IntegerCompare = data.GetValueOrDefault( "comparisonType", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ).ConvertToEnum<ComparisonType>(),
+                AttendedCount = data.GetValueOrDefault( "attendedCount", "4" ).AsInteger(),
+                SlidingDateRangeDelimitedValues = data.GetValueOrDefault( "dateRange", "All||||" ),
+                ScheduleIds = scheduleIds,
+            };
+
+            return groupAttendanceFilterSelection.ToJson();
         }
 
         #endregion
@@ -160,6 +235,8 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
 
             return selectionOutput;
         }
+
+#if WEBFORMS
 
         /// <summary>
         /// Creates the child controls.
@@ -357,6 +434,8 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
             slidingDateRangePicker.DelimitedValues = groupAttendanceFilterSelection.SlidingDateRangeDelimitedValues;
             cbChildGroups.Checked = groupAttendanceFilterSelection.IncludeChildGroups;
         }
+
+#endif
 
         /// <summary>
         /// Gets the expression.

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,8 +15,14 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+
+using Rock.Data;
+
+using Rock.Net;
+using Rock.ViewModels.Controls;
 
 namespace Rock.Reporting.DataFilter.Group
 {
@@ -26,7 +32,7 @@ namespace Rock.Reporting.DataFilter.Group
     [Description( "Filter groups based on member count" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Member Count" )]
-    [Rock.SystemGuid.EntityTypeGuid( "27E521A3-9F5C-424E-8AED-43A228B1702F")]
+    [Rock.SystemGuid.EntityTypeGuid( "27E521A3-9F5C-424E-8AED-43A228B1702F" )]
     public class SimpleMemberCountFilter : MemberCountFilter
     {
         /// <summary>
@@ -41,7 +47,7 @@ namespace Rock.Reporting.DataFilter.Group
         {
             return "Member Count";
         }
-        
+
         /// <summary>
         /// Gets a value indicating whether [simple member count mode].
         /// </summary>
@@ -54,6 +60,38 @@ namespace Rock.Reporting.DataFilter.Group
             {
                 return true;
             }
+        }
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Group/simpleMemberCountFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionValues = selection.Split( '|' );
+
+            if ( selectionValues.Length > 1 )
+            {
+                return new Dictionary<string, string>
+                {
+                    { "comparisonType", selectionValues[0] },
+                    { "count", selectionValues[1] },
+                };
+            }
+
+            return new Dictionary<string, string>();
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return string.Format( "{0}|{1}|{2}|{3}", data.GetValueOrDefault( "comparisonType", "" ), data.GetValueOrDefault( "count", "" ), null, null );
         }
     }
 }

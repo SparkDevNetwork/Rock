@@ -156,8 +156,10 @@ namespace Rock.Communication
         /// from the send method.
         /// </summary>
         /// <remarks>
-        /// This is a special one-off use case for the LMS system. So don't
-        /// use this under any circumstances unless ye be judged.
+        /// This is only for scenarios that must have the communication record
+        /// created as quickly as possible (e.g. LMS system, fallback Chat
+        /// notifications). Don't use this without DSD approval unless ye be
+        /// judged.
         /// </remarks>
         internal bool CreateCommunicationRecordImmediately { get; set; }
 
@@ -166,8 +168,10 @@ namespace Rock.Communication
         /// message.
         /// </summary>
         /// <remarks>
-        /// This is a special one-off use case for the LMS system. So don't
-        /// use this under any circumstances unless ye be judged.
+        /// This is only for scenarios that must have the communication record
+        /// created as quickly as possible (e.g. LMS system, fallback Chat
+        /// notifications). Don't use this without DSD approval unless ye be
+        /// judged.
         /// </remarks>
         internal int? LastCommunicationId { get; set; }
 

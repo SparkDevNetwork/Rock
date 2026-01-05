@@ -7,7 +7,7 @@
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" Visible="false">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-file-text"></i> <asp:Literal ID="lTitle" runat="server" /></h1>
+                <h1 class="panel-title"><i class="ti ti-file-type-txt"></i> <asp:Literal ID="lTitle" runat="server" /></h1>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
@@ -113,7 +113,7 @@
         <asp:Panel ID="pnlDefinedTypeAttributes" CssClass="panel panel-block" runat="server" Visible="false">
             
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-list-ul"></i> Attribute Editor</h1>
+                <h1 class="panel-title"><i class="ti ti-list"></i> Attribute Editor</h1>
             </div>
             <div class="panel-body">
                 <Rock:AttributeEditor ID="edtDefinedTypeAttributes" runat="server" OnSaveClick="btnSaveDefinedTypeAttribute_Click" OnCancelClick="btnCancelDefinedTypeAttribute_Click" ValidationGroup="Attribute" />

@@ -21,7 +21,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-envelope"></i>
+                    <i class="ti ti-mail"></i>
                     Group Schedule Communication
                 </h1>
             </div>

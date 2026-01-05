@@ -186,6 +186,13 @@ namespace Rock.Model
         [DataMember]
         public ChatRole ChatRole { get; set; }
 
+        /// <summary>
+        /// Determines if this role is intended to be used and displayed on public
+        /// facing sites and features.
+        /// </summary>
+        [DataMember]
+        public bool IsPublic { get; set; } = true;
+
         #endregion
 
         #region Navigation Properties

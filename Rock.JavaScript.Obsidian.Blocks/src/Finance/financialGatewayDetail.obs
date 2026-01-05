@@ -75,10 +75,6 @@
 
     // #region Computed Values
 
-    const isAuditHidden = computed((): boolean => {
-        return !financialGatewayViewBag.value?.idKey;
-    });
-
     /**
      * The entity name to display in the block panel.
      */
@@ -105,14 +101,14 @@
 
         if (financialGatewayViewBag.value?.isActive === true) {
             labels.push({
-                iconCssClass: "fa fa-lightbulb",
+                iconCssClass: "ti ti-bulb-filled",
                 title: "Active",
                 type: "success"
             });
         }
         else {
             labels.push({
-                iconCssClass: "far fa-lightbulb",
+                iconCssClass: "ti ti-bulb",
                 title: "Inactive",
                 type: "danger"
             });

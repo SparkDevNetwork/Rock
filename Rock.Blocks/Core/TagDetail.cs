@@ -39,7 +39,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Tag Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a particular tag." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

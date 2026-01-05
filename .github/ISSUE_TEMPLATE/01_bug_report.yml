@@ -51,7 +51,7 @@ body:
       label: Issue Confirmation
       description: Check the boxes below to confirm each task has been completed.
       options:
-        - label: Perform a search on the [Github Issues](https://github.com/issues?q=is%3Aissue+user%3ASparkDevNetwork+-repo%3ARock) to see if your bug or enhancement is already reported.
+        - label: Perform a search on the [Github Issues](https://github.com/search?q=repo%3ASparkDevNetwork%2FRock&type=issues) to see if your bug is already reported.
           required: true
         - label: Reproduced the problem on a fresh install or on the [demo site](https://rock.rocksolidchurchdemo.com/).
           required: true

@@ -40,7 +40,7 @@ namespace Rock.Blocks.Group.Scheduling
     [DisplayName( "Group Schedule Toolbox" )]
     [Category( "Group Scheduling" )]
     [Description( "Allows management of group scheduling for a specific person (worker)." )]
-    [IconCssClass( "fa fa-calendar-alt" )]
+    [IconCssClass( "ti ti-calendar-month" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
     [ContextAware( typeof( Person ) )]
 

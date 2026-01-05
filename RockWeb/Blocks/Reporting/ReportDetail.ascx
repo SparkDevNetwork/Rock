@@ -8,7 +8,7 @@
                 <div id="pnlEditDetails" runat="server">
                     <div class="panel panel-block">
                         <div class="panel-heading">
-                            <h1 class="panel-title"><i class="fa fa-list-alt"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
+                            <h1 class="panel-title"><i class="ti ti-list-details"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
                         </div>
                         <div class="panel-body">
 
@@ -60,7 +60,7 @@
                                 <header class="panel-heading clearfix">
                                     <h3 class="panel-title pull-left">Fields</h3>
                                     <div class="pull-right">
-                                        <asp:LinkButton runat="server" ID="btnAddField" CssClass="btn btn-xs btn-action" CausesValidation="false" OnClick="btnAddField_Click"><i class="fa fa-plus"></i> Add Field</asp:LinkButton>
+                                        <asp:LinkButton runat="server" ID="btnAddField" CssClass="btn btn-xs btn-action" CausesValidation="false" OnClick="btnAddField_Click"><i class="ti ti-plus"></i> Add Field</asp:LinkButton>
                                     </div>
                                 </header>
                                 <div class="panel-body panel-widget-sort-container">
@@ -79,7 +79,7 @@
                 <div id="pnlViewDetails" runat="server">
                     <div class="panel panel-block">
                         <div class="panel-heading">
-                            <h1 class="panel-title"><i class="fa fa-list-alt"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
+                            <h1 class="panel-title"><i class="ti ti-list-details"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
                         </div>
                         <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
                         <div class="panel-body">
@@ -110,7 +110,7 @@
                                 <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                                 <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                                 <div class="pull-right">
-                                    <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Report" CssClass="btn btn-default btn-sm btn-square" Text="<i class='fa fa-clone'></i>" OnClick="btnCopy_Click" />
+                                    <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Report" CssClass="btn btn-default btn-sm btn-square" Text="<i class='ti ti-copy'></i>" OnClick="btnCopy_Click" />
                                     <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
                                 </div>
                             </div>
@@ -119,7 +119,7 @@
 
                     <div class="panel panel-block">
                         <div class="panel-heading">
-                            <h1 class="panel-title"><i class="fa fa-table"></i> Report Data</h1>
+                            <h1 class="panel-title"><i class="ti ti-table"></i> Report Data</h1>
 
                             <div class="panel-labels">
                                 <asp:LinkButton ID="btnToggleResults" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnToggleResults_Click" />
@@ -179,7 +179,7 @@
 
                 // javascript to set the widget panel title based on the defined column header text when collapsed
                 $('.panel-widget .panel-heading').on('click', function (e, data) {
-                    if ($(this).find('.fa-chevron-down').length) {
+                    if ($(this).find('.ti-chevron-down').length) {
                         var title = $(this).closest('section').find('.js-column-header-textbox').val();
                         var reportFieldGuid = $(this).closest('section').find('.js-report-field-guid').val();
 

@@ -153,6 +153,17 @@ namespace Rock.Core
         /// </summary>
         public string UserAgent { get; set; }
 
+        /// <summary>
+        /// Gets or sets the UserAgentPlatformVersion value.
+        /// </summary>
+        /// <remarks>
+        /// This is not always provided by user agents and we have to request it by sending
+        /// Headers "Accept-CH" and "Critical-CH" with a value of Sec-CH-UA-Platform-Version
+        /// and possibly the "Permissions-Policy" header with a value of "ch-ua-platform-version=(self)"
+        /// see https://learn.microsoft.com/en-us/microsoft-edge/web-platform/how-to-detect-win11.
+        /// </remarks>
+        public string UserAgentPlatformVersion {  get; set; }
+
         #endregion Helper Properties
 
         #region Constructors
@@ -229,6 +240,8 @@ namespace Rock.Core
             #region Set Helper Properties
 
             this.UserAgent = info.UserAgent;
+
+            this.UserAgentPlatformVersion = info.UserAgentPlatformVersion;
 
             #endregion Set Helper Properties
         }

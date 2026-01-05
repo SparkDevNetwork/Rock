@@ -4,7 +4,7 @@
         <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
                 <NotificationBox v-if="uploadErrorMessage" alertType="warning">
-                    <strong><i class="fa fa-exclamation-triangle"></i> Warning </strong>
+                    <strong><i class="ti ti-alert-triangle"></i> Warning </strong>
                     <span>{{ uploadErrorMessage }}</span>
                 </NotificationBox>
 
@@ -17,13 +17,13 @@
 
                         <div v-if="isDeleteVisible" class="imageupload-remove">
                             <a href="#" class="remove-file" title="Remove File" @click.prevent.stop="onRemoveFileClick">
-                                <i class="fa fa-times"></i>
+                                <i class="ti ti-x"></i>
                             </a>
                         </div>
                     </div>
 
                     <div v-if="isUploading" class="upload-progress">
-                        <i class="fa fa-refresh fa-spin fa-3x"></i>
+                        <i class="ti ti-refresh ti-spin ti-3x"></i>
                         <div>{{ uploadProgressText }}</div>
                     </div>
 

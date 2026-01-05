@@ -38,7 +38,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Personal Link Section List" )]
     [Category( "CMS" )]
     [Description( "Lists personal link section in the system." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

@@ -137,5 +137,10 @@ namespace Rock.SystemGuid
         /// The parent group for all chat direct messages.
         /// </summary>
         public const string GROUP_CHAT_DIRECT_MESSAGES = "79C99867-5244-43E7-A3BF-625186A77D20";
+
+        /// <summary>
+        /// Role for individuals allowed to develop Lava Applications.
+        /// </summary>
+        public const string GROUP_LAVA_APPLICATION_DEVELOPERS = "F88EC798-2DCC-119C-4459-CF0F304CC036";
     }
 }

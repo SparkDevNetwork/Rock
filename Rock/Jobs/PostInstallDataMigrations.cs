@@ -20,6 +20,8 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -83,7 +85,7 @@ namespace Rock.Jobs
         {
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
                 if ( !rockContext.Set<AnalyticsSourceDate>().AsQueryable().Any() )
                 {
                     var analyticsStartDate = new DateTime( RockDateTime.Today.AddYears( -150 ).Year, 1, 1 );
@@ -103,7 +105,7 @@ namespace Rock.Jobs
 
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
                 if ( !rockContext.Set<AnalyticsSourcePostalCode>().AsQueryable().Any() )
                 {
                     Rock.Model.AnalyticsSourcePostalCode.GenerateAnalyticsSourcePostalCodeData();
@@ -115,7 +117,7 @@ namespace Rock.Jobs
         {
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
                 rockContext.Database.ExecuteSqlCommand( "DELETE FROM IdentityVerificationCode" );
 
                 InsertIdentityVerificationCodeDataChunk( rockContext, 1001, 250000 );

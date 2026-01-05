@@ -8,7 +8,7 @@
             <div class="panel panel-block">
                 <div class="panel-heading">
                     <h1 class="panel-title">
-                        <i class="fa fa-certificate"></i>
+                        <i class="ti ti-certificate"></i>
                         <asp:Literal ID="lTitle" runat="server" />
                     </h1>
                 </div>

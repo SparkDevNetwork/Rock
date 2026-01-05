@@ -35,7 +35,7 @@
                                 <Rock:RockBoundField DataField="FriendlySchedule" HeaderText="Schedule" SortExpression="NextOrLastStartDateTime" ExcelExportBehavior="AlwaysInclude" />
                                 <Rock:RockBoundField DataField="LeaderCount" HeaderText="Leader Count" SortExpression="LeaderCount" ExcelExportBehavior="AlwaysInclude" />
                                 <Rock:RockLiteralField ID="lParticipantCountBadgeHtml" HeaderText="Participant Count" SortExpression="ParticipantCount" ExcelExportBehavior="NeverInclude" />
-                                <Rock:LinkButtonField ID="lbOpportunityDetail" Text="<i class='fa fa-users'></i>" ToolTip="Attendee List" CssClass="btn btn-default btn-sm btn-square" OnClick="lbOpportunityDetail_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
+                                <Rock:LinkButtonField ID="lbOpportunityDetail" Text="<i class='ti ti-users'></i>" ToolTip="Attendee List" CssClass="btn btn-default btn-sm btn-square" OnClick="lbOpportunityDetail_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                                 <Rock:DeleteField ID="dfOpportunities" OnClick="dfOpportunities_Click" />
 
                                 <%-- Fields that are only shown when exporting --%>

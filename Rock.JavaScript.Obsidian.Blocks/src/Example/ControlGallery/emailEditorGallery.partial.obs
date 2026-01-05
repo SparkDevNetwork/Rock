@@ -74,7 +74,8 @@
     const importCode = getSfcControlImportPath("htmlEditor");
     const exampleCode = computed(() => {
         return `<EmailEditor
-    :html="value"
+    :html="value"${ltr.value ? `
+    :ltr="${ltr.value}"` : ""}
     :getHtmlRequest="getHtmlRequest"${disabled.value ? `
     :disabled="${disabled.value}"` : ""}${mergeFields.value?.length ? `
     :mergeFields="['${mergeFields.value.join(`', '`)}']"` : ""} />`;

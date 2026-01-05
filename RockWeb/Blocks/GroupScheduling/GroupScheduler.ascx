@@ -6,7 +6,7 @@
             <%-- Panel Header --%>
             <div class="panel-heading panel-follow">
                 <h1 class="panel-title">
-                    <i class="fa fa-calendar-alt"></i>
+                    <i class="ti ti-calendar-month"></i>
                     Group Scheduler
                 </h1>
 
@@ -14,26 +14,26 @@
                     <button id="btnHelp" runat="server"
                         class="btn btn-default btn-xs btn-square"
                         onclick="$('#filter-drawer').slideToggle();return false;">
-                        <i class='fa fa-question'></i>
+                        <i class='ti ti-question-mark'></i>
                     </button>
 
                     <button id="btnCopyToClipboard" runat="server" disabled="disabled"
                         data-toggle="tooltip" data-placement="bottom" data-trigger="hover" data-delay="250" title="Copy Report Link to Clipboard"
                         class="btn btn-default btn-xs btn-square btn-copy-to-clipboard"
                         onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
-                        <i class='fa fa-clipboard'></i>
+                        <i class='ti ti-clipboard'></i>
                     </button>
 
                     <asp:HiddenField ID="hfDisplayedOccurrenceIds" runat="server" />
 
                     <asp:LinkButton ID="btnSendNowSingleGroupMode" runat="server" CssClass="js-sendnow btn btn-default btn-xs" OnClick="btnSendNowSelectedGroup_Click">
-                        <i class="fa fa-envelope"></i>
+                        <i class="ti ti-mail"></i>
                         Send Now
                     </asp:LinkButton>
 
                     <asp:Panel ID="pnlSendNowMultiGroupMode" runat="server" class="btn-group" >
                         <div class="dropdown-toggle btn btn-default btn-xs" data-toggle="dropdown">
-                            <i class="fa fa-envelope"></i>
+                            <i class="ti ti-mail"></i>
                             Send Now
                         </div>
 
@@ -50,13 +50,13 @@
 
 
                     <asp:LinkButton ID="btnAutoScheduleSingleGroupMode" runat="server" CssClass="js-autoschedule btn btn-default btn-xs" OnClick="btnAutoScheduleSelectedGroup_Click">
-                        <i class="fa fa-magic"></i>
+                        <i class="ti ti-wand"></i>
                         Auto Schedule
                     </asp:LinkButton>
 
                     <asp:Panel ID="pnlAutoScheduleMultiGroupMode" runat="server" class="btn-group" >
                         <div class="dropdown-toggle btn btn-default btn-xs" data-toggle="dropdown">
-                            <i class="fa fa-magic"></i>
+                            <i class="ti ti-wand"></i>
                             Auto Schedule
                         </div>
 
@@ -121,7 +121,7 @@
                             <asp:Panel ID="pnlResourceListFilter" runat="server">
                                 <div class="btn-group">
                                     <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
-                                        <i class="fa fa-list-ul"></i>
+                                        <i class="ti ti-list"></i>
                                         <%--<asp:HiddenField ID="hfSchedulerResourceListSourceType" runat="server" />--%>
                                         List: <asp:Literal ID="lSelectedResourceTypeDropDownText" runat="server" Text="Group Members" />
                                     </div>
@@ -139,7 +139,7 @@
                             </asp:Panel>
 
                             <asp:Panel ID="pnlAddPerson" runat="server" CssClass="btn btn-xs btn-tool js-add-resource" ToolTip="Add Person">
-                                <i class="fa fa-plus"></i>
+                                <i class="ti ti-plus"></i>
                             </asp:Panel>
                         </div>
                     </div>
@@ -152,7 +152,7 @@
                                 <div class="d-flex">
                                     <Rock:GroupPicker ID="gpPickedGroups" runat="server" Label="" AllowMultiSelect="true" OnValueChanged="gpPickedGroups_ValueChanged" CssClass="occurrences-groups-picker" LimitToSchedulingEnabledGroups="true" />
                                     <div>
-                                    <asp:LinkButton ID="btnShowChildGroups" runat="server" CssClass="btn btn-xs btn-tool" Text="<i class='fa fa-square'></i> Show Child Groups" AutoPostBack="true" OnClick="btnShowChildGroups_Click" />
+                                    <asp:LinkButton ID="btnShowChildGroups" runat="server" CssClass="btn btn-xs btn-tool" Text="<i class='ti ti-square'></i> Show Child Groups" AutoPostBack="true" OnClick="btnShowChildGroups_Click" />
                                     </div>
                                 </div>
 
@@ -274,7 +274,7 @@
                                                             <span class="resource-member-role js-resource-member-role"></span>
                                                         </div>
                                                         <div class="dropdown js-resource-actions hide-dragging">
-                                                            <button class="btn btn-link btn-overflow" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></button>
+                                                            <button class="btn btn-link btn-overflow" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="ti ti-dots-vertical"></i></button>
                                                         </div>
                                                     </div>
 
@@ -294,7 +294,7 @@
                                                     <Rock:PersonPicker ID="ppAddPerson" runat="server" Label="Select Person" OnSelectPerson="ppAddPerson_SelectPerson" />
                                                 </div>
 
-                                                    <Rock:RockTextBox ID="sfResource" runat="server" CssClass="resource-search padding-all-sm js-resource-search" PrependText="<i class='fa fa-search'></i>" Placeholder="Search" spellcheck="false" />
+                                                    <Rock:RockTextBox ID="sfResource" runat="server" CssClass="resource-search padding-all-sm js-resource-search" PrependText="<i class='ti ti-search'></i>" Placeholder="Search" spellcheck="false" />
 
 
                                             <div class="resource-list d-flex flex-fill">
@@ -302,7 +302,7 @@
 
                                                     <div class="scroll-list">
                                                         <%-- loading indicator --%>
-                                                        <i class="fa fa-refresh fa-spin margin-l-md js-loading-notification" style="display: none; opacity: .4;"></i>
+                                                        <i class="ti ti-refresh ti-spin margin-l-md js-loading-notification" style="display: none; opacity: .4;"></i>
 
                                                         <%-- container for list of resources --%>
 
@@ -333,7 +333,7 @@
                                                     <div class="js-resource-meta text-right"></div>
                                                 </div>
                                                 <div class="dropdown js-resource-actions hide-dragging">
-                                                    <button class="btn btn-link btn-overflow" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></button>
+                                                    <button class="btn btn-link btn-overflow" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="ti ti-dots-vertical"></i></button>
                                                     <ul class="dropdown-menu dropdown-menu-right">
                                                         <li>
                                                             <button type="button" class="dropdown-item btn-link js-markconfirmed">Mark Confirmed</button>
@@ -391,7 +391,7 @@
                                                             <span class="board-column-title flex-fill text-wrap"><asp:Literal ID="lMultiGroupModeColumnGroupNameHtml" runat="server" /></span>
                                                             <asp:LinkButton ID="btnMultiGroupModeColumnSelectedGroup" runat="server"
                                                             CssClass="text-color p-0"
-                                                            Text="fa fa-check-square"
+                                                            Text="ti ti-square-check"
                                                             AutoPostBack="true"
                                                             OnClick="btnMultiGroupModeColumnSelectedGroup_Click"/>
                                                         </div>
@@ -428,7 +428,7 @@
                                                                                     <span class="board-column-schedule-name text-truncate" data-toggle="tooltip" data-placement="bottom" title="<%# Eval("Schedule.AbbreviatedName") %>"><asp:Literal runat="server" ID="lMultiGroupModeOccurrenceScheduleName" /></span>
 
                                                                                     <span class="autoscheduler-warning ml-1 js-autoscheduler-warning" data-placement="bottom" data-original-title="Auto Schedule requires a desired capacity for this location.">
-                                                                                        <i class="fa fa-exclamation-triangle"></i>
+                                                                                        <i class="ti ti-alert-triangle"></i>
                                                                                     </span>
                                                                                 </div>
                                                                             </asp:Panel>
@@ -438,7 +438,7 @@
                                                                                 <asp:Literal ID="lSingleGroupModeLocationTitle" runat="server" />
 
                                                                                 <span class="autoscheduler-warning js-autoscheduler-warning" data-placement="bottom" data-original-title="Auto Schedule requires a desired capacity for this location.">
-                                                                                        <i class="fa fa-exclamation-triangle"></i>
+                                                                                        <i class="ti ti-alert-triangle"></i>
                                                                                     </span>
                                                                             </asp:Panel>
                                                                     </div>
@@ -466,7 +466,7 @@
 
                                                                     <div class="panel-body p-0">
                                                                         <div class="alert alert-danger js-alert js-scheduler-schedule-person-error margin-all-md" style="display: none">
-                                                                            <button type="button" class="close js-hide-alert" aria-hidden="true"><i class="fa fa-times"></i></button>
+                                                                            <button type="button" class="close js-hide-alert" aria-hidden="true"><i class="ti ti-x"></i></button>
                                                                             <span class="js-scheduler-schedule-person-error-text"></span>
                                                                         </div>
 

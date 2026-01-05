@@ -1,0 +1,38 @@
+.rock-chat-window {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-height: 0;
+
+    .rock-chat-window-content {
+        display: flex;
+        flex-direction: row;
+        flex-grow: 1;
+        min-height: 0;
+
+        .rock-chat-window-content-left {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            flex-grow: 1;
+
+            >.str-chat__message-list {
+                flex-grow: 1;
+                min-height: 0;
+                overflow-y: auto;
+            }
+        }
+
+        .rock-chat-window-content-right {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+
+            .str-chat__list {
+                flex-grow: 1;
+                min-height: 0;
+                overflow-y: auto;
+            }
+        }
+    }
+}

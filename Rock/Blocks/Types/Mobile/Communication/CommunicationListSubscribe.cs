@@ -37,7 +37,7 @@ namespace Rock.Blocks.Types.Mobile.Events
     [DisplayName( "Communication List Subscribe" )]
     [Category( "Mobile > Communication" )]
     [Description( "Allows the user to subscribe or unsubscribe from specific communication lists." )]
-    [IconCssClass( "fa fa-at" )]
+    [IconCssClass( "ti ti-at" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

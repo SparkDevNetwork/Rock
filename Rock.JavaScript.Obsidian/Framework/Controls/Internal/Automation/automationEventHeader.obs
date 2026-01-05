@@ -1,0 +1,105 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="automation-event-header">
+        <div class="title">
+            {{ title }}
+        </div>
+
+        <div class="header-description">
+            <span class="description-text">{{ description }}</span>
+
+            <span v-if="props.mergeFields.length > 0"
+                  class="merge-fields-link"
+                  @click="showMergeFields = !showMergeFields">
+                {{ mergeFieldTitle }}
+            </span>
+        </div>
+
+        <TransitionVerticalCollapse>
+            <div v-if="showMergeFields">
+                <ul class="mb-0 pt-2">
+                    <li v-for="mergeField in mergeFields"
+                        :key="mergeField.key ?? undefined">
+                        <strong>{{ mergeField.key }}</strong>: {{ mergeField.description }}
+                    </li>
+                </ul>
+            </div>
+        </TransitionVerticalCollapse>
+    </div>
+</template>
+
+<style scoped>
+.automation-event-header {
+    background-color: var(--color-interface-softer);
+    border-radius: var(--rounded-medium);
+    display: flex;
+    flex-direction: column;
+    margin-bottom: var(--spacing-small);
+    padding: var(--spacing-medium);
+    gap: var(--spacing-tiny);
+}
+
+.title {
+    font-size: var(--font-size-h5);
+    font-weight: 600;
+    color: var(--color-interface-strong);
+}
+
+.header-description {
+    font-size: var(--font-size-small);
+    color: var(--color-interface-medium);
+}
+
+.merge-fields-link {
+    color: var(--color-link);
+    cursor: pointer;
+    margin-left: var(--spacing-tiny);
+}
+</style>
+
+<script setup lang="ts">
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { AutomationValueDefinitionBag } from "@Obsidian/ViewModels/Core/Automation/automationValueDefinitionBag";
+    import { computed, PropType, ref } from "vue";
+
+    const props = defineProps({
+        /**
+         * The title of the automation event that is being configured.
+         */
+        title: {
+            type: String as PropType<string>,
+            default: "Settings"
+        },
+
+        /**
+         * A description of how the automation event works and what the
+         * person needs to configure before it will work.
+         */
+        description: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /**
+         * The list of merge fields that can be used in the automation event.
+         */
+        mergeFields: {
+            type: Array as PropType<AutomationValueDefinitionBag[]>,
+            default: []
+        }
+    });
+
+    // #region Values
+
+    const showMergeFields = ref(false);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const mergeFieldTitle = computed((): string => {
+        return showMergeFields.value ? "Hide Merge Fields" : "Show Merge Fields";
+    });
+
+    // #endregion
+</script>

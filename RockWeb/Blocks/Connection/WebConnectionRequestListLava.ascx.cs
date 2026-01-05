@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Connection
     [DisplayName( "Connection Request List" )]
     [Category( "Connection > WebView" )]
     [Description( "Displays the list of connection requests for a single opportunity." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
 
     #region Block Attributes
     [CodeEditorField( "Lava Template",

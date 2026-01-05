@@ -15,8 +15,8 @@
                          label="Description"
                          textMode="multiline" />
 
-                <TextBox v-model="iconCssClass"
-                         label="Icon CSS Class" />
+                <IconPicker v-model="iconCssClass"
+                            label="Icon CSS Class" />
 
                 <div class="row">
                     <div class="col-md-6">
@@ -112,6 +112,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
     import Grid, { EditColumn, TextColumn, DeleteColumn } from "@Obsidian/Controls/grid";
     import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
     import Modal from "@Obsidian/Controls/modal.obs";

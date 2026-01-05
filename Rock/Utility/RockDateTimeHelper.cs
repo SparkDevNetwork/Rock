@@ -16,6 +16,8 @@
 //
 using System;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.Web;
@@ -116,7 +118,7 @@ END";
 
             using ( var rockContext = new Rock.Data.RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeoutSeconds;
+                rockContext.Database.SetCommandTimeout( commandTimeoutSeconds );
                 rockContext.Database.ExecuteSqlCommand( @"
 UPDATE FinancialTransaction
 SET SundayDate = dbo.ufnUtility_GetSundayDate(TransactionDateTime)

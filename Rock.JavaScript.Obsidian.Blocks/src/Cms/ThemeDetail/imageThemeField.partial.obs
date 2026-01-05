@@ -13,7 +13,7 @@
                     class="btn btn-default btn-sm"
                     title="Reset to default"
                     @click="onResetValue">
-                <i class="fa fa-refresh"></i>
+                <i class="ti ti-refresh"></i>
             </button>
         </div>
     </div>

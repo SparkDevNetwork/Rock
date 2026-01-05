@@ -143,9 +143,12 @@
         const actionContext: BlockActionContextBag = {};
         if (!config.disableCaptchaSupport && captchaElement.value) {
             actionContext.captcha = captchaToken.value;
-            captchaElement.value.refreshToken();
         }
         const result = await invokeBlockAction<ConnectionOpportunitySignupResultBag>("Signup", { bag: requestBag }, actionContext);
+
+        if (!config.disableCaptchaSupport && captchaElement.value) {
+            captchaElement.value.refreshToken();
+        }
 
         if (result.isError) {
             errorMessage.value = result.errorMessage || "An error occurred while processing your request.";

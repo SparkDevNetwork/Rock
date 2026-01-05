@@ -15,7 +15,7 @@
                             <asp:HiddenField ID="hfValue" runat="server" Value='<%# Eval("Id") %>' />
                             <header class="panel-heading clearfix">
                                 <Rock:RockCheckBox ID="cbValue" runat="server" AutoPostBack="true" Checked='<%# Eval("Selected") %>' text='<%# Eval("Value") %>' />
-                                <a class='btn btn-link btn-xs pull-right checklist-desc-toggle'><i class='fa fa-chevron-down'></i></a>
+                                <a class='btn btn-link btn-xs pull-right checklist-desc-toggle'><i class='ti ti-chevron-down'></i></a>
                             </header>
                             <div class="checklist-description panel-body" style="display: none;">
                                 <%# Eval("Description") %>

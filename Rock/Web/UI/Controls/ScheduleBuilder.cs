@@ -415,7 +415,7 @@ namespace Rock.Web.UI.Controls
             _btnShowPopup.CausesValidation = false;
             _btnShowPopup.ID = "btnShowPopup_" + this.ClientID;
             _btnShowPopup.CssClass = "picker-label";
-            _btnShowPopup.Text = "<i class='fa fa-calendar'></i> Edit Schedule";
+            _btnShowPopup.Text = "<i class='ti ti-calendar'></i> Edit Schedule";
             _btnShowPopup.ClientIDMode = ClientIDMode.Static;
             _btnShowPopup.Click += _btnShowPopup_Click;
 
@@ -1589,12 +1589,12 @@ END:VCALENDAR
 
             foreach ( var dateValue in _hfSpecificDateListValues.Value.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
             {
-                writer.Write( "<li><span>" + dateValue + "</span><a href='#' style='display: none'><i class='fa fa-times'></i></a></li>" );
+                writer.Write( "<li><span>" + dateValue + "</span><a href='#' style='display: none'><i class='ti ti-x'></i></a></li>" );
             }
 
             writer.Write( @"
                 </ul>
-                <a class='btn btn-action btn-sm add-specific-date'><i class='fa fa-plus'></i>
+                <a class='btn btn-action btn-sm add-specific-date'><i class='ti ti-plus'></i>
                     <span> Add Date</span>
                 </a>
 " );
@@ -1802,12 +1802,12 @@ END:VCALENDAR
 
             foreach ( var dateRangeValue in _hfExclusionDateRangeListValues.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
             {
-                writer.Write( "<li><span>" + dateRangeValue + "</span> <a href='#' style='display: none'><i class='fa fa-times'></i></a></li>" );
+                writer.Write( "<li><span>" + dateRangeValue + "</span> <a href='#' style='display: none'><i class='ti ti-x'></i></a></li>" );
             }
 
             writer.Write( @"
                 </ul>
-                <a class='btn btn-action btn-sm add-exclusion-daterange'><i class='fa fa-plus'></i>
+                <a class='btn btn-action btn-sm add-exclusion-daterange'><i class='ti ti-plus'></i>
                     <span> Add Date Range</span>
                 </a>" );
 

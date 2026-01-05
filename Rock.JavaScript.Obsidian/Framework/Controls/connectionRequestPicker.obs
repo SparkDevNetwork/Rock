@@ -2,7 +2,7 @@
 <template>
     <TreeItemPicker v-model="internalValue"
                     formGroupClasses="connection-request-item-picker"
-                    iconCssClass="fa fa-plug"
+                    iconCssClass="ti ti-plug"
                     :provider="itemProvider"
                     :multiple="multiple" />
 </template>

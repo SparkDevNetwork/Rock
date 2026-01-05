@@ -41,6 +41,9 @@ export type LearningClassFacilitatorBag = {
     /** Gets or sets the facilitator name. */
     facilitatorName?: string | null;
 
+    /** Gets or sets the facilitator Person Id. */
+    facilitatorPersonId: number;
+
     /** Gets or sets the facilitator role. */
     facilitatorRole?: string | null;
 

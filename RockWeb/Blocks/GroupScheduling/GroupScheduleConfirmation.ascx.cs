@@ -152,7 +152,7 @@ namespace RockWeb.Blocks.GroupScheduling
 
   {{ ScheduledItem.Occurrence.Group.Name }}<br />
   {{ ScheduledItem.Occurrence.Location.Name }} {{ScheduledItem.Occurrence.Schedule.Name }}
-<i class='text-success fa fa-check-circle'></i><br /><br />
+<i class='text-success ti ti-circle-check'></i><br /><br />
 {% endfor %}
 </p><p class='margin-b-lg'>Thanks again!<br /></p>";
 

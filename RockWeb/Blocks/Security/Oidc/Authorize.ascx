@@ -7,7 +7,7 @@
         <asp:Panel ID="pnlPanel" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-key"></i>
+                    <i class="ti ti-key"></i>
                     Authorization
                 </h1>
             </div>

@@ -209,8 +209,8 @@ $('.rock-panel-widget > header').on('click', function () {
     $expanded = $(this).children('input.filter-expanded');
     $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
 
-    $('a.view-state > i', this).toggleClass('fa-chevron-down');
-    $('a.view-state > i', this).toggleClass('fa-chevron-up');
+    $('a.view-state > i', this).toggleClass('ti-chevron-down');
+    $('a.view-state > i', this).toggleClass('ti-chevron-up');
 });
 
 // fix so that certain controls will fire its event, but not the parent event
@@ -251,7 +251,7 @@ $('.js-stop-immediate-propagation').on('click', function (event) {
             _lbDelete.CausesValidation = false;
             _lbDelete.CssClass = "btn btn-xs btn-square btn-danger js-stop-immediate-propagation";
             _lbDelete.Click += lbDelete_Click;
-            _lbDelete.Controls.Add( new LiteralControl { Text = "<i class='fa fa-times'></i>" } );
+            _lbDelete.Controls.Add( new LiteralControl { Text = "<i class='ti ti-x'></i>" } );
         }
 
         /// <summary>
@@ -374,7 +374,7 @@ $('.js-stop-immediate-propagation').on('click', function (event) {
                     // Reorder Icon
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-link btn-xs panel-widget-reorder js-stop-immediate-propagation" );
                     writer.RenderBeginTag( HtmlTextWriterTag.A );
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-bars" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "ti ti-menu-2" );
                     writer.RenderBeginTag( HtmlTextWriterTag.I );
                     writer.RenderEndTag();
                     writer.RenderEndTag();
@@ -383,7 +383,7 @@ $('.js-stop-immediate-propagation').on('click', function (event) {
                 // Chevron up/down Button
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-link btn-xs view-state" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "ti ti-chevron-up" : "ti ti-chevron-down" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();

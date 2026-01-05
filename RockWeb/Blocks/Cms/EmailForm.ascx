@@ -9,6 +9,10 @@
             <asp:Literal ID="lEmailForm" runat="server" />
 
             <div class="emailform-messages"></div>
+            
+            <asp:Panel ID="pnlCaptcha" runat="server" CssClass="captcha-panel">
+                <Rock:Captcha ID="cpCaptcha" runat="server" OnTokenReceived="cpCaptcha_TokenReceived" />
+            </asp:Panel>
 			
 			<div id="divButtonWrap" runat="server">
 				<asp:Button ID="btnSubmit" CssClass="btn btn-primary" runat="server" Text="Submit" OnClientClick="return validateForm();" OnClick="btnSubmit_Click" />
@@ -79,6 +83,84 @@
 
                 return true;
 
+            }
+ 
+            var prm = Sys.WebForms.PageRequestManager.getInstance();
+            var formData = {};
+            var formAttachments = {};
+
+            if (!prm._handlersAlreadyAdded) {
+                prm.add_beginRequest(maintainFormData);
+                prm.add_endRequest(restoreFormData);
+                prm._handlersAlreadyAdded = true;
+            }
+
+            function maintainFormData(sender, args) {
+                formData = {};
+                formAttachments = {};
+                $(".emailform input[type='text'], .emailform input[type='email'], .emailform input[type='password'], .emailform textarea, .emailform select").each(function () {
+                    var name = $(this).attr('name');
+                    if (name) {
+                        formData[name] = $(this).val();
+                    }
+                });
+                $(".emailform input[type='checkbox']").each(function () {
+                    var name = $(this).attr('name');
+                    if (name) {
+                        if (!formData[name]) formData[name] = [];
+                        if ($(this).prop('checked')) {
+                            formData[name].push($(this).val());
+                        }
+                    }
+                });
+                $(".emailform input[type='radio']").each(function () {
+                    if ($(this).prop('checked')) {
+                        var name = $(this).attr('name');
+                        if (name) {
+                            formData[name] = $(this).val();
+                        }
+                    }
+                });
+                $(".emailform input[type='file']").each(function () {
+                    var name = $(this).attr('name');
+                    if (name && this.files.length > 0) {
+                        formAttachments[name] = Array.from(this.files);
+                    }
+                });
+            }
+
+            function restoreFormData(sender, args) {
+                for (var name in formData) {
+                    var val = formData[name];
+                    if (Array.isArray(val)) {
+                        $(".emailform input[type='checkbox'][name='" + name + "']").prop('checked', false);
+                        for (var i = 0; i < val.length; i++) {
+                            $(".emailform input[type='checkbox'][name='" + name + "'][value='" + val[i] + "']").prop('checked', true);
+                        }
+                    } else {
+                        var input = $(".emailform [name='" + name + "']");
+                        if (input.is(':radio')) {
+                            input.prop('checked', false);
+                            $(".emailform input[type='radio'][name='" + name + "'][value='" + val + "']").prop('checked', true);
+                        } else {
+                            input.val(val);
+                        }
+                    }
+                }
+                for (var name in formAttachments) {
+                    var files = formAttachments[name];
+                    if (files && files.length > 0) {
+                        var dt = new window.DataTransfer();
+                        files.forEach(function (file) {
+                            dt.items.add(file);
+                        });
+                        try {
+                            $(".emailform input[type='file'][name='" + name + "']")[0].files = dt.files;
+                        } catch (err) {
+                            console.error(err.message);
+                        }
+                    }
+                }
             }
         </script>
 

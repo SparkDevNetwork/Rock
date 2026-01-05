@@ -197,10 +197,7 @@ namespace RockWeb.Blocks.Event
 
                 mergeFields.Add("Context", contextObjects);
 
-                // Enable Calendar Events and Event Scheduled Instance Lava commands
-                var enabledLavaCommands = "CalendarEvents,EventScheduledInstance";
-
-                lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields, enabledLavaCommands );
+                lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 
             }
             else

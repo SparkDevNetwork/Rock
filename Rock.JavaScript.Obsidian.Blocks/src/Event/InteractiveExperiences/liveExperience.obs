@@ -220,7 +220,7 @@ body {
             styles["--experience-action-secondary-btn-bg"] = config.style.action.secondaryButtonColor;
         }
         else {
-            styles["--experience-action-secondary-btn-bg"] = "var(--color-info)";
+            styles["--experience-action-secondary-btn-bg"] = "var(--color-info-strong)";
         }
 
         if (config.style?.action?.secondaryButtonTextColor) {

@@ -21,7 +21,7 @@ using System.Windows.Controls;
 
 using RestSharp;
 
-using Rock.Client;
+using Rock.Apps.StatementGenerator.Client;
 
 namespace Rock.Apps.StatementGenerator
 {
@@ -63,9 +63,9 @@ namespace Rock.Apps.StatementGenerator
             txtDocumentName.Text = saveOptions.DocumentName;
             txtDocumentPurposeKey.Text = saveOptions.DocumentPurposeKey;
             cbOverwriteDocumentsOfThisTypeWithSamePurposeKey.IsChecked = saveOptions.OverwriteDocumentsOfThisTypeWithSamePurposeKey;
-            rbSaveForAllAdults.IsChecked = saveOptions.DocumentSaveFor == Client.Enums.FinancialStatementIndividualSaveOptionsSaveFor.AllActiveAdultsInGivingGroup;
-            rbSaveForPrimaryGiver.IsChecked = saveOptions.DocumentSaveFor == Client.Enums.FinancialStatementIndividualSaveOptionsSaveFor.PrimaryGiver;
-            rbSaveForAllActiveFamilyMembers.IsChecked = saveOptions.DocumentSaveFor == Client.Enums.FinancialStatementIndividualSaveOptionsSaveFor.AllActiveFamilyMembersInGivingGroup;
+            rbSaveForAllAdults.IsChecked = saveOptions.DocumentSaveFor == FinancialStatementIndividualSaveOptionsSaveFor.AllActiveAdultsInGivingGroup;
+            rbSaveForPrimaryGiver.IsChecked = saveOptions.DocumentSaveFor == FinancialStatementIndividualSaveOptionsSaveFor.PrimaryGiver;
+            rbSaveForAllActiveFamilyMembers.IsChecked = saveOptions.DocumentSaveFor == FinancialStatementIndividualSaveOptionsSaveFor.AllActiveFamilyMembersInGivingGroup;
 
             ReportOptions.Current.IndividualSaveOptions = saveOptions;
         }
@@ -81,14 +81,14 @@ namespace Rock.Apps.StatementGenerator
             restClient.LoginToRock( rockConfig.Username, rockConfig.Password );
 
             var getDocumentTypesRequest = new RestRequest( "api/DocumentTypes?$filter=EntityType/Name eq 'Rock.Model.Person'" );
-            var getDocumentTypesResponse = restClient.Execute<List<Client.DocumentType>>( getDocumentTypesRequest );
+            var getDocumentTypesResponse = restClient.Execute<List<DocumentType>>( getDocumentTypesRequest );
 
             if ( getDocumentTypesResponse.ErrorException != null )
             {
                 throw getDocumentTypesResponse.ErrorException;
             }
 
-            List<Client.DocumentType> documentTypeList = getDocumentTypesResponse.Data;
+            List<DocumentType> documentTypeList = getDocumentTypesResponse.Data;
 
             cboDocumentType.Items.Clear();
             foreach ( var documentType in documentTypeList.OrderBy( d => d.Name ) )
@@ -118,15 +118,15 @@ namespace Rock.Apps.StatementGenerator
 
             if ( rbSaveForAllAdults.IsChecked == true )
             {
-                saveOptions.DocumentSaveFor = Client.Enums.FinancialStatementIndividualSaveOptionsSaveFor.AllActiveAdultsInGivingGroup;
+                saveOptions.DocumentSaveFor = FinancialStatementIndividualSaveOptionsSaveFor.AllActiveAdultsInGivingGroup;
             }
             else if ( rbSaveForPrimaryGiver.IsChecked == true )
             {
-                saveOptions.DocumentSaveFor = Client.Enums.FinancialStatementIndividualSaveOptionsSaveFor.PrimaryGiver;
+                saveOptions.DocumentSaveFor = FinancialStatementIndividualSaveOptionsSaveFor.PrimaryGiver;
             }
             else if ( rbSaveForAllActiveFamilyMembers.IsChecked == true )
             {
-                saveOptions.DocumentSaveFor = Client.Enums.FinancialStatementIndividualSaveOptionsSaveFor.AllActiveFamilyMembersInGivingGroup;
+                saveOptions.DocumentSaveFor = FinancialStatementIndividualSaveOptionsSaveFor.AllActiveFamilyMembersInGivingGroup;
             }
 
             ReportOptions.Current.IndividualSaveOptions = saveOptions;

@@ -18,7 +18,7 @@
         };
         var MenuLabelDefault = 'More';
         var MenuLabelAllHiddenDefault = 'Menu';
-        var MenuLabelCarat = '<i class="ml-1 fa fa-angle-down" />'
+        var MenuLabelCarat = '<i class="ml-1 ti ti-chevron-down" />'
         var MenuTemplate = function(MenuLabel) {
             return '<li class="overflow-nav dropdown d-none"><a href="#" class="dropdown-toggle nav-link overflow-nav-link" data-toggle="dropdown" role="button" aria-haspopup="true">' + MenuLabel + '</a><ul class="overflow-nav-list dropdown-menu dropdown-menu-right"></ul></li>';
         };

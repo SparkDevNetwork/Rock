@@ -14,7 +14,7 @@
                             @click="onAbilityLevelClick(abilityLevel)">
                     <span v-if="abilityLevel.id === currentAbilityLevelId"
                           class="selection">
-                        <i class="fa fa-check-square"></i>
+                        <i class="ti ti-checkbox"></i>
                     </span>
                     <span class="title">{{ abilityLevel.name }}</span>
                 </RockButton>

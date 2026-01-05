@@ -38,13 +38,14 @@ namespace Rock.Blocks.Core
     [DisplayName( "Signature Document Template List" )]
     [Category( "Core" )]
     [Description( "Lists all the signature document templates and allows for managing them." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the signature document template details.",
         Key = AttributeKey.DetailPage )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "8fae9715-89f1-4faa-a35f-18cb55e269c0" )]
     [Rock.SystemGuid.BlockTypeGuid( "ffca1f50-e5fa-45b0-8d97-e2707e19bba7" )]
     [CustomizedGrid]

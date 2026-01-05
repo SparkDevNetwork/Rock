@@ -1,0 +1,9 @@
+<template>
+    <div v-content="content"></div>
+</template>
+
+<script setup lang="ts">
+    import { useStaticContent } from "@Obsidian/Utility/block";
+
+    const content = useStaticContent();
+</script>

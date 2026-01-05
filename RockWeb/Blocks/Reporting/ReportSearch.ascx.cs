@@ -145,7 +145,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !string.IsNullOrWhiteSpace( prefix ) )
             {
-                prefix += " <i class='fa fa-angle-right'></i> ";
+                prefix += " <i class='ti ti-chevron-right'></i> ";
             }
 
             prefix += ParentStructure( category.ParentCategory, parentIds );

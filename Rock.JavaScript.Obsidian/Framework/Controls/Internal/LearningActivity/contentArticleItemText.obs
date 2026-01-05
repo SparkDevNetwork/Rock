@@ -1,0 +1,63 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="[ComponentScreen.Configuration, ComponentScreen.Completion].includes(screenToShow)" :class="containerClasses">
+        <div v-if="screenToShow === ComponentScreen.Configuration">
+            <StructuredContentEditor v-model="text" :disabled="disabled" />
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Completion">
+            <div v-if="text" v-html="text"></div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, toValue, watch } from "vue";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import { ComponentScreen } from "./learningActivity";
+    import { ContentArticleItem } from "./contentArticleLearningActivity.partial";
+
+    const props = defineProps({
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** The assessment item's configuration. */
+        modelValue: {
+            type: Object as PropType<ContentArticleItem>,
+            required: true
+        },
+
+        screenToShow: {
+            type: Object as PropType<ComponentScreen>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "update:modelValue", value: ContentArticleItem): void
+    }>();
+
+    const text = ref(props.modelValue.text ?? "");
+
+    watch(text, () => {
+        const newModelValue = {
+            ...props.modelValue,
+            text: text.value
+        };
+
+        emit("update:modelValue", newModelValue);
+    });
+
+    /** CSS classes for the panel. */
+    const containerClasses = computed((): string[] => {
+        const screenName = toValue(props.screenToShow);
+        return [
+            "lms-assessment-item-container",
+            `lms-assessment-item-${screenName.toLowerCase()}-container`,
+            `lms-assessment-item-section-container`
+        ];
+    });
+
+</script>

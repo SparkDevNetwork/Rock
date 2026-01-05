@@ -11,7 +11,7 @@
 
                     <div class="panel-heading">
                         <h1 class="panel-title pull-left">
-                            <i class="fa fa-user-check"></i>
+                            <i class="ti ti-user-check"></i>
                             RSVP Occurrences
                         </h1>
                     </div>
@@ -47,7 +47,7 @@
                                     <Rock:RockBoundField DataField="AcceptedCount" HeaderText="Accepted" SortExpression="AcceptedCount" />
                                     <Rock:RockBoundField DataField="DeclinedCount" HeaderText="Declined" SortExpression="DeclinedCount" />
                                     <Rock:RockBoundField DataField="NoResponseCount" HeaderText="No Response" SortExpression="NoResponseCount" />
-                                    <Rock:LinkButtonField CssClass="btn btn-default btn-sm" ID="btnDetails" Text="<i class='fa fa-user-check' title='Details'></i>" OnClick="btnDetails_Click" />
+                                    <Rock:LinkButtonField CssClass="btn btn-default btn-sm" ID="btnDetails" Text="<i class='ti ti-user-check' title='Details'></i>" OnClick="btnDetails_Click" />
                                 </Columns>
                             </Rock:Grid>
                         </div>

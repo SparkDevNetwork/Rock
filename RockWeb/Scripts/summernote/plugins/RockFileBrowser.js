@@ -3,7 +3,7 @@
 
     // create button
     var button = ui.button({
-        contents: '<i class="fa fa-file-text-o"/>',
+        contents: '<i class="ti ti-file-type-txt"/>',
         tooltip: 'File Browser',
         click: function () {
             context.invoke('editor.saveRange');

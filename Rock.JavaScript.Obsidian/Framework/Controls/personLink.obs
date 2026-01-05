@@ -2,7 +2,7 @@
 <template>
     <PopOver v-model:isVisible="isVisible" :placement="popOverPlacement" v-model:triggerUpdate="triggerUpdate">
         <template #activator="props">
-            <a v-bind="props" :href="'/Person/' + personId"><i v-if="photoId != 0" class="fa fa-circle"></i> <strong>{{ personName }}</strong></a>
+            <a v-bind="props" :href="'/Person/' + personId"><i v-if="photoId != 0" class="ti ti-circle"></i> <strong>{{ personName }}</strong></a>
         </template>
 
         <Loading :isLoading="!popOverContent" isSmall>

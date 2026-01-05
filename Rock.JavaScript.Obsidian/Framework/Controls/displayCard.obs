@@ -1,0 +1,208 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="displaycard"
+         :class="{
+            'is-hovering': isHovering,
+            'clickable': !!props.onClick
+        }"
+         @mouseenter="isHovering = true"
+         @mouseleave="isHovering = false"
+         @click="onMainClick">
+        <slot name="prepend" />
+
+        <div v-if="badgeText" class="displaycard-badge">
+            <Badge badgeType="success">{{ badgeText }}</Badge>
+        </div>
+
+        <div class="displaycard-heading">
+            <div v-if="iconCssClass" class="displaycard-heading-icon">
+                <HighlightLabel :labelType="internalIconLabelType" :iconCssClass="`${iconCssClass}`" :customClass="internalIconLabelCustomClass" />
+            </div>
+
+            <div v-if="title || description || $slots.description" class="displaycard-heading-text">
+                <h5 v-if="title" class="displaycard-heading-text-title">{{ title }}</h5>
+                <small v-if="description || $slots.description" class="displaycard-heading-text-description">
+                    <slot name="description">
+                        {{ description }}
+                    </slot>
+                </small>
+            </div>
+        </div>
+
+        <div v-if="asideIconCssClass || aside" class="displaycard-aside">
+            <i v-if="asideIconCssClass" :class="`${asideIconCssClass}`"></i>
+            <small v-if="aside">{{ aside }}</small>
+        </div>
+
+        <div v-if="primaryActions?.length || secondaryActions?.length || $slots.actions" class="displaycard-actions">
+            <slot name="actions">
+                <div v-if="primaryActions?.length" class="displaycard-primary-actions">
+                    <template v-for="action in primaryActions" :key="`${action.title}${action.iconCssClass}`">
+                        <RockButton v-if="action.iconCssClass"
+                                    isSquare btnSize="sm"
+                                    :btnType="action.type"
+                                    :tooltip="action.title"
+                                    :disabled="action.disabled"
+                                    @click.stop="action.handler">
+                            <i :class="action.iconCssClass"></i>
+                        </RockButton>
+
+                        <RockButton v-else btnSize="sm"
+                                    :btnType="action.type"
+                                    :tooltip="action.title"
+                                    :disabled="action.disabled"
+                                    @click.stop="action.handler">
+                            {{ action.title }}
+                        </RockButton>
+                    </template>
+                </div>
+
+                <div v-if="secondaryActions?.length" class="displaycard-secondary-actions">
+                    <DropDownMenu align="right"
+                                  :items="secondaryActions"
+                                  @click.stop
+                                  @mouseenter="isHovering = false"
+                                  @mouseleave="isHovering = true" />
+                </div>
+            </slot>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import Badge from "./badge.obs";
+    import DropDownMenu from "./dropDownMenu.obs";
+    import HighlightLabel from "./highlightLabel.obs";
+    import RockButton from "./rockButton.obs";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+
+    const highlightLabelTypes = ["default", "primary", "success", "info", "warning", "danger", "type", "campus", "custom"] as const;
+    type HighlightLabelType = (typeof highlightLabelTypes)[number];
+
+    const props = defineProps({
+        aside: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        asideIconCssClass: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        badgeText: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        iconCssClass: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        iconLabelType: {
+            type: String as PropType<Omit<HighlightLabelType, "custom"> | string>,
+            default: "info" as const
+        },
+
+        iconTitleAndDescMinWidth: {
+            type: String as PropType<string>,
+            required: false,
+            default: "150px" as const
+        },
+
+        description: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        minWidth: {
+            type: String as PropType<string>,
+            required: false,
+            default: "440px" as const
+        },
+
+        primaryActions: {
+            type: Array as PropType<MenuAction[] | null | undefined>,
+            required: false
+        },
+
+        secondaryActions: {
+            type: Array as PropType<MenuAction[] | null | undefined>,
+            required: false
+        },
+
+        title: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        /**
+         * Optional click handler that will be called when the main item
+         * is clicked.
+         */
+        onClick: {
+            type: Function as PropType<() => void>,
+            required: false
+        }
+    });
+
+    // #region Values
+
+    const isHovering = ref<boolean>(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const internalIconLabelType = computed<HighlightLabelType>(() => {
+        const currentValue = props.iconLabelType;
+
+        if (!currentValue) {
+            // Return "info" by default if empty.
+            return "info";
+        }
+        else if (isHighlightLabelType(currentValue)) {
+            return currentValue;
+        }
+        else {
+            return "custom";
+        }
+    });
+
+    const internalIconLabelCustomClass = computed<string | undefined>(() => {
+        if (isHighlightLabelType(props.iconLabelType) && props.iconLabelType !== "custom") {
+            return undefined;
+        }
+        else {
+            return props.iconLabelType as string ?? undefined;
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Handles the click event on the main item. This will simply call the
+     * onClick function if it is defined. This is used so that we can detect
+     * when a click handler is defined and apply the "clickable" class.
+     */
+    function onMainClick(): void {
+        if (props.onClick) {
+            props.onClick();
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    function isHighlightLabelType(value: unknown): value is HighlightLabelType {
+        return typeof value === "string"
+            && highlightLabelTypes.map(t => t as string).includes(value);
+    }
+
+    // #endregion Functions
+</script>

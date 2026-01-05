@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Administration
                 if ( downloadCellIndex >= 0 )
                 {
                     string fileUrl = definedValue.GetAttributeValue("DownloadUrl");
-                    e.Row.Cells[downloadCellIndex].Text = string.Format( "<a href='{0}' class='btn btn-action btn-xs'><i class='fa fa-download'></i> Download</a>", fileUrl );
+                    e.Row.Cells[downloadCellIndex].Text = string.Format( "<a href='{0}' class='btn btn-action btn-xs'><i class='ti ti-download'></i> Download</a>", fileUrl );
                 }
 
                 Literal lAppName = e.Row.FindControl( "lAppName" ) as Literal;

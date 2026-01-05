@@ -39,7 +39,7 @@ namespace Rock.Blocks.Tv
     [DisplayName( "TV Application List" )]
     [Category( "TV > TV Apps" )]
     [Description( "Displays a list of TV applications." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Apple TV Detail Page",

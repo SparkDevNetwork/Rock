@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <a class="warning" href="#" tabindex="-1" role="button" @click.prevent="toggleWarning"><i class="fa fa-exclamation-triangle"></i></a>
+    <a class="warning" href="#" tabindex="-1" role="button" @click.prevent="toggleWarning"><i class="ti ti-alert-triangle"></i></a>
     <TransitionVerticalCollapse>
         <NotificationBox v-if="showWarning" alertType="warning">
             <slot />

@@ -36,8 +36,8 @@
                           help="Checking this box will allow this Document Type as an option when manually adding/editing documents for the entity." />
             </div>
             <div class="col-md-6">
-                <TextBox v-model="iconCssClass"
-                         label="Icon CSS Class" />
+                <IconPicker v-model="iconCssClass"
+                            label="Icon CSS Class" />
             </div>
         </div>
 
@@ -98,6 +98,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
     import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";

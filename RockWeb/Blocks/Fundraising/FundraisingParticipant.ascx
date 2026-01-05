@@ -23,7 +23,7 @@
                                 data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Link to Clipboard"
                                 class="btn btn-default btn-xs btn-copy-to-clipboard cursor-pointer"
                                 onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
-                                <i class='fa fa-clipboard'></i>&nbsp;Copy Profile Link
+                                <i class='ti ti-clipboard'></i>&nbsp;Copy Profile Link
                             </button>
                         </div>
                         <asp:Literal ID="lMainTopContentHtml" runat="server" />

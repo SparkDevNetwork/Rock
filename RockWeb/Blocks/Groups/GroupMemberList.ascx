@@ -29,7 +29,7 @@
 
                     <div class="panel-heading">
                         <h1 class="panel-title pull-left">
-                            <i class="fa fa-users"></i>
+                            <i class="ti ti-users"></i>
                             <asp:Literal ID="lHeading" runat="server" Text="Group Members" />
                         </h1>
 
@@ -39,7 +39,7 @@
                                 <%-- Motive: get the postback url to the group sync method ---%>
                                 <%-- This button is to be hidden from the frontend as it's sole purpose is to be used as a proxy by the #sync-button in the popover ---%>
                                 <asp:LinkButton ID="lbGroupSync" style="display:none" runat="server" OnClick="lbGroupSync_Click" />
-                                <i class='fa fa-exchange' ></i></span> &nbsp;
+                                <i class='ti ti-switch-3' ></i></span> &nbsp;
                         </div>
                     </div>
 
@@ -261,7 +261,7 @@
             </Rock:ModalDialog>
 
             <Rock:ModalDialog ID="mdPlaceElsewhere" runat="server" Visible="false" ValidationGroup="vgPlaceElsewhere"
-                Title="<i class='fa fa-share'></i> Place Elsewhere" OnSaveClick="mdPlaceElsewhere_SaveClick"
+                Title="<i class='ti ti-share'></i> Place Elsewhere" OnSaveClick="mdPlaceElsewhere_SaveClick"
                 SaveButtonText="Place">
                 <Content>
                     <asp:ValidationSummary ID="vsPlaceElsewhere" runat="server" ValidationGroup="vgPlaceElsewhere" HeaderText="Please correct the following:" CssClass="alert alert-validation" />

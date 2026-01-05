@@ -11,7 +11,7 @@
                         class="btn btn-default"
                         title="Reset to default"
                         @click="onResetValue">
-                    <i class="fa fa-refresh"></i>
+                    <i class="ti ti-refresh"></i>
                 </button>
             </span>
         </template>

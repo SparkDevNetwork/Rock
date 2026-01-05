@@ -8,7 +8,7 @@
         <asp:Panel ID="pnlContent" CssClass="panel panel-block" runat="server">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-cog"></i>
+                <h1 class="panel-title"><i class="ti ti-settings"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlblWorkflowId" runat="server" LabelType="Info" />

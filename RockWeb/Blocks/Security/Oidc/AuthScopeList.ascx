@@ -6,7 +6,7 @@
             <Rock:ModalAlert ID="maGridWarning" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-openid"></i>OpenID Connect Scopes</h1>
+                <h1 class="panel-title"><i class="ti ti-lock"></i>OpenID Connect Scopes</h1>
             </div>
             <div class="panel-body">
                 <div class="grid grid-panel">

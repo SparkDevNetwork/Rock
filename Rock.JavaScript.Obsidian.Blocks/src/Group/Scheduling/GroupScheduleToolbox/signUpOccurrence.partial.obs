@@ -32,7 +32,7 @@
         </div>
 
         <div :class="checkCssClass">
-            <i class='fa fa-check'></i>
+            <i class='ti ti-check'></i>
         </div>
     </div>
 </template>

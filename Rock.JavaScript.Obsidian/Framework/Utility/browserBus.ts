@@ -46,7 +46,12 @@ export const PageMessages = {
     /**
      * Sent when the query string is changed outside the context of a page load.
      */
-    QueryStringChanged: "page.core.queryStringChanged"
+    QueryStringChanged: "page.core.queryStringChanged",
+
+    /**
+     * Sent when one of the context entity values have changed on the page.
+     */
+    ContextEntityChanged: "page.core.contextEntityChanged",
 } as const;
 
 /**

@@ -133,6 +133,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningProgramDetail
         public bool IsPublic { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether public security should be enforced for this program.
+        /// </summary>
+        public bool EnforcePublicSecurity { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the LearningProgram.
         /// </summary>
         public string Name { get; set; }

@@ -39,6 +39,15 @@ namespace Rock.Communication.Chat.Sync
         public bool IsValid => Exception == null && RequestBody.IsNotNullOrWhiteSpace();
 
         /// <summary>
+        /// Gets or sets whether this webhook should be processed immediately, or if it's acceptable for processing to
+        /// be delayed (e.g. by sending it through the standard transaction queue).
+        /// </summary>
+        /// <remarks>
+        /// This should only be set to true with approval from the DSD.
+        /// </remarks>
+        public bool ShouldProcessImmediately { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="WebhookValidationResult"/> class.
         /// </summary>
         /// <param name="requestBody">The request body.</param>

@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -48,7 +50,7 @@ namespace Rock.Jobs
 
             using ( var rockContext = new Rock.Data.RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
                 rockContext.Database.ExecuteSqlCommand( @"
 UPDATE xs
 SET xs.[DurationSeconds] = sq.[DurationSeconds]

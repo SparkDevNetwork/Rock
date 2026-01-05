@@ -1,0 +1,93 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="[ComponentScreen.Configuration, ComponentScreen.Completion].includes(screenToShow)" :class="containerClasses">
+        <div v-if="screenToShow === ComponentScreen.Configuration">
+            <TextBox v-model="label"
+                     label="Label"
+                     :disabled="disabled"
+                     inputClasses="form-control"
+                     help="Text displayed above the note field."
+                     rules="required" />
+
+            <NumberBox v-model="inputRows"
+                       :disabled="disabled"
+                       :minimumValue="1"
+                       label="Input Rows"
+                       help="Number of visible rows in the note field. Determines its height." />
+
+            <div class="is-required-section">
+                <CheckBox v-model="isRequired"
+                          label="Is Required"
+                          :disabled="disabled" />
+            </div>
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Completion">
+            <TextBox v-model="note"
+                     :label="label"
+                     textMode="multiline"
+                     :rows="inputRows"
+                     :rules="isRequired ? 'required' : ''"
+                     inputClasses="form-control" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, toValue, watch } from "vue";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { ComponentScreen } from "./learningActivity";
+    import { ContentArticleItem } from "./contentArticleLearningActivity.partial";
+
+    const props = defineProps({
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** The assessment item's configuration. */
+        modelValue: {
+            type: Object as PropType<ContentArticleItem>,
+            required: true
+        },
+
+        screenToShow: {
+            type: Object as PropType<ComponentScreen>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "update:modelValue", value: ContentArticleItem): void
+    }>();
+
+    const label = ref(props.modelValue.label ?? "");
+    const inputRows = ref(props.modelValue.inputRows ?? 3);
+    const isRequired = ref(props.modelValue.isRequired ?? false);
+    const note = ref(props.modelValue.note ?? "");
+
+    watch([label, inputRows, isRequired, note], () => {
+        const newModelValue = {
+            ...props.modelValue,
+            label: label.value,
+            inputRows: inputRows.value,
+            isRequired: isRequired.value,
+            note: note.value
+        };
+
+        emit("update:modelValue", newModelValue);
+    });
+
+    /** CSS classes for the panel. */
+    const containerClasses = computed((): string[] => {
+        const screenName = toValue(props.screenToShow);
+        return [
+            "lms-assessment-item-container",
+            `lms-assessment-item-${screenName.toLowerCase()}-container`,
+            `lms-assessment-item-section-container`
+        ];
+    });
+
+</script>

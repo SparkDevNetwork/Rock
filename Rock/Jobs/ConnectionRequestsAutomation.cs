@@ -24,6 +24,8 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -120,7 +122,7 @@ namespace Rock.Jobs
                 foreach ( var connectionStatusAutomation in connectionStatus.ConnectionStatusAutomations.OrderBy( a => a.Order ).ThenBy( a => a.AutomationName ) )
                 {
                     var rockContext = new RockContext();
-                    rockContext.Database.CommandTimeout = commandTimeout;
+                    rockContext.Database.SetCommandTimeout( commandTimeout );
 
                     var connectionRequestService = new ConnectionRequestService( rockContext );
                     var destinationStatusId = connectionStatusAutomation.DestinationStatusId;
@@ -244,7 +246,7 @@ namespace Rock.Jobs
         private List<ConnectionTypeView> GetConnectionTypeViewsWithOrderedStatuses()
         {
             var rockContext = new RockContext();
-            rockContext.Database.CommandTimeout = commandTimeout;
+            rockContext.Database.SetCommandTimeout( commandTimeout );
             var connectionTypeService = new ConnectionTypeService( rockContext );
 
             var views = connectionTypeService.Queryable().AsNoTracking()

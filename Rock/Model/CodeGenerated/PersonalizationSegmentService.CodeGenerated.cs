@@ -144,6 +144,10 @@ namespace Rock.Model
             target.IsActive = source.IsActive;
             target.IsDirty = source.IsDirty;
             target.Name = source.Name;
+            target.PersistedLastRefreshDateTime = source.PersistedLastRefreshDateTime;
+            target.PersistedLastRunDurationMilliseconds = source.PersistedLastRunDurationMilliseconds;
+            target.PersistedScheduleId = source.PersistedScheduleId;
+            target.PersistedScheduleIntervalMinutes = source.PersistedScheduleIntervalMinutes;
             target.SegmentKey = source.SegmentKey;
             target.TimeToUpdateDurationMilliseconds = source.TimeToUpdateDurationMilliseconds;
             target.CreatedDateTime = source.CreatedDateTime;

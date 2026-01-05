@@ -1,0 +1,241 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :labels="blockLabels"
+                 :entityKey="entityKey"
+                 :isAuditHidden="false"
+                 :isBadgesVisible="true"
+                 :isDeleteVisible="false"
+                 :isEditVisible="isEditable"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="false"
+                 @cancelEdit="onCancelEdit"
+                 @edit="onEdit"
+                 @save="onSave">
+        <template #view>
+            <NotificationBox v-if="infoMessage" alertType="info" v-html="infoMessage"></NotificationBox>
+
+            <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
+
+            <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
+
+            <ViewPanel :modelValue="authScopeViewBag" :options="options" />
+        </template>
+
+        <template #edit>
+            <NotificationBox v-if="infoMessage" alertType="info" v-html="infoMessage"></NotificationBox>
+
+            <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
+
+            <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
+
+            <EditPanel v-model="authScopeEditBag" :options="options" :isSystem="isSystem" @propertyChanged="baseBlock.onPropertyChanged" />
+        </template>
+    </DetailBlock>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import EditPanel from "./AuthScopeDetail/editPanel.partial.obs";
+    import ViewPanel from "./AuthScopeDetail/viewPanel.partial.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { NavigationUrlKey } from "./AuthScopeDetail/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { AuthScopeBag } from "@Obsidian/ViewModels/Blocks/Security/Oidc/AuthScopeDetail/authScopeBag";
+    import { AuthScopeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/Oidc/AuthScopeDetail/authScopeDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const config = useConfigurationValues<DetailBlockBox<AuthScopeBag, AuthScopeDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const infoMessage = ref("");
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const authScopeViewBag = ref(config.entity);
+    const authScopeEditBag = ref<ValidPropertiesBox<AuthScopeBag>>({
+        bag: {} as AuthScopeBag
+    });
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: authScopeEditBag
+    });
+
+    infoMessage.value = (
+        authScopeViewBag.value?.isSystem === true
+            ? "<strong>Note</strong> Because this auth scope is used by Rock, editing is restricted."
+            : ""
+    );
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        if (panelMode.value === DetailPanelMode.Edit) {
+            return "Edit Scope";
+        }
+
+        return "View Scope";
+    });
+
+    /**
+     * The identifier key value for this entity.
+     */
+    const entityKey = computed((): string => {
+        return authScopeViewBag.value?.idKey ?? "";
+    });
+
+    /**
+     * Additional labels to display in the block panel.
+     */
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        const labels: PanelAction[] = [];
+
+        if (panelMode.value !== DetailPanelMode.View) {
+            return undefined;
+        }
+
+        if (authScopeViewBag.value?.isActive === true) {
+            labels.push({
+                iconCssClass: "ti ti-bulb-filled",
+                title: "Active",
+                type: "success"
+            });
+        }
+        else {
+            labels.push({
+                iconCssClass: "ti ti-bulb",
+                title: "Inactive",
+                type: "danger"
+            });
+        }
+
+        return labels;
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true && authScopeViewBag.value?.isSystem !== true;
+    });
+
+    const options = computed((): AuthScopeDetailOptionsBag => {
+        return config.options ?? {};
+    });
+
+    const isSystem = computed((): boolean => {
+        return authScopeEditBag.value?.bag?.isSystem === true;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (!authScopeEditBag.value.bag?.idKey) {
+            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+                return config.navigationUrls[NavigationUrlKey.ParentPage];
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Event handler for the Edit button being clicked. Request the edit
+     * details from the server and then enter edit mode.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+    async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<ValidPropertiesBox<AuthScopeBag>>("Edit", {
+            key: authScopeViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            authScopeEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<ValidPropertiesBox<AuthScopeBag> | string>("Save", {
+            box: authScopeEditBag.value
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "object") {
+                authScopeViewBag.value = result.data.bag;
+
+                return true;
+            }
+            else if (result.statusCode === 201 && typeof result.data === "string") {
+                return result.data;
+            }
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save auth scope.";
+
+        return false;
+    }
+
+    // #endregion
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified auth scope could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        authScopeEditBag.value = { bag: config.entity };
+        panelMode.value = DetailPanelMode.Add;
+    }
+</script>

@@ -51,9 +51,9 @@ namespace Rock.Communication.Chat.DTO
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the URL of the avatar image to use for this channel in the external chat system.
+        /// Gets or sets the URL of the image to use for this channel in the external chat system.
         /// </summary>
-        public string AvatarImageUrl { get; set; }
+        public string AvatarUrl { get; set; }
 
         /// <inheritdoc cref="Group.CampusId"/>
         public int? CampusId { get; set; }
@@ -67,9 +67,7 @@ namespace Rock.Communication.Chat.DTO
         /// <inheritdoc cref="Group.GetIsChatChannelAlwaysShown"/>
         public bool IsAlwaysShown { get; set; }
 
-        /// <summary>
-        /// Gets or sets the <see cref="ChatNotificationMode"/> that determines the notification behavior for this channel.
-        /// </summary>
+        /// <inheritdoc cref="Group.GetChatPushNotificationMode"/>
         public ChatNotificationMode ChatNotificationMode { get; set; }
 
         /// <summary>

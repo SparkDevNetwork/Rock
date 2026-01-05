@@ -359,12 +359,12 @@ namespace RockWeb.Blocks.Crm
 
                             if ( !string.IsNullOrWhiteSpace( icon.IconCssClass ) )
                             {
-                                iconsHtml.AppendLine( string.Format( "<i style=\"color:{0}\" class=\"fa-3x fa-fw {1}\" data-toggle=\"tooltip\" title=\"{2}\"></i>", icon.HighlightColor, icon.IconCssClass, tooltip ) );
+                                iconsHtml.AppendLine( string.Format( "<i style=\"color:{0}\" class=\"ti-3x ti-fw {1}\" data-toggle=\"tooltip\" title=\"{2}\"></i>", icon.HighlightColor, icon.IconCssClass, tooltip ) );
                             }
                             else
                             {
                                 // Add a placeholder so that all (potential) icons align.
-                                iconsHtml.AppendLine( "<span style=\"display:block;\" class=\"fa-3x fa-fw\">&nbsp;</span>" );
+                                iconsHtml.AppendLine( "<span style=\"display:block;\" class=\"ti-3x ti-fw\">&nbsp;</span>" );
                             }
                         }
 

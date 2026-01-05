@@ -10,6 +10,16 @@ async function getEngine(): Promise<Engine> {
     let enginePromise = globalEnginePromise;
 
     if (!enginePromise) {
+        let url = "/rock-rt";
+
+        // If we have a Rock object with settings, use the realTimeUrl setting
+        // if available.
+        // @ts-expect-error Ignore implicit any type for Rock object.
+        const getSetting = window["Rock"]?.["settings"]?.get;
+        if (typeof getSetting === "function") {
+            url = getSetting("realTimeUrl") || "/rock-rt";
+        }
+
         let retryPolicy: RetryPolicy | null = null;
 
         enginePromise = globalEnginePromise = new Promise<Engine>(async (resolve, reject) => {
@@ -21,7 +31,7 @@ async function getEngine(): Promise<Engine> {
                 }
 
                 try {
-                    const engine = new AspNetEngine();
+                    const engine = new AspNetEngine(url);
 
                     engine.onDisconnected(() => {
                         globalEnginePromise = null;

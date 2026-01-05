@@ -33,5 +33,10 @@ namespace Rock.ViewModels.Blocks.Cms.PageShortLinkDetail
         /// The site options.
         /// </value>
         public List<ListItemBag> SiteOptions { get; set; }
+
+        /// <summary>
+        /// Get the Default Domain URLs of the sites to be passed to the front end.
+        /// </summary>
+        public List<ListItemBag> DefaultDomainUrls { get; set; }
     }
 }

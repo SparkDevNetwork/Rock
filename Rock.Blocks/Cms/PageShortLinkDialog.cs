@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
@@ -86,9 +87,8 @@ namespace Rock.Blocks.Cms
             box.Entity = new PageShortLinkBag();
             box.Entity.Site = defaultSite ?? new ListItemBag();
             box.Entity.Url = PageParameter( PageParameterKey.Url );
-            box.Entity.DefaultDomainURL = new SiteService( RockContext )
-                .GetDefaultDomainUri( defaultSiteId )
-                .ToString();
+            box.Entity.IsPinned = true; // Set IsPinned to True by default for manual Short Link creations.
+
             if ( defaultSiteId != 0 )
             {
                 box.Entity.Token = new PageShortLinkService( RockContext ).GetUniqueToken( SiteCache.GetId( box.Entity.Site.Value.AsGuid() ) ?? 0, minTokenLength );
@@ -107,21 +107,46 @@ namespace Rock.Blocks.Cms
         /// <returns>The options that provide additional details to the block.</returns>
         private PageShortLinkDetailOptionsBag GetBoxOptions()
         {
-            var options = new PageShortLinkDetailOptionsBag
+            var siteOptions = SiteCache
+                .All()
+                .Where( site => site.EnabledForShortening )
+                .OrderBy( site => site.Name )
+                .Select( site => new ListItemBag
+                {
+                    Value = site.Guid.ToString(),
+                    Text = site.Name
+                } )
+                .ToList();
+
+            var defaultDomainUrls = new List<ListItemBag>();
+
+            foreach ( var siteOption in siteOptions )
             {
-                SiteOptions = SiteCache
-                    .All()
-                    .Where( site => site.EnabledForShortening )
-                    .OrderBy( site => site.Name )
-                    .Select( site => new ListItemBag
+                var siteGuid = siteOption.Value.AsGuidOrNull();
+
+                if ( siteGuid.HasValue )
+                {
+                    var site = SiteCache.Get( siteGuid.Value );
+                    if ( site == null )
+                    {
+                        continue;
+                    }
+
+                    var defaultUrl = new SiteService( RockContext ).GetDefaultDomainUri( site.Id );
+
+                    defaultDomainUrls.Add( new ListItemBag
                     {
                         Value = site.Guid.ToString(),
-                        Text = site.Name
-                    } )
-                   .ToList(),
-            };
+                        Text = defaultUrl.ToString()
+                    } );
+                }
+            }
 
-            return options;
+            return new PageShortLinkDetailOptionsBag
+            {
+                SiteOptions = siteOptions,
+                DefaultDomainUrls = defaultDomainUrls
+            };
         }
 
         /// <summary>
@@ -195,6 +220,12 @@ namespace Rock.Blocks.Cms
 
             box.IfValidProperty( nameof( box.Bag.Url ),
                 () => entity.Url = box.Bag.Url );
+
+            box.IfValidProperty( nameof( box.Bag.Category ),
+                () => entity.CategoryId = box.Bag.Category.GetEntityId<Category>( RockContext ) );
+
+            box.IfValidProperty( nameof( box.Bag.IsPinned ),
+                () => entity.IsPinned = box.Bag.IsPinned );
 
             box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>

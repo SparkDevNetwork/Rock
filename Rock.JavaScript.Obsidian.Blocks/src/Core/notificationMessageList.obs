@@ -6,7 +6,7 @@
                     <DropDownContent>
                         <template #anchor>
                             <span class="clickable text-sm filter-button" :class="{ 'active': isFilterActive }">
-                                <i class="fa fa-filter"></i> Filter
+                                <i class="ti ti-filter"></i> Filter
                             </span>
                         </template>
 
@@ -19,9 +19,9 @@
                                           :showBlankItem="false" />
 
                             <DropDownList label="Status"
-                                           v-model="showReadFilter"
-                                           :items="showReadFilterItems"
-                                           :showBlankItem="false" />
+                                          v-model="showReadFilter"
+                                          :items="showReadFilterItems"
+                                          :showBlankItem="false" />
 
                             <SlidingDateRangePicker label="Date Range"
                                                     v-model="dateRangeFilter" />
@@ -31,7 +31,7 @@
 
                 <div class="ml-3 clickable" @click="onMarkAllReadClick">
                     <span class="text-sm">
-                        <i class="fa fa-check"></i> Mark All Read
+                        <i class="ti ti-check"></i> Mark All Read
                     </span>
                 </div>
             </div>
@@ -250,6 +250,11 @@
             }
         }
         disableUpdate = false;
+
+        // Temporary fix to force the reminder/notification counts to update
+        // on next page load. In the future this will be replaced with a browser
+        // bus message to cause an immediate update.
+        localStorage.removeItem("Rock.Core.ReminderLinks.Counts");
 
         visibleMessages.value = getFilteredMessages();
     }

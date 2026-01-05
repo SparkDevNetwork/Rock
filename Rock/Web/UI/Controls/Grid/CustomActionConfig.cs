@@ -44,7 +44,7 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets the icon CSS class.
-        /// Example: fa fa-custom
+        /// Example: ti ti-custom
         /// </summary>
         /// <value>
         /// The icon CSS class.

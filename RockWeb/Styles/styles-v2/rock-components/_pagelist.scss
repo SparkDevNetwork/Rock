@@ -1,0 +1,178 @@
+
+
+// Pagelist (ROCK COMPONENT) 
+
+
+// =============================================================
+// Table of Content
+//  + Base Style
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.block-title {
+  margin: 0 0 6.7px;
+}
+
+.list-as-blocks {
+  background-color: var(--color-interface-softer);
+  border-radius:    var(--rounded-medium);
+  border:           1px solid var(--color-interface-soft);
+  margin-bottom:    var(--spacing-huge);
+  
+  h3 {
+    display:      inline-block;
+    width:        100%;
+    margin:       0 0 var(--spacing-xsmall);
+    font-size:    var(--font-size-small);
+    font-weight:  var(--font-weight-regular);
+    word-wrap:    break-word;
+  }
+
+  ul {
+    display:          -ms-flexbox;
+    display:          flex;
+    -ms-flex-wrap:    wrap;
+    flex-wrap:        wrap;
+    padding:          var(--spacing-large) var(--spacing-medium) 8px var(--spacing-medium);
+    list-style:       none;
+
+    li {
+      position:       relative;
+      -ms-flex:       0 0 50%;
+      flex:           0 0 50%;
+      max-width:      50%;
+      padding-right:  calc($grid-gutter-width / 4);
+      padding-left:   calc($grid-gutter-width / 4);
+      margin-bottom:  calc($grid-gutter-width / 2);
+
+      @media (min-width: $screen-small) {
+        -ms-flex:   0 0 33.3333%;
+        flex:       0 0 33.3333%;
+        max-width:  33.3333%;
+      }
+
+      @media (min-width: $screen-medium) {
+        -ms-flex:   0 0 25%;
+        flex:       0 0 25%;
+        max-width:  25%;
+      }
+
+      @media (min-width: $screen-large) {
+        -ms-flex:   0 0 20%;
+        flex:       0 0 20%;
+        max-width:  20%;
+      }
+
+      a {
+        position:               relative;
+        display:                -ms-flexbox;
+        display:                flex;
+        -ms-flex-direction:     column;
+        flex-direction:         column;
+        align-content:          center;
+        align-items:            center;
+        justify-content:        center;
+        min-width:                0;
+        min-height:              90px;
+        height:                 100%;
+        padding:                var(--spacing-xsmall);
+        color:                  var(--color-interface-strongest);
+        text-align:             center;
+        word-wrap:              break-word;
+        background-color:       var(--color-interface-softest);
+        background-clip:        border-box;
+        border:                 1px solid var(--color-interface-soft);
+        border-radius:          var(--rounded-small);
+        -webkit-transition:     background-color 200ms linear, border-color 200ms linear;
+        -moz-transition:        background-color 200ms linear, border-color 200ms linear;
+        -ms-transition:         background-color 200ms linear, border-color 200ms linear;
+        transition:             background-color 200ms linear, border-color 200ms linear;
+
+        i {
+          margin:     var(--spacing-xsmall) 0;
+          font-size:  var(--font-size-h3);    /* When switching Rock Core to Tabler icon set make sure to increase the font-size as FontAwesome is bigger than Tabler.*/
+          color:      var(--color-interface-medium);
+        }
+
+        &:hover {
+          color:              var(--color-interface-stronger);
+          text-decoration:    none;
+          background-color:   var(--color-interface-softer);
+          border-color:       var(--color-interface-medium);
+
+          i {
+            color:            var(--color-interface-stronger);
+          }
+        }
+
+        .notification {
+          position:   absolute;
+          top:        -10px;
+          right:      -6px;
+
+          .label {
+            padding:        2px var(--spacing-xsmall);
+            color:          var(--color-interface-softest);
+            background:     var(--color-danger-strong);
+            border-radius:  36px;
+          }
+        }
+      }
+
+      &.active,
+      &.selected {
+        a {
+          color:              var(--color-interface-stronger);
+          background-color:   var(--color-interface-soft);
+          border-color:       var(--color-interface-medium);
+
+          i {
+            color: var(--color-interface-stronger);
+          }
+        }
+      }
+
+      &.inactive-item {
+        opacity: .5;
+      }
+    }
+  }
+
+  &.has-count {
+
+    a {
+      position: relative;
+    }
+
+    a::before {
+      position:       absolute;
+      top:            0;
+      right:          0;
+      content:        "";
+      border-right:   45px solid var(--color-link);
+      border-bottom:  45px solid transparent;
+    }
+
+    .item-count {
+      position:   absolute;
+      top:        5px;
+      right:      1px;
+      display:    block;
+      width:      25px;
+      font-size:  var(--font-size-xsmall);
+      color:      var(--color-interface-softest);
+      text-align: center;
+    }
+  }
+
+  .block-status a {
+    min-height:   105px;
+    padding:      var(--spacing-xsmall) var(--spacing-medium);
+
+    .status-list {
+      margin-top: auto;
+    }
+  }
+}
+// ====================== END BASE STYLE ======================

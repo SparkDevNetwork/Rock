@@ -5,7 +5,7 @@
     <asp:Panel ID="pnlFileManager" CssClass="panel panel-block" runat="server" >
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-folder-open"></i>
+                    <i class="ti ti-folder-open"></i>
                     File Manager
                 </h1>
             </div>

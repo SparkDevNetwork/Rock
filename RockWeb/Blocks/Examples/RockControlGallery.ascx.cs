@@ -87,7 +87,7 @@ namespace RockWeb.Blocks.Examples
                 if ( example.NamingContainer == this && ( example.TagName == "h1" || example.TagName == "h2" || example.TagName == "h3" ) )
                 {
                     example.Attributes["class"] = "rollover-container";
-                    example.Controls.AddAt( 0, new LiteralControl( string.Format( "<a name='{0}' class='anchor rollover-item' href='#{0}'><i class='fa fa-link rlink icon-link'></i></a>", BuildAnchorForHref( ( HtmlGenericControl ) example ) ) ) );
+                    example.Controls.AddAt( 0, new LiteralControl( string.Format( "<a name='{0}' class='anchor rollover-item' href='#{0}'><i class='ti ti-link rlink icon-link'></i></a>", BuildAnchorForHref( ( HtmlGenericControl ) example ) ) ) );
                 }
             }
         }

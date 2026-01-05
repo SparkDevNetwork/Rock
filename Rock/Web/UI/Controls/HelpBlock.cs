@@ -71,7 +71,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute("data-html", "true");
                 writer.AddAttribute("title", this.Text.ConvertCrLfToHtmlBr().Trim() );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute("class", "fa fa-info-circle");
+                writer.AddAttribute("class", "ti ti-info-circle");
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();

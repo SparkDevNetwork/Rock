@@ -14,9 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Globalization;
 using System.Web;
 using Rock.Utility;
-using System;
 using Rock.Web.Cache;
 
 namespace Rock
@@ -29,72 +30,108 @@ namespace Rock
         #region Currency (decimal,double) Extensions
 
         /// <summary>
-        /// Formats as currency using the Currency Code information from Global Attributes
+        /// Formats the decimal value as currency using the Currency Code information from Global Attributes.
         /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
+        /// <param name="value">The decimal value.</param>
+        /// <returns>A formatted currency string.</returns>
         public static string FormatAsCurrency( this decimal value )
         {
             return value.FormatAsCurrency( null );
         }
 
         /// <summary>
-        /// Formats as currency with specified number of decimal places or the currency's decimal places which ever is small.
+        /// Formats the decimal value as currency with a specified number of decimal places or the currency's
+        /// default decimal places, whichever is smaller.
         /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="decimalPlaces">The decimal places.</param>
-        /// <returns></returns>
+        /// <param name="value">The decimal value.</param>
+        /// <param name="decimalPlaces">The number of decimal places.</param>
+        /// <returns>A formatted currency string.</returns>
         public static string FormatAsCurrencyWithDecimalPlaces( this decimal value, int decimalPlaces )
         {
             return value.FormatAsCurrency( null, decimalPlaces );
         }
 
         /// <summary>
-        /// Formats as currency.
+        /// Formats the decimal value as currency using the specified Currency Code defined value identifier.
         /// </summary>
-        /// <param name="value">The value.</param>
+        /// <param name="value">The decimal value.</param>
         /// <param name="currencyCodeDefinedValueId">The currency code defined value identifier.</param>
-        /// <returns></returns>
+        /// <returns>A formatted currency string.</returns>
         public static string FormatAsCurrency( this decimal value, int? currencyCodeDefinedValueId )
         {
             return value.FormatAsCurrency( currencyCodeDefinedValueId, null );
         }
 
         /// <summary>
-        /// Formats as currency.
+        /// Formats the decimal value as currency using the specified Currency Code defined value identifier and decimal places.
         /// </summary>
-        /// <param name="value">The value.</param>
+        /// <param name="value">The decimal value.</param>
         /// <param name="currencyCodeDefinedValueId">The currency code defined value identifier.</param>
-        /// <param name="decimalPlaces">The decimal places.</param>
-        /// <returns></returns>
+        /// <param name="decimalPlaces">The number of decimal places.</param>
+        /// <returns>A formatted currency string.</returns>
         public static string FormatAsCurrency( this decimal value, int? currencyCodeDefinedValueId, int? decimalPlaces )
+        {
+            return value.FormatAsCurrency( currencyCodeDefinedValueId, decimalPlaces, CultureInfo.CurrentCulture );
+        }
+
+        /// <summary>
+        /// Formats the decimal value as currency using the specified Currency Code, decimal places, and culture information.
+        /// </summary>
+        /// <param name="value">The decimal value.</param>
+        /// <param name="currencyCodeDefinedValueId">The currency code defined value identifier.</param>
+        /// <param name="decimalPlaces">The number of decimal places.</param>
+        /// <param name="cultureInfo">The culture information used to format the number.</param>
+        /// <returns>A formatted currency string.</returns>
+        public static string FormatAsCurrency( this decimal value, int? currencyCodeDefinedValueId, int? decimalPlaces, CultureInfo cultureInfo )
         {
             var currencyCodeInfo = new RockCurrencyCodeInfo( currencyCodeDefinedValueId );
             var currencyCode = currencyCodeInfo.IsOrganizationCurrency ? string.Empty : currencyCodeInfo.CurrencyCode;
             var currencySymbol = HttpUtility.HtmlDecode( currencyCodeInfo.Symbol );
+
             if ( decimalPlaces == null || decimalPlaces > currencyCodeInfo.DecimalPlaces )
             {
                 decimalPlaces = currencyCodeInfo.DecimalPlaces;
             }
 
-            if ( currencyCodeInfo.SymbolLocation.Equals( "left", System.StringComparison.OrdinalIgnoreCase ) )
+            var formatString = "N" + decimalPlaces.ToString();
+
+            if ( currencyCodeInfo.SymbolLocation.Equals( "left", StringComparison.OrdinalIgnoreCase ) )
             {
-                return string.Format( "{2} {0}{1:N" + decimalPlaces.ToString() + "}", currencySymbol, value, currencyCode ).Trim();
+                return string.Format( cultureInfo, "{2} {0}{1:" + formatString + "}", currencySymbol, value, currencyCode ).Trim();
             }
 
-            return string.Format( "{1:N" + decimalPlaces.ToString() + "}{0}{2}", currencySymbol, value, currencyCode ).Trim();
+            return string.Format( cultureInfo, "{1:" + formatString + "}{0}{2}", currencySymbol, value, currencyCode ).Trim();
         }
 
         /// <summary>
-        /// Formats as currency using the Currency Code information from Global Attributes
+        /// Formats the nullable decimal value as currency using the Currency Code information from Global Attributes.
         /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
+        /// <param name="value">The nullable decimal value.</param>
+        /// <returns>A formatted currency string or an empty string if the value is null.</returns>
         public static string FormatAsCurrency( this decimal? value )
         {
             if ( value.HasValue )
             {
                 return value.Value.FormatAsCurrency();
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+        
+        /// <summary>
+        /// Formats the nullable decimal value as currency using the specified culture information and the
+        /// Currency Code information from Global Attributes.
+        /// </summary>
+        /// <param name="value">The nullable decimal value.</param>
+        /// <param name="cultureInfo">The culture information used to format the number.</param>
+        /// <returns>A formatted currency string or an empty string if the value is null.</returns>
+        public static string FormatAsCurrency( this decimal? value, CultureInfo cultureInfo )
+        {
+            if ( value.HasValue )
+            {
+                return value.Value.FormatAsCurrency( null, null, cultureInfo );
             }
             else
             {

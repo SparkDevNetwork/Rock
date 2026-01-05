@@ -5,7 +5,7 @@
         <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info"  Visible="false" />
         <asp:Panel ID="pnlDetail" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-plug"></i>
+                <h1 class="panel-title"><i class="ti ti-plug"></i>
                     <asp:Literal ID="lTitle" runat="server" /></h1>
             </div>
             <div class="panel-body">

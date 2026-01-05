@@ -7,7 +7,7 @@
              :disabled="disabled">
         <template #inputGroupPrepend>
             <div class="input-group-addon">
-                <i class="fa fa-search"></i>
+                <i class="ti ti-search"></i>
             </div>
         </template>
     </TextBox>

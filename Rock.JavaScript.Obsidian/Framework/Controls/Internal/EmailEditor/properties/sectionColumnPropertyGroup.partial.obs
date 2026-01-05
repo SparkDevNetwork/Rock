@@ -6,7 +6,7 @@
                     btnSize="xs"
                     btnType="link"
                     class="section-column-property-remove-button"
-                    @click="$emit('delete')"><i class="fa fa-trash"></i> Remove</RockButton>
+                    @click="$emit('delete')"><i class="ti ti-trash"></i> Remove</RockButton>
     </div>
 
     <template v-if="componentWrapper">

@@ -4,7 +4,7 @@
     <ContentTemplate>
         <asp:Panel ID="pnlSecurity" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-lock"></i> Verify Security</h1>
+                <h1 class="panel-title"><i class="ti ti-lock"></i> Verify Security</h1>
             </div>
 
             <div class="panel-body">
@@ -40,7 +40,7 @@
                                 <Rock:RockBoundField DataField="EntityName" HeaderText="Source Name"></Rock:RockBoundField>
                                 <Rock:RockBoundField DataField="Role" HeaderText="User / Role"></Rock:RockBoundField>
                                 <Rock:RockBoundField DataField="Access" HeaderText="Access" HtmlEncode="false"></Rock:RockBoundField>
-                                <Rock:LinkButtonField HeaderText="" CssClass="btn btn-default btn-sm" Text="<i class='fa fa-unlock'></i>" OnClick="gUnlock_Click" />
+                                <Rock:LinkButtonField HeaderText="" CssClass="btn btn-default btn-sm" Text="<i class='ti ti-lock-open'></i>" OnClick="gUnlock_Click" />
                             </Columns>
                         </Rock:Grid>
                     </asp:Panel>

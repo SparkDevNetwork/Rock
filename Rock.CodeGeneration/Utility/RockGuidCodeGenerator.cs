@@ -345,8 +345,8 @@ JOIN EntityType et
 
             foreach ( var restAction in restActions )
             {
-                var restActionApiParts = restAction.ApiID.Split( '^' );
-                if ( restActionApiParts.Count() != 2 )
+                var restActionApiParts = restAction.ApiID?.Split( '^' );
+                if ( restActionApiParts?.Count() != 2 )
                 {
                     continue;
                 }

@@ -111,25 +111,25 @@
         panelMode.value = DetailPanelMode.View;
     }
 
-    /**
-     * Event handler for the Edit button being clicked. Request the edit
-     * details from the server and then enter edit mode.
-     *
-     * @returns true if the panel should enter edit mode; otherwise false.
-     */
-    async function onEdit(): Promise<void> {
-        const result = await invokeBlockAction<ValidPropertiesBox<WebFarmNodeBag>>("Edit", {
-            key: webFarmNodeViewBag.value?.idKey
-        });
+    // /**
+    //  * Event handler for the Edit button being clicked. Request the edit
+    //  * details from the server and then enter edit mode.
+    //  *
+    //  * @returns true if the panel should enter edit mode; otherwise false.
+    //  */
+    // async function onEdit(): Promise<void> {
+    //     const result = await invokeBlockAction<ValidPropertiesBox<WebFarmNodeBag>>("Edit", {
+    //         key: webFarmNodeViewBag.value?.idKey
+    //     });
 
-        if (result.isSuccess && result.data && result.data.bag) {
-            webFarmNodeEditBag.value = {
-                bag: result.data.bag,
-                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
-            };
-            panelMode.value = DetailPanelMode.Edit;
-        }
-    }
+    //     if (result.isSuccess && result.data && result.data.bag) {
+    //         webFarmNodeEditBag.value = {
+    //             bag: result.data.bag,
+    //             validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+    //         };
+    //         panelMode.value = DetailPanelMode.Edit;
+    //     }
+    // }
 
     /**
      * Event handler for the panel's Save event. Send the data to the server

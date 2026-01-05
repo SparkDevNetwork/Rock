@@ -9,7 +9,7 @@
           liveUpdates
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem"
-          :showLaunchWorkflow="false" >
+          :showLaunchWorkflow="false">
         <ReorderColumn :onOrderChanged=onOrderChanged />
         <TextColumn name="name"
                     title="Name"
@@ -27,7 +27,8 @@
                     title="Phone Number"
                     field="phoneNumber"
                     :filter="textValueFilter"
-                    visiblePriority="sm" />
+                    visiblePriority="sm"
+                    :hideOnScreen="!config.options?.showCampusPhoneNumber" />
 
         <PersonColumn name="leader"
                       title="Campus Leader"
@@ -59,6 +60,12 @@
             </template>
         </Column>
 
+        <NumberColumn name="averageWeekendAttendance"
+                      title="Avg. Attendance"
+                      field="averageWeekendAttendance"
+                      :filter="numberValueFilter"
+                      visiblePriority="xs" />
+
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
@@ -80,7 +87,7 @@
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
-    import Grid, { AttributeColumns, BooleanColumn, Column, PersonColumn, pickExistingValueFilter, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, booleanValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, BooleanColumn, Column, PersonColumn, NumberColumn, pickExistingValueFilter, TextColumn, textValueFilter, numberValueFilter, DeleteColumn, ReorderColumn, booleanValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { CampusListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CampusList/campusListOptionsBag";
@@ -154,7 +161,7 @@
      *
      * @returns `true` if the operation succeeded; otherwise `false`.
      */
-     async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
         const result = await invokeBlockAction<string>("ReorderItem", {
             key: item["idKey"],
             beforeKey: beforeItem?.["idKey"] ?? null

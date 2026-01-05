@@ -9,19 +9,19 @@
                         :btnSize="btnSize"
                         :btnType="getItemButtonType(!!internalFontWeight && internalFontWeight !== 'normal')"
                         title="Bold"
-                        @click="onFontWeightToggled()"><i class="fa fa-bold"></i></RockButton>
+                        @click="onFontWeightToggled()"><i class="ti ti-bold"></i></RockButton>
 
             <RockButton :disabled="disabled"
                         :btnSize="btnSize"
                         :btnType="getItemButtonType(internalTextDecoration === 'underline')"
                         title="Underline"
-                        @click="onTextDecorationToggled()"><i class="fa fa-underline"></i></RockButton>
+                        @click="onTextDecorationToggled()"><i class="ti ti-underline"></i></RockButton>
 
             <RockButton :disabled="disabled"
                         :btnSize="btnSize"
                         :btnType="getItemButtonType(internalFontStyle === 'italic')"
                         title="Italic"
-                        @click="onFontStyleToggled()"><i class="fa fa-italic"></i></RockButton>
+                        @click="onFontStyleToggled()"><i class="ti ti-italic"></i></RockButton>
         </div>
         <ClearStyleButton v-if="!isNullish(fontStyleProvider.value) || !isNullish(fontWeightProvider.value) || !isNullish(textDecorationProvider.value)"
                           @click="onClearClicked" />

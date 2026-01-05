@@ -5,8 +5,7 @@
         <strong>Note</strong> You are not authorized to view Step Types of this Step Program.
     </NotificationBox>
 
-    <Grid v-if="isVisible"
-          :definition="config.gridDefinition ?? undefined"
+    <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Step Type"
@@ -23,54 +22,79 @@
 
         <ReorderColumn v-if="config.options?.canEdit" @orderChanged="onOrderChanged" />
 
-        <Column name="icon"
-                visiblePriority="xs"
-                width="57px">
+        <TextColumn name="iconCssClass"
+                    field="iconCssClass"
+                    visiblePriority="xs"
+                    width="57px">
             <template #format="{ row }">
                 <i :class="`fa-fw ${row.iconCssClass}`"></i>
             </template>
-        </Column>
+        </TextColumn>
 
         <TextColumn name="name"
                     title="Name"
                     field="name"
                     :filter="textValueFilter"
                     visiblePriority="xs"
-                    width="30%" />
+                    width="20%" />
 
-        <BooleanColumn name="hasEndDate"
-                       title="Spans Time"
-                       field="hasEndDate"
-                       :filter="booleanValueFilter"
-                       visiblePriority="md" />
+        <Column name="engagementType"
+                title="Engagement Type"
+                field="engagementType"
+                :filter="pickExistingValueFilter"
+                :filterValue="getEngagementTypeTextValue"
+                :quickFilterValue="getEngagementTypeTextValue"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <div v-if="row.engagementType !== null && row.engagementType !== undefined && row.engagementType !== EngagementType.None"
+                     :class="'label label-info'" style="font-weight: bold;">
+                    {{ EngagementTypeDescription[row.engagementType] }}
+                </div>
+            </template>
+        </Column>
 
-        <BooleanColumn name="allowMultiple"
-                       title="Allow Multiple"
-                       field="allowMultiple"
-                       :filter="booleanValueFilter"
-                       visiblePriority="md" />
+        <Column name="objective"
+                title="Objective"
+                field="organizationalObjective"
+                :filter="pickExistingValueFilter"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <div v-if="row.organizationalObjective" class="label organizational-objective-label">
+                    {{ row.organizationalObjective }}
+                </div>
+            </template>
+        </Column>
+
+        <Column name="impactWeight"
+                title="Impact Weight"
+                field="impactWeight"
+                :filter="pickExistingValueFilter"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <div v-if="row.impactWeight" class="label label-primary" style="font-weight: bold;">
+                    {{ row.impactWeight }}
+                </div>
+            </template>
+        </Column>
 
         <NumberColumn name="startedCount"
                       title="Started"
                       field="startedCount"
                       :filter="numberValueFilter"
-                      headerClass="justify-content-end text-right"
-                      itemClass="justify-content-end text-right"
-                      visiblePriority="md"
-                      width="5%" />
+                      visiblePriority="md" />
 
         <NumberColumn name="completedCount"
                       title="Completed"
                       field="completedCount"
                       :filter="numberValueFilter"
-                      headerClass="justify-content-end text-right text-nowrap"
-                      itemClass="justify-content-end text-right"
-                      visiblePriority="md"
-                      width="20%" />
+                      headerClass="text-nowrap"
+                      visiblePriority="md" />
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
         <ButtonColumn v-if="config.options?.isBulkEntryColumnVisible"
                       name="bulkEntry"
-                      iconClass="fa fa-truck"
+                      iconClass="ti ti-truck"
                       visiblePriority="md"
                       @click="bulkEntry" />
 
@@ -83,10 +107,19 @@
                        v-model:visible="isGridSettingsVisible" />
 </template>
 
+<style scoped>
+.organizational-objective-label {
+    background-color: var(--color-interface-soft);
+    color: var(--text-color);
+    font-weight: bold;
+}
+</style>
+
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, NumberColumn, Column, ButtonColumn, booleanValueFilter, numberValueFilter } from "@Obsidian/Controls/grid";
+    import { EngagementType, EngagementTypeDescription } from "@Obsidian/Enums/Engagement/engagementType";
+    import Grid, { TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, NumberColumn, Column, ButtonColumn, AttributeColumns, numberValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -95,11 +128,20 @@
     import { NavigationUrlKey, GridSettingsOptions, PreferenceKey } from "./StepTypeList/types.partial";
     import GridSettingsModal from "./StepTypeList/gridSettingsModal.partial.obs";
     import { computed, reactive, ref, watch } from "vue";
-    import { useStore } from "@Obsidian/PageState";
+    import { PageMessages } from "@Obsidian/Utility/browserBus";
+    import { ContextEntityChangedData, Message } from "@Obsidian/Types/Utility/browserBus";
+    import { areEqual } from "@Obsidian/Utility/guid";
 
     const config = useConfigurationValues<ListBlockBox<StepTypeListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const preferences = usePersonPreferences().blockPreferences;
+    const browserBus = useBlockBrowserBus();
+
+    browserBus.subscribe(PageMessages.ContextEntityChanged, async (message: Message<ContextEntityChangedData>) => {
+        if (areEqual(message.data.entityTypeGuid, EntityType.Campus)) {
+            gridDataSource.value = loadGridData();
+        }
+    });
 
     // #region Values
 
@@ -130,13 +172,24 @@
         }
     }
 
+    /**
+     * Gets the text value for the Engagement Type enum for searching/filtering.
+     *
+     * @param row The grid row.
+     */
+    function getEngagementTypeTextValue(row: Record<string, unknown>): string | undefined {
+        const enumValue = (row as Record<string, number | null | undefined>).engagementType;
+        if (enumValue == null) {
+            return undefined;
+        }
+
+        const text = EngagementTypeDescription[enumValue];
+        return text ?? undefined;
+    }
+
     // #endregion
 
     // #region Computed Values
-
-    const isVisible = computed((): boolean => {
-        return !!useStore().state.areSecondaryBlocksShown;
-    });
 
     /** `true` if the grid settings is performing any filtering. */
     const hasSettingsFilters = computed((): boolean => {
@@ -144,9 +197,9 @@
     });
 
     /**
-    * Makes the key unique to the current event calendar.
+    * Makes the key unique to the current step program.
     *
-    * @param row The preference key.
+    * @param key The preference key.
     */
     function makeKeyUniqueToStepProgram(key: string): string {
         if (config.options?.stepProgramIdKey) {
@@ -194,7 +247,7 @@
     }
 
     /**
-     * Called when the Add button has been clicked by the indivual.
+     * Called when the Add button has been clicked by the individual.
      */
     function onAddItem(): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
@@ -217,11 +270,17 @@
         });
 
         if (gridData?.rows && result.isSuccess) {
-            const itemIndex = gridData.rows.findIndex(r => r["idKey"] === item.idKey);
-            const beforeItemIndex = gridData.rows.findIndex(r => r["idKey"] === beforeItem?.idKey);
+            const itemIndex = gridData.rows.findIndex(r => r["idKey"] === item["idKey"]);
 
-            if (itemIndex !== -1 && beforeItemIndex !== -1) {
-                [gridData.rows[itemIndex], gridData.rows[beforeItemIndex]] = [gridData.rows[beforeItemIndex], gridData.rows[itemIndex]];
+            if (itemIndex !== -1) {
+                const [movedItem] = gridData.rows.splice(itemIndex, 1);
+                let insertIndex = beforeItem ? gridData.rows.findIndex(r => r["idKey"] === beforeItem["idKey"]) : gridData.rows.length;
+
+                if (insertIndex === -1) {
+                    insertIndex = gridData.rows.length;
+                }
+
+                gridData.rows.splice(insertIndex, 0, movedItem);
             }
         }
 

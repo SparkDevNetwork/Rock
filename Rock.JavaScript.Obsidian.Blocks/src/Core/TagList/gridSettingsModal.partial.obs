@@ -33,7 +33,6 @@
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         modelValue: {
@@ -57,16 +56,6 @@
     const scopes = ref(props.modelValue.scopes);
     const owner = ref(props.modelValue.owner);
     const isVisible = useVModelPassthrough(props, "visible", emit);
-    const scopeItems: ListItemBag[] = [
-        {
-            text: "Organization",
-            value: "Organization"
-        },
-        {
-            text: "Personal",
-            value: "Personal"
-        }
-    ];
 
     const showPersonPicker = computed((): boolean => {
         return scopes.value.includes("Personal");

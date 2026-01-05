@@ -16,7 +16,7 @@
                 <asp:Panel ID="pnlRegistrations" runat="server" CssClass="panel panel-block">
                     <div class="panel-heading">
                         <h1 class="panel-title">
-                            <i class="fa fa-user"></i>
+                            <i class="ti ti-user"></i>
                             Registrations
                         </h1>
                     </div>

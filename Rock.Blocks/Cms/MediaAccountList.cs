@@ -42,7 +42,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Media Account List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of media accounts." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
@@ -175,6 +175,16 @@ namespace Rock.Blocks.Cms
                 FolderCount = b.MediaFolders.Count,
                 VideoCount = b.MediaFolders.SelectMany( a => a.MediaElements ).Count(),
             } );
+        }
+
+        /// <inheritdoc/>
+        protected override List<MediaAccountData> GetListItems( IQueryable<MediaAccountData> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+
+            GridAttributeLoader.LoadFor( items, a => a.MediaAccount, _gridAttributes.Value, rockContext );
+
+            return items;
         }
 
         /// <inheritdoc/>

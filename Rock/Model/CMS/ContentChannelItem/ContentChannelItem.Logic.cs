@@ -16,11 +16,15 @@
 //
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+
+using Rock.Core;
+using Rock.Data;
 using Rock.Lava;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
-    public partial class ContentChannelItem
+    public partial class ContentChannelItem : IHasLinkageSummary
     {
         /// <summary>
         /// Gets the parent authority.
@@ -99,5 +103,26 @@ namespace Rock.Model
                 return ( this.IsContentLibraryOwner ?? false ) && this.ContentLibrarySourceIdentifier.HasValue;
             }
         }
+
+        #region IHasLinkageSummary
+
+        /// <inheritdoc/>
+        object IHasLinkageSummary.SummaryParent( RockContext rockContext )
+        {
+            if ( ContentChannelId == 0 )
+            {
+                return null;
+            }
+
+            return ContentChannelCache.Get( ContentChannelId, rockContext );
+        }
+
+        /// <inheritdoc/>
+        string IHasLinkageSummary.SummaryValue( RockContext rockContext )
+        {
+            return Title;
+        }
+
+        #endregion
     }
 }

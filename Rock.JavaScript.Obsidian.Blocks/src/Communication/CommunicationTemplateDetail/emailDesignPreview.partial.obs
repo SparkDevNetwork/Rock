@@ -35,7 +35,7 @@
                                                     style="background-color: transparent"
                                                     title="Revert to default"
                                                     @click.prevent="internalLavaFieldValues[key] = lavaFields[key]">
-                                                <i class="fa fa-undo"></i>
+                                                <i class="ti ti-arrow-back-up"></i>
                                             </button>
                                         </span>
                                     </div>

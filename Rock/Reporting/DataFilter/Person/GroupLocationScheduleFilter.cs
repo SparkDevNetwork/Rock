@@ -318,10 +318,9 @@ function() {
 
                 var locations = new GroupLocationService( new RockContext() ).Queryable()
                     .Where( gl => gl.GroupId == groupId )
-                    .AsEnumerable()
                     .Select( gl => new ListItem
                     {
-                        Text = gl.Location.ToString( true ),
+                        Text = string.IsNullOrEmpty( gl.Location.Name ) ? gl.Location.Description : gl.Location.Name, // Nameless Locations have a friendly name in their Description.
                         Value = gl.Location.Id.ToString()
                     } )
                     .ToList();

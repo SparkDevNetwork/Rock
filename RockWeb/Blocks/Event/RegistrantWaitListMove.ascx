@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlSend" runat="server" CssClass="panel panel-block">
         
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-calendar-check-o "></i> Wait List Confirmation</h1>
+                <h1 class="panel-title"><i class="ti ti-calendar-check"></i> Wait List Confirmation</h1>
             </div>
             <div class="panel-body">
                 <asp:Panel ID="pnlPreview" runat="server">

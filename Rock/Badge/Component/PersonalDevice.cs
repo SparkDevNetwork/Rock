@@ -98,9 +98,9 @@ namespace Rock.Badge.Component
                             }}
 
                             if (linkUrl != '') {{
-                                badgeContent = '<a href=\'' + linkUrl + '\' class=\'badge-content\'><i class=\''+ badgeClass +' fa fa-mobile badge-icon\'></i><span class=\'metric-value\'>' + devicesNumber + '</span></a>';
+                                badgeContent = '<a href=\'' + linkUrl + '\' class=\'badge-content\'><i class=\''+ badgeClass +' ti ti-device-mobile badge-icon\'></i><span class=\'metric-value\'>' + devicesNumber + '</span></a>';
                             }} else {{
-                                badgeContent = '<div class=\'badge-content\'><i class=\'badge-icon '+ badgeClass +' fa  fa-mobile\'></i><span class=\'metric-value\'>' + devicesNumber + '</span></div>';
+                                badgeContent = '<div class=\'badge-content\'><i class=\'badge-icon '+ badgeClass +' ti ti-device-mobile\'></i><span class=\'metric-value\'>' + devicesNumber + '</span></div>';
                             }}
                             $('.rockbadge-personaldevice.rockbadge-id-{badge.Id}').html(badgeContent).attr('data-original-title', labelContent);
 

@@ -1,0 +1,274 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel v-if="hasData"
+           title="Message Performance Over Time">
+        <LineChart :series="series"
+                   :labels="labels"
+                   labelDateFormat="day"
+                   legendPosition="top"
+                   type="percent" />
+    </Panel>
+
+    <NothingToShowPartial v-else title="Message Performance Over Time" />
+</template>
+
+<style scoped>
+:deep(.chart-container) {
+    height: 265px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import NothingToShowPartial from "./nothingToShow.partial.obs";
+    import { isRockDateTime, useRockDateTimeParser } from "./utils.partial";
+    import LineChart from "@Obsidian/Controls/lineChart.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { alignDataPointsByDate, LineSeries, XYPoint, XYPointEnumerable } from "@Obsidian/Core/Controls/chart";
+    import { RecipientMetricsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/recipientMetricsBag";
+
+    enum SeriesName {
+        ConversionRate = "Conversion Rate",
+        UnsubscribeRate = "Unsubscribe Rate",
+        OpenRate = "Open Rate",
+        ClickThroughRate = "Click-Through Rate"
+    }
+
+    const props = defineProps({
+        isConversionGoalTrackingEnabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        selectedCommunicationFlowInstanceRecipientMetrics: {
+            type: Array as PropType<RecipientMetricsBag[]>,
+            required: true
+        },
+
+        uniquePersonCount: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+
+    const { parseRockDateTime } = useRockDateTimeParser();
+
+    // #region Computed Values
+
+    const labels = computed<string[]>(() => {
+        return dataPoints.value.labels;
+    });
+
+    const series = computed<LineSeries[]>(() => {
+        return dataPoints.value.series;
+    });
+
+    const hasData = computed<boolean>(() => {
+        return Enumerable.from(dataPoints.value.series).any(s => !!s.data.length);
+    });
+
+    const dataPoints = computed<{ labels: string[]; series: LineSeries[] }>(() => {
+        if (props.selectedCommunicationFlowInstanceRecipientMetrics.length <= 0) {
+            return { labels: [], series: [] };
+        }
+
+        const recipientMetricsEnumerable = Enumerable.from(props.selectedCommunicationFlowInstanceRecipientMetrics);
+
+        // Ensure the data points include the earliest message sent date.
+        const earliestMessageSentDate = recipientMetricsEnumerable
+            .select(m => parseRockDateTime(m.sentDate))
+            .ofType<RockDateTime>(isRockDateTime)
+            .orderBy(d => d.toMilliseconds())
+            .select(d => d.toISOString())
+            .firstOrDefault();
+
+        if (!earliestMessageSentDate) {
+            return {
+                labels: [],
+                series: []
+            };
+        }
+
+        // There are 4 data series: Conversion Rate (conditional), Open Rate, Click-Through Rate, and Unsubscribe Rate.
+        const dataPoints: XYPoint[][] = [];
+
+        // Process the Conversion Rates per day.
+        // These contain timestamps so they can be sorted with the other data series above.
+        dataPoints.push(XYPointEnumerable
+            .fromData(recipientMetricsEnumerable
+                .where(m => !!m.personAliasIdKey && !!m.conversionDate)
+                .groupBy(m => m.personAliasIdKey!)
+                .select<RockDateTime>(g => g
+                    .select(m => parseRockDateTime(m.conversionDate))
+                    .cast<RockDateTime>((r): r is RockDateTime => !isNullish(r))
+                    .first()
+                )
+                .orderBy(r => r.toMilliseconds()) // Sort before accumulating.
+                .select<XYPoint>(r => {
+                    return {
+                        x: r, // Represents a datetime that a person converted (only a person's first conversion date is counted)
+                        y: 1  // Each conversion datetime is counted as 1.
+                    };
+                })
+            )
+            .selectWithStartingPoint(
+                {
+                    x: earliestMessageSentDate,
+                    y: 0
+                },
+                (date1, date2) => {
+                    return parseRockDateTime(date1.x)?.toMilliseconds() === parseRockDateTime(date2.x)?.toMilliseconds();
+                }
+            )
+            .selectSquishedByDate()
+            .selectAccumulated()
+            .selectAsDecimalPercentage(props.uniquePersonCount)
+            .toArray());
+
+        // Open Rates per day.
+        // These contain timestamps so they can be sorted with the other data series.
+        dataPoints.push(XYPointEnumerable
+            .fromData(
+                recipientMetricsEnumerable
+                    .where(m => !!m.personAliasIdKey && !!m.openedDate)
+                    .groupBy(m => m.personAliasIdKey!)
+                    .select<RockDateTime>(g => g
+                        .select(rm => parseRockDateTime(rm.openedDate))
+                        .ofType(isRockDateTime)
+                        .first()
+                    )
+                    .orderBy(r => r.toMilliseconds()) // Sort before accumulating.
+                    .select<XYPoint>(openedRockDateTime => {
+                        return {
+                            x: openedRockDateTime, // Represents a datetime that a person opened (only a person's first opened date is counted)
+                            y: 1
+                        };
+                    })
+            )
+            .selectWithStartingPoint(
+                {
+                    x: earliestMessageSentDate,
+                    y: 0
+                },
+                (date1, date2) => {
+                    return parseRockDateTime(date1.x)?.toMilliseconds() === parseRockDateTime(date2.x)?.toMilliseconds();
+                }
+            )
+            .selectSquishedByDate()
+            .selectAccumulated()
+            .selectAsDecimalPercentage(props.uniquePersonCount)
+            .toArray());
+
+        // Click-Through Rates per day.
+        // These contain timestamps so they can be sorvted with the other data series.
+        dataPoints.push(XYPointEnumerable
+            .fromData(recipientMetricsEnumerable
+                .where(m => !!m.personAliasIdKey && !!m.clickedDate)
+                .groupBy(m => m.personAliasIdKey!)
+                .select<RockDateTime>(g => g
+                    .select(rm => parseRockDateTime(rm.clickedDate))
+                    .ofType(isRockDateTime)
+                    .first()
+                )
+                .orderBy(r => r.toMilliseconds()) // Sort before accumulating.
+                .select<XYPoint>(clickedRockDateTime => {
+                    return {
+                        x: clickedRockDateTime, // Represents a datetime that a person clicked (only a person's first clicked date is counted)
+                        y: 1
+                    };
+                })
+            )
+            .selectWithStartingPoint(
+                {
+                    x: earliestMessageSentDate,
+                    y: 0
+                },
+                (date1, date2) => {
+                    return parseRockDateTime(date1.x)?.toMilliseconds() === parseRockDateTime(date2.x)?.toMilliseconds();
+                }
+            )
+            .selectSquishedByDate()
+            .selectAccumulated()
+            .selectAsDecimalPercentage(props.uniquePersonCount)
+            .toArray());
+
+        // Unsubscribe Rates per day.
+        // These contain timestamps so they can be sorted with the other data series.
+        dataPoints.push(XYPointEnumerable
+            .fromData(
+                recipientMetricsEnumerable
+                    .where(m => !!m.personAliasIdKey && !!m.unsubscribeDate)
+                    .groupBy(m => m.personAliasIdKey!)
+                    .select<RockDateTime>(g => g
+                        .select(m => parseRockDateTime(m.unsubscribeDate))
+                        .cast<RockDateTime>((r): r is RockDateTime => !isNullish(r))
+                        .first())
+                    .orderBy(r => r.toMilliseconds()) // Sort before accumulating.
+                    .select<XYPoint>(r => {
+                        return {
+                            x: r, // Represents a datetime that a person unsubscribed (only a person's first unsubscribe date is counted)
+                            y: 1  // Each unsubscribe datetime is counted as 1.
+                        };
+                    })
+            )
+            .selectWithStartingPoint(
+                {
+                    x: earliestMessageSentDate,
+                    y: 0
+                },
+                (date1, date2) => {
+                    return parseRockDateTime(date1.x)?.toMilliseconds() === parseRockDateTime(date2.x)?.toMilliseconds();
+                }
+            )
+            .selectSquishedByDate()
+            .selectAccumulated()
+            .selectAsDecimalPercentage(props.uniquePersonCount)
+            .toArray());
+
+        // Align the data points. This will inject missing dates into each series
+        // so that they all have the same x-axis (date) values.
+        const alignedData = alignDataPointsByDate(dataPoints,
+            {
+                fillWith: "previousValueOrZero"
+            });
+
+        // Now that all the data is aligned, we can push it to the series.
+        const series: LineSeries[] = [];
+
+        if (props.isConversionGoalTrackingEnabled) {
+            series.push({
+                label: SeriesName.ConversionRate,
+                data: alignedData.values[0],
+                color: "#68D391"
+            });
+        }
+
+        series.push(
+            {
+                label: SeriesName.OpenRate,
+                data: alignedData.values[1],
+                color: "#63B3ED"
+            },
+            {
+                label: SeriesName.ClickThroughRate,
+                data: alignedData.values[2],
+                color: "#F6AD55"
+            },
+            {
+                label: SeriesName.UnsubscribeRate,
+                data: alignedData.values[3],
+                color: "#FC8181"
+            }
+        );
+
+        return {
+            labels: alignedData.labels,
+            series
+        };
+    });
+
+    // #endregion Computed Values
+</script>

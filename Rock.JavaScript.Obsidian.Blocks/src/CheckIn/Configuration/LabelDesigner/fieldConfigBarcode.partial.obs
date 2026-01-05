@@ -7,13 +7,13 @@
                 <RockButton :btnType="format === BarcodeFormat.QRCode.toString() ? 'primary' : 'default'"
                             btnSize="sm"
                             @click="format = BarcodeFormat.QRCode.toString()">
-                    <i class="fa fa-qrcode"></i> QR
+                    <i class="ti ti-qrcode"></i> QR
                 </RockButton>
 
                 <RockButton :btnType="format === BarcodeFormat.Code128.toString() ? 'primary' : 'default'"
                             btnSize="sm"
                             @click="format = BarcodeFormat.Code128.toString()">
-                    <i class="fa fa-barcode"></i> Code 128
+                    <i class="ti ti-barcode"></i> Code 128
                 </RockButton>
             </div>
         </div>
@@ -39,7 +39,7 @@
 
     <div v-if="isDynamic" class="form-group">
         <RockButton @click="onEditLavaTemplateClick">
-            <i class="fa fa-edit"></i>
+            <i class="ti ti-edit"></i>
             Edit Lava Template
         </RockButton>
     </div>

@@ -1,0 +1,29 @@
+
+
+//  BLOCK WORKFLOWS STYLE
+
+
+// =============================================================
+// Table of Content
+//  + Workflow Entry
+// =============================================================
+
+
+// ======================== WORKFLOW ENTRY ========================
+.workflow-entry-panel {
+  & > h1:first-of-type {
+    margin-top: 0;
+  }
+}
+
+// Override list group item styles to add flex and remove table styles
+.panel-workflowitem .list-group-item {
+  display: flex;
+  justify-content: space-between;
+  &::before,
+  &::after {
+    all: unset;
+  }
+}
+
+// ====================== END WORKFLOW ENTRY ======================

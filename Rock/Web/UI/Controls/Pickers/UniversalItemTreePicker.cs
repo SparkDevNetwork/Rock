@@ -29,6 +29,8 @@ namespace Rock.Web.UI.Controls
         /// <inheritdoc/>
         public override string ItemRestUrl => _itemRestUrl;
 
+        internal string UrlContext { get; set; }
+
         /// <inheritdoc/>
         protected override void RegisterJavaScript()
         {
@@ -37,6 +39,7 @@ $@"Rock.controls.itemPicker.initialize({{
     controlId: '{ClientID}',
     universalItemPicker: true,
     restUrl: '{ResolveUrl( ItemRestUrl )}',
+    context: {(UrlContext != null ? UrlContext.ToJson() : "null")},
     allowMultiSelect: {AllowMultiSelect.ToString().ToLower()},
     allowCategorySelection: false,
     categoryPrefix: '',

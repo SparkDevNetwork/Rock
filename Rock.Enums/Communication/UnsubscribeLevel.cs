@@ -39,8 +39,8 @@ namespace Rock.Model
         CommunicationList = 3,
 
         /// <summary>
-        /// Unsubscribe from communication campaigns.
+        /// Unsubscribe from communication flows.
         /// </summary>
-        Campaign = 4,
+        Flows = 4,
     }
 }

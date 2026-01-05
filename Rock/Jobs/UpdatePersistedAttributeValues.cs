@@ -29,6 +29,7 @@ using Rock.Logging;
 using Rock.Model;
 using Rock.Web.Cache;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 namespace Rock.Jobs
 {
@@ -201,7 +202,7 @@ namespace Rock.Jobs
 
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
 
                 // First rebuild the attribute's default value.
                 var attribute = new AttributeService( rockContext ).Queryable()
@@ -283,7 +284,7 @@ namespace Rock.Jobs
             // need to update the references for.
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
 
                 attributeValueList = new AttributeValueService( rockContext )
                     .Queryable()
@@ -317,7 +318,7 @@ namespace Rock.Jobs
 
                     using ( var rockContext = new RockContext() )
                     {
-                        rockContext.Database.CommandTimeout = commandTimeout;
+                        rockContext.Database.SetCommandTimeout( commandTimeout );
 
                         Helper.BulkUpdateAttributeValueEntityReferences( referenceDictionary, rockContext );
                     }
@@ -355,7 +356,7 @@ namespace Rock.Jobs
 
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
 
                 var attributeService = new AttributeService( rockContext );
                 var attributeCount = attributeService.Queryable().Count();
@@ -441,7 +442,7 @@ namespace Rock.Jobs
 
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
 
                 var attributes = new AttributeService( rockContext )
                     .Queryable()
@@ -548,7 +549,7 @@ namespace Rock.Jobs
 
                             using ( var rockContext = new RockContext() )
                             {
-                                rockContext.Database.CommandTimeout = commandTimeout;
+                                rockContext.Database.SetCommandTimeout( commandTimeout );
 
                                 Helper.BulkUpdateAttributeValueComputedColumns( attributeId, attributeValueIds, value, rockContext );
 
@@ -611,7 +612,7 @@ namespace Rock.Jobs
         {
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
 
                 return rockContext.Set<AttributeValue>()
                     .Where( av => av.IsPersistedValueDirty )
@@ -638,7 +639,7 @@ namespace Rock.Jobs
         {
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
 
                 return rockContext.Set<Rock.Model.Attribute>()
                     .Where( a => a.IsDefaultPersistedValueDirty )

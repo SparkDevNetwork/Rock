@@ -432,7 +432,7 @@ namespace Rock.DownhillCss
 
                             CreateAlertByColor( colorName, _cssBuilder );
                         }
-                        else if( Settings.MobileStyleFramework == MobileStyleFramework.Blended )
+                        else if ( Settings.MobileStyleFramework == MobileStyleFramework.Blended )
                         {
                             CreateAlertByColor( colorName, _cssBuilder );
                         }
@@ -584,7 +584,7 @@ namespace Rock.DownhillCss
                     // is now defined with a spacing- class, so we want
                     // to make sure that does not conflict with any legacy
                     // styles.
-                    if( useStandardStyles )
+                    if ( useStandardStyles )
                     {
                         // spacing-
                         AddUtilityClass( "spacing", spacing.Key.ToString(), new Dictionary<string, string>
@@ -1339,7 +1339,14 @@ formfield.required .required-indicator,
 ^grid.unordered-list ^grid.ordered-list,
 ^grid.unordered-list ^grid.unordered-list {
     margin-bottom: 0;
-}";
+}
+
+/* Tags CSS */
+.tag-softer {
+    background-color: ?color-interface-softer;
+    color: ?color-interface-strong;
+}
+";
             private static string baseStylesWeb = @"";
 
             private static string legacyStylesMobile = @"/*

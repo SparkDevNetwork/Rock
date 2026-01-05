@@ -40,7 +40,7 @@ namespace Rock.Blocks.WebFarm
     [DisplayName( "Web Farm Settings" )]
     [Category( "WebFarm" )]
     [Description( "Displays the details of the Web Farm." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

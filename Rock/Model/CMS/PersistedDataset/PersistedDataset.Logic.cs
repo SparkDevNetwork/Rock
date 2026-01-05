@@ -80,18 +80,17 @@ namespace Rock.Model
 
                                 if ( this.ResultFormat == PersistedDatasetDataFormat.JSON )
                                 {
-                                    var outputAsDynamic = output.FromJsonDynamicOrNull();
-
-                                    if ( outputAsDynamic == null )
+                                    try
                                     {
-                                        LogError( $"PersistedDataset (Id: {this.Id}) build script created invalid result data: {output}" );
-                                        result.IsSuccess = false;
-                                        result.WarningMessage = $"Unable to parse dataset {this.Id} JSON:\n{output}";
-                                    }
-                                    else
-                                    {
+                                        var outputAsDynamic = output.FromJsonDynamic();
                                         this.ResultData = outputAsDynamic.ToJson( true );
                                         result.IsSuccess = true;
+                                    }
+                                    catch ( Exception innerException )
+                                    {
+                                        LogError( $"PersistedDataset \"{this.Name}\" (Id: {this.Id}) build script created invalid result data:\r\n {output}", innerException );
+                                        result.IsSuccess = false;
+                                        result.WarningMessage = $"Unable to parse dataset {this.Id} JSON:\n{output}";
                                     }
                                 }
                                 else
@@ -114,7 +113,7 @@ namespace Rock.Model
                 }
                 catch ( Exception ex )
                 {
-                    LogError( $"An error occurred while updating PersistedDataset (Id: {this.Id}): {ex.Message}" );
+                    LogError( $"An error occurred while updating PersistedDataset (Id: {this.Id}): {ex.Message}", ex );
                     result.IsSuccess = false;
                     result.WarningMessage = ex.Message;
                 }
@@ -130,6 +129,11 @@ namespace Rock.Model
 
                 return result;
             }
+        }
+
+        private void LogError( string errorMessage, Exception innerException )
+        {
+            Rock.Model.ExceptionLogService.LogException( new Exception( errorMessage, innerException ) );
         }
 
         private void LogError( string errorMessage )

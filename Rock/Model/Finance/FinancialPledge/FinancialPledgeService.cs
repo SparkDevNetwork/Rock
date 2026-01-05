@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -192,7 +194,7 @@ namespace Rock.Model
             bool includePledges, bool includeGifts )
         {
             var rockContext = new RockContext();
-            rockContext.Database.CommandTimeout = 180;
+            rockContext.Database.SetCommandTimeout( 180 );
             return new FinancialPledgeService( rockContext ).GetPledgeAnalyticsDataSet( accountId, start, end, minAmountPledged, maxAmountPledged, minComplete, maxComplete, minAmountGiven, maxAmountGiven, includePledges, includeGifts );
         }
     }

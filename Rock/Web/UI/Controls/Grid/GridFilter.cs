@@ -174,7 +174,7 @@ namespace Rock.Web.UI.Controls
             const string scriptKey = "grid-filter-script";
             const string script = @"
     $('div.grid-filter header').on('click', function () {
-        $('.btn-filter-toggle', this).toggleClass('is-open').find('i.toggle-filter').toggleClass('fa-chevron-down fa-chevron-up');
+        $('.btn-filter-toggle', this).toggleClass('is-open').find('i.toggle-filter').toggleClass('ti-chevron-down ti-chevron-up');
         var $hf = $('input', this).first();
         if($hf.val() != 'true') {
             $hf.val('true');
@@ -316,7 +316,7 @@ namespace Rock.Web.UI.Controls
 
                 _hfVisible.RenderControl( writer );
 
-                writer.AddAttribute( "class", visible ? "btn-icon fa fa-chevron-up toggle-filter" : "btn-icon fa fa-chevron-down toggle-filter" );
+                writer.AddAttribute( "class", visible ? "btn-icon ti ti-chevron-up toggle-filter" : "btn-icon ti ti-chevron-down toggle-filter" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
 

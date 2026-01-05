@@ -40,7 +40,7 @@ namespace Rock.Blocks.Tv
     [DisplayName( "Roku Application Detail" )]
     [Category( "TV > TV Apps" )]
     [Description( "Displays the details of a Roku application." )]
-    [IconCssClass( "fa fa-tv" )]
+    [IconCssClass( "ti ti-device-tv" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -632,6 +632,7 @@ namespace Rock.Blocks.Tv
         <field id=""rockLoginSuccessPageGuid"" type=""string"" />
         <field id=""rockLogoutSuccessPageGuid"" type=""string"" />
         <field id=""rockWatchMap"" type=""string"" />
+        <field id=""rockIsLive"" type=""bool"" value=""false"" />
     </interface>
 </component>
 ###COMPONENT>Rock:FocusGroup###

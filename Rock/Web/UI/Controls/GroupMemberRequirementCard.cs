@@ -213,7 +213,7 @@ namespace Rock.Web.UI.Controls
                     {
                         CausesValidation = false,
                         ID = "lbManualRequirement" + this.ClientID,
-                        Text = "<i class='fa fa-square-o fa-fw'></i> " + manualLabel,
+                        Text = "<i class='ti ti-square ti-fw'></i> " + manualLabel,
                     };
                     _lbManualRequirement.Click += lbManualRequirement_Click;
                     Controls.Add( _lbManualRequirement );
@@ -226,7 +226,7 @@ namespace Rock.Web.UI.Controls
                     {
                         CausesValidation = false,
                         ID = "lbMarkasMetPopup" + this.ClientID,
-                        Text = "<i class='fa fa-check-circle-o fa-fw'></i> Mark as Met",
+                        Text = "<i class='ti ti-circle-check ti-fw'></i> Mark as Met",
                     };
                     _lbMarkAsMet.Click += lbMarkasMetPopup_Click;
                     Controls.Add( _lbMarkAsMet );
@@ -275,7 +275,7 @@ namespace Rock.Web.UI.Controls
                         _lbDoesNotMeetWorkflow = new LinkButton
                         {
                             ID = "lbDoesNotMeetWorkflow" + this.ClientID,
-                            Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + workflowLinkText,
+                            Text = "<i class='ti ti-player-play ti-fw'></i>" + workflowLinkText,
                         };
                         _lbDoesNotMeetWorkflow.Click += lbDoesNotMeetWorkflow_Click;
                         Controls.Add( _lbDoesNotMeetWorkflow );
@@ -303,7 +303,7 @@ namespace Rock.Web.UI.Controls
                         _lbWarningWorkflow = new LinkButton
                         {
                             ID = "lblWarningWorkflow" + this.ClientID,
-                            Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + workflowLinkText,
+                            Text = "<i class='ti ti-player-play ti-fw'></i>" + workflowLinkText,
                         };
                         _lbWarningWorkflow.Click += lbWarningWorkflow_Click;
                         Controls.Add( _lbWarningWorkflow );
@@ -341,7 +341,7 @@ namespace Rock.Web.UI.Controls
                 {
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-shrink-0" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, TypeIconCssClass + " fa-fw icon" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, TypeIconCssClass + " ti-fw icon" );
                     writer.RenderBeginTag( HtmlTextWriterTag.I );
 
                     // End the I tag.
@@ -405,7 +405,7 @@ namespace Rock.Web.UI.Controls
                     writer.AddAttribute( "data-html", "true" );
                     writer.AddAttribute( "title", toolTipText );
                     writer.RenderBeginTag( HtmlTextWriterTag.A );
-                    writer.AddAttribute( "class", "fa fa-user-check fa-fw" );
+                    writer.AddAttribute( "class", "ti ti-user-check ti-fw" );
                     writer.RenderBeginTag( HtmlTextWriterTag.I );
                     writer.RenderEndTag();
                     writer.RenderEndTag();

@@ -23,12 +23,6 @@
                           label="Log to Local File System"
                           help="Enables writing logs to the local file system of the Rock server." />
             </div>
-
-            <div class="col-md-6">
-                <CheckBox v-model="isObservabilityLoggingEnabled"
-                          label="Log to Observability"
-                          help="Enables writing logs to the observability framework, this is recommended when running in a web farm." />
-            </div>
         </div>
 
         <Panel v-if="isLocalLoggingEnabled" :isDrawerOpen="false" title="Local File System Settings" :hasCollapse="true">
@@ -111,14 +105,13 @@
     const standardLogLevel = ref(props.modelValue.bag?.standardLogLevel ?? "");
     const categories = ref(props.modelValue.bag?.categories ?? []);
     const isLocalLoggingEnabled = ref(props.modelValue.bag?.isLocalLoggingEnabled ?? false);
-    const isObservabilityLoggingEnabled = ref(props.modelValue.bag?.isObservabilityLoggingEnabled ?? false);
     const maxFileSize = ref(props.modelValue.bag?.maxFileSize ?? "");
     const numberOfLogFiles = ref(props.modelValue.bag?.numberOfLogFiles ?? "");
     const customCategories = ref(props.modelValue.bag?.customCategories ?? []);
     const advancedSettings = ref(props.modelValue.bag?.advancedSettings ?? "");
     const loggingMessage = ref("");
 
-    const properties = [standardLogLevel, categories, isLocalLoggingEnabled, isObservabilityLoggingEnabled, maxFileSize, numberOfLogFiles, customCategories, advancedSettings];
+    const properties = [standardLogLevel, categories, isLocalLoggingEnabled, maxFileSize, numberOfLogFiles, customCategories, advancedSettings];
 
     // #endregion
 
@@ -151,7 +144,6 @@
         updateRefValue(standardLogLevel, props.modelValue.bag?.standardLogLevel ?? "");
         updateRefValue(categories, props.modelValue.bag?.categories ?? []);
         updateRefValue(isLocalLoggingEnabled, props.modelValue.bag?.isLocalLoggingEnabled ?? false);
-        updateRefValue(isObservabilityLoggingEnabled, props.modelValue.bag?.isObservabilityLoggingEnabled ?? false);
         updateRefValue(maxFileSize, props.modelValue.bag?.maxFileSize ?? "");
         updateRefValue(numberOfLogFiles, props.modelValue.bag?.numberOfLogFiles ?? "");
         updateRefValue(customCategories, props.modelValue.bag?.customCategories ?? []);
@@ -168,7 +160,6 @@
         setPropertiesBoxValue(newValue, "standardLogLevel", standardLogLevel.value);
         setPropertiesBoxValue(newValue, "categories", categories.value);
         setPropertiesBoxValue(newValue, "isLocalLoggingEnabled", isLocalLoggingEnabled.value);
-        setPropertiesBoxValue(newValue, "isObservabilityLoggingEnabled", isObservabilityLoggingEnabled.value);
         setPropertiesBoxValue(newValue, "maxFileSize", maxFileSize.value);
         setPropertiesBoxValue(newValue, "numberOfLogFiles", numberOfLogFiles.value);
         setPropertiesBoxValue(newValue, "customCategories", customCategories.value);

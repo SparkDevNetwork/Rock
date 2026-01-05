@@ -1,0 +1,21 @@
+
+// Navigation for Paging - styles for creating a pager (Rock Component)
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style  
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.nav-paging {
+  .btn-prev {
+    float:        left;
+  }
+
+  .btn-next {
+    float:        right;
+    margin-left:  auto !important;
+  }
+}

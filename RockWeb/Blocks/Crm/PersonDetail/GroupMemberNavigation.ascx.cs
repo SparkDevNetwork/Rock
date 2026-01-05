@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var sb = new StringBuilder(
             $@"<a href=""#"" id=""familyDropdownNav"" class=""profile-toggle"" data-toggle=""dropdown"" aria-haspopup=""true"" aria-expanded=""false"">
                     <img src=""{Person.GetPersonPhotoUrl( this.Person, 400 )}&Style=icon&BackgroundColor=E4E4E7&ForegroundColor=A1A1AA"" class=""avatar mr-2 flex-shrink-0"" alt="""" />
-                    <span class=""d-none d-sm-inline text-nowrap font-weight-semibold"">{this.Person.FullName}<i class=""fa fa-chevron-down ml-2""></i></span>
+                    <span class=""d-none d-sm-inline text-nowrap font-weight-semibold"">{this.Person.FullName}<i class=""ti ti-chevron-down ml-2""></i></span>
                 </a>
 
                 <ul class=""dropdown-menu"" aria-labelledby=""familyDropdownNav"">");

@@ -107,7 +107,6 @@
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
@@ -207,7 +206,7 @@
         }
     }
 
-    function validateKeyValue(value: unknown): string | boolean {
+    function validateKeyValue(): string | boolean {
         if (messageReservedKeyNames.value.some(k => k === key.value)) {
             return "There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.";
         }

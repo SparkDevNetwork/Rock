@@ -64,6 +64,7 @@
                             </div>
                             <div class="col-md-6">
                                 <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
+                                <Rock:DefinedValuePicker ID="dvpRecordSource" runat="server" Label="Record Source Override" Help="The record source for attendees added to this project. If not set, the group type's record source will be used." />
                             </div>
                         </div>
 
@@ -258,7 +259,7 @@
                                             <Rock:RockBoundField DataField="FriendlyDateTime" HeaderText="Date/Time" />
                                             <Rock:RockBoundField DataField="FriendlyLocation" HeaderText="Location" />
                                             <Rock:RockBoundField DataField="ProgressBar" HeaderText="Sign-Ups" ItemStyle-CssClass="progress-sign-ups-cell align-middle" HtmlEncode="false" />
-                                            <Rock:LinkButtonField ID="lbOpportunityDetail" Text="<i class='fa fa-users'></i>" ToolTip="Attendee List" CssClass="btn btn-default btn-sm btn-square" OnClick="lbOpportunityDetail_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
+                                            <Rock:LinkButtonField ID="lbOpportunityDetail" Text="<i class='ti ti-users'></i>" ToolTip="Attendee List" CssClass="btn btn-default btn-sm btn-square" OnClick="lbOpportunityDetail_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                                             <Rock:EditField ID="efOpportunities" OnClick="gOpportunities_Edit" />
                                             <Rock:DeleteField ID="dfOpportunities" OnClick="gOpportunities_Delete" />
                                         </Columns>

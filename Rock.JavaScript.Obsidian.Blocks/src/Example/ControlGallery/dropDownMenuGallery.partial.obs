@@ -47,13 +47,13 @@
             handler: async () => await alert("Default action clicked.")
         },
         {
-            iconCssClass: "fa fa-refresh",
+            iconCssClass: "ti ti-refresh",
             title: "Refresh",
             type: "default",
             handler: async () => await alert("Refresh action clicked.")
         },
         {
-            iconCssClass: "fa fa-trash",
+            iconCssClass: "ti ti-trash",
             title: "Delete",
             type: "danger",
             handler: async () => await alert("Delete action clicked.")
@@ -70,7 +70,7 @@
     const exampleCode = computed((): string => {
         return `<DropDownMenu :items="menuItems" align="${align.value}">
     <!-- Optional content -->
-    <i class="fa fa-ellipsis-v"></i>
+    <i class="ti ti-dots-vertical"></i>
 </DropDownMenu>`;
     });
 </script>

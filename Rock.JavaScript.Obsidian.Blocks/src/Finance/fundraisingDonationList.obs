@@ -85,9 +85,7 @@
                         itemClass="justify-content-end"
                         visiblePriority="xs">
             <template #format="{ row }">
-                <div class="flex-grow-1 text-right">
-                    {{ toCurrencyOrNull(row.amount, config.options?.currencyInfo) }}
-                </div>
+                {{ toCurrencyOrNull(row.amount, config.options?.currencyInfo) }}
             </template>
         </CurrencyColumn>
     </Grid>

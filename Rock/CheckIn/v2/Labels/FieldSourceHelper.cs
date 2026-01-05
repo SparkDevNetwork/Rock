@@ -41,6 +41,8 @@ namespace Rock.CheckIn.v2.Labels
     /// </summary>
     internal static class FieldSourceHelper
     {
+        #region Constants
+
         /// <summary>
         /// The person property names that should be made common so they are
         /// easily accessible when picking a data source or filter.
@@ -90,6 +92,8 @@ namespace Rock.CheckIn.v2.Labels
         /// are going to provide a custom version of them.
         /// </summary>
         private static readonly HashSet<Guid> PersonAttributesToExcludeFromDataSources = new HashSet<Guid>();
+
+        #endregion
 
         /// <summary>
         /// Retrieves the data sources for the specified label type.
@@ -466,6 +470,15 @@ namespace Rock.CheckIn.v2.Labels
 
             dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasAttendance>
             {
+                Key = "0e11f268-ba2a-4f9d-a1e0-42a5c2c20f09",
+                Name = "Campus Name",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValueFunc = ( source, field, printRequest ) => source.Attendance.Campus?.Name
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasAttendance>
+            {
                 Key = "f69b47f6-40f0-4cf3-93f8-9a7f49c400e7",
                 Name = "Check-in Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
@@ -482,6 +495,15 @@ namespace Rock.CheckIn.v2.Labels
                 Category = "Common",
                 Formatter = DateTimeDataFormatter.Instance,
                 ValueFunc = ( source, field, printRequest ) => RockDateTime.Now
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasAttendance>
+            {
+                Key = "b10187c0-233b-4003-9ac6-f5d5ed0cdc76",
+                Name = "Device Name",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValueFunc = ( source, field, printRequest ) => source.Attendance.Device?.Name
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasAttendance>
@@ -537,11 +559,29 @@ namespace Rock.CheckIn.v2.Labels
 
             dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasAttendance>
             {
+                Key = "fb783ffb-2e99-4cd3-a634-2c1e1ad810d1",
+                Name = "Search Type Name",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValueFunc = ( source, field, printRequest ) => source.Attendance.SearchType?.Value
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasAttendance>
+            {
                 Key = "5bfa4351-3f18-4ec8-be29-18e4aa44323d",
                 Name = "Security Code",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
                 ValueFunc = ( source, field, printRequest ) => source.Attendance.SecurityCode
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasAttendance>
+            {
+                Key = "56e371ee-15a8-46df-be92-c509b784bd62",
+                Name = "Source Name",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValueFunc = ( source, field, printRequest ) => source.Attendance.Source?.Value
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasAttendance>
@@ -617,12 +657,24 @@ namespace Rock.CheckIn.v2.Labels
                 path: $"{nameof( AttendanceLabelData.Attendance )}.{nameof( AttendanceLabelData.Attendance.Area )}",
                 category: "Check-in Info" ) );
 
+            filterSources.Add( CreateStringPropertyFilter(
+                title: "Campus Name",
+                propertyName: nameof( AttendanceLabelData.Attendance.Campus.Name ),
+                path: $"{nameof( AttendanceLabelData.Attendance )}.{nameof( AttendanceLabelData.Attendance.Campus )}",
+                category: "Check-in Info" ) );
+
             filterSources.Add( CreateDateTimePropertyFilter(
                 propertyName: nameof( AttendanceLabelData.CheckInDateTime ),
                 category: "Check-in Info" ) );
 
             filterSources.Add( CreateDateTimePropertyFilter(
                 propertyName: nameof( AttendanceLabelData.CurrentDateTime ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                title: "Device Name",
+                propertyName: nameof( AttendanceLabelData.Attendance.Device.Name ),
+                path: $"{nameof( AttendanceLabelData.Attendance )}.{nameof( AttendanceLabelData.Attendance.Device )}",
                 category: "Check-in Info" ) );
 
             filterSources.Add( CreateStringPropertyFilter(
@@ -648,8 +700,20 @@ namespace Rock.CheckIn.v2.Labels
                 category: "Check-in Info" ) );
 
             filterSources.Add( CreateStringPropertyFilter(
+                title: "Search Type Name",
+                propertyName: nameof( AttendanceLabelData.Attendance.SearchType.Value ),
+                path: $"{nameof( AttendanceLabelData.Attendance )}.{nameof( AttendanceLabelData.Attendance.SearchType )}",
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
                 propertyName: nameof( AttendanceLabelData.Attendance.SecurityCode ),
                 path: nameof( AttendanceLabelData.Attendance ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                title: "Source Name",
+                propertyName: nameof( AttendanceLabelData.Attendance.Source.Value ),
+                path: $"{nameof( AttendanceLabelData.Attendance )}.{nameof( AttendanceLabelData.Attendance.Source )}",
                 category: "Check-in Info" ) );
 
             // Add in the Achievement Info filters.

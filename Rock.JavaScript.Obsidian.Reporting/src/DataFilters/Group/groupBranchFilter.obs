@@ -1,0 +1,41 @@
+<template>
+    <div class="row">
+        <div class="col-sm-6">
+            <GroupPicker v-model="group" label="Parent Group" />
+        </div>
+    </div>
+    <DropDownList v-model="branchType"
+                  :items="branchTypeOptions"
+                  label="Branch Type"
+                  :showBlankItem="false" />
+</template>
+
+<script setup lang="ts">
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const group = ref<ListItemBag>(safeParseJson(props.modelValue.group) ?? {});
+
+    const branchTypeOptions = [
+        { text: "Parent and Descendants", value: "0" },
+        { text: "Descendants Only", value: "1" }
+    ];
+    const branchType = ref<string>(props.modelValue.branchType ?? "0");
+
+    watch([group, branchType], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            group: JSON.stringify(group.value),
+            branchType: branchType.value
+        });
+    });
+</script>

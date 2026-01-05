@@ -143,21 +143,10 @@ namespace Rock.Model
                     }
                 }
 
-                rockContext.Database.ExecuteSqlCommand( @"
-UPDATE [AttributeValue] SET ValueAsDateTime = 
-    CASE WHEN 
-	    LEN(value) < 50 and 
-	    ISNULL(value,'') != '' and 
-	    ISNUMERIC([value]) = 0 THEN
-		    CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN 
-			    ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
-		    ELSE
-			    TRY_CAST( [value] as datetime )
-		    END
-    END
-WHERE [Id] = @entityId 
-",
-new System.Data.SqlClient.SqlParameter( "@entityId", Entity.Id ) );
+                // Previously we were doing this here:
+                //     UPDATE [AttributeValue] SET ValueAsDateTime = ...
+                // We no longer need to do this via SQL because it is handled in the PreSave call
+                // to the Entity.UpdateValueAsProperties(...) method since Nov 2022 (via 26bbe60).
 
                 base.PostSave();
             }

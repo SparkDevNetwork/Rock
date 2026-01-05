@@ -71,7 +71,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         [DataRow( AccountProtectionProfile.High )]
         [DataRow( AccountProtectionProfile.Extreme )]
-        public void PostSave_ShouldNotUpdatePersonAccountProtectionProfileToMedium( int expectedAccountProtectionProfile )
+        public void PostSave_ShouldNotUpdatePersonAccountProtectionProfileToMedium( AccountProtectionProfile expectedAccountProtectionProfile )
         {
             var personGuid = Guid.NewGuid();
 

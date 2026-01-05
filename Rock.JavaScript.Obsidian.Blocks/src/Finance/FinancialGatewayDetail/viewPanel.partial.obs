@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, ref } from "vue";
+    import { computed, PropType } from "vue";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
@@ -126,13 +126,13 @@
         return valueBuilder.build();
     });
 
-                    // #endregion
+    // #endregion
 
-                    // #region Functions
+    // #region Functions
 
-                    // #endregion
+    // #endregion
 
-                    // #region Event Handlers
+    // #region Event Handlers
 
-                    // #endregion
+    // #endregion
 </script>

@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.Finance
         DefaultValue = Rock.SystemGuid.FinancialStatementTemplate.ROCK_DEFAULT,
         Order = 1 )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.BlockTypeGuid( "E0A699C3-61AA-4522-9067-1FE56FA80972" )]
     public partial class ContributionStatementGenerator : RockBlock
     {

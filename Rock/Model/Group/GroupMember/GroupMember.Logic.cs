@@ -233,7 +233,7 @@ namespace Rock.Model
                 var person = this.Person ?? new PersonService( rockContext ).GetNoTracking( this.PersonId );
 
                 var groupRole = groupType.Roles.Where( a => a.Id == this.GroupRoleId ).FirstOrDefault();
-                errorMessage = $"{person} already belongs to the {groupRole.Name.ToLower()} role for this {groupType.GroupTerm.ToLower()} in GroupId ({ this.GroupId }), and cannot be added again with the same role";
+                errorMessage = $"{person} already belongs to the {groupRole.Name.ToLower()} role for this {groupType.GroupTerm.ToLower()} (Group Id: { this.GroupId }), and cannot be added again with the same role";
 
                 return false;
             }

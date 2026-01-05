@@ -105,7 +105,7 @@ namespace Rock.CodeGeneration.Utility
         public string GetConvertToBagCode( bool throwOnError = true )
         {
             // Check if it is a simple assignment type.
-            if ( _assignmentTypes.Contains( PropertyType ) )
+            if ( _assignmentTypes.Contains( PropertyType ) || PropertyType.IsRockEnum() || PropertyType.IsRockNullableEnum( out var _ ) )
             {
                 return Name;
             }
@@ -145,7 +145,7 @@ namespace Rock.CodeGeneration.Utility
         public string GetConvertFromBagCode( bool throwOnError = true )
         {
             // Check if it is a simple assignment type.
-            if ( _assignmentTypes.Contains( PropertyType ) )
+            if ( _assignmentTypes.Contains( PropertyType ) || PropertyType.IsRockEnum() || PropertyType.IsRockNullableEnum( out var _ ) )
             {
                 return Name;
             }
@@ -237,11 +237,15 @@ namespace Rock.CodeGeneration.Utility
             {
                 return true;
             }
-            else if ( type.IsEnum && type.Namespace.StartsWith( "Rock.Enums" ) )
+            else if ( type == typeof( TimeSpan ) || type == typeof( TimeSpan? ) )
             {
                 return true;
             }
-            else if ( type.IsEnum && type.Namespace.StartsWith( "Rock.Model" ) && type.GetCustomAttributes().FirstOrDefault( a => a.GetType().FullName == "Rock.Enums.EnumDomainAttribute" ) != null )
+            else if ( type.IsRockEnum() )
+            {
+                return true;
+            }
+            else if ( type.IsRockNullableEnum( out var _ ) )
             {
                 return true;
             }

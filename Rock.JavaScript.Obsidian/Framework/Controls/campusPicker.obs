@@ -228,6 +228,13 @@
         // At this point the base picker will be not be instantiated yet.
         // Start loading the options so we can determine if we should
         // be visible or not.
+
+        /*
+            10/1/2025 - KBH
+
+            The context slicer relies on this suspense operation for smooth block rendering.
+            If removed, custom logic will be required to handle slicer rendering.
+        */
         const suspense = useSuspense();
 
         if (suspense) {

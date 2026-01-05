@@ -408,11 +408,13 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void InitializeStepProgramPicker()
         {
+            var hasStepTypeId = PageParameter( PageParameterKey.StepTypeId ).IsNotNullOrWhiteSpace();
+            var hasProgramId = PageParameter( PageParameterKey.StepProgramId ).IsNotNullOrWhiteSpace();
             var isSelectedable =
-                !PageParameter( PageParameterKey.StepTypeId ).AsIntegerOrNull().HasValue &&
+                !hasStepTypeId &&
                 !GetStepTypeGuidFromBlockAttribute().HasValue &&
                 !GetStepProgramGuidFromBlockAttribute().HasValue &&
-                !PageParameter( PageParameterKey.StepProgramId ).AsIntegerOrNull().HasValue;
+                !hasProgramId;
 
             var stepProgram = GetStepProgram();
 
@@ -436,8 +438,9 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void InitializeStepTypePicker()
         {
+            var hasStepTypeId = PageParameter( PageParameterKey.StepTypeId ).IsNotNullOrWhiteSpace();
             var isSelectedable =
-                !PageParameter( PageParameterKey.StepTypeId ).AsIntegerOrNull().HasValue &&
+                !hasStepTypeId &&
                 !GetStepTypeGuidFromBlockAttribute().HasValue;
 
             var stepType = GetStepType();
@@ -789,10 +792,13 @@ namespace RockWeb.Blocks.Steps
         /// <returns></returns>
         private StepProgram GetStepProgram()
         {
+            var rockContext = GetRockContext();
+            var stepTypeService = new StepTypeService( rockContext );
+
             var blockSettingStepTypeGuid = GetStepTypeGuidFromBlockAttribute();
             var blockSettingStepProgramGuid = GetStepProgramGuidFromBlockAttribute();
-            var pageParamStepProgramId = PageParameter( PageParameterKey.StepProgramId ).AsIntegerOrNull();
-            var pageParamStepTypeId = PageParameter( PageParameterKey.StepTypeId ).AsIntegerOrNull();
+            var pageParamStepProgramId = PageParameter( PageParameterKey.StepProgramId );
+            var pageParamStepTypeId = PageParameter( PageParameterKey.StepTypeId );
             const string includes = "StepStatuses, StepTypes.StepTypePrerequisites.PrerequisiteStepType";
 
             // #1 priority is the block setting for the step type
@@ -816,26 +822,29 @@ namespace RockWeb.Blocks.Steps
                 }
             }
             // #3 priority is the page parameter for the step type
-            else if ( pageParamStepTypeId.HasValue )
+            else if ( pageParamStepTypeId.IsNotNullOrWhiteSpace() )
             {
-                if ( _stepProgram == null || _stepProgram.StepTypes.All( st => st.Id != pageParamStepTypeId.Value ) )
+                var stepType = stepTypeService.Get( pageParamStepTypeId, !PageCache.Layout.Site.DisablePredictableIds );
+
+                if ( stepType != null )
                 {
                     var stepProgramService = GetStepProgramService();
                     _stepProgram = stepProgramService.Queryable( includes ).AsNoTracking()
-                        .FirstOrDefault( sp => sp.StepTypes.Any( st => st.Id == pageParamStepTypeId.Value ) );
+                        .FirstOrDefault( sp => sp.Id == stepType.StepProgramId );
                 }
             }
             // #4 priority is the page parameter for the step program
-            else if ( pageParamStepProgramId.HasValue )
+            else if ( pageParamStepProgramId.IsNotNullOrWhiteSpace() )
             {
-                if ( _stepProgram == null || _stepProgram.Id != pageParamStepProgramId.Value )
+                var stepProgramService = GetStepProgramService();
+                var stepProgram = stepProgramService.Get( pageParamStepProgramId, !PageCache.Layout.Site.DisablePredictableIds );
+                if ( stepProgram != null )
                 {
-                    var stepProgramService = GetStepProgramService();
                     _stepProgram = stepProgramService.Queryable( includes ).AsNoTracking()
-                        .FirstOrDefault( sp => sp.Id == pageParamStepProgramId.Value );
+                        .FirstOrDefault( sp => sp.Id == stepProgram.Id );
                 }
             }
-            // #4 priority is the user's selection
+            // #5 priority is the user's selection
             else
             {
                 var selectedStepProgramId = sppProgramPicker.SelectedValue.AsIntegerOrNull();
@@ -862,7 +871,7 @@ namespace RockWeb.Blocks.Steps
         /// <returns></returns>
         private StepType GetStepType()
         {
-            var pageParamStepTypeId = PageParameter( PageParameterKey.StepTypeId ).AsIntegerOrNull();
+            var pageParamStepTypeId = PageParameter( PageParameterKey.StepTypeId );
             var blockSettingStepTypeGuid = GetStepTypeGuidFromBlockAttribute();
 
             // #1 priority is the block setting for the step type
@@ -883,21 +892,11 @@ namespace RockWeb.Blocks.Steps
                 }
             }
             // #2 priority is the page param for the step type
-            else if ( pageParamStepTypeId.HasValue )
+            else if ( pageParamStepTypeId.IsNotNullOrWhiteSpace() )
             {
-                if ( _stepType == null || _stepType.Id != pageParamStepTypeId.Value )
-                {
-                    var stepProgram = GetStepProgram();
-
-                    if ( stepProgram == null )
-                    {
-                        _stepType = null;
-                    }
-                    else
-                    {
-                        _stepType = stepProgram.StepTypes.FirstOrDefault( st => st.Id == pageParamStepTypeId.Value );
-                    }
-                }
+                var rockContext = GetRockContext();
+                var stepTypeService = new StepTypeService( rockContext );
+                _stepType = stepTypeService.Get( pageParamStepTypeId, !PageCache.Layout.Site.DisablePredictableIds );
             }
             // #3 priority is the user's selection
             else

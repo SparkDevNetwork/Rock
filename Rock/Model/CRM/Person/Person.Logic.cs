@@ -1578,7 +1578,7 @@ namespace Rock.Model
                 return string.Format(
                     "<i class='{1}' style='color: {0};'></i>",
                     signalColor,
-                    !string.IsNullOrWhiteSpace( signalIconCssClass ) ? signalIconCssClass : "fa fa-flag" );
+                    !string.IsNullOrWhiteSpace( signalIconCssClass ) ? signalIconCssClass : "ti ti-flag" );
             }
 
             return string.Empty;

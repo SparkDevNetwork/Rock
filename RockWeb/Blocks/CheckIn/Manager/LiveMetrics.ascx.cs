@@ -416,18 +416,18 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             string desktopStatus = string.Empty;
             string statusClass = string.Empty;
-            string mobileIcon = @"<i class=""fa fa-{0}""></i>";
+            string mobileIcon = @"<i class=""{0}""></i>";
 
             if ( NavData.AllowCheckout && personResult.CheckedOutDateTime.HasValue )
             {
                 statusClass = "danger";
-                mobileIcon = string.Format( mobileIcon, "minus" );
+                mobileIcon = string.Format( mobileIcon, "ti ti-minus" );
                 desktopStatus = "Checked-out";
             }
             else if ( personResult.PresentDateTime.HasValue )
             {
                 statusClass = "success";
-                mobileIcon = string.Format( mobileIcon, "check" );
+                mobileIcon = string.Format( mobileIcon, "ti ti-check" );
                 if ( NavData.EnablePresence )
                 {
                     desktopStatus = "Present";

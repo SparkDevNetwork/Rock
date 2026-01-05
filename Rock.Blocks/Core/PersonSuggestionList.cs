@@ -36,7 +36,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Person Suggestion List" )]
     [Category( "Follow" )]
     [Description( "Block for displaying people that have been suggested to current person to follow." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "fd10b5b8-494c-4665-8f1f-8f92f2194f7e" )]

@@ -40,7 +40,7 @@ namespace Rock.Blocks.Event
     [DisplayName( "Calendar Detail" )]
     [Category( "Event" )]
     [Description( "Displays the details of the given Event Calendar." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

@@ -3,6 +3,7 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
+          title="Media Accounts"
           itemTerm="Media Account"
           :entityTypeGuid="EntityType.MediaAccount"
           stickyHeader
@@ -16,11 +17,13 @@
                     title="Name"
                     field="name"
                     :filter="textValueFilter"
+                    width="35%"
                     visiblePriority="xs" />
 
         <TextColumn name="componentEntityType"
                     title="Type"
                     field="componentEntityType"
+                    width="32%"
                     :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
@@ -28,12 +31,14 @@
                         title="Last Refresh Date/Time"
                         field="lastRefreshDateTime"
                         :filter="dateValueFilter"
+                        width="29%"
                         visiblePriority="xs" />
 
         <NumberColumn name="folderCount"
                       title="Folders"
                       field="folderCount"
                       :filter="numberValueFilter"
+                      width="1%"
                       visiblePriority="sm">
             <template #format="{ row }">
                 <div class="flex-grow-1">
@@ -46,6 +51,7 @@
                       title="Videos"
                       field="videoCount"
                       :filter="numberValueFilter"
+                      width="1%"
                       visiblePriority="sm">
             <template #format="{ row }">
                 <div class="flex-grow-1">

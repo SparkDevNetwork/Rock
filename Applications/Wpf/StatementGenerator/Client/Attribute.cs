@@ -1,0 +1,213 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
+
+namespace Rock.Apps.StatementGenerator.Client
+{
+    /// <summary>
+    /// Base client model for Attribute that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// </summary>
+    public partial class Attribute
+    {
+        /// <summary />
+        public int Id { get; set; }
+
+        /// <summary />
+        public string AbbreviatedName { get; set; }
+
+        /// <summary />
+        public bool AllowSearch { get; set; }
+
+        /// <summary />
+        public string AttributeColor { get; set; }
+
+        /// <summary />
+        public string DefaultPersistedCondensedHtmlValue { get; set; }
+
+        /// <summary />
+        public string DefaultPersistedCondensedTextValue { get; set; }
+
+        /// <summary />
+        public string DefaultPersistedHtmlValue { get; set; }
+
+        /// <summary />
+        public string DefaultPersistedTextValue { get; set; }
+
+        /// <summary />
+        public string DefaultValue { get; set; }
+
+        /// <summary />
+        public string Description { get; set; }
+
+        /// <summary />
+        public bool EnableHistory { get; set; }
+
+        /// <summary />
+        public int? EntityTypeId { get; set; }
+
+        /// <summary />
+        public string EntityTypeQualifierColumn { get; set; }
+
+        /// <summary />
+        public string EntityTypeQualifierValue { get; set; }
+
+        /// <summary />
+        public int FieldTypeId { get; set; }
+
+        /// <summary />
+        public Guid? ForeignGuid { get; set; }
+
+        /// <summary />
+        public string ForeignKey { get; set; }
+
+        /// <summary />
+        public string IconCssClass { get; set; }
+
+        /// <summary />
+        public bool IsActive { get; set; } = true;
+
+        /// <summary />
+        public bool IsAnalytic { get; set; }
+
+        /// <summary />
+        public bool IsAnalyticHistory { get; set; }
+
+        /// <summary />
+        public bool IsDefaultPersistedValueDirty { get; set; }
+
+        /// <summary />
+        public bool IsGridColumn { get; set; }
+
+        /// <summary />
+        public bool IsIndexEnabled { get; set; }
+
+        /// <summary />
+        public bool IsMultiValue { get; set; }
+
+        /// <summary />
+        public bool IsPublic { get; set; }
+
+        /// <summary />
+        public bool IsRequired { get; set; }
+
+        /// <summary />
+        public bool IsSuppressHistoryLogging { get; set; }
+
+        /// <summary />
+        public bool IsSystem { get; set; }
+
+        /// <summary />
+        public string Key { get; set; }
+
+        /// <summary>
+        /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
+        /// </summary>
+        public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
+
+        /// <summary />
+        public int Order { get; set; }
+
+        /// <summary />
+        public string PostHtml { get; set; }
+
+        /// <summary />
+        public string PreHtml { get; set; }
+
+        /// <summary />
+        public bool ShowOnBulk { get; set; }
+
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
+        public DateTime? CreatedDateTime { get; set; }
+
+        /// <summary>
+        /// This does not need to be set or changed. Rock will always set this to the current date/time when saved to the database.
+        /// </summary>
+        public DateTime? ModifiedDateTime { get; set; }
+
+        /// <summary>
+        /// Leave this as NULL to let Rock set this
+        /// </summary>
+        public int? CreatedByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// If you need to set this manually, set ModifiedAuditValuesAlreadyUpdated=True to prevent Rock from setting it
+        /// </summary>
+        public int? ModifiedByPersonAliasId { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary />
+        public int? ForeignId { get; set; }
+
+        /// <summary>
+        /// Copies the base properties from a source Attribute object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( Attribute source )
+        {
+            this.Id = source.Id;
+            this.AbbreviatedName = source.AbbreviatedName;
+            this.AllowSearch = source.AllowSearch;
+            this.AttributeColor = source.AttributeColor;
+            this.DefaultPersistedCondensedHtmlValue = source.DefaultPersistedCondensedHtmlValue;
+            this.DefaultPersistedCondensedTextValue = source.DefaultPersistedCondensedTextValue;
+            this.DefaultPersistedHtmlValue = source.DefaultPersistedHtmlValue;
+            this.DefaultPersistedTextValue = source.DefaultPersistedTextValue;
+            this.DefaultValue = source.DefaultValue;
+            this.Description = source.Description;
+            this.EnableHistory = source.EnableHistory;
+            this.EntityTypeId = source.EntityTypeId;
+            this.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
+            this.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+            this.FieldTypeId = source.FieldTypeId;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
+            this.IconCssClass = source.IconCssClass;
+            this.IsActive = source.IsActive;
+            this.IsAnalytic = source.IsAnalytic;
+            this.IsAnalyticHistory = source.IsAnalyticHistory;
+            this.IsDefaultPersistedValueDirty = source.IsDefaultPersistedValueDirty;
+            this.IsGridColumn = source.IsGridColumn;
+            this.IsIndexEnabled = source.IsIndexEnabled;
+            this.IsMultiValue = source.IsMultiValue;
+            this.IsPublic = source.IsPublic;
+            this.IsRequired = source.IsRequired;
+            this.IsSuppressHistoryLogging = source.IsSuppressHistoryLogging;
+            this.IsSystem = source.IsSystem;
+            this.Key = source.Key;
+            this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.Name = source.Name;
+            this.Order = source.Order;
+            this.PostHtml = source.PostHtml;
+            this.PreHtml = source.PreHtml;
+            this.ShowOnBulk = source.ShowOnBulk;
+            this.CreatedDateTime = source.CreatedDateTime;
+            this.ModifiedDateTime = source.ModifiedDateTime;
+            this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            this.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+
+        }
+    }
+}

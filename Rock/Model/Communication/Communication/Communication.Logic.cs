@@ -24,9 +24,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Communication;
 using Rock.Data;
 using Rock.Observability;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -1025,68 +1028,7 @@ WHERE r.[RowNumber] > 1;";
         /// <param name="communication">The communication.</param>
         public static void Send( Rock.Model.Communication communication )
         {
-            if ( communication == null || communication.Status != CommunicationStatus.Approved )
-            {
-                return;
-            }
-
-            // only alter the Recipient list if it the communication hasn't sent a message to any recipients yet
-            if ( communication.SendDateTime.HasValue == false )
-            {
-                using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Send > Prepare Recipient List" ) )
-                {
-                    activity?.AddTag( "rock.communication.id", communication.Id );
-                    activity?.AddTag( "rock.communication.name", communication.Name );
-
-                    using ( var rockContext = new RockContext() )
-                    {
-                        /*
-                            1/2/2024 - JPH
-
-                            We're increasing this timeout from the default of 30 seconds to give the following
-                            pre-send tasks more time to complete, as the sending of communications with a large
-                            number of recipients is most often done as a background task, and shouldn't risk
-                            tying up the UI.
-
-                            Reason: Communications with a large number of recipients time out and don't send.
-                            https://github.com/SparkDevNetwork/Rock/issues/5651
-                        */
-                        rockContext.Database.CommandTimeout = 90;
-
-                        if ( communication.ListGroupId.HasValue )
-                        {
-                            communication.RefreshCommunicationRecipientList( rockContext );
-                        }
-
-                        if ( communication.ExcludeDuplicateRecipientAddress )
-                        {
-                            communication.RemoveRecipientsWithDuplicateAddress( rockContext );
-                        }
-
-                        communication.RemoveDuplicatePersonRecipients( rockContext );
-                    }
-                }
-            }
-
-            foreach ( var medium in communication.GetMediums() )
-            {
-                medium.Send( communication );
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var dbCommunication = new CommunicationService( rockContext ).Get( communication.Id );
-
-                dbCommunication.UpdateSendingRecipients();
-
-                if ( !dbCommunication.HasPendingRecipients( rockContext ) )
-                {
-                    // Set the SendDateTime of the Communication
-                    dbCommunication.SendDateTime = RockDateTime.Now;
-                }
-
-                rockContext.SaveChanges();
-            }
+            AsyncHelper.RunSync( () => SendAsync( communication ) );
         }
 
         /// <summary>
@@ -1100,16 +1042,18 @@ WHERE r.[RowNumber] > 1;";
                 return;
             }
 
-            // only alter the Recipient list if it the communication hasn't sent a message to any recipients yet
-            if ( communication.SendDateTime.HasValue == false )
+            // Only alter the recipient list if Rock hasn't already begun sending to recipients.
+            using ( var rockContext = new RockContext() )
             {
-                using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Send Async > Prepare Recipient List" ) )
-                {
-                    activity?.AddTag( "rock.communication.id", communication.Id );
-                    activity?.AddTag( "rock.communication.name", communication.Name );
+                var hasSendingBegun = GetOrSetHasSendingBegun( communication.Id, rockContext );
 
-                    using ( var rockContext = new RockContext() )
+                if ( !communication.SendDateTime.HasValue && !hasSendingBegun )
+                {
+                    using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Send Async > Prepare Recipient List" ) )
                     {
+                        activity?.AddTag( "rock.communication.id", communication.Id );
+                        activity?.AddTag( "rock.communication.name", communication.Name );
+
                         /*
                             1/2/2024 - JPH
 
@@ -1121,7 +1065,7 @@ WHERE r.[RowNumber] > 1;";
                             Reason: Communications with a large number of recipients time out and don't send.
                             https://github.com/SparkDevNetwork/Rock/issues/5651
                         */
-                        rockContext.Database.CommandTimeout = 90;
+                        rockContext.Database.SetCommandTimeout( 90 );
 
                         if ( communication.ListGroupId.HasValue )
                         {
@@ -1184,6 +1128,40 @@ WHERE r.[RowNumber] > 1;";
 
                 rockContext.SaveChanges();
             }
+        }
+
+        /// <summary>
+        /// Gets whether Rock has already begun sending this communication to any of its recipients.
+        /// </summary>
+        /// <param name="communicationId">The communication identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>Whether Rock has already begun sending this communication to any of its recipients.</returns>
+        /// <remarks>
+        /// If sending hasn't already begun, one of the recipient's <see cref="CommunicationRecipient.FirstSendAttemptDateTime"/>
+        /// will be set to <see cref="RockDateTime.Now"/> to indicate that sending has begun.
+        /// </remarks>
+        public static bool GetOrSetHasSendingBegun( int communicationId, RockContext rockContext )
+        {
+            var communicationRecipient = new CommunicationRecipientService( rockContext )
+                .Queryable()
+                .Where( cr =>
+                    cr.CommunicationId == communicationId
+                )
+                .OrderByDescending( cr => cr.FirstSendAttemptDateTime.HasValue )
+                .FirstOrDefault();
+
+            if ( communicationRecipient?.FirstSendAttemptDateTime.HasValue == true )
+            {
+                return true;
+            }
+
+            if ( communicationRecipient != null )
+            {
+                communicationRecipient.FirstSendAttemptDateTime = RockDateTime.Now;
+                rockContext.SaveChanges();
+            }
+
+            return false;
         }
 
         /// <summary>

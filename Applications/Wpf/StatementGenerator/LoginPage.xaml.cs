@@ -22,6 +22,8 @@ using System.Windows;
 using System.Windows.Input;
 using RestSharp;
 
+using Rock.Apps.StatementGenerator.Client;
+
 namespace Rock.Apps.StatementGenerator
 {
     /// <summary>
@@ -100,7 +102,7 @@ namespace Rock.Apps.StatementGenerator
                 }
 
                 var getByUserNameRequest = new RestRequest( string.Format( "api/People/GetByUserName/{0}", userName ) );
-                var getByUserNameResponse = restClient.Execute<Rock.Client.Person>( getByUserNameRequest );
+                var getByUserNameResponse = restClient.Execute( getByUserNameRequest );
                 if ( getByUserNameResponse.ErrorException != null )
                 {
                     string message = getByUserNameResponse.ErrorException.Message;
@@ -116,7 +118,6 @@ namespace Rock.Apps.StatementGenerator
                     return;
                 }
 
-                Rock.Client.Person person = getByUserNameResponse.Data;
                 RockConfig rockConfig = RockConfig.Load();
                 rockConfig.RockBaseUrl = rockUrl;
                 rockConfig.Username = userName;
@@ -226,8 +227,8 @@ namespace Rock.Apps.StatementGenerator
             var restClient = new RestClient( rockConfig.RockBaseUrl );
             restClient.LoginToRock( rockConfig.Username, rockConfig.Password );
 
-            var getStatementGeneratorConfig = new RestRequest( $"api/Attributes?$filter=Guid eq guid'{Rock.Client.SystemGuid.Attribute.STATEMENT_GENERATOR_CONFIG}'" );
-            var storedSetting = restClient.Execute<List<Rock.Client.Attribute>>( getStatementGeneratorConfig ).Data.FirstOrDefault();
+            var getStatementGeneratorConfig = new RestRequest( $"api/Attributes?$filter=Guid eq guid'{SystemGuid.STATEMENT_GENERATOR_CONFIG}'" );
+            var storedSetting = restClient.Execute<List<Client.Attribute>>( getStatementGeneratorConfig ).Data.FirstOrDefault();
 
             if ( null == storedSetting )
             {

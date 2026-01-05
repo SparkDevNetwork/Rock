@@ -18,6 +18,8 @@
 using System;
 using System.Threading;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -34,7 +36,7 @@ namespace Rock.Tasks
         {
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = 300;
+                rockContext.Database.SetCommandTimeout( 300 );
 
                 var personalizationSegmentService = new PersonalizationSegmentService( rockContext );
                 var personalizationSegment = personalizationSegmentService.Get( message.PersonalizationSegmentId );

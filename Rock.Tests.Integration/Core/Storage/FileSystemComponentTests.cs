@@ -58,7 +58,7 @@ namespace Rock.Tests.Integration.Core.Storage
             EnsureFolder( appDataTempFolder );
         }
 
-        [ClassCleanup]
+        [ClassCleanup( ClassCleanupBehavior.EndOfClass )]
         public static void CleanupFolder()
         {
             // WARNING: Only delete if this is the TestFolder/Content folder we setup.

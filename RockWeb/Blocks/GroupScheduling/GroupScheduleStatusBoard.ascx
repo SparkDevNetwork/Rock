@@ -4,23 +4,23 @@
     <ContentTemplate>
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block panel-groupscheduler">
             <div class="panel-heading panel-follow">
-                <h1 class="panel-title"><i class="fa fa-calendar"></i>Schedule Status Board
+                <h1 class="panel-title"><i class="ti ti-calendar"></i>Schedule Status Board
                 </h1>
                 <div class="panel-labels">
                     <asp:LinkButton ID="btnRosters" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnRosters_Click">
-                        <i class="fa fa-calendar-check"></i>
+                        <i class="ti ti-calendar-check"></i>
                         Rosters
                     </asp:LinkButton>
                     <asp:LinkButton ID="btnSendCommunications" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnSendCommunications_Click">
-                        <i class="fa fa-envelope"></i>
+                        <i class="ti ti-mail"></i>
                         Send Communications
                     </asp:LinkButton>
                     <asp:LinkButton ID="btnGroups" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnGroups_Click">
-                        <i class="fa fa-users"></i>
+                        <i class="ti ti-users"></i>
                         Groups
                     </asp:LinkButton>
                     <asp:LinkButton ID="btnDates" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnDates_Click">
-                        <i class="fa fa-calendar"></i>
+                        <i class="ti ti-calendar"></i>
                         Dates
                     </asp:LinkButton>
                 </div>

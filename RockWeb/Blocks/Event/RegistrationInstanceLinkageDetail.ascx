@@ -54,8 +54,8 @@
                     <div class="col-md-6">
                         <asp:HiddenField ID="hfLinkageEventItemOccurrenceId" runat="server" />
                         <Rock:RockLiteral ID="lLinkageEventItemOccurrence" runat="server" Label="Calendar Item" CssClass="margin-b-none" />
-                        <asp:LinkButton ID="lbLinkageEventItemOccurrenceAdd" runat="server" CssClass="btn btn-primary btn-xs margin-b-md" OnClick="lbLinkageEventItemOccurrenceAdd_Click"><i class="fa fa-plus"></i> Add Event Item</asp:LinkButton>
-                        <asp:LinkButton ID="lbLinkageEventItemOccurrenceRemove" runat="server" CssClass="btn btn-danger btn-xs margin-b-md" Visible="false" OnClick="lbLinkageEventItemOccurrenceRemove_Click"><i class="fa fa-times"></i> Remove</asp:LinkButton>
+                        <asp:LinkButton ID="lbLinkageEventItemOccurrenceAdd" runat="server" CssClass="btn btn-primary btn-xs margin-b-md" OnClick="lbLinkageEventItemOccurrenceAdd_Click"><i class="ti ti-plus"></i> Add Event Item</asp:LinkButton>
+                        <asp:LinkButton ID="lbLinkageEventItemOccurrenceRemove" runat="server" CssClass="btn btn-danger btn-xs margin-b-md" Visible="false" OnClick="lbLinkageEventItemOccurrenceRemove_Click"><i class="ti ti-x"></i> Remove</asp:LinkButton>
                     </div>
                     <div class="col-md-6">
 

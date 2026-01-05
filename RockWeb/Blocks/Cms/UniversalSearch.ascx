@@ -20,14 +20,14 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block" DefaultButton="btnSearch">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-search"></i> Universal Search</h1>
+                <h1 class="panel-title"><i class="ti ti-search"></i> Universal Search</h1>
             </div>
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbWarnings" runat="server" NotificationBoxType="Warning" />
 
                 <asp:Literal ID="lPreHtml" runat="server" />
                 <div class="input-group searchbox">
-                    <div class="input-group-addon"><i class="fa fa-search"></i></div>
+                    <div class="input-group-addon"><i class="ti ti-search"></i></div>
                     <asp:TextBox id="tbSearch" runat="server" CssClass="form-control" Placeholder="Search" />
 
                     <span id="spanButtonGroup" runat="server" class="input-group-btn">

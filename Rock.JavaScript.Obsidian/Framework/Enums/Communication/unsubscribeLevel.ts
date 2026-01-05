@@ -32,8 +32,8 @@ export const UnsubscribeLevel = {
     /** Unsubscribe from communication lists. */
     CommunicationList: 3,
 
-    /** Unsubscribe from communication campaigns. */
-    Campaign: 4
+    /** Unsubscribe from communication flows. */
+    Flows: 4
 } as const;
 
 /** Represents the level at which an individual can unsubscribe from communications. */
@@ -44,7 +44,7 @@ export const UnsubscribeLevelDescription: Record<number, string> = {
 
     3: "Communication List",
 
-    4: "Campaign"
+    4: "Flows"
 };
 
 /** Represents the level at which an individual can unsubscribe from communications. */

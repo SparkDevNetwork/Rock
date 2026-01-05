@@ -40,7 +40,7 @@ namespace Rock.Blocks.Finance
     [DisplayName( "Financial Batch List" )]
     [Category( "Finance" )]
     [Description( "Displays a list of financial batches." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
@@ -315,9 +315,8 @@ namespace Rock.Blocks.Finance
             // Load all the batches into memory.
             var items = queryable.ToList();
 
-            // Load any attribute column configuration.
-            var gridAttributeIds = _gridAttributes.Value.Select( a => a.Id ).ToList();
-            Helper.LoadFilteredAttributes( items.Select( d => d.Batch ).ToList(), rockContext, a => gridAttributeIds.Contains( a.Id ) );
+            // Load attribute values for the grid-selected attributes.
+            GridAttributeLoader.LoadFor( items, a => a.Batch, _gridAttributes.Value, rockContext );
 
             // Load the account summary data into memory.
             var batchIdQry = GetBatchQueryable( rockContext ).Select( b => b.Id );

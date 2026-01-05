@@ -668,7 +668,7 @@ namespace RockWeb.Blocks.Core
                                 var jsonOfObject = mergeValueObject.ToJson();
                                 try
                                 {
-                                    mergeValueObject = Rock.Lava.RockFilters.FromJSON( jsonOfObject );
+                                    mergeValueObject = jsonOfObject.FromJsonDynamicOrNull();
                                 }
                                 catch ( Exception ex )
                                 {

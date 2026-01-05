@@ -20,6 +20,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Cms;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
@@ -166,6 +167,9 @@ namespace Rock.Web.Cache
         /// The additional settings.
         /// </value>
         public string AdditionalSettings { get; private set; }
+
+        /// <inheritdoc cref="Block.Role"/>
+        public BlockRole? Role { get; private set; }
 
         /// <summary>
         /// Gets or sets the Page that this Block is implemented on. This 
@@ -352,6 +356,7 @@ namespace Rock.Web.Cache
             PostHtml = block.PostHtml;
             OutputCacheDuration = block.OutputCacheDuration;
             AdditionalSettings = block.AdditionalSettings;
+            Role = block.Role;
         }
 
         /// <summary>

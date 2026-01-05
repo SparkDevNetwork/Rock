@@ -135,16 +135,18 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets a list of active, public programs, optionally filtered to the specified categoryIds and optionally with completion status for the specified person.
+        /// Security is enforced based on EnforcePublicSecurity, view authorization, and participant status.
         /// </summary>
-        /// <param name="includeCompletionsForPersonId">The identifier of the <see cref="Person"/> to include completion status for.</param>
+        /// <param name="personId">The identifier of the <see cref="Person"/> to include completion status and apply user-specific security for.</param>
         /// <param name="publicOnly"><c>true</c> to include <see cref="LearningProgram"/> records whose IsPublic property is true; <c>false</c> to include regardless of IsPublic.</param>
         /// <param name="categoryGuids">The optional list of category Guids to filter for.</param>
         /// <returns>An enumerable of PublicLearningProgramBag.</returns>
-        public List<PublicLearningProgramBag> GetPublicPrograms( int includeCompletionsForPersonId = 0, bool publicOnly = true, params Guid[] categoryGuids )
+        public List<PublicLearningProgramBag> GetPublicPrograms( int personId = 0, bool publicOnly = true, params Guid[] categoryGuids )
         {
-            var programs = new List<PublicLearningProgramBag>();
+            var rockContext = ( RockContext ) Context;
+            var currentPerson = personId > 0 ? new PersonService( rockContext ).GetNoTracking( personId ) : null;
 
-            var baseQuery = Queryable()
+            var programsQuery = Queryable()
                 .AsNoTracking()
                 .Include( p => p.ImageBinaryFile )
                 .Include( p => p.Category )
@@ -154,46 +156,42 @@ namespace Rock.Model
 
             if ( categoryGuids.Any() )
             {
-                baseQuery = baseQuery.Where( p => p.Category != null && categoryGuids.Contains( p.Category.Guid ) );
+                programsQuery = programsQuery.Where( p => p.Category != null && categoryGuids.Contains( p.Category.Guid ) );
             }
 
-            if ( includeCompletionsForPersonId > 0 )
+            var participantProgramIds = new HashSet<int>();
+            List<LearningProgramCompletion> personCompletions = null;
+
+            if ( currentPerson != null )
             {
-                // If we should include completion status then get those values first and return the program bag queryable.
-                var personCompletions = new LearningProgramCompletionService( ( RockContext ) Context )
+                participantProgramIds = new LearningClassService( rockContext )
+                    .GetStudentClasses( personId )
+                    .AsNoTracking()
+                    .Select( c => c.LearningCourse.LearningProgramId )
+                    .ToHashSet();
+
+                personCompletions = new LearningProgramCompletionService( rockContext )
                     .Queryable()
-                    .Where( lpc => lpc.PersonAlias.PersonId == includeCompletionsForPersonId )
-                    .OrderByDescending( lpc => lpc.StartDate );
-
-                programs = baseQuery
-                    .Select( p => new PublicLearningProgramBag
-                    {
-                        Id = p.Id,
-                        PublicName = p.PublicName,
-                        Summary = p.Summary,
-                        Category = p.Category.Name,
-                        CategoryColor = p.Category.HighlightColor,
-                        CompletionStatus = personCompletions
-                            .FirstOrDefault( c => c.LearningProgramId == p.Id )
-                            .CompletionStatus,
-                        ConfigurationMode = p.ConfigurationMode,
-                        ImageFileGuid = p.ImageBinaryFile.Guid
-                    } ).ToList();
+                    .AsNoTracking()
+                    .Where( lpc => lpc.PersonAlias.PersonId == personId )
+                    .OrderByDescending( lpc => lpc.StartDate )
+                    .ToList();
             }
-            else
-            {
-                // If we don't need to include completion status return the program bag queryable.
-                programs = baseQuery.Select( p => new PublicLearningProgramBag
+
+            var programs = programsQuery.ToList()
+                .Where( p => !p.EnforcePublicSecurity || p.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) || participantProgramIds.Contains( p.Id ) )
+                .Select( p => new PublicLearningProgramBag
                 {
                     Id = p.Id,
                     PublicName = p.PublicName,
                     Summary = p.Summary,
-                    Category = p.Category.Name,
-                    CategoryColor = p.Category.HighlightColor,
+                    Category = p.Category?.Name,
+                    CategoryColor = p.Category?.HighlightColor,
+                    CompletionStatus = personCompletions?.FirstOrDefault( c => c.LearningProgramId == p.Id )?.CompletionStatus,
                     ConfigurationMode = p.ConfigurationMode,
-                    ImageFileGuid = p.ImageBinaryFile.Guid
-                } ).ToList();
-            }
+                    ImageFileGuid = p.ImageBinaryFile?.Guid
+                } )
+                .ToList();
 
             foreach ( var program in programs )
             {

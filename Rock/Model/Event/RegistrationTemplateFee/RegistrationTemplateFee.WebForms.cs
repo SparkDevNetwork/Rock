@@ -39,8 +39,8 @@ namespace Rock.Model
             var cb = new RockCheckBox
             {
                 ID = "fee_" + fee.Id.ToString(),
-                SelectedIconCssClass = "fa fa-check-square-o fa-lg",
-                UnSelectedIconCssClass = "fa fa-square-o fa-lg",
+                SelectedIconCssClass = "ti ti-square-check ti-lg",
+                UnSelectedIconCssClass = "ti ti-square ti-lg",
                 Required = fee.IsRequired,
                 Label = controlLabel
             };

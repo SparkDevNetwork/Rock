@@ -22,6 +22,9 @@ using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -267,7 +270,7 @@ namespace Rock.Jobs
         private void SaveMetricValues()
         {
             var rockContext = new RockContext();
-            rockContext.Database.CommandTimeout = _commandTimeout;
+            rockContext.Database.SetCommandTimeout( _commandTimeout );
 
             var hostingMetricsCategoryId = CategoryCache.GetId( SystemGuid.Category.METRIC_HOSTING_METRICS.AsGuid() );
             if ( !hostingMetricsCategoryId.HasValue )

@@ -22,7 +22,7 @@
                     :btnType="adaptiveFontSize.length > 0 ? 'primary' : 'default'"
                     btnSize="sm"
                     @click="onAdaptiveFontSizeClick">
-            <i class="fa fa-text-width"></i>
+            <i class="ti ti-ruler-measure"></i>
         </RockButton>
 
         <slot name="iconButtons" />
@@ -107,15 +107,15 @@
     const alignmentItems: ListItemBag[] = [
         {
             value: `${HorizontalTextAlignment.Left}`,
-            text: "fa fa-align-left"
+            text: "ti ti-align-left"
         },
         {
             value: `${HorizontalTextAlignment.Center}`,
-            text: "fa fa-align-center"
+            text: "ti ti-align-center"
         },
         {
             value: `${HorizontalTextAlignment.Right}`,
-            text: "fa fa-align-right"
+            text: "ti ti-align-right"
         }
     ];
 

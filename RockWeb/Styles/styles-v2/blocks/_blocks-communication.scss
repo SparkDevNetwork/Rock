@@ -1,0 +1,246 @@
+
+
+//  BLOCK COMMUNICATION STYLE
+
+
+// =============================================================
+// Table of Content
+//  + Communication Entry
+//  + Communication Detail
+//  + Communication List
+//  + Communication Wizard
+//  + Email Builder
+//  + Legacy Email Editor
+//  + Communication History
+// =============================================================
+
+
+// ======================== COMMUNICATION ENTRY ========================
+.recipients {
+  .recipient {
+    float:                left;
+    width:                100%;
+    @media (min-width: $screen-small) {
+      width:              50%;
+    }
+    @media (min-width: $screen-medium) {
+      width:              25%;
+    }
+
+    &.failed {
+      color:              var(--color-danger-strong);
+    }
+
+    &.opened {
+      color:              var(--color-success-strong);
+    }
+  }
+}
+
+.featured-content.row {
+  margin:0 !important;
+}
+// ====================== END Contributions ======================
+
+
+// ======================== COMMUNICATION DETAIL ========================
+
+.communication-detail .panel-worksurface {
+  .panel-body .actions:last-of-type {
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+}
+
+iframe.email-body {
+  width:                100%;
+  height:               300px;
+  background-color:     var(--color-interface-softest);
+  border:               1px solid var(--color-interface-soft);
+}
+
+// ======================== END COMMUNICATION DETAIL ========================
+
+// ======================== COMMUNICATION LIST ========================
+.hint {
+  background-color: var(--color-interface-soft);
+  padding: 0 6px;
+  border-radius: var(--rounded-small);
+  color: var(--color-interface-strongest);
+}
+
+.hint-ai {
+  border: 2px solid transparent;
+  border-radius: var(--rounded-small);
+  background: linear-gradient(var(--color-interface-softest), var(--color-interface-softest)) padding-box,
+              linear-gradient(to right, #FBC453, #F7964F, #EF6653) border-box;
+  padding: 0 6px;
+  color: var(--color-primary);
+}
+
+.hint-ai::before {
+  content:'AI';
+}
+// ======================== END COMMUNICATION LIST ========================
+
+
+// ======================== COMMUNICATION WIZARD ========================
+.communication-template {
+  position:             relative;
+  display:              block;
+  height:               192px;
+  padding:              var(--spacing-medium);
+  margin-bottom:        var(--spacing-large);
+  overflow:             hidden;
+  color:                var(--color-interface-stronger);
+  border:               1px solid var(--color-interface-soft);
+  outline-offset:       -1px;
+
+  &:focus,
+  &:hover {
+    color:              var(--color-interface-stronger);
+    outline:            2px solid var(--color-info-strong);
+  }
+
+  label {
+    font-size:          var(--font-size-regular);
+  }
+
+  &.template-selected {
+    outline:            2px solid var(--color-info-strong);
+
+    &:hover {
+      outline:          2px solid var(--color-info-strong);
+    }
+
+    &::before {
+      position:         absolute;
+      top:              -4px;
+      left:             8px;
+      z-index:          1;
+      font-family:      'FontAwesome';
+      font-size:        var(--font-size-h2);
+      font-weight:      var(--font-weight-bold);
+      color:            var(--color-info-strong);
+      content:          '\f058';
+    }
+  }
+}
+
+.step-title {
+  margin-top:           0;
+}
+
+// ====================== END COMMUNICATION WIZARD ======================
+
+// ======================== EMAIL BUILDER ========================
+
+.communication-entry-wizard .email-editor .side-panel .flat-panel-body .alert {
+  margin:               var(--spacing-xsmall);
+  .btn {
+    margin-top:         var(--spacing-xsmall);
+  }
+}
+
+// ======================== END EMAIL BUILDER ======================
+
+// ====================== LEGACY EMAIL EDITOR ======================
+
+#emaileditor,
+.panel-fill-body {
+  height: calc(100vh - var(--email-editor-offset, 360px));
+  min-height: 300px;
+  margin: calc(var(--spacing-medium) * -1) calc(var(--spacing-medium) * -1) 0 calc(var(--spacing-medium) * -1);
+}
+
+#emaileditor .html-editor-container {
+  margin-bottom: var(--spacing-medium);
+}
+
+#emaileditor .actions:last-of-type {
+  padding: var(--spacing-small) 0;
+}
+
+.panel-actions-bordered {
+  padding: var(--spacing-medium) var(--spacing-medium) 0;
+  margin: var(--spacing-medium) calc(var(--spacing-medium) * -1) 0;
+  border-top: 1px solid var(--color-interface-soft);
+}
+
+#emaileditor-properties {
+  width: 40%;
+  padding: var(--spacing-medium);
+  background-color: var(--color-interface-softest);
+}
+
+#emaileditor-properties .actions {
+    margin-right: 0;
+    margin-left:  0;
+}
+
+#section-email {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 60%;
+}
+
+#email-editor {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 60%;
+  height: 100%;
+  border-top: 1px solid var(--color-interface-soft);
+}
+
+#emaileditor-designer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 60%;
+  border-right: 1px solid var(--color-interface-soft);
+}
+
+.emaileditor-iframe {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.emaileditor-propertypanels .propertypanel-title {
+  margin-top: 0;
+  font-weight: 600;
+}
+
+// ====================== END LEGACY EMAIL EDITOR ======================
+
+// ======================== COMMUNICATION HISTORY ========================
+
+// Recipient Details Grid Sticky Header Fix
+.communication-detail-recipient-details > .grid-obsidian > .grid-header {
+    position: sticky;
+    top: 0;
+}
+.communication-detail-recipient-details .sticky-column-header {
+    top: 37px;
+}
+
+.page-fullscreen-capable .panel.panel-block.panel-flex > .panel-body:has(.communication-detail-recipient-details) {
+    overflow: auto;
+}
+
+// Had to refactor the padding here because of the grid header sticky positioning.
+.panel-body:has(.communication-detail-recipient-details) {
+    padding: 0 var(--spacing-medium) var(--spacing-medium) var(--spacing-medium);
+}
+
+
+// ======================== END COMMUNICATION HISTORY ========================

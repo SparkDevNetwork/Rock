@@ -6,7 +6,7 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-mobile"></i>
+                    <i class="ti ti-device-mobile"></i>
                     <asp:Label ID="lblHeading" runat="server" />
                 </h1>
             </div>

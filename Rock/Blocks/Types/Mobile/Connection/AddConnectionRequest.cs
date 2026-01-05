@@ -45,7 +45,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
     [DisplayName( "Add Connection Request" )]
     [Category( "Mobile > Connection" )]
     [Description( "Allows an individual to create and add a new Connection Request." )]
-    [IconCssClass( "fa fa-plus" )]
+    [IconCssClass( "ti ti-plus" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

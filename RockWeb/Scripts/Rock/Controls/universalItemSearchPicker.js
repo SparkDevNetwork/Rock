@@ -7,6 +7,7 @@
         var UniversalItemSearchPicker = function (options) {
             this.controlId = options.controlId;
             this.restUrl = options.restUrl;
+            this.context = options.context;
             this.areDetailsAlwaysVisible = options.areDetailsAlwaysVisible;
             this.iScroll = null;
             this.$pickerControl = $('#' + this.controlId);
@@ -16,6 +17,7 @@
         UniversalItemSearchPicker.prototype.initializeEventHandlers = function () {
             var controlId = this.controlId;
             var restUrl = this.restUrl;
+            var context = this.context;
             var areDetailsAlwaysVisible = this.areDetailsAlwaysVisible;
 
             var $pickerControl = this.$pickerControl;
@@ -51,6 +53,7 @@
                     }
 
                     var searchBag = {
+                        context: context,
                         value: search.value,
                         isInactiveIncluded: $searchFieldIncludeInactive && $searchFieldIncludeInactive.is(":checked") == true
                     };
@@ -67,7 +70,7 @@
 
                     // Display a wait indicator to show that the search is now running.
                     if ($('.js-searching-notification').length == 0) {
-                        $searchResults.prepend('<i class="fa fa-refresh fa-spin margin-l-md js-searching-notification" style="display: none; opacity: .4;"></i>');
+                        $searchResults.prepend('<i class="ti ti-refresh ti-spin margin-l-md js-searching-notification" style="display: none; opacity: .4;"></i>');
                     }
                     $('.js-searching-notification').fadeIn(800);
 

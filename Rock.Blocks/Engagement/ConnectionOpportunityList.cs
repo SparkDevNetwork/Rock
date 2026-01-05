@@ -38,13 +38,14 @@ namespace Rock.Blocks.Engagement
     [DisplayName( "Connection Opportunity List" )]
     [Category( "Engagement" )]
     [Description( "Displays a list of connection opportunities." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the connection opportunity details.",
         Key = AttributeKey.DetailPage )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "02713f10-e574-45e0-9178-a02f7957b3a4" )]
     [Rock.SystemGuid.BlockTypeGuid( "8eb82e1e-c0bd-4591-9d7a-f120a871fec3" )]
     [CustomizedGrid]

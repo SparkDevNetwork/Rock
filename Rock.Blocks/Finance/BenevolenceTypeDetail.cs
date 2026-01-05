@@ -38,7 +38,7 @@ namespace Rock.Blocks.Finance
     [DisplayName( "Benevolence Type Detail" )]
     [Category( "Finance" )]
     [Description("Block to display the benevolence type detail.")]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

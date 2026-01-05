@@ -1,0 +1,58 @@
+.rocktheme-community {
+    .rock-channel-list {
+        display: flex;
+        flex-direction: column;
+        width: var(--channel-list-width);
+        min-width: var(--channel-list-width);
+
+        .rock-channel-list-container {
+            .rock-channel-group {
+                .rock-channel-group-items {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0px;
+                }
+
+                .rock-channel-group-title {
+                    color: var(--channel-list-group-title-color);
+                    font-size: var(--channel-list-group-title-font-size);
+                    font-weight: var(--channel-list-group-title-font-weight);
+                    line-height: var(--channel-list-group-title-line-height);
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    max-width: 100%;
+                    flex: 1;
+                    margin: var(--channel-list-group-title-margin);
+                }
+            }
+        }
+    }
+
+    .rock-channel-list-header {
+        width: var(--channel-list-width);
+        min-width: var(--channel-list-width);
+    }
+}
+
+@media (min-width: 100em) {
+    .rocktheme-community {
+
+        .rock-channel-list,
+        .rock-channel-list-header {
+            width: var(--channel-list-md-width);
+            min-width: var(--channel-list-md-width);
+        }
+    }
+}
+
+@media (min-width: 120em) {
+    .rocktheme-community {
+
+        .rock-channel-list,
+        .rock-channel-list-header {
+            width: var(--channel-list-lg-width);
+            min-width: var(--channel-list-lg-width);
+        }
+    }
+}

@@ -3,7 +3,7 @@
     <NotificationBox v-if="blockError" alertType="warning" v-html="blockError">
     </NotificationBox>
 
-    <Panel v-else type="block" hasFullscreen :title="blockTitle" titleIconCssClass="fa fa-poll-h">
+    <Panel v-else type="block" hasFullscreen :title="blockTitle" titleIconCssClass="ti ti-notes">
         <template #default>
 
             <div ref="bodyElement" class="panel-flex-fill-body styled-scroll">
@@ -16,7 +16,27 @@
                         <li role="presentation"><a :href="config.analyticsPageUrl ?? undefined">Analytics</a></li>
                     </ul>
 
-                    <RockButton btnType="primary" btnSize="sm" :disabled="!isFormDirty" @click="onSaveClick">Save</RockButton>
+                    <div class="panel-toolbar-actions">
+                        <template v-if="linkToFormOptions?.length">
+                            <CopyButton v-if="linkToFormOptions.length === 1 && linkToFormOptions[0].formPageUrl"
+                                        btnSize="sm"
+                                        isSquare
+                                        tooltip="Link To Form"
+                                        :value="linkToFormOptions[0].formPageUrl"><i class="ti ti-link"></i></CopyButton>
+                            <RockButton v-else
+                                        btnSize="sm"
+                                        isSquare
+                                        title="Link To Form"
+                                        @click="onLinkToFormClick"><i class="ti ti-link"></i></RockButton>
+
+                            <RockButton btnSize="sm"
+                                        isSquare
+                                        title="Preview"
+                                        @click="onPreviewClick"><i class="ti ti-eye"></i></RockButton>
+                        </template>
+
+                        <RockButton btnType="primary" btnSize="sm" :disabled="isSaving || !isFormDirty" @click="onSaveClick">Save</RockButton>
+                    </div>
                 </div>
 
                 <div class="form-builder-container form-builder-grow" :style="formBuilderContainerStyle">
@@ -39,14 +59,28 @@
                                  v-model:completion="completionViewModel"
                                  :templateOverrides="selectedTemplate"
                                  :submit="formSubmit"
+                                 @getUniqueSlug="onGetUniqueSlug"
                                  @validationChanged="onSettingsValidationChanged" />
                 </div>
             </div>
         </template>
     </Panel>
+
+    <LinkToFormModal v-model="isLinkToFormModalOpen"
+                     :items="linkToFormOptions ?? []" />
+
+    <FormPreviewModal v-model="isFormPreviewModalOpen"
+                      :defaultPreviewPage="config.defaultPreviewPage"
+                      :items="linkToFormOptions ?? []" />
 </template>
 
 <style>
+.panel-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-small);
+}
+
 .inline-svg {
     display: inline-flex;
     width: 1.25em;
@@ -56,19 +90,7 @@
 }
 
 .form-builder-detail {
-    --zone-border: #ebebeb;
-    --zone-configurable-border: #f5faff;
-    --zone-configurable-hover-border: #dfe0e1;
-    --zone-action-bg: #f5faff;
-    --zone-action-border: #dde7f2;
-    --zone-action-color: #89a1b9;
-    --zone-action-hover-color: #737475;
-    --zone-active-color: #c9eaf9;
-    --zone-active-action-color: #83bad3;
-    --zone-highlight-color: #ee7725;
-    --zone-highlight-action-text-color: #e4bda2;
     --flex-col-gutter: 30px;
-    --zone-border-radius: 6px;
 }
 
 .form-builder-detail .zone-body .configurable-zone > .zone-content-container > .zone-content {
@@ -97,10 +119,10 @@
 .form-builder-detail .configurable-zone > .zone-content-container {
     display: flex;
     flex-grow: 1;
-    background: #fff;
-    border: 2px dotted var(--zone-border);
-    border-right: 2px solid var(--zone-action-border);
-    border-radius: var(--zone-border-radius) 0 0 var(--zone-border-radius);
+    background: var(--color-interface-softest);
+    border: 2px dotted var(--color-interface-soft);
+    border-right: 2px solid var(--color-interface-soft);
+    border-radius: var(--rounded-small) 0 0 var(--rounded-small);
 }
 
 .form-builder-detail .configurable-zone > .zone-content-container > .zone-content {
@@ -121,22 +143,24 @@
     align-items: center;
     justify-content: center;
     width: 40px;
-    background-color: var(--zone-action-bg);
-    border: 2px solid var(--zone-action-border);
-    border-left: 0;
+    background-color: var(--color-interface-softer);
+    border: 2px solid var(--color-interface-soft);
+    border-left: transparent;
+    border-top-right-radius: var(--rounded-small);
+    border-bottom-right-radius: var(--rounded-small);
 }
 
 .form-builder-detail .configurable-zone.active > .zone-content-container {
-    border-color: var(--zone-active-color);
+    border-color: var(--color-info-tint);
 }
 
 .form-builder-detail .configurable-zone.active > .zone-actions {
-    background-color: var(--zone-active-color);
-    border-color: var(--zone-active-color);
+    background-color: var(--color-info-soft);
+    border-color: var(--color-info-tint);
 }
 
 .form-builder-detail .configurable-zone.highlight > .zone-content-container {
-    border-color: var(--zone-highlight-color);
+    border-color: var(--color-primary);
     border-right-style: dotted;
 }
 
@@ -160,13 +184,13 @@
     margin: 0 calc(.5 * var(--flex-col-gutter) + 40px) 12px calc(.5 * var(--flex-col-gutter));
 }
 
-.form-builder-detail .form-section .configurable-zone {
-    --zone-border: var(--zone-configurable-border);
+.form-builder-detail .form-section .configurable-zone:hover .zone-content-container {
+    border-right: transparent;
 }
 
 .form-builder-detail .form-section .configurable-zone > .zone-actions {
     border-style: dotted;
-    border-radius: 0 var(--zone-border-radius) var(--zone-border-radius) 0;
+    border-radius: 0 var(--rounded-small) var(--rounded-small) 0;
     opacity: 0;
     transition: opacity 116ms cubic-bezier(.2, .2, .38, .9), transform 116ms cubic-bezier(.2, .2, .38, .9);
     transform: scaleX(0);
@@ -174,24 +198,27 @@
 }
 
 .form-builder-detail .form-section .configurable-zone > .zone-content-container {
-    border-right: 2px dotted var(--zone-border);
+    border-right: 2px dotted var(--color-interface-soft);
 }
 
-.form-builder-detail .form-section .configurable-zone.active,
-.form-builder-detail .form-section .configurable-zone:hover {
-    --zone-border: var(--zone-configurable-hover-border);
+.form-builder-detail .form-section .configurable-zone.active > .zone-content-container {
+    border-right-color: var(--color-info-tint);
 }
 
-.form-builder-detail .form-section .configurable-zone.active > .zone-content-container,
 .form-builder-detail .form-section .configurable-zone:hover > .zone-content-container {
-    border-right-color: transparent;
+    border-right-color: var(--color-interface-soft);
 }
 
-.form-builder-detail .form-section .configurable-zone.active > .zone-actions,
 .form-builder-detail .form-section .configurable-zone:hover > .zone-actions {
     opacity: 1;
     transform: scaleX(1);
     transform-origin: 0% 0%;
+    border-style: solid;
+    border-left: 2px solid var(--color-interface-soft);
+}
+
+.form-builder-detail .form-section .configurable-zone.active > .zone-actions {
+    border-left-color: var(--color-info-tint);
 }
 
 .form-builder-detail .flex-col {
@@ -291,7 +318,7 @@
     min-width: 320px;
     max-width: 320px;
     overflow: hidden;
-    border-right: 1px solid #dfe0e1;
+    border-right: 1px solid var(--color-interface-soft);
 }
 
 .form-sidebar .panel-body {
@@ -308,13 +335,13 @@
     align-items: center;
     justify-content: center;
     width: 40px;
-    color: #fff;
+    color: var(--color-interface-softest);
     cursor: pointer;
-    background-color: #484848;
+    background-color: var(--color-interface-medium);
 }
 
 .sidebar-back:hover {
-    background-color: #3d3d3d;
+    background-color: var(--color-interface-strong);
 }
 
 .sidebar-header {
@@ -324,7 +351,7 @@
     align-items: stretch;
     font-size: 14px;
     font-weight: 600;
-    border-bottom: 1px solid #dfe0e1;
+    border-bottom: 1px solid var(--color-interface-soft);
 }
 
 .sidebar-header .title {
@@ -370,7 +397,7 @@
 }
 
 .sidebar-panels .panel-heading {
-    background: var(--theme-lightest);
+    background: var(--color-interface-softest);
     border-bottom: 0;
     transition: .1s background-color ease-in-out;
 }
@@ -380,15 +407,15 @@
 }
 
 .sidebar-panels .panel-heading:hover {
-    background: #fcfcfc;
+    background: var(--color-interface-softer);
 }
 
 .sidebar-panels .panel-heading:hover > .panel-aside {
-    color: var(--text-color);
+    color: var(--color-interface-strong);
 }
 
 .sidebar-panels .panel-heading:active {
-    background: #dfe0e1;
+    background: var(--color-interface-softer);
 }
 
 .form-template-item-list {
@@ -413,17 +440,17 @@
     z-index: 10;
     width: 100% !important;
     padding: 6px 4px;
-    color: var(--zone-action-color);
+    color: var(--color-interface-medium);
     text-align: center;
     cursor: pointer;
 }
 
 .zone-action:hover {
-    color: var(--zone-action-hover-color);
+    color: var(--color-interface-soft);
 }
 
 .configurable-zone.active .zone-action {
-    color: var(--zone-active-action-color);
+    color: var(--color-info-strong);
 }
 
 .zone-action.zone-action-delete:hover {
@@ -448,11 +475,11 @@
     display: flex;
     align-items: center;
     padding: 7px 6px;
-    font-size: 14px;
+    font-size: var(--font-size-small);
     font-weight: 600;
     cursor: grab;
-    background-color: #fff;
-    border: 1px solid #e1e1e1;
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
     border-left-width: 3px;
     border-radius: 3px;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .05);
@@ -460,7 +487,7 @@
     transform: scale(1);
 }
 
-.form-template-item > .fa {
+.form-template-item > .ti {
     margin-right: 6px;
 }
 
@@ -483,28 +510,37 @@
 }
 
 .form-template-item.form-template-item-section {
-    border-left-color: #009ce3;
+    border-left-color: var(--color-info-strong);
 }
 </style>
 
 <script setup lang="ts">
-    import { nextTick } from "vue";
-    import { computed, ref, watch } from "vue";
+    import { computed, nextTick, ref, watch } from "vue";
+    import CommunicationsTab from "./FormBuilderDetail/communicationsTab.partial.obs";
+    import FormBuilderTab from "./FormBuilderDetail/formBuilderTab.partial.obs";
+    import FormPreviewModal from "./FormBuilderDetail/formPreviewModal.partial.obs";
+    import LinkToFormModal from "./FormBuilderDetail/linkToFormModal.partial.obs";
+    import SettingsTab from "./FormBuilderDetail/settingsTab.partial.obs";
+    import {
+        FormBuilderDetailConfiguration,
+        FormBuilderSettings,
+        FormCommunication,
+        FormTemplateListItem
+    } from "./FormBuilderDetail/types.partial";
+    import { provideFormSources } from "./FormBuilderDetail/utils.partial";
+    import { FormCompletionAction, FormGeneral, FormSettings } from "./Shared/types.partial";
+    import CopyButton from "@Obsidian/Controls/copyButton.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { Guid } from "@Obsidian/Types";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { FormError } from "@Obsidian/Utility/form";
     import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { FormBuilderDetailLinkToFormBag } from "@Obsidian/ViewModels/Blocks/Workflow/FormBuilder/formBuilderDetailLinkToFormBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import CommunicationsTab from "./FormBuilderDetail/communicationsTab.partial.obs";
-    import FormBuilderTab from "./FormBuilderDetail/formBuilderTab.partial.obs";
-    import SettingsTab from "./FormBuilderDetail/settingsTab.partial.obs";
-    import { FormBuilderDetailConfiguration, FormBuilderSettings, FormCommunication, FormTemplateListItem } from "./FormBuilderDetail/types.partial";
-    import { provideFormSources } from "./FormBuilderDetail/utils.partial";
-    import { FormCompletionAction, FormGeneral, FormSettings } from "./Shared/types.partial";
-    import { Guid } from "@Obsidian/Types";
 
     const config = useConfigurationValues<FormBuilderDetailConfiguration>();
 
@@ -515,6 +551,7 @@
     const form = config.form ?? {};
 
     const isFormDirty = ref(false);
+    const isSaving = ref<boolean>(false);
 
     const selectedTab = ref(0);
 
@@ -528,7 +565,12 @@
     const generalViewModel = ref<FormGeneral>(form.general ?? {});
 
     const blockTitle = computed((): string => {
-        return generalViewModel.value?.name + " Form" ?? "Workflow Form Builder";
+        if (isNullish(generalViewModel.value?.name)) {
+            return "Workflow Form Builder";
+        }
+        else {
+            return `${generalViewModel.value.name} Form`;
+        }
     });
 
     const completionViewModel = ref<FormCompletionAction>(form.completion ?? {});
@@ -548,6 +590,11 @@
     const communicationsValidationErrors = ref<FormError[]>([]);
     const formBuilderValidationErrors = ref<FormError[]>([]);
     const settingsValidationErrors = ref<FormError[]>([]);
+
+    const isLinkToFormModalOpen = ref<boolean>(false);
+    const isFormPreviewModalOpen = ref<boolean>(false);
+
+    const linkToFormOptions = ref<FormBuilderDetailLinkToFormBag[] | null | undefined>(config.sources?.linkToFormOptions);
 
     // #endregion
 
@@ -645,58 +692,114 @@
         recipientOptions.value = options;
     }
 
+    function selectFormBuilderTab(): void {
+        selectedTab.value = 0;
+    }
+
+    function selectCommunicationsTab(): void {
+        selectedTab.value = 1;
+    }
+
+    function selectSettingsTab(): void {
+        selectedTab.value = 2;
+    }
+
+    async function save(): Promise<boolean> {
+        try {
+            isSaving.value = true;
+
+            // Trigger the submit for validation purposes and then on the next
+            // UI pass turn it back off.
+            formSubmit.value = true;
+            nextTick(() => formSubmit.value = false);
+
+            if (formBuilderValidationErrors.value.length > 0) {
+                selectFormBuilderTab();
+                return false;
+            }
+
+            if (communicationsValidationErrors.value.length > 0) {
+                selectCommunicationsTab();
+                return false;
+            }
+
+            if (settingsValidationErrors.value.length > 0) {
+                selectSettingsTab();
+                return false;
+            }
+
+            const request: {
+                formGuid: Guid;
+                formSettings: FormSettings;
+            } = {
+                formGuid: toGuidOrNull(config.formGuid) ?? emptyGuid,
+                formSettings: form
+            };
+
+            const result = await invokeBlockAction<{ linkToFormOptions?: FormBuilderDetailLinkToFormBag[] | null | undefined; }>("SaveForm", request);
+
+            if (!result.isSuccess) {
+                alert(result.errorMessage ?? "Failed to save.");
+                return false;
+            }
+            else {
+                isFormDirty.value = false;
+                linkToFormOptions.value = result.data?.linkToFormOptions;
+                return true;
+            }
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
     // #endregion
 
     // #region Event Handlers
 
     function onFormBuilderTabClick(): void {
-        selectedTab.value = 0;
+        selectFormBuilderTab();
     }
 
     function onCommunicationsTabClick(): void {
-        selectedTab.value = 1;
+        selectCommunicationsTab();
     }
 
     function onSettingsTabClick(): void {
-        selectedTab.value = 2;
+        selectSettingsTab();
     }
 
     async function onSaveClick(): Promise<void> {
-        // Trigger the submit for validation purposes and then on the next
-        // UI pass turn it back off.
-        formSubmit.value = true;
-        nextTick(() => formSubmit.value = false);
+        await save();
+    }
 
-        if (formBuilderValidationErrors.value.length > 0) {
-            onFormBuilderTabClick();
-            return;
-        }
-
-        if (communicationsValidationErrors.value.length > 0) {
-            onCommunicationsTabClick();
-            return;
-        }
-
-        if (settingsValidationErrors.value.length > 0) {
-            onSettingsTabClick();
-            return;
-        }
-
-        const request: {
-            formGuid: Guid;
-            formSettings: FormSettings;
-        } = {
-            formGuid: toGuidOrNull(config.formGuid) ?? emptyGuid,
-            formSettings: form
-        };
-
-        const result = await invokeBlockAction("SaveForm", request);
-
-        if (!result.isSuccess) {
-            alert(result.errorMessage ?? "Failed to save.");
+    async function onLinkToFormClick(): Promise<void> {
+        if (!isFormDirty.value) {
+            // No need to save before showing the modal if the form is not dirty.
+            isLinkToFormModalOpen.value = true;
         }
         else {
-            isFormDirty.value = false;
+            // Save the form before showing the modal.
+            const isSuccess = await save();
+
+            if (isSuccess) {
+                isLinkToFormModalOpen.value = true;
+            }
+        }
+    }
+
+    async function onPreviewClick(): Promise<void> {
+        if (!isFormDirty.value) {
+            // No need to save before previewing if the form is not dirty.
+            isFormPreviewModalOpen.value = true;
+        }
+        else {
+            // Save the form before previewing it.
+            const isSuccess = await save();
+
+            if (isSuccess) {
+                isFormPreviewModalOpen.value = true;
+            }
         }
     }
 
@@ -736,6 +839,33 @@
      */
     function onSettingsValidationChanged(errors: FormError[]): void {
         settingsValidationErrors.value = errors;
+    }
+
+    async function onGetUniqueSlug(): Promise<void> {
+        const request: {
+            formGuid: Guid;
+            slug: string;
+        } = {
+            formGuid: toGuidOrNull(config.formGuid) ?? emptyGuid,
+            slug: generalViewModel.value.slug ?? ""
+        };
+
+        const result = await invokeBlockAction<string>("GetUniqueSlug", request);
+
+        if (!result.isSuccess) {
+            // Log the error to the console, but don't show it.
+            // A validation error will be shown if the slug is invalid when the form is saved.
+            console.error(result.errorMessage ?? "Failed to get unique slug.");
+        }
+        else if (result.data !== generalViewModel.value.slug) {
+            // Update the current slug with the auto-generated unique slug.
+            const newValue: FormGeneral = {
+                ...generalViewModel.value,
+                slug: result.data
+            };
+
+            generalViewModel.value = newValue;
+        }
     }
 
     // #endregion
@@ -788,4 +918,6 @@
             selectedTab.value = 2;
         }
     }
+
+    onConfigurationValuesChanged(useReloadBlock());
 </script>

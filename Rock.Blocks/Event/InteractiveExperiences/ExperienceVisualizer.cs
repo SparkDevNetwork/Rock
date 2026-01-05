@@ -41,7 +41,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     [DisplayName( "Experience Visualizer" )]
     [Category( "Event > Interactive Experiences" )]
     [Description( "Displays the visuals of an experience." )]
-    [IconCssClass( "fa fa-chart" )]
+    [IconCssClass( "ti ti-chart-line" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

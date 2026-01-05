@@ -129,7 +129,7 @@ namespace Rock.Communication
             return results;
         }
 
-        private static CreateMessageResult CreateSmsMessage( Person person, Dictionary<string, object> mergeObjects, SystemCommunication systemCommunication, ILogger logger )
+        internal static CreateMessageResult CreateSmsMessage( Person person, Dictionary<string, object> mergeObjects, SystemCommunication systemCommunication, ILogger logger )
         {
             var isSmsEnabled = MediumContainer.HasActiveSmsTransport() && !string.IsNullOrWhiteSpace( systemCommunication.SMSMessage );
             var createMessageResult = new CreateMessageResult();

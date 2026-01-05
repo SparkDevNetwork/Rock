@@ -5,7 +5,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-plus-square-o"></i>
+                <h1 class="panel-title"><i class="ti ti-square-plus"></i>
                     <asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
             </div>
             <div class="panel-body">
@@ -32,6 +32,8 @@
                             <Rock:CampusPicker ID="cpCampus" runat="server" Required="true" />
                             <Rock:DefinedValuePicker ID="dvpMaritalStatus" runat="server" Label="Marital Status of Adults"
                                 Help="The marital status to use for the adults in this family." />
+                            <Rock:DefinedValuePicker ID="dvpRecordSource" runat="server" Label="Record Source"
+                                Help="The record source to use when creating new person records." />
                         </div>
 
                         <div class="col-md-8">

@@ -10,7 +10,7 @@
                         title="Reset to default"
                         :disabled="internalValue === null"
                         @click="onResetValue">
-                    <i class="fa fa-refresh"></i>
+                    <i class="ti ti-refresh"></i>
                 </button>
             </span>
         </template>

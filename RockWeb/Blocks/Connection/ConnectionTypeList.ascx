@@ -5,11 +5,11 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-plug"></i> Connection Types</h1>
+                <h1 class="panel-title"><i class="ti ti-plug"></i> Connection Types</h1>
 
                 <div class="panel-labels">
                     <a href="/CampaignConfiguration" class="btn btn-xs btn-default mr-1">Connection Campaigns</a>
-                    <asp:LinkButton ID="lbAddConnectionType" runat="server" CssClass="btn btn-action btn-xs btn-square" OnClick="lbAddConnectionType_Click" CausesValidation="false" Title="Add Connection Type"><i class="fa fa-plus"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbAddConnectionType" runat="server" CssClass="btn btn-action btn-xs btn-square" OnClick="lbAddConnectionType_Click" CausesValidation="false" Title="Add Connection Type"><i class="ti ti-plus"></i></asp:LinkButton>
                 </div>
             </div>
             <div class="panel-body">

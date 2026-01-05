@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -23,6 +24,8 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -53,6 +56,62 @@ namespace Rock.Reporting.DataSelect.Group
 
         /// <inheritdoc/>
         public override string ColumnHeaderText => "Has Completed Program";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionConfig = SelectionConfig.Parse( selection ) ?? new SelectionConfig();
+
+            var programOptions = new LearningProgramService( rockContext )
+                .Queryable()
+                .Where( lp => lp.IsActive && lp.IsCompletionStatusTracked )
+                .OrderBy( lp => lp.Name )
+                .ToList()
+                .Select( lp => lp.ToListItemBag() )
+                .ToList();
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Person/hasCompletedProgramSelect.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    ["programOptions"] = programOptions.ToCamelCaseJson( false, true ),
+                },
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+            var selectionConfig = SelectionConfig.Parse( selection ) ?? new SelectionConfig();
+
+            if ( selectionConfig.LearningProgramGuid.HasValue )
+            {
+                var program = new LearningProgramService( rockContext ).Get( selectionConfig.LearningProgramGuid.Value );
+
+                data.Add( "program", program?.Guid.ToString() );
+            }
+
+            data.Add( "dateRange", selectionConfig.SlidingDateRangeDelimitedValues );
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionConfig = new SelectionConfig();
+
+            selectionConfig.LearningProgramGuid = data.GetValueOrNull( "program" )?.AsGuidOrNull();
+            selectionConfig.SlidingDateRangeDelimitedValues = data.GetValueOrDefault( "dateRange", "All||||" );
+
+            return selectionConfig.ToJson();
+        }
 
         #endregion
 

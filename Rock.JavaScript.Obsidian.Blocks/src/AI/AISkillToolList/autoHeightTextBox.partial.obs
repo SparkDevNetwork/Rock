@@ -1,0 +1,82 @@
+<template>
+    <textarea ref="textArea"
+              v-model="internalValue"
+              class="form-control"
+              rows="1"
+              maxlength="524288"></textarea>
+</template>
+
+<script setup lang="ts">
+    import { onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    const textArea = ref<HTMLTextAreaElement | null>(null);
+    const internalValue = ref(props.modelValue);
+
+    function autoSize(): void {
+        if (textArea.value) {
+            textArea.value.style.height = "auto";
+            textArea.value.style.height = `${textArea.value.scrollHeight}px`;
+        }
+    }
+
+    let intersectionObserver: IntersectionObserver | null = null;
+
+    onMounted(() => {
+        if (textArea.value) {
+            if (textArea.value.scrollHeight > 0) {
+                textArea.value.style.height = textArea.value.scrollHeight + "px";
+            }
+            else {
+                // When used in a detail block, the text area may be in the DOM
+                // but hidden by CSS because the panel is hidden. In that case
+                // we need to use an IntersectionObserver to know when it is
+                // actually visible so we can size it correctly.
+                intersectionObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            autoSize();
+
+                            if (intersectionObserver) {
+                                intersectionObserver.disconnect();
+                                intersectionObserver = null;
+                            }
+                        }
+                    });
+                });
+
+                intersectionObserver.observe(textArea.value);
+            }
+
+            textArea.value.style.overflowY = "hidden";
+            textArea.value.style.resize = "none";
+
+            textArea.value.addEventListener("input", autoSize);
+        }
+    });
+
+    onBeforeUnmount(() => {
+        if (textArea.value) {
+            textArea.value.removeEventListener("input", autoSize);
+        }
+
+        if (intersectionObserver) {
+            intersectionObserver.disconnect();
+            intersectionObserver = null;
+        }
+    });
+
+    watch(internalValue, (newValue) => {
+        emit("update:modelValue", newValue);
+    });
+</script>

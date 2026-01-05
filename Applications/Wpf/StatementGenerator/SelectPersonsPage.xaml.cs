@@ -26,7 +26,7 @@ using System.Windows.Input;
 
 using RestSharp;
 
-using Rock.Client;
+using Rock.Apps.StatementGenerator.Client;
 
 namespace Rock.Apps.StatementGenerator
 {
@@ -50,7 +50,7 @@ namespace Rock.Apps.StatementGenerator
 
             string queryParam = "?$filter=EntityType/Name eq 'Rock.Model.Person'";
             var getDataViewsRequest = new RestRequest( "api/DataViews" + queryParam );
-            var getDataViewsResponse = _restClient.Execute<List<Rock.Client.DataView>>( getDataViewsRequest );
+            var getDataViewsResponse = _restClient.Execute<List<DataView>>( getDataViewsRequest );
 
             if ( getDataViewsResponse.ErrorException != null )
             {
@@ -104,7 +104,7 @@ namespace Rock.Apps.StatementGenerator
             else if ( radDataView.IsChecked ?? false )
             {
                 rockConfig.PersonSelectionOption = PersonSelectionOption.DataView;
-                var selectedDataView = ddlDataView.SelectedValue as Rock.Client.DataView;
+                var selectedDataView = ddlDataView.SelectedValue as DataView;
                 if ( selectedDataView != null )
                 {
                     ReportOptions.Current.DataViewId = selectedDataView.Id;
@@ -318,7 +318,7 @@ namespace Rock.Apps.StatementGenerator
 
             if ( ReportOptions.Current.DataViewId.HasValue )
             {
-                ddlDataView.SelectedValue = ddlDataView.Items.OfType<Rock.Client.DataView>().FirstOrDefault( a => a.Id == ReportOptions.Current.DataViewId.Value );
+                ddlDataView.SelectedValue = ddlDataView.Items.OfType<DataView>().FirstOrDefault( a => a.Id == ReportOptions.Current.DataViewId.Value );
             }
 
             radPersons_Checked( sender, e );

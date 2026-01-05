@@ -26,6 +26,7 @@ import { DataSourceBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration
 import { IconItemBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/iconItemBag";
 import { LabelDetailBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/labelDetailBag";
 import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The configuration options for the label designer block. */
 export type LabelDesignerOptionsBag = {
@@ -64,6 +65,12 @@ export type LabelDesignerOptionsBag = {
 
     /** The type of label being designed. */
     labelType: LabelType;
+
+    /**
+     * The list of printers that are available to select from when
+     * printing a preview label to a physical printer.
+     */
+    printers?: ListItemBag[] | null;
 
     /** The URL to return to when the cancel button is clicked. */
     returnUrl?: string | null;

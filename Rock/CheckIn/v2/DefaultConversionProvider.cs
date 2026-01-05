@@ -356,7 +356,10 @@ namespace Rock.CheckIn.v2
                 IsUnavailable = attendee.IsUnavailable,
                 IsMultipleSelectionsAvailable = attendee.IsMultipleSelectionsAvailable,
                 UnavailableMessage = attendee.UnavailableMessage,
-                SelectedOpportunities = attendee.SelectedOpportunities
+                SelectedOpportunities = attendee.SelectedOpportunities,
+                PossibleSchedules = attendee.Opportunities?.Schedules
+                    .Select( GetScheduleOpportunityBag )
+                    .ToList() ?? new List<ScheduleOpportunityBag>(),
             };
         }
 

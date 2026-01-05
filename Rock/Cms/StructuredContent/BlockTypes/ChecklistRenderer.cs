@@ -38,11 +38,11 @@ namespace Rock.Cms.StructuredContent.BlockTypes
 
                     if ( item.Checked )
                     {
-                        writer.Write( "<i class=\"fa fa-check-square\"></i> " );
+                        writer.Write( "<i class=\"ti ti-checkbox\"></i> " );
                     }
                     else
                     {
-                        writer.Write( "<i class=\"fa fa-square-o\"></i> " );
+                        writer.Write( "<i class=\"ti ti-square-check\"></i> " );
                     }
 
                     writer.Write( item.Text );

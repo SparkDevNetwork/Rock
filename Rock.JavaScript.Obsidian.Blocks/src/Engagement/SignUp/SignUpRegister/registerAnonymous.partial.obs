@@ -18,7 +18,7 @@
 
     <div v-if="allowAddRegistrants" class="form-group">
         <RockButton type="button" @click="onAddClick" class="btn-square mr-1">
-            <i class="fa fa-plus"></i>
+            <i class="ti ti-plus"></i>
         </RockButton>
         Add Additional Individual
     </div>

@@ -7,7 +7,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-th"></i>
+                    <i class="ti ti-grid-dots"></i>
                     <asp:Literal ID="lTitle" runat="server" />
                 </h1>
             </div>

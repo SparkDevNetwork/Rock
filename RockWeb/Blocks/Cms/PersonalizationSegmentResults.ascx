@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title pull-left">
-                    <i class="fa fa-users"></i>
+                    <i class="ti ti-users"></i>
                     <asp:Literal ID="lTitle" runat="server" />
                 </h1>
             </div>
@@ -36,7 +36,7 @@
                                 DataField="RecordStatusValueId"
                                 HeaderText="Record Status"
                                 ColumnPriority="Desktop" />
-                            <asp:HyperLinkField ItemStyle-CssClass="grid-columncommand" ControlStyle-CssClass="btn btn-default btn-sm" DataTextFormatString="<i class='fa fa-user'></i>" DataTextField="FullName" DataNavigateUrlFormatString="/Person/{0}" DataNavigateUrlFields="Id" /> 
+                            <asp:HyperLinkField ItemStyle-CssClass="grid-columncommand" ControlStyle-CssClass="btn btn-default btn-sm" DataTextFormatString="<i class='ti ti-user'></i>" DataTextField="FullName" DataNavigateUrlFormatString="/Person/{0}" DataNavigateUrlFields="Id" /> 
                         </Columns>
                     </Rock:Grid>
                 </div>

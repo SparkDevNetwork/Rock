@@ -27,7 +27,6 @@ using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Core.CategoryDetail;
 using Rock.ViewModels.Blocks.Core.DefinedValueList;
 using Rock.Web.Cache;
 
@@ -39,7 +38,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Defined Value List" )]
     [Category( "Core" )]
     [Description( "Block for viewing values for a defined type." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [DefinedTypeField( "Defined Type",
@@ -47,6 +46,7 @@ namespace Rock.Blocks.Core
         IsRequired = false,
         Key = AttributeKey.DefinedType )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "710916bd-4bc1-4d05-b088-381394351b53" )]
     [Rock.SystemGuid.BlockTypeGuid( "f431f950-f007-493e-81c8-16559fe4c0f0" )]
     [CustomizedGrid]
@@ -89,8 +89,45 @@ namespace Rock.Blocks.Core
             box.ExpectedRowCount = null;
             box.Options = GetBoxOptions();
             box.GridDefinition = builder.BuildDefinition();
+            box.SecurityGrantToken = GetSecurityGrantToken();
 
             return box;
+        }
+
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            return GetSecurityGrantToken();
+        }
+
+        /// <summary>
+        /// Gets the security grant token that will be used by UI controls on
+        /// this block to ensure they have the proper permissions.
+        /// </summary>
+        /// <returns>A string that represents the security grant token.</string>
+        private string GetSecurityGrantToken()
+        {
+            var securityGrant = new Rock.Security.SecurityGrant();
+
+            var fieldTypes = FieldTypeCache.All();
+
+            foreach ( var fieldType in fieldTypes )
+            {
+                if ( fieldType.Field is Rock.Field.ISecurityGrantFieldType grantFieldType )
+                {
+                    grantFieldType.AddRulesToSecurityGrant( securityGrant, new Dictionary<string, string>() );
+                }
+            }
+
+            var entity = GetDefinedType();
+
+            if ( entity != null )
+            {
+                var attributes = AttributeCache.GetByEntityTypeQualifier( new DefinedValue().TypeId, "DefinedTypeId", entity.Id.ToString(), true );
+                securityGrant.AddRulesForAttributes( attributes );
+            }
+
+            return securityGrant.ToToken();
         }
 
         /// <summary>

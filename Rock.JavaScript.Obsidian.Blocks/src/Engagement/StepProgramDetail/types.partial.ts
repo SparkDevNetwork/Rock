@@ -18,3 +18,7 @@
 export const enum NavigationUrlKey {
     ParentPage = "ParentPage"
 }
+
+export const enum PreferenceKey {
+    IsBarChart = "is-bar-chart"
+}

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -134,7 +134,7 @@ namespace Rock.Rest.Controllers
                     item.Id = request.Id.ToString();
                     item.Name = request.PersonAlias.Person.FullName;
                     item.HasChildren = false;
-                    item.IconCssClass = "fa fa-user";
+                    item.IconCssClass = "ti ti-user";
                     list.Add( item );
                 }
             }

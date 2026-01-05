@@ -15,15 +15,15 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
 
 export const enum PreferenceKey {
-    FilterEntityType = "filter-entity-type",
-
-    FilterEntityId = "filter-entity-id",
-
-    FilterWho = "filter-who",
+    FilterCreatedDateRange = "filter-created-date-range"
 }
+
+export type GridSettingsOptions = {
+    createdDateRange?: SlidingDateRange | null;
+};
 
 export type AuditDetail = {
     property: string;
@@ -31,13 +31,5 @@ export type AuditDetail = {
     originalValue: string;
 
     currentValue: string;
-};
-
-export type GridSettingsOptions = {
-    entityType?: string | null;
-
-    entityId?: number | null;
-
-    who?: ListItemBag | null;
 };
 

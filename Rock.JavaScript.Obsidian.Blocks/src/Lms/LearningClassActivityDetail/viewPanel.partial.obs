@@ -84,7 +84,7 @@
             valueBuilder.addTextValue("Available", availableDateText);
         }
 
-        const checkmarkIconOrEmpty = props.modelValue.isStudentCommentingEnabled ? "<i class='fa fa-check'></i>" : "";
+        const checkmarkIconOrEmpty = props.modelValue.isStudentCommentingEnabled ? "<i class='ti ti-check'></i>" : "";
         if (checkmarkIconOrEmpty.length > 0) {
             valueBuilder.addHtmlValue("Student Commenting Enabled", checkmarkIconOrEmpty);
         }

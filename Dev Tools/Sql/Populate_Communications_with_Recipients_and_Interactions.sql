@@ -18,6 +18,12 @@ SET NOCOUNT ON;
 DECLARE @CommCount              INT = 250;      -- How many [Communication] records to create.
 DECLARE @MaxRecipientCount      INT = 2500;     -- Max randomized count of [CommunicationRecipient] records per communication.
 
+DECLARE @OnlyRecordTypePerson   BIT = 0;        -- Constrain to only people; RecordType 1 (Default No)
+DECLARE @OnlyNonDeceased        BIT = 0;        -- Constrain to people who are not deceased (Default No)
+DECLARE @OnlyActiveRecordStatus BIT = 0;        -- Constrain to people who Active Record Status (Default No)
+DECLARE @DataViewId             INT = NULL;     -- Constrain people to only those in this PERSISTED DataView (optional)
+DECLARE @VerboseStatus          BIT = 0;        -- Output a message for each communication created (Default No)
+
 DECLARE @StartDate  DATETIME = DATEADD(DAY, -365, GETDATE());   -- Start date for communication date range.
 DECLARE @EndDate    DATETIME = DATEADD(DAY,  14, GETDATE());    -- End date for communication date range.
 
@@ -27,6 +33,19 @@ DECLARE @UseRealisticInteractionDateRange BIT = 1;
 
 ---------------------------------------------------------------------------------------------------
 -- DON'T MODIFY ANYTHING BELOW
+
+-- Check input args:
+IF @DataViewId IS NOT NULL AND EXISTS (
+    SELECT 1
+    FROM [DataView]
+    WHERE [Id] = @DataViewId
+      AND PersistedScheduleIntervalMinutes IS NULL
+      AND PersistedScheduleId IS NULL
+)
+BEGIN
+    THROW 50002, 'I''m sorry... Invalid DataView: must have either PersistedScheduleIntervalMinutes or PersistedScheduleId.', 1;
+END
+
 
 -- Seed [InteractionDeviceType]s to be used for email recipients.
 DECLARE @SeedEmailDeviceTypes TABLE
@@ -185,11 +204,32 @@ DECLARE @PersonAndAliasIds TABLE(
     , [PersonAliasId] INT
 );
 
+DECLARE 
+    @personRecordType INT = (
+        SELECT id
+        FROM DefinedValue
+        WHERE guid = '36CF10D6-C695-413D-8E7C-4546EFEF385E'
+        )
+    ,@personRecordStatusDefinedTypeId INT = (
+        SELECT id
+        FROM DefinedType
+        WHERE guid = '8522BADD-2871-45A5-81DD-C76DA07E2E7E'
+        )
+	,@personRecordStatusValueId INT
+
+-- The "Active" person record status
+SET @personRecordStatusValueId = (select top 1 id from DefinedValue where DefinedTypeId = @personRecordStatusDefinedTypeId AND [Value] = 'Active' )
+
 INSERT INTO @PersonAndAliasIds
 SELECT pa.[PersonId]
     , MIN(pa.[Id])
 FROM [PersonAlias] pa
+INNER JOIN [Person] p ON p.Id = pa.PersonId
 WHERE pa.[AliasPersonId] = pa.[PersonId]    -- only primary aliases
+AND (@OnlyNonDeceased = 0 OR p.IsDeceased = 0 )
+AND (@OnlyRecordTypePerson = 0 OR RecordTypeValueId = @personRecordType)
+AND (@OnlyActiveRecordStatus = 0 OR RecordStatusValueId = @personRecordStatusValueId)
+AND (@DataViewId IS NULL OR p.[Id] IN (SELECT [EntityId] FROM [DataViewPersistedValue] dvp WHERE dvp.[DataViewId] = @DataViewId))
 GROUP BY pa.[PersonId];                     -- one alias per person
 
 -- Ensure the max recipient count doesn't exceed the available person count.
@@ -256,6 +296,7 @@ DECLARE @CommIndex INT = 0
     , @Jitter INT
     , @CommCreatedDateTime DATETIME
     , @FutureSendDateTime DATETIME
+    , @ReviewedDateTime DATETIME
     , @SendDateTime DATETIME
     , @CommunicationAgeInMinutes INT
 
@@ -312,6 +353,7 @@ DECLARE @RecipientCount INT
     , @RecipientPersonAliasId INT
     , @MediumEntityTypeId INT
     , @RecipientSendDateTime DATETIME
+    , @DeliveredDateTime DATETIME
 
     , @RandomizeUnsubscribeOffsetMinutes INT
     , @UnsubscribeOffsetMinutes INT
@@ -389,6 +431,11 @@ SET @CommCreatedDateTime = @StartDate;
 
 WHILE @CommIndex < @CommCount
 BEGIN
+    IF (@VerboseStatus = 1)
+    BEGIN
+        PRINT CONCAT('Processing communication index ', @CommIndex, ' of ', @CommCount);
+    END
+
     -- Advance the created datetime.
     SET @Jitter = (ABS(CHECKSUM(NEWID())) % (@BaseIncrementSeconds / 5 + 1)) - (@BaseIncrementSeconds / 10);
     SET @CommCreatedDateTime = DATEADD(SECOND, @BaseIncrementSeconds + @Jitter, @CommCreatedDateTime);
@@ -451,13 +498,21 @@ BEGIN
 
     SET @SenderPersonAliasId = (SELECT TOP 1 [PersonAliasId] FROM @PersonAndAliasIds ORDER BY NEWID());
 
-    IF ABS(CHECKSUM(NEWID())) % 2 = 0 -- Self-approved 50% of the time.
+    -- Only set reviewer info if the communication is approved.
+    SET @ReviewedDateTime = NULL;
+    SET @ReviewerPersonAliasId = NULL;
+    IF @CommStatus = @CommStatusApproved
     BEGIN
-        SET @ReviewerPersonAliasId = @SenderPersonAliasId;
-    END
-    ELSE
-    BEGIN
-        SET @ReviewerPersonAliasId = (SELECT TOP 1 [PersonAliasId] FROM @PersonAndAliasIds ORDER BY NEWID());
+        SET @ReviewedDateTime = @CommCreatedDateTime;
+
+        IF ABS(CHECKSUM(NEWID())) % 2 = 0 -- Self-approved 50% of the time.
+        BEGIN
+            SET @ReviewerPersonAliasId = @SenderPersonAliasId;
+        END
+        ELSE
+        BEGIN
+            SET @ReviewerPersonAliasId = (SELECT TOP 1 [PersonAliasId] FROM @PersonAndAliasIds ORDER BY NEWID());
+        END
     END
 
     SET @TopicId = NULL;
@@ -743,6 +798,7 @@ html, body { margin: 0px; padding: 0px; height: 100%; }
         [Subject]
         , [FutureSendDateTime]
         , [Status]
+        , [ReviewedDateTime]
         , [Guid]
         , [CreatedDateTime]
         , [ModifiedDateTime]
@@ -761,13 +817,14 @@ html, body { margin: 0px; padding: 0px; height: 100%; }
         , [SendDateTime]
         , [SmsFromSystemPhoneNumberId]
         , [CommunicationTopicValueId]
-        --, [Summary]
+        , [Summary]
     )
     VALUES
     (
         @Subject
         , @FutureSendDateTime
         , @CommStatus
+        , @ReviewedDateTime
         , NEWID()
         , @CommCreatedDateTime
         , @CommCreatedDateTime
@@ -789,7 +846,7 @@ html, body { margin: 0px; padding: 0px; height: 100%; }
             ELSE NULL
           END
         , @TopicId
-        --, @Summary
+        , @Summary
     );
 
     -- Skip the rest of the loop if the insert fails (unlikely, but we'll play it safe).
@@ -832,6 +889,11 @@ html, body { margin: 0px; padding: 0px; height: 100%; }
     );
 
     SET @InteractionComponentId = SCOPE_IDENTITY();
+
+    IF @MaxRecipientCount = 0
+    BEGIN
+        THROW 50001, 'Cannot proceed: @MaxRecipientCount is 0.  The constraints probably made the @TotalPersonCount 0.', 1;
+    END
 
     -- Assign a random count of recipients up to the max recipient count.
     SET @RecipientCount = 1 + ABS(CHECKSUM(NEWID())) % @MaxRecipientCount;
@@ -928,21 +990,29 @@ html, body { margin: 0px; padding: 0px; height: 100%; }
 
         SET @RecipientStatusNote = NULL;
 
-        -- 50% of email recipients whose delivery failed will recive a failure reason.
         IF @MediumEntityTypeId = @EmailMediumEntityTypeId
-            AND @RecipientStatus = @RecipientStatusFailed
-            AND ABS(CHECKSUM(NEWID())) % 2 = 0
         BEGIN
-            SET @RecipientStatusNote = (SELECT TOP 1 [Reason] FROM @FailedEmailReasons ORDER BY NEWID());
+            IF @RecipientStatus = @RecipientStatusDelivered
+            BEGIN
+                SET @RecipientStatusNote = CONCAT('Confirmed delivered by Mailgun at ', FORMAT(@SendDateTime, 'M/d/yyyy h:mm:ss tt'));
+            END
+            ELSE IF @RecipientStatus = @RecipientStatusFailed
+                AND ABS(CHECKSUM(NEWID())) % 2 = 0
+            BEGIN
+                -- 50% of email recipients whose delivery failed will recive a failure reason.
+                SET @RecipientStatusNote = (SELECT TOP 1 [Reason] FROM @FailedEmailReasons ORDER BY NEWID());
+            END
         END
 
         --------------------------
 
         SET @RecipientSendDateTime = NULL;
+        SET @DeliveredDateTime = NULL;
 
         IF @RecipientStatus = @RecipientStatusDelivered
         BEGIN
             SET @RecipientSendDateTime = @SendDateTime;
+            SET @DeliveredDateTime = @SendDateTime;
         END
 
         --------------------------
@@ -1051,8 +1121,8 @@ html, body { margin: 0px; padding: 0px; height: 100%; }
             , [PersonalDeviceId]
             , [UnsubscribeDateTime]
             , [UnsubscribeLevel]
-            --, [DeliveredDateTime]
-            --, [SpamComplaintDateTime]
+            , [DeliveredDateTime]
+            , [SpamComplaintDateTime]
         )
         VALUES
         (
@@ -1071,8 +1141,8 @@ html, body { margin: 0px; padding: 0px; height: 100%; }
               END
             , @UnsubscribeDateTime
             , @UnsubscribeLevel
-            --, @RecipientSendDateTime
-            --, @SpamComplaintDateTime
+            , @DeliveredDateTime
+            , @SpamComplaintDateTime
         );
 
         -- Skip the rest of the loop if the insert fails (unlikely, but we'll play it safe).

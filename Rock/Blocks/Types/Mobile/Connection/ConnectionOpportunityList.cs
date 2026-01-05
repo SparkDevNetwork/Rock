@@ -37,7 +37,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
     [DisplayName( "Connection Opportunity List" )]
     [Category( "Mobile > Connection" )]
     [Description( "Displays the list of connection opportunities for a single connection type." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

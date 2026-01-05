@@ -39,7 +39,7 @@ namespace Rock.Blocks.Finance
     [DisplayName( "Saved Account Detail" )]
     [Category( "Finance" )]
     [Description( "Displays the details of a particular financial person saved account." )]
-    [IconCssClass( "fa fa-credit-card" )]
+    [IconCssClass( "ti ti-credit-card" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

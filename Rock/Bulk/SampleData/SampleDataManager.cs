@@ -37,6 +37,7 @@ using System.Xml.Linq;
 
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Rock.Utility
 {
@@ -501,7 +502,7 @@ namespace Rock.Utility
                 using ( var personRockContext = new Rock.Data.RockContext() )
                 {
                     // these should all be pretty quick, but just in case
-                    personRockContext.Database.CommandTimeout = 180;
+                    personRockContext.Database.SetCommandTimeout( 180 );
                     PersonService.UpdatePrimaryFamilyAll( personRockContext );
                     PersonService.UpdateGivingLeaderIdAll( personRockContext );
                     PersonService.UpdateGivingIdAll( personRockContext );
@@ -3509,7 +3510,7 @@ namespace Rock.Utility
             var rockContext = new RockContext();
 
             // Set the timeout to 30 mins, to allow processing of very large datasets.
-            rockContext.Database.CommandTimeout = 1800;
+            rockContext.Database.SetCommandTimeout( 1800 );
 
             return rockContext;
         }

@@ -1,0 +1,71 @@
+<template>
+    <DropDownList v-model="comparisonType" :items="comparisonItems" disableLabel />
+    <CurrencyBox v-model="amount" label="Amount" />
+    <AccountPicker v-model="accounts" label="Accounts" multiple />
+    <InlineCheckBox v-model="includeChildAccounts" label="Include Child Accounts" />
+    <InlineCheckBox v-model="ignoreInactiveAccounts" label="Ignore Inactive Accounts" />
+    <SlidingDateRangePicker v-model="dateRange"
+                            label="Date Range"
+                            rules="required"
+                            help="The date range of the transactions using the transaction date of each transaction" />
+    <CheckBox v-model="combineGiving"
+              label="Combine Giving"
+              help="Combine individuals in the same giving group when calculatin totals and reporting the list of individuals." />
+    <CheckBox v-model="useAnalyticsModels"
+              label="Use Analytics Models"
+              help="Using Analytics Data might be faster than querying real-time data, but it may not include data that has been added or updated in the last 24 hours." />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/comparisonTypeOptions";
+    import { SlidingDateRange, parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { SlidingDateRangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
+    import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const comparisonType = ref<`${ComparisonType}`>((props.modelValue.comparisonType as `${ComparisonType}`) ?? `${ComparisonType.EqualTo}`);
+    const amount = ref<number>(parseFloat(props.modelValue.amount ?? "0") ?? 0);
+    const accounts = ref<ListItemBag[]>(safeParseJson<ListItemBag[]>(props.modelValue.accountGuids) ?? []);
+    const includeChildAccounts = ref<boolean>(asBoolean(props.modelValue.includeChildAccounts));
+    const ignoreInactiveAccounts = ref<boolean>(asBoolean(props.modelValue.ignoreInactiveAccounts));
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.slidingDateRangePickerDelimitedValues ?? ""));
+    const combineGiving = ref<boolean>(asBoolean(props.modelValue.combineGiving));
+    const useAnalyticsModels = ref<boolean>(asBoolean(props.modelValue.useAnalyticsModels));
+
+    const comparisonItems = getFilteredComparisonTypeOptions(
+        ComparisonType.EqualTo,
+        ComparisonType.GreaterThanOrEqualTo,
+        ComparisonType.LessThan
+    );
+
+    watch([comparisonType, amount, accounts, includeChildAccounts, ignoreInactiveAccounts, dateRange, combineGiving, useAnalyticsModels], () => {
+        const newData = {
+            ...props.modelValue,
+            comparisonType: comparisonType.value.toString(),
+            amount: Number.isNaN(amount.value) || !amount.value ? "0.00" : amount.value.toFixed(2),
+            accountGuids: accounts.value.length > 0 ? JSON.stringify(accounts.value) : null,
+            includeChildAccounts: asTrueOrFalseString(includeChildAccounts.value),
+            ignoreInactiveAccounts: asTrueOrFalseString(ignoreInactiveAccounts.value),
+            slidingDateRangePickerDelimitedValues: slidingDateRangeToString(dateRange.value ?? { rangeType: SlidingDateRangeType.All }),
+            combineGiving: asTrueOrFalseString(combineGiving.value),
+            useAnalyticsModels: asTrueOrFalseString(useAnalyticsModels.value),
+        };
+
+        emit("update:modelValue", newData);
+    });
+</script>

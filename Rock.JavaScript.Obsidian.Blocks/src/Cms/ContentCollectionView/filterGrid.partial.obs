@@ -17,7 +17,7 @@
                     <tr v-for="row in filters" :key="row.name!" align="left">
                         <td class="grid-columnreorder" align="center">
                             <a class="minimal reorder-handle" href="#">
-                                <i class="fa fa-bars"></i>
+                                <i class="ti ti-menu-2"></i>
                             </a>
                         </td>
 
@@ -27,12 +27,12 @@
                         <td>{{ row.name }}</td>
 
                         <td class="grid-bool-field" align="center">
-                            <i v-if="row.headerMarkup" class="fa fa-check"></i>
+                            <i v-if="row.headerMarkup" class="ti ti-check"></i>
                         </td>
 
                         <td class="grid-columncommand" align="center">
                             <a class="btn btn-default btn-sm" href="#" @click.prevent="onEditClick(row.name!)">
-                                <i class="fa fa-pencil"></i>
+                                <i class="ti ti-pencil"></i>
                             </a>
                         </td>
                     </tr>

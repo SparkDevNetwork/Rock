@@ -366,8 +366,7 @@ namespace Rock.Plugin.HotFixes {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 
-        ///
+        ///   Looks up a localized string similar to /*
         ///&lt;doc&gt;
         /// &lt;summary&gt;
         ///   This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
@@ -381,7 +380,7 @@ namespace Rock.Plugin.HotFixes {
         ///            * Phone Type - Cell: &apos;407E7E45-7B2E-4FCD-9605-ECB1339F2453&apos;
         /// &lt;/remarks&gt;
         /// &lt;code&gt;
-        ///   [rest of string was truncated]&quot;;.
+        ///  EX [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _050_MigrationRollupsForV7_4_spCrm_PersonDuplicateFinder {
             get {
@@ -434,8 +433,7 @@ namespace Rock.Plugin.HotFixes {
         ///    BEGIN
         ///	
         ///	    -- configuration of the duration in weeks
-        ///	    DECLARE @GivingDurationLongWeeks int = 52
-        /// [rest of string was truncated]&quot;;.
+        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _052_MigrationRollupsForV8_1_spCrm_FamilyAnalyticsGiving {
             get {

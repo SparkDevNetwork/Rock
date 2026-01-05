@@ -74,14 +74,14 @@
 
         <ButtonColumn name="refresh"
                       tooltip="Refresh"
-                      iconClass="fa fa-sync-alt"
+                      iconClass="ti ti-refresh"
                       :excludeFromExport="true"
                       :disabled="row => !row.allowManualRefresh"
                       @click="onRefreshClick" />
 
         <ButtonColumn name="preview"
                       tooltip="Preview (does not save results)"
-                      iconClass="fa fa-search"
+                      iconClass="ti ti-search"
                       :excludeFromExport="true"
                       @click="onPreviewClick" />
 

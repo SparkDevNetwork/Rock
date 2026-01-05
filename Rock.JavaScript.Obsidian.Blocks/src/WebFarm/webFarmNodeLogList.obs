@@ -1,8 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid v-if="isVisible"
+    <Grid :definition="config.gridDefinition ?? undefined"
           title="Log"
-          :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Log"
@@ -80,7 +79,6 @@
     import { reactive, ref, computed, watch } from "vue";
     import GridSettingsModal from "./WebFarmNodeLogList/gridSettingsModal.partial.obs";
     import { GridSettingsOptions, PreferenceKey } from "./WebFarmNodeLogList/types.partial";
-    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<ListBlockBox<WebFarmNodeLogListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -95,10 +93,6 @@
 
     const gridSettings = ref<GridSettingsOptions>({
         dateRange: preferences.getValue(PreferenceKey.FilterDateRange),
-    });
-
-    const isVisible = computed((): boolean => {
-        return !!useStore().state.areSecondaryBlocksShown;
     });
 
     const logSeverityColors: Record<string, string> = {

@@ -38,7 +38,7 @@ namespace Rock.Blocks.Crm.PersonDetail
     [DisplayName( "Badges" )]
     [Category( "CRM > Person Detail" )]
     [Description( "Handles displaying badges for a person." )]
-    [IconCssClass( "fa fa-certificate" )]
+    [IconCssClass( "ti ti-certificate" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
     [InitialBlockHeight( 100 )]
 

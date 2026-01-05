@@ -51,7 +51,6 @@ namespace Rock.Tests.Integration.TestData
             /// <summary>
             /// Creates test data for Group Requirements.
             /// </summary>
-            [TestMethod]
             public static void AddSampleDataForGroupRequirements()
             {
                 // Add the sample data.

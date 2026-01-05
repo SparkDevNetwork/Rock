@@ -69,14 +69,14 @@
     // #region Computed Values
 
     const footerActions: PanelAction[] = [
-
         {
             title: "Save Continue Editing",
             type: "link",
             handler: onSaveAndContinue
             //onClick: onSave
         },
-    ]
+    ];
+
     /**
      * The entity name to display in the block panel.
      */

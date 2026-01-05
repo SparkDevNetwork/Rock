@@ -50,7 +50,7 @@
                     </h3>
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlblCampus" runat="server" LabelType="Campus" />
-                        <Rock:HighlightLabel ID="hlblPrayerCountTotal" runat="server" IconCssClass="fa fa-users" LabelType="Info" Text="team: 0" ToolTip="The number of prayers offered by the team for this request." />
+                        <Rock:HighlightLabel ID="hlblPrayerCountTotal" runat="server" IconCssClass="ti ti-users" LabelType="Info" Text="team: 0" ToolTip="The number of prayers offered by the team for this request." />
                         <Rock:HighlightLabel ID="hlblUrgent" runat="server" LabelType="Warning" Text="Urgent" Visible="false" />
                         <Rock:HighlightLabel ID="hlblCategory" runat="server" LabelType="Type" />
                     </div>
@@ -61,8 +61,8 @@
                     <asp:HiddenField ID="hfPrayerIndex" runat="server" />
                     <div class="row margin-b-md">
                         <div class="col-md-12">
-                            <asp:LinkButton ID="lbBack" runat="server" data-shortcut-key="arrowleft" ToolTip="Alt+🡄" CssClass="btn btn-default" OnClick="lbBack_Click" CausesValidation="false"><i class="fa fa-chevron-left"></i> Back</asp:LinkButton>
-                            <asp:LinkButton ID="lbNext" TabIndex="1" data-shortcut-key="arrowright" ToolTip="Alt+🡆" runat="server" CssClass="btn btn-default pull-right" OnClick="lbNext_Click" CausesValidation="false">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                            <asp:LinkButton ID="lbBack" runat="server" data-shortcut-key="arrowleft" ToolTip="Alt+🡄" CssClass="btn btn-default" OnClick="lbBack_Click" CausesValidation="false"><i class="ti ti-chevron-left"></i> Back</asp:LinkButton>
+                            <asp:LinkButton ID="lbNext" TabIndex="1" data-shortcut-key="arrowright" ToolTip="Alt+🡆" runat="server" CssClass="btn btn-default pull-right" OnClick="lbNext_Click" CausesValidation="false">Next <i class="ti ti-chevron-right"></i></asp:LinkButton>
 
                         </div>
                     </div>
@@ -72,7 +72,7 @@
                     <div class="actions margin-t-lg margin-b-md">
                         <div class="row margin-t-md">
                             <div class="col-md-12">
-                                <asp:LinkButton ID="lbFlag" runat="server" Text="<i class='fa fa-flag'></i> Flag" CssClass="btn btn-warning" ToolTip="Flag as inappropriate so that an administrator can review the content." CausesValidation="false" OnClick="lbFlag_Click" />
+                                <asp:LinkButton ID="lbFlag" runat="server" Text="<i class='ti ti-flag'></i> Flag" CssClass="btn btn-warning" ToolTip="Flag as inappropriate so that an administrator can review the content." CausesValidation="false" OnClick="lbFlag_Click" />
                                 <asp:LinkButton ID="lbStop" runat="server" Text="End Session" CssClass="btn btn-link" CausesValidation="false" OnClick="lbStop_Click" />
                             </div>
                             <div class="col-md-12">

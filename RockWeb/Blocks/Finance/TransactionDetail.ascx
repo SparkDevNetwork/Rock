@@ -17,7 +17,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-credit-card"></i>
+                    <i class="ti ti-credit-card"></i>
                     Financial Transaction
                 </h1>
                 <div class="panel-labels">
@@ -219,8 +219,8 @@
                         <div class="pull-right">
                             <asp:LinkButton ID="lbRefund" runat="server" Text="Refund" data-shortcut-key="r" ToolTip="Alt+r" CssClass="btn btn-default margin-r-sm" CausesValidation="false" OnClick="lbRefundTransaction_Click" />
                             <asp:LinkButton ID="lbAddTransaction" runat="server" Text="Add New Transaction" data-shortcut-key="a" ToolTip="Alt+a" CssClass="btn btn-default margin-r-sm" CausesValidation="false" OnClick="lbAddTransaction_Click" />
-                            <asp:HyperLink ID="lbBack" runat="server" data-shortcut-key="arrowleft" ToolTip="Alt+🡄" CssClass="btn btn-default margin-r-sm" OnClick="lbBack_Click"><i class="fa fa-chevron-left"></i> Back</asp:HyperLink>
-                            <asp:HyperLink ID="lbNext" runat="server" data-shortcut-key="arrowright" ToolTip="Alt+🡆" CssClass="btn btn-default margin-r-sm">Next <i class="fa fa-chevron-right"></i></asp:HyperLink>
+                            <asp:HyperLink ID="lbBack" runat="server" data-shortcut-key="arrowleft" ToolTip="Alt+🡄" CssClass="btn btn-default margin-r-sm" OnClick="lbBack_Click"><i class="ti ti-chevron-left"></i> Back</asp:HyperLink>
+                            <asp:HyperLink ID="lbNext" runat="server" data-shortcut-key="arrowright" ToolTip="Alt+🡆" CssClass="btn btn-default margin-r-sm">Next <i class="ti ti-chevron-right"></i></asp:HyperLink>
                         </div>
                     </div>
 

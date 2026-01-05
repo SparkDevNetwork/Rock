@@ -634,7 +634,7 @@
                 });
 
                 if (expand) {
-                    $('i', self.$toggleRegistrantDetails).removeClass('fa-angle-double-down').addClass('fa-angle-double-up');
+                    $('i', self.$toggleRegistrantDetails).removeClass('ti-chevrons-down').addClass('ti-chevrons-up');
                     $('.js-registrant-details').each(function (i, el) {
                         var $details = $(el);
                         if ($details.text().trim().length != '') {
@@ -643,7 +643,7 @@
                     });
                 }
                 else {
-                    $('i', self.$toggleRegistrantDetails).removeClass('fa-angle-double-up').addClass('fa-angle-double-down');
+                    $('i', self.$toggleRegistrantDetails).removeClass('ti-chevrons-up').addClass('ti-chevrons-down');
                     $('.js-registrant-details', self.$groupPlacementTool).stop().slideUp();
                 }
             },
@@ -777,21 +777,21 @@
                 });
 
                 $('.js-toggle-group-details', self.$groupPlacementTool.closest('.block-instance')).click(function () {
-                    $('i', this).toggleClass('fa-angle-double-up fa-angle-double-down');
+                    $('i', this).toggleClass('ti-chevrons-up ti-chevrons-down');
                     // if toggle class is up, then show the details, otherwise hide them
                     var groups = $(this).closest('.js-block-instance').find('.placement-group .js-group-details');
                     var groupSlideIcon = $(this).closest('.js-block-instance').find('.js-placement-group-toggle-visibility i');
-                    if ($(this).find('i').hasClass('fa-angle-double-up')) {
+                    if ($(this).find('i').hasClass('ti-chevrons-up')) {
                         groups.slideDown();
-                        groupSlideIcon.attr('class', 'fa fa-chevron-up');
+                        groupSlideIcon.attr('class', 'ti ti-chevron-up');
                     } else {
                         groups.slideUp();
-                        groupSlideIcon.attr('class', 'fa fa-chevron-down');
+                        groupSlideIcon.attr('class', 'ti ti-chevron-down');
                     }
                 });
 
                 self.$groupPlacementTool.on('click', '.js-placement-group-toggle-visibility', function () {
-                    $('i', this).toggleClass('fa-chevron-down fa-chevron-up');
+                    $('i', this).toggleClass('ti-chevron-down ti-chevron-up');
                     $(this).closest('.js-placement-group').find('.js-group-details').slideToggle();
                 });
 

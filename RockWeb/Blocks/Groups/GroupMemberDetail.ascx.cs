@@ -121,6 +121,7 @@ namespace RockWeb.Blocks.Groups
         DefaultValue = "1",
         Order = 11 )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.GROUPS_GROUP_MEMBER_DETAIL )]
     public partial class GroupMemberDetail : RockBlock
     {
@@ -182,6 +183,7 @@ namespace RockWeb.Blocks.Groups
             public const string LocationId = "LocationId";
             public const string RegistrationId = "RegistrationId";
             public const string ScheduleId = "ScheduleId";
+            public const string ReturnUrl = "returnUrl";
         }
 
         #region Control Methods
@@ -604,7 +606,7 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                lGroupIconHtml.Text = "<i class='fa fa-user' ></i>";
+                lGroupIconHtml.Text = "<i class='ti ti-user' ></i>";
             }
 
             if ( groupMember.Id.Equals( 0 ) )
@@ -1558,7 +1560,15 @@ namespace RockWeb.Blocks.Groups
             {
                 if ( cvGroupMember.IsValid )
                 {
-                    NavigateToParentPage();
+                    var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
+                    if ( returnUrl.IsNotNullOrWhiteSpace() )
+                    {
+                        Response.Redirect( returnUrl );
+                    }
+                    else
+                    {
+                        NavigateToParentPage();
+                    }
                 }
             }
         }
@@ -1929,7 +1939,15 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();
+            var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
+            if ( returnUrl.IsNotNullOrWhiteSpace() )
+            {
+                Response.Redirect( returnUrl );
+            }
+            else
+            {
+                NavigateToParentPage();
+            }
         }
 
         /// <summary>

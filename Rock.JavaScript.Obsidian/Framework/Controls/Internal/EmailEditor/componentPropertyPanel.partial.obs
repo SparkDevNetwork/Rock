@@ -3,6 +3,7 @@
     <TitleComponentPropertyPanel v-if="componentTypeName === 'title'"
                                  :componentElement="componentElement"
                                  :hasScrollableBody="true"
+                                 :ltr="ltr"
                                  @clone="$emit('clone')"
                                  @complete="$emit('complete')"
                                  @delete="$emit('delete')"
@@ -11,6 +12,7 @@
     <VideoComponentPropertyPanel v-else-if="componentTypeName === 'video'"
                                  :componentElement="componentElement"
                                  :hasScrollableBody="true"
+                                 :ltr="ltr"
                                  :videoProviderNames="videoProviderNames"
                                  @clone="$emit('clone')"
                                  @complete="$emit('complete')"
@@ -20,6 +22,7 @@
     <ButtonComponentPropertyPanel v-else-if="componentTypeName === 'button'"
                                   :componentElement="componentElement"
                                   :hasScrollableBody="true"
+                                  :ltr="ltr"
                                   @clone="$emit('clone')"
                                   @complete="$emit('complete')"
                                   @delete="$emit('delete')"
@@ -28,6 +31,7 @@
     <TextComponentPropertyPanel v-else-if="componentTypeName === 'text'"
                                 :componentElement="componentElement"
                                 :hasScrollableBody="true"
+                                :ltr="ltr"
                                 :mergeFields="mergeFields"
                                 :shortLinkCheckToken="shortLinkCheckToken"
                                 :shortLinkGetPageId="shortLinkGetPageId"
@@ -42,6 +46,7 @@
     <DividerComponentPropertyPanel v-else-if="componentTypeName === 'divider'"
                                    :componentElement="componentElement"
                                    :hasScrollableBody="true"
+                                   :ltr="ltr"
                                    @clone="$emit('clone')"
                                    @complete="$emit('complete')"
                                    @delete="$emit('delete')"
@@ -50,6 +55,7 @@
     <AdaptiveMessageComponentPropertyPanel v-else-if="componentTypeName === 'message'"
                                            :componentElement="componentElement"
                                            :hasScrollableBody="true"
+                                           :ltr="ltr"
                                            @clone="$emit('clone')"
                                            @complete="$emit('complete')"
                                            @delete="$emit('delete')" />
@@ -58,6 +64,7 @@
                                  :componentElement="componentElement"
                                  :hasScrollableBody="true"
                                  :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
+                                 :ltr="ltr"
                                  @clone="$emit('clone')"
                                  @complete="$emit('complete')"
                                  @delete="$emit('delete')"
@@ -66,6 +73,7 @@
     <CodeComponentPropertyPanel v-else-if="componentTypeName === 'code'"
                                 :componentElement="componentElement"
                                 :hasScrollableBody="true"
+                                :ltr="ltr"
                                 :mergeFields="mergeFields"
                                 :usageType="usageType"
                                 @clone="$emit('clone')"
@@ -76,6 +84,7 @@
     <RsvpComponentPropertyPanel v-else-if="componentTypeName === 'rsvp'"
                                 :componentElement="componentElement"
                                 :hasScrollableBody="true"
+                                :ltr="ltr"
                                 :recipientPersonIds="recipientPersonIds"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
@@ -86,6 +95,7 @@
                                    :componentElement="componentElement"
                                    :hasScrollableBody="true"
                                    :isCloneDisabled="isRootSectionComponent && !parentStructureDropzone"
+                                   :ltr="ltr"
                                    @clone="$emit('clone')"
                                    @complete="$emit('complete')"
                                    @delete="$emit('delete')"
@@ -95,6 +105,7 @@
     <RowComponentPropertyPanel v-else-if="componentTypeName === 'row'"
                                :componentElement="componentElement"
                                :hasScrollableBody="true"
+                               :ltr="ltr"
                                @clone="$emit('clone')"
                                @complete="$emit('complete')"
                                @delete="$emit('delete')"
@@ -133,6 +144,11 @@
         imageComponentBinaryFileTypeGuid: {
             type: String as PropType<Guid>,
             required: true
+        },
+
+        ltr: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         mergeFields: {

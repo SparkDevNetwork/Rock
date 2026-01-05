@@ -5,7 +5,7 @@
         <Rock:ModalAlert ID="maUpdated" runat="server" />
         <asp:Panel ID="pnlWrapper" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-shield"></i> Checkr Background Checks</h1>
+                <h1 class="panel-title"><i class="ti ti-shield-half"></i> Checkr Background Checks</h1>
                 <div class="panel-labels">
                     <asp:LinkButton ID="btnDefault" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnDefault_Click">Enable As Default Background Check Provider</asp:LinkButton>
                 </div>
@@ -44,7 +44,7 @@
                         <div class="col-md-6">
                             <Rock:RockLiteral ID="lPackages" runat="server" Label="Enabled Background Check Types" />
                             <div class="panel-actions">
-                                <asp:LinkButton ID="btnUpdate" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnUpdate_Click"><i class="fa fa-sync"></i> Update Packages</asp:LinkButton>
+                                <asp:LinkButton ID="btnUpdate" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnUpdate_Click"><i class="ti ti-refresh"></i> Update Packages</asp:LinkButton>
                             </div>
                         </div>
                     </div>

@@ -27,8 +27,6 @@ namespace Rock.Transactions
     /// 
     /// </summary>
     /// <seealso cref="Rock.Transactions.ITransaction" />
-    [Obsolete( "Use a System.Task instead." )]
-    [RockObsolete( "1.13" )]
     public class SaveHistoryTransaction : ITransaction
     {
         /// <summary>

@@ -62,7 +62,7 @@ namespace Rock.Lms
         public override string HighlightColor => "#644a88";
 
         /// <inheritdoc/>
-        public override string IconCssClass => "far fa-check-square";
+        public override string IconCssClass => "ti ti-checkbox";
 
         /// <inheritdoc/>
         public override string Name => "Acknowledgment";

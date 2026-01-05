@@ -75,7 +75,7 @@ namespace RockWeb.Blocks.Finance
 
 <div class=""clearfix"">
     <div class=""pull-right"">
-        <a href=""#"" class=""btn btn-primary hidden-print"" onClick=""window.print();""><i class=""fa fa-print""></i> Print Statement</a>
+        <a href=""#"" class=""btn btn-primary hidden-print"" onClick=""window.print();""><i class=""ti ti-printer""></i> Print Statement</a>
     </div>
 </div>
 

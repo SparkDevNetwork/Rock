@@ -1,0 +1,22 @@
+<template>
+    <CampusPicker v-model="campus" includeInactive disableLabel showBlankItem />
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/jsonUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const campus = ref<ListItemBag | undefined>(safeParseJson(props.modelValue.campus));
+
+    watch(campus, () => {
+        emit("update:modelValue", { ...props.modelValue, campus: JSON.stringify(campus.value) });
+    });
+</script>

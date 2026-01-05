@@ -40,7 +40,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Binary File Type Detail" )]
     [Category( "Core" )]
     [Description( "Displays all details of a binary file type." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

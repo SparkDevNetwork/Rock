@@ -31,6 +31,9 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The box that contains all the initialization information for the System Configuration block. */
 export type SystemConfigurationInitializationBox = {
+    /** Gets or sets the countries. */
+    countries?: ListItemBag[] | null;
+
     /**
      * Gets or sets the error message. A non-empty value indicates that
      * an error is preventing the block from being displayed.

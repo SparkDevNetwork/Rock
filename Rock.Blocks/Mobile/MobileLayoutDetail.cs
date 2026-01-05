@@ -37,7 +37,7 @@ namespace Rock.Blocks.Mobile
     [DisplayName( "Mobile Layout Detail" )]
     [Category( "Mobile" )]
     [Description( "Edits and configures the settings of a mobile layout." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( SiteType.Web )]
 
     [SystemGuid.EntityTypeGuid( "e83c989b-5ecb-4de4-b5bf-11af7fc2cca3" )]

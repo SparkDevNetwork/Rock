@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -339,7 +339,7 @@ namespace Rock.Achievement.Component
 
             if ( iconClass.IsNullOrWhiteSpace() )
             {
-                iconClass = "fa fa-medal";
+                iconClass = "ti ti-medal";
             }
 
             var successCountMarkup = string.Empty;

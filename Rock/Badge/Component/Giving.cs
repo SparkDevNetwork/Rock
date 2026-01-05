@@ -55,7 +55,7 @@ namespace Rock.Badge.Component
 {% endif %}
 
 <div class='rockbadge rockbadge-giving rockbadge-id-{{Badge.Id}}' data-toggle='tooltip' data-original-title='{{ tooltipText }}'>
-  <i class='badge-icon fa fa-heartbeat' style='color: {{ iconColor }}'></i>
+  <i class='badge-icon ti ti-heartbeat' style='color: {{ iconColor }}'></i>
 </div>
 " )]
     [Rock.SystemGuid.EntityTypeGuid( "2F3E57EC-D126-4F0D-B1E5-C78E220C2060")]

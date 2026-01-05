@@ -62,5 +62,42 @@ export default defineComponent({
             type: String as PropType<string>,
             default: "select"
         },
-    }
+
+        // #region Row Exclusion Props
+
+        /**
+         * If true, excludeRow can be used to exclude a row from having a selection checkbox.
+         * If false, all rows will ignore the excludeRow setting and show a checkbox.
+         * This is useful when you want to have some rows excluded from selection.
+         * This will disable the "select all" checkbox in the header by default.
+         */
+        enableRowExclusions: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * A function that determines if the row should be excluded from selection.
+         * Should return true to exclude the row, false otherwise.
+         * @requires enableRowExclusions to be true
+         */
+        excludeRow: {
+            type: Function as PropType<(row: unknown) => boolean>,
+            default: undefined
+        },
+
+        /**
+         * If true, the "select all" checkbox in the header will be available even if
+         * enableRowExclusions is true.
+         *
+         * This is only useful if your rows are sorted in a way that being able to select all
+         * selectable rows on the current page is meaningful.
+         */
+        forceAllowSelectAll: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+
+        // #endregion Row Exclusion Props
+    },
 });

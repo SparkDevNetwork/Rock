@@ -11,7 +11,7 @@
     import { computed, PropType } from "vue";
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";
     import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
-    import { FilterMode } from "@Obsidian/Core/Reporting/filterMode";
+    import { FilterMode } from "@Obsidian/Enums/Reporting/filterMode";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
@@ -31,7 +31,7 @@
         },
         filterMode: {
             type: Number as PropType<FilterMode>,
-            default: FilterMode.Simple
+            default: FilterMode.SimpleFilter
         }
     });
 

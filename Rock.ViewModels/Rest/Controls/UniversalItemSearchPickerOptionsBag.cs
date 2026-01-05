@@ -29,6 +29,14 @@ namespace Rock.ViewModels.Rest.Controls
         public string Value { get; set; }
 
         /// <summary>
+        /// Gets or sets the general purpose context provided by the field
+        /// type control. We also recommend you encode any context data as a
+        /// JSON string to future proof yourself from changes you might need to make.
+        /// </summary>
+        /// <value>The general purpose context.</value>
+        public string Context { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether inactive records should be included.
         /// </summary>
         /// <value><c>true</c> if inactive records should be included; otherwise, <c>false</c>.</value>

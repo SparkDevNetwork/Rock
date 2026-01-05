@@ -34,7 +34,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
     [DisplayName( "Reminder Edit" )]
     [Category( "Reminders" )]
     [Description( "Allows adding/editing of reminders." )]
-    [IconCssClass( "fa fa-edit" )]
+    [IconCssClass( "ti ti-edit" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

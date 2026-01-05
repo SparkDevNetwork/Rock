@@ -46,7 +46,7 @@ namespace Rock.Blocks.Lms
     [DisplayName( "Public Learning Class Workspace" )]
     [Category( "LMS" )]
     [Description( "The main block for interacting with enrolled classes." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -282,7 +282,8 @@ namespace Rock.Blocks.Lms
                     IsStudentCommentingEnabled = activity.LearningClassActivity.IsStudentCommentingEnabled,
                     Name = activity.LearningClassActivity.Name,
                     Order = activity.LearningClassActivity.Order,
-                    Points = activity.LearningClassActivity.Points
+                    Points = activity.LearningClassActivity.Points,
+                    SendNotificationCommunication = activity.LearningClassActivity.SendNotificationCommunication
                 };
 
                 var isPreviousMethodCalculation = activityBag.AvailabilityCriteria == AvailabilityCriteria.AfterPreviousCompleted;
@@ -439,6 +440,7 @@ namespace Rock.Blocks.Lms
                 .ToList()
                 .Select( f => new LearningClassFacilitatorBag
                 {
+                    FacilitatorPersonId = f.PersonId,
                     FacilitatorEmail = f.Email,
                     FacilitatorName = f.Name,
                     FacilitatorRole = f.RoleName,
@@ -454,15 +456,27 @@ namespace Rock.Blocks.Lms
 
             box.IsCurrentPersonFacilitator = box.Activities.Any( a => a.ClassActivityBag.CurrentPerson.IsFacilitator );
 
+            box.ShowCommunicationPreference = box.Activities.Any( a => a.ClassActivityBag.SendNotificationCommunication );
+
             var participantIdKey = box.Activities.Select( a => a.Student.IdKey ).FirstOrDefault();
             var participantData = participantService.GetSelect( participantIdKey, p => new
             {
                 p.LearningGradingSystemScale,
                 p.LearningCompletionDateTime,
-                SemesterEndDate = p.LearningClass.LearningSemester.EndDate
+                SemesterEndDate = p.LearningClass.LearningSemester.EndDate,
+                p.CommunicationPreference
             } );
 
             box.ClassCompletionDate = participantData?.LearningCompletionDateTime;
+
+            if ( participantData != null && ( participantData.CommunicationPreference == CommunicationType.Email || participantData.CommunicationPreference == CommunicationType.SMS ) )
+            {
+                box.CommunicationPreference = ( Rock.Enums.Communication.CommunicationType ) participantData.CommunicationPreference;
+            }
+            else
+            {
+                box.CommunicationPreference = ( Rock.Enums.Communication.CommunicationType ) currentPerson.CommunicationPreference;
+            }
 
             // Allow historical access if the course allows it and the class is not over.
             var canShowHistoricalAccess = course.AllowHistoricalAccess
@@ -735,6 +749,29 @@ namespace Rock.Blocks.Lms
                 RequestContext );
 
             return ActionOk( activityCompletionBag );
+        }
+
+        [BlockAction]
+        public BlockActionResult UpdateCommunicationPreference( CommunicationType communicationType, string learningClassIdKey )
+        {
+            var currentPerson = GetCurrentPerson();
+            var learningClassService = new LearningClassService( RockContext );
+            var learningClass = learningClassService.Get( learningClassIdKey );
+
+            if ( learningClass == null )
+            {
+                return ActionBadRequest( "Could not find the specified Class" );
+            }
+
+            var learningParticipants = learningClass.LearningParticipants.Where( l => l.PersonId == currentPerson.Id ).ToList();
+
+            foreach ( var participant in learningParticipants )
+            {
+                participant.CommunicationPreference = communicationType;
+            }
+
+            RockContext.SaveChanges();
+            return ActionOk();
         }
 
         #endregion

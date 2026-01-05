@@ -17,6 +17,8 @@
 using System.ComponentModel;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -51,7 +53,7 @@ namespace Rock.Jobs.PostUpdateJobs
 
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
                 var entityTypeId = EntityTypeCache.Get( Person.USER_VALUE_ENTITY, false, rockContext )?.Id;
 
                 if ( !entityTypeId.HasValue )

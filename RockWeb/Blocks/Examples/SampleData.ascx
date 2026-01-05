@@ -27,7 +27,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-flask"></i> Sample Data Import</h1>
+                <h1 class="panel-title"><i class="ti ti-flask"></i> Sample Data Import</h1>
             </div>
             <div class="panel-body">
 

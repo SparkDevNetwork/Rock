@@ -29,7 +29,6 @@ namespace Rock.Web.Cache
     [Serializable]
     [DataContract]
     [LavaType( "AttributeId", "EntityId", "Value", "ValueFormatted", "PersistedTextValue", "PersistedFormattedValue", "PersistedCondensedTextValue", "PersistedCondensedFormattedValue", "IsPersistedValueDirty", "AttributeName", "AttributeAbbreviatedName", "AttributeKey", "AttributeIsGridColumn", "AttributeCategoryIds" )]
-    [DotLiquid.LiquidType( "AttributeId", "EntityId", "Value", "ValueFormatted", "PersistedTextValue", "PersistedFormattedValue", "PersistedCondensedTextValue", "PersistedCondensedFormattedValue", "IsPersistedValueDirty", "AttributeName", "AttributeAbbreviatedName", "AttributeKey", "AttributeIsGridColumn", "AttributeCategoryIds" )]
     public class AttributeValueCache
     {
         #region constructors
@@ -296,6 +295,27 @@ namespace Rock.Web.Cache
                 return attribute != null && attribute.IsGridColumn;
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether attribute is public.
+        /// </summary>
+        /// <remarks>
+        /// Note: this property is provided specifically for Lava templates when the Attribute property is not available
+        /// as a navigable property
+        /// </remarks>
+        /// <value>
+        /// <c>true</c> if [attribute is public]; otherwise, <c>false</c>.
+        /// </value>
+        [LavaVisible]
+        public virtual bool AttributeIsPublic
+        {
+            get
+            {
+                var attribute = AttributeCache.Get( AttributeId );
+                return attribute != null && attribute.IsPublic;
+            }
+        }
+
         /// <summary>
         /// Returns the Formatted Value of this Attribute Value
         /// </summary>

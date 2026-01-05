@@ -17,14 +17,16 @@
 //
 
 using System;
-using System.Web;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Collections.Generic;
+using System.Web;
+
 using Rock;
-using Rock.Communication.SmsActions;
 using Rock.Communication;
+using Rock.Communication.Medium;
+using Rock.Communication.SmsActions;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
@@ -112,44 +114,15 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
             Message = body
         };
 
-        if ( !string.IsNullOrWhiteSpace( message.ToNumber ) && !string.IsNullOrWhiteSpace( message.FromNumber ) )
+        if ( message.ToNumber.IsNotNullOrWhiteSpace() && message.FromNumber.IsNotNullOrWhiteSpace() )
         {
+            // Opt-in/opt-out tracking should be processed before anything else, to ensure we respect the sender's
+            // preferences and also to ensure we remain compliant with messaging regulations.
+            SmsActionService.TryUpdateOptInOutTrackingForSender( message );
+
             using ( var rockContext = new RockContext() )
             {
                 message.FromPerson = new PersonService( rockContext ).GetPersonFromMobilePhoneNumber( message.FromNumber, true );
-
-                if ( IsOptOutMessage( body ) )
-                {
-                    var cleanNumber = PhoneNumber.CleanNumber( fromPhone );
-                    var phoneNumbers = new PhoneNumberService( rockContext ).Queryable()
-                        .Where( pn => pn.FullNumber == cleanNumber )
-                        .ToList();
-
-                    foreach ( var phoneNumber in phoneNumbers )
-                    {
-                        phoneNumber.IsMessagingEnabled = false;
-                        phoneNumber.IsMessagingOptedOut = true;
-                        phoneNumber.MessagingOptedOutDateTime = RockDateTime.Now;
-                    }
-
-                    rockContext.SaveChanges();
-                }
-                else if ( IsOptInMessage( body ) )
-                {
-                    var cleanNumber = PhoneNumber.CleanNumber( fromPhone );
-                    var phoneNumbers = new PhoneNumberService( rockContext ).Queryable()
-                        .Where( pn => pn.FullNumber == cleanNumber )
-                        .ToList();
-
-                    foreach ( var phoneNumber in phoneNumbers )
-                    {
-                        phoneNumber.IsMessagingEnabled = true;
-                        phoneNumber.IsMessagingOptedOut = false;
-                        phoneNumber.MessagingOptedOutDateTime = null;
-                    }
-
-                    rockContext.SaveChanges();
-                }
 
                 var smsPipelineId = request.QueryString["smsPipelineId"].AsIntegerOrNull();
 
@@ -197,7 +170,7 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
                     return null;
                 }
 
-                if ( !string.IsNullOrWhiteSpace( smsResponse.Message ) )
+                if ( smsResponse.Message.IsNotNullOrWhiteSpace() )
                 {
                     twilioMessage.Body( smsResponse.Message );
                 }
@@ -215,31 +188,5 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
         }
 
         return null;
-    }
-
-    private bool IsOptOutMessage( string messageBody )
-    {
-        foreach ( var keyword in SmsActionService.OptOutKeywords )
-        {
-            if ( string.Equals( messageBody.Trim(), keyword, StringComparison.OrdinalIgnoreCase ) )
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private bool IsOptInMessage( string messageBody )
-    {
-        foreach ( var keyword in SmsActionService.OptInKeywords )
-        {
-            if ( string.Equals( messageBody.Trim(), keyword, StringComparison.OrdinalIgnoreCase ) )
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <i class="fa fa-bars reorder-handle" :class="additionalClass" :style="iconStyle"></i>
+    <i class="ti ti-menu-2 reorder-handle" :class="additionalClass" :style="iconStyle"></i>
 </template>
 
 <script setup lang="ts">

@@ -31,8 +31,6 @@
         <DeleteColumn :rowDisabled="isDeleteRowDisabled" @click="onDeleteClick" />
     </Grid>
 
-    <ModalAlert v-model="isAlertVisible" :type="ModalAlertType.Information">{{ alertMessage }}</ModalAlert>
-
     <Modal v-model="isPersonalLinkModalVisible"
            :title="saveLinkTitle"
            saveText="Save"
@@ -60,8 +58,6 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
-    import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
-    import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
 
     const config = useConfigurationValues<ListBlockBox<PersonalLinkListOptionsBag>>();
@@ -73,9 +69,6 @@
     const isPersonalLinkSectionShared = ref(config.options?.isPersonalLinkSectionShared ?? false);
     const isBlockVisible = ref(config.options?.isBlockVisible ?? false);
     const gridDataSource = ref<Promise<GridDataBag>>();
-
-    const alertMessage = ref("");
-    const isAlertVisible = ref(false);
 
     const personalLinkIdKey = ref("");
     const personalLinkName = ref("");
@@ -242,14 +235,6 @@
     function isEditRowDisabled(row: Record<string, unknown>): boolean {
         const canEdit = row["canEdit"] as boolean;
         return !canEdit;
-    }
-
-    /**
-    * Displays an alert with the provided message.
-    */
-    function showAlert(message: string): void {
-        alertMessage.value = message;
-        isAlertVisible.value = true;
     }
 
     function showPersonalLinkModal(personalLink: SavePersonalLinkRequestBag): void {

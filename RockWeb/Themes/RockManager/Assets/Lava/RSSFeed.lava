@@ -37,7 +37,7 @@
 					{{ article.description }}
 				</div>
 				<p>
-					<a href="{{ article.detailPageUrl }}" class="btn btn-default">View Article <i class="fa fa-angle-double-right"></i></a>
+					<a href="{{ article.detailPageUrl }}" class="btn btn-default">View Article <i class="ti ti-chevrons-right"></i></a>
 				</p>
 			</div>
 		{% endfor -%}

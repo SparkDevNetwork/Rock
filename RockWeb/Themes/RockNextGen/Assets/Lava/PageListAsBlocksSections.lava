@@ -1,0 +1,65 @@
+<div class="panel panel-default clearfix">
+    <div class="panel-body">
+            //- The custom pages with no child pages which were created by the churches need to be stored under the additional page section.
+            //- Creating a lava array to store such pages.
+            {% assign customPages = "" | split: "," %}
+            {%- for sectionPage in Page.Pages -%}
+                {% assign count = sectionPage.Pages | Size %}
+                    {% if count == 0 %}
+                        {% assign customPages = customPages | AddToArray: sectionPage %}
+                        {% continue %}
+                    {% endif %}
+                <div class="rock-header">
+                    <h3 class="title">{{ sectionPage.Title }}</h3>
+                    <hr class="section-header-hr">
+                </div>
+
+                <div class="list-as-blocks">
+                    <ul class="mb-5">
+                    {% for childPage in sectionPage.Pages %}
+                        <li>
+                            <a href="{{ childPage.Url }}" {% if childPage.DisplayDescription != 'true' %} title="{{ childPage.Description }}"{% endif %}>
+                                {% if childPage.IconCssClass != '' %}
+                                    <i class="{{ childPage.IconCssClass }}"></i>
+                                {% endif %}
+                                <h3>{{ childPage.Title }}</h3>
+                            </a>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            {%- endfor -%}
+
+            {% assign includeListPageCount = IncludePageList | Size %}
+            {% assign customPagesCount = customPages | Size  %}
+            {% if includeListPageCount > 0 or customPagesCount > 0 %}
+                <div class="rock-header">
+                    <h3 class="title">Additional Pages</h3>
+                    <hr class="section-header-hr">
+                </div>
+
+                <div class="list-as-blocks">
+                    <ul>
+                    {%- for customPage in customPages -%}
+                        <li>
+                            <a href="{{ customPage.Url }}">
+                                {% if customPage.IconCssClass != '' %}
+                                    <i class="{{ customPage.IconCssClass }}"></i>
+                                    <h3>{{ customPage.Title }}</h3>
+                                {% else %}
+                                    {{ customPage.Title }}
+                                {% endif %}
+                            </a>
+                        </li>
+                    {%- endfor -%}
+                    {%- for includedPage in IncludePageList -%}
+                        {%- assign attributeParts = includedPage | PropertyToKeyValue -%}
+                        <li>
+                            <a href="{{ attributeParts.Value }}">{{ attributeParts.Key }}</a>
+                        </li>
+                    {%- endfor -%}
+                    </ul>
+                </div>
+            {% endif %}
+    </div>
+</div>

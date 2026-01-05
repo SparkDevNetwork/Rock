@@ -16,7 +16,7 @@
 //
 using System;
 
-using Rock.Client;
+using Rock.Apps.StatementGenerator.Client;
 
 namespace Rock.Apps.StatementGenerator
 {

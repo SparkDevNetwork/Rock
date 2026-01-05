@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 
-using Rock.Client;
+using Rock.Apps.StatementGenerator.Client;
 
 namespace Rock.Apps.StatementGenerator
 {
@@ -32,7 +32,7 @@ namespace Rock.Apps.StatementGenerator
         /// <value>
         /// The current report options.
         /// </value>
-        public static Rock.Client.FinancialStatementGeneratorOptions Current
+        public static FinancialStatementGeneratorOptions Current
         {
             get
             {
@@ -61,6 +61,6 @@ namespace Rock.Apps.StatementGenerator
         /// <summary>
         /// The current
         /// </summary>
-        private static Rock.Client.FinancialStatementGeneratorOptions _current = new Rock.Client.FinancialStatementGeneratorOptions();
+        private static FinancialStatementGeneratorOptions _current = new FinancialStatementGeneratorOptions();
     }
 }

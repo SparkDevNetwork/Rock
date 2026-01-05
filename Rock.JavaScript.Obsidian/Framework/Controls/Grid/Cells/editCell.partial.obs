@@ -4,7 +4,7 @@
             title="Edit"
             :disabled="isDisabled"
             @click.prevent="onClick">
-        <i class="fa fa-pencil"></i>
+        <i class="ti ti-pencil"></i>
     </button>
 </template>
 

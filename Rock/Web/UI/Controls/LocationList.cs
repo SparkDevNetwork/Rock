@@ -258,7 +258,7 @@ namespace Rock.Web.UI.Controls
                 Visible = AllowAdd,
             };
             _btnShowAddAddressForm.Click += btnShowAddAddressForm_Click;
-            _btnShowAddAddressForm.Controls.Add( new HtmlGenericControl { InnerHtml = "<i class='fa fa-plus'></i>" } );
+            _btnShowAddAddressForm.Controls.Add( new HtmlGenericControl { InnerHtml = "<i class='ti ti-plus'></i>" } );
             Controls.Add( _btnShowAddAddressForm );
 
             GenerateAddAddressPanel();

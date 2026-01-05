@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -48,7 +50,7 @@ namespace Rock.Jobs.PostUpdateJobs
         {
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsInteger();
+                rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.CommandTimeout ).AsInteger() );
 
                 var service = new AchievementTypeService( rockContext );
                 var achievementTypes = service.Queryable().ToList();

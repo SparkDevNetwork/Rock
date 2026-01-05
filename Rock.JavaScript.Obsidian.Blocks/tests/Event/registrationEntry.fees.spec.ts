@@ -32,6 +32,7 @@ describe("RegistrationEntry Fees", () => {
     beforeAll(() => {
         // Silence console errors about scrollTo() not being implemented in jsdom.
         global.scrollTo = jest.fn();
+        document.elementsFromPoint = jest.fn(() => []);
     });
 
     describe("Checkbox Fee", () => {
@@ -1593,5 +1594,6 @@ const configurationValues: RegistrationEntryInitializationBox = {
     "showSmsOptIn": false,
     "isPaymentPlanAllowed": false,
     "isPaymentPlanConfigured": false,
-    "disableCaptchaSupport": true
+    "disableCaptchaSupport": true,
+    "areCurrentFamilyMembersShown": false
 };

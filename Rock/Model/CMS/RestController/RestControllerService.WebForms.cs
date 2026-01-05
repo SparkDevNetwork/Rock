@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 
@@ -59,29 +60,71 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Registers the controllers.
+        /// Registers the controllers; retrying up to 5 times if an InvalidOperationException
+        /// (Collection was modified; enumeration operation may not execute) occurs.
         /// </summary>
         public static void RegisterControllers()
         {
             /*
-             * 05/13/2022 MDP/DMV
-             * 
-             * In addition to the 12/19/2019 BJW note, we also added a RockGuid attribute to 
-             * controllers and methods (except for inherited methods). This will prevent
-             * loosing security on methods that have changed their signature. 
-             * 
-             * 
-             * 12/19/2019 BJW
-             *
-             * There was an issue with the SecuredAttribute not calculating API ID the same as was being calculated here.
-             * This caused the secured attribute to sometimes not find the RestAction record and thus not find the
-             * appropriate permissions (Auth table). The new method "GetApiId" is used in both places as a standardized
-             * API ID generator to ensure that this does not occur. The following code has also been modified to gracefully
-             * update any old style API IDs and update them to the new format without losing any foreign key associations, such
-             * as permissions.
-             *
-             * See task for detailed background: https://app.asana.com/0/474497188512037/1150703513867003/f
-             */
+                 6/2/2025 - NA
+
+                 IApiExplorer.ApiDescriptions returns a Collection<ApiDescription> that can be lazily populated
+                 by ApiExplorer at access time. If other threads are also accessing or modifying routes/controllers
+                 during this time (e.g., app initialization, concurrent requests), we can hit this concurrency
+                 exception even when just reading the .Count property.
+
+                 Reason: Try 5 times before giving up.
+            */
+
+            int maxAttempts = 5;
+            int baseDelayMs = 3000; // 3 seconds base
+
+            for ( int attempt = 1; attempt <= maxAttempts ; attempt++ )
+            {
+                try
+                {
+                    RegisterControllersInternal();
+                    break; // success, exit loop
+                }
+                catch ( InvalidOperationException )
+                {
+                    if ( attempt == maxAttempts )
+                    {
+                        throw; // fail after final attempt
+                    }
+
+                    // small delay
+                    Thread.Sleep( baseDelayMs * attempt );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Registers the controllers.
+        /// </summary>
+        private static void RegisterControllersInternal()
+        {
+            /*
+                 5/13/2022 - MDP/DMV
+
+                 In addition to the 12/19/2019 BJW note, we also added a RockGuid attribute to 
+                 controllers and methods (except for inherited methods). This will prevent
+                 loosing security on methods that have changed their signature. 
+
+
+                 12/19/2019 - BJW
+
+                 There was an issue with the SecuredAttribute not calculating API ID the same as was being calculated here.
+                 This caused the secured attribute to sometimes not find the RestAction record and thus not find the
+                 appropriate permissions (Auth table). The new method "GetApiId" is used in both places as a standardized
+                 API ID generator to ensure that this does not occur. The following code has also been modified to gracefully
+                 update any old style API IDs and update them to the new format without losing any foreign key associations, such
+                 as permissions.
+
+                 See task for detailed background: https://app.asana.com/0/474497188512037/1150703513867003/f
+
+                 Reason: Preserve security settings when method signatures change and ensure consistent API ID generation.
+            */
 
             // Controller Class Name => New Format Id => Old Format Id
             var controllerApiIdMap = new Dictionary<string, Dictionary<string, string>>();

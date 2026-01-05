@@ -39,7 +39,7 @@ namespace Rock.Blocks.Finance
     [DisplayName( "Pledge Detail" )]
     [Category( "Finance" )]
     [Description( "Allows the details of a given pledge to be edited." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

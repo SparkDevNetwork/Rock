@@ -243,7 +243,7 @@ namespace RockWeb.Blocks.Cms
                     configControls.Add( lbConfigure );
                 }
                 HtmlGenericControl iConfigure = new HtmlGenericControl( "i" );
-                iConfigure.Attributes.Add( "class", "fa fa-cog" );
+                iConfigure.Attributes.Add( "class", "ti ti-settings" );
 
                 lbConfigure.Controls.Add( iConfigure );
                 lbConfigure.CausesValidation = false;

@@ -27,7 +27,6 @@
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { EventCalendarBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventCalendarBag";
     import { EventCalendarDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventCalendarDetailOptionsBag";
-    import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
 
     const props = defineProps({
         modelValue: {

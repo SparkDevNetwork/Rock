@@ -2,7 +2,7 @@
 <template>
     <TreeItemPicker v-model="internalValue"
                     formGroupClasses="category-picker"
-                    iconCssClass="fa fa-calendar"
+                    iconCssClass="ti ti-calendar"
                     :provider="itemProvider"
                     :multiple="multiple"
                     disableFolderSelection />

@@ -1,0 +1,23 @@
+<template>
+    <CampusPicker v-model="campuses" :displayStyle="PickerDisplayStyle.List" includeInactive multiple disableLabel showBlankItem />
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/jsonUtils";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const campuses = ref<ListItemBag[] | undefined>(safeParseJson(props.modelValue.campuses));
+
+    watch(campuses, () => {
+        emit("update:modelValue", { ...props.modelValue, campuses: JSON.stringify(campuses.value) });
+    });
+</script>

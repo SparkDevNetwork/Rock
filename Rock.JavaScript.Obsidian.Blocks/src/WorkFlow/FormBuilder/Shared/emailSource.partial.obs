@@ -8,6 +8,7 @@
             <div class="row">
                 <div class="col-md-4">
                     <DropDownList v-model="template"
+                                  enhanceForLongLists
                                   label="Email Template"
                                   rules="required"
                                   :items="templateOptions" />

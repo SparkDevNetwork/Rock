@@ -147,6 +147,10 @@ namespace Rock.Rest.Controllers
                 {
                     interactionInfo.UserHostAddress = WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper( request ) );
                 }
+                if ( string.IsNullOrWhiteSpace( interactionInfo.UserAgentPlatformVersion ) )
+                {
+                    interactionInfo.UserAgentPlatformVersion = request.UserAgentPlatformVersion();
+                }
             }
 
             var rockContext = new RockContext();

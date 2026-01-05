@@ -20,7 +20,7 @@ using System.Text.RegularExpressions;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 
-using Rock.Client;
+using Rock.Apps.StatementGenerator.Client;
 
 namespace Rock.Apps.StatementGenerator
 {

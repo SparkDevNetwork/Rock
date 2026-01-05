@@ -38,7 +38,7 @@ namespace Rock.Blocks.Communication
     [DisplayName( "Sms Pipeline List" )]
     [Category( "Communication" )]
     [Description( "Lists the SMS Pipelines currently in the system." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

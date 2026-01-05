@@ -7,7 +7,7 @@
         
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-bus"></i> 
+                    <i class="ti ti-bus"></i> 
                     Message Bus
                 </h1>
 

@@ -22,6 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
@@ -80,13 +81,20 @@ namespace Rock.Jobs
         DefaultBooleanValue = true,
         Order = 5 )]
 
+    [IntegerField( "API Throttle",
+        Key = AttributeKey.ApiThrottle,
+        Description = "The number of milliseconds to wait between tightly-consecutive API calls to the external Chat system, helping to proactively avoid rate limiting.",
+        IsRequired = false,
+        DefaultIntegerValue = 100,
+        Order = 6 )]
+
     [IntegerField( "Command Timeout",
         Key = AttributeKey.CommandTimeout,
         Description = "Maximum amount of time (in seconds) to wait for the sql operations to complete. Leave blank to use the default for this job (3600). Note, some operations could take several minutes, so you might want to set it at 3600 (60 minutes) or higher.",
         IsRequired = false,
         DefaultIntegerValue = 60 * 60,
         Category = "General",
-        Order = 6 )]
+        Order = 7 )]
 
     #endregion Job Attributes
 
@@ -106,6 +114,7 @@ namespace Rock.Jobs
             public const string EnforceDefaultGrantsPerRole = "EnforceDefaultGrantsPerRole";
             public const string EnforceDefaultSyncSettings = "EnforceDefaultSyncSettings";
             public const string CommandTimeout = "CommandTimeout";
+            public const string ApiThrottle = "ApiThrottle";
         }
 
         /// <summary>
@@ -131,7 +140,32 @@ namespace Rock.Jobs
         /// </summary>
         private readonly List<ChatSyncResultSection> _resultSections = new List<ChatSyncResultSection>();
 
+        /// <summary>
+        /// The backing field for the <see cref="ApiThrottleMs"/> property.
+        /// </summary>
+        private int? _apiThrottleMs;
+
         #endregion Fields
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the API throttle milliseconds.
+        /// </summary>
+        private int ApiThrottleMs
+        {
+            get
+            {
+                if ( !_apiThrottleMs.HasValue )
+                {
+                    _apiThrottleMs = Math.Abs( GetAttributeValue( AttributeKey.ApiThrottle ).AsInteger() );
+                }
+
+                return _apiThrottleMs.Value;
+            }
+        }
+
+        #endregion Properties
 
         #region Constructors
 
@@ -168,7 +202,7 @@ namespace Rock.Jobs
                 using ( var chatHelper = new ChatHelper( rockContext ) )
                 {
                     var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
-                    rockContext.Database.CommandTimeout = commandTimeout;
+                    rockContext.Database.SetCommandTimeout( commandTimeout );
 
                     // The chat helper methods that will be called by this job have been designed to never throw an
                     // unhandled exception, but will - instead - return an object that will contain any exceptions
@@ -177,7 +211,7 @@ namespace Rock.Jobs
 
                     if ( GetAttributeValue( AttributeKey.SynchronizeData ).AsBoolean() )
                     {
-                        await SynchronizeData( rockContext, chatHelper );
+                        await SynchronizeDataAsync( rockContext, chatHelper );
                     }
 
                     if ( GetAttributeValue( AttributeKey.CreateInteractions ).AsBoolean() )
@@ -215,7 +249,7 @@ namespace Rock.Jobs
         /// <param name="rockContext">The rock context.</param>
         /// <param name="chatHelper">The chat helper.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        private async Task SynchronizeData( RockContext rockContext, ChatHelper chatHelper )
+        private async Task SynchronizeDataAsync( RockContext rockContext, ChatHelper chatHelper )
         {
             #region 1) Rock-to-Chat Sync
 
@@ -254,15 +288,35 @@ namespace Rock.Jobs
             // -------------------------------------------------------------------------------
             // 1b) Delete any Rock chat users who no longer exist in the external chat system.
 
-            UpdateLastStatusMessage( "Synchronizing Rock People to Chat Individuals..." );
-
             // Technically, this should be considered a Chat-to-Rock sync operation, but we need to perform it up front,
             // as it's important to delete these Rock chat users before attempting to perform the remaining Rock-to-Chat
             // sync operations. This should prevent exceptions that might otherwise be encountered by referencing chat
             // user keys that have already been deleted in the external chat system. We won't report these deletions in
             // the job results, as we don't want to cause alarm.
 
-            await chatHelper.DeleteRockChatUsersMissingFromChatProviderAsync();
+            /*
+                9/9/2025 - JPH
+
+                The following `chatHelper.DeleteRockChatUsersMissingFromChatProviderAsync()` call is problematic, as
+                Stream doesn't let us query for all users while providing an offset value > 1000. If we decide to
+                re-enable this step of the job, we should improve our `StreamChatProvider.GetAllChatUserKeysAsync()`
+                method to use Stream's ID-based pagination approach. However - for now - we don't think we need this
+                step of the job at all, since we've added pretty robust exception handling to detect if a chat user has
+                been deleted from Stream without Rock receiving and properly handling the corresponding webhook.
+
+                Here's the exception handling to detect and remove deleted Stream chat users:
+                https://github.com/SparkDevNetwork/Rock/blob/a5736ac2bd4f22956e3d412de51f02792d3fbe9f/Rock/Communication/Chat/Stream/StreamChatProvider.cs#L3353-L3413
+
+                Here's where Stream mentions their offset limit of 1000:
+                https://getstream.io/chat/docs/dotnet-csharp/query_users/#supported-queries
+
+                Reason: Prevent Stream exceptions when attempting to query for more than 1k users.
+             */
+
+
+            //UpdateLastStatusMessage( "Synchronizing Rock People to Chat Individuals..." );
+
+            //await chatHelper.DeleteRockChatUsersMissingFromChatProviderAsync();
 
             // ------------------------------------------------------------------
             // 1c) Delete any deceased individuals from the external chat system.
@@ -522,7 +576,11 @@ namespace Rock.Jobs
 
             if ( chatEnabledGroupSyncCommands.Any() )
             {
-                var syncConfig = new RockToChatGroupSyncConfig { ShouldSyncAllGroupMembers = true };
+                var syncConfig = new RockToChatGroupSyncConfig
+                {
+                    ShouldSyncAllGroupMembers = true,
+                    ApiThrottleMs = ApiThrottleMs
+                };
 
                 var chatEnabledChannelCrudResult = await chatHelper.SyncGroupsToChatProviderAsync( chatEnabledGroupSyncCommands, syncConfig );
                 if ( chatEnabledChannelCrudResult != null )
@@ -840,7 +898,7 @@ namespace Rock.Jobs
                 var syncCommand = new SyncChatChannelToRockCommand( ChatSyncType.Create )
                 {
                     AttemptLimit = 1,
-                    GroupTypeId = groupTypeId,
+                    GroupTypeId = groupTypeId.Value,
                     ChatChannelKey = chatChannel.Key,
                     GroupName = chatChannel.Name,
                     IsActive = chatChannel.IsActive
@@ -891,6 +949,8 @@ namespace Rock.Jobs
                 var groupId = groupCache.Id;
                 var chatChannelKey = ChatHelper.GetChatChannelKey( groupId, groupCache.ChatChannelKey );
                 var chatChannelTypeKey = ChatHelper.GetChatChannelTypeKey( groupCache.GroupTypeId );
+
+                await ChatHelper.TryThrottleApiRequestsAsync( ApiThrottleMs );
 
                 // Start by querying the external chat system for a list of channel members.
                 var getChatChannelMembersResult = await chatHelper.GetChatChannelMembersAsync( chatChannelTypeKey, chatChannelKey );
@@ -1409,12 +1469,12 @@ namespace Rock.Jobs
             if ( exceptions.Any() )
             {
                 jobSummaryBuilder.AppendLine( string.Empty );
-                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-danger'></i> Some tasks have errors. View Rock's Exception List for more details. {enableErrorLogsMessage}" );
+                jobSummaryBuilder.AppendLine( $"<i class='ti ti-circle-filled text-danger'></i> Some tasks have errors. View Rock's Exception List for more details. {enableErrorLogsMessage}" );
             }
             else if ( anyWarnings )
             {
                 jobSummaryBuilder.AppendLine( string.Empty );
-                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-warning'></i> Some tasks completed with warnings. {enableWarningLogsMessage}" );
+                jobSummaryBuilder.AppendLine( $"<i class='ti ti-circle-filled text-warning'></i> Some tasks completed with warnings. {enableWarningLogsMessage}" );
             }
 
             this.Result = jobSummaryBuilder.ToString();
@@ -1455,18 +1515,18 @@ namespace Rock.Jobs
 
             if ( result.HasException )
             {
-                formattedResultSb.Append( $"<i class='fa fa-circle text-danger'></i> {title}" );
+                formattedResultSb.Append( $"<i class='ti ti-circle-filled text-danger'></i> {title}" );
             }
             else if ( result.IsWarning )
             {
-                formattedResultSb.Append( $"<i class='fa fa-circle text-warning'></i> {title}" );
+                formattedResultSb.Append( $"<i class='ti ti-circle-filled text-warning'></i> {title}" );
             }
             else
             {
-                formattedResultSb.Append( $"<i class='fa fa-circle text-success'></i> {title}" );
+                formattedResultSb.Append( $"<i class='ti ti-circle-filled text-success'></i> {title}" );
             }
 
-            var iconSpacer = "<span style='visibility:hidden'><i class='fa fa-circle'></i></span>";
+            var iconSpacer = "<span style='visibility:hidden'><i class='ti ti-circle'></i></span>";
             foreach ( var detail in result.Details?.Where( d => d.IsNotNullOrWhiteSpace() ) )
             {
                 formattedResultSb.AppendLine( string.Empty );

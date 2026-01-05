@@ -21,6 +21,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { HttpBodyData, HttpMethod, HttpFunctions, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
 import { inject, provide, getCurrentInstance, ref, type Ref } from "vue";
 import { ICancellationToken } from "./cancellation";
+import { EventSourceStream } from "@Obsidian/Libs/sse";
 
 
 // #region HTTP Requests
@@ -40,6 +41,29 @@ async function doApiCallRaw(method: HttpMethod, url: string, params: HttpUrlPara
         params,
         data,
         signal: getSignal(cancellationToken)
+    });
+}
+
+/**
+ * Make an API call. This is only place Axios (or AJAX library) should be referenced to allow tools like performance metrics to provide
+ * better insights.
+ * @param method
+ * @param url
+ * @param params
+ * @param data
+ */
+async function doStreamingApiCallRaw(method: HttpMethod, url: string, params: HttpUrlParams, data: HttpBodyData, cancellationToken?: ICancellationToken): Promise<AxiosResponse<ReadableStream<Uint8Array>>> {
+    return await axios<ReadableStream<Uint8Array>>({
+        method,
+        url,
+        params,
+        data,
+        signal: getSignal(cancellationToken),
+        headers: {
+            Accept: "text/event-stream"
+        },
+        responseType: "stream",
+        adapter: "fetch"
     });
 }
 
@@ -112,6 +136,62 @@ export async function doApiCall<T>(method: HttpMethod, url: string, params: Http
 }
 
 /**
+ * Make an API call.  This is a special use function that should not
+ * normally be used. Instead call useHttp() to get the HTTP functions that
+ * can be used.
+ *
+ * @param {string} method The HTTP method, such as GET
+ * @param {string} url The endpoint to access, such as /api/campuses/
+ * @param {object} params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
+ * @param {any} data This will be the body of the request
+ */
+export async function doStreamingApiCall<T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined, cancellationToken?: ICancellationToken): Promise<HttpResult<ReadableStream<T>>> {
+    try {
+        const result = await doStreamingApiCallRaw(method, url, params, data, cancellationToken);
+        const decoder = new EventSourceStream();
+        const x = new JsonDecodeStream<T>();
+
+        return {
+            data: result.data.pipeThrough(decoder).pipeThrough(x),
+            isError: false,
+            isSuccess: true,
+            statusCode: result.status,
+            errorMessage: null
+        } as HttpResult<ReadableStream<T>>;
+    }
+    catch (e) {
+        if (axios.isAxiosError(e)) {
+            if (e.response?.data?.Message || e?.response?.data?.message) {
+                return {
+                    data: null,
+                    isError: true,
+                    isSuccess: false,
+                    statusCode: e.response.status,
+                    errorMessage: e?.response?.data?.Message ?? e.response.data.message
+                } as HttpResult<ReadableStream<T>>;
+            }
+
+            return {
+                data: null,
+                isError: true,
+                isSuccess: false,
+                statusCode: e.response?.status ?? 0,
+                errorMessage: null
+            } as HttpResult<ReadableStream<T>>;
+        }
+        else {
+            return {
+                data: null,
+                isError: true,
+                isSuccess: false,
+                statusCode: 0,
+                errorMessage: null
+            } as HttpResult<ReadableStream<T>>;
+        }
+    }
+}
+
+/**
  * Make a GET HTTP request. This is a special use function that should not
  * normally be used. Instead call useHttp() to get the HTTP functions that
  * can be used.
@@ -165,6 +245,7 @@ export function useHttp(): HttpFunctions {
 
     return http || {
         doApiCall: doApiCall,
+        doStreamingApiCall: doStreamingApiCall,
         get: get,
         post: post
     };
@@ -188,7 +269,7 @@ type ApiCallerReturnType<ReturnType, Args extends any[] = []> = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createApiCaller<ReturnType = unknown, Args extends any[] = []> (options: ApiCallerOptions<ReturnType, Args>): ApiCallerReturnType<ReturnType, Args> {
+export function createApiCaller<ReturnType = unknown, Args extends any[] = []>(options: ApiCallerOptions<ReturnType, Args>): ApiCallerReturnType<ReturnType, Args> {
     const fetchFunction = useHttp()[(options.method || "post").toLowerCase()];
     const isLoading = ref(false);
     const hasError = ref(false);
@@ -198,7 +279,7 @@ export function createApiCaller<ReturnType = unknown, Args extends any[] = []> (
         isLoading,
         hasError,
         errorMessage,
-        async run (...args) {
+        async run(...args) {
             isLoading.value = true;
             hasError.value = false;
             errorMessage.value = undefined;
@@ -240,6 +321,32 @@ export function createApiCaller<ReturnType = unknown, Args extends any[] = []> (
         }
     };
 
+}
+
+/**
+ * A TransformStream that decodes JSON string chunks into objects of type T.
+ * Each chunk must be a complete JSON string.
+ */
+class JsonDecodeStream<T> implements TransformStream<MessageEvent<string>, T> {
+    public readonly readable: ReadableStream<T>;
+    public readonly writable: WritableStream<MessageEvent<string>>;
+
+    constructor() {
+        const transformer: Transformer<MessageEvent<string>, T> = {
+            transform(chunk, controller) {
+                try {
+                    const obj = JSON.parse(chunk.data) as T;
+                    controller.enqueue(obj);
+                }
+                catch (e) {
+                    controller.error(new Error(`Invalid JSON: ${e}`));
+                }
+            }
+        };
+        const ts = new TransformStream<MessageEvent<string>, T>(transformer);
+        this.readable = ts.readable;
+        this.writable = ts.writable;
+    }
 }
 
 // #endregion

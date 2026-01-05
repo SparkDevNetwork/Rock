@@ -22,12 +22,14 @@
                     :filter="dateValueFilter"
                     headerClass="title-right"
                     itemClass="justify-content-end text-right"
+                    width="5%"
                     visiblePriority="xs" />
 
         <TextColumn v-if="!config.options?.columnsToHide?.includes(ColumnKey.Campus)"
                     name="campus"
                     title="Campus"
                     field="campus"
+                    width="5%"
                     :filter="pickExistingValueFilter"
                     visiblePriority="md" />
 
@@ -38,11 +40,12 @@
                 :filterValue="getPersonNameFilterValue"
                 :quickFilterValue="getPersonNameFilterValue"
                 :exportValue="getPersonNameExportValue"
+                sortValue="{{ row.firstName }} {{  row.lastName }}"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <div class="flex-grow-1">
-                    <span v-if="row.requestedBy"><a :href="`/person/${row.requestedByIdKey}`">{{ row.requestedByFullName }}</a></span>
-                    <span v-else>{{ row.firstName }} {{ row.lastName }}</span>
+                    <span v-if="row.requestedBy"><a :href="`/person/${row.requestedByIdKey}`"><strong>{{ row.requestedByFullName }}</strong></a></span>
+                    <span v-else><strong>{{ row.firstName }} {{ row.lastName }}</strong></span>
                     <div class="text-muted">{{ row.connectionStatus }}</div>
                 </div>
             </template>
@@ -64,12 +67,14 @@
                     title="Government ID"
                     field="governmentId"
                     :filter="textValueFilter"
-                    visiblePriority="md" />
+                    headerClass="break-word"
+                    visiblePriority="lg" />
 
         <TextColumn name="requestText"
                     title="Request"
                     field="requestText"
                     :filter="textValueFilter"
+                    width="60%"
                     visiblePriority="xs" />
 
         <PersonColumn v-if="!config.options?.columnsToHide?.includes(ColumnKey.AssignedTo)"
@@ -85,9 +90,9 @@
         <TextColumn name="resultSummary"
                     title="Result Summary"
                     field="resultSummary"
+                    disableSort
                     :filter="textValueFilter"
-                    width="25%"
-                    visiblePriority="md" />
+                    visiblePriority="lg" />
 
         <Column name="resultSpecifics"
                 title="Result Specifics"
@@ -95,8 +100,8 @@
                 :filterValue="getResultSpecificsFilterValue"
                 :quickFilterValue="getResultSpecificsFilterValue"
                 :exportValue="getResultSpecificsExportValue"
-                visiblePriority="md"
-                width="20%">
+                width="5%"
+                visiblePriority="md">
             <template #format="{ row }">
                 <div class="flex-grow-1">
                     <div v-for="result of row.resultSpecifics">
@@ -116,6 +121,7 @@
                 field="requestStatus"
                 :filter="pickExistingValueFilter"
                 :filterValue="getRequestStatusFilterValue"
+                width="5%"
                 visiblePriority="md">
             <template #format="{ row }">
                 <div>
@@ -135,6 +141,7 @@
                         :filter="numberValueFilter"
                         headerClass="title-right"
                         itemClass="justify-content-end text-right"
+                        width="5%"
                         visiblePriority="md" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
@@ -142,7 +149,7 @@
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
 
         <template v-if="!config.options?.columnsToHide?.includes(ColumnKey.TotalResults)" #gridFooterAppend>
-            <div class="d-flex" style="background-color: #faf7f5; padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
+            <div class="d-flex" style="background-color: var(--color-interface-softest); padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
                 <div style="flex-grow: 4;"></div>
                 <div style="flex-grow: 1;">
                     <SectionHeader title="Total Results" />
@@ -170,6 +177,10 @@
 <style>
 .title-right .grid-column-title {
     text-align: right;
+}
+
+.break-word {
+    word-break: normal;
 }
 </style>
 
@@ -233,7 +244,7 @@
         if (config.options?.canAdministrate == true) {
             actions.push({
                 title: "Options",
-                iconCssClass: "fa fa-gear",
+                iconCssClass: "ti ti-settings",
                 handler: onBenevolenceTypesClick
             });
         }
@@ -384,7 +395,7 @@
         for (const row of rows) {
             for (const result of row.resultSpecifics as BenevolenceResultBag[]) {
                 if (result.result && !isNullOrUndefined(result.amount)) {
-                    if (result.result in resultTotals) {
+                    if (result.result in resultTotals.value) {
                         resultTotals.value[result.result] += result.amount ?? 0;
                     }
                     else {

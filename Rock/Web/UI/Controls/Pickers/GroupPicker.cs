@@ -134,8 +134,8 @@ namespace Rock.Web.UI.Controls
 
             _cbShowInactiveGroups = new RockCheckBox();
             _cbShowInactiveGroups.ContainerCssClass = "pull-right";
-            _cbShowInactiveGroups.SelectedIconCssClass = "fa fa-check-square-o";
-            _cbShowInactiveGroups.UnSelectedIconCssClass = "fa fa-square-o";
+            _cbShowInactiveGroups.SelectedIconCssClass = "ti ti-square-check";
+            _cbShowInactiveGroups.UnSelectedIconCssClass = "ti ti-square";
             _cbShowInactiveGroups.ID = this.ID + "_cbShowInactiveGroups";
             _cbShowInactiveGroups.Text = "Show Inactive";
             _cbShowInactiveGroups.AutoPostBack = true;
@@ -157,7 +157,7 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             SetExtraRestParams();
-            this.IconCssClass = "fa fa-users";
+            this.IconCssClass = "ti ti-users";
             base.OnInit( e );
         }
 

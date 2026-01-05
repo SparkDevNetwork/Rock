@@ -17,6 +17,11 @@ module.exports = {
         ecmaVersion: 6,
         sourceType: "module"
     },
+    ignorePatterns: [
+        "dist/",
+        "shims-vue.d.ts",
+        ".eslintrc.js"
+    ],
     rules: {
         // Warn if tabs are used anywhere in a file.
         "no-tabs": "warn",

@@ -1,23 +1,23 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Grid :definition="config.gridDefinition ?? undefined"
-        :data="gridDataSource"
-        keyField="idKey"
-        itemTerm="Verify Photo"
-        emptyDataText="No one to show."
-        :entityTypeGuid="EntityType.GroupMember"
-        stickyHeader
-        liveUpdates
-        :isFooterHidden="false"
-        :showLaunchWorkflow="false"
-        :isCountMessageVisible="false"
-        :showMergeTemplate="false"
-        :showExport="false"
-        gridSettings
-        :gridSettingsActive="hasSettingsFilters"
-        @gridSettingsClick="isGridSettingsVisible = true"
-        @selectItem="onSelectItem"
-        @selectedKeysChanged="onSelectedKeysChanged">
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Verify Photo"
+          emptyDataText="No one to show."
+          :entityTypeGuid="EntityType.GroupMember"
+          stickyHeader
+          liveUpdates
+          :isFooterHidden="false"
+          :showLaunchWorkflow="false"
+          :isCountMessageVisible="false"
+          :showMergeTemplate="false"
+          :showExport="false"
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="isGridSettingsVisible = true"
+          @selectItem="onSelectItem"
+          @selectedKeysChanged="onSelectedKeysChanged">
 
         <template #gridHeaderPrepend v-if="processVerificationMessage">
             <NotificationBox class="m-3" :alertType="notificationMessageType">{{ processVerificationMessage }}</NotificationBox>
@@ -26,8 +26,8 @@
         <SelectColumn />
 
         <Column name="photo"
-            field="photo"
-            title="Photo">
+                field="photo"
+                title="Photo">
             <template #format="{ row }">
                 <img :src="row.photo" :width="config.options?.photoSize" :height="config.options?.photoSize" class="img-fluid">
             </template>
@@ -49,7 +49,7 @@
             </template>
         </Column>
 
-        <ButtonColumn name="user" @click="onSelectItem" iconClass="fa fa-user" />
+        <ButtonColumn name="user" @click="onSelectItem" iconClass="ti ti-user" />
 
         <DeleteColumn @click="onDeleteClick" />
 
@@ -140,14 +140,14 @@
      *
      * @param state The state object that describes the grid.
      */
-     function onSelectedKeysChanged(state: IGridState): void {
+    function onSelectedKeysChanged(state: IGridState): void {
         selectedKeys.value = [...state.selectedKeys];
     }
 
     /**
      * Called when a row's delete button has been clicked by the individual.
      */
-     async function onDeleteClick(key: string): Promise<void> {
+    async function onDeleteClick(key: string): Promise<void> {
         const result = await invokeBlockAction<string>("Delete", {
             key
         });
@@ -166,7 +166,7 @@
         }
     }
 
-     async function onVerifyClick(): Promise<void> {
+    async function onVerifyClick(): Promise<void> {
         const result = await invokeBlockAction("VerifySelectedMembers", {
             selectedGroupMembers: selectedKeys.value
         });

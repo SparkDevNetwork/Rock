@@ -10,7 +10,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-star"></i> 
+                    <i class="ti ti-star"></i> 
                     Request Filters
                 </h1>
             </div>

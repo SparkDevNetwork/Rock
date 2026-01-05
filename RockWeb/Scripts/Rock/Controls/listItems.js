@@ -80,7 +80,7 @@
 
                 $listItemsControl.find('.list-items-rows').sortable({
                     helper: fixHelper,
-                    handle: '.fa-bars',
+                    handle: '.ti-menu-2',
                     start: function (event, ui) {
                         {
                             var start_pos = ui.item.index();

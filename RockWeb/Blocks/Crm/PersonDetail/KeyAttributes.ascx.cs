@@ -145,7 +145,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             string script = @"
         $('fieldset.attribute-values').sortable({
-            handle: '.fa-bars',
+            handle: '.ti-menu-2',
             update: function(event, ui) {
                 var newOrder = '';
                 $(this).children('div').each(function( index ) {
@@ -453,7 +453,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                             var i = new HtmlGenericControl( "i" );
                             a.Controls.Add( i );
-                            i.Attributes.Add( "class", "fa fa-bars" );
+                            i.Attributes.Add( "class", "ti ti-menu-2" );
 
                             div.Controls.Add( new LiteralControl( " " + attribute.Name ) );
                         }

@@ -3,7 +3,7 @@
     "name": "NextGenCheckin",
     "description": "The default theme for the next generation check-in system.",
     "purpose": "checkin",
-    "availableIconSets": ["fontawesome"],
+    "availableIconSets": ["tabler"],
     "fields": [
         {
             "type": "color",

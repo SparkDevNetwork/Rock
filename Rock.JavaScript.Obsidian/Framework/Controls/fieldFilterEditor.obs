@@ -24,7 +24,7 @@
         </div>
 
         <div class="filter-actions">
-            <button class="btn btn-xs btn-action add-action" @click.prevent="onAddRuleClick"><i class="fa fa-filter"></i> Add Criteria</button>
+            <button class="btn btn-xs btn-action add-action" @click.prevent="onAddRuleClick"><i class="ti ti-filter"></i> Add Criteria</button>
         </div>
     </div>
 </template>
@@ -32,7 +32,7 @@
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import DropDownList from "./dropDownList.obs";
-    import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
+    import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
     import { areEqual, newGuid } from "@Obsidian/Utility/guid";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

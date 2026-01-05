@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Define the variables in "$(var.*) expressions" -->
+<?define Name = "Rock RMS Statement Generator" ?>
+<?define Manufacturer = "Spark Development Network" ?>
+<?define Version = "1.14.2" ?>
+<?define UpgradeCode = "c54a49f7-547f-420e-9a8c-14bf71a19ad3" ?>
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+	<!-- Define the directory structure -->
+	<Package Name="$(Name)"
+             Manufacturer="$(Manufacturer)"
+             Version="$(Version)"
+             UpgradeCode="$(var.UpgradeCode)"
+             Compressed="true">
+
+		<!-- Remove the legacy Install Shield version. -->
+		<Upgrade Id="{A80C9E34-B396-4D4D-87A4-3354F87F3898}">
+			<UpgradeVersion Minimum="0.0.0" Maximum="127.254.32767" IncludeMinimum="yes" IncludeMaximum="no" Property="REMOVEOLDINSTALL" />
+		</Upgrade>
+
+		<MediaTemplate EmbedCab="yes" />
+		<Icon Id="AppIcon" SourceFile="..\resources\statement-printer.ico" />
+		<Property Id="ARPPRODUCTICON" Value="AppIcon" />
+
+		<!-- Allow upgrades and prevent downgrades -->
+		<MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed. Setup will now exit." />
+
+		<StandardDirectory Id="ProgramFiles6432Folder">
+			<Directory Id="InstallFolder" Name="!(bind.Property.Manufacturer)\!(bind.Property.ProductName)">
+			</Directory>
+		</StandardDirectory>
+
+		<StandardDirectory Id="ProgramMenuFolder">
+			<Directory Id="ApplicationProgramsFolder" Name="!(bind.Property.Manufacturer)"/>
+		</StandardDirectory>
+
+		<!-- Tell WiX to install the files -->
+		<Feature Id="Application" Title="!(bind.Property.ProductName)" Level="1">
+			<Files Include="$(var.StatementGenerator.TargetDir)publish\**" Directory="InstallFolder">
+				<Exclude Files="$(var.StatementGenerator.TargetDir)publish\StatementGenerator.exe" />
+			</Files>
+
+			<File Id="StatementGenerator.exe" Directory="InstallFolder" Source="$(var.StatementGenerator.TargetDir)publish\StatementGenerator.exe" />
+
+			<Component Id="ApplicationShortcut" Guid="dfe6bacf-55e5-4d70-be78-426bb2850b74" Directory="ApplicationProgramsFolder">
+				<Shortcut Id="ApplicationStartMenuShortcut"
+                            Name="!(bind.Property.ProductName)"
+                            Target="[!StatementGenerator.exe]"
+                            WorkingDirectory="InstallFolder"/>
+				<RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
+				<RegistryValue Root="HKCU" Key="Software\!(bind.Property.Manufacturer)\!(bind.Property.ProductName)" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+			</Component>
+		</Feature>
+
+		<UI Id="MinimalUI">
+			<Property Id="WIXUI_INSTALLDIR" Value="TARGETDIR" />
+			<Property Id="WixUI_Mode" Value="Custom" />
+
+			<TextStyle Id="WixUI_Font_Normal" FaceName="Tahoma" Size="8" />
+			<TextStyle Id="WixUI_Font_Bigger" FaceName="Tahoma" Size="12" Bold="yes" />
+			<TextStyle Id="WixUI_Font_Title"  FaceName="Tahoma" Size="9" Bold="yes" />
+
+			<Property Id="DefaultUIFont" Value="WixUI_Font_Normal" />
+
+			<DialogRef Id="ProgressDlg" />
+			<DialogRef Id="ErrorDlg" />
+			<DialogRef Id="FilesInUse" />
+			<DialogRef Id="FatalError" />
+			<DialogRef Id="UserExit" />
+
+			<Publish Dialog="ExitDialog" Control="Finish" Event="EndDialog" Value="Return" Order="999"></Publish>
+			<Publish Dialog="WelcomeDlg" Control="Next" Event="EndDialog" Value="Return" Order="2"></Publish>
+		</UI>
+
+		<UIRef Id="WixUI_Common" />
+
+		<WixVariable Id="WixUIBannerBmp" Value="InstallBanner.jpg" />
+		<WixVariable Id="WixUIDialogBmp" Value="InstallWelcome.jpg" />
+	</Package>
+</Wix>

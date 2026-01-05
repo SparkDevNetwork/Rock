@@ -79,6 +79,15 @@ export default defineComponent({
         },
 
         /**
+         * If a function is provided, it will be called with the row to determine
+         * if the button should be visible.
+         */
+        visible: {
+            type: Function as PropType<(row: Record<string, unknown>) => boolean>,
+            required: false
+        },
+
+        /**
          * If true, the button will be disabled and not clickable.
          * If a function is provided, it will be called with the row to determine if the button should be disabled.
          */

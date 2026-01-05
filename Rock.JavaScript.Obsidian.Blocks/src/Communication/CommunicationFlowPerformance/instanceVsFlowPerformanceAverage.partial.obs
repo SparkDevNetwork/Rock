@@ -1,0 +1,219 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel v-if="hasData"
+           hasFullscreen
+           title="Instance vs. Flow Performance Average">
+        <BarChart :series="data.series"
+                  :labels="data.labels"
+                  :barLabels="barLabels"
+                  hideLegend
+                  type="percent" />
+    </Panel>
+
+    <NothingToShow v-else title="Instance vs. Flow Performance Average" />
+</template>
+
+<style scoped>
+:deep(.chart-container) {
+    height: 265px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import NothingToShow from "./nothingToShow.partial.obs";
+    import BarChart from "@Obsidian/Controls/barChart.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { BarLabelsConfig, BarSeries } from "@Obsidian/Core/Controls/chart";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceBag";
+    import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
+
+    /**
+     * In terms of metrics, the percentage of PEOPLE who achieved the conversion goal is most important,
+     * not the individual conversion events.
+     */
+
+    enum SeriesName {
+        Instance = "Instance",
+        Instances = "Instances",
+        Average = "Average"
+    }
+
+    const props = defineProps({
+        messages: {
+            type: Array as PropType<MessageBag[]>,
+            required: true
+        },
+
+        allMessages: {
+            type: Array as PropType<MessageBag[]>,
+            required: true
+        },
+
+        uniquePersonCount: {
+            type: Number,
+            required: true
+        },
+
+        instances: {
+            type: Object as PropType<CommunicationFlowInstanceBag[]>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    const barLabels = computed<BarLabelsConfig>(() => {
+        return {
+            outside: {
+                formatter: ({ seriesName }) => {
+                    return seriesName;
+                }
+            },
+            inside: {
+                formatter: ({ formattedValue, value }) => {
+                    return formattedValue ?? value.toLocaleString(undefined, { style: "percent", maximumFractionDigits: 0 });
+                }
+            }
+        };
+    });
+
+    const hasData = computed<boolean>(() => {
+        // Check if there are any recipients with a sent date.
+        return Enumerable.from(data.value.series).any(s => !!s.data.length);
+    });
+
+    const selectedInstanceCount = computed<number>(() => {
+        return Enumerable
+            .from(props.messages)
+            .select(m => m.communicationFlowInstanceIdKey)
+            .where(id => !isNullish(id))
+            .distinct()
+            .count();
+    });
+
+    const selectedInstanceConversionRate = computed((): number => {
+        if (props.uniquePersonCount === 0) {
+            return 0;
+        }
+
+        const selectedConversionCount = Enumerable
+            .from(props.messages)
+            .groupBy(m => m.personAliasIdKey)
+            .count(g => !!g.key && g.any(m => {
+                const instanceConversionGoalEndDate = RockDateTime.parseISO(m.conversionGoalEndDate ?? "");
+
+                if (!instanceConversionGoalEndDate) {
+                    // If the instance doesn't have an end date,
+                    // then treat it as an instance where conversion goal
+                    // tracking is indefinite.
+                    return !!m.convertedDateTime;
+                }
+                else {
+                    const conversionDate = RockDateTime.parseISO(m.convertedDateTime ?? "");
+                    return !!conversionDate && !conversionDate.isLaterThan(instanceConversionGoalEndDate);
+                }
+            }));
+
+        return selectedConversionCount / props.uniquePersonCount;
+    });
+
+    const averageConversionRate = computed((): number => {
+        return Enumerable
+            .from(props.allMessages)
+            .groupBy(m => m.communicationFlowInstanceIdKey)
+            .select(g => {
+                const instanceMessagesByPerson = g
+                    .groupBy(m => m.personAliasIdKey)
+                    .toArray();
+
+                const uniquePeopleInInstanceCount = instanceMessagesByPerson.length;
+
+                if (uniquePeopleInInstanceCount === 0) {
+                    return 0;
+                }
+
+                const instanceConversionGoalEndDate = RockDateTime.parseISO(g.firstOrDefault()?.conversionGoalEndDate ?? "");
+
+                const uniquePeopleInInstanceWhoAchievedGoalCount = Enumerable
+                    .from(instanceMessagesByPerson)
+                    .count(g => !!g.key && g.any(m => {
+                        const conversionDate = RockDateTime.parseISO(m.convertedDateTime ?? "");
+                        return !!conversionDate && (!instanceConversionGoalEndDate || !conversionDate.isLaterThan(instanceConversionGoalEndDate));
+                    }));
+
+                return uniquePeopleInInstanceWhoAchievedGoalCount / uniquePeopleInInstanceCount;
+            })
+            .average(r => r);
+    });
+
+    const selectedInstanceUnsubscribeRate = computed((): number => {
+        if (props.uniquePersonCount === 0) {
+            return 0;
+        }
+
+        const selectedInstanceUnsubscribeCount = Enumerable
+            .from(props.messages)
+            .groupBy(m => m.personAliasIdKey)
+            .count(g => !!g.key && g.any(m => !!m.unsubscribedDateTime));
+
+        return selectedInstanceUnsubscribeCount / props.uniquePersonCount;
+    });
+
+    const averageUnsubscribeRate = computed((): number => {
+        return Enumerable
+            .from(props.allMessages)
+            .groupBy(m => m.communicationFlowInstanceIdKey)
+            .select(g => {
+                const instanceMessagesByPerson = g
+                    .groupBy(m => m.personAliasIdKey)
+                    .toArray();
+
+                const uniquePeopleInInstanceCount = instanceMessagesByPerson.length;
+
+                if (uniquePeopleInInstanceCount === 0) {
+                    return 0;
+                }
+
+                const uniquePeopleInInstanceWhoUnsubscribedCount = Enumerable
+                    .from(instanceMessagesByPerson)
+                    .count(g => !!g.key && g.any(m => !!m.unsubscribedDateTime));
+
+                return uniquePeopleInInstanceWhoUnsubscribedCount / uniquePeopleInInstanceCount;
+            })
+            .average(r => r);
+    });
+
+    const data = computed<{ series: BarSeries[]; labels: string[]; }>(() => {
+        if (props.messages.length === 0 || props.uniquePersonCount === 0) {
+            return { series: [], labels: [] };
+        }
+
+        return {
+            labels: ["Conversion Rate", "Unsubscribe Rate"],
+            series: [
+                {
+                    label: selectedInstanceCount.value > 1 ? SeriesName.Instances : SeriesName.Instance,
+                    data: [
+                        selectedInstanceConversionRate.value,
+                        selectedInstanceUnsubscribeRate.value
+                    ],
+                    color: ["#38A169", "#E53E3E"]
+                },
+                {
+                    label: SeriesName.Average,
+                    data: [
+                        averageConversionRate.value,
+                        averageUnsubscribeRate.value
+                    ],
+                    color: ["#CDEAE1", "#FAD8D8"]
+                }
+            ]
+        };
+    });
+
+    // #endregion Computed Values
+</script>

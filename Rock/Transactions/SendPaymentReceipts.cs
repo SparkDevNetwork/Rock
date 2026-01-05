@@ -86,9 +86,12 @@ namespace Rock.Transactions
                         {
                             if ( detail.Account != null && detail.Amount > 0 )
                             {
+                                // This class is Obsolete, but we'll keep it in sync with ProcessSendPaymentReceiptEmails
+                                var accountName = string.IsNullOrWhiteSpace( detail.Account.PublicName ) ? detail.Account.Name : detail.Account.PublicName;
+
                                 var accountAmount = new Dictionary<String, object>();
                                 accountAmount.Add( "AccountId", detail.Account.Id );
-                                accountAmount.Add( "AccountName", detail.Account.Name );
+                                accountAmount.Add( "AccountName", accountName );
                                 accountAmount.Add( "Amount", detail.Amount );
                                 accountAmounts.Add( accountAmount );
 

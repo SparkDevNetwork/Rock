@@ -209,6 +209,7 @@ namespace Rock.Migrations
                 { "D9834641-7F39-4CFA-8CB2-E64068127565", "DisplayCount,Channels" }, // Communication Entry ( Communication )
                 { "F791046A-333F-4B2A-9815-73B60326162D", "EnableAIDisclaimer,AIDisclaimer,GroupCategoryId" }, // Prayer Request Detail ( Prayer )
                 { "9F26A1DA-74AE-4CB7-BABC-6AE81A581A06", "DefaultInviteEmail" }, // Signature Document Template Detail ( Core )
+                { "20AD75DD-0DF3-49E9-9DB1-8537C12B1664", "DetailPage" }, // Rest Action List ( Core )
             } );
         }
 

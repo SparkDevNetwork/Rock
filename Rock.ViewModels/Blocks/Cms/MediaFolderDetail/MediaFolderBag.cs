@@ -56,6 +56,11 @@ namespace Rock.ViewModels.Blocks.Cms.MediaFolderDetail
         public bool IsContentChannelSyncEnabled { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the media account allows manual entry.
+        /// </summary>
+        public bool IsAllowsManualEntry { get; set; }
+
+        /// <summary>
         /// Gets or sets the Media Account that this MediaFolder belongs to.
         /// </summary>
         public ListItemBag MediaAccount { get; set; }

@@ -40,7 +40,7 @@ namespace Rock.Blocks.Prayer
     [DisplayName( "Prayer Request Detail" )]
     [Category( "Prayer" )]
     [Description( "Displays the details of a particular prayer request." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -270,18 +270,24 @@ namespace Rock.Blocks.Prayer
                             box.Entity.FirstName = person.NickName;
                             box.Entity.LastName = person.LastName;
                             box.Entity.Email = person.Email;
+
+                            var campus = person.GetFamily( rockContext )?.Campus;
+                            box.Entity.Campus = campus?.ToListItemBag();
                         }
                     }
                     else
                     {
                         // if no PersonId is specified, then set the current person as the requester if the block setting is enabled
-                        var CurrentPerson = this.GetCurrentPerson();
-                        if ( CurrentPerson != null && GetAttributeValue( AttributeKey.SetCurrentPersonToRequester ).AsBoolean() )
+                        var currentPerson = this.GetCurrentPerson();
+                        if ( currentPerson != null && GetAttributeValue( AttributeKey.SetCurrentPersonToRequester ).AsBoolean() )
                         {
-                            box.Entity.RequestedByPersonAlias = CurrentPerson.PrimaryAlias.ToListItemBag();
-                            box.Entity.FirstName = CurrentPerson.NickName;
-                            box.Entity.LastName = CurrentPerson.LastName;
-                            box.Entity.Email = CurrentPerson.Email;
+                            box.Entity.RequestedByPersonAlias = currentPerson.PrimaryAlias.ToListItemBag();
+                            box.Entity.FirstName = currentPerson.NickName;
+                            box.Entity.LastName = currentPerson.LastName;
+                            box.Entity.Email = currentPerson.Email;
+
+                            var campus = currentPerson.GetFamily( rockContext )?.Campus;
+                            box.Entity.Campus = campus?.ToListItemBag();
                         }
                     }
 

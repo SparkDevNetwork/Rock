@@ -8,7 +8,7 @@
         <BaseAsyncPicker v-model="internalValue" v-bind="standardProps" :items="itemsSource" :disabled="disabled">
             <template #inputGroupAppend v-if="allowAdd">
                 <span class="input-group-btn">
-                    <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
+                    <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="ti ti-plus" aria-hidden></i></RockButton>
                 </span>
             </template>
             <template #append="{ isInputGroupSupported }" v-if="allowAdd">

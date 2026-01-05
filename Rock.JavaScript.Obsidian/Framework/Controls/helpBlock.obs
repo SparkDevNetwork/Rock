@@ -11,7 +11,7 @@
        title=""
        :data-original-title="props.text"
        @click.prevent="toggleTooltip">
-        <i class="fa fa-info-circle"></i>
+        <i class="ti ti-info-circle"></i>
     </a>
 </template>
 

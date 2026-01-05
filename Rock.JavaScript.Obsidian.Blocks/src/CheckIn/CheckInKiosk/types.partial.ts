@@ -291,7 +291,7 @@ export interface IRockCheckInNative {
 /**
  * Makes all properties on the type not nullable and not undefined.
  */
-type NoNullishField<T> = { [P in keyof T]-?: NonNullable<T[P]> };
+export type NoNullishField<T> = { [P in keyof T]-?: NonNullable<T[P]> };
 
 export type SupervisorScreenData = {
     pinCode: string;
@@ -305,6 +305,8 @@ export type RegistrationScreenData = Omit<Omit<EditFamilyResponseBag, "people">,
     family: NoNullishField<ValidPropertiesBox<RegistrationFamilyBag>>;
 
     people: NoNullishField<ValidPropertiesBox<AugmentedRegistrationPersonBag>>[];
+
+    addIndividualMode?: boolean;
 };
 
 export type AugmentedRegistrationPersonBag = RegistrationPersonBag & {

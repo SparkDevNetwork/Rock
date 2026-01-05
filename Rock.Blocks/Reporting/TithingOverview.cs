@@ -37,7 +37,7 @@ namespace Rock.Blocks.Reporting
     [DisplayName( "Tithing Overview" )]
     [Category( "Reporting" )]
     [Description( "Shows high-level statistics of the tithing overview." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
@@ -119,11 +119,8 @@ namespace Rock.Blocks.Reporting
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = GetInitializationBox( RockContext, ChartTypeKey.BarChart );
-                return box;
-            }
+            var box = GetInitializationBox( RockContext, ChartTypeKey.BarChart );
+            return box;
         }
 
         /// <summary>

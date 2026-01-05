@@ -20,24 +20,23 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Utility;
 
 namespace RockWeb.Blocks.CheckIn.Config
 {
-    [DisplayName( "Edit Label" )]
+    [RockObsolete( "18.0" )]
+    [Obsolete( "This block type has been deprecated." )]
+    [DisplayName( "Edit Label (Legacy)" )]
     [Category( "Check-in > Configuration" )]
     [Description( "Allows editing contents of a label and printing test labels." )]
     [TextField( "Labelary URL",

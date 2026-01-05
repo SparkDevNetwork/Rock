@@ -58,9 +58,9 @@
     const errorMessage = ref("");
 
     const statusLabels = {
-        0: { title: "Pending", type: "danger"},
-        1: { title: "Open", type: "warning"},
-        2: { title: "Closed", type: "default"}
+        0: { title: "Pending", type: "danger" },
+        1: { title: "Open", type: "warning" },
+        2: { title: "Closed", type: "default" }
     };
 
     const financialBatchViewBag = ref(config.entity);
@@ -112,28 +112,28 @@
     const blockLabels = computed((): PanelAction[] | undefined => {
 
         const labels: PanelAction[] = [{
-                title: `Batch #${financialBatchViewBag.value?.id}`,
-                type: "info",
-            },
-            // if in case the value of the status is not initialized in the component, the value is defaulted to the default status which is OPEN
-            {
-                title: `${statusLabels[financialBatchViewBag.value?.status ?? 1].title}`,
-                type: `${statusLabels[financialBatchViewBag.value?.status ?? 1].type}`,
-            }];
+            title: `Batch #${financialBatchViewBag.value?.id}`,
+            type: "info",
+        },
+        // if in case the value of the status is not initialized in the component, the value is defaulted to the default status which is OPEN
+        {
+            title: `${statusLabels[financialBatchViewBag.value?.status ?? 1].title}`,
+            type: `${statusLabels[financialBatchViewBag.value?.status ?? 1].type}`,
+        }];
 
-            if(financialBatchViewBag.value?.campus) {
-                labels.push({
-                    title: `${financialBatchViewBag.value?.campus.text ?? ""}`,
-                    type: "campus",
-                });
-            }
+        if (financialBatchViewBag.value?.campus) {
+            labels.push({
+                title: `${financialBatchViewBag.value?.campus.text ?? ""}`,
+                type: "campus",
+            });
+        }
 
-            if(financialBatchViewBag.value?.isAutomated) {
-                labels.push({
-                    title: "Automated",
-                    type: "warning",
-                });
-            }
+        if (financialBatchViewBag.value?.isAutomated) {
+            labels.push({
+                title: "Automated",
+                type: "warning",
+            });
+        }
 
 
         return labels;
@@ -156,27 +156,27 @@
     });
 
     const footerActions = computed((): PanelAction[] => {
-        if(panelMode.value != DetailPanelMode.View) {
+        if (panelMode.value != DetailPanelMode.View) {
             return [];
         }
         return [
-                {
-                    iconCssClass: "fa fa-money",
-                    title: "Match Transactions",
-                    type: "default",
-                    handler: () => {
-                        window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.MatchTransactions] ?? "");
-                    }
-                },
-                {
-                    iconCssClass: "fa fa-file-text-o",
-                    title: "Audit Log",
-                    type: "default",
-                    handler: () => {
-                        window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.AuditLogs] ?? "");
-                    }
+            {
+                iconCssClass: "ti ti-cash",
+                title: "Match Transactions",
+                type: "default",
+                handler: () => {
+                    window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.MatchTransactions] ?? "");
                 }
-            ];
+            },
+            {
+                iconCssClass: "ti ti-file-type-txt",
+                title: "Audit Log",
+                type: "default",
+                handler: () => {
+                    window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.AuditLogs] ?? "");
+                }
+            }
+        ];
     });
     // #endregion
 

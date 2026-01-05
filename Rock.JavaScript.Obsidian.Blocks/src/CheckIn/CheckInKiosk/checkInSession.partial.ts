@@ -605,8 +605,34 @@ export class CheckInSession {
      * @returns A new CheckInSession object.
      */
     public withSelectedAttendees(attendeeIds: string[]): CheckInSession {
+        let possibleSchedules = this.possibleSchedules ?? [];
+        const selectedAttendees = this.attendees
+            ?.filter(a => a.person?.id && attendeeIds.includes(a.person.id))
+            ?? [];
+
+        // If any of the selected attendees have possible schedules then we
+        // need to update our list of possible schedules to use only those that
+        // are available to the selected attendees.
+        if (selectedAttendees.filter(a => a.possibleSchedules).length > 0) {
+            const attendeeScheduleIds: string[] = [];
+
+            // Find all the possible schedules that are available across all
+            // selected attendees. This may give us duplicate values at this point.
+            for (const attendee of selectedAttendees) {
+                if (attendee.possibleSchedules) {
+                    attendeeScheduleIds.push(...attendee.possibleSchedules.map(s => s.id ?? ""));
+                }
+            }
+
+            // Filter the session's possible schedules to only those that are
+            // available to the selected attendees.
+            possibleSchedules = (this.possibleSchedules ?? [])
+                .filter(s => attendeeScheduleIds.includes(s.id ?? ""));
+        }
+
         return new CheckInSession(this, {
-            selectedAttendeeIds: attendeeIds
+            selectedAttendeeIds: attendeeIds,
+            possibleSchedules: possibleSchedules
         });
     }
 

@@ -91,6 +91,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
     #endregion Block Attributes
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.BlockTypeGuid( "D70A59DC-16BE-43BE-9880-59598FA7A94C" )]
     public partial class AttributeValues : PersonBlock
     {
@@ -190,7 +191,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             string script = @"
         $('fieldset.attribute-values').sortable({
-            handle: '.fa-bars',
+            handle: '.ti-menu-2',
             update: function(event, ui) {
                 var newOrder = '';
                 $(this).children('div').each(function( index ) {
@@ -472,7 +473,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                         var i = new HtmlGenericControl( "i" );
                         a.Controls.Add( i );
-                        i.Attributes.Add( "class", "fa fa-bars" );
+                        i.Attributes.Add( "class", "ti ti-menu-2" );
 
                         div.Controls.Add( new LiteralControl( " " + attributeLabel ) );
                     }

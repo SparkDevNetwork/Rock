@@ -9,7 +9,7 @@
         
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-bell"></i> Reminder Types
+                    <i class="ti ti-bell"></i> Reminder Types
                 </h1>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>

@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="section-column-divider" @mousedown="onStartDrag">
-        <i class="fa fa-grip-vertical" aria-hidden="true"></i>
+        <i class="ti ti-grip-vertical" aria-hidden="true"></i>
     </div>
 </template>
 

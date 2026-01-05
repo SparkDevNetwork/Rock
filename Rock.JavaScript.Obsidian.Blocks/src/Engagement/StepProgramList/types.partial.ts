@@ -16,17 +16,13 @@
 //
 
 export const enum NavigationUrlKey {
-    DetailPage = "DetailPage"
+    DetailPage = "DetailPage",
 }
 
 export const enum PreferenceKey {
     FilterActive = "filter-active",
-
-    FilterCategory = "filter-category",
 }
 
 export type GridSettingsOptions = {
     active?: string | null;
-
-    category?: string | null;
 };

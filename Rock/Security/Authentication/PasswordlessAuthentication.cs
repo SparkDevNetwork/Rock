@@ -278,10 +278,16 @@ namespace Rock.Security.Authentication
                 }
                 else
                 {
+                    var errorMessage = "Unable to send confirmation code. Make sure to use a mobile phone that can receive text messages.";
+                    if ( errorMessages?.Count() == 1 && errorMessages.First().Contains( TransportComponent.UnsubscribedSmsRecipientMessage ) )
+                    {
+                        errorMessage = $"We're unable to send a confirmation code to the number provided. {errorMessages.First()}";
+                    }
+
                     return new SendOneTimePasscodeResult()
                     {
                         IsSuccessful = false,
-                        ErrorMessage = "Unable to send confirmation code. Make sure to use a mobile phone that can receive text messages.",
+                        ErrorMessage = errorMessage,
                         State = null
                     };
                 }

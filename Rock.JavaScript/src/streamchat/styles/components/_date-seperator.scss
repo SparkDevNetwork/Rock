@@ -1,0 +1,27 @@
+.rocktheme-community {
+    .rock-date-separator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--date-separator-gap);
+        margin: var(--date-separator-margin);
+        padding-inline: var(--date-separator-padding-inline);
+    }
+
+    .rock-date-separator__bar {
+        flex-grow: 1;
+        height: var(--date-separator-bar-height);
+        background-color: var(--date-separator-bar-bg);
+    }
+
+    .rock-date-separator__bubble {
+        background-color: var(--date-separator-bubble-bg);
+        color: var(--date-separator-bubble-color);
+        font-size: var(--date-separator-bubble-font-size);
+        font-weight: var(--date-separator-bubble-font-weight);
+        border-radius: var(--date-separator-bubble-radius);
+        padding: var(--date-separator-bubble-padding);
+        white-space: nowrap;
+        box-shadow: var(--date-separator-bubble-shadow);
+    }
+}

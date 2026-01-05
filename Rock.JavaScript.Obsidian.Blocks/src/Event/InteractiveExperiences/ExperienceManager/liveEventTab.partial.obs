@@ -8,7 +8,7 @@
                      :colorShade="600"
                      :value="participantCount"
                      label="Current Participants"
-                     iconCssClass="fa fa-user"
+                     iconCssClass="ti ti-user"
                      isCard
                      tooltip="The number of individuals that are currently participating in the experience." />
             </div>
@@ -70,7 +70,8 @@
 }
 
 .experience-actions-panel {
-    background-color: var(--panel-heading-bg);
+    background-color: var(--color-interface-softest);
+    border: none;
 }
 
 .preview-panel {
@@ -158,7 +159,7 @@
     });
 
     const notificationStateIconClass = computed((): string => {
-        return isNotificationsEnabled.value ? "fa fa-fw fa-bell" : "fa fa-fw fa-bell-slash";
+        return isNotificationsEnabled.value ? "ti ti-fw ti-bell" : "ti ti-fw ti-bell-off";
     });
 
     const previewPageUrl = computed((): string => {

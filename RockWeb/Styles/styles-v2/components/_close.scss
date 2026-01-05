@@ -1,0 +1,42 @@
+// CLOSE STYLE
+
+// ============================ BASE STYLE ============================
+.close {
+  float:          right;
+  font-size:      calc(var(--font-size-regular) * 1.5);
+  font-weight:    var(--font-weight-bold);
+  line-height:    var(--line-height-compact);
+  color:          var(--color-interface-strongest);
+  filter:         alpha(opacity=20);
+  text-shadow:    0 1px 0 var(--color-interface-softest);
+  // opacity:        .8;
+
+  &:hover,
+  &:focus {
+    color:            var(--color-interface-strongest);
+    text-decoration:  none;
+    cursor:           pointer;
+    filter:           alpha(opacity=20);
+    // opacity:          .2;
+  }
+  
+  // Additional properties for button version
+  // iOS requires the button element instead of an anchor tag.
+  // If you want the anchor version, it requires `href="#"`.
+  // See https://developer.mozilla.org/en-US/docs/Web/Events/click#Safari_Mobile
+
+
+  .system-error &{
+    color: inherit;
+  }
+
+}
+button.close {
+  padding:              0;
+  cursor:               pointer;
+  background:           transparent;
+  border:               0;
+  -webkit-appearance:   none;
+  appearance:           none;
+}
+// ========================== END BASE STYLE ==========================

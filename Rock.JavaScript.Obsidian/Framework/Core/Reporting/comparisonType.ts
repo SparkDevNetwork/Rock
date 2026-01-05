@@ -14,7 +14,7 @@
 // </copyright>
 //
 
-import { FilterMode } from "./filterMode";
+import { FilterMode } from "@Obsidian/Enums/Reporting/filterMode";
 import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 
 /** The comparison types typically used for simple binary comparison. */
@@ -122,7 +122,7 @@ export function getComparisonName(type: ComparisonType): string {
  * @returns true if the comparison type component should be visible; otherwise false.
  */
 export function isCompareVisibleForComparisonFilter(comparisonType: ComparisonType, filterMode: FilterMode): boolean {
-    if (filterMode !== FilterMode.Simple) {
+    if (filterMode !== FilterMode.SimpleFilter) {
         return true;
     }
 

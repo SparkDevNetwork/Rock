@@ -20,6 +20,8 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility.Settings.Giving;
@@ -99,7 +101,7 @@ namespace Rock.Financial
             var givingAnalyticsSetting = GivingAutomationSettings.LoadGivingAutomationSettings();
 
             var rockContext = new RockContext();
-            rockContext.Database.CommandTimeout = this.SqlCommandTimeout;
+            rockContext.Database.SetCommandTimeout( this.SqlCommandTimeout );
             var personService = new PersonService( rockContext );
 
             // Limit to only Business and Person type records.
@@ -369,7 +371,7 @@ NoneOfTheAboveCount: {noneOfTheAboveGiverGivingIds.Count}
                     {
                         using ( var rockContext = new RockContext() )
                         {
-                            rockContext.Database.CommandTimeout = this.SqlCommandTimeout;
+                            rockContext.Database.SetCommandTimeout( this.SqlCommandTimeout );
                             var personService = new PersonService( rockContext );
 
                             var person = personService.Get( personId );

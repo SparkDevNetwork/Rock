@@ -39,6 +39,7 @@
                           description="These settings will lock the forms person entry settings.">
             <PersonEntrySettings v-model="personEntry"
                                  :recordStatusOptions="sources.recordStatusOptions ?? undefined"
+                                 :recordSourceOptions="sources.recordSourceOptions ?? undefined"
                                  :connectionStatusOptions="sources.connectionStatusOptions ?? undefined"
                                  :campusTypeOptions="sources.campusTypeOptions ?? undefined"
                                  :campusStatusOptions="sources.campusStatusOptions ?? undefined"

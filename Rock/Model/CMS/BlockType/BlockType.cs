@@ -126,6 +126,13 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
+        /// The default role that instances of this block type will have if
+        /// they have not been explicitly set to a different role.
+        /// </summary>
+        [DataMember]
+        public BlockRole DefaultRole { get; set; } = BlockRole.Content;
+
+        /// <summary>
         /// The list of <see cref="SiteType" /> this block type could be a part of.
         /// </summary>
         [RockInternal( "1.16.6" )]

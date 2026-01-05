@@ -166,6 +166,26 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
+        /// Handles the PreRender event.
+        /// </summary>
+        /// <param name="e">The <see cref="System.EventArgs"/> object that contains the event data.</param>
+        protected override void OnPreRender( EventArgs e )
+        {
+            base.OnPreRender( e );
+
+            /*
+                9/29/2025 - JMH
+
+                Moved FieldVisibilityWrapper.ApplyFieldVisibilityRules(...) to OnPreRender so it runs
+                after viewstate and postback data is restored. This prevents fields from being hidden or
+                cleared due to rules evaluating against empty values.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/6452
+            */
+            FieldVisibilityWrapper.ApplyFieldVisibilityRules( phFields );
+        }
+
+        /// <summary>
         /// Saves any user control view-state changes that have occurred since the last page postback.
         /// </summary>
         /// <returns>
@@ -939,8 +959,6 @@ namespace RockWeb.Blocks.Event
                     }
                 }
             }
-
-            FieldVisibilityWrapper.ApplyFieldVisibilityRules( phFields );
         }
 
         /// <summary>

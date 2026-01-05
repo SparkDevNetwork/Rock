@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Crm.RecordSource;
 using Rock.Enums.Blocks.Connection.ConnectionOpportunitySignup;
 using Rock.Model;
 using Rock.ViewModels.Blocks.Connection.ConnectionOpportunitySignup;
@@ -84,12 +85,21 @@ namespace Rock.Blocks.Connection
         Order = 5,
         Key = AttributeKey.RecordStatus )]
 
+    [DefinedValueField( "Record Source",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE,
+        Description = "The record source to use for new individuals (default = 'Serving Connection'). If a 'RecordSource' page parameter is found, it will be used instead.",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_SERVING_CONNECTION,
+        Order = 6,
+        Key = AttributeKey.RecordSource )]
+
     [ConnectionOpportunityField( Name = "Connection Opportunity",
         Description = "If a Connection Opportunity is set, only details for it will be displayed (regardless of the querystring parameters).",
         IsRequired = false,
         DefaultValue = "",
         Category = "",
-        Order = 6,
+        Order = 7,
         Key = AttributeKey.ConnectionOpportunity )]
 
     [AttributeCategoryField(
@@ -98,7 +108,7 @@ namespace Rock.Blocks.Connection
         AllowMultiple = true,
         EntityTypeName = "Rock.Model.ConnectionRequest",
         IsRequired = false,
-        Order = 7,
+        Order = 8,
         Key = AttributeKey.IncludeAttributeCategories )]
 
     [AttributeCategoryField(
@@ -107,27 +117,27 @@ namespace Rock.Blocks.Connection
         AllowMultiple = true,
         EntityTypeName = "Rock.Model.ConnectionRequest",
         IsRequired = false,
-        Order = 8,
+        Order = 9,
         Key = AttributeKey.ExcludeAttributeCategories )]
 
     [BooleanField( "Exclude Non-Public Connection Request Attributes",
         Description = "Attributes without 'Public' checked will not be displayed.",
         DefaultBooleanValue = true,
-        Order = 9,
+        Order = 10,
         Key = AttributeKey.ExcludeNonPublicAttributes )]
 
     [TextField( "Comment Field Label",
         Description = "The label to apply to the comment field.",
         DefaultValue = "Comments",
         IsRequired = false,
-        Order = 10,
+        Order = 11,
         Key = AttributeKey.CommentFieldLabel )]
 
     [BooleanField(
         "Disable Captcha Support",
         Description = "If set to 'Yes' the CAPTCHA verification will be skipped. \n\nNote: If the CAPTCHA site key and/or secret key are not configured in the system settings, this option will be forced as 'Yes', even if 'No' is visually selected.",
         DefaultBooleanValue = false,
-        Order = 11,
+        Order = 12,
         Key = AttributeKey.DisableCaptchaSupport )]
 
     #endregion Block Attributes
@@ -147,6 +157,7 @@ namespace Rock.Blocks.Connection
             public const string EnableCampusContext = "EnableCampusContext";
             public const string ConnectionStatus = "ConnectionStatus";
             public const string RecordStatus = "RecordStatus";
+            public const string RecordSource = "RecordSource";
             public const string ConnectionOpportunity = "ConnectionOpportunity";
             public const string IncludeAttributeCategories = "IncludeAttributeCategories";
             public const string ExcludeAttributeCategories = "ExcludeAttributeCategories";
@@ -183,8 +194,7 @@ namespace Rock.Blocks.Connection
             box.DisplayHomePhone = GetAttributeValue( AttributeKey.DisplayHomePhone ).AsBoolean();
             box.DisplayMobilePhone = GetAttributeValue( AttributeKey.DisplayMobilePhone ).AsBoolean();
 
-            bool disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !IsCaptchaConfigured();
-            box.DisableCaptchaSupport = disableCaptcha;
+            box.DisableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
 
             var opportunity = GetConnectionOpportunity();
 
@@ -427,15 +437,17 @@ namespace Rock.Blocks.Connection
             }
         }
 
+
         /// <summary>
-        /// Determines whether CAPTCHA is properly configured with site and secret keys.
+        /// Gets the record source to use for new individuals.
         /// </summary>
-        /// <returns>True if both keys are present and not empty; otherwise, false.</returns>
-        private bool IsCaptchaConfigured()
+        /// <returns>
+        /// The identifier of the Record Source Type <see cref="DefinedValue"/> to use.
+        /// </returns>
+        private int? GetRecordSourceValueId()
         {
-            var siteKey = Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.CAPTCHA_SITE_KEY );
-            var secretKey = Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.CAPTCHA_SECRET_KEY );
-            return !(siteKey.IsNullOrWhiteSpace() || secretKey.IsNullOrWhiteSpace());
+            return RecordSourceHelper.GetSessionRecordSourceValueId()
+                ?? DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordSource ).AsGuid() )?.Id;
         }
 
         #endregion Methods
@@ -453,7 +465,7 @@ namespace Rock.Blocks.Connection
             var resultBag = new ConnectionOpportunitySignupResultBag();
             try
             {
-                bool disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !IsCaptchaConfigured();
+                bool disableCaptcha = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
 
                 if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
                 {
@@ -518,18 +530,19 @@ namespace Rock.Blocks.Connection
                         EmailPreference = EmailPreference.EmailAllowed,
                         RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON ).Id,
                         ConnectionStatusValueId = connectionStatus?.Id,
-                        RecordStatusValueId = recordStatus?.Id
+                        RecordStatusValueId = recordStatus?.Id,
+                        RecordSourceValueId = GetRecordSourceValueId()
                     };
 
                     PersonService.SaveNewPerson( person, this.RockContext, campusId, false );
                 }
 
-                if (bag.HomePhone != null && !string.IsNullOrWhiteSpace(bag.HomePhone.Number))
+                if ( bag.HomePhone != null && !string.IsNullOrWhiteSpace( bag.HomePhone.Number ) )
                 {
                     SavePhone( bag.HomePhone.Number, bag.HomePhone.CountryCode, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
                 }
 
-                if (bag.MobilePhone != null && !string.IsNullOrWhiteSpace(bag.MobilePhone.Number))
+                if ( bag.MobilePhone != null && !string.IsNullOrWhiteSpace( bag.MobilePhone.Number ) )
                 {
                     SavePhone( bag.MobilePhone.Number, bag.MobilePhone.CountryCode, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
                 }

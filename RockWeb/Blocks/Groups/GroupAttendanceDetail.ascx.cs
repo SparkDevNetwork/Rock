@@ -131,6 +131,8 @@ namespace RockWeb.Blocks.Groups
         Order = 15,
         Key = AttributeKey.AttendanceTypeLabel )]
     #endregion
+
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.GROUP_ATTENDANCE_DETAIL )]
     public partial class GroupAttendanceDetail : RockBlock
     {

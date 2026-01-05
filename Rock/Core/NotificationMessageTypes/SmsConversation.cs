@@ -79,7 +79,7 @@ namespace Rock.Core.NotificationMessageTypes
                     .Select( gm => new
                     {
                         gm.PersonId,
-                        PrimaryPersonAliasId = gm.Person.Aliases.Where( a => a.AliasPersonId == gm.PersonId ).Select( a => ( int? ) a.Id ).FirstOrDefault()
+                        PrimaryPersonAliasId = gm.Person.PrimaryAliasId
                     } )
                     .Where( a => a.PrimaryPersonAliasId.HasValue )
                     .Distinct()
@@ -224,7 +224,7 @@ namespace Rock.Core.NotificationMessageTypes
             return new NotificationMessageMetadataBag
             {
                 PhotoUrl = url,
-                IconCssClass = "fa fa-comment-o",
+                IconCssClass = "ti ti-message",
                 Color = "#16C98D"
             };
         }

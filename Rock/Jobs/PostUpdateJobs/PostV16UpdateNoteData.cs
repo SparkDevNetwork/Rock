@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -88,7 +90,7 @@ namespace Rock.Jobs
         {
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
+                rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400 );
 
                 var noteTypeService = new NoteTypeService( rockContext );
                 var notes = noteTypeService.Queryable().ToList();
@@ -117,7 +119,7 @@ namespace Rock.Jobs
 
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
+                rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400 );
 
                 var noteService = new NoteService( rockContext );
 

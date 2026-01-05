@@ -779,19 +779,19 @@
                 }
 
                 if (schedulerResource.HasSchedulingConflict) {
-                    $resourceNameMeta.append('<span class="resource-scheduling-conflict hide-transit" title="Scheduling Conflict"><i class="fa fa-user-clock"></i></span>');
+                    $resourceNameMeta.append('<span class="resource-scheduling-conflict hide-transit" title="Scheduling Conflict"><i class="ti ti-user-exclamation"></i></span>');
                 }
 
                 if (schedulerResource.HasBlackoutConflict) {
-                    $resourceNameMeta.append('<span class="resource-blackout-status hide-transit" title="Blackout"><i class="fa fa-user-times"></i></span>');
+                    $resourceNameMeta.append('<span class="resource-blackout-status hide-transit" title="Blackout"><i class="ti ti-user-x"></i></span>');
                 }
 
                 if (schedulerResource.HasPartialBlackoutConflict) {
-                    $resourceNameMeta.append('<span class="resource-partial-blackout-status hide-transit" title="Partial Blackout"><i class="fa fa-user-clock"></i></span>');
+                    $resourceNameMeta.append('<span class="resource-partial-blackout-status hide-transit" title="Partial Blackout"><i class="ti ti-user-exclamation"></i></span>');
                 }
 
                 if (schedulerResource.HasGroupRequirementsConflict) {
-                    $resourceNameMeta.append('<span class="resource-requirements-conflict hide-transit" title="Group Requirements Not Met"><i class="fa fa-exclamation-triangle"></i></span>');
+                    $resourceNameMeta.append('<span class="resource-requirements-conflict hide-transit" title="Group Requirements Not Met"><i class="ti ti-alert-triangle"></i></span>');
                 }
 
                 if (schedulerResource.LastAttendanceDateTime) {

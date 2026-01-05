@@ -2,6 +2,7 @@
 <template>
     <ComponentPropertyPanelBase :componentElement="componentElement"
                                 :componentMigrationHelper="rsvpComponentHelper"
+                                :ltr="ltr"
                                 title="RSVP"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
@@ -37,7 +38,7 @@
                                 <RockButton btnSize="xs"
                                             :disabled="isCreatingOccurrence || areRsvpRecipientsRegistering || areRsvpRecipientsRegistered"
                                             @click="onRegisterRecipientsClicked">
-                                    <i class="fa fa-user-check"></i> {{ areRsvpRecipientsRegistering ? 'Registering...' : areRsvpRecipientsRegistered ? 'Recipients Registered!' : 'Register Recipients' }}
+                                    <i class="ti ti-user-check"></i> {{ areRsvpRecipientsRegistering ? 'Registering...' : areRsvpRecipientsRegistered ? 'Recipients Registered!' : 'Register Recipients' }}
                                 </RockButton>
                             </div>
                         </div>
@@ -243,6 +244,11 @@
         componentElement: {
             type: Object as PropType<HTMLElement>,
             required: true
+        },
+
+        ltr: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         recipientPersonIds: {

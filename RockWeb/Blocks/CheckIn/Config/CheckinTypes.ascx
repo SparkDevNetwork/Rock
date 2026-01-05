@@ -5,10 +5,10 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-check-square-o"></i> Check-in Configurations</h1>
+                <h1 class="panel-title"><i class="ti ti-square-check"></i> Check-in Configurations</h1>
 
                 <div class="panel-labels">
-                    <asp:LinkButton ID="lbAddCheckinType" runat="server" CssClass="btn btn-action btn-xs btn-square" OnClick="lbAddCheckinType_Click" CausesValidation="false"><i class="fa fa-plus"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbAddCheckinType" runat="server" CssClass="btn btn-action btn-xs btn-square" OnClick="lbAddCheckinType_Click" CausesValidation="false"><i class="ti ti-plus"></i></asp:LinkButton>
                 </div>
             </div>
             <div class="panel-body">
