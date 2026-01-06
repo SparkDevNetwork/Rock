@@ -179,5 +179,10 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// When <see langword="true"/>, navigation shortcuts will be disabled.
         /// </value>
         public bool AreNavigationShortcutsDisabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the template should be applied to the communication on load.
+        /// </summary>
+        public bool ShouldApplyTemplateToCommunication { get; set; }
     }
 }

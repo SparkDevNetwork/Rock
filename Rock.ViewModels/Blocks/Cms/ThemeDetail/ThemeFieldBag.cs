@@ -45,9 +45,9 @@ namespace Rock.ViewModels.Blocks.Cms.ThemeDetail
         public string Description { get; set; }
 
         /// <summary>
-        /// The name of the variable.
+        /// The key that will be used to read and set the value.
         /// </summary>
-        public string Variable { get; set; }
+        public string Key { get; set; }
 
         /// <summary>
         /// The default value of the variable.

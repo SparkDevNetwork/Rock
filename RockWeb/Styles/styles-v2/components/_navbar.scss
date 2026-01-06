@@ -717,6 +717,21 @@
 // =================== END INVERSE NAV ===================
 
 
+// ======================== SIDEBAR NAV ========================
+
+.navbar-static-side .navbar-side .nav-item-top {
+  &.open {
+    .item-title,
+    .nav-childpages li.title {
+      color: var(--color-interface-stronger);
+      i {
+        color: var(--color-interface-strong);
+      }
+    }
+  }
+}
+// ======================== END SIDEBAR NAV ========================
+
 // ======================== REMINDERS / BOOKMARKS ========================
 
 a.rock-bookmark {

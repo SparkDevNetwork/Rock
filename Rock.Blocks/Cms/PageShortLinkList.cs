@@ -53,7 +53,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "b9825e53-d074-4280-a1a3-e20771e34625" )]
     [Rock.SystemGuid.BlockTypeGuid( "d25ff675-07c8-4e2d-a3fa-38ba3468b4ae" )]
-    [CustomizedGrid( CustomColumnMessage = "To access the entity, prefix your property names with <code>Row.PageShortLink</code> (e.g. <code>{{ Row.PageShortLink.Id }}</code>)." )]
+    [CustomizedGrid]
     public class PageShortLinkList : RockListBlockType<PageShortLinkList.PageShortLinkWithClicks>
     {
         #region Keys
@@ -304,8 +304,13 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override GridBuilder<PageShortLinkWithClicks> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<PageShortLinkWithClicks>
+            {
+                LavaObject = row => row.PageShortLink
+            };
+
             return new GridBuilder<PageShortLinkWithClicks>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.PageShortLink.IdKey )
                 .AddTextField( "url", a => a.PageShortLink.Url )
                 .AddTextField( "site", a => a.PageShortLink.Site?.Name )
@@ -421,7 +426,7 @@ namespace Rock.Blocks.Cms
         #endregion
 
         #region Support Classes
-        public class PageShortLinkWithClicks : LavaDataObject
+        public class PageShortLinkWithClicks
         {
             public PageShortLink PageShortLink { get; set; }
 

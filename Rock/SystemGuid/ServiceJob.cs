@@ -515,11 +515,6 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_173_UPDATE_NAMELESS_SCHEDULES = "4C7CC0FC-12A7-4578-B9B1-FEF2732EB912";
 
         /// <summary>
-        /// The job to run Post v18.0 Data Migrations to update an existing index on the CommunicationRecipient table.
-        /// </summary>
-        public const string DATA_MIGRATIONS_180_UPDATE_COMMUNICATIONRECIPIENT_INDEX = "FE519BCE-CCB8-42B7-A14C-1620859F23E8";
-
-        /// <summary>
         /// The job to run Post v18.0 Data Migrations to migrate existing eRA records from the History table to the Steps table.
         /// </summary>
         public const string DATA_MIGRATIONS_180_MIGRATE_ERA_DATA_TO_STEPS = "64CB888D-0F81-473B-B200-8FA38337DAED";
@@ -563,5 +558,10 @@ namespace Rock.SystemGuid
         /// The job to run Post v18.0 Data Migrations to update the Manage My Account Page block setting for the recently-chopped Email Preference Entry block.
         /// </summary>
         public const string DATA_MIGRATIONS_180_UPDATE_EMAIL_PREFERENCE_ENTRY_BLOCK_MANAGE_MY_ACCOUNT_PAGE = "7319E385-8068-43FE-9085-6F9A21F5972B";
+
+        /// <summary>
+        /// The job to run Post v18.1 Data Migrations to add indexes to improve communication prep performance.
+        /// </summary>
+        public const string DATA_MIGRATIONS_181_ADD_INDEXES_FOR_COMMUNICATION_PREP = "88C42A48-6713-4CB1-BF6B-A12AB2E292E7";
     }
 }

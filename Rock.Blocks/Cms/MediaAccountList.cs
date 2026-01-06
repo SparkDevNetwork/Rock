@@ -196,7 +196,7 @@ namespace Rock.Blocks.Cms
             };
 
             return new GridBuilder<MediaAccountData>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.MediaAccount.IdKey )
                 .AddTextField( "name", a => a.MediaAccount.Name )
                 .AddTextField( "componentEntityType", a => a.MediaAccount.ComponentEntityType?.FriendlyName )

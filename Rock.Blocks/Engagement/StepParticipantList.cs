@@ -66,7 +66,7 @@ namespace Rock.Blocks.Engagement
     [Rock.SystemGuid.EntityTypeGuid( "e7eb8f39-ae85-4f9c-8afb-18b3e3c6c570" )]
     // Was [Rock.SystemGuid.BlockTypeGuid( "272b2236-fccc-49b4-b914-20893f5e746d" )]
     [Rock.SystemGuid.BlockTypeGuid( "2E4A1578-145E-4052-9B56-1739F7366827" )]
-    [CustomizedGrid( CustomColumnMessage = "To access the entity, prefix your property names with <code>Row.Step</code> (e.g. <code>{{ Row.Step.Id }}</code>)." )]
+    [CustomizedGrid]
     public class StepParticipantList : RockListBlockType<StepParticipantList.StepParticipantRow>
     {
         #region Keys
@@ -321,9 +321,15 @@ namespace Rock.Blocks.Engagement
         /// <inheritdoc/>
         protected override GridBuilder<StepParticipantRow> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<StepParticipantRow>
+            {
+                LavaObject = row => row.Step
+            };
+
             var inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
+
             return new GridBuilder<StepParticipantRow>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.Step.IdKey )
                 .AddField( "person", a => a.Person )
                 .AddTextField( "fullName", a => a.Person.FullName )
@@ -499,7 +505,7 @@ namespace Rock.Blocks.Engagement
 
         #region Helper Classes
 
-        public class StepParticipantRow : LavaDataObject
+        public class StepParticipantRow
         {
             public Step Step { get; set; }
 

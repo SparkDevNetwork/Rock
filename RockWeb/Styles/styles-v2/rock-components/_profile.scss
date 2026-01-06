@@ -363,11 +363,17 @@
   position: relative;
   width: 100%;
   padding-bottom: 60%;
-  border-radius: var(--rounded-xsmall) var(--rounded-xsmall) 0 0;
+  border-radius: var(--rounded-small) var(--rounded-small) 0 0;
+
+  .fluid-crop {
+    border-radius: var(--rounded-small) var(--rounded-small) 0 0;
+  }
+
+  img {
+    border-radius: var(--rounded-small) var(--rounded-small) 0 0;
+  }
 }
-.profile-squish img {
-  border-radius: var(--rounded-xsmall) var(--rounded-xsmall) 0 0;
-}
+
 
 .profile-notes .notes {
   .panel-noteadd-visible .panel-heading,
@@ -443,6 +449,8 @@
     resize: none;
   }
 }
+
+
 
 .fluid-crop {
 position: absolute;
@@ -668,9 +676,14 @@ background: currentColor;
     width: 25%;
     height: 100%;
 
-    img {
-      border-radius: var(--rounded-normal) 0 0 var(--rounded-normal);
+    &.profile-image-sm .fluid-crop {
+      border-radius: var(--rounded-small) 0 0 var(--rounded-small);
     }
+
+    img {
+      border-radius: var(--rounded-small) 0 0 var(--rounded-small);
+    }
+
   }
 
   .profile-data {
@@ -736,23 +749,6 @@ background: currentColor;
 .profile-toggle:hover {
   color: var(--color-interface-strong);
   background-color: var(--color-interface-softer);
-}
-
-.rockbadge-assessment a {
-  display: inline-flex;
-  color: inherit;
-}
-
-.rockbadge-assessment .ti-stacked-1x {
-  color: var(--color-interface-softest) !important;
-}
-
-.rockbadge-assessment .ti-stacked-2x {
-  color: currentColor !important;
-}
-
-.rockbadge-assessment.requested {
-  color: var(--color-link-strong) !important;
 }
 
 .avatar-lg {

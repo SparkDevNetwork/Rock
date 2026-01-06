@@ -83,7 +83,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:RockTextBox ID="tbResultsPerPage" runat="server" Label="Results Per Page" CssClass="input-width-sm" />
-                                    <Rock:RockCheckBox ID="cbShowRefinedSearch" runat="server" Label="Show Refinded Search Options" />
+                                    <Rock:RockCheckBox ID="cbShowRefinedSearch" runat="server" Label="Show Refined Search Options" />
                                     <Rock:RockCheckBox ID="cbShowScores" runat="server" Label="Show Scores" Help="Enables the display of scores for help with debugging." />
                                     <Rock:RockCheckBox ID="cbUseCustomResults" runat="server" Label="Use Custom Results Template" Help="Determines if the custom Lava results template should be used." />
                                     <Rock:RockCheckBox ID="cbShowFilter" runat="server" Label="Show Model Filter" />

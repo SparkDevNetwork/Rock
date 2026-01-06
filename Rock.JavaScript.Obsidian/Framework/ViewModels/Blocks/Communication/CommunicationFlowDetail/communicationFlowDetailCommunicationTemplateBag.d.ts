@@ -22,6 +22,7 @@
 //
 
 import { PushOpenAction } from "@Obsidian/Enums/Blocks/Communication/CommunicationFlowDetail/pushOpenAction";
+import { CommunicationTemplateUsageType } from "@Obsidian/Enums/Communication/communicationTemplateUsageType";
 import { Guid } from "@Obsidian/Types";
 import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -90,4 +91,7 @@ export type CommunicationFlowDetailCommunicationTemplateBag = {
 
     /** Gets or sets the subject of the email. */
     subject?: string | null;
+
+    /** Gets or sets the usage type for the template. */
+    usageType?: CommunicationTemplateUsageType | null;
 };

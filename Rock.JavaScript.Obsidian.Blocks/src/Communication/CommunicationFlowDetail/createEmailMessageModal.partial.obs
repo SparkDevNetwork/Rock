@@ -29,19 +29,21 @@
 
                         <TextBox v-model="emailFromName"
                                  :disabled="disabled"
-                                 help="This name will appear in your recipients' inboxes. Use a name they'll recognize, such as your church or ministry."
+                                 help="This name will appear in your recipients' inboxes. Use a name they'll recognize, such as your church or ministry. <small><span class='tip tip-lava'></span></span></small>"
                                  label="From Name"
                                  rules="required" />
 
                         <EmailBox v-model="emailFromEmail"
+                                  allowLava
                                   :disabled="disabled"
-                                  help="This is the email address that will appear as the sender. Make sure it's an address your recipients can trust."
+                                  help="This is the email address that will appear as the sender. Make sure it's an address your recipients can trust. <small><span class='tip tip-lava'></span></span></small>"
                                   label="From Email"
                                   rules="required" />
 
                         <EmailBox v-model="emailReplyToAddress"
+                                  allowLava
                                   :disabled="disabled"
-                                  help="If your recipients reply to the email, this is the address where their responses will be sent."
+                                  help="If your recipients reply to the email, this is the address where their responses will be sent. <small><span class='tip tip-lava'></span></span></small>"
                                   label="Reply To Address" />
 
                         <TextBox v-model="emailPreviewText"
@@ -69,17 +71,22 @@
                 </div>
 
                 <div class="email-editor-container">
-                    <EmailEditor v-model:communicationTemplateGuid="communicationTemplateGuid"
-                                 :communicationTemplates="communicationTemplateListItemsBags"
-                                 communicationTemplatesHelp="Copies the message content and details from the selected template. If you're starting fresh, all template fields are copied. If you've already started editing, only the message content is updated unless all other fields are still blank."
-                                 :disabled="disabled"
+                    <EmailEditor :disabled="disabled"
                                  :getHtmlRequest="getHtmlRequest"
                                  :html="message"
                                  :mergeFields="['GlobalAttribute', 'Rock.Model.Person']"
                                  :recipientPersonIds="undefined"
                                  :videoProviderNames="undefined"
-                                 @emailDocumentUpdated="onEmailDocumentUpdated"
-                                 @update:communicationTemplateGuid="onCommunicationTemplateSelected" />
+                                 @emailDocumentUpdated="onEmailDocumentUpdated">
+                        <template #bodySettingsPrepend>
+                            <DropDownList v-model="communicationTemplateGuidOrEmptyString"
+                                          enhanceForLongLists
+                                          grouped
+                                          help="Copies the message body from the selected template. If the Name, Email Subject, From Name, From Email, and Reply To Address fields in the message you're editing are all empty, those values will also be copied from the template. If any of those fields already have a value, they will not be overwritten."
+                                          :items="communicationTemplateListItemsBags"
+                                          label="Duplicate From Template" />
+                        </template>
+                    </EmailEditor>
                 </div>
             </div>
         </template>
@@ -142,8 +149,9 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import { getPreheaderTextFromDoc } from "./utils.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import EmailEditor, { GetHtmlRequest } from "@Obsidian/Controls/emailEditor";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import FileUploader from "@Obsidian/Controls/fileUploader.obs";
@@ -161,6 +169,7 @@
     import { isNullish } from "@Obsidian/Utility/util";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { BlockActionCallbacks } from "./types.partial";
+    import { CommunicationTemplateUsageType, CommunicationTemplateUsageTypeDescription } from "@Obsidian/Enums/Communication/communicationTemplateUsageType";
 
     const props = defineProps({
         communicationTemplate: {
@@ -232,12 +241,29 @@
         return Enumerable
             .from(props.communicationTemplates)
             // Find email templates only.
-            .where(c => !!c.fromEmail || !!c.message)
-            .select(x => ({
-                text: x.name,
-                value: x.guid
+            .where(ct => !!ct.fromEmail || !!ct.message)
+            .orderBy(ct => isNullish(ct.usageType)).thenOrderBy(ct => ct.usageType) // Order by usage type (nulls last).
+            .thenOrderBy(ct => isNullish(ct.name)).thenOrderBy(ct => ct.name) // Then order by name (nulls last).
+            .select(ct => ({
+                text: ct.name,
+                value: ct.guid,
+                // Categorize by usage type.
+                category: isNullish(ct.usageType)
+                    ? "Communication Templates"
+                    : ct.usageType === CommunicationTemplateUsageType.CommunicationFlows
+                        ? "Flow Templates"
+                        : CommunicationTemplateUsageTypeDescription[ct.usageType]
             }))
             .toArray();
+    });
+
+    const communicationTemplateGuidOrEmptyString = computed<string>({
+        get(): string {
+            return toGuidOrNull(communicationTemplateGuid.value) ?? "";
+        },
+        set(value: string): void {
+            communicationTemplateGuid.value = toGuidOrNull(value);
+        }
     });
 
     // #endregion Computed Values
@@ -432,4 +458,12 @@
     }
 
     // #endregion Methods
+
+    // #region Watchers
+
+    watch(communicationTemplateGuidOrEmptyString, value => {
+        onCommunicationTemplateSelected(value);
+    });
+
+    // #endregion Watchers
 </script>

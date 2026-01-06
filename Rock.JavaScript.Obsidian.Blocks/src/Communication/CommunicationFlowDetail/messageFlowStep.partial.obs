@@ -355,7 +355,7 @@
         if (!isNullish(props.conversionGoalType)) {
             items.push({
                 text: "Conversion Goal Achieved",
-                value: `${props.conversionGoalType}`
+                value: `${ExitConditionType.ConversionAchieved}`
             });
         }
 

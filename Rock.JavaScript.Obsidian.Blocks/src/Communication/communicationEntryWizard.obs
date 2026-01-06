@@ -487,19 +487,28 @@
     });
 
     const emailRecipients = computed<CommunicationEntryWizardRecipientBag[]>(() => {
-        return recipients.value.filter(r => r.isEmailAllowed);
+        var isEmailMediumAllowed = allowedMediums.value.includes(CommunicationType.Email);
+
+        return recipients.value.filter(r => isEmailMediumAllowed && r.isEmailAllowed);
     });
 
     const smsRecipients = computed<CommunicationEntryWizardRecipientBag[]>(() => {
-        return recipients.value.filter(r => r.isSmsAllowed);
+        var isSmsMediumAllowed = allowedMediums.value.includes(CommunicationType.SMS);
+
+        return recipients.value.filter(r => isSmsMediumAllowed && r.isSmsAllowed);
     });
 
     const pushNotificationRecipients = computed<CommunicationEntryWizardRecipientBag[]>(() => {
-        return recipients.value.filter(r => r.isPushAllowed);
+        var isPushNotificationMediumAllowed = allowedMediums.value.includes(CommunicationType.PushNotification);
+
+        return recipients.value.filter(r => isPushNotificationMediumAllowed && r.isPushAllowed);
     });
 
     const personalPreferenceRecipients = computed<CommunicationEntryWizardRecipientBag[]>(() => {
-        return recipients.value.filter(r => r.isEmailAllowed || r.isSmsAllowed);
+        var isEmailMediumAllowed = allowedMediums.value.includes(CommunicationType.Email);
+        var isSmsMediumAllowed = allowedMediums.value.includes(CommunicationType.SMS);
+
+        return recipients.value.filter(r => (isEmailMediumAllowed && r.isEmailAllowed) || (isSmsMediumAllowed && r.isSmsAllowed));
     });
 
     const selectedMediumRecipients = computed<CommunicationEntryWizardRecipientBag[]>(() => {
@@ -1396,9 +1405,8 @@
 
     startRealTime();
 
-    // On initialization, if the communication is new, then copy fields from the template.
     onMounted(async () => {
-        if (!communicationId.value || !communicationTemplateGuid.value) {
+        if (config.shouldApplyTemplateToCommunication) {
             if (communicationTemplateDetail.value) {
                 populateFromCommunicationTemplateDetail(communicationTemplateDetail.value);
             }

@@ -52,6 +52,9 @@ export type ThemeFieldBag = {
      */
     isMultiline: boolean;
 
+    /** The key that will be used to read and set the value. */
+    key?: string | null;
+
     /**
      * The name of the field. When type is a variable then this contains
      * the user friendly name of the variable. Otherwise it is the title
@@ -61,7 +64,4 @@ export type ThemeFieldBag = {
 
     /** The type of field represented by this instance. */
     type: ThemeFieldType;
-
-    /** The name of the variable. */
-    variable?: string | null;
 };
