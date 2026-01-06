@@ -4,10 +4,7 @@
                title="Styles">
         <AccordionGroup>
             <Accordion title="Body Settings">
-                <CommunicationTemplateProperty v-if="communicationTemplates"
-                                               v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
-                                               :communicationTemplates="communicationTemplates"
-                                               :communicationTemplatesHelp="communicationTemplatesHelp" />
+                <slot name="bodySettingsPrepend"></slot>
 
                 <RangeSliderProperty label="Body Width"
                                      :min="480"
@@ -290,7 +287,6 @@
     import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
     import ButtonWidthProperty from "../properties/buttonWidthProperty.partial.obs";
     import ColorPickerProperty from "../properties/colorPickerProperty.partial.obs";
-    import CommunicationTemplateProperty from "../properties/communicationTemplateProperty.partial.obs";
     import DividerColorProperty from "../properties/dividerColorProperty.partial.obs";
     import DividerStyleProperty from "../properties/dividerStyleProperty.partial.obs";
     import DividerThicknessProperty from "../properties/dividerThicknessProperty.partial.obs";
@@ -315,44 +311,14 @@
         GlobalStylesCssSelectors,
         RockStylesCssClass
     } from "../utils.partial";
-    import { Guid } from "@Obsidian/Types";
-    import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { isHTMLElement } from "@Obsidian/Utility/dom";
 
     const props = defineProps({
         document: {
             type: Object as PropType<Document>,
             required: true
-        },
-
-        communicationTemplateGuid: {
-            type: String as PropType<Guid | null | undefined>,
-            required: false
-        },
-
-        communicationTemplates: {
-            type: Object as PropType<ListItemBag[] | null | undefined>,
-            required: false
-        },
-
-        communicationTemplatesHelp: {
-            type: String as PropType<string | null | undefined>,
-            required: false
         }
     });
-
-    const emit = defineEmits<{
-        (e: "complete"): void;
-        (e: "delete"): void;
-        (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
-    }>();
-
-    // #region Values
-
-    const internalCommunicationTemplateGuid = useVModelPassthrough(props, "communicationTemplateGuid", emit);
-
-    // #endregion Values
 
     // #region Computed Values
 

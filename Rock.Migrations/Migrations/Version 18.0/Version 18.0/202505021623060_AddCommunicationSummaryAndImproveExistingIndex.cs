@@ -29,12 +29,14 @@ namespace Rock.Migrations
         {
             AddColumn( "dbo.Communication", "Summary", c => c.String( maxLength: 600 ) );
 
-            RockMigrationHelper.AddPostUpdateServiceJob(
-                name: "Rock Update Helper v18.0 - Update CommunicationRecipient Index",
-                description: "This job will update an existing index on the CommunicationRecipient table.",
-                jobType: "Rock.Jobs.PostV18UpdateCommunicationRecipientIndex",
-                cronExpression: "0 0 21 1/1 * ? *",
-                guid: Rock.SystemGuid.ServiceJob.DATA_MIGRATIONS_180_UPDATE_COMMUNICATIONRECIPIENT_INDEX );
+            // This is no longer needed, as Rock v18.1 introduces an improved version of this index.
+            // https://github.com/SparkDevNetwork/Rock/blob/fbcd238722974b80411eb4cdbefaeb517aaf4b6d/Rock/Jobs/PostUpdateJobs/PostV181AddIndexesForCommunicationPrep.cs#L52-L65
+            //RockMigrationHelper.AddPostUpdateServiceJob(
+            //    name: "Rock Update Helper v18.0 - Update CommunicationRecipient Index",
+            //    description: "This job will update an existing index on the CommunicationRecipient table.",
+            //    jobType: "Rock.Jobs.PostV18UpdateCommunicationRecipientIndex",
+            //    cronExpression: "0 0 21 1/1 * ? *",
+            //    guid: Rock.SystemGuid.ServiceJob.DATA_MIGRATIONS_180_UPDATE_COMMUNICATIONRECIPIENT_INDEX );
         }
 
         /// <summary>

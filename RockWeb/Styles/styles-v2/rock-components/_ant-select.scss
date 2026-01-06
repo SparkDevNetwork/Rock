@@ -174,7 +174,7 @@
   }
 
   .ant-select-arrow {
-    color: var(--color-interface-stronger);
+    color: var(--color-interface-strong);
   }
 
   .ant-select-clear {
@@ -183,148 +183,155 @@
     background: var(--color-interface-softest);
   }
 
-  .ant-select-dropdown {
-    color: var(--color-interface-stronger);
-    padding: var(--spacing-tiny) 0;
-    font-size: var(--font-size-small);
-    background-color: var(--color-interface-softest);
-    border: 1px solid var(--color-interface-soft);
-  }
-
-  .ant-select-dropdown-empty {
-    color: var(--color-interface-stronger);
-  }
-
-  .ant-select-item-empty {
-    padding: var(--spacing-tiny) var(--spacing-small);
-    color: var(--color-interface-stronger);
-    font-size: var(--font-size-small);
-    color: var(--color-interface-stronger);
-  }
-
-  .ant-select-item {
-    padding: var(--spacing-tiny) var(--spacing-small);
-    color: var(--color-interface-stronger);
-    font-size: var(--font-size-small);
-  }
-
-  .ant-select-item-group {
-    color: var(--color-interface-medium);
-    font-size: var(--font-size-xsmall);
-  }
-
-  .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
-    background-color: var(--color-interface-softer);
-  }
-
-  .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
-    color: var(--color-interface-strong);
-    font-weight: var(--font-weight-semibold);
-    background-color: var(--color-interface-soft);
-  }
-
-  .ant-select-item-option-disabled {
-    color: var(--color-interface-stronger);
-
-    .ant-select-item-option-selected {
-      background-color: var(--color-interface-softer);
-    }
-
-  }
-
-  .ant-select-item-option-grouped {
-    padding-left: var(--spacing-medium);
-  }
-
-  .ant-select-lg {
-    font-size: var(--font-size-regular);
-  }
-
-  .ant-select-dropdown-rtl .ant-select-item-option-grouped {
-    padding-right: var(--spacing-large);
-    padding-left: var(--spacing-small);
-  }
-
-  .ant-select-rtl.ant-select-multiple.ant-select-show-arrow .ant-select-selector,
-  .ant-select-rtl.ant-select-multiple.ant-select-allow-clear .ant-select-selector {
-    padding-right: var(--spacing-tiny);
-    padding-left: var(--spacing-large);
-  }
-
-  .ant-select-rtl.ant-select-multiple .ant-select-selection-item-content {
-    margin-left: var(--spacing-tiny);
-  }
-
-  .ant-select-auto-complete {
-    color: var(--color-interface-stronger);
-  }
-
   &.form-control {
-    padding: 0;
+  padding: 0;
 
-    .ant-select-selector {
-      height:           34px !important;
-      padding:          var(--spacing-xsmall) var(--spacing-medium) !important;
-      border-radius:    var(--rounded-small) !important;
-      margin:           0 !important;
-      background-color: initial !important;
-      border:           none !important;
-      box-shadow:       none !important;
+  .ant-select-selector {
+    height:           34px !important;
+    padding:          var(--spacing-xsmall) var(--spacing-medium) !important;
+    border-radius:    var(--rounded-small) !important;
+    margin:           0 !important;
+    background-color: initial !important;
+    border:           none !important;
+    box-shadow:       none !important;
 
-      .ant-select-selection-item {
-        display:        inline-flex;
-        align-items:    center;
-      }
-
-    }
-
-    .ant-select-arrow,
-    .ant-select-clear {
-      width:        16px;
-      height:       16px;
-      font-size:    var(--font-size-h6);
+    .ant-select-selection-item {
+      display:        inline-flex;
+      align-items:    center;
     }
 
   }
 
-  .input-group & {
-
-    &.ant-select-focused {
-      z-index:          3;
-    }
-
-  }
-
-  &.ant-select-focused:not(.ant-select-disabled).form-control {
-    border:       1px solid var(--color-primary);
-    outline:      none;
-    box-shadow:   var(--input-focus-box-shadow);
-
-      .ant-select-selector {
-        border:       none;
-        outline:      none;
-        box-shadow:   none;
-      }
-
-  }
-
-  // Prevent clear button from overlapping chevron arrow.
+  .ant-select-arrow,
   .ant-select-clear {
-    right:          30px;
-  }
-
-  // Prevent the text from being truncated in dropdown lists.
-  &-dropdown {
-
-    .ant-select-item {
-      &-option {
-        &-content {
-          white-space:  normal;
-          word-wrap:    break-word;
-        }
-      }
-    }
-
+    width:        16px;
+    height:       16px;
+    font-size:    var(--font-size-h6);
   }
 
 }
+
+&.ant-select-focused:not(.ant-select-disabled).form-control {
+  border:       1px solid var(--color-primary);
+  outline:      none;
+  box-shadow:   var(--input-focus-box-shadow);
+
+    .ant-select-selector {
+      border:       none;
+      outline:      none;
+      box-shadow:   none;
+    }
+
+}
+
+.input-group {
+
+  &.ant-select-focused {
+    z-index:          3;
+  }
+
+}
+
+
+
+// Prevent clear button from overlapping chevron arrow.
+.ant-select-clear {
+  right:          30px;
+}
+
+// Prevent the text from being truncated in dropdown lists.
+&-dropdown {
+
+  .ant-select-item {
+    &-option {
+      &-content {
+        white-space:  normal;
+        word-wrap:    break-word;
+      }
+    }
+  }
+
+}
+
+}
+
+// Dropdown Styles
+
+.ant-select-dropdown {
+  color: var(--color-interface-stronger);
+  padding: var(--spacing-tiny) 0;
+  font-size: var(--font-size-regular);
+  background-color: var(--color-interface-softest);
+  border: 1px solid var(--color-interface-soft);
+}
+
+.ant-select-dropdown-empty {
+  color: var(--color-interface-stronger);
+}
+
+.ant-select-item-empty {
+  padding: var(--spacing-tiny) var(--spacing-small);
+  color: var(--color-interface-stronger);
+  font-size: var(--font-size-small);
+  color: var(--color-interface-stronger);
+}
+
+.ant-select-item {
+  padding: var(--spacing-tiny) var(--spacing-small);
+  color: var(--color-interface-stronger);
+  font-size: var(--font-size-small);
+}
+
+.ant-select-item-group {
+  color: var(--color-interface-medium);
+  font-size: var(--font-size-xsmall);
+}
+
+.ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+  background-color: var(--color-interface-softer);
+}
+
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+  color: var(--color-interface-strong);
+  font-weight: var(--font-weight-semibold);
+  background-color: var(--color-info-soft);
+}
+
+.ant-select-item-option-disabled {
+  color: var(--color-interface-soft);
+
+  .ant-select-item-option-selected {
+    background-color: var(--color-interface-softer);
+  }
+
+}
+
+.ant-select-item-option-grouped {
+  padding-left: var(--spacing-medium);
+}
+
+.ant-select-lg {
+  font-size: var(--font-size-regular);
+}
+
+.ant-select-dropdown-rtl .ant-select-item-option-grouped {
+  padding-right: var(--spacing-large);
+  padding-left: var(--spacing-small);
+}
+
+.ant-select-rtl.ant-select-multiple.ant-select-show-arrow .ant-select-selector,
+.ant-select-rtl.ant-select-multiple.ant-select-allow-clear .ant-select-selector {
+  padding-right: var(--spacing-tiny);
+  padding-left: var(--spacing-large);
+}
+
+.ant-select-rtl.ant-select-multiple .ant-select-selection-item-content {
+  margin-left: var(--spacing-tiny);
+}
+
+.ant-select-auto-complete {
+  color: var(--color-interface-stronger);
+}
+
+
+

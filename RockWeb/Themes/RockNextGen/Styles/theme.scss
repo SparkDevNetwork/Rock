@@ -598,11 +598,11 @@ body.navbar-side-open {
         font-size: 24px;
         font-weight: var(--font-weight-semibold);
         line-height: 1;
-        color: var(--color-interface-softer);
+        color: var(--base-interface-softer);
 
         &:after {
-          content: "\f054";
-          font-family: FontAwesome;
+          content: "\ea61";
+          font-family: tabler-icons;
           font-size: 12px;
           font-weight: 900;
           margin-left: 12px;

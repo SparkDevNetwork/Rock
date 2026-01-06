@@ -24,7 +24,8 @@
 }
 
 .contentstack-body {
-    flex: 1 1 80%
+    flex: 1 1 80%;
+    max-width: 100%;
 }
 
 .contentstack > .contentstack-sidebar {
@@ -85,6 +86,12 @@
 // Adjust spacing when content stack is the last child in a content section and there is an overflow body.
 .contentsection:has(.contentsection-body-overflow) .contentstack:last-child {
     padding-bottom: var(--spacing-small);
+}
+
+// Adjust spacing when content stack is the only child in a content section
+
+.contentstack:only-child {
+    padding-bottom: 0;
 }
 
 @media (max-width: 767px) {

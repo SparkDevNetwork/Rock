@@ -207,8 +207,13 @@ namespace Rock.Blocks.Engagement
         /// <inheritdoc/>
         protected override GridBuilder<StreakTypeWithEnrollment> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<StreakTypeWithEnrollment>
+            {
+                LavaObject = row => row.StreakType
+            };
+
             return new GridBuilder<StreakTypeWithEnrollment>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.StreakType.IdKey )
                 .AddTextField( "name", a => a.StreakType.Name )
                 .AddField( "isActive", a => a.StreakType.IsActive )

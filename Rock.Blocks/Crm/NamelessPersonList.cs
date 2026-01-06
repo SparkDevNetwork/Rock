@@ -290,8 +290,13 @@ namespace Rock.Blocks.Crm
         /// <inheritdoc/>
         protected override GridBuilder<NamelessPersonRow> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<NamelessPersonRow>
+            {
+                LavaObject = row => row.Person
+            };
+
             return new GridBuilder<NamelessPersonRow>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddPersonField( "Person", a => a.Person )
                 .AddTextField( "idKey", a => a.Person.IdKey )
                 .AddTextField( "guid", a => a.Person.Guid.ToString() )

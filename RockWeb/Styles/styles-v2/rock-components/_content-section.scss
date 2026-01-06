@@ -329,7 +329,11 @@
     height: 100%;
     flex: 0 0 20%;
     position: sticky;
-    top: 0;
+    top: calc(var(--spacing-medium) + 80px); // offset from top to account for fixed header
+}
+
+.full-work-surface .contentsection-container > .contentsection-nav {
+    top: 0; // remove offset from top when in full worksurface mode
 }
 
 .contentsection-list {
@@ -346,9 +350,15 @@
     flex-direction: row-reverse;
 }
 
-@media (max-width: 767px) {
+@media (max-width: $screen-small) {
     .contentsection-container .contentsection-nav {
         display: none;
+    }
+}
+
+@media (max-width: $screen-medium) {
+    .contentsection-container .contentsection-nav {
+        top: var(--spacing-medium);
     }
 }
 

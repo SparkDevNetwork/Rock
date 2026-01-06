@@ -233,8 +233,13 @@ namespace Rock.Blocks.Group
         /// <inheritdoc/>
         protected override GridBuilder<ArchivedGroupRow> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<ArchivedGroupRow>
+            {
+                LavaObject = row => row.Group
+            };
+
             return new GridBuilder<ArchivedGroupRow>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.Group.IdKey )
                 .AddTextField( "groupType", a => a.GroupTypeName )
                 .AddTextField( "name", a => a.Group.Name )

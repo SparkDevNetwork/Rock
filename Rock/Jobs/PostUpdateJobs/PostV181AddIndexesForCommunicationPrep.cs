@@ -23,10 +23,10 @@ using Rock.Model;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Run once job for v18.0 to update an existing index on the CommunicationRecipient table.
+    /// Run once job for v18.1 to add indexes to improve communication prep performance.
     /// </summary>
-    [DisplayName( "Rock Update Helper v18.0 - Update CommunicationRecipient Index" )]
-    [Description( "This job will update an existing index on the CommunicationRecipient table." )]
+    [DisplayName( "Rock Update Helper v18.1 - Add Indexes For Communication Prep" )]
+    [Description( "This job will add indexes to improve communication prep performance." )]
 
     [IntegerField( "Command Timeout",
         Key = AttributeKey.CommandTimeout,
@@ -34,7 +34,7 @@ namespace Rock.Jobs
         IsRequired = false,
         DefaultIntegerValue = 14400 )]
 
-    public class PostV18UpdateCommunicationRecipientIndex : RockJob
+    public class PostV181AddIndexesForCommunicationPrep : RockJob
     {
         private static class AttributeKey
         {
@@ -44,37 +44,58 @@ namespace Rock.Jobs
         /// <inheritdoc />
         public override void Execute()
         {
-            /*
-                12/8/2025 - JPH
-
-                This is no longer needed, as Rock v18.1 introduces an improved version of this index.
-                https://github.com/SparkDevNetwork/Rock/blob/fbcd238722974b80411eb4cdbefaeb517aaf4b6d/Rock/Jobs/PostUpdateJobs/PostV181AddIndexesForCommunicationPrep.cs#L52-L65
-
-                -- Begin: Original Job Migration -----
-
             // Get the configured timeout, or default to 240 minutes if it is blank.
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
             var jobMigration = new JobMigration( commandTimeout );
 
             jobMigration.Sql( @"
--- Drop the existing index.
-IF EXISTS (SELECT * FROM sys.indexes WHERE NAME = N'IX_CommunicationId' AND object_id = OBJECT_ID('CommunicationRecipient'))
+-- Drop existing index.
+IF EXISTS (SELECT * FROM sys.indexes WHERE NAME = N'IX_CommunicationId' AND object_id = OBJECT_ID(N'[dbo].[CommunicationRecipient]'))
 BEGIN
     DROP INDEX [IX_CommunicationId] ON [dbo].[CommunicationRecipient];
 END
 
--- Recreate the index to include the new columns.
+-- Recreate the index to include the [PersonAliasId] column (promote it from the includes).
 CREATE NONCLUSTERED INDEX [IX_CommunicationId] ON [dbo].[CommunicationRecipient] (
     [CommunicationId] ASC,
+    [PersonAliasId] ASC,
     [Status] ASC,
     [OpenedDateTime] ASC
 )
-INCLUDE ([PersonAliasId], [UnsubscribeDateTime]);" );
+INCLUDE ([UnsubscribeDateTime]);
 
-                -- End: Original Job Migration -----
+-- Drop index (if it exists).
+IF EXISTS (SELECT * FROM sys.indexes WHERE NAME = N'IX_GroupId_GroupMemberStatus_PersonId' AND object_id = OBJECT_ID(N'[dbo].[GroupMember]'))
+BEGIN
+    DROP INDEX [IX_GroupId_GroupMemberStatus_PersonId] ON [dbo].[GroupMember];
+END
 
-                Reason: Prevent an unneeded index migration.
-            */
+-- Add a new index to support communication prep queries.
+CREATE NONCLUSTERED INDEX [IX_GroupId_GroupMemberStatus_PersonId] ON [dbo].[GroupMember] (
+    [GroupId] ASC,
+    [GroupMemberStatus] ASC,
+    [PersonId] ASC
+)
+INCLUDE ([DateTimeAdded], [CreatedDateTime]);
+
+-- Drop index (if it exists).
+IF EXISTS (SELECT * FROM sys.indexes WHERE NAME = N'IX_PersonalizationType_PersonalizationEntityId' AND object_id = OBJECT_ID(N'[dbo].[PersonAliasPersonalization]'))
+BEGIN
+    DROP INDEX [IX_PersonalizationType_PersonalizationEntityId] ON [dbo].[PersonAliasPersonalization];
+END
+
+-- Add a new index to support communication prep queries.
+CREATE NONCLUSTERED INDEX [IX_PersonalizationType_PersonalizationEntityId] ON [dbo].[PersonAliasPersonalization] (
+    [PersonalizationType] ASC,
+    [PersonalizationEntityId] ASC
+)
+INCLUDE ([PersonAliasId]);
+
+-- Drop index (if it exists). This index is redundant with the clustered index for this table, so it's not needed.
+IF EXISTS (SELECT * FROM sys.indexes WHERE NAME = N'IX_PersonAliasId' AND object_id = OBJECT_ID(N'[dbo].[PersonAliasPersonalization]'))
+BEGIN
+    DROP INDEX [IX_PersonAliasId] ON [dbo].[PersonAliasPersonalization];
+END" );
 
             DeleteJob();
         }

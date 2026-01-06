@@ -452,8 +452,12 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         protected override GridBuilder<FinancialScheduledTransactionData> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<FinancialScheduledTransactionData>
+            {
+                LavaObject = row => row.FinancialScheduledTransaction
+            };
             return new GridBuilder<FinancialScheduledTransactionData>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.FinancialScheduledTransaction.IdKey )
                 .AddTextField( "id", a => a.FinancialScheduledTransaction.Id.ToString() )
                 .AddPersonField( "authorized", a => a.FinancialScheduledTransaction.AuthorizedPersonAlias?.Person )

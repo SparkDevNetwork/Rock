@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 
 using Rock.Enums.Blocks.Communication.CommunicationFlowDetail;
+using Rock.Enums.Communication;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 
@@ -42,6 +43,14 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowDetail
         /// Gets or sets the binary file for the template preview.
         /// </summary>
         public ListItemBag ImageFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the usage type for the template.
+        /// </summary>
+        /// <value>
+        /// This is used to differentiate between flow-specific and regular communication templates, such as in the "Duplicate From Template" picker.
+        /// </value>
+        public CommunicationTemplateUsageType? UsageType { get; set; }
 
         /// <summary>
         /// Gets or sets the subject of the email.

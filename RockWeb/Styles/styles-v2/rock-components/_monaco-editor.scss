@@ -1,0 +1,52 @@
+// Styles to override monoco editor defaults to match Rock theme
+
+// Normal VS Theme Overrides - does not affect VS Dark or HC themes
+
+
+.monaco-editor {
+    > .overflow-guard > .margin,
+    > .overflow-guard > .monaco-scrollable-element > .monaco-editor-background,
+    canvas.decorationsOverviewRuler,
+    .sticky-widget,
+    .sticky-line-content {
+        background-color: var(--color-interface-softest) !important;
+    }
+
+    .monaco-editor-background {
+        background-color: transparent !important;
+    }
+
+    .line-numbers.active-line-number {
+        color: var(--color-interface-strong) !important;
+    }
+
+    .view-overlays .current-line-exact,
+    .sticky-widget {
+        border-color: var(--color-interface-soft) !important;
+    }
+
+    .sticky-widget {
+        box-shadow: 0 4px 2px -2px var(--color-interface-soft) !important;
+    }
+
+    .scroll-decoration {
+        box-shadow: var(--color-interface-strong) 0 6px 6px -6px inset !important;
+    }
+
+    .mtk14,
+    .mtk10 { // Element text and bracket color
+        color: var(--color-danger-strong) !important;
+    }
+
+    .mtk1 { // Text content color
+        color: var(--color-interface-stronger) !important;
+    }
+
+    .cursor {
+        background-color: var(--color-interface-stronger) !important;
+    }
+
+    .mtk23 { // Variable color
+        color: var(--color-info-strong) !important;
+    }
+}

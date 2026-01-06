@@ -1450,6 +1450,20 @@ namespace RockWeb.Blocks.Crm
             var maxAccountProtectionProfile = canMergeResult.MaxAccountProtectionProfile;
             var maxElevatedSecurityLevel = canMergeResult.MaxElevatedSecurityLevel;
 
+            if ( AreSelectedPersonsInSameLMSClass() )
+            {
+                nbWarning.Visible = true;
+                nbWarning.Heading = "Unable to Merge";
+                nbWarning.Text = "More than one of the selected individuals is enrolled in the same LMS class. To proceed, ensure that the individual is enrolled in only one instance of the class.";
+                lbMerge.Enabled = false;
+                return;
+            }
+            else
+            {
+                nbWarning.Visible = false;
+                lbMerge.Enabled = true;
+            }
+
             if ( maxAccountProtectionProfile == AccountProtectionProfile.Medium && !hasDifferentEmailAddresses && !hasDifferentEmailAddresses )
             {
                 // Medium AccountProtectionProfile, but not email or phone issues, so just a friendly warning
@@ -1596,6 +1610,17 @@ namespace RockWeb.Blocks.Crm
             {
                 nbSecurityNotice.Text += $"<br><br>{memberOfSecurityRoleMessage}";
             }
+        }
+
+        private bool AreSelectedPersonsInSameLMSClass()
+        {
+            var personIds = MergeData.People.Select( a => a.Id ).ToArray();
+
+            return new LearningParticipantService( new RockContext() )
+                .Queryable()
+                .Where( a => personIds.Contains( a.PersonId ) )
+                .GroupBy( lp => lp.LearningClassId )
+                .Any( g => g.Select( lp => lp.PersonId ).Distinct().Count() >= 2 );
         }
 
         /// <summary>
@@ -1832,118 +1857,6 @@ WHERE GMO.[PersonId] = @OldId
 			AND gmo.GroupMemberStatus = @GroupMemberStatusPending
 			)
 		)
-/*
-    10/20/2025 - N.A.
-
-    Handles LearningClassActivityCompletion records for a student. Since a student cannot have multiple completion records for the 
-    same class and activity, we need to remove duplicates when they exist.
-
-    The removal priority is ranked as follows:
-    1) Prefer completed records over non-completed ones (student-submitted).
-    2) Prefer completed records over non-completed ones (facilitator-graded).
-    3) Prefer records with higher points earned.
-    4) Prefer newer records based on CreatedDateTime.
-
-    Reason: Ensure only one valid completion record exists per student per activity, retaining the highest ranked entry.
-*/
-
--- Move any LearningClassActivityCompletion records for the @LessActiveGroupMembersIdsToDelete to the surviving Student/GroupMember
-DECLARE @Map TABLE (fromId INT PRIMARY KEY, toId INT NOT NULL);
-
--- Case 1: new (less-active) -> old (survivor) for early-delete list
-INSERT INTO @Map (fromId, toId)
-SELECT
-    GMN.[Id],
-    GMO.[Id]
-FROM [GroupMember] AS GMO
-INNER JOIN [GroupTypeRole] AS GTR ON GTR.[Id] = GMO.[GroupRoleId]
-INNER JOIN [GroupMember] AS GMN ON GMN.[GroupId] = GMO.[GroupId]
-    AND (GTR.[MaxCount] <= 1 OR GMN.[GroupRoleId] = GMO.[GroupRoleId])
-    AND GMN.[PersonId] = @NewId
-WHERE GMO.[PersonId] = @OldId
-    AND GMN.[Id] IN (SELECT [Id] FROM @LessActiveGroupMembersIdsToDelete);
-
--- Case 2: old -> new for the “already existed with new id” scenario
-INSERT INTO @Map (fromId, toId)
-SELECT
-    GMO.[Id],
-    GMN.[Id]
-FROM [GroupMember] AS GMO
-INNER JOIN [GroupTypeRole] AS GTR ON GTR.[Id] = GMO.[GroupRoleId]
-INNER JOIN [GroupMember] AS GMN ON GMN.[GroupId] = GMO.[GroupId]
-    AND (GTR.[MaxCount] <= 1 OR GMN.[GroupRoleId] = GMO.[GroupRoleId])
-    AND GMN.[PersonId] = @NewId
-WHERE GMO.[PersonId] = @OldId
-    AND NOT EXISTS (SELECT 1 FROM @Map m WHERE m.fromId = GMO.[Id]); -- avoid dup inserts
-
--- Create a CTE for the student's LearningClassActivityCompletion records per LearningClassActivity
--- ranked by completion, points earned, created date.  We'll use this later when
--- deciding which ones (if any) need to be deleted to avoid duplicate activity completion records
--- for one student in the class.
-;WITH LCAC_ALL AS (
-    SELECT
-        L.[Id],
-        L.[StudentId],
-        L.[LearningClassActivityId],
-        L.[IsStudentCompleted],
-        L.[IsFacilitatorCompleted],
-        L.[PointsEarned],
-        L.[CreatedDateTime],
-        TargetStudentId = COALESCE(M.toId, L.StudentId),
-        IsFrom = CASE WHEN M.fromId IS NULL THEN 0 ELSE 1 END
-    FROM [LearningClassActivityCompletion] AS L
-    LEFT JOIN @Map AS M ON L.[StudentId] = M.[fromId]
-    WHERE L.[StudentId] IN (SELECT fromId FROM @Map)
-       OR L.[StudentId] IN (SELECT toId   FROM @Map)
-),
-Ranked AS (
-    SELECT
-        *,
-        rn_keep = ROW_NUMBER() OVER (
-            PARTITION BY TargetStudentId, LearningClassActivityId
-            ORDER BY
-                CASE WHEN IsStudentCompleted = 1 THEN 1 ELSE 0 END DESC,
-                CASE WHEN IsFacilitatorCompleted = 1 THEN 1 ELSE 0 END DESC,
-                COALESCE(PointsEarned, -2147483648) DESC,
-                COALESCE(CreatedDateTime, '1900-01-01') DESC,
-                IsFrom ASC
-        )
-    FROM LCAC_ALL
-)
-
--- 1) Now, delete would-be duplicates (all but best)
-DELETE L
-FROM [LearningClassActivityCompletion] AS L
-INNER JOIN Ranked AS R ON R.[Id] = L.[Id]
-WHERE R.rn_keep > 1;
-
--- 2) Move remaining LCAC rows to survivor
-UPDATE L
-SET L.[StudentId] = M.[toId]
-FROM [LearningClassActivityCompletion] AS L
-INNER JOIN @Map AS M ON L.[StudentId] = M.[fromId];
-
-/*
- * Handle LearningParticipant records.
- * Move LearningParticipant to survivor then drop source
- * (LCAC moves had to be done first to satisfy FK to LP)
- */
--- If a LearningParticipant already exists for the surviving group member participant, drop the source to avoid PK collision.
-DELETE LP
-FROM [LearningParticipant] AS LP
-INNER JOIN @Map AS M ON LP.[Id] = M.[fromId]
-WHERE EXISTS (
-    SELECT 1
-    FROM [LearningParticipant] AS LP2
-    WHERE LP2.[Id] = M.[toId]
-);
-
--- Otherwise, rewrite the primary key to the survivor's GroupMember.Id.
-UPDATE LP
-SET LP.[Id] = M.[toId]
-FROM [LearningParticipant] AS LP
-JOIN @Map AS M ON LP.[Id] = M.[fromId]
-
 /*
  * Handle RegistrationRegistrant records
  */

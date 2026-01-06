@@ -1183,6 +1183,7 @@ namespace Rock.Blocks.Communication
             var pushCommunication = new CommunicationDetails();
 
             bag.Guid = communicationTemplate.Guid;
+            bag.UsageType = communicationTemplate.UsageType;
 
             pushCommunication = new CommunicationDetails
             {
@@ -1281,7 +1282,6 @@ namespace Rock.Blocks.Communication
                 .Where( a =>
                     a.IsActive
                     && a.Version != CommunicationTemplateVersion.Legacy
-                    && a.UsageType == CommunicationTemplateUsageType.CommunicationFlows
                 );
 
             // Get templates that the currently logged in person is authorized to view.

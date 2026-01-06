@@ -39,7 +39,7 @@
                     </RockForm>
                 </div>
                 <div v-else class="d-flex justify-content-between align-items-center">
-                    <div class="w-50">
+                    <div class="w-50 row">
                         <div class="col-md-6">
                             <DropDownList v-model="selectedMeasure"
                                           @update:modelValue="handleChartFilterChanged"
@@ -127,10 +127,6 @@
 /* Overrides the font-size set on the loading indicator because it was affecting the height of the flex row its in. */
 :deep(.ti-2x) {
     font-size: 1.5em !important;
-}
-
-:deep(.contentsection-body) {
-    padding: var(--spacing-small)
 }
 
 .mt-sm {

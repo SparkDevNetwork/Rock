@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -415,8 +416,17 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// <returns></returns>
         private async Task<ScannedDocInfo> ExtractMicrInformationAsync( Rock.Model.BinaryFile image, CancellationToken cancellationToken )
         {
+            BinaryData data = null;
+            if ( image.DatabaseData != null )
+            {
+                data = new BinaryData( image.DatabaseData?.Content );
+            }
+            else
+            {
+                data = await BinaryData.FromStreamAsync( image.ContentStream );
+            }
+
             var client = new DocumentIntelligenceClient( new Uri( GetAttributeValue( AttributeKeys.EndPoint ) ), new Azure.AzureKeyCredential( GetAttributeValue( AttributeKeys.ApiKey ) ) );
-            var data = new BinaryData( image.DatabaseData?.Content );
             var result = await client.AnalyzeDocumentAsync( Azure.WaitUntil.Completed, "prebuilt-check.us", data, cancellationToken );
 
             if ( result.Value.Documents.Any() && result.Value.Documents[0].Fields["MICR"].ValueDictionary.Any() )
@@ -744,13 +754,11 @@ namespace Rock.Blocks.Types.Mobile.Finance
 
             try
             {
-                if ( image.DatabaseData.Content.Length > 0 )
-                {
-                    ProcessImageAndGenerateTransaction( processImageBag, image );
-                }
+                ProcessImageAndGenerateTransaction( processImageBag, image );
             }
-            catch
+            catch (Exception ex)
             {
+                ExceptionLogService.LogException( ex );
                 // If the image could not be loaded, return an error.
                 return ActionBadRequest( "Could not load the image from the binary file." );
             }

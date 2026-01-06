@@ -707,6 +707,64 @@ WHERE r.[RowNumber] > 1;";
         /// Refresh the recipients list.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockObsolete( "19.0" )]
+        [Obsolete( "Use RefreshCommunicationRecipientList instead." )]
+        internal void RefreshCommunicationRecipientListInternal( RockContext rockContext )
+        {
+            if ( !ListGroupId.HasValue )
+            {
+                return;
+            }
+
+            if ( ( rockContext.Database.CommandTimeout ?? 0 ) < 90 )
+            {
+                /*
+                    12/1/2025 - JPH
+
+                    We're increasing this timeout from the default of 30 seconds to give the following
+                    pre-send task more time to complete.
+
+                    Reason: Communications with a large number of recipients time out and don't send.
+                    https://github.com/SparkDevNetwork/Rock/issues/5651
+                */
+                rockContext.Database.SetCommandTimeout( 90 );
+            }
+
+            using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Prepare Recipient List > Refresh Communication Recipient List" ) )
+            {
+                /*
+                    10/16/2025 - JPH
+
+                    For communications created by the Legacy Communication Entry Wizard block, we must continue supporting
+                    the slower, legacy method of refreshing the recipient list, since it supports data view segments with
+                    queries that are built using EF LINQ expressions. The newer, faster stored procedure-based approach
+                    only supports personalization segments (or legacy communications that don't have any segments at all).
+
+                    Reason: Improve refresh communication recipient list performance when possible.
+                */
+
+                if ( Segments.IsNotNullOrWhiteSpace() )
+                {
+                    RefreshCommunicationRecipientList( rockContext );
+                    return;
+                }
+
+                rockContext.Database.ExecuteSqlCommand( "EXEC [dbo].[spCommunication_SynchronizeListRecipients] @CommunicationId", new SqlParameter( "@CommunicationId", Id ) );
+            }
+        }
+
+        /// <summary>
+        /// Refresh the recipients list.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public void RefreshCommunicationRecipientList( RockContext rockContext )
         {

@@ -67,7 +67,7 @@ namespace Rock.Blocks.Engagement
     [Rock.SystemGuid.EntityTypeGuid( "f3a7b501-61c4-4784-8f73-958e2f1fc353" )]
     // Was [Rock.SystemGuid.BlockTypeGuid( "6a7c7c71-4760-4e6c-9d6f-6926c81caf8f" )]
     [Rock.SystemGuid.BlockTypeGuid( "3EFB4302-9AB4-420F-A818-48B1B06AD109" )]
-    [CustomizedGrid( CustomColumnMessage = "To access the entity, prefix your property names with <code>Row.StepType</code> (e.g. <code>{{ Row.StepType.Id }}</code>)." )]
+    [CustomizedGrid]
     [ContextAware( typeof( Campus ) )]
     public class StepTypeList : RockListBlockType<StepTypeList.StepTypeWithCounts>
     {
@@ -266,8 +266,13 @@ namespace Rock.Blocks.Engagement
         /// <inheritdoc/>
         protected override GridBuilder<StepTypeWithCounts> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<StepTypeWithCounts>
+            {
+                LavaObject = row => row.StepType
+            };
+
             return new GridBuilder<StepTypeWithCounts>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.StepType.IdKey )
                 .AddTextField( "iconCssClass", a => a.StepType.IconCssClass )
                 .AddTextField( "name", a => a.StepType.Name )
@@ -399,7 +404,7 @@ namespace Rock.Blocks.Engagement
         #endregion
 
         #region Helper Classes
-        public class StepTypeWithCounts : LavaDataObject
+        public class StepTypeWithCounts
         {
             public StepType StepType { get; set; }
             public int StartedCount { get; set; }

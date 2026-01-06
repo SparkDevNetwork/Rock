@@ -19,7 +19,7 @@
                 },
                 {
                     "type": "image",
-                    "name": "Checkin Logo",
+                    "name": "Site Logo",
                     "variable": "logo-image",
                     "description": "The logo that will be displayed throughout the site. For best results, use a white SVG file to ensure clear and consistent display across the site.",
                     "default": "~/Assets/Images/rock-logo-circle-white.svg"
