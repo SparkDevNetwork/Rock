@@ -386,10 +386,6 @@ namespace Rock.Net
             {
                 PageParameters.AddOrReplace( key, request.QueryString[key] );
             }
-            foreach ( var kvp in request.RouteData )
-            {
-                PageParameters.AddOrReplace( kvp.Key, kvp.Value.ToStringSafe() );
-            }
 
             foreach ( var kvp in request.RouteData )
             {
