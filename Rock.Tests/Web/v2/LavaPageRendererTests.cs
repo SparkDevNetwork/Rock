@@ -1067,6 +1067,8 @@ namespace Rock.Tests.Web.v2
 
         #endregion
 
+        #region Support Classes and Methods
+
         /// <summary>
         /// Create a base layout that will be used by tests. This is an empty
         /// layout that has an optional list of zones to render blocks into.
@@ -1097,5 +1099,7 @@ namespace Rock.Tests.Web.v2
 
             return builder.GetLayout( "/main.lava", "RockNextGen", engine );
         }
+
+        #endregion
     }
 }

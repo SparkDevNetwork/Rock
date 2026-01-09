@@ -86,6 +86,8 @@ namespace Rock.Web.v2
             AddPageMetaTags();
             AddSiteIcons();
 
+            var zones = await RenderBlocksAsync( _layout.Zones );
+
             if ( _pageNeedsObsidian )
             {
                 InjectObsidian();
@@ -113,7 +115,7 @@ namespace Rock.Web.v2
             mergeFields.Add( "SiteTitle", _rockRequestContext.Page.Layout.Site.Name );
             mergeFields.Add( "BodyCssClass", _rockRequestContext.Page.BodyCssClass );
             mergeFields.Add( "BreadCrumbs", GetPageBreadCrumbs() );
-            mergeFields.Add( "Zones", await RenderBlocksAsync( _layout.Zones ) );
+            mergeFields.Add( "Zones", zones );
             mergeFields.Add( "HeadEndContent", headEndContentBuilder.ToString() );
             mergeFields.Add( "BodyEndContent", bodyEndContentBuilder.ToString() );
 
@@ -511,6 +513,8 @@ namespace Rock.Web.v2
                 sb.Append( responseElement.Name );
                 sb.Append( ">" );
             }
+
+            sb.AppendLine();
         }
 
         /// <summary>
