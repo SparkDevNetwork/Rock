@@ -1194,7 +1194,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
 
         #endregion
 
-        #region Inject Title Element
+        #region InjectTitleElement
 
         [TestMethod]
         public async Task InjectTitleElement_WithTitleElement_ReplacesOriginalTitleContent()
@@ -1332,6 +1332,142 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
 
             Assert.IsFalse( result.HasErrors );
             Assert.Contains( "<title>one &lt; two | site</title>", result.Text );
+        }
+
+        #endregion
+
+        #region InjectBodyClassAttribute
+
+        [TestMethod]
+        public async Task InjectBodyClassAttribute_WithoutClassAttribute_AddsAttribute()
+        {
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", "<html><head></head><body></body></html>" }
+            );
+
+            var builder = new LavaPageLayoutFactory( fileProvider );
+            var engine = new FluidEngine();
+
+            var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
+            var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+            {
+                ["BodyCssClass"] = "custom-class",
+            } );
+
+            var result = engine.RenderTemplate( layout.Template, lavaContext );
+
+            Assert.IsFalse( result.HasErrors );
+            Assert.Contains( "<body class=\"custom-class\">", result.Text );
+        }
+
+        [TestMethod]
+        public async Task InjectBodyClassAttribute_WithoutClassAttributeAndNullBodyCssClass_RendersEmptyAttribute()
+        {
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", "<html><head></head><body></body></html>" }
+            );
+
+            var builder = new LavaPageLayoutFactory( fileProvider );
+            var engine = new FluidEngine();
+
+            var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
+            var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+            {
+                ["BodyCssClass"] = null,
+            } );
+
+            var result = engine.RenderTemplate( layout.Template, lavaContext );
+
+            Assert.IsFalse( result.HasErrors );
+            Assert.Contains( "<body class=\"\">", result.Text );
+        }
+
+        [TestMethod]
+        public async Task InjectBodyClassAttribute_WithoutClassAttributeAndEmptyBodyCssClass_RendersEmptyAttribute()
+        {
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", "<html><head></head><body></body></html>" }
+            );
+
+            var builder = new LavaPageLayoutFactory( fileProvider );
+            var engine = new FluidEngine();
+
+            var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
+            var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+            {
+                ["BodyCssClass"] = "",
+            } );
+
+            var result = engine.RenderTemplate( layout.Template, lavaContext );
+
+            Assert.IsFalse( result.HasErrors );
+            Assert.Contains( "<body class=\"\">", result.Text );
+        }
+
+        [TestMethod]
+        public async Task InjectBodyClassAttribute_WithClassAttribute_UpdatesAttribute()
+        {
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", "<html><head></head><body class=\"original-class\"></body></html>" }
+            );
+
+            var builder = new LavaPageLayoutFactory( fileProvider );
+            var engine = new FluidEngine();
+
+            var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
+            var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+            {
+                ["BodyCssClass"] = "custom-class",
+            } );
+
+            var result = engine.RenderTemplate( layout.Template, lavaContext );
+
+            Assert.IsFalse( result.HasErrors );
+            Assert.Contains( "<body class=\"original-class custom-class\">", result.Text );
+        }
+
+        [TestMethod]
+        public async Task InjectBodyClassAttribute_WithClassAttributeAndNullBodyCssClass_RendersOriginalClass()
+        {
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", "<html><head></head><body class=\"original-class\"></body></html>" }
+            );
+
+            var builder = new LavaPageLayoutFactory( fileProvider );
+            var engine = new FluidEngine();
+
+            var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
+            var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+            {
+                ["BodyCssClass"] = null,
+            } );
+
+            var result = engine.RenderTemplate( layout.Template, lavaContext );
+
+            Assert.IsFalse( result.HasErrors );
+            Assert.Contains( "<body class=\"original-class\">", result.Text );
+        }
+
+        [TestMethod]
+        public async Task InjectBodyClassAttribute_WithClassAttributeAndEmptyBodyCssClass_RendersOriginalClass()
+        {
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", "<html><head></head><body class=\"original-class\"></body></html>" }
+            );
+
+            var builder = new LavaPageLayoutFactory( fileProvider );
+            var engine = new FluidEngine();
+
+            var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
+            var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+            {
+                ["BodyCssClass"] = "",
+            } );
+
+            var result = engine.RenderTemplate( layout.Template, lavaContext );
+
+            Assert.IsFalse( result.HasErrors );
+            Assert.Contains( "<body class=\"original-class\">", result.Text );
         }
 
         #endregion

@@ -111,6 +111,7 @@ namespace Rock.Web.v2
             mergeFields.Add( "PageTitle", responseBase.PageTitle );
             mergeFields.Add( "BrowserTitle", responseBase.BrowserTitle );
             mergeFields.Add( "SiteTitle", _rockRequestContext.Page.Layout.Site.Name );
+            mergeFields.Add( "BodyCssClass", _rockRequestContext.Page.BodyCssClass );
             mergeFields.Add( "BreadCrumbs", GetPageBreadCrumbs() );
             mergeFields.Add( "Zones", await RenderBlocksAsync( _layout.Zones ) );
             mergeFields.Add( "HeadEndContent", headEndContentBuilder.ToString() );

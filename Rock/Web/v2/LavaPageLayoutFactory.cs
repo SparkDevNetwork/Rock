@@ -163,6 +163,7 @@ namespace Rock.Web.v2
             ProcessZoneNodes( document, document.DocumentElement, context );
 
             InjectTitleElement( document );
+            InjectBodyClassAttribute( document );
 
             var headElement = document.QuerySelector( "head" );
             var bodyElement = document.QuerySelector( "body" );
@@ -452,6 +453,25 @@ namespace Rock.Web.v2
             }
 
             titleElement.TextContent = "{% if BrowserTitle != null and BrowserTitle != empty %}{{ BrowserTitle | Escape }} | {% endif %}{{ SiteTitle | Escape }}";
+        }
+
+        /// <summary>
+        /// Injects the Lava required to render custom CSS classes into the body
+        /// element.
+        /// </summary>
+        /// <param name="document">The HTML document.</param>
+        private void InjectBodyClassAttribute( IDocument document )
+        {
+            var bodyElement = document.QuerySelector( "body" );
+
+            if ( bodyElement.HasAttribute( "class" ) )
+            {
+                bodyElement.SetAttribute( "class", bodyElement.GetAttribute( "class" ) + "{% if BodyCssClass != null and BodyCssClass != empty %} {{ BodyCssClass }}{% endif %}" );
+            }
+            else
+            {
+                bodyElement.SetAttribute( "class", "{{ BodyCssClass }}" );
+            }
         }
 
         /// <summary>
