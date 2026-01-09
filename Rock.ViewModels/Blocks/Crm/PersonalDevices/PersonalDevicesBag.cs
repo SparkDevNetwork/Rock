@@ -1,5 +1,4 @@
-﻿
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-
 using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Crm.PersonalDevices

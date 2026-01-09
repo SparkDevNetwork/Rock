@@ -25,7 +25,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <TextBox v-model="description"
                              :disabled="isSystem"
                              label="Description"
@@ -36,17 +36,23 @@
         <br />
         <ContentSection title="General"
                         icon="ti ti-settings">
-            <ContentStack title="Site Theming"
-                          description="Select the theme and upload branding assets for this site.">
-                <DropDownList v-model="theme"
-                              label="Theme"
-                              :disabled="isSystem"
-                              help="The theme that should be used for the site. Themes contain specific layouts and css styling that controls how a site and its pages will look."
-                              :items="themes" />
-
+            <ContentStack>
+                <template #header>
+                    <p class="contentstack-header-title">Site Theming</p>
+                    <p class="contentstack-header-description small">Select the theme and upload branding assets for this site.</p>
+                </template>
+                <div class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="theme"
+                                      label="Theme"
+                                      help="The theme that should be used for the site. Themes contain specific layouts and css styling that controls how a site and its pages will look."
+                                      :disabled="isSystem"
+                                      :items="themes" />
+                    </div>
+                </div>
                 <ImageUploader v-model="favIconBinaryFile"
                                label="Favicon"
-                               help="Upload a favicon (site icon). Recommended size: 192×192. Rock will generate all other required sizes."
+                               help="Upload a favicon (site icon). Recommended size: 192x192. Rock will generate all other required sizes."
                                :uploadAsTemporary="true"
                                uploadButtonText="Upload"
                                :binaryFileTypeGuid="binaryFileTypeGuid"
@@ -59,19 +65,24 @@
                                uploadButtonText="Upload"
                                :showDeleteButton="true" />
             </ContentStack>
+
             <ContentStack>
-                <hr class="section-header-hr">
-            </ContentStack>
-            <ContentStack title="Site Settings"
-                          description="Define domains, analytics, and key options that control how this site operates.">
+                <template #header>
+                    <p class="contentstack-header-title">Site Settings</p>
+                    <p class="contentstack-header-description small">Define domains, analytics, and key options that control how this site operates.</p>
+                </template>
                 <TextBox v-model="siteDomains"
                          label="Domain(s)"
-                         help="Enter one or more domains for this site (comma-separated or one per line). Rock uses these domains to match incoming requests to the correct site. If no page or route is specified, the site’s default page will be shown."
+                         help="Enter one or more domains for this site (comma-separated or one per line). Rock uses these domains to match incoming requests to the correct site. If no page or route is specified, the site's default page will be shown."
                          textMode="multiline" />
 
-                <TextBox v-model="googleAnalyticsCode"
-                         label="Google Analytics Code"
-                         help="Provided Google Analytics code will track visits on all site pages." />
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="googleAnalyticsCode"
+                                 label="Google Analytics Code"
+                                 help="Provided Google Analytics code will track visits on all site pages." />
+                    </div>
+                </div>
 
                 <InlineCheckBox v-model="enableVisitorTracking"
                                 label="Enable Visitor Tracking"
@@ -94,59 +105,85 @@
         <ContentSection title="Page Routing"
                         icon="ti ti-sitemap"
                         isCollapsed>
-            <ContentStack title="Main Pages"
-                          description="Define the key pages used for site navigation and interactions.">
-
-                <PagePicker v-model="defaultPage"
-                            label="Default Page"
-                            :multiple="false"
-                            help="Page shown when no specific page or route is given."
-                            promptForPageRoute
-                            showSelectCurrentPage />
-
-                <PagePicker v-model="loginPage"
-                            label="Login Page"
-                            :multiple="false"
-                            help="Page people see when accessing a page that requires login."
-                            promptForPageRoute
-                            showSelectCurrentPage />
-
-                <PagePicker v-model="changePasswordPage"
-                            label="Password Reset Page"
-                            :multiple="false"
-                            help="Page where people change their password."
-                            promptForPageRoute
-                            showSelectCurrentPage />
-
-                <PagePicker v-model="communicationPage"
-                            label="Communication Page"
-                            :multiple="false"
-                            help="Page used when creating a new communication."
-                            promptForPageRoute
-                            showSelectCurrentPage />
-
-                <PagePicker v-model="registrationPage"
-                            label="Group Registration Page"
-                            :multiple="false"
-                            help="Page shown when people register for a group."
-                            promptForPageRoute
-                            showSelectCurrentPage />
-            </ContentStack>
             <ContentStack>
-                <hr class="section-header-hr">
+                <template #header>
+                    <p class="contentstack-header-title">Main Pages</p>
+                    <p class="contentstack-header-description small">Define the key pages used for site navigation and interactions.</p>
+                </template>
+                <div class="row">
+                    <div class="col-md-6">
+                        <PagePicker v-model="defaultPage"
+                                    label="Default Page"
+                                    :multiple="false"
+                                    help="Page shown when no specific page or route is given."
+                                    promptForPageRoute
+                                    showSelectCurrentPage />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <PagePicker v-model="loginPage"
+                                    label="Login Page"
+                                    :multiple="false"
+                                    help="Page people see when accessing a page that requires login."
+                                    promptForPageRoute
+                                    showSelectCurrentPage />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <PagePicker v-model="changePasswordPage"
+                                    label="Password Reset Page"
+                                    :multiple="false"
+                                    help="Page where people change their password."
+                                    promptForPageRoute
+                                    showSelectCurrentPage />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <PagePicker v-model="communicationPage"
+                                    label="Communication Page"
+                                    :multiple="false"
+                                    help="Page used when creating a new communication."
+                                    promptForPageRoute
+                                    showSelectCurrentPage />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <PagePicker v-model="registrationPage"
+                                    label="Group Registration Page"
+                                    :multiple="false"
+                                    help="Page shown when people register for a group."
+                                    promptForPageRoute
+                                    showSelectCurrentPage />
+                    </div>
+                </div>
             </ContentStack>
-            <ContentStack title="Error Handling"
-                          description="Specify the pages used when errors occur or content isn’t found.">
-                <TextBox v-model="errorPage"
-                         label="Error Page"
-                         help="URL users see if a site error occurs." />
 
-                <PagePicker v-model="pageNotFoundPage"
-                            label="404 Page"
-                            :multiple="false"
-                            help="Custom page shown when a page isn’t found (404 error)."
-                            promptForPageRoute
-                            showSelectCurrentPage />
+            <ContentStack>
+                <template #header>
+                    <p class="contentstack-header-title">Error Handling</p>
+                    <p class="contentstack-header-description small">Specify the pages used when errors occur or content isn't found.</p>
+                </template>
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="errorPage"
+                                 label="Error Page"
+                                 help="URL users see if a site error occurs." />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <PagePicker v-model="pageNotFoundPage"
+                                    label="404 Page"
+                                    :multiple="false"
+                                    help="Custom page shown when a page isn't found (404 error)."
+                                    promptForPageRoute
+                                    showSelectCurrentPage />
+                    </div>
+                </div>
             </ContentStack>
         </ContentSection>
         <br />
@@ -160,6 +197,7 @@
             <div class="panel-body">
                 <div class="grid grid-panel">
                     <Grid :data="gridData" keyField="idKey" itemTerm="Page Attribute" liveUpdates light @addItem="onAddItem">
+                        <ReorderColumn @orderChanged="onOrderChanged" />
                         <TextColumn name="name" field="name" title="Attribute" />
                         <TextColumn name="description" field="description" title="Description" />
                         <BooleanColumn name="isRequired" field="isRequired" title="Required" />
@@ -185,70 +223,87 @@
         <ContentSection title="Advanced Settings"
                         icon="ti ti-adjustments-cog"
                         isCollapsed>
-            <ContentStack title="Traffic"
-                          description="Configure how visitors are redirected and how their activity is logged.">
+            <ContentStack>
+                <template #header>
+                    <p class="contentstack-header-title">Traffic</p>
+                    <p class="contentstack-header-description small">Configure how visitors are redirected and how their activity is logged.</p>
+                </template>
                 <InlineCheckBox v-model="enablePageViews"
                                 label="Track Page Views"
                                 help="Record page view events for analytics." />
 
 
                 <ConditionalWell v-show="enablePageViews">
-                    <NumberBox v-model="retentionDuration"
-                               label="Page View Retention (Days)"
-                               help="How many days to retain page view logs. Leave blank to keep indefinitely." />
+                    <div class="row">
+                        <div class="col-md-3">
+                            <NumberBox v-model="retentionDuration"
+                                       label="Page View Retention (Days)"
+                                       help="How many days to retain page view logs. Leave blank to keep indefinitely." />
+                        </div>
+                    </div>
                 </ConditionalWell>
 
                 <InlineCheckBox v-model="enableMobileRedirect"
                                 label="Enable Mobile Redirect"
                                 help="Redirect visitors on mobile devices to a mobile page or external URL." />
 
-                <ConditionalWell v-show="enableMobileRedirect">
-                    <PagePicker v-model="mobilePageComputed"
-                                label="Mobile Landing Page"
-                                :multiple="false"
-                                help="Page to show mobile visitors when redirect is enabled."
-                                showSelectCurrentPage />
+                <ConditionalWell v-show="enableMobileRedirect" class="">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <PagePicker v-model="mobilePageComputed"
+                                        label="Mobile Landing Page"
+                                        :multiple="false"
+                                        help="Page to show mobile visitors when redirect is enabled."
+                                        showSelectCurrentPage />
 
-                    <TextBox v-model="externalUrl"
-                             label="Mobile Redirect URL"
-                             help="External URL to send mobile visitors to (overrides Mobile Page)." />
+                            <TextBox v-model="externalUrl"
+                                     label="Mobile Redirect URL"
+                                     help="External URL to send mobile visitors to (overrides Mobile Page)." />
 
-                    <InlineCheckBox v-model="redirectTablets"
-                                    label="Include Tablet Devices"
-                                    help="Redirect tablet users as well (in addition to phones)." />
+                            <InlineCheckBox v-model="redirectTablets"
+                                            label="Include Tablet Devices"
+                                            help="Redirect tablet users as well (in addition to phones)." />
+                        </div>
+                    </div>
                 </ConditionalWell>
+            </ContentStack>
 
-                <InlineCheckBox v-model="allowIndexing"
-                                label="Allow Indexing"
-                                help="Controls whether search engines (like Google or Bing) can index this site’s pages." />
-            </ContentStack>
             <ContentStack>
-                <hr class="section-header-hr">
-            </ContentStack>
-            <ContentStack title="Security and Indexing"
-                          description="Set rules for indexing, routing, and embedding.">
+                <template #header>
+                    <p class="contentstack-header-title">Security and Indexing</p>
+                    <p class="contentstack-header-description small">Set rules for indexing, routing, and embedding.</p>
+                </template>
                 <TextBox v-model="allowedFrameDomains"
                          label="Allowed Embed Domain(s)"
                          textMode="multiline"
-                         help="Enter the domains allowed to embed this site in an iframe (comma-separated or one per line). Be sure to include your own domain(s) to avoid blocking modal use. These values are applied to the Content-Security-Policy frame-ancestors directive. If left blank, Rock sets the header to frame-ancestors 'self', which prevents embedding on other domains." />
+                         :help="`Enter the domains allowed to embed this site in an iframe (comma-separated or one per line). Be sure to include your own domain(s) to avoid blocking modal use. These values are applied to the <a href='${frameAncestorsDirectiveLink}'>Content-Security-Policy frame-ancestors directive</a>. If left blank, Rock sets the header to frame-ancestors 'self', which prevents embedding on other domains.`" />
 
-                <TextBox v-model="indexStartingLocation"
-                         label="Index Start Path"
-                         help="Start page or path for the Rock site indexer." />
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="indexStartingLocation"
+                                 label="Index Start Path"
+                                 help="Start page or path for the Rock site indexer." />
+                    </div>
+                </div>
+
+                <InlineCheckBox v-model="allowIndexing"
+                                label="Allow Indexing"
+                                help="Controls whether search engines (like Google or Bing) can index this site's pages." />
 
                 <InlineCheckBox v-model="enableExclusiveRoutes"
                                 label="Restrict Routes to This Site"
-                                help="Limit routes so they only work on this site’s configured domain(s). Ignored for routes marked ‘Is Global’." />
+                                help="Limit routes so they only work on this site's configured domain(s). Ignored for routes marked 'Is Global'." />
 
                 <InlineCheckBox v-model="disablePredictableIds"
                                 label="Disable Predictable IDs"
-                                help="Replaces simple number IDs in URLs with secure, non-guessable values. This prevents someone from guessing other records by changing numbers (e.g., 112 → 113). Enable only if your site and blocks don’t depend on numeric IDs in the URL." />
+                                help="Replaces simple number IDs in URLs with secure, non-guessable values. This prevents someone from guessing other records by changing numbers (e.g., 112 → 113). Enable only if your site and blocks don't depend on numeric IDs in the URL." />
             </ContentStack>
+
             <ContentStack>
-                <hr class="section-header-hr">
-            </ContentStack>
-            <ContentStack title="Page Header Content"
-                          description="Inject custom HTML, CSS, or scripts into the page header. This will be added to each page's head section.">
+                <template #header>
+                    <p class="contentstack-header-title">Page Header Content</p>
+                    <p class="contentstack-header-description small">Inject custom HTML, CSS, or scripts into the page header. This will be added to each page's head section.</p>
+                </template>
                 <CodeEditor v-model="pageHeaderContent" mode="text" :editorHeight="200" />
             </ContentStack>
         </ContentSection>
@@ -273,7 +328,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
-    import Grid, { DeleteColumn, EditColumn, TextColumn, BooleanColumn } from "@Obsidian/Controls/grid";
+    import Grid, { DeleteColumn, EditColumn, TextColumn, BooleanColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
@@ -303,9 +358,12 @@
     const emit = defineEmits<{
         (e: "update:modelValue", value: ValidPropertiesBox<SiteBag>): void;
         (e: "propertyChanged", value: string): void;
+        (e: "orderSaving", value: boolean): void;
     }>();
 
     // #region Values
+
+    const frameAncestorsDirectiveLink = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/frame-ancestors#Syntax";
 
     const attributes = ref(props.modelValue?.bag?.attributes ?? {});
     const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
@@ -497,6 +555,31 @@
     const onStartSaveAttribute = (): void => {
         submitEditAttribute.value = true;
     };
+
+    function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): boolean {
+        emit("orderSaving", true);
+
+        const beforeIndex = beforeItem ? siteAttributes.value.findIndex(a => a.guid === beforeItem["idKey"]) : -1;
+        const movingIndex = siteAttributes.value.findIndex(a => a.guid === item["idKey"]);
+
+        if (movingIndex === -1) {
+            emit("orderSaving", false);
+            return false;
+        }
+
+        const movingAttribute = siteAttributes.value[movingIndex];
+        siteAttributes.value.splice(movingIndex, 1);
+
+        if (beforeIndex === -1) {
+            siteAttributes.value.push(movingAttribute);
+        }
+        else {
+            siteAttributes.value.splice(beforeIndex, 0, movingAttribute);
+        }
+
+        emit("orderSaving", false);
+        return true;
+    }
 
     watch(isModalOpen, () => {
         if (isModalOpen.value) {

@@ -163,6 +163,18 @@ namespace Rock.Model
         [DataMember]
         public string AdditionalSettingsJson { get; set; }
 
+        /// <summary>
+        /// Number of days added to the calculated due date for a request.
+        /// </summary>
+        [DataMember]
+        public int? RequestDueDateOffestInDays { get; set; }
+
+        /// <summary>
+        /// Number of days before the due date when a request is considered "due soon."
+        /// </summary>
+        [DataMember]
+        public int? RequestDueSoonOffsetInDays { get; set; }
+
         #endregion
 
         #region Navigation Properties

@@ -29,11 +29,11 @@
             </div>
         </div>
 
-        <div v-if="$slots.middleSection" class="displaycard-middle">
+        <div v-if="$slots.middleSection" class="displaycard-content">
             <slot name="middleSection" />
         </div>
 
-        <div v-if="$slots.rightMiddleSection" class="displaycard-right-middle">
+        <div v-if="$slots.rightMiddleSection" class="displaycard-content">
             <slot name="rightMiddleSection" />
         </div>
 
@@ -78,22 +78,6 @@
         </div>
     </div>
 </template>
-
-<style scoped>
-.displaycard-middle {
-    display: flex;
-    flex: 1 1 0;
-    align-items: center;
-    text-align: center;
-}
-
-.displaycard-right-middle {
-    display: flex;
-    flex: 1 1 0;
-    align-items: center;
-    text-align: center;
-}
-</style>
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";

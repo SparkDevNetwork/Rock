@@ -4,6 +4,7 @@
         <Panel v-model="value"
                v-model:isDrawerOpen="drawerValue"
                v-model:selectedTab="selectedTab"
+               v-model:quickFilterValue="quickFilterModel"
                :type="panelType"
                :hasCollapse="collapsibleValue"
                :hasZoom="hasZoom"
@@ -26,13 +27,13 @@
             </template>
 
             <template v-if="simulateHeaderActions" #headerActions>
-                <span class="action">
+                <button type="button" class="btn btn-panel-action">
                     <i class="ti ti-star"></i>
-                </span>
+                </button>
 
-                <span class="action">
-                    <i class="ti ti-user"></i>
-                </span>
+                <button type="button" class="btn btn-panel-action btn-add">
+                    <i class="ti ti-square-plus"></i>
+                </button>
             </template>
 
             <template v-if="simulateSubheaderLeft" #subheaderLeft>
@@ -132,6 +133,7 @@
                 <CheckBox v-model="isFullscreenPageOnly" label="Page Only Fullscreen" />
                 <CheckBox v-model="hasZoom" label="Has Zoom" />
                 <CheckBox v-model="worksurfaceMode" label="Worksurface Mode" />
+                <CheckBox v-model="hasQuickFilter" label="Has Quick Filter" />
             </div>
             <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" horizontal :repeatColumns="4" />
 
@@ -186,6 +188,8 @@
     const hasFullscreen = ref(false);
     const hasZoom = ref(false);
     const worksurfaceMode = ref(false);
+    const hasQuickFilter = ref(false);
+    const quickFilterValue = ref("");
     const panelType = ref<"default" | "success" | "primary" | "info" | "warning" | "danger" | "block" | "widget">("default");
     const panelTypeItems: ListItemBag[] = ["default", "success", "primary", "info", "warning", "danger", "block", "widget"]
         .map(t => ({ value: t, text: t }));
@@ -247,6 +251,22 @@
     const simulateFooterContent = computed((): boolean => simulateValues.value.includes("footerContent"));
     const simulateHelp = computed((): boolean => simulateValues.value.includes("helpContent"));
     const isFullscreenPageOnly = ref(true);
+
+    const quickFilterModel = computed<string | undefined>({
+        get() {
+            return hasQuickFilter.value ? quickFilterValue.value : undefined;
+        },
+        set(value) {
+            // If the checkbox is off, ignore updates.
+            if (!hasQuickFilter.value) {
+                return;
+            }
+
+            quickFilterValue.value = value ?? "";
+        }
+    });
+
+
     const value = ref(true);
     const importCode = getSfcControlImportPath("panel");
 

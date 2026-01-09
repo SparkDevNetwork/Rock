@@ -118,6 +118,7 @@ namespace Rock.Migrations.RockStartup
             SystemGuid.ServiceJob.DATA_MIGRATIONS_180_UPDATE_EMAIL_PREFERENCE_ENTRY_BLOCK_MANAGE_MY_ACCOUNT_PAGE.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_181_ADD_FINANCIALBATCH_INDEX.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_190_SWAP_OBSIDIAN_BLOCKS.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_190_CHOP_REGISTRATION_ENTRY_FINAL.AsGuid(),
         };
 
 

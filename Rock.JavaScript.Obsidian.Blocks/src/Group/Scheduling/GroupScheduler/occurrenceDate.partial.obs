@@ -156,7 +156,9 @@
     }
 
     /**
-     * Observes this occurrence date's descendent location elements' sizes.
+     * Observes this occurrence date's "js-schedule-location" elements' sizes so
+     * we can adjust the heights of their parent "js-schedule-group" elements
+     * accordingly.
      */
     function observeLocationSizes(): void {
         if (!window.ResizeObserver || !occurrenceDateElement.value) {
@@ -164,7 +166,7 @@
         }
 
         if (locationsResizeObserver) {
-            // Stop observing any previous location elements.
+            // Stop observing any previous "js-schedule-location" elements.
             locationsResizeObserver.disconnect();
         }
         else {
@@ -173,17 +175,18 @@
             });
         }
 
-        // Start observing any current location elements.
+        // Start observing any current "js-schedule-location" elements.
         occurrenceDateElement.value.querySelectorAll(".js-schedule-location").forEach((location: Element) => {
             locationsResizeObserver?.observe(location);
         });
     }
 
     /**
-     * Sets this occurrence date's descendent group elements to have a minimum height equal to each
-     * respective tallest sibling group element. "Sibling" within this context means: the group
-     * element(s) at the matching query selector index position for each schedule column within this
-     * occurrence date.
+     * Sets this occurrence date's "js-schedule-group" elements to have a minimum
+     * height equal to each respective tallest sibling "js-schedule-group" element.
+     * "Sibling" within this context means: the "js-schedule-group" element(s) at
+     * the matching query selector index position for each schedule column within
+     * this occurrence date.
      */
     function setEqualGroupHeights(): void {
         if (!occurrenceDateElement.value) {
@@ -192,22 +195,30 @@
 
         const scheduleElems = occurrenceDateElement.value.querySelectorAll<HTMLElement>(".js-schedule-column");
 
-        // Start by setting all group elements back to "auto" minimum height. This will do two things:
-        //  1. Reclaim any vertical space that is no longer needed (if an individual was removed).
-        //  2. Set up the UI for mobile widths (as we won't synchronize heights in that case).
+        // Start by setting all "js-schedule-group" elements back to "auto"
+        // minimum height. This will do two things:
+        //  1. Reclaim any vertical space that is no longer needed (if an
+        //     individual was removed).
+        //  2. Set up the UI for mobile widths (as we won't synchronize heights
+        //     in that case).
         scheduleElems.forEach((scheduleElem: HTMLElement) => {
             scheduleElem.querySelectorAll<HTMLElement>(".js-schedule-group").forEach((groupElem: HTMLElement) => {
                 groupElem.style.minHeight = "auto";
             });
         });
 
-        // For non-mobile widths, synchronize heights.
+        // Synchronize heights for non-mobile widths, but wait until the next
+        // tick to allow the above "auto" minimum heights to take effect first.
+        // We don't want to do this for mobile widths since we've designed the
+        // mobile UI to only show a single schedule column at a time, and it
+        // doesn't make sense to reserve unused vertical space within a given
+        // column when the other schedule columns aren't even visible.
         if (window.innerWidth >= 992) {
-            // But wait until the next tick to give the above "auto" minimum heights to take effect first.
             nextTick(() => {
                 const groupHeights: number[] = [];
 
-                // Loop through all group elements to find the tallest one for a given index position.
+                // Loop through all "js-schedule-group" elements to find the
+                // tallest one for a given index position.
                 scheduleElems.forEach((scheduleElem: HTMLElement) => {
                     scheduleElem.querySelectorAll<HTMLElement>(".js-schedule-group").forEach((groupElem: HTMLElement, i: number) => {
                         if (!groupHeights[i] || groupHeights[i] < groupElem.offsetHeight) {
@@ -216,7 +227,8 @@
                     });
                 });
 
-                // Loop through all group elements again to set each minimum height to match their tallest sibling.
+                // Loop through all "js-schedule-group" elements again to set
+                // each minimum height to match their tallest sibling.
                 scheduleElems.forEach((scheduleElem: HTMLElement) => {
                     scheduleElem.querySelectorAll<HTMLElement>(".js-schedule-group").forEach((group: HTMLElement, i: number) => {
                         group.style.minHeight = `${groupHeights[i]}px`;

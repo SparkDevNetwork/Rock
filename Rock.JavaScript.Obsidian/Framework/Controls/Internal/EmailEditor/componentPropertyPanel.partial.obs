@@ -21,8 +21,10 @@
 
     <ButtonComponentPropertyPanel v-else-if="componentTypeName === 'button'"
                                   :componentElement="componentElement"
+                                  :buttonGlobalProps="buttonGlobalProps"
                                   :hasScrollableBody="true"
                                   :ltr="ltr"
+                                  :usageType="usageType"
                                   @clone="$emit('clone')"
                                   @complete="$emit('complete')"
                                   @delete="$emit('delete')"
@@ -45,6 +47,7 @@
 
     <DividerComponentPropertyPanel v-else-if="componentTypeName === 'divider'"
                                    :componentElement="componentElement"
+                                   :dividerGlobalProps="dividerGlobalProps"
                                    :hasScrollableBody="true"
                                    :ltr="ltr"
                                    @clone="$emit('clone')"
@@ -127,8 +130,8 @@
     import TextComponentPropertyPanel from "./propertyPanels/textComponentPropertyPanel.partial.obs";
     import TitleComponentPropertyPanel from "./propertyPanels/titleComponentPropertyPanel.partial.obs";
     import VideoComponentPropertyPanel from "./propertyPanels/videoComponentPropertyPanel.partial.obs";
-    import { EditorComponentTypeName } from "./types.partial";
-    import { UsageType } from "./types";
+    import { ButtonGlobalProps, DividerGlobalProps, EditorComponentTypeName } from "./types.partial";
+    import { UsageType } from "./types.partial";
     import { getComponentTypeName } from "./utils.partial";
     import { Guid } from "@Obsidian/Types";
     import { isHTMLElement } from "@Obsidian/Utility/dom";
@@ -136,8 +139,18 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
+        buttonGlobalProps: {
+            type: Object as PropType<ButtonGlobalProps>,
+            required: true
+        },
+
         componentElement: {
             type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        dividerGlobalProps: {
+            type: Object as PropType<DividerGlobalProps>,
             required: true
         },
 

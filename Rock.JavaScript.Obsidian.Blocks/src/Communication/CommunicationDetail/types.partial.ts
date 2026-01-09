@@ -28,15 +28,6 @@ export const enum TabItem {
     RecipientDetails = "Recipient Details"
 }
 
-export type ChartStyles = {
-    fontFamily: string;
-    fontColor: string;
-    fontSize: number;
-    fontWeight: string;
-    legendBoxSize: number;
-    fallbackColor: string;
-};
-
 export const enum PreferenceKey {
     RecipientListSettings = "RecipientListSettings"
 }

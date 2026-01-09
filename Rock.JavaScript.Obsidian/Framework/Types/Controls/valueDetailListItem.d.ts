@@ -29,4 +29,7 @@ export type ValueDetailListItem = {
 
     /** The HTML value to be displayed. No escaping is performed. */
     htmlValue?: string;
+
+    /** The HTMLElement to be displayed as the value. */
+    elementValue?: HTMLElement;
 };

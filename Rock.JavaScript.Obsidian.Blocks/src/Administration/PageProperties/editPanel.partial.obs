@@ -184,12 +184,6 @@
     </div>
 </template>
 
-<style scoped>
-.tabbed-bar {
-    padding: 0;
-}
-</style>
-
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";

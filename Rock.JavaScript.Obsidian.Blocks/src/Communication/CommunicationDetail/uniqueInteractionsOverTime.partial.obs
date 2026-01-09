@@ -9,42 +9,31 @@
                              :disableLabel="true" />
         </div>
         <div class="communication-detail-unique-interactions-over-time-chart">
-            <Chart type="line"
-                   :data="chartData"
-                   :options="chartOptions" />
+            <LineChart title="Unique Interactions Over Time"
+                       :labels="labels"
+                       :series="series"
+                       :categoryShowGridLines="true"
+                       :legendAlign="LegendAlign.Start"
+                       :legendPosition="LegendPosition.Bottom"
+                       :lineStyle="LineStyle.Solid"
+                       :unfilled="true"
+                       type="percent" />
         </div>
     </div>
 </template>
 
-<style scoped>
-.communication-detail-unique-interactions-over-time {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-.communication-detail-unique-interactions-over-time-actions {
-    flex: 0 0 auto;
-}
-
-.communication-detail-unique-interactions-over-time-chart {
-    flex: 1 0 auto;
-}
-</style>
-
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
-    import { useChartStyles, useCommunicationDetail } from "./utils.partial";
-    import Chart from "@Obsidian/Controls/chart.obs";
+    import { useCommunicationDetail } from "./utils.partial";
+    import LineChart from "@Obsidian/Controls/lineChart.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
-    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { LegendAlign, LegendPosition, LineSeries, LineStyle } from "@Obsidian/Core/Controls/chart";
     import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { isNullish } from "@Obsidian/Utility/util";
     import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
 
     const communicationDetail = useCommunicationDetail();
-    const chartStyles = useChartStyles();
 
     const enum PerformanceChartTimeframe {
         First45Days = "First 45 Days",
@@ -136,124 +125,49 @@
             }));
     });
 
-    const chartData = computed((): ChartData | null => {
+    const chartData = computed<{ labels: string[]; series: LineSeries[] } | null>(() => {
         if (!visibleDataPoints.value.length) {
             return null;
         }
 
+        // The server returns a flat, ordered list of data points, with a
+        // guarantee that each series has data for each label. We'll transform
+        // this data into the structure expected by the LineChart component.
         const labels = new Set<string>();
-        const seriesDataSets = new Map<string, {
-            label: string,
-            data: number[],
-            borderColor: string,
-            backgroundColor: string,
-            borderWidth: number
-        }>();
+        const seriesDataSets = new Map<string, LineSeries>();
 
         visibleDataPoints.value.forEach(dp => {
             const seriesName = dp.seriesName!;
             let seriesDataSet = seriesDataSets.get(seriesName);
 
-            const color = getCssVariableValue(dp.color!, chartStyles.value.fallbackColor);
+            const color = getCssVariableValue(dp.color!, "#8B8BA7");
 
             if (!seriesDataSet) {
                 seriesDataSet = {
                     label: dp.seriesName!,
                     data: [],
-                    borderColor: color,
-                    backgroundColor: color,
-                    borderWidth: 1
+                    color: color,
                 };
 
                 seriesDataSets.set(seriesName, seriesDataSet);
             }
 
             labels.add(dp.label!);
-            seriesDataSet.data.push(dp.value!);
+            seriesDataSet.data.push(dp.value! / 100);
         });
 
         return {
             labels: Array.from(labels),
-            datasets: Array.from(seriesDataSets.values())
+            series: Array.from(seriesDataSets.values())
         };
     });
 
-    const maxPercentage = computed((): number => {
-        if (!visibleDataPoints.value.length) {
-            return 0;
-        }
-
-        return Math.max(
-            ...visibleDataPoints.value
-                .map((dp => dp.value!))
-        );
+    const labels = computed((): string[] => {
+        return chartData.value ? chartData.value.labels : [];
     });
 
-    const yStepSize = computed((): number => {
-        return maxPercentage.value > 50
-            ? 10
-            : 5;
-    });
-
-    const yMax = computed((): number => {
-        const maxWithPadding = maxPercentage.value + 10;
-        if (maxWithPadding < 50) {
-            return 50;
-        }
-
-        return maxWithPadding;
-    });
-
-    const chartOptions = computed((): ChartOptions => {
-        return {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                title: {
-                    display: true,
-                    text: "Unique Interactions Over Time",
-                    color: chartStyles.value.fontColor,
-                    font: {
-                        family: chartStyles.value.fontFamily,
-                        size: chartStyles.value.fontSize,
-                        weight: chartStyles.value.fontWeight as "lighter" | "normal" | "bold" | "bolder"
-                    }
-                },
-                legend: {
-                    position: "bottom",
-                    align: "start",
-                    labels: {
-                        boxWidth: chartStyles.value.legendBoxSize,
-                        boxHeight: chartStyles.value.legendBoxSize,
-                        font: {
-                            family: chartStyles.value.fontFamily,
-                            size: chartStyles.value.fontSize,
-                            weight: chartStyles.value.fontWeight as "lighter" | "normal" | "bold" | "bolder"
-                        },
-                        color: chartStyles.value.fontColor
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: context => {
-                            const label = context.dataset.label ?? "";
-                            const value = context.parsed.y;
-                            return `${label ? `${label}: ` : ""}${value}%`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: yMax.value,
-                    ticks: {
-                        stepSize: yStepSize.value,
-                        callback: v => `${v}%`
-                    }
-                }
-            }
-        };
+    const series = computed((): LineSeries[] => {
+        return chartData.value ? chartData.value.series : [];
     });
 
     // #endregion Computed Values

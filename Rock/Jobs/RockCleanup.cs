@@ -358,6 +358,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "update campus average weekly attendance", () => UpdateCampusAverageWeekendAttendance() );
 
+            RunCleanupTask( "delete expired short links", () => DeleteExpiredShortLinks() );
+
             /*
              * 21-APR-2022 DMV
              *
@@ -1675,7 +1677,7 @@ namespace Rock.Jobs
         {
             int totalRowsDeleted = 0;
 
-            // Event though BulkDelete has a batch amount, that could exceed our command time out since that'll just be one command for the whole thing, so let's break it up into multiple commands
+            // Even though BulkDelete has a batch amount, that could exceed our command time out since that'll just be one command for the whole thing, so let's break it up into multiple commands
             // Also, this helps prevent new record inserts waiting the batch operation (if Snapshot Isolation is disabled)
             var chunkQuery = recordsToDeleteQuery.Take( chunkSize );
 
@@ -3657,6 +3659,32 @@ SET @UpdatedCampusCount = @CampusCount;
                 rockContext.Database.ExecuteSqlCommand( updateQuery, outputParam );
 
                 return ( int ) outputParam.Value;
+            }
+        }
+
+        /// <summary>
+        /// Deletes expired short links from the database.
+        /// </summary>
+        /// <remarks>
+        /// This removes all short links that have an expiration date earlier than the current date.
+        /// It uses a minimum command timeout of 10 minutes to ensure the operation completes
+        /// successfully, even if processing a large number of records.
+        /// </remarks>
+        /// <returns>The total number of short links deleted from the database.</returns>
+        private int DeleteExpiredShortLinks()
+        {
+            using ( var rockContext = CreateRockContext() )
+            {
+                var today = RockDateTime.Today;
+                var totalRowsDeleted = 0;
+
+                var shortLinksToDelete = new PageShortLinkService( rockContext )
+                    .Queryable()
+                    .Where( a => a.ExpireDate.HasValue && a.ExpireDate.Value < today );
+
+                totalRowsDeleted += BulkDeleteInChunks( shortLinksToDelete, batchAmount, commandTimeout );
+
+                return totalRowsDeleted;
             }
         }
 

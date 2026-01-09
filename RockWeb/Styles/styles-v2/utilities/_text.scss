@@ -7,32 +7,6 @@
 
 .font-monospace { font-family: var(--font-family-monospace); }
 
-// ROCK TEXT UTILITIES
-
-.font-size-xs   { font-size: var(--font-size-xsmall) !important; }
-.font-size-sm   { font-size: var(--font-size-small) !important; }
-.font-size-regular { font-size: var(--font-size-regular) !important; }
-.font-size-h1    { font-size: var(--font-size-h1) !important; }
-.font-size-h2    { font-size: var(--font-size-h2) !important; }
-.font-size-h3    { font-size: var(--font-size-h3) !important; }
-.font-size-h4    { font-size: var(--font-size-h4) !important; }
-.font-size-h5    { font-size: var(--font-size-h5) !important; }
-.font-size-h6    { font-size: var(--font-size-h6) !important; }
-
-
-.line-height-normal {
-  line-height: var(--line-height-normal) !important;
-}
-
-.line-height-tight {
-  line-height: var(--line-height-tight) !important;
-}
-
-.line-height-compact {
-  line-height: var(--line-height-compact) !important;
-}
-
-
 
 // BOOTSTRAP TEXT UTILITIES
 

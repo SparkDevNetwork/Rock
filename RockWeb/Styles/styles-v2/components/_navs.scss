@@ -95,10 +95,8 @@
 
 // ===================== TAB =====================
 .nav-tabs {
-  border:           1px solid var(--color-interface-soft);
-  border-radius:    var(--rounded-medium);
-  background-color: var(--color-interface-softest);
-  padding: var(--spacing-small);
+  border-bottom:           1px solid var(--color-interface-soft);
+
   > li {
     float: left;
     // Make the list-items overlay the bottom border
@@ -109,13 +107,10 @@
       margin-right:     var(--spacing-small);
       line-height:      var(--line-height-normal);
       border-radius:    var(--rounded-small);
-      color: var(--color-interface-strong);
-      font-weight: var(--font-weight-medium);
-      background-color: var(--color-interface-softer);
+      border:           1px solid transparent; // remove bootstrap border
 
       &:hover {
-        background-color: var(--color-primary-soft);
-        color: var(--color-primary);
+        border-color:   var(--color-interface-softer) var(--color-interface-softer) var(--color-interface-soft);
       }
 
     }
@@ -128,6 +123,8 @@
         color:                var(--color-primary);
         cursor:               default;
         background-color:     var(--color-primary-soft);
+        border:               1px solid var(--color-interface-soft);
+        border-bottom-color:  transparent;
       }
     }
   }
@@ -185,15 +182,8 @@
     }
   }
 
-
-
 }
 
-.panel:has(.nav-tabs) .nav-tabs {
-    border:           none;
-    border-radius:    0;
-    padding:          0;
-  }
 
 // =================== END TAB ===================
 
@@ -205,11 +195,6 @@
         // Links rendered as pills
         > a {
             border-radius: var(--rounded-small);
-            color: var(--color-interface-strong);
-        }
-
-        > a:hover {
-            color: var(--color-primary);
         }
 
         + li {
@@ -217,7 +202,7 @@
         }
         // Active state
         &.active > a {
-            &,
+            &:hover,
             &:focus {
                 color: var(--color-primary);
                 background-color: var(--color-primary-soft);
@@ -308,10 +293,6 @@
   > .active {
     display: block;
   }
-}
-
-.nav-tabs + .tab-content {
-  margin-top: var(--spacing-small);
 }
 
 // =================== END TAB CONTENT ===================

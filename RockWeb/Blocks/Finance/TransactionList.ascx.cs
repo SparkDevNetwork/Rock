@@ -2127,11 +2127,7 @@ namespace RockWeb.Blocks.Finance
                 gTransactions.DataBind();
 
                 var showAccountSummary = this.GetAttributeValue( AttributeKey.ShowAccountSummary ).AsBoolean();
-                if ( showAccountSummary ||
-                    _scheduledTxn == null &&
-                    _registration == null &&
-                    _person == null &&
-                    !isExporting )
+                if ( showAccountSummary && !isExporting )
                 {
                     pnlSummary.Visible = true;
 

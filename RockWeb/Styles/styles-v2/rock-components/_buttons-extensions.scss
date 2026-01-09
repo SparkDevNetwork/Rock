@@ -1,0 +1,271 @@
+// imported by _core.scss
+
+// Boostrap Buttons Extensions
+
+// =============================================================
+// Table of Contents
+//  + Theme Toggle Button
+//  + Register Button
+//  + Authentication Buttons
+//  + ASP.NET Button
+// =============================================================
+
+
+// =========================== BASE BUTTON EXTENSIONS ===========================
+
+.btn {
+  align-content: center;
+}
+
+.dropdown > .btn-link.btn-overflow {
+  color:    var(--color-interface-medium);
+
+  &:hover,
+  &:focus {
+      color:  var(--color-interface-stronger);
+  }
+}
+
+
+
+// ========================== END BASE BUTTON EXTENSIONS ===========================
+
+// =========================== THEME TOGGLE BUTTON ===========================
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-left: var(--spacing-small);
+  padding: var(--spacing-xsmall) var(--spacing-xsmall);
+  font-size: 1.15em ;
+  border: 1px solid var(--color-interface-soft);
+  border-radius: 99px;
+
+  color: var(--color-interface-strong);
+  background-color: var(--color-interface-softer);
+
+  transition: .15s ease-in-out,box-shadow .15s ease-in-out;
+
+  --size: 32px;
+  position: relative;
+  width: var(--size);
+  height: var(--size);
+  margin: 0 0 0 var(--spacing-small);
+  font-size: calc(var(--size) * 0.5);
+  transition: .15s ease-in-out,box-shadow .15s ease-in-out;
+
+  @media (max-width: $screen-small) {
+    font-size: 1em;
+    padding: 6px;
+  }
+
+    @media (min-width: $screen-small) {
+    --size: 40px;
+    padding: 20px;
+  }
+
+  &:hover {
+    color: var(--color-interface-stronger);
+  }
+
+  &:focus {
+    color: var(--color-interface-stronger);
+  }
+
+  &:focus:active {
+    color: var(--color-primary);
+    box-shadow: var(--input-focus-box-shadow)
+  }
+
+  .ti.theme-mode-icon:before {
+    content: "\f23a"; // Default to light mode icon
+  }
+}
+
+[theme="dark"] {
+  .theme-toggle {
+    .ti.theme-mode-icon:before {
+      content:"\eaf8"
+    }
+  }
+}
+[theme="light"] {
+  .theme-toggle {
+    .ti.theme-mode-icon:before {
+      content:"\eb30"
+    }
+  }
+}
+[theme="system"] {
+  .theme-toggle {
+    .ti.theme-mode-icon:before {
+      content:"\f23a"
+    }
+  }
+}
+
+// =========================== END THEME TOGGLE BUTTON ===========================
+
+// =========================== REGISTER BUTTON ===========================
+
+.btn-register {
+  color:            var(--color-interface-strong);
+  background-color: var(--color-interface-softest);
+  border-color:     var(--color-interface-soft);
+
+  &:focus,
+  &.focus {
+    color:            var(--color-interface-stronger);
+    background-color: var(--color-interface-softer);
+    border-color:     var(--color-interface-medium)
+  }
+  &:hover {
+    color:            var(--color-interface-stronger);
+    background-color: var(--color-interface-softer);
+    border-color:     var(--color-interface-soft)
+  }
+  &:active,
+  &.active,
+  .open > .dropdown-toggle & {
+    color:              var(--color-interface-stronger);
+    background-color:   var(--color-interface-softer);
+    background-image:   none;
+    border-color:       var(--color-interface-soft);
+
+    &:hover,
+    &:focus,
+    &.focus {
+      color:            var(--color-interface-stronger);
+      background-color: var(--color-interface-softest); // TODO darken by 17% when available
+      border-color:     var(--color-interface-medium)
+    }
+  }
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    &:hover,
+    &:focus,
+    &.focus {
+      background-color: var(--color-interface-softest);
+      border-color:     var(--color-interface-soft);
+    }
+  }
+}
+
+// =========================== END REGISTER BUTTON ===========================
+
+// =========================== AUTHENTICATION BUTTONS ===========================
+
+.btn-authentication {
+  width:            100%;
+  margin-bottom:    var(--spacing-xsmall);
+  color:            var(--color-interface-strong);
+  background-color: var(--color-interface-softest);
+  border-color:     var(--color-interface-soft);
+
+  &::before {
+    content: " ";
+    width: 2em;
+  }
+
+  &.facebook,
+  &.google,
+  &.twitter {
+    background-color: var(--color-interface-softest);
+    border-color:     var(--color-interface-soft);
+
+    &::before {
+      color:          var(--btn-bg);
+      display:        inline-block;
+      margin-right:   12px;
+      font-family:    "Font Awesome 5 Brands";
+      font-weight:    var(--font-weight-regular);
+      content:        var(--social-icon);
+      flex:           0 0 1.25em;
+    }
+  }
+
+  &.facebook {
+    --btn-bg:       #{$brand-facebook};
+    --btn-hover-bg: #{$brand-facebook}; // TODO darken by 10% when available
+    --social-icon:  "\f39e";
+    &:before {
+      background-image:     url("/Assets/Icons/Facebook_logo.svg");
+      background-size:      contain;
+      background-repeat:    no-repeat;
+      background-position:  center;
+      width:                1.2em;
+      height:               1.2em;
+      content: "  ";
+    }
+  }
+
+  &.google {
+    color: var(--color-interface-strong);
+    &:before {
+      background-image:     url("/Assets/Icons/googlesigninicon.svg");
+      background-size:      contain;
+      background-repeat:    no-repeat;
+      background-position:  center;
+      width:                1.1em;
+      height:               1.1em;
+      content: "  ";
+    }
+  }
+
+  &.twitter {
+    --btn-bg:       #{$brand-twitter};
+    --btn-hover-bg: #{$brand-twitter}; // TODO darken by 10% when available
+    &:before {
+      background-image:     url("/Assets/Icons/X_logo_2023.svg");
+      background-size:      contain;
+      background-repeat:    no-repeat;
+      background-position:  center;
+      width:                1em;
+      height:               1em;
+      content: "  ";
+    }
+  }
+
+  &:hover {
+    background-color: var(--color-interface-softer);
+    color: var(--color-interface-strong);
+  }
+}
+
+[theme = "dark"] .btn-authentication {
+  &.twitter {
+    &::before{
+      background-image:     url("/Assets/Icons/X_Logo_White.svg");
+      content: "";
+    }
+  }
+}
+
+.btn-authentication-v2 {
+  display:          inline-flex;
+  align-items:      center;
+  justify-content:  space-between;
+  white-space:      normal;
+
+  &:after {
+    content: " ";
+    flex: 0 1 1.25em;
+  }
+}
+
+// =========================== END AUTHENTICATION BUTTONS ===========================
+
+// =========================== ASP.NET BUTTON ===========================
+
+.btn.aspNetDisabled {
+  pointer-events:   none; // Future-proof disabling of clicks
+  cursor:           not-allowed;
+
+  opacity:          .65;
+  box-shadow:       none;
+}
+
+// =========================== END ASP.NET BUTTON ===========================

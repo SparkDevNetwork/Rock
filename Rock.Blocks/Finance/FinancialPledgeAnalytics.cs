@@ -265,11 +265,9 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public virtual BlockActionResult GetBlockData()
         {
-            var rockContext = new RockContext();
-
             var bag = new FinancialPledgeAnalyticsBlockDataBag
             {
-                PledgeGridData = GePledgeGridDataBag( rockContext )
+                PledgeGridData = GePledgeGridDataBag( RockContext )
             };
 
             return ActionOk( bag );

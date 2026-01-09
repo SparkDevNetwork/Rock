@@ -4,7 +4,7 @@
         <NotificationBox v-if="isFull && numberToAddToWaitlist !== numberOfRegistrants" class="text-left" alertType="warning">
             <strong>{{ registrationEntryTerms.registrationSingularTitleCase }} Full</strong>
             <p>
-                There are not any more {{ registrationEntryTerms.registrationPluralLowerCase }} available for {{ config.instanceName }}.
+                There are no more {{ registrationEntryTerms.registrationPluralLowerCase }} available for {{ config.instanceName }}.
             </p>
         </NotificationBox>
         <NotificationBox v-if="showRemainingCapacity" class="text-left" alertType="warning">

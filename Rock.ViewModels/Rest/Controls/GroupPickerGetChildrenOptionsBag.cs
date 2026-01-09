@@ -46,6 +46,11 @@ namespace Rock.ViewModels.Rest.Controls
         public bool IncludeInactiveGroups { get; set; } = false;
 
         /// <summary>
+        /// When true, show no groups unless IncludedGroupTypeGuids has values.
+        /// </summary>
+        public bool ExcludeAllByDefault { get; set; } = false;
+
+        /// <summary>
         /// Whether to limit to only groups that have scheduling enabled.
         /// </summary>
         public bool LimitToSchedulingEnabled { get; set; } = false;

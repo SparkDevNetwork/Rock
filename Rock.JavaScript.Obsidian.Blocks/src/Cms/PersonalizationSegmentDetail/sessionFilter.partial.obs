@@ -95,6 +95,7 @@
     import { SessionCountSegmentFilter } from "./types.partial";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { slidingDateRangeToString, parseSlidingDateRangeString, SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
     import { SessionCountSegmentFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalizationSegmentDetail/sessionCountSegmentFilterBag";
@@ -129,7 +130,10 @@
 
     const theFilter = ref<SessionCountSegmentFilterBag>(createDefaultFilter());
 
-    const comparisonTypes = getFilteredComparisonTypeOptions(numericComparisonTypes);
+    const excludedComparisonTypes = [ComparisonType.IsBlank, ComparisonType.IsNotBlank].map(v => v.toString());
+    const comparisonTypes = (getFilteredComparisonTypeOptions(numericComparisonTypes))
+        .filter(ct => !excludedComparisonTypes.includes(ct.value ?? ""));
+
     const sites = ref(props.sites ?? []);
     const isModalVisible = ref(false);
     const isEditing = ref(false);

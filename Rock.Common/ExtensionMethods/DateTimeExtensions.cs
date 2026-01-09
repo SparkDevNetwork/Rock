@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+
+using Rock.Enums.Core;
 using Rock.Utility.Enums;
 
 namespace Rock
@@ -705,6 +707,8 @@ namespace Rock
         /// <param name="dayOfWeek">The day of week.</param>
         /// <returns></returns>
         /// <exception cref="Exception">Rock is not familiar with this day of the week: {dateTime.DayOfWeek}</exception>
+        [Obsolete( "The DayOfWeekFlag enum is obsolete, use the one in the Rock.Enums.Core namespace instead." )]
+        [RockObsolete( "19.0" )]
         public static DayOfWeekFlag AsFlag( this DayOfWeek dayOfWeek )
         {
             switch ( dayOfWeek )
@@ -733,6 +737,8 @@ namespace Rock
         /// </summary>
         /// <param name="flags">The flags.</param>
         /// <returns></returns>
+        [Obsolete( "The DayOfWeekFlag enum is obsolete, use the one in the Rock.Enums.Core namespace instead." )]
+        [RockObsolete( "19.0" )]
         public static List<DayOfWeek> AsDayOfWeekList( this DayOfWeekFlag flags )
         {
             var enums = new List<DayOfWeek>();
@@ -768,6 +774,82 @@ namespace Rock
             }
 
             if ( ( flags & DayOfWeekFlag.Saturday ) == DayOfWeekFlag.Saturday )
+            {
+                enums.Add( DayOfWeek.Saturday );
+            }
+
+            return enums;
+        }
+
+        /// <summary>
+        /// Converts to the flag (bit per day) friendly enum.
+        /// </summary>
+        /// <param name="dayOfWeek">The day of week.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">Rock is not familiar with this day of the week: {dateTime.DayOfWeek}</exception>
+        public static DaysOfWeekFlags AsFlags( this DayOfWeek dayOfWeek )
+        {
+            switch ( dayOfWeek )
+            {
+                case DayOfWeek.Sunday:
+                    return DaysOfWeekFlags.Sunday;
+                case DayOfWeek.Monday:
+                    return DaysOfWeekFlags.Monday;
+                case DayOfWeek.Tuesday:
+                    return DaysOfWeekFlags.Tuesday;
+                case DayOfWeek.Wednesday:
+                    return DaysOfWeekFlags.Wednesday;
+                case DayOfWeek.Thursday:
+                    return DaysOfWeekFlags.Thursday;
+                case DayOfWeek.Friday:
+                    return DaysOfWeekFlags.Friday;
+                case DayOfWeek.Saturday:
+                    return DaysOfWeekFlags.Saturday;
+                default:
+                    throw new Exception( $"Rock is not familiar with this day of the week: {dayOfWeek}" );
+            }
+        }
+
+        /// <summary>
+        /// Converts the flags to "day of week" enum list.
+        /// </summary>
+        /// <param name="flags">The flags.</param>
+        /// <returns></returns>
+        public static List<DayOfWeek> AsDayOfWeekList( this DaysOfWeekFlags flags )
+        {
+            var enums = new List<DayOfWeek>();
+
+            if ( ( flags & DaysOfWeekFlags.Sunday ) == DaysOfWeekFlags.Sunday )
+            {
+                enums.Add( DayOfWeek.Sunday );
+            }
+
+            if ( ( flags & DaysOfWeekFlags.Monday ) == DaysOfWeekFlags.Monday )
+            {
+                enums.Add( DayOfWeek.Monday );
+            }
+
+            if ( ( flags & DaysOfWeekFlags.Tuesday ) == DaysOfWeekFlags.Tuesday )
+            {
+                enums.Add( DayOfWeek.Tuesday );
+            }
+
+            if ( ( flags & DaysOfWeekFlags.Wednesday ) == DaysOfWeekFlags.Wednesday )
+            {
+                enums.Add( DayOfWeek.Wednesday );
+            }
+
+            if ( ( flags & DaysOfWeekFlags.Thursday ) == DaysOfWeekFlags.Thursday )
+            {
+                enums.Add( DayOfWeek.Thursday );
+            }
+
+            if ( ( flags & DaysOfWeekFlags.Friday ) == DaysOfWeekFlags.Friday )
+            {
+                enums.Add( DayOfWeek.Friday );
+            }
+
+            if ( ( flags & DaysOfWeekFlags.Saturday ) == DaysOfWeekFlags.Saturday )
             {
                 enums.Add( DayOfWeek.Saturday );
             }

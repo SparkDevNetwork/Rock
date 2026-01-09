@@ -116,12 +116,10 @@
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import { emptyGuid, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { newGuid } from "@Obsidian/Utility/guid";
     import Grid, { TextColumn, DeleteColumn, BooleanColumn, EditColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
-    import { Guid } from "@Obsidian/Types";
-    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
@@ -160,7 +158,6 @@
     const eventAttribute = ref<PublicEditableAttributeBag | null>(null);
     const reservedKeyNames = ref<string[]>([]);
     const indexingEnabled = ref(props.options.indexingEnabled);
-    const invokeBlockAction = useInvokeBlockAction();
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -333,35 +330,39 @@
      *
      * @param key The key of the row that was selected.
      */
-    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
-        let isSuccess = false;
+    function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): boolean {
+        const itemGuid = item["key"] as string;
+        const beforeGuid = (beforeItem?.["key"] as string | undefined) ?? null;
 
-        if (props.modelValue?.bag?.idKey) {
-            const data: {
-                idKey: string | null | undefined;
-                guid: Guid;
-                beforeGuid: Guid | null | undefined;
-            } = {
-                idKey: props.modelValue?.bag?.idKey,
-                guid: toGuidOrNull(item?.key as string) ?? emptyGuid,
-                beforeGuid: toGuidOrNull(beforeItem?.key as string)
-            };
+        const currentItems = [...eventAttributes.value];
+        const idx = currentItems.findIndex(i => i.attribute?.guid === itemGuid);
 
-            const result = await invokeBlockAction<string>("ReorderAttributes", data);
-
-            isSuccess = result.isSuccess;
+        if (idx < 0) {
+            return false;
         }
 
-        if (eventAttributesGridData.rows) {
-            const itemIndex = eventAttributes.value.findIndex(x => x.attribute?.guid === item.guid);
-            const beforeItemIndex = eventAttributes.value.findIndex(x => x.attribute?.guid === beforeItem?.guid);
+        const itemToMove = currentItems.splice(idx, 1)[0];
 
-            if (itemIndex !== -1 && beforeItemIndex !== -1) {
-                [eventAttributes.value[itemIndex], eventAttributes.value[beforeItemIndex]] = [eventAttributes.value[beforeItemIndex], eventAttributes.value[itemIndex]];
+        if (beforeGuid) {
+            const beforeIndex = currentItems.findIndex(i => i.attribute?.guid === beforeGuid);
+            if (beforeIndex < 0) {
+                currentItems.push(itemToMove);
+            }
+            else {
+                currentItems.splice(beforeIndex, 0, itemToMove);
             }
         }
+        else {
+            currentItems.push(itemToMove);
+        }
 
-        return isSuccess;
+        eventAttributes.value = currentItems;
+
+        if (eventAttributesGridData.rows) {
+            eventAttributesGridData.rows = eventAttributes.value.map(x => toAttributeGridRowItem(x));
+        }
+
+        return true;
     }
 
     watch(isAttributeModalOpen, () => {

@@ -25,6 +25,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.Logging;
 using Rock.Model;
+using Rock.Observability;
 
 namespace Rock.Transactions
 {
@@ -190,56 +191,66 @@ namespace Rock.Transactions
         public static void Drain( Action<Exception> errorHandler )
         {
 #pragma warning disable CS0618 // Type or member is obsolete
-            while ( TransactionQueue.TryDequeue( out var transaction ) )
+            if ( TransactionQueue.Count == 0 && _standardTransactionQueue.Count == 0 )
+#pragma warning restore CS0618 // Type or member is obsolete
             {
-                CurrentlyExecutingTransaction = transaction;
-
-                if ( CurrentlyExecutingTransaction == null )
-                {
-                    continue;
-                }
-
-                try
-                {
-                    // This is a bit of a hack just in case somebody puts an
-                    // IQueuedTransaction into the legacy queue.
-                    if ( CurrentlyExecutingTransaction is IQueuedTransaction queuedTransaction )
-                    {
-                        queuedTransaction.OnEnqueue();
-                    }
-
-                    if ( CurrentlyExecutingTransaction is IAsyncTransaction asyncTransation )
-                    {
-                        asyncTransation.ExecuteAsync().Wait();
-                    }
-                    else
-                    {
-                        CurrentlyExecutingTransaction.Execute();
-                    }
-                }
-                catch ( Exception ex )
-                {
-                    errorHandler( new Exception( $"Exception in RockQueue.Drain(): {transaction.GetType().Name}", ex ) );
-                }
+                return;
             }
+
+            using ( var activity = ObservabilityHelper.StartActivity( "Draining RockQueue" ) )
+            {
+#pragma warning disable CS0618 // Type or member is obsolete
+                while ( TransactionQueue.TryDequeue( out var transaction ) )
+                {
+                    CurrentlyExecutingTransaction = transaction;
+
+                    if ( CurrentlyExecutingTransaction == null )
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        // This is a bit of a hack just in case somebody puts an
+                        // IQueuedTransaction into the legacy queue.
+                        if ( CurrentlyExecutingTransaction is IQueuedTransaction queuedTransaction )
+                        {
+                            queuedTransaction.OnEnqueue();
+                        }
+
+                        if ( CurrentlyExecutingTransaction is IAsyncTransaction asyncTransation )
+                        {
+                            asyncTransation.ExecuteAsync().Wait();
+                        }
+                        else
+                        {
+                            CurrentlyExecutingTransaction.Execute();
+                        }
+                    }
+                    catch ( Exception ex )
+                    {
+                        errorHandler( new Exception( $"Exception in RockQueue.Drain(): {transaction.GetType().Name}", ex ) );
+                    }
+                }
 #pragma warning restore CS0618 // Type or member is obsolete
 
-            while ( _standardTransactionQueue.TryDequeue( out var transaction ) )
-            {
-                try
+                while ( _standardTransactionQueue.TryDequeue( out var transaction ) )
                 {
-                    if ( transaction is IAsyncTransaction asyncTransaction )
+                    try
                     {
-                        asyncTransaction.ExecuteAsync().Wait();
+                        if ( transaction is IAsyncTransaction asyncTransaction )
+                        {
+                            asyncTransaction.ExecuteAsync().Wait();
+                        }
+                        else
+                        {
+                            transaction.Execute();
+                        }
                     }
-                    else
+                    catch ( Exception ex )
                     {
-                        transaction.Execute();
+                        errorHandler( new Exception( $"Unhandled exception in RockQueue.Drain(): {transaction.GetType().Name} {transaction.ToJson()}", ex ) );
                     }
-                }
-                catch ( Exception ex )
-                {
-                    errorHandler( new Exception( $"Unhandled exception in RockQueue.Drain(): {transaction.GetType().Name} {transaction.ToJson()}", ex ) );
                 }
             }
         }

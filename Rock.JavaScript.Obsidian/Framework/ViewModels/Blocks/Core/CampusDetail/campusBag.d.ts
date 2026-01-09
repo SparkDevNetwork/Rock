@@ -37,12 +37,6 @@ export type CampusBag = {
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
-    /** Gets or sets the specially handled core attributes. */
-    coreAttributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the specially handled core attribute values. */
-    coreAttributeValues?: Record<string, string> | null;
-
     /** Gets or sets the campus average weekend attendance. */
     averageWeekendAttendance?: number | null;
 
@@ -60,6 +54,12 @@ export type CampusBag = {
 
     /** Gets or sets the closed date. */
     closedDate?: string | null;
+
+    /** Gets or sets the specially handled core attributes. */
+    coreAttributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the specially handled core attribute values. */
+    coreAttributeValues?: Record<string, string> | null;
 
     /** Gets or sets the description. */
     description?: string | null;

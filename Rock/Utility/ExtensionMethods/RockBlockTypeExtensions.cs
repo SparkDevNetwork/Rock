@@ -110,22 +110,26 @@ namespace Rock
         /// </summary>
         /// <param name="block">The block to get instance data from.</param>
         /// <param name="queryParams">Any query string parameters that should be included in the built URL.</param>
+        /// <param name="skipExistingParameters">Whether to skip adding existing page parameters to the URL.</param>
         /// <returns>A string representing the URL to the current <see cref="Rock.Model.Page"/>.</returns>
-        public static string GetCurrentPageUrl( this RockBlockType block, IDictionary<string, string> queryParams = null )
+        public static string GetCurrentPageUrl( this RockBlockType block, IDictionary<string, string> queryParams = null, bool skipExistingParameters = false )
         {
             var parameters = queryParams != null ? new Dictionary<string, string>( queryParams ) : new Dictionary<string, string>();
 
-            // Add in the original page parameters if they have not already
-            // been set in the new query parameters.
-            foreach ( var qp in block.RequestContext.GetPageParameters() )
+            if ( !skipExistingParameters )
             {
-                // Skip any page parameters that are internal usage.
-                if ( qp.Key == "PageId" )
+                // Add in the original page parameters if they have not already
+                // been set in the new query parameters.
+                foreach ( var qp in block.RequestContext.GetPageParameters() )
                 {
-                    continue;
-                }
+                    // Skip any page parameters that are internal usage.
+                    if ( qp.Key == "PageId" )
+                    {
+                        continue;
+                    }
 
-                parameters.TryAdd( qp.Key, qp.Value );
+                    parameters.TryAdd( qp.Key, qp.Value );
+                }
             }
 
             var pageReference = new Rock.Web.PageReference( block.PageCache.Guid.ToString(), parameters );

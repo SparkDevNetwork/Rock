@@ -1,0 +1,68 @@
+// imported by _core.scss
+
+// TABLES EXTENSIONS
+
+
+// =============================================================
+// Table of Contents
+//  + Borders
+//  + Grid Table
+//  + Misc
+// =============================================================
+
+// ===================== BORDERS ===================
+
+// Table - No Borders
+.table-no-border {
+  overflow-x: auto;
+}
+
+// ===================== END BORDERS ===================
+
+// ===================== GRID TABLE ===================
+
+.grid.grid-panel {
+
+  .grid-table {
+
+    // If there is no table footer, round the bottom corners of the last row, first and last cell to match the rounded grid panel.
+    &:not(:has(tfoot)) tr:last-child,
+    &:not(:has(tfoot)) tr:last-child > td:first-child {
+      border-bottom-left-radius: var(--rounded-medium);
+    }
+    &:not(:has(tfoot)) tr:last-child > td:last-child {
+      border-bottom-right-radius: var(--rounded-medium);
+    }
+  }
+
+}
+
+.grid-actions:has(.btn-grid-custom-action) {
+  padding-top: var(--spacing-xsmall) !important;
+  border-bottom-left-radius: var(--rounded-medium);
+  border-bottom-right-radius: var(--rounded-medium);
+}
+
+td.grid-actions {
+    .form-control {
+      border-bottom-left-radius: var(--rounded-medium); // If there's a dropdown in the action column, make sure the corners are rounded
+  }
+}
+
+// ===================== END GRID TABLE ===================
+
+// ======================= MISC =======================
+
+table tbody tr td .required-indicator::after {
+  margin-left: var(--spacing-tiny);
+  background-color: var(--color-danger-strong);
+  width: 6px;
+  height: 6px;
+  display: inline-block;
+  border-radius: 50%;
+  content: "";
+  position: relative;
+  transform: translateY(-30%);
+}
+
+// ===================== END MISC ===================

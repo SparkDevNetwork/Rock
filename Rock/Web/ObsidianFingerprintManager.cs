@@ -60,6 +60,11 @@ namespace Rock.Web
             InitializeFingerprint();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ObsidianFingerprintManager"/> class.
+        /// This constructor is used for unit testing to set a specific fingerprint value.
+        /// </summary>
+        /// <param name="fingerprint">The fingerprint value to use.</param>
         internal ObsidianFingerprintManager( long fingerprint )
         {
             _fingerprint = fingerprint;

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Collections.Generic;
 
 using Rock.Attribute;
@@ -24,6 +25,18 @@ namespace Rock.Model
 {
     public partial class RegistrationInstance
     {
+        /// <summary>
+        /// Gets the default timeout length for registration sessions.
+        /// </summary>
+        /// <value>Minutes a session is held once it starts.</value>
+        internal static TimeSpan DefaultTimeoutLength => TimeSpan.FromMinutes( 15 );
+
+        /// <summary>
+        /// Gets the default timeout threshold for registration sessions.
+        /// </summary>
+        /// <value>Percent of remaining spots at which session locking kicks in.</value>
+        internal static int DefaultTimeoutThreshold => 33;
+
         /// <summary>
         /// Gets the contact recipient as either an email to the person that registered, or as an anonymous email to the specified contact email if it is different than the person's email.
         /// </summary>

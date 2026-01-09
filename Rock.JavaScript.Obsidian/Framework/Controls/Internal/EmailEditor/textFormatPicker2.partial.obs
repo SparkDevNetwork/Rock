@@ -1,0 +1,161 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField v-bind="standardFieldProps"
+                   :modelValue="internalIsItalicized"
+                   :disableLabel="!label"
+                   name="textFormatGroup">
+        <div class="btn-group">
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="getItemButtonType(!!internalIsBold)"
+                        title="Bold"
+                        @click="onFontWeightToggled()"><i class="ti ti-bold"></i></RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="getItemButtonType(!!internalIsUnderlined)"
+                        title="Underline"
+                        @click="onTextDecorationToggled()"><i class="ti ti-underline"></i></RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="getItemButtonType(!!internalIsItalicized)"
+                        title="Italic"
+                        @click="onFontStyleToggled()"><i class="ti ti-italic"></i></RockButton>
+        </div>
+        <ClearStyleButton v-if="!isNullish(internalIsItalicized) || !isNullish(internalIsBold) || !isNullish(internalIsUnderlined)"
+                          @click="onClearClicked" />
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ClearStyleButton from "./clearStyleButton.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { LiteralUnion } from "@Obsidian/Types/Utility/support";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        ...standardRockFormFieldProps,
+
+        isBold: {
+            type: Boolean as PropType<boolean | null>,
+            required: true
+        },
+
+        isUnderlined: {
+            type: Boolean as PropType<boolean | null>,
+            required: true
+        },
+
+        isItalicized: {
+            type: Boolean as PropType<boolean | null>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:isBold", value: boolean | null): void;
+        (e: "update:isUnderlined", value: boolean | null): void;
+        (e: "update:isItalicized", value: boolean | null): void;
+    }>();
+
+    const standardFieldProps = useStandardRockFormFieldProps(props);
+
+    const unselectedBtnType: BtnType = BtnType.Default;
+    const selectedBtnType: BtnType = BtnType.Primary;
+    const btnSize: BtnSize = BtnSize.Default;
+
+    // #region Computed Props
+
+    // Set the values from the element OR from the input CSS styles.
+    const internalIsBold = computed<boolean | null>({
+        get(): boolean | null {
+            return props.isBold;
+        },
+        set(newValue: boolean | null): void {
+            emit("update:isBold", newValue);
+        }
+    });
+
+    const internalIsUnderlined = computed<boolean | null>({
+        get(): boolean | null {
+            return props.isUnderlined;
+        },
+        set(newValue: boolean | null): void {
+            emit("update:isUnderlined", newValue);
+        }
+    });
+
+    const internalIsItalicized = computed<boolean | null>({
+        get(): boolean | null {
+            return props.isItalicized;
+        },
+        set(newValue: boolean | null): void {
+            emit("update:isItalicized", newValue);
+        }
+    });
+
+    // #endregion Computed Props
+
+    // #region Functions
+
+    /**
+     * Gets the selected or unselected button type for the button group buttons.
+     */
+    function getItemButtonType(isSelected: boolean): LiteralUnion<BtnType> {
+        return isSelected ? selectedBtnType : unselectedBtnType;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the font style control being toggled.
+     */
+    function onFontStyleToggled(): void {
+        internalIsItalicized.value = !internalIsItalicized.value;
+    }
+
+    /**
+     * Event handler for the font weight control being toggled.
+     */
+    function onFontWeightToggled(): void {
+        internalIsBold.value = !internalIsBold.value;
+    }
+
+    /**
+     * Event handler for the text decoration control being toggled.
+     */
+    function onTextDecorationToggled(): void {
+        internalIsUnderlined.value = !internalIsUnderlined.value;
+    }
+
+    /**
+     * Event handler for the clear styles button being clicked.
+     *
+     * Deletes the property from the CSS style declarations.
+     */
+    function onClearClicked(): void {
+        internalIsItalicized.value = null;
+        internalIsBold.value = null;
+        internalIsUnderlined.value = null;
+    }
+
+    // #endregion Event Handlers
+</script>

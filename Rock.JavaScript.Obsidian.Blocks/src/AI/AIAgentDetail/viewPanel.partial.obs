@@ -19,10 +19,17 @@
                        :availableSkills="props.options?.availableSkills ?? []"
                        :systemSkills="systemSkills" />
     </fieldset>
+
+    <Modal v-model="isInstructionsVisible"
+           title="Instructions"
+           cancelText="Close">
+        <pre class="instructions text-wrap text-break">{{ props.modelValue?.instructions }}</pre>
+    </Modal>
 </template>
 
 <script setup lang="ts">
     import EditSkillList from "./editSkillList.partial.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { computed, PropType, ref, watch } from "vue";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
@@ -50,6 +57,7 @@
     // #region Values
 
     const skills = ref(props.modelValue?.skills as AgentSkillBag[] ?? []);
+    const isInstructionsVisible = ref(false);
 
     // #endregion
 
@@ -68,7 +76,19 @@
         }
 
         if (props.modelValue.instructions) {
-            valueBuilder.addTextValue("Instructions", props.modelValue.instructions);
+            const instructions = props.modelValue.instructions.trim();
+
+            if (instructions.length < 500 && !instructions.includes("\n")) {
+                valueBuilder.addTextValue("Instructions", instructions);
+            }
+            else {
+                const buttonElement = document.createElement("button");
+                buttonElement.classList.add("btn", "btn-default", "btn-xs");
+                buttonElement.innerHTML = "<i class=\"ti ti-eye\"></i> View Instructions";
+                buttonElement.type = "button";
+                buttonElement.addEventListener("click", () => isInstructionsVisible.value = true);
+                valueBuilder.addElementValue("Instructions", buttonElement);
+            }
         }
 
         return valueBuilder.build();

@@ -6,11 +6,15 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Prayer Request"
+          title="Prayer Requests"
           :entityTypeGuid="EntityType.PrayerRequest"
           stickyHeader
           liveUpdates
-          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
-          @selectItem="onSelectItem">
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="onGridSettingsClick"
+          @selectItem="onSelectItem"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined">
         <SelectColumn />
 
         <TextColumn name="fullName"
@@ -22,13 +26,13 @@
         <TextColumn name="category"
                     title="Category"
                     field="category"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
         <TextColumn name="campus"
                     title="Campus"
                     field="campus"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
         <DateColumn name="enteredDateTime"
@@ -57,10 +61,12 @@
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
-        <Column name="isApproved"
+        <Column v-if="config.options?.showIsApprovedColumn"
+                name="isApproved"
                 title="Approved?"
                 field="isApproved"
-                :filter="booleanValueFilter">
+                :filter="booleanValueFilter"
+                :exportValue="getIsApprovedExportValue">
             <template #format="{ row }">
                 <Toggle v-model="row.isApproved"
                         btnSize="xs"
@@ -83,26 +89,31 @@
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
+
+    <GridSettingsModal v-model="gridSettings" v-model:visible="isGridSettingsVisible" />
 </template>
 
 <script setup lang="ts">
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, NumberColumn, TextColumn, textValueFilter, DeleteColumn, SelectColumn, DateColumn, dateValueFilter, numberValueFilter, booleanValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, NumberColumn, TextColumn, textValueFilter, DeleteColumn, SelectColumn, DateColumn, dateValueFilter, numberValueFilter, booleanValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import Toggle from "@Obsidian/Controls/toggle.obs";
     import { PrayerRequestListOptionsBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestList/prayerRequestListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey } from "./PrayerRequestList/types.partial";
-    import { reactive, ref } from "vue";
+    import { NavigationUrlKey, PreferenceKey, GridSettingsOptions } from "./PrayerRequestList/types.partial";
+    import { reactive, ref, computed, watch } from "vue";
+    import GridSettingsModal from "./PrayerRequestList/gridSettingsModal.partial.obs";
     import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
     import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
 
     const config = useConfigurationValues<ListBlockBox<PrayerRequestListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
@@ -113,8 +124,32 @@
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
     let gridDataCopy: GridDataBag | undefined;
+    const isGridSettingsVisible = ref(false);
 
-    // #endregion
+    const gridSettings = ref<GridSettingsOptions>({
+        publicOrPrivate: preferences.getValue(PreferenceKey.FilterPublicOrPrivate),
+        active: preferences.getValue(PreferenceKey.FilterActive),
+        urgent: preferences.getValue(PreferenceKey.FilterUrgent),
+        commenting: preferences.getValue(PreferenceKey.FilterCommenting),
+        showExpiredRequests: asBooleanOrNull(preferences.getValue(PreferenceKey.FilterShowExpiredRequests)) ?? false
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * Returns `true` if the grid settings filters are active; otherwise `false`.
+     */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.publicOrPrivate
+            || !!gridSettings.value.active
+            || !!gridSettings.value.urgent
+            || !!gridSettings.value.commenting
+            || !!gridSettings.value.showExpiredRequests;
+    });
+
+    // #endregion Computed Values
 
     // #region Functions
 
@@ -125,6 +160,14 @@
         }
 
     }
+
+    /**
+     * Gets the export value for approval status.
+     */
+    function getIsApprovedExportValue(row: Record<string, unknown>): string {
+        return row.isApproved ? "True" : "False";
+    }
+
     /**
      * Ensures a promise takes at least the specified minimum duration before resolving.
      * @param promise The promise to await.
@@ -156,7 +199,14 @@
         }
     }
 
-    // #endregion
+    /**
+    * Called when the grid setting icon is clicked, displays the block filters.
+    */
+    function onGridSettingsClick(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+    // #endregion Functions
 
     // #region Event Handlers
 
@@ -255,7 +305,23 @@
         }
     }
 
-    // #endregion
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterPublicOrPrivate, gridSettings.value.publicOrPrivate ?? "");
+        preferences.setValue(PreferenceKey.FilterActive, gridSettings.value.active ?? "");
+        preferences.setValue(PreferenceKey.FilterUrgent, gridSettings.value.urgent ?? "");
+        preferences.setValue(PreferenceKey.FilterCommenting, gridSettings.value.commenting ?? "");
+        preferences.setValue(PreferenceKey.FilterShowExpiredRequests, asTrueOrFalseString(gridSettings.value.showExpiredRequests));
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion Watchers
 
     gridDataSource.value = loadGridData();
 </script>

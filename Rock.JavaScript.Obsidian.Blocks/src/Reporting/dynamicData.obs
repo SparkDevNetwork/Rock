@@ -368,6 +368,10 @@
      * @param rowKey The key of the row that was selected.
      */
     function onSelectItem(rowKey: string): void {
+        if (!rowKey) {
+            return;
+        }
+
         let rowSelectionUrl = config.navigationUrls?.[NavigationUrlKey.RowSelection];
         if (!rowSelectionUrl) {
             return;
@@ -381,10 +385,6 @@
         if (!(columnKeys?.length)) {
             // No values to replace; simply redirect.
             window.location.href = rowSelectionUrl;
-            return;
-        }
-
-        if (rowKey) {
             return;
         }
 

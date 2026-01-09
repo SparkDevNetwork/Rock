@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,24 +41,14 @@ namespace Rock.Blocks.Crm
         Description = "The interactions associated with a specific personal device.",
         Order = 0 )]
 
-    [BooleanField(
-        "Show Device Last Seen DateTime",
-        Description = "Checking this option will display the time when the device was last seen.",
-        DefaultBooleanValue = false,
-        Order = 1,
-        Key = AttributeKey.ShowDeviceLastSeenDateTime )]
-
     [ContextAware( typeof( Person ) )]
     // was [Rock.SystemGuid.BlockTypeGuid( "9A504904-8AF6-4351-AE31-CBC4DB2F55BA" )]
     [Rock.SystemGuid.BlockTypeGuid( "2D90562E-7332-46DB-9100-0C4106151CA1" )]
+    [Rock.SystemGuid.EntityTypeGuid( "5136CA2E-4AB6-4048-A6FC-6A07B03BD6C0")]
     public class PersonalDevices : RockBlockType
     {
         #region Keys
 
-        private static class AttributeKey
-        {
-            public const string ShowDeviceLastSeenDateTime = "ShowDeviceLastSeenDateTime";
-        }
 
         private static class PageParameterKey
         {
@@ -90,7 +80,6 @@ namespace Rock.Blocks.Crm
                 PersonName = person?.FullName ?? string.Empty
             };
 
-            box.Options.ShowDeviceLastSeenDateTime = GetAttributeValue( AttributeKey.ShowDeviceLastSeenDateTime ).AsBoolean();
             box.Options.DeviceTypeOptions = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_TYPE.AsGuid() ).DefinedValues.ToListItemBagList();
 
             return box;

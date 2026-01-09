@@ -1,0 +1,130 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentToggle v-model="isBorderShown"
+                   v-bind="$attrs"
+                   :label="label">
+        <ShorthandBorderStylePicker v-model="borderStyle"
+                                    :help="help"
+                                    label="Border Style" />
+
+        <ShorthandPixelBox v-model="borderThickness"
+                           :help="help"
+                           label="Border Thickness" />
+
+        <ShorthandColorPicker v-model="borderColor"
+                              :help="help"
+                              label="Border Color" />
+    </ContentToggle>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import ShorthandBorderStylePicker from "./shorthandBorderStylePicker.partial.obs";
+    import {
+        BorderModel,
+        BorderStyle,
+        ShorthandModel
+    } from "./types.partial";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import ShorthandPixelBox from "./shorthandPixelBox.partial.obs";
+    import ShorthandColorPicker from "./shorthandColorPicker.partial.obs";
+    import ContentToggle from "./contentToggle.partial.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<BorderModel | null>,
+            required: true
+        },
+
+        help: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Border" as const
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: BorderModel | null): void;
+        (e: "update:isBorderShown", value: boolean): void;
+    }>();
+
+    // #region Values
+
+    // Initialize to true then update based on the initial model value.
+    const borderStyle = ref<ShorthandModel<BorderStyle | null> | null>(props.modelValue?.style ?? null);
+    const borderThickness = ref<ShorthandModel<number | null> | null>(props.modelValue?.widthPx ?? null);
+    const borderColor = ref<ShorthandModel<string | null> | null>(props.modelValue?.color ?? null);
+    const isBorderShown = ref<boolean>(
+        hasAnyShorthandValue(borderStyle.value)
+            || hasAnyShorthandValue(borderThickness.value)
+            || hasAnyShorthandValue(borderColor.value));
+
+    // #endregion Values
+
+    // #region Functions
+
+    function hasAnyShorthandValue<T>(test: ShorthandModel<T | null> | null): boolean {
+        if (!test) {
+            return false;
+        }
+
+        return !isNullish(test.top)
+            || !isNullish(test.bottom)
+            || !isNullish(test.left)
+            || !isNullish(test.right);
+    }
+
+    function emitUpdateModelValue(): void {
+        if (!hasAnyShorthandValue(borderStyle.value)
+            && !hasAnyShorthandValue(borderThickness.value)
+            && !hasAnyShorthandValue(borderColor.value)) {
+            emit("update:modelValue", null);
+        }
+        else {
+            emit("update:modelValue", {
+                style: borderStyle.value,
+                widthPx: borderThickness.value,
+                color: borderColor.value
+            });
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(isBorderShown, (value: boolean) => {
+        if (!value) {
+            // Clear the border properties when "Border" is switched off
+            // or when toggled in code.
+            borderStyle.value = null;
+            borderThickness.value = null;
+            borderColor.value = null;
+        }
+
+        emit("update:isBorderShown", value);
+    });
+
+    watch([borderStyle, borderThickness, borderColor], () => {
+        if (hasAnyShorthandValue(borderStyle.value)
+            || hasAnyShorthandValue(borderThickness.value)
+            || hasAnyShorthandValue(borderColor.value)) {
+            // If any border style is found, show the border properties.
+            isBorderShown.value = true;
+        }
+
+        emitUpdateModelValue();
+    });
+
+    watch(() => props.modelValue, () => {
+        borderStyle.value = props.modelValue?.style ?? null;
+        borderThickness.value = props.modelValue?.widthPx ?? null;
+        borderColor.value = props.modelValue?.color ?? null;
+    });
+
+    // #endregion Watchers
+</script>

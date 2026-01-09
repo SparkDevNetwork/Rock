@@ -208,7 +208,14 @@ namespace Rock.Jobs
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
 
             // Register the attributes of the new block type in the database if not already registered.
-            BlockTypeService.VerifyBlockTypeInstanceProperties( BlockTypeGuidReplacementPairs.Values.Select( g => BlockTypeCache.GetId( g ).Value ).ToArray() );
+            BlockTypeService.VerifyBlockTypeInstanceProperties(
+                BlockTypeGuidReplacementPairs.Values
+                    .Select( g => BlockTypeCache.GetId( g ) )
+                    .Where( id => id.HasValue )
+                    .Select( id => id.Value )
+                    .ToArray()
+            );
+
 
             foreach ( var blockTypeGuidPair in BlockTypeGuidReplacementPairs )
             {

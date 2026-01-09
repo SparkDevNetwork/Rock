@@ -308,39 +308,23 @@ namespace Rock.Blocks.Core
             }
 
             // Update the Attributes that were assigned in the UI
+            // The attributes are coming from the frontend already sorted in the correct order.
+            int order = 0;
             foreach ( var attributeState in AttributesState )
             {
-                Helper.SaveAttributeEdits( attributeState, entityTypeIdAttributeMatrix, "AttributeMatrixTemplateId", qualifierValue, RockContext );
+                var attr = Helper.SaveAttributeEdits( attributeState, entityTypeIdAttributeMatrix, "AttributeMatrixTemplateId", qualifierValue, RockContext );
+                if ( attr != null )
+                {
+                    attr.Order = order++;
+                }
             }
+
+            RockContext.SaveChanges();
         }
 
         #endregion
 
         #region Block Actions
-
-        /// <summary>
-        /// Changes the ordered position of a single item.
-        /// </summary>
-        /// <param name="key">The identifier of the item that will be moved.</param>
-        /// <param name="beforeKey">The identifier of the item it will be placed before.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
-        [BlockAction]
-        public BlockActionResult ReorderAttributes( string idKey, Guid guid, Guid? beforeGuid )
-        {
-            // Get the queryable and make sure it is ordered correctly.
-            var id = Rock.Utility.IdHasher.Instance.GetId( idKey );
-
-            var attributes = GetAttributes( id ?? 0 );
-
-            if ( !attributes.ReorderEntity( guid.ToString(), beforeGuid.ToString() ) )
-            {
-                return ActionBadRequest( "Invalid reorder attempt." );
-            }
-
-            RockContext.SaveChanges();
-
-            return ActionOk();
-        }
 
         /// <summary>
         /// Saves the entity contained in the box.

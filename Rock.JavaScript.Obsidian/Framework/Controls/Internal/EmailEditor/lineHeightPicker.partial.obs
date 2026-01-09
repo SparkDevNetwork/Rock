@@ -65,24 +65,6 @@
     </SingleSelectButtonGroup>
 </template>
 
-<style scoped>
-.btn-line-height {
-    display: inline-flex;
-    align-items: center;
-}
-
-svg {
-    height: 24px;
-    width: 16px;
-    stroke: var(--color-interface-strong);
-    stroke-width: 3px;
-}
-
-.btn-primary svg {
-    stroke: var(--color-interface-softer);
-}
-</style>
-
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import ClearStyleButton from "./clearStyleButton.partial.obs";

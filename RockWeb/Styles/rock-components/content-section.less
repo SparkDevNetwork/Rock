@@ -17,7 +17,6 @@
     background-color: var(--color-interface-softer);
     padding-left: 0;
     padding-right: 0;
-    overflow: hidden;
 }
 
 /* HEADER */
@@ -93,7 +92,7 @@
     padding: var(--spacing-large);
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xlarge);
+    gap: var(--spacing-large);
 }
 
 .contentsection-header + div > .contentsection-body {
@@ -109,6 +108,7 @@
 
 .contentsection-body-overflow-toggle {
     margin-bottom: var(--spacing-small);
+    padding-left: var(--spacing-xsmall);
 }
 
 .contentsection-body-overflow-toggle .btn {
@@ -274,7 +274,7 @@
     z-index: 10;
 }
 
-.contentsection-nav > .contentsection-nav-header {
+.contentsection-nav .contentsection-nav-header {
     width: 100%;
     display: flex;
     justify-content: space-between;
@@ -283,13 +283,13 @@
     margin-bottom: var(--spacing-tiny);
 }
 
-.contentsection-nav > .contentsection-nav-header-title {
+.contentsection-nav .contentsection-nav-header-title {
     color: var(--color-interface-medium);
     font-size: var(--font-size-small);
     padding-left: var(--spacing-small);
 }
 
-.contentsection-nav > .contentsection-nav-link {
+.contentsection-nav .contentsection-nav-link {
     border: none;
     border-radius: var(--rounded-small);
     background-color: transparent;
@@ -302,24 +302,24 @@
     margin-bottom: var(--spacing-tiny);
 }
 
-.contentsection-nav > .list-group-item i.ti {
+.contentsection-nav .list-group-item i.ti {
     font-size: var(--font-size-regular);
     margin-right: var(--spacing-xsmall);
     color: var(--color-interface-strong);
     align-self: center;
 }
 
-.contentsection-nav > .list-group-item:hover {
+.contentsection-nav .list-group-item:hover {
     background-color: var(--color-interface-softest);
 }
 
-.contentsection-nav > .list-group-item.active {
+.contentsection-nav .list-group-item.active {
     background-color: var(--color-interface-softest);
     font-weight: var(--font-weight-semibold);
     color: var(--color-interface-strong);
 }
 
-.contentsection-nav > .list-group-item.active i.ti {
+.contentsection-nav .list-group-item.active i.ti {
     color: var(--color-interface-strong);
 }
 

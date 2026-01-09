@@ -498,6 +498,41 @@
   }
 }
 
+.notes-container-editor-with-filter,
+.notes-container-editor-without-filter {
+  display: flex;
+}
+
+.notes-container-editor-with-filter .notes-container-editor .note-editor {
+  // Reduce the editor's right padding when the filter button is shown.
+  padding-right: var(--spacing-medium) !important;
+}
+
+.notes-container-editor {
+  flex: 1 1 auto;
+}
+
+.notes-container-filter {
+  flex: 0 0 auto;
+  padding-top: var(--spacing-medium);
+  padding-right: var(--spacing-medium);
+
+  .btn.btn-notes-container-filter {
+    border-radius: var(--rounded-small);
+  }
+
+  .btn.btn-notes-container-filter:hover,
+  .dropdown.open .btn.btn-notes-container-filter,
+  .btn.btn-notes-container-filter-active {
+    color: var(--color-interface-stronger);
+    background-color: var(--color-interface-soft);
+  }
+
+  .dropdown-menu {
+    white-space: nowrap;
+  }
+}
+
 .note-editor {
   .meta-body {
     background:     var(--color-interface-softest);

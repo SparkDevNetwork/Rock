@@ -204,9 +204,19 @@ namespace Rock.SystemGuid
         public const string CONNECTION_STATUS = "F3840C8B-63BF-4F98-AC4A-9336896E589B";
 
         /// <summary>
+        /// The guid for the Rock.Model.ConnectionRequestStatusHistory entity
+        /// </summary>
+        public const string CONNECTION_REQUEST_STATUS_HISTORY = "9D73FA0E-5787-4357-BD7C-43AD1800DBB1";
+
+        /// <summary>
         /// The guid for the Rock.Model.ConnectionType entity
         /// </summary>
         public const string CONNECTION_TYPE = "B1E52EAD-65BD-4C4D-BCCD-73368067621D";
+
+        /// <summary>
+        /// The guid for the Rock.Model.ConnectionTypeSource entity
+        /// </summary>
+        public const string CONNECTION_TYPE_SOURCE = "06FD04C5-8A18-43D1-AE13-3611344FB40A";
 
         /// <summary>
         /// The guid for the Rock.Model.ConnectionWorkflow entity

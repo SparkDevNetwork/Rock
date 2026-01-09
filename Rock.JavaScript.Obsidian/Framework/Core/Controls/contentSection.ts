@@ -41,6 +41,13 @@ export interface IContentSectionHolder {
      */
     readonly isCollapsed: Ref<boolean>;
 
+    /**
+     * Indicates whether animations are disabled for this section. When true,
+     * transitions such as expand/collapse will occur instantly without
+     * animation effects.
+     */
+    readonly isAnimationDisabled: Ref<boolean>;
+
     /** The order of the section in relation to other sections. */
     readonly order: Ref<number>;
 }
@@ -55,6 +62,9 @@ export interface IContentSectionHolder {
 export interface IContentSectionContainerHolder {
     addSection: (section: IContentSectionHolder) => void;
     removeSection: (section: IContentSectionHolder) => void;
+    onSectionTransitionStart?: (section: IContentSectionHolder) => void;
+    onSectionTransitionEnd?: (section: IContentSectionHolder) => void;
+    waitForAllTransitions?: () => Promise<void>;
 }
 
 /**
@@ -82,6 +92,9 @@ export function useSectionContainer(): IContentSectionContainerHolder {
         ?? {
         addSection: () => { },
         removeSection: () => { },
+        onSectionTransitionStart: () => { },
+        onSectionTransitionEnd: () => { },
+        waitForAllTransitions: async () => { },
     };
 }
 
@@ -94,11 +107,16 @@ export function useSectionContainer(): IContentSectionContainerHolder {
  * @param title The title of the section.
  * @param icon The icon for the section, if any.
  * @param isCollapsed Indicates whether the section is collapsed or expanded.
+ * @param isAnimationDisabled Indicates whether animations are disabled for this section.
  * @param order The order of the section in relation to other sections.
  *
  * @returns A new content section holder to be registered with the content section container.
  */
-export function createSection(title: Readonly<Ref<string | undefined>>, icon: Readonly<Ref<string | undefined>>, isCollapsed: Readonly<Ref<boolean>>, order: Readonly<Ref<number>>): IContentSectionHolder {
+export function createSection(title: Readonly<Ref<string | undefined>>,
+    icon: Readonly<Ref<string | undefined>>,
+    isCollapsed: Readonly<Ref<boolean>>,
+    isAnimationDisabled: Readonly<Ref<boolean>>,
+    order: Readonly<Ref<number>>): IContentSectionHolder {
     const anchor = ref<string>();
 
     const holder: IContentSectionHolder = {
@@ -106,6 +124,7 @@ export function createSection(title: Readonly<Ref<string | undefined>>, icon: Re
         icon,
         anchor,
         isCollapsed,
+        isAnimationDisabled,
         order,
     };
 

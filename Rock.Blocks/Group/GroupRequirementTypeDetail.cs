@@ -250,31 +250,6 @@ namespace Rock.Blocks.Group
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.SqlHelpHTML = @"A SQL expression that returns a list of Person Ids that meet the criteria. Example:
-<pre>
-SELECT [Id] FROM [Person]
-WHERE [LastName] = 'Decker'</pre>
-</pre>
-The SQL can include Lava merge fields:
-
-<ul>
-   <li>Group</i>
-   <li>GroupRequirementType</i>
-</ul>
-
-TIP: When calculating for a specific Person, a <strong>Person</strong> merge field will also be included. This can improve performance in cases when the system is checking requirements for a specific person. Example:
-
-<pre>
-    SELECT [Id] FROM [Person]
-        WHERE [LastName] = 'Decker'
-    {% if Person != empty %}
-        AND [Id] = {{ Person.Id }}
-    {% endif %}
-</pre>
-";
-
-            bag.SqlHelpHTML += entity.GetMergeObjects( new Rock.Model.Group(), this.GetCurrentPerson() ).lavaDebugInfo();
-
             return bag;
         }
 
@@ -509,6 +484,41 @@ TIP: When calculating for a specific Person, a <strong>Person</strong> merge fie
             RockContext.SaveChanges();
 
             return ActionOk( this.GetParentPageUrl() );
+        }
+
+        /// <summary>
+        /// Gets the SQL Help HTML
+        /// </summary>
+        /// <returns>A string containing the HTML to display.</returns>
+        [BlockAction]
+        public BlockActionResult GetSqlHelpHtml()
+        {
+            var html = @"A SQL expression that returns a list of Person Ids that meet the criteria. Example:
+<pre>
+SELECT [Id] FROM [Person]
+WHERE [LastName] = 'Decker'</pre>
+</pre>
+The SQL can include Lava merge fields:
+
+<ul>
+   <li>Group</i>
+   <li>GroupRequirementType</i>
+</ul>
+
+TIP: When calculating for a specific Person, a <strong>Person</strong> merge field will also be included. This can improve performance in cases when the system is checking requirements for a specific person. Example:
+
+<pre>
+    SELECT [Id] FROM [Person]
+        WHERE [LastName] = 'Decker'
+    {% if Person != empty %}
+        AND [Id] = {{ Person.Id }}
+    {% endif %}
+</pre>
+";
+            var entity = GetInitialEntity() ?? new GroupRequirementType();
+            html += entity.GetMergeObjects( new Rock.Model.Group(), this.GetCurrentPerson() ).lavaDebugInfo();
+
+            return ActionOk( html );
         }
 
         #endregion

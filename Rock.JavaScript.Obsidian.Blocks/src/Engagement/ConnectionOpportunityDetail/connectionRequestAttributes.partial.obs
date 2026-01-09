@@ -1,0 +1,232 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentStack v-if="inheritedGridData.rows.length > 0" title="Inherited Connection Request Attributes"
+                  description="Connection Request Attributes apply to requests within this opportunity. Each request will have its own
+                  values for these attributes."
+                  headerLocation="top">
+
+        <Grid :data="inheritedGridData" keyField="guid" itemTerm="Inherited Attribute" liveUpdates light>
+            <TextColumn name="attribute" field="attribute" title="Attribute" />
+            <TextColumn name="description" field="description" title="Description" />
+            <TextColumn name="inheritedFrom" field="inheritedFrom" title="Inherited From">
+                <template #format>
+                    <template v-if="connectionTypeUrl">
+                        <a :href="connectionTypeUrl" target="_blank" class="fw-bold">{{ connectionTypeName }}</a>
+                    </template>
+                    <span v-else class="fw-bold">Connection Type: ({{ connectionTypeName }})</span>
+                </template>
+            </TextColumn>
+        </Grid>
+    </ContentStack>
+
+    <ContentStack title="Configure Connection Request Attributes" description="Configure the connection request attributes that should be available for connection requests associated with this opportunity." headerLocation="top">
+        <NotificationBox v-if="inheritedGridData.rows.length == 0" :alertType="AlertType.Info">
+            Connection Request Attributes apply to requests within this opportunity. Each request will have its own
+            values for these attributes.
+        </NotificationBox>
+        <Grid :data="gridData" keyField="guid" itemTerm="Connection Request Attribute" liveUpdates light
+              @addItem="onAdd">
+
+            <ReorderColumn v-if="options?.isReOrderColumnVisible" @orderChanged="onOrderChanged" />
+
+            <TextColumn name="attribute" field="attribute" title="Attribute" />
+            <TextColumn name="description" field="description" title="Description" />
+            <BooleanColumn name="isRequired" field="isRequired" title="Required" />
+            <EditColumn @click="onEdit" />
+            <DeleteColumn @click="onDelete" disableConfirmation />
+        </Grid>
+    </ContentStack>
+
+    <Modal v-model="isModalVisible" title="Connection Request Attributes" saveText="Save" cancelText="Cancel"
+           :onSave="onSave">
+        <AttributeEditor v-model="theAttribute" :reservedKeyNames="reservedKeyNames" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { ref, watch, PropType, computed } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import Grid, { BooleanColumn, EditColumn, TextColumn, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
+    import { InheritedAttributeBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/inheritedAttributeBag";
+    import { ConnectionOpportunityDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/connectionOpportunityDetailOptionsBag";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<PublicEditableAttributeBag[]>,
+            required: true
+        },
+
+        inheritedConnectionRequestAttributes: {
+            type: Object as PropType<InheritedAttributeBag[]>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<ConnectionOpportunityDetailOptionsBag>,
+            required: true
+        },
+
+        connectionTypeName: {
+            type: String,
+            required: true
+        },
+
+        connectionTypeUrl: {
+            type: String,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: PublicEditableAttributeBag[]): void
+    }>();
+
+    // #region Values
+
+    const reservedKeyNames = ref<string[]>([]);
+    const isModalVisible = ref(false);
+    const theAttribute = ref<PublicEditableAttributeBag | null>(null);
+
+    //#endregion Values
+
+    // #region Computed Values
+
+    const gridData = computed(() => {
+        const rows = (props.modelValue ?? []).map(attribute => ({
+            guid: attribute.guid,
+            attribute: attribute.name,
+            description: attribute.description,
+            isRequired: attribute.isRequired
+        }));
+        return { rows };
+    });
+
+    const inheritedGridData = computed(() => {
+        const rows = (props.inheritedConnectionRequestAttributes ?? []).map(attribute => ({
+            guid: attribute?.guid,
+            attribute: attribute?.name,
+            description: attribute?.description,
+            inheritedFrom: `${props.connectionTypeName}`
+        }));
+        return { rows };
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onAdd(): void {
+        theAttribute.value = {
+            fieldTypeGuid: FieldType.Text
+        } as PublicEditableAttributeBag;
+        isModalVisible.value = true;
+    }
+
+    function onEdit(key: string): void {
+        const selected = (props.modelValue ?? []).find(x => x.guid === key);
+        if (selected) {
+            theAttribute.value = { ...selected };
+            isModalVisible.value = true;
+        }
+        else {
+            onAdd();
+        }
+    }
+
+    function onDelete(guid: string): void {
+        isModalVisible.value = false;
+        const currentAttributes = (props.modelValue ?? []).filter(s => s.guid !== guid);
+
+        emit("update:modelValue", currentAttributes);
+    }
+
+    function onSave(): void {
+        if (!theAttribute.value) {
+            return;
+        }
+
+        const currentAttributes = props.modelValue ?? [];
+        const idx = currentAttributes.findIndex(a => a.guid === theAttribute.value?.guid);
+        let newAttributes = [...currentAttributes];
+
+        if (idx !== -1) {
+            newAttributes.splice(idx, 1, theAttribute.value);
+        }
+        else {
+            theAttribute.value.guid = newGuid();
+            newAttributes = [...currentAttributes, theAttribute.value];
+        }
+
+        emit("update:modelValue", newAttributes);
+
+        isModalVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const itemGuid = item["guid"] as string;
+        const beforeItemGuid = beforeItem?.["guid"] as string | null;
+
+        const currentItems = [...(props.modelValue ?? [])];
+        const idx = currentItems.findIndex(i => i.guid === itemGuid);
+
+        if (idx < 0) {
+            return false;
+        }
+
+        const itemToMove = currentItems.splice(idx, 1)[0];
+
+        if (beforeItemGuid) {
+            const beforeIndex = currentItems.findIndex(i => i.guid === beforeItemGuid);
+            if (beforeIndex < 0) {
+                currentItems.push(itemToMove);
+            }
+            else {
+                currentItems.splice(beforeIndex, 0, itemToMove);
+            }
+        }
+        else {
+            currentItems.push(itemToMove);
+        }
+
+        emit("update:modelValue", currentItems);
+
+        return true;
+    }
+
+    // #region Watchers
+
+    watch(isModalVisible, () => {
+        if (isModalVisible.value) {
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== theAttribute.value?.key);
+        }
+        else {
+            if (theAttribute.value?.key && !reservedKeyNames.value.includes(theAttribute.value.key)) {
+                reservedKeyNames.value.push(theAttribute.value.key);
+            }
+        }
+    });
+
+    watch([() => props.modelValue, () => props.inheritedConnectionRequestAttributes], () => {
+        const inheritedKeys = Enumerable.from(props.inheritedConnectionRequestAttributes ?? [])
+            .select(attr => attr?.key)
+            .where(k => !!k);
+
+        const ownKeys = Enumerable.from(props.modelValue ?? [])
+            .select(attr => attr.key)
+            .where(k => !!k);
+
+        reservedKeyNames.value = inheritedKeys.concat(ownKeys).toArray() as string[];
+    }, { immediate: true });
+
+    // #endregion Watchers
+</script>

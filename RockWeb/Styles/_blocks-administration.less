@@ -1,0 +1,144 @@
+//  imported by _core.scss
+
+//  ADMINISTRATION BLOCK STYLES
+
+
+// =============================================================
+// Table of Content
+//  + Choose Experience Mode
+// =============================================================
+
+
+// ============ CHOOSE EXPERIENCE MODE =========================
+
+.choose-experience-mode {
+    display: flex;
+    gap: var(--spacing-medium);
+}
+
+.choose-experience-logo {
+    min-width: 268px;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    background: linear-gradient(90deg, #fbc453, #ef6653);
+    border-radius: var(--rounded-medium);
+}
+
+.choose-experience-header {
+    display: flex;
+    padding: var(--spacing-medium);
+    gap: var(--spacing-medium);
+    background-color: var(--color-interface-softer);
+    align-items: center;
+    border-radius: var(--rounded-medium);
+
+    i {
+      font-size: var(--font-size-h4);
+      min-width: 40px;
+      min-height: 40px;
+      background-color: var(--color-info-soft);
+      color: var(--color-info-strong);
+      text-align: center;
+      align-content: center;
+      border-radius: var(--rounded-xsmall);
+    }
+
+    h3, p {
+      margin: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .choose-experience-mode,
+    .choose-experience-header {
+        flex-direction: column;
+        h3, p {
+            text-align: center;
+        }
+    }
+
+    .choose-experience-logo {
+        min-width: auto;
+        padding: var(--spacing-large);
+    }
+}
+
+
+
+.choose-experience-body {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    gap: var(--spacing-large);
+}
+
+
+
+.choose-experience-body-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-large);
+}
+
+.choose-experience-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-small);
+}
+
+// Experience Mode Picker Overrides
+
+.experience-mode-picker {
+
+    .btn.btn-warning {
+      background-color: var(--color-interface-softest);
+      color: var(--color-warning-strong);
+    }
+
+    .btn.btn-warning:hover,
+    .open .btn.btn-warning {
+      background-color: var(--color-warning-strong);
+      color: var(--color-interface-softest);
+    }
+
+    .btn.btn-success {
+      background-color: var(--color-interface-softest);
+      color: var(--color-success-strong);
+
+      &:hover,
+      .open .btn.btn-success {
+        background-color: var(--color-success-strong);
+        color: var(--color-interface-softest);
+      }
+    }
+
+}
+
+/* When inside a panel, don't paint a border. */
+.panel-experience-mode {
+
+  .experience-mode-picker {
+
+    .btn.dropdown-toggle {
+      border: none;
+    }
+
+    // When inside a panel, don't highlight the button.
+    .btn.btn-warning {
+      background-color: var(--color-interface-softest);
+      color: var(--color-warning-strong);
+    }
+
+    // When inside a panel, don't highlight the button.
+    .btn.btn-success {
+      background-color: var(--color-interface-softest);
+      color: var(--color-success-strong);
+    }
+
+  }
+
+}
+
+// ================END EXPERIENCE MODE==========================

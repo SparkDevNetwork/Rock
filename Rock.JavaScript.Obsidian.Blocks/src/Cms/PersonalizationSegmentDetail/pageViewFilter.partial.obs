@@ -198,8 +198,12 @@
 
     const theFilter = ref<PageViewSegmentFilterBag>(createDefaultFilter());
 
-    const comparisonTypes = getFilteredComparisonTypeOptions(numericComparisonTypes);
+    const excludedComparisonTypes = [ComparisonType.IsBlank, ComparisonType.IsNotBlank].map(v => v.toString());
+    const comparisonTypes = (getFilteredComparisonTypeOptions(numericComparisonTypes))
+        .filter(ct => !excludedComparisonTypes.includes(ct.value ?? ""));
+
     const advancedOptionsComparisonTypes = getFilteredComparisonTypeOptions(stringComparisonTypes);
+
     const sites = ref(props.sites ?? []);
     const isModalVisible = ref(false);
     const isEditing = ref(false);

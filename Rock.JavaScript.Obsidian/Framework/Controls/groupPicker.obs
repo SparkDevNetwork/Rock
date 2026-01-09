@@ -48,6 +48,12 @@
             default: []
         },
 
+        /** When true, show no groups by default. */
+        excludeAllByDefault: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         /** Whether to limit to only groups that have scheduling enabled. */
         limitToSchedulingEnabled: {
             type: Object as PropType<boolean>,
@@ -78,6 +84,7 @@
         const provider = new GroupTreeItemProvider();
         provider.rootGroupGuid = props.rootGroupGuid;
         provider.includedGroupTypeGuids = props.includedGroupTypeGuids;
+        provider.excludeAllByDefault = props.excludeAllByDefault;
         provider.includeInactiveGroups = includeInactiveGroups.value;
         provider.limitToSchedulingEnabled = props.limitToSchedulingEnabled;
         provider.limitToRSVPEnabled = props.limitToRSVPEnabled;
@@ -92,6 +99,7 @@
         props.rootGroupGuid,
         includeInactiveGroups.value,
         props.includedGroupTypeGuids,
+        props.excludeAllByDefault,
         props.limitToRSVPEnabled,
         props.limitToSchedulingEnabled
     ], refreshItemProvider);

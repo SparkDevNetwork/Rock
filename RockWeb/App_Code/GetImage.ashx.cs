@@ -101,7 +101,7 @@ namespace RockWeb
             if ( !string.IsNullOrWhiteSpace( encryptedRootFolder ) )
             {
                 // Decrypt it (It is encrypted to help prevent direct access to filesystem).
-                trustedRootFolder = Encryption.DecryptString( encryptedRootFolder );
+                trustedRootFolder = Encryption.DecryptString( encryptedRootFolder, false );
             }
 
             // If we don't have a rootFolder, default to the ~/Content folder.

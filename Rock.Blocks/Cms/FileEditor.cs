@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -55,6 +55,7 @@ namespace Rock.Blocks.Cms
 
     // was [Rock.SystemGuid.BlockTypeGuid( "327370A5-3CC0-42AD-B236-F45260F6A1EE" )]
     [Rock.SystemGuid.BlockTypeGuid( "0F1DADBC-6B12-4BAA-A828-FD1AA86AA387" )]
+    [Rock.SystemGuid.EntityTypeGuid( "EFD19035-70F5-4135-9D76-A1EE024D7D7B")]
     public partial class FileEditor : RockBlockType
     {
 

@@ -11,13 +11,13 @@
 */
 -->
 <template>
-    <Block title="Stark Block">
+    <Block>
         <Panel title="Pledge Analytics" type="block" class="panel-analytics" :hasFullscreen="true">
 
             <RockForm class="mb-4" @submit="applyFiltersAndLoadData">
                 <div class="row row-eq-height-md">
                     <div class="col-md-3 filter-options">
-                        <AccountPicker label="Account" v-model="pledgeAccounts" rules="required" enhanceForLongLists activeOnly displayPublicName multiple displayChildItemCountLabel />
+                        <AccountPicker label="Account" v-model="pledgeAccounts" rules="required" enhanceForLongLists displayPublicName multiple displayChildItemCountLabel />
                         <SlidingDateRangePicker v-model="pledgeDateRange"
                                                 label="Pledge Date Range"
                                                 :enabledTimeUnits="enabledTimeUnits"

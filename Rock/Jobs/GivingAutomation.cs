@@ -30,10 +30,10 @@ using Microsoft.EntityFrameworkCore;
 using Rock.Attribute;
 using Rock.Bus.Message;
 using Rock.Data;
+using Rock.Enums.Core;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Tasks;
-using Rock.Utility.Enums;
 using Rock.Utility.Settings.Giving;
 using Rock.Web.Cache;
 
@@ -147,7 +147,7 @@ namespace Rock.Jobs
 
             var classificationStartDateTime = RockDateTime.Now;
 
-            var classificationsDaysToRun = settings.GivingClassificationSettings.RunDays ?? DayOfWeekFlag.All.AsDayOfWeekList().ToArray();
+            var classificationsDaysToRun = settings.GivingClassificationSettings.RunDays ?? DaysOfWeekFlags.All.AsDayOfWeekList().ToArray();
             context.IsGivingClassificationRunDay = classificationsDaysToRun.Contains( context.Now.DayOfWeek );
 
             // Get a list of all giving units (distinct giver ids) that have given since the last classification
@@ -1021,12 +1021,12 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                     .ToList();
 
                 // Filter out alert types that are not supposed to run today
-                var currentDayOfWeekFlag = context.Now.DayOfWeek.AsFlag();
+                var currentDayOfWeekFlag = context.Now.DayOfWeek.AsFlags();
 
                 alertTypes = alertTypes
                     .Where( at =>
-                        !at.RunDays.HasValue ||
-                        ( at.RunDays.Value & currentDayOfWeekFlag ) == currentDayOfWeekFlag )
+                        !at.RunDaysOfWeek.HasValue ||
+                        ( at.RunDaysOfWeek.Value & currentDayOfWeekFlag ) == currentDayOfWeekFlag )
                     .ToList();
 
                 context.AlertTypes = alertTypes;

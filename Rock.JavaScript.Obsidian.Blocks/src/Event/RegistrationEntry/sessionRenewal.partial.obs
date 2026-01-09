@@ -172,7 +172,7 @@
 
             registrationEntryState.viewModel.spotsRemaining = spotsSecured.value;
 
-            if (!hasWaitlist) {
+            if (!hasWaitlist.value) {
                 // Reduce the registrants down to fit the spots available
                 registrationEntryState.registrants.length = spotsSecured.value;
                 return;

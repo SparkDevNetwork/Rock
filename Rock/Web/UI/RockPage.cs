@@ -3985,6 +3985,7 @@ Sys.Application.add_load(function () {
         {
             if ( page != null && page.Header != null )
             {
+                page.Header.EnableViewState = false;
                 /*
                      6/26/2021 - SK
 

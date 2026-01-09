@@ -1891,6 +1891,70 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        This stored procedure returns the data needed to create a Step Flow 
+        ///        chart for a provided Step Program. It supports filtering on date 
+        ///        ranges, data views, campuses, and an optional list of starting 
+        ///        step type IDs via a table-valued parameter.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        * Level - The step level. 1 = Steps that were a person&apos;s first step, 2 = The second steps, etc.
+        ///        * SourceStepTypeId - The last step taken before the current o [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202512121548566_UpdateGroupRequirementsJob_spSteps_StepFlow {
+            get {
+                return ResourceManager.GetString("_202512121548566_UpdateGroupRequirementsJob_spSteps_StepFlow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        Evaluates requirement status for applicable Group Members and updates 
+        ///        or inserts corresponding GroupMemberRequirement records. Also returns 
+        ///        any records that should trigger automatic &apos;Not Met&apos; or &apos;Warning&apos; workflows.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;param name=&quot;GroupRequirementId&quot; datatype=&quot;int&quot;&gt;
+        ///        The Id of the GroupRequirement definition being evaluated.
+        ///    &lt;/param&gt;
+        ///
+        ///    &lt;param name=&quot;GroupId&quot; datatype=&quot;int&quot;&gt;
+        ///        The Id of the Group whose members  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202512121548566_UpdateGroupRequirementsJob_spUpdateGroupMemberRequirements {
+            get {
+                return ResourceManager.GetString("_202512121548566_UpdateGroupRequirementsJob_spUpdateGroupMemberRequirements", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure merges the data from the non-primary person to the primary person.  It
+        ///		is used when merging people in Rock and should never be used outside of that process. 
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
+        ///	&lt;param name=&quot;New Id&quot; datatype=&quot;int&quot;&gt;The person id of the primary Person being merged&lt;/param&gt;
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: 790E [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202512182358368_UpdatespCrm_PersonMerge {
+            get {
+                return ResourceManager.GetString("_202512182358368_UpdatespCrm_PersonMerge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] lms_header_min {

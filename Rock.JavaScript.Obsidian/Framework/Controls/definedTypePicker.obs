@@ -1,0 +1,102 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <BaseAsyncPicker v-model="internalValue" v-bind="standardProps" :items="actualItems" />
+</template>
+
+<script setup lang="ts">
+    import { Guid } from "@Obsidian/Types";
+    import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { computed, PropType, ref, watch } from "vue";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
+    import { DefinedTypePickerGetDefinedTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedTypePickerGetDefinedTypesOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            required: false
+        },
+
+        /** List of Defined Type GUIDs of the Defined Types to include in the picker. If null or empty, include all defined types. */
+        definedTypes: {
+            type: Array as PropType<Guid[] | null>,
+            default: []
+        },
+
+        /** List of Defined Type GUIDs of the Defined Types to exclude from the picker. */
+        excludeDefinedTypes: {
+            type: Array as PropType<Guid[] | null>,
+            default: []
+        },
+
+        /** Whether to sort by defined type name; otherwise sort by Category name, then defined type name. */
+        isSortedByName: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        ...standardAsyncPickerProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag | ListItemBag[] | null): void;
+    }>();
+
+    // #region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const standardProps = useStandardAsyncPickerProps(props);
+    const http = useHttp();
+    const loadedItems = ref<ListItemBag[] | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The actual items to make available to the picker. This allows us to do any
+     * post-processing, such as adding additional items, and still be lazy loaded as well.
+     */
+    const actualItems = computed((): ListItemBag[] | (() => Promise<ListItemBag[]>) => {
+        return loadedItems.value ? loadedItems.value : loadOptions;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Loads the items from the server.
+     */
+    const loadOptions = async (): Promise<ListItemBag[]> => {
+        const options: DefinedTypePickerGetDefinedTypesOptionsBag = {
+            definedTypes: props.definedTypes,
+            excludeDefinedTypes: props.excludeDefinedTypes,
+            isSortedByName: props.isSortedByName
+        };
+
+        const result = await http.post<ListItemBag[]>("/api/v2/Controls/DefinedTypePickerGetDefinedTypes", undefined, options);
+
+        if (result.isSuccess && result.data) {
+            loadedItems.value = result.data;
+            return result.data;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+            loadedItems.value = [];
+            return [];
+        }
+    };
+
+    // #endregion
+
+    // #region Watchers
+
+    // Reload items when our filtering props change.
+    watch(() => [props.definedTypes, props.excludeDefinedTypes, props.isSortedByName], () => {
+        loadedItems.value = null;
+    });
+
+    // #endregion
+</script>

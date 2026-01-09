@@ -303,10 +303,14 @@
     const isExistingRequest = !!props.modelValue.bag?.benevolenceTypeId;
 
     const benevolenceRequestTypes = ref(props.options.benevolenceRequestTypes ?? []);
-    const benevolenceRequestTypeItemBags = ref<ListItemBag[]>(benevolenceRequestTypes.value.map(type => ({
-        text: type.name ?? "",
-        value: type.id?.toString() ?? ""
-    })));
+    const benevolenceRequestTypeItemBags = ref<ListItemBag[]>(
+        benevolenceRequestTypes.value
+            .filter(type => type.isActive)
+            .map(type => ({
+                text: type.name ?? "",
+                value: type.id?.toString() ?? ""
+            }))
+    );
 
     const caseWorkersByRoleCount = ref(props.options.caseWorkersByRole?.length ?? 0);
     const requestStatusValues = ref(props.options.requestStatusValues ?? []);

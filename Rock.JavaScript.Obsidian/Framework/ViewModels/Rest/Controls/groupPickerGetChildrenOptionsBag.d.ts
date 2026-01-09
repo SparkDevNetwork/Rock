@@ -28,6 +28,9 @@ import { Guid } from "@Obsidian/Types";
  * the GroupMemberPicker control.
  */
 export type GroupPickerGetChildrenOptionsBag = {
+    /** When true, show no groups unless IncludedGroupTypeGuids has values. */
+    excludeAllByDefault: boolean;
+
     /**
      * Gets or sets the values that need to be expanded to. This is used
      * when opening the tree view with an already selected value. Each

@@ -57,7 +57,10 @@ namespace Rock.Tests.Utility
             var result = methodRetry.Execute( () => actualCallCount++, _ => false );
             stopWatch.Stop();
 
-            var minExpectedRuntime = expectedWait * expectedCallCount;
+            // Shave off a little time from the expected 4,000ms to account
+            // for slight clock drift or other timing issues that might cause
+            // the async to finish in just under 4,000ms.
+            var minExpectedRuntime = 3900;
             if ( minExpectedRuntime > stopWatch.ElapsedMilliseconds )
             {
                 Assert.Fail( $"Execute did not take long enough to run. Expected a minimum of {minExpectedRuntime}ms, but only for {stopWatch.ElapsedMilliseconds}ms" );
@@ -117,7 +120,10 @@ namespace Rock.Tests.Utility
             var result = await methodRetry.ExecuteAsync( () => Task.FromResult( actualCallCount++ ), _ => false );
             stopWatch.Stop();
 
-            var minExpectedRuntime = expectedWait * expectedCallCount;
+            // Shave off a little time from the expected 4,000ms to account
+            // for slight clock drift or other timing issues that might cause
+            // the async to finish in just under 4,000ms.
+            var minExpectedRuntime = 3900;
             if ( minExpectedRuntime > stopWatch.ElapsedMilliseconds )
             {
                 Assert.Fail( $"Execute did not take long enough to run. Expected a minimum of {minExpectedRuntime}ms, but only for {stopWatch.ElapsedMilliseconds}ms" );

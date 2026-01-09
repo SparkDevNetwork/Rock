@@ -35,10 +35,10 @@
                 </ContentSection>
 
                 <ContentSection title="Documentation" icon="ti ti-book">
-                    <ContentStack>
-                        <div class="lava-shortcode-detail-help-text">
-                            Document the shortcode's technical details and provide clear instructions on its properties, usage, and parameters.
-                        </div>
+                    <ContentStack
+                        headerLocation="top"
+                        description="Document the shortcode's technical details and provide clear instructions on its properties, usage, and parameters.">
+
                         <HtmlEditor v-model="documentation"
                                     :editorHeight="250"
                                     toolbar="light"
@@ -148,7 +148,7 @@
                         <ValueDetailList :modelValue="lavaSettingsPropertyValues" />
 
                         <template v-if="anyParameters">
-                            <div class="lava-shortcode-detail-parameters-label">Parameters</div>
+                            <div class="mb-spacing-tiny font-size-sm text-interface-medium">Parameters</div>
                             <pre>
                                 <p v-for="parameter in parameters"><strong>{{ parameter.key }} : </strong>{{ parameter.value }}</p>
                             </pre>
@@ -162,21 +162,6 @@
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
     </fieldset>
 </template>
-
-<style scoped>
-.lava-shortcode-detail-help-text {
-    color: var(--color-interface-medium);
-    font-size: var(--font-size-xsmall);
-    line-height: var(--line-height-tight);
-    margin-bottom: var(--spacing-large);
-}
-
-.lava-shortcode-detail-parameters-label {
-    color: var(--color-interface-medium);
-    font-size: var(--font-size-small);
-    margin-bottom: 2px;
-}
-</style>
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";

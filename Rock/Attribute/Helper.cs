@@ -1312,14 +1312,15 @@ INNER JOIN @EntityKey entityKey ON entityKey.[EntityTypeId] = A.[EntityTypeId] A
                 var attributeIdsTable = new DataTable();
                 attributeIdsTable.Columns.Add( "Id", typeof( int ) );
 
-                for ( int i = 0; i < attributes.Count; i++ )
+                var distinctAttributes = attributes.DistinctBy( a => a.Id ).ToList();
+                for ( int i = 0; i < distinctAttributes.Count; i++ )
                 {
-                    attributeIdsTable.Rows.Add( attributes[i].Id );
+                    attributeIdsTable.Rows.Add( distinctAttributes[i].Id );
                 }
 
                 var attributeIdsParameter = new SqlParameter( "@AttributeId", SqlDbType.Structured )
                 {
-                    TypeName = "dbo.EntityIdList",
+                    TypeName = "dbo.IdList",
                     Value = attributeIdsTable
                 };
 
@@ -2106,14 +2107,14 @@ WHERE [AttributeId] = @AttributeId
             var attributeIdsTable = new DataTable();
             attributeIdsTable.Columns.Add( "Id", typeof( int ) );
 
-            foreach ( var valueId in valueIds )
+            foreach ( var valueId in valueIds.Distinct() )
             {
                 attributeIdsTable.Rows.Add( valueId );
             }
 
             var valueIdParameter = new SqlParameter( "@ValueId", SqlDbType.Structured )
             {
-                TypeName = "dbo.EntityIdList",
+                TypeName = "dbo.IdList",
                 Value = attributeIdsTable
             };
 
@@ -2376,14 +2377,14 @@ WHERE [AttributeId] = @AttributeId
             var attributeIdsTable = new DataTable();
             attributeIdsTable.Columns.Add( "Id", typeof( int ) );
 
-            foreach ( var valueId in valueIds )
+            foreach ( var valueId in valueIds.Distinct() )
             {
                 attributeIdsTable.Rows.Add( valueId );
             }
 
             var valueIdParameter = new SqlParameter( "@ValueId", SqlDbType.Structured )
             {
-                TypeName = "dbo.EntityIdList",
+                TypeName = "dbo.IdList",
                 Value = attributeIdsTable
             };
 

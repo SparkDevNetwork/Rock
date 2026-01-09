@@ -142,11 +142,15 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this ConnectionType target, ConnectionType source )
         {
             target.Id = source.Id;
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.ConnectionRequestDetailPageId = source.ConnectionRequestDetailPageId;
             target.ConnectionRequestDetailPageRouteId = source.ConnectionRequestDetailPageRouteId;
             target.DaysUntilRequestIdle = source.DaysUntilRequestIdle;
             target.DefaultView = source.DefaultView;
             target.Description = source.Description;
+            target.DueDateCalculationMode = source.DueDateCalculationMode;
+            target.EnabledFeatures = source.EnabledFeatures;
+            target.EnabledViews = source.EnabledViews;
             target.EnableFullActivityList = source.EnableFullActivityList;
             target.EnableFutureFollowup = source.EnableFutureFollowup;
             target.EnableRequestSecurity = source.EnableRequestSecurity;
@@ -154,12 +158,16 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.IconCssClass = source.IconCssClass;
             target.IsActive = source.IsActive;
+            target.IsSequentialStatusEnforced = source.IsSequentialStatusEnforced;
             target.Name = source.Name;
             target.Order = source.Order;
             target.OwnerPersonAliasId = source.OwnerPersonAliasId;
             target.RequestBadgeLava = source.RequestBadgeLava;
+            target.RequestDueDateOffestInDays = source.RequestDueDateOffestInDays;
+            target.RequestDueSoonOffsetInDays = source.RequestDueSoonOffsetInDays;
             target.RequestHeaderLava = source.RequestHeaderLava;
             target.RequiresPlacementGroupToConnect = source.RequiresPlacementGroupToConnect;
+            target.SnippetCategoryId = source.SnippetCategoryId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

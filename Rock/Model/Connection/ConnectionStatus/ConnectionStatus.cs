@@ -133,6 +133,31 @@ namespace Rock.Model
         [DataMember]
         public string HighlightColor { get; set; }
 
+        /// <summary>
+        /// Number of days added to the calculated due date for a request status.
+        /// </summary>
+        [DataMember]
+        public int? RequestStatusDueDateOffestInDays { get; set; }
+
+        /// <summary>
+        /// Number of days before the due date when a request status is considered "due soon."
+        /// </summary>
+        [DataMember]
+        public int? RequestStatusDueSoonOffsetInDays { get; set; }
+
+        /// <summary>
+        /// When set, automatically moves the request to Future Follow-Up for the specified number of days. 
+        /// Leave blank to disable this behavior.
+        /// </summary>
+        [DataMember]
+        public int? AutoFutureFollowUpPauseInDays { get; set; }
+
+        /// <summary>
+        /// Indicates whether completing a request requires entering a note.
+        /// </summary>
+        [DataMember]
+        public bool IsNoteRequiredOnCompletion { get; set; }
+
         #endregion
 
         #region Navigation Properties

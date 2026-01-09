@@ -88,7 +88,6 @@
     import Modal from "@Obsidian/Controls/modal.obs";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
     import Grid, { EditColumn, TextColumn, BooleanColumn, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
-    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { ContentChannelTypeBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelTypeDetail/contentChannelTypeBag";
     import { ContentChannelTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelTypeDetail/contentChannelTypeDetailOptionsBag";
@@ -127,7 +126,6 @@
     const showInChannelList = propertyRef(props.modelValue.showInChannelList, "ShowInChannelList");
 
     const dateRangeTypeOptions = ref(props.options.dateRangeTypes ?? []);
-    const invokeBlockAction = useInvokeBlockAction();
 
     const itemAttributes = ref(props.modelValue.itemAttributes ?? []);
     const isItemAttributeModalOpen = ref(false);
@@ -260,33 +258,39 @@
     *
     * @returns `true` if the operation succeeded; otherwise `false`.
     */
-    async function onItemAttributeOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+    function onItemAttributeOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): boolean {
+        const itemGuid = item["guid"] as string;
+        const beforeGuid = (beforeItem?.["guid"] as string | undefined) ?? null;
 
-        if (props.modelValue?.idKey) {
+        const currentItems = [...itemAttributes.value];
+        const idx = currentItems.findIndex(i => i.guid === itemGuid);
 
-            const data = {
-                idKey: props.modelValue?.idKey,
-                guid: item["guid"],
-                beforeGuid: beforeItem?.["guid"] ?? null
-            };
+        if (idx < 0) {
+            return false;
+        }
 
-            const result = await invokeBlockAction<string>("ReorderItemAttributes", data);
+        const itemToMove = currentItems.splice(idx, 1)[0];
 
-            return result.isSuccess;
+        if (beforeGuid) {
+            const beforeIndex = currentItems.findIndex(i => i.guid === beforeGuid);
+            if (beforeIndex < 0) {
+                currentItems.push(itemToMove);
+            }
+            else {
+                currentItems.splice(beforeIndex, 0, itemToMove);
+            }
         }
         else {
-
-            if (itemAttributesGridData.rows) {
-                const itemIndex = itemAttributes.value.findIndex(x => x.guid === item.guid);
-                const beforeItemIndex = itemAttributes.value.findIndex(x => x.guid === beforeItem?.guid);
-
-                if (itemIndex !== -1 && beforeItemIndex !== -1) {
-                    [itemAttributes.value[itemIndex], itemAttributes.value[beforeItemIndex]] = [itemAttributes.value[beforeItemIndex], itemAttributes.value[itemIndex]];
-                }
-            }
-
-            return true;
+            currentItems.push(itemToMove);
         }
+
+        itemAttributes.value = currentItems;
+
+        if (itemAttributesGridData.rows) {
+            itemAttributesGridData.rows = itemAttributes.value.map((x: PublicEditableAttributeBag) => convertToAttributeGridRowItem(x, itemAttributesReservedKeyNames));
+        }
+
+        return true;
     }
 
     watch(isItemAttributeModalOpen, () => {
@@ -380,29 +384,39 @@
     *
     * @returns `true` if the operation succeeded; otherwise `false`.
     */
-    async function onChannelAttributeOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
-        if (props.modelValue?.idKey) {
-            const data = {
-                idKey: props.modelValue?.idKey,
-                guid: item["guid"],
-                beforeGuid: beforeItem?.["guid"] ?? null
-            };
+    function onChannelAttributeOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): boolean {
+        const itemGuid = item["guid"] as string;
+        const beforeGuid = (beforeItem?.["guid"] as string | undefined) ?? null;
 
-            const result = await invokeBlockAction<string>("ReorderChannelAttributes", data);
+        const currentItems = [...channelAttributes.value];
+        const idx = currentItems.findIndex(i => i.guid === itemGuid);
 
-            return result.isSuccess;
+        if (idx < 0) {
+            return false;
+        }
+
+        const itemToMove = currentItems.splice(idx, 1)[0];
+
+        if (beforeGuid) {
+            const beforeIndex = currentItems.findIndex(i => i.guid === beforeGuid);
+            if (beforeIndex < 0) {
+                currentItems.push(itemToMove);
+            }
+            else {
+                currentItems.splice(beforeIndex, 0, itemToMove);
+            }
         }
         else {
-            if (itemAttributesGridData.rows) {
-                const itemIndex = channelAttributes.value.findIndex(x => x.guid === item.guid);
-                const beforeItemIndex = channelAttributes.value.findIndex(x => x.guid === beforeItem?.guid);
-
-                if (itemIndex !== -1 && beforeItemIndex !== -1) {
-                    [channelAttributes.value[itemIndex], channelAttributes.value[beforeItemIndex]] = [channelAttributes.value[beforeItemIndex], channelAttributes.value[itemIndex]];
-                }
-            }
-            return true;
+            currentItems.push(itemToMove);
         }
+
+        channelAttributes.value = currentItems;
+
+        if (channelAttributesGridData.rows) {
+            channelAttributesGridData.rows = channelAttributes.value.map((x: PublicEditableAttributeBag) => convertToAttributeGridRowItem(x, channelAttributesReservedKeyNames));
+        }
+
+        return true;
     }
 
     watch(isChannelAttributeModalOpen, () => {

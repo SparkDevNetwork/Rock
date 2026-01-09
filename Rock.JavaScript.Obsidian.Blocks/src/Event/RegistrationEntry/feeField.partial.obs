@@ -21,6 +21,8 @@
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { areEqual } from "@Obsidian/Utility/guid";
     import { asFormattedString, toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { RegistrationEntryFeeBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFeeBag";
     import { RegistrationEntryFeeItemBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFeeItemBag";
@@ -169,7 +171,7 @@
             }
 
             if (!singleItem.value) {
-                if (props.fee.items.every(i => i.countRemaining !== null && i.countRemaining !== undefined && i.countRemaining + (internalValue.value[i.guid] ?? 0) === 0)) {
+                if (props.fee.items.every(i => !isNullish(i.countRemaining) && i.countRemaining + (internalValue.value[i.guid] ?? 0) === 0)) {
                     return true;
                 }
             }
@@ -196,37 +198,56 @@
 
     const dropDownListOptions = computed((): ListItemBag[] => {
         return props.fee.items
-            ?.filter(i => !props.fee.hideWhenNoneRemaining || i.countRemaining === null || i.countRemaining === undefined || (i.countRemaining + (internalValue.value[i.guid] ?? 0)) > 0)
+            ?.filter(i => !props.fee.hideWhenNoneRemaining || isNullish(i.countRemaining) || (i.countRemaining + (internalValue.value[i.guid] ?? 0)) > 0)
             .map(i => ({
                 text: getItemLabel(i),
                 value: i.guid,
-                disabled: i.countRemaining !== null && i.countRemaining !== undefined && (i.countRemaining + (internalValue.value[i.guid] ?? 0)) === 0
+                disabled: !isNullish(i.countRemaining) && (i.countRemaining + (internalValue.value[i.guid] ?? 0)) === 0
             })) ?? [];
     });
 
     const numberUpDownGroupOptions = computed((): NumberUpDownGroupOption[] => {
         return props.fee.items
-            ?.filter(i => !props.fee.hideWhenNoneRemaining || i.countRemaining === null || i.countRemaining === undefined || (i.countRemaining + (internalValue.value[i.guid] ?? 0)) > 0)
+            ?.filter(i => !props.fee.hideWhenNoneRemaining || isNullish(i.countRemaining) || (i.countRemaining + (internalValue.value[i.guid] ?? 0)) > 0)
             .map(i => ({
                 key: i.guid,
                 label: getItemLabel(i),
-                max: i.countRemaining !== null && i.countRemaining !== undefined
+                max: !isNullish(i.countRemaining)
                     ? i.countRemaining + (internalValue.value[i.guid] ?? 0)
                     : 100,
                 min: 0
             })) ?? [];
     });
 
-    const rules = computed((): string => {
-        return props.fee.isRequired ? "required" : "";
+    const rules = computed((): ValidationRule | ValidationRule[] => {
+        const internalRules: ValidationRule[] = [];
+        if (props.fee.isRequired) {
+            internalRules.push("required");
+
+            if (isCheckbox.value) {
+                // For required checkbox fields, ensure it is checked.
+                internalRules.push((value: unknown, _params?: unknown[]) => {
+                    if (typeof value === "boolean") {
+                        if (value === true) {
+                            return true;
+                        }
+                    }
+
+                    return `is required`;
+                });
+            }
+        }
+
+        return internalRules;
     });
 
     const isCheckboxDisabled = computed((): string | undefined => {
-        if (props.fee.isRequired && checkboxValue.value) {
-            return "disabled";
-        }
+        // Do not disable if required and true. Allow the registrar to uncheck if they want to and then see a validation error if required and unchecked.
+        // if (props.fee.isRequired && checkboxValue.value) {
+        //     return "disabled";
+        // }
 
-        if (!checkboxValue.value && props.fee.items?.length && props.fee.items[0].countRemaining === 0) {
+        if (!checkboxValue.value && props.fee.items?.[0]?.countRemaining === 0) {
             return "disabled";
         }
 
@@ -239,11 +260,12 @@
 
     function getItemLabel(item: RegistrationEntryFeeItemBag): string {
         const formattedCost = toCurrencyOrNull(item.cost);
-
         const formattedItem = item.cost === 0 ? `${item.name}` : `${item.name} (${formattedCost})`;
-        if (item.countRemaining !== null && item.countRemaining !== undefined) {
-            const formattedRemaining = asFormattedString(item.countRemaining, 0);
-            return `${formattedItem} (${formattedRemaining} remaining)`;
+
+        if (!isNullish(item.countRemaining)) {
+            const availableIncludingSelection = item.countRemaining + (internalValue.value[item.guid] ?? 0);
+            const formattedAvailable = asFormattedString(availableIncludingSelection, 0);
+            return `${formattedItem} (${formattedAvailable} available)`;
         }
 
         return formattedItem;

@@ -280,7 +280,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
 
             var template = @"
 <p>Entity Command Example</p>
-{%- person where:'Id != 1' limit:'3' iterator:'People' -%}
+{%- person where:'LastName == ""Decker""' limit:'2' iterator:'People' -%}
   {%- assign followedItems = People | AppendFollowing -%}
 <ul>
   {%- for item in followedItems -%}
@@ -292,7 +292,6 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
             var outputExpected = @"
 <p>Entity Command Example</p>
 <ul>
-<li>Giver Anonymous - false</li>
 <li>Ted Decker - false</li>
 <li>Cindy Decker - false</li>
 </ul>

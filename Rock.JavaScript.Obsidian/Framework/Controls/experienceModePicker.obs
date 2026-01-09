@@ -32,47 +32,6 @@
     </RockFormField>
 </template>
 
-<style>
-.experience-mode-picker .btn.btn-warning {
-    background-color: var(--color-interface-softest);
-    color: var(--color-warning-strong);
-}
-
-.experience-mode-picker .btn.btn-warning:hover,
-.experience-mode-picker .open .btn.btn-warning {
-    background-color: var(--color-warning-strong);
-    color: var(--color-interface-softest);
-}
-
-.experience-mode-picker .btn.btn-success {
-    background-color: var(--color-interface-softest);
-    color: var(--color-success-strong);
-}
-
-.experience-mode-picker .btn.btn-success:hover,
-.experience-mode-picker .open .btn.btn-success {
-    background-color: var(--color-success-strong);
-    color: var(--color-interface-softest);
-}
-
-/* When inside a panel, don't paint a border. */
-.panel-experience-mode .btn.dropdown-toggle {
-    border: none;
-}
-
-/* When inside a panel, don't highlight the button. */
-.panel-experience-mode .experience-mode-picker .btn.btn-warning {
-    background-color: var(--color-interface-softest);
-    color: var(--color-warning-strong);
-}
-
-/* When inside a panel, don't highlight the button. */
-.panel-experience-mode .experience-mode-picker .btn.btn-success {
-    background-color: var(--color-interface-softest);
-    color: var(--color-success-strong);
-}
-</style>
-
 <script setup lang="ts">
     import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";

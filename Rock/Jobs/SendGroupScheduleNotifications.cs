@@ -169,11 +169,13 @@ namespace Rock.Jobs
                     sendConfirmationAttendancesQuery = sendConfirmationAttendancesQuery.Where( a => groupIds.Contains( a.Occurrence.GroupId.Value ) );
                 }
 
+                var currentDateTime = RockDateTime.Now;
                 var currentDate = RockDateTime.Now.Date;
 
                 // limit to confirmation offset window
                 sendConfirmationAttendancesQuery = sendConfirmationAttendancesQuery
                     .Where( a => a.Occurrence.Group.GroupType.ScheduleConfirmationEmailOffsetDays.HasValue )
+                    .Where( a => !a.Occurrence.ScheduleId.HasValue || a.StartDateTime >= currentDateTime )
                     .Where( a => System.Data.Entity.SqlServer.SqlFunctions.DateDiff( "day", currentDate, a.Occurrence.OccurrenceDate ) <= a.Occurrence.Group.GroupType.ScheduleConfirmationEmailOffsetDays.Value );
 
                 var messageResult = attendanceService.SendScheduleConfirmationCommunication( sendConfirmationAttendancesQuery );
@@ -199,12 +201,29 @@ namespace Rock.Jobs
                 var groupService = new GroupService( rockContext );
                 var attendanceService = new AttendanceService( rockContext );
 
+                /*
+                     12/16/2025 - MSE
+
+                     AttendanceOccurrence.OccurrenceDate stores only a date value and does not include a time.
+                     The previous query relied on date-only comparisons, which allowed reminder notifications
+                     to be sent later in the same day even after the scheduled start time had already passed.
+
+                     Attendance.StartDateTime is initialized to the scheduled start time
+                     ( OccurrenceDate + Schedule.StartTimeOfDay ) when an individual is scheduled.
+                     If the individual later checks in, this value may be updated to the actual check-in time.
+                     Either way, StartDateTime provides a reliable date and time value for determining
+                     whether we should send a reminder notification.
+
+                     Reason: Prevent schedule reminder messages from being sent after an occurrence has already begun.
+                */
+                var currentDateTime = RockDateTime.Now;
                 var currentDate = RockDateTime.Now.Date;
 
                 // Get all who have not already been notified( attendance.ScheduleReminderSent = false ) and who have been requested to attend.
                 var sendReminderAttendancesQuery = new AttendanceService( rockContext )
                     .GetConfirmedScheduled()
                     .Where( a => a.Occurrence.OccurrenceDate >= currentDate )
+                    .Where( a => !a.Occurrence.ScheduleId.HasValue || a.StartDateTime >= currentDateTime )
                     .Where( a => a.ScheduleReminderSent != true );
 
                 // if the root group is configured on the Job then limit to the group and its child groups

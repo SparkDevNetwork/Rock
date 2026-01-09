@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
-
+using Rock.Model.Event.RegistrationInstance.Options;
 using Rock.ViewModels.Blocks.Event.RegistrationEntry;
 
 namespace Rock.Model
@@ -339,8 +339,22 @@ namespace Rock.Model
         /// <returns></returns>
         public int? GetSpotsAvailable( RegistrationContext context )
         {
+            var options = new GetSpotsAvailableOptions
+            {
+                RegistrationInstanceId = context.RegistrationSettings.RegistrationInstanceId,
+                MaxAttendees = context.RegistrationSettings.MaxAttendees,
+                IsTimeoutEnabled = context.RegistrationSettings.IsTimeoutEnabled,
+
+                // Leaving all other new properties as defaults for backward-compatibility of this method.
+            };
+
+            return GetSpotsAvailable( options );
+        }
+
+        internal int? GetSpotsAvailable( GetSpotsAvailableOptions options )
+        {
             // Get the number of slots available
-            var spotsRemaining = context.RegistrationSettings.MaxAttendees;
+            var spotsRemaining = options.MaxAttendees;
 
             if ( !spotsRemaining.HasValue )
             {
@@ -351,23 +365,37 @@ namespace Rock.Model
             if ( spotsRemaining.HasValue )
             {
                 // Check the count of people already registered
-                var otherRegistrantsCount = new RegistrationRegistrantService( Context as RockContext )
+                var otherRegistrantsCountQuery = new RegistrationRegistrantService( Context as RockContext )
                     .Queryable()
                     .AsNoTracking()
-                    .Count( a =>
-                        a.Registration.RegistrationInstanceId == context.RegistrationSettings.RegistrationInstanceId &&
+                    .Where( a =>
+                        a.Registration.RegistrationInstanceId == options.RegistrationInstanceId &&
                         !a.Registration.IsTemporary );
+
+                if ( options.IsWaitListExcluded )
+                {
+                    otherRegistrantsCountQuery = otherRegistrantsCountQuery.Where( a => !a.OnWaitList );
+                }
+
+                var otherRegistrantsCount = otherRegistrantsCountQuery.Count();
 
                 spotsRemaining -= otherRegistrantsCount;
 
-                if ( spotsRemaining > 0 && context.RegistrationSettings.IsTimeoutEnabled )
+                if ( spotsRemaining > 0 && options.IsTimeoutEnabled && !options.AreRegistrationSessionsExcluded )
                 {
-                    // Check the number of people that are in the process of registering right now
-                    var sessionRegistrantCount = new RegistrationSessionService( Context as RockContext )
+                    // Check the number of people that are in the process of registering right now.
+                    var query = new RegistrationSessionService( Context as RockContext )
                         .Queryable()
                         .AsNoTracking()
-                        .Where( s => s.RegistrationInstanceId == context.RegistrationSettings.RegistrationInstanceId
-                            && s.ExpirationDateTime > RockDateTime.Now )
+                        .Where( s => s.RegistrationInstanceId == options.RegistrationInstanceId
+                            && s.ExpirationDateTime > RockDateTime.Now );
+
+                    if ( options.ExcludeReservedSpotsForRegistrationSessionGuid.HasValue )
+                    {
+                        query = query.Where( rs => rs.Guid != options.ExcludeReservedSpotsForRegistrationSessionGuid.Value );
+                    }
+
+                    var sessionRegistrantCount = query
                         .Select( s => s.RegistrationCount )
                         .DefaultIfEmpty( 0 )
                         .Sum();
@@ -382,6 +410,34 @@ namespace Rock.Model
             }
 
             return spotsRemaining;
+        }
+
+        /// <summary>
+        /// Gets the spots reserved for the current registration.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="registrationSessionGuid"></param>
+        internal int GetReservedSpots( RegistrationContext context, Guid registrationSessionGuid )
+        {
+            if ( !context.RegistrationSettings.MaxAttendees.HasValue || !context.RegistrationSettings.IsTimeoutEnabled )
+            {
+                // Unlimited capacity or sessions are not enabled.
+                return 0;
+            }
+
+            // Check the number of people that are in the process of registering right now
+            // in the current registration session.
+            var sessionRegistrantCount = new RegistrationSessionService( Context as RockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( rs => rs.RegistrationInstanceId == context.RegistrationSettings.RegistrationInstanceId
+                    && rs.Guid == registrationSessionGuid
+                    && rs.ExpirationDateTime > RockDateTime.Now )
+                .Select( s => s.RegistrationCount )
+                .DefaultIfEmpty( 0 )
+                .Sum();
+
+            return sessionRegistrantCount;
         }
 
         /// <summary>

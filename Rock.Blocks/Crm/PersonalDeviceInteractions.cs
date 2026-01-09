@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -47,6 +47,7 @@ namespace Rock.Blocks.Crm
 
     // was [Rock.SystemGuid.BlockTypeGuid( "B734D303-E116-497D-9A03-E641DCF193C3" )]
     [Rock.SystemGuid.BlockTypeGuid( "D6224911-2590-427F-9DCE-6D14E79806BA" )]
+    [Rock.SystemGuid.EntityTypeGuid( "4C55C927-8364-4026-8019-6B85EF28AE03")]
     public class PersonalDeviceInteractions : RockListBlockType<PersonalDeviceInteractions.PersonalDeviceInteractionRow>
     {
         #region Keys

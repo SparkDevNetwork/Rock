@@ -14,7 +14,7 @@
 | MassTransit.Azure.ServiceBus.Core | = 8.2.5 | Newer versions indirectly depend on Microsoft.IdentityModel.Clients.ActiveDirectory > 3.0.0 which we can't do. |
 | MassTransit.AzureServiceBus | = 5.5.6 | Newer versions indirectly depend on Microsoft.IdentityModel.Clients.ActiveDirectory > 3.0.0 which we can't do. This is actually legacy and only required because we are using old code in AzureServiceBus.cs, MassTransit.Azure.ServiceBus.Core is the one we should be using. |
 | MassTransit.RabbitMQ | = 8.2.5 | Newer versions indirectly depend on Microsoft.IdentityModel.Clients.ActiveDirectory > 3.0.0 which we can't do. |
-| Microsoft.Azure.SignalR.AspNet | = 1.0.14 | Latest version adds a dependency on a newer jQuery version than we have. |
+| Microsoft.Azure.SignalR.AspNet | = 1.4.3 | Latest version adds a dependency on a newer jQuery version than we have. |
 | Microsoft.CodeDom.Providers.DotNetCompilerPlatform | = 3.6.0 | This is the Roslyn compiler for WebForms, needs extensive testing on upgrade. |
 | Microsoft.SqlServer.Types | = 11.0.2 | I really just don't want to touch this unless we have to, even though it is probably safe. |
 | System.Interactive.Async | = 3.2.0 | Don't think we need this, but don't want to remove until we know for sure. |

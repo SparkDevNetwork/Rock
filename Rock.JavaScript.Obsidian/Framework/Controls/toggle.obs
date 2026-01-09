@@ -2,6 +2,7 @@
 <template>
     <RockFormField
                    :modelValue="modelValue"
+                   v-bind="fieldProps"
                    formGroupClasses="toggle"
                    name="toggle">
         <template #default="{ uniqueId, field }">
@@ -27,12 +28,15 @@
     import { computed, PropType } from "vue";
     import JavaScriptAnchor from "./javaScriptAnchor.obs";
     import RockFormField from "./rockFormField.obs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
 
     const props = defineProps({
         modelValue: {
             type: Boolean as PropType<boolean>,
             required: true
         },
+
+        ...standardRockFormFieldProps,
 
         trueText: {
             type: String as PropType<string>,
@@ -64,6 +68,8 @@
             default: false
         }
     });
+
+    const fieldProps = useStandardRockFormFieldProps(props);
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: boolean): void;

@@ -79,8 +79,7 @@ namespace Rock.Lava
         protected virtual string GetCurrentThemeName()
         {
             // Get the theme from the current page.
-            var page = HttpContext.Current?.Handler as RockPage;
-            if ( page != null )
+            if ( HttpContext.Current?.Handler is RockPage page )
             {
                 if ( page.Theme.IsNotNullOrWhiteSpace() )
                 {

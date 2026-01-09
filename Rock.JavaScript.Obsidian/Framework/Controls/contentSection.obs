@@ -33,7 +33,9 @@
             </div>
         </div>
 
-        <TransitionVerticalCollapse>
+        <TransitionVerticalCollapse :isAnimationDisabled="isAnimationDisabled"
+                                    @transitionStart="onSectionTransitionStart"
+                                    @transitionEnd="onSectionTransitionEnd">
             <div v-show="disableCollapse || !section.isCollapsed.value">
                 <div class="contentsection-body">
                     <slot />
@@ -146,10 +148,11 @@
     const title = computed((): string | undefined => props.title);
     const icon = computed((): string | undefined => props.icon);
     const isCollapsed = ref(props.disableCollapse ? false : props.isCollapsed);
+    const isAnimationDisabled = ref(false);
     const order = ref(props.order);
     const isOverflowCollapsed = ref(true);
 
-    const section = createSection(title, icon, isCollapsed, order);
+    const section = createSection(title, icon, isCollapsed, isAnimationDisabled, order);
     const sectionContainer = useSectionContainer();
 
     // #endregion
@@ -195,6 +198,20 @@
     // #endregion
 
     // #region Event Handlers
+
+    /**
+     * Notifies the section container that a section transition is starting.
+     */
+    function onSectionTransitionStart(): void {
+        sectionContainer.onSectionTransitionStart?.(section);
+    }
+
+    /**
+     * Notifies the section container that a section transition has ended.
+     */
+    function onSectionTransitionEnd(): void {
+        sectionContainer.onSectionTransitionEnd?.(section);
+    }
 
     /**
      * Handles the click event on the section header to toggle the collapse state

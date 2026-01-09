@@ -575,6 +575,9 @@ export class GroupTreeItemProvider implements ITreeItemProvider {
     /** List of group types GUIDs to limit to groups of those types. */
     public includedGroupTypeGuids: Guid[] = [];
 
+    /** When true, show no groups by default. */
+    public excludeAllByDefault: boolean = false;
+
     /** Whether to include inactive groups or not. */
     public includeInactiveGroups: boolean = false;
 
@@ -597,6 +600,7 @@ export class GroupTreeItemProvider implements ITreeItemProvider {
             guid: parentGuid,
             rootGroupGuid: this.rootGroupGuid,
             includedGroupTypeGuids: this.includedGroupTypeGuids,
+            excludeAllByDefault: this.excludeAllByDefault,
             includeInactiveGroups: this.includeInactiveGroups,
             limitToSchedulingEnabled: this.limitToSchedulingEnabled,
             limitToRSVPEnabled: this.limitToRSVPEnabled,

@@ -609,12 +609,12 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _nbTimeoutLengthMinutes.IntegerValue;
+                return _nbTimeoutLengthMinutes.IntegerValue ?? RegistrationInstance.DefaultTimeoutLength.Minutes;
             }
             set
             {
                 EnsureChildControls();
-                _nbTimeoutLengthMinutes.IntegerValue = value;
+                _nbTimeoutLengthMinutes.IntegerValue = value ?? RegistrationInstance.DefaultTimeoutLength.Minutes;
             }
         }
 
@@ -629,12 +629,12 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _nbTimeoutThreshold.IntegerValue;
+                return _nbTimeoutThreshold.IntegerValue ?? RegistrationInstance.DefaultTimeoutThreshold;
             }
             set
             {
                 EnsureChildControls();
-                _nbTimeoutThreshold.IntegerValue = value;
+                _nbTimeoutThreshold.IntegerValue = value ?? RegistrationInstance.DefaultTimeoutThreshold;
             }
         }
 
@@ -709,7 +709,7 @@ namespace Rock.Web.UI.Controls
                 _ceDetails.Text = instance.Details;
                 _dtpStart.SelectedDateTime = instance.StartDateTime;
                 _dtpEnd.SelectedDateTime = instance.EndDateTime;
-                _nbMaxAttendees.Text = instance.MaxAttendees.ToString();
+                _nbMaxAttendees.IntegerValue = instance.MaxAttendees;
                 _wtpRegistrationWorkflow.SetValue( instance.RegistrationWorkflowTypeId );
                 _dvpRecordSource.SetValue( instance.RegistrantRecordSourceValueId );
 
@@ -749,8 +749,8 @@ namespace Rock.Web.UI.Controls
                 _htmlRegistrationInstructions.Text = instance.RegistrationInstructions;
                 _htmlAdditionalReminderDetails.Text = instance.AdditionalReminderDetails;
                 _htmlAdditionalConfirmationDetails.Text = instance.AdditionalConfirmationDetails;
-                _nbTimeoutThreshold.IntegerValue = instance.TimeoutThreshold;
-                _nbTimeoutLengthMinutes.IntegerValue = instance.TimeoutLengthMinutes;
+                _nbTimeoutThreshold.IntegerValue = instance.TimeoutThreshold ?? RegistrationInstance.DefaultTimeoutThreshold;
+                _nbTimeoutLengthMinutes.IntegerValue = instance.TimeoutLengthMinutes ?? RegistrationInstance.DefaultTimeoutLength.Minutes;
 
                 if ( instance.RegistrationTemplate.FinancialGateway.IsRedirectionGateway() )
                 {
@@ -818,7 +818,7 @@ namespace Rock.Web.UI.Controls
                 _ceDetails.Text = string.Empty;
                 _dtpStart.SelectedDateTime = null;
                 _dtpEnd.SelectedDateTime = null;
-                _nbMaxAttendees.Text = string.Empty;
+                _nbMaxAttendees.IntegerValue = null;
                 _wtpRegistrationWorkflow.SetValue( null );
                 _dvpRecordSource.SetValue( ( int? ) null );
                 _ppContact.SetValue( null );
@@ -833,8 +833,8 @@ namespace Rock.Web.UI.Controls
                 _dpPaymentDeadline.Required = false;
                 _dpPaymentDeadline.Visible = false;
                 _cbReminderSent.Checked = false;
-                _nbTimeoutLengthMinutes.IntegerValue = null;
-                _nbTimeoutThreshold.IntegerValue = null;
+                _nbTimeoutLengthMinutes.IntegerValue = RegistrationInstance.DefaultTimeoutLength.Minutes;
+                _nbTimeoutThreshold.IntegerValue = RegistrationInstance.DefaultTimeoutThreshold;
                 _htmlRegistrationInstructions.Text = string.Empty;
                 _htmlAdditionalReminderDetails.Text = string.Empty;
                 _htmlAdditionalConfirmationDetails.Text = string.Empty;
@@ -861,7 +861,7 @@ namespace Rock.Web.UI.Controls
                 instance.Details = _ceDetails.Text;
                 instance.StartDateTime = _dtpStart.SelectedDateTime;
                 instance.EndDateTime = _dtpEnd.SelectedDateTime;
-                instance.MaxAttendees = _nbMaxAttendees.Text.AsIntegerOrNull();
+                instance.MaxAttendees = _nbMaxAttendees.IntegerValue;
                 instance.RegistrationWorkflowTypeId = _wtpRegistrationWorkflow.SelectedValueAsInt();
                 instance.RegistrantRecordSourceValueId = _dvpRecordSource.SelectedValueAsInt();
                 instance.ContactPersonAliasId = _ppContact.PersonAliasId;
@@ -878,9 +878,9 @@ namespace Rock.Web.UI.Controls
                 instance.RegistrationInstructions = _htmlRegistrationInstructions.Text;
                 instance.AdditionalReminderDetails = _htmlAdditionalReminderDetails.Text;
                 instance.AdditionalConfirmationDetails = _htmlAdditionalConfirmationDetails.Text;
-                instance.TimeoutIsEnabled = _nbTimeoutLengthMinutes.IntegerValue.HasValue;
-                instance.TimeoutLengthMinutes = _nbTimeoutLengthMinutes.IntegerValue;
-                instance.TimeoutThreshold = _nbTimeoutThreshold.IntegerValue;
+                instance.TimeoutIsEnabled = instance.MaxAttendees.HasValue;
+                instance.TimeoutLengthMinutes = _nbTimeoutLengthMinutes.IntegerValue ?? RegistrationInstance.DefaultTimeoutLength.Minutes;
+                instance.TimeoutThreshold = _nbTimeoutThreshold.IntegerValue ?? RegistrationInstance.DefaultTimeoutThreshold;
 
                 var gateway = new FinancialGateway { EntityTypeId = GatewayEntityTypeId };
                 var gatewayComponent = gateway.GetGatewayComponent() as IRedirectionGatewayComponent;
@@ -976,6 +976,7 @@ namespace Rock.Web.UI.Controls
                 _nbMaxAttendees.Label = "Maximum Attendees";
                 _nbMaxAttendees.Help = "Total number of people who can register for the event. Leave blank for unlimited.";
                 _nbMaxAttendees.NumberType = ValidationDataType.Integer;
+                _nbMaxAttendees.AutoPostBack = true; // Set to automatically send post-back request so the Registration Session session can be shown/hidden automatically.
                 Controls.Add( _nbMaxAttendees );
 
                 _wtpRegistrationWorkflow = new WorkflowTypePicker();
@@ -1055,14 +1056,14 @@ namespace Rock.Web.UI.Controls
                 _nbTimeoutLengthMinutes.ID = ID + "_nbTimeoutLengthMinutes";
                 _nbTimeoutLengthMinutes.Label = "Timeout Length";
                 _nbTimeoutLengthMinutes.AppendText = "minutes";
-                _nbTimeoutLengthMinutes.Help = "To help with registrations with limited slots a timeout can be applied to registration sessions. When applied, individuals will have the configured timeout duration to complete each page of the registration. Their spots are reserved until the timeout elapses, or they advance in the registration process.";
+                _nbTimeoutLengthMinutes.Help = "Applies a timeout to registration sessions to help manage limited spots. Individuals have this amount of time to complete each page before losing their reserved spots. Defaults to 15 minutes if left blank. Sessions are automatically enabled when a Maximum Attendee limit is set.";
                 Controls.Add( _nbTimeoutLengthMinutes );
 
                 _nbTimeoutThreshold = new NumberBox();
                 _nbTimeoutThreshold.ID = ID + "_nbTimeoutThreshold";
                 _nbTimeoutThreshold.Label = "Timeout Threshold";
-                _nbTimeoutThreshold.AppendText = "registrants";
-                _nbTimeoutThreshold.Help = "The use of registration sessions can add stress to the registration experience. The Timeout Threshold determines the lower limit of spots available before the session feature is enabled. This allows early registrations to proceed without worrying about a session since they are not in danger of being in an oversell situation.";
+                _nbTimeoutThreshold.AppendText = "% registrants";
+                _nbTimeoutThreshold.Help = "Determines when registration sessions begin based on the percentage of spots remaining. This helps prevent overselling by activating sessions only as availability gets low. If left blank, the threshold defaults to 33%. Sessions are automatically enabled when a Maximum Attendee limit is set.";
                 Controls.Add( _nbTimeoutThreshold );
 
                 _htmlRegistrationInstructions = new HtmlEditor();
@@ -1333,23 +1334,26 @@ namespace Rock.Web.UI.Controls
                 _htmlAdditionalConfirmationDetails.RenderControl( writer );
             } );
 
-            RockControlHelper.RenderSection( "Registration Session", CssClass, writer, ( HtmlTextWriter ) =>
+            if ( _nbMaxAttendees.IntegerValue.HasValue && _nbMaxAttendees.IntegerValue > 0 )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                RockControlHelper.RenderSection( "Registration Session", CssClass, writer, ( HtmlTextWriter ) =>
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _nbTimeoutLengthMinutes.RenderControl( writer );
-                writer.RenderEndTag();
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    _nbTimeoutLengthMinutes.RenderControl( writer );
+                    writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _nbTimeoutThreshold.RenderControl( writer );
-                writer.RenderEndTag();
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    _nbTimeoutThreshold.RenderControl( writer );
+                    writer.RenderEndTag();
 
-                writer.RenderEndTag();
-            } );
+                    writer.RenderEndTag();
+                } );
+            }
         }
     }
 }

@@ -121,7 +121,7 @@ namespace Rock.Tests.Web.v2
 
             foreach ( var kvp in mergeFields )
             {
-                if ( kvp.Key.StartsWith( LavaHelper.InternalMergeFieldPrefix ) )
+                if ( kvp.Key.StartsWith( LavaRenderContextBase.InternalMergeFieldPrefix ) )
                 {
                     context.SetInternalField( kvp.Key, kvp.Value );
                 }

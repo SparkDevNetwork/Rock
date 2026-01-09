@@ -23,6 +23,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Connection;
 using Rock.Lava;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -194,6 +195,54 @@ namespace Rock.Model
         [DataMember]
         public int Order { get; set; }
 
+        /// <summary>
+        /// The category Id used to organize and filter snippets for this connection type.
+        /// </summary>
+        [DataMember]
+        public int? SnippetCategoryId { get; set; }
+
+        /// <summary>
+        /// Determines how the due date for a request is calculated.
+        /// </summary>
+        [DataMember]
+        public DueDateCalculationMode DueDateCalculationMode { get; set; }
+
+        /// <summary>
+        /// Number of days added to the calculated due date for a request.
+        /// </summary>
+        [DataMember]
+        public int? RequestDueDateOffestInDays { get; set; }
+
+        /// <summary>
+        /// Number of days before the due date when a request is considered "due soon."
+        /// </summary>
+        [DataMember]
+        public int? RequestDueSoonOffsetInDays { get; set; }
+
+        /// <summary>
+        /// Flags that specify which optional features are enabled for this connection type.
+        /// </summary>
+        [DataMember]
+        public EnabledFeatureFlags EnabledFeatures { get; set; }
+
+        /// <summary>
+        /// Flags that specify which request views are enabled for this connection type.
+        /// </summary>
+        [DataMember]
+        public EnabledViewFlags EnabledViews { get; set; }
+
+        /// <summary>
+        /// Determines whether requests must move through statuses in a defined sequence.
+        /// </summary>
+        [DataMember]
+        public bool IsSequentialStatusEnforced { get; set; }
+
+        /// <summary>
+        /// Additional configuration settings stored as JSON.
+        /// </summary>
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -283,6 +332,12 @@ namespace Rock.Model
             set { _connectionOpportunities = value; }
         }
 
+        /// <summary>
+        /// The category used to organize and filter snippets for this connection type.
+        /// </summary>
+        [LavaVisible]
+        public virtual Category SnippetCategory { get; set; }
+
         private ICollection<ConnectionOpportunity> _connectionOpportunities;
 
         #endregion
@@ -318,6 +373,7 @@ namespace Rock.Model
             this.HasOptional( p => p.OwnerPersonAlias ).WithMany().HasForeignKey( p => p.OwnerPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ConnectionRequestDetailPage ).WithMany().HasForeignKey( p => p.ConnectionRequestDetailPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ConnectionRequestDetailPageRoute ).WithMany().HasForeignKey( p => p.ConnectionRequestDetailPageRouteId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.SnippetCategory ).WithMany().HasForeignKey( p => p.SnippetCategoryId ).WillCascadeOnDelete( false );
         }
     }
 

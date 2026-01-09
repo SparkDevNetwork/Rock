@@ -320,18 +320,6 @@ output {
   padding-top: 0;
 }
 
-// Moved from _checkin-core.less
-.form-group.required > .control-label::before {
-  margin-right:    var(--spacing-tiny);
-  background-color: var(--color-danger-strong);
-  width: 6px;
-  height: 6px;
-  display: inline-block;
-  border-radius: 50%;
-  content:        '';
-  position: relative;
-  transform: translateY(-30%);
-}
 // ===============
 // ===================== END FORM CONTROL =====================
 
@@ -345,7 +333,6 @@ select.form-control {
   background-size:        var(--spacing-medium) 12px;
   border-radius:          var(--rounded-xsmall);
   appearance:             none;
-  cursor:                 pointer;
 
   &[multiple],
   &[size]:not([size="1"]) {
@@ -354,20 +341,6 @@ select.form-control {
   }
 
   // Remove outline from select box in FF
-  &:-moz-focusring {
-    color:          transparent;
-    text-shadow:    0 0 0 var(--color-interface-strong);
-  }
-
-  &:focus::-ms-value {
-    color:              var(--color-interface-stronger);
-    background-color:   var(--color-interface-softest);
-  }
-}
-
-[theme="dark"] select.form-control {
-  background-image:       url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23D9D9E3' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
-
   &:-moz-focusring {
     color:          transparent;
     text-shadow:    0 0 0 var(--color-interface-strong);
@@ -411,18 +384,6 @@ select.form-control {
   // .form-group {
   //   margin-top:   var(--spacing-medium)
   // }
-
-  .control-label {
-    margin-bottom:  var(--spacing-tiny);
-    font-size:      var(--font-size-small);
-    line-height:    18px;
-  }
-
-  .control-label-sm {
-      display:    block;
-      font-size:  var(--font-size-xsmall);
-      color:      var(--color-interface-medium);
-  }
 }
 
 .help-block {
@@ -474,7 +435,6 @@ select.form-control {
     .control-label {
       margin-bottom:    0;
       vertical-align:   middle;
-      margin-right:     var(--spacing-tiny);
     }
 
     // Remove default margin on radios/checkboxes that were used for stacking, and
@@ -512,9 +472,6 @@ select.form-control {
     margin-bottom: 0;
   }
 
-  .form-group.entity-type-picker > .control-label {
-    margin-right: var(--spacing-xsmall);
-  }
 }
 
 .form-inline-all {

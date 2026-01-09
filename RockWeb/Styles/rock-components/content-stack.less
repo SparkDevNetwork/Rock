@@ -15,10 +15,10 @@
     gap: var(--spacing-large);
     width: 100%;
     height: auto;
-    padding-bottom: var(--spacing-xlarge);
+    padding-bottom: var(--spacing-large);
     border-bottom: 1px solid var(--color-interface-soft);
     &:last-child{
-        padding-bottom: var(--spacing-large);
+        padding-bottom: 0; // Remove padding for last/only content stack in a section. Contentsection-body will handle spacing.
         border-bottom: none;
     }
 }
@@ -26,6 +26,10 @@
 .contentstack-body {
     flex: 1 1 80%;
     max-width: 100%;
+
+    & .grid-light:last-child { // Remove bottom margin for last light grid in content stack body to allow. Contentsection-body will handle spacing.
+        margin-bottom: 0;
+    }
 }
 
 .contentstack > .contentstack-sidebar {
@@ -80,17 +84,6 @@
 
 .contentstack-header-description {
     color: var(--color-interface-medium);
-}
-
-// Adjust spacing when content stack is the last child in a content section and there is an overflow body.
-.contentsection:has(.contentsection-body-overflow) .contentstack:last-child {
-    padding-bottom: var(--spacing-small);
-}
-
-// Adjust spacing when content stack is the only child in a content section
-
-.contentstack:only-child {
-  padding-bottom: 0;
 }
 
 @media (max-width: 767px) {

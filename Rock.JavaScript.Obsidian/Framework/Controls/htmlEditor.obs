@@ -102,6 +102,7 @@
     import { tinymce, Editor, EditorEvent, Events, RawEditorOptions } from "@Obsidian/Libs/tinymce";
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
     import { debounce, isNullish } from "@Obsidian/Utility/util";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -220,7 +221,6 @@
             default: false
         },
 
-
         /**
          * When set to true, the code editor allows toggling even if the content includes Lava commands,
          * bypassing any usual restrictions related to such content.
@@ -259,6 +259,19 @@
          */
         autocommitDelayMs: {
             type: Number as PropType<number | null | undefined>
+        },
+
+        /**
+         * A request to get the current content from the editor.
+         *
+         * Useful for scenarios where the latest content is needed on-demand,
+         * such as before form submission.
+         *
+         * This is necessary on iOS Safari if the editor is still focused when the form is submitted,
+         * as the editor may not have triggered a change event yet in that case.
+         */
+        getContentRequest: {
+            type: Object as PropType<PromiseCompletionSource<string> | null | undefined>,
         }
     });
 
@@ -409,6 +422,23 @@
     }, {
         // "post" will cause the effect to initially execute after the DOM is updated (after the editor is initialized).
         flush: "post"
+    });
+
+    // When a new getContentRequest comes in, get the latest editor content and send it back.
+    // This will also update the bound internalValue.
+    watch(() => props.getContentRequest, (request) => {
+        if (tinyMceInstance.value) {
+            if (request) {
+                const newValue = tinyMceInstance.value.getContent();
+
+                if (tinyMceValue.value !== newValue) {
+                    tinyMceValue.value = newValue;
+                    internalValue.value = newValue;
+                }
+
+                request.resolve(internalValue.value);
+            }
+        }
     });
 
     /** Sets the enabled state of the editor. */

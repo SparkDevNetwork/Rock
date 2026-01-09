@@ -220,6 +220,10 @@ namespace Rock.Model
         /// <value>
         /// The campus identifier.
         /// </value>
+        /// <remarks>
+        /// [IgnoreCanDelete] since there is a ON DELETE SET NULL cascade on this
+        /// </remarks>
+        [IgnoreCanDelete]
         [HideFromReporting]
         [DataMember]
         public int? CampusId { get; set; }

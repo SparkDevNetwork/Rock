@@ -17,7 +17,7 @@
 
 import EmailEditor from "./Internal/EmailEditor/emailEditor.partial.obs";
 import { EmailEditorApi } from "./Internal/EmailEditor/api";
-import { GetHtmlRequest, GetHtmlResponse } from "./Internal/EmailEditor/types";
+import { type GetHtmlRequest, type GetHtmlResponse } from "./Internal/EmailEditor/types.partial";
 
 export default EmailEditor;
 

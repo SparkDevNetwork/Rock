@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,7 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Web;
 
 using Rock.Attribute;
@@ -479,6 +482,15 @@ namespace Rock.Financial
             return true;
         }
 
+        private static int? GetMaxLength<T>(Expression<Func<T, string>> propertyLambda)
+        {
+            var memberExpression = propertyLambda.Body as MemberExpression;
+            var propertyInfo = memberExpression?.Member as PropertyInfo;
+        
+            var attribute = propertyInfo?.GetCustomAttribute<MaxLengthAttribute>();
+            return attribute?.Length; // Returns null if attribute is not present
+        }
+
         #endregion
 
         #region IRedirectionGateway Implementation
@@ -587,9 +599,11 @@ namespace Rock.Financial
 
             decimal amount = tokenComponents.Length >= 2 ? tokenComponents[1].AsDecimalOrNull() ?? 10 : 10;
 
+            var maxLength = GetMaxLength<FinancialTransaction>( f => f.TransactionCode );
+
             return new FinancialTransaction
             {
-                TransactionCode = paymentToken,
+                TransactionCode = maxLength.HasValue ? paymentToken.Truncate( maxLength.Value ) : paymentToken,
                 TransactionDetails = new List<FinancialTransactionDetail> {
                     new FinancialTransactionDetail {
                         Amount = amount

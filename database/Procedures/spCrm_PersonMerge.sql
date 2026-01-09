@@ -50,13 +50,13 @@ BEGIN
 
 		-- Group Member
 		-----------------------------------------------------------------------------------------------
-
 		DECLARE @LessActiveGroupMembersIdsToDelete TABLE (id INT);
 		DECLARE @GroupMembersIdsToArchive TABLE (id INT);
 
 		-- In the case when the old person and the new person are in the same group with the same role,
 		-- delete the groupmember record for the new person if it is 'less active' (Active > Pending > Inactive) then the old person. 
 		-- That will get that record out of the way so that the 'old' group member record can be assigned to the new person
+		-- We'll also consider 'less active' as having fewer LearningClassActivityCompletion records for the same class then the old person.
 		INSERT INTO @LessActiveGroupMembersIdsToDelete
 		SELECT gmn.id
 		FROM [GroupMember] GMO
@@ -67,9 +67,27 @@ BEGIN
 				GTR.[MaxCount] <= 1
 				OR GMN.[GroupRoleId] = GMO.[GroupRoleId]
 				)
+		-- Count completions for the "old" group member in this class
+		OUTER APPLY (
+			SELECT COUNT(lcac.[Id]) AS OldCompletionCount
+			FROM [dbo].[LearningParticipant] AS lp
+			LEFT JOIN [dbo].[LearningClassActivityCompletion] AS lcac
+				ON lcac.[StudentId] = lp.[Id]
+			WHERE lp.[Id] = gmo.[Id]              -- LP is the TPT extension of GroupMember
+				AND lp.[LearningClassId] = gmo.[GroupId] -- same class as the group
+		) AS oldc
+		-- Count completions for the "new" group member in this class
+		OUTER APPLY (
+			SELECT COUNT(lcac2.[Id]) AS NewCompletionCount
+			FROM [dbo].[LearningParticipant] AS lp2
+			LEFT JOIN [dbo].[LearningClassActivityCompletion] AS lcac2
+				ON lcac2.[StudentId] = lp2.[Id]
+			WHERE lp2.[Id] = gmn.[Id]
+				AND lp2.[LearningClassId] = gmn.[GroupId]
+		) AS newc
 		WHERE GMO.[PersonId] = @OldId
 			AND (
-				(
+					(
 					-- old person' group member status is Active but new person's status is not, so delete the new person's groupmember record so that we can set the old record to the new person id
 					gmn.GroupMemberStatus != @GroupMemberStatusActive
 					AND gmo.GroupMemberStatus = @GroupMemberStatusActive
@@ -79,8 +97,32 @@ BEGIN
 					gmn.GroupMemberStatus = @GroupMemberStatusInactive
 					AND gmo.GroupMemberStatus = @GroupMemberStatusPending
 					)
+				 OR (
+					  -- the old person has more LearningClassActivityCompletions for the class than the new person, so delete the new person's groupmember record.
+					  ISNULL(oldc.[OldCompletionCount], 0) > ISNULL(newc.NewCompletionCount, 0)
+					)
 				)
 
+		/**********************************************************************************************
+		 * Handle LearningClassActivityCompletion and LearningParticipant records
+		 **********************************************************************************************/
+		DELETE
+		FROM [LearningClassActivityCompletion]
+		WHERE StudentId IN (
+				SELECT [Id]
+				FROM @LessActiveGroupMembersIdsToDelete
+		)
+
+		DELETE
+		FROM LearningParticipant
+		WHERE Id IN (
+				SELECT [Id]
+				FROM @LessActiveGroupMembersIdsToDelete
+				)
+
+		/**********************************************************************************************
+		 * Handle RegistrationRegistrant records
+		 **********************************************************************************************/
 		-- NULL out RegistrationRegistrant Records for the @LessActiveGroupMembersIdsToDelete
 		UPDATE [RegistrationRegistrant]
 		SET [GroupMemberId] = NULL
@@ -89,13 +131,92 @@ BEGIN
 				FROM @LessActiveGroupMembersIdsToDelete
 				)
 
-		-- Delete the GroupMemberAssignment Records for the @LessActiveGroupMembersIdsToDelete
-		DELETE FROM [GroupMemberAssignment]
-		WHERE [GroupMemberId] IN (
-				SELECT [Id]
-				FROM @LessActiveGroupMembersIdsToDelete
-				)
+		/*********************************************************************************************
+		 * Handle GroupMemberAssignment records
+		 **********************************************************************************************/
+			DECLARE @Pairs TABLE (
+				OldGMId           INT NOT NULL,
+				KeepGMId          INT NOT NULL,
+				GroupId           INT NOT NULL,
+				FinalWinnerGMId   INT NOT NULL,
+				FinalLoserGMId    INT NOT NULL,
+				PRIMARY KEY (FinalLoserGMId, GroupId)
+			);
 
+			-- Because our initial 'Keep' record might be in the @LessActiveGroupMembersIdsToDelete
+			-- list, we need to adjust which one we'll keep based on that. 
+			INSERT INTO @Pairs (OldGMId, KeepGMId, GroupId, FinalWinnerGMId, FinalLoserGMId)
+			SELECT
+				GMOld.Id,
+				GMKeep.Id,
+				GMOld.GroupId,
+				CASE WHEN LA.Id IS NOT NULL THEN GMOld.Id ELSE GMKeep.Id END,
+				CASE WHEN LA.Id IS NOT NULL THEN GMKeep.Id ELSE GMOld.Id END
+			FROM dbo.GroupMember AS GMOld
+			JOIN dbo.GroupMember AS GMKeep ON GMKeep.GroupId = GMOld.GroupId
+			 AND GMKeep.GroupRoleId = GMOld.GroupRoleId
+			 AND GMKeep.PersonId    = @NewId
+			LEFT JOIN @LessActiveGroupMembersIdsToDelete AS LA ON LA.Id = GMKeep.Id
+			WHERE GMOld.PersonId = @OldId;
+
+			-----------------------------------------------------------------------------
+			--   @Assigns: losing assignments and their projected winner.
+			-----------------------------------------------------------------------------
+			DECLARE @Assigns TABLE (
+				GroupMemberAssignmentId INT NOT NULL PRIMARY KEY,
+				GroupId                 INT NOT NULL,
+				LocationId              INT NULL,
+				ScheduleId              INT NULL,
+				NewGroupMemberId        INT NOT NULL
+			);
+
+			INSERT INTO @Assigns (GroupMemberAssignmentId, GroupId, LocationId, ScheduleId, NewGroupMemberId)
+			SELECT
+				GMA.Id,
+				GMA.GroupId,
+				GMA.LocationId,
+				GMA.ScheduleId,
+				P.FinalWinnerGMId
+			FROM dbo.GroupMemberAssignment AS GMA
+			JOIN @Pairs AS P ON GMA.GroupMemberId = P.FinalLoserGMId
+			   AND GMA.GroupId = P.GroupId;
+
+			/*
+				12/2/2025 - N.A.
+
+				Why does this appear to be so complicated?
+
+				Additional cleanup steps are required when updating GroupMember assignments due to 
+				the IX_GroupMemberIdLocationIdScheduleId index since you cannot have two 
+				GroupMemberAssignments for the same groupmember, location and schedule.
+
+				Specifically:
+				1) A 'losing' row might match an existing 'winner' row after remapping, violating
+				   the unique index. Therefore, the losing row must be deleted before the update.
+			*/
+
+			-- (1) DELETE losing assignments that would collide with EXISTING winner rows.
+			DELETE GMA
+			FROM dbo.GroupMemberAssignment AS GMA
+			JOIN @Assigns AS A ON A.GroupMemberAssignmentId = GMA.Id
+			WHERE EXISTS (
+				SELECT 1
+				FROM dbo.GroupMemberAssignment AS W
+				WHERE W.GroupMemberId = A.NewGroupMemberId
+				   AND W.GroupId       = A.GroupId
+				   AND ( (W.LocationId = A.LocationId) OR (W.LocationId IS NULL AND A.LocationId IS NULL) )
+				   AND ( (W.ScheduleId = A.ScheduleId) OR (W.ScheduleId IS NULL AND A.ScheduleId IS NULL) )
+			);
+
+			-- Update assignments from Loser -> Winner (@Pairs / @Assigns are scoped by GroupId)
+			UPDATE GMA
+			SET GMA.GroupMemberId = A.NewGroupMemberId
+			FROM dbo.GroupMemberAssignment AS GMA
+			JOIN @Assigns AS A ON A.GroupMemberAssignmentId = GMA.Id;
+
+		/**********************************************************************************************
+		 * Handle GroupMemberHistory records
+		 **********************************************************************************************/
 		-- If there is GroupMemberHistory, we can't delete, so create a list of GroupMemberIds that we'll archive instead of delete
 		INSERT INTO @GroupMembersIdsToArchive 
 			SELECT [Id]	FROM @LessActiveGroupMembersIdsToDelete WHERE Id IN (SELECT GroupMemberId FROM GroupMemberHistorical)
@@ -103,6 +224,9 @@ BEGIN
 		DELETE FROM @LessActiveGroupMembersIdsToDelete 
 			WHERE Id IN (SELECT Id FROM @GroupMembersIdsToArchive)
 
+		/**********************************************************************************************
+		 * Handle the final surviving GroupMember records
+		 **********************************************************************************************/
 		-- Delete the @LessActiveGroupMembersIdsToDelete for any GroupMember records that don't have GroupMemberHistory
 		DELETE
 		FROM GroupMember
@@ -121,11 +245,15 @@ BEGIN
 			LEFT OUTER JOIN [GroupMember] GMN
 				ON GMN.[GroupId] = GMO.[GroupId]
 				AND GMN.[PersonId] = @NewId
+				AND GMN.[IsArchived] = 0
 				AND (GTR.[MaxCount] <= 1 OR GMN.[GroupRoleId] = GMO.[GroupRoleId])
 		WHERE GMO.[PersonId] = @OldId
 			AND GMN.[Id] IS NULL
 			and GMO.Id NOT IN (SELECT [Id] FROM @GroupMembersIdsToArchive)
 
+		/**********************************************************************************************
+		 * Handle RegistrationRegistrant records
+		 **********************************************************************************************/
 		-- Update any registrant groups that point to a group member about to be deleted 
 		UPDATE [RegistrationRegistrant]
 		SET [GroupMemberId] = NULL 
@@ -135,7 +263,10 @@ BEGIN
 			WHERE [PersonId] = @OldId
 		)
 
-
+		/**********************************************************************************************
+		 * Handle GroupMemberAssignment records (again)
+		 *    NOTE: There should not be any if we did everything correctly earlier/above.
+		 **********************************************************************************************/
 		-- Delete any Group Assignments that point to a group member about to be deleted
 		DELETE FROM [GroupMemberAssignment]
 		WHERE [GroupMemberId] IN (
@@ -144,7 +275,6 @@ BEGIN
 			WHERE [PersonId] = @OldId
 		)
 
-
 		-- If there is GroupMemberHistory, we can't delete, so add any other GroupMemberIds for the old PersonId to our @GroupMembersIdsToArchive list
 		INSERT INTO @GroupMembersIdsToArchive 
 			SELECT [Id]	FROM [GroupMember] WHERE [PersonId] = @OldId AND Id IN (SELECT GroupMemberId FROM GroupMemberHistorical)
@@ -152,6 +282,13 @@ BEGIN
 		UPDATE [GroupMember] 
 			SET [IsArchived] = 1, [PersonId] = @NewId
 			WHERE [Id] IN (SELECT [Id] FROM @GroupMembersIdsToArchive)
+
+        -- Delete LMS LearningParticipant rows whose parent GroupMember belongs to @OldId
+        DELETE lp
+        FROM [LearningParticipant] AS lp
+        INNER JOIN [GroupMember] AS gm
+            ON gm.[Id] = lp.[Id]         -- TPT key equality (LP inherits GM)
+        WHERE gm.[PersonId] = @OldId;
 
 		-- Delete any group members not updated (already existed with new id)
 		DELETE [GroupMember]
@@ -325,7 +462,7 @@ BEGIN
 			INNER JOIN [PersonAlias] PA2 ON PA2.[Id] = PN2.[PersonAliasId]
 			WHERE PA2.[PersonId] = @NewId
 			GROUP BY PN2.[LastName]
-		)	
+		)
 
 		-- Remaining Tables
 		-----------------------------------------------------------------------------------------------
@@ -348,11 +485,11 @@ BEGIN
 		WHERE so.name = 'Person'
 			AND rac.name = 'Id'
 			AND tso.name NOT IN (
-				 'GroupMember'
+				'GroupMember'
 				,'PhoneNumber'
 				,'UserLogin'
 				,'PersonAlias'
-                ,'AttributeValue'
+				,'AttributeValue'
 			)
 
 		OPEN ForeignKeyCursor
@@ -380,7 +517,6 @@ BEGIN
 		CLOSE ForeignKeyCursor
 		DEALLOCATE ForeignKeyCursor
 
-
 		-- Person
 		-----------------------------------------------------------------------------------------------
 		-- Delete the old person record.  By this time it should not have any relationships 
@@ -390,28 +526,28 @@ BEGIN
 		WHERE [Id] = @OldId
 
         -- Reset FirstTime Attendance for all but the to the oldest first time record.
-        DECLARE @Records AS TABLE(Id INT, StartDateTime DATETIME)
+		DECLARE @Records AS TABLE(Id INT, StartDateTime DATETIME)
 
-        INSERT INTO @Records
-        SELECT Attendance.Id, Attendance.StartDateTime
-        FROM Attendance
-        INNER JOIN PersonAlias ON PersonAlias.Id = Attendance.PersonAliasId
-        WHERE PersonId = @NewId AND IsFirstTime = 1
+		INSERT INTO @Records
+		SELECT Attendance.Id, Attendance.StartDateTime
+		FROM Attendance
+		INNER JOIN PersonAlias ON PersonAlias.Id = Attendance.PersonAliasId
+		WHERE PersonId = @NewId AND IsFirstTime = 1
 
-        DECLARE @FirstTimeRecordId AS INT
-        SELECT TOP 1 @FirstTimeRecordId = a.Id
-        FROM @Records a
-        ORDER BY a.StartDateTime ASC
+		DECLARE @FirstTimeRecordId AS INT
+		SELECT TOP 1 @FirstTimeRecordId = a.Id
+		FROM @Records a
+		ORDER BY a.StartDateTime ASC
 
-        UPDATE Attendance
-        SET IsFirstTime = 0
-        FROM Attendance
-        INNER JOIN PersonAlias ON PersonAlias.Id = Attendance.PersonAliasId
-        WHERE Attendance.Id IN (
-		    SELECT a.Id
-		    FROM @Records a
+		UPDATE Attendance
+		SET IsFirstTime = 0
+		FROM Attendance
+		INNER JOIN PersonAlias ON PersonAlias.Id = Attendance.PersonAliasId
+		WHERE Attendance.Id IN (
+			SELECT a.Id
+			FROM @Records a
 		)
-        AND Attendance.Id != @FirstTimeRecordId
+		AND Attendance.Id != @FirstTimeRecordId
 
 	END
 

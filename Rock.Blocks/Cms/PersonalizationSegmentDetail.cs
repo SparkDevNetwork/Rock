@@ -42,14 +42,15 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details of a particular personalization segment." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "B1595326-592E-415B-ADE3-984F2FBA1980" )]
-    [Rock.SystemGuid.BlockTypeGuid( "AA6203A7-E1D5-427D-98FB-76F969642906" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "AA6203A7-E1D5-427D-98FB-76F969642906" )]
+    [Rock.SystemGuid.BlockTypeGuid( "1F0A0A57-952D-4774-8760-52C6D56B9DB5" )]
     public class PersonalizationSegmentDetail : RockEntityDetailBlockType<PersonalizationSegment, PersonalizationSegmentBag>
     {
         #region Keys

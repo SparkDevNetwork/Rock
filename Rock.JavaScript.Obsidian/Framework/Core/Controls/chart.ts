@@ -185,6 +185,17 @@ export type PieSeries = {
 
 // #endregion Pie Chart
 
+// #region Doughnut Chart
+
+/** Represents a doughnut chart series where each data + color combination is a slice of the doughnut. */
+export type DoughnutSeries = {
+    label: string;
+    data: number[];
+    colors?: string[] | undefined;
+};
+
+// #endregion Doughnut Chart
+
 // #endregion Types
 
 // #region Utils

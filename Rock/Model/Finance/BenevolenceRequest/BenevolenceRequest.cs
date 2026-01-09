@@ -108,7 +108,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the Home Phone Number of the person who requested benevolence.
         /// </value>
-        [MaxLength( 20 )]
+        [MaxLength( 50 )]
         [DataMember]
         public string HomePhoneNumber { get; set; }
 
@@ -118,7 +118,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the Cell Phone Number of the person who requested benevolence.
         /// </value>
-        [MaxLength( 20 )]
+        [MaxLength( 50 )]
         [DataMember]
         public string CellPhoneNumber { get; set; }
 
@@ -128,7 +128,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the Work Phone Number of the person who requested benevolence.
         /// </value>
-        [MaxLength( 20 )]
+        [MaxLength( 50 )]
         [DataMember]
         public string WorkPhoneNumber { get; set; }
 

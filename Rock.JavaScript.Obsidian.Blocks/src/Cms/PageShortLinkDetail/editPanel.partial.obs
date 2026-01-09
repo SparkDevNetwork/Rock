@@ -54,8 +54,14 @@
         </div>
 
         <div class="row">
-            <div class="col-md-3">
+            <div class="col-md-6">
                 <CheckBox v-model="isPinned" label="Pinned" />
+            </div>
+            <div class="col-md-6">
+                <NumberBox :modelValue="expireInDays"
+                           help="Sets the number of days before the short link expires. Once expired, the link and its tracking data will be permanently deleted. Leave blank for no expiration."
+                           label="Expire In Days"
+                           @update:modelValue="expireInDays = $event" />
             </div>
         </div>
 
@@ -100,7 +106,7 @@
             <br />
         </template>
 
-        <Panel title="Advanced Settings" hasCollapse>
+        <ContentSection title="Advanced Settings" isCollapsed>
             <div class="row">
                 <div class="col-md-6">
                     <DefinedValuePicker
@@ -143,7 +149,7 @@
                              help="The UTM content parameter helps differentiate between links that point to the same URL within the same ad or campaign, allowing you to test the effectiveness of various content elements, like text or images, in your marketing efforts." />
                 </div>
             </div>
-        </Panel>
+        </ContentSection>
 
         <EditScheduledRedirect v-if="isEditScheduledRedirectVisible"
                                v-model="editScheduledRedirect"
@@ -155,18 +161,19 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch, onMounted } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import Grid, { ReorderColumn, TextColumn, EditColumn, DeleteColumn } from "@Obsidian/Controls/grid";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import EditScheduledRedirect from "./editScheduledRedirect.partial.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import Panel from "@Obsidian/Controls/panel.obs";
     import { PageShortLinkBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkBag";
     import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
     import { newGuid } from "@Obsidian/Utility/guid";
@@ -203,6 +210,7 @@
     const url = propertyRef(props.modelValue.bag?.url ?? "", "Url");
     const token = propertyRef(props.modelValue.bag?.token ?? "", "Token");
     const isPinned = propertyRef(props.modelValue.bag?.isPinned ?? true, "IsPinned");
+    const expireInDays = propertyRef(props.modelValue.bag?.expireInDays, "ExpireInDays");
     const category = propertyRef(props.modelValue.bag?.category ?? {}, "Category");
     const utmSource = ref(props.modelValue.bag?.utmSettings?.utmSource ?? {});
     const utmMedium = ref(props.modelValue.bag?.utmSettings?.utmMedium ?? {});
@@ -228,6 +236,7 @@
         token,
         site,
         isPinned,
+        expireInDays,
         category];
 
     // #endregion
@@ -268,6 +277,7 @@
         setPropertiesBoxValue(newValue, "token", token.value);
         setPropertiesBoxValue(newValue, "site", { value: site.value });
         setPropertiesBoxValue(newValue, "isPinned", isPinned.value);
+        setPropertiesBoxValue(newValue, "expireInDays", expireInDays.value);
         setPropertiesBoxValue(newValue, "category", category.value);
         setPropertiesBoxValue(newValue, "utmSettings", {
             utmSource: utmSource.value,
@@ -395,6 +405,7 @@
         updateRefValue(url, props.modelValue.bag?.url ?? "");
         updateRefValue(token, props.modelValue.bag?.token ?? "");
         updateRefValue(isPinned, props.modelValue.bag?.isPinned ?? true);
+        updateRefValue(expireInDays, props.modelValue.bag?.expireInDays);
         updateRefValue(category, props.modelValue.bag?.category ?? {});
         updateRefValue(utmSource, props.modelValue.bag?.utmSettings?.utmSource ?? {});
         updateRefValue(utmMedium, props.modelValue.bag?.utmSettings?.utmMedium ?? {});

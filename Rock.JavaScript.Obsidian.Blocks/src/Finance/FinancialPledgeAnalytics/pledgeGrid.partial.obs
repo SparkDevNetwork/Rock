@@ -132,19 +132,6 @@
     const totalAmountPledged = ref(0);
     const totalAmountGiven = ref(0);
 
-    watch(() => props.gridData, async () => {
-
-        if (isPromise(props.gridData)) {
-            // Don't need to await here. The loadGridData function in the parent component never resolves the promise.
-            // Rather, it just reassigns the prop to the value.
-        }
-        else {
-            if ((props.gridData?.rows?.length ?? 0) > 0 && props.gridData) {
-                calculateTotals(props.gridData.rows as Record<string, unknown>[]);
-            }
-        }
-    }, { immediate: true });
-
     // #region Functions
 
     /**
@@ -193,6 +180,7 @@
     // #endregion
 
     // #region Event Handlers
+
     /**
      * Called when the rows that match the user filters have changed.
      *
@@ -210,6 +198,20 @@
     function onSelectItem(key: string): void {
         window.location.href = makeUrlRedirectSafe(`/Person/${key}/Contributions`);
     }
+
     // #endregion
+
+    watch(() => props.gridData, async () => {
+
+        if (isPromise(props.gridData)) {
+            // Don't need to await here. The loadGridData function in the parent component never resolves the promise.
+            // Rather, it just reassigns the prop to the value.
+        }
+        else {
+            if ((props.gridData?.rows?.length ?? 0) > 0 && props.gridData) {
+                calculateTotals(props.gridData.rows as Record<string, unknown>[]);
+            }
+        }
+    }, { immediate: true });
 
 </script>

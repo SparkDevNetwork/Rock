@@ -18,8 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Enums.Core;
 using Rock.SystemKey;
-using Rock.Utility.Enums;
 
 namespace Rock.Utility.Settings.Giving
 {
@@ -52,7 +52,7 @@ namespace Rock.Utility.Settings.Giving
             settings.GivingAlertingSettings = settings.GivingAlertingSettings ?? new GivingAlertingSettings();
             settings.GivingClassificationSettings = settings.GivingClassificationSettings ?? new GivingClassificationSettings();
             settings.GivingClassificationSettings.GiverBins = settings.GivingClassificationSettings.GiverBins ?? new List<GiverBin>();
-            settings.GivingClassificationSettings.RunDays = settings.GivingClassificationSettings.RunDays ?? DayOfWeekFlag.All.AsDayOfWeekList().ToArray();
+            settings.GivingClassificationSettings.RunDays = settings.GivingClassificationSettings.RunDays ?? DaysOfWeekFlags.All.AsDayOfWeekList().ToArray();
 
             // This setting is currently not configurable.
             settings.GivingJourneySettings.TransactionWindowDurationHours = 24;

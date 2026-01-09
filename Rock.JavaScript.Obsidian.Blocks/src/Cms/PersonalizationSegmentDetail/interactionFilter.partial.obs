@@ -55,10 +55,16 @@
         </section>
         <section>
             <div class="row form-row">
-                <InteractionChannelPicker v-model="theFilter.interactionChannel" label="Channel" rules="required" />
+                <InteractionChannelPicker v-model="theFilter.interactionChannel"
+                                          label="Channel"
+                                          rules="required"
+                                          :showBlankItem="true" />
             </div>
             <div class="row form-row">
-                <InteractionComponentPicker v-model="theFilter.interactionComponent" :interactionChannelGuid="theFilter.interactionChannel?.value ?? ''" label="Component" :showBlankItem="true" />
+                <InteractionComponentPicker v-model="theFilter.interactionComponent"
+                                            label="Component"
+                                            :interactionChannelGuid="theFilter.interactionChannel?.value ?? ''"
+                                            :showBlankItem="true" />
             </div>
             <div class="row form-row">
                 <DropDownList
@@ -106,6 +112,7 @@
     import { DateTimeFormat } from "@Obsidian/Utility/rockDateTime";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { InteractionSegmentFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalizationSegmentDetail/interactionSegmentFilterBag";
 
@@ -136,7 +143,10 @@
 
     const theFilter = ref<InteractionSegmentFilterBag>(createDefaultFilter());
 
-    const comparisonTypes = getFilteredComparisonTypeOptions(numericComparisonTypes);
+    const excludedComparisonTypes = [ComparisonType.IsBlank, ComparisonType.IsNotBlank].map(v => v.toString());
+    const comparisonTypes = (getFilteredComparisonTypeOptions(numericComparisonTypes))
+        .filter(ct => !excludedComparisonTypes.includes(ct.value ?? ""));
+
     const isModalVisible = ref(false);
     const isEditing = ref(false);
 

@@ -25,29 +25,31 @@
             </TabbedContent>
 
             <template v-else>
-                <div v-for="cat in attributeCategories" key="cat.guid">
-                    <h4 v-if="showCategoryLabel && areEqual(cat.guid, emptyGuid) && !isEditMode">{{ defaultCategoryHeading }}</h4>
-                    <h4 v-else-if="showCategoryLabel && !areEqual(cat.guid, emptyGuid)">{{ cat.name }}</h4>
+                <div class="attributevaluescontainer">
+                    <div v-for="cat in attributeCategories" key="cat.guid" class="attributevaluescontainer-category">
+                        <h4 v-if="showCategoryLabel && areEqual(cat.guid, emptyGuid) && !isEditMode">{{ defaultCategoryHeading }}</h4>
+                        <h4 v-else-if="showCategoryLabel && !areEqual(cat.guid, emptyGuid)">{{ cat.name }}</h4>
 
-                    <div :class="{ 'attribute-value-container-display': true, 'row': numberOfColumns > 1 }">
-                        <ItemsWithPreAndPostHtml :items="prePostHtmlItems[cat.guid]" v-if="isEditMode && showPrePostHtml">
-                            <template v-slot:[a.attributeGuid] v-for="a in cat.attributes" :key="a.attributeGuid">
+                        <div :class="{ 'attributevaluescontainer-category-content': true, 'row': numberOfColumns > 1 }">
+                            <ItemsWithPreAndPostHtml :items="prePostHtmlItems[cat.guid]" v-if="isEditMode && showPrePostHtml">
+                                <template v-slot:[a.attributeGuid] v-for="a in cat.attributes" :key="a.attributeGuid">
+                                    <RockField :isEditMode="isEditMode"
+                                            :attribute="a"
+                                            :modelValue="values[a.key!]"
+                                            @update:modelValue="onUpdateValue(a.key!, $event)"
+                                            :showEmptyValue="showEmptyValues"
+                                            :showAbbreviatedName="showAbbreviatedName" />
+                                </template>
+                            </ItemsWithPreAndPostHtml>
+
+                            <div v-else :class="columnClass" v-for="a in cat.attributes" :key="a.attributeGuid!">
                                 <RockField :isEditMode="isEditMode"
-                                           :attribute="a"
-                                           :modelValue="values[a.key!]"
-                                           @update:modelValue="onUpdateValue(a.key!, $event)"
-                                           :showEmptyValue="showEmptyValues"
-                                           :showAbbreviatedName="showAbbreviatedName" />
-                            </template>
-                        </ItemsWithPreAndPostHtml>
-
-                        <div v-else :class="columnClass" v-for="a in cat.attributes" :key="a.attributeGuid!">
-                            <RockField :isEditMode="isEditMode"
-                                       :attribute="a"
-                                       :modelValue="values[a.key!]"
-                                       @update:modelValue="onUpdateValue(a.key!, $event)"
-                                       :showEmptyValue="showEmptyValues"
-                                       :showAbbreviatedName="showAbbreviatedName" />
+                                        :attribute="a"
+                                        :modelValue="values[a.key!]"
+                                        @update:modelValue="onUpdateValue(a.key!, $event)"
+                                        :showEmptyValue="showEmptyValues"
+                                        :showAbbreviatedName="showAbbreviatedName" />
+                            </div>
                         </div>
                     </div>
                 </div>

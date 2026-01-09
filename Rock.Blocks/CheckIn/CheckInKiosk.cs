@@ -403,6 +403,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         private List<GroupOpportunityBag> GetGroupsAndLocationsForAreas( List<int> areaIds )
         {
             var groupLocationQry = new GroupLocationService( RockContext ).Queryable()
+                .Where( gl => gl.Schedules.Any( s => s.IsActive ) )
                 .Select( gl => new
                 {
                     gl.LocationId,
@@ -412,7 +413,9 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             // Load all groups for these areas and the associated location identifiers.
             var groupsAndLocations = new GroupService( RockContext )
                 .Queryable()
-                .Where( g => areaIds.Contains( g.GroupTypeId ) )
+                .Where( g => areaIds.Contains( g.GroupTypeId )
+                    && g.IsActive
+                    && !g.IsArchived )
                 .GroupJoin( groupLocationQry, g => g.Id, gl => gl.GroupId, ( g, gl ) => new
                 {
                     Group = g,
@@ -444,6 +447,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                         } )
                         .ToList()
                 } )
+                .Where( g => g.Locations.Any() )
                 .ToList();
         }
 

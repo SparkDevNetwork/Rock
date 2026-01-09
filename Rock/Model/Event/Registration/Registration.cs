@@ -144,10 +144,10 @@ namespace Rock.Model
         public int? GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is temporary.
+        /// Gets or sets a value indicating whether this instance is temporary (started from another page).
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is temporary; otherwise, <c>false</c>.
+        ///   <c>true</c> if this instance is temporary (started from another page); otherwise, <c>false</c>.
         /// </value>
         [DataMember]
         public bool IsTemporary { get; set; }
@@ -197,6 +197,10 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> the event occured
         /// </value>
+        /// <remarks>
+        /// [IgnoreCanDelete] since there is a ON DELETE SET NULL cascade on this
+        /// </remarks>
+        [IgnoreCanDelete]
         [DataMember]
         [FieldType(Rock.SystemGuid.FieldType.CAMPUS)]
         public int? CampusId { get; set; }

@@ -1060,6 +1060,11 @@ namespace RockWeb.Blocks.Mobile
                 binaryFileService.Get( site.ThumbnailBinaryFileId.Value ).IsTemporary = false;
             }
 
+            if (additionalSettings.DarkFavIconBinaryFileId.HasValue )
+            {
+                binaryFileService.Get( additionalSettings.DarkFavIconBinaryFileId.Value ).IsTemporary = false;
+            }
+
             // This is a new site.
             if ( site.Id == 0 )
             {
@@ -1235,6 +1240,11 @@ namespace RockWeb.Blocks.Mobile
                 if ( site.FavIconBinaryFileId.HasValue )
                 {
                     binaryFileService.Get( site.FavIconBinaryFileId.Value ).IsTemporary = false;
+                }
+
+                if ( additionalSettings.DarkFavIconBinaryFileId.HasValue )
+                {
+                    binaryFileService.Get( additionalSettings.DarkFavIconBinaryFileId.Value ).IsTemporary = false;
                 }
 
                 rockContext.SaveChanges();

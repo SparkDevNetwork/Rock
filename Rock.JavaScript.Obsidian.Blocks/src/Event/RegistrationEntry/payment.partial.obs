@@ -318,6 +318,19 @@
             args: getRegistrationEntryBlockArgs()
         }, actionContext);
 
+        if (result.isError && result.statusCode === 409) {
+            // The registration is full. Display special error message.
+            registrationEntryState.isCapacityFull = true;
+
+            dispatchPaymentEvent({
+                type: "failure",
+                errorMessage: result.errorMessage || "The registration could not be completed because it is full."
+            });
+
+            // Return true so the next step can be shown.
+            return true;
+        }
+
         if (result.isError || !result.data) {
             const errorMessage = result.errorMessage || "Unknown error";
             submitErrorMessage.value = errorMessage;

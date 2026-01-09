@@ -132,6 +132,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.CategoryId = source.CategoryId;
+            target.ExpireDate = source.ExpireDate;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsPinned = source.IsPinned;

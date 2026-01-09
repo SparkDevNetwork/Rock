@@ -340,7 +340,7 @@ namespace RockWeb.Blocks.Utility
             {
                 try
                 {
-                    rootFolder = Rock.Security.Encryption.DecryptString( rootFolderEncrypted );
+                    rootFolder = Rock.Security.Encryption.DecryptString( rootFolderEncrypted, false );
                 }
                 catch ( Exception )
                 {

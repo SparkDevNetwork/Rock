@@ -6,14 +6,14 @@
         </NotificationBox>
 
         <div class="row">
-            <div class="col-md-2">
+            <div class="col-sm-3">
                 <DropDownList label="Filter By"
                               v-model="deviceTypeFilter"
                               :items="deviceTypeOptions"
                               :showBlankItem="false"
                               :multiple="false" />
             </div>
-            <div class="col-md-2">
+            <div class="col-sm-3">
                 <DropDownList label="Sort By"
                               v-model="sortBy"
                               :items="sortByOptions"
@@ -26,8 +26,7 @@
             <PersonalDevice v-for="item in filteredPersonalDevices"
                             :key="item.personalDevice.guid"
                             :modelValue="item.personalDevice"
-                            :duplicateIndex="item.duplicateIndex"
-                            :showDeviceLastSeenDateTime="showDeviceLastSeenDateTime" />
+                            :duplicateIndex="item.duplicateIndex" />
         </DisplayCardContainer>
     </Block>
 </template>
@@ -59,7 +58,6 @@
 
     const personalDevices = ref<PersonalDeviceListItemBag[]>(config.bag?.personalDevices ?? []);
 
-    const showDeviceLastSeenDateTime = config.options?.showDeviceLastSeenDateTime ?? false;
 
     const deviceTypeFilter = ref<string>("");
     const deviceTypeOptions: ListItemBag[] = [
@@ -112,7 +110,7 @@
 
         /*
             12/2/2025 - MSE
-
+    
             When multiple devices share the same platform and version, each device requires a unique
             identifier. We track how many times each platform/version pair appears and assign a
             duplicateIndex value to represent its sequence. This index is then considered to build the

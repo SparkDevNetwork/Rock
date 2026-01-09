@@ -92,6 +92,7 @@ namespace Rock
         /// <param name="entityIds">An The enumerable of int to convert.</param>
         /// <param name="parameterName">The name of the Sql Parameter to be set.</param>
         /// <returns>A SqlParameter of Type dbo.EntityIdList whose values are those of this enumerable.</returns>
+        [RockObsolete( "19.0" )]
         public static SqlParameter ConvertToEntityIdListParameter( this IEnumerable<int> entityIds, string parameterName )
         {
             var dataTable = new DataTable();
@@ -105,6 +106,32 @@ namespace Rock
             return new SqlParameter( parameterName, SqlDbType.Structured )
             {
                 TypeName = "dbo.EntityIdList",
+                Value = dataTable
+            };
+        }
+
+        /// <summary>
+        /// Converts the IEnumerable <see cref="int"/> to a dbo.IdList <see cref="SqlParameter"/> populated with values.
+        /// </summary>
+        /// <param name="entityIds">An The enumerable of int to convert.</param>
+        /// <param name="parameterName">The name of the Sql Parameter to be set.</param>
+        /// <returns>A SqlParameter of Type dbo.IdList whose values are those of this enumerable.</returns>
+        internal static SqlParameter ConvertToIdListParameter( this IEnumerable<int> entityIds, string parameterName )
+        {
+            var dataTable = new DataTable();
+            dataTable.Columns.Add( "IdList", typeof( int ) );
+
+            // Use Distinct() because dbo.IdList enforces a PRIMARY KEY on Id.
+            // Without removing duplicates, adding duplicate values would cause a SQL
+            // primary key violation when the DataTable is passed as a table-valued parameter.
+            foreach ( var value in entityIds.Distinct() )
+            {
+                dataTable.Rows.Add( value );
+            }
+
+            return new SqlParameter( parameterName, SqlDbType.Structured )
+            {
+                TypeName = "dbo.IdList",
                 Value = dataTable
             };
         }

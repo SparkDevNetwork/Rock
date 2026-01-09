@@ -361,6 +361,11 @@ namespace Rock.Blocks.Workflow
                 return null;
             }
 
+            if ( workflow.Id == 0 )
+            {
+                SetInitialWorkflowAttributes( workflow, null );
+            }
+
             // If the workflow type was not configured by block setting
             // or if the block is configured to always use the form name for the page title and the workflow type uses a form,
             // then update the page title to match the workflow type name.

@@ -23,7 +23,7 @@
 .grid-header {
     background: var(--color-interface-softest);
     border-radius: var(--rounded-medium) var(--rounded-medium) 0 0;
-    z-index: 1;
+    z-index: 3;
 }
 
 .grid-obsidian.grid-sticky > .grid-header {
@@ -33,7 +33,7 @@
 
 .grid-obsidian .grid-content-container .grid-column-header-container.sticky-column-header {
     position: sticky;
-    z-index: 1;
+    z-index: 3;
     background-color: var(--color-interface-softest);
 }
 
@@ -48,7 +48,7 @@
 .grid-obsidian.grid-sticky .sticky-column-header {
     position: sticky;
     top: calc(var(--sticky-element-offset) + 57px);
-    z-index: 1;
+    z-index: 3;
     background-color: var(--color-interface-softest);
 }
 
@@ -77,6 +77,15 @@
 .grid-obsidian > .grid-header > .grid-title-header > .grid-actions {
     background-color: initial;
     text-align: initial;
+    &:last-child {
+        border-top-right-radius: var(--rounded-small);
+        .btn-grid-action:last-child {
+            border-top-right-radius: var(--rounded-small);
+        }
+        .btn-grid-action.btn-quick-filter {
+            border-top-right-radius: var(--rounded-small);
+        }
+    }
 }
 
 .grid-obsidian > .grid-header > .grid-title-header > .grid-actions .btn-grid-action {
@@ -108,54 +117,6 @@
     position: fixed;
     display: block;
     margin-top: 0;
-}
-
-.grid-obsidian > .grid-header > .grid-title-header > .grid-quick-filter {
-    display: flex;
-}
-
-.grid-obsidian > .grid-header > .grid-title-header > .grid-quick-filter > .grid-quick-filter-search {
-    width: 0;
-    overflow: hidden;
-    transition: width 0.3s ease;
-    display: inline-flex;
-    align-items: stretch;
-}
-
-.grid-obsidian > .grid-header > .grid-title-header > .grid-quick-filter.active > .grid-quick-filter-search {
-    width: 240px;
-}
-
-.grid-obsidian > .grid-header > .grid-title-header > .grid-quick-filter.active > .grid-quick-filter-search > form {
-    width: 100%;
-}
-
-.grid-obsidian > .grid-header > .grid-title-header > .grid-quick-filter.active > .btn-grid-action {
-    background-color: var(--color-interface-soft);
-    color: var(--color-interface-stronger);
-}
-
-.grid-obsidian > .grid-header > .grid-title-header > .grid-quick-filter > .grid-quick-filter-search > .control-wrapper,
-.grid-obsidian > .grid-header > .grid-title-header > .grid-quick-filter > .grid-quick-filter-search > form > .control-wrapper,
-.grid-obsidian > .grid-header > .grid-title-header > .grid-quick-filter > .grid-quick-filter-search > form > .control-wrapper > div,
-.grid-obsidian > .grid-header > .grid-title-header > .grid-quick-filter > .grid-quick-filter-search > form > .control-wrapper > div > .form-control {
-    width: 100%;
-    height: 100%;
-    border-radius: 0;
-}
-
-.grid-quick-filter-search > .control-wrapper > div {
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    display: flex;
-    align-items: center;
-}
-
-.grid-obsidian > .grid-header > .grid-title-header > .grid-quick-filter > .grid-quick-filter-search > .control-wrapper .form-control {
-    height: 100%;
-    width: 100%;
-    border-radius: 0;
 }
 
 .grid-column-header-row {

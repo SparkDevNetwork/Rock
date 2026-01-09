@@ -223,6 +223,8 @@ export const EntityType = {
     ConnectionRequest: "36B0D0C7-8125-48FA-9DA2-729AAA65F718",
     /** The guid for the Rock.Model.ConnectionRequestActivity entity */
     ConnectionRequestActivity: "3248F40D-7661-42CC-AD9B-EF63322937B7",
+    /** The guid for the Rock.Model.ConnectionRequestStatusHistory entity */
+    ConnectionRequestStatusHistory: "9D73FA0E-5787-4357-BD7C-43AD1800DBB1",
     /** The guid for the Rock.Model.ConnectionRequestWorkflow entity */
     ConnectionRequestWorkflow: "C69D1C9F-5521-4C83-8FE9-5044ECC2CE65",
     /** The guid for the Rock.Model.ConnectionStatus entity */
@@ -231,6 +233,8 @@ export const EntityType = {
     ConnectionStatusAutomation: "ACF794C7-F12D-42DF-85C5-089A28993EE6",
     /** The guid for the Rock.Model.ConnectionType entity */
     ConnectionType: "B1E52EAD-65BD-4C4D-BCCD-73368067621D",
+    /** The guid for the Rock.Model.ConnectionTypeSource entity */
+    ConnectionTypeSource: "06FD04C5-8A18-43D1-AE13-3611344FB40A",
     /** The guid for the Rock.Model.ConnectionWorkflow entity */
     ConnectionWorkflow: "4EB8711F-7301-4699-A223-0505A7CEB20A",
     /** The content channel type */

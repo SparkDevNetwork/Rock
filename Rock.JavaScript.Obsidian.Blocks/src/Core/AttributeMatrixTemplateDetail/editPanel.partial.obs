@@ -88,7 +88,7 @@
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import Grid, { EditColumn, TextColumn, DeleteColumn, SecurityColumn, ReorderColumn } from "@Obsidian/Controls/grid";
-    import { setPropertiesBoxValue, useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { AttributeMatrixTemplateBag } from "@Obsidian/ViewModels/Blocks/Core/AttributeMatrixTemplateDetail/attributeMatrixTemplateBag";
     import { AttributeMatrixTemplateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AttributeMatrixTemplateDetail/attributeMatrixTemplateDetailOptionsBag";
@@ -136,7 +136,6 @@
     const isAttributeModalOpen = ref(false);
     const templateAttribute = ref<PublicEditableAttributeBag | null>(null);
     const reservedKeyNames = ref<string[]>([]);
-    const invokeBlockAction = useInvokeBlockAction();
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -304,16 +303,39 @@
     *
     * @returns `true` if the operation succeeded; otherwise `false`.
     */
-    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
-        const data = {
-            idKey: props.modelValue?.bag?.idKey,
-            guid: item["guid"],
-            beforeGuid: beforeItem?.["guid"] ?? null
-        };
+    function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): boolean {
+        const itemGuid = item["guid"] as string;
+        const beforeGuid = (beforeItem?.["guid"] as string | undefined) ?? null;
 
-        const result = await invokeBlockAction<string>("ReorderAttributes", data);
+        const currentItems = [...templateAttributes.value];
+        const idx = currentItems.findIndex(i => i.guid === itemGuid);
 
-        return result.isSuccess;
+        if (idx < 0) {
+            return false;
+        }
+
+        const itemToMove = currentItems.splice(idx, 1)[0];
+
+        if (beforeGuid) {
+            const beforeIndex = currentItems.findIndex(i => i.guid === beforeGuid);
+            if (beforeIndex < 0) {
+                currentItems.push(itemToMove);
+            }
+            else {
+                currentItems.splice(beforeIndex, 0, itemToMove);
+            }
+        }
+        else {
+            currentItems.push(itemToMove);
+        }
+
+        templateAttributes.value = currentItems;
+
+        if (attributesGridData.rows) {
+            attributesGridData.rows = templateAttributes.value.map(x => convertToAttributeGridRowItem(x));
+        }
+
+        return true;
     }
 
     // #endregion

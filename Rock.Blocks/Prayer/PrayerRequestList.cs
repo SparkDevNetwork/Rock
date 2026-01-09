@@ -27,6 +27,7 @@ using Rock.Enums.AI;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Prayer.PrayerRequestList;
 using Rock.Web.Cache;
@@ -48,6 +49,8 @@ namespace Rock.Blocks.Prayer
         Description = "The page that will show the prayer request details.",
         Key = AttributeKey.DetailPage )]
 
+    [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve prayer requests." )]
+
     [ContextAware( typeof( Rock.Model.Person ) )]
     [Rock.SystemGuid.EntityTypeGuid( "e8be562a-bb24-47a9-b3df-63cfb508f831" )]
     // was [Rock.SystemGuid.BlockTypeGuid( "e860f577-f30d-4197-87f0-c3dc6132f537" )]
@@ -66,6 +69,37 @@ namespace Rock.Blocks.Prayer
         {
             public const string DetailPage = "DetailPage";
         }
+
+        private static class PreferenceKey
+        {
+            public const string FilterPublicOrPrivate = "filter-public-private";
+            public const string FilterActive = "filter-active";
+            public const string FilterUrgent = "filter-urgent";
+            public const string FilterCommenting = "filter-commenting";
+            public const string FilterShowExpiredRequests = "filter-show-expired-requests";
+        }
+
+        #region Properties
+
+        private PersonPreferenceCollection BlockPersonPreferences => this.GetBlockPersonPreferences();
+
+        protected string FilterPublicOrPrivate => BlockPersonPreferences
+            .GetValue( PreferenceKey.FilterPublicOrPrivate );
+
+        protected string FilterActive => BlockPersonPreferences
+            .GetValue( PreferenceKey.FilterActive );
+
+        protected string FilterUrgent => BlockPersonPreferences
+            .GetValue( PreferenceKey.FilterUrgent );
+
+        protected string FilterCommenting => BlockPersonPreferences
+            .GetValue( PreferenceKey.FilterCommenting );
+
+        private bool FilterShowExpiredRequests => BlockPersonPreferences
+            .GetValue( PreferenceKey.FilterShowExpiredRequests )
+            .AsBoolean();
+
+        #endregion Properties
 
         #endregion Keys
 
@@ -94,6 +128,7 @@ namespace Rock.Blocks.Prayer
         private PrayerRequestListOptionsBag GetBoxOptions()
         {
             var options = new PrayerRequestListOptionsBag();
+            options.ShowIsApprovedColumn = IsPersonApproveAuthorized();
 
             return options;
         }
@@ -151,13 +186,80 @@ namespace Rock.Blocks.Prayer
                 qry = qry.Where( p => p.RequestedByPersonAlias != null && p.RequestedByPersonAlias.PersonId == personContext.Id );
             }
 
+            // Filter by IsPublic
+            if ( !string.IsNullOrWhiteSpace( FilterPublicOrPrivate ) )
+            {
+                if ( FilterPublicOrPrivate.Equals( "Public", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    qry = qry.Where( p => p.IsPublic == true );
+                }
+                else if ( FilterPublicOrPrivate.Equals( "Private", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    qry = qry.Where( p => p.IsPublic == false );
+                }
+            }
+
+            // Filter by IsActive
+            if ( !string.IsNullOrWhiteSpace( FilterActive ) )
+            {
+                if ( FilterActive.Equals( "Active", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    qry = qry.Where( p => p.IsActive == true );
+                }
+                else if ( FilterActive.Equals( "Inactive", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    qry = qry.Where( p => p.IsActive == false );
+                }
+            }
+
+            // Filter by IsUrgent
+            if ( !string.IsNullOrWhiteSpace( FilterUrgent ) )
+            {
+                if ( FilterUrgent.Equals( "Urgent", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    qry = qry.Where( p => p.IsUrgent == true );
+                }
+                else if ( FilterUrgent.Equals( "Non-Urgent", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    qry = qry.Where( p => p.IsUrgent == false );
+                }
+            }
+
+            // Filter by AllowComments
+            if ( !string.IsNullOrWhiteSpace( FilterCommenting ) )
+            {
+                if ( FilterCommenting.Equals( "Allowed", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    qry = qry.Where( p => p.AllowComments == true );
+                }
+                else if ( FilterCommenting.Equals( "Not Allowed", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    qry = qry.Where( p => p.AllowComments == false );
+                }
+            }
+
+            // If 'Show Expired Requests' is false, filter them out... they're included by default.
+            if ( !FilterShowExpiredRequests )
+            {
+                var currentDateTime = RockDateTime.Now;
+                qry = qry.Where( p => !p.ExpirationDate.HasValue || p.ExpirationDate > currentDateTime );
+            }
+
             return qry;
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<PrayerRequest> GetOrderedListQueryable( IQueryable<PrayerRequest> queryable, RockContext rockContext )
+        {
+            return queryable
+                .OrderByDescending( p => p.EnteredDateTime )
+                .ThenBy( p => p.Id );
         }
 
         /// <inheritdoc/>
         protected override GridBuilder<PrayerRequest> GetGridBuilder()
         {
-            return new GridBuilder<PrayerRequest>()
+            var builder = new GridBuilder<PrayerRequest>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "fullName", a => a.FullName )
@@ -167,9 +269,15 @@ namespace Rock.Blocks.Prayer
                 .AddDateTimeField( "enteredDateTime", a => a.EnteredDateTime )
                 .AddField( "prayerCount", a => a.PrayerCount )
                 .AddField( "flagCount", a => a.FlagCount )
-                .AddField( "isApproved", a => a.IsApproved )
                 .AddTextField( "moderationFlags", a => GetModerationFlagsText( a.ModerationFlags ) )
                 .AddAttributeFields( GetGridAttributes() );
+
+            if ( IsPersonApproveAuthorized() )
+            {
+                builder.AddField( "isApproved", a => a.IsApproved );
+            }
+
+            return builder;
         }
 
         /// <summary>
@@ -248,6 +356,15 @@ namespace Rock.Blocks.Prayer
             return false;
         }
 
+        /// <summary>
+        /// Determines whether the current Person has authorization to approve prayer requests
+        /// via the block's "Approve" security action.
+        /// </summary>
+        private bool IsPersonApproveAuthorized()
+        {
+            return BlockCache.IsAuthorized( Authorization.APPROVE, RequestContext.CurrentPerson );
+        }
+
         #endregion
 
         #region Block Actions
@@ -263,7 +380,7 @@ namespace Rock.Blocks.Prayer
                 return ActionBadRequest( $"{PrayerRequest.FriendlyTypeName} not found." );
             }
 
-            if ( !IsPersonEditOrAdminAuthorized() )
+            if ( !IsPersonApproveAuthorized() )
             {
                 return ActionBadRequest( $"Not authorized to update approval status of {PrayerRequest.FriendlyTypeName}." );
             }

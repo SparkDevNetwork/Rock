@@ -9,7 +9,7 @@
                                  label="Name"
                                  rules="required" />
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-2">
                         <CheckBox v-model="isActive"
                                   label="Active" />
                     </div>
@@ -28,7 +28,7 @@
                          textMode="multiline" />
 
                 <div class="row">
-                    <div class="col-md-2">
+                    <div class="col-md-6">
                         <CategoryPicker v-model="categories"
                                         label="Categories"
                                         :isRequired="false"
@@ -78,7 +78,18 @@
 
         <ContentSection title="Person Filters" icon="ti ti-user">
             <ContentStack>
-                <DataViewPicker label="Filter Data View" v-model="filterDataView" :displayOnlyPersisted="true" />
+                <div class="row">
+                    <div class="col-md-12">
+                        <NotificationBox alertType="info">
+                            Adding a Data View to the segment will exclude anonymous visitors.
+                        </NotificationBox>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <DataViewPicker label="Filter Data View" v-model="filterDataView" :displayOnlyPersisted="true" />
+                    </div>
+                </div>
             </ContentStack>
         </ContentSection>
 
@@ -107,17 +118,6 @@
         </ContentSection>
     </ContentSectionContainer>
 </template>
-
-<style scoped>
-.panel-waterfall {
-    background-color: var(--color-interface-softer);
-}
-
-:deep(.contentsection-body:has(.panel-waterfall)) {
-    padding-top: 0;
-    padding-bottom: 0;
-}
-</style>
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
@@ -149,6 +149,7 @@
     import InteractionFilter from "./interactionFilter.partial.obs";
     import { InteractionSegmentFilter, PageViewSegmentFilter, SessionCountSegmentFilter } from "./types.partial";
     import { isNullish } from "@Obsidian/Utility/util";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 
     const props = defineProps({
         modelValue: {

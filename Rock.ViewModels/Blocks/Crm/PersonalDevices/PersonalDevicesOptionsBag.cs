@@ -27,11 +27,6 @@ namespace Rock.ViewModels.Blocks.Crm.PersonalDevices
 	public class PersonalDevicesOptionsBag
 	{
         /// <summary>
-        /// Gets or sets a value indicating whether to show the DeviceLastSeenDatetime property.
-        /// </summary>
-        public bool ShowDeviceLastSeenDateTime { get; set; }
-
-        /// <summary>
         /// Gets or sets a list of the personal device type options used for filtering.
         /// </summary>
         public List<ListItemBag> DeviceTypeOptions { get; set; }

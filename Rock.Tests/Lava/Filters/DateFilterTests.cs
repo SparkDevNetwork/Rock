@@ -1108,6 +1108,112 @@ namespace Rock.Tests.Lava.Filters
             } );
         }
 
+        /// <summary>
+        /// Verifies the resolution of Issue #6626.
+        /// https://github.com/SparkDevNetwork/Rock/issues/6626
+        /// </summary>
+        /// <remarks>
+        /// To represent future date-times that fall under Daylight Time, to represent these correctly in ISO 8601,
+        /// Rock must adjust the UTC offset to reflect the change.  So while the NextStartDateTime was correct, the
+        /// calculated EndDateTime using the DatesFromICal filter was incorrectly showing an offset of "-08:00"
+        /// instead of "-07:00" as seen here in the reported example issue:
+        ///   NextStartDateTime: "2026-04-01T12:00:00-07:00"
+        ///   EndDateTime( iCal) : "2026-04-01T13:00:00-08:00"  <--
+        /// </remarks>
+        [TestMethod]
+        [DataRow( @"
+BEGIN:VCALENDAR
+PRODID:-//github.com/SparkDevNetwork/Rock//NONSGML Rock//EN
+VERSION:2.0
+BEGIN:VEVENT
+DTEND:20260301T130000
+DTSTAMP:20251231T101650
+DTSTART:20260301T120000
+SEQUENCE:0
+UID:a9cbe528-f619-4c5d-aa72-128fb6c5ddcb
+END:VEVENT
+END:VCALENDAR
+", "2026-3-1 12:00", "2026-3-1 13:00" )]
+        [DataRow( @"
+BEGIN:VCALENDAR
+PRODID:-//github.com/SparkDevNetwork/Rock//NONSGML Rock//EN
+VERSION:2.0
+BEGIN:VEVENT
+DTEND:20260401T130000
+DTSTAMP:20251231T101650
+DTSTART:20260401T120000
+SEQUENCE:0
+UID:b0a0f562-b14c-46a6-9891-e52e275a5e5a
+END:VEVENT
+END:VCALENDAR
+", "2026-4-1 12:00", "2026-4-1 13:00" )] // this date is during DST in certain time zones
+        public void DatesFromICal_WithEndDateTimeParameter_ReturnsEndDateTimeOfEvent_WithCorrectOffset_PerIssue6626( string iCalString, string expectedStartDateTimeString, string expectedEndDateTimeString )
+        {
+            LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
+            {
+                // Get the iCalendar and expected datetime for the test time zone.
+                var expectedStartDateTime = LocalExpected( timeZone, expectedStartDateTimeString );
+                var expectedEndDateTime =   LocalExpected( timeZone, expectedEndDateTimeString );
+
+                var schedule = new Rock.Model.Schedule();
+                schedule.iCalendarContent = iCalString;
+
+                var mergeValues = new LavaDataDictionary();
+                mergeValues.Add( "iCalString", iCalString );
+                mergeValues.Add( "schedule", schedule );
+
+                var template = @"
+Start: {{ schedule.NextStartDateTime | ToJSON }}
+End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
+";
+
+                TestHelper.ExecuteForActiveEngines( ( engine ) =>
+                {
+                    var output = TestHelper.GetTemplateOutput( engine, template, mergeValues );
+
+                    TestHelper.DebugWriteRenderResult( engine, template, output );
+
+                    var rockStartDateTimeString = LavaDateTime.ToString( expectedStartDateTime, "yyyy-MM-ddTHH:mm:sszzz" );
+                    var rockEndDateTimeString = LavaDateTime.ToString( expectedEndDateTime, "yyyy-MM-ddTHH:mm:sszzz" );
+
+                    if ( !output.Contains( $"Start: \"{rockStartDateTimeString}\"" ) )
+                    {
+                        Assert.Fail( $"Lava Output\n'{output}' does not contain string 'Start: \"{rockStartDateTimeString}\"'.\n[SystemDateTime = {DateTime.Now:O}, RockDateTime = {_now:O}, Time Zone = {timeZone.DisplayName}]" );
+                    }
+                    if ( !output.Contains( $"End: \"{rockEndDateTimeString}\"" ) )
+                    {
+                        Assert.Fail( $"Lava Output\n'{output}' does not contain string 'End: \"{rockEndDateTimeString}\"'.\n[SystemDateTime = {DateTime.Now:O}, RockDateTime = {_now:O}, Time Zone = {timeZone.DisplayName}]" );
+                    }
+                } );
+
+            } );
+        }
+
+        // Treat iCal DTSTART/DTEND as "floating" local time in the given TimeZoneInfo.
+        private static DateTimeOffset LocalExpected( TimeZoneInfo tz, string dateTimeString )
+        {
+            var local = DateTime.SpecifyKind( DateTime.Parse( dateTimeString ), DateTimeKind.Unspecified );
+
+            // spring-forward gap safety (rare for noon, but keeps helper correct)
+            if ( tz.IsInvalidTime( local ) )
+            {
+                for ( var i = 0; i < 180 && tz.IsInvalidTime( local ); i++ )
+                {
+                    local = local.AddMinutes( 1 );
+                }
+            }
+
+            if ( tz.IsAmbiguousTime( local ) )
+            {
+                // fall-back overlap: pick one deterministically (usually daylight = larger offset)
+                var offsets = tz.GetAmbiguousTimeOffsets( local );
+                var chosen = offsets.Max();
+                return new DateTimeOffset( local, chosen );
+            }
+
+            return new DateTimeOffset( local, tz.GetUtcOffset( local ) );
+        }
+
         private DateTime GetNextScheduledWeeklyEventDateTime( DateTime currentDateTime, DayOfWeek scheduledDayOfWeek, TimeSpan scheduledTime )
         {
             var daysUntilTargetDay = ( ( int ) scheduledDayOfWeek - ( int ) currentDateTime.Date.DayOfWeek + 7 ) % 7;

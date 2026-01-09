@@ -47,7 +47,8 @@ namespace Rock.Blocks.Engagement
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "02713f10-e574-45e0-9178-a02f7957b3a4" )]
-    [Rock.SystemGuid.BlockTypeGuid( "8eb82e1e-c0bd-4591-9d7a-f120a871fec3" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "8eb82e1e-c0bd-4591-9d7a-f120a871fec3" )]
+    [Rock.SystemGuid.BlockTypeGuid( "481AE184-4654-48FB-A2B4-90F6604B59B8" )]
     [CustomizedGrid]
     public class ConnectionOpportunityList : RockEntityListBlockType<ConnectionOpportunity>
     {
@@ -61,6 +62,11 @@ namespace Rock.Blocks.Engagement
         private static class NavigationUrlKey
         {
             public const string DetailPage = "DetailPage";
+        }
+
+        private static class PageParameterKey
+        {
+            public const string ConnectionTypeId = "ConnectionTypeId";
         }
 
         #endregion Keys
@@ -111,16 +117,31 @@ namespace Rock.Blocks.Engagement
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var queryParams = new Dictionary<string, string>
+            {
+                ["ConnectionOpportunityId"] = "((Key))",
+                ["autoEdit"] = "true",
+                ["returnUrl"] = this.GetCurrentPageUrl()
+            };
+
+            var connectionType = ConnectionTypeCache.Get( PageParameter( PageParameterKey.ConnectionTypeId ), !PageCache.Layout.Site.DisablePredictableIds );
+            if ( connectionType != null )
+            {
+                queryParams[PageParameterKey.ConnectionTypeId] = connectionType.IdKey;
+            }
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string> { ["ConnectionOpportunityId"] = "((Key))", ["autoEdit"] = "true", ["returnUrl"] = this.GetCurrentPageUrl() } )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams )
             };
         }
 
         /// <inheritdoc/>
         protected override IQueryable<ConnectionOpportunity> GetListQueryable( RockContext rockContext )
         {
-            return base.GetListQueryable( rockContext );
+            var connectionType = ConnectionTypeCache.Get( PageParameter( PageParameterKey.ConnectionTypeId ), !PageCache.Layout.Site.DisablePredictableIds );
+
+            return base.GetListQueryable( rockContext ).Where( c => c.ConnectionTypeId == connectionType.Id );
         }
 
         /// <inheritdoc/>

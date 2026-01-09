@@ -24,8 +24,18 @@
         speed: {
             type: String as PropType<"normal" | "fast" | "slow">,
             default: "normal"
+        },
+
+        isAnimationDisabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
+
+    const emit = defineEmits<{
+        (e: "transitionStart"): void;
+        (e: "transitionEnd"): void;
+    }>();
 
     // These transition speeds come from jQuery's hide/show "fast" and "slow" options.
     const speed = computed<string>(() => {
@@ -49,6 +59,9 @@
         if (!(element instanceof HTMLElement)) {
             return;
         }
+
+        emit("transitionStart");
+
         // Because width and height may be 'auto',
         // first detect and cache the dimensions
         detectAndCacheDimensions(element);
@@ -82,6 +95,8 @@
         unsetTransitionStyles(element);
         unsetDimensions(element);
         cachedStyles.value = undefined;
+
+        emit("transitionEnd");
     }
 
     /**
@@ -93,6 +108,8 @@
         if (!(element instanceof HTMLElement)) {
             return;
         }
+
+        emit("transitionStart");
 
         // For some reason, @leave triggered when starting
         // from open state on page load. So for safety,
@@ -126,6 +143,8 @@
         unsetTransitionStyles(element);
         unsetDimensions(element);
         cachedStyles.value = undefined;
+
+        emit("transitionEnd");
     }
 
     function detectAndCacheDimensions(el): void {
@@ -186,11 +205,16 @@
     }
 
     function setTransitionStyles(el): void {
+        if (props.isAnimationDisabled) {
+            unsetTransitionStyles(el);
+            return;
+        }
+
         el.style.transition = `height ${speed.value} ease-in-out, padding-top ${speed.value} ease-in-out, padding-bottom ${speed.value} ease-in-out`;
     }
 
     function unsetTransitionStyles(el): void {
-        el.style.transition = "";
+        el.style.transition = "none";
     }
 
     function hideOverflow(el): void {

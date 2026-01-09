@@ -24,7 +24,7 @@
     <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
         <Panel type="block" :title="panelName" :headerSecondaryActions="blockLabels">
             <template v-if="siteViewBag?.idKey" #headerActions>
-                <button class="btn btn-info" @click.prevent="onVisitSite" style="margin-right: 15px;"><i class="ti ti-world"></i> Visit Site</button>
+                <button class="btn btn-xs btn-info" @click.prevent="onVisitSite" style="margin-right: 15px;"><i class="ti ti-world"></i> Visit Site</button>
             </template>
             <template #default>
                 <ViewPanel v-if="panelMode == DetailPanelMode.View"
@@ -34,7 +34,8 @@
                            v-model="siteEditBag"
                            :isEditable="isEditable"
                            :options="options"
-                           @propertyChanged="baseBlock.onPropertyChanged" />
+                           @propertyChanged="baseBlock.onPropertyChanged"
+                           @orderSaving="isSaving = $event" />
 
                 <ModalAlert v-model="isShowing" :type="alertType">{{ compileMessage }}</ModalAlert>
 
@@ -47,6 +48,8 @@
                     <RockButton v-if="isEditable"
                                 :btnSize="BtnSize.Default"
                                 :btnType="BtnType.Primary"
+                                :disabled="isSaving"
+                                :isLoading="isSaving"
                                 @click="onStartSubmitForm">
                         Save
                     </RockButton>
@@ -136,6 +139,7 @@
     const compileBtnText = allowsCompile ? "Compile Theme" : "Theme Doesn't Support Compiling";
     const isConfirmDeleteVisible = ref(false);
     const isActionButtonsVisible = ref(true);
+    const isSaving = ref(false);
 
 
     const entityTypeGuid = EntityType.Site;

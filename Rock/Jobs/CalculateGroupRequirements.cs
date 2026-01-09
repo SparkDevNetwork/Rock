@@ -17,8 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Data.Entity;
-using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Text;
 
@@ -82,21 +82,28 @@ namespace Rock.Jobs
             // Get the list of group requirements that are based on a DataView or SQL.
             var rockContext = new RockContext();
             var groupRequirementService = new GroupRequirementService( rockContext );
+            var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+
+
+            int insertedCount = 0;
+            int updatedCount = 0;
+            int deletedCount = 0;
+            int successfulNotMetCount = 0;
+            int successfulWarningCount = 0;
+
             var groupRequirements = groupRequirementService.Queryable()
-                .Where( a => a.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual )
-                .AsNoTracking()
-                .Include( i => i.GroupRequirementType )
-                .Include( a => a.GroupRequirementType.DataView )
-                .Include( a => a.GroupRequirementType.WarningDataView )
-                .AsNoTracking()
-                .ToList();
+                    .AsNoTracking()
+                    .Include( i => i.GroupRequirementType )
+                    .Include( a => a.GroupRequirementType.DataView )
+                    .Include( a => a.GroupRequirementType.WarningDataView )
+                    .AsNoTracking()
+                    .ToList();
 
             foreach ( var groupRequirement in groupRequirements )
             {
                 // Create a new data context for each requirement to ensure performance is scalable.
                 rockContext = new RockContext();
 
-                var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
                 var groupService = new GroupService( rockContext );
 
@@ -123,142 +130,216 @@ namespace Rock.Jobs
                     this.UpdateLastStatusMessage( $"Calculating group requirement '{groupRequirement.GroupRequirementType.Name}' for {groupIdName.Name} (Id:{groupIdName.Id})" );
                     try
                     {
-                        var currentDateTime = RockDateTime.Now;
-                        var qryGroupMemberRequirementsAlreadyOK = groupMemberRequirementService.Queryable().Where( a => a.GroupRequirementId == groupRequirement.Id && a.GroupMember.GroupId == groupIdName.Id );
+                        List<int> applicablePersonIds = new List<int>();
 
-                        if ( groupRequirement.GroupRequirementType.CanExpire && groupRequirement.GroupRequirementType.ExpireInDays.HasValue )
+                        // If this group requirement has an "AppliesToDataView" than we'll need to populate applicablePersonIds with a list of person Ids returned from the DataView.
+                        if ( groupRequirement.AppliesToDataViewId.HasValue )
                         {
-                            // Group requirement can expire: don't recalculate members that already met the requirement within the expire days (unless they are flagged with a warning)
-                            var expireDaysCount = groupRequirement.GroupRequirementType.ExpireInDays.Value;
-                            qryGroupMemberRequirementsAlreadyOK = qryGroupMemberRequirementsAlreadyOK.Where( a => !a.RequirementWarningDateTime.HasValue && a.RequirementMetDateTime.HasValue && SqlFunctions.DateDiff( "day", a.RequirementMetDateTime, currentDateTime ) < expireDaysCount );
-                        }
-                        else
-                        {
-                            // No Expiration: don't recalculate members that already met the requirement
-                            qryGroupMemberRequirementsAlreadyOK = qryGroupMemberRequirementsAlreadyOK.Where( a => a.RequirementMetDateTime.HasValue );
-                        }
+                            /*
+                                4/17/2024 - JPH
 
-                        // Only run the group requirements calculation on group members that are not inactive or archived.
-                        var groupMemberQry = groupMemberService.Queryable().Where( gm => gm.GroupMemberStatus != GroupMemberStatus.Inactive && !gm.IsArchived );
+                                The "Bypass Data View Cache" attribute is a temporary setting being introduced to properly test
+                                a new approach of calculating group requirements in bulk, using the newly-introduced data view cache.
+                                Using this new cache will be the default behavior of the job, whereas this setting will allow a given
+                                partner to easily fall back to the old behavior if the cached approach proves to be problematic in any way.
 
-                        if ( groupRequirement.GroupId.HasValue )
-                        {
-                            groupMemberQry = groupMemberQry.Where( g => g.GroupId == groupRequirement.GroupId );
-                        }
-                        else if ( groupRequirement.GroupTypeId.HasValue )
-                        {
-                            groupMemberQry = groupMemberQry.Where( g => ( g.Group.GroupTypeId == groupRequirement.GroupTypeId ) && g.GroupId == groupIdName.Id );
-                        }
-                        else
-                        {
-                            // Should not happen, but break if Group Requirement doesn't have a GroupId or a GroupTypeId.
-                            break;
-                        }
+                                This attribute will be removed in a future version of Rock (and the following if/else block will go away)
+                                once we're sure of which path to take in the long run.
 
-                        var groupMembersThatDoNotMeetRequirementsPersonQry = groupMemberQry.Where( a => !qryGroupMemberRequirementsAlreadyOK.Any( r => r.GroupMemberId == a.Id ) ).Select( a => a.Person );
-
-                        /*
-                            4/17/2024 - JPH
-
-                            The "Bypass Data View Cache" attribute is a temporary setting being introduced to properly test
-                            a new approach of calculating group requirements in bulk, using the newly-introduced data view cache.
-                            Using this new cache will be the default behavior of the job, whereas this setting will allow a given
-                            partner to easily fall back to the old behavior if the cached approach proves to be problematic in any way.
-
-                            This attribute will be removed in a future version of Rock (and the following if/else block will go away)
-                            once we're sure of which path to take in the long run.
-
-                            Reason: Option to fall back to old behavior
-                         */
-                        List<PersonGroupRequirementStatus> personGroupRequirementStatuses;
-                        if ( bypassDataViewCache )
-                        {
-                            personGroupRequirementStatuses = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext, groupMembersThatDoNotMeetRequirementsPersonQry, groupIdName.Id, groupRequirement.GroupRoleId ).ToList();
-                        }
-                        else
-                        {
-                            personGroupRequirementStatuses = groupRequirement.PersonQueryableMeetsGroupRequirementUsingDataViewCache( rockContext, groupMembersThatDoNotMeetRequirementsPersonQry, groupIdName.Id, groupRequirement.GroupRoleId ).ToList();
+                                Reason: Option to fall back to old behavior
+                            */
+                            if ( bypassDataViewCache )
+                            {
+                                var appliesToDataViewPersonService = new PersonService( rockContext );
+                                var appliesToDataViewParamExpression = appliesToDataViewPersonService.ParameterExpression;
+                                var appliesToDataViewWhereExpression = groupRequirement.AppliesToDataView.GetExpression( appliesToDataViewPersonService, appliesToDataViewParamExpression );
+                                applicablePersonIds = appliesToDataViewPersonService.Get( appliesToDataViewParamExpression, appliesToDataViewWhereExpression ).Select( p => p.Id ).ToList();
+                            }
+                            else
+                            {
+                                var appliesToDataViewCache = DataViewCache.Get( groupRequirement.AppliesToDataViewId.Value );
+                                applicablePersonIds = appliesToDataViewCache.GetVolatileEntityIds().ToList();
+                            }
                         }
 
-                        foreach ( var personGroupRequirementStatus in personGroupRequirementStatuses )
+                        List<int> meetsPersonIdList = new List<int>();
+                        List<int> warningPersonIdList = new List<int>();
+
+                        if ( groupRequirement.GroupRequirementType.RequirementCheckType == RequirementCheckType.Dataview )
                         {
+                            var personService = new PersonService( rockContext );
+                            var paramExpression = personService.ParameterExpression;
+
+                            // If a warning data view exists, we'll populate warningPersonIdList with the results.
+                            if ( groupRequirement.GroupRequirementType.WarningDataViewId.HasValue )
+                            {
+                                if ( bypassDataViewCache )
+                                {
+                                    var warningDataViewWhereExpression = groupRequirement.GroupRequirementType.WarningDataView.GetExpression( personService, paramExpression );
+                                    warningPersonIdList = personService.Get( paramExpression, warningDataViewWhereExpression ).Where( p => applicablePersonIds.Contains( p.Id ) ).Select( p => p.Id ).ToList();
+                                }
+                                else
+                                {
+                                    var warningDataViewCache = DataViewCache.Get( groupRequirement.GroupRequirementType.WarningDataViewId.Value );
+                                    warningPersonIdList = warningDataViewCache.GetVolatileEntityIds().ToList();
+                                }
+                            }
+
+                            // If a warning data view exists, we'll populate meetsPersonIdList with the results.
+                            if ( groupRequirement.GroupRequirementType.DataViewId.HasValue )
+                            {
+                                if ( bypassDataViewCache )
+                                {
+                                    var meetsDataViewWhereExpression = groupRequirement.GroupRequirementType.DataView.GetExpression( personService, paramExpression );
+                                    meetsPersonIdList = personService.Get( paramExpression, meetsDataViewWhereExpression ).Where( p => applicablePersonIds.Contains( p.Id ) ).Select( p => p.Id ).ToList();
+                                }
+                                else
+                                {
+                                    var meetsDataViewWhereExpression = DataViewCache.Get( groupRequirement.GroupRequirementType.DataViewId.Value );
+                                    meetsPersonIdList = meetsDataViewWhereExpression.GetVolatileEntityIds().ToList();
+                                }
+                            }
+                        }
+                        else if ( groupRequirement.GroupRequirementType.RequirementCheckType == RequirementCheckType.Sql )
+                        {
+                            var targetGroup = new GroupService( rockContext ).Get( groupIdName.Id );
+                            Rock.Model.Person personMergeField = null;
+
+                            // If there is only one applicable person than we can resolve the person merge field
+                            if ( applicablePersonIds.Count == 1 )
+                            {
+                                var personId = applicablePersonIds[0];
+                                personMergeField = new PersonService( rockContext ).GetNoTracking( personId );
+                            }
+
+                            string metFormattedSql = groupRequirement.GroupRequirementType.SqlExpression.ResolveMergeFields( groupRequirement.GroupRequirementType.GetMergeObjects( targetGroup, personMergeField ) );
+                            string warningFormattedSql = groupRequirement.GroupRequirementType.WarningSqlExpression.ResolveMergeFields( groupRequirement.GroupRequirementType.GetMergeObjects( targetGroup, personMergeField ) );
                             try
                             {
-                                // Use a fresh rockContext per result so that ChangeTracker doesn't get bogged down.
-                                using ( var rockContextUpdate = new RockContext() )
+                                var tableResult = DbService.GetDataTable( metFormattedSql, System.Data.CommandType.Text, null );
+                                if ( tableResult.Columns.Count > 0 )
                                 {
-                                    groupRequirement.UpdateGroupMemberRequirementResult( rockContextUpdate, personGroupRequirementStatus.PersonId, groupIdName.Id, personGroupRequirementStatus.MeetsGroupRequirement );
+                                    // Populate the meetsPersonIdList with the results from the Query.
+                                    meetsPersonIdList = tableResult.Rows.OfType<System.Data.DataRow>().Select( r => Convert.ToInt32( r[0] ) ).ToList();
 
-                                    /*
-                                        4/23/2024 - JPH
-
-                                        Save any group member requirement changes made by the method call above.
-                                        This object might be passed to a workflow below, so let's ensure the record is in
-                                        the database and the latest changes are saved before the workflow gets launched.
-
-                                        Reason: Ensure entity is in the database before launching workflows.
-                                     */
-                                    rockContextUpdate.SaveChanges();
-
-                                    bool shouldRunNotMetWorkflow = personGroupRequirementStatus.MeetsGroupRequirement == MeetsGroupRequirement.NotMet &&
-                                        groupRequirement.GroupRequirementType.ShouldAutoInitiateDoesNotMeetWorkflow &&
-                                        groupRequirement.GroupRequirementType.DoesNotMeetWorkflowTypeId.HasValue;
-                                    bool shouldRunWarningWorkflow = personGroupRequirementStatus.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning &&
-                                        groupRequirement.GroupRequirementType.ShouldAutoInitiateWarningWorkflow &&
-                                        groupRequirement.GroupRequirementType.WarningWorkflowTypeId.HasValue;
-
-                                    if ( shouldRunNotMetWorkflow || shouldRunWarningWorkflow )
+                                    // if a Warning SQL was specified, get a list of PersonIds that should have a warning with their status
+                                    if ( !string.IsNullOrWhiteSpace( warningFormattedSql ) )
                                     {
-                                        // Get the full name of the group member person to add to the workflow name.
-                                        var personForWorkflow = groupMembersThatDoNotMeetRequirementsPersonQry.FirstOrDefault( p => p.Id == personGroupRequirementStatus.PersonId )?.FullName;
-                                        var workflowName = personForWorkflow + " (" + groupRequirement.GroupRequirementType.Name + ")";
-
-                                        try
+                                        var warningTableResult = DbService.GetDataTable( warningFormattedSql, System.Data.CommandType.Text, null );
+                                        if ( warningTableResult.Columns.Count > 0 )
                                         {
-                                            bool wasWorkflowSuccessful = true;
-
-                                            // Only one of these two should be possible by the logic of the Requirement Card.
-                                            if ( shouldRunNotMetWorkflow )
-                                            {
-                                                var workflowTypeCache = WorkflowTypeCache.Get( groupRequirement.GroupRequirementType.DoesNotMeetWorkflowTypeId.Value );
-                                                workflowName = $"({workflowTypeCache.Name}) {workflowName}";
-                                                LaunchRequirementWorkflow( rockContextUpdate, workflowTypeCache, workflowName, personGroupRequirementStatus, groupIdName.Id, shouldRunNotMetWorkflow, false, out wasWorkflowSuccessful );
-                                            }
-                                            else if ( shouldRunWarningWorkflow )
-                                            {
-                                                var workflowTypeCache = WorkflowTypeCache.Get( groupRequirement.GroupRequirementType.WarningWorkflowTypeId.Value );
-                                                workflowName = $"({workflowTypeCache.Name}) {workflowName}";
-                                                LaunchRequirementWorkflow( rockContextUpdate, workflowTypeCache, workflowName, personGroupRequirementStatus, groupIdName.Id, false, shouldRunWarningWorkflow, out wasWorkflowSuccessful );
-                                            }
-
-                                            if ( !wasWorkflowSuccessful )
-                                            {
-                                                unsuccessfulWorkflowNames.Add( workflowName, true );
-                                            }
-                                        }
-                                        catch ( Exception ex )
-                                        {
-                                            // Record workflow exception as warning or debug for RockLog instead of creating multiple exception logs and ending.
-                                            Logger.LogWarning( $"Could not launch workflow: '{workflowName}' with group requirement: '{groupRequirement}' for person.Id: {personGroupRequirementStatus.PersonId} so the workflow was skipped." );
-                                            Logger.LogDebug( ex, "Error when launching workflow for requirement." );
-
-                                            skippedWorkflowNames.Add( workflowName, true );
+                                            warningPersonIdList = warningTableResult.Rows.OfType<System.Data.DataRow>().Select( r => Convert.ToInt32( r[0] ) ).ToList();
                                         }
                                     }
-
-                                    rockContextUpdate.SaveChanges();
-
-                                    // Add the calculated person's ID to the list (if it is not already there) after it was successfully calculated.
-                                    groupRequirementsCalculatedPersonIds.Add( personGroupRequirementStatus.PersonId, true );
                                 }
                             }
                             catch ( Exception ex )
                             {
-                                // Record group member 'Person' exception as warning or debug for RockLog and continue job instead of adding to exception logs and ending.
-                                Logger.LogWarning( $"Could not update group requirement result: '{groupRequirement}' for Person.Id: {personGroupRequirementStatus.PersonId} in Group: '{groupIdName.Name}' so the person was skipped." );
-                                Logger.LogDebug( ex, "Error when calculating person for group requirement." );
+                                // Exception occurred (probably due to bad SQL)
+                                ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
+                            }
+                        }
 
-                                skippedPersonIds.Add( personGroupRequirementStatus.PersonId.ToString(), true );
+                        // Prepare the parameters needed to execute the spUpdateGroupMemberRequirements Stored Procedure.
+                        var parameters = new Dictionary<string, object>
+                        {
+                            { "GroupRequirementId", groupRequirement.Id },
+                            { "GroupId", groupIdName.Id },
+                            { "AppliesToPersonIds", applicablePersonIds.ConvertToIdListParameter( "AppliesToPersonIds" ) },
+                            { "WarningPersonIds", warningPersonIdList.ConvertToIdListParameter( "WarningPersonIds" ) },
+                            { "MeetsPersonIds", meetsPersonIdList.ConvertToIdListParameter( "MeetsPersonIds" ) }
+                        };
+
+                        var mergeResult = new DbService( new RockContext() ).GetDataTableFromSqlCommand( "spUpdateGroupMemberRequirements", System.Data.CommandType.StoredProcedure, parameters );
+
+                        // Update counts based on the results from the Stored Procedure execution.
+                        insertedCount += mergeResult.Rows.Count > 0
+                            ? mergeResult.Rows[0]["InsertedCount"].ToIntSafe()
+                            : 0;
+                        updatedCount += mergeResult.Rows.Count > 0
+                            ? mergeResult.Rows[0]["UpdatedCount"].ToIntSafe()
+                            : 0;
+                        deletedCount += mergeResult.Rows.Count > 0
+                            ? mergeResult.Rows[0]["DeletedCount"].ToIntSafe()
+                            : 0;
+
+                        WorkflowTypeCache doesNotMeetWorkflowType = null;
+                        WorkflowTypeCache warningWorkflowType = null;
+
+                        if ( groupRequirement.GroupRequirementType.DoesNotMeetWorkflowTypeId.HasValue )
+                        {
+                            doesNotMeetWorkflowType = WorkflowTypeCache.Get( groupRequirement.GroupRequirementType.DoesNotMeetWorkflowTypeId.Value );
+
+                        }
+                        if ( groupRequirement.GroupRequirementType.WarningWorkflowTypeId.HasValue )
+                        {
+                            warningWorkflowType = WorkflowTypeCache.Get( groupRequirement.GroupRequirementType.WarningWorkflowTypeId.Value );
+                        }
+
+                        // Loop over the results from the Stored Procedure and launch workflows if specified.
+                        foreach ( DataRow result in mergeResult.Rows )
+                        {
+                            int groupMemberRequirementId = result["GroupMemberRequirementId"].ToIntSafe();
+                            int groupMemberId = result["GroupMemberId"].ToIntSafe();
+                            int personId = result["PersonId"].ToIntSafe();
+                            string workflowTypeQualifier = result["WorkflowType"].ToStringSafe();
+                            string nickName = result["NickName"].ToStringSafe();
+                            string lastName = result["LastName"].ToStringSafe();
+                            int? suffixValueId = result["SuffixValueId"] != null
+                                ? result["SuffixValueId"].ToIntSafe()
+                                : ( int? ) null;
+                            int? recordTypeValueId = result["RecordTypeValueId"] != null
+                                ? result["RecordTypeValueId"].ToIntSafe()
+                                : ( int? ) null;
+
+                            GroupMemberRequirement groupMemberRequirement = groupMemberRequirementService.Get( groupMemberRequirementId );
+                            WorkflowTypeCache workflowType;
+
+                            bool wasWorkflowSuccessful = true;
+                            string personFullName = Rock.Model.Person.FormatFullName( nickName, lastName, suffixValueId, recordTypeValueId );
+
+                            if ( workflowTypeQualifier == "NotMet" && doesNotMeetWorkflowType != null )
+                            {
+                                workflowType = doesNotMeetWorkflowType;
+                            }
+                            else if ( workflowTypeQualifier == "Warning" && warningWorkflowType != null )
+                            {
+                                workflowType = warningWorkflowType;
+                            }
+                            else
+                            {
+                                continue;
+                            }
+
+                            var workflowName = $"({workflowType.Name}) {personFullName} ({groupRequirement.GroupRequirementType.Name})";
+
+                            try
+                            {
+                                LaunchRequirementWorkflow( rockContext, workflowType, workflowName, groupIdName.Id, personId, groupRequirement, groupMemberRequirement, workflowTypeQualifier, out wasWorkflowSuccessful );
+
+                                if ( wasWorkflowSuccessful )
+                                {
+                                    if ( workflowTypeQualifier == "NotMet" )
+                                    {
+                                        successfulNotMetCount++;
+                                    }
+                                    else if ( workflowTypeQualifier == "Warning" )
+                                    {
+                                        successfulWarningCount++;
+                                    }
+                                }
+                                else
+                                {
+                                    unsuccessfulWorkflowNames.Add( workflowName, true );
+                                }
+                            }
+                            catch ( Exception ex )
+                            {
+                                // Record workflow exception as warning or debug for RockLog instead of creating multiple exception logs and ending.
+                                Logger.LogWarning( $"Could not launch workflow: '{workflowName}' with group requirement: '{groupRequirement}' for person.Id: {personId} so the workflow was skipped." );
+                                Logger.LogDebug( ex, "Error when launching workflow for requirement." );
+
+                                skippedWorkflowNames.Add( workflowName, true );
                             }
                         }
                     }
@@ -274,9 +355,12 @@ namespace Rock.Jobs
             }
 
             JobSummary jobSummary = new JobSummary();
-            jobSummary.Successes.Add( $"{groupRequirements.Count} group {"requirement".PluralizeIf( groupRequirements.Count != 1 )} " +
-                $"re-calculated for {groupRequirementsCalculatedPersonIds.Distinct().Count()} " +
-                $"{"person".PluralizeIf( groupRequirementsCalculatedPersonIds.Distinct().Count() != 1 )}." );
+            jobSummary.Successes.Add( $"Checked {groupRequirements.Count} Group {"Requirement".PluralizeIf( groupRequirements.Count != 1 )}." );
+            jobSummary.Successes.Add( $"Inserted {insertedCount} Group Member {"Requirement".PluralizeIf( insertedCount != 1 )}." );
+            jobSummary.Successes.Add( $"Updated {updatedCount} Group Member {"Requirement".PluralizeIf( updatedCount != 1 )}." );
+            jobSummary.Successes.Add( $"Deleted {deletedCount} Group Member {"Requirement".PluralizeIf( deletedCount != 1 )}." );
+            jobSummary.Successes.Add( $"Launched {successfulNotMetCount} \"Does Not Meet Requirement\" {"Workflow".PluralizeIf( successfulNotMetCount != 1 )}." );
+            jobSummary.Successes.Add( $"Launched {successfulWarningCount} \"Warning Requirement\" {"Workflow".PluralizeIf( successfulWarningCount != 1 )}." );
 
             bool jobHasWarnings = skippedGroupNames.Any() || skippedPersonIds.Any() || skippedWorkflowNames.Any() || unsuccessfulWorkflowNames.Any();
             if ( jobHasWarnings )
@@ -285,12 +369,6 @@ namespace Rock.Jobs
                 {
                     jobSummary.Warnings.Add( "Skipped groups: " );
                     jobSummary.Warnings.AddRange( skippedGroupNames.Take( 10 ) );
-                }
-
-                if ( skippedPersonIds.Any() )
-                {
-                    jobSummary.Warnings.Add( "Skipped PersonIds: " );
-                    jobSummary.Warnings.Add( skippedPersonIds.Take( 10 ).ToList().AsDelimited( ", " ) );
                 }
 
                 if ( skippedWorkflowNames.Any() )
@@ -318,52 +396,34 @@ namespace Rock.Jobs
             }
         }
 
-        private void LaunchRequirementWorkflow( RockContext rockContext, WorkflowTypeCache workflowTypeCache, string workflowName, PersonGroupRequirementStatus status, int groupId, bool shouldRunNotMetWorkflow, bool shouldRunWarningWorkflow, out bool wasWorkflowSuccessful )
+        private void LaunchRequirementWorkflow( RockContext rockContext, WorkflowTypeCache workflowTypeCache, string workflowName, int groupId, int personId, GroupRequirement groupRequirement, GroupMemberRequirement groupMemberRequirement, string workflowType, out bool wasWorkflowSuccessful )
         {
             wasWorkflowSuccessful = true;
 
-            if ( workflowTypeCache != null && ( workflowTypeCache.IsActive ?? false ) )
+            var workflow = Rock.Model.Workflow.Activate( workflowTypeCache, workflowName, rockContext );
+            var personAliasGuid = new PersonAliasService( rockContext ).GetPrimaryAliasGuid( personId );
+
+            workflow.SetAttributeValue( "Person", personAliasGuid );
+
+            new WorkflowService( rockContext ).Process( workflow, out var workflowErrors );
+
+            if ( workflowErrors?.Any() == true )
             {
-                GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
-                var groupMemberRequirement = groupMemberRequirementService
-                    .GetByPersonIdRequirementIdGroupIdGroupRoleId( status.PersonId, status.GroupRequirement.Id, groupId, status.GroupRequirement.GroupRoleId );
-                if ( groupMemberRequirement == null )
-                {
-                    Logger.LogWarning( $"Could not find group member requirement for group requirement: '{status.GroupRequirement}' for Person.Id: {status.PersonId} in Group.Id: {groupId} when attempting to launch workflow type: '{workflowTypeCache.Name}' so the workflow was not launched." );
+                Logger.LogWarning( $"Encountered workflow errors when calculating group requirement: '{groupRequirement}' for workflow type: '{workflowTypeCache.Name}' for Person.Id: {personId} in Group.Id: {groupId}: {string.Join( "; ", workflowErrors )}" );
 
-                    wasWorkflowSuccessful = false;
-                    return;
-                }
-
-                if ( ( shouldRunNotMetWorkflow && groupMemberRequirement.DoesNotMeetWorkflowId == null ) ||
-                    ( shouldRunWarningWorkflow && groupMemberRequirement.WarningWorkflowId == null ) )
-                {
-                    var workflow = Rock.Model.Workflow.Activate( workflowTypeCache, workflowName, rockContext );
-                    var personAliasGuid = new PersonAliasService( rockContext ).GetPrimaryAliasGuid( status.PersonId );
-
-                    workflow.SetAttributeValue( "Person", personAliasGuid );
-
-                    new WorkflowService( rockContext ).Process( workflow, groupMemberRequirement, out var workflowErrors );
-
-                    if ( workflowErrors?.Any() == true )
-                    {
-                        Logger.LogWarning( $"Encountered workflow errors when calculating group requirement: '{status.GroupRequirement}' for workflow type: '{workflowTypeCache.Name}' for Person.Id: {status.PersonId} in Group.Id: {groupId}: {string.Join( "; ", workflowErrors )}" );
-
-                        wasWorkflowSuccessful = false;
-                    }
-
-                    if ( shouldRunNotMetWorkflow )
-                    {
-                        groupMemberRequirement.DoesNotMeetWorkflowId = workflow.Id;
-                    }
-                    else if ( shouldRunWarningWorkflow )
-                    {
-                        groupMemberRequirement.WarningWorkflowId = workflow.Id;
-                    }
-
-                    rockContext.SaveChanges();
-                }
+                wasWorkflowSuccessful = false;
             }
+
+            if ( workflowType == "NotMet" )
+            {
+                groupMemberRequirement.DoesNotMeetWorkflowId = workflow.Id;
+            }
+            else if ( workflowType == "Warning" )
+            {
+                groupMemberRequirement.WarningWorkflowId = workflow.Id;
+            }
+
+            rockContext.SaveChanges();
         }
 
         private class JobSummary

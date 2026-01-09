@@ -292,7 +292,7 @@ namespace Rock.Model
             bool isExistingRegistration = false;
             if ( registrationId.HasValue )
             {
-                isExistingRegistration = new RegistrationService( Context as RockContext ).Get( registrationId.Value ) != null;
+                isExistingRegistration = new RegistrationService( Context as RockContext ).Queryable().Any( r => r.Id == registrationId.Value );
             }
 
             if ( !isExistingRegistration )
@@ -655,10 +655,10 @@ namespace Rock.Model
         public List<RegistrationTemplateForm> Forms { get; private set; }
 
         /// <summary>
-        /// Gets or sets the maximum attendees. If null, there is no cap.
+        /// Gets or sets the maximum attendees (registrants) for the entire registration instance. If null, there is no cap.
         /// </summary>
         /// <value>
-        /// The maximum attendees.
+        /// The maximum attendees (registrants) for the entire registration instance.
         /// </value>
         public int? MaxAttendees { get; private set; }
 
@@ -743,10 +743,10 @@ namespace Rock.Model
         public bool AreCurrentFamilyMembersShown { get; private set; }
 
         /// <summary>
-        /// Gets the maximum registrants.
+        /// Gets the maximum number of registrants that the registrar can register for the registration.
         /// </summary>
         /// <value>
-        /// The maximum registrants.
+        /// The maximum number of registrants that the registrar can register for the registration.
         /// </value>
         public int? MaxRegistrants { get; private set; }
 

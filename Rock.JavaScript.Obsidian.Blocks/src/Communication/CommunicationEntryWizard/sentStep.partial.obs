@@ -10,7 +10,7 @@
                 <Switch v-model="isEmailAnalyticsEnabled"
                         help="Turn this on to receive an email with basic performance analytics. Note: analytics only available for email medium."
                         label="Email Performance Analytics To Me"
-                        :text="isEmailAnalyticsEnabled ? 'No' : 'Yes'" />
+                        :text="isEmailAnalyticsEnabled ? 'Yes' : 'No'" />
 
                 <RockForm v-if="isEmailAnalyticsEnabled"
                           @submit="onSaveEmailAnayltics">

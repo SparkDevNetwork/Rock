@@ -27,7 +27,4 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 export type PersonalDevicesOptionsBag = {
     /** Gets or sets a list of the personal device type options used for filtering. */
     deviceTypeOptions?: ListItemBag[] | null;
-
-    /** Gets or sets a value indicating whether to show the DeviceLastSeenDatetime property. */
-    showDeviceLastSeenDateTime: boolean;
 };

@@ -83,6 +83,7 @@ namespace Rock.Web
             activity.AddTag( "rock.page.issystem", requestContext.Page?.IsSystem );
         }
 
+
         /// <summary>
         /// Gets the JavaScript block that is required to initialize the Obsidian
         /// environment. The Obsidian script bundles must also be imported manually.
@@ -145,7 +146,6 @@ Obsidian.onReady(() => {{
         }});
     }});
 }});
-
 Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
 ";
         }

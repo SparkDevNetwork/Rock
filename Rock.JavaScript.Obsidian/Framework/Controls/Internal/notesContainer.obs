@@ -15,36 +15,54 @@
 
         <div class="panel-body">
             <TransitionVerticalCollapse>
-                <div v-if="descending && isAddNoteVisible">
-                    <NoteEditor v-model="addNoteBag"
-                                :noteTypes="noteTypes"
-                                :showAlert="noteOptions.showAlert"
-                                :showDate="noteOptions.showCreateDate"
-                                :showPrivate="noteOptions.showPrivate"
-                                :showSecurity="noteOptions.showSecurity"
-                                :hideCancel="alwaysShowAdd"
-                                autoSize
-                                :autoFocus="!alwaysShowAdd"
-                                @cancel="onNoteAddCancel"
-                                @save="onNoteAddSave" />
+                <div v-if="descending && isAddNoteVisible" :class="notesContainerEditorAndFilterCssClass">
+                    <div class="notes-container-editor">
+                        <NoteEditor v-model="addNoteBag"
+                                    :noteTypes="noteTypes"
+                                    :showAlert="noteOptions.showAlert"
+                                    :showDate="noteOptions.showCreateDate"
+                                    :showPrivate="noteOptions.showPrivate"
+                                    :showSecurity="noteOptions.showSecurity"
+                                    :hideCancel="alwaysShowAdd"
+                                    autoSize
+                                    :autoFocus="!alwaysShowAdd"
+                                    @cancel="onNoteAddCancel"
+                                    @save="onNoteAddSave" />
+                    </div>
+                    <div v-if="isNoteTypeFilterVisible" class="notes-container-filter">
+                        <DropDownMenu :items="noteTypeFilterItems"
+                                      :anchorButtonSize="BtnSize.Small"
+                                      :anchorButtonCssClass="noteTypeFilterAnchorButtonCssClass"
+                                      anchorIconCssClass="ti ti-adjustments-horizontal"
+                                      align="right" />
+                    </div>
                 </div>
             </TransitionVerticalCollapse>
 
-            <NoteList :notes="notes" @beginEditNote="onBeginEditNote" @endEditNote="onEndEditNote" />
+            <NoteList :notes="visibleNotes" @beginEditNote="onBeginEditNote" @endEditNote="onEndEditNote" />
 
             <TransitionVerticalCollapse>
-                <div v-if="!descending && isAddNoteVisible">
-                    <NoteEditor v-model="addNoteBag"
-                                :noteTypes="noteTypes"
-                                :showAlert="noteOptions.showAlert"
-                                :showDate="noteOptions.showCreateDate"
-                                :showPrivate="noteOptions.showPrivate"
-                                :showSecurity="noteOptions.showSecurity"
-                                :hideCancel="alwaysShowAdd"
-                                autoSize
-                                :autoFocus="!alwaysShowAdd"
-                                @cancel="onNoteAddCancel"
-                                @save="onNoteAddSave" />
+                <div v-if="!descending && isAddNoteVisible" :class="notesContainerEditorAndFilterCssClass">
+                    <div class="notes-container-editor">
+                        <NoteEditor v-model="addNoteBag"
+                                    :noteTypes="noteTypes"
+                                    :showAlert="noteOptions.showAlert"
+                                    :showDate="noteOptions.showCreateDate"
+                                    :showPrivate="noteOptions.showPrivate"
+                                    :showSecurity="noteOptions.showSecurity"
+                                    :hideCancel="alwaysShowAdd"
+                                    autoSize
+                                    :autoFocus="!alwaysShowAdd"
+                                    @cancel="onNoteAddCancel"
+                                    @save="onNoteAddSave" />
+                    </div>
+                    <div v-if="isNoteTypeFilterVisible" class="notes-container-filter">
+                        <DropDownMenu :items="noteTypeFilterItems"
+                                      :anchorButtonSize="BtnSize.Small"
+                                      :anchorButtonCssClass="noteTypeFilterAnchorButtonCssClass"
+                                      anchorIconCssClass="ti ti-adjustments-horizontal"
+                                      align="right" />
+                    </div>
                 </div>
             </TransitionVerticalCollapse>
 
@@ -61,16 +79,20 @@
     import Note from "./Notes/note.partial.obs";
     import NoteList from "./Notes/noteList.partial.obs";
     import NoteEditor from "./Notes/noteEditor.partial.obs";
+    import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { insertSortedPosition, provideEmitter, provideNoteOptions } from "./Notes/utils.partial";
     import { ExpandedNoteBag, NoteOptions } from "./Notes/types.partial";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
     import { computed, onBeforeUnmount, PropType, reactive, ref } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { NoteEditBag } from "@Obsidian/ViewModels/Controls/noteEditBag";
     import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Controls/saveNoteRequestBag";
     import { NoteBag } from "@Obsidian/ViewModels/Controls/noteBag";
     import { NoteTypeBag } from "@Obsidian/ViewModels/Controls/noteTypeBag";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
 
     const props = defineProps({
         /** The notes to be displayed in the container. */
@@ -204,12 +226,26 @@
         onDeleteNote: {
             type: Function as PropType<(idKey: string) => Promise<void> | void>,
             required: false
+        },
+
+        /**
+         * The identifier of the note type to filter by.
+         * Only notes of this type will be shown.
+         */
+        noteTypeIdKeyFilter: {
+            type: String as PropType<string>,
+            required: false
         }
     });
+
+    const emit = defineEmits<{
+        (e: "update:noteTypeIdKeyFilter", v: string): void
+    }>();
 
     // #region Values
 
     const notes = reactive(getExpandedNotes().filter(n => !n.parentNoteIdKey));
+    const internalNoteTypeIdKeyFilter = useVModelPassthrough(props, "noteTypeIdKeyFilter", emit);
     const isManuallyAddingNote = ref(false);
     const isEditingNote = ref(false);
     const addNoteBag = ref<NoteEditBag>({ isAlert: false, isPrivate: false, isPinned: false });
@@ -232,6 +268,56 @@
         }
 
         return props.showAdd && props.alwaysShowAdd;
+    });
+
+    const noteTypeFilterItems = computed((): MenuAction[] => {
+        const items: MenuAction[] = [
+            {
+                title: "All Notes",
+                iconCssClass: internalNoteTypeIdKeyFilter.value ? "" : "ti ti-check",
+                type: "default",
+                handler: () => onNoteTypeFilterSelected("")
+            }
+        ];
+
+        for (const noteType of props.noteTypes) {
+            items.push({
+                title: noteType.name!,
+                iconCssClass: internalNoteTypeIdKeyFilter.value === noteType.idKey ? "ti ti-check" : "",
+                type: "default",
+                handler: () => onNoteTypeFilterSelected(noteType.idKey!)
+            });
+        }
+
+        return items;
+    });
+
+    const isNoteTypeFilterVisible = computed((): boolean => {
+        return !!(notes.length && props.noteTypes.length > 1);
+    });
+
+    const notesContainerEditorAndFilterCssClass = computed((): string => {
+        return isNoteTypeFilterVisible.value
+            ? "notes-container-editor-with-filter"
+            : "notes-container-editor-without-filter";
+    });
+
+    const noteTypeFilterAnchorButtonCssClass = computed((): string => {
+        const classes = ["btn-notes-container-filter btn-square"];
+
+        if (internalNoteTypeIdKeyFilter.value) {
+            classes.push("btn-notes-container-filter-active");
+        }
+
+        return classes.join(" ");
+    });
+
+    const visibleNotes = computed((): ExpandedNoteBag[] => {
+        if (!internalNoteTypeIdKeyFilter.value) {
+            return notes;
+        }
+
+        return notes.filter(n => n.noteType.idKey === internalNoteTypeIdKeyFilter.value);
     });
 
     const selectableNoteTypes = computed((): NoteTypeBag[] => {
@@ -315,6 +401,13 @@
     // #endregion
 
     // #region Event Handlers
+
+    /**
+     * Event handler for when the person selects a note type filter.
+     */
+    function onNoteTypeFilterSelected(noteTypeIdKey: string): void {
+        internalNoteTypeIdKeyFilter.value = noteTypeIdKey;
+    }
 
     /**
      * Event handler for when the person clicks the button to begin adding
