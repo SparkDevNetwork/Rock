@@ -391,6 +391,11 @@ namespace Rock.Net
                 PageParameters.AddOrReplace( kvp.Key, kvp.Value.ToStringSafe() );
             }
 
+            foreach ( var kvp in request.RouteData )
+            {
+                PageParameters.AddOrReplace( kvp.Key, kvp.Value.ToStringSafe() );
+            }
+
             // Setup the headers.
             Headers = request.Headers.AllKeys
                 .Select( k => new KeyValuePair<string, IEnumerable<string>>( k, request.Headers.GetValues( k ) ) )
