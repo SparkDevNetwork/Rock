@@ -1194,6 +1194,148 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
 
         #endregion
 
+        #region Inject Title Element
+
+        [TestMethod]
+        public async Task InjectTitleElement_WithTitleElement_ReplacesOriginalTitleContent()
+        {
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", "<html><head><title>Bad Text</title></head></html>" }
+            );
+
+            var builder = new LavaPageLayoutFactory( fileProvider );
+            var engine = new FluidEngine();
+
+            var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
+            var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+            {
+                ["BrowserTitle"] = "homepage",
+                ["SiteTitle"] = "site",
+            } );
+
+            var result = engine.RenderTemplate( layout.Template, lavaContext );
+
+            Assert.IsFalse( result.HasErrors );
+            Assert.Contains( "<title>homepage | site</title>", result.Text );
+        }
+
+        [TestMethod]
+        public async Task InjectTitleElement_WithoutTitleElement_AddsTitleElement()
+        {
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", "<html><head></head></html>" }
+            );
+
+            var builder = new LavaPageLayoutFactory( fileProvider );
+            var engine = new FluidEngine();
+
+            var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
+            var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+            {
+                ["BrowserTitle"] = "homepage",
+                ["SiteTitle"] = "site",
+            } );
+
+            var result = engine.RenderTemplate( layout.Template, lavaContext );
+
+            Assert.IsFalse( result.HasErrors );
+            Assert.Contains( "<title>homepage | site</title>", result.Text );
+        }
+
+        [TestMethod]
+        public async Task InjectTitleElement_WithBrowserTitle_RendersTitle()
+        {
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", "<html><head><title></title></head></html>" }
+            );
+
+            var builder = new LavaPageLayoutFactory( fileProvider );
+            var engine = new FluidEngine();
+
+            var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
+            var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+            {
+                ["BrowserTitle"] = "homepage",
+                ["SiteTitle"] = "site",
+            } );
+
+            var result = engine.RenderTemplate( layout.Template, lavaContext );
+
+            Assert.IsFalse( result.HasErrors );
+            Assert.Contains( "<title>homepage | site</title>", result.Text );
+        }
+
+        [TestMethod]
+        public async Task InjectTitleElement_WithEmptyBrowserTitle_DoesNotRenderTitle()
+        {
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", "<html><head><title></title></head></html>" }
+            );
+
+            var builder = new LavaPageLayoutFactory( fileProvider );
+            var engine = new FluidEngine();
+
+            var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
+            var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+            {
+                ["BrowserTitle"] = "",
+                ["SiteTitle"] = "site",
+            } );
+
+            var result = engine.RenderTemplate( layout.Template, lavaContext );
+
+            Assert.IsFalse( result.HasErrors );
+            Assert.Contains( "<title>site</title>", result.Text );
+        }
+
+        [TestMethod]
+        public async Task InjectTitleElement_WithNullBrowserTitle_DoesNotRenderTitle()
+        {
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", "<html><head><title></title></head></html>" }
+            );
+
+            var builder = new LavaPageLayoutFactory( fileProvider );
+            var engine = new FluidEngine();
+
+            var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
+            var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+            {
+                ["BrowserTitle"] = null,
+                ["SiteTitle"] = "site",
+            } );
+
+            var result = engine.RenderTemplate( layout.Template, lavaContext );
+
+            Assert.IsFalse( result.HasErrors );
+            Assert.Contains( "<title>site</title>", result.Text );
+        }
+
+        [TestMethod]
+        public async Task InjectTitleElement_WithHtmlTitle_EscapesHtmlContent()
+        {
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", "<html><head><title></title></head></html>" }
+            );
+
+            var builder = new LavaPageLayoutFactory( fileProvider );
+            var engine = new FluidEngine();
+
+            var layout = builder.CreateLayout( "/main.lava", "RockNextGen", engine );
+            var lavaContext = engine.NewRenderContext( new Dictionary<string, object>
+            {
+                ["BrowserTitle"] = "one < two",
+                ["SiteTitle"] = "site",
+            } );
+
+            var result = engine.RenderTemplate( layout.Template, lavaContext );
+
+            Assert.IsFalse( result.HasErrors );
+            Assert.Contains( "<title>one &lt; two | site</title>", result.Text );
+        }
+
+        #endregion
+
         #region Support Classes and Methods
 
         private static ILavaEngine GetMockLavaEngine()

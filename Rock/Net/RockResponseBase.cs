@@ -31,6 +31,10 @@ namespace Rock.Net
 
         private int _elementOrder = 0;
 
+        internal string BrowserTitle { get; private set; }
+
+        internal string PageTitle { get; private set; }
+
         public RockResponseBase()
         {
         }
@@ -93,7 +97,7 @@ namespace Rock.Net
         /// <inheritdoc/>
         public void SetBrowserTitle( string title )
         {
-            throw new System.NotImplementedException();
+            BrowserTitle = title;
         }
 
         /// <inheritdoc/>
@@ -105,7 +109,7 @@ namespace Rock.Net
         /// <inheritdoc/>
         public void SetPageTitle( string title )
         {
-            throw new System.NotImplementedException();
+            PageTitle = title;
         }
 
         #endregion

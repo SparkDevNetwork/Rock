@@ -162,6 +162,8 @@ namespace Rock.Web.v2
             ProcessNodes( document, document.DocumentElement, context, 0 );
             ProcessZoneNodes( document, document.DocumentElement, context );
 
+            InjectTitleElement( document );
+
             var headElement = document.QuerySelector( "head" );
             var bodyElement = document.QuerySelector( "body" );
 
@@ -431,6 +433,25 @@ namespace Rock.Web.v2
                 parentElement.InsertBefore( renderedElements.ToArray() );
                 parentElement.Remove();
             }
+        }
+
+        /// <summary>
+        /// Injects the standard head title Lava code into the &lt;title&gt;
+        /// element. If the element does not exist it is created.
+        /// </summary>
+        /// <param name="document">The HTML document.</param>
+        private void InjectTitleElement( IDocument document )
+        {
+            var headElement = document.QuerySelector( "head" );
+            var titleElement = headElement.QuerySelector( "title" );
+
+            if ( titleElement == null )
+            {
+                titleElement = document.CreateElement( "title" );
+                headElement.AppendChild( titleElement );
+            }
+
+            titleElement.TextContent = "{% if BrowserTitle != null and BrowserTitle != empty %}{{ BrowserTitle | Escape }} | {% endif %}{{ SiteTitle | Escape }}";
         }
 
         /// <summary>

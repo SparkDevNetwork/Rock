@@ -71,6 +71,12 @@ namespace Rock.Web.v2
 
         internal async Task<string> RenderAsync()
         {
+            var responseBase = ( RockResponseBase ) _rockRequestContext.Response;
+
+            // Set default response values.
+            responseBase.SetBrowserTitle( _rockRequestContext.Page.BrowserTitle );
+            responseBase.SetPageTitle( _rockRequestContext.Page.PageTitle );
+
             AddLegacyWebFormSupport();
             AddDefaultPageScripts();
             AddPageMetaTags();
@@ -78,14 +84,6 @@ namespace Rock.Web.v2
 
             // Add configuration specific to Rock Page to the observability activity.
             RockPageHelper.ConfigureActivity( Activity.Current, _rockRequestContext );
-
-            var mergeFields = _rockRequestContext.GetCommonMergeFields();
-
-            mergeFields.Add( "Page", _rockRequestContext.Page );
-            mergeFields.Add( "PageIconCssClass", _rockRequestContext.Page.IconCssClass );
-            mergeFields.Add( "PageTitle", _rockRequestContext.Page.PageTitle );
-            mergeFields.Add( "BreadCrumbs", GetPageBreadCrumbs() );
-            mergeFields.Add( "Zones", await RenderBlocksAsync( _layout.Zones ) );
 
             if ( _pageNeedsObsidian )
             {
@@ -98,14 +96,20 @@ namespace Rock.Web.v2
             // Add support for JavaScript that tries to access the WebForms progress div.
             bodyEndContentBuilder.AppendLine( "<div id=\"updateProgress\"></div>" );
 
-            if ( _rockRequestContext.Response is RockResponseBase responseBase )
+            foreach ( var responseElement in responseBase.GetHtmlElements() )
             {
-                foreach ( var responseElement in responseBase.GetHtmlElements() )
-                {
-                    ProcessResponseElement( responseElement, headEndContentBuilder, bodyEndContentBuilder );
-                }
+                ProcessResponseElement( responseElement, headEndContentBuilder, bodyEndContentBuilder );
             }
 
+            var mergeFields = _rockRequestContext.GetCommonMergeFields();
+
+            mergeFields.Add( "Page", _rockRequestContext.Page );
+            mergeFields.Add( "PageIconCssClass", _rockRequestContext.Page.IconCssClass );
+            mergeFields.Add( "PageTitle", responseBase.PageTitle );
+            mergeFields.Add( "BrowserTitle", responseBase.BrowserTitle );
+            mergeFields.Add( "SiteTitle", _rockRequestContext.Page.Layout.Site.Name );
+            mergeFields.Add( "BreadCrumbs", GetPageBreadCrumbs() );
+            mergeFields.Add( "Zones", await RenderBlocksAsync( _layout.Zones ) );
             mergeFields.Add( "HeadEndContent", headEndContentBuilder.ToString() );
             mergeFields.Add( "BodyEndContent", bodyEndContentBuilder.ToString() );
 
