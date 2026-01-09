@@ -714,41 +714,7 @@ namespace Rock.Web.UI
         protected virtual void RegisterShortcutKeys()
         {
             // Register the shortcut keys with debouncing
-            string script = @"
-                (function() {
-                    var lastDispatchTime = 0;
-                    var lastDispatchedElement = null;
-                    var debounceDelay = 500;
-
-                    document.addEventListener('keydown', function (event) {
-                        if (event.altKey) {
-                            var shortcutKey = event.key.toLowerCase();
-
-                            // Check if a shortcut key is registered for the pressed key
-                            var element = document.querySelector('[data-shortcut-key=""' + shortcutKey + '""]');
-
-                    
-                            if (element) {
-                                var currentTime = performance.now();
-
-                                if (lastDispatchedElement === element && (currentTime - lastDispatchTime) < debounceDelay) {
-                                    return;
-                                }
-
-                                lastDispatchTime = currentTime;
-                                lastDispatchedElement = element;
-
-                                if (shortcutKey === 'arrowright' || shortcutKey === 'arrowleft') {
-                                    event.preventDefault();
-                                }
-
-                                event.preventDefault();
-                                element.click();
-                            }
-                        }
-                    });
-                })();
-            ";
+            string script = RockPageHelper.GetShortcutKeyScript();
 
             ScriptManager.RegisterStartupScript( this, typeof( RockPage ), "ShortcutKeys", script, true );
         }
@@ -2724,28 +2690,11 @@ Sys.Application.add_load(function () {
                     return;
                 }
 
-                // Parse the list of codes, we want the "G-" codes to be first because the first code is used as the default in the <script> src property.
-                var gtagCodes = code.Split( ',' ).Select( a => a.Trim() ).Where( a => a.StartsWith( "G-", StringComparison.OrdinalIgnoreCase ) ).ToList() ?? new List<string>();
+                var script = RockPageHelper.GetGoogleAnalyticsScriptTags( _pageCache );
 
-                // Add the measurement codes that start with 'UA' to the gtag script. If there are multiple measurement IDs the first one is used as the default.
-                gtagCodes.AddRange( code.Split( ',' ).Select( a => a.Trim() ).Where( a => a.StartsWith( "UA-", StringComparison.OrdinalIgnoreCase ) ).ToList() ?? new List<string>() );
-
-                if ( gtagCodes.Any() )
+                if ( script.IsNotNullOrWhiteSpace() )
                 {
-                    var sb = new StringBuilder();
-                    sb.Append( $@"
-    <!-- BEGIN Global site tag (gtag.js) - Google Analytics -->
-    <script async src=""https://www.googletagmanager.com/gtag/js?id={gtagCodes.First()}""></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){{window.dataLayer.push(arguments);}}
-      gtag('js', new Date());" );
-                    sb.AppendLine( "" );
-                    gtagCodes.ForEach( a => sb.AppendLine( $"      gtag('config', '{a}');" ) );
-                    sb.AppendLine( "    </script>" );
-                    sb.AppendLine( "    <!-- END Global site tag (gtag.js) - Google Analytics -->" );
-
-                    AddScriptToHead( this.Page, sb.ToString(), false );
+                    AddScriptToHead( this.Page, script, false );
                 }
             }
             catch ( Exception ex )
@@ -2760,14 +2709,9 @@ Sys.Application.add_load(function () {
         /// </summary>
         private void AddJesusHook()
         {
-            var script = $@"
-    <script>
-      console.info(
-        '%cCrafting Code For Christ | Col. 3:23-24',
-        'background: #ee7625; border-radius:0.5em; padding:0.2em 0.5em; color: white; font-weight: bold');
-      console.info('{_rockVersion}');
-    </script>";
-            AddScriptToHead( this.Page, script, false );
+            var script = RockPageHelper.GetJesusScript();
+
+            AddScriptToHead( this.Page, script, true );
         }
 
         /// <summary>

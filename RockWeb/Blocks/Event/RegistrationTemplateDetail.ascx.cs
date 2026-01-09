@@ -864,7 +864,7 @@ The logged-in person's information will be used to complete the registrar inform
 
             if ( registrationTemplate != null )
             {
-                if ( ! (UserCanEdit || registrationTemplate.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ) || registrationTemplate.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                if ( !( UserCanEdit || registrationTemplate.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || registrationTemplate.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) ) )
                 {
                     mdDeleteWarning.Show( "You are not authorized to delete this registration template.", ModalAlertType.Information );
                     return;

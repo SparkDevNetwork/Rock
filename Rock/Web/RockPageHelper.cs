@@ -18,6 +18,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Text;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,6 +27,7 @@ using Rock.Configuration;
 using Rock.Net;
 using Rock.Observability;
 using Rock.ViewModels.Crm;
+using Rock.Web.Cache;
 
 namespace Rock.Web
 {
@@ -34,6 +37,15 @@ namespace Rock.Web
     /// </summary>
     internal static class RockPageHelper
     {
+        #region Fields
+
+        /// <summary>
+        /// The version of Rock to inject in startup scripts.
+        /// </summary>
+        private static readonly string _rockVersion = "Rock v" + typeof( RockPageHelper ).Assembly.GetName().Version.ToString();
+
+        #endregion
+
         /// <summary>
         /// Adds configuration specific to the Rock Page to the observability
         /// activity.
@@ -148,6 +160,116 @@ Obsidian.onReady(() => {{
 }});
 Obsidian.init({{ debug: true, fingerprint: ""v={fingerprint}"" }});
 ";
+        }
+
+        /// <summary>
+        /// Gets the JavaScript that enables shortcut key functionality for
+        /// elements that have the <c>data-shortcut-key</c> attribute defined.
+        /// </summary>
+        /// <returns></returns>
+        public static string GetShortcutKeyScript()
+        {
+            return @"
+(function() {
+    var lastDispatchTime = 0;
+    var lastDispatchedElement = null;
+    var debounceDelay = 500;
+
+    document.addEventListener('keydown', function (event) {
+        if (event.altKey) {
+            var shortcutKey = event.key.toLowerCase();
+
+            // Check if a shortcut key is registered for the pressed key
+            var element = document.querySelector('[data-shortcut-key=""' + shortcutKey + '""]');
+
+                    
+            if (element) {
+                var currentTime = performance.now();
+
+                if (lastDispatchedElement === element && (currentTime - lastDispatchTime) < debounceDelay) {
+                    return;
+                }
+
+                lastDispatchTime = currentTime;
+                lastDispatchedElement = element;
+
+                if (shortcutKey === 'arrowright' || shortcutKey === 'arrowleft') {
+                    event.preventDefault();
+                }
+
+                event.preventDefault();
+                element.click();
+            }
+        }
+    });
+})();
+            ";
+
+        }
+
+        /// <summary>
+        /// Gets the JavaScript content that should be added to each page when
+        /// it is rendered.
+        /// </summary>
+        /// <returns>A string of text to be rendered inside a &lt;script&gt; tag.</returns>
+        public static string GetJesusScript()
+        {
+            return $@"
+console.info(
+  '%cCrafting Code For Christ | Col. 3:23-24',
+  'background: #ee7625; border-radius:0.5em; padding:0.2em 0.5em; color: white; font-weight: bold');
+console.info('{_rockVersion}');
+";
+        }
+
+        /// <summary>
+        /// Gets the tags that make up the Google Analytics initialization
+        /// script. This contains raw HTML script tags that should be added
+        /// to the &lt;head&gt; section of the page.
+        /// </summary>
+        /// <param name="page">The page that is being rendered.</param>
+        /// <returns>A string that contains the various script elements or null if Google Analytics is not configured for this site.</returns>
+        public static string GetGoogleAnalyticsScriptTags( PageCache page )
+        {
+            var code = page.Layout.Site.GoogleAnalyticsCode ?? string.Empty;
+
+            // Parse the list of codes, we want the "G-" codes to be first
+            // because the first code is used as the default in the <script>
+            // src property.
+            var gtagCodes = code.Split( ',' )
+                .Select( a => a.Trim() )
+                .Where( a => a.StartsWith( "G-", StringComparison.OrdinalIgnoreCase ) )
+                .ToList();
+
+            // Add the measurement codes that start with 'UA' to the gtag script.
+            // If there are multiple measurement IDs the first one is used as the
+            // default.
+            var uaCodes = code.Split( ',' )
+                .Select( a => a.Trim() )
+                .Where( a => a.StartsWith( "UA-", StringComparison.OrdinalIgnoreCase ) );
+
+            gtagCodes.AddRange( uaCodes );
+
+            if ( gtagCodes.Any() )
+            {
+                var sb = new StringBuilder();
+
+                sb.Append( $@"
+    <!-- BEGIN Global site tag (gtag.js) - Google Analytics -->
+    <script async src=""https://www.googletagmanager.com/gtag/js?id={gtagCodes.First()}""></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){{window.dataLayer.push(arguments);}}
+      gtag('js', new Date());" );
+                sb.AppendLine( "" );
+                gtagCodes.ForEach( a => sb.AppendLine( $"      gtag('config', '{a}');" ) );
+                sb.AppendLine( "    </script>" );
+                sb.AppendLine( "    <!-- END Global site tag (gtag.js) - Google Analytics -->" );
+
+                return sb.ToString();
+            }
+
+            return null;
         }
     }
 }
