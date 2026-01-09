@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 using AngleSharp.Html.Dom;
@@ -949,6 +950,118 @@ namespace Rock.Tests.Web.v2
                     .ToList();
 
                 Assert.IsNotEmpty( elements );
+            }
+        }
+
+        #endregion
+
+        #region AddPageHeadContent
+
+        [TestMethod]
+        public void AddPageHeadContent_WithPageContent_RendersContent()
+        {
+            void configureRockContext( Mock<RockContext> rockContextMock )
+            {
+                var siteMock = MockDatabaseHelper.CreateEntityMock<Site>( 1, new Guid( "f1141648-44b5-4dcc-9eed-6f0981faf3d6" ) );
+                var pageMock = MockDatabaseHelper.CreateEntityMock<Page>( 1, new Guid( "fdd9603f-85c0-4813-86aa-a3bc0d5e533b" ) );
+
+                siteMock.Setup( m => m.DefaultDomainUri ).Returns( new Uri( "http://localhost" ) );
+                siteMock.Setup( m => m.SiteDomains ).Returns( new List<SiteDomain>() );
+                siteMock.Object.PageHeaderContent = null;
+
+                pageMock.Object.LayoutId = 1;
+                pageMock.Object.HeaderContent = "page content";
+
+                rockContextMock.SetupDbSet( siteMock.Object );
+                rockContextMock.SetupDbSet( pageMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                var sb = new StringBuilder();
+
+                renderer.AddPageHeadContent( sb );
+
+                Assert.Contains( "page content", sb.ToString() );
+            }
+        }
+
+        [TestMethod]
+        public void AddPageHeadContent_WithSiteContent_RendersContent()
+        {
+            void configureRockContext( Mock<RockContext> rockContextMock )
+            {
+                var siteMock = MockDatabaseHelper.CreateEntityMock<Site>( 1, new Guid( "f1141648-44b5-4dcc-9eed-6f0981faf3d6" ) );
+                var pageMock = MockDatabaseHelper.CreateEntityMock<Page>( 1, new Guid( "fdd9603f-85c0-4813-86aa-a3bc0d5e533b" ) );
+
+                siteMock.Setup( m => m.DefaultDomainUri ).Returns( new Uri( "http://localhost" ) );
+                siteMock.Setup( m => m.SiteDomains ).Returns( new List<SiteDomain>() );
+                siteMock.Object.PageHeaderContent = "site content";
+
+                pageMock.Object.LayoutId = 1;
+                pageMock.Object.HeaderContent = null;
+
+                rockContextMock.SetupDbSet( siteMock.Object );
+                rockContextMock.SetupDbSet( pageMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                var sb = new StringBuilder();
+
+                renderer.AddPageHeadContent( sb );
+
+                Assert.Contains( "site content", sb.ToString() );
+            }
+        }
+
+        [TestMethod]
+        public void AddPageHeadContent_WithoutPageOrSiteContent_DoesNotRenderContent()
+        {
+            void configureRockContext( Mock<RockContext> rockContextMock )
+            {
+                var siteMock = MockDatabaseHelper.CreateEntityMock<Site>( 1, new Guid( "f1141648-44b5-4dcc-9eed-6f0981faf3d6" ) );
+                var pageMock = MockDatabaseHelper.CreateEntityMock<Page>( 1, new Guid( "fdd9603f-85c0-4813-86aa-a3bc0d5e533b" ) );
+
+                siteMock.Setup( m => m.DefaultDomainUri ).Returns( new Uri( "http://localhost" ) );
+                siteMock.Setup( m => m.SiteDomains ).Returns( new List<SiteDomain>() );
+                siteMock.Object.PageHeaderContent = null;
+
+                pageMock.Object.LayoutId = 1;
+                pageMock.Object.HeaderContent = null;
+
+                rockContextMock.SetupDbSet( siteMock.Object );
+                rockContextMock.SetupDbSet( pageMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                var sb = new StringBuilder();
+
+                renderer.AddPageHeadContent( sb );
+
+                Assert.IsEmpty( sb.ToString() );
             }
         }
 

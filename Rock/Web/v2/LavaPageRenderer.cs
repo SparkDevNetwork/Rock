@@ -21,6 +21,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.UI;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -77,13 +78,13 @@ namespace Rock.Web.v2
             responseBase.SetBrowserTitle( _rockRequestContext.Page.BrowserTitle );
             responseBase.SetPageTitle( _rockRequestContext.Page.PageTitle );
 
+            // Add configuration specific to Rock Page to the observability activity.
+            RockPageHelper.ConfigureActivity( Activity.Current, _rockRequestContext );
+
             AddLegacyWebFormSupport();
             AddDefaultPageScripts();
             AddPageMetaTags();
             AddSiteIcons();
-
-            // Add configuration specific to Rock Page to the observability activity.
-            RockPageHelper.ConfigureActivity( Activity.Current, _rockRequestContext );
 
             if ( _pageNeedsObsidian )
             {
@@ -92,6 +93,8 @@ namespace Rock.Web.v2
 
             var headEndContentBuilder = new StringBuilder();
             var bodyEndContentBuilder = new StringBuilder();
+
+            AddPageHeadContent( headEndContentBuilder );
 
             // Add support for JavaScript that tries to access the WebForms progress div.
             bodyEndContentBuilder.AppendLine( "<div id=\"updateProgress\"></div>" );
@@ -574,6 +577,23 @@ namespace Rock.Web.v2
                     ["href"] = url,
                 },
                 Enums.Net.ResponseElementLocation.Header );
+        }
+
+        /// <summary>
+        /// Adds the custom head element content defined for the site and page.
+        /// </summary>
+        /// <param name="headEndContentBuilder">The <see cref="StringBuilder"/> to append the content to.</param>
+        internal void AddPageHeadContent( StringBuilder headEndContentBuilder )
+        {
+            if ( _rockRequestContext.Page.Layout.Site.PageHeaderContent.IsNotNullOrWhiteSpace() )
+            {
+                headEndContentBuilder.AppendLine( _rockRequestContext.Page.Layout.Site.PageHeaderContent );
+            }
+
+            if ( _rockRequestContext.Page.HeaderContent.IsNotNullOrWhiteSpace() )
+            {
+                headEndContentBuilder.AppendLine( _rockRequestContext.Page.HeaderContent );
+            }
         }
 
         [ExcludeFromCodeCoverage]
