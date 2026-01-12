@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using AngleSharp.Dom;
+using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 
 namespace Rock.Web.v2
@@ -61,6 +62,12 @@ namespace Rock.Web.v2
         /// context.
         /// </summary>
         public HtmlParser Parser { get; } = new HtmlParser();
+
+        /// <summary>
+        /// The root document that will be rendered. If this is not set after
+        /// parsing is completed then the layout is considered invalid.
+        /// </summary>
+        public IHtmlDocument RootDocument { get; set; }
 
         #endregion
 

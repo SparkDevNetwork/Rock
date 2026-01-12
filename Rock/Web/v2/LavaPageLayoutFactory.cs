@@ -23,6 +23,7 @@ using System.Text.RegularExpressions;
 
 using AngleSharp;
 using AngleSharp.Dom;
+using AngleSharp.Html.Dom;
 
 using Microsoft.Extensions.FileProviders;
 
@@ -96,7 +97,26 @@ namespace Rock.Web.v2
         {
             var context = new LavaPageLayoutContext( themeName );
             var nodes = ProcessLayout( layoutPath, context, 10 );
-            var templateContent = string.Join( string.Empty, nodes.Select( n => n.ToHtml() ) );
+            string templateContent;
+
+            if ( context.RootDocument == null )
+            {
+                templateContent = string.Empty;
+            }
+            else
+            {
+                if ( context.RootDocument.DocumentElement == null )
+                {
+                    var htmlElement = nodes.FirstOrDefault( n => n is IHtmlHtmlElement );
+
+                    if ( htmlElement != null )
+                    {
+                        context.RootDocument.AppendChild( htmlElement );
+                    }
+                }
+
+                templateContent = context.RootDocument.ToHtml();
+            }
 
             var result = lavaEngine.ParseTemplate( templateContent );
 
@@ -178,6 +198,8 @@ namespace Rock.Web.v2
 
             headElement?.Append( document.CreateTextNode( "{{ HeadEndContent }}" ) );
             bodyElement?.Append( document.CreateTextNode( "{{ BodyEndContent }}" ) );
+
+            context.RootDocument = document;
 
             return new List<INode> { document.DocumentElement };
         }
