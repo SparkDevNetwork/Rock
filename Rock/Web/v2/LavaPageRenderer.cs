@@ -81,8 +81,11 @@ namespace Rock.Web.v2
             // Add configuration specific to Rock Page to the observability activity.
             RockPageHelper.ConfigureActivity( Activity.Current, _rockRequestContext );
 
+            var headEndContentBuilder = new StringBuilder();
+            var bodyEndContentBuilder = new StringBuilder();
+
             AddLegacyWebFormSupport();
-            AddDefaultPageScripts();
+            AddDefaultPageScripts( headEndContentBuilder );
             AddPageMetaTags();
             AddSiteIcons();
 
@@ -92,9 +95,6 @@ namespace Rock.Web.v2
             {
                 InjectObsidian();
             }
-
-            var headEndContentBuilder = new StringBuilder();
-            var bodyEndContentBuilder = new StringBuilder();
 
             AddPageHeadContent( headEndContentBuilder );
 
@@ -432,7 +432,8 @@ namespace Rock.Web.v2
         /// Adds the default page JavaScript libraries that must be included on
         /// every page.
         /// </summary>
-        private void AddDefaultPageScripts()
+        /// <param name="headEndContentBuilder">The <see cref="StringBuilder"/> to append raw header content to.</param>
+        private void AddDefaultPageScripts( StringBuilder headEndContentBuilder )
         {
             AddScriptBundle( "~/Scripts/Bundles/RockJQueryLatest" );
             AddScriptBundle( "~/Scripts/Bundles/RockLibs" );
@@ -451,6 +452,19 @@ namespace Rock.Web.v2
             // isn't actually used, and ajaxClientErrorHandler doesn't apply
             // to non-WebForms.
             // AddScriptBundle( "~/Scripts/Bundles/RockValidation" );
+
+            _rockRequestContext.Response
+                .AddScriptToHead( "jesus-script", RockPageHelper.GetJesusScript() );
+
+            _rockRequestContext.Response
+                .AddScriptToHead( "shortcut-script", RockPageHelper.GetShortcutKeyScript() );
+
+            var googleScript = RockPageHelper.GetGoogleAnalyticsScriptTags( _rockRequestContext.Page );
+
+            if ( googleScript.IsNotNullOrWhiteSpace() )
+            {
+                headEndContentBuilder.AppendLine( googleScript );
+            }
         }
 
         /// <summary>
