@@ -22,7 +22,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using CronExpressionDescriptor;
+
 using Rock.Data;
 using Rock.Lava;
 
@@ -259,13 +259,9 @@ namespace Rock.Model
         /// </value>
         [LavaVisible]
         [NotMapped]
-        public virtual string CronDescription
-        {
-            get
-            {
-                return ExpressionDescriptor.GetDescription( this.CronExpression, new Options { ThrowExceptionOnParseError = false } );
-            }
-        }
+        [Obsolete( "CronExpressionDescriptor library is no longer supported." )]
+        [RockObsolete( "19.0" )]
+        public virtual string CronDescription => "Not supported";
 
         /// <summary>
         /// Gets or sets the a list of previous values that this attribute value had (If ServiceJob.EnableHistory is enabled)

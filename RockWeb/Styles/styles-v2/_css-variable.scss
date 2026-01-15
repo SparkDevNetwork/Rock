@@ -317,8 +317,8 @@
   --color-interface-strong:    var(--base-interface-soft);
   --color-interface-medium:    var(--base-interface-medium);
   --color-interface-soft:      var(--base-interface-strong);
-  --color-interface-softer:    var(--base-interface-strongest);
-  --color-interface-softest:   var(--base-interface-stronger);
+  --color-interface-softer:    var(--base-interface-strongest); // Flipped to strongest to maintain consistency with mobile app dark mode. Stronger is too light.
+  --color-interface-softest:   var(--base-interface-stronger); // Flipped to stronger to maintain consistency with mobile app dark mode.
 
   --color-info-strong:  color-mix(in srgb, var(--base-info) 50%, #fff var(--tint-white-percentage));
   --color-danger-strong:  color-mix(in srgb, var(--base-danger) 50%, #fff var(--tint-white-percentage));

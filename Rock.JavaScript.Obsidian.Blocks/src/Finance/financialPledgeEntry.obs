@@ -61,6 +61,7 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { FinancialPledgeEntryBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeEntry/financialPledgeEntryBag";
     import { FinancialPledgeEntryOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeEntry/financialPledgeEntryOptionsBag";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
     const config = useConfigurationValues<DetailBlockBox<FinancialPledgeEntryBag, FinancialPledgeEntryOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -133,7 +134,7 @@
      */
     async function onCancelEdit(): Promise<void> {
 
-        resetKey.value = "reset-errors";
+        resetKey.value = newGuid();
         const result = await invokeBlockAction<DetailBlockBox<FinancialPledgeEntryBag, FinancialPledgeEntryOptionsBag>>("InitializeBox");
 
         if (result.isSuccess && result.data && result.data.entity) {

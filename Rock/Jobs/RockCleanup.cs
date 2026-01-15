@@ -651,7 +651,7 @@ namespace Rock.Jobs
             int recordsUpdated = 0;
             var rockContext = CreateRockContext();
 
-            // just in case when groups has missing InactiveDateTime
+            // Update inactive Groups that are missing InactiveDateTime
             var inactiveGroups = new GroupService( rockContext )
                 .Queryable()
                 .Where( a => !a.IsActive && !a.InactiveDateTime.HasValue );
@@ -661,9 +661,9 @@ namespace Rock.Jobs
                 recordsUpdated += rockContext.BulkUpdate( inactiveGroups, g => new Group { InactiveDateTime = RockDateTime.Now } );
             }
 
-            // just in case when groups has missing archive date time
+            // Update archived Groups that are missing ArchivedDateTime
             var archivedGroups = new GroupService( rockContext )
-                .Queryable()
+                .AsNoFilter() // This is necessary to find archived groups.
                 .Where( a => a.IsArchived && !a.ArchivedDateTime.HasValue );
 
             if ( archivedGroups.Any() )
@@ -671,24 +671,24 @@ namespace Rock.Jobs
                 recordsUpdated += rockContext.BulkUpdate( archivedGroups, g => new Group { ArchivedDateTime = RockDateTime.Now } );
             }
 
-            // Clear InactiveDateTime If the Group record is Not Inactive
-            var activeGroups = new GroupService( rockContext )
+            // Clear the InactiveDateTime if the Group is active
+            var activeGroupsWithInactiveDates = new GroupService( rockContext )
                 .Queryable()
                 .Where( a => a.IsActive && a.InactiveDateTime.HasValue );
 
-            if ( archivedGroups.Any() )
+            if ( activeGroupsWithInactiveDates.Any() )
             {
-                recordsUpdated += rockContext.BulkUpdate( activeGroups, g => new Group { InactiveDateTime = null } );
+                recordsUpdated += rockContext.BulkUpdate( activeGroupsWithInactiveDates, g => new Group { InactiveDateTime = null } );
             }
 
-            // Remove ArchiveDateTime if the Group record is not Archived
-            var inarchivedGroups = new GroupService( rockContext )
+            // Clear the ArchiveDateTime if the Group is NOT archived
+            var nonArchivedGroupsWithArchivedDate = new GroupService( rockContext )
                 .Queryable()
                 .Where( a => !a.IsArchived && a.ArchivedDateTime.HasValue );
 
-            if ( archivedGroups.Any() )
+            if ( nonArchivedGroupsWithArchivedDate.Any() )
             {
-                recordsUpdated += rockContext.BulkUpdate( archivedGroups, g => new Group { ArchivedDateTime = null } );
+                recordsUpdated += rockContext.BulkUpdate( nonArchivedGroupsWithArchivedDate, g => new Group { ArchivedDateTime = null } );
             }
 
             return recordsUpdated;
@@ -715,7 +715,7 @@ namespace Rock.Jobs
 
             // just in case when group members has missing archive date time
             var archivedGroupMembers = new GroupMemberService( rockContext )
-                .Queryable()
+                .AsNoFilter() // This is necessary to find archived group members.
                 .Where( a => a.IsArchived && !a.ArchivedDateTime.HasValue );
 
             if ( archivedGroupMembers.Any() )
@@ -734,13 +734,13 @@ namespace Rock.Jobs
             }
 
             // Remove ArchiveDateTime if the Group members record is not Archived
-            var inarchivedGroupMembers = new GroupMemberService( rockContext )
+            var nonArchivedGroupMembersWithArchivedDate = new GroupMemberService( rockContext )
                 .Queryable()
                 .Where( a => !a.IsArchived && a.ArchivedDateTime.HasValue );
 
-            if ( inarchivedGroupMembers.Any() )
+            if ( nonArchivedGroupMembersWithArchivedDate.Any() )
             {
-                recordsUpdated += rockContext.BulkUpdate( inarchivedGroupMembers, g => new GroupMember { ArchivedDateTime = null } );
+                recordsUpdated += rockContext.BulkUpdate( nonArchivedGroupMembersWithArchivedDate, g => new GroupMember { ArchivedDateTime = null } );
             }
 
             return recordsUpdated;
@@ -3107,16 +3107,16 @@ INNER JOIN [AverageAttendance] aa ON c.[Id] = aa.[CampusId]";
 
             // Delete each duplicate set one at a time. The most recent
             // message of the set is kept, older ones are removed.
-            foreach ( var (NotificationMessageTypeId, PersonId, Key) in duplicateKeys )
+            foreach ( var (notificationMessageTypeId, personId, key) in duplicateKeys )
             {
                 using ( var rockContext = CreateRockContext() )
                 {
                     var messageService = new NotificationMessageService( rockContext );
 
                     var messagesToDelete = messageService.Queryable()
-                        .Where( nm => nm.NotificationMessageTypeId == NotificationMessageTypeId
-                            && nm.PersonAlias.PersonId == PersonId
-                            && nm.Key == Key )
+                        .Where( nm => nm.NotificationMessageTypeId == notificationMessageTypeId
+                            && nm.PersonAlias.PersonId == personId
+                            && nm.Key == key )
                         .OrderByDescending( nm => nm.MessageDateTime )
                         .Skip( 1 )
                         .ToList();
@@ -3203,7 +3203,7 @@ INNER JOIN [AverageAttendance] aa ON c.[Id] = aa.[CampusId]";
         }
 
         /// <summary>
-        /// Updates Person.ViewedCount based on the count of ViewCount.PersonId for the past 90 days
+        /// Updates Person.ViewedCount based on the count of ViewCount.personId for the past 90 days
         /// </summary>
         /// <returns>The number of Person rows updated</returns>
         private int UpdatePersonViewedCount()
@@ -3217,13 +3217,13 @@ INNER JOIN [AverageAttendance] aa ON c.[Id] = aa.[CampusId]";
                     FROM [Person] p
                     INNER JOIN (
                         SELECT
-                            pat.[PersonId]
+                            pat.[personId]
                             , COUNT(*) AS [ViewCount]
                         FROM [PersonViewed] pv
                             INNER JOIN [PersonAlias] pat ON pat.[Id] = pv.[TargetPersonAliasId]
                         WHERE pv.[ViewDateTime] > DATEADD( DAY, -90, GETDATE() )
-                        GROUP BY pat.[PersonId]
-                    ) AS u ON u.[PersonId] = p.[Id]";
+                        GROUP BY pat.[personId]
+                    ) AS u ON u.[personId] = p.[Id]";
 
                 updateCount = rockContext.Database.ExecuteSqlCommand( updateQuery );
             }
@@ -3236,7 +3236,7 @@ INNER JOIN [AverageAttendance] aa ON c.[Id] = aa.[CampusId]";
         /// </summary>
         private int CalculateAgeAndAgeBracketOnAnalyticsSourceDate()
         {
-            var UpdateAgeAndAgeBracketSql = $@"
+            var updateAgeAndAgeBracketSql = $@"
 DECLARE @Today DATE = GETDATE()
 BEGIN 
 	UPDATE A
@@ -3313,7 +3313,7 @@ END
 ";
             using ( var rockContext = CreateRockContext() )
             {
-                int result = rockContext.Database.ExecuteSqlCommand( UpdateAgeAndAgeBracketSql );
+                int result = rockContext.Database.ExecuteSqlCommand( updateAgeAndAgeBracketSql );
                 return result;
             }
         }
@@ -3326,7 +3326,7 @@ END
         {
             CalculateAgeAndAgeBracketOnAnalyticsSourceDate();
 
-            const string UpdateAgeAndAgeRangeSql = @"
+            const string updateAgeAndAgeRangeSql = @"
 BEGIN
 	UPDATE Person
 	SET [BirthDateKey] = FORMAT([BirthDate],'yyyyMMdd')
@@ -3353,7 +3353,7 @@ END
 ";
             using ( var rockContext = CreateRockContext() )
             {
-                int result = rockContext.Database.ExecuteSqlCommand( UpdateAgeAndAgeRangeSql );
+                int result = rockContext.Database.ExecuteSqlCommand( updateAgeAndAgeRangeSql );
                 return result;
             }
         }
@@ -3603,7 +3603,7 @@ CREATE TABLE #GivingFamilies (
     , (SELECT [FamiliesMedianIncome] FROM [dbo].[AnalyticsSourcePostalCode] WHERE [PostalCode] = (SELECT TOP 1 LEFT([PostalCode], 5) FROM [dbo].[Location] l INNER JOIN [dbo].[GroupLocation] gl ON gl.[LocationId] = l.[Id] AND gl.[GroupId] = [PrimaryFamilyId] AND gl.[IsMappedLocation] = 1) ) AS [FamiliesMedianTithe]
  FROM
   [Person] p
-  INNER JOIN [dbo].[PersonAlias] pa ON pa.[PersonId] = p.[Id]
+  INNER JOIN [dbo].[PersonAlias] pa ON pa.[personId] = p.[Id]
   INNER JOIN [dbo].[FinancialTransaction] ft ON ft.[AuthorizedPersonAliasId] = pa.[Id]
   INNER JOIN [dbo].[FinancialTransactionDetail] ftd ON ftd.[TransactionId] = ft.[Id]
   INNER JOIN [dbo].[FinancialAccount] fa ON fa.[Id] = ftd.[AccountId] 

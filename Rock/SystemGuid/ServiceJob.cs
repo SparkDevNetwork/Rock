@@ -333,6 +333,11 @@ namespace Rock.SystemGuid
         public const string UPDATE_MEDIA_ELEMENT_USAGE = "32d0cb70-d4ef-4ac2-8693-bfdfe9e5233e";
 
         /// <summary>
+        /// The <see cref="Rock.Jobs.UpdateOutreachToolboxTouchpoints"/> job.
+        /// </summary>
+        public const string UPDATE_OUTREACH_TOOLBOX_TOUCHPOINTS = "06320140-a5ff-46fa-9ee5-41f747bbc542";
+
+        /// <summary>
         /// The <see cref="Rock.Jobs.UpdatePersistedAttributeValues">Update Persisted Attribute Values</see> job.
         /// </summary>
         public const string UPDATE_PERSISTED_ATTRIBUTE_VALUE = "A7DDA4B0-BA1D-49F1-8749-5E7A9876AE70";
@@ -578,5 +583,10 @@ namespace Rock.SystemGuid
         /// The job to run Post v18.1 Data Migrations to add indexes to improve communication prep performance.
         /// </summary>
         public const string DATA_MIGRATIONS_181_ADD_INDEXES_FOR_COMMUNICATION_PREP = "88C42A48-6713-4CB1-BF6B-A12AB2E292E7";
+
+        /// <summary>
+        /// The job to run Post v19.0 Data Migrations to add an index to ensure the Communication Unsubscribe Report performs efficiently.
+        /// </summary>
+        public const string DATA_MIGRATIONS_190_ADD_COMMUNICATION_UNSUBSCRIBE_REPORT_INDEX = "ECBC94C0-7646-491E-A804-1CA228F0FFAD";
     }
 }

@@ -2658,7 +2658,8 @@ namespace Rock.Blocks.Event
         /// <param name="person">The person.</param>
         /// <param name="phoneTypeGuid">The phone type unique identifier.</param>
         /// <param name="changes">The changes.</param>
-        private void SavePhone( object fieldValue, Person person, Guid phoneTypeGuid, History.HistoryChangeList changes )
+        /// <param name="isMessagingEnabledEditable">Whether the phone Messaging Enabled property is editable.</param>
+        private void SavePhone( object fieldValue, Person person, Guid phoneTypeGuid, History.HistoryChangeList changes, bool isMessagingEnabledEditable )
         {
             string phoneNumber = string.Empty;
             string countryCode = string.Empty;
@@ -2669,7 +2670,7 @@ namespace Rock.Blocks.Event
             {
                 // We got the number and SMS selection, so set both.
                 phoneNumber = phoneData.Number;
-                isMessagingEnabled = phoneData.IsMessagingEnabled;
+                isMessagingEnabled = isMessagingEnabledEditable ? phoneData.IsMessagingEnabled : ( bool? ) null;
                 countryCode = phoneData.CountryCode;
             }
             else if ( fieldValue is string )
@@ -2688,6 +2689,7 @@ namespace Rock.Blocks.Event
 
             if ( string.IsNullOrWhiteSpace( cleanNumber ) || numberType == null )
             {
+                // TODO: Figure out why phone numbers are prevented from being cleared out here and update comment with "why".
                 return;
             }
 
@@ -3043,6 +3045,7 @@ namespace Rock.Blocks.Event
             var homeNumberDefinedValue = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
             var mobileNumberDefinedValue = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
             var workNumberDefinedValue = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
+            var isSmsOptInShown = settings.ShowSmsOptIn;
 
             // Set any of the template's person fields
             foreach ( var field in settings.Forms
@@ -3164,7 +3167,7 @@ namespace Rock.Blocks.Event
                         case RegistrationPersonFieldType.MobilePhone:
                             if ( IsFieldUnlockedForEditing( field, personService.GetPhoneNumber( person, mobileNumberDefinedValue )?.Number ) )
                             {
-                                SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), personChanges );
+                                SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), personChanges, isSmsOptInShown );
                             }
 
                             break;
@@ -3172,7 +3175,7 @@ namespace Rock.Blocks.Event
                         case RegistrationPersonFieldType.HomePhone:
                             if ( IsFieldUnlockedForEditing( field, personService.GetPhoneNumber( person, homeNumberDefinedValue )?.Number ) )
                             {
-                                SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), personChanges );
+                                SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), personChanges, isMessagingEnabledEditable: false );
                             }
 
                             break;
@@ -3180,7 +3183,7 @@ namespace Rock.Blocks.Event
                         case RegistrationPersonFieldType.WorkPhone:
                             if ( IsFieldUnlockedForEditing( field, personService.GetPhoneNumber( person, workNumberDefinedValue )?.Number ) )
                             {
-                                SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid(), personChanges );
+                                SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid(), personChanges, isMessagingEnabledEditable: false );
                             }
 
                             break;
@@ -3542,7 +3545,7 @@ namespace Rock.Blocks.Event
                         registrantFee.Cost = feeItemModel.Cost;
                     }
 
-                    if ( !hasRequiredFeeItem )
+                    if ( feeModel.IsRequired && !hasRequiredFeeItem )
                     {
                         var cannotAccommodateQuantitySuffix = isFeeUsageAutoReduced
                                 ? $", but is no longer available{( feeModel.AllowMultiple ? " in the selected quantity" : string.Empty )}"
@@ -4180,12 +4183,107 @@ namespace Rock.Blocks.Event
                 }
             }
 
-            // Determine the starting point. External registration updates are
-            // currently only supported if we are not doing inline signatures.
-            var allowExternalRegistrationUpdates = context.RegistrationSettings.AllowExternalRegistrationUpdates && !context.RegistrationSettings.IsInlineSignatureRequired;
+            /*
+                JMH - 1/9/2026
+
+                Track whether any required fees are missing so the fee selection step is shown to the registrar
+                when necessary. This is critical when a registrant is moved off the waitlist and the registrar
+                must complete the registration and select applicable fees.
+
+                Previously, if a signature document was involved, the block always advanced directly to the
+                final step. This caused required fees to be skipped. The block now prioritizes fee selection,
+                even if it requires the signature document to be re-signed.
+             */
+            var requiredFees = fees.Where( fee => fee.IsRequired ).ToList();
+            var isAnyRequiredFeeMissing = requiredFees.Any( requiredFee =>
+            {
+                var isAnyRegistrantMissingTheRequiredFee = session.Registrants.Any( registrant =>
+                    !registrant.FeeItemQuantities.ContainsKey( requiredFee.Guid )
+                );
+
+                if ( isAnyRegistrantMissingTheRequiredFee )
+                {
+                    return true;
+                }
+
+                var doesAnyRegistrantNotHaveAnyOfTheRequiredFee = session.Registrants.Any( registrant =>
+                    registrant.FeeItemQuantities[requiredFee.Guid] <= 0
+                );
+
+                if ( doesAnyRegistrantNotHaveAnyOfTheRequiredFee )
+                {
+                    return true;
+                }
+
+                return false;
+            } );
+
+            /*
+                JMH - 1/9/2026
+
+                Handle registration fields that are configured to be visible only for non waitlist registrants.
+                When a registrar indicates that registrants are on the waitlist, or when capacity forces them
+                onto the waitlist, these fields are intentionally hidden, regardless of whether they are required,
+                and will have no values.
+
+                If a registrant is later moved off the waitlist, the registrar must be prompted to complete the
+                registration and provide values for any newly visible fields. Previously, if a signature document
+                was present, the block forced the registrar directly to the final step, causing these fields
+                to be skipped. The block now ensures all applicable fields are shown before finalizing, even if
+                this requires the signature document to be re-signed.
+             */
+            var nonWaitListRegistrants = session.Registrants
+                .Where( r => !r.IsOnWaitList )
+                .ToList();
+            var formFieldsShownOnlyToNonWaitListRegistrants = context.RegistrationSettings.Forms
+                .SelectMany( f => f.Fields.Where( ff => !ff.ShowOnWaitlist ) )
+                .ToDictionary( f => f.Guid, f => f );
+            var isAnyFieldShownOnlyToNonWaitListRegistrantsMissingAValue =
+                formFieldsShownOnlyToNonWaitListRegistrants.Any( formField =>
+                    nonWaitListRegistrants.Any( registrant =>
+                    {
+                        var isNonWaitListRegistrantMissingFormFieldShownOnlyToNonWaitListRegistrants =
+                            !registrant.FieldValues.ContainsKey( formField.Key );
+
+                        // If the registrant is missing the field entirely, then we know it's missing.
+                        if ( isNonWaitListRegistrantMissingFormFieldShownOnlyToNonWaitListRegistrants )
+                        {
+                            return true;
+                        }
+
+                        var fieldValue = registrant.FieldValues[formField.Key].ToStringSafe();
+                        var isNonWaitListRegistrantMissingValueForFieldShownOnlyToNonWaitListRegistrants = fieldValue.IsNullOrWhiteSpace();
+
+                        // If the field value is empty, then we know it's missing.
+                        if ( isNonWaitListRegistrantMissingValueForFieldShownOnlyToNonWaitListRegistrants )
+                        {
+                            return true;
+                        }
+
+                        // Some field values are stored as a ListItemBag in JSON format.
+                        // A field with a ListItemBag value is considered empty if its value property is empty.
+                        var fieldValueAsListItemBag = fieldValue.FromJsonOrNull<ListItemBag>();
+                        if ( fieldValueAsListItemBag != null && fieldValueAsListItemBag.Value.IsNullOrWhiteSpace() )
+                        {
+                            return true;
+                        }
+
+                        // This field has a value.
+                        return false;
+                    } )
+                );
+
+            // Determine the starting point. 
+            var allowExternalRegistrationUpdates =
+                // External registration updates are supported if enabled and we are not doing inline signatures...
+                ( context.RegistrationSettings.AllowExternalRegistrationUpdates && !context.RegistrationSettings.IsInlineSignatureRequired )
+                // - OR - if there are any required fees that need to be selected by the registrar (signature doc will need to be signed again, if present)
+                || isAnyRequiredFeeMissing
+                // - OR - if there are any fields that need entry for non-waitlist registrants (signature doc will need to be signed again, if present)
+                || isAnyFieldShownOnlyToNonWaitListRegistrantsMissingAValue;
             var allowRegistrationUpdates = !isExistingRegistration || allowExternalRegistrationUpdates;
-            var startAtBeginning = !isExistingRegistration ||
-                ( allowExternalRegistrationUpdates && PageParameter( PageParameterKey.StartAtBeginning ).AsBoolean() );
+            var startAtBeginning = !isExistingRegistration
+                || ( allowExternalRegistrationUpdates && PageParameter( PageParameterKey.StartAtBeginning ).AsBoolean() );
 
             // Adjust the spots remaining if this is an existing registration. Add to the Spots remaining the number of registrants that are not on the waitlist.
             var adjustedSpotsRemaining = isExistingRegistration && session != null

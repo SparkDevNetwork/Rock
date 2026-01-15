@@ -59,7 +59,8 @@ namespace Rock.Field.Types
                     ["iconCssClass"] = GetItemIconCssClass( privateConfigurationValues ),
                     ["isMultiple"] = IsMultipleSelection.ToString(),
                     ["rootRestUrl"] = GetRootRestUrl( privateConfigurationValues ),
-                    ["context"] = GetStandardContext( privateConfigurationValues )
+                    ["context"] = GetStandardContext( privateConfigurationValues ),
+                    ["isDescendantSelectionAllowed"] = GetDescendantSelectionAllowed( privateConfigurationValues ).ToString(),
                 };
 
                 var itemTypes = GetSelectableItemTypes( privateConfigurationValues );
@@ -183,6 +184,17 @@ namespace Rock.Field.Types
             return null;
         }
 
+        /// <summary>
+        /// Gets a value to determine if this field type supports selecting
+        /// all descendants in the UI picker.
+        /// </summary>
+        /// <param name="privateConfigurationValues">The private configuration values.</param>
+        /// <returns><c>true</c> if the UI should support selecting all descendants; otherwise <c>false</c>.</returns>
+        protected virtual bool GetDescendantSelectionAllowed( Dictionary<string, string> privateConfigurationValues )
+        {
+            return false;
+        }
+
         #endregion
 
 #if WEBFORMS
@@ -222,7 +234,8 @@ namespace Rock.Field.Types
             {
                 ID = id,
                 IconCssClass = GetItemIconCssClass( privateConfigurationValues ),
-                AllowMultiSelect = IsMultipleSelection
+                AllowMultiSelect = IsMultipleSelection,
+                ShowSelectChildren = GetDescendantSelectionAllowed( privateConfigurationValues ),
             };
 
             picker.SetItemRestUrl( GetRootRestUrl( privateConfigurationValues ) );

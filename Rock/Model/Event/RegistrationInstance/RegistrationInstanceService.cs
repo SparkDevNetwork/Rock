@@ -280,8 +280,16 @@ namespace Rock.Model
                         // Default the DiscountedCost to be the same as the Cost
                         DiscountedCost = quantity * cost
                     };
-
-                    if ( templateFee != null && templateFee.DiscountApplies && discountApplies )
+                    // If the registrant is on the waitlist then set fee costs to 0 and add a waitlist indicator to the name for the payment summary grid
+                    if ( registrant.IsOnWaitList )
+                    {
+                        feeCostSummary.Description += " (Waiting List)";
+                        feeCostSummary.Cost = 0.0m;
+                        feeCostSummary.DiscountedCost = 0.0m;
+                        feeCostSummary.MinPayment = 0.0m;
+                        feeCostSummary.DefaultPayment = 0.0m;
+                    }
+                    else if ( templateFee != null && templateFee.DiscountApplies && discountApplies )
                     {
                         if ( discountPercentage > 0.0m )
                         {

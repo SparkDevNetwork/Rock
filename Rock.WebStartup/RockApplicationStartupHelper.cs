@@ -1226,7 +1226,7 @@ AS
     CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedTextValue] ELSE [A].[DefaultPersistedCondensedTextValue] END AS [PersistedCondensedTextValue],
     CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedHtmlValue] ELSE [A].[DefaultPersistedCondensedHtmlValue] END AS [PersistedCondensedHtmlValue],
     CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[IsPersistedValueDirty] ELSE [A].[IsDefaultPersistedValueDirty] END AS [IsPersistedValueDirty],
-    CASE WHEN ISNULL([AV].[Value], '') != '' THEN 0 ELSE CHECKSUM(ISNULL([A].[DefaultValue], '')) END AS [ValueChecksum]
+    CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[ValueChecksum] ELSE [A].[DefaultValueChecksum] END AS [ValueChecksum]
 FROM [{entityTableName}] AS [E]
 CROSS JOIN [Attribute] AS [A]
 LEFT OUTER JOIN [AttributeValue] AS [AV] ON [AV].[AttributeId] = [A].[Id] AND [AV].[EntityId] = [E].[Id]{additionalJoins}
@@ -1272,7 +1272,7 @@ FROM
             CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedTextValue] ELSE [A].[DefaultPersistedCondensedTextValue] END AS [PersistedCondensedTextValue],
             CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedHtmlValue] ELSE [A].[DefaultPersistedCondensedHtmlValue] END AS [PersistedCondensedHtmlValue],
             CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[IsPersistedValueDirty] ELSE [A].[IsDefaultPersistedValueDirty] END AS [IsPersistedValueDirty],
-            CASE WHEN ISNULL([AV].[Value], '') != '' THEN 0 ELSE CHECKSUM(ISNULL([A].[DefaultValue], '')) END AS [ValueChecksum]
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[ValueChecksum] ELSE [A].[DefaultValueChecksum] END AS [ValueChecksum]
         FROM [EventItem] AS [E]
         CROSS JOIN [Attribute] AS [A]
         LEFT OUTER JOIN [AttributeValue] AS [AV] ON [AV].[AttributeId] = [A].[Id] AND [AV].[EntityId] = [E].[Id]
@@ -1293,7 +1293,7 @@ FROM
             CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedTextValue] ELSE [A].[DefaultPersistedCondensedTextValue] END AS [PersistedCondensedTextValue],
             CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedHtmlValue] ELSE [A].[DefaultPersistedCondensedHtmlValue] END AS [PersistedCondensedHtmlValue],
             CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[IsPersistedValueDirty] ELSE [A].[IsDefaultPersistedValueDirty] END AS [IsPersistedValueDirty],
-            CASE WHEN ISNULL([AV].[Value], '') != '' THEN 0 ELSE CHECKSUM(ISNULL([A].[DefaultValue], '')) END AS [ValueChecksum]
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[ValueChecksum] ELSE [A].[DefaultValueChecksum] END AS [ValueChecksum]
         FROM [EventItem] AS [E]
         INNER JOIN [EventCalendarItem] AS [ECI] ON [ECI].[EventItemId] = [E].[Id]
         CROSS JOIN [Attribute] AS [A]

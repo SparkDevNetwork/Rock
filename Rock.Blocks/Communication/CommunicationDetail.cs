@@ -602,7 +602,7 @@ namespace Rock.Blocks.Communication
                 recipientRows
                     .OrderByDescending( r => r.LastActivityDateTime )
                     .ThenBy( r => r.Person.LastName )
-                    .ThenBy( r => r.Person.FirstName )
+                    .ThenBy( r => r.Person.NickName )
             );
 
             return ActionOk( new CommunicationRecipientGridDataBag
@@ -806,7 +806,7 @@ namespace Rock.Blocks.Communication
                                 if ( pageCache.PageRoutes.Count == 1 )
                                 {
                                     pageReference.RouteId = pageCache.PageRoutes.First().Id;
-                                }                               
+                                }
                             }
 
                             redirectUrl = pageReference.BuildUrl();

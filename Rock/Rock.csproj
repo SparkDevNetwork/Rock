@@ -30,7 +30,6 @@
     <PackageReference Include="BCrypt-Official" Version="0.1.109" />
     <PackageReference Include="CacheManager.SystemRuntimeCaching" Version="1.2.0" />
     <PackageReference Include="CommonMark.NET" Version="0.15.1" />
-    <PackageReference Include="CronExpressionDescriptor" Version="2.16.0" />
     <PackageReference Include="CS-Script" Version="3.13.2" />
     <PackageReference Include="dotless" Version="1.5.2" />
     <PackageReference Include="EF6.TagWith" Version="1.2.1" />

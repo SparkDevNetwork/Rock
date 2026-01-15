@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Web;
 
@@ -109,20 +110,50 @@ namespace Rock
         /// and any necessary query parameters.
         /// </summary>
         /// <param name="block">The block to get instance data from.</param>
-        /// <param name="queryParams">Any query string parameters that should be included in the built URL.</param>
-        /// <param name="skipExistingParameters">Whether to skip adding existing page parameters to the URL.</param>
+        /// <param name="queryParams">
+        ///   Any query string parameters that should be included in the built URL.
+        ///   If any of these parameters is also supplied by the current page's URL,
+        ///   the value from <paramref name="queryParams"/> will be used instead of
+        ///   the existing value in the current page's URL.
+        /// </param>
         /// <returns>A string representing the URL to the current <see cref="Rock.Model.Page"/>.</returns>
-        public static string GetCurrentPageUrl( this RockBlockType block, IDictionary<string, string> queryParams = null, bool skipExistingParameters = false )
+        public static string GetCurrentPageUrl( this RockBlockType block, IDictionary<string, string> queryParams = null )
+        {
+            return GetCurrentPageUrl( block, queryParams, skipExistingParameters: false );
+        }
+
+        /// <summary>
+        /// Builds and returns the URL for the current <see cref="Rock.Model.Page"/>
+        /// and any necessary query parameters.
+        /// </summary>
+        /// <param name="block">The block to get instance data from.</param>
+        /// <param name="queryParams">
+        ///   Any query string parameters that should be included in the built URL.
+        ///   If any of these parameters is also supplied by the current page's URL,
+        ///   when <paramref name="skipExistingParameters"/> is <see langword="true"/>,
+        ///   the value from <paramref name="queryParams"/> will be used instead of
+        ///   the existing value in the current page's URL.
+        /// </param>
+        /// <param name="skipExistingParameters">
+        ///  <para>
+        ///    If <see langword="true"/>, parameters already included in the current page's URL will be dropped.
+        ///    Only parameters supplied by <paramref name="queryParams"/> will be included, if any.
+        ///  </para>
+        ///  <para>
+        ///    If <see langword="false"/>, parameters already included in current page's URL will be included.
+        ///    If any of these parameters is also supplied by <paramref name="queryParams"/>, the value from
+        ///   <paramref name="queryParams"/> will be used instead of the existing value in the current page's URL.
+        ///  </para>
+        /// </param>
+        /// <returns>A string representing the URL to the current <see cref="Rock.Model.Page"/>.</returns>
+        public static string GetCurrentPageUrl( this RockBlockType block, IDictionary<string, string> queryParams, bool skipExistingParameters )
         {
             var parameters = queryParams != null ? new Dictionary<string, string>( queryParams ) : new Dictionary<string, string>();
 
             if ( !skipExistingParameters )
             {
-                // Add in the original page parameters if they have not already
-                // been set in the new query parameters.
                 foreach ( var qp in block.RequestContext.GetPageParameters() )
                 {
-                    // Skip any page parameters that are internal usage.
                     if ( qp.Key == "PageId" )
                     {
                         continue;

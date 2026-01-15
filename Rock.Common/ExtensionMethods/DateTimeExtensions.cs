@@ -811,6 +811,24 @@ namespace Rock
         }
 
         /// <summary>
+        /// Converts to the flag (bit per day) friendly enum.
+        /// </summary>
+        /// <param name="dayOfWeek">The day of week.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">Rock is not familiar with this day of the week: {dateTime.DayOfWeek}</exception>
+        public static DaysOfWeekFlags AsFlags( this IEnumerable<DayOfWeek> dayOfWeek )
+        {
+            var flags = DaysOfWeekFlags.None;
+
+            foreach ( var day in dayOfWeek )
+            {
+                flags |= day.AsFlags();
+            }
+
+            return flags;
+        }
+
+        /// <summary>
         /// Converts the flags to "day of week" enum list.
         /// </summary>
         /// <param name="flags">The flags.</param>

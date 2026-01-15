@@ -53,11 +53,5 @@ namespace Rock.Field.Types
 
             return msgBags;
         }
-
-        /// <inheritdoc/>
-        protected override List<string> GetSelectableItemTypes( Dictionary<string, string> privateConfigurationValues )
-        {
-            return new List<string> { "Item" };
-        }
     }
 }

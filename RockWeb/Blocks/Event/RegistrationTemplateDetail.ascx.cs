@@ -56,7 +56,6 @@ namespace RockWeb.Blocks.Event
         Key = AttributeKey.DefaultConfirmationEmail,
         Description = "The default Confirmation Email Template value to use for a new template",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 300,
         IsRequired = false,
         Order = 1,
@@ -162,7 +161,6 @@ namespace RockWeb.Blocks.Event
         Key = AttributeKey.DefaultReminderEmail,
         Description = "The default Reminder Email Template value to use for a new template",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 300,
         IsRequired = false,
         Order = 2,
@@ -230,7 +228,6 @@ namespace RockWeb.Blocks.Event
         Key = AttributeKey.DefaultSuccessText,
         Description = "The success text default to use for a new template",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 300,
         IsRequired = false,
         Order = 3,
@@ -326,7 +323,6 @@ namespace RockWeb.Blocks.Event
         Key = AttributeKey.DefaultPaymentReminderEmail,
         Description = "The default Payment Reminder Email Template value to use for a new template",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 300,
         IsRequired = false,
         Order = 4,
@@ -387,7 +383,6 @@ namespace RockWeb.Blocks.Event
         Key = AttributeKey.DefaultWaitListTransitionEmail,
         Description = "The default Wait List Transition Email Template value to use for a new template",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 300,
         IsRequired = false,
         Order = 5,
@@ -909,6 +904,9 @@ The logged-in person's information will be used to complete the registrar inform
             var newRegistrationTemplate = registrationTemplate.CloneWithoutIdentity();
             newRegistrationTemplate.Name = registrationTemplate.Name + " - Copy";
 
+            // Copy navigation properties that will not be lazily loaded when accessing from the new copy.
+            newRegistrationTemplate.RequiredSignatureDocumentTemplate = registrationTemplate.RequiredSignatureDocumentTemplate;
+
             // Create temporary state objects for the new registration template.
             var newFormState = new List<RegistrationTemplateForm>();
             var newFormFieldsState = new Dictionary<Guid, List<RegistrationTemplateFormField>>();
@@ -1069,10 +1067,8 @@ The logged-in person's information will be used to complete the registrar inform
                 registrationTemplate = registrationTemplateService.Get( registrationTemplateId.Value );
             }
 
-            var newTemplate = false;
             if ( registrationTemplate == null )
             {
-                newTemplate = true;
                 registrationTemplate = new RegistrationTemplate();
             }
 
@@ -3324,7 +3320,8 @@ The logged-in person's information will be used to complete the registrar inform
                     formField = new RegistrationTemplateFormField
                     {
                         Guid = formFieldGuid,
-                        FieldSource = RegistrationFieldSource.PersonAttribute
+                        FieldSource = RegistrationFieldSource.PersonAttribute,
+                        ShowOnWaitlist = true
                     };
                 }
                 else
@@ -3457,6 +3454,12 @@ The logged-in person's information will be used to complete the registrar inform
                     formField.PersonFieldType == RegistrationPersonFieldType.FirstName ||
                     formField.PersonFieldType == RegistrationPersonFieldType.LastName );
 
+                if ( lPersonField.Visible )
+                {
+                    // Force show on waitlist to be true for FirstName and LastName fields.
+                    cbShowOnWaitList.Checked = true;
+                }
+
                 SetFieldDisplay();
             }
 
@@ -3501,6 +3504,12 @@ The logged-in person's information will be used to complete the registrar inform
 
             cbShowOnWaitList.Visible = cbWaitListEnabled.Visible && cbWaitListEnabled.Checked;
             cbShowOnWaitList.Enabled = fieldSource != RegistrationFieldSource.GroupMemberAttribute;
+
+            if ( protectedField )
+            {
+                // FirstName or LastName field. Do not allow changing show on wait list.
+                cbShowOnWaitList.Enabled = false;
+            }
         }
 
         /// <summary>

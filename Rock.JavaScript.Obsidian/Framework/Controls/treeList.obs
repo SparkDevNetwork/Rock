@@ -13,9 +13,11 @@
                             showChildCount,
                             provider,
                             initiallyExpanded,
-                            enableDeselect
+                            enableDeselect,
+                            showSelectChildren,
                         }"
                           @update:modelValue="onUpdateSelectedValues"
+                          @update:items="emit('update:items', internalItems)"
                           @treeitem-expanded="onItemExpanded"
                           @treeitem-collapsed="onItemCollapsed" />
         </ul>
@@ -103,7 +105,16 @@
         selectFirstByDefault: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
+
+        /**
+         * If enabled then an icon will be shown next to folder items to allow
+         * selecting all children and descendant items of that folder.
+         */
+        showSelectChildren: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
     });
 
     const emit = defineEmits<{
@@ -172,35 +183,6 @@
         // Pass the event up to the parent so it knows about the expansion and can
         // handle it if there's provider
         emit("treeitem-expanded", item);
-
-        if (props.provider) {
-            // We have a provider, check if the item needs it's children loaded still.
-            if (item.hasChildren && item.children === null) {
-                const result = props.provider.getChildItems(item);
-
-                let children = result;
-
-                if (isPromise(result)) {
-                    item.children = [{
-                        children: [],
-                        hasChildren: false,
-                        iconCssClass: "ti ti-rotate-clockwise-2 ti-spin",
-                        value: "",
-                        isActive: false,
-                        isFolder: false
-                    }];
-
-                    children = await result;
-                }
-
-                if (!children || (Array.isArray(children) && children.length === 0)) {
-                    item.hasChildren = false;
-                }
-                item.children = JSON.parse(JSON.stringify(children)) as TreeItemBag[];
-
-                emit("update:items", internalItems.value);
-            }
-        }
     };
 
     /**

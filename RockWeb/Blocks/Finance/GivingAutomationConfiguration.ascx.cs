@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Data;
+using Rock.Enums.Core;
 using Rock.Model;
 using Rock.Utility.Enums;
 using Rock.Utility.Settings.Giving;
@@ -294,7 +295,7 @@ namespace RockWeb.Blocks.Finance
             financialTransactionAlertType.AccountParticipantSystemCommunicationId = ddlAccountParticipantSystemCommunication.SelectedValueAsId();
             financialTransactionAlertType.WorkflowTypeId = wtpLaunchWorkflow.SelectedValueAsId();
             financialTransactionAlertType.AlertSummaryNotificationGroupId = gpNotificationGroup.GroupId;
-            financialTransactionAlertType.RunDays = dwpDaysToRunAlertType.SelectedDaysOfWeekAsFlags();
+            financialTransactionAlertType.RunDaysOfWeek = dwpDaysToRunAlertType.SelectedDaysOfWeek.AsFlags();
             rockContext.SaveChanges();
 
             hfFinancialTransactionAlertTypeId.Value = string.Empty;
@@ -563,7 +564,7 @@ namespace RockWeb.Blocks.Finance
             cbSendBusEvent.Checked = financialTransactionAlertType.SendBusEvent;
             wtpLaunchWorkflow.SetValue( financialTransactionAlertType.WorkflowTypeId );
             gpNotificationGroup.GroupId = financialTransactionAlertType.AlertSummaryNotificationGroupId;
-            dwpDaysToRunAlertType.SelectedDaysOfWeek = ( financialTransactionAlertType.RunDays ?? DayOfWeekFlag.All ).AsDayOfWeekList();
+            dwpDaysToRunAlertType.SelectedDaysOfWeek = ( financialTransactionAlertType.RunDaysOfWeek ?? DaysOfWeekFlags.All ).AsDayOfWeekList();
 
             if ( financialTransactionAlertType.ConnectionOpportunity != null )
             {

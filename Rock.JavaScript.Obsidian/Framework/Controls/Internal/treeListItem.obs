@@ -7,10 +7,16 @@
             {{ itemName }}
             <span class="label label-tree" v-if="showChildCount && item.childCount">{{ item.childCount }}</span>
         </span>
+        <i v-if="showSelectChildren && multiple && item.isFolder"
+           class="ti ti-chevrons-down icon-fw clickable select-children"
+           title="Select Children"
+           @click.prevent.stop="onSelectDescendants"></i>
+
         <ul v-if="hasChildrenLoaded" v-show="showChildren" class="rocktree-children">
             <treeListItem v-for="child in children"
                           :key="child.value ?? ''"
                           @update:modelValue="onUpdateSelectedValues"
+                          @update:items="emit('update:items', $event)"
                           @treeitem-expanded="onChildItemExpanded"
                           @treeitem-collapsed="onChildItemCollapsed"
                           :item="child"
@@ -22,7 +28,8 @@
                             showChildCount,
                             initiallyExpanded,
                             enableDeselect,
-                            provider
+                            provider,
+                            showSelectChildren,
                         }" />
         </ul>
     </li>
@@ -32,6 +39,7 @@
     import { computed, PropType, ref, watch } from "vue";
     import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
     import { ITreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
 
     const props = defineProps({
         modelValue: {
@@ -90,14 +98,33 @@
         enableDeselect: {
             type: Boolean,
             default: false
-        }
+        },
+
+        /**
+         * If enabled then an icon will be shown next to folder items to allow
+         * selecting all children and descendant items of that folder.
+         */
+        showSelectChildren: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: string[]): void;
+        (e: "update:items", value: TreeItemBag[]): void;
         (e: "treeitem-expanded", value: TreeItemBag): void;
         (e: "treeitem-collapsed", value: TreeItemBag): void;
     }>();
+
+    // #region Values
+
+    /** Contains a value that indicates if the children should be shown. */
+    const showChildren = ref(false);
+
+    // #endregion
+
+    // #region Computed Values
 
     /** The list of child items to this item. */
     const children = computed((): TreeItemBag[] => props.item.children ?? []);
@@ -110,9 +137,6 @@
 
     /** The display name of the current item. */
     const itemName = computed((): string => props.item.text ?? "");
-
-    /** Contains a value that indicates if the children should be shown. */
-    const showChildren = ref(false);
 
     /** The CSS class value to use for the list-item element. */
     const listItemClass = computed((): string => {
@@ -146,19 +170,9 @@
         return classes.join(" ");
     });
 
-    // Automatically expand to show selected value deep in the tree
-    watch(() => [props.item, props.modelValue], () => {
-        if (!props.autoExpand || hasChildrenLoaded.value === false) {
-            return;
-        }
+    // #endregion
 
-        if (hasSelectedChild(props.item, props.modelValue)) {
-            showChildren.value = true;
-        }
-        else if (children.value.length === 0) {
-            showChildren.value = false;
-        }
-    }, { immediate: true, deep: true });
+    // #region Functions
 
     /**
      * Determine if a child item is a selected value
@@ -187,13 +201,101 @@
     }
 
     /**
+     * Determines if the specified item can be selected given the current
+     * configuration options.
+     *
+     * @param item The item to be checked.
+     *
+     * @returns true if the item can be selected; otherwise false.
+     */
+    function canSelectItem(item: TreeItemBag): boolean {
+        let canSelect = !item.isFolder && !props.disableFolderSelection;
+
+        if (canSelect && props.provider?.canSelectItem) {
+            canSelect = props.provider.canSelectItem(item, canSelect);
+        }
+
+        return canSelect;
+    }
+
+    /**
+     * Loads the child items for the specified item using the provider, if
+     * necessary.
+     *
+     * @param item The item whose children should be loaded.
+     */
+    async function loadChildItems(item: TreeItemBag): Promise<void> {
+        if (!props.provider) {
+            return;
+        }
+
+        // We have a provider, check if the item needs it's children loaded still.
+        if (!item.hasChildren || item.children !== null) {
+            return;
+        }
+
+        const result = props.provider.getChildItems(item);
+
+        let children = result;
+
+        if (isPromise(result)) {
+            item.children = [{
+                children: [],
+                hasChildren: false,
+                iconCssClass: "ti ti-rotate-clockwise-2 ti-spin",
+                value: "",
+                isActive: false,
+                isFolder: false
+            }];
+
+            children = await result;
+        }
+
+        if (!children || (Array.isArray(children) && children.length === 0)) {
+            item.hasChildren = false;
+        }
+
+        item.children = JSON.parse(JSON.stringify(children)) as TreeItemBag[];
+
+        emit("update:items", item.children);
+    }
+
+    /**
+     * Recursively gets all descendant items of the specified item.
+     *
+     * @param item The item whose descendants should be retrieved.
+     *
+     * @returns A promise that resolves to an array of all descendant items.
+     */
+    async function getAllDescendantItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        const items: TreeItemBag[] = [];
+
+        await loadChildItems(item);
+
+        if (item.children) {
+            for (const child of item.children) {
+                items.push(child);
+                items.push(...await getAllDescendantItems(child));
+            }
+        }
+
+        return items;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
      * Event handler for when the folder arrow is clicked.
      */
-    function onExpand(): void {
+    async function onExpand(): Promise<void> {
         showChildren.value = !showChildren.value;
 
         if (showChildren.value) {
             emit("treeitem-expanded", props.item);
+
+            await loadChildItems(props.item);
         }
         else {
             emit("treeitem-collapsed", props.item);
@@ -201,14 +303,31 @@
     }
 
     /**
-     * If something changes to make existing children no longer exist in the list,
-     * unexpand this item
+     * Event handler for when the "select children" icon is clicked.
      */
-    watch(hasChildrenLoaded, () => {
-        if (!hasChildrenLoaded.value && showChildren.value) {
-            onExpand();
+    async function onSelectDescendants(): Promise<void> {
+        const descendantItems = await getAllDescendantItems(props.item);
+        const descendantValues = descendantItems
+            .filter(i => i.value && canSelectItem(i))
+            .map(i => i.value!);
+
+        const allSelected = descendantValues.every(v => props.modelValue.includes(v));
+
+        if (!allSelected) {
+            // If not all child items are already selected, we need to
+            // add them to the selection.
+            const newSelectedValues = Array.from(new Set([...props.modelValue, ...descendantValues]));
+
+            emit("update:modelValue", newSelectedValues);
         }
-    });
+        else {
+            // If all child items are already selected, we need to
+            // deselect them from the selection.
+            const newSelectedValues = props.modelValue.filter(v => !descendantValues.includes(v));
+
+            emit("update:modelValue", newSelectedValues);
+        }
+    }
 
     /**
      * Event handler for when a child item is expanded.
@@ -232,13 +351,7 @@
      * Event handler for when this item is selected or deselected.
      */
     function onSelect(): void {
-        let canSelect = !props.item.isFolder || !props.disableFolderSelection;
-
-        if (props.provider?.canSelectItem) {
-            canSelect = props.provider.canSelectItem(props.item, canSelect);
-        }
-
-        if (!canSelect) {
+        if (!canSelectItem(props.item)) {
             return;
         }
 
@@ -268,6 +381,32 @@
     function onUpdateSelectedValues(values: string[]): void {
         emit("update:modelValue", values);
     }
+
+    // Automatically expand to show selected value deep in the tree
+    watch(() => [props.item, props.modelValue], () => {
+        if (!props.autoExpand || hasChildrenLoaded.value === false) {
+            return;
+        }
+
+        if (hasSelectedChild(props.item, props.modelValue)) {
+            showChildren.value = true;
+        }
+        else if (children.value.length === 0) {
+            showChildren.value = false;
+        }
+    }, { immediate: true, deep: true });
+
+    /**
+     * If something changes to make existing children no longer exist in the list,
+     * unexpand this item
+     */
+    watch(hasChildrenLoaded, () => {
+        if (!hasChildrenLoaded.value && showChildren.value) {
+            onExpand();
+        }
+    });
+
+    // #endregion
 
     // Show Children on init if this item is in the initiallyExpanded list
     if (props.initiallyExpanded.length > 0 && props.initiallyExpanded.includes(props.item.value ?? "")) {

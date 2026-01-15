@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -56,6 +56,7 @@ namespace Rock.Blocks.Cms
 
     //was [Rock.SystemGuid.BlockTypeGuid( "362179DE-5E57-46AE-A41D-A1E0F869179F" )]
     [Rock.SystemGuid.BlockTypeGuid( "2700A1B8-BD1A-40F1-A660-476DA86D0432" )]
+    [Rock.SystemGuid.EntityTypeGuid( "EB57D1FD-64BA-4651-9F9E-662A2176C6E4")]
     public class PageMap : RockBlockType
     {
         #region Properties

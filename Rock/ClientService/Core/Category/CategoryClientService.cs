@@ -385,23 +385,30 @@ namespace Rock.ClientService.Core.Category
                             childCategoryItem.IsActive = activatedItem.IsActive;
                         }
 
-                        var childCategorizedItemBranch = GetAllDescendants<T>(
-                            childCategoryItem,
-                            currentPerson,
-                            categoryService,
-                            serviceInstance,
-                            cachedEntityType,
-                            options,
-                            depth + 1,
-                            filterMethod
-                        );
-
-                        if ( categoryItem.Children == null )
+                        if ( !options.LazyLoad || options.ExpandToCategoryGuids?.Contains( childCategory.Guid ) == true )
                         {
-                            categoryItem.Children = new List<TreeItemBag>();
+                            if ( childCategoryItem.Children == null )
+                            {
+                                childCategoryItem.Children = new List<TreeItemBag>();
+                            }
+
+                            GetAllDescendants(
+                                childCategoryItem,
+                                currentPerson,
+                                categoryService,
+                                serviceInstance,
+                                cachedEntityType,
+                                options,
+                                depth + 1,
+                                filterMethod
+                            );
+                        }
+                        else
+                        {
+                            childCategoryItem.HasChildren = DoesCategoryHaveChildren( options, categoryService, serviceInstance, childCategoryItem.Value );
                         }
 
-                        categoryItem.Children.Add( childCategorizedItemBranch );
+                        categoryItem.Children.Add( childCategoryItem );
                     }
                 }
 

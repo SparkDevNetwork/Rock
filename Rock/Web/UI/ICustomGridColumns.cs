@@ -40,25 +40,28 @@ namespace Rock.Web.UI
         public const string AttributeKey = "core.CustomGridColumnsConfig";
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CustomGridColumnsConfig"/> class.
-        /// </summary>
-        public CustomGridColumnsConfig()
-        {
-            this.ColumnsConfig = new List<ColumnConfig>();
-        }
-
-        /// <summary>
         /// Gets or sets the columns configuration.
         /// </summary>
         /// <value>
         /// The columns configuration.
         /// </value>
-        public List<ColumnConfig> ColumnsConfig { get; set; }
+        [Newtonsoft.Json.JsonIgnore]
+        [Obsolete( "Use Columns property instead." )]
+        [RockObsolete( "19.0" )]
+        public List<ColumnConfig> ColumnsConfig { get; set; } = new List<ColumnConfig>();
+
+        /// <summary>
+        /// The custom columns that are defined for the grid.
+        /// </summary>
+        [Newtonsoft.Json.JsonProperty( "ColumnsConfig" )]
+        public List<CustomColumnConfig> Columns { get; set; } = new List<CustomColumnConfig>();
 
         /// <summary>
         /// 
         /// </summary>
         [Serializable]
+        [Obsolete( "Use Rock.Web.UI.CustomColumnConfig instead." )]
+        [RockObsolete( "19.0" )]
         public class ColumnConfig
         {
             /// <summary>

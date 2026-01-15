@@ -19,6 +19,7 @@
                   :autoExpand="autoExpand"
                   :showChildCount="showChildCount"
                   :selectFirstByDefault="selectFirstByDefault"
+                  :showSelectChildren="showSelectChildren"
                   :isVisible="internalShowPopup" />
 
         <template #innerLabel><span class="selected-names">{{ selectedNames || blankValue }}</span></template>
@@ -140,7 +141,16 @@
         selectFirstByDefault: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
+
+        /**
+         * If enabled then an icon will be shown next to folder items to allow
+         * selecting all children and descendant items of that folder.
+         */
+        showSelectChildren: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
     });
 
     const emit = defineEmits<{

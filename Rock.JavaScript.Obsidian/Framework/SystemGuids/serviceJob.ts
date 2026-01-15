@@ -195,6 +195,10 @@ export const ServiceJob = {
     DataMigrations181AddFinancialbatchIndex: "EA5D69D8-8ABB-42CD-A664-48F6BC5E2C7F",
     /** The job to run Post v18.1 Data Migrations to add indexes to improve communication prep performance. */
     DataMigrations181AddIndexesForCommunicationPrep: "88C42A48-6713-4CB1-BF6B-A12AB2E292E7",
+    /** The job to run Post v19.0 Data Migrations to add an index to ensure the Communication Unsubscribe Report performs efficiently. */
+    DataMigrations190AddCommunicationUnsubscribeReportIndex: "ECBC94C0-7646-491E-A804-1CA228F0FFAD",
+    /** The Job to run Post v19.0 Data Migrations to perform the final chop of the Registration Entry (webforms) Block. */
+    DataMigrations190ChopRegistrationEntryFinal: "37E3EC22-513D-4F13-A929-38BBA2BDAC68",
     /** The Job to run Post v19.0 Data Migrations to swap Block. */
     DataMigrations190SwapObsidianBlocks: "C05C0C81-12B2-4C35-9405-C3CE09E3CE75",
     /**
@@ -243,6 +247,8 @@ export const ServiceJob = {
     UpdateAnalyticsSourcePostalCode: "29731D97-699D-4D34-A9F4-50C7C33D5C48",
     /** The Rock.Jobs.UpdateEntityUsage job configured to update Media Element usage. */
     UpdateMediaElementUsage: "32d0cb70-d4ef-4ac2-8693-bfdfe9e5233e",
+    /** The Rock.Jobs.UpdateOutreachToolboxTouchpoints job. */
+    UpdateOutreachToolboxTouchpoints: "06320140-a5ff-46fa-9ee5-41f747bbc542",
     /** The Update Persisted Attribute Values job. */
     UpdatePersistedAttributeValue: "A7DDA4B0-BA1D-49F1-8749-5E7A9876AE70",
     /** The Rock.Jobs.UpdatePersistedDatasets job. */

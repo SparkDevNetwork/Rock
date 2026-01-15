@@ -247,7 +247,7 @@ namespace Rock.Data
         /// the action delegate method. Meaning, create your own context.
         /// </remarks>
         /// <param name="action">The action delegate to execute after the changes have been committed.</param>
-        internal void ExecuteAfterCommit( Action action )
+        public void ExecuteAfterCommit( Action action )
         {
             _commitedActions.Add( action );
         }

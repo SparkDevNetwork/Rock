@@ -556,9 +556,9 @@ namespace Rock.Web.UI
         {
             var additionalColumns = this.GetAttributeValue( CustomGridColumnsConfig.AttributeKey ).FromJsonOrNull<CustomGridColumnsConfig>();
             var grid = this.ControlsOfTypeRecursive<Rock.Web.UI.Controls.Grid>().FirstOrDefault();
-            if ( grid != null && additionalColumns != null && additionalColumns.ColumnsConfig.Any() )
+            if ( grid != null && additionalColumns != null && additionalColumns.Columns.Any() )
             {
-                grid.CustomColumns = additionalColumns.ColumnsConfig;
+                grid.InternalCustomColumns = additionalColumns.Columns;
             }
         }
 
