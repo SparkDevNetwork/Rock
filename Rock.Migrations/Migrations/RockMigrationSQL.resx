@@ -421,4 +421,10 @@
   <data name="_202512182358368_UpdatespCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>202512182358368_UpdatespCrm_PersonMerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingBinsAndPercentiles" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingBinsAndPercentiles.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingJourneyStages" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingJourneyStages.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

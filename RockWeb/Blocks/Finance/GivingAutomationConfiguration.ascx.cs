@@ -311,6 +311,20 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            SaveConfiguration( isConfirmed: false );
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the filter-change confirmation modal.
+        /// </summary>
+        protected void mdFiltersChangedConfirm_SaveClick( object sender, EventArgs e )
+        {
+            mdFiltersChangedConfirm.Hide();
+            SaveConfiguration( isConfirmed: true );
+        }
+
+        private void SaveConfiguration( bool isConfirmed )
+        {
             if ( !Page.IsValid )
             {
                 return;
@@ -336,9 +350,44 @@ namespace RockWeb.Blocks.Finance
 
             var givingAutomationSettings = GivingAutomationSettings.LoadGivingAutomationSettings();
 
+            /*
+                1/11/2026 - MSE
+
+                When the transaction filters change (Transaction Types, Accounts, Include Children),
+                any previously-computed attributes are no longer valid. These attributes were calculated
+                using the prior filter set and need to be recomputed for all giving units.
+
+                We mark FiltersChanged so the Giving Automation Job knows to recompute all attributes for all giving units.
+
+                Reason: Changing filters invalidates persisted AttributeValues and requires a full recomputation.
+            */
+            var originalTransactionTypeGuids = ( givingAutomationSettings.TransactionTypeGuids ?? new List<Guid>() ).OrderBy( g => g ).ToList();
+            var originalAccountGuids = ( givingAutomationSettings.FinancialAccountGuids ?? new List<Guid>() ).OrderBy( g => g ).ToList();
+            var originalIncludeChildren = givingAutomationSettings.AreChildAccountsIncluded == true;
+
+            givingAutomationSettings.TransactionTypeGuids = cblTransactionTypes.SelectedValues.AsGuidList();
             givingAutomationSettings.FinancialAccountGuids = isCustomAccounts ? selectedGivingAutomationAccountGuids : null;
             givingAutomationSettings.AreChildAccountsIncluded = isCustomAccounts ? cbGivingAutomationIncludeChildAccounts.Checked : ( bool? ) null;
-            givingAutomationSettings.TransactionTypeGuids = cblTransactionTypes.SelectedValues.AsGuidList();
+
+            var newTransactionTypeGuids = ( givingAutomationSettings.TransactionTypeGuids ?? new List<Guid>() ).OrderBy( g => g ).ToList();
+            var newAccountGuids = ( givingAutomationSettings.FinancialAccountGuids ?? new List<Guid>() ).OrderBy( g => g ).ToList();
+            var newIncludeChildren = givingAutomationSettings.AreChildAccountsIncluded == true;
+
+            var filtersChanged =
+                !originalTransactionTypeGuids.SequenceEqual( newTransactionTypeGuids )
+                || !originalAccountGuids.SequenceEqual( newAccountGuids )
+                || originalIncludeChildren != newIncludeChildren;
+
+            if ( filtersChanged && !isConfirmed )
+            {
+                mdFiltersChangedConfirm.Show();
+                return;
+            }
+
+            if ( filtersChanged )
+            {
+                givingAutomationSettings.GivingClassificationSettings.FiltersChanged = true;
+            }
 
             // Main Giving Automation Settings
             givingAutomationSettings.GivingAutomationJobSettings.IsEnabled = cbEnableGivingAutomation.Checked;
@@ -347,20 +396,18 @@ namespace RockWeb.Blocks.Finance
             // Giving Journey Settings
             givingAutomationSettings.GivingJourneySettings.DaysToUpdateGivingJourneys = dwpDaysToUpdateGivingJourneys.SelectedDaysOfWeek?.ToArray();
 
-            givingAutomationSettings.GivingJourneySettings.FormerGiverNoContributionInTheLastDays = nbFormerGiverNoContributionInTheLastDays.IntegerValue;
-            givingAutomationSettings.GivingJourneySettings.FormerGiverMedianFrequencyLessThanDays = nbFormerGiverMedianFrequencyLessThanDays.IntegerValue;
-
-            givingAutomationSettings.GivingJourneySettings.LapsedGiverNoContributionInTheLastDays = nbLapsedGiverNoContributionInTheLastDays.IntegerValue;
-            givingAutomationSettings.GivingJourneySettings.LapsedGiverMedianFrequencyLessThanDays = nbLapsedGiverMedianFrequencyLessThanDays.IntegerValue;
-
             givingAutomationSettings.GivingJourneySettings.NewGiverContributionCountBetweenMinimum = ( int? ) nreNewGiverContributionCountBetween.LowerValue;
             givingAutomationSettings.GivingJourneySettings.NewGiverContributionCountBetweenMaximum = ( int? ) nreNewGiverContributionCountBetween.UpperValue;
-            givingAutomationSettings.GivingJourneySettings.NewGiverFirstGiftInTheLastDays = nbNewGiverFirstGiftInLastDays.IntegerValue;
+            givingAutomationSettings.GivingJourneySettings.NewGiverFirstGaveDays = nbNewGiverFirstGaveDays.IntegerValue;
 
-            givingAutomationSettings.GivingJourneySettings.OccasionalGiverMedianFrequencyDaysMinimum = ( int? ) nreOccasionalGiverMedianFrequencyDays.LowerValue;
-            givingAutomationSettings.GivingJourneySettings.OccasionalGiverMedianFrequencyDaysMaximum = ( int? ) nreOccasionalGiverMedianFrequencyDays.UpperValue;
+            givingAutomationSettings.GivingJourneySettings.ConsistentGiverLastGaveDays = nbConsistentGiverLastGaveDays.IntegerValue;
+            givingAutomationSettings.GivingJourneySettings.ConsistentGiverMeanFrequency = nbConsistentGiverMeanFrequency.IntegerValue;
 
-            givingAutomationSettings.GivingJourneySettings.ConsistentGiverMedianLessThanDays = nbConsistentGiverMedianLessThanDays.IntegerValue;
+            givingAutomationSettings.GivingJourneySettings.OccasionalGiverLastGaveDays = nbOccasionalGiverLastGaveDays.IntegerValue;
+            givingAutomationSettings.GivingJourneySettings.OccasionalGiverMeanFrequency = nbOccasionalGiverMeanFrequency.IntegerValue;
+
+            givingAutomationSettings.GivingJourneySettings.LapsedGiverNoGiftDays = nbLapsedGiverNoGiftDays.IntegerValue;
+            givingAutomationSettings.GivingJourneySettings.LapsedGiverMeanFrequency = nbLapsedGiverMeanFrequency.IntegerValue;
 
             // Alerting Settings
             givingAutomationSettings.GivingAlertingSettings.GlobalRepeatPreventionDurationDays = nbGlobalRepeatPreventionDuration.Text.AsIntegerOrNull();
@@ -430,20 +477,18 @@ namespace RockWeb.Blocks.Finance
             // Giving Journey Settings
             dwpDaysToUpdateGivingJourneys.SelectedDaysOfWeek = givingAutomationSetting.GivingJourneySettings.DaysToUpdateGivingJourneys?.ToList();
 
-            nbFormerGiverNoContributionInTheLastDays.IntegerValue = givingAutomationSetting.GivingJourneySettings.FormerGiverNoContributionInTheLastDays;
-            nbFormerGiverMedianFrequencyLessThanDays.IntegerValue = givingAutomationSetting.GivingJourneySettings.FormerGiverMedianFrequencyLessThanDays;
-
-            nbLapsedGiverNoContributionInTheLastDays.IntegerValue = givingAutomationSetting.GivingJourneySettings.LapsedGiverNoContributionInTheLastDays;
-            nbLapsedGiverMedianFrequencyLessThanDays.IntegerValue = givingAutomationSetting.GivingJourneySettings.LapsedGiverMedianFrequencyLessThanDays;
-
             nreNewGiverContributionCountBetween.LowerValue = givingAutomationSetting.GivingJourneySettings.NewGiverContributionCountBetweenMinimum;
             nreNewGiverContributionCountBetween.UpperValue = givingAutomationSetting.GivingJourneySettings.NewGiverContributionCountBetweenMaximum;
-            nbNewGiverFirstGiftInLastDays.IntegerValue = givingAutomationSetting.GivingJourneySettings.NewGiverFirstGiftInTheLastDays;
+            nbNewGiverFirstGaveDays.IntegerValue = givingAutomationSetting.GivingJourneySettings.NewGiverFirstGaveDays;
 
-            nreOccasionalGiverMedianFrequencyDays.LowerValue = givingAutomationSetting.GivingJourneySettings.OccasionalGiverMedianFrequencyDaysMinimum;
-            nreOccasionalGiverMedianFrequencyDays.UpperValue = givingAutomationSetting.GivingJourneySettings.OccasionalGiverMedianFrequencyDaysMaximum;
+            nbConsistentGiverLastGaveDays.IntegerValue = givingAutomationSetting.GivingJourneySettings.ConsistentGiverLastGaveDays;
+            nbConsistentGiverMeanFrequency.IntegerValue = givingAutomationSetting.GivingJourneySettings.ConsistentGiverMeanFrequency;
 
-            nbConsistentGiverMedianLessThanDays.IntegerValue = givingAutomationSetting.GivingJourneySettings.ConsistentGiverMedianLessThanDays;
+            nbOccasionalGiverLastGaveDays.IntegerValue = givingAutomationSetting.GivingJourneySettings.OccasionalGiverLastGaveDays;
+            nbOccasionalGiverMeanFrequency.IntegerValue = givingAutomationSetting.GivingJourneySettings.OccasionalGiverMeanFrequency;
+
+            nbLapsedGiverNoGiftDays.IntegerValue = givingAutomationSetting.GivingJourneySettings.LapsedGiverNoGiftDays;
+            nbLapsedGiverMeanFrequency.IntegerValue = givingAutomationSetting.GivingJourneySettings.LapsedGiverMeanFrequency;
 
             nbGlobalRepeatPreventionDuration.Text = givingAutomationSetting.GivingAlertingSettings.GlobalRepeatPreventionDurationDays.ToStringSafe();
             nbGratitudeRepeatPreventionDuration.Text = givingAutomationSetting.GivingAlertingSettings.GratitudeRepeatPreventionDurationDays.ToStringSafe();

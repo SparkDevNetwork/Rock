@@ -22,8 +22,10 @@ using System.Linq;
 using System.Text;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 using Rock.Configuration;
+using Rock.Logging;
 using Rock.Net;
 using Rock.Observability;
 using Rock.ViewModels.Crm;
@@ -94,7 +96,6 @@ namespace Rock.Web
             activity.AddTag( "rock.page.ispostback", isPostBack );
             activity.AddTag( "rock.page.issystem", requestContext.Page?.IsSystem );
         }
-
 
         /// <summary>
         /// Gets the JavaScript block that is required to initialize the Obsidian
@@ -270,6 +271,163 @@ console.info('{_rockVersion}');
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the HTML content that is used to render the Obsidian page
+        /// timings visualizer.
+        /// </summary>
+        /// <returns>A string of HTML text or an empty string.</returns>
+        public static string GetObsidianPageTimingsContent()
+        {
+            return Activity.Current != null
+                ? $"<div id=\"lObsidianPageTimings\" data-trace-id=\"{Activity.Current.TraceId}\"></div>"
+                : string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the JavaScript that initializes the page timings visualizer.
+        /// </summary>
+        /// <returns>A string of text that should be rendered inside a <c>&lt;script&gt;</c> block.</returns>
+        public static string GetObsidianPageTimingsScript()
+        {
+            return @"
+Obsidian.onReady(() => {
+    System.import('@Obsidian/Templates/rockPage.js').then(module => {
+        module.initializePageTimings({
+            elementId: 'lObsidianPageTimings'
+        });
+    });
+});";
+        }
+
+        /// <summary>
+        /// Gets the script that initializes the Rock.settings object.
+        /// </summary>
+        /// <param name="requestContext">The context that describes the current request.</param>
+        /// <returns>A string of text to be rendered inside a &lt;script&gt; tag.</returns>
+        public static string GetRockSettingsInitializeScript( RockRequestContext requestContext )
+        {
+            var realTimeUrl = "/rock-rt";
+            var realTimeHostname = SystemSettings.GetValue( SystemKey.SystemSetting.REALTIME_HOSTNAME );
+            var pageCache = requestContext.Page;
+
+            if ( realTimeHostname.IsNotNullOrWhiteSpace() )
+            {
+                try
+                {
+                    var requestUrl = System.Web.HttpContext.Current.Request.Url;
+                    requestUrl = requestContext.RequestUri;
+
+                    realTimeUrl = new UriBuilder
+                    {
+                        Scheme = requestUrl.Scheme,
+                        Host = realTimeHostname,
+                        Port = requestUrl.Port,
+                        Path = "/rock-rt"
+                    }.ToString();
+                }
+                catch ( Exception ex )
+                {
+                    RockLogger.LoggerFactory.CreateLogger( typeof( RockPageHelper ).FullName )
+                        .LogError( ex, "Unable to create URL for real-time engine." );
+                }
+            }
+
+            return $@"
+Rock.settings.initialize({{
+    siteId: {pageCache.Layout.SiteId},
+    layoutId: {pageCache.LayoutId},
+    pageId: {pageCache.Id},
+    layout: '{pageCache.Layout.FileName}',
+    baseUrl: '{requestContext.ResolveRockUrl( "~" )}',
+    realTimeUrl: '{realTimeUrl}',
+}});";
+        }
+
+        /// <summary>
+        /// Gets the URL of the login page for the current site.
+        /// </summary>
+        /// <param name="requestContext">The context that describes the current request.</param>
+        /// <returns>The URL of the login page.</returns>
+        public static string GetLoginPageUrl( RockRequestContext requestContext )
+        {
+            var site = requestContext.Page.Layout.Site;
+
+            if ( requestContext.CurrentPerson == null )
+            {
+                // If the user hasn't logged in yet, redirect to the login page.
+
+                if ( site.LoginPageId.HasValue )
+                {
+                    return site.GetLoginUrlWithReturnUrl();
+                }
+                else
+                {
+#if NET472_OR_GREATER
+                    return GetFormsLoginPage();
+#endif
+                }
+            }
+
+            // If the user has logged in, redirect to error page.
+            // We can also get here if we couldn't determine a login page.
+            if ( site.ErrorPage.IsNotNullOrWhiteSpace() )
+            {
+                return string.Format( "{0}?type=security", site.ErrorPage.TrimEnd( new char[] { '/' } ) );
+            }
+            else
+            {
+                return "~/Error.aspx?type=security";
+            }
+        }
+
+#if NET472_OR_GREATER
+        /// <summary>
+        /// This is used on .NET Framework systems to get the Forms Authentication
+        /// login page if it wasn't defined on the Site.
+        /// </summary>
+        /// <returns>The URL to use for the login page.</returns>
+        internal static string GetFormsLoginPage()
+        {
+            var current = System.Web.HttpContext.Current;
+            var loginComponents = System.Web.Security.FormsAuthentication.LoginUrl.Split( '?' );
+            var loginUrl = loginComponents[0];
+
+            var queryString = loginComponents.Length > 1
+                ? loginComponents[1].ParseQueryString()
+                : "".ParseQueryString();
+
+            var originalUrl = System.Web.HttpUtility.UrlEncode( current.Request.RawUrl, current.Request.ContentEncoding );
+            queryString["ReturnUrl"] = originalUrl;
+
+            return $"{loginUrl}?{queryString.ToQueryString(true)}";
+        }
+#endif
+
+        /// <summary>
+        /// Gets the JavaScript that initializes the color mode (light, dark, system)
+        /// for the site.
+        /// </summary>
+        /// <returns>A string of text that should be rendered inside a <c>&lt;script&gt;</c> block.</returns>
+        public static string GetColorModeScript()
+        {
+            return @"
+        (function () {
+            var attr = 'theme';
+            var states = ['light', 'dark', 'system'];
+            var html = document.documentElement;
+
+            // init state
+            var saved = localStorage.getItem(attr);
+            var currentIndex = Math.max(0, states.indexOf(saved));
+            if ( saved == null ) {
+                currentIndex = 2; // default to system
+            }
+
+            html.setAttribute( ""theme"", states[currentIndex] );
+        })();
+";
         }
     }
 }

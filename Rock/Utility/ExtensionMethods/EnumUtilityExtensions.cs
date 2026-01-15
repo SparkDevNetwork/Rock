@@ -136,5 +136,36 @@ namespace Rock
             };
         }
 
+        /// <summary>
+        /// Converts the updates dictionary to a dbo.AttributeValueUpdateList <see cref="SqlParameter"/> populated with values.
+        /// </summary>
+        /// <param name="updates">The dictionary of updates (Key: PersonId, Value: List of AttributeUpdate objects).</param>
+        /// <param name="parameterName">The name of the Sql Parameter to be set.</param>
+        /// <returns>A SqlParameter of Type dbo.AttributeValueUpdateList whose values are those of this dictionary.</returns>
+        public static SqlParameter ConvertToAttributeValueUpdateListParameter( this Dictionary<int, List<Rock.Utility.AttributeValueUpdate>> updates, string parameterName )
+        {
+            var dataTable = new DataTable();
+            dataTable.Columns.Add( "EntityId", typeof( int ) );
+            dataTable.Columns.Add( "AttributeId", typeof( int ) );
+            dataTable.Columns.Add( "Value", typeof( string ) );
+
+            foreach ( var personId in updates.Keys )
+            {
+                var attributeUpdates = updates[personId];
+                if ( attributeUpdates != null )
+                {
+                    foreach ( var attributeUpdate in attributeUpdates )
+                    {
+                        dataTable.Rows.Add( personId, attributeUpdate.AttributeId, attributeUpdate.Value );
+                    }
+                }
+            }
+
+            return new SqlParameter( parameterName, SqlDbType.Structured )
+            {
+                TypeName = "dbo.AttributeValueUpdateList",
+                Value = dataTable
+            };
+        }
     }
 }

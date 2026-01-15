@@ -19,7 +19,7 @@ namespace Rock.Migrations.Migrations {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class RockMigrationSQL {
@@ -280,7 +280,8 @@ namespace Rock.Migrations.Migrations {
         ///    BEGIN
         ///	
         ///	    -- configuration of the duration in weeks
-        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
+        ///	    DECLARE @GivingDurationLongWeeks int = 52
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202101292141445_Rollup_01291_spCrm_FamilyAnalyticsGiving {
             get {
@@ -1755,7 +1756,8 @@ namespace Rock.Migrations.Migrations {
         ///    &lt;/returns&gt;
         ///
         ///    &lt;param name=&apos;@RegistrationTemplatePlacementEntityTypeId&apos; datatype=&apos;int&apos;&gt;
-        ///		The EntityTypeId for RegistrationTemplatePlacement.        /// [rest of string was truncated]&quot;;.
+        ///		The EntityTypeId for RegistrationTemplatePlacement.
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202506232302341_AddAndSwapToObsidianGroupPlacementBlock_spGetGroupPlacementPeople {
             get {
@@ -1817,7 +1819,8 @@ namespace Rock.Migrations.Migrations {
         ///    &lt;/returns&gt;
         ///
         ///    &lt;param name=&apos;@RegistrationTemplatePlacementEntityTypeId&apos; datatype=&apos;int&apos;&gt;
-        ///		The EntityTypeId for RegistrationTemplatePlacement.        /// [rest of string was truncated]&quot;;.
+        ///		The EntityTypeId for RegistrationTemplatePlacement.
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202507162006509_UpdateGroupPlacementStoredProcedure_spGetGroupPlacementPeople {
             get {
@@ -1881,7 +1884,8 @@ namespace Rock.Migrations.Migrations {
         ///    &lt;/returns&gt;
         ///
         ///    &lt;param name=&apos;@RegistrationTemplatePlacementEntityTypeId&apos; datatype=&apos;int&apos;&gt;
-        ///		The EntityTypeId for RegistrationTemplatePlacement.        /// [rest of string was truncated]&quot;;.
+        ///		The EntityTypeId for RegistrationTemplatePlacement.
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202511051918499_UpdateGetGroupPlacementPeopleStoredProcedure_spGetGroupPlacementPeople {
             get {
@@ -1951,6 +1955,39 @@ namespace Rock.Migrations.Migrations {
         public static string _202512182358368_UpdatespCrm_PersonMerge {
             get {
                 return ResourceManager.GetString("_202512182358368_UpdatespCrm_PersonMerge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CREATE PROCEDURE dbo.spGivingAutomation_UpdateGivingBinsAndPercentiles
+        ///    @CurrentRockDateTime DATETIME,
+        ///    @TransactionTypeIds dbo.IdList READONLY,        -- List of allowed TransactionTypeValueIds ( Defined in Giving Automation Configuration Block )
+        ///    @FinancialAccountIds dbo.IdList READONLY        -- List of allowed FinancialAccounts ( Defined in Giving Automation Configuration Block )
+        ///AS
+        ///BEGIN
+        ///    SET NOCOUNT ON;
+        ///
+        ///    DECLARE @EndDate DATETIME = @CurrentRockDateTime;
+        ///    DECLARE @StartDate  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingBinsAndPercentiles {
+            get {
+                return ResourceManager.GetString("_202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingBin" +
+                        "sAndPercentiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CREATE PROCEDURE dbo.spGivingAutomation_UpdateGivingJourneyStages
+        ///    @CurrentRockDateTime DATETIME,
+        ///    @TransactionTypeIds dbo.IdList READONLY,                -- List of allowed TransactionTypeValueIds ( Defined in Giving Automation Configuration Block )
+        ///    @FinancialAccountIds dbo.IdList READONLY,               -- List of allowed FinancialAccounts ( Defined in Giving Automation Configuration Block )
+        ///    @NewGiverFirstGaveDays INT = 150,                       -- Max days since the first gift for some [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingJourneyStages {
+            get {
+                return ResourceManager.GetString("_202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingJou" +
+                        "rneyStages", resourceCulture);
             }
         }
         

@@ -366,6 +366,38 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the giving automation source transaction query filtered by a batch of giving identifiers.
+        /// Negative transactions are excluded.
+        /// </summary>
+        /// <param name="givingIds">The giving identifiers to include.</param>
+        /// <returns>An IQueryable of FinancialTransaction filtered to the specified giving identifiers.</returns>
+        public IQueryable<FinancialTransaction> GetGivingAutomationSourceTransactionQueryByGivingIds( List<string> givingIds )
+        {
+            return GetGivingAutomationSourceTransactionQueryByGivingIds( givingIds, false );
+        }
+
+        /// <summary>
+        /// Gets the giving automation source transaction query filtered by a batch of giving identifiers.
+        /// </summary>
+        /// <param name="givingIds">The giving identifiers to include.</param>
+        /// <param name="includeNegativeTransactions">True to include negative transactions; otherwise false.</param>
+        /// <returns>An IQueryable of FinancialTransaction filtered per the specified parameters.</returns>
+        public IQueryable<FinancialTransaction> GetGivingAutomationSourceTransactionQueryByGivingIds( List<string> givingIds, bool includeNegativeTransactions )
+        {
+            var baseQuery = GetGivingAutomationSourceTransactionQuery( includeNegativeTransactions );
+
+            var qry = baseQuery.Where( t =>
+                t.AuthorizedPersonAliasId.HasValue &&
+                t.AuthorizedPersonAlias.Person.GivingId != null &&
+                t.AuthorizedPersonAlias.Person.GivingId.Length > 0 &&
+                // Within the GivingAutomation job, we process in batches of no more than 500,
+                // so we don't have to worry about SQL parameter limits here.
+                givingIds.Contains( t.AuthorizedPersonAlias.Person.GivingId ) );
+
+            return qry;
+        }
+
+        /// <summary>
         /// Gets the giving automation source transaction query (without negative transactions).
         /// This is used by <see cref="Rock.Jobs.GivingAutomation"/>.
         /// </summary>
@@ -399,12 +431,12 @@ namespace Rock.Model
             var giverAnonymousPersonAliasIds = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.Guid == giverAnonymousPersonGuid ).Select( a => a.Id );
             query = query.Where( a => a.AuthorizedPersonAliasId.HasValue && !giverAnonymousPersonAliasIds.Contains( a.AuthorizedPersonAliasId.Value ) );
 
-            var settings = GivingAutomationSettings.LoadGivingAutomationSettings();
+            // Get the qualifying transaction filters set in the GivingAutomationConfiguration block
+            // (accountIds already includes child accounts if configured)
+            var ( transactionTypeIds, accountIds, isAllTaxDeductible ) = GetGivingAutomationFilterIds();
 
-            // Filter by transaction type (defaults to contributions only)
-            var transactionTypeIds = settings.TransactionTypeGuids.Select( DefinedValueCache.Get ).Select( dv => dv.Id ).ToList();
-
-            if ( transactionTypeIds.Count() == 1 )
+            // Filter by transaction type (defaults to contributions only in GivingAutomationSettings)
+            if ( transactionTypeIds.Count == 1 )
             {
                 var transactionTypeId = transactionTypeIds[0];
                 query = query.Where( t => t.TransactionTypeValueId == transactionTypeId );
@@ -414,43 +446,17 @@ namespace Rock.Model
                 query = query.Where( t => transactionTypeIds.Contains( t.TransactionTypeValueId ) );
             }
 
-            List<int> accountIds;
-            if ( settings.FinancialAccountGuids?.Any() == true )
+            // Filter by account
+            if ( isAllTaxDeductible )
             {
-                accountIds = FinancialAccountCache.GetByGuids( settings.FinancialAccountGuids ).Select( a => a.Id ).ToList();
+                query = query.Where( t => t.TransactionDetails.Any( td => td.Account.IsTaxDeductible ) );
             }
             else
             {
-                accountIds = new FinancialAccountService( rockContext ).Queryable()
-                    .Where( a => a.IsTaxDeductible )
-                    .Select( a => a.Id )
-                    .ToList();
-            }
-
-            if ( settings.AreChildAccountsIncluded == true )
-            {
-                var selectedAccountIds = accountIds.ToList();
-                var childAccountsIds = FinancialAccountCache.GetByIds( accountIds ).SelectMany( a => a.GetDescendentFinancialAccountIds() ).ToList();
-                selectedAccountIds.AddRange( childAccountsIds );
-                selectedAccountIds = selectedAccountIds.Distinct().ToList();
-
-                if ( selectedAccountIds.Count() == 1 )
-                {
-                    var accountId = selectedAccountIds[0];
-                    query = query.Where( t => t.TransactionDetails.Any( td => td.AccountId == accountId ) );
-
-                }
-                else
-                {
-                    query = query.Where( t => t.TransactionDetails.Any( td => selectedAccountIds.Contains( td.AccountId ) ) );
-                }
-            }
-            else
-            {
-                if ( accountIds.Count() == 1 )
+                if ( accountIds.Count == 1 )
                 {
                     var accountId = accountIds[0];
-                    query = query.Where( t => t.TransactionDetails.Any( td => accountId == td.AccountId ) );
+                    query = query.Where( t => t.TransactionDetails.Any( td => td.AccountId == accountId ) );
                 }
                 else
                 {
@@ -496,6 +502,69 @@ namespace Rock.Model
             }
 
             return query;
+        }
+
+        /// <summary>
+        /// Computes the TransactionTypeIds and FinancialAccountIds used by Giving Automation filters.
+        /// </summary>
+        /// <returns></returns>
+        public ( List<int> TransactionTypeIds, List<int> FinancialAccountIds, bool IsAllTaxDeductible ) GetGivingAutomationFilterIds()
+        {
+            var settings = GivingAutomationSettings.LoadGivingAutomationSettings();
+            var rockContext = this.Context as RockContext;
+
+            // Transaction types from defined values in settings
+            var transactionTypeIds = settings.TransactionTypeGuids
+                .Select( DefinedValueCache.Get )
+                .Where( dv => dv != null )
+                .Select( dv => dv.Id )
+                .ToList();
+
+            // Account Ids from settings or fallback to tax-deductible
+            List<int> accountIds;
+            bool isAllTaxDeductible = false;
+            
+            if ( settings.FinancialAccountGuids?.Any() == true )
+            {
+                accountIds = FinancialAccountCache.GetByGuids( settings.FinancialAccountGuids )
+                    .Select( a => a.Id )
+                    .ToList();
+
+                if ( settings.AreChildAccountsIncluded == true )
+                {
+                    var childIds = FinancialAccountCache
+                        .GetByIds( accountIds )
+                        .SelectMany( a => a.GetDescendentFinancialAccountIds() )
+                        .ToList();
+                    accountIds.AddRange( childIds );
+                    accountIds = accountIds.Distinct().ToList();
+                }
+            }
+            else
+            {
+                /*
+                      1/14/2026 - MSE
+
+                      To prevent the unlikely scenario of a SQL error caused by exceeding the
+                      maximum number of parameters allowed in a query, we use this isAllTaxDeductible
+                      flag to query by property (IsTaxDeductible) instead of by ID list.
+
+                      No specific accounts selected implies "All Tax Deductible Accounts".
+
+                      Reason: https://github.com/SparkDevNetwork/Rock/issues/6644
+                */
+                isAllTaxDeductible = true;
+
+                // The list of account IDs must still be materialized because they are passed
+                // as a TVP to the stored procedures in GivingAutomationHelper.
+                accountIds = new FinancialAccountService( rockContext ).Queryable()
+                    .AsNoTracking()
+                    .Where( a => a.IsTaxDeductible )
+                    .Select( a => a.Id )
+                    .ToList();
+            }
+
+            return ( transactionTypeIds, accountIds, isAllTaxDeductible );
         }
 
         /// <summary>
