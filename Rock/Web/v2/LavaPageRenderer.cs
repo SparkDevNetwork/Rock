@@ -21,7 +21,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web.UI;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -36,9 +35,7 @@ using Rock.Observability;
 using Rock.Security;
 using Rock.Utility;
 using Rock.Utility.ExtensionMethods;
-using Rock.ViewModels.Crm;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 
 namespace Rock.Web.v2
 {
@@ -57,11 +54,7 @@ namespace Rock.Web.v2
 
         private readonly RockRequestContext _rockRequestContext;
 
-        private bool _pageHasObsidianBlock = false;
-
-        private bool _pageNeedsObsidian = false;
-
-        private bool _canAdministrateBlockOnPage = false;
+        internal LavaPageRendererState State { get; } = new LavaPageRendererState();
 
         public LavaPageRenderer( LavaPageLayout layout, ILavaEngine engine, RockRequestContext rockRequestContext )
         {
@@ -81,51 +74,59 @@ namespace Rock.Web.v2
             // Add configuration specific to Rock Page to the observability activity.
             RockPageHelper.ConfigureActivity( Activity.Current, _rockRequestContext );
 
-            var headEndContentBuilder = new StringBuilder();
-            var bodyEndContentBuilder = new StringBuilder();
-
             AddLegacyWebFormSupport();
-            AddDefaultPageScripts( headEndContentBuilder );
+            AddDefaultPageScripts();
             AddPageMetaTags();
             AddSiteIcons();
+            AddDebugTimings();
 
             var zones = await RenderBlocksAsync( _layout.Zones );
 
-            if ( _pageNeedsObsidian )
+            if ( State.PageNeedsObsidian )
             {
                 InjectObsidian();
             }
 
-            AddPageHeadContent( headEndContentBuilder );
+            AddPageHeadContent();
 
             // Add support for JavaScript that tries to access the WebForms progress div.
-            bodyEndContentBuilder.AppendLine( "<div id=\"updateProgress\"></div>" );
+            State.BodyEndContentBuilder.AppendLine( "<div id=\"updateProgress\"></div>" );
 
             foreach ( var responseElement in responseBase.GetHtmlElements() )
             {
-                ProcessResponseElement( responseElement, headEndContentBuilder, bodyEndContentBuilder );
+                ProcessResponseElement( responseElement );
             }
 
-            var mergeFields = _rockRequestContext.GetCommonMergeFields();
+            return RenderTemplate( responseBase, zones );
+        }
 
-            mergeFields.Add( "Page", _rockRequestContext.Page );
-            mergeFields.Add( "PageIconCssClass", _rockRequestContext.Page.IconCssClass );
-            mergeFields.Add( "PageTitle", responseBase.PageTitle );
-            mergeFields.Add( "BrowserTitle", responseBase.BrowserTitle );
-            mergeFields.Add( "SiteTitle", _rockRequestContext.Page.Layout.Site.Name );
-            mergeFields.Add( "BodyCssClass", _rockRequestContext.Page.BodyCssClass );
-            mergeFields.Add( "BreadCrumbs", GetPageBreadCrumbs() );
-            mergeFields.Add( "Zones", zones );
-            mergeFields.Add( "HeadEndContent", headEndContentBuilder.ToString() );
-            mergeFields.Add( "BodyEndContent", bodyEndContentBuilder.ToString() );
+        private string RenderTemplate( RockResponseBase responseBase, Dictionary<string, string> zones )
+        {
+            var breadCrumbs = GetPageBreadCrumbs();
 
-            var context = _engine.NewRenderContext( mergeFields, Array.Empty<string>() );
-            var parameters = LavaRenderParameters.WithContext( context );
-            parameters.ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Throw;
+            using ( var activity = ObservabilityHelper.StartActivity( "Render Page Template" ) )
+            {
+                var mergeFields = _rockRequestContext.GetCommonMergeFields();
 
-            var result = _engine.RenderTemplate( _layout.Template, parameters );
+                mergeFields.Add( "Page", _rockRequestContext.Page );
+                mergeFields.Add( "PageIconCssClass", _rockRequestContext.Page.IconCssClass );
+                mergeFields.Add( "PageTitle", responseBase.PageTitle );
+                mergeFields.Add( "BrowserTitle", responseBase.BrowserTitle );
+                mergeFields.Add( "SiteTitle", _rockRequestContext.Page.Layout.Site.Name );
+                mergeFields.Add( "BodyCssClass", _rockRequestContext.Page.BodyCssClass );
+                mergeFields.Add( "BreadCrumbs", breadCrumbs );
+                mergeFields.Add( "Zones", zones );
+                mergeFields.Add( "HeadEndContent", State.HeadEndContentBuilder.ToString() );
+                mergeFields.Add( "BodyEndContent", State.BodyEndContentBuilder.ToString() );
 
-            return result.Text;
+                var context = _engine.NewRenderContext( mergeFields, Array.Empty<string>() );
+                var parameters = LavaRenderParameters.WithContext( context );
+                parameters.ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Throw;
+
+                var result = _engine.RenderTemplate( _layout.Template, parameters );
+
+                return result.Text;
+            }
         }
 
         internal async Task<Dictionary<string, string>> RenderBlocksAsync( IReadOnlyCollection<LavaPageZone> zones )
@@ -259,13 +260,13 @@ namespace Rock.Web.v2
 
                         if ( blockEntity is IRockObsidianBlockType )
                         {
-                            _pageNeedsObsidian = true;
-                            _pageHasObsidianBlock = true;
+                            State.PageNeedsObsidian = true;
+                            State.PageHasObsidianBlock = true;
                         }
 
                         if ( canAdministrate || ( canEdit && blockEntity is IHasCustomActions ) )
                         {
-                            _canAdministrateBlockOnPage = true;
+                            State.CanAdministrateBlockOnPage = true;
                         }
 
                         if ( blockEntity is IRockWebBlockType rockBlockEntity )
@@ -310,7 +311,7 @@ namespace Rock.Web.v2
             var script = RockPageHelper.GetObsidianInitScript( _rockRequestContext );
 
             // TODO: Add this to some property that contains body CSS class data.
-            if ( _pageHasObsidianBlock )
+            if ( State.PageHasObsidianBlock )
             {
                 //script = "document.body.classList.add(\"obsidian-loading\")\n" + script;
             }
@@ -432,14 +433,13 @@ namespace Rock.Web.v2
         /// Adds the default page JavaScript libraries that must be included on
         /// every page.
         /// </summary>
-        /// <param name="headEndContentBuilder">The <see cref="StringBuilder"/> to append raw header content to.</param>
-        private void AddDefaultPageScripts( StringBuilder headEndContentBuilder )
+        private void AddDefaultPageScripts()
         {
             AddScriptBundle( "~/Scripts/Bundles/RockJQueryLatest" );
             AddScriptBundle( "~/Scripts/Bundles/RockLibs" );
             AddScriptBundle( "~/Scripts/Bundles/RockUi" );
 
-            var isAdministratorLike = _canAdministrateBlockOnPage
+            var isAdministratorLike = State.CanAdministrateBlockOnPage
                 || _rockRequestContext.Page.IsAuthorized( Authorization.ADMINISTRATE, _rockRequestContext.CurrentPerson )
                 || _rockRequestContext.Page.IsAuthorized( Authorization.EDIT, _rockRequestContext.CurrentPerson );
 
@@ -459,12 +459,39 @@ namespace Rock.Web.v2
             _rockRequestContext.Response
                 .AddScriptToHead( "shortcut-script", RockPageHelper.GetShortcutKeyScript() );
 
+            _rockRequestContext.Response
+                .AddScriptToHead( "rock-settings-initialize", RockPageHelper.GetRockSettingsInitializeScript( _rockRequestContext ) );
+
+            _rockRequestContext.Response
+                .AddScriptToHead( "color-mode-script", RockPageHelper.GetColorModeScript() );
+
             var googleScript = RockPageHelper.GetGoogleAnalyticsScriptTags( _rockRequestContext.Page );
 
             if ( googleScript.IsNotNullOrWhiteSpace() )
             {
-                headEndContentBuilder.AppendLine( googleScript );
+                State.HeadEndContentBuilder.AppendLine( googleScript );
             }
+        }
+
+        /// <summary>
+        /// Adds in any scripts and HTML content to render the page debug timings.
+        /// </summary>
+        private void AddDebugTimings()
+        {
+            if ( Activity.Current == null )
+            {
+                return;
+            }
+
+            if ( !DebugTraceProcessor.IsValidTrace( Activity.Current.TraceId.ToString() ) )
+            {
+                return;
+            }
+
+            State.BodyEndContentBuilder.AppendLine( RockPageHelper.GetObsidianPageTimingsContent() );
+
+            _rockRequestContext.Response
+                .AddScript( "rock-obsidian-page-timings-script", RockPageHelper.GetObsidianPageTimingsScript() );
         }
 
         /// <summary>
@@ -496,13 +523,11 @@ namespace Rock.Web.v2
         /// content builder.
         /// </summary>
         /// <param name="responseElement">The element being processed.</param>
-        /// <param name="headEndContentBuilder">The builder for content at the end of the 'head' tag.</param>
-        /// <param name="bodyEndContentBuilder">The builder for content at the end of the 'body' tag.</param>
-        private void ProcessResponseElement( ResponseHtmlElement responseElement, StringBuilder headEndContentBuilder, StringBuilder bodyEndContentBuilder )
+        private void ProcessResponseElement( ResponseHtmlElement responseElement )
         {
             var sb = responseElement.Location == Enums.Net.ResponseElementLocation.Header
-               ? headEndContentBuilder
-               : bodyEndContentBuilder;
+               ? State.HeadEndContentBuilder
+               : State.BodyEndContentBuilder;
 
             sb.Append( $"<{responseElement.Name}" );
 
@@ -601,21 +626,33 @@ namespace Rock.Web.v2
         /// <summary>
         /// Adds the custom head element content defined for the site and page.
         /// </summary>
-        /// <param name="headEndContentBuilder">The <see cref="StringBuilder"/> to append the content to.</param>
-        internal void AddPageHeadContent( StringBuilder headEndContentBuilder )
+        internal void AddPageHeadContent()
         {
             if ( _rockRequestContext.Page.Layout.Site.PageHeaderContent.IsNotNullOrWhiteSpace() )
             {
-                headEndContentBuilder.AppendLine( _rockRequestContext.Page.Layout.Site.PageHeaderContent );
+                State.HeadEndContentBuilder.AppendLine( _rockRequestContext.Page.Layout.Site.PageHeaderContent );
             }
 
             if ( _rockRequestContext.Page.HeaderContent.IsNotNullOrWhiteSpace() )
             {
-                headEndContentBuilder.AppendLine( _rockRequestContext.Page.HeaderContent );
+                State.HeadEndContentBuilder.AppendLine( _rockRequestContext.Page.HeaderContent );
             }
         }
 
         [ExcludeFromCodeCoverage]
         private void LogException( Exception ex ) => ExceptionLogService.LogException( ex );
+    }
+
+    internal sealed class LavaPageRendererState
+    {
+        public bool PageHasObsidianBlock { get; set; }
+
+        public bool PageNeedsObsidian { get; set; }
+
+        public bool CanAdministrateBlockOnPage { get; set; }
+
+        public StringBuilder HeadEndContentBuilder { get; } = new StringBuilder();
+
+        public StringBuilder BodyEndContentBuilder { get; } = new StringBuilder();
     }
 }

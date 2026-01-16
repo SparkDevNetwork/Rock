@@ -985,11 +985,10 @@ namespace Rock.Tests.Web.v2
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
                 var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
-                var sb = new StringBuilder();
 
-                renderer.AddPageHeadContent( sb );
+                renderer.AddPageHeadContent();
 
-                Assert.Contains( "page content", sb.ToString() );
+                Assert.Contains( "page content", renderer.State.HeadEndContentBuilder.ToString() );
             }
         }
 
@@ -1021,11 +1020,10 @@ namespace Rock.Tests.Web.v2
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
                 var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
-                var sb = new StringBuilder();
 
-                renderer.AddPageHeadContent( sb );
+                renderer.AddPageHeadContent();
 
-                Assert.Contains( "site content", sb.ToString() );
+                Assert.Contains( "site content", renderer.State.HeadEndContentBuilder.ToString() );
             }
         }
 
@@ -1057,11 +1055,10 @@ namespace Rock.Tests.Web.v2
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
                 var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
-                var sb = new StringBuilder();
 
-                renderer.AddPageHeadContent( sb );
+                renderer.AddPageHeadContent();
 
-                Assert.IsEmpty( sb.ToString() );
+                Assert.IsEmpty( renderer.State.HeadEndContentBuilder.ToString() );
             }
         }
 

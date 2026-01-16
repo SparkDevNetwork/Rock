@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
@@ -27,6 +28,8 @@ using Microsoft.Extensions.Primitives;
 using Rock.Configuration;
 using Rock.Lava;
 using Rock.Net;
+using Rock.Observability;
+using Rock.Web.Cache;
 
 namespace Rock.Web.v2
 {
@@ -47,6 +50,17 @@ namespace Rock.Web.v2
 
         public override async Task ProcessRequestAsync( HttpContext context )
         {
+            // Validate the trace if it is for this page.
+            if ( context.Items.Contains( "Rock:DebugTraceEnabled" ) && Activity.Current != null )
+            {
+                var tracePageId = context.Items["Rock:DebugTraceEnabled"] as int?;
+
+                if ( tracePageId == _rockRequestContext.Page.Id )
+                {
+                    DebugTraceProcessor.ValidateTrace( Activity.Current.TraceId.ToString() );
+                }
+            }
+
             var internalAccessor = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>() as RockRequestContextAccessor;
 
             if ( internalAccessor != null )
