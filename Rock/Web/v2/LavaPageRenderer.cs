@@ -21,6 +21,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
+
+using Grpc.Core;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -85,6 +88,7 @@ namespace Rock.Web.v2
             AddPageMetaTags();
             AddSiteIcons();
             AddDebugTimings();
+            AddPopupControls();
 
             var zones = await RenderBlocksAsync( _layout.Zones );
 
@@ -98,12 +102,16 @@ namespace Rock.Web.v2
             // Add support for JavaScript that tries to access the WebForms progress div.
             State.BodyEndContentBuilder.AppendLine( "<div id=\"updateProgress\"></div>" );
 
+            AddDefaultResponseHeaders();
+
+            // This should be last, just before the response elements are processed.
+            // This emits the page load timing value.
+            AddAdminFooter();
+
             foreach ( var responseElement in responseBase.GetHtmlElements() )
             {
                 ProcessResponseElement( responseElement );
             }
-
-            AddDefaultResponseHeaders();
 
             return RenderTemplate( responseBase, zones );
         }
@@ -658,6 +666,138 @@ namespace Rock.Web.v2
             {
                 State.HeadEndContentBuilder.AppendLine( _rockRequestContext.Page.HeaderContent );
             }
+        }
+
+        private void AddPopupControls()
+        {
+            var content = @"<div id=""modal-popup"" class=""modal container modal-content rock-modal rock-modal-frame"">
+	<div id=""modal-popup_contentPanel"" class=""iframe"">
+		<iframe id=""modal-popup_iframe"" scrolling=""no"" style=""height:auto;""></iframe>
+	</div>
+</div>";
+
+            State.BodyEndContentBuilder.AppendLine( content );
+        }
+
+        private void AddAdminFooter()
+        {
+            if ( !_rockRequestContext.Page.IncludeAdminFooter )
+            {
+                return;
+            }
+
+            var canEditPage = _rockRequestContext.Page.IsAuthorized( Authorization.EDIT, _rockRequestContext.CurrentPerson );
+            var canAdministratePage = _rockRequestContext.Page.IsAuthorized( Authorization.ADMINISTRATE, _rockRequestContext.CurrentPerson );
+
+            if ( !State.CanAdministrateBlockOnPage && !canEditPage && !canAdministratePage )
+            {
+                return;
+            }
+
+#if NET472_OR_GREATER
+            var duration = RockDateTime.Now.Subtract( ( DateTime ) System.Web.HttpContext.Current.Items["Request_Start_Time"] );
+#else
+            var duration = TimeSpan.Zero;
+#endif
+
+            var url = _rockRequestContext.RequestUri;
+            var query = url.Query.ParseQueryString();
+            var timingsKey = $"{_rockRequestContext.Page.IdKey}_{_rockRequestContext.CurrentPerson.IdKey}";
+            var timingsHash = timingsKey.HmacSha256Hash( Encryption.GetEphemeralHashingKey() + url.AbsolutePath );
+
+            query["ShowDebugTimings"] = $"{timingsKey}_{timingsHash}";
+
+            var cacheControlCookie = _rockRequestContext.GetCookieValue( RockCache.CACHE_CONTROL_COOKIE );
+            var isCacheEnabled = cacheControlCookie == null || cacheControlCookie.AsBoolean();
+            var cacheIndicator = isCacheEnabled ? "text-success" : "text-danger";
+            var cacheEnabled = isCacheEnabled ? "enabled" : "disabled";
+
+            State.BodyEndContentBuilder.AppendLine( $@"<div id=""cms-admin-footer"" class=""js-cms-admin-footer"">
+    <span class=""cms-admin-footer-property"">
+        <a href=""?{query}""> Page Load Time: {duration.TotalSeconds:N2}s </a>
+    </span>
+
+    <span class=""margin-l-md js-html-size-stats cms-admin-footer-property""></span>
+
+    <a title=""Web cache {cacheEnabled}"" class=""pull-left margin-l-md {cacheIndicator}"" href=""javascript: rockInternalSetCacheState({( !isCacheEnabled ).ToString().ToLower()})"">
+        <i class=""ti ti-run""></i>
+    </a>" );
+
+            // TODO: Add impersonation control.
+
+            State.BodyEndContentBuilder.AppendLine( @"    <div class=""button-bar"">" );
+
+            if ( canAdministratePage || State.CanAdministrateBlockOnPage )
+            {
+                State.BodyEndContentBuilder.AppendLine( @"        <a class=""btn block-config js-block-config"" href=""javascript: Rock.admin.pageAdmin.showBlockConfig();"" title=""Block Configuration (Alt-B)"">
+            <i class=""ti ti-border-all""></i>
+        </a>" );
+            }
+
+            if ( canEditPage || canAdministratePage )
+            {
+                State.BodyEndContentBuilder.AppendLine( @"        <a id=""aPageProperties"" class=""btn properties js-page-properties"" href=""javascript: Rock.controls.modal.show($(this), '/PageProperties/12?t=Page Properties')"" title=""Page Properties (Alt+P)"">
+            <i class=""ti ti-settings""></i>
+        </a>" );
+            }
+
+            if ( canAdministratePage )
+            {
+                var pageEntityTypeId = EntityTypeCache.Get( typeof( Page ) ).Id;
+                var pageSecurityUrl = _rockRequestContext.ResolveRockUrl( $"~/Secure/{pageEntityTypeId}/{_rockRequestContext.Page.Id}?t=Page Security&pb=&sb=Done" );
+
+                var childPagesUrl = _rockRequestContext.ResolveRockUrl( $"~/pages/{_rockRequestContext.Page.Id}?t=Child Pages&pb=&sb=Done" );
+                var shortlinkUrl = _rockRequestContext.ResolveRockUrl( $"~/ShortLink/{_rockRequestContext.Page.Id}?t=Shortened Link&Url={_rockRequestContext.RequestUri.AbsoluteUri.UrlEncode()}" );
+                var systemInfoUrl = _rockRequestContext.ResolveRockUrl( "~/SystemInfo?t=System Information&pb=&sb=Done" );
+
+                State.BodyEndContentBuilder.AppendLine( $@"        <a id=""aChildPages"" class=""btn page-child-pages js-page-child-pages"" href=""javascript: Rock.controls.modal.show($(this), '{childPagesUrl}')"" title=""Child Pages (Alt+L)"">
+            <i class=""ti ti-sitemap""></i>
+        </a>
+
+        <a class=""btn page-zones js-page-zones"" href=""javascript: Rock.admin.pageAdmin.showPageZones();"" title=""Page Zones (Alt+Z)"">
+            <i class=""ti ti-columns""></i>
+        </a>
+
+        <a id=""aPageSecurity"" class=""btn page-security"" href=""javascript: Rock.controls.modal.show($(this), '{pageSecurityUrl}')"" title=""Page Security"">
+            <i class=""ti ti-lock""></i>
+        </a>
+
+        <a id=""aShortLink"" class=""btn properties"" href=""#"" onclick=""event.preventDefault(); Obsidian.onReady(() =&gt; {{
+    System.import('@Obsidian/Templates/rockPage.js').then(module =&gt; {{
+        module.showShortLink('{shortlinkUrl}');
+    }});
+}});"" title=""Add Short Link"">
+            <i class=""ti ti-link""></i>
+        </a>
+
+        <a id=""aSystemInfo"" class=""btn system-info"" href=""javascript: Rock.controls.modal.show($(this), '{systemInfoUrl}')"" title=""Rock Information"">
+            <i class=""ti ti-info-circle""></i>
+        </a>" );
+            }
+
+            State.BodyEndContentBuilder.AppendLine( @"    </div>
+</div>" );
+
+            var script = @"
+function rockInternalSetCacheState(state) {
+    if (!state) {
+        document.cookie = "".rock-web-cache-enabled=false; path=/;"";
+    }
+    else {
+        document.cookie = "".rock-web-cache-enabled=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"";
+    }
+
+    window.location = window.location.href;
+}
+
+(function () {
+    setTimeout(function () {
+        $('.js-html-size-stats').html('HTML Size: ' + ($('html').html().length / 1024).toFixed(0) + ' KB');
+    }, 1);
+}());
+";
+
+            _rockRequestContext.Response.AddScript( "cms-admin-footer-script", script );
         }
 
         [ExcludeFromCodeCoverage]
