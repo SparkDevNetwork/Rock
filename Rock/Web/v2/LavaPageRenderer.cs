@@ -74,6 +74,12 @@ namespace Rock.Web.v2
             // Add configuration specific to Rock Page to the observability activity.
             RockPageHelper.ConfigureActivity( Activity.Current, _rockRequestContext );
 
+            if ( !_rockRequestContext.Page.IsAuthorized( Authorization.VIEW, _rockRequestContext.CurrentPerson ) )
+            {
+                responseBase.RedirectToUrl( RockPageHelper.GetLoginPageUrl( _rockRequestContext ), false );
+                return string.Empty;
+            }
+
             AddLegacyWebFormSupport();
             AddDefaultPageScripts();
             AddPageMetaTags();

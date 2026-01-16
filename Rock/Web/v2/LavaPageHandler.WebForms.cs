@@ -70,6 +70,12 @@ namespace Rock.Web.v2
 
             context.Response.Write( await _renderer.RenderAsync() );
 
+            if ( _rockRequestContext.Response is RockResponseBase responseBase && responseBase.RedirectInfo != null )
+            {
+                context.Response.Clear();
+                context.Response.Redirect( responseBase.RedirectInfo.Value.Url, responseBase.RedirectInfo.Value.Permanent );
+            }
+
             if ( internalAccessor != null )
             {
                 internalAccessor.RockRequestContext = null;

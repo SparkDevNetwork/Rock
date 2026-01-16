@@ -35,6 +35,8 @@ namespace Rock.Net
 
         internal string PageTitle { get; private set; }
 
+        internal (string Url, bool Permanent)? RedirectInfo { get; private set; }
+
         public RockResponseBase()
         {
         }
@@ -85,7 +87,7 @@ namespace Rock.Net
         /// <inheritdoc/>
         public void RedirectToUrl( string url, bool permanent = false )
         {
-            throw new System.NotImplementedException();
+            RedirectInfo = (url, permanent);
         }
 
         /// <inheritdoc/>
