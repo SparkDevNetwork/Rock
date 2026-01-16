@@ -103,6 +103,8 @@ namespace Rock.Web.v2
                 ProcessResponseElement( responseElement );
             }
 
+            AddDefaultResponseHeaders();
+
             return RenderTemplate( responseBase, zones );
         }
 
@@ -477,6 +479,19 @@ namespace Rock.Web.v2
             {
                 State.HeadEndContentBuilder.AppendLine( googleScript );
             }
+        }
+
+        /// <summary>
+        /// Adds default response headers for all Rock Pages.
+        /// </summary>
+        private void AddDefaultResponseHeaders()
+        {
+            // Add headers to request that we be sent the browser color scheme
+            // and platform version.
+            _rockRequestContext.Response.SetHttpHeader( "Accept-CH", "Sec-CH-Prefers-Color-Scheme, Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version" );
+            _rockRequestContext.Response.SetHttpHeader( "Vary", "Sec-CH-Prefers-Color-Scheme" );
+            _rockRequestContext.Response.SetHttpHeader( "Critical-CH", "Sec-CH-Prefers-Color-Scheme, Sec-CH-UA-Platform-Version" );
+            _rockRequestContext.Response.SetHttpHeader( "Permissions-Policy", "ch-ua-platform-version=(self)" );
         }
 
         /// <summary>

@@ -70,10 +70,18 @@ namespace Rock.Web.v2
 
             context.Response.Write( await _renderer.RenderAsync() );
 
-            if ( _rockRequestContext.Response is RockResponseBase responseBase && responseBase.RedirectInfo != null )
+            if ( _rockRequestContext.Response is RockResponseBase responseBase )
             {
-                context.Response.Clear();
-                context.Response.Redirect( responseBase.RedirectInfo.Value.Url, responseBase.RedirectInfo.Value.Permanent );
+                foreach ( var header in responseBase.Headers )
+                {
+                    context.Response.Headers[header.Key] = header.Value;
+                }
+
+                if ( responseBase.RedirectInfo != null )
+                {
+                    context.Response.Clear();
+                    context.Response.Redirect( responseBase.RedirectInfo.Value.Url, responseBase.RedirectInfo.Value.Permanent );
+                }
             }
 
             if ( internalAccessor != null )

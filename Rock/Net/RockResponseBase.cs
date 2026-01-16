@@ -37,6 +37,8 @@ namespace Rock.Net
 
         internal (string Url, bool Permanent)? RedirectInfo { get; private set; }
 
+        internal Dictionary<string, string> Headers { get; } = new Dictionary<string, string>();
+
         public RockResponseBase()
         {
         }
@@ -105,7 +107,7 @@ namespace Rock.Net
         /// <inheritdoc/>
         public void SetHttpHeader( string name, string value )
         {
-            throw new System.NotImplementedException();
+            Headers[name] = value;
         }
 
         /// <inheritdoc/>
