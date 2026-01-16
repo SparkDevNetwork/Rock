@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data.Entity;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -31,7 +30,6 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Blocks;
@@ -40,7 +38,6 @@ using Rock.Configuration;
 using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Lava;
-using Rock.Logging;
 using Rock.Model;
 using Rock.Net;
 using Rock.Observability;
@@ -48,7 +45,6 @@ using Rock.Security;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Utility;
-using Rock.ViewModels.Crm;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -1573,13 +1569,18 @@ namespace Rock.Web.UI
 
                 if ( Context.Items.Contains( "Rock:DebugTraceEnabled" ) && Activity.Current != null )
                 {
-                    Page.Trace.Warn( "Initializing Obsidian Page Timings" );
-                    Page.Form.Controls.Add( new Literal
-                    {
-                        Text = RockPageHelper.GetObsidianPageTimingsContent()
-                    } );
+                    var tracePageId = Context.Items["Rock:DebugTraceEnabled"] as int?;
 
-                    DebugTraceProcessor.ValidateTrace( Activity.Current.TraceId.ToString() );
+                    if ( tracePageId == _pageCache.Id )
+                    {
+                        Page.Trace.Warn( "Initializing Obsidian Page Timings" );
+                        Page.Form.Controls.Add( new Literal
+                        {
+                            Text = RockPageHelper.GetObsidianPageTimingsContent()
+                        } );
+
+                        DebugTraceProcessor.ValidateTrace( Activity.Current.TraceId.ToString() );
+                    }
                 }
 
                 // Add configuration specific to Rock Page to the observability activity.

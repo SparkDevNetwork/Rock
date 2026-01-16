@@ -68,18 +68,23 @@
 
 .traces :deep(.trace-waterfall) {
     width: 40%;
-    position: relative;
     vertical-align: middle !important;
     padding: 0 !important;
+    overflow: hidden;
+}
+
+.traces :deep(.trace-chart) {
+    position: relative;
+    height: 1.125em;
+    margin: 0 2px;
 }
 
 .traces :deep(.trace-chart-bar) {
     position: absolute;
     display: block;
     min-width: 1px;
-    height: 1.125em;
+    height: 100%;
     background: #009ce3;
-    margin-top: -0.5625em;
     border-radius: var(--rounded-xsmall);
 }
 

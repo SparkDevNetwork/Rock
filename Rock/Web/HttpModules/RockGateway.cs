@@ -301,7 +301,7 @@ namespace Rock.Web.HttpModules
                 {
                     DebugTraceProcessor.BeginTracing();
 
-                    context.AddOrReplaceItem( "Rock:DebugTraceEnabled", true );
+                    context.AddOrReplaceItem( "Rock:DebugTraceEnabled", pageCache.Id );
 
                     return true;
                 }

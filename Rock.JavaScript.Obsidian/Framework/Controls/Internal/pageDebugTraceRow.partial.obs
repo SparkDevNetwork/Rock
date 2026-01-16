@@ -20,7 +20,9 @@
         </td>
 
         <td class="trace-waterfall">
-            <span class="trace-chart-bar" :style="waterfallStyle"></span>
+            <div class="trace-chart">
+                <span class="trace-chart-bar" :style="waterfallStyle"></span>
+            </div>
         </td>
     </tr>
 
