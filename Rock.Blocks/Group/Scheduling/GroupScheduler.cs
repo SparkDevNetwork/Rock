@@ -627,13 +627,6 @@ namespace Rock.Blocks.Group.Scheduling
                 return;
             }
 
-            // Get any already-existing attendance occurrence records tied to the [group, location, schedule, occurrence date] occurrences
-            // we're retrieving. We'll need these IDs to facilitate scheduling within the Obsidian JavaScript block. Note that we'll create
-            // any missing attendance occurrence records below, before sending the final, filtered collection of occurrences back to the client.
-            var attendanceOccurrencesQry = new AttendanceOccurrenceService( rockContext )
-                .Queryable()
-                .AsNoTracking();
-
             // Determine the actual start and end dates, based on the date range validation that has already taken place.
             // For the end date, add a day (and set it to the START of that day) so we can follow Rock's rule: let your
             // start be "inclusive" and your end be "exclusive".
@@ -644,7 +637,11 @@ namespace Rock.Blocks.Group.Scheduling
             // Go ahead and materialize the list so we can:
             //  1) Perform additional, in-memory filtering.
             //  2) Set the scheduled start date/time(s) on the returned instances; these represent the "occurrences" that may be scheduled.
-            var groupLocationSchedules = new GroupLocationService( rockContext )
+            //
+            // NOTE: We project to an anonymous type first to avoid EF6 materialization issues with class constructors,
+            // then convert to GroupLocationSchedule after materialization. We also fetch AttendanceOccurrences separately
+            // to avoid correlated subquery performance issues.
+            var groupLocationScheduleData = new GroupLocationService( rockContext )
                 .Queryable()
                 .AsNoTracking()
                 .Where( gl =>
@@ -679,6 +676,10 @@ namespace Rock.Blocks.Group.Scheduling
                         || gls.Schedule.EffectiveEndDate.Value >= actualStartDate
                     )
                 )
+                .ToList(); // Materialize the anonymous type first
+
+            // Now convert to GroupLocationSchedule objects in memory (avoids EF6 projection limitations)
+            var groupLocationSchedules = groupLocationScheduleData
                 .Select( gls => new GroupLocationSchedule
                 {
                     Group = gls.Group,
@@ -687,14 +688,40 @@ namespace Rock.Blocks.Group.Scheduling
                     Location = gls.Location,
                     Schedule = gls.Schedule,
                     Config = gls.Config,
-                    AttendanceOccurrences = attendanceOccurrencesQry.Where( ao =>
-                        ao.GroupId == gls.Group.Id
-                        && ao.LocationId == gls.Location.Id
-                        && ao.ScheduleId == gls.Schedule.Id
-                    )
-                    .ToList()
+                    AttendanceOccurrences = new List<AttendanceOccurrence>()
                 } )
                 .ToList();
+
+            // Fetch AttendanceOccurrences separately to avoid correlated subquery performance issues.
+            // We'll match them to their GroupLocationSchedules in memory.
+            if ( groupLocationSchedules.Any() )
+            {
+                var glsGroupIds = groupLocationSchedules.Select( gls => gls.Group.Id ).Distinct().ToList();
+                var glsLocationIds = groupLocationSchedules.Select( gls => gls.Location.Id ).Distinct().ToList();
+                var glsScheduleIds = groupLocationSchedules.Select( gls => gls.Schedule.Id ).Distinct().ToList();
+
+                var attendanceOccurrences = new AttendanceOccurrenceService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( ao =>
+                        ao.GroupId.HasValue && glsGroupIds.Contains( ao.GroupId.Value )
+                        && ao.LocationId.HasValue && glsLocationIds.Contains( ao.LocationId.Value )
+                        && ao.ScheduleId.HasValue && glsScheduleIds.Contains( ao.ScheduleId.Value )
+                    )
+                    .ToList();
+
+                // Match AttendanceOccurrences to their GroupLocationSchedules in memory.
+                foreach ( var gls in groupLocationSchedules )
+                {
+                    gls.AttendanceOccurrences = attendanceOccurrences
+                        .Where( ao =>
+                            ao.GroupId == gls.Group.Id
+                            && ao.LocationId == gls.Location.Id
+                            && ao.ScheduleId == gls.Schedule.Id
+                        )
+                        .ToList();
+                }
+            }
 
             // Remove any schedules that don't actually have any start date/time(s) within the specified date range, and set the start date/time(s) on those that remain.
             if ( !skipFullScheduleValidation && groupLocationSchedules.Any() )
