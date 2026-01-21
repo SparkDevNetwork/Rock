@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -89,6 +89,33 @@ namespace Rock.AI.Agent.Skills
                         .ToList(),
                 } )
                 .ToList();
+
+            // Add connection statuses. There is no cache for this so we have to query it.
+            var connectionStatuses = new ConnectionStatusService( AgentRequestContext.RockContext )
+                .Queryable()
+                .Where( s => s.IsActive )
+                .Select( s => new
+                {
+                    s.Id,
+                    s.Name,
+                    s.ConnectionTypeId
+                } )
+                .GroupBy( s => s.ConnectionTypeId )
+                .ToDictionary( g => g.Key, g => g.ToList() );
+
+            foreach ( var connectionType in connectionTypeResult )
+            {
+                if ( connectionStatuses.TryGetValue( connectionType.Id, out var statuses ) )
+                {
+                    connectionType.Statuses = statuses
+                        .Select( s => new KeyNameResult
+                        {
+                            Id = s.Id,
+                            Name = s.Name
+                        } )
+                        .ToList();
+                }
+            }
 
             // Add connection opportunities. There is no cache for this so we have to query it.
             var connectionOpportunities = new ConnectionOpportunityService( AgentRequestContext.RockContext )
