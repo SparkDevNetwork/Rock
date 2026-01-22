@@ -22,8 +22,6 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-using MassTransit.NewIdProviders;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -32,6 +30,7 @@ using Rock.AI.Agent.Classes;
 using Rock.AI.Agent.Classes.Common;
 using Rock.Data;
 using Rock.Enums.AI.Agent;
+using Rock.Model;
 using Rock.Net;
 using Rock.SystemGuid;
 using Rock.Web.Cache.Entities;
@@ -421,7 +420,30 @@ namespace Rock.AI.Agent
             {
 
                 // Invoke the function first — this actually sets context.Result
-                await next( context );
+                try
+                {
+                    var argumentNames = context.Arguments.Keys;
+                    var parameterNames = context.Function.Metadata.Parameters.Select( p => p.Name );
+
+                    var unknownArguments = argumentNames.Except( parameterNames, StringComparer.OrdinalIgnoreCase ).ToList();
+
+                    if ( unknownArguments.Count > 0 )
+                    {
+                        var error = RockToolResult.Error( "Unrecognized arguments were provided to this tool." )
+                            .WithMetadata( "unknownArguments", unknownArguments );
+
+                        context.Result = new FunctionResult( context.Function, error );
+                    }
+                    else
+                    {
+                        await next( context );
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                    throw;
+                }
 
                 // Now capture the return value
                 var functionResult = context.Result; // FunctionResult

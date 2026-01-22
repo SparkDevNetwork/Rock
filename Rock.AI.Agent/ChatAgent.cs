@@ -106,6 +106,7 @@ namespace Rock.AI.Agent
         /// </summary>
         private const string AutoSummarizePrompt = "Provide a very brief summary of the following conversation, including only the most important details."
             + " This will be used when sending subsequent requests to the language model."
+            + " Any IdKey values from tool calls / results should be preserved if they will provide context to future tools."
             + " It should reduce extra whitespace and doesn't need to be user-friendly:\n\n";
 
         #endregion
@@ -869,7 +870,7 @@ namespace Rock.AI.Agent
                 }
 
                 var message = session.AIAgentSessionHistories.First().Message;
-                var prompt = $"Please provide a name for this session (7 words or less, but it should read like proper english) title for a new chat session with the initial message: {message}";
+                var prompt = $"Please provide a name for this session (7 words or less, but it should read like proper english) title, without markup, for a new chat session with the initial message: {message}";
 
                 var sessionResult = await chat.GetChatMessageContentAsync(
                     new ChatHistory { new ChatMessageContent( Microsoft.SemanticKernel.ChatCompletion.AuthorRole.User, prompt ) },

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -92,60 +92,7 @@ namespace Rock.AI.Agent.Skills
             }
 
             var connectionRequests = connectionRequestsQry
-                .Select( cr => new ConnectionRequestResult
-                {
-                    Id = cr.Id,
-                    Requester = new PersonResult
-                    {
-                        Id = cr.PersonAlias.Person.Id,
-                        FirstName = cr.PersonAlias.Person.FirstName,
-                        LastName = cr.PersonAlias.Person.LastName,
-                        NickName = cr.PersonAlias.Person.NickName,
-                        PhotoId = cr.PersonAlias.Person.PhotoId
-                    },
-                    Comments = cr.Comments,
-                    ConnectionState = new KeyNameResult { Id = ( int ) cr.ConnectionState, Name = cr.ConnectionState.ToString() },
-                    ConnectionStatus = new KeyNameResult { Id = cr.ConnectionStatus.Id, Name = cr.ConnectionStatus.Name },
-                    ConnectionOpportunity = new ConnectionOpportunityResult
-                    {
-                        Id = cr.ConnectionOpportunity.Id,
-                        Name = cr.ConnectionOpportunity.Name,
-                        ConnectionType = new ConnectionTypeResult { Id = cr.ConnectionOpportunity.ConnectionType.Id, Name = cr.ConnectionOpportunity.ConnectionType.Name }
-                    },
-                    CreatedDateTime = cr.CreatedDateTime,
-                    ModifiedDateTime = cr.ModifiedDateTime,
-                    FollowupDate = cr.FollowupDate,
-                    Campus = cr.Campus != null ? new CampusResult { Id = cr.Campus.Id, Name = cr.Campus.Name } : null,
-                    AssignedGroup = cr.AssignedGroup != null ? new GroupResult { Id = cr.AssignedGroup.Id, Name = cr.AssignedGroup.Name } : null,
-                    Connector = cr.ConnectorPersonAlias != null ? new PersonResult
-                    {
-                        Id = cr.ConnectorPersonAlias.Person.Id,
-                        FirstName = cr.ConnectorPersonAlias.Person.FirstName,
-                        LastName = cr.ConnectorPersonAlias.Person.LastName,
-                        NickName = cr.ConnectorPersonAlias.Person.NickName,
-                        PhotoId = cr.ConnectorPersonAlias.Person.PhotoId
-                    } : null,
-                    Activities = cr.ConnectionRequestActivities.Select( a => new ConnectionRequestActivityResult
-                    {
-                        Id = a.Id,
-                        ActivityType = new KeyNameResult { Id = a.ConnectionActivityTypeId, Name = a.ConnectionActivityType.Name },
-                        Note = a.Note,
-                        CreatedDateTime = a.CreatedDateTime,
-                        Connector = a.ConnectorPersonAlias != null ? new PersonResult
-                        {
-                            Id = a.CreatedByPersonAlias.Person.Id,
-                            FirstName = a.CreatedByPersonAlias.Person.FirstName,
-                            LastName = a.CreatedByPersonAlias.Person.LastName,
-                            NickName = a.CreatedByPersonAlias.Person.NickName,
-                            PhotoId = a.CreatedByPersonAlias.Person.PhotoId
-                        } : null
-                    } ).ToList(),
-                    Attributes = cr.ConnectionRequestAttributeValues
-                        .Where( a => isInternal || a.IsPublic )
-                        .Select( a =>
-                            new AttributeResult { Id = a.AttributeId, Value = a.PersistedTextValue, Name = a.Name } ).ToList()
-
-                } )
+                .Select( GetResultExpression() )
                 .OrderBy( cr => cr.Id )
                 .Skip( offset )
                 .Take( take )

@@ -49,7 +49,24 @@ namespace Rock.AI.Agent.Skills
                 return LoadConnectionTypes();
             }, TimeSpan.FromMinutes( 3 ) ) as List<ConnectionTypeResult>;
 
-            return RockToolResult.Success( connectionTypes );
+            return RockToolResult.Success( connectionTypes )
+                .WithHistoryContent( connectionTypes
+                    .Select( ct => new
+                    {
+                        ct.IdKey,
+                        ct.Name,
+                        Opportunities = ct.Opportunities.Select( o => new
+                        {
+                            o.IdKey,
+                            o.Name
+                        } ),
+                        Statuses = ct.Statuses.Select( s => new
+                        {
+                            s.Id,
+                            s.Name
+                        } )
+                    }
+                ) );
         }
 
         #endregion
