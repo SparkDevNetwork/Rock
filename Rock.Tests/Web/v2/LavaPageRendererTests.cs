@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Net;
+using Rock.Observability;
 using Rock.Security;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
@@ -1298,6 +1300,116 @@ namespace Rock.Tests.Web.v2
 
                 Assert.Contains( "rockInternalSetCacheState", bodyEndContent );
                 Assert.Contains( "Web cache enabled", bodyEndContent );
+            }
+        }
+
+        #endregion
+
+        #region AddDebugTimings
+
+        [TestMethod]
+        public void AddDebugTimings_WithValidTrace_IncludesTimingScript()
+        {
+            void configureTimingsServices( ServiceCollection serviceCollection )
+            {
+                ConfigureServices( serviceCollection );
+
+                var traceObserverMock = new Mock<DebugTraceObserver>();
+                traceObserverMock.Setup( m => m.IsValidTrace( It.IsAny<string>() ) ).Returns( true );
+
+                serviceCollection.AddSingleton( traceObserverMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => configureTimingsServices( sc ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                using ( var activity = new Activity( "Test" ) )
+                {
+                    activity.Start();
+
+                    renderer.AddDebugTimings();
+                }
+
+                var hasInitializePageTimings = response.GetHtmlElements()
+                    .Any( e => e.Content.Contains( "initializePageTimings" ) );
+
+                Assert.IsTrue( hasInitializePageTimings );
+            }
+        }
+
+        [TestMethod]
+        public void AddDebugTimings_WithoutActivity_DoesNotIncludeTimingScript()
+        {
+            void configureTimingsServices( ServiceCollection serviceCollection )
+            {
+                ConfigureServices( serviceCollection );
+
+                var traceObserverMock = new Mock<DebugTraceObserver>();
+                traceObserverMock.Setup( m => m.IsValidTrace( It.IsAny<string>() ) ).Returns( true );
+
+                serviceCollection.AddSingleton( traceObserverMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => configureTimingsServices( sc ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                renderer.AddDebugTimings();
+
+                var hasInitializePageTimings = response.GetHtmlElements()
+                    .Any( e => e.Content.Contains( "initializePageTimings" ) );
+
+                Assert.IsFalse( hasInitializePageTimings );
+            }
+        }
+
+        [TestMethod]
+        public void AddDebugTimings_WithoutValidTrace_DoesNotIncludeTimingScript()
+        {
+            void configureTimingsServices( ServiceCollection serviceCollection )
+            {
+                ConfigureServices( serviceCollection );
+
+                var traceObserverMock = new Mock<DebugTraceObserver>();
+                traceObserverMock.Setup( m => m.IsValidTrace( It.IsAny<string>() ) ).Returns( false );
+
+                serviceCollection.AddSingleton( traceObserverMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => configureTimingsServices( sc ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                using ( var activity = new Activity( "Test" ) )
+                {
+                    activity.Start();
+
+                    renderer.AddDebugTimings();
+                }
+
+                var hasInitializePageTimings = response.GetHtmlElements()
+                    .Any( e => e.Content.Contains( "initializePageTimings" ) );
+
+                Assert.IsFalse( hasInitializePageTimings );
             }
         }
 

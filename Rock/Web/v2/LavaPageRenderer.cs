@@ -502,7 +502,7 @@ namespace Rock.Web.v2
         /// <summary>
         /// Adds in any scripts and HTML content to render the page debug timings.
         /// </summary>
-        private void AddDebugTimings()
+        internal void AddDebugTimings()
         {
             if ( Activity.Current == null )
             {
