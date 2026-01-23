@@ -21,8 +21,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Web;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -201,6 +203,8 @@ namespace Rock.Web.HttpModules
                                                     ?? context.Request.ServerVariables["REMOTE_ADDR"]
                                                     ?? string.Empty );
 
+                var traceObserver = RockApp.Current.GetRequiredService<DebugTraceObserver>();
+
                 // If we have a linked activity from the request headers then
                 // link it to the current activity.
                 if ( linkedActivity.HasValue )
@@ -209,10 +213,10 @@ namespace Rock.Web.HttpModules
 
                     // If the linked activity is being traced by the debug
                     // processor, then start tracing this activity as well.
-                    if ( DebugTraceProcessor.IsValidTrace( linkedActivity.Value.Context.TraceId.ToString() ) )
+                    if ( traceObserver.IsValidTrace( linkedActivity.Value.Context.TraceId.ToString() ) )
                     {
-                        DebugTraceProcessor.BeginTracing();
-                        DebugTraceProcessor.LinkTrace( activity.TraceId.ToString(), linkedActivity.Value.Context.TraceId.ToString() );
+                        traceObserver.BeginTracing();
+                        traceObserver.LinkTrace( activity.TraceId.ToString(), linkedActivity.Value.Context.TraceId.ToString() );
 
                         context.AddOrReplaceItem( "Rock:DebugTraceEnabled", true );
 
@@ -223,7 +227,7 @@ namespace Rock.Web.HttpModules
                 // Begin monitoring for this trace if it was enabled.
                 if ( tracingEnabled )
                 {
-                    DebugTraceProcessor.MonitorTrace( activity.TraceId.ToString() );
+                    traceObserver.MonitorTrace( activity.TraceId.ToString() );
                     activity.SetCustomProperty( "rock.full_trace", true );
                 }
 
@@ -256,7 +260,7 @@ namespace Rock.Web.HttpModules
             {
                 if ( context.Items.Contains( "Rock:DebugTraceEnabled" ) )
                 {
-                    DebugTraceProcessor.EndTracing();
+                    RockApp.Current.GetRequiredService<DebugTraceObserver>().EndTracing();
                     context.Items.Remove( "Rock:DebugTraceEnabled" );
                 }
             }
@@ -299,7 +303,7 @@ namespace Rock.Web.HttpModules
 
                 if ( pageCache.IsAuthorized( Authorization.ADMINISTRATE, person ) )
                 {
-                    DebugTraceProcessor.BeginTracing();
+                    RockApp.Current.GetRequiredService<DebugTraceObserver>().BeginTracing();
 
                     context.AddOrReplaceItem( "Rock:DebugTraceEnabled", pageCache.Id );
 

@@ -361,6 +361,7 @@ namespace Rock.WebStartup
             sc.AddSingleton<MetadataHelper>();
             sc.AddSingleton<ObsidianFingerprintManager>();
             sc.AddSingleton<ILavaEngineFactory, LavaEngineFactory>();
+            sc.AddSingleton<DebugTraceObserver>();
 
             sc.AddScoped<RockContext>();
 

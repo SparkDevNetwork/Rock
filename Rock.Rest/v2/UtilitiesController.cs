@@ -17,6 +17,10 @@
 
 using System.Linq;
 
+using Microsoft.Extensions.DependencyInjection;
+
+using Rock.Configuration;
+using Rock.Observability;
 using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Utility;
@@ -66,7 +70,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "9bca1f10-942d-45c6-97f8-e1b54f76a521" )]
         public IActionResult GetDebugTraceDetails( string traceId )
         {
-            var activities = Observability.DebugTraceProcessor.GetTraceActivities( traceId );
+            var activities = RockApp.Current.GetRequiredService<DebugTraceObserver>().GetTraceActivities( traceId );
 
             var items = activities
                 .Select( a => new

@@ -384,7 +384,7 @@ namespace Rock.Blocks.Event
 
                 if ( PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull() == null )
                 {
-                    var groupId = GetRegistrationGroupId( rockContext, context?.Registration?.RegistrationInstanceId );
+                    var groupId = GetRegistrationGroupId( rockContext, context?.Registration?.RegistrationInstanceId, allowParameterGroupId: false );
                     if ( groupId.HasValue )
                     {
                         RequestContext.PageParameters.Add( PageParameterKey.GroupId, groupId.ToString() );
@@ -706,7 +706,7 @@ namespace Rock.Blocks.Event
 
                 // Process the GroupMember so we have data for the Lava merge.
                 GroupMember groupMember = null;
-                var groupId = GetRegistrationGroupId( rockContext, context.Registration.RegistrationInstanceId );
+                var groupId = GetRegistrationGroupId( rockContext, context.Registration.RegistrationInstanceId, allowParameterGroupId: false );
 
                 if ( groupId.HasValue )
                 {
@@ -844,7 +844,7 @@ namespace Rock.Blocks.Event
                     // try getting the group member for the registrant person.
                     if ( groupMember == null && person != null )
                     {
-                        var groupId = GetRegistrationGroupId( rockContext, GetRegistrationInstanceId( rockContext ) );
+                        var groupId = GetRegistrationGroupId( rockContext, GetRegistrationInstanceId( rockContext ), allowParameterGroupId: false );
 
                         if ( groupId.HasValue )
                         {
@@ -2058,48 +2058,48 @@ namespace Rock.Blocks.Event
         /// <param name="rockContext">The rock context.</param>
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
         /// <returns>The <see cref="Group"/> identifier or <c>null</c> if one is not available.</returns>
-        private int? GetRegistrationGroupId( RockContext rockContext, int? registrationInstanceId )
+        private int? GetRegistrationGroupId( RockContext rockContext, int? registrationInstanceId, bool allowParameterGroupId = true )
         {
             var groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
             var registrationSlug = PageParameter( PageParameterKey.Slug );
             var eventOccurrenceId = this.EventOccurrenceIdPageParameter;
 
-            if ( !groupId.HasValue )
+            if ( !registrationSlug.IsNullOrWhiteSpace() )
             {
-                if ( !registrationSlug.IsNullOrWhiteSpace() )
-                {
-                    var dateTime = RockDateTime.Now;
-                    var linkage = new EventItemOccurrenceGroupMapService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( l =>
-                            l.UrlSlug == registrationSlug &&
-                            l.RegistrationInstance != null &&
-                            l.RegistrationInstance.IsActive &&
-                            l.RegistrationInstance.RegistrationTemplate != null &&
-                            l.RegistrationInstance.RegistrationTemplate.IsActive &&
-                            ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) &&
-                            ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
-                        .FirstOrDefault();
+                var dateTime = RockDateTime.Now;
+                var linkage = new EventItemOccurrenceGroupMapService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( l =>
+                        l.UrlSlug == registrationSlug &&
+                        l.RegistrationInstance != null &&
+                        l.RegistrationInstance.IsActive &&
+                        l.RegistrationInstance.RegistrationTemplate != null &&
+                        l.RegistrationInstance.RegistrationTemplate.IsActive &&
+                        ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) &&
+                        ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
+                    .FirstOrDefault();
 
-                    return linkage?.GroupId;
-                }
-                else if ( eventOccurrenceId.HasValue && registrationInstanceId.HasValue )
-                {
-                    var linkageGroupId = new EventItemOccurrenceService( rockContext )
-                        .Queryable()
-                        .Where( o => o.Id == eventOccurrenceId.Value )
-                        .SelectMany( o => o.Linkages )
-                        .Where( l => l.RegistrationInstanceId == registrationInstanceId.Value )
-                        .Select( l => l.GroupId )
-                        .FirstOrDefault();
+                return linkage?.GroupId;
+            }
+            else if ( eventOccurrenceId.HasValue && registrationInstanceId.HasValue )
+            {
+                var linkageGroupId = new EventItemOccurrenceService( rockContext )
+                    .Queryable()
+                    .Where( o => o.Id == eventOccurrenceId.Value )
+                    .SelectMany( o => o.Linkages )
+                    .Where( l => l.RegistrationInstanceId == registrationInstanceId.Value )
+                    .Select( l => l.GroupId )
+                    .FirstOrDefault();
 
-                    return linkageGroupId;
-                }
+                return linkageGroupId;
+            }
+
+            if ( allowParameterGroupId && groupId.HasValue )
+            {
+                return groupId.Value;
             }
 
             // If there is no slug or event occurrence id then don't use/trust the groupId in the query string
-            // There is some if logic refactoring that could be done here but leaving as we're only addressing a
-            // security concern and don't want to inadvertently change behavior.
             return null;
         }
 

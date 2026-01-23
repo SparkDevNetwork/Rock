@@ -1579,7 +1579,7 @@ namespace Rock.Web.UI
                             Text = RockPageHelper.GetObsidianPageTimingsContent()
                         } );
 
-                        DebugTraceProcessor.ValidateTrace( Activity.Current.TraceId.ToString() );
+                        RockApp.Current.GetRequiredService<DebugTraceObserver>().ValidateTrace( Activity.Current.TraceId.ToString() );
                     }
                 }
 

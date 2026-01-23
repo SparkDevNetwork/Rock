@@ -591,9 +591,22 @@
         }
     });
 
+    const isCommunicationTypeAllowed = computed<boolean>(() => {
+        return props.allowedMediums.includes(internalCommunicationType.value);
+    });
+
     // #endregion Computed Values
 
     // #region Functions
+
+    /**
+     * Ensures the communication's type is within the allowed mediums.
+     */
+    function enforceAllowedCommunicationTypes(): void {
+        if (!isCommunicationTypeAllowed.value && props.allowedMediums.length > 0) {
+            internalCommunicationType.value = props.allowedMediums[0];
+        }
+    }
 
     function appendQueryParameters(url: string): string {
         const currentParams = new URLSearchParams(window.location.search);
@@ -727,4 +740,6 @@
     });
 
     // #endregion Watchers
+
+    enforceAllowedCommunicationTypes();
 </script>

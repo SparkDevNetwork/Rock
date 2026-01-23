@@ -162,10 +162,10 @@ namespace Rock.Configuration
         /// automatically, if it can't be determined then "Rock" will be used.
         /// </summary>
         /// <remarks>
-        ///     <para>An input starting with "~~/" will return a path like, "{SiteRoot}/Themes/{CurrentSiteTheme}/{input}" without the leading "~~".</para>
-        ///     <para>An input starting with "~/" will return the site root like, {SiteRoot}/{input}" without the leading "~".</para>
-        ///     <para>An input of "~~" will return a path like "{SiteRoot}/Themes/{CurrentSiteTheme}" without a trailing slash.</para>
-        ///     <para>An input of "~" will return the site root "{SiteRoot}/" with a trailing slash. </para>
+        ///     <para>An input like "~~/{input}" will return a path like, "D:\RockWeb\Themes\Rock\{input}".</para>
+        ///     <para>An input like "~/{input}" will return the site root like, "D:\RockWeb\{input}".</para>
+        ///     <para>An input of "~~" will return a path like "D:\RockWeb\Themes\Rock\" with a trailing slash.</para>
+        ///     <para>An input of "~" will return the site root "D:\RockWeb\" with a trailing slash. </para>
         ///     <para>The input will be returned as supplied for all other cases.</para>
         /// </remarks>
         /// <param name="app">The RockApp instance.</param>
@@ -181,10 +181,10 @@ namespace Rock.Configuration
         /// the filesystem.
         /// </summary>
         /// <remarks>
-        ///     <para>An input starting with "~~/" will return a path like, "{SiteRoot}/Themes/{CurrentSiteTheme}/{input}" without the leading "~~".</para>
-        ///     <para>An input starting with "~/" will return the site root like, {SiteRoot}/{input}" without the leading "~".</para>
-        ///     <para>An input of "~~" will return a path like "{SiteRoot}/Themes/{CurrentSiteTheme}" without a trailing slash.</para>
-        ///     <para>An input of "~" will return the site root "{SiteRoot}/" with a trailing slash. </para>
+        ///     <para>An input like "~~/{input}" will return a path like, "D:\RockWeb\Themes\{theme}\{input}".</para>
+        ///     <para>An input like "~/{input}" will return the site root like, "D:\RockWeb\{input}".</para>
+        ///     <para>An input of "~~" will return a path like "D:\RockWeb\Themes\{theme}\" with a trailing slash.</para>
+        ///     <para>An input of "~" will return the site root "D:\RockWeb\" with a trailing slash. </para>
         ///     <para>The input will be returned as supplied for all other cases.</para>
         /// </remarks>
         /// <param name="app">The RockApp instance.</param>
@@ -200,23 +200,45 @@ namespace Rock.Configuration
                 return path;
             }
 
-            if ( path == "~" )
+            string normalizePath( string p )
             {
-                // Special case, make this end with slash.
-                return $"{appPath}{Path.DirectorySeparatorChar}";
+                if ( Path.DirectorySeparatorChar == '\\' )
+                {
+                    // On Windows, convert forward slashes to backslashes.
+                    return p.Replace( '/', '\\' );
+                }
+
+                return p;
             }
 
-            if ( path.StartsWith( "~~" ) )
+            if ( path == "~~/" )
             {
-                return new[] { appPath, "Themes", theme, path.Substring( 2 ) }.JoinStrings( Path.DirectorySeparatorChar.ToString() );
+                return Path.Combine( appPath, "Themes", theme ) + Path.DirectorySeparatorChar;
             }
-
-            if ( path.StartsWith( "~" ) )
+            else if ( path.StartsWith( "~~/" ) )
             {
-                return new[] { appPath, path.Substring( 1 ) }.JoinStrings( Path.DirectorySeparatorChar.ToString() );
+                return Path.Combine( appPath, "Themes", theme, normalizePath( path.Substring( 3 ) ) );
             }
-
-            return path;
+            else if ( path == "~~" )
+            {
+                return Path.Combine( appPath, "Themes", theme ) + Path.DirectorySeparatorChar;
+            }
+            else if ( path == "~/" )
+            {
+                return appPath + Path.DirectorySeparatorChar;
+            }
+            else if ( path.StartsWith( "~/" ) )
+            {
+                return Path.Combine( appPath, normalizePath( path.Substring( 2 ) ) );
+            }
+            else if ( path == "~" )
+            {
+                return appPath + Path.DirectorySeparatorChar;
+            }
+            else
+            {
+                return path;
+            }
         }
 
         /// <summary>
