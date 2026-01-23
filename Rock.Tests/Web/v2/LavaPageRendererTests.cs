@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 using AngleSharp.Html.Dom;
@@ -13,6 +12,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Moq;
 
+using OpenTelemetry;
+using OpenTelemetry.Trace;
+
+using Rock.Blocks;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
@@ -437,6 +440,173 @@ namespace Rock.Tests.Web.v2
 
         #endregion
 
+        #region RenderBlockAsync
+
+        [TestMethod]
+        public async Task RenderBlockAsync_WithActivity_SetsBlockTypeId()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var blockMock = CreateBlockMock( 1, 1, "Main", BlockTypeIds.MockBlock, 0 );
+
+                rockContextMock.SetupDbSet( blockMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext: ConfigureRockContextForTest ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                var blockCache = BlockCache.Get( 1 );
+
+                using ( var activity = new Activity( "Test Activity" ) )
+                {
+                    activity.Start();
+
+                    await renderer.RenderBlockAsync( blockCache, false, false );
+
+                    Assert.AreEqual( 1, activity.GetTagItem( "rock.blocktype.id" ) );
+                }
+            }
+        }
+
+        [TestMethod]
+        public async Task RenderBlockAsync_WithWebFormsBlock_RendersError()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var blockMock = CreateBlockMock( 1, 1, "Main", BlockTypeIds.MockBlock, 0 );
+
+                rockContextMock.SetupDbSet( blockMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext: ConfigureRockContextForTest ) ) )
+            {
+                RockApp.Current.CreateRockContext()
+                    .Set<BlockType>()
+                    .Single( bt => bt.Id == 1 )
+                    .Path = "~/Blocks/SomeWebFormsBlock.ascx";
+
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                var blockCache = BlockCache.Get( 1 );
+
+                var result = await renderer.RenderBlockAsync( blockCache, false, false );
+
+                Assert.Contains( "WebForms block", result );
+                Assert.Contains( "is not supported", result );
+            }
+        }
+
+        [TestMethod]
+        public async Task RenderBlockAsync_WithoutBlockTypeEntityTypeId_RendersError()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var blockMock = CreateBlockMock( 1, 1, "Main", BlockTypeIds.MockBlock, 0 );
+
+                rockContextMock.SetupDbSet( blockMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext: ConfigureRockContextForTest ) ) )
+            {
+                RockApp.Current.CreateRockContext()
+                    .Set<BlockType>()
+                    .Single( bt => bt.Id == 1 )
+                    .EntityTypeId = null;
+
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                var blockCache = BlockCache.Get( 1 );
+
+                var result = await renderer.RenderBlockAsync( blockCache, false, false );
+
+                Assert.Contains( "unknown block type", result );
+            }
+        }
+
+        [TestMethod]
+        public async Task RenderBlockAsync_WithBlockThrowingException_RendersError()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var blockMock = CreateBlockMock( 1, 1, "Main", BlockTypeIds.MockBlock, 0 );
+
+                rockContextMock.SetupDbSet( blockMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext: ConfigureRockContextForTest ) ) )
+            {
+                var blockTypeEntityType = RockApp.Current.CreateRockContext()
+                    .Set<EntityType>()
+                    .Single( bt => bt.Id == EntityTypeIds.MockBlock );
+                blockTypeEntityType.Name = typeof( MockObsidianBlockWithThrow ).FullName;
+                blockTypeEntityType.AssemblyName = typeof( MockObsidianBlockWithThrow ).AssemblyQualifiedName;
+
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                var blockCache = BlockCache.Get( 1 );
+
+                var result = await renderer.RenderBlockAsync( blockCache, false, false );
+
+                Assert.Contains( "Error Loading Block", result );
+            }
+        }
+
+        [TestMethod]
+        public async Task RenderBlockAsync_WithNonWebBlock_RendersError()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var blockMock = CreateBlockMock( 1, 1, "Main", BlockTypeIds.MockBlock, 0 );
+
+                rockContextMock.SetupDbSet( blockMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext: ConfigureRockContextForTest ) ) )
+            {
+                var blockTypeEntityType = RockApp.Current.CreateRockContext()
+                    .Set<EntityType>()
+                    .Single( bt => bt.Id == EntityTypeIds.MockBlock );
+                blockTypeEntityType.Name = typeof( NonWebMockObsidianBlock ).FullName;
+                blockTypeEntityType.AssemblyName = typeof( NonWebMockObsidianBlock ).AssemblyQualifiedName;
+
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                var blockCache = BlockCache.Get( 1 );
+
+                var result = await renderer.RenderBlockAsync( blockCache, false, false );
+
+                Assert.Contains( "is not a web block", result );
+            }
+        }
+
+        #endregion
+
         #region RenderZone
 
         [TestMethod]
@@ -474,14 +644,7 @@ namespace Rock.Tests.Web.v2
         [TestMethod]
         public async Task RenderZone_WithAdministrateAccess_RendersCanConfigureClass()
         {
-            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
-            {
-                var authAdministrateMock = CreateAuthMock( EntityTypeIds.Page, 1, Authorization.ADMINISTRATE, true, SpecialRole.AllUsers );
-
-                rockContextMock.SetupDbSet( authAdministrateMock.Object );
-            }
-
-            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext: ConfigureRockContextForTest ) ) )
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc ) ) )
             {
                 var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
                 var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
@@ -490,6 +653,7 @@ namespace Rock.Tests.Web.v2
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
                 var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                renderer.State.CanAdministratePage = true;
                 var zone = new LavaPageZone
                 {
                     Key = "Main",
@@ -512,14 +676,7 @@ namespace Rock.Tests.Web.v2
         [TestMethod]
         public async Task RenderZone_WithAdministrateAccess_RendersZoneConfiguration()
         {
-            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
-            {
-                var authAdministrateMock = CreateAuthMock( EntityTypeIds.Page, 1, Authorization.ADMINISTRATE, true, SpecialRole.AllUsers );
-
-                rockContextMock.SetupDbSet( authAdministrateMock.Object );
-            }
-
-            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext: ConfigureRockContextForTest ) ) )
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc ) ) )
             {
                 var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
                 var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
@@ -528,6 +685,7 @@ namespace Rock.Tests.Web.v2
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
                 var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                renderer.State.CanAdministratePage = true;
                 var zone = new LavaPageZone
                 {
                     Key = "Main",
@@ -1080,14 +1238,7 @@ namespace Rock.Tests.Web.v2
         [TestMethod]
         public void AddAdminFooter_WithPageEditAccess_IncludesFooter()
         {
-            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
-            {
-                var authEditMock = CreateAuthMock( EntityTypeIds.Page, 1, Authorization.EDIT, true, SpecialRole.AllUsers );
-
-                rockContextMock.SetupDbSet( authEditMock.Object );
-            }
-
-            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, ConfigureRockContextForTest ) ) )
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc ) ) )
             {
                 RockApp.Current.CreateRockContext()
                     .Set<Page>()
@@ -1103,6 +1254,7 @@ namespace Rock.Tests.Web.v2
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
                 var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                renderer.State.CanEditPage = true;
 
                 renderer.AddAdminFooter();
 
@@ -1115,14 +1267,7 @@ namespace Rock.Tests.Web.v2
         [TestMethod]
         public void AddAdminFooter_WithPageAdministrateAccess_IncludesFooter()
         {
-            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
-            {
-                var authAdministrateMock = CreateAuthMock( EntityTypeIds.Page, 1, Authorization.ADMINISTRATE, true, SpecialRole.AllUsers );
-
-                rockContextMock.SetupDbSet( authAdministrateMock.Object );
-            }
-
-            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, ConfigureRockContextForTest ) ) )
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc ) ) )
             {
                 RockApp.Current.CreateRockContext()
                     .Set<Page>()
@@ -1138,6 +1283,7 @@ namespace Rock.Tests.Web.v2
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
                 var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                renderer.State.CanAdministratePage = true;
 
                 renderer.AddAdminFooter();
 
@@ -1186,14 +1332,7 @@ namespace Rock.Tests.Web.v2
         [TestMethod]
         public void AddAdminFooter_WithoutCacheCookie_EnablesCache()
         {
-            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
-            {
-                var authAdministrateMock = CreateAuthMock( EntityTypeIds.Page, 1, Authorization.ADMINISTRATE, true, SpecialRole.AllUsers );
-
-                rockContextMock.SetupDbSet( authAdministrateMock.Object );
-            }
-
-            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, ConfigureRockContextForTest ) ) )
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc ) ) )
             {
                 RockApp.Current.CreateRockContext()
                     .Set<Page>()
@@ -1209,6 +1348,7 @@ namespace Rock.Tests.Web.v2
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
                 var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                renderer.State.CanAdministratePage = true;
 
                 renderer.AddAdminFooter();
 
@@ -1222,14 +1362,7 @@ namespace Rock.Tests.Web.v2
         [TestMethod]
         public void AddAdminFooter_WithFalseCacheCookie_DisabledCache()
         {
-            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
-            {
-                var authAdministrateMock = CreateAuthMock( EntityTypeIds.Page, 1, Authorization.ADMINISTRATE, true, SpecialRole.AllUsers );
-
-                rockContextMock.SetupDbSet( authAdministrateMock.Object );
-            }
-
-            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, ConfigureRockContextForTest ) ) )
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc ) ) )
             {
                 RockApp.Current.CreateRockContext()
                     .Set<Page>()
@@ -1251,6 +1384,7 @@ namespace Rock.Tests.Web.v2
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
                 var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                renderer.State.CanAdministratePage = true;
 
                 renderer.AddAdminFooter();
 
@@ -1264,14 +1398,7 @@ namespace Rock.Tests.Web.v2
         [TestMethod]
         public void AddAdminFooter_WithTrueCacheCookie_EnablesCache()
         {
-            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
-            {
-                var authAdministrateMock = CreateAuthMock( EntityTypeIds.Page, 1, Authorization.ADMINISTRATE, true, SpecialRole.AllUsers );
-
-                rockContextMock.SetupDbSet( authAdministrateMock.Object );
-            }
-
-            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, ConfigureRockContextForTest ) ) )
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc ) ) )
             {
                 RockApp.Current.CreateRockContext()
                     .Set<Page>()
@@ -1293,6 +1420,7 @@ namespace Rock.Tests.Web.v2
                 requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
 
                 var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                renderer.State.CanAdministratePage = true;
 
                 renderer.AddAdminFooter();
 
@@ -1415,6 +1543,409 @@ namespace Rock.Tests.Web.v2
 
         #endregion
 
+        #region WrapBlockContent
+
+        [TestMethod]
+        public void WrapBlockContent_BlockTypeNameWithSpace_ReplacesSpaceWithHyphen()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var blockMock = CreateBlockMock( 1, 1, "Main", BlockTypeIds.MockBlock, 0 );
+                var blockTypeMock = MockDatabaseHelper.CreateEntityMock<BlockType>( BlockTypeIds.MockBlock, new Guid( "92b4726f-0408-4ca2-89dd-13ecc5eb43e7" ) );
+
+                blockTypeMock.Object.Name = "Mock Block Type";
+
+                rockContextMock.SetupDbSet( blockMock.Object );
+                rockContextMock.SetupDbSet( blockTypeMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, ConfigureRockContextForTest ) ) )
+            {
+                var blockCache = BlockCache.Get( 1 );
+                var parser = new HtmlParser();
+
+                var result = LavaPageRenderer.WrapBlockContent( "<div>block content</div>", blockCache, false, false );
+
+                var dom = parser.ParseDocument( $"<html><body>{result}</body></html>" );
+                var blockDiv = dom.GetElementById( "bid_1" );
+
+                Assert.IsNotNull( blockDiv );
+                Assert.Contains( "mock-block-type", blockDiv.ClassList );
+            }
+        }
+
+        [TestMethod]
+        public void WrapBlockContent_BlockTypeNameWithGreaterThan_UsesLastSegment()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var blockMock = CreateBlockMock( 1, 1, "Main", BlockTypeIds.MockBlock, 0 );
+                var blockTypeMock = MockDatabaseHelper.CreateEntityMock<BlockType>( BlockTypeIds.MockBlock, new Guid( "92b4726f-0408-4ca2-89dd-13ecc5eb43e7" ) );
+
+                blockTypeMock.Object.Name = "Test > Mock Block Type";
+
+                rockContextMock.SetupDbSet( blockMock.Object );
+                rockContextMock.SetupDbSet( blockTypeMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, ConfigureRockContextForTest ) ) )
+            {
+                var blockCache = BlockCache.Get( 1 );
+                var parser = new HtmlParser();
+
+                var result = LavaPageRenderer.WrapBlockContent( "<div>block content</div>", blockCache, false, false );
+
+                var dom = parser.ParseDocument( $"<html><body>{result}</body></html>" );
+                var blockDiv = dom.GetElementById( "bid_1" );
+
+                Assert.IsNotNull( blockDiv );
+                Assert.Contains( "mock-block-type", blockDiv.ClassList );
+            }
+        }
+
+        [TestMethod]
+        public void WrapBlockContent_BlockWithoutRole_UsesBlockTypeDefaultRole()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var blockMock = CreateBlockMock( 1, 1, "Main", BlockTypeIds.MockBlock, 0 );
+                var blockTypeMock = MockDatabaseHelper.CreateEntityMock<BlockType>( BlockTypeIds.MockBlock, new Guid( "92b4726f-0408-4ca2-89dd-13ecc5eb43e7" ) );
+
+                blockMock.Object.Role = null;
+                blockTypeMock.Object.Name = "Mock Block Type";
+                blockTypeMock.Object.DefaultRole = Enums.Cms.BlockRole.Secondary;
+
+                rockContextMock.SetupDbSet( blockMock.Object );
+                rockContextMock.SetupDbSet( blockTypeMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, ConfigureRockContextForTest ) ) )
+            {
+                var blockCache = BlockCache.Get( 1 );
+                var parser = new HtmlParser();
+
+                var result = LavaPageRenderer.WrapBlockContent( "<div>block content</div>", blockCache, false, false );
+
+                var dom = parser.ParseDocument( $"<html><body>{result}</body></html>" );
+                var blockDiv = dom.GetElementById( "bid_1" );
+
+                Assert.IsNotNull( blockDiv );
+                Assert.Contains( "block-role-secondary", blockDiv.ClassList );
+            }
+        }
+
+        [TestMethod]
+        public void WrapBlockContent_BlockWithRole_UsesBlockRole()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var blockMock = CreateBlockMock( 1, 1, "Main", BlockTypeIds.MockBlock, 0 );
+                var blockTypeMock = MockDatabaseHelper.CreateEntityMock<BlockType>( BlockTypeIds.MockBlock, new Guid( "92b4726f-0408-4ca2-89dd-13ecc5eb43e7" ) );
+
+                blockMock.Object.Role = Enums.Cms.BlockRole.Primary;
+                blockTypeMock.Object.Name = "Mock Block Type";
+                blockTypeMock.Object.DefaultRole = Enums.Cms.BlockRole.Secondary;
+
+                rockContextMock.SetupDbSet( blockMock.Object );
+                rockContextMock.SetupDbSet( blockTypeMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, ConfigureRockContextForTest ) ) )
+            {
+                var blockCache = BlockCache.Get( 1 );
+                var parser = new HtmlParser();
+
+                var result = LavaPageRenderer.WrapBlockContent( "<div>block content</div>", blockCache, false, false );
+
+                var dom = parser.ParseDocument( $"<html><body>{result}</body></html>" );
+                var blockDiv = dom.GetElementById( "bid_1" );
+
+                Assert.IsNotNull( blockDiv );
+                Assert.Contains( "block-role-primary", blockDiv.ClassList );
+            }
+        }
+
+        [TestMethod]
+        public void WrapBlockContent_BlockWithCssClass_RendersClass()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var blockMock = CreateBlockMock( 1, 1, "Main", BlockTypeIds.MockBlock, 0 );
+                var blockTypeMock = MockDatabaseHelper.CreateEntityMock<BlockType>( BlockTypeIds.MockBlock, new Guid( "92b4726f-0408-4ca2-89dd-13ecc5eb43e7" ) );
+
+                blockMock.Object.CssClass = "mock-test-custom-class";
+                blockTypeMock.Object.Name = "Mock Block Type";
+
+                rockContextMock.SetupDbSet( blockMock.Object );
+                rockContextMock.SetupDbSet( blockTypeMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, ConfigureRockContextForTest ) ) )
+            {
+                var blockCache = BlockCache.Get( 1 );
+                var parser = new HtmlParser();
+
+                var result = LavaPageRenderer.WrapBlockContent( "<div>block content</div>", blockCache, false, false );
+
+                var dom = parser.ParseDocument( $"<html><body>{result}</body></html>" );
+                var blockDiv = dom.GetElementById( "bid_1" );
+
+                Assert.IsNotNull( blockDiv );
+                Assert.Contains( "mock-test-custom-class", blockDiv.ClassList );
+            }
+        }
+
+        [TestMethod]
+        public void WrapBlockContent_BlockWithEdit_IncludesCanConfigureClass()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var blockMock = CreateBlockMock( 1, 1, "Main", BlockTypeIds.MockBlock, 0 );
+                var blockTypeMock = MockDatabaseHelper.CreateEntityMock<BlockType>( BlockTypeIds.MockBlock, new Guid( "92b4726f-0408-4ca2-89dd-13ecc5eb43e7" ) );
+
+                blockTypeMock.Object.Name = "Mock Block Type";
+
+                rockContextMock.SetupDbSet( blockMock.Object );
+                rockContextMock.SetupDbSet( blockTypeMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, ConfigureRockContextForTest ) ) )
+            {
+                var blockCache = BlockCache.Get( 1 );
+                var parser = new HtmlParser();
+
+                var result = LavaPageRenderer.WrapBlockContent( "<div>block content</div>", blockCache, true, false );
+
+                var dom = parser.ParseDocument( $"<html><body>{result}</body></html>" );
+                var blockDiv = dom.GetElementById( "bid_1" );
+
+                Assert.IsNotNull( blockDiv );
+                Assert.Contains( "can-configure", blockDiv.ClassList );
+            }
+        }
+
+        [TestMethod]
+        public void WrapBlockContent_BlockWithAdministrate_IncludesCanConfigureClass()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var blockMock = CreateBlockMock( 1, 1, "Main", BlockTypeIds.MockBlock, 0 );
+                var blockTypeMock = MockDatabaseHelper.CreateEntityMock<BlockType>( BlockTypeIds.MockBlock, new Guid( "92b4726f-0408-4ca2-89dd-13ecc5eb43e7" ) );
+
+                blockTypeMock.Object.Name = "Mock Block Type";
+
+                rockContextMock.SetupDbSet( blockMock.Object );
+                rockContextMock.SetupDbSet( blockTypeMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, ConfigureRockContextForTest ) ) )
+            {
+                var blockCache = BlockCache.Get( 1 );
+                var parser = new HtmlParser();
+
+                var result = LavaPageRenderer.WrapBlockContent( "<div>block content</div>", blockCache, false, true);
+
+                var dom = parser.ParseDocument( $"<html><body>{result}</body></html>" );
+                var blockDiv = dom.GetElementById( "bid_1" );
+
+                Assert.IsNotNull( blockDiv );
+                Assert.Contains( "can-configure", blockDiv.ClassList );
+            }
+        }
+
+        [TestMethod]
+        public void WrapBlockContent_BlockWithoutEditOrAdministrate_DoesNotIncludeCanConfigureClass()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var blockMock = CreateBlockMock( 1, 1, "Main", BlockTypeIds.MockBlock, 0 );
+                var blockTypeMock = MockDatabaseHelper.CreateEntityMock<BlockType>( BlockTypeIds.MockBlock, new Guid( "92b4726f-0408-4ca2-89dd-13ecc5eb43e7" ) );
+
+                blockTypeMock.Object.Name = "Mock Block Type";
+
+                rockContextMock.SetupDbSet( blockMock.Object );
+                rockContextMock.SetupDbSet( blockTypeMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, ConfigureRockContextForTest ) ) )
+            {
+                var blockCache = BlockCache.Get( 1 );
+                var parser = new HtmlParser();
+
+                var result = LavaPageRenderer.WrapBlockContent( "<div>block content</div>", blockCache, false, false );
+
+                var dom = parser.ParseDocument( $"<html><body>{result}</body></html>" );
+                var blockDiv = dom.GetElementById( "bid_1" );
+
+                Assert.IsNotNull( blockDiv );
+                Assert.DoesNotContain( "can-configure", blockDiv.ClassList );
+            }
+        }
+
+        #endregion
+
+        #region AddDefaultPageScripts
+
+        [TestMethod]
+        public void AddDefaultPageScripts_WithOnlyViewAccess_DoesNotIncludeRockAdmin()
+        {
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                renderer.State.CanEditPage = false;
+                renderer.State.CanAdministratePage = false;
+                renderer.State.CanAdministrateBlockOnPage = false;
+
+                renderer.AddDefaultPageScripts();
+
+                var hasRockAdminScript = response.GetHtmlElements()
+                    .Any( e => e.Attributes?.TryGetValue( "src", out var src ) == true && src.Contains( "RockAdmin" ) );
+
+                Assert.IsFalse( hasRockAdminScript );
+            }
+        }
+
+        [TestMethod]
+        public void AddDefaultPageScripts_WithEditAccess_IncludesRockAdmin()
+        {
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                renderer.State.CanEditPage = true;
+                renderer.State.CanAdministratePage = false;
+                renderer.State.CanAdministrateBlockOnPage = false;
+
+                renderer.AddDefaultPageScripts();
+
+                var hasRockAdminScript = response.GetHtmlElements()
+                    .Any( e => e.Attributes?.TryGetValue( "src", out var src ) == true && src.Contains( "RockAdmin" ) );
+
+                Assert.IsTrue( hasRockAdminScript );
+            }
+        }
+
+        [TestMethod]
+        public void AddDefaultPageScripts_WithAdministrateAccess_IncludesRockAdmin()
+        {
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                renderer.State.CanEditPage = false;
+                renderer.State.CanAdministratePage = true;
+                renderer.State.CanAdministrateBlockOnPage = false;
+
+                renderer.AddDefaultPageScripts();
+
+                var hasRockAdminScript = response.GetHtmlElements()
+                    .Any( e => e.Attributes?.TryGetValue( "src", out var src ) == true && src.Contains( "RockAdmin" ) );
+
+                Assert.IsTrue( hasRockAdminScript );
+            }
+        }
+
+        [TestMethod]
+        public void AddDefaultPageScripts_WithBlockAdministrateAccess_IncludesRockAdmin()
+        {
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc ) ) )
+            {
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                renderer.State.CanEditPage = false;
+                renderer.State.CanAdministratePage = false;
+                renderer.State.CanAdministrateBlockOnPage = true;
+
+                renderer.AddDefaultPageScripts();
+
+                var hasRockAdminScript = response.GetHtmlElements()
+                    .Any( e => e.Attributes?.TryGetValue( "src", out var src ) == true && src.Contains( "RockAdmin" ) );
+
+                Assert.IsTrue( hasRockAdminScript );
+            }
+        }
+
+        [TestMethod]
+        public void AddDefaultPageScripts_WithGoogleAnalyticsCode_IncludesAnalyticsScript()
+        {
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc ) ) )
+            {
+                RockApp.Current.CreateRockContext()
+                    .Set<Site>()
+                    .Single( s => s.Id == 1 )
+                    .GoogleAnalyticsCode = "G-ABC123";
+
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                renderer.State.CanEditPage = false;
+                renderer.State.CanAdministratePage = false;
+                renderer.State.CanAdministrateBlockOnPage = true;
+
+                renderer.AddDefaultPageScripts();
+
+                var headEndContent = renderer.State.HeadEndContentBuilder.ToString();
+
+                Assert.Contains( "googletagmanager", headEndContent );
+            }
+        }
+
+        [TestMethod]
+        public void AddDefaultPageScripts_WithEmptyGoogleAnalyticsCode_DoesNotIncludeAnalyticsScript()
+        {
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc ) ) )
+            {
+                RockApp.Current.CreateRockContext()
+                    .Set<Site>()
+                    .Single( s => s.Id == 1 )
+                    .GoogleAnalyticsCode = string.Empty;
+
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                renderer.State.CanEditPage = false;
+                renderer.State.CanAdministratePage = false;
+                renderer.State.CanAdministrateBlockOnPage = true;
+
+                renderer.AddDefaultPageScripts();
+
+                var headEndContent = renderer.State.HeadEndContentBuilder.ToString();
+
+                Assert.DoesNotContain( "googletagmanager", headEndContent );
+            }
+        }
+
+        #endregion
+
         #region Support Classes and Methods
 
         /// <summary>
@@ -1469,6 +2000,18 @@ namespace Rock.Tests.Web.v2
             configure?.Invoke( mockRequest );
 
             return mockRequest.Object;
+        }
+
+        protected class MockObsidianBlockWithThrow : RockBlockType
+        {
+            public override Task<string> GetControlMarkupAsync()
+            {
+                throw new Exception( "This block contains an error." );
+            }
+        }
+
+        protected class NonWebMockObsidianBlock
+        {
         }
 
         #endregion

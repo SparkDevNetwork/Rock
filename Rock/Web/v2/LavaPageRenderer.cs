@@ -74,6 +74,9 @@ namespace Rock.Web.v2
             // Add configuration specific to Rock Page to the observability activity.
             RockPageHelper.ConfigureActivity( Activity.Current, _rockRequestContext );
 
+            State.CanEditPage = _rockRequestContext.Page.IsAuthorized( Authorization.EDIT, _rockRequestContext.CurrentPerson );
+            State.CanAdministratePage = _rockRequestContext.Page.IsAuthorized( Authorization.ADMINISTRATE, _rockRequestContext.CurrentPerson );
+
             if ( !_rockRequestContext.Page.IsAuthorized( Authorization.VIEW, _rockRequestContext.CurrentPerson ) )
             {
                 responseBase.RedirectToUrl( RockPageHelper.GetLoginPageUrl( _rockRequestContext ), false );
@@ -163,7 +166,12 @@ namespace Rock.Web.v2
                 // has access to view block instance.
                 if ( zone != null && ( canAdministrate || canEdit || canView ) )
                 {
-                    var markup = await RenderBlockAsync( block, canEdit, canAdministrate );
+                    string markup;
+
+                    using ( ObservabilityHelper.StartActivity( $"BLOCK LOAD {block.BlockType.Name} - {block.Name}" ) )
+                    {
+                        markup = await RenderBlockAsync( block, canEdit, canAdministrate );
+                    }
 
                     if ( markup != null )
                     {
@@ -185,13 +193,12 @@ namespace Rock.Web.v2
         internal string RenderZone( LavaPageZone zone, string blockContent )
         {
             var sb = new StringBuilder();
-            var canAdministrate = _rockRequestContext.Page.IsAuthorized( Authorization.ADMINISTRATE, _rockRequestContext.CurrentPerson );
 
             sb.Append( "<div id=\"zone-" );
             sb.Append( zone.Key.ToLower() );
             sb.Append( "\" class=\"zone-instance" );
 
-            if ( canAdministrate )
+            if ( State.CanAdministratePage )
             {
                 sb.Append( " can-configure" );
             }
@@ -206,7 +213,7 @@ namespace Rock.Web.v2
 
             sb.Append( ">" );
 
-            if ( canAdministrate )
+            if ( State.CanAdministratePage )
             {
                 var configUrl = $"~/ZoneBlocks/{_rockRequestContext.Page.Id}/{zone.Key}?t=Zone Block&pb=&sb=Done";
 
@@ -245,18 +252,18 @@ namespace Rock.Web.v2
             return sb.ToString();
         }
 
-        private async Task<string> RenderBlockAsync( BlockCache block, bool canEdit, bool canAdministrate )
+        internal async Task<string> RenderBlockAsync( BlockCache block, bool canEdit, bool canAdministrate )
         {
-            var activity = ObservabilityHelper.StartActivity( $"BLOCK LOAD {block.BlockType.Name} - {block.Name}" );
-
             try
             {
+                var activity = Activity.Current;
+
                 activity?.AddTag( "rock.otel_type", "rock-block" );
                 activity?.AddTag( "rock.blocktype.name", block.BlockType.Name );
                 activity?.AddTag( "rock.blocktype.id", block.BlockType.Id );
                 activity?.AddTag( "rock.node", RockApp.Current.HostingSettings.NodeName );
 
-                if ( !string.IsNullOrWhiteSpace( block.BlockType.Path ) )
+                if ( block.BlockType.Path.IsNotNullOrWhiteSpace() )
                 {
                     return $"<div>WebForms block '{block.BlockType.Name.EncodeHtml()}' is not supported.</div>";
                 }
@@ -292,6 +299,10 @@ namespace Rock.Web.v2
 
                             return WrapBlockContent( blockHtml, block, canEdit, canAdministrate );
                         }
+                        else
+                        {
+                            return $"<div>Block type '{block.BlockType.Name.EncodeHtml()}' is not a web block.</div>";
+                        }
                     }
                 }
 
@@ -299,20 +310,9 @@ namespace Rock.Web.v2
             }
             catch ( Exception ex )
             {
-                try
-                {
-                    LogException( ex );
-                }
-                catch
-                {
-                    //
-                }
+                LogException( ex );
 
                 return $"<div class=\"alert alert-danger system-error\"><strong>Error Loading Block: {block.Name}</strong> {ex.Message.EncodeHtml()}<pre>{ex.StackTrace.EncodeHtml()}</pre>";
-            }
-            finally
-            {
-                activity?.Dispose();
             }
         }
 
@@ -332,7 +332,7 @@ namespace Rock.Web.v2
             _rockRequestContext.Response.AddScriptToHead( "rock-obsidian-init", script );
         }
 
-        private static string WrapBlockContent( string blockHtml, BlockCache block, bool canEdit, bool canAdministrate )
+        internal static string WrapBlockContent( string blockHtml, BlockCache block, bool canEdit, bool canAdministrate )
         {
             var str = new StringBuilder();
 
@@ -446,15 +446,15 @@ namespace Rock.Web.v2
         /// Adds the default page JavaScript libraries that must be included on
         /// every page.
         /// </summary>
-        private void AddDefaultPageScripts()
+        internal void AddDefaultPageScripts()
         {
             AddScriptBundle( "~/Scripts/Bundles/RockJQueryLatest" );
             AddScriptBundle( "~/Scripts/Bundles/RockLibs" );
             AddScriptBundle( "~/Scripts/Bundles/RockUi" );
 
             var isAdministratorLike = State.CanAdministrateBlockOnPage
-                || _rockRequestContext.Page.IsAuthorized( Authorization.ADMINISTRATE, _rockRequestContext.CurrentPerson )
-                || _rockRequestContext.Page.IsAuthorized( Authorization.EDIT, _rockRequestContext.CurrentPerson );
+                || State.CanEditPage
+                || State.CanAdministratePage;
 
             if ( _rockRequestContext.Page.IncludeAdminFooter && isAdministratorLike )
             {
@@ -685,10 +685,7 @@ namespace Rock.Web.v2
                 return;
             }
 
-            var canEditPage = _rockRequestContext.Page.IsAuthorized( Authorization.EDIT, _rockRequestContext.CurrentPerson );
-            var canAdministratePage = _rockRequestContext.Page.IsAuthorized( Authorization.ADMINISTRATE, _rockRequestContext.CurrentPerson );
-
-            if ( !State.CanAdministrateBlockOnPage && !canEditPage && !canAdministratePage )
+            if ( !State.CanAdministrateBlockOnPage && !State.CanEditPage && !State.CanAdministratePage )
             {
                 return;
             }
@@ -721,21 +718,21 @@ namespace Rock.Web.v2
 
             State.BodyEndContentBuilder.AppendLine( @"    <div class=""button-bar"">" );
 
-            if ( canAdministratePage || State.CanAdministrateBlockOnPage )
+            if ( State.CanAdministratePage || State.CanAdministrateBlockOnPage )
             {
                 State.BodyEndContentBuilder.AppendLine( @"        <a class=""btn block-config js-block-config"" href=""javascript: Rock.admin.pageAdmin.showBlockConfig();"" title=""Block Configuration (Alt-B)"">
             <i class=""ti ti-border-all""></i>
         </a>" );
             }
 
-            if ( canEditPage || canAdministratePage )
+            if ( State.CanEditPage || State.CanAdministratePage )
             {
                 State.BodyEndContentBuilder.AppendLine( @"        <a id=""aPageProperties"" class=""btn properties js-page-properties"" href=""javascript: Rock.controls.modal.show($(this), '/PageProperties/12?t=Page Properties')"" title=""Page Properties (Alt+P)"">
             <i class=""ti ti-settings""></i>
         </a>" );
             }
 
-            if ( canAdministratePage )
+            if ( State.CanAdministratePage )
             {
                 var pageEntityTypeId = EntityTypeCache.Get( typeof( Page ) ).Id;
                 var pageSecurityUrl = _rockRequestContext.ResolveRockUrl( $"~/Secure/{pageEntityTypeId}/{_rockRequestContext.Page.Id}?t=Page Security&pb=&sb=Done" );
@@ -811,7 +808,17 @@ function rockInternalSetCacheState(state) {
         }
 
         [ExcludeFromCodeCoverage]
-        private void LogException( Exception ex ) => ExceptionLogService.LogException( ex );
+        private void LogException( Exception ex )
+        {
+            try
+            {
+                ExceptionLogService.LogException( ex );
+            }
+            catch
+            {
+                // If we get an error recording the exception, just swallow it.
+            }
+        }
     }
 
     internal sealed class LavaPageRendererState
@@ -819,6 +826,10 @@ function rockInternalSetCacheState(state) {
         public bool PageHasObsidianBlock { get; set; }
 
         public bool PageNeedsObsidian { get; set; }
+
+        public bool CanEditPage { get; set; }
+
+        public bool CanAdministratePage { get; set; }
 
         public bool CanAdministrateBlockOnPage { get; set; }
 
