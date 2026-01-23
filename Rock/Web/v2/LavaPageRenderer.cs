@@ -509,7 +509,9 @@ namespace Rock.Web.v2
                 return;
             }
 
-            if ( !DebugTraceProcessor.IsValidTrace( Activity.Current.TraceId.ToString() ) )
+            var traceObserver = RockApp.Current.GetRequiredService<DebugTraceObserver>();
+
+            if ( !traceObserver.IsValidTrace( Activity.Current.TraceId.ToString() ) )
             {
                 return;
             }

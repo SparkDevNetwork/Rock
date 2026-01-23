@@ -57,7 +57,8 @@ namespace Rock.Web.v2
 
                 if ( tracePageId == _rockRequestContext.Page.Id )
                 {
-                    DebugTraceProcessor.ValidateTrace( Activity.Current.TraceId.ToString() );
+                    RockApp.Current.GetRequiredService<DebugTraceObserver>()
+                        .ValidateTrace( Activity.Current.TraceId.ToString() );
                 }
             }
 
