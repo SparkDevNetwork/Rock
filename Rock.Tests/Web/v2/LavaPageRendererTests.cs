@@ -152,6 +152,46 @@ namespace Rock.Tests.Web.v2
             }
         }
 
+        [TestMethod]
+        public async Task RenderAsync_WithoutViewAccess_RedirectsToLoginPage()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var pageMock = MockDatabaseHelper.CreateEntityMock<Page>( 1, new Guid( "fdd9603f-85c0-4813-86aa-a3bc0d5e533b" ) );
+                var authViewMock = CreateAuthMock( EntityTypeIds.Page, 1, Authorization.VIEW, false, SpecialRole.AllUsers );
+
+                pageMock.Setup( m => m.TypeId ).Returns( EntityTypeIds.Page );
+                pageMock.Object.LayoutId = 1;
+
+                rockContextMock.SetupDbSet( pageMock.Object );
+                rockContextMock.SetupDbSet( authViewMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext: ConfigureRockContextForTest ) ) )
+            {
+                // Update the login page Id.
+                RockApp.Current.CreateRockContext()
+                    .Set<Site>()
+                    .Single( s => s.Id == 1 )
+                    .LoginPageId = 2;
+
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( response );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                var result = await renderer.RenderAsync();
+
+                Assert.IsEmpty( result );
+                Assert.IsTrue( response.RedirectInfo.HasValue );
+                Assert.AreEqual( "/page/2", response.RedirectInfo.Value.Url );
+                Assert.IsFalse( response.RedirectInfo.Value.Permanent );
+            }
+        }
+
         #endregion
 
         #region RenderBlocksAsync

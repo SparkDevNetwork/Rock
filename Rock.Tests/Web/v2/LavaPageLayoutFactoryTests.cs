@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Moq;
 
+using Rock.Configuration;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Tests.Shared;
@@ -276,6 +278,37 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 var layout2 = builder.GetLayout( "/main.lava", "RockNextGen", engine );
 
                 Assert.AreSame( layout, layout2 );
+            }
+        }
+
+        #endregion
+
+        #region CreateLayout
+
+        [TestMethod]
+        public void CreateLayout_WithInvalidLava_ThrowsException()
+        {
+            var mainLava = @"<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body id=""body"">
+{% if
+</body>
+</html>
+";
+
+            var fileProvider = GetMockFileProvider(
+                new[] { "/main.lava", mainLava }
+            );
+
+            using ( TestHelper.CreateScopedRockApp( ConfigureServices ) )
+            {
+                var builder = new LavaPageLayoutFactory( fileProvider );
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+
+                Assert.ThrowsExactly<LavaParseException>( () => builder.CreateLayout( "/main.lava", "RockNextGen", engine ) );
             }
         }
 
@@ -569,19 +602,6 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 .Returns( new LavaParseResult() );
 
             return engineMock.Object;
-        }
-
-        private static string GetEmptyLayout( string body = "" )
-        {
-            return $@"<!DOCTYPE html>
-<html>
-<head>
-</head>
-<body id=""body"">
-    {body}
-</body>
-</html>
-";
         }
 
         #endregion

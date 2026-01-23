@@ -70,10 +70,6 @@ namespace Rock.Web.v2
             Dependencies = dependencies;
         }
 
-        public LavaPageLayout()
-        {
-        }
-
         #endregion
     }
 }
