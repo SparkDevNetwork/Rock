@@ -70,8 +70,10 @@ namespace Rock.Blocks.Types.Mobile.Engagement
                 {
                     tp.Contact.PhotoId,
                     tp.Contact.FirstName,
+                    tp.Contact.LastName,
                     tp.Type,
-                    tp.CompletedDateTime
+                    tp.CompletedDateTime,
+                    tp.Contact.Gender
                 } )
                 .ToList()
                 .Select( tp =>
@@ -83,6 +85,8 @@ namespace Rock.Blocks.Types.Mobile.Engagement
                     {
                         ProfileURL = profileURL,
                         contactName = tp.FirstName,
+                        LastName = tp.LastName,
+                        Gender = tp.Gender.ToMobile(),
                         TouchpointType = tp.Type.ToMobile(),
                         CompletedDate = tp.CompletedDateTime.Value
                     };

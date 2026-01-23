@@ -67,7 +67,7 @@ namespace Rock.Observability
         /// Installs the shared trace provider if it is not already active
         /// in the system.
         /// </summary>
-        public virtual void BeginTracing()
+        public void BeginTracing()
         {
             lock ( _sharedTraceProviderLock )
             {
@@ -89,7 +89,7 @@ namespace Rock.Observability
         /// Begins monitoring the specified trace identifier.
         /// </summary>
         /// <param name="traceId">The identifier of the trace to be recorded.</param>
-        public virtual void MonitorTrace( string traceId )
+        public void MonitorTrace( string traceId )
         {
             DebugTraceProcessor.ActiveTraces.AddOrReplace( traceId, new DebugTraceTracker() );
         }
@@ -105,7 +105,7 @@ namespace Rock.Observability
         /// string.
         /// </summary>
         /// <param name="traceId">The identifier of the trace associated with the page load.</param>
-        public virtual void ValidateTrace( string traceId )
+        public void ValidateTrace( string traceId )
         {
             if ( DebugTraceProcessor.ActiveTraces.TryGetValue( traceId, out var tracker ) )
             {
@@ -119,7 +119,7 @@ namespace Rock.Observability
         /// </summary>
         /// <param name="childTraceId">The child (current) trace identifier.</param>
         /// <param name="parentTraceId">The parent trace identifier.</param>
-        public virtual void LinkTrace( string childTraceId, string parentTraceId )
+        public void LinkTrace( string childTraceId, string parentTraceId )
         {
             DebugTraceProcessor.LinkedTraces.AddOrReplace( childTraceId, parentTraceId );
         }
@@ -129,7 +129,7 @@ namespace Rock.Observability
         /// </summary>
         /// <param name="traceId">The identifier of the trace.</param>
         /// <returns><c>true</c> if the trace has been previously validated; otherwise <c>false</c>.</returns>
-        public bool IsValidTrace( string traceId )
+        public virtual bool IsValidTrace( string traceId )
         {
             if ( DebugTraceProcessor.ActiveTraces.TryGetValue( traceId, out var tracker ) )
             {
@@ -197,7 +197,7 @@ namespace Rock.Observability
         /// </summary>
         /// <param name="traceId">The identifier of the trace to retrieve activities for.</param>
         /// <returns>A set of <see cref="Activity"/> records for the trace.</returns>
-        public virtual List<Activity> GetTraceActivities( string traceId )
+        public List<Activity> GetTraceActivities( string traceId )
         {
             var activities = new List<Activity>();
 

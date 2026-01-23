@@ -106,7 +106,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
                 );
             }
 
-            var contacts = qry.OrderByDescending( c => c.Id )
+            var contacts = qry.OrderByDescending( c => c.LastName )
                 .Skip( option.Offset )
                 .Take( option.Limit )
                 .ToList();
@@ -115,6 +115,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
             {
                 ContactIdKey = c.IdKey,
                 Name = c.FirstName + " " + c.LastName,
+                Gender = c.Gender.ToMobile(),
                 ProfilePhotoUrl = c.PhotoId != null ? MobileHelper.BuildPublicApplicationRootUrl( FileUrlHelper.GetImageUrl( c.PhotoId.Value, new GetImageUrlOptions { Width = 256, Height = 256 } ) ) : string.Empty,
             } );
 
