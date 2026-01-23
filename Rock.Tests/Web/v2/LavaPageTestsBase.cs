@@ -187,6 +187,8 @@ namespace Rock.Tests.Web.v2
 
                 siteMock.Setup( m => m.DefaultDomainUri ).Returns( new Uri( "http://localhost" ) );
                 siteMock.Setup( m => m.SiteDomains ).Returns( new List<SiteDomain>() );
+                siteMock.Setup( m => m.TypeId ).Returns( EntityTypeIds.Site );
+                pageMock.Setup( m => m.TypeId ).Returns( EntityTypeIds.Page );
                 pageMock.Object.LayoutId = 1;
                 layoutMock.Object.SiteId = 1;
 
