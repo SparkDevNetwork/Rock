@@ -164,7 +164,6 @@ namespace Rock.Tests.Web.v2
 
             using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, configureRockContext: ConfigureRockContextForTest ) ) )
             {
-                // Update the login page Id.
                 RockApp.Current.CreateRockContext()
                     .Set<Site>()
                     .Single( s => s.Id == 1 )
@@ -1012,6 +1011,298 @@ namespace Rock.Tests.Web.v2
 
         #endregion
 
+        #region AddAdminFooter
+
+        [TestMethod]
+        public void AddAdminFooter_WithDefaultAccess_DoesNotIncludeFooter()
+        {
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc ) ) )
+            {
+                RockApp.Current.CreateRockContext()
+                    .Set<Page>()
+                    .Single( p => p.Id == 1 )
+                    .IncludeAdminFooter = true;
+
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var request = CreateMockRequest( "http://localhost" );
+                var response = new RockResponseBase();
+                var requestContext = new Net.RockRequestContext( request, response, null );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                renderer.AddAdminFooter();
+
+                var bodyEndContent = renderer.State.BodyEndContentBuilder.ToString();
+
+                Assert.DoesNotContain( "<div id=\"cms-admin-footer", bodyEndContent );
+            }
+        }
+
+        [TestMethod]
+        public void AddAdminFooter_WithoutIncludeAdminFooter_DoesNotIncludeFooter()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var authAdministrateMock = CreateAuthMock( EntityTypeIds.Page, 1, Authorization.ADMINISTRATE, true, SpecialRole.AllUsers );
+
+                rockContextMock.SetupDbSet( authAdministrateMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, ConfigureRockContextForTest ) ) )
+            {
+                RockApp.Current.CreateRockContext()
+                    .Set<Page>()
+                    .Single( p => p.Id == 1 )
+                    .IncludeAdminFooter = false;
+
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var request = CreateMockRequest( "http://localhost" );
+                var response = new RockResponseBase();
+                var user = new UserLogin { Person = new Person() };
+                var requestContext = new Net.RockRequestContext( request, response, user );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                renderer.AddAdminFooter();
+
+                var bodyEndContent = renderer.State.BodyEndContentBuilder.ToString();
+
+                Assert.DoesNotContain( "<div id=\"cms-admin-footer", bodyEndContent );
+            }
+        }
+
+        [TestMethod]
+        public void AddAdminFooter_WithPageEditAccess_IncludesFooter()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var authEditMock = CreateAuthMock( EntityTypeIds.Page, 1, Authorization.EDIT, true, SpecialRole.AllUsers );
+
+                rockContextMock.SetupDbSet( authEditMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, ConfigureRockContextForTest ) ) )
+            {
+                RockApp.Current.CreateRockContext()
+                    .Set<Page>()
+                    .Single( p => p.Id == 1 )
+                    .IncludeAdminFooter = true;
+
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var request = CreateMockRequest( "http://localhost" );
+                var response = new RockResponseBase();
+                var user = new UserLogin { Person = new Person() };
+                var requestContext = new Net.RockRequestContext( request, response, user );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                renderer.AddAdminFooter();
+
+                var bodyEndContent = renderer.State.BodyEndContentBuilder.ToString();
+
+                Assert.Contains( "<div id=\"cms-admin-footer", bodyEndContent );
+            }
+        }
+
+        [TestMethod]
+        public void AddAdminFooter_WithPageAdministrateAccess_IncludesFooter()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var authAdministrateMock = CreateAuthMock( EntityTypeIds.Page, 1, Authorization.ADMINISTRATE, true, SpecialRole.AllUsers );
+
+                rockContextMock.SetupDbSet( authAdministrateMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, ConfigureRockContextForTest ) ) )
+            {
+                RockApp.Current.CreateRockContext()
+                    .Set<Page>()
+                    .Single( p => p.Id == 1 )
+                    .IncludeAdminFooter = true;
+
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var request = CreateMockRequest( "http://localhost" );
+                var response = new RockResponseBase();
+                var user = new UserLogin { Person = new Person() };
+                var requestContext = new Net.RockRequestContext( request, response, user );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                renderer.AddAdminFooter();
+
+                var bodyEndContent = renderer.State.BodyEndContentBuilder.ToString();
+
+                Assert.Contains( "<div id=\"cms-admin-footer", bodyEndContent );
+            }
+        }
+
+        [TestMethod]
+        public void AddAdminFooter_WithBlockAdministrateAccess_IncludesFooter()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var authViewMock = CreateAuthMock( EntityTypeIds.Page, 1, Authorization.VIEW, true, SpecialRole.AllUsers );
+
+                rockContextMock.SetupDbSet( authViewMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, ConfigureRockContextForTest ) ) )
+            {
+                RockApp.Current.CreateRockContext()
+                    .Set<Page>()
+                    .Single( p => p.Id == 1 )
+                    .IncludeAdminFooter = true;
+
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var request = CreateMockRequest( "http://localhost" );
+                var response = new RockResponseBase();
+                var user = new UserLogin { Person = new Person() };
+                var requestContext = new Net.RockRequestContext( request, response, user );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+                renderer.State.CanAdministrateBlockOnPage = true;
+
+                renderer.AddAdminFooter();
+
+                var bodyEndContent = renderer.State.BodyEndContentBuilder.ToString();
+
+                Assert.Contains( "<div id=\"cms-admin-footer", bodyEndContent );
+            }
+        }
+
+        [TestMethod]
+        public void AddAdminFooter_WithoutCacheCookie_EnablesCache()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var authAdministrateMock = CreateAuthMock( EntityTypeIds.Page, 1, Authorization.ADMINISTRATE, true, SpecialRole.AllUsers );
+
+                rockContextMock.SetupDbSet( authAdministrateMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, ConfigureRockContextForTest ) ) )
+            {
+                RockApp.Current.CreateRockContext()
+                    .Set<Page>()
+                    .Single( p => p.Id == 1 )
+                    .IncludeAdminFooter = true;
+
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var request = CreateMockRequest( "http://localhost" );
+                var response = new RockResponseBase();
+                var user = new UserLogin { Person = new Person() };
+                var requestContext = new Net.RockRequestContext( request, response, user );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                renderer.AddAdminFooter();
+
+                var bodyEndContent = renderer.State.BodyEndContentBuilder.ToString();
+
+                Assert.Contains( "rockInternalSetCacheState", bodyEndContent );
+                Assert.Contains( "Web cache enabled", bodyEndContent );
+            }
+        }
+
+        [TestMethod]
+        public void AddAdminFooter_WithFalseCacheCookie_DisabledCache()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var authAdministrateMock = CreateAuthMock( EntityTypeIds.Page, 1, Authorization.ADMINISTRATE, true, SpecialRole.AllUsers );
+
+                rockContextMock.SetupDbSet( authAdministrateMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, ConfigureRockContextForTest ) ) )
+            {
+                RockApp.Current.CreateRockContext()
+                    .Set<Page>()
+                    .Single( p => p.Id == 1 )
+                    .IncludeAdminFooter = true;
+
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var request = CreateMockRequest( "http://localhost", mockRequest =>
+                {
+                    mockRequest.Setup( m => m.Cookies ).Returns( new Dictionary<string, string>
+                    {
+                        [RockCache.CACHE_CONTROL_COOKIE] = "false"
+                    } );
+                } );
+                var response = new RockResponseBase();
+                var user = new UserLogin { Person = new Person() };
+                var requestContext = new Net.RockRequestContext( request, response, user );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                renderer.AddAdminFooter();
+
+                var bodyEndContent = renderer.State.BodyEndContentBuilder.ToString();
+
+                Assert.Contains( "rockInternalSetCacheState", bodyEndContent );
+                Assert.Contains( "Web cache disabled", bodyEndContent );
+            }
+        }
+
+        [TestMethod]
+        public void AddAdminFooter_WithTrueCacheCookie_EnablesCache()
+        {
+            void ConfigureRockContextForTest( Mock<RockContext> rockContextMock )
+            {
+                var authAdministrateMock = CreateAuthMock( EntityTypeIds.Page, 1, Authorization.ADMINISTRATE, true, SpecialRole.AllUsers );
+
+                rockContextMock.SetupDbSet( authAdministrateMock.Object );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( sc => ConfigureServices( sc, ConfigureRockContextForTest ) ) )
+            {
+                RockApp.Current.CreateRockContext()
+                    .Set<Page>()
+                    .Single( p => p.Id == 1 )
+                    .IncludeAdminFooter = true;
+
+                var factory = RockApp.Current.GetRequiredService<ILavaEngineFactory>();
+                var engine = factory.CreateEngine( new LavaEngineConfigurationOptions { InitializeDynamicShortcodes = false } );
+                var request = CreateMockRequest( "http://localhost", mockRequest =>
+                {
+                    mockRequest.Setup( m => m.Cookies ).Returns( new Dictionary<string, string>
+                    {
+                        [RockCache.CACHE_CONTROL_COOKIE] = "true"
+                    } );
+                } );
+                var response = new RockResponseBase();
+                var user = new UserLogin { Person = new Person() };
+                var requestContext = new Net.RockRequestContext( request, response, user );
+                requestContext.PrepareRequestForPage( PageCache.Get( 1 ) );
+
+                var renderer = new LavaPageRenderer( CreateBaseLayout( engine ), engine, requestContext );
+
+                renderer.AddAdminFooter();
+
+                var bodyEndContent = renderer.State.BodyEndContentBuilder.ToString();
+
+                Assert.Contains( "rockInternalSetCacheState", bodyEndContent );
+                Assert.Contains( "Web cache enabled", bodyEndContent );
+            }
+        }
+
+        #endregion
+
         #region Support Classes and Methods
 
         /// <summary>
@@ -1043,6 +1334,29 @@ namespace Rock.Tests.Web.v2
             var renderContext = engine.NewRenderContext();
 
             return builder.GetLayout( "/main.lava", "RockNextGen", engine );
+        }
+
+        private IRequest CreateMockRequest( string url, Action<Mock<IRequest>> configure = null )
+        {
+            var mockRequest = new Mock<IRequest>();
+            var qs = string.Empty;
+
+            if ( url.Contains( '?' ) )
+            {
+                qs = url.Split( '?' )[1];
+                url = url.Split( '?' )[0];
+            }
+
+            mockRequest.Setup( m => m.RequestUri ).Returns( new Uri( url ) );
+            mockRequest.Setup( m => m.Method ).Returns( "GET" );
+            mockRequest.Setup( m => m.QueryString ).Returns( qs.ParseQueryString() );
+            mockRequest.Setup( m => m.RouteData ).Returns( new Dictionary<string, object>() );
+            mockRequest.Setup( m => m.Headers ).Returns( new System.Collections.Specialized.NameValueCollection() );
+            mockRequest.Setup( m => m.Cookies ).Returns( new Dictionary<string, string>() );
+
+            configure?.Invoke( mockRequest );
+
+            return mockRequest.Object;
         }
 
         #endregion

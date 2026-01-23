@@ -21,9 +21,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
-
-using Grpc.Core;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -679,7 +676,7 @@ namespace Rock.Web.v2
             State.BodyEndContentBuilder.AppendLine( content );
         }
 
-        private void AddAdminFooter()
+        internal void AddAdminFooter()
         {
             if ( !_rockRequestContext.Page.IncludeAdminFooter )
             {
@@ -694,12 +691,7 @@ namespace Rock.Web.v2
                 return;
             }
 
-#if NET472_OR_GREATER
-            var duration = RockDateTime.Now.Subtract( ( DateTime ) System.Web.HttpContext.Current.Items["Request_Start_Time"] );
-#else
-            var duration = TimeSpan.Zero;
-#endif
-
+            var duration = GetPageLoadDuration();
             var url = _rockRequestContext.RequestUri;
             var query = url.Query.ParseQueryString();
             var timingsKey = $"{_rockRequestContext.Page.IdKey}_{_rockRequestContext.CurrentPerson.IdKey}";
@@ -798,6 +790,22 @@ function rockInternalSetCacheState(state) {
 ";
 
             _rockRequestContext.Response.AddScript( "cms-admin-footer-script", script );
+        }
+
+        /// <summary>
+        /// Gets the duration of the page load from the request start time.
+        /// </summary>
+        /// <returns>The duration as a <see cref="TimeSpan"/> object.</returns>
+        [ExcludeFromCodeCoverage]
+        private static TimeSpan GetPageLoadDuration()
+        {
+#if NET472_OR_GREATER
+            return System.Web.HttpContext.Current?.Items.Contains( "Request_Start_Time" ) == true
+                ? RockDateTime.Now.Subtract( ( DateTime ) System.Web.HttpContext.Current.Items["Request_Start_Time"] )
+                : TimeSpan.Zero;
+#else
+            return TimeSpan.Zero;
+#endif
         }
 
         [ExcludeFromCodeCoverage]
