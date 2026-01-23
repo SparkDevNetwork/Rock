@@ -178,6 +178,7 @@ namespace Rock.Tests.Web.v2
 
                 globalDefaultEntityTypeMock.Object.Name = "Rock.Security.GlobalDefault";
                 siteEntityTypeMock.Object.Name = "Rock.Model.Site";
+                pageEntityTypeMock.Object.Name = "Rock.Model.Page";
                 mockBlockEntityTypeMock.Object.Name = typeof( MockObsidianBlock ).FullName;
                 mockBlockEntityTypeMock.Object.AssemblyName = typeof( MockObsidianBlock ).AssemblyQualifiedName;
 
