@@ -38,7 +38,7 @@ namespace Rock.Migrations
                 migrationStrategy: "Chop",
                 jobGuid: SystemGuid.ServiceJob.DATA_MIGRATIONS_190_CHOP_REGISTRATION_ENTRY_FINAL,
                 blockAttributeKeysToIgnore: new Dictionary<string, string>  {
-                { "CABD2BFB-DFFF-42CD-BF1A-14F3BEE583DD", "ConfirmAccountTemplate" } // Registration Entry
+                { "CABD2BFB-DFFF-42CD-BF1A-14F3BEE583DD", "ConfirmAccountTemplate,EnableDebug" } // Registration Entry
             } );
         }
 

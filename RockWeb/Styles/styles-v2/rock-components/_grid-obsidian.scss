@@ -369,6 +369,44 @@
     align-items: center;
 }
 
+.grid-actions {
+  text-align:         right;
+  background-color:   var(--color-interface-softest);
+
+  .btn {
+    margin-left:      var(--spacing-xsmall);
+  }
+
+  &:hover {
+    color:            var(--color-interface-strong);
+  }
+
+  .btn-grid-action {
+    padding:          5px 7px; // Need to hard coded so that the action btn in the group scheduler takes more space, for the "filter options" button to fit in
+    margin:           0 0 0 2px;
+    font-size:        20px;
+    border:           0;
+    box-shadow:       none;
+    transition:       color 250ms;
+    color:            var(--color-interface-medium);
+    background-color: transparent;
+    border-color:     transparent;
+  }
+
+  .btn-add {
+    color:            var(--color-info-strong);
+
+    &:hover {
+      color:          var(--color-success-strong);
+    }
+  }
+
+  .btn-grid-custom-action {
+    margin-bottom: var(--spacing-xsmall);
+  }
+
+}
+
 .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-sizes {
     flex: 1 1 auto;
     display: flex;

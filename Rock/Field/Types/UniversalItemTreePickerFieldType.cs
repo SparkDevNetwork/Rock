@@ -61,6 +61,7 @@ namespace Rock.Field.Types
                     ["rootRestUrl"] = GetRootRestUrl( privateConfigurationValues ),
                     ["context"] = GetStandardContext( privateConfigurationValues ),
                     ["isDescendantSelectionAllowed"] = GetDescendantSelectionAllowed( privateConfigurationValues ).ToString(),
+                    ["isFolderSelectionDisabled"] = GetFolderSelectionDisabled( privateConfigurationValues ).ToString(),
                 };
 
                 var itemTypes = GetSelectableItemTypes( privateConfigurationValues );
@@ -168,6 +169,18 @@ namespace Rock.Field.Types
         protected virtual List<string> GetSelectableItemTypes( Dictionary<string, string> privateConfigurationValues )
         {
             return null;
+        }
+
+        /// <summary>
+        /// Determines if folder selection should be disabled in the tree view.
+        /// Folders are any items where <see cref="TreeItemBag.IsFolder"/> is true.
+        /// This is typically set when working with Category based trees.
+        /// </summary>
+        /// <param name="privateConfigurationValues">The private configuration values.</param>
+        /// <returns><c>true</c> if folder selection should be disabled; otherwise <c>false</c> to allow folder selection.</returns>
+        protected virtual bool GetFolderSelectionDisabled( Dictionary<string, string> privateConfigurationValues )
+        {
+            return false;
         }
 
         /// <summary>

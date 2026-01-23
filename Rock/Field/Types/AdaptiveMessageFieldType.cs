@@ -53,5 +53,11 @@ namespace Rock.Field.Types
 
             return msgBags;
         }
+
+        /// <inheritdoc/>
+        protected override bool GetFolderSelectionDisabled( Dictionary<string, string> privateConfigurationValues )
+        {
+            return true;
+        }
     }
 }

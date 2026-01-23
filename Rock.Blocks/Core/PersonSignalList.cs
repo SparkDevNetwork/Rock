@@ -227,7 +227,7 @@ namespace Rock.Blocks.Core
                 .AddPersonField( "owner", a => a.OwnerPersonAlias.Person )
                 .AddTextField( "note", a => a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ? a.Note : string.Empty )
                 .AddDateTimeField( "expirationDate", a => a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ? a.ExpirationDate : null )
-                .AddAttributeFields( GetGridAttributes() );
+                .AddAttributeFields( GetGridAttributes().Where( a => a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ) );
         }
 
         #endregion

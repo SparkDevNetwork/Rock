@@ -73,12 +73,6 @@
                        :defaultSlidingDateRange="defaultSlidingDateRange" />
 </template>
 
-<style scoped>
-.communication-unsubscribe-report-grid-cell-label {
-    display: block;
-}
-</style>
-
 <script setup lang="ts">
     import { computed, reactive, ref, watch } from "vue";
     import GridSettingsModal from "./CommunicationUnsubscribeReport/gridSettingsModal.partial.obs";

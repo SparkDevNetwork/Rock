@@ -209,7 +209,7 @@
      * @returns true if the item can be selected; otherwise false.
      */
     function canSelectItem(item: TreeItemBag): boolean {
-        let canSelect = !item.isFolder && !props.disableFolderSelection;
+        let canSelect = !item.isFolder || !props.disableFolderSelection;
 
         if (canSelect && props.provider?.canSelectItem) {
             canSelect = props.provider.canSelectItem(item, canSelect);

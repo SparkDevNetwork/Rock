@@ -153,6 +153,10 @@ export const EditComponent = defineComponent({
             return asBoolean(props.configurationValues["isDescendantSelectionAllowed"]);
         });
 
+        const isFolderSelectionDisabled = computed((): boolean => {
+            return asBoolean(props.configurationValues["isFolderSelectionDisabled"]);
+        });
+
         const rules = computed((): string => {
             return isRequired ? "required" : "";
         });
@@ -178,6 +182,7 @@ export const EditComponent = defineComponent({
             iconCssClass,
             internalValue,
             isDescendantSelectionAllowed,
+            isFolderSelectionDisabled,
             isRequired,
             itemProvider,
             multiple,
@@ -193,6 +198,7 @@ export const EditComponent = defineComponent({
                 :provider="itemProvider"
                 :multiple="multiple"
                 :showSelectChildren="isDescendantSelectionAllowed"
+                :disableFolderSelection="isFolderSelectionDisabled"
                 :rules="rules" />
 `
 });

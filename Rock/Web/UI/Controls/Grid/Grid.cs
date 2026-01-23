@@ -1983,6 +1983,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     var communicationService = new Rock.Model.CommunicationService( communicationRockContext );
                     var communication = new Rock.Model.Communication();
                     communication.Status = Model.CommunicationStatus.Transient;
+                    communication.CommunicationType = Rock.Model.CommunicationType.Email;
 
                     // Get a list of the mergefield names
                     List<string> mergeFields = communicationMergeFields.Select( f => f.Value ).Distinct().ToList();

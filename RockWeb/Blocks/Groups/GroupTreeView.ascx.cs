@@ -109,6 +109,7 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage(
         "Search Results Page",
         Key = AttributeKey.SearchResultsPage,
+        IsRequired = false,
         Category = "Advanced",
         Description = "If set, this is the page where search results will be shown when using the quick find feature. The selected page must include a Group Search block, and that block should be configured to link back to the appropriate Group Detail page.",
         Order = 11 )]

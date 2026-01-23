@@ -26,6 +26,16 @@
   }
 }
 
+.btn-add {
+  color: var(--color-info-strong);
+  padding: 0;
+
+  &:hover,
+  &:focus {
+    color: var(--color-success-strong);
+  }
+}
+
 
 
 // ========================== END BASE BUTTON EXTENSIONS ===========================

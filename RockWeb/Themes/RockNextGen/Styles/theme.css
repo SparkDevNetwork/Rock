@@ -3088,15 +3088,6 @@ input[type=button].btn-block {
   outline: 0;
 }
 
-.tox .tox-tbtn--select.btn-link span {
-  font-weight: 400;
-  color: var(--color-info-strong);
-}
-
-.ant-select-selector .ant-select-selection-overflow .btn-link {
-  color: var(--color-interface-medium);
-}
-
 .btn-group,
 .btn-group-vertical {
   position: relative;
@@ -6550,34 +6541,6 @@ tr.row-highlight td {
 
 td.grid-col-actions {
   text-align: right;
-}
-
-.grid-actions {
-  text-align: right;
-  background-color: var(--color-interface-softest);
-}
-.grid-actions .btn {
-  margin-left: var(--spacing-xsmall);
-}
-.grid-actions:hover {
-  color: var(--color-interface-strong);
-}
-.grid-actions .btn-add:hover {
-  color: var(--color-success-strong);
-}
-.grid-actions .btn-grid-action {
-  padding: 5px 7px;
-  margin: 0 0 0 2px;
-  font-size: 20px;
-  border: 0;
-  box-shadow: none;
-  transition: color 250ms;
-  color: var(--color-interface-medium);
-  background-color: transparent;
-  border-color: transparent;
-}
-.grid-actions .btn-grid-custom-action {
-  margin-bottom: var(--spacing-xsmall);
 }
 
 td.grid-actions {
@@ -11565,6 +11528,37 @@ ul ul, ol ul, ul ol, ol ol {
   display: flex;
   padding: var(--spacing-xsmall) var(--table-cell-padding-x);
   align-items: center;
+}
+
+.grid-actions {
+  text-align: right;
+  background-color: var(--color-interface-softest);
+}
+.grid-actions .btn {
+  margin-left: var(--spacing-xsmall);
+}
+.grid-actions:hover {
+  color: var(--color-interface-strong);
+}
+.grid-actions .btn-grid-action {
+  padding: 5px 7px;
+  margin: 0 0 0 2px;
+  font-size: 20px;
+  border: 0;
+  box-shadow: none;
+  transition: color 250ms;
+  color: var(--color-interface-medium);
+  background-color: transparent;
+  border-color: transparent;
+}
+.grid-actions .btn-add {
+  color: var(--color-info-strong);
+}
+.grid-actions .btn-add:hover {
+  color: var(--color-success-strong);
+}
+.grid-actions .btn-grid-custom-action {
+  margin-bottom: var(--spacing-xsmall);
 }
 
 .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-sizes {
@@ -16606,6 +16600,10 @@ iframe.file-browser {
   color: var(--color-interface-stronger);
 }
 
+.ant-select-selector .ant-select-selection-overflow .btn-link {
+  color: var(--color-interface-medium);
+}
+
 .main-content:has(.profile-content, .person-profile) {
   max-width: 100%;
   padding: 0 !important;
@@ -18013,6 +18011,11 @@ iframe.file-browser {
   background-position: center top 40px !important;
   background-size: calc(100% - 22px) calc(100% - 41px) !important;
   background-repeat: no-repeat !important;
+}
+
+.tox .tox-tbtn--select.btn-link span {
+  font-weight: 400;
+  color: var(--color-info-strong);
 }
 
 .workflow-activity {
@@ -20082,6 +20085,14 @@ iframe.file-browser {
 }
 .dropdown > .btn-link.btn-overflow:hover, .dropdown > .btn-link.btn-overflow:focus {
   color: var(--color-interface-stronger);
+}
+
+.btn-add {
+  color: var(--color-info-strong);
+  padding: 0;
+}
+.btn-add:hover, .btn-add:focus {
+  color: var(--color-success-strong);
 }
 
 .theme-toggle {
