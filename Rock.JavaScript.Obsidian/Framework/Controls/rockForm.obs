@@ -166,7 +166,23 @@
 
     watch(() => props.formResetKey, () => {
         formState.submitCount = 0;
-        updateRefValue(errors, {});
+
+        // 2026/01/14 - DSH
+        //
+        // We no longer reset errors on the form. The reason for this is that
+        // the initial errors are set when the form controls initialize and if
+        // we reset them here then the form controls would need to re-emit their
+        // errors.
+        //
+        // This was causing issues with Registration Entry where the form
+        // errors were reset when moving to the previous registrant. But since
+        // the field components were never destroyed and re-initialized, we
+        // lost the "required value" errors which allowed the individual to
+        // proceed with blank data.
+        //
+        // Original Code:
+        // updateRefValue(errors, {});
+
         updateRefValue(visibleErrors, []);
         emit("visibleValidationChanged", visibleErrors.value);
     });

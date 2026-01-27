@@ -46,9 +46,22 @@ namespace RockWeb.Blocks.WorkFlow
 
     [LinkedPage( "Workflow Launch Page", "Page used to launch a workflow.", true, "", "", 0 )]
     [LinkedPage( "Manage Workflows Page", "Page used to manage workflows.", true, "", "", 1 )]
-    [CodeEditorField( "Default No Action Message", "The default No Action Message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, @"
-This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attention.", "", 2 )]
-    [CodeEditorField( "Default Summary View Text", "The default Summary View Text.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 500, false, @"
+
+    [CodeEditorField( "Default No Action Message",
+        Description = "The default No Action Message.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 100,
+        IsRequired = false,
+        DefaultValue = @"
+This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attention.",
+        Order = 2 )]
+
+    [CodeEditorField( "Default Summary View Text",
+        Description = "The default Summary View Text.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 500,
+        IsRequired = false,
+        DefaultValue = @"
 <div class='row'>
     <div class='col-sm-6'>
         <dl><dt>Started By</dt><dd>{{ Workflow.InitiatorPersonAlias.Person.FullName }}</dd></dl>
@@ -77,7 +90,9 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             </dl>
         </div>
     </div>
-{% endif %}", "", 3 )]
+{% endif %}",
+        Order = 3 )]
+
     [LinkedPage( "Export Workflows Page", "Page used to export workflows.", false, "", "", 4 )]
     [Rock.SystemGuid.BlockTypeGuid( "E1FF677D-5E52-4259-90C7-5560ECBBD82B" )]
     public partial class WorkflowTypeDetail : RockBlock

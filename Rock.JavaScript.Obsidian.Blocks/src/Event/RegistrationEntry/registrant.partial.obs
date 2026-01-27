@@ -235,7 +235,7 @@
         const fields = JSON.parse(JSON.stringify(currentFormFields.value ?? null)) as RegistrationEntryFormFieldBag[];
 
         fields.forEach(value => {
-            if (value.fieldSource != fieldSources.personField) {
+            if (value.fieldSource !== fieldSources.personField) {
                 let isVisible = true;
                 switch (value.visibilityRuleType) {
                     case FilterExpressionType.GroupAll:
@@ -320,7 +320,7 @@
         }
 
         // Add the current person (registrant) if not already added
-        const familyGuid = !props.currentRegistrant.familyGuid || usedFamilyGuids[props.currentRegistrant.familyGuid] == true
+        const familyGuid = !props.currentRegistrant.familyGuid || usedFamilyGuids[props.currentRegistrant.familyGuid] === true
             ? newFamilyGuid
             : props.currentRegistrant.familyGuid;
         options.push({

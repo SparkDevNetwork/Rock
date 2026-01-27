@@ -532,7 +532,6 @@ namespace Rock.Web.UI.Controls
                 Help = "HTML to display above the form fields. <span class='tip tip-lava'></span> <span class='tip tip-html'>",
                 ID = "_ebHeaderText",
                 EditorMode = CodeEditorMode.Lava,
-                EditorTheme = CodeEditorTheme.Rock,
                 EditorHeight = "120"
             };
 
@@ -544,7 +543,6 @@ namespace Rock.Web.UI.Controls
                 Help = "HTML to display below the form fields. <span class='tip tip-lava'></span> <span class='tip tip-html'>",
                 ID = "_ebFooterText",
                 EditorMode = CodeEditorMode.Lava,
-                EditorTheme = CodeEditorTheme.Rock,
                 EditorHeight = "120"
             };
 
@@ -607,7 +605,6 @@ namespace Rock.Web.UI.Controls
                 Label = "Person Form Pre-HTML",
                 Help = "HTML to display above the person entry form. <span class='tip tip-lava'></span> <span class='tip tip-html'>",
                 EditorMode = CodeEditorMode.Lava,
-                EditorTheme = CodeEditorTheme.Rock,
                 EditorHeight = "120"
             };
 
@@ -787,7 +784,6 @@ namespace Rock.Web.UI.Controls
                 Label = "Person Form Post-HTML",
                 Help = "HTML to display below the person entry form. <span class='tip tip-lava'></span> <span class='tip tip-html'>",
                 EditorMode = CodeEditorMode.Lava,
-                EditorTheme = CodeEditorTheme.Rock,
                 EditorHeight = "120"
             };
 

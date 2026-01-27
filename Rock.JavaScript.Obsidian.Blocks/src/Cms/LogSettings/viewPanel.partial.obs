@@ -68,7 +68,7 @@
             return valueBuilder.build();
         }
 
-        const verbosityLevel = props.options.verbosityLevels?.find(v => v.value == props.modelValue?.standardLogLevel);
+        const verbosityLevel = props.options.verbosityLevels?.find(v => v.value === props.modelValue?.standardLogLevel);
         if (verbosityLevel?.text) {
             valueBuilder.addTextValue("Verbosity Level", verbosityLevel.text);
         }

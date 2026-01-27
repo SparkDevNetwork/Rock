@@ -4,6 +4,7 @@
         <DisplayCard :aside="aside"
                      :asideIconCssClass="asideIconCssClass"
                      :badgeText="badgeText"
+                     :badgeType="badgeType"
                      :iconCssClass="iconCssClass"
                      :iconLabelType="iconLabelCssClass || iconLabelType"
                      :description="description"
@@ -31,6 +32,7 @@
         <template #settings>
             <div class="row">
                 <TextBox v-model="badgeText" formGroupClasses="col-md-4" label="Badge Text" />
+                <DropDownList v-model="badgeType" :items="badgeTypes" :showBlankItem="false" formGroupClasses="col-md-4" label="Badge Type" />
                 <IconPicker v-model="iconCssClass" formGroupClasses="col-md-4" label="Icon CSS Class" />
                 <DropDownList v-model="iconLabelType" :items="labelTypes" :showBlankItem="false" formGroupClasses="col-md-4" label="Icon Label Type" />
                 <TextBox v-if="iconLabelType === 'custom'" v-model="iconLabelCssClass" formGroupClasses="col-md-4 col-md-offset-8" label="Icon Label Custom Class" />
@@ -63,6 +65,7 @@
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
 
     const labelTypes: ListItemBag[] = [
         { text: "Default", value: "default" },
@@ -74,11 +77,20 @@
         { text: "Custom", value: "custom" },
     ];
 
+    const badgeTypes: ListItemBag[] = [
+        { text: "Success", value: BadgeType.Success },
+        { text: "Info", value: BadgeType.Info },
+        { text: "Warning", value: BadgeType.Warning },
+        { text: "Danger", value: BadgeType.Danger },
+        { text: "Critical", value: BadgeType.Critical },
+    ];
+
     const importCode = `import DisplayCard from "@Obsidian/Controls/displayCard.obs";`;
 
     const aside = ref<string>("hello@triumph.tech");
     const asideIconCssClass = ref<string>("ti ti-user");
     const badgeText = ref<string>("Step 3");
+    const badgeType = ref<BadgeType>(BadgeType.Success);
     const iconCssClass = ref<string>("ti ti-chart-line");
     const iconLabelType = ref<"default" | "primary" | "success" | "info" | "warning" | "danger" | "custom">("info");
     const iconLabelCssClass = ref<string>("");
@@ -167,6 +179,7 @@
         return `<DisplayCard aside="${aside.value}"
              asideIconCssClass="${asideIconCssClass.value}"
              badgeText="${badgeText.value}"
+             badgeType="${badgeType.value}"
              iconCssClass="${iconCssClass.value}"
              iconLabelType="${iconLabelCssClass.value || iconLabelType.value}"
              description="${description.value}"

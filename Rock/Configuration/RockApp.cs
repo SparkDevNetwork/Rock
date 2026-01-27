@@ -19,6 +19,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 
 using Rock.Communication.Chat;
+using Rock.Data;
 
 namespace Rock.Configuration
 {
@@ -92,6 +93,7 @@ namespace Rock.Configuration
                 sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
                 sc.AddSingleton<IHostingSettings, HostingSettings>();
                 sc.AddSingleton<IChatProvider, StreamChatProvider>();
+                sc.AddSingleton<IRockContextFactory, RockContextFactory>();
 
                 Current = new RockApp( sc.BuildServiceProvider() );
             }

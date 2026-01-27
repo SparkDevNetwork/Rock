@@ -1,0 +1,153 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <tr>
+        <td :style="indentStyle">
+            <div class="trace-title">
+                <i v-if="trace.children.length === 0" class="ti fa-fw"></i>
+                <i v-else-if="!isExpanded" class="ti ti-chevron-right fa-fw" @click="isExpanded = true"></i>
+                <i v-else class="ti ti-chevron-down fa-fw" @click="isExpanded = false"></i>
+
+                <span class="trace-name" @click="emit('select', trace)">{{ getTraceName(trace) }}</span>
+            </div>
+        </td>
+
+        <td class="trace-queries">
+            {{ asFormattedString(trace.queries, 0) }}
+        </td>
+
+        <td class="trace-timestamp">
+            {{ asFormattedString(trace.duration, 2) }} ms
+        </td>
+
+        <td class="trace-waterfall">
+            <div class="trace-chart">
+                <span class="trace-chart-bar" :style="waterfallStyle"></span>
+            </div>
+        </td>
+    </tr>
+
+    <PageDebugTraceRow v-if="isExpanded"
+                       v-for="child of trace.children"
+                       :key="child.spanId!"
+                       :trace="child"
+                       :indentLevel="indentLevel + 1"
+                       :startMs="startMs"
+                       :totalMs="totalMs"
+                       @select="emit('select', $event)" />
+</template>
+
+<style scoped>
+.ti-chevron-right,
+.ti-chevron-down,
+.trace-name {
+    cursor: pointer;
+}
+
+.trace-title {
+    display: flex;
+    gap: var(--spacing-small);
+    align-items: center;
+}
+
+.trace-title .trace-name {
+    flex-grow: 1;
+}
+</style>
+
+<script setup lang="ts">
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { computed, PropType, ref, watch } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    type TraceRecordBag = {
+        traceId?: string | null;
+        spanId?: string | null;
+        parentSpanId?: string | null;
+        name?: string | null;
+        startTime: number;
+        duration: number;
+        tags?: ListItemBag[] | null;
+    };
+
+    type TraceRecordTreeBag = TraceRecordBag & {
+        children: TraceRecordTreeBag[];
+
+        queries: number;
+
+        parent: TraceRecordTreeBag | null;
+    };
+
+    defineOptions({ name: "PageDebugTraceRow" });
+
+    const props = defineProps({
+        trace: {
+            type: Object as PropType<TraceRecordTreeBag>,
+            required: true
+        },
+
+        indentLevel: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        isExpanded: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        startMs: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        totalMs: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "select", trace: TraceRecordTreeBag): void;
+    }>();
+
+    const isExpanded = ref(props.isExpanded);
+
+    const indentStyle = computed((): string => {
+        if (!props.indentLevel) {
+            return "";
+        }
+
+        const pixels = props.indentLevel * 24;
+        return `padding-left: ${pixels}px`;
+
+    });
+
+    const waterfallStyle = computed((): string => {
+        const leftPercent = getPercentFromMs(props.trace.startTime - props.startMs);
+        const widthPercent = getPercentFromMs(props.trace.duration);
+
+        return `left: ${leftPercent}%; width: ${widthPercent}%;`;
+    });
+
+    function getPercentFromMs(ms: number): number {
+        if (!props.totalMs) {
+            return 0;
+        }
+
+        return (ms / props.totalMs) * 100;
+    }
+
+    function getTraceName(trace: TraceRecordTreeBag): string {
+        if (!trace.name) {
+            return "Unnamed Trace";
+        }
+
+        const match = /API: POST \/api\/v2\/BlockActions\/[a-z0-9-]+\/[a-z0-9-]+\/([a-zA-Z]+)/.exec(trace.name);
+
+        return match ? `BLOCKACTION: ${match[1]}` : trace.name;
+    }
+
+    watch(() => props.isExpanded, () => {
+        isExpanded.value = props.isExpanded;
+    });
+</script>

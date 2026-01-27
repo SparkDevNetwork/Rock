@@ -201,6 +201,48 @@ namespace Rock.Model
             private set { }
         }
 
+        /// <summary>
+        /// The source ConnectionType identifier.
+        /// </summary>
+        [DataMember]
+        public int? ConnectionTypeSourceId { get; set; }
+
+        /// <summary>
+        /// Note entered when a celebration action occurs on this request.
+        /// </summary>
+        [DataMember]
+        public string CelebrationNote { get; set; }
+
+        /// <summary>
+        /// The due date for this request.
+        /// </summary>
+        [DataMember]
+        public DateTime? DueDate { get; set; }
+
+        /// <summary>
+        /// The date when this request becomes considered due soon.
+        /// </summary>
+        [DataMember]
+        public DateTime? DueSoonDate { get; set; }
+
+        /// <summary>
+        /// Additional celebration text.
+        /// </summary>
+        [DataMember]
+        public string CelebrationText { get; set; }
+
+        /// <summary>
+        /// The date and time when this request was marked as connected.
+        /// </summary>
+        [DataMember]
+        public DateTime? ConnectedDateTime { get; set; }
+
+        /// <summary>
+        /// Indicates whether the request was completed within the expected timeframe.
+        /// </summary>
+        [DataMember]
+        public bool WasCompletedOnTime { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -297,6 +339,15 @@ namespace Rock.Model
         [DataMember]
         public virtual AnalyticsSourceDate CreatedSourceDate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.ConnectionTypeSource"/>.
+        /// </summary>
+        /// <value>
+        /// The connection type source.
+        /// </value>
+        [LavaVisible]
+        public virtual ConnectionTypeSource ConnectionTypeSource { get; set; }
+
         #endregion
 
         #region Methods
@@ -341,6 +392,7 @@ namespace Rock.Model
             this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.AssignedGroup ).WithMany().HasForeignKey( p => p.AssignedGroupId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.ConnectionStatus ).WithMany().HasForeignKey( p => p.ConnectionStatusId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ConnectionTypeSource ).WithMany().HasForeignKey( p => p.ConnectionTypeSourceId ).WillCascadeOnDelete( false );
 
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
             // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed

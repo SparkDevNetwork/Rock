@@ -663,8 +663,8 @@ namespace Rock.Financial
             {
                 // The payment has already been charged by the gateway, so if the transaction cannot be saved to the DB, it's bad.
                 // The save transaction method is safe to retry since it uses the preset guid and will not enter duplicate
-                // transactions. Wait a second and try saving again
-                Thread.Sleep( 1000 );
+                // transactions. Wait 2 seconds and try saving again.
+                Thread.Sleep( 2000 );
 
                 try
                 {

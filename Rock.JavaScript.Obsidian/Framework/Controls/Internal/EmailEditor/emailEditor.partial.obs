@@ -2,9 +2,11 @@
 <template>
     <div class="email-editor-wrapper styled-scroll">
         <div class="email-editor">
-            <SidePanel v-if="ltr" v-model:selectedComponentElement="selectedComponentElement"
-                       v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
-                       :communicationTemplates="communicationTemplates"
+            <SidePanel v-if="ltr"
+                       v-model:bodyGlobalProps="bodyGlobalProps"
+                       v-model:buttonGlobalProps="buttonGlobalProps"
+                       v-model:selectedComponentElement="selectedComponentElement"
+                       v-model:dividerGlobalProps="dividerGlobalProps"
                        :emailDocument="emailDocument"
                        :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
                        :ltr="ltr"
@@ -21,7 +23,11 @@
                        @componentTypeDragStart="onComponentTypeDragStart"
                        @componentTypeDragEnd="onComponentTypeDragEnd"
                        @deleteComponent="onDeleteComponent"
-                       @replaceComponent="onReplaceComponent" />
+                       @replaceComponent="onReplaceComponent">
+                <template v-if="$slots.bodySettingsPrepend" #bodySettingsPrepend>
+                    <slot name="bodySettingsPrepend"></slot>
+                </template>
+            </SidePanel>
 
             <div class="email-designer-container">
                 <EmailDesigner v-model:selectedComponentElement="selectedComponentElement"
@@ -34,12 +40,15 @@
                                :getHtmlRequest="getHtmlRequest"
                                :replaceComponentRequest="replaceComponentRequest"
                                :isDisabled="disabled"
-                               @emailDocumentUpdated="onEmailDocumentUpdated" />
+                               @emailDocumentUpdated="onEmailDocumentUpdated"
+                               @componentAdded="onComponentAdded" />
             </div>
 
-            <SidePanel v-if="!ltr" v-model:selectedComponentElement="selectedComponentElement"
-                       v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
-                       :communicationTemplates="communicationTemplates"
+            <SidePanel v-if="!ltr"
+                       v-model:bodyGlobalProps="bodyGlobalProps"
+                       v-model:buttonGlobalProps="buttonGlobalProps"
+                       v-model:dividerGlobalProps="dividerGlobalProps"
+                       v-model:selectedComponentElement="selectedComponentElement"
                        :emailDocument="emailDocument"
                        :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
                        :ltr="ltr"
@@ -56,7 +65,11 @@
                        @componentTypeDragStart="onComponentTypeDragStart"
                        @componentTypeDragEnd="onComponentTypeDragEnd"
                        @deleteComponent="onDeleteComponent"
-                       @replaceComponent="onReplaceComponent" />
+                       @replaceComponent="onReplaceComponent">
+                <template v-if="$slots.bodySettingsPrepend" #bodySettingsPrepend>
+                    <slot name="bodySettingsPrepend"></slot>
+                </template>
+            </SidePanel>
         </div>
     </div>
 </template>
@@ -92,32 +105,34 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, ref } from "vue";
+    import { PropType, ref, watch } from "vue";
     import EmailDesigner from "./emailDesigner.partial.obs";
     import SidePanel from "./sidePanel.partial.obs";
-    import { CloneComponentRequest, CompleteComponentRequest, ComponentTypeDragEndRequest, ComponentTypeDragStartRequest, DeleteComponentRequest, ReplaceComponentRequest } from "./types.partial";
-    import { GetHtmlRequest, UsageType } from "./types";
+    import { BodyGlobalProps, ButtonGlobalProps, CloneComponentRequest, CompleteComponentRequest, ComponentTypeDragEndRequest, ComponentTypeDragStartRequest, ComponentTypeName, DeleteComponentRequest, DividerGlobalProps, ReplaceComponentRequest } from "./types.partial";
+    import { GetHtmlRequest, UsageType } from "./types.partial";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { Guid } from "@Obsidian/Types";
-    import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { EmailEditorApi, provideApi } from "./api";
+    import {
+        bodyGlobalAdapter,
+        buttonComponentAdapter,
+        buttonGlobalAdapter,
+        codeComponentAdapter,
+        dividerComponentAdapter,
+        dividerGlobalAdapter,
+        imageComponentAdapter,
+        rsvpComponentAdapter,
+        textComponentAdapter,
+        titleComponentAdapter,
+        videoComponentAdapter
+    } from "./utils.partial";
 
-    const props = defineProps({
+    defineProps({
         html: {
             type: String as PropType<string>,
             required: true
-        },
-
-        communicationTemplateGuid: {
-            type: String as PropType<Guid | null | undefined>,
-            required: false
-        },
-
-        communicationTemplates: {
-            type: Object as PropType<ListItemBag[] | null | undefined>,
-            required: false
         },
 
         emailEditorCssClass: {
@@ -200,7 +215,6 @@
     // #region Values
 
     const selectedComponentElement = ref<HTMLElement | null | undefined>();
-    const internalCommunicationTemplateGuid = useVModelPassthrough(props, "communicationTemplateGuid", emit);
     const emailDocument = ref<Document | null | undefined>();
 
     const cloneComponentRequest = ref<CloneComponentRequest | null | undefined>();
@@ -209,6 +223,10 @@
     const componentTypeDragStartRequest = ref<ComponentTypeDragStartRequest | null | undefined>();
     const componentTypeDragEndRequest = ref<ComponentTypeDragEndRequest | null | undefined>();
     const replaceComponentRequest = ref<ReplaceComponentRequest | null | undefined>();
+
+    const bodyGlobalProps = ref<BodyGlobalProps>({} as BodyGlobalProps);
+    const buttonGlobalProps = ref<ButtonGlobalProps>({} as ButtonGlobalProps);
+    const dividerGlobalProps = ref<DividerGlobalProps>({} as DividerGlobalProps);
 
     // #endregion
 
@@ -229,38 +247,121 @@
 
     function onComponentTypeDragStart(event: ComponentTypeDragStartRequest): void {
         componentTypeDragStartRequest.value = event;
-        //emailDesigner.value?.onComponentTypeDragStart(e.componentTypeName, e.customHtml);
     }
 
     function onComponentTypeDragEnd(event: ComponentTypeDragEndRequest): void {
         componentTypeDragEndRequest.value = event;
-        //emailDesigner.value?.onComponentTypeDragEnd();
     }
 
     function onCloneComponent(event: CloneComponentRequest): void {
         cloneComponentRequest.value = event;
-        //emailDesigner.value?.cloneSelectedComponent();
     }
 
     function onReplaceComponent(event: ReplaceComponentRequest): void {
         replaceComponentRequest.value = event;
-        //emailDesigner.value?.cloneSelectedComponent();
     }
 
     function onCompleteComponent(event: CompleteComponentRequest): void {
-        //selectedComponentElement.value = null;
         completeComponentRequest.value = event;
     }
 
     function onDeleteComponent(event: DeleteComponentRequest): void {
         deleteComponentRequest.value = event;
-        //emailDesigner.value?.deleteSelectedComponent();
     }
 
-    function onEmailDocumentUpdated(document: Document): void {
-        emailDocument.value = document;
-        emit("emailDocumentUpdated", document);
+    function onEmailDocumentUpdated(eventArgs: { emailDocument: Document, areGlobalDefaultsRequired: boolean }): void {
+        const { emailDocument: emailDoc, areGlobalDefaultsRequired } = eventArgs;
+
+        // Migrate all components in the document.
+        titleComponentAdapter.migrateAllComponents(emailDoc);
+        textComponentAdapter.migrateAllComponents(emailDoc);
+        imageComponentAdapter.migrateAllComponents(emailDoc);
+        buttonComponentAdapter.migrateAllComponents(emailDoc);
+        videoComponentAdapter.migrateAllComponents(emailDoc);
+        dividerComponentAdapter.migrateAllComponents(emailDoc);
+        rsvpComponentAdapter.migrateAllComponents(emailDoc);
+        codeComponentAdapter.migrateAllComponents(emailDoc);
+
+        // Initialize global props.
+
+        if (areGlobalDefaultsRequired || bodyGlobalAdapter.areGlobalDefaultsNeeded(emailDoc)) {
+            bodyGlobalProps.value = bodyGlobalAdapter.getDefaultGlobalProps();
+            bodyGlobalAdapter.writeGlobalProps(emailDoc, bodyGlobalProps.value);
+        }
+        else {
+            bodyGlobalAdapter.migrateGlobalProps(emailDoc);
+            bodyGlobalProps.value = bodyGlobalAdapter.readGlobalProps(emailDoc);
+        }
+
+        if (areGlobalDefaultsRequired || buttonGlobalAdapter.areGlobalDefaultsNeeded(emailDoc)) {
+            buttonGlobalProps.value = buttonGlobalAdapter.getDefaultGlobalProps();
+            buttonGlobalAdapter.writeGlobalProps(emailDoc, buttonGlobalProps.value);
+        }
+        else {
+            buttonGlobalAdapter.migrateGlobalProps(emailDoc);
+            buttonGlobalProps.value = buttonGlobalAdapter.readGlobalProps(emailDoc);
+        }
+
+        if (areGlobalDefaultsRequired || dividerGlobalAdapter.areGlobalDefaultsNeeded(emailDoc)) {
+            dividerGlobalProps.value = dividerGlobalAdapter.getDefaultGlobalProps();
+            dividerGlobalAdapter.writeGlobalProps(emailDoc, dividerGlobalProps.value);
+        }
+        else {
+            dividerGlobalAdapter.migrateGlobalProps(emailDoc);
+            dividerGlobalProps.value = dividerGlobalAdapter.readGlobalProps(emailDoc);
+        }
+
+        // Update the email document reference after migrations in case setting it triggers reactivity.
+        emailDocument.value = emailDoc;
+        emit("emailDocumentUpdated", emailDoc);
+    }
+
+    function onComponentAdded(event: { componentTypeName: ComponentTypeName; componentElement: HTMLElement }): void {
+        if (emailDocument.value) {
+            buttonGlobalAdapter.onComponentAdded({
+                emailDocument: emailDocument.value,
+                componentElement: event.componentElement,
+                componentTypeName: event.componentTypeName,
+                globalProps: buttonGlobalProps.value
+            });
+
+            dividerGlobalAdapter.onComponentAdded({
+                emailDocument: emailDocument.value,
+                componentElement: event.componentElement,
+                componentTypeName: event.componentTypeName,
+                globalProps: dividerGlobalProps.value
+            });
+
+            bodyGlobalAdapter.onComponentAdded({
+                emailDocument: emailDocument.value,
+                componentElement: event.componentElement,
+                componentTypeName: event.componentTypeName,
+                globalProps: bodyGlobalProps.value
+            });
+        }
     }
 
     // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(bodyGlobalProps, (newValue) => {
+        if (emailDocument.value) {
+            bodyGlobalAdapter.writeGlobalProps(emailDocument.value, newValue);
+        }
+    });
+
+    watch(buttonGlobalProps, (newValue) => {
+        if (emailDocument.value) {
+            buttonGlobalAdapter.writeGlobalProps(emailDocument.value, newValue);
+        }
+    });
+
+    watch(dividerGlobalProps, (newValue) => {
+        if (emailDocument.value) {
+            dividerGlobalAdapter.writeGlobalProps(emailDocument.value, newValue);
+        }
+    });
+
+    // #endregion Watchers
 </script>

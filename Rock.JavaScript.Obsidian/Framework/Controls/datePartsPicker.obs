@@ -138,7 +138,7 @@
     });
 
     const internalDateKey = computed((): string => {
-        if ((!props.modelValue?.year ?? 0) && !computedRequireYear.value) {
+        if (!(props.modelValue?.year ?? 0) && !computedRequireYear.value) {
             const dateKey = DateKey.toNoYearDateKey(props.modelValue?.month ?? 0, props.modelValue?.day ?? 0);
 
             return dateKey;

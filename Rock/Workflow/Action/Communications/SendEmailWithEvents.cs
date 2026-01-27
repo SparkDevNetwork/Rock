@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,7 +41,11 @@ namespace Rock.Workflow.Action
     [WorkflowTextOrAttribute( "Send To Email Addresses", "Attribute Value", "The email addresses or an attribute that contains the person or email address that email should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "To",
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType" } )]
     [TextField( "Subject", "The subject that should be used when sending email. <span class='tip tip-lava'></span>", false, "", "", 2 )]
-    [CodeEditorField( "Body", "The body of the email that should be sent. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", Web.UI.Controls.CodeEditorMode.Html, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 3 )]
+    [CodeEditorField( "Body",
+        Description = "The body of the email that should be sent. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
+        EditorMode = Web.UI.Controls.CodeEditorMode.Html,
+        IsRequired = false,
+        Order = 3 )]
     [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 4 )]
 
     [WorkflowActivityType("On Open Activity", "The activity to launch when the email is opened.", false, "", "", 5)]

@@ -123,7 +123,7 @@ namespace Rock.Blocks.Engagement.SignUp
     [BooleanField(
         "Disable Captcha Support",
         Key = AttributeKey.DisableCaptchaSupport,
-        Description = "If set to 'Yes' the CAPTCHA verification will be skipped. \n\nNote: If the CAPTCHA site key and/or secret key are not configured in the system settings, this option will be forced as 'Yes', even if 'No' is visually selected.",
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
         DefaultBooleanValue = false,
         Order = 9 )]
 
@@ -749,7 +749,9 @@ namespace Rock.Blocks.Engagement.SignUp
             var personGroupRequirementStatuses = group.PersonMeetsGroupRequirements( rockContext, personId, groupRoleId );
             foreach ( var personGroupRequirementStatus in personGroupRequirementStatuses
                                                                 .Where( s => s.GroupRequirement.MustMeetRequirementToAddMember
-                                                                            && s.MeetsGroupRequirement != MeetsGroupRequirement.Meets && s.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable ) )
+                                                                            && s.MeetsGroupRequirement != MeetsGroupRequirement.Meets
+                                                                            && s.MeetsGroupRequirement != MeetsGroupRequirement.MeetsWithWarning
+                                                                            && s.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable ) )
             {
                 var groupRequirementType = personGroupRequirementStatus.GroupRequirement.GroupRequirementType;
                 if ( groupRequirementType == null )

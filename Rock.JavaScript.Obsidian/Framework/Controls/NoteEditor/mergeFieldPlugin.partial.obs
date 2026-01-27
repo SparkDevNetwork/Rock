@@ -18,6 +18,7 @@
             <button class="btn btn-default btn-block text-left"
                     v-for="field in commonMergeFieldOptions"
                     :key="field?.value"
+                    type="button"
                     @click="onCommonMergeFieldPicked(field?.value ?? '')">
                 <i v-if="field?.icon" :class="field?.icon"></i>&nbsp;
                 {{ field?.text }}

@@ -52,7 +52,7 @@ namespace Rock.Blocks.Communication.Chat
 
         #endregion Keys
 
-        #region RockBlockType Impelementation
+        #region RockBlockType Implementation
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
@@ -141,13 +141,18 @@ namespace Rock.Blocks.Communication.Chat
                 }
             }
 
+            var directMessageAccessDataView = chatConfiguration.DirectMessageAccessDataViewGuid.HasValue
+                ? DataViewCache.Get( chatConfiguration.DirectMessageAccessDataViewGuid.Value )?.ToListItemBag()
+                : null;
+
             return new ChatConfigurationBag
             {
                 ApiKey = chatConfiguration.ApiKey,
                 ApiSecret = chatConfiguration.ApiSecret,
                 AreChatProfilesVisible = chatConfiguration.AreChatProfilesVisible,
                 IsOpenDirectMessagingAllowed = chatConfiguration.IsOpenDirectMessagingAllowed,
-                ChatBadgeDataViews = chatBadgeDataViews
+                ChatBadgeDataViews = chatBadgeDataViews,
+                DirectMessageAccessDataView = directMessageAccessDataView
             };
         }
 
@@ -184,6 +189,16 @@ namespace Rock.Blocks.Communication.Chat
                 }
             }
 
+            Guid? directMessageDataViewGuid = null;
+            if ( bag.DirectMessageAccessDataView != null )
+            {
+                var dataViewCache = DataViewCache.Get( bag.DirectMessageAccessDataView.Value );
+                if ( dataViewCache != null )
+                {
+                    directMessageDataViewGuid = dataViewCache.Guid;
+                }
+            }
+
             // Get the system user GUID from the current (pre-save) config so we always have the latest value, since
             // this isn't managed by the UI.
             var preSaveChatConfiguration = ChatHelper.GetChatConfiguration();
@@ -193,6 +208,7 @@ namespace Rock.Blocks.Communication.Chat
                 ApiKey = bag.ApiKey,
                 ApiSecret = bag.ApiSecret,
                 AreChatProfilesVisible = bag.AreChatProfilesVisible,
+                DirectMessageAccessDataViewGuid = directMessageDataViewGuid,
                 IsOpenDirectMessagingAllowed = bag.IsOpenDirectMessagingAllowed,
                 ChatBadgeDataViewGuids = chatBadgeDataViewGuids,
                 SystemUserGuid = preSaveChatConfiguration.SystemUserGuid

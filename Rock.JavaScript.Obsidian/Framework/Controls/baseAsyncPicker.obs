@@ -225,7 +225,7 @@
     });
 
     const isHorizontal = computed((): boolean => {
-        return props.columnCount != 1;
+        return props.columnCount !== 1;
     });
 
     // #endregion

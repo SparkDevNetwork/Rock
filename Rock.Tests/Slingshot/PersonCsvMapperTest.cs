@@ -34,7 +34,7 @@ namespace Rock.Tests.Slingshot
             Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
 
             Assert.AreEqual( MaritalStatus.Unknown, person.MaritalStatus );
-            Assert.IsTrue( parserErrors.Count == 1 );
+            Assert.HasCount( 1, parserErrors );
         }
 
         [TestMethod]
@@ -63,7 +63,7 @@ namespace Rock.Tests.Slingshot
             Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
 
             Assert.AreEqual( Gender.Unknown, person.Gender );
-            Assert.IsTrue( parserErrors.Count == 1 );
+            Assert.HasCount( 1, parserErrors );
         }
 
         [TestMethod]
@@ -78,7 +78,7 @@ namespace Rock.Tests.Slingshot
             Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
 
             Assert.IsFalse( person.IsDeceased );
-            Assert.IsTrue( parserErrors.Count == 1 );
+            Assert.HasCount( 1, parserErrors );
         }
 
         [TestMethod]
@@ -93,7 +93,7 @@ namespace Rock.Tests.Slingshot
             Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
 
             Assert.IsNull( person.Birthdate );
-            Assert.IsTrue( parserErrors.Count == 1 );
+            Assert.HasCount( 1, parserErrors );
         }
 
         [TestMethod]
@@ -108,7 +108,7 @@ namespace Rock.Tests.Slingshot
             Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
 
             Assert.IsTrue( string.IsNullOrEmpty( person.Email ) );
-            Assert.IsTrue( parserErrors.Count == 1 );
+            Assert.HasCount( 1, parserErrors );
         }
 
         [TestMethod]
@@ -123,7 +123,7 @@ namespace Rock.Tests.Slingshot
             Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
 
             Assert.AreEqual( RecordStatus.Active, person.RecordStatus );
-            Assert.IsTrue( parserErrors.Count == 1 );
+            Assert.HasCount( 1, parserErrors );
         }
 
         [TestMethod]
@@ -138,7 +138,7 @@ namespace Rock.Tests.Slingshot
             Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
 
             Assert.AreEqual( RecordStatus.Active, person.RecordStatus );
-            Assert.AreEqual( 0, parserErrors.Count );
+            Assert.IsEmpty( parserErrors );
         }
 
         [TestMethod]
@@ -153,7 +153,7 @@ namespace Rock.Tests.Slingshot
             Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
 
             Assert.AreEqual( EmailPreference.EmailAllowed, person.EmailPreference );
-            Assert.IsTrue( parserErrors.Count == 1 );
+            Assert.HasCount( 1, parserErrors );
         }
 
         [TestMethod]
@@ -168,7 +168,7 @@ namespace Rock.Tests.Slingshot
             Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
 
             Assert.AreEqual( FamilyRole.Adult, person.FamilyRole );
-            Assert.IsTrue( parserErrors.Count == 1 );
+            Assert.HasCount( 1, parserErrors );
         }
 
         [TestMethod]
@@ -183,7 +183,7 @@ namespace Rock.Tests.Slingshot
             Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
 
             Assert.IsNull( person.GiveIndividually );
-            Assert.IsTrue( parserErrors.Count == 1 );
+            Assert.HasCount( 1, parserErrors );
         }
 
         private static Dictionary<string, string> RequiredHeaderMapperDictionary()

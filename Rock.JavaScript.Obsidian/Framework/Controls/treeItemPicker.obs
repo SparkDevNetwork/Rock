@@ -18,6 +18,8 @@
                   :disableFolderSelection="disableFolderSelection"
                   :autoExpand="autoExpand"
                   :showChildCount="showChildCount"
+                  :selectFirstByDefault="selectFirstByDefault"
+                  :showSelectChildren="showSelectChildren"
                   :isVisible="internalShowPopup" />
 
         <template #innerLabel><span class="selected-names">{{ selectedNames || blankValue }}</span></template>
@@ -131,6 +133,24 @@
             type: String as PropType<string>,
             default: ""
         },
+
+        /**
+         * When true, the first item in the list will be automatically selected
+         * if no other item is currently selected.
+         */
+        selectFirstByDefault: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * If enabled then an icon will be shown next to folder items to allow
+         * selecting all children and descendant items of that folder.
+         */
+        showSelectChildren: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
     });
 
     const emit = defineEmits<{
@@ -170,7 +190,31 @@
      * selecting items.
      */
     const selectedNames = computed((): string => {
-        return forceToArray(props.modelValue, true).map(v => v.text).join(", ");
+        return forceToArray(props.modelValue, true)
+            .map(v => {
+                if (v.text) {
+                    return v.text;
+                }
+
+                if (!v.value) {
+                    // This should not really happen, but just in case we don't
+                    // have a value for this entry, return an empty string.
+                    return "";
+                }
+
+                // If the provided model value entry doesn't contain text,
+                // try to find it in the list of items provided to the picker.
+                const items = flatItems.value.filter(i =>
+                    i.value?.toLocaleLowerCase() === v.value?.toLocaleLowerCase()
+                );
+
+                if (items.length > 0) {
+                    return items[0].text ?? "";
+                }
+                else {
+                    return "";
+                }
+            }).join(", ");
     });
 
     /** The CSS class to use for the picker icon. */

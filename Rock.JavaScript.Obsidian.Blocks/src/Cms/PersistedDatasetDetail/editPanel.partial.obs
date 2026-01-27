@@ -36,7 +36,6 @@
         <CodeEditor v-model="buildScript"
                     label="Build Script"
                     help="Lava Template to use for building JSON that will be used as the cached dataset object."
-                    theme="rock"
                     mode="lava"
                     :editorHeight="300"
                     :disabled="isSystem" />
@@ -46,9 +45,9 @@
                            label="Enabled Lava Commands"
                            :disabled="isSystem" />
 
-        <NotificationBox  v-if="isEntityCommandEnabled" alertType="info">
+        <NotificationBox v-if="isEntityCommandEnabled" alertType="info">
             <strong>Tip:</strong> When using an entity command, ensure you consider the securityenabled parameter.
-                It is recommended to set its value to false, as the build script will run without a user context.
+            It is recommended to set its value to false, as the build script will run without a user context.
         </NotificationBox>
 
         <Panel title="Persistence Schedule" class="mt-4">
@@ -194,16 +193,16 @@
     const entityType = propertyRef(props.modelValue.entityType ?? {}, "EntityTypeId");
     const enabledLavaCommands = ref<ListItemBag[]>(props.modelValue.enabledLavaCommands ?? [{ value: "All", text: "All" }]);
     const allowManualRefresh = propertyRef(props.modelValue.allowManualRefresh ?? false, "AllowManualRefresh");
-    const refreshInterval = propertyRef(props.modelValue.refreshIntervalHours, "RefreshIntervalMinutes");
+    const refreshInterval = propertyRef(props.modelValue.refreshIntervalHours, "PersistedScheduleIntervalMinutes");
     const memoryCacheDuration = propertyRef(props.modelValue.memoryCacheDurationHours, "MemoryCacheDurationMS");
     const expiresOn = propertyRef(props.modelValue.expireDateTime ?? "", "ExpireDateTime");
-    const refreshIntervalMinutes = propertyRef(props.modelValue.refreshInterval ?? 1, "RefreshInterval");
+    const persistedScheduleIntervalMinutes = propertyRef(props.modelValue.refreshInterval ?? 1, "RefreshInterval");
     const persistedSchedule = propertyRef(props.modelValue.persistedSchedule ?? "", "PersistedSchedule");
     const persistenceIntervalType = propertyRef(props.modelValue.persistedScheduleIntervalType ?? "", "PersistedScheduleIntervalType");
     const persistedScheduleType = propertyRef(props.modelValue.persistedScheduleType ?? "", "PersistedScheduleType");
     const persistenceType = propertyRef(typeOfPersistence?.value, "PersistenceType");
 
-    const propRefs = [description, isActive, name, accessKey, buildScript, entityType, enabledLavaCommands, allowManualRefresh, refreshInterval, memoryCacheDuration, expiresOn, refreshIntervalMinutes, persistedSchedule, persistenceType, persistedScheduleType, persistenceIntervalType];
+    const propRefs = [description, isActive, name, accessKey, buildScript, entityType, enabledLavaCommands, allowManualRefresh, refreshInterval, memoryCacheDuration, expiresOn, persistedScheduleIntervalMinutes, persistedSchedule, persistenceType, persistedScheduleType, persistenceIntervalType];
 
     const persistenceTypeOptions = [
         { value: "Interval", text: "Interval" },
@@ -252,9 +251,9 @@
     /**
      * Returns true the Rock Entity command (or All) is enabled.
      */
-     const isEntityCommandEnabled = computed((): boolean => {
+    const isEntityCommandEnabled = computed((): boolean => {
         return enabledLavaCommands.value.some((obj) => {
-            if (obj.value ===  "All" || obj.value === "RockEntity") {
+            if (obj.value === "All" || obj.value === "RockEntity") {
                 return true;
             }
             else {
@@ -273,7 +272,7 @@
             intervalMinutes.value = 12;
             persistedSchedule.value = "";
             selectedNamedSchedule.value = "";
-            refreshIntervalMinutes.value = 1;
+            persistedScheduleIntervalMinutes.value = 1;
         }
         emitUpdate();
     }
@@ -322,7 +321,7 @@
         updateRefValue(refreshInterval, props.modelValue.refreshIntervalHours);
         updateRefValue(memoryCacheDuration, props.modelValue.memoryCacheDurationHours);
         updateRefValue(expiresOn, props.modelValue.expireDateTime ?? "");
-        updateRefValue(refreshIntervalMinutes, props.modelValue.refreshInterval ?? 1);
+        updateRefValue(persistedScheduleIntervalMinutes, props.modelValue.refreshInterval ?? 1);
         updateRefValue(persistedSchedule, props.modelValue.persistedSchedule ?? "");
         updateRefValue(persistenceType, props.modelValue.refreshInterval != null ? "Interval" : "Schedule");
         updateRefValue(persistedScheduleType, props.modelValue.refreshInterval != null ? "Unique" : "NamedSchedule");
@@ -334,7 +333,7 @@
 
     watch(() => intervalMinutes.value, () => {
         if (typeOfPersistence.value === "Interval") {
-            refreshIntervalMinutes.value = intervalMinutes.value;
+            persistedScheduleIntervalMinutes.value = intervalMinutes.value;
             emitUpdate();
         }
     });

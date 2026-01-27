@@ -239,7 +239,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
             body = request.Form["Body"];
         }
 
-        Twilio.TwiML.Message twilioMessage = null;
+        Twilio.TwiML.Messaging.Message twilioMessage = null;
         if ( toPhone.IsNotNullOrWhiteSpace() && fromPhone.IsNotNullOrWhiteSpace() )
         {
             twilioMessage = ProcessMessage( request, toPhone, fromPhone, body );
@@ -248,7 +248,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
         if ( twilioMessage != null )
         {
             var messagingResponse = new Twilio.TwiML.MessagingResponse();
-            messagingResponse.Message( twilioMessage );
+            messagingResponse.Append( twilioMessage );
 
             var response = _context.Response;
             response.ContentType = "application/xml";
@@ -347,5 +347,5 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
     /// <param name="fromPhone">From phone.</param>
     /// <param name="body">The body.</param>
     /// <returns></returns>
-    public abstract Twilio.TwiML.Message ProcessMessage( HttpRequest request, string toPhone, string fromPhone, string body );
+    public abstract Twilio.TwiML.Messaging.Message ProcessMessage( HttpRequest request, string toPhone, string fromPhone, string body );
 }

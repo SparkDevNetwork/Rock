@@ -910,7 +910,8 @@ namespace Rock.Web.UI.Controls
             {
                 //// EntityFieldFilter renders the checkbox itself (see EntityFieldFilter.cs),
                 //// so only render the checkbox if we are hiding filter criteria and it isn't an entity field filter
-                if ( !( component is Rock.Reporting.DataFilter.EntityFieldFilter ) || HideFilterCriteria )
+                //// 11-06-2025 - KBH: An additional change was made to render the Checkbox when UseObsidian is true.
+                if ( !( component is Rock.Reporting.DataFilter.EntityFieldFilter ) || HideFilterCriteria || UseObsidian )
                 {
                     cbIncludeFilter.Text = this.Label;
                     cbIncludeFilter.RenderControl( writer );

@@ -16,8 +16,6 @@
 //
 using System;
 
-using Rock.Attribute;
-
 namespace Rock.Blocks
 {
     /// <summary>
@@ -46,5 +44,12 @@ namespace Rock.Blocks
         /// </summary>
         /// <value><c>true</c> if custom columns are supported; otherwise, <c>false</c>.</value>
         public bool IsCustomColumnsSupported { get; set; } = true;
+
+        /// <summary>
+        /// The message to display when editing the custom columns for a grid.
+        /// This can be used to provide specific instructions for the block or
+        /// general performance considerations.
+        /// </summary>
+        public string CustomColumnMessage { get; set; }
     }
 }

@@ -321,7 +321,6 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.AccountHeaderTemplate,
         Description = "The Lava Template to use as the amount input label for each account.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 50,
         IsRequired = true,
         DefaultValue = "{{ Account.PublicName }}",
@@ -490,7 +489,6 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.InvalidAccountInURLMessage,
         Description = "Display this text (HTML) as an error alert if an invalid 'account' or 'GL account' is passed through the URL. Leave blank to just ignore the invalid accounts and not show a message.",
         EditorMode = CodeEditorMode.Html,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         DefaultValue = "",
@@ -998,9 +996,11 @@ mission. We are so grateful for your commitment.</p>
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             // Don't use captcha if the block is set to disable (DisableCaptchaSupport==true) it or if is not configured (IsAvailable==false)
-            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
-            cpCaptcha.Visible = !disableCaptchaSupport;
+            var disableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
+            cpCaptcha.Visible = !( disableCaptchaSupport || !cpCaptcha.IsAvailable );
             cpCaptcha.TokenReceived += CpCaptcha_TokenReceived;
+
+            btnGiveNow.Visible = !cpCaptcha.Visible;
 
             var enableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
             var enableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
@@ -1009,7 +1009,7 @@ mission. We are so grateful for your commitment.</p>
                 _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, $"_hostedPaymentInfoControl_{this.FinancialGateway.Id}", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard } );
                 phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
 
-                if ( disableCaptchaSupport )
+                if ( !cpCaptcha.Visible )
                 {
                     hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
                 }
@@ -1103,6 +1103,15 @@ mission. We are so grateful for your commitment.</p>
             {
                 hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
                 cpCaptcha.Visible = false;
+                
+                btnGiveNow.Visible = true;
+            }
+            else
+            {
+                cpCaptcha.Visible = true;
+                btnGiveNow.Visible = false;
+                nbPromptForAmountsWarning.Visible = true;
+                nbPromptForAmountsWarning.Text = "There was an issue processing your request. Please try again. If the issue persists please contact us.";
             }
         }
 

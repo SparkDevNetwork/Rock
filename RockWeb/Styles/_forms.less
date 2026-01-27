@@ -238,13 +238,15 @@ a.aspNetDisabled.picker-label,
 .form-group.required > .control-label,
 .required-indicator {
   &::before {
-    margin-right: var(--spacing-tiny);
-    font-family: @fa-font-face;
-    font-size: 6px;
-    font-weight: @fa-theme-weight;
-    color: @required-field-color;
-    vertical-align: top;
-    content: @fa-var-circle;
+    margin-right:    var(--spacing-tiny);
+    background-color: var(--color-danger-strong);
+    width: 6px;
+    height: 6px;
+    display: inline-block;
+    border-radius: 50%;
+    content:        '';
+    position: relative;
+    transform: translateY(-30%);
   }
 }
 

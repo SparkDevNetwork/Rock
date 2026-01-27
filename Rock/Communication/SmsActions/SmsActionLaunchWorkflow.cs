@@ -37,7 +37,7 @@ namespace Rock.Communication.SmsActions
         Description = "The message body content that will be filtered on.",
         IsRequired = false,
         Category = AttributeCategories.Filters,
-        Order = 1)]
+        Order = 1 )]
 
     [WorkflowTypeField( "Workflow Type",
         Key = AttributeKey.WorkflowType,
@@ -68,11 +68,19 @@ namespace Rock.Communication.SmsActions
         Description = "Key/value list of workflow attributes to set with the given lava merge template. See the defined type’s help text for a listing of merge fields. <span class='tip tip-lava'></span>",
         IsRequired = false,
         DefaultValue = "",
-        KeyPrompt = "Attribute Key", 
+        KeyPrompt = "Attribute Key",
         ValuePrompt = "Merge Template",
         Order = 5 )]
 
-    [Rock.SystemGuid.EntityTypeGuid( "D1528FAB-EEE5-4273-8EF9-69163483BA1B")]
+    [BooleanField( "Save Response",
+        Key = AttributeKey.SaveResponse,
+        Category = AttributeCategories.Response,
+        Description = "If true, any response will be saved as a communication record so automated responses can be tracked.",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        Order = 6 )]
+
+    [Rock.SystemGuid.EntityTypeGuid( "D1528FAB-EEE5-4273-8EF9-69163483BA1B" )]
     public class SmsActionLaunchWorkflow : SmsActionComponent
     {
         #region Attribute Keys
@@ -87,6 +95,7 @@ namespace Rock.Communication.SmsActions
             public const string PassNamelessPerson = "PassNamelessPerson";
             public const string WorkflowNameTemplate = "WorkflowNameTemplate";
             public const string WorkflowAttributes = "WorkflowAttributes";
+            public const string SaveResponse = "SaveResponse";
         }
 
 
@@ -101,6 +110,11 @@ namespace Rock.Communication.SmsActions
             /// The Workflow category
             /// </summary>
             public const string Workflow = "Workflow";
+
+            /// <summary>
+            /// The response category
+            /// </summary>
+            public const string Response = "Response";
         }
 
         #region Properties
@@ -240,7 +254,8 @@ namespace Rock.Communication.SmsActions
 
             return new SmsMessage
             {
-                Message = response.Trim()
+                Message = response.Trim(),
+                SaveAsResponse = GetAttributeValue( action, AttributeKey.SaveResponse ).AsBoolean()
             };
         }
 

@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using Rock.Enums.Cms;
+
 namespace Rock.ViewModels.Blocks.Administration.SystemConfiguration
 {
     /// <summary>
@@ -39,20 +41,9 @@ namespace Rock.ViewModels.Blocks.Administration.SystemConfiguration
         public string EthnicityLabel { get; set; }
 
         /// <summary>
-        /// Gets or sets the captcha site key.
+        /// Gets or sets the captcha mode.
         /// </summary>
-        /// <value>
-        /// The captcha site key.
-        /// </value>
-        public string CaptchaSiteKey { get; set; }
-
-        /// <summary>
-        /// Gets or sets the captcha secret key.
-        /// </summary>
-        /// <value>
-        /// The captcha secret key.
-        /// </value>
-        public string CaptchaSecretKey { get; set; }
+        public CaptchaMode CaptchaMode { get; set; }
 
         /// <summary>
         /// Gets or sets the SMS opt in message.

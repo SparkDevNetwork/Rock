@@ -1,0 +1,43 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      demoMode>
+        <div class="row">
+            <div class="col-md-4">
+                <ExperienceModePicker label="Experience Mode" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox label="Essentials Input" modelValue="" />
+            </div>
+
+            <div class="col-md-4">
+                <TextBox label="Trailblazer Input" modelValue="" trailblazerField />
+            </div>
+        </div>
+
+        <template #settings>
+            <div class="automatic-layout">
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import ExperienceModePicker from "@Obsidian/Controls/experienceModePicker.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { computed } from "vue";
+    import { ComponentUsage, getSfcControlImportPath } from "./common/utils.partial";
+
+    const importCode = getSfcControlImportPath("experienceModePicker");
+    const exampleCode = computed(() => {
+        const usage = new ComponentUsage("ExperienceMode");
+
+        usage.addAttribute("label", "Experience Mode");
+
+        return usage.toString();
+    });
+</script>

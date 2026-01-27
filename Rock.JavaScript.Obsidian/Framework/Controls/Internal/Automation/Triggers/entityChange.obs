@@ -38,7 +38,49 @@
                             label="Advanced Filter"
                             editor="monaco"
                             rules="required" />
+
+                <div class="filter-actions">
+                    <RockButton btnType="link"
+                                btnSize="sm"
+                                @click="showHelp = !showHelp">
+                        <template v-if="!showHelp">Show Help</template>
+                        <template v-else>Hide Help</template>
+                    </RockButton>
+
+                    <RockButton btnType="default"
+                                btnSize="sm"
+                                autoDisable
+                                @click="onValidateAdvancedCriteria">
+                        Validate
+                    </RockButton>
+
+                </div>
+
+                <TransitionVerticalCollapse>
+                    <div v-if="showHelp" class="well mt-4">
+                        <p>
+                            The advanced filter uses Rock's Dynamic Linq syntax to define the filter criteria.
+                            You can reference the entity's properties directly in the filter.
+                        </p>
+                        <p>
+                            For example, if you are monitoring changes to the Group entity, you could use a filter like:
+                        </p>
+                        <pre>Entity.GroupTypeId == 30 &amp;&amp; Entity.Name.Contains( &quot;Decker&quot;)</pre>
+                        <p>
+                            This filter would match groups with GroupTypeId 30 whose Name contains "Decker".
+                        </p>
+                        <p>
+                            Other available objects include:
+                        <ul>
+                            <li><strong>State</strong> - The state of the entity before it was saved: Added, Modified, Deleted.</li>
+                            <li><strong>OriginalValues</strong> - The original property values before the change as a dictionary object. Only valid if State is Modified.</li>
+                            <li><strong>ModifiedProperties</strong> - A list of the property names there were modified. Only valid if State is Modified.</li>
+                        </ul>
+                        </p>
+                    </div>
+                </TransitionVerticalCollapse>
             </template>
+
             <template v-else>
                 <SimpleCriteria v-model="simpleCriteria"
                                 :properties="properties" />
@@ -47,11 +89,22 @@
     </TransitionVerticalCollapse>
 </template>
 
+<style scoped>
+.filter-actions {
+    display: flex;
+}
+
+.filter-actions > button:last-child {
+    margin-left: auto;
+}
+</style>
+
 <script setup lang="ts">
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import SimpleCriteria from "./EntityChange/simpleCriteria.partial.obs";
     import Toggle from "@Obsidian/Controls/toggle.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
@@ -94,6 +147,7 @@
     const properties = ref<string[]>(safeParseJson<string[]>(props.options[OptionKey.Properties]) ?? []);
 
     const isLoadingEntityType = ref(false);
+    const showHelp = ref(false);
 
     let entityChangeCancellationSource: CancellationTokenSource | null = null;
 
@@ -167,7 +221,12 @@
         }
 
         try {
-            const result = await props.executeRequest({ entityType: entityTypeValue });
+            var request = {
+                command: "GetEntityProperties",
+                entityType: entityTypeValue
+            };
+
+            const result = await props.executeRequest(request);
 
             if (result?.properties) {
                 properties.value = safeParseJson<string[]>(result.properties) ?? [];
@@ -219,6 +278,32 @@
         }
 
         isLoadingEntityType.value = false;
+    }
+
+    /**
+     * Validates the advanced criteria by sending it to the server for
+     * validation against the C# type.
+     */
+    async function onValidateAdvancedCriteria(): Promise<void> {
+        try {
+            var request = {
+                command: "Validate",
+                entityType: entityType.value?.value,
+                criteria: advancedCriteria.value
+            };
+
+            const result = await props.executeRequest(request);
+
+            if (result?.isValid === "true") {
+                await alert("The filter appears to be valid.");
+            }
+            else {
+                await alert(result?.errorMessage || "Unable to validate filter.");
+            }
+        }
+        catch (error) {
+            await alert(error instanceof Error ? error.message : "Unable to validate filter.");
+        }
     }
 
     // #endregion

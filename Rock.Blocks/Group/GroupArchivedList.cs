@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -71,6 +72,11 @@ namespace Rock.Blocks.Group
         #region Fields
 
         private PersonPreferenceCollection _personPreferences;
+
+        /// <summary>
+        /// The Group attributes configured to show on the grid.
+        /// </summary>
+        private readonly Lazy<List<AttributeCache>> _gridAttributes = new System.Lazy<List<AttributeCache>>( BuildGridAttributes );
 
         #endregion
 
@@ -218,14 +224,22 @@ namespace Rock.Blocks.Group
                 }
             }
 
+            // Load attribute values for the grid-selected attributes on Group
+            GridAttributeLoader.LoadFor( archivedGroups, g => g.Group, _gridAttributes.Value, rockContext );
+
             return archivedGroups;
         }
 
         /// <inheritdoc/>
         protected override GridBuilder<ArchivedGroupRow> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<ArchivedGroupRow>
+            {
+                LavaObject = row => row.Group
+            };
+
             return new GridBuilder<ArchivedGroupRow>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.Group.IdKey )
                 .AddTextField( "groupType", a => a.GroupTypeName )
                 .AddTextField( "name", a => a.Group.Name )
@@ -233,7 +247,24 @@ namespace Rock.Blocks.Group
                 .AddDateTimeField( "createdDate", a => a.Group.CreatedDateTime?.Date )
                 .AddDateTimeField( "archivedDate", a => a.Group.ArchivedDateTime?.Date )
                 .AddField( "archivedBy", a => a.Person )
-                .AddField( "isSystem", a => a.Group.IsSystem );
+                .AddField( "isSystem", a => a.Group.IsSystem )
+                .AddAttributeFieldsFrom( a => a.Group, _gridAttributes.Value );
+        }
+
+        /// <summary>
+        /// Builds the list of grid attributes that should be included on the Grid.
+        /// </summary>
+        /// <returns>A list of <see cref="AttributeCache"/> objects.</returns>
+        private static List<AttributeCache> BuildGridAttributes()
+        {
+            var entityTypeId = EntityTypeCache.Get<Rock.Model.Group>( false )?.Id;
+
+            if ( entityTypeId.HasValue )
+            {
+                return AttributeCache.GetOrderedGridAttributes( entityTypeId.Value, string.Empty, string.Empty );
+            }
+
+            return new List<AttributeCache>();
         }
 
         /// <summary>

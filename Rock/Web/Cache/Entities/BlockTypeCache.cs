@@ -252,6 +252,11 @@ namespace Rock.Web.Cache
                 physicalPath = System.Web.Hosting.HostingEnvironment.MapPath( Path );
             }
 
+            if ( physicalPath == null )
+            {
+                return;
+            }
+
             var fileinfo = new FileInfo( physicalPath );
             if ( !fileinfo.Exists )
             {

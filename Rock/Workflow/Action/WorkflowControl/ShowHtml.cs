@@ -39,8 +39,13 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Workflow Entry Show HTML" )]
 
-    [CodeEditorField( "HTML", "The HTML to show. <span class='tip tip-lava'></span>", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, true, "", "", 0 )]
+    [CodeEditorField( "HTML",
+        Description = "The HTML to show. <span class='tip tip-lava'></span>",
+        EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Html,
+        IsRequired = true,
+        Order = 0 )]
     [BooleanField( "Hide Status Message", "Whether or not to hide the built-in status message.", false, "", 1 )]
+
     [Rock.SystemGuid.EntityTypeGuid( "FDDAE78D-B7B3-4DA2-9A92-CC129AAF15DE")]
     public class ShowHtml : ActionComponent, IInteractiveAction
     {

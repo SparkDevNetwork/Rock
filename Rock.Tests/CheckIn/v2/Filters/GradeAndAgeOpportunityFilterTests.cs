@@ -95,7 +95,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             filter.FilterGroups( opportunities );
 
-            Assert.AreEqual( 2, opportunities.Groups.Count );
+            Assert.HasCount( 2, opportunities.Groups );
         }
 
         [TestMethod]
@@ -119,7 +119,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             filter.FilterGroups( opportunities );
 
-            Assert.AreEqual( 1, opportunities.Groups.Count );
+            Assert.HasCount( 1, opportunities.Groups );
             Assert.AreSame( groupOpportunityByGrade, opportunities.Groups[0] );
         }
 
@@ -143,7 +143,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             filter.FilterGroups( opportunities );
 
-            Assert.AreEqual( 2, opportunities.Groups.Count );
+            Assert.HasCount( 2, opportunities.Groups );
             Assert.AreSame( groupOpportunityByGrade, opportunities.Groups[0] );
             Assert.AreSame( groupOpportunityByDataView, opportunities.Groups[1] );
         }
@@ -168,7 +168,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             filter.FilterGroups( opportunities );
 
-            Assert.AreEqual( 2, opportunities.Groups.Count );
+            Assert.HasCount( 2, opportunities.Groups );
             Assert.AreSame( groupOpportunityByGrade, opportunities.Groups[0] );
             Assert.AreSame( groupOpportunityByDataView, opportunities.Groups[1] );
         }

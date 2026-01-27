@@ -297,7 +297,10 @@ namespace Rock.Blocks.Cms
                 ScheduledRedirects = entity.GetScheduleData()
                     .Schedules
                     ?.Select( ConvertToScheduledRedirectBag )
-                    .ToList()
+                    .ToList(),
+                ExpireInDays = entity.ExpireDate.HasValue
+                    ? ( int? )( entity.ExpireDate.Value - RockDateTime.Today ).TotalDays
+                    : null
             };
         }
 
@@ -376,6 +379,18 @@ namespace Rock.Blocks.Cms
 
             box.IfValidProperty( nameof( box.Bag.IsPinned ),
                 () => entity.IsPinned = box.Bag.IsPinned );
+
+            box.IfValidProperty( nameof( box.Bag.ExpireInDays ), () =>
+            {
+                if ( box.Bag.ExpireInDays.HasValue && box.Bag.ExpireInDays.Value >= 0 )
+                {
+                    entity.ExpireDate = RockDateTime.Today.AddDays( box.Bag.ExpireInDays.Value );
+                }
+                else
+                {
+                    entity.ExpireDate = null;
+                }
+            } );
 
             box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>

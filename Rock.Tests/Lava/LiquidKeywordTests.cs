@@ -21,7 +21,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Enums.Blocks.Crm.FamilyPreRegistration;
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Tests.Shared;
 
 namespace Rock.Tests.Lava
 {
@@ -102,8 +101,6 @@ First Case matched. Second Case matched.
                 CommunicationPreference = CommunicationPreference.Email
             };
 
-            Assert.That.AreEqual( 1, (int)CommunicationPreference.Email );
-
             var template = @"
 {{ person.NickName }}, your communication preference is:
 {% case person.CommunicationPreference %} {% when 1 %}Email{% else %}Not Email!{% endcase %}
@@ -127,8 +124,6 @@ Ted, your communication preference is: Email
                 CommunicationPreference = CommunicationPreference.Email
             };
 
-            Assert.That.AreEqual( 1, ( int ) CommunicationPreference.Email );
-
             var template = @"
 {{ person.NickName }}, your communication preference is:
 {% case person.CommunicationPreference %} {% when 'Email' %}Email{% else %}Not Email!{% endcase %}
@@ -151,8 +146,6 @@ Ted, your communication preference is: Email
                 NickName = "Ted",
                 CommunicationPreference = CommunicationPreference.Email
             };
-
-            Assert.That.AreEqual( 1, ( int ) CommunicationPreference.Email );
 
             var template = @"
 {{ person.NickName }}, your communication preference is:
@@ -535,6 +528,249 @@ WELCOME TO THE LAVA TAG
             TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
         }
 
+        [TestMethod]
+        public void LavaTag_WithInnerForLoop_ShouldParseCorrectly()
+        {
+            var template = @"
+{% liquid 
+    for i in (1..5)
+        if i > 3
+            continue
+        endif
+        echo i
+    endfor
+%}";
+            var expectedOutput = @"123";
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// Verify that the {% lava %} tag is correctly aliased to the default {% liquid %} tag.
+        /// </summary>
+        [TestMethod]
+        public void LavaTag_WrappedWithForLoop_IsProcessedCorrectly()
+        {
+            var template = @"
+{%- for i in (1..5) %}
+    {%- liquid 
+        if i > 3
+            continue
+        endif
+        echo i
+    %}
+{%- endfor %}
+";
+
+            var expectedOutput = @"123";
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// Verify that Rock's custom "elseif" works inside a {% lava %} {% liquid %} tag.
+        /// </summary>
+        [TestMethod]
+        public void LavaTag_WithInnerIfElseIfTag_IsProcessedCorrectly()
+        {
+            var person = new LavaUnitTestHelper.TestPerson { FirstName = "Theodore", NickName = "Ted", LastName = "Decker", Id = 1 };
+
+            var mergeValues = new LavaDataDictionary { { "CurrentPerson", TestHelper.GetTestPersonTedDecker() } };
+
+            var template = @"
+{% liquid
+
+    assign lastName = CurrentPerson.LastName
+    if lastName == ''
+        assign result = 'nope'
+    else
+        if CurrentPerson.NickName == 'Cindy'
+            assign result = 'female'
+        elsif CurrentPerson.NickName == 'Ted'
+            assign result = 'male'
+        else
+            assign result = 'unknown'
+        endif
+    endif
+
+    echo result
+%}
+";
+            var expectedOutput = @"male";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, mergeValues, ignoreWhitespace: true );
+            } );
+
+        }
+
+        /// <summary>
+        /// Verify that Rock's custom "//-" comments works inside an IF tag that is inside a {% lava %} {% liquid %} tag.
+        /// </summary>
+        [TestMethod]
+        public void LavaTag_WithInnerIfTagAndLineComments_IsProcessedCorrectly()
+        {
+            var template = @"
+{% liquid
+
+    //- Comment level one
+    assign isTest = true
+    if isTest
+        
+        //- Comment level two
+        assign isTest = false
+        
+    endif
+    echo isTest
+
+%}
+";
+            var expectedOutput = @"false";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, ignoreWhitespace: true );
+            } );
+        }
+
+
+        /// <summary>
+        /// Verify that Rock's custom "/- -/" block comments works inside an IF tag that is inside a {% lava %} {% liquid %} tag.
+        /// </summary>
+        [TestMethod]
+        public void LavaTag_WithCommentesNestedInIfTag_IsProcessedCorrectly()
+        {
+            var template = @"
+{% lava
+    //- Comment level one
+    assign isTest = true
+    if isTest
+        
+        /-
+        assign isTest = false
+        -/
+
+    endif
+    echo isTest
+%}
+";
+            var expectedOutput = @"true";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, ignoreWhitespace: true );
+            } );
+
+        }
+
+        /// <summary>
+        /// Verify that Rock's custom "/- -/" block comments works inside an IF tag that is inside a {% lava %} {% liquid %} tag.
+        /// </summary>
+        [TestMethod]
+        public void LavaTag_WithInnerIfTagAndBlockComment_SpanningMultipleLines_IsProcessedCorrectly()
+        {
+            var template = @"
+{% liquid
+    assign isTest = true
+    /- This is a block comment...
+   ... spanning multiple lines. -/
+    if isTest
+        
+        assign isTest = false
+        
+    endif
+    echo isTest
+%}
+";
+            var expectedOutput = @"false";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, ignoreWhitespace: true );
+            } );
+        }
+
+        /// <summary>
+        /// Verify that Rock's custom "//-" block comments works inside a FOR tag that is inside a {% lava %} {% liquid %} tag.
+        /// </summary>
+        [TestMethod]
+        public void LavaTag_WithSingleLineCommentInsideForTag_IsProcessedCorrectly()
+        {
+            var template = @"
+{% lava
+    //- Comment level one
+    assign test = -1
+    assign loopCount = 5
+    for i in (0..loopCount)
+        
+        //- Comment level two
+        assign test = i
+        
+    endfor
+    echo test
+%}
+";
+            var expectedOutput = @"5";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, ignoreWhitespace: true );
+            } );
+        }
+
+        /// <summary>
+        /// Verify that Rock's custom "//-" block comments works inside a FOR tag that is inside a {% lava %} {% liquid %} tag.
+        /// </summary>
+        [TestMethod]
+        public void LavaTag_WithCommentBlockInsideForTag_IsProcessedCorrectly()
+        {
+            var template = @"
+{% lava
+    //- Comment level one
+    assign test = -1
+    assign loopCount = 5
+    for i in (0..loopCount)
+        
+        /-
+        assign test = i
+        -/
+        
+    endfor
+    echo test
+%}
+";
+            var expectedOutput = @"-1";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, ignoreWhitespace: true );
+            } );
+        }
+
+        /// <summary>
+        /// Verify that Liquid's "#" comments works inside a {% lava %} {% liquid %} tag.
+        /// NOTE: This is not supported in Rock (or Fluid as far as I can tell).
+        /// </summary>
+        [TestMethod]
+        [Ignore] // Ignored because this is not currently supported in Fluid.
+        public void LavaTag_WithSingleLineHashComment_IsProcessedCorrectly()
+        {
+            var template = @"
+{% liquid
+    
+    # This is a comment
+    assign test = 5
+        
+    echo test
+%}
+";
+            var expectedOutput = @"5";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, ignoreWhitespace: true );
+            } );
+        }
         #endregion
 
         #region Raw Tag
@@ -550,7 +786,7 @@ WELCOME TO THE LAVA TAG
             var expectedOutput = @"{{- -}}";
 
             // This only works correctly in the Fluid engine.
-            TestHelper.AssertTemplateOutput( typeof(FluidEngine), expectedOutput, template, ignoreWhitespace: false );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: false );
 
         }
 

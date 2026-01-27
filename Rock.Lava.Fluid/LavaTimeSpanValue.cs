@@ -18,6 +18,8 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Text.Encodings.Web;
+using System.Threading.Tasks;
+
 using Fluid.Values;
 
 namespace Rock.Lava.Fluid
@@ -73,7 +75,7 @@ namespace Rock.Lava.Fluid
             return _value.ToString( "c", CultureInfo.InvariantCulture );
         }
 
-        public override void WriteTo( TextWriter writer, TextEncoder encoder, CultureInfo cultureInfo )
+        public override ValueTask WriteToAsync( TextWriter writer, TextEncoder encoder, CultureInfo cultureInfo )
         {
             AssertWriteToParameters( writer, encoder, cultureInfo );
 
@@ -81,6 +83,8 @@ namespace Rock.Lava.Fluid
             var outputDate = _value.ToString( "c", cultureInfo );
 
             writer.Write( outputDate );
+
+            return default;
         }
 
         public override object ToObjectValue()

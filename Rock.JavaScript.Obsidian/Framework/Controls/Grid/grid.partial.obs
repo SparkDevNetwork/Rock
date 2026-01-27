@@ -12,7 +12,11 @@
                              :countMessage="countMessage"
                              :selectedRowCount="selectedRowCount"
                              :isCountMessageVisible="isCountMessageVisible"
-                             :isSearchVisible="isSearchVisible" />
+                             :isSearchVisible="isSearchVisible">
+                <template #additionalHeaderBadges>
+                    <slot name="gridHeaderBadges" />
+                </template>
+            </FilterHeaderRow>
         </div>
 
         <div class="grid-content-container"
@@ -28,7 +32,8 @@
                                  v-model:columnFilters="columnFilterValues"
                                  v-model:columnSort="columnSortDirection"
                                  :grid="gridState"
-                                 :light="light" />
+                                 :light="light"
+                                 :manualSort="manualSort" />
                 <div v-if="$slots.gridHeaderAppend"
                      class="grid-header-append">
                     <slot name="gridHeaderAppend" />
@@ -115,8 +120,6 @@
         </div>
     </div>
 </template>
-
-
 
 <script setup lang="ts">
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -573,8 +576,18 @@
         isNestedInScrollable: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
 
+        /**
+         * When defined, this function will be called when a column's header
+         * is clicked for sorting. This allows the consumer to implement manual
+         * sorting logic. This function receives the column name and is expected
+         * to provide the sorted data back to the grid via the data property.
+         */
+        manualSort: {
+            type: Function as PropType<((column: string, grid: IGridState) => void) | undefined>,
+            default: undefined
+        },
     });
 
     const emit = defineEmits<{
@@ -953,7 +966,8 @@
             props.definition,
             props.liveUpdates ?? false,
             props.itemTerm || "item",
-            props.entityTypeGuid);
+            props.entityTypeGuid,
+            props.selectedKeysOverride);
 
         state.setItemKey(props.keyField);
 
@@ -1357,6 +1371,10 @@
      * Sets the current sort value to match what is in the preferences.
      */
     function setSortFromPreferences(): void {
+        if (props.manualSort) {
+            return;
+        }
+
         const sortDirection = gridPreferences.getValue(PreferenceKey.SortDirection);
 
         if (sortDirection) {
@@ -1419,7 +1437,7 @@
      * a request to save the preferences.
      */
     function saveSortPreferences(): void {
-        if (props.disablePreferences) {
+        if (props.disablePreferences || props.manualSort) {
             return;
         }
 
@@ -1442,7 +1460,7 @@
             return;
         }
 
-        if (pageSize.value && pageSize.value != 50) {
+        if (pageSize.value && pageSize.value !== 50) {
             gridPreferences.setValue(PreferenceKey.PageSize, JSON.stringify(pageSize.value));
         }
         else {
@@ -1566,6 +1584,11 @@
         const lineHeight = 15;
         const padding = 2;
 
+        if (!worksheet) {
+            await alert("Unable to create export file.");
+            return;
+        }
+
         // Apply formatting to data rows
         worksheet.eachRow((row, index) => {
             let maxLines = 1;
@@ -1672,11 +1695,16 @@
     async function onLaunchWorkflow(): Promise<void> {
         const url = props.definition?.actionUrls?.[GridActionUrlKey.LaunchWorkflow];
 
-        if (!props.keyField || !url) {
+        let keyField = props.keyField;
+        if (props.personKeyField && props.entityTypeGuid === EntityType.Person) {
+            keyField = props.personKeyField;
+        }
+
+        if (!keyField || !url) {
             return;
         }
 
-        await createEntitySetAndRedirect([props.keyField], url, undefined);
+        await createEntitySetAndRedirect([keyField], url, undefined);
     }
 
     /**

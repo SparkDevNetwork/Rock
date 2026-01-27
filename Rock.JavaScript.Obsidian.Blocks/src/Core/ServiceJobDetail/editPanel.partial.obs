@@ -82,7 +82,8 @@
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import Cron from "@Obsidian/Libs/cronstrue";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { ServiceJobBag } from "@Obsidian/ViewModels/Blocks/Core/ServiceJobDetail/serviceJobBag";
     import { ServiceJobDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/ServiceJobDetail/serviceJobDetailOptionsBag";
@@ -123,7 +124,6 @@
     const notificationEmails = propertyRef(props.modelValue.notificationEmails ?? "", "NotificationEmails");
     const lastStatusMessage = ref(props.modelValue.lastStatusMessage);
     const cronDescription = ref(props.modelValue.cronDescription ?? "");
-    const invokeBlockAction = useInvokeBlockAction();
     const jobTypeOptions = props.options.jobTypeOptions ?? [];
     const notificationStatusOptions = props.options.notificationStatusOptions ?? [];
     const jobTypeClass = propertyRef(props.modelValue.class ?? "", "Class");
@@ -148,13 +148,10 @@
 
     async function getCronDescription(): Promise<void> {
         if (cronExpression.value) {
-            let response = await invokeBlockAction<{ cronDescription: string }>("GetCronDescription", {
-                cronExpression: cronExpression.value
-            });
-            if (response.isSuccess && response.data) {
-                cronDescription.value = response.data.cronDescription;
+            try {
+                cronDescription.value = Cron.toString(cronExpression.value);
             }
-            else {
+            catch {
                 cronDescription.value = "Invalid Cron Expression";
             }
         }

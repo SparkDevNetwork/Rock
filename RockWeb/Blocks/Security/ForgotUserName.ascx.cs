@@ -27,6 +27,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Security
 {
@@ -40,7 +41,6 @@ namespace RockWeb.Blocks.Security
     [CodeEditorField( "Heading Caption",
         Key = AttributeKey.HeadingCaption,
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Html,
-        EditorTheme = Rock.Web.UI.Controls.CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         DefaultValue = "<h5 class='text-center'>Can’t log in?</h5>",
@@ -50,7 +50,6 @@ namespace RockWeb.Blocks.Security
     [CodeEditorField( "Invalid Email Caption",
         Key = AttributeKey.InvalidEmailCaption,
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Html,
-        EditorTheme = Rock.Web.UI.Controls.CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         DefaultValue = "Sorry, we didn’t recognize that email address. Want to try another?",
@@ -60,7 +59,6 @@ namespace RockWeb.Blocks.Security
     [CodeEditorField( "Success Caption",
         Key = AttributeKey.SuccessCaption,
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Html,
-        EditorTheme = Rock.Web.UI.Controls.CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         DefaultValue = "We’ve emailed you instructions for logging in",
@@ -122,8 +120,8 @@ namespace RockWeb.Blocks.Security
 
             if ( !Page.IsPostBack )
             {
-                var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
-                if ( disableCaptchaSupport )
+                var disableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
+                if ( disableCaptchaSupport || !cpCaptcha.IsAvailable )
                 {
                     pnlCaptcha.Visible = false;
                     EnableForm();

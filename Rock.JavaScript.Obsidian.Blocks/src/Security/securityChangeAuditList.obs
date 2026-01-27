@@ -284,7 +284,7 @@
     function getOrderText(preOrder: number | null, postOrder: number | null, separator: string): string {
         let orderString = "";
 
-        if (preOrder != postOrder) {
+        if (preOrder !== postOrder) {
             orderString = preOrder != null ? preOrder.toString() : "";
             orderString += separator;
             orderString += postOrder != null ? postOrder.toString() : "";
@@ -301,7 +301,7 @@
     function getAccessText(preAllowOrDeny: string | null, postAllowOrDeny: string | null): string {
         let accessString = "";
 
-        if (preAllowOrDeny != postAllowOrDeny) {
+        if (preAllowOrDeny !== postAllowOrDeny) {
             accessString = getAccessString(preAllowOrDeny);
             accessString += rightArrowIndicator;
             accessString += getAccessString(postAllowOrDeny);
@@ -318,7 +318,7 @@
     function getOrderTextForExport(preOrder: number | null, postOrder: number | null): string {
         let orderString = "";
 
-        if (preOrder != postOrder) {
+        if (preOrder !== postOrder) {
 
             if (preOrder !== null) {
                 orderString = preOrder != null ? preOrder.toString() : "";
@@ -339,7 +339,7 @@
     function getAccessTextForExport(preAllowOrDeny: string | null, postAllowOrDeny: string | null): string {
         let accessString = "";
 
-        if (preAllowOrDeny != postAllowOrDeny) {
+        if (preAllowOrDeny !== postAllowOrDeny) {
 
             if (preAllowOrDeny != null) {
                 accessString = getAccessString(preAllowOrDeny);
@@ -362,7 +362,7 @@
             accessStr = "";
         }
         else {
-            accessStr = allowOrDeny == "A" ? allow : deny;
+            accessStr = allowOrDeny === "A" ? allow : deny;
         }
 
         return accessStr;

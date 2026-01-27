@@ -257,7 +257,7 @@
 
     function populateAttributeKey(): void {
         // if the attribute key hasn't been filled in yet, populate it with the attribute name minus whitespace
-        if (attributeKey.value.trim() == "" && attributeName.value.trim() != "") {
+        if (attributeKey.value.trim() === "" && attributeName.value.trim() !== "") {
             let keyValue = attributeName.value.trim().replace(/[^a-zA-Z0-9_.-]/g, "");
             let newKeyValue = keyValue;
 

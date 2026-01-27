@@ -190,6 +190,17 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
+        protected override List<AdaptiveMessageData> GetListItems( IQueryable<AdaptiveMessageData> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+
+            // Load attribute values for the grid-selected attributes.
+            GridAttributeLoader.LoadFor( items, a => a.AdaptiveMessage, _gridAttributes.Value, rockContext );
+
+            return items;
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<AdaptiveMessageData> GetGridBuilder()
         {
             var blockOptions = new GridBuilderGridOptions<AdaptiveMessageData>

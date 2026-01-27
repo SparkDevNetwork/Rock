@@ -421,6 +421,11 @@ export const Page = {
      */
     CommunicationTransports: "29CC8A0B-6476-4200-8B93-DC9BA8767D59",
     /**
+     * Gets the Communication Unsubscribe Report page guid
+     * ParentPage: Communications
+     */
+    CommunicationUnsubscribeReport: "E08EC84A-2F1B-43D9-ACA5-0294C5026E5B",
+    /**
      * Gets the Communications page guid
      * ParentPage: People
      */

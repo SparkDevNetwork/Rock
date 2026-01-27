@@ -25,6 +25,12 @@
             default: []
         },
 
+        /** List of Group Type GUIDs of the Group Types to exclude from the picker. */
+        excludeGroupTypes: {
+            type: Array as PropType<Guid[] | null>,
+            default: []
+        },
+
         /** Whether to sort by name of the group type. Otherwise sort by order */
         isSortedByName: {
             type: Boolean as PropType<boolean>,
@@ -73,6 +79,7 @@
     const loadOptions = async (): Promise<ListItemBag[]> => {
         const options: GroupTypePickerGetGroupTypesOptionsBag = {
             groupTypes: props.groupTypes,
+            excludeGroupTypes: props.excludeGroupTypes,
             isSortedByName: props.isSortedByName,
             onlyGroupListItems: props.onlyGroupListItems
         };
@@ -94,9 +101,9 @@
     // #region Watchers
 
     // Reload elements when props change
-    watch(() => [props.groupTypes, props.isSortedByName], () => {
+    watch(() => [props.groupTypes, props.excludeGroupTypes, props.isSortedByName], () => {
         loadedItems.value = null;
     });
 
-        // #endregion
+    // #endregion
 </script>

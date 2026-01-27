@@ -66,6 +66,13 @@ export type ObsidianBlockConfigBag = {
      */
     initialContent?: string | null;
 
+    /**
+     * The parent trace for this block load operation. This is used to
+     * link block actions back to the original trace. This must be in
+     * the W3C format '{version}-{trace_id}-{span_id}-{trace_flags}'.
+     */
+    parentTrace?: string | null;
+
     /** Gets or sets the person preferences associated with this block. */
     preferences?: ObsidianBlockPreferencesBag | null;
 

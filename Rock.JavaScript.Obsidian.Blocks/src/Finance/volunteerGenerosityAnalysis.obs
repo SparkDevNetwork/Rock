@@ -2,7 +2,7 @@
 <template>
     <div v-if="config === null" class="no-data-message">
         <p>No data available. Please refresh the dataset to load the block.</p>
-        <button class="btn btn-primary" @click="hardRefreshData" :disabled="isRefreshing">
+        <button class="btn btn-primary" type="button" @click="hardRefreshData" :disabled="isRefreshing">
             {{ isRefreshing ? 'Refreshing...' : 'Refresh Dataset' }}
         </button>
     </div>
@@ -18,7 +18,7 @@
             <template #gridHeaderPrepend>
                 <Panel :hasTitle="false">
                     <div class="d-flex justify-content-end">
-                        <button ref="refreshTooltip" class="btn btn-xs btn-default" @click.prevent="refreshData" :title="formatLastUpdated(lastUpdated) + '. Estimated refresh time ' + estimatedRefreshTime + 's.'">
+                        <button ref="refreshTooltip" class="btn btn-xs btn-default" type="button" @click.prevent="refreshData" :title="formatLastUpdated(lastUpdated) + '. Estimated refresh time ' + estimatedRefreshTime + 's.'">
                             {{ calculateTimeDifference(lastUpdated) }}
                             <i class="ti ti-refresh"></i>
                         </button>
@@ -149,7 +149,7 @@
     position: relative;
     height: 30px;
     transition: height 0.3s ease-out;
-    background-color: var(--color-info);
+    background-color: var(--color-info-strong);
 }
 
 .empty {

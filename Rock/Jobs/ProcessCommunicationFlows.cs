@@ -1776,6 +1776,13 @@ WHERE
             {
                 using ( ObservabilityHelper.StartActivity( "Add Initial Instance Recipients" ) )
                 {
+                    if ( instance.CommunicationFlow.TriggerType == CommunicationFlowTriggerType.OnDemand )
+                    {
+                        // On-Demand flows do not auto-seed recipients from a DataView.
+                        // They should already be added by the time the first communication is created.
+                        return true;
+                    }
+
                     if ( instance.CommunicationFlow.TargetAudienceDataView == null )
                     {
                         // No DataView; nothing to seed.

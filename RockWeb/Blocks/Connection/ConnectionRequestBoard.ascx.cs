@@ -23,10 +23,7 @@ using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using CSScriptLibrary;
-
 using Newtonsoft.Json;
-//using NuGet;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -84,7 +81,6 @@ namespace RockWeb.Blocks.Connection
         "Status Template",
         Description = "Lava Template that can be used to customize what is displayed in the status bar. Includes common merge fields plus ConnectionOpportunities, ConnectionTypes and the default IdleTooltip.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         DefaultValue = StatusTemplateDefaultValue,
         Order = 5,
         Key = AttributeKey.StatusTemplate )]
@@ -93,7 +89,6 @@ namespace RockWeb.Blocks.Connection
         "Connection Request Status Icons Template",
         Description = "Lava Template that can be used to customize what is displayed for the status icons in the connection request grid.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         DefaultValue = ConnectionRequestStatusIconsTemplateDefaultValue,
         Key = AttributeKey.ConnectionRequestStatusIconsTemplate,
         Order = 6 )]
@@ -3290,21 +3285,6 @@ ORDER BY ct.[Name], cs.[Name]",
                     {
                         var newOpportunity = new ConnectionOpportunityService( rockContext ).Get( newOpportunityId.Value );
 
-                        // Check if a connection request in the target opportunity already exists for the same person
-                        var existingRequest = connectionRequestService.Queryable().AsNoTracking()
-                            .Where( r => r.PersonAliasId == connectionRequest.PersonAliasId &&
-                                        r.ConnectionOpportunityId == newOpportunityId.Value &&
-                                        r.Id != connectionRequest.Id &&
-                                        ( r.ConnectionState == ConnectionState.Active || r.ConnectionState == ConnectionState.FutureFollowUp ) )
-                            .FirstOrDefault();
-
-                        if ( existingRequest != null )
-                        {
-                            nbTranferFailed.Text = "This person already has an active connection request for the selected opportunity. Transfer cannot be completed.";
-                            nbTranferFailed.Visible = true;
-                            return;
-                        }
-
                         connectionRequest.ConnectionOpportunityId = newOpportunityId.Value;
                         connectionRequest.ConnectionTypeId = newOpportunity.ConnectionTypeId;
                         if ( newOpportunity.ShowStatusOnTransfer && ddlRequestModalViewModeTransferModeStatus.Visible )
@@ -3947,6 +3927,11 @@ ORDER BY ct.[Name], cs.[Name]",
         /// <param name="e"></param>
         protected void lbApplyFilter_Click( object sender, EventArgs e )
         {
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
             SaveSettingByConnectionType( FilterKey.DateRange, sdrpLastActivityDateRangeFilter.DelimitedValues );
             SaveSettingByConnectionType( FilterKey.Requester, ppRequesterFilter.PersonId.ToStringSafe() );
             SaveSettingByConnectionType( FilterKey.Statuses, cblStatusFilter.SelectedValues.AsDelimited( DefaultDelimiter ) );
@@ -4012,6 +3997,8 @@ ORDER BY ct.[Name], cs.[Name]",
                 Text = cs.ToString().SplitCase()
             } );
             cblStateFilter.DataBind();
+
+            cblStateFilter.Required = true;
 
             cblLastActivityFilter.DataSource = GetConnectionActivityTypes().Select( cat => new
             {

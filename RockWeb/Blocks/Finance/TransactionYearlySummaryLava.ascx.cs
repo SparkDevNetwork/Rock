@@ -38,7 +38,13 @@ namespace RockWeb.Blocks.Finance
     [Description( "Presents a summary of financial transactions broke out by year and account using lava" )]
 
     [ContextAware( typeof( Person ) )]
-    [CodeEditorField( "Lava Template", "The lava template to use to format the transaction summary.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/TransactionYearlySummary.lava' %}", "", 1 )]
+    [CodeEditorField( "Lava Template",
+        Description = "The lava template to use to format the transaction summary.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = "{% include '~~/Assets/Lava/TransactionYearlySummary.lava' %}",
+        Order = 1 )]
     [AccountsField( "Accounts", "Limit the results to transactions that match the selected accounts.", false, "", "", 2 )]
     [Rock.SystemGuid.BlockTypeGuid( "535307C8-77D1-44F8-AD4D-1577572B6D26" )]
     public partial class TransactionYearlySummaryLava : RockBlock, ISecondaryBlock

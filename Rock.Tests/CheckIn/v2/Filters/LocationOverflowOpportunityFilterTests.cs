@@ -4,7 +4,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Filters;
-using Rock.Tests.Shared;
 using Rock.Utility;
 using Rock.ViewModels.CheckIn;
 
@@ -70,11 +69,11 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             filter.FilterLocations( opportunities );
 
-            Assert.That.AreEqual( 1, opportunities.Groups[0].Locations.Count );
-            Assert.That.AreEqual( "101", opportunities.Groups[0].Locations[0].LocationId );
-            Assert.That.AreEqual( 1, opportunities.Groups[1].Locations.Count );
-            Assert.That.AreEqual( "201", opportunities.Groups[1].Locations[0].LocationId );
-            Assert.That.AreEqual( 2, opportunities.Locations.Count );
+            Assert.HasCount( 1, opportunities.Groups[0].Locations );
+            Assert.AreEqual( "101", opportunities.Groups[0].Locations[0].LocationId );
+            Assert.HasCount( 1, opportunities.Groups[1].Locations );
+            Assert.AreEqual( "201", opportunities.Groups[1].Locations[0].LocationId );
+            Assert.HasCount( 2, opportunities.Locations );
         }
 
         [TestMethod]
@@ -137,17 +136,17 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             filter.FilterLocations( opportunities );
 
-            Assert.That.AreEqual( 1, opportunities.Groups[0].Locations.Count );
-            Assert.That.AreEqual( "101", opportunities.Groups[0].Locations[0].LocationId );
-            Assert.That.AreEqual( 0, opportunities.Groups[0].OverflowLocations.Count );
+            Assert.HasCount( 1, opportunities.Groups[0].Locations );
+            Assert.AreEqual( "101", opportunities.Groups[0].Locations[0].LocationId );
+            Assert.IsEmpty( opportunities.Groups[0].OverflowLocations );
 
-            Assert.That.AreEqual( 1, opportunities.Groups[1].Locations.Count );
-            Assert.That.AreEqual( "201", opportunities.Groups[1].Locations[0].LocationId );
-            Assert.That.AreEqual( 0, opportunities.Groups[1].OverflowLocations.Count );
+            Assert.HasCount( 1, opportunities.Groups[1].Locations );
+            Assert.AreEqual( "201", opportunities.Groups[1].Locations[0].LocationId );
+            Assert.IsEmpty( opportunities.Groups[1].OverflowLocations );
 
-            Assert.That.AreEqual( 2, opportunities.Locations.Count );
-            Assert.That.AreEqual( "101", opportunities.Locations[0].Id );
-            Assert.That.AreEqual( "201", opportunities.Locations[1].Id );
+            Assert.HasCount( 2, opportunities.Locations );
+            Assert.AreEqual( "101", opportunities.Locations[0].Id );
+            Assert.AreEqual( "201", opportunities.Locations[1].Id );
         }
 
         [TestMethod]
@@ -206,15 +205,15 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             // The kindergarten group should now have no locations which will
             // cause it to be removed in production.
-            Assert.That.AreEqual( 0, opportunities.Groups[0].Locations.Count );
-            Assert.That.AreEqual( 0, opportunities.Groups[0].OverflowLocations.Count );
+            Assert.IsEmpty( opportunities.Groups[0].Locations );
+            Assert.IsEmpty( opportunities.Groups[0].OverflowLocations );
 
-            Assert.That.AreEqual( 1, opportunities.Groups[1].Locations.Count );
-            Assert.That.AreEqual( "202", opportunities.Groups[1].Locations[0].LocationId );
-            Assert.That.AreEqual( 0, opportunities.Groups[1].OverflowLocations.Count );
+            Assert.HasCount( 1, opportunities.Groups[1].Locations );
+            Assert.AreEqual( "202", opportunities.Groups[1].Locations[0].LocationId );
+            Assert.IsEmpty( opportunities.Groups[1].OverflowLocations );
 
-            Assert.That.AreEqual( 1, opportunities.Locations.Count );
-            Assert.That.AreEqual( "202", opportunities.Locations[0].Id );
+            Assert.HasCount( 1, opportunities.Locations );
+            Assert.AreEqual( "202", opportunities.Locations[0].Id );
         }
 
         #endregion

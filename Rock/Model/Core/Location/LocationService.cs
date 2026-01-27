@@ -151,13 +151,24 @@ namespace Rock.Model
             postalCode = postalCode.ToStringSafe().Trim();
             country = country.ToStringSafe().Trim();
 
-            // Make sure the address has some content.
-            if ( string.IsNullOrWhiteSpace( street1 )
-                 && string.IsNullOrWhiteSpace( street2 )
-                 && string.IsNullOrWhiteSpace( city )
-                 && string.IsNullOrWhiteSpace( state )
-                 && string.IsNullOrWhiteSpace( locality )
-                 && string.IsNullOrWhiteSpace( postalCode ) )
+            // Make sure the address has some content besides the default address state selection.
+            var enableDefaultAddressStateSelection = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ENABLE_DEFAULT_ADDRESS_STATE_SELECTION ).AsBoolean();
+
+            var globalAttributesCache = GlobalAttributesCache.Get();
+            var orgStateCode = enableDefaultAddressStateSelection ? globalAttributesCache.OrganizationState : string.Empty;
+
+            if ( street1.IsNullOrWhiteSpace()
+                && street2.IsNullOrWhiteSpace()
+                && city.IsNullOrWhiteSpace()
+                && (
+                    state.IsNullOrWhiteSpace()
+                    || (
+                        enableDefaultAddressStateSelection
+                        && string.Equals( state, orgStateCode, StringComparison.OrdinalIgnoreCase )
+                    )
+                )
+                && locality.IsNullOrWhiteSpace()
+                && postalCode.IsNullOrWhiteSpace() )
             {
                 return null;
             }

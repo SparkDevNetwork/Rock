@@ -18,7 +18,6 @@ using System.Collections.Generic;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Tests.Shared;
 using Rock.Utility;
 
 namespace Rock.Tests.Utility
@@ -41,7 +40,7 @@ namespace Rock.Tests.Utility
 
             foreach ( var keyValue in testData )
             {
-                Assert.That.AreEqual( keyValue.Value, keyValue.Key.ToSeconds() );
+                Assert.AreEqual( keyValue.Value, keyValue.Key.ToSeconds() );
             }
         }
     }

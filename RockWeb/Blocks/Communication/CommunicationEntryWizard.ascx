@@ -825,7 +825,7 @@
                                     <!-- Code Properties -->
                                     <div class="propertypanel propertypanel-code" data-component="code" style="display: none;">
                                         <h4 class="propertypanel-title">HTML</h4>
-                                        <Rock:CodeEditor ID="codeEditor" CssClass="js-component-code-codeEditor" runat="server" Height="350" EditorTheme="Rock" EditorMode="Lava" OnChangeScript="updateCodeComponent(this, contents);" />
+                                        <Rock:CodeEditor ID="codeEditor" CssClass="js-component-code-codeEditor" runat="server" Height="350" EditorMode="Lava" OnChangeScript="updateCodeComponent(this, contents);" />
                                         <div class="alert alert-danger" id="component-code-codeEditor-error" style="display: none"></div>
 
 

@@ -21,12 +21,12 @@
         <NotificationBox v-else-if="preventNewRegistration" class="text-left" alertType="warning">
             <strong>{{ terms.registrationSingularTitleCase }} Full</strong>
             <p>
-                There are not any more {{ terms.registrationPluralLowerCase }} available for {{ config.instanceName }}.
+                There are no more {{ terms.registrationPluralLowerCase }} available for {{ config.instanceName }}.
             </p>
         </NotificationBox>
         <template v-else>
             <h1 v-if="currentStep !== steps.intro" v-html="stepTitleHtml"></h1>
-            <ProgressTracker v-if="config.hideProgressBar !== true && currentStep !== steps.success" :items="progressTrackerItems" :currentIndex="progressTrackerIndex">
+            <ProgressTracker v-if="config.hideProgressBar !== true && currentStep !== steps.success && currentStep !== steps.capacityFullFailure" :items="progressTrackerItems" :currentIndex="progressTrackerIndex">
                 <template #aside>
                     <div v-if="secondsBeforeExpiration >= 0" v-show="secondsBeforeExpiration <= (30 * 60)" class="remaining-time flex-grow-1 flex-md-grow-0">
                         <NotificationBox v-if="hasSessionRenewalSuccess" alertType="success" class="m-0 pt-3" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
@@ -46,6 +46,7 @@
             <RegistrationEntrySummary v-else-if="currentStep === steps.review" @next="onSummaryNext" @previous="onSummaryPrevious" />
             <RegistrationEntryPayment v-else-if="currentStep === steps.payment" @next="onPaymentNext" @previous="onPaymentPrevious" />
             <RegistrationEntrySuccess v-else-if="currentStep === steps.success" />
+            <RegistrationEntryCapacityFullFailure v-else-if="currentStep === steps.capacityFullFailure" :newRegistrantCount="registrationEntryState.registrants.length" :showNoPaymentProcessed="!!registrationEntryState.amountToPayToday || !!registrationEntryState.paymentPlan?.amountPerPayment" />
             <NotificationBox v-else alertType="danger">Invalid State: '{{ currentStep }}'</NotificationBox>
 
             <SessionRenewal :isSessionExpired="isSessionExpired" @success="onSessionRenewalSuccess" />
@@ -55,6 +56,7 @@
 
 <script setup lang="ts">
     import { computed, onMounted, onUnmounted, provide, readonly, ref, watch } from "vue";
+    import RegistrationEntryCapacityFullFailure from "./RegistrationEntry/capacityFullFailure.partial.obs";
     import RegistrationEntryIntro from "./RegistrationEntry/intro.partial.obs";
     import RegistrationEntryPayment from "./RegistrationEntry/payment.partial.obs";
     import RegistrationEntryRegistrants from "./RegistrationEntry/registrants.partial.obs";
@@ -72,11 +74,12 @@
     import { ProgressTrackerItem } from "@Obsidian/Types/Controls/progressTracker";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { newGuid } from "@Obsidian/Utility/guid";
-    import { List } from "@Obsidian/Utility/linq";
+    import { Enumerable, List } from "@Obsidian/Utility/linq";
     import NumberFilter, { toWord } from "@Obsidian/Utility/numberUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { isNullOrWhiteSpace, toTitleCase } from "@Obsidian/Utility/stringUtils";
     import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
+    import { PersistSessionResponseBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/persistSessionResponseBag";
     import { RegistrationEntryArgsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryArgsBag";
     import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
     import { RegistrationEntryFeeBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFeeBag";
@@ -89,7 +92,8 @@
         [Step.RegistrationEndForm]: Step.RegistrationEndForm,
         [Step.Review]: Step.Review,
         [Step.Payment]: Step.Payment,
-        [Step.Success]: Step.Success
+        [Step.Success]: Step.Success,
+        [Step.CapacityFullFailure]: Step.CapacityFullFailure
     };
 
     const invokeBlockAction = useInvokeBlockAction();
@@ -152,6 +156,7 @@
         registrationSessionGuid: config.session?.registrationSessionGuid || newGuid(),
         ownFamilyGuid: config.currentPersonFamilyGuid || newGuid(),
         paymentPlan: null,
+        isCapacityFull: false
     });
     const registrationCostSummary = ref<RegistrationCostSummaryInfo>({
         paidAmount: 0,
@@ -161,7 +166,7 @@
     const wipPaymentPlanConfiguration = ref<PaymentPlanConfiguration | null | undefined>();
     const finalPaymentPlanConfiguration = ref<PaymentPlanConfiguration | null | undefined>();
 
-    // #endregion
+    // #endregion Values
 
     // #region Computed Values
 
@@ -362,7 +367,8 @@
     });
 
     const preventNewRegistration = computed<boolean>(() => {
-        return isFull.value && !config.isExistingRegistration;
+        const isReturningFromPayment = config.isRedirectGateway && !!config.successViewModel?.registeredCount;
+        return isFull.value && !config.isExistingRegistration && !isReturningFromPayment;
     });
 
     const terms = computed<RegistrationEntryTerminology>(() => {
@@ -382,7 +388,7 @@
         };
     });
 
-    // #endregion
+    // #endregion Computed Values
 
     // #region Functions
 
@@ -420,14 +426,42 @@
             return;
         }
 
-        const response = await invokeBlockAction<{ expirationDateTime: string }>("PersistSession", {
+        const response = await invokeBlockAction<PersistSessionResponseBag>("PersistSession", {
             args: getRegistrationEntryBlockArgs()
         });
 
-        if (response.data) {
-            const expirationDate = RockDateTime.parseISO(response.data.expirationDateTime);
-
+        if (response.isSuccess && response.data) {
+            const expirationDate = RockDateTime.parseISO(response.data.expirationDateTime ?? "");
             registrationEntryState.value.sessionExpirationDateMs = expirationDate?.toMilliseconds() ?? null;
+            const spotsSecured = Enumerable
+                .from(registrationEntryState.value.registrants)
+                .where(r => !r.isOnWaitList)
+                .count();
+            registrationEntryState.value.viewModel.spotsRemaining =
+                (response.data.spotsRemaining ?? 0) + spotsSecured;
+            return;
+        }
+        else if (!registrationEntryState.value.viewModel.isExistingRegistration) {
+            // This likely happened because this is the first time the session has been persisted
+            // and capacity for the registration instance was reached between the time the individual
+            // first started the registration and now.
+
+            // If wait-listing is not enabled, then clear out all registrants
+            // since we can't save them and show the "Registration Full" message.
+            if (!registrationEntryState.value.viewModel.waitListEnabled) {
+                registrationEntryState.value.viewModel.spotsRemaining = 0;
+                registrationEntryState.value.sessionExpirationDateMs = null;
+                registrationEntryState.value.registrants.length = 0;
+            }
+            // If wait-listing is enabled, then mark all non-waitlist registrants as waitlisted.
+            else {
+                // Mark all non-waitlist registrants as waitlisted since the registration session could not be saved.
+                Enumerable.from(registrationEntryState.value.registrants)
+                    .where(r => !r.isOnWaitList)
+                    .forEach(r => {
+                        r.isOnWaitList = true;
+                    });
+            }
         }
     }
 
@@ -512,9 +546,13 @@
         ) {
             registrationEntryState.value.currentStep = Step.Payment;
         }
+        else if (registrationEntryState.value.isCapacityFull) {
+            registrationEntryState.value.currentStep = Step.CapacityFullFailure;
+        }
         else {
             registrationEntryState.value.currentStep = Step.Success;
         }
+
         registrationEntryState.value.navBack = false;
         scrollToTopAfterNextRender();
     }
@@ -527,7 +565,13 @@
     }
 
     function onPaymentNext(): void {
-        registrationEntryState.value.currentStep = Step.Success;
+        if (registrationEntryState.value.isCapacityFull) {
+            registrationEntryState.value.currentStep = Step.CapacityFullFailure;
+        }
+        else {
+            registrationEntryState.value.currentStep = Step.Success;
+        }
+
         registrationEntryState.value.navBack = false;
         scrollToTopAfterNextRender();
     }
@@ -539,7 +583,7 @@
         }
     };
 
-    // #endregion
+    // #endregion Functions
 
     // #region Watchers
 
@@ -569,7 +613,7 @@
         immediate: true
     });
 
-    // #endregion
+    // #endregion Watchers
 
     // Provide the injectables for child components.
     provide(CurrentRegistrationEntryState, registrationEntryState.value);
@@ -580,7 +624,7 @@
     // Provide the same dependencies with simple string keys for dependent plugins.
     provide("registrationEntryState", registrationEntryState.value);
     provide("getRegistrationEntryBlockArgs", getRegistrationEntryBlockArgs);
-    provide("persistSession", getRegistrationEntryBlockArgs);
+    provide("persistSession", persistSession);
 
     provide(RegistrationCostSummary, {
         // Provide a read-only version of the registrationCostSummary so

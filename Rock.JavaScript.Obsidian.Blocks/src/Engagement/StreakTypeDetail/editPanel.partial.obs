@@ -15,30 +15,30 @@
 
             <div class="col-md-12">
                 <TextBox v-model="description"
-                    label="Description"
-                    textMode="multiline" />
+                         label="Description"
+                         textMode="multiline" />
             </div>
 
             <div class="col-md-6">
                 <DatePicker v-model="startDate"
-                    label="Start Date"
-                    rules="required"
-                    :disabled="!isAddMode"
-                    help="This defines the first day (or week) that a person could engage with this Streak Type and receive an affirmative mark towards their streak.
+                            label="Start Date"
+                            rules="required"
+                            :disabled="!isAddMode"
+                            help="This defines the first day (or week) that a person could engage with this Streak Type and receive an affirmative mark towards their streak.
                         The start date cannot be changed once the Streak Type is created except when rebuilding the entire Streak Type." />
             </div>
 
             <div class="col-sm-3 col-xs-6">
                 <CheckBox v-model="enableAttendance"
-                    label="Sync Linked Activity"
-                    help="If enabled, this streak type will create linked activity records (interaction or attendance) when the Mark Engagement API endpoints are used.
+                          label="Sync Linked Activity"
+                          help="If enabled, this streak type will create linked activity records (interaction or attendance) when the Mark Engagement API endpoints are used.
                         Furthermore, when linked activity records are added, this streak type will mark the appropriate engagement bit." />
             </div>
 
             <div class="col-sm-3 col-xs-6">
                 <CheckBox v-model="requiresEnrollment"
-                    label="Require Enrollment"
-                    help="If enabled, this Streak Type will not allow new Streaks to be tracked unless the person has been explicitly enrolled. Implicit enrollment
+                          label="Require Enrollment"
+                          help="If enabled, this Streak Type will not allow new Streaks to be tracked unless the person has been explicitly enrolled. Implicit enrollment
                         occurs when Sync Linked Activity is enabled, and a linked activity record is created." />
             </div>
         </div>
@@ -46,10 +46,10 @@
         <div class="row">
             <div class="col-md-6">
                 <DropDownList v-model="structureType"
-                    label="Linked Activity"
-                    :items="streakStructureTypes"
-                    blankValue="None"
-                    help="This specifies what linked activity types this Streak Type may interface with. Something very broad like “Attendance: Any” could
+                              label="Linked Activity"
+                              :items="streakStructureTypes"
+                              blankValue="None"
+                              help="This specifies what linked activity types this Streak Type may interface with. Something very broad like “Attendance: Any” could
                         help measure general engagement with the church. Alternatively, something narrower like a Group Type Purpose could measure more specific engagement points." />
 
                 <GroupTypePicker label="Group Type" v-if="modelValue.structureType == StreakStructureType.GroupType" v-model="structureEntity" :isSortedByName="true" showBlankItem />
@@ -58,7 +58,7 @@
 
                 <DefinedValuePicker label="Group Type Purpose" v-if="modelValue.structureType == StreakStructureType.GroupTypePurpose" v-model="structureEntity" :definedTypeGuid="DefinedType.GrouptypePurpose" showBlankItem />
 
-                <GroupTypePicker label="Check-In Configuration" v-if="modelValue.structureType == StreakStructureType.CheckInConfig" v-model="structureEntity" :isSortedByName="true" :groupTypes="options?.attendanceCheckInConfigGroupTypesGuids" showBlankItem/>
+                <GroupTypePicker label="Check-In Configuration" v-if="modelValue.structureType == StreakStructureType.CheckInConfig" v-model="structureEntity" :isSortedByName="true" :groupTypes="options?.attendanceCheckInConfigGroupTypesGuids" showBlankItem />
 
                 <InteractionChannelPicker label="Interaction Channel" v-if="modelValue.structureType == StreakStructureType.InteractionChannel" v-model="structureEntity" showBlankItem />
 
@@ -78,14 +78,14 @@
             </div>
             <div class="col-md-6">
                 <DropDownList v-model="occurrenceFrequency"
-                    label="Frequency"
-                    :items="streakOccurrenceFrequencies ?? []"
-                    :disabled="!isAddMode"
-                    :blankValue="streakOccurrenceFrequencies?.[0].value ?? ''"
-                    help="Daily measuring is great for something like Bible Reading where the ideal is daily engagement. Weekly measurements are better suited for activities
+                              label="Frequency"
+                              :items="streakOccurrenceFrequencies ?? []"
+                              :disabled="!isAddMode"
+                              :blankValue="streakOccurrenceFrequencies?.[0].value ?? ''"
+                              help="Daily measuring is great for something like Bible Reading where the ideal is daily engagement. Weekly measurements are better suited for activities
                         such as a small group where the ideal is weekly engagement." />
                 <DayOfWeekPicker v-if="canUpdateDayOfWeekPicker" label="Day of the Week" v-model="firstDayOfWeek"
-                    help="Allows this weekly streak type to calculate streaks based off a custom first day of the week setting. Leave this blank to use the system setting." />
+                                 help="Allows this weekly streak type to calculate streaks based off a custom first day of the week setting. Leave this blank to use the system setting." />
             </div>
         </div>
 
@@ -155,10 +155,10 @@
     const streakStructureTypes = ref<ListItemBag[]>(enumToListItemBag(StreakStructureTypeDescription));
     const streakOccurrenceFrequencies = ref<ListItemBag[]>(enumToListItemBag(StreakOccurrenceFrequencyDescription));
 
-    const isAddMode = computed((): boolean => props.modelValue?.idKey == "");
+    const isAddMode = computed((): boolean => props.modelValue?.idKey === "");
 
     // update Day of the Week picker only if the streak occurrence frequency is set to Weekly
-    const canUpdateDayOfWeekPicker = computed((): boolean => props.modelValue?.occurrenceFrequency == 1);
+    const canUpdateDayOfWeekPicker = computed((): boolean => props.modelValue?.occurrenceFrequency === 1);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -210,7 +210,7 @@
             firstDayOfWeek: parseInt(firstDayOfWeek.value ?? "0"),
             occurrenceFrequency: toNumber(occurrenceFrequency.value) as StreakOccurrenceFrequency,
             structureType: toNumberOrNull(structureType.value) as StreakStructureType,
-            structureEntity: props.modelValue?.structureType?.toString() == structureType.value ? structureEntity.value: {},
+            structureEntity: props.modelValue?.structureType?.toString() === structureType.value ? structureEntity.value : {},
             includeChildAccounts: includeChildAccounts.value
         };
 

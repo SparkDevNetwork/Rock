@@ -51,7 +51,6 @@ namespace Rock.Blocks.Core
     [CodeEditorField( "Map HTML",
         Description = "The HTML to use for displaying group location maps. Lava syntax is used to render data from the following data structure: points[type, latitude, longitude], polygons[type, polygon_wkt, google_encoded_polygon]",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 300,
         IsRequired = false,
         DefaultValue = @"{% if point or polygon %}

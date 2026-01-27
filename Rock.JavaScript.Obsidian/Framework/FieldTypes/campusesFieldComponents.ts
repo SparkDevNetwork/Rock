@@ -61,7 +61,7 @@ export const EditComponent = defineComponent({
         });
 
         const enhance = computed(() => {
-            return props.configurationValues[ConfigurationValueKey.EnhancedSelection] == "True";
+            return props.configurationValues[ConfigurationValueKey.EnhancedSelection] === "True";
         });
 
         const repeatColumns = computed(() => {

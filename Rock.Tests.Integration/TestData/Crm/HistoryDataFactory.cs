@@ -111,8 +111,6 @@ namespace Rock.Tests.Integration.TestData.Crm
                     // For each Person who has a Connection Status of Member, add prior change events for Visitor --> Attendee --> Member.
 
                     // Add a change for Attendee --> Member.
-                    dateOfChange = dateOfChange.AddDays( rng.Next( 1, 365 ) * -1 );
-
                     historyEntry = historyChanges.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Property, "Connection Status" )
                         .SetOldValue( "Attendee" )
                         .SetNewValue( "Member" )
@@ -121,12 +119,12 @@ namespace Rock.Tests.Integration.TestData.Crm
 
                     // Add a change for Visitor --> Attendee.
                     // This change record has only the OldValue and NewValue, compatible with records created prior to Rock v1.8
-                    dateOfChange = dateOfChange.AddDays( rng.Next( 1, 365 ) * -1 );
+                    var date = dateOfChange.AddYears( -1 );
 
                     historyEntry = historyChanges.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Property, "Connection Status" )
                         .SetOldValue( "Visitor" )
                         .SetNewValue( "Attendee" )
-                        .SetDateOfChange( dateOfChange );
+                        .SetDateOfChange( date );
 
                     entriesAdded += 2;
                 }
@@ -149,7 +147,7 @@ namespace Rock.Tests.Integration.TestData.Crm
                 HistoryService.SaveChanges( dataContext, typeof( Person ), global::Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, historyChanges, true, adminPerson.PrimaryAliasId, _TestDataSourceOfChange );
             }
 
-            Debug.Print( $"Create Data completed: { entriesAdded } history entries created." );
+            Debug.Print( $"Create Data completed: {entriesAdded} history entries created." );
         }
 
         /// <summary>
@@ -222,7 +220,7 @@ namespace Rock.Tests.Integration.TestData.Crm
                 HistoryService.SaveChanges( dataContext, typeof( Person ), global::Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, historyChanges, true, adminPerson.PrimaryAliasId, _TestDataSourceOfChange );
             }
 
-            Debug.Print( $"Create Data completed: { entriesAdded } history entries created." );
+            Debug.Print( $"Create Data completed: {entriesAdded} history entries created." );
         }
 
         /// <summary>

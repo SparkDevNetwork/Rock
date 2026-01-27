@@ -33,7 +33,7 @@ namespace Rock.Lava.Shortcodes
     [LavaShortcodeMetadata(
         Name = "Sankey Diagram",
         TagName = "sankeydiagram",
-        Description = "Displays a set of data as a sankey diagram, showing the flow from nodes to other nodes.",
+        Description = "Show data flow between nodes using a Sankey diagram visualization.",
         Documentation = DocumentationMetadata,
         Parameters = ParameterNamesMetadata,
         Categories = "A5503FF2-01A2-49CB-8C22-E57C3D7FDC29" )]

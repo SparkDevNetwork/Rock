@@ -358,7 +358,7 @@ This is some literal text containing an invalid shortcode: {[ panel title:'Examp
         /// <summary>
         /// A shortcode that enables a specific command should not cause that command to be enabled outside the scope of the shortcode.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "execute", true )]
         [DataRow( "entity,execute,sql", true )]
         [DataRow( "all", true )]

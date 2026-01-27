@@ -320,7 +320,7 @@ namespace Rock.Drawing.Avatar
                 };
 
                 // Measure the size of the text
-                var textSize = TextMeasurer.Measure( settings.Text, textOptions );
+                var textSize = TextMeasurer.MeasureSize( settings.Text, textOptions );
 
                 // Calculate margins
                 var leftMargin = ( settings.Size - textSize.Width ) / 2;
@@ -331,7 +331,7 @@ namespace Rock.Drawing.Avatar
                 // but you can't. The Origin will appear to be updated, but the text will be place at the original
                 // Origin (possible bug? 🤷‍). To get around that we'll need to create a new TextOption.
 
-                var renderTextOptions = new TextOptions( font )
+                var renderTextOptions = new RichTextOptions( font )
                 {
                     Dpi = ( float ) backgroundImage.Metadata.VerticalResolution,
                     Origin = new System.Numerics.Vector2( leftMargin, topMargin )

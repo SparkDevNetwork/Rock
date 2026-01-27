@@ -38,8 +38,10 @@ namespace Rock.Badge.Component
     [AccountsField( "Accounts", "The accounts to limit this to, or leave blank to include all accounts", false, order: 1 )]
     [DecimalField( "Minimum Amount", "The minimum contribution amount", required: false, order: 2 )]
     [SlidingDateRangeField( "Date Range", "The date range in which the contributions were made.", defaultValue: "Last|6|Month||", required: false, order: 3 )]
-    [CodeEditorField( "Lava Template", "The lava template to use for the badge display", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, order: 4, defaultValue:
-        @"
+    [CodeEditorField( "Lava Template",
+        Description = "The lava template to use for the badge display",
+        EditorMode = CodeEditorMode.Lava,
+        DefaultValue = @"
 {% if DateRange and DateRange.Summary != '' %}
   {% capture dateRangeText %} in the {{ DateRange.Summary | Downcase }}{% endcapture %}
 {% else %}
@@ -57,7 +59,10 @@ namespace Rock.Badge.Component
 <div class='rockbadge rockbadge-giving rockbadge-id-{{Badge.Id}}' data-toggle='tooltip' data-original-title='{{ tooltipText }}'>
   <i class='badge-icon ti ti-heartbeat' style='color: {{ iconColor }}'></i>
 </div>
-" )]
+",
+        Order = 4
+        )]
+
     [Rock.SystemGuid.EntityTypeGuid( "2F3E57EC-D126-4F0D-B1E5-C78E220C2060")]
     public class Giving : BadgeComponent
     {

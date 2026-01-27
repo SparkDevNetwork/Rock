@@ -37,50 +37,48 @@ namespace RockWeb.Blocks.Tv
     [Description( "Authenticates an individual for a remote system." )]
 
     #region Block Attributes
+
     [SiteField( "Site",
                 "The optional site that the remote authentication is tied to.",
                 false, "", "", 0,
                 AttributeKey.Site)]
 
     [CodeEditorField( "Header Content",
-        "Lava template to create the header.",
-        CodeEditorMode.Lava,
-        CodeEditorTheme.Rock,
-        300,
-        false,
-        @"<div class=""mb-4"">
+        Description = "Lava template to create the header.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 300,
+        IsRequired = false,
+        DefaultValue = @"<div class=""mb-4"">
     <h1>Hello
     {{ CurrentPerson.NickName }}</h1>
     <span>Enter your security code below to authenticate your application.</span>
 </div>",
-        "default",
-        1,
-        AttributeKey.HeaderContent)]
+        Category = "default",
+        Order = 1,
+        Key = AttributeKey.HeaderContent )]
 
     [CodeEditorField( "Footer Content",
-        "Lava template to create the footer.",
-        CodeEditorMode.Lava,
-        CodeEditorTheme.Rock,
-        300,
-        false,
-        "",
-        "default",
-        2,
-        AttributeKey.FooterContent )]
+        Description = "Lava template to create the footer.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 300,
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "default",
+        Order = 2,
+        Key = AttributeKey.FooterContent )]
 
     [CodeEditorField( "Success Message",
-        "Lava template that will be displayed after a successful authentication.",
-        CodeEditorMode.Lava,
-        CodeEditorTheme.Rock,
-        300,
-        false,
-        @"<div>
+        Description = "Lava template that will be displayed after a successful authentication.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 300,
+        IsRequired = false,
+        DefaultValue = @"<div>
     <h1>Success!</h1>
     <span>{{ CurrentPerson.NickName }}, you have successfully authenticated to your application.</span>
 </div>",
-        "default",
-        3,
-        AttributeKey.SuccessMessage )]
+        Category = "default",
+        Order = 3,
+        Key = AttributeKey.SuccessMessage )]
 
     [IntegerField(  "Code Expiration Duration",
         "The length of time in minutes that a code is good for.",
@@ -89,6 +87,7 @@ namespace RockWeb.Blocks.Tv
         "",
         4,
         AttributeKey.CodeExpirationDuration)]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "3080C707-4594-4DDD-95B5-DEF82141DE6A" )]

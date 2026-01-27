@@ -67,37 +67,12 @@
                             <hr />
                             <div class="row d-flex flex-wrap align-items-end align-items-md-center justify-content-center">
                                 <div class="col-xs-12 col-md-12 col-lg-2 font-weight-semibold mb-2 mb-md-0">
-                                    Former Giver
+                                    Non-Giver
                                 </div>
-                                <div class="col-xs-12 flex-sm-eq col-md-3 mb-3 mb-md-0">
-                                    <Rock:NumberBox ID="nbFormerGiverNoContributionInTheLastDays" runat="server" Label="No Contribution in the Last" AppendText="days" Required="true" FormGroupCssClass="m-0" />
-                                </div>
-                                <div class="px-2 mb-3 mb-sm-4 mb-md-0 mt-md-4 text-center">
-                                    and
-                                </div>
-                                <div class="col-xs-12 flex-sm-eq col-md-3 mb-3 mb-md-0">
-                                    <Rock:NumberBox ID="nbFormerGiverMedianFrequencyLessThanDays" runat="server" Label="Median Frequency Less Than" AppendText="days" FormGroupCssClass="m-0" />
+                                <div class="col-xs-12 col-md-8 col-lg-6">
                                 </div>
                                 <div class="col-xs-12 col-md-4 text-sm text-muted">
-                                    Former Givers are defined as not having a contribution since the number of days provided and having a median frequency less than the number of days provided. Providing no value for Median Frequency would have the effect of not having it be considered.
-                                </div>
-                            </div>
-                            <hr />
-                            <div class="row d-flex flex-wrap align-items-end align-items-md-center justify-content-center">
-                                <div class="col-xs-12 col-md-12 col-lg-2 font-weight-semibold mb-2 mb-md-0">
-                                    Lapsed Giver
-                                </div>
-                                <div class="col-xs-12 flex-sm-eq col-md-3 mb-3 mb-md-0">
-                                    <Rock:NumberBox ID="nbLapsedGiverNoContributionInTheLastDays" runat="server" Label="No Contribution in the Last" AppendText="days" Required="true" FormGroupCssClass="m-0" />
-                                </div>
-                                <div class="px-2 mb-3 mb-sm-4 mb-md-0 mt-md-4 text-center">
-                                    and
-                                </div>
-                                <div class="col-xs-12 flex-sm-eq col-md-3 mb-3 mb-md-0">
-                                    <Rock:NumberBox ID="nbLapsedGiverMedianFrequencyLessThanDays" runat="server" Label="Median Frequency Less Than" AppendText="days" FormGroupCssClass="m-0" />
-                                </div>
-                                <div class="col-xs-12 col-md-4 text-sm text-muted">
-                                    Lapsed Givers are defined as not having contributed since the number of days provided and having a median frequency less than the number of days provided. Providing no value for Median Frequency would have the effect of not having it be considered.
+                                    Non-Givers are defined as having never given.
                                 </div>
                             </div>
                             <hr />
@@ -112,7 +87,7 @@
                                     and
                                 </div>
                                 <div class="col-xs-12 flex-sm-eq col-md-3 mb-4 mb-md-0">
-                                    <Rock:NumberBox ID="nbNewGiverFirstGiftInLastDays" runat="server" Label="First Gift in the Last" AppendText="days" FormGroupCssClass="mb-0 my-sm-1" />
+                                    <Rock:NumberBox ID="nbNewGiverFirstGaveDays" runat="server" Label="First Gift in the Last" AppendText="days" Required="true" FormGroupCssClass="mb-0 my-sm-1" />
                                 </div>
                                 <div class="col-xs-12 col-md-4 text-sm text-muted">
                                     New Givers are defined as having a total contribution count between the values provided. Their first contribution must also be within the number of days configured.
@@ -121,37 +96,66 @@
                             <hr />
                             <div class="row d-flex flex-wrap align-items-end align-items-md-center">
                                 <div class="col-xs-12 col-md-12 col-lg-2 font-weight-semibold mb-2 mb-md-0">
-                                    Occasional Giver
+                                    Consistent Giver
                                 </div>
-                                <div class="col-md-8 col-lg-6">
-                                    <Rock:NumberRangeEditor ID="nreOccasionalGiverMedianFrequencyDays" runat="server" CssClass="input-width-sm" Label="Median Frequency Days" Required="true" FormGroupCssClass="m-0" />
+                                <div class="col-xs-12 flex-sm-eq col-md-3 mb-3 mb-md-0">
+                                    <Rock:NumberBox ID="nbConsistentGiverLastGaveDays" runat="server" Label="Last Gift Within" AppendText="days" Required="true" FormGroupCssClass="m-0" />
+                                </div>
+                                <div class="px-2 mb-3 mb-sm-4 mb-md-0 mt-md-4 text-center">
+                                    and
+                                </div>
+                                <div class="col-xs-12 flex-sm-eq col-md-3 mb-3 mb-md-0">
+                                    <Rock:NumberBox ID="nbConsistentGiverMeanFrequency" runat="server" Label="Mean Frequency Less Than or Equal To" AppendText="days" Required="true" FormGroupCssClass="m-0" Help="Mean frequency is calculated using qualifying transactions from the last 2 years." />
                                 </div>
                                 <div class="col-xs-12 col-md-4 text-sm text-muted">
-                                    Occasional Givers are defined as having a median frequency between the days provided. They must also have at least one gift in that time frame.
+                                    Consistent Givers are defined as having a recent qualifying gift (within the number of days provided) and an average interval between gifts that is less than or equal to the number of days provided.
                                 </div>
                             </div>
                             <hr />
                             <div class="row d-flex flex-wrap align-items-end align-items-md-center">
                                 <div class="col-xs-12 col-md-12 col-lg-2 font-weight-semibold mb-2 mb-md-0">
-                                    Consistent Giver
+                                    Occasional Giver
                                 </div>
-                                <div class="col-xs-12 col-sm-7 col-md-3 mb-3 mb-md-0">
-                                    <Rock:NumberBox ID="nbConsistentGiverMedianLessThanDays" runat="server" Label="Median Less Than" AppendText="days" Required="true" FormGroupCssClass="m-0" />
+                                <div class="col-xs-12 flex-sm-eq col-md-3 mb-3 mb-md-0">
+                                    <Rock:NumberBox ID="nbOccasionalGiverLastGaveDays" runat="server" Label="Last Gift Within" AppendText="days" Required="true" FormGroupCssClass="m-0" />
                                 </div>
-                                <div class="col-sm-6 col-md-5 col-lg-3"></div>
+                                <div class="px-2 mb-3 mb-sm-4 mb-md-0 mt-md-4 text-center">
+                                    and
+                                </div>
+                                <div class="col-xs-12 flex-sm-eq col-md-3 mb-3 mb-md-0">
+                                    <Rock:NumberBox ID="nbOccasionalGiverMeanFrequency" runat="server" Label="Mean Frequency Less Than or Equal To" AppendText="days" Required="true" FormGroupCssClass="m-0" Help="Mean frequency is calculated using qualifying transactions from the last 2 years." />
+                                </div>
                                 <div class="col-xs-12 col-md-4 text-sm text-muted">
-                                    Consistent Givers are defined as having a median frequency less than the days provided. They must also have at least one gift in that time frame.
+                                    Occasional Givers are defined as having a recent qualifying gift (within the number of days provided) and an average interval between gifts that is less than or equal to the number of days provided.
                                 </div>
                             </div>
                             <hr />
                             <div class="row d-flex flex-wrap align-items-end align-items-md-center justify-content-center">
                                 <div class="col-xs-12 col-md-12 col-lg-2 font-weight-semibold mb-2 mb-md-0">
-                                    Non-Giver
+                                    Lapsed Giver
+                                </div>
+                                <div class="col-xs-12 flex-sm-eq col-md-3 mb-3 mb-md-0">
+                                    <Rock:NumberBox ID="nbLapsedGiverNoGiftDays" runat="server" Label="No Gift Within" AppendText="days" Required="true" FormGroupCssClass="m-0" />
+                                </div>
+                                <div class="px-2 mb-3 mb-sm-4 mb-md-0 mt-md-4 text-center">
+                                    and
+                                </div>
+                                <div class="col-xs-12 flex-sm-eq col-md-3 mb-3 mb-md-0">
+                                    <Rock:NumberBox ID="nbLapsedGiverMeanFrequency" runat="server" Label="Mean Frequency Less Than" AppendText="days" Required="true" FormGroupCssClass="m-0" Help="Mean frequency is calculated using qualifying transactions from the last 2 years." />
+                                </div>
+                                <div class="col-xs-12 col-md-4 text-sm text-muted">
+                                    Lapsed Givers are defined as having given in the past, but not having a qualifying gift (within the number of days provided) and an average interval between gifts that is less than or equal to the number of days provided.
+                                </div>
+                            </div>
+                            <hr />
+                            <div class="row d-flex flex-wrap align-items-end align-items-md-center justify-content-center">
+                                <div class="col-xs-12 col-md-12 col-lg-2 font-weight-semibold mb-2 mb-md-0">
+                                    Former Giver
                                 </div>
                                 <div class="col-xs-12 col-md-8 col-lg-6">
                                 </div>
                                 <div class="col-xs-12 col-md-4 text-sm text-muted">
-                                    Non-Givers are defined as having never given.
+                                    Former Givers are defined as having given in the past, but not meeting the criteria for any other classification.
                                 </div>
                             </div>
                         </div>
@@ -305,5 +309,30 @@
             </Content>
         </Rock:ModalDialog>
 
+        <%-- Filter Change Confirmation Modal --%>
+        <Rock:ModalDialog ID="mdFiltersChangedConfirm" runat="server" Title="Filters Changed" SaveButtonText="Confirm" OnSaveClick="mdFiltersChangedConfirm_SaveClick">
+        <Content>
+            <div class="alert alert-warning">
+                <strong>Giving Automation filters have been modified.</strong>
+            </div>
+
+            <p>
+                Changes to the <strong>Transaction Types</strong>, <strong>Accounts</strong>, or <strong>Include Child Accounts</strong> settings invalidate any previously calculated Giving Automation attributes.
+            </p>
+
+            <p>
+                When the <strong>Giving Automation</strong> job next runs, it will perform a full recalculation of <strong>all giving attributes defined within the job for all people</strong> using the updated filters. This operation may take significantly longer than a typical run.
+            </p>
+
+            <p>
+                Because this action will overwrite existing computed values across the entire system, it is <strong>potentially destructive</strong> and should only be performed when you are confident the new filters are correct.
+            </p>
+
+            <p>
+                Do you want to proceed with these changes?
+            </p>
+        </Content>
+    </Rock:ModalDialog>
+    
     </ContentTemplate>
 </asp:UpdatePanel>

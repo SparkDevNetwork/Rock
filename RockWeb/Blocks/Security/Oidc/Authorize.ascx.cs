@@ -255,7 +255,17 @@ namespace RockWeb.Blocks.Security.Oidc
             // Notify the client that the authorization grant has been denied by the resource owner.
             var owinContext = Context.GetOwinContext();
             var redirectUri = owinContext.Request.Query["redirect_uri"];
-            Response.Redirect( redirectUri + $"?error=access_denied&error_description={errorDescription.Replace( ' ', '+' )}", true );
+            var state = owinContext.Request.Query["state"];
+
+            var separator = redirectUri.Contains( "?" ) ? "&" : "?";
+            var qs = $"error=access_denied&error_description={errorDescription.Replace( ' ', '+' )}";
+
+            if ( !string.IsNullOrEmpty( state ) )
+            {
+                qs += $"&state={Uri.EscapeDataString( state )}";
+            }
+
+            Response.Redirect( $"{redirectUri}{separator}{qs}", true );
             ApplicationInstance.CompleteRequest();
         }
 

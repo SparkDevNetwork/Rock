@@ -41,7 +41,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of media elements." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the media element details.",
@@ -49,7 +49,8 @@ namespace Rock.Blocks.Cms
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "9560305d-5ada-4ce4-a67a-2fe2d606cfb8" )]
-    [Rock.SystemGuid.BlockTypeGuid( "a713cbd4-549e-4795-9468-828ee2f8c21d" )]
+    // Was [Rock.SystemGuid.BlockTypeGuid( "a713cbd4-549e-4795-9468-828ee2f8c21d" )]
+    [Rock.SystemGuid.BlockTypeGuid( "28D6F57B-59D9-4DA6-A8DC-6DBD3E157554" )]
     [CustomizedGrid]
     public class MediaElementList : RockEntityListBlockType<MediaElement>
     {

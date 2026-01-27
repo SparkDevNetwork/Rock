@@ -25,8 +25,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Linq;
+
 using Rock.Attribute;
 using Rock.Configuration;
+using Rock.Enums.Cms;
 using Rock.Enums.Observability;
 using Rock.Model;
 using Rock.Observability;
@@ -157,8 +159,8 @@ namespace Rock.Blocks.Administration
         {
             return new UiSettingsConfigurationBag()
             {
-                CaptchaSecretKey = Rock.Web.SystemSettings.GetValue( SystemSetting.CAPTCHA_SECRET_KEY ),
-                CaptchaSiteKey = Rock.Web.SystemSettings.GetValue( SystemSetting.CAPTCHA_SITE_KEY ),
+                CaptchaMode = Rock.Web.SystemSettings.GetValue( SystemSetting.CAPTCHA_MODE ).ConvertToEnum<CaptchaMode>( CaptchaMode.Visible ),
+
                 EthnicityLabel = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_ETHNICITY_LABEL ),
                 RaceLabel = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_RACE_LABEL ),
                 SmsOptInMessage = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL ),
@@ -207,7 +209,8 @@ namespace Rock.Blocks.Administration
                 RealTimeHostname = Rock.Web.SystemSettings.GetValue( SystemSetting.REALTIME_HOSTNAME ),
                 PersonalizationCookieCacheLengthMinutes = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSONALIZATION_SEGMENT_COOKIE_AFFINITY_DURATION_MINUTES ).AsIntegerOrNull() ?? SettingDefault.PersonalizationCookieCacheLengthMinutes,
                 VisitorCookiePersistenceLengthDays = Rock.Web.SystemSettings.GetValue( SystemSetting.VISITOR_COOKIE_PERSISTENCE_DAYS ).AsIntegerOrNull() ?? SettingDefault.VisitorCookieTimeoutDays,
-                CountriesRestrictedFromAccessing = countriesRestrictedFromAccessing
+                CountriesRestrictedFromAccessing = countriesRestrictedFromAccessing,
+                IsTrailblazerMode = Rock.Web.SystemSettings.GetValue( SystemSetting.TRAILBLAZER_MODE ).AsBoolean(),
             };
         }
 
@@ -590,6 +593,7 @@ namespace Rock.Blocks.Administration
             Rock.Web.SystemSettings.SetValue( SystemSetting.VISITOR_COOKIE_PERSISTENCE_DAYS, bag.VisitorCookiePersistenceLengthDays?.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.PERSONALIZATION_SEGMENT_COOKIE_AFFINITY_DURATION_MINUTES, bag.PersonalizationCookieCacheLengthMinutes?.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.COUNTRIES_RESTRICTED_FROM_ACCESSING, string.Join( "|", bag.CountriesRestrictedFromAccessing.Distinct() ) );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.TRAILBLAZER_MODE, bag.IsTrailblazerMode.ToString() );
 
             return ActionOk( GetSuccessResponseBag( "Settings saved successfully." ) );
         }
@@ -606,12 +610,8 @@ namespace Rock.Blocks.Administration
             Rock.Web.SystemSettings.SetValue( SystemSetting.PERSON_RACE_LABEL, bag.RaceLabel );
             Rock.Web.SystemSettings.SetValue( SystemSetting.PERSON_ETHNICITY_LABEL, bag.EthnicityLabel );
 
-            // Save Captcha keys
-            Rock.Web.SystemSettings.SetValue( SystemSetting.CAPTCHA_SITE_KEY, bag.CaptchaSiteKey );
-            Rock.Web.SystemSettings.SetValue( SystemSetting.CAPTCHA_SECRET_KEY, bag.CaptchaSecretKey );
-
+            Rock.Web.SystemSettings.SetValue( SystemSetting.CAPTCHA_MODE, bag.CaptchaMode.ConvertToInt().ToString() );
             Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL, bag.SmsOptInMessage );
-
             Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ENABLE_DEFAULT_ADDRESS_STATE_SELECTION, bag.EnableDefaultAddressStateSelection.ToString() );
 
             return ActionOk( GetSuccessResponseBag( "Settings saved successfully." ) );

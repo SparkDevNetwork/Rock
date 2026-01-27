@@ -1,0 +1,367 @@
+//
+// Panel helpers
+//
+// --------------------------------------------------
+
+// Obsidian Panels (flex-based panels) styles. These are not used by webforms-based panels.
+.panel.panel-flex {
+  display: flex;
+  flex-direction: column;
+
+  > .panel-heading,
+  > .panel-header {
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    padding: 0;
+    line-height: 1em;
+
+    > .panel-title {
+      flex-grow: 1;
+      padding: 0 24px;
+    }
+
+    > .panel-aside {
+      padding: 0 24px 0 0;
+    }
+
+    > .panel-action {
+      position: relative;
+      display: flex;
+      align-items: center;
+      align-self: stretch;
+      justify-content: center;
+      width: 48px;
+      cursor: pointer;
+      border-left: 1px solid #ccc;
+
+      .rock-fullscreen-toggle {
+        position: relative;
+        border-left: 0;
+      }
+    }
+
+    /*
+      12/15/2025 - JPH
+
+      Many of the following styles - especially those referencing the newly-added .btn-panel-action class - were copied
+      from the corresponding .btn-grid-action rules, so the panel's header actions will match those of the grid's:
+      https://github.com/SparkDevNetwork/Rock/blob/d3b2eddd6b39df240b1a72cde482943979f81821/RockWeb/Styles/styles-v2/rock-components/_grid-obsidian.scss#L82-L105
+
+      We should eventually merge these rules into a common set of rules if possible so we only have to maintain them in
+      a single place.
+
+      Reason: Panel and Grid header action styles should match.
+    */
+
+    .panel-header-actions > *:not(.btn-panel-action, .panel-secondary-actions, .quick-filter) { // This will add space between custom elements in .panel-header-actions that are NOT meant to be action buttons.
+      margin-right: var(--spacing-small);
+    }
+
+    .panel-header-actions {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0;
+      margin: 0;
+
+      > .action {
+        padding-right: 16px;
+        margin: 2px;
+        color: #616161;
+        transition: color .2s, background-color .2s, border-radius .2s;
+
+        &:hover {
+          color: #212121;
+        }
+
+        &.active {
+          background-color: rgba(0, 0, 0, .05);
+          border-radius: 4px;
+        }
+      }
+
+      .btn-panel-action {
+        height: 56px;
+        width: 56px;
+        margin: 0;
+        border-radius: 0;
+        background-color: transparent;
+        color: var(--color-interface-medium);
+
+        &.btn-add {
+          color: var(--color-info-strong);
+
+          &:hover {
+            color: var(--color-info-strong);
+          }
+        }
+
+        &.active,
+        &:hover {
+          background-color: var(--color-interface-soft);
+          color: var(--color-interface-stronger);
+        }
+      }
+
+      .btn-panel-action:last-child,
+      .panel-secondary-actions:last-child .btn-panel-action,
+      .quick-filter:last-child,
+      .quick-filter:last-child .btn-panel-action {
+        border-top-right-radius: var(--rounded-xsmall);
+      }
+
+      .quick-filter:last-child.quick-filter-active {
+        border-top-right-radius: 0;
+
+        .btn-panel-action.active {
+          border-top-right-radius: 0;
+        }
+
+        .quick-filter-open,
+        .quick-filter-open * {
+          border-top-right-radius: var(--rounded-xsmall);
+        }
+      }
+
+      // If the panel's quick filter has an immediate sibling to the right that's NOT a .btn-panel-action, add a right margin.
+      /*.quick-filter:has(+ *):not(:has(+ .btn-panel-action)),
+      .quick-filter:has(+ *):not(:has(+ .panel-secondary-actions)) {
+        margin-right: var(--spacing-medium);
+      }*/
+
+      // Hide the action buttons on small screens
+      @media screen and (max-width: @screen-sm-max) {
+        .panel-action-zoom,
+        .panel-action-zoom-control,
+        .panel-action-fullscreen {
+          display: none;
+        }
+      }
+    }
+  }
+
+  .panel-sub-header > .panel-sub-header-left {
+    flex-grow: 1;
+  }
+
+  .footer-secondary-actions {
+    margin: 0 0 0 auto !important;
+  }
+
+  .panel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 0 @panel-body-padding @panel-body-padding;
+    margin: @panel-body-padding -@panel-body-padding -@panel-body-padding -@panel-body-padding;
+  }
+}
+
+.panel.panel-fullscreen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+
+  &,
+  > .panel-heading {
+    border-radius: 0;
+  }
+}
+
+.panel.panel-flex.panel-fullscreen {
+  .panel-header .panel-header-actions {
+    .btn-panel-action:last-child,
+    .panel-secondary-actions:last-child .btn-panel-action,
+    .quick-filter:last-child,
+    .quick-filter:last-child .btn-panel-action {
+      border-top-right-radius: 0;
+    }
+
+    .quick-filter:last-child.quick-filter-active {
+      border-top-right-radius: 0;
+
+      .btn-panel-action.active,
+      .quick-filter-open,
+      .quick-filter-open * {
+        border-top-right-radius: 0;
+      }
+    }
+  }
+}
+
+
+.panel.panel-flex .panel-flex-fill-body {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  // width: 100%;
+  // height: 100%;
+  display: flex;
+  flex-direction: column;
+  //margin: -18px;
+}
+
+.panel.panel-flex.panel-fullscreen > .panel-body {
+  position: relative;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.page-fullscreen-capable .panel.panel-block.panel-flex {
+  overflow-y: hidden;
+
+  > .panel-body {
+    position: relative;
+
+    &::before,
+    &::after {
+      display: none;
+    }
+  }
+}
+
+
+// the .panel-parent class allow you to wrap a child panel removing the child's heading.
+.panel-parent {
+
+  & > .panel-body {
+    padding: 0;
+  }
+
+  .panel {
+    margin-bottom: 0;
+    border: 0;
+
+    .panel-heading,
+    .panel-header {
+      display: none;
+    }
+  }
+}
+
+// Panels with sidebar content use a grid with 4 columns and 2 rows.
+/* use e("/") to escape the forward slash during compilation. */
+.panel-with-sidebar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  box-shadow: 0 0 1px 0 rgba(0,0,0,0.03), 0 1px 3px 0 rgba(0,0,0,0.08);
+  background: @panel-bg;
+  border: 1px solid @panel-default-border;
+  border-radius: @panel-border-radius;
+  margin-bottom: var(--spacing-large);
+  /* The sidebar panel content spans 1 of the 4 columns of the 1st row. */
+  > .panel-sidebar-content {
+    grid-column: 1;
+    grid-row: 1;
+    /* Include margins for the top and left. */
+    margin-top: @panel-body-padding;
+    margin-left: @panel-body-padding;
+  }
+  /* The main panel content spans 3 of the 4 columns of the 1st row. */
+  > .panel {
+    grid-column: 2 e("/") span 3;
+    grid-row: 1;
+    border: 0;
+    box-shadow: none;
+  }
+  /* Remove background and borders for main panel headers. */
+  .panel-block {
+    > .panel-heading, > .panel-sub-header,
+    > .panel-header, > .panel-sub-header {
+      border-bottom: 0;
+      background-color: #fff;
+    }
+  }
+  /* The footer spans all 4 columns of the 2nd row. */
+  .sidebar-footer {
+    grid-column: 1 e("/") span 4;
+    grid-row: 2;
+    /* The actions footer items uses a sub grid with a single row and 2 columns. */
+    > div.actions {
+      display: grid;
+      justify-items: start;
+      grid-template-columns: repeat(2, 1fr);
+      margin: 12px;
+
+      div.footer-actions {
+        grid-column: 1;
+        /* Child buttons should have margins */
+        > * {
+          margin-right: 8px;
+        }
+      }
+      /* justify the secondary footer actions to the right-hand side (end) of the grid. */
+      div.footer-secondary-actions {
+        grid-column: 2;
+        justify-self: end;
+        /* Child buttons should have margins */
+        > * {
+          margin-left: 4px;
+        }
+      }
+    }
+  }
+}
+
+// Removes the padding from a panel's body
+.panel.panel-body-flush {
+  & > .panel-body {
+    padding: 0;
+
+    .actions:last-of-type {
+        margin: inherit;
+    }
+  }
+}
+
+// File Asset Manager panel adjustments
+.panel-block:has(.file-asset-manager) {
+  margin-top: var(--spacing-medium);
+}
+
+
+.panel-worksurface > .panel-body {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.panel-worksurface .panel-scrollable-content {
+    flex-grow: 1;
+    overflow: hidden auto;
+}
+
+.panel-footer-content {
+    padding: var(--panel-body-padding);
+    background: var(--color-interface-softer);
+    border-top: 1px solid var(--color-interface-soft);
+}
+
+.panel-sidebar-footer-content {
+    grid-column: ~"1 / span 4";
+}
+
+// Panel Waterfall in a Content Section
+
+.contentsection .panel-waterfall {
+  background-color: transparent;
+  overflow: visible; // Allow dropdowns to render outside the panel
+  border-color: transparent;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .panel-body {
+    padding: 0;
+  }
+}

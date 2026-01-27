@@ -23,7 +23,9 @@
         </ContentSection>
 
         <ContentSection title="Trigger Conditions"
-                        icon="ti ti-bolt">
+                        icon="ti ti-bolt"
+                        disableCollapse
+                        light>
             <ContentStack>
                 <div class="row">
                     <div class="col-md-6">

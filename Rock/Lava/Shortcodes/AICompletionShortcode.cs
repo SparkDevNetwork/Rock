@@ -33,7 +33,7 @@ namespace Rock.Lava.Shortcodes
     [LavaShortcodeMetadata(
         Name = "AI Completion (Experimental)",
         TagName = "aicompletion",
-        Description = "Processes a completion using a AI provider. The APIs that are called by this shortcode can be slow. It's recommended that they not be used on public facing websites. They're better used in back-end or batch processes.",
+        Description = "Generate text using an AI provider. Best suited for back-end or batch use, as responses may be slow.",
         Documentation = DocumentationMetadata,
         Parameters = ParameterNamesMetadata,
         Categories = SystemGuid.Category.LAVA_SHORTCODE_AI )]

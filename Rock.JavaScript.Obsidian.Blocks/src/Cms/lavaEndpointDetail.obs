@@ -4,7 +4,7 @@
 
     <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
 
-    <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
+    <RockForm v-model:submit="submitForm" @submit="onSave">
         <Panel :title="panelTitle" :headerSecondaryActions="secondaryActions">
 
             <EditPanel v-model="lavaEndpointEditBag" :options="options" />
@@ -64,7 +64,6 @@
     const isSaving = ref(false);
     const isNavigating = ref(false);
     const submitForm = ref(false);
-    const resetKey = ref("");
     const showAuditDetailsModal = ref(false);
     const entityTypeGuid = "";
 

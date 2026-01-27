@@ -76,7 +76,7 @@ class TwilioResponseAsync : TwilioDefaultResponseAsync
     /// <param name="fromPhone"></param>
     /// <param name="body"></param>
     /// <returns></returns>
-    public override Twilio.TwiML.Message ProcessMessage( HttpRequest request, string toPhone, string fromPhone, string body )
+    public override Twilio.TwiML.Messaging.Message ProcessMessage( HttpRequest request, string toPhone, string fromPhone, string body )
     {
         string errorMessage;
 
@@ -95,7 +95,7 @@ class TwilioResponseAsync : TwilioDefaultResponseAsync
             return null;
         }
 
-        var twilioMessage = new Twilio.TwiML.Message();
+        var twilioMessage = new Twilio.TwiML.Messaging.Message();
         twilioMessage.Body( errorMessage );
         return twilioMessage;
     }

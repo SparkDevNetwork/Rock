@@ -26,9 +26,9 @@
                     @updateValue="onUpdateValue" />
 
     <SwitchThemeField v-else-if="field.type === ThemeFieldType.Switch"
-                    :field="field"
-                    :value="value"
-                    @updateValue="onUpdateValue" />
+                      :field="field"
+                      :value="value"
+                      @updateValue="onUpdateValue" />
 
     <HeadingThemeField v-else-if="field.type === ThemeFieldType.Heading"
                        :field="field" />
@@ -74,13 +74,13 @@
         (e: "updateValue", key: string, value: string | null): void;
     }>();
 
-    const value = ref<string>(props.values[props.field.variable ?? ""] ?? null);
+    const value = ref<string>(props.values[props.field.key ?? ""] ?? null);
 
     function onUpdateValue(key: string, val: string | null): void {
         emit("updateValue", key, val);
     }
 
     watch([() => props.field, () => props.values], () => {
-        value.value = props.values[props.field.variable ?? ""] ?? null;
+        value.value = props.values[props.field.key ?? ""] ?? null;
     });
 </script>

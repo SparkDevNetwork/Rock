@@ -31,7 +31,7 @@ namespace Rock.Tests.Shared.TestFramework
         /// </summary>
         private readonly int _poolSize;
 
-        private int _takeCount;
+        private bool _firstTake = true;
 
         /// <summary>
         /// A lock object to provide synchronization.
@@ -135,12 +135,11 @@ namespace Rock.Tests.Shared.TestFramework
                 // If this is the first container being requested, then just
                 // start it without the pool. This way if we are running just
                 // a single test we don't spin up a bunch of extra containers.
-                if ( _takeCount == 0 )
+                if ( _firstTake )
                 {
+                    _firstTake = false;
                     return StartContainerAsync();
                 }
-
-                _takeCount++;
 
                 if ( _pool.Count == 0 )
                 {

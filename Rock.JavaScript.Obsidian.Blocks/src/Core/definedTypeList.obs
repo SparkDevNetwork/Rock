@@ -16,7 +16,6 @@
                     title="Category"
                     field="category"
                     :filter="pickExistingValueFilter"
-                    :hideOnScreen="!config.options?.showCategoryColumn"
                     visiblePriority="xs" />
 
         <TextColumn name="name"

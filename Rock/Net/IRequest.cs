@@ -46,6 +46,11 @@ namespace Rock.Net
         NameValueCollection QueryString { get; }
 
         /// <summary>
+        /// The parameter data that came from the route.
+        /// </summary>
+        IDictionary<string, object> RouteData { get; }
+
+        /// <summary>
         /// Gets the headers provided in the request.
         /// </summary>
         /// <value>The headers provided in the request.</value>

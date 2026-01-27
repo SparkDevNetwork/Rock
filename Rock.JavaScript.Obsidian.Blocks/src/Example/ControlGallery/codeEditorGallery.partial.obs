@@ -3,14 +3,10 @@
                       :importCode="importCode"
                       :exampleCode="exampleCode"
                       displayAsRaw>
-        <CodeEditor v-model="value" :theme="theme" :mode="mode" :editorHeight="editorHeight" :editor="editorType" :noLineWrap="!lineWrap" :disabled="disabled" />
+        <CodeEditor v-model="value" :mode="mode" :editorHeight="editorHeight" :editor="editorType" :noLineWrap="!lineWrap" :disabled="disabled" />
 
         <template #settings>
             <div class="row">
-                <div class="col-md-3">
-                    <DropDownList label="Theme" v-model="theme" :items="editorType == 'ace' ? aceThemeOptions : monacoThemeOptions" />
-                </div>
-
                 <div class="col-md-3">
                     <DropDownList label="Mode" v-model="mode" :items="modeOptions" />
                 </div>
@@ -36,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref, watchEffect } from "vue";
+    import { computed, ref } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
@@ -44,55 +40,6 @@
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import { ComponentUsage, getSfcControlImportPath } from "./common/utils.partial";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-
-    const aceThemes = [
-        "ambiance",
-        "chrome",
-        "chaos",
-        "clouds_midnight",
-        "cobalt",
-        "crimson_editor",
-        "dawn",
-        "dreamweaver",
-        "eclipse",
-        "github",
-        "idle_fingers",
-        "kr_theme",
-        "merbivore",
-        "merbivore_soft",
-        "mono_industrial",
-        "monokai",
-        "pastel_on_dark",
-        "rock",
-        "solarized_dark",
-        "solarized_light",
-        "terminal",
-        "textmate",
-        "tomorrow",
-        "tomorrow_night",
-        "tomorrow_night_blue",
-        "tomorrow_night_bright",
-        "tomorrow_night_eighties",
-        "twilight",
-        "vibrant_ink",
-        "vs-dark",
-        "xcode",
-    ] as const;
-
-    const aceThemeOptions = aceThemes.map(theme => ({ value: theme, text: theme } as ListItemBag));
-
-    const monacoThemes = [
-        "vs",
-        "vs-dark",
-        "hc-light",
-        "hc-black",
-    ] as const;
-
-    const monacoThemeOptions = monacoThemes.map(theme => ({ value: theme, text: theme } as ListItemBag));
-
-    type AceTheme = (typeof aceThemes)[number];
-    type MonacoTheme = (typeof monacoThemes)[number];
-    type Theme = AceTheme | MonacoTheme;
 
     const modes = [
         "csharp",
@@ -109,7 +56,7 @@
         "xml",
     ] as const;
 
-    const modeOptions = modes.map(theme => ({ value: theme, text: theme } as ListItemBag));
+    const modeOptions = modes.map(mode => ({ value: mode, text: mode } as ListItemBag));
 
     type Mode = (typeof modes)[number];
 
@@ -118,7 +65,6 @@
         { value: "monaco", text: "Monaco" }
     ];
 
-    const theme = ref<Theme>("rock");
     const mode = ref<Mode>("text");
     const editorHeight = ref(400);
     const editorType = ref<"ace" | "monaco">("ace");
@@ -126,21 +72,11 @@
     const lineWrap = ref(true);
     const disabled = ref(false);
 
-    watchEffect(() => {
-        if (editorType.value === "ace") {
-            theme.value = "rock";
-        }
-        else {
-            theme.value = "vs-dark";
-        }
-    });
-
     const value = ref("");
 
     const exampleCode = computed((): string => {
         const usage = new ComponentUsage("CodeEditor");
 
-        usage.addAttribute("theme", theme.value);
         usage.addAttribute("mode", mode.value);
         usage.addAttribute("editorHeight", editorHeight.value ?? undefined);
         usage.addAttribute("editor", editorType.value === "monaco" ? "monaco" : undefined);

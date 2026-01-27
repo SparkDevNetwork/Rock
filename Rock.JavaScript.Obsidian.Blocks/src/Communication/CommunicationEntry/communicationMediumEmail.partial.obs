@@ -190,6 +190,7 @@
                         :disabled="disabled"
                         :editorHeight="600"
                         :enableAssetManager="config.enableAssetManager"
+                        :getContentRequest="getContentRequest"
                         :help="`${config.isLavaEnabled ? '<span class=\'tip tip-lava\'></span> ' : ''}<span class='tip tip-html'>`"
                         label="Message"
                         :encryptedDocumentRootFolder="mediumOptions.encryptedDocumentFolderRoot ?? undefined"
@@ -248,6 +249,7 @@
     import RecipientPicker from "./recipientPicker.partial.obs";
     import ScheduleSend from "./scheduleSend.partial.obs";
     import { getAlertType, removeQueryParams, scrollToTopOfWindow, useSelectedMediumType, useTemplate } from "./utils.partial";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
@@ -269,6 +271,7 @@
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
     import { CommunicationEntryCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryCommunicationBag";
     import { CommunicationEntryEmailMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryEmailMediumOptionsBag";
     import { CommunicationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryInitializationBox";
@@ -281,7 +284,6 @@
     import { CommunicationEntryTestRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestRequestBag";
     import { CommunicationEntryTestResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestResponseBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import CheckBox from "@Obsidian/Controls/checkBox.obs";
 
     const invokeBlockAction = useInvokeBlockAction();
     const props = defineProps({
@@ -455,6 +457,7 @@
     const errorMessage = ref<string | null | undefined>();
     const isInvalidTransportNotificationDismissed = ref<boolean>(false);
     const isLoadingMediumOptions = ref<boolean>(true);
+    const getContentRequest = ref<PromiseCompletionSource<string> | null | undefined>();
 
     //#endregion
 
@@ -696,6 +699,10 @@
      * button is pressed.
      */
     async function submitForm(): Promise<void> {
+        // Ensure the latest HTML content is updated before sending/saving/testing.
+        getContentRequest.value = new PromiseCompletionSource<string>();
+        await getContentRequest.value.promise;
+
         if (!submitFormTrigger.value) {
             submitFormTrigger.value = true;
         }
@@ -960,6 +967,16 @@
             isLoadingMediumOptions.value = true;
 
             if (mediumOptions.value) {
+                // The medium options have already been loaded, but ensure the "From" address and name are set.
+                // These fields might be read-only in Simple mode, so we need to verify they have values.
+                if (!internalFromAddress.value) {
+                    internalFromAddress.value = mediumOptions.value.fromAddress ?? "";
+                }
+
+                if (!internalFromName.value) {
+                    internalFromName.value = mediumOptions.value.fromName ?? "";
+                }
+
                 return;
             }
 
@@ -986,3 +1003,4 @@
         }
     });
 </script>
+

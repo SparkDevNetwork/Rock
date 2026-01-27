@@ -53,11 +53,11 @@ namespace Rock.Tests.CheckIn.v2.Labels
             instance.Initialize( data );
 
             Assert.IsNotNull( instance.AdaptiveFontSize );
-            Assert.AreEqual( 2, instance.AdaptiveFontSize.Count );
+            Assert.HasCount( 2, instance.AdaptiveFontSize );
             Assert.IsTrue( instance.AdaptiveFontSize.ContainsKey( 6 ) );
-            Assert.AreEqual( 20, instance.AdaptiveFontSize[ 6 ] );
+            Assert.AreEqual( 20, instance.AdaptiveFontSize[6] );
             Assert.IsTrue( instance.AdaptiveFontSize.ContainsKey( 10 ) );
-            Assert.AreEqual( 14, instance.AdaptiveFontSize [ 10 ] );
+            Assert.AreEqual( 14, instance.AdaptiveFontSize[10] );
         }
 
         [TestMethod]

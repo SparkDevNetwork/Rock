@@ -1,0 +1,100 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TextBox v-model="internalValue"
+             :placeholder="placeholderText"
+             @keyup.enter="isButtonClickRequired ? null : onSubmitSearch()">
+        <template #inputGroupAppend>
+            <span class="input-group-btn">
+                <button class="btn btn-default"
+                        type="button"
+                        @click.prevent="onSubmitSearch"
+                        title="">
+                    <i :class="searchButtonIconCssClass"></i>
+                </button>
+            </span>
+        </template>
+    </TextBox>
+</template>
+
+<script setup lang="ts">
+    import TextBox from "./textBox.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        /** The current search term of the search results search text box */
+        modelValue: {
+            type: String,
+            required: true
+        },
+        /** The URL to the search results page. This can be supplied as a NavigationUrlKey for the raw URL */
+        searchResultsPageUrl: {
+            type: String,
+            required: true
+        },
+        /** The name of and exposed results field to look for the search term in */
+        searchType: {
+            type: String,
+            required: false,
+            default: "name"
+        },
+        /** The placeholder text for the quick find text box */
+        placeholderText: {
+            type: String,
+            required: false,
+            default: "Quick Find"
+        },
+        /** The CSS class for the icon displayed in the button that submits the search */
+        searchButtonIconCssClass: {
+            type: String,
+            required: false,
+            default: "ti ti-search"
+        },
+        /** Additional search parameters to include in the search results page URL */
+        additionalSearchParameters: {
+            type: Array as () => KeyValueItem[] | undefined,
+            required: false,
+            default: undefined
+        },
+        /**
+         * Determines if the search button needs to be clicked to perform the search or
+         * if pressing Enter in the text box will also perform the search
+         */
+        isButtonClickRequired: {
+            type: Boolean,
+            required: false,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag): void
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    function onSubmitSearch(): void {
+        if (!internalValue.value || internalValue.value.trim() === "") {
+            return;
+        }
+
+        const url = new URL(props.searchResultsPageUrl, window.location.origin);
+
+        if (props.searchType) {
+            url.searchParams.set("SearchType", props.searchType);
+        }
+
+        url.searchParams.set("SearchTerm", internalValue.value);
+
+        if (props.additionalSearchParameters) {
+            for (const param of props.additionalSearchParameters) {
+                if (param.key && param.value) {
+                    url.searchParams.set(param.key, param.value);
+                }
+            }
+        }
+
+        window.location.href = url.toString();
+    }
+</script>

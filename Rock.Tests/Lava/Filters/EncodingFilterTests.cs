@@ -61,7 +61,7 @@ Have you read &#39;The Lion, The Witch &amp; the Wardrobe by C.S. Lewis&#39;?
 
             TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
                 expectedOutput,
-                inputTemplate, ignoreWhitespace:true );
+                inputTemplate, ignoreWhitespace: true );
         }
 
         /// <summary>

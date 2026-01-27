@@ -104,6 +104,9 @@ export type CommunicationEntryWizardInitializationBox = {
     /** Gets or sets the sites enabled for shortening. */
     shortLinkSites?: ListItemBag[] | null;
 
+    /** Gets or sets a value indicating whether the template should be applied to the communication on load. */
+    shouldApplyTemplateToCommunication: boolean;
+
     /** Gets or sets the SMS accepted MIME types. */
     smsAcceptedMimeTypes?: string[] | null;
 

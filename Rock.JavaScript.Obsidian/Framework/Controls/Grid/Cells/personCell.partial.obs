@@ -1,6 +1,6 @@
 <template>
     <div class="d-flex flex-fill align-items-center">
-        <PersonAvatar v-if="!hideAvatar" :personIdKey="idKey" :photoUrl="photoUrl" :photoSize="36" marginRight="3" :enableHoverInfo="enableHoverInfo" />
+        <PersonAvatar v-if="!hideAvatar" :personIdKey="idKey" :photoUrl="photoUrl" :photoSize="36" marginRight="3" :enableHoverInfo="enableHoverInfo" :alwaysShowAvatar="alwaysShowAvatar" />
 
         <div class="flex-grow-1">
             <template v-if="showAsLink && idKey">
@@ -24,6 +24,7 @@
 
     const showAsLink = props.column.props.showAsLink;
     const hideAvatar = props.column.props.hideAvatar;
+    const alwaysShowAvatar = props.column.props.alwaysShowAvatar as boolean;
     const enableHoverInfo = props.column.props.enableHoverInfo as boolean;
 
     const idKey = computed((): string | undefined => {

@@ -643,7 +643,7 @@ namespace RockWeb.Blocks.WorkFlow
                 var manageField = new LinkButtonField();
                 gWorkflows.Columns.Add( manageField );
                 manageField.CssClass = "btn btn-default btn-sm";
-                manageField.Text = "<i class='ti ti-file-type-txt'></i>";
+                manageField.Text = "<i class='ti ti-list-details'></i>";
                 manageField.Click += gWorkflows_Manage;
             }
 

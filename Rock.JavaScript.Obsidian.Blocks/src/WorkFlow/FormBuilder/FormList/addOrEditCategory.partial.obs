@@ -1,0 +1,163 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="errorMessage" alertType="danger" class="mb-spacing-md">
+        {{ errorMessage }}
+    </NotificationBox>
+
+    <div class="d-flex justify-content-between align-items-end w-100 border-bottom pb-spacing-lg mb-spacing-lg">
+        <div class="heading-text d-flex flex-column align-items-start">
+            <h4 class="form-title m-0">{{ headerTitle }}</h4>
+            <span class="form-description">{{ headerDescription }}</span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <TextBox v-model="name" label="Name" rules="required" help="The name of the category." />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <TextBox v-model="description" label="Description" textMode="multiline"
+                     help="A description of the category." />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-2">
+            <ColorPicker label="Highlight Color" v-model="highlightColor" />
+        </div>
+        <div class="col-md-2">
+            <IconPicker label="Icon" v-model="iconCssClass" />
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <RockButton btnType="primary" @click="onSave">Save</RockButton>
+        <RockButton btnType="link" @click="onCancel">Cancel</RockButton>
+    </div>
+</template>
+
+<style scoped>
+.heading-text {
+    gap: var(--spacing-tiny);
+}
+
+.form-title {
+    line-height: 105.469%;
+}
+
+.form-description {
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-Small);
+    font-weight: var(--font-weight-regular);
+    line-height: 110%;
+}
+</style>
+
+<script setup lang="ts">
+    import { ref, computed, PropType, onMounted } from "vue";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { BlockState } from "./types.partial";
+    import { UpdateFormCategoryBag } from "@Obsidian/ViewModels/Blocks/WorkFlow/FormBuilder/FormList/updateFormCategoryBag";
+    import { Guid } from "@Obsidian/Types";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    const props = defineProps({
+        blockState: {
+            type: String as PropType<BlockState>,
+            required: true
+        },
+
+        /* Represents either the category we're editing, or the category to use for the parent category
+        if addNewCategoryAsChild is true. */
+        selectedCategoryGuid: {
+            type: String as PropType<Guid>,
+            required: true
+        },
+
+        addNewCategoryAsChild: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "cancel"): void;
+        (e: "save"): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const name = ref("");
+    const description = ref("");
+    const iconCssClass = ref("");
+    const highlightColor = ref("");
+    const errorMessage = ref<string | null>("");
+
+    const headerTitle = computed(() => {
+        return props.blockState === BlockState.EditCategory ? "Edit Category" : "Add Category";
+    });
+
+    const headerDescription = computed(() => {
+        return props.blockState === BlockState.EditCategory
+            ? "Edit the fields below to update this category."
+            : "Add a new category by completing the fields below.";
+    });
+
+    /**
+     * Event handler for the "Save" button.
+     * Validates and saves the category.
+     */
+    async function onSave(): Promise<void> {
+        errorMessage.value = "";
+
+        const bag: UpdateFormCategoryBag = {
+            categoryGuid: props.blockState === BlockState.EditCategory ? props.selectedCategoryGuid : null,
+            parentCategoryGuid: props.addNewCategoryAsChild ? props.selectedCategoryGuid : null,
+            name: name.value,
+            description: description.value,
+            iconCssClass: iconCssClass.value,
+            highlightColor: highlightColor.value
+        };
+
+        const result = await invokeBlockAction("AddOrEditCategory", { bag: bag });
+
+        if (result.isSuccess) {
+            emit("save");
+        }
+        else {
+            errorMessage.value = result.errorMessage || "Unable to save the category.";
+        }
+    }
+
+    /**
+     * Event handler for the "Cancel" button.
+     * Emits the "cancel" event.
+     */
+    function onCancel(): void {
+        emit("cancel");
+    }
+
+    // Load the category details if editing.
+    onMounted(async () => {
+        if (props.blockState === BlockState.EditCategory) {
+            const result = await invokeBlockAction<UpdateFormCategoryBag>("GetCategory", { categoryGuid: props.selectedCategoryGuid });
+
+            if (result.isSuccess && result.data) {
+                name.value = result.data.name ?? "";
+                description.value = result.data.description ?? "";
+                iconCssClass.value = result.data.iconCssClass ?? "";
+                highlightColor.value = result.data.highlightColor ?? "";
+            }
+            else {
+                errorMessage.value = result.errorMessage || "Unable to load the category.";
+            }
+        }
+    });
+</script>

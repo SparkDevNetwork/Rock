@@ -21,6 +21,7 @@
                         <span class="input-group-btn">
                             <button class="btn btn-default"
                                     :disabled="isRefreshing"
+                                    type="button"
                                     @click.prevent="onPreviewRefreshClick">
                                 Refresh
                             </button>
@@ -38,6 +39,7 @@
                         <span class="input-group-btn">
                             <button class="btn btn-default"
                                     :disabled="!selectedPrinter || !previewSourceContent || isRefreshing || isPrinting"
+                                    type="button"
                                     @click.prevent="onPreviewPrintClick">
                                 Print
                             </button>

@@ -1,0 +1,196 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      demoMode>
+        <Grid v-if="showGrid"
+              :data="gridData"
+              keyField="key"
+              liveUpdates
+              :light="light"
+              :markInactiveRows="markInactiveRows"
+              itemTerm="Widget"
+              @addItem="onAddItem"
+              :showExport="showExport"
+              :manualSort="onManualSort">
+            <ReorderColumn v-if="showReorder" />
+
+            <TextColumn name="name"
+                        :title="nameTitle"
+                        field="name"
+                        :filter="textValueFilter" />
+
+            <DateColumn name="date"
+                        :title="dateTitle"
+                        field="date"
+                        :filter="dateValueFilter"
+                        visiblePriority="md" />
+
+            <NumberColumn name="index"
+                          :title="numberTitle"
+                          field="index"
+                          :filter="numberValueFilter"
+                          visiblePriority="lg" />
+
+            <BooleanColumn name="isActive"
+                           :title="activeTitle"
+                           field="isActive"
+                           :filter="booleanValueFilter"
+                           width="120px"
+                           visiblePriority="sm" />
+
+            <EditColumn @click="onEdit" />
+
+            <DeleteColumn @click="onDelete" />
+        </Grid>
+
+        <template #settings>
+            <div class="automatic-layout">
+                <CheckBox label="Light" v-model="light" />
+                <CheckBox label="Reorder Column" :modelValue="showReorder" @update:modelValue="onShowReorderChanged" />
+                <CheckBox label="Show Export" v-model="showExport" />
+                <CheckBox label="Mark Inactive Rows" v-model="markInactiveRows" />
+                <CheckBox label="Use Column Titles" v-model="useColumnTitles" />
+                <CheckBox label="Manual Sorting" v-model="manualSort" />
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import Grid, { BooleanColumn, DateColumn, DeleteColumn, EditColumn, NumberColumn, ReorderColumn, TextColumn, textValueFilter, dateValueFilter, numberValueFilter, booleanValueFilter } from "@Obsidian/Controls/grid";
+    import { ComponentUsage, getControlImportPath } from "./common/utils.partial";
+    import { computed, nextTick, reactive, ref } from "vue";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { IGridState } from "@Obsidian/Types/Controls/grid";
+
+    const showGrid = ref(true);
+    const light = ref(false);
+    const showReorder = ref(false);
+    const showExport = ref(false);
+    const markInactiveRows = ref(false);
+    const useColumnTitles = ref(true);
+    const manualSort = ref(false);
+
+    const gridData: GridDataBag = reactive<GridDataBag>({
+        rows: [1, 2, 3, 4, 5].map(idx => generateItem(idx))
+    });
+
+    const nameTitle = computed(() => useColumnTitles.value ? "Name" : "");
+    const dateTitle = computed(() => useColumnTitles.value ? "Date" : "");
+    const numberTitle = computed(() => useColumnTitles.value ? "Number" : "");
+    const activeTitle = computed(() => useColumnTitles.value ? "Active" : "");
+
+    const onManualSort = computed<((column: string, grid: IGridState) => void) | undefined>(() => {
+        return manualSort.value ? onManualSortCallback : undefined;
+    });
+
+    const importCode = getControlImportPath("grid");
+
+    const exampleCode = computed(() => {
+        const usage = new ComponentUsage("Grid");
+
+        usage.addAttribute(":data", "gridData");
+        usage.addAttribute("keyField", "key");
+        usage.addAttribute("liveUpdates", true);
+        usage.addAttribute("itemTerm", "Widget");
+        usage.addAttribute("light", light.value, false);
+        usage.addAttribute("showExport", showExport.value, false);
+        usage.addAttribute("markInactiveRows", markInactiveRows.value, false);
+
+        if (showReorder.value) {
+            usage.addBody(createColumn("ReorderColumn"));
+            usage.addBody("");
+        }
+
+        usage.addBody(createColumn("TextColumn", "name", nameTitle.value, undefined, "textValueFilter"));
+        usage.addBody("");
+        usage.addBody(createColumn("DateColumn", "date", dateTitle.value, "md", "dateValueFilter"));
+        usage.addBody("");
+        usage.addBody(createColumn("NumberColumn", "index", numberTitle.value, "lg", "numberValueFilter"));
+        usage.addBody("");
+        usage.addBody(createColumn("BooleanColumn", "isActive", activeTitle.value, "sm", "booleanValueFilter"));
+        usage.addBody("");
+        usage.addBody(createColumn("EditColumn"));
+        usage.addBody("");
+        usage.addBody(createColumn("DeleteColumn"));
+
+        return usage.toString();
+    });
+
+    function createColumn(type: string, field?: string, title?: string, visiblePriority?: string, filter?: string): string {
+        const columnUsage = new ComponentUsage(type);
+
+        if (field) {
+            columnUsage.addAttribute("name", field);
+            columnUsage.addAttribute("field", field);
+        }
+
+        if (title) {
+            columnUsage.addAttribute("title", title);
+        }
+
+        if (visiblePriority) {
+            columnUsage.addAttribute("visiblePriority", visiblePriority);
+        }
+
+        if (filter) {
+            columnUsage.addAttribute(":filter", filter);
+        }
+
+        if (type === "EditColumn") {
+            columnUsage.addAttribute("@click", "onEdit");
+        }
+
+        if (type === "DeleteColumn") {
+            columnUsage.addAttribute("@click", "onDelete");
+        }
+
+        return columnUsage.toString();
+    }
+
+    function generateItem(index: number): Record<string, unknown> {
+        return {
+            key: `${index}`,
+            name: `Item ${index}`,
+            date: RockDateTime.now().date.addDays(-Math.floor(Math.random() * 365)).toISOString(),
+            index: Math.floor(Math.random() * 1000),
+            isActive: (index % 3) !== 0
+        };
+    }
+
+    function onManualSortCallback(column: string, grid: IGridState): void {
+        gridData.rows?.splice(0, gridData.rows.length, ...grid.sortRows(gridData.rows ?? [], { column, isDescending: false }));
+    }
+
+    function onAddItem(): void {
+        if (gridData.rows) {
+            gridData.rows.splice(gridData.rows.length, 0, generateItem(gridData.rows.length + 1));
+        }
+    }
+
+    async function onEdit(): Promise<void> {
+        await alert("Edit clicked.");
+    }
+
+    function onDelete(key: string): void {
+        if (gridData.rows) {
+            const index = gridData.rows.findIndex(r => r.key === key);
+
+            if (index !== -1) {
+                gridData.rows.splice(index, 1);
+            }
+        }
+    }
+
+    async function onShowReorderChanged(value: boolean): Promise<void> {
+        showGrid.value = false;
+        await nextTick();
+        showReorder.value = value;
+        await nextTick();
+        showGrid.value = true;
+    }
+</script>

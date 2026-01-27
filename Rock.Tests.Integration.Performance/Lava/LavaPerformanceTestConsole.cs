@@ -82,13 +82,13 @@ namespace Rock.Tests.Integration.Performance.Lava
                 ConsoleOutputManager.WriteHeading1( $"** Templates in Current Test Set:" );
                 foreach ( var testEntry in testTemplates )
                 {
-                    ConsoleOutputManager.WriteHeading1( $"** --> { testEntry.TestName } " );
+                    ConsoleOutputManager.WriteHeading1( $"** --> {testEntry.TestName} " );
                 }
 
                 ConsoleOutputManager.WriteHeading1( $"**" );
 
                 // Prompt for test parameters.
-                ConsoleOutputManager.WriteInfo( $"Enter the number of Test Sets to execute (default={ _defaultTestSetCount })? " );
+                ConsoleOutputManager.WriteInfo( $"Enter the number of Test Sets to execute (default={_defaultTestSetCount})? " );
 
                 var testCount = Console.ReadLine().AsIntegerOrNull() ?? _defaultTestSetCount;
 
@@ -137,7 +137,7 @@ namespace Rock.Tests.Integration.Performance.Lava
         private static void RunParseAndRenderPerformanceTest( Type engineType, List<TestDataTemplateItem> testTemplates, int totalSets )
         {
             ConsoleOutputManager.WriteHeading2( $"**" );
-            ConsoleOutputManager.WriteHeading2( $"** Testing Engine: { engineType.Name }" );
+            ConsoleOutputManager.WriteHeading2( $"** Testing Engine: {engineType.Name}" );
             ConsoleOutputManager.WriteHeading2( $"**" );
 
             var resultTracker = new TestResultTracker();
@@ -175,7 +175,7 @@ namespace Rock.Tests.Integration.Performance.Lava
                         if ( repeatCount == 1 && _showFirstRenderResult )
                         {
                             ConsoleOutputManager.WriteDetail( $"" );
-                            ConsoleOutputManager.WriteDetail( $"<< START: Template Output \"{ testTemplates[i].TestName }\" >>" );
+                            ConsoleOutputManager.WriteDetail( $"<< START: Template Output \"{testTemplates[i].TestName}\" >>" );
                             ConsoleOutputManager.WriteDetail( result.Text );
                             ConsoleOutputManager.WriteDetail( $"<<   END: Template Output >>" );
 
@@ -200,15 +200,16 @@ namespace Rock.Tests.Integration.Performance.Lava
                         lastUpdateElapsedMs = 0;
                     }
                 }
-            };
+            }
+            ;
 
             var testCount = testTemplates.Count * totalSets;
 
             ConsoleOutputManager.WriteHeading2( $"" );
             ConsoleOutputManager.WriteHeading2( $"--" );
-            ConsoleOutputManager.WriteHeading2( $"-- Results Summary - { engineType.Name }" );
+            ConsoleOutputManager.WriteHeading2( $"-- Results Summary - {engineType.Name}" );
             ConsoleOutputManager.WriteHeading2( $"--" );
-            ConsoleOutputManager.WriteHeading2( $"-- Total Tests: { testCount } items" );
+            ConsoleOutputManager.WriteHeading2( $"-- Total Tests: {testCount} items" );
 
             var headerRow = $"-- {"Test Name",20} | {"Total",13} | {"Min",13} | {"Max",13} | {"Mean",13} | {"Median",13}";
 

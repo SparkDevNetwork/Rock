@@ -40,14 +40,18 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.Block"/> that the HTML content should appear on. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Block"/> that the HTML content should appear on. This property is recommended
+        /// but no longer required as of Rock v19.0.
         /// </summary>
+        /// <remarks>
+        ///    Any HTMLContent without a BlockId could be considered "orphaned" if the HtmlContent
+        ///    is not shared via EntityValue (ContextName=...) and could be removed by an automated job.
+        /// </remarks>
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Block" /> that the HTML content should be a part of.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public int BlockId { get; set; }
+        [DataMember]
+        public int? BlockId { get; set; }
         
         /// <summary>
         /// Gets or sets the Entity Value that must be present on the page for this HTML Content to be displayed. If this value will null
@@ -178,7 +182,7 @@ namespace Rock.Model
         /// </summary>
         public HtmlContentConfiguration()
         {
-            this.HasRequired( p => p.Block ).WithMany().HasForeignKey( p => p.BlockId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.Block ).WithMany().HasForeignKey( p => p.BlockId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ApprovedByPersonAlias ).WithMany().HasForeignKey( p => p.ApprovedByPersonAliasId ).WillCascadeOnDelete(false);
         }
     }

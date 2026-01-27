@@ -174,7 +174,7 @@ export const ConfigurationComponent = defineComponent({
             mediaPickerLabel.value = props.modelValue[ConfigurationValueKey.MediaPickerLabel] ?? "Media";
             account.value = JSON.parse(props.modelValue[ConfigurationValueKey.LimitToAccount] || "{}");
             folder.value = JSON.parse(props.modelValue[ConfigurationValueKey.LimitToFolder] || "{}");
-            enhancedForLongListsThreshold.value = threshold == undefined ? 20 : toNumberOrNull(threshold) ?? undefined;
+            enhancedForLongListsThreshold.value = threshold === undefined || threshold === null ? 20 : toNumberOrNull(threshold) ?? undefined;
             allowRefresh.value = asBooleanOrNull(props.modelValue[ConfigurationValueKey.AllowRefresh]) ?? true;
         }, {
             immediate: true

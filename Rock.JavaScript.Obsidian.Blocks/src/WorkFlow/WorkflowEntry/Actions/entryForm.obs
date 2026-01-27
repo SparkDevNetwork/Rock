@@ -24,7 +24,11 @@
                                   @updateFieldValue="onUpdateFieldValue" />
             </PrePost>
 
-            <div class="actions" v-content="actionNodes"></div>
+          <div v-if="isCaptchaEnabled" v-show="!isCaptchaComplete">
+                <Captcha ref="captchaElement"></Captcha>
+            </div>
+
+            <div v-if="!isCaptchaEnabled || isCaptchaComplete" class="actions" v-content="actionNodes"></div>
         </RockForm>
     </div>
 </template>
@@ -33,17 +37,19 @@
     import EntryFormPersonEntry from "./entryFormPersonEntry.partial.obs";
     import EntryFormSection from "./entryFormSection.partial.obs";
     import PrePost from "../prePost.partial";
+    import Captcha from "@Obsidian/Controls/captcha.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { EntryFormButtonBag } from "@Obsidian/ViewModels/Workflow/entryFormButtonBag";
     import { EntryFormFieldBag } from "@Obsidian/ViewModels/Workflow/entryFormFieldBag";
     import { EntryFormSectionBag } from "@Obsidian/ViewModels/Workflow/entryFormSectionBag";
     import { PersonEntryConfigurationBag } from "@Obsidian/ViewModels/Workflow/personEntryConfigurationBag";
     import { PersonEntryValuesBag } from "@Obsidian/ViewModels/Workflow/personEntryValuesBag";
-    import { computed, ref, watch } from "vue";
+    import { computed, onMounted, ref, watch } from "vue";
     import { Guid } from "@Obsidian/Types";
     import { EntryFormFilterContext } from "./conditional.partial";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { interactiveActionProps } from "../types";
+    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
 
     const enum ComponentConfigurationKey {
         HeaderHtml = "headerHtml",
@@ -78,6 +84,10 @@
     const buttonNodes = ref<HTMLAnchorElement[]>([]);
     const actionNodes = ref<Node[]>([]);
     let currentButtonAction: string | undefined;
+
+    const isCaptchaComplete = ref<boolean>(false);
+    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
+    const captchaToken = ref<string | null | undefined>();
 
     const filterContext = computed((): EntryFormFilterContext => {
         return {
@@ -140,7 +150,6 @@
         buttonNodes.value = buttonNodeList;
     }
 
-
     /**
      * Called when a field component has updated the value in the UI.
      *
@@ -196,7 +205,31 @@
         newData[ComponentDataKey.PersonEntryValues] = JSON.stringify(personEntryValues.value);
         newData[ComponentDataKey.Button] = currentButtonAction;
 
-        await props.submit(newData);
+        let actionContext: BlockActionContextBag | undefined;
+
+        if (captchaToken.value) {
+            actionContext = {
+                ...actionContext,
+                captcha: captchaToken.value
+            };
+        }
+
+        await props.submit(newData, actionContext);
+    }
+
+    async function waitForCaptcha(): Promise<void> {
+        if (!props.isCaptchaEnabled || !captchaElement.value) {
+            return;
+        }
+
+        captchaToken.value = await captchaElement.value.getToken() || null;
+
+        if (!captchaToken.value) {
+            isCaptchaComplete.value = false;
+        }
+        else {
+            isCaptchaComplete.value = true;
+        }
     }
 
     // If either configuration or data changes, we need to reset our state
@@ -217,4 +250,8 @@
     });
 
     configureButtons(buttons.value.map(b => b.html).join(" "));
+
+    onMounted(async () => {
+        await waitForCaptcha();
+    });
 </script>

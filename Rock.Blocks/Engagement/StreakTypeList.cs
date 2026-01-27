@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -67,6 +68,15 @@ namespace Rock.Blocks.Engagement
         }
 
         #endregion Keys
+
+        #region Fields
+
+        /// <summary>
+        /// The StreakType attributes configured to show on the grid.
+        /// </summary>
+        private readonly Lazy<List<AttributeCache>> _gridAttributes = new System.Lazy<List<AttributeCache>>( BuildGridAttributes );
+
+        #endregion
 
         #region Properties
 
@@ -184,24 +194,50 @@ namespace Rock.Blocks.Engagement
         /// <inheritdoc/>
         protected override List<StreakTypeWithEnrollment> GetListItems( IQueryable<StreakTypeWithEnrollment> queryable, RockContext rockContext )
         {
-            return queryable
+            var items = queryable
                 .ToList()
                 .Where( s => s.StreakType.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
                 .ToList();
+
+            GridAttributeLoader.LoadFor( items, s => s.StreakType, _gridAttributes.Value, rockContext );
+
+            return items;
         }
 
         /// <inheritdoc/>
         protected override GridBuilder<StreakTypeWithEnrollment> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<StreakTypeWithEnrollment>
+            {
+                LavaObject = row => row.StreakType
+            };
+
             return new GridBuilder<StreakTypeWithEnrollment>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.StreakType.IdKey )
                 .AddTextField( "name", a => a.StreakType.Name )
                 .AddField( "isActive", a => a.StreakType.IsActive )
                 .AddTextField( "occurrenceFrequency", a => a.StreakType.OccurrenceFrequency.ToString() )
                 .AddDateTimeField( "startDate", a => a.StreakType.StartDate )
                 .AddField( "enrollmentCount", a => a.EnrollmentCount )
-                .AddField( "isSecurityDisabled", a => !a.StreakType.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
+                .AddField( "isSecurityDisabled", a => !a.StreakType.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddAttributeFieldsFrom( a => a.StreakType, _gridAttributes.Value );
+        }
+
+        /// <summary>
+        /// Builds the list of grid attributes that should be included on the Grid.
+        /// </summary>
+        /// <returns>A list of <see cref="AttributeCache"/> objects.</returns>
+        private static List<AttributeCache> BuildGridAttributes()
+        {
+            var entityTypeId = EntityTypeCache.Get<StreakType>( false )?.Id;
+
+            if ( entityTypeId.HasValue )
+            {
+                return AttributeCache.GetOrderedGridAttributes( entityTypeId.Value, string.Empty, string.Empty );
+            }
+
+            return new List<AttributeCache>();
         }
 
         #endregion

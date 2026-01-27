@@ -37,6 +37,8 @@ using Humanizer;
 using Humanizer.Localisation;
 
 using Ical.Net;
+using Ical.Net.CalendarComponents;
+using Ical.Net.DataTypes;
 
 using ImageResizer;
 
@@ -58,10 +60,13 @@ using Rock.Security;
 using Rock.Tasks;
 using Rock.Utilities;
 using Rock.Utility;
+using Rock.Utility.ExtensionMethods;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+
+using TimeZoneConverter;
 
 using UAParser;
 
@@ -1131,6 +1136,8 @@ namespace Rock.Lava
 
         /// <summary>
         /// Gets the occurrence dates from an iCalendar string, calculated in Rock time and expressed in UTC.
+        /// As per ISO 8601, to represent times that fall within a (future) DST period correctly, the
+        /// UTC **offset** must be adjusted to reflect the DTS-time change.
         /// </summary>
         /// <param name="iCalString">The iCal string.</param>
         /// <param name="returnCount">The return count.</param>
@@ -1152,30 +1159,47 @@ namespace Rock.Lava
             var endDate = startDateTime.Value.AddYears( 1 );
 
             // Load the calendar definition.
-            // The calendar has no specified timezone, so dates and times are interpreted for the current Rock timezone.
             var calendar = CalendarCollection.Load( new StringReader( iCalString ) ).First();
             var calendarEvent = calendar.Events[0];
 
-            // Get the UTC offset of the start date, expressed in the Rock timezone.
+            // The calendar has no specified timezone, so event dates and times are interpreted
+            // for the current Rock timezone.
+            var timeZoneId = TZConvert.WindowsToIana( RockDateTime.OrgTimeZoneInfo.Id );
+            calendar.AddTimeZone( new VTimeZone( timeZoneId ) );
+
+            foreach ( var ev in calendar.Events )
+            {
+                ev.DtStart = WithTz( ev.DtStart, timeZoneId );
+
+                if ( ev.DtEnd != null )
+                {
+                    ev.DtEnd = WithTz( ev.DtEnd, timeZoneId );
+                }
+
+                if ( ev.RecurrenceId != null )
+                {
+                    ev.RecurrenceId = WithTz( ev.RecurrenceId, timeZoneId );
+                }
+            }
+
             // We apply this to the list of occurrence dates to ensure that the scheduled event time remains the same
             // even if the sequence of dates crosses a Daylight Saving Time (DST) boundary.
             List<DateTimeOffset> dates;
 
-            var tsOffset = startDateTime.Value.Offset;
             if ( !useEndDateTime && calendarEvent.DtStart != null )
             {
                 // The GetOccurrences() method returns a list of dates, to which we add the offset
                 // for the Rock timezone.
                 dates = calendar.GetOccurrences( startDateTime.Value.DateTime, endDate.DateTime )
                     .Take( returnCount )
-                    .Select( d => new DateTimeOffset( d.Period.StartTime.Ticks, tsOffset ) )
+                    .Select( d =>  d.Period.StartTime.AsDateTimeOffset )
                     .ToList();
             }
             else if ( useEndDateTime && calendarEvent.DtEnd != null )
             {
                 dates = calendar.GetOccurrences( startDateTime.Value.DateTime, endDate.DateTime )
                     .Take( returnCount )
-                    .Select( d => new DateTimeOffset( d.Period.EndTime.Ticks, tsOffset ) )
+                    .Select( d => d.Period.EndTime.AsDateTimeOffset )
                     .ToList();
             }
             else
@@ -1184,6 +1208,30 @@ namespace Rock.Lava
             }
 
             return dates;
+        }
+        /// <summary>
+        /// Helper to rebuild a CalDateTime with the specified TzId.
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <param name="tzid"></param>
+        /// <returns></returns>
+        private static CalDateTime WithTz( IDateTime dt, string tzid )
+        {
+            if ( dt == null )
+            {
+                return null;
+            }
+
+            // IMPORTANT: Build a *new* CalDateTime; changing TzId after conversions can retain cached AsUtc values.
+            // Also force Kind.Unspecified so it's treated as "local in tzid", not system local/utc.
+            var local = DateTime.SpecifyKind( dt.Value, DateTimeKind.Unspecified );
+
+            var rebuilt = new CalDateTime( local, tzid )
+            {
+                HasTime = dt.HasTime
+            };
+
+            return rebuilt;
         }
 
         /// <summary>
@@ -3351,12 +3399,16 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string AddScriptLink( ILavaRenderContext context, string input, bool fingerprintLink = false )
         {
-            var page = HttpContext.Current?.Handler as RockPage;
-
-            if ( page != null )
+            if ( HttpContext.Current?.Handler is RockPage page )
             {
                 RockPage.AddScriptLink( page, ResolveRockUrl( context, input ), fingerprintLink );
+
+                return string.Empty;
             }
+
+            var requestContext = context.GetRockRequestContext();
+
+            requestContext?.Response.AddScriptLinkToHead( ResolveRockUrl( context, input ), fingerprintLink );
 
             return string.Empty;
         }
@@ -3370,12 +3422,16 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string AddCssLink( ILavaRenderContext context, string input, bool fingerprintLink = false )
         {
-            var page = HttpContext.Current?.Handler as RockPage;
-
-            if ( page != null )
+            if ( HttpContext.Current?.Handler is RockPage page )
             {
                 RockPage.AddCSSLink( page, ResolveRockUrl( context, input ), fingerprintLink );
+
+                return string.Empty;
             }
+
+            var requestContext = context.GetRockRequestContext();
+
+            requestContext?.Response.AddCssLink( ResolveRockUrl( context, input ), fingerprintLink );
 
             return string.Empty;
         }
@@ -4119,8 +4175,9 @@ namespace Rock.Lava
         /// <param name="randomLength">The random length.</param>
         /// <param name="categoryId">The category identifier.</param>
         /// <param name="isPinned">The isPinned indicator.</param>
+        /// <param name="expireInDays">The number of days until the short link expires.</param>
         /// <returns></returns>
-        public static string CreateShortLink( ILavaRenderContext context, object input, string token = "", int? siteId = null, bool overwrite = false, int randomLength = 10, int? categoryId = null, bool isPinned = false )
+        public static string CreateShortLink( ILavaRenderContext context, object input, string token = "", int? siteId = null, bool overwrite = false, int randomLength = 10, int? categoryId = null, bool isPinned = false, int? expireInDays = null )
         {
             // Notes: This filter attempts to return a valid shortlink at all costs
             //        this means that if the configuration passed to it is invalid
@@ -4197,6 +4254,12 @@ namespace Rock.Lava
             shortLink.Url = input.ToString();
             shortLink.CategoryId = categoryId;
             shortLink.IsPinned = isPinned;
+
+            if ( expireInDays.HasValue && expireInDays.Value >= 0 )
+            {
+                shortLink.ExpireDate = RockDateTime.Today.AddDays( expireInDays.Value );
+            }
+
             rockContext.SaveChanges();
 
             return shortLink.ShortLinkUrl;

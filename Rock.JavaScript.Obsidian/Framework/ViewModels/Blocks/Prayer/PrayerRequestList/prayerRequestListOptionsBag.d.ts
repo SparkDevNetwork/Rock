@@ -22,4 +22,9 @@
 //
 
 export type PrayerRequestListOptionsBag = {
+    /**
+     * Gets or sets a value indicating whether the current person is authorized
+     * to approve prayer requests (via the block's "Approve" security action).
+     */
+    showIsApprovedColumn: boolean;
 };

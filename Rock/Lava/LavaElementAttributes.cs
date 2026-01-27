@@ -702,21 +702,5 @@ namespace Rock.Lava
             return parameters;
         }
         #endregion
-
-        #region RockLiquid Lava implementation
-
-        /// <summary>
-        /// Parse the attributes markup of a Lava element tag to produce a collection of settings.
-        /// </summary>
-        /// <param name="attributesMarkup"></param>
-        /// <param name="context"></param>
-        [Obsolete( "This method was for DotLiquid which is no longer supported." )]
-        [RockObsolete( "18.0" )]
-        public void ParseFromMarkup( string attributesMarkup, DotLiquid.Context context )
-        {
-            throw new NotSupportedException( "DotLiquid is no longer supported." );
-        }
-
-        #endregion
     }
 }

@@ -7,7 +7,10 @@
                 <ul class="list-group">
                     <li v-for="(page, index) in pages" :key="index" @click="selectCategory(page, index)" class="list-group-item leading-snug cursor-pointer" :class="currentCategoryIndex === index ? selectedCategoryClasses : ''">{{ page.title }}</li>
                 </ul>
+
+                <div v-if="config.additionalContent" v-html="config.additionalContent"></div>
             </div>
+
             <div class="col-md-9 col-lg-10">
                 <div class="row">
                     <div ref="searchContainer" class="search-container col-md-9 col-sm-8">
@@ -28,6 +31,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div v-for="(category, index) in categorySections" :key="index" style="width: 100%;">
                     <div v-if="category.children && category.children.length > 0 && filteredSettings(category).length > 0">
                         <h4>{{ category.title }}</h4>

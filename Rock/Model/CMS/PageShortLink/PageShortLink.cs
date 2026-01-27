@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -96,6 +97,15 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public bool IsPinned { get; set; }
+
+        /// <summary>
+        /// Gets or sets the expiration date of the short link.
+        /// </summary>
+        /// <value>
+        /// If defined, the short link will be "good through" this date, and will be deleted afterwards.
+        /// If <see langword="null"/>, the short link will not be automatically deleted.</value>
+        [DataMember]
+        public DateTime? ExpireDate { get; set; }
 
         #endregion Entity Properties
 

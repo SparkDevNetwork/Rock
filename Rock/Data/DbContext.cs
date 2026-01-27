@@ -247,7 +247,7 @@ namespace Rock.Data
         /// the action delegate method. Meaning, create your own context.
         /// </remarks>
         /// <param name="action">The action delegate to execute after the changes have been committed.</param>
-        internal void ExecuteAfterCommit( Action action )
+        public void ExecuteAfterCommit( Action action )
         {
             _commitedActions.Add( action );
         }
@@ -428,51 +428,79 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Gets the current person alias.
-        /// </summary>
-        /// <returns>The primary alias</returns>
-        [Obsolete( "Use GetCurrentPersonAliasId() instead." )]
-        [RockObsolete( "18.0" )]
-        internal PersonAlias GetCurrentPersonAlias()
-        {
-            if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-            {
-                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
-                if ( currentPerson != null && currentPerson.PrimaryAlias != null )
-                {
-                    return currentPerson.PrimaryAlias;
-                }
-            }
-
-            if ( Net.RockRequestContextAccessor.Current != null )
-            {
-                return Net.RockRequestContextAccessor.Current.CurrentPerson?.PrimaryAlias;
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Gets the current person alias Id.
         /// </summary>
         /// <returns>The Id of the current person's primary alias.</returns>
         internal int? GetCurrentPersonAliasId()
         {
-            if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+            /*
+             * 12/18/2025 - DSH
+             * 
+             * Problem: In some background tasks (such as post-save processing),
+             * there is a race condition because they do some of their processing
+             * on a background task/thread. We might be able to obtain the "Person"
+             * object from HttpContext.Current. But since we are on a background
+             * thread, the RockContext associated with that Person object may
+             * have been disposed if the request already completed. If the aliases
+             * have not already loaded, then a lazy-load attempt will be made
+             * against the disposed context, resulting in an ObjectDisposedException.
+             * 
+             * Temporary Fix: So what we now do is try to get the PrimaryAliasId. If
+             * that throws an exception then we fall back to trying to load the
+             * Person object using ourselves as the context. If that still
+             * throws an exception then we give up and return null.
+             * 
+             * Longterm Fix: We should probably store all required information
+             * in a custom POCO inside HttpContext.Current.Items or some other
+             * location that we have more control over so that we can ensure we
+             * don't have to lazy load on a disposed context.
+             */
+            Person currentPerson;
+
+            try
             {
-                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
-                if ( currentPerson != null && currentPerson.PrimaryAliasId != null )
+                if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
                 {
-                    return currentPerson.PrimaryAliasId;
+                    currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
+                }
+                else if ( RockRequestContextAccessor.Current != null )
+                {
+                    currentPerson = RockRequestContextAccessor.Current.CurrentPerson;
+                }
+                else
+                {
+                    currentPerson = null;
                 }
             }
-
-            if ( Net.RockRequestContextAccessor.Current != null )
+            catch
             {
-                return Net.RockRequestContextAccessor.Current.CurrentPerson?.PrimaryAliasId;
+                currentPerson = null;
             }
 
-            return null;
+            // If we couldn't determine the current Person object from any
+            // request information then we are done.
+            if ( currentPerson == null )
+            {
+                return null;
+            }
+
+            try
+            {
+                return currentPerson.PrimaryAliasId;
+            }
+            catch
+            {
+                if ( !( this is RockContext rockContext ) )
+                {
+                    return null;
+                }
+
+                // Try to load the person using ourselves as the context
+                return new PersonService( rockContext ).Queryable()
+                    .Where( p => p.Id == currentPerson.Id )
+                    .Select( p => p.PrimaryAliasId )
+                    .FirstOrDefault();
+            }
         }
 
         /// <summary>
@@ -645,7 +673,7 @@ namespace Rock.Data
                              Reason: It may look irrelevant to update the ModifiedByPersonAliasId and ModifiedDateTime here but
                              this play vital role in displaying the Who column in history summary.
                         */
-                        if ( entry.Entity is IModel )
+            if ( entry.Entity is IModel )
                         {
                             var model = entry.Entity as IModel;
                             model.ModifiedDateTime = RockDateTime.Now;
@@ -815,9 +843,22 @@ namespace Rock.Data
 
                     using ( var activity = ObservabilityHelper.StartActivity( "Processing Change Monitors" ) )
                     {
+                        var hasTriggers = false;
+
                         foreach ( var item in updatedItems )
                         {
-                            Core.Automation.Triggers.EntityChangeMonitor.ProcessEntity( item );
+                            if ( Core.Automation.Triggers.EntityChangeMonitor.ProcessEntity( item ) )
+                            {
+                                hasTriggers = true;
+                            }
+                        }
+
+                        // If we don't have any triggers then don't record the
+                        // activity since it will just add noise to record the
+                        // few nanoseconds that have elapsed.
+                        if ( activity != null && !hasTriggers )
+                        {
+                            activity.IsAllDataRequested = false;
                         }
                     }
 

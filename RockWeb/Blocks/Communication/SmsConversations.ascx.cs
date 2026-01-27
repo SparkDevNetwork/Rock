@@ -87,7 +87,6 @@ namespace RockWeb.Blocks.Communication
         Description = "A Lava template to display person information about the selected Communication Recipient.",
         DefaultValue = "{{ Person.FullName }}",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 300,
         IsRequired = false,
         Order = 6

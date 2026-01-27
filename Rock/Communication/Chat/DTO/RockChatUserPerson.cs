@@ -26,12 +26,6 @@ namespace Rock.Communication.Chat.DTO
     /// </summary>
     internal class RockChatUserPerson : RockChatUserKey
     {
-        /// <inheritdoc cref="Person.NickName"/>
-        public string NickName { get; set; }
-
-        /// <inheritdoc cref="Person.LastName"/>
-        public string LastName { get; set; }
-
         /// <inheritdoc cref="Person.SuffixValueId"/>
         public int? SuffixValueId { get; set; }
 

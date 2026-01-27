@@ -52,7 +52,7 @@ namespace Rock.Rest.v2.Models.Actions
         [HttpGet]
         [Route( "followed/{entityTypeId}" )]
         [Authenticate]
-        [Secured( Security.Authorization.VIEW )]
+        [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ItemIdentifierBag> ) )]
         [ProducesResponse( HttpStatusCode.BadRequest )]

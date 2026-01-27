@@ -18,10 +18,8 @@ using System;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
@@ -31,7 +29,7 @@ namespace Rock.Tests.Integration.AI
     /// Integration tests for AI Features.
     /// </summary>
     [TestClass]
-    [TestCategory("AI")]
+    [TestCategory( "AI" )]
     public class AIProviderTests : DatabaseTestsBase
     {
         private const string _openAiDefaultProviderGuid = "CA71BA8A-A4EB-449F-A94E-53807603D534";
@@ -53,8 +51,8 @@ namespace Rock.Tests.Integration.AI
             // Retrieve the new component and verify that it has the correct properties.
             newProvider = service.Get( _openAiDefaultProviderGuid );
 
-            Assert.That.IsNotNull( newProvider, "Expected entity not found." );
-            Assert.That.AreEqual( newName, newProvider.Name );
+            Assert.IsNotNull( newProvider, "Expected entity not found." );
+            Assert.AreEqual( newName, newProvider.Name );
         }
 
         [TestMethod]
@@ -72,8 +70,8 @@ namespace Rock.Tests.Integration.AI
             // Retrieve the new component and verify that it has the correct properties.
             newProvider = service.Get( _openAiCompatibleProviderGuid );
 
-            Assert.That.IsNotNull( newProvider, "Expected entity not found." );
-            Assert.That.AreEqual( newName, newProvider.Name );
+            Assert.IsNotNull( newProvider, "Expected entity not found." );
+            Assert.AreEqual( newName, newProvider.Name );
         }
 
         [TestMethod]
@@ -88,7 +86,7 @@ namespace Rock.Tests.Integration.AI
             var service = new AIProviderService( dataContext );
             service.Add( newProvider );
 
-            Assert.ThrowsException<System.Data.Entity.Infrastructure.DbUpdateException>( () =>
+            Assert.Throws<System.Data.Entity.Infrastructure.DbUpdateException>( () =>
             {
                 dataContext.SaveChanges();
             } );
@@ -108,7 +106,7 @@ namespace Rock.Tests.Integration.AI
             // Set the default AI Provider component.
             var openAIProviderEntityTypeId = EntityTypeCache.GetId( _openAiProviderEntityTypeGuid );
 
-            Assert.That.IsNotNull( openAIProviderEntityTypeId, "Open AI Provider not found" );
+            Assert.IsNotNull( openAIProviderEntityTypeId, "Open AI Provider not found" );
 
             newProvider.ProviderComponentEntityTypeId = openAIProviderEntityTypeId;
 

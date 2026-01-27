@@ -13,7 +13,7 @@
         </template>
 
         <template #default>
-            <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
+            <RockForm v-model:submit="submitForm" @submit="onSave">
                 <EditPanel v-if="panelMode === DetailPanelMode.Add || panelMode === DetailPanelMode.Edit"
                            v-model="appleTvPageEditBag"
                            :options="options"
@@ -97,7 +97,6 @@
 
     const submitForm = ref(false);
     const redirectAfterSave = ref(true);
-    const resetKey = ref("");
     const showAuditDetailsModal = ref(false);
     const panelName = appleTvPageEditBag.value?.bag?.name ?? "New Page";
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.Edit);

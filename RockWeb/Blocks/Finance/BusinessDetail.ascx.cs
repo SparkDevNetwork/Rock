@@ -101,7 +101,6 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.AdditionalCustomActions,
         Description = BlockAttributeDescription.AdditionalCustomActions,
         EditorMode = CodeEditorMode.Html,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         Order = 7 )]

@@ -246,6 +246,15 @@ namespace Rock.Model
         public virtual DefinedValue PersonalDeviceType { get; set; }
 
         /// <summary>
+        /// Gets or sets the platform defined value (i.e., iOS, Android, etc).
+        /// </summary>
+        /// <value>
+        /// The platform defined value.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue Platform { get; set; }
+
+        /// <summary>
         /// Gets or sets the site.
         /// </summary>
         /// <value>
@@ -271,6 +280,7 @@ namespace Rock.Model
         {
             this.HasOptional( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.PersonalDeviceType ).WithMany().HasForeignKey( r => r.PersonalDeviceTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.Platform ).WithMany().HasForeignKey( r => r.PlatformValueId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.Site ).WithMany().HasForeignKey( r => r.SiteId ).WillCascadeOnDelete( false );
         }
     }

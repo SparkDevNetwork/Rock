@@ -5,12 +5,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Core.Model
 {
     [TestClass]
-    [Ignore("These tests require additional data. Rows are expected in the IdentityVerificationCode table.")]
+    [Ignore( "These tests require additional data. Rows are expected in the IdentityVerificationCode table." )]
     public class IdentityVerificationTests
     {
 
@@ -26,7 +25,7 @@ namespace Rock.Tests.Integration.Core.Model
                 var service = new IdentityVerificationService( rockContext );
                 var verificationRecord = service.CreateIdentityVerificationRecord( ipAddress, 10, referenceNumber );
 
-                Assert.That.IsNotNull( verificationRecord );
+                Assert.IsNotNull( verificationRecord );
             }
         }
 
@@ -42,7 +41,7 @@ namespace Rock.Tests.Integration.Core.Model
             using ( var rockContext = new RockContext() )
             {
                 var service = new IdentityVerificationService( rockContext );
-                Assert.That.ThrowsException<IdentityVerificationIpLimitReachedException>(
+                Assert.Throws<IdentityVerificationIpLimitReachedException>(
                     () => service.CreateIdentityVerificationRecord( ipAddress, ipLimit, referenceNumber )
                 );
             }
@@ -62,7 +61,7 @@ namespace Rock.Tests.Integration.Core.Model
                 var service = new IdentityVerificationService( rockContext );
                 var verificationRecord = service.CreateIdentityVerificationRecord( ipAddress, ipLimit, referenceNumber );
 
-                Assert.That.IsNotNull( verificationRecord );
+                Assert.IsNotNull( verificationRecord );
             }
         }
 
@@ -83,7 +82,7 @@ namespace Rock.Tests.Integration.Core.Model
                 var service = new IdentityVerificationService( rockContext );
                 var verificationRecord = service.CreateIdentityVerificationRecord( ipAddress, ipLimit, referenceNumber );
 
-                Assert.That.IsNotNull( verificationRecord );
+                Assert.IsNotNull( verificationRecord );
             }
         }
 
@@ -105,7 +104,7 @@ namespace Rock.Tests.Integration.Core.Model
                 var service = new IdentityVerificationService( rockContext );
                 var verificationRecord = service.CreateIdentityVerificationRecord( ipAddress, ipLimit, referenceNumber );
 
-                Assert.That.IsNotNull( verificationRecord );
+                Assert.IsNotNull( verificationRecord );
             }
         }
 
@@ -122,9 +121,9 @@ namespace Rock.Tests.Integration.Core.Model
                 var service = new IdentityVerificationService( rockContext );
                 var verificationRecord = service.CreateIdentityVerificationRecord( ipAddress, 10, referenceNumber );
 
-                Assert.That.IsNotNull( verificationRecord );
+                Assert.IsNotNull( verificationRecord );
 
-                Assert.That.IsTrue( service.VerifyIdentityVerificationCode( verificationRecord.Id, 1, verificationRecord.IdentityVerificationCode.Code, validationAttempts ) );
+                Assert.IsTrue( service.VerifyIdentityVerificationCode( verificationRecord.Id, 1, verificationRecord.IdentityVerificationCode.Code, validationAttempts ) );
             }
         }
 
@@ -143,10 +142,10 @@ namespace Rock.Tests.Integration.Core.Model
                 var verificationRecord1 = service.CreateIdentityVerificationRecord( ipAddress, 10, referenceNumber );
                 var verificationRecord2 = service.CreateIdentityVerificationRecord( ipAddress, 10, referenceNumber );
 
-                Assert.That.IsNotNull( verificationRecord1 );
-                Assert.That.IsNotNull( verificationRecord2 );
+                Assert.IsNotNull( verificationRecord1 );
+                Assert.IsNotNull( verificationRecord2 );
 
-                Assert.That.IsFalse( service.VerifyIdentityVerificationCode( verificationRecord1.Id, 1, verificationRecord2.IdentityVerificationCode.Code, validationAttempts ) );
+                Assert.IsFalse( service.VerifyIdentityVerificationCode( verificationRecord1.Id, 1, verificationRecord2.IdentityVerificationCode.Code, validationAttempts ) );
             }
         }
 
@@ -164,9 +163,9 @@ namespace Rock.Tests.Integration.Core.Model
                 var service = new IdentityVerificationService( rockContext );
                 var verificationRecord = service.CreateIdentityVerificationRecord( ipAddress, 10, referenceNumber );
 
-                Assert.That.IsNotNull( verificationRecord );
+                Assert.IsNotNull( verificationRecord );
 
-                Assert.That.IsFalse( service.VerifyIdentityVerificationCode( verificationRecord.Id, 1, "120003", validationAttempts ) );
+                Assert.IsFalse( service.VerifyIdentityVerificationCode( verificationRecord.Id, 1, "120003", validationAttempts ) );
             }
         }
 
@@ -184,12 +183,12 @@ namespace Rock.Tests.Integration.Core.Model
                 var service = new IdentityVerificationService( rockContext );
                 var verificationRecord = service.CreateIdentityVerificationRecord( ipAddress, 10, referenceNumber );
 
-                Assert.That.IsNotNull( verificationRecord );
+                Assert.IsNotNull( verificationRecord );
 
                 verificationRecord.IssueDateTime = verificationRecord.IssueDateTime.AddSeconds( -61 );
                 rockContext.SaveChanges();
 
-                Assert.That.IsFalse( service.VerifyIdentityVerificationCode( verificationRecord.Id, 1, verificationRecord.IdentityVerificationCode.Code, validationAttempts ) );
+                Assert.IsFalse( service.VerifyIdentityVerificationCode( verificationRecord.Id, 1, verificationRecord.IdentityVerificationCode.Code, validationAttempts ) );
             }
         }
 
@@ -207,12 +206,12 @@ namespace Rock.Tests.Integration.Core.Model
                 var service = new IdentityVerificationService( rockContext );
                 var verificationRecord = service.CreateIdentityVerificationRecord( ipAddress, 10, referenceNumber );
 
-                Assert.That.IsNotNull( verificationRecord );
+                Assert.IsNotNull( verificationRecord );
 
                 verificationRecord.FailedMatchAttemptCount = 10;
                 rockContext.SaveChanges();
 
-                Assert.That.IsFalse( service.VerifyIdentityVerificationCode( verificationRecord.Id, 1, verificationRecord.IdentityVerificationCode.Code, validationAttempts ) );
+                Assert.IsFalse( service.VerifyIdentityVerificationCode( verificationRecord.Id, 1, verificationRecord.IdentityVerificationCode.Code, validationAttempts ) );
             }
         }
 
@@ -230,7 +229,7 @@ namespace Rock.Tests.Integration.Core.Model
                 var service = new IdentityVerificationService( rockContext );
                 var verificationRecord = service.CreateIdentityVerificationRecord( ipAddress, 10, referenceNumber );
 
-                Assert.That.IsNotNull( verificationRecord );
+                Assert.IsNotNull( verificationRecord );
 
                 service.VerifyIdentityVerificationCode( verificationRecord.Id, 1, "Fail1", validationAttempts );
                 service.VerifyIdentityVerificationCode( verificationRecord.Id, 1, "Fail2", validationAttempts );
@@ -240,7 +239,7 @@ namespace Rock.Tests.Integration.Core.Model
 
                 var actualVerificationRecord = service.Get( verificationRecord.Id );
 
-                Assert.That.AreEqual( 5, actualVerificationRecord.FailedMatchAttemptCount );
+                Assert.AreEqual( 5, actualVerificationRecord.FailedMatchAttemptCount );
             }
         }
 

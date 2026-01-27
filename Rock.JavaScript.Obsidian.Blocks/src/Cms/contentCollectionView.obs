@@ -126,7 +126,7 @@
         }
 
         // Add in the sort order if it isn't default.
-        if (sortOrder != SearchOrder.Relevance.toString()) {
+        if (sortOrder !== SearchOrder.Relevance.toString()) {
             qs.push(["s", sortOrder.toString()]);
         }
 

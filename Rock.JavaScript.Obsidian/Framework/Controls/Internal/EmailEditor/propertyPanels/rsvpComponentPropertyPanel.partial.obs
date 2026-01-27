@@ -1,7 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <ComponentPropertyPanelBase :componentElement="componentElement"
-                                :componentMigrationHelper="rsvpComponentHelper"
                                 :ltr="ltr"
                                 title="RSVP"
                                 @clone="$emit('clone')"
@@ -13,7 +12,6 @@
                 <div class="row">
                     <div class="col-sm-12">
                         <GroupPicker v-model="selectedGroupListItemBag"
-                                     :autoExpand="true"
                                      label="RSVP Group"
                                      :limitToRSVPEnabled="true"
                                      @update:modelValue="areRsvpRecipientsRegistered = false" />
@@ -21,9 +19,9 @@
                 </div>
 
                 <TransitionVerticalCollapse>
-                    <div v-if="selectedGroupListItemBag" class="row">
+                    <div v-if="selectedGroupListItemBag && occurrenceItems?.length" class="row">
                         <div class="col-sm-12">
-                            <DropDownList v-model="selectedFutureOccurrenceDataOrEmptyString"
+                            <DropDownList v-model="rsvpOccurrenceValue"
                                           label="Occurrence"
                                           :items="occurrenceItems"
                                           @update:modelValue="areRsvpRecipientsRegistered = false" />
@@ -32,7 +30,7 @@
                 </TransitionVerticalCollapse>
 
                 <TransitionVerticalCollapse>
-                    <div v-if="selectedFutureOccurrenceDataOrEmptyString">
+                    <div v-if="rsvpOccurrenceValue">
                         <div class="row">
                             <div class="col-sm-12">
                                 <RockButton btnSize="xs"
@@ -47,41 +45,50 @@
             </Accordion>
 
             <Accordion title="Block Styling">
-                <PaddingProperty :element="componentElement" />
+                <ShorthandPixelBox v-model="blockPaddingPx"
+                                   label="Padding" />
 
-                <AlignAttributeProperty v-if="rsvpInnerWrapElement"
-                                        :element="rsvpInnerWrapElement"
-                                        label="Horizontal Alignment" />
+                <HorizontalAlignmentPicker v-model="blockHorizontalAlignment"
+                                           label="Horizontal Alignmment" />
             </Accordion>
 
             <Accordion title="Buttons">
-                <div v-if="acceptButtonElement"
-                     class="row">
-                    <div class="col-sm-12">
-                        <FontPropertyGroup :element="acceptButtonElement"
-                                           :copyToElements="declineButtonElement ? [declineButtonElement] : undefined"
-                                           :visibilityOptions="{
-                                            isColorHidden: true,
-                                            isJustifyTextHidden: true,
-                                        }" />
+                <div class="row">
+                    <div class="col-sm-8">
+                        <FontFamilyPicker v-model="fontFamily" />
+                    </div>
+
+                    <div class="col-sm-4 pl-0">
+                        <PixelBox v-model="fontSizePx"
+                                  label="Font Size" />
                     </div>
                 </div>
 
-                <div v-if="acceptButtonElement"
-                     class="row">
+                <TextFormatPicker v-model:isBold="isBold"
+                                  v-model:isUnderlined="isUnderlined"
+                                  v-model:isItalicized="isItalicized" />
+
+                <LetterCasePicker v-model="letterCase"
+                                  label="" />
+
+                <LineHeightPicker v-model="lineHeight" />
+
+                <div class="row">
                     <div class="col-sm-12">
-                        <PaddingProperty :element="acceptButtonElement"
-                                         :copyToElements="declineButtonElement ? [declineButtonElement] : undefined"
-                                         label="Button Padding" />
+                        <ShorthandPixelBox v-model="buttonPaddingPx"
+                                           label="Button Padding" />
                     </div>
                 </div>
 
-                <div v-if="acceptButtonElement"
-                     class="row">
+                <div class="row">
                     <div class="col-sm-12">
-                        <BorderRadiusProperty :element="acceptButtonElement"
-                                              label="Corner Radius"
-                                              :copyToElements="borderRadiusCopyTargets" />
+                        <ShorthandPixelBox v-model="borderRadiusPx"
+                                           help="Rounded corners may not display correctly in some versions of Outlook or Windows Mail."
+                                           label="Corner Radius"
+                                           topLabel="Top-Left"
+                                           bottomLabel="Top-Right"
+                                           leftLabel="Bottom-Left"
+                                           rightLabel="Bottom-Right" />
                     </div>
                 </div>
 
@@ -93,43 +100,30 @@
                     </div>
                 </div>
 
-                <template v-if="acceptButtonElement">
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <TextContentProperty :element="acceptButtonElement"
-                                                 label="Label"
-                                                 @change="onAcceptButtonTextChanged" />
-                        </div>
-                    </div>
-
-                    <div v-if="acceptButtonWidthProvider" class="row">
-                        <div class="col-sm-12">
-                            <ButtonWidthProperty :valueProvider="acceptButtonWidthProvider" />
-                        </div>
-                    </div>
-                </template>
-
-                <div v-if="acceptButtonShellElement"
-                     class="row">
-                    <div class="col-sm-8">
-                        <BackgroundColorProperty :element="acceptButtonShellElement"
-                                                 label="Background Color"
-                                                 @update:backgroundColor="(value) => {
-                                                    acceptButtonBackgroundColor = value;
-                                                    updateRsvpHrefs();
-                                                }" />
+                <div class="row">
+                    <div class="col-sm-12">
+                        <TextBox v-model="acceptText"
+                                 label="Label" />
                     </div>
                 </div>
 
-                <div v-if="acceptButtonElement"
-                     class="row">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <ButtonWidthPicker v-model="acceptWidth" />
+                    </div>
+                </div>
+
+                <div class="row">
                     <div class="col-sm-8">
-                        <ColorProperty :element="acceptButtonElement"
-                                       label="Text Color"
-                                       @update:color="(value) => {
-                                        acceptButtonColor = value;
-                                        updateRsvpHrefs();
-                                    }" />
+                        <ColorPicker v-model.hex="acceptButtonBackgroundColor"
+                                     label="Background Color" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-8">
+                        <ColorPicker v-model.hex="acceptButtonColor"
+                                     label="Text Color" />
                     </div>
                 </div>
 
@@ -141,53 +135,37 @@
                     </div>
                 </div>
 
-                <div v-if="declineButtonShellElement"
-                     class="row">
+                <div class="row">
                     <div class="col-sm-12">
-                        <DisplayProperty :element="declineButtonShellElement"
-                                         label="Show"
-                                         displayValue="inline-table"
-                                         @update:display="onShowDeclineStylesChanged" />
+                        <Switch v-model="isDeclineButtonShown"
+                                label="Show" />
                     </div>
                 </div>
 
-                <template v-if="declineButtonElement">
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <TextContentProperty :element="declineButtonElement"
-                                                 label="Label"
-                                                 @change="onDeclineButtonTextChanged" />
-                        </div>
-                    </div>
-
-                    <div v-if="declineButtonWidthProvider" class="row">
-                        <div class="col-sm-12">
-                            <ButtonWidthProperty :valueProvider="declineButtonWidthProvider" />
-                        </div>
-                    </div>
-                </template>
-
-                <div v-if="declineButtonShellElement"
-                     class="row">
-                    <div class="col-sm-8">
-                        <BackgroundColorProperty :element="declineButtonShellElement"
-                                                 label="Background Color"
-                                                 @update:backgroundColor="(value) => {
-                                                    declineButtonBackgroundColor = value;
-                                                    updateRsvpHrefs();
-                                                }" />
+                <div class="row">
+                    <div class="col-sm-12">
+                        <TextBox v-model="declineText"
+                                 label="Label" />
                     </div>
                 </div>
 
-                <div v-if="declineButtonElement"
-                     class="row">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <ButtonWidthPicker v-model="declineWidth" />
+                    </div>
+                </div>
+
+                <div class="row">
                     <div class="col-sm-8">
-                        <ColorProperty :element="declineButtonElement"
-                                       label="Text Color"
-                                       @update:color="(value) => {
-                                        declineButtonColor = value;
-                                        updateRsvpHrefs();
-                                    }" />
+                        <ColorPicker v-model.hex="declineButtonBackgroundColor"
+                                     label="Background Color" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-8">
+                        <ColorPicker v-model.hex="declineButtonColor"
+                                     label="Text Color" />
                     </div>
                 </div>
             </Accordion>
@@ -209,36 +187,38 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, onMounted, onUnmounted, PropType, ref, watch } from "vue";
+    import { onMounted, onUnmounted, PropType, ref, watch } from "vue";
     import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
     import Accordion from "../accordion.partial.obs";
     import AccordionGroup from "../accordionGroup.partial.obs";
     import { useApi } from "../api";
-    import AlignAttributeProperty from "../properties/alignAttributeProperty.partial.obs";
-    import BackgroundColorProperty from "../properties/backgroundColorProperty.partial.obs";
-    import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
-    import ButtonWidthProperty from "../properties/buttonWidthProperty.partial.obs";
-    import ColorProperty from "../properties/colorProperty.partial.obs";
-    import FontPropertyGroup from "../properties/fontPropertyGroup.partial.obs";
-    import PaddingProperty from "../properties/paddingProperty.partial.obs";
-    import DisplayProperty from "../properties/displayProperty.partial.obs";
-    import TextContentProperty from "../properties/textContentProperty.partial.obs";
-    import { createButtonWidthValuesProvider } from "../providers.partial";
-    import { ButtonWidthValues, ValueProvider } from "../types.partial";
-    import { getRsvpComponentHelper } from "../utils.partial";
+    //import { createButtonWidthValuesProvider } from "../providers.partial";
+    import { rsvpComponentAdapter } from "../utils.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
-    import { isHTMLAnchorElement } from "@Obsidian/Utility/dom";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { Enumerable } from "@Obsidian/Utility/linq";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-    import { replaceAll } from "@Obsidian/Utility/stringUtils";
     import { isNullish } from "@Obsidian/Utility/util";
     import { EmailEditorAttendanceOccurrenceBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorAttendanceOccurrenceBag";
     import { EmailEditorRegisterRsvpRecipientsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorRegisterRsvpRecipientsOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import ShorthandPixelBox from "../shorthandPixelBox.partial.obs";
+    import HorizontalAlignmentPicker from "../horizontalAlignmentPicker.partial.obs";
+    import FontFamilyPicker from "../fontFamilyPicker.partial.obs";
+    import PixelBox from "../pixelBox.partial.obs";
+    import TextFormatPicker from "../textFormatPicker2.partial.obs";
+    import LetterCasePicker from "../letterCasePicker.partial.obs";
+    import LineHeightPicker from "../lineHeightPicker2.partial.obs";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { ButtonWidthModel, HorizontalAlignment, LetterCase, ShorthandModel } from "../types.partial";
+    import { Guid } from "@Obsidian/Types";
+    import ButtonWidthPicker from "../buttonWidthPicker.partial.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
 
     const props = defineProps({
         componentElement: {
@@ -264,92 +244,102 @@
         (e: "migrate", value: Element): void;
     }>();
 
-    const rsvpComponentHelper = getRsvpComponentHelper();
     const api = useApi();
-
-    // #region Computed Props
-
-    const acceptButtonShellElement = computed<HTMLElement | undefined>(() => {
-        return props.componentElement.querySelector(".accept-button-shell") as HTMLElement;
-    });
-
-    const acceptButtonContentElement = computed<HTMLElement | undefined>(() => {
-        return acceptButtonShellElement.value?.querySelector(".rsvp-accept-content") as HTMLElement;
-    });
-
-    const acceptButtonElement = computed<HTMLElement | undefined>(() => {
-        return acceptButtonContentElement.value?.querySelector(".rsvp-accept-link") as HTMLElement;
-    });
-
-    const declineButtonShellElement = computed<HTMLElement | undefined>(() => {
-        return props.componentElement.querySelector(".decline-button-shell") as HTMLElement;
-    });
-
-    const declineButtonContentElement = computed<HTMLElement | undefined>(() => {
-        return declineButtonShellElement.value?.querySelector(".rsvp-decline-content") as HTMLElement;
-    });
-
-    const declineButtonElement = computed<HTMLElement | undefined>(() => {
-        return declineButtonContentElement.value?.querySelector(".rsvp-decline-link") as HTMLElement;
-    });
-
-    const rsvpInnerWrapElement = computed<HTMLElement | undefined>(() => {
-        return props.componentElement.querySelector(".rsvp-innerwrap") as HTMLElement;
-    });
-
-    const borderRadiusCopyTargets = computed<HTMLElement[] | undefined>(() => {
-        const targets: HTMLElement[] = [];
-
-        if (acceptButtonShellElement.value) {
-            targets.push(acceptButtonShellElement.value);
-        }
-
-        if (declineButtonShellElement.value) {
-            targets.push(declineButtonShellElement.value);
-        }
-
-        if (declineButtonElement.value) {
-            targets.push(declineButtonElement.value);
-        }
-
-        if (targets.length) {
-            return targets;
-        }
-        else {
-            return;
-        }
-    });
-
-    // #endregion Computed Props
 
     // #region Values
 
+    // State
+    const blockPaddingPx = ref<ShorthandModel<number | null> | null>(null);
+    const blockHorizontalAlignment = ref<HorizontalAlignment | "">("");
+    const fontFamily = ref<string | null>(null);
+    const fontSizePx = ref<number | null>(null);
+    const isBold = ref<boolean | null>(null);
+    const isUnderlined = ref<boolean | null>(null);
+    const isItalicized = ref<boolean | null>(null);
+    const letterCase = ref<LetterCase | null>(null);
+    const lineHeight = ref<number | null>(null);
+    const buttonPaddingPx = ref<ShorthandModel<number | null> | null>(null);
+    const borderRadiusPx = ref<ShorthandModel<number | null> | null>(null);
+    const acceptText = ref<string>("");
+    const acceptWidth = ref<ButtonWidthModel | null>(null);
+    const acceptButtonBackgroundColor = ref<string>("");
+    const acceptButtonColor = ref<string>("");
+    const isDeclineButtonShown = ref<boolean>(true);
+    const declineText = ref<string>("");
+    const declineWidth = ref<ButtonWidthModel | null>(null);
+    const declineButtonBackgroundColor = ref<string>("");
+    const declineButtonColor = ref<string>("");
+    const rsvpGroupGuid = ref<Guid | null>(null);
+    const rsvpOccurrenceValue = ref<string>("");
+
+    // UI state
     const areRsvpRecipientsRegistering = ref<boolean>(false);
     const areRsvpRecipientsRegistered = ref<boolean>(false);
     const isCreatingOccurrence = ref<boolean>(false);
 
-    const occurrenceItems = ref<ListItemBag[] | undefined>();
-
-    // Represented as `(Accept|Decline)ButtonColor=${"background-color"}`
-    const acceptButtonBackgroundColor = ref<string | null>(null);
-    const declineButtonBackgroundColor = ref<string | null>(null);
-
-    // Represented as `(Accept|Decline)ButtonFontColor=${"color"}`
-    const acceptButtonColor = ref<string | null>(null);
-    const declineButtonColor = ref<string | null>(null);
-
-    const hiddenGroupIdElement = ref<HTMLInputElement | undefined>();
+    const occurrenceItems = ref<ListItemBag[] | undefined>(undefined);
     const selectedGroupListItemBag = ref<ListItemBag | null | undefined>();
 
-    const hiddenOccurrenceIdElement = ref<HTMLInputElement | undefined>();
-    const selectedFutureOccurrenceDataOrEmptyString = ref<string>("");
-
-    const acceptButtonWidthProvider = ref<ValueProvider<ButtonWidthValues | null | undefined> | null | undefined>(acceptButtonShellElement.value ? createButtonWidthValuesProvider(acceptButtonShellElement.value) : null);
-    const declineButtonWidthProvider = ref<ValueProvider<ButtonWidthValues | null | undefined> | null | undefined>(declineButtonShellElement.value ? createButtonWidthValuesProvider(declineButtonShellElement.value) : null);
+    // Read the current props into the refs.
+    readLocalProps();
 
     // #endregion Values
 
     // #region Functions
+
+    function writeLocalProps(): void {
+        rsvpComponentAdapter.writeLocalProps(props.componentElement, {
+            acceptBackgroundColor: acceptButtonBackgroundColor.value || null,
+            acceptTextColor: acceptButtonColor.value || null,
+            blockHorizontalAlignment: blockHorizontalAlignment.value || null,
+            blockPaddingPx: blockPaddingPx.value,
+            buttonBorderRadiusPx: borderRadiusPx.value,
+            fontFamily: fontFamily.value,
+            fontSizePx: fontSizePx.value,
+            isBold: isBold.value,
+            isUnderlined: isUnderlined.value,
+            isItalicized: isItalicized.value,
+            letterCase: letterCase.value,
+            lineHeight: lineHeight.value,
+            buttonPaddingPx: buttonPaddingPx.value,
+            acceptText: acceptText.value,
+            acceptWidth: acceptWidth.value,
+            declineText: declineText.value,
+            declineWidth: declineWidth.value,
+            declineBackgroundColor: declineButtonBackgroundColor.value || null,
+            declineTextColor: declineButtonColor.value || null,
+            isDeclineHidden: !isDeclineButtonShown.value,
+            rsvpGroupGuid: rsvpGroupGuid.value,
+            rsvpOccurrenceValue: rsvpOccurrenceValue.value || null
+        });
+    }
+
+    function readLocalProps(): void {
+        const localProps = rsvpComponentAdapter.readLocalProps(props.componentElement);
+
+        acceptButtonBackgroundColor.value = localProps.acceptBackgroundColor ?? "";
+        acceptButtonColor.value = localProps.acceptTextColor ?? "";
+        blockHorizontalAlignment.value = localProps.blockHorizontalAlignment ?? "";
+        blockPaddingPx.value = localProps.blockPaddingPx;
+        borderRadiusPx.value = localProps.buttonBorderRadiusPx;
+        fontFamily.value = localProps.fontFamily;
+        fontSizePx.value = localProps.fontSizePx;
+        isBold.value = localProps.isBold;
+        isUnderlined.value = localProps.isUnderlined;
+        isItalicized.value = localProps.isItalicized;
+        letterCase.value = localProps.letterCase;
+        lineHeight.value = localProps.lineHeight;
+        buttonPaddingPx.value = localProps.buttonPaddingPx;
+        acceptText.value = localProps.acceptText ?? "";
+        acceptWidth.value = localProps.acceptWidth;
+        declineText.value = localProps.declineText ?? "";
+        declineWidth.value = localProps.declineWidth;
+        declineButtonBackgroundColor.value = localProps.declineBackgroundColor ?? "";
+        declineButtonColor.value = localProps.declineTextColor ?? "";
+        isDeclineButtonShown.value = !localProps.isDeclineHidden;
+        rsvpGroupGuid.value = localProps.rsvpGroupGuid;
+        rsvpOccurrenceValue.value = localProps.rsvpOccurrenceValue ?? "";
+    }
 
     function parseFutureOccurrenceData(value: string): EmailEditorAttendanceOccurrenceBag {
         const [id, groupId, locationId, scheduleId, occurrenceDate] = (value || "").split("|");
@@ -367,73 +357,39 @@
         return `${value.occurrenceId}|${value.groupId ?? ""}|${value.locationId ?? ""}|${value.scheduleId ?? ""}|${value.occurrenceDate ?? ""}`;
     }
 
-    function updateRsvpHrefs(): void {
-        const { occurrenceId } = parseFutureOccurrenceData(selectedFutureOccurrenceDataOrEmptyString.value);
-        // Lava parameters are intentionally not encoded so they can replaced.
-        const nonEncodedParams: string[] = [
-            `p={{ Person | PersonActionIdentifier:'RSVP' }}`
-        ];
-        const sharedParams = new URLSearchParams();
-        sharedParams.set("AcceptButtonText", `${acceptButtonElement.value?.textContent}`);
-        sharedParams.set("AcceptButtonColor", `${replaceAll(acceptButtonBackgroundColor.value ?? "", " ", "")}`);
-        sharedParams.set("AcceptButtonFontColor", `${replaceAll(acceptButtonColor.value ?? "", " ", "")}`);
-        sharedParams.set("DeclineButtonText", `${declineButtonElement.value?.textContent}`);
-        sharedParams.set("DeclineButtonColor", `${replaceAll(declineButtonBackgroundColor.value ?? "", " ", "")}`);
-        sharedParams.set("DeclineButtonFontColor", `${replaceAll(declineButtonColor.value ?? "", " ", "")}`);
-        sharedParams.set("AttendanceOccurrenceId", `${occurrenceId}`);
+    async function getGroupListItemBagOrNull(): Promise<ListItemBag | null> {
+        const groupGuid = rsvpGroupGuid.value;
 
-        const acceptParams = new URLSearchParams(sharedParams);
-        acceptParams.set("isAccept", "1");
-        const declineParams = new URLSearchParams(sharedParams);
-        declineParams.set("isAccept", "0");
-
-        if (isHTMLAnchorElement(acceptButtonElement.value)) {
-            acceptButtonElement.value.href = `{{ 'Global' | Attribute:'PublicApplicationRoot' }}RSVP?${nonEncodedParams.join("&")}&${acceptParams.toString()}`;
-        }
-
-        if (isHTMLAnchorElement(declineButtonElement.value)) {
-            declineButtonElement.value.href = `{{ 'Global' | Attribute:'PublicApplicationRoot' }}RSVP?${nonEncodedParams.join("&")}&${declineParams.toString()}`;
-        }
-    }
-
-    function getOrCreateHiddenGroupIdElement(): HTMLInputElement {
-        let element: HTMLInputElement | null = props.componentElement.querySelector(`input[type="hidden"].rsvp-group-id`) as HTMLInputElement;
-
-        if (!element) {
-            element = props.componentElement.ownerDocument.createElement("input");
-            element.setAttribute("type", "hidden");
-            element.classList.add(".rsvp-group-id");
-            props.componentElement.append(element);
-        }
-
-        hiddenGroupIdElement.value = element;
-
-        return element;
-    }
-
-    function getOrCreateHiddenOccurrenceValueElement(): HTMLInputElement {
-        let element: HTMLInputElement | null = props.componentElement.querySelector(`input[type="hidden"].rsvp-occurrence-value`) as HTMLInputElement;
-
-        if (!element) {
-            element = props.componentElement.ownerDocument.createElement("input");
-            element.setAttribute("type", "hidden");
-            element.classList.add(".rsvp-occurrence-value");
-            props.componentElement.append(element);
-        }
-
-        hiddenOccurrenceIdElement.value = element;
-
-        return element;
-    }
-
-    function toListItemBagOrNull(value: string | null): ListItemBag | null {
-        if (value === null) {
+        if (!groupGuid) {
             return null;
         }
-        else {
-            return {
-                value
-            };
+
+        const result = await api.getGroup({
+            groupGuid
+        });
+
+        if (!result.isSuccess || !result.data) {
+            console.error(result.errorMessage ?? "An error occurred while getting the group.");
+            return null;
+        }
+
+        return result.data;
+    }
+
+    async function loadOccurrenceItems(): Promise<void> {
+        if (rsvpGroupGuid.value) {
+            // Get the future group occurrences.
+            const result = await api.getFutureAttendanceOccurrences({
+                groupGuid: rsvpGroupGuid.value
+            });
+
+            if (result?.isSuccess && result.data) {
+                occurrenceItems.value = result.data;
+            }
+            else {
+                console.error(result.errorMessage ?? "An error occurred while getting future group occurrences.");
+                occurrenceItems.value = undefined;
+            }
         }
     }
 
@@ -441,28 +397,20 @@
 
     // #region Event Handlers
 
-    function onShowDeclineStylesChanged(value: string | null): void {
-        if (value === "none") {
-            // When the decline button is hidden,
-            // remove the left padding from the ancestor element.
-            if (declineButtonShellElement.value?.parentElement) {
-                declineButtonShellElement.value.parentElement.style.paddingLeft = "";
-            }
-        }
-        else {
-            // When the decline button is shown,
-            // add the left padding to the ancestor element.
-            if (declineButtonShellElement.value?.parentElement) {
-                declineButtonShellElement.value.parentElement.style.paddingLeft = "10px";
-            }
-        }
+    function onAcceptInput(): void {
+        const { acceptText: enteredText } = rsvpComponentAdapter.readLocalProps(props.componentElement);
+        acceptText.value = enteredText;
+    }
+
+    function onDeclineInput(): void {
+        const { declineText: enteredText } = rsvpComponentAdapter.readLocalProps(props.componentElement);
+        declineText.value = enteredText;
     }
 
     async function onRegisterRecipientsClicked(): Promise<void> {
         areRsvpRecipientsRegistering.value = true;
         try {
-            const occurrenceValueEl = getOrCreateHiddenOccurrenceValueElement();
-            const data = parseFutureOccurrenceData(occurrenceValueEl.value);
+            const data = parseFutureOccurrenceData(rsvpOccurrenceValue.value);
 
             if (!data.occurrenceId) {
                 console.error("An occurrence needs to be selected before registering recipients.");
@@ -489,48 +437,22 @@
         }
     }
 
-    function onAcceptButtonTextChanged(value: string | null): void {
-        if (acceptButtonElement.value) {
-            acceptButtonElement.value.setAttribute("title", value ?? "");
-        }
+    // #endregion Event Handlers
 
-        updateRsvpHrefs();
-    }
-
-    function onDeclineButtonTextChanged(value: string | null): void {
-        if (declineButtonElement.value) {
-            declineButtonElement.value.setAttribute("title", value ?? "");
-        }
-
-        updateRsvpHrefs();
-    }
+    // #region Watchers
 
     watch(selectedGroupListItemBag, async () => {
-        const groupGuid = toGuidOrNull(selectedGroupListItemBag.value?.value);
-        getOrCreateHiddenGroupIdElement().value = groupGuid ?? "";
-
-        // Cannot clear the occurrence id here because this handler is invoked even when the control is initialized,
-        // and it clears out the occurrence id on load.
-
-        // Hrefs can be updated now. No need to wait for the occurrences to be retrieved.
-        updateRsvpHrefs();
-
-        if (groupGuid) {
-            // Get the future group occurrences.
-            const result = await api.getFutureAttendanceOccurrences({
-                groupGuid
-            });
-
-            if (result?.isSuccess && result.data) {
-                occurrenceItems.value = result.data;
-            }
-            else {
-                console.error(result.errorMessage ?? "An error occurred while getting future group occurrences.");
-            }
-        }
+        rsvpGroupGuid.value = toGuidOrNull(selectedGroupListItemBag.value?.value);
     });
 
-    watch(selectedFutureOccurrenceDataOrEmptyString, async (serializedOccurrence) => {
+    watch(rsvpGroupGuid, async () => {
+        // Cannot clear the occurrence id here because this handler is invoked even when the control is initialized,
+        // and it clears out the occurrence id on load.
+        await loadOccurrenceItems();
+        writeLocalProps();
+    });
+
+    watch(rsvpOccurrenceValue, async (serializedOccurrence) => {
         const data = parseFutureOccurrenceData(serializedOccurrence);
 
         if (data.occurrenceId === 0 && !isNullish(data.groupId)) {
@@ -545,7 +467,29 @@
                 });
 
                 if (result?.isSuccess && result.data) {
-                    serializedOccurrence = serializeAttendanceOccurrence(result.data);
+                    // Update the item and the serialized value.
+                    const newOccurrenceItems = occurrenceItems.value ?? [];
+                    const itemInfo = Enumerable
+                        .from(occurrenceItems.value ?? [])
+                        .where((item) => item.value === serializedOccurrence)
+                        .withIndex()
+                        .select(([item, index]) => ({ item, index }))
+                        .firstOrDefault();
+
+                    const newValue = serializeAttendanceOccurrence(result.data);
+
+                    if (itemInfo) {
+                        occurrenceItems.value = [
+                            ...newOccurrenceItems.slice(0, itemInfo.index),
+                            {
+                                text: itemInfo.item.text,
+                                value: newValue
+                            },
+                            ...newOccurrenceItems.slice(itemInfo.index + 1)
+                        ];
+                    }
+
+                    rsvpOccurrenceValue.value = newValue;
                 }
                 else {
                     console.error(result?.errorMessage ?? "An error occurred while creating the attendance occurrence.");
@@ -556,31 +500,64 @@
             }
         }
 
-        getOrCreateHiddenOccurrenceValueElement().value = serializedOccurrence;
-        updateRsvpHrefs();
+        writeLocalProps();
     });
 
-    // #endregion Event Handlers
+    watch(acceptText, (newValue) => {
+        const { acceptText: currentText } = rsvpComponentAdapter.readLocalProps(props.componentElement);
 
-    // #region Watchers
-
-    watch(() => props.componentElement, () => {
-        const groupIdEl = getOrCreateHiddenGroupIdElement();
-        const occurrenceIdEl = getOrCreateHiddenOccurrenceValueElement();
-        selectedGroupListItemBag.value = toListItemBagOrNull(toGuidOrNull(groupIdEl.value));
-        selectedFutureOccurrenceDataOrEmptyString.value = occurrenceIdEl.value;
-
-        updateRsvpHrefs();
+        if (currentText !== newValue) {
+            writeLocalProps();
+        }
     });
 
-    watch(acceptButtonShellElement, (newElement) => {
-        acceptButtonWidthProvider.value?.dispose();
-        acceptButtonWidthProvider.value = newElement ? createButtonWidthValuesProvider(newElement) : null;
+    watch(declineText, (newValue) => {
+        const { declineText: currentText } = rsvpComponentAdapter.readLocalProps(props.componentElement);
+
+        if (currentText !== newValue) {
+            writeLocalProps();
+        }
     });
 
-    watch(declineButtonShellElement, (newElement) => {
-        declineButtonWidthProvider.value?.dispose();
-        declineButtonWidthProvider.value = newElement ? createButtonWidthValuesProvider(newElement) : null;
+    watch([
+        blockPaddingPx,
+        blockHorizontalAlignment,
+        fontFamily,
+        fontSizePx,
+        isBold,
+        isUnderlined,
+        isItalicized,
+        letterCase,
+        lineHeight,
+        buttonPaddingPx,
+        borderRadiusPx,
+        // acceptText, Handled separately above
+        acceptWidth,
+        acceptButtonBackgroundColor,
+        acceptButtonColor,
+        isDeclineButtonShown,
+        // declineText, Handled separately above
+        declineWidth,
+        declineButtonBackgroundColor,
+        declineButtonColor,
+        // rsvpGroupGuid, Handled separately above
+        // rsvpOccurrenceValue Handled separately above
+    ], () => {
+        writeLocalProps();
+    });
+
+    watch(() => props.componentElement, async (newElement, oldElement) => {
+        if (oldElement) {
+            oldElement.querySelector(".rsvp-accept-link")?.removeEventListener("input", onAcceptInput);
+            oldElement.querySelector(".rsvp-decline-link")?.removeEventListener("input", onDeclineInput);
+        }
+
+        newElement.querySelector(".rsvp-accept-link")?.addEventListener("input", onAcceptInput);
+        newElement.querySelector(".rsvp-decline-link")?.addEventListener("input", onDeclineInput);
+
+        readLocalProps();
+
+        selectedGroupListItemBag.value = await getGroupListItemBagOrNull();
     });
 
     // #endregion Watchers
@@ -588,33 +565,18 @@
     // #region Hooks
 
     onMounted(async () => {
-        const groupIdEl = getOrCreateHiddenGroupIdElement();
-        const occurrenceValueEl = getOrCreateHiddenOccurrenceValueElement();
-        const groupGuid = toGuidOrNull(groupIdEl.value);
-        const groupListItemBag = toListItemBagOrNull(groupGuid);
+        // Watch for changes to the RSVP links since they are contenteditable.
+        props.componentElement.querySelector(".rsvp-accept-link")?.addEventListener("input", onAcceptInput);
+        props.componentElement.querySelector(".rsvp-decline-link")?.addEventListener("input", onDeclineInput);
 
-        if (groupGuid) {
-            // Get the future group occurrences.
-            const result = await api.getFutureAttendanceOccurrences({
-                groupGuid
-            });
-            if (result?.isSuccess && result.data) {
-                occurrenceItems.value = result.data;
-            }
-            else {
-                console.error(result.errorMessage ?? "An error occurred while getting future group occurrences.");
-            }
-
-            selectedGroupListItemBag.value = groupListItemBag;
-            selectedFutureOccurrenceDataOrEmptyString.value = occurrenceValueEl.value;
-
-            updateRsvpHrefs();
-        }
+        // Load occurrence items right away the picker can be populated and not clear out the selection.
+        await loadOccurrenceItems();
+        selectedGroupListItemBag.value = await getGroupListItemBagOrNull();
     });
 
     onUnmounted(() => {
-        acceptButtonWidthProvider.value?.dispose();
-        declineButtonWidthProvider.value?.dispose();
+        props.componentElement.querySelector(".rsvp-accept-link")?.removeEventListener("input", onAcceptInput);
+        props.componentElement.querySelector(".rsvp-decline-link")?.removeEventListener("input", onDeclineInput);
     });
 
     // #endregion Hooks

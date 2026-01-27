@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Utility;
@@ -1127,7 +1128,7 @@ namespace Rock.Model
         /// <param name="communicationId">The communication identifier.</param>
         /// <param name="currentPersonAliasId">The current person alias identifier.</param>
         /// <returns></returns>
-        [Obsolete( "Use CopyWithBulkInsert() instead." )]
+        [Obsolete( "Use the Copy method that takes CopyArgs instead." )]
         [RockObsolete( "18.0" )]
         public Communication Copy( int communicationId, int? currentPersonAliasId )
         {
@@ -1209,6 +1210,8 @@ namespace Rock.Model
         /// <param name="communicationId">The communication identifier.</param>
         /// <param name="currentPersonAliasId">The current person alias identifier.</param>
         /// <returns>The identifier of the new communication if successfully copied and saved.</returns>
+        [Obsolete( "Use the Copy method that takes CopyArgs instead." )]
+        [RockObsolete( "18.1" )]
         public int? CopyWithBulkInsert( int communicationId, int? currentPersonAliasId )
         {
             var newCommunication = Copy(

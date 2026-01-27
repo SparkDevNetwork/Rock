@@ -44,7 +44,6 @@ namespace RockWeb.Blocks.Prayer
         Key = AttributeKey.DisplayLavaTemplate,
         Description = "The Lava template that layouts out the view of the prayer requests.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = false,
         DefaultValue = LavaTemplateDefaultValue,

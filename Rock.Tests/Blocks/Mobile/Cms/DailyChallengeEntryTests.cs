@@ -494,7 +494,7 @@ namespace Rock.Tests.Blocks.Mobile.Cms
 
             var missedDays = GetMissedDays( dailyChallenge, recentInteractions, 1 );
 
-            Assert.AreEqual( 0, missedDays.Item1.Count );
+            Assert.IsEmpty( missedDays.Item1 );
         }
 
         [TestMethod]
@@ -516,7 +516,7 @@ namespace Rock.Tests.Blocks.Mobile.Cms
 
             var missedDays = GetMissedDays( dailyChallenge, recentInteractions, 1 );
 
-            Assert.AreEqual( 0, missedDays.Item1.Count );
+            Assert.IsEmpty( missedDays.Item1 );
         }
 
         [TestMethod]
@@ -538,7 +538,7 @@ namespace Rock.Tests.Blocks.Mobile.Cms
 
             var missedDays = GetMissedDays( dailyChallenge, recentInteractions, 1 );
 
-            Assert.AreEqual( 0, missedDays.Item1.Count );
+            Assert.IsEmpty( missedDays.Item1 );
         }
 
         [TestMethod]
@@ -560,7 +560,7 @@ namespace Rock.Tests.Blocks.Mobile.Cms
 
             var missedDays = GetMissedDays( dailyChallenge, recentInteractions, 1 );
 
-            Assert.AreEqual( 1, missedDays.Item1.Count );
+            Assert.HasCount( 1, missedDays.Item1 );
         }
 
         [TestMethod]
@@ -582,7 +582,7 @@ namespace Rock.Tests.Blocks.Mobile.Cms
 
             var missedDays = GetMissedDays( dailyChallenge, recentInteractions, 2 );
 
-            Assert.AreEqual( 2, missedDays.Item1.Count );
+            Assert.HasCount( 2, missedDays.Item1 );
         }
 
         [TestMethod]
@@ -604,7 +604,7 @@ namespace Rock.Tests.Blocks.Mobile.Cms
 
             var missedDays = GetMissedDays( dailyChallenge, recentInteractions, 2 );
 
-            Assert.AreEqual( 2, missedDays.Item1.Count );
+            Assert.HasCount( 2, missedDays.Item1 );
         }
 
         [TestMethod]
@@ -633,7 +633,7 @@ namespace Rock.Tests.Blocks.Mobile.Cms
             var currentChallenge = GetCurrentDailyChallenge( cachedChallenge, recentInteractions, 1 );
 
             Assert.AreEqual( _fiveDayChallengeDayOneGuid, currentChallenge.Guid );
-            Assert.AreEqual( 0, currentChallenge.ChallengeItemValues.Count );
+            Assert.IsEmpty( currentChallenge.ChallengeItemValues );
         }
 
         [TestMethod]
@@ -656,7 +656,7 @@ namespace Rock.Tests.Blocks.Mobile.Cms
             var currentChallenge = GetCurrentDailyChallenge( cachedChallenge, recentInteractions, 1 );
 
             Assert.AreEqual( _fiveDayChallengeDayTwoGuid, currentChallenge.Guid );
-            Assert.AreEqual( 0, currentChallenge.ChallengeItemValues.Count );
+            Assert.IsEmpty( currentChallenge.ChallengeItemValues );
         }
 
         [TestMethod]
@@ -694,7 +694,7 @@ namespace Rock.Tests.Blocks.Mobile.Cms
             var currentChallenge = GetCurrentDailyChallenge( cachedChallenge, recentInteractions, 1 );
 
             Assert.AreEqual( _fiveDayChallengeDayTwoGuid, currentChallenge.Guid );
-            Assert.AreEqual( 3, currentChallenge.ChallengeItemValues.Count );
+            Assert.HasCount( 3, currentChallenge.ChallengeItemValues );
             Assert.IsTrue( currentChallenge.ChallengeItemValues[_fiveDayChallengeDayTwoItemOneGuid].IsComplete );
             Assert.IsFalse( currentChallenge.ChallengeItemValues[_fiveDayChallengeDayTwoItemTwoGuid].IsComplete );
             Assert.IsFalse( currentChallenge.ChallengeItemValues[_fiveDayChallengeDayTwoItemThreeGuid].IsComplete );
@@ -735,7 +735,7 @@ namespace Rock.Tests.Blocks.Mobile.Cms
             var currentChallenge = GetCurrentDailyChallenge( cachedChallenge, recentInteractions, 1 );
 
             Assert.AreEqual( _fiveDayChallengeDayTwoGuid, currentChallenge.Guid );
-            Assert.AreEqual( 3, currentChallenge.ChallengeItemValues.Count );
+            Assert.HasCount( 3, currentChallenge.ChallengeItemValues );
             Assert.IsTrue( currentChallenge.ChallengeItemValues[_fiveDayChallengeDayTwoItemOneGuid].IsComplete );
             Assert.IsTrue( currentChallenge.ChallengeItemValues[_fiveDayChallengeDayTwoItemTwoGuid].IsComplete );
             Assert.IsTrue( currentChallenge.ChallengeItemValues[_fiveDayChallengeDayTwoItemThreeGuid].IsComplete );

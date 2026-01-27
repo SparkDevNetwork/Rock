@@ -120,6 +120,7 @@
                 <button v-if="row.guid !== ServiceJob.JobPulse"
                         @click.prevent="onShowHistory(row, $event)"
                         class="btn btn-sm"
+                        type="button"
                         title="History">
                     <i class="ti ti-history"></i>
                 </button>
@@ -135,6 +136,7 @@
                 <button v-if="row.guid !== ServiceJob.JobPulse"
                         @click.prevent="onRunNowClick(row, $event)"
                         class="btn btn-default btn-sm"
+                        type="button"
                         title="Run Now">
                     <i class="ti ti-player-play"></i>
                 </button>

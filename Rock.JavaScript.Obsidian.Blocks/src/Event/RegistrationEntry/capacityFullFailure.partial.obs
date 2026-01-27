@@ -1,0 +1,53 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox alertType="warning">
+        <strong>Capacity Limit Reached</strong>
+        <p>
+            {{ registrationEntryTerms.registrationSingularTitleCase }} could not be saved because there's no remaining capacity for the selected {{ registrantOrRegistrantsTerm }}.
+        </p>
+
+        <p v-if="showNoPaymentProcessed">
+            No payment was processed.
+        </p>
+    </NotificationBox>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { injectRequired, RegistrationEntryTerms } from "./utils.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    const registrationEntryTerms = injectRequired(RegistrationEntryTerms);
+
+    const props = defineProps({
+        /**
+         * The number of new registrants attempting to register.
+         */
+        newRegistrantCount: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        /**
+         * Indicates whether to show a message that no payment was processed.
+         */
+        showNoPaymentProcessed: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    const registrantOrRegistrantsTerm = computed<string>(() => {
+        if (props.newRegistrantCount === 1) {
+            return registrationEntryTerms.value.registrantSingularLowerCase;
+        }
+        else {
+            return registrationEntryTerms.value.registrantPluralLowerCase;
+
+        }
+    });
+
+    // #endregion Computed Values
+</script>

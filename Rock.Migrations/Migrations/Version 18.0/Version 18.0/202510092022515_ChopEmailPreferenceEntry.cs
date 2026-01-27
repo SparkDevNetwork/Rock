@@ -19,7 +19,7 @@ namespace Rock.Migrations
     using System;
     using System.Collections.Generic;
     using System.Data.Entity.Migrations;
-    
+
     /// <summary>
     ///
     /// </summary>
@@ -331,7 +331,8 @@ namespace Rock.Migrations
                 { "DF0F5743-2BFF-40C0-8BEE-39F1DE7B4C22", "GroupCategoryId" }, // Prayer Comment List ( Core )
                 { "3131C55A-8753-435F-85F3-DF777EFBD1C8", "DetailPage,CaseWorkerGroup" }, // Benevolence Request List ( Finance )
                 { "7E4663CD-2176-48D6-9CC2-2DBC9B880C23", "StreakPage" }, // Achievement Attempt Detail ( Engagement )
-                { "476FBA19-005C-4FF4-996B-CA1B165E5BC8", "UnsubscribefromListsText,UpdateEmailAddressText,EmailsAllowedText,NoMassEmailsText,NoEmailsText,NotInvolvedText,SuccessText,UnsubscribeSuccessText,CommunicationListCategories" } // Email Preference Entry ( Communication )
+                { "476FBA19-005C-4FF4-996B-CA1B165E5BC8", "UnsubscribefromListsText,UpdateEmailAddressText,EmailsAllowedText,NoMassEmailsText,NoEmailsText,NotInvolvedText,SuccessText,UnsubscribeSuccessText,CommunicationListCategories" }, // Email Preference Entry ( Communication )
+                { "56ABBD0F-8F62-4094-88B3-161E71F21419", "core.CustomGridColumnsConfig,core.CustomActionsConfigs,core.EnableDefaultWorkflowLauncher,core.CustomGridEnableStickyHeaders" } // Communication List ( Communication )
             } );
         }
 

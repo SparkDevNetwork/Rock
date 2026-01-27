@@ -24,19 +24,11 @@ iframe {
 <script setup lang="ts">
     import { nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
     import {
-        createGlobalBodyWidthProvider,
-        createGlobalBodyAlignmentProvider,
-        createGlobalBodyBackgroundColorProvider,
-        createGlobalBackgroundColorProvider,
-        createGlobalButtonWidthValuesProvider,
-        createMediaQueryEffect,
-        createGlobalButtonBackgroundColorProvider,
-        createGlobalDividerWidthProvider,
-        createGlobalDividerHorizontalAlignmentProvider
+        createGlobalBackgroundColorProvider
     } from "./providers.partial";
     import {
         checkDropzoneSize,
-        copyShorthandInlineStyles,
+        bodyGlobalAdapter,
         createComponentElement,
         createComponentElementPlaceholder,
         EmptyDropzoneSvgPixelWidth,
@@ -46,11 +38,7 @@ iframe {
         getComponentHostSelector,
         getComponentTypeName,
         GlobalCssClasses,
-        GlobalStylesCssSelectors,
         LineHeights,
-        moveShorthandInlineStyles,
-        moveStandaloneInlineStyles,
-        pixelConverter,
         removeTemporaryAttributes,
         removeTemporaryClasses,
         removeTemporaryElements,
@@ -63,7 +51,6 @@ iframe {
         SmallEmptyClass
     } from "./utils.partial";
     import {
-        CssStyleDeclarationKebabKey,
         ComponentTypeDragDropMessage,
         ComponentTypeDragEndMessage,
         ComponentTypeDragLeaveMessage,
@@ -79,11 +66,10 @@ iframe {
         ComponentTypeDragDropRequest,
         ComponentTypeDragLeaveRequest,
         ValueProvider,
-        ButtonWidthValues,
         ReplaceComponentRequest,
-        HorizontalAlignment
+        ComponentTypeName
     } from "./types.partial";
-    import { GetHtmlRequest } from "./types";
+    import { GetHtmlRequest } from "./types.partial";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import {
         findDirectChildContaining,
@@ -167,11 +153,16 @@ iframe {
 
     const emit = defineEmits<{
         (e: "update:selectedComponentElement", value: HTMLElement | null | undefined): void;
-        (e: "emailDocumentUpdated", value: Document): void;
+        (e: "componentAdded", value: { componentTypeName: ComponentTypeName; componentElement: HTMLElement; }): void;
+        (e: "emailDocumentUpdated", value: { emailDocument: Document, areGlobalDefaultsRequired: boolean; }): void;
     }>();
 
     const draggingCssClass = `${RockRuntimeClassCssClassPrefix}-is-dragging` as const;
     const nonRowHoveredClass = `${RockRuntimeClassCssClassPrefix}-non-row-hovered` as const;
+
+    // Component types that have adapters available.
+    // Eventually, all component types should have adapters.
+    const adapterComponentTypes: ComponentTypeName[] = ["button", "rsvp", "divider", "image", "text", "video", "code", "title"];
 
     // #region Values
 
@@ -190,15 +181,7 @@ iframe {
     const dropzoneEmptyResizeObserver = ref<ResizeObserver | null | undefined>();
 
     // Global default providers and effects.
-    const globalBodyWidthProvider = ref<ValueProvider<number | null | undefined> | undefined>();
-    const globalBodyAlignmentProvider = ref<ValueProvider<string | null | undefined> | undefined>();
-    const globalBodyColorProvider = ref<ValueProvider<string | null | undefined> | undefined>();
     const globalBackgroundColorProvider = ref<ValueProvider<string | null | undefined> | undefined>();
-    const globalButtonWidthValuesProvider = ref<ValueProvider<ButtonWidthValues | null | undefined> | undefined>();
-    const globalBodyWidthMediaQueryEffect = ref<Disposable | undefined>();
-    const globalButtonBackgroundColorProvider = ref<ValueProvider<string | null | undefined> | undefined>();
-    const globalDividerWidthProvider = ref<ValueProvider<number | null | undefined> | undefined>();
-    const globalDividerHorizontalAlignmentProvider = ref<ValueProvider<HorizontalAlignment | null | undefined> | undefined>();
 
     // #endregion
 
@@ -536,39 +519,34 @@ iframe {
      */
     function getHtml(options: GetHtmlRequest): void {
         try {
-            const clone = document.createElement("iframe");
-
-            // Hide the clone.
-            clone.style.display = "none";
-
-            // Append the cloned iframe to the body to get access to the clone's contentDocument.
-            document.body.appendChild(clone);
-
-            const cloneDocument = clone.contentDocument ?? clone.contentWindow?.document;
-
-            if (cloneDocument) {
-                cloneDocument.open();
-                cloneDocument.writeln(iFrameElement.value?.contentWindow?.document.documentElement.outerHTML ?? "");
-                cloneDocument.close();
-
-                removeTemporaryElements(cloneDocument);
-                removeTemporaryAttributes(cloneDocument);
-                removeTemporaryWrappers(cloneDocument);
-                removeTemporaryClasses(cloneDocument);
-
-                const html = cloneDocument.documentElement.outerHTML ?? "";
-
-                // Remove the cloned iframe element before returning the HTML.
-                clone.remove();
-
-                options.onSuccess({
-                    html,
-                    bodyWidth: globalBodyWidthProvider.value?.value
-                });
+            const sourceDoc = iFrameElement.value?.contentWindow?.document;
+            if (!sourceDoc) {
+                throw new Error("Unable to access the iframe document.");
             }
-            else {
-                throw new Error("An error occurred while preparing HTML.");
-            }
+
+            // Build the doctype text. If none, default to HTML5.
+            const doctypeText = sourceDoc.doctype
+                ? `<!DOCTYPE ${sourceDoc.doctype.name}${sourceDoc.doctype.publicId ? ` PUBLIC "${sourceDoc.doctype.publicId}"` : ""}${sourceDoc.doctype.systemId ? ` "${sourceDoc.doctype.systemId}"` : ""}>`
+                : "<!DOCTYPE html>";
+
+            const cloneDocument = sourceDoc.cloneNode(true) as Document;
+
+            removeTemporaryElements(cloneDocument);
+            removeTemporaryAttributes(cloneDocument);
+            removeTemporaryWrappers(cloneDocument);
+            removeTemporaryClasses(cloneDocument);
+
+            const finalHtmlOuterHtml = cloneDocument.documentElement.outerHTML ?? "";
+            const html = `${doctypeText}\n${finalHtmlOuterHtml}`;
+
+            // Get the global body width from the source document that is attached to the iframe.
+            // This width is used by some callers to generate preview images.
+            const bodyWidth = bodyGlobalAdapter.readGlobalProps(sourceDoc).widthPx;
+
+            options.onSuccess({
+                html,
+                bodyWidth
+            });
         }
         catch (e) {
             if (options.onError) {
@@ -701,85 +679,8 @@ iframe {
     }
 
     async function fixOldWizardElements(document: Document): Promise<void> {
-        // RSVP Component Fixes
-
-        // The old wizard set some font styles and padding on the content elements instead of the button elements.
-        const propertiesToMove: CssStyleDeclarationKebabKey[] = [
-            "font-family",
-            "font-size"
-        ];
-        Enumerable.from(document.querySelectorAll(".accept-button-shell"))
-            .ofType(isHTMLElement)
-            .forEach(buttonShellElement => {
-                const buttonContentElement = buttonShellElement.querySelector(".rsvp-accept-content");
-
-                if (isHTMLElement(buttonContentElement)) {
-                    const buttonElement = buttonContentElement.querySelector(".rsvp-accept-link");
-
-                    if (isHTMLElement(buttonElement)) {
-                        moveStandaloneInlineStyles(
-                            buttonContentElement,
-                            buttonElement,
-                            propertiesToMove);
-
-                        moveShorthandInlineStyles(
-                            buttonContentElement,
-                            buttonElement,
-                            "padding",
-                            ["padding-top", "padding-bottom", "padding-right", "padding-left"]);
-
-                        // The old wizard was missing "display" inline style on the button elements.
-                        buttonElement.style.display = "inline-block";
-
-                        // Copy the button shell padding to the button element for the Corner Radius property.
-                        copyShorthandInlineStyles(
-                            buttonShellElement,
-                            buttonElement,
-                            "border-radius",
-                            ["border-top-left-radius", "border-top-right-radius", "border-bottom-right-radius", "border-bottom-left-radius"]
-                        );
-                    }
-                }
-            });
-        Enumerable.from(document.querySelectorAll(".decline-button-shell"))
-            .ofType(isHTMLElement)
-            .forEach(buttonShellElement => {
-                const buttonContentElement = buttonShellElement.querySelector(".rsvp-decline-content");
-
-                if (isHTMLElement(buttonContentElement)) {
-                    const buttonElement = buttonContentElement.querySelector(".rsvp-decline-link");
-
-                    if (isHTMLElement(buttonElement)) {
-                        moveStandaloneInlineStyles(
-                            buttonContentElement,
-                            buttonElement,
-                            propertiesToMove);
-
-                        moveShorthandInlineStyles(
-                            buttonContentElement,
-                            buttonElement,
-                            "padding",
-                            ["padding-top", "padding-bottom", "padding-right", "padding-left"]);
-
-                        // The old wizard was missing "display" inline style on the button elements.
-                        buttonElement.style.display = "inline-block";
-
-                        // Copy the button shell padding to the button element for the Corner Radius property.
-                        copyShorthandInlineStyles(
-                            buttonShellElement,
-                            buttonElement,
-                            "border-radius",
-                            ["border-top-left-radius", "border-top-right-radius", "border-bottom-right-radius", "border-bottom-left-radius"]
-                        );
-
-                        // The old wizard was missing the "rel" attribute on the decline button element.
-                        buttonElement.setAttribute("rel", "noopener noreferrer");
-                    }
-                }
-            });
-
         // Auto-migrate each component type to ensure they are all using the latest versions.
-        document.querySelectorAll(".component").forEach(componentElement => {
+        document.querySelectorAll(adapterComponentTypes.map(type => `.component:not(.component-${type})`).join(",")).forEach(componentElement => {
             try {
                 const componentTypeName = getComponentTypeName(componentElement);
                 const componentHelper = getComponentHelper(componentTypeName);
@@ -879,7 +780,7 @@ iframe {
      * be removed before saving the email communication message.
      */
     async function onIFrameLoaded(): Promise<void> {
-        console.log(`"loaded" iframe`);
+        console.debug(`"loaded" iframe`);
 
         const iFrameDocument = iFrameElement.value?.contentDocument;
 
@@ -889,7 +790,7 @@ iframe {
 
         // Only include styles needed for editing the email, such as drag effects.
         // Styles for individual components in the HTML email should be styled by
-        // CSS defined in the Communication Template as these will be stripped out.
+        // CSS defined in the Communication Template as the following will be stripped out.
         var style = iFrameDocument.createElement("style");
         style.className = RockRuntimeElementCssClass;
         function createCssRuleset(selector, declarations): string {
@@ -1133,6 +1034,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
             iFrameDocument.body.append(dropzone);
         }
 
+        // This fixes issues where :empty styles are not applied due to whitespace text nodes.
         removeWhiteSpaceFromChildElements(iFrameDocument, ".structure-dropzone, .dropzone");
 
         await fixOldWizardElements(iFrameDocument);
@@ -1147,7 +1049,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
             }
         }
 
-        applyDefaultGlobalStylesIfNeeded(iFrameDocument);
+        const areGlobalDefaultsRequired = applyDefaultGlobalStylesIfNeeded(iFrameDocument);
 
         emailDocument.value = iFrameDocument;
 
@@ -1250,7 +1152,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
         wrapComponentElements(iFrameDocument);
 
         // Finally, let other components know the document was updated.
-        emit("emailDocumentUpdated", iFrameDocument);
+        emit("emailDocumentUpdated", { emailDocument: iFrameDocument, areGlobalDefaultsRequired });
     }
 
     function generateCssRulesets(styles: Record<string, string>): string {
@@ -1275,7 +1177,9 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
         };
     }
 
-    function applyDefaultGlobalStylesIfNeeded(iFrameDocument: Document): void {
+    function applyDefaultGlobalStylesIfNeeded(iFrameDocument: Document): boolean {
+        let areGlobalDefaultsRequired = false;
+
         // Add default style sheet if it doesn't exist.
         if (!iFrameDocument.querySelector(`style.${RockStylesCssClass}`)) {
             const styleElement = iFrameDocument.createElement("style");
@@ -1283,7 +1187,6 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
 
             const globalStyles = getStyleBuilder();
 
-            globalStyles.addStyle(GlobalStylesCssSelectors.bodyPadding, "padding: 24px;");
             globalStyles.addStyle(`.${GlobalCssClasses.fontGlobal}`,
                 `font-family: ${FontFamilies.Arial};
                 font-size: 16px;
@@ -1316,18 +1219,6 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
                 color: #364153;
                 line-height: ${LineHeights.tight.value};`);
             globalStyles.addStyle(`.${GlobalCssClasses.marginParagraph}`, `margin: 0;`);
-            globalStyles.addStyle(GlobalStylesCssSelectors.buttonTextStyling,
-                `font-family: ${FontFamilies.Arial};
-                font-weight: bold;
-                text-decoration: none; border-bottom-width: 0; /* border-bottom-width is needed for MSO. */
-                color: #ffffff;
-                line-height: ${LineHeights.tight.value};`);
-            globalStyles.addStyle(GlobalStylesCssSelectors.buttonCornerRadius, `border-radius: 4px;`);
-            globalStyles.addStyle(GlobalStylesCssSelectors.buttonPadding, `padding: 15px;`);
-            globalStyles.addStyle(GlobalStylesCssSelectors.dividerStyle, `border-style: solid none none;`);
-            globalStyles.addStyle(GlobalStylesCssSelectors.dividerThickness, `border-width: 1px 0px 0px;`);
-            globalStyles.addStyle(GlobalStylesCssSelectors.dividerColor, `border-color: #8b8ba7 transparent transparent;`);
-            globalStyles.addStyle(GlobalStylesCssSelectors.dividerMargin, `padding: 12px 0;`);
 
             // Add non-editable global styles.
             globalStyles.addStyle(`html, body`,
@@ -1335,11 +1226,6 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
                 margin: 0;
                 padding: 0;
                 height: 100%;`
-            );
-
-            globalStyles.addStyle(`.component-button .button-link`,
-                `text-align: center;
-                letter-spacing: normal;`
             );
 
             globalStyles.addStyle(`.email-wrapper`,
@@ -1352,119 +1238,23 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
             // Insert as the first child. This style sheet will be removed when sent.
             iFrameDocument.body.insertBefore(styleElement, iFrameDocument.body.firstChild);
 
-            const mediaStyleElement = iFrameDocument.createElement("style");
-            mediaStyleElement.classList.add("rock-media-styles");
-
-            const mediaStyles = getStyleBuilder();
-            mediaStyles.addStyle(`@media screen and (max-width: 600px)`,
-                `.email-wrapper { min-height: 100vh; }`
-            );
-
-            mediaStyleElement.textContent = generateCssRulesets(mediaStyles.styles);
-
-            // Insert into the head since it shouldn't be removed.
-            iFrameDocument.head.append(mediaStyleElement);
+            // Setting this to true will trigger global defaults in emailEditor.partial.obs
+            // for components that follow the adapter pattern. All components before that
+            // had globals set here when there was no style.rock-styles element, so we can
+            // reliably say that global defaults are required when we add this style element.
+            // This is a temporary solution until other components use the component adapter pattern.
+            // The goal is to always apply all defaults in emailEditor.partial.obs on editor load.
+            areGlobalDefaultsRequired = true;
         }
 
         // Apply other defaults using providers.
         // These providers need to run as long as the editor is open regardless of side panel tab
         // so the matching element styles stay up-to-date.
-        globalBodyWidthProvider.value?.dispose();
-        globalBodyWidthProvider.value = createGlobalBodyWidthProvider(iFrameDocument);
-
-        globalBodyWidthMediaQueryEffect.value?.[Symbol.dispose]();
-        globalBodyWidthMediaQueryEffect.value = createMediaQueryEffect(
-            iFrameDocument.head,
-            "rock-media-styles",
-            `.small-12 {
-                display: inline-block !important;
-                width: 100% !important;
-            }
-
-            .small-11 {
-                display: inline-block !important;
-                width: 91.66667% !important;
-            }
-
-            .small-10 {
-                display: inline-block !important;
-                width: 83.33333% !important;
-            }
-
-            .small-9 {
-                display: inline-block !important;
-                width: 75% !important;
-            }
-
-            .small-8 {
-                display: inline-block !important;
-                width: 66.66667% !important;
-            }
-
-            .small-7 {
-                display: inline-block !important;
-                width: 58.33333% !important;
-            }
-
-            .small-6 {
-                display: inline-block !important;
-                width: 50% !important;
-            }
-
-            .small-5 {
-                display: inline-block !important;
-                width: 41.66667% !important;
-            }
-
-            .small-4 {
-                display: inline-block !important;
-                width: 33.33333% !important;
-            }
-
-            .small-3 {
-                display: inline-block !important;
-                width: 25% !important;
-            }
-
-            .small-2 {
-                display: inline-block !important;
-                width: 16.66667% !important;
-            }
-
-            .small-1 {
-                display: inline-block !important;
-                width: 8.33333% !important;
-            }
-
-            .spacer {
-                display: none !important;
-                width: 0 !important;
-            }`,
-            "max-width",
-            globalBodyWidthProvider.value,
-            pixelConverter
-        );
-
-        globalBodyAlignmentProvider.value?.dispose();
-        globalBodyAlignmentProvider.value = createGlobalBodyAlignmentProvider(iFrameDocument);
-
-        globalBodyColorProvider.value?.dispose();
-        globalBodyColorProvider.value = createGlobalBodyBackgroundColorProvider(iFrameDocument);
 
         globalBackgroundColorProvider.value?.dispose();
         globalBackgroundColorProvider.value = createGlobalBackgroundColorProvider(iFrameDocument);
 
-        globalButtonWidthValuesProvider.value?.dispose();
-        globalButtonWidthValuesProvider.value = createGlobalButtonWidthValuesProvider(iFrameDocument);
-
-        globalButtonBackgroundColorProvider.value?.dispose();
-        globalButtonBackgroundColorProvider.value = createGlobalButtonBackgroundColorProvider(iFrameDocument);
-
-        globalDividerWidthProvider.value?.dispose();
-        globalDividerWidthProvider.value = createGlobalDividerWidthProvider(iFrameDocument);
-
-        globalDividerHorizontalAlignmentProvider.value?.dispose();
-        globalDividerHorizontalAlignmentProvider.value = createGlobalDividerHorizontalAlignmentProvider(iFrameDocument);
+        return areGlobalDefaultsRequired;
     }
 
     function getComponentFromMouseEvent(event: MouseEvent): { componentElement: HTMLElement | null, componentWrapperElement: HTMLElement | null } {
@@ -1496,7 +1286,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
     }
 
     function onIFrameClick(event: MouseEvent): void {
-        console.log(`"click" iframe`);
+        console.debug(`"click" iframe`);
 
         // Prevent default browser behavior so links and buttons aren't executed.
         event.preventDefault();
@@ -1559,7 +1349,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
      * This will enable dragging behavior
      */
     function onIFrameComponentMouseDown(event: MouseEvent): void {
-        console.log(`"mousedown" iframe component`);
+        console.debug(`"mousedown" iframe component`);
 
         if (event.button !== 0) {
             // Only handle left mouse button events.
@@ -1599,7 +1389,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
                 iFrameElement.value.contentWindow.addEventListener("mouseup", onIFrameComponentMouseUp);
 
                 //componentElement.setAttribute("draggable", "true");
-                console.log("dragging component", componentElement);
+                console.debug("dragging component", componentElement);
 
                 if (componentWrapperElement) {
                     // The component element has a wrapper that should also be moved.
@@ -1617,7 +1407,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
     }
 
     function onIFrameComponentMouseUp(_event: MouseEvent): void {
-        console.log(`"mouseup" iframe component`);
+        console.debug(`"mouseup" iframe component`);
         let oldParent: HTMLElement | null | undefined;
 
         if (draggingPlaceholderElement.value && draggingElement.value) {
@@ -1630,7 +1420,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
                     }
                 }
                 else {
-                    console.log(`"dragend" iframe component - placeholder replaced with component`, draggingElement.value);
+                    console.debug(`"dragend" iframe component - placeholder replaced with component`, draggingElement.value);
                     oldParent = draggingElement.value.parentElement;
 
                     // Swap the placeholder element with the permanent element.
@@ -1638,7 +1428,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
                 }
             }
             else if (emptySectionElementToBeAddedTo.value) {
-                console.log(`"dragend" iframe component - component added to empty section`, draggingElement.value);
+                console.debug(`"dragend" iframe component - component added to empty section`, draggingElement.value);
                 oldParent = draggingElement.value.parentElement;
 
                 // Put the permanent element in the empty section being dragged over.
@@ -1665,7 +1455,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
     }
 
     function onIFrameComponentTypeDragStart(componentTypeName: EditorComponentTypeName, customHtml?: string | null | undefined): void {
-        console.log(`"dragstart" iframe component type`);
+        console.debug(`"dragstart" iframe component type`);
 
         const iFrameDocument = iFrameElement.value?.contentDocument;
         if (!iFrameDocument) {
@@ -1677,9 +1467,12 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
             tempElement.innerHTML = customHtml;
             const customComponentElement = tempElement.querySelector(".component");
             if (customComponentElement) {
-                const helper = getComponentHelper(getComponentTypeName(customComponentElement));
-                if (helper && helper.isMigrationRequired(customComponentElement)) {
-                    customComponentElement.replaceWith(helper.migrate(customComponentElement));
+                const componentTypeName = getComponentTypeName(customComponentElement);
+                if (!adapterComponentTypes.includes(componentTypeName)) {
+                    const helper = getComponentHelper(getComponentTypeName(customComponentElement));
+                    if (helper && helper.isMigrationRequired(customComponentElement)) {
+                        customComponentElement.replaceWith(helper.migrate(customComponentElement));
+                    }
                 }
             }
             draggingElement.value = tempElement.firstElementChild as HTMLElement;
@@ -1702,7 +1495,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
     }
 
     function onIFrameComponentMouseMove(e: MouseEvent): void {
-        console.log(`"mousemove" iframe component`);
+        console.debug(`"mousemove" iframe component`);
 
         if (!iFrameElement.value?.contentDocument) {
             throw new Error("iframe: Unable to handle component 'dragover' event. The iframe document has not been initialized");
@@ -1864,7 +1657,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
     }
 
     function onIFrameComponentTypeDragOver(message: ComponentTypeDragOverMessage): void {
-        console.log(`"dragover" iframe component type`);
+        console.debug(`"dragover" iframe component type`);
 
         if (!iFrameElement.value?.contentDocument) {
             throw new Error("iframe: Unable to handle 'dragover' event. The iframe document has not been initialized.");
@@ -1992,7 +1785,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
     }
 
     function onIFrameComponentTypeDragEnd(): void {
-        console.log(`"dragend" iframe component type`);
+        console.debug(`"dragend" iframe component type`);
 
         // If "dragend" happens and there was never a "drop",
         // then remove the temporary dragging element from the DOM.
@@ -2005,7 +1798,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
     }
 
     function onIFrameComponentTypeDragLeave(): void {
-        console.log(`"dragleave" iframe component type`);
+        console.debug(`"dragleave" iframe component type`);
 
         // If "dragleave" happens then remove the temporary dragging element from the DOM.
         if (draggingPlaceholderElement.value) {
@@ -2014,7 +1807,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
     }
 
     function onIFrameComponentTypeDragDrop(): void {
-        console.log(`"drop" iframe component type`);
+        console.debug(`"drop" iframe component type`);
 
         const iFrameDocument = iFrameElement.value?.contentDocument;
         if (!iFrameDocument) {
@@ -2029,17 +1822,29 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
             const componentElement = getComponentElement(draggingElement.value) ?? draggingElement.value.querySelector(".component");
             const isComponentChild = draggingElement.value.contains(componentElement);
             if (componentElement) {
-                const componentHelper = getComponentHelper(getComponentTypeName(componentElement));
-                if (componentHelper && componentHelper.isMigrationRequired(componentElement)) {
-                    const migratedComponentElement = componentHelper.migrate(componentElement);
-                    if (migratedComponentElement !== componentElement) {
-                        if (isComponentChild) {
-                            componentElement.replaceWith(migratedComponentElement);
-                        }
-                        else {
-                            elementToPlace = migratedComponentElement as HTMLElement;
+                const componentTypeName = getComponentTypeName(componentElement);
+                if (!adapterComponentTypes.includes(componentTypeName)) {
+                    const componentHelper = getComponentHelper(getComponentTypeName(componentElement));
+                    if (componentHelper && componentHelper.isMigrationRequired(componentElement)) {
+                        const migratedComponentElement = componentHelper.migrate(componentElement);
+                        if (migratedComponentElement !== componentElement) {
+                            if (isComponentChild) {
+                                componentElement.replaceWith(migratedComponentElement);
+                            }
+                            else {
+                                elementToPlace = migratedComponentElement as HTMLElement;
+                            }
                         }
                     }
+                }
+
+                if (!componentElement.isConnected) {
+                    nextTick(() => {
+                        emit("componentAdded", { componentTypeName: componentTypeName, componentElement: componentElement });
+                    });
+                }
+                else {
+                    emit("componentAdded", { componentTypeName: componentTypeName, componentElement: componentElement });
                 }
             }
 
@@ -2080,7 +1885,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
         | ComponentTypeDragOverMessage
         | ComponentTypeDragLeaveMessage
         | ComponentTypeDragEndMessage>): void {
-        console.log(`"message" iframe`);
+        console.debug(`"message" iframe`);
 
         switch (event.data.type) {
             case "COMPONENT_TYPE_DRAG_START":
@@ -2255,15 +2060,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
         dropzoneEmptyResizeObserver.value?.disconnect();
         sectionComponentMutationObserver.value?.disconnect();
 
-        globalBodyWidthProvider.value?.dispose();
-        globalBodyWidthMediaQueryEffect.value?.[Symbol.dispose]();
-        globalBodyAlignmentProvider.value?.dispose();
-        globalBodyColorProvider.value?.dispose();
         globalBackgroundColorProvider.value?.dispose();
-        globalButtonWidthValuesProvider.value?.dispose();
-        globalButtonBackgroundColorProvider.value?.dispose();
-        globalDividerWidthProvider.value?.dispose();
-        globalDividerHorizontalAlignmentProvider.value?.dispose();
     });
 
     // #endregion

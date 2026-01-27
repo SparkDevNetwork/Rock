@@ -30,7 +30,7 @@ namespace Rock.Tests.Integration.Performance.Lava
             Results.Add( new TestResult { TestKey = testKey, ExecutionNumber = testExecutionNumber, TimeElapsedInTicks = timeElapsedInTicks } );
         }
 
-        private List<TestResult> GetFilteredResults(string testKey = null)
+        private List<TestResult> GetFilteredResults( string testKey = null )
         {
             if ( testKey == null )
             {
@@ -49,7 +49,7 @@ namespace Rock.Tests.Integration.Performance.Lava
             return new TimeSpan( result );
         }
 
-        public TimeSpan GetMinTime(string testKey = null)
+        public TimeSpan GetMinTime( string testKey = null )
         {
             var result = GetFilteredResults( testKey ).Min( x => x.TimeElapsedInTicks );
 

@@ -59,7 +59,14 @@ namespace RockWeb.Blocks.Event
     [BooleanField( "Show All View", "Determines whether the all view option is shown (Limited to 2 years)", false, order: 14 )]
 
     [BooleanField( "Enable Campus Context", "If the page has a campus context its value will be used as a filter", order: 15 )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the list of events.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/Calendar.lava' %}", "", 16 )]
+
+    [CodeEditorField( "Lava Template",
+        Description = "Lava template to use to display the list of events.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = @"{% include '~~/Assets/Lava/Calendar.lava' %}",
+        Order = 16 )]
 
     [DayOfWeekField( "Start of Week Day", "Determines what day is the start of a week.", true, DayOfWeek.Sunday, order: 17 )]
 

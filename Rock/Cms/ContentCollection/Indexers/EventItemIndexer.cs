@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -80,7 +81,6 @@ namespace Rock.Cms.ContentCollection.Indexers
             var eventCalendarEntityTypeId = EntityTypeCache.GetId<EventCalendar>() ?? 0;
             var now = RockDateTime.Now;
             List<EventItem> eventItems;
-            List<int> unapprovedItems = new List<int>();
 
             // Make sure the source is valid.
             if ( contentCollectionSourceCache == null || contentCollectionSourceCache.EntityTypeId != eventCalendarEntityTypeId )
@@ -105,37 +105,34 @@ namespace Rock.Cms.ContentCollection.Indexers
                     return 0;
                 }
 
-                foreach( var eventItem in eventItems )
+                eventItems.LoadAttributes( rockContext );
+
+                // Process all items while the RockContext is still available
+                // so that lazy load properties can be used in custom fields.
+                // This also requires that we process items sequentially since
+                // EF contexts are not thread-safe.
+                foreach ( var eventItem in eventItems )
                 {
-                    if ( !eventItem.IsApproved )
+                    try
                     {
-                        unapprovedItems.Add( eventItem.Id );
+                        var indexItem = await EventItemDocument.LoadByModelAsync( eventItem, contentCollectionSourceCache );
+
+                        if ( !eventItem.IsApproved )
+                        {
+                            indexItem.IsApproved = false;
+                        }
+
+                        await ContentIndexContainer.IndexDocumentAsync( indexItem );
+                    }
+                    catch ( Exception ex )
+                    {
+                        // If a single item fails, log the exception and continue processing.
+                        ExceptionLogService.LogException( ex );
                     }
                 }
 
-                eventItems.LoadAttributes( rockContext );
+                return eventItems.Count;
             }
-
-            // The RockContext is now closed. Any navigation properties that are
-            // used by the indexer must be included in the query itself and
-            // eager loaded. Navigation properties that lazy load are not
-            // thread-safe.
-
-            var processor = new ParallelProcessor( options.MaxConcurrency );
-
-            await processor.ExecuteAsync( eventItems, async eventItem =>
-            {
-                var indexItem = await EventItemDocument.LoadByModelAsync( eventItem, contentCollectionSourceCache );
-
-                if( unapprovedItems.Contains( indexItem.EntityId ) )
-                {
-                    indexItem.IsApproved = false;
-                }
-
-                await ContentIndexContainer.IndexDocumentAsync( indexItem );
-            } );
-
-            return eventItems.Count;
         }
 
         /// <inheritdoc/>
@@ -157,35 +154,36 @@ namespace Rock.Cms.ContentCollection.Indexers
 
                 isApproved = itemEntity.IsApproved;
                 itemEntity.LoadAttributes( rockContext );
+
+                // Create or update any indexed documents for content collection sources.
+                var eventCalendarEntityTypeId = EntityTypeCache.Get<EventCalendar>().Id;
+                var calendarIds = itemEntity.EventCalendarItems
+                    .Select( eci => eci.EventCalendarId )
+                    .ToList();
+
+                var sources = ContentCollectionSourceCache.All()
+                    .Where( s => s.EntityTypeId == eventCalendarEntityTypeId
+                        && calendarIds.Contains( s.EntityId ) )
+                    .ToList();
+
+                foreach ( var source in sources )
+                {
+                    try
+                    {
+                        var indexItem = await EventItemDocument.LoadByModelAsync( itemEntity, source );
+                        indexItem.IsApproved = isApproved;
+
+                        await ContentIndexContainer.IndexDocumentAsync( indexItem );
+                    }
+                    catch ( Exception ex )
+                    {
+                        // If a single item fails, log the exception and continue processing.
+                        ExceptionLogService.LogException( ex );
+                    }
+                }
+
+                return sources.Count;
             }
-
-            // The RockContext is now closed. Any navigation properties that are
-            // used by the indexer must be included in the query itself and
-            // eager loaded. Navigation properties that lazy load are not
-            // thread-safe.
-
-            // Create or update any indexed documents for content collection sources.
-            var eventCalendarEntityTypeId = EntityTypeCache.Get<EventCalendar>().Id;
-            var calendarIds = itemEntity.EventCalendarItems
-                .Select( eci => eci.EventCalendarId )
-                .ToList();
-
-            var sources = ContentCollectionSourceCache.All()
-                .Where( s => s.EntityTypeId == eventCalendarEntityTypeId
-                    && calendarIds.Contains( s.EntityId ) )
-                .ToList();
-
-            var processor = new ParallelProcessor( options.MaxConcurrency );
-
-            await processor.ExecuteAsync( sources, async source =>
-            {
-                var indexItem = await EventItemDocument.LoadByModelAsync( itemEntity, source );
-                indexItem.IsApproved = isApproved;
-
-                await ContentIndexContainer.IndexDocumentAsync( indexItem );
-            } );
-
-            return sources.Count;
         }
     }
 }

@@ -18,15 +18,22 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Linq;
 using System.Web;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
+using Rock.Configuration;
+using Rock.Data;
 using Rock.Logging;
+using Rock.Model;
 using Rock.Net;
 using Rock.Net.Geolocation;
 using Rock.Observability;
+using Rock.Security;
 using Rock.Utility;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace Rock.Web.HttpModules
@@ -139,6 +146,9 @@ namespace Rock.Web.HttpModules
                 }
             }
 
+            var tracingEnabled = EnableDebugTracing( context );
+            var linkedActivity = GetLinkedActivity( context );
+
             Activity activity;
 
             // Create activity with the correct prefix
@@ -193,6 +203,34 @@ namespace Rock.Web.HttpModules
                                                     ?? context.Request.ServerVariables["REMOTE_ADDR"]
                                                     ?? string.Empty );
 
+                var traceObserver = RockApp.Current.GetRequiredService<DebugTraceObserver>();
+
+                // If we have a linked activity from the request headers then
+                // link it to the current activity.
+                if ( linkedActivity.HasValue )
+                {
+                    activity.AddLink( linkedActivity.Value );
+
+                    // If the linked activity is being traced by the debug
+                    // processor, then start tracing this activity as well.
+                    if ( traceObserver.IsValidTrace( linkedActivity.Value.Context.TraceId.ToString() ) )
+                    {
+                        traceObserver.BeginTracing();
+                        traceObserver.LinkTrace( activity.TraceId.ToString(), linkedActivity.Value.Context.TraceId.ToString() );
+
+                        context.AddOrReplaceItem( "Rock:DebugTraceEnabled", true );
+
+                        activity.SetCustomProperty( "rock.full_trace", true );
+                    }
+                }
+
+                // Begin monitoring for this trace if it was enabled.
+                if ( tracingEnabled )
+                {
+                    traceObserver.MonitorTrace( activity.TraceId.ToString() );
+                    activity.SetCustomProperty( "rock.full_trace", true );
+                }
+
                 context.Items[ObservabilityContextKey] = activity;
             }
         }
@@ -217,6 +255,84 @@ namespace Rock.Web.HttpModules
 
                 activity.Dispose();
             }
+
+            try
+            {
+                if ( context.Items.Contains( "Rock:DebugTraceEnabled" ) )
+                {
+                    RockApp.Current.GetRequiredService<DebugTraceObserver>().EndTracing();
+                    context.Items.Remove( "Rock:DebugTraceEnabled" );
+                }
+            }
+            catch
+            {
+                // Ignore exceptions.
+            }
+        }
+
+        /// <summary>
+        /// Enables debug tracing for this request if it has been properly
+        /// configured.
+        /// </summary>
+        /// <param name="context">The context that describes the current request.</param>
+        /// <returns><c>true</c> if tracing was enabled; otherwise <c>false</c>.</returns>
+        private bool EnableDebugTracing( HttpContext context )
+        {
+            var showDebugTimingsKey = context.Request.QueryString["ShowDebugTimings"]?.Split( '_' );
+
+            if ( showDebugTimingsKey == null || showDebugTimingsKey.Length != 3 )
+            {
+                return false;
+            }
+
+            var pageIdKey = showDebugTimingsKey[0];
+            var personIdKey = showDebugTimingsKey[1];
+            var hash = showDebugTimingsKey[2];
+            var verificationValue = $"{pageIdKey}_{personIdKey}";
+            var expectedHash = verificationValue.HmacSha256Hash( Encryption.GetEphemeralHashingKey() + context.Request.UrlProxySafe().AbsolutePath );
+
+            if ( hash != expectedHash )
+            {
+                return false;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var pageCache = PageCache.GetByIdKey( pageIdKey, rockContext );
+                var person = new PersonService( rockContext ).Get( personIdKey, false );
+
+                if ( pageCache.IsAuthorized( Authorization.ADMINISTRATE, person ) )
+                {
+                    RockApp.Current.GetRequiredService<DebugTraceObserver>().BeginTracing();
+
+                    context.AddOrReplaceItem( "Rock:DebugTraceEnabled", pageCache.Id );
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the linked activity from the request headers if available.
+        /// </summary>
+        /// <param name="context">The context that describes the current request.</param>
+        /// <returns>An instance of <see cref="ActivityLink"/> if there was a valid traceparent header, otherwise <c>null</c>.</returns>
+        private ActivityLink? GetLinkedActivity( HttpContext context )
+        {
+            var traceParent = context.Request.Headers["traceparent"]?.Split( '-' );
+
+            if ( traceParent != null && traceParent.Length == 4 )
+            {
+                var traceId = traceParent[1];
+                var spanId = traceParent[2];
+                var traceFlags = traceParent[3].ConvertToEnum<ActivityTraceFlags>( ActivityTraceFlags.None );
+
+                return new ActivityLink( new ActivityContext( ActivityTraceId.CreateFromString( traceId.ToArray() ), ActivitySpanId.CreateFromString( spanId.ToArray() ), traceFlags ) );
+            }
+
+            return null;
         }
 
         #endregion Observability

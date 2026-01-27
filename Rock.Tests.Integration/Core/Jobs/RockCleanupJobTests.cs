@@ -47,7 +47,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             using ( var rockContext = new RockContext() )
             {
                 var actualPerson = new PersonService( rockContext ).Get( expectedPerson.Guid );
-                Assert.That.AreEqual( AccountProtectionProfile.Medium, actualPerson.AccountProtectionProfile );
+                Assert.AreEqual( AccountProtectionProfile.Medium, actualPerson.AccountProtectionProfile );
             }
         }
 
@@ -66,10 +66,10 @@ namespace Rock.Tests.Integration.Core.Jobs
             using ( var rockContext = new RockContext() )
             {
                 var actualPerson = new PersonService( rockContext ).Get( expectedLowGroupPerson.Guid );
-                Assert.That.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
+                Assert.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
 
                 actualPerson = new PersonService( rockContext ).Get( expectedHighSecurityGroupPerson.Guid );
-                Assert.That.AreEqual( AccountProtectionProfile.Extreme, actualPerson.AccountProtectionProfile );
+                Assert.AreEqual( AccountProtectionProfile.Extreme, actualPerson.AccountProtectionProfile );
             }
         }
 
@@ -111,7 +111,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             using ( var rockContext = new RockContext() )
             {
                 var actualPerson = new PersonService( rockContext ).Get( personGuid );
-                Assert.That.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
+                Assert.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
             }
         }
 
@@ -165,7 +165,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             using ( var rockContext = new RockContext() )
             {
                 var actualPerson = new PersonService( rockContext ).Get( personGuid );
-                Assert.That.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
+                Assert.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
             }
         }
 
@@ -207,7 +207,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             using ( var rockContext = new RockContext() )
             {
                 var actualPerson = new PersonService( rockContext ).Get( personGuid );
-                Assert.That.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
+                Assert.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
             }
         }
 
@@ -248,7 +248,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             using ( var rockContext = new RockContext() )
             {
                 var actualPerson = new PersonService( rockContext ).Get( personGuid );
-                Assert.That.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
+                Assert.AreEqual( AccountProtectionProfile.High, actualPerson.AccountProtectionProfile );
             }
         }
 
@@ -510,13 +510,13 @@ namespace Rock.Tests.Integration.Core.Jobs
             var remainingFiles = Directory.EnumerateFiles( cacheDirectory, searchPattern: "*", searchOption: SearchOption.AllDirectories ).ToList();
 
             var oldFiles = remainingFiles.Where( f => f.Contains( "_old" ) ).ToList();
-            Assert.IsTrue( oldFiles.Count == 0, "Unexpected files found. Old files not removed from cache." );
+            Assert.IsEmpty( oldFiles, "Unexpected files found. Old files not removed from cache." );
 
             var currentFiles = remainingFiles.Where( f => f.Contains( "_current" ) ).ToList();
-            Assert.IsTrue( currentFiles.Count == 2, "Expected files not found. Current files removed from cache." );
+            Assert.HasCount( 2, currentFiles, "Expected files not found. Current files removed from cache." );
 
             var futureFiles = remainingFiles.Where( f => f.Contains( "_future" ) ).ToList();
-            Assert.IsTrue( futureFiles.Count == 1, "Expected files not found. Future files removed from cache." );
+            Assert.HasCount( 1, futureFiles, "Expected files not found. Future files removed from cache." );
         }
 
         private FileInfo CreateTestFile( string filePath, DateTime? createdTime = null, DateTime? lastModifiedTime = null )
@@ -626,7 +626,7 @@ DELETE FROM PersonSearchKey
             var result = job.Result;
             TestHelper.Log( result );
 
-            Assert.That.Contains( result, "2 Unused Interaction Sessions" );
+            Assert.Contains( "2 Unused Interaction Sessions", result );
 
             InteractionSession interactionSession;
             var interactionSessionService = new InteractionSessionService( rockContext );

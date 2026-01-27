@@ -26,7 +26,6 @@
         <CodeEditor v-model="publicDescription"
                     label="Public Description HTML"
                     mode="lava"
-                    theme="rock"
                     :editorHeight="250"
                     help="Additional HTML content to include with the account." />
 
@@ -189,7 +188,7 @@
         return {
             key: participant.personAlias?.value,
             name: participant.personFullName,
-            purposeKey: purposeKeyOptions.value.find(x => x.value == participant.purposeKey)?.text
+            purposeKey: purposeKeyOptions.value.find(x => x.value === participant.purposeKey)?.text
         };
     }
     // #endregion

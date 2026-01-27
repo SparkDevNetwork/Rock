@@ -1,0 +1,222 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="errorMessage" alertType="danger" class="mb-spacing-md">
+        {{ errorMessage }}
+    </NotificationBox>
+
+    <div class="d-flex justify-content-between align-items-end w-100 border-bottom pb-spacing-lg mb-spacing-lg">
+        <div class="heading-text d-flex flex-column align-items-start">
+            <h4 class="form-title m-0">Create New Form</h4>
+            <span class="form-description">Complete the fields below to setup your new form. Upon completion
+                you'll be
+                taken to the form designer.</span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <TextBox v-model="name" label="Name" rules="required"
+                     help="The internal name of the form you are creating. This name will not be displayed when the form is not being shown." />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <TextBox v-model="description" label="Description" textMode="multiline"
+                     help="An internal description of what the form will be used for." />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <DropDownList label="Template" v-model="template" :items="templateOptions" :showBlankItem="true"
+                          help="An optional template to use that provides pre-configured settings." />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <TextBox v-model="slug" label="Slug" rules="required" @update:modelValue="onSlugManualInput" @blur="onSlugBlur"
+                     help="The slug is used to identify this form in the URL. It must be unique." />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <CategoryPicker label="Category" v-model="category" :entityTypeGuid="EntityType.WorkflowType"
+                            rules="required" />
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <RockButton btnType="primary" @click="onStartBuilding">Start Building</RockButton>
+        <RockButton btnType="link" @click="onCancel">Cancel</RockButton>
+    </div>
+</template>
+
+<style scoped>
+.heading-text {
+    gap: var(--spacing-tiny);
+}
+
+.form-title {
+    line-height: 105.469%;
+}
+
+.form-description {
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-Small);
+    font-weight: var(--font-weight-regular);
+    line-height: 110%;
+}
+</style>
+
+<script setup lang="ts">
+    import { ref, watch, onMounted, PropType } from "vue";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { FormListBag } from "@Obsidian/ViewModels/Blocks/Workflow/FormBuilder/FormList/formListBag";
+    import { NavigationUrlKey } from "./types.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    const props = defineProps({
+        selectedCategory: {
+            type: Object as PropType<ListItemBag | null>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "cancel"): void;
+        (e: "save", result: { url: string; errorMessage?: string | null }): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const config = useConfigurationValues<FormListBag>();
+
+    const name = ref("");
+    const description = ref("");
+    const template = ref("");
+    const slug = ref("");
+    const category = ref<ListItemBag | null | undefined>(props.selectedCategory);
+    const errorMessage = ref<string | null>("");
+    const slugWasManuallyEdited = ref(false);
+
+    const templateOptions = ref<ListItemBag[]>([]);
+
+    /**
+     * Fetches the template options from the server.
+     */
+    async function fetchTemplateOptions(): Promise<void> {
+        const result = await invokeBlockAction<ListItemBag[]>("GetTemplates");
+
+        if (result.isSuccess && result.data) {
+            templateOptions.value = result.data;
+        }
+    }
+
+    /**
+     * Event handler for the "Start Building" button.
+     * Creates a new form and redirects the user to the form builder.
+     */
+    async function onStartBuilding(): Promise<void> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<string>("CreateForm", {
+            name: name.value,
+            description: description.value,
+            slug: slug.value,
+            categoryGuid: category.value?.value,
+            templateGuid: toGuidOrNull(template.value)
+        });
+
+        if (!result.isSuccess) {
+            errorMessage.value = result.errorMessage || "Unable to create the form.";
+            return;
+        }
+
+        if (!result.data) {
+            errorMessage.value = "Unable to create the form.";
+            return;
+        }
+
+        if (config.navigationUrls?.[NavigationUrlKey.FormBuilderPage]) {
+            const url = config.navigationUrls[NavigationUrlKey.FormBuilderPage] + `?WorkflowTypeId=${result.data}`;
+            emit("save", { url });
+        }
+        else {
+            // Form was created successfully, but we can't redirect anywhere.
+            emit("save", { url: "", errorMessage: "The Form Builder Page URL is not configured." });
+        }
+    }
+
+    /**
+     * Event handler for the "Cancel" button.
+     * Emits the "cancel" event.
+     */
+    function onCancel(): void {
+        emit("cancel");
+    }
+
+    /**
+     * Event handler for the "Blur" event on the Slug field.
+     * Sanitizes the slug and ensures it is unique.
+     */
+    async function onSlugBlur(): Promise<void> {
+        if (!slug.value) {
+            return;
+        }
+
+        const result = await invokeBlockAction<string>("GetUniqueSlug", { name: slug.value });
+
+        if (result.isSuccess && result.data) {
+            if (slug.value !== result.data) {
+                slug.value = result.data;
+            }
+        }
+    }
+
+    /**
+     * Event handler for when the user manually inputs a value into the Slug field.
+     */
+    function onSlugManualInput(val: string): void {
+        // If user clears slug, allow name watcher to resume managing it.
+        if (!val) {
+            slugWasManuallyEdited.value = false;
+            return;
+        }
+
+        slugWasManuallyEdited.value = true;
+    }
+
+    // Watch for changes to the name and update the slug accordingly (only until the user edits the slug directly).
+    watch(name, debounce(async () => {
+        if (slugWasManuallyEdited.value) {
+            return;
+        }
+
+        const val = name.value;
+
+        if (val) {
+            const result = await invokeBlockAction<string>("GetUniqueSlug", { name: val });
+
+            if (result.isSuccess && result.data) {
+                slug.value = result.data;
+            }
+            else {
+                slug.value = val.replace(/[^a-zA-Z0-9_.-]/g, "");
+            }
+        }
+    }, 500));
+
+    onMounted(() => {
+        fetchTemplateOptions();
+    });
+</script>

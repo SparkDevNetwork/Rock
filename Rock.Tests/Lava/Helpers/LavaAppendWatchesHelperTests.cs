@@ -19,7 +19,6 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava.Helpers;
-using Rock.Tests.Shared;
 
 namespace Rock.Tests.Lava.Helpers
 {
@@ -31,8 +30,8 @@ namespace Rock.Tests.Lava.Helpers
         {
             var (resumePercentage, resumeLocationInSeconds) = LavaAppendWatchesHelper.GetResumeInformation( string.Empty );
 
-            Assert.That.AreEqual( 0, resumePercentage );
-            Assert.That.AreEqual( 0, resumeLocationInSeconds );
+            Assert.AreEqual( 0, resumePercentage );
+            Assert.AreEqual( 0, resumeLocationInSeconds );
         }
 
         [TestMethod]
@@ -40,8 +39,8 @@ namespace Rock.Tests.Lava.Helpers
         {
             var (resumePercentage, resumeLocationInSeconds) = LavaAppendWatchesHelper.GetResumeInformation( null );
 
-            Assert.That.AreEqual( 0, resumePercentage );
-            Assert.That.AreEqual( 0, resumeLocationInSeconds );
+            Assert.AreEqual( 0, resumePercentage );
+            Assert.AreEqual( 0, resumeLocationInSeconds );
         }
 
         [TestMethod]
@@ -50,7 +49,7 @@ namespace Rock.Tests.Lava.Helpers
             var watchMap = "851,222,,4601,5720";
             var (_, resumeLocationInSeconds) = LavaAppendWatchesHelper.GetResumeInformation( watchMap );
 
-            Assert.That.AreEqual( 567, resumeLocationInSeconds );
+            Assert.AreEqual( 567, resumeLocationInSeconds );
         }
 
         [TestMethod]
@@ -59,7 +58,7 @@ namespace Rock.Tests.Lava.Helpers
             var watchMap = "851,222,23X,4601,5720";
             var (_, resumeLocationInSeconds) = LavaAppendWatchesHelper.GetResumeInformation( watchMap );
 
-            Assert.That.AreEqual( 567, resumeLocationInSeconds );
+            Assert.AreEqual( 567, resumeLocationInSeconds );
         }
 
         [TestMethod]
@@ -68,7 +67,7 @@ namespace Rock.Tests.Lava.Helpers
             var watchMap = "851,222,XX1,4601,5720";
             var (_, resumeLocationInSeconds) = LavaAppendWatchesHelper.GetResumeInformation( watchMap );
 
-            Assert.That.AreEqual( 567, resumeLocationInSeconds );
+            Assert.AreEqual( 567, resumeLocationInSeconds );
         }
 
         [TestMethod]
@@ -77,7 +76,7 @@ namespace Rock.Tests.Lava.Helpers
             var watchMap = "851,222,4601,5722";
             var (_, resumeLocationInSeconds) = LavaAppendWatchesHelper.GetResumeInformation( watchMap );
 
-            Assert.That.AreEqual( 0, resumeLocationInSeconds );
+            Assert.AreEqual( 0, resumeLocationInSeconds );
         }
 
         [TestMethod]
@@ -86,7 +85,7 @@ namespace Rock.Tests.Lava.Helpers
             var watchMap = "851,222,4601,5722";
             var (resumePercentage, _) = LavaAppendWatchesHelper.GetResumeInformation( watchMap );
 
-            Assert.That.AreEqual( 100, resumePercentage);
+            Assert.AreEqual( 100, resumePercentage );
         }
 
         [TestMethod]
@@ -95,7 +94,7 @@ namespace Rock.Tests.Lava.Helpers
             var watchMap = "851,222,4601,5720";
             var (_, resumeLocationInSeconds) = LavaAppendWatchesHelper.GetResumeInformation( watchMap );
 
-            Assert.That.AreEqual( 567, resumeLocationInSeconds );
+            Assert.AreEqual( 567, resumeLocationInSeconds );
         }
 
         [TestMethod]
@@ -104,7 +103,7 @@ namespace Rock.Tests.Lava.Helpers
             var watchMap = "851,222,4601,5720";
             var (resumePercentage, _) = LavaAppendWatchesHelper.GetResumeInformation( watchMap );
 
-            Assert.That.AreEqual( 49.78, Math.Round( resumePercentage, 2 ) );
+            Assert.AreEqual( 49.78, Math.Round( resumePercentage, 2 ) );
         }
     }
 }

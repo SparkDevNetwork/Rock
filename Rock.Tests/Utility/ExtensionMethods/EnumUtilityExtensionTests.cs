@@ -32,7 +32,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             var actualListItemBag = typeof( TestEnum ).ToEnumListItemBag();
 
-            Assert.AreEqual( expectedListItemBagList.Length, actualListItemBag.Count);
+            Assert.HasCount( expectedListItemBagList.Length, actualListItemBag );
             Assert.AreEqual( expectedListItemBagList[0].Text, actualListItemBag[0].Text );
             Assert.AreEqual( expectedListItemBagList[1].Text, actualListItemBag[1].Text );
             Assert.AreEqual( expectedListItemBagList[0].Value, actualListItemBag[0].Value );
@@ -49,7 +49,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             var actualListItemBag = typeof( TestEnumWithDescription ).ToEnumListItemBag();
 
-            Assert.AreEqual( expectedListItemBagList.Length, actualListItemBag.Count);
+            Assert.HasCount( expectedListItemBagList.Length, actualListItemBag );
             Assert.AreEqual( expectedListItemBagList[0].Text, actualListItemBag[0].Text );
             Assert.AreEqual( expectedListItemBagList[1].Text, actualListItemBag[1].Text );
             Assert.AreEqual( expectedListItemBagList[0].Value, actualListItemBag[0].Value );

@@ -82,7 +82,7 @@
     // #region Computed Values
 
     const isAuditHidden = computed((): boolean => {
-        return panelMode.value != DetailPanelMode.View;
+        return panelMode.value !== DetailPanelMode.View;
     });
 
     /**

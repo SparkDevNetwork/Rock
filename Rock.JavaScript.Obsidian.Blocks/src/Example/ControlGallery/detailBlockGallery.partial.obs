@@ -1,0 +1,267 @@
+<template>
+    <GalleryAndResult demoMode
+                      :importCode="importCode"
+                      :exampleCode="exampleCode">
+        <div>
+            <DetailBlock name="Sample Entity"
+                         :entityTypeGuid="entityTypeGuid"
+                         entityTypeName="Entity Type"
+                         entityKey="57dc00a3-ff88-4d4c-9878-30ae309117e2"
+                         :headerActions="headerActions"
+                         :headerSecondaryActions="headerSecondaryActions"
+                         :labels="labels"
+                         :footerActions="footerActions"
+                         :footerSecondaryActions="footerSecondaryActions"
+                         :isAuditHidden="isAuditHidden"
+                         :isEditVisible="isEditVisible"
+                         :isDeleteVisible="isDeleteVisible"
+                         :isFollowVisible="isFollowVisible"
+                         :isBadgesVisible="isBadgesVisible"
+                         :isSecurityHidden="isSecurityHidden"
+                         :isTagsVisible="isTagsVisible"
+                         :showExperienceMode="showExperienceMode"
+                         @save="delayedHandler"
+                         @edit="delayedHandler"
+                         @delete="delayedDeleteHandler">
+                <template v-if="simulateHelp" #helpContent>
+                    This is some help text.
+                </template>
+
+                <template #view>
+                    <div v-for="(_, i) in colors" :style="{ background: 'var(--color-info-strong)', height: '1px', opacity: 1 - (i / colors.length) }"></div>
+                </template>
+            </DetailBlock>
+        </div>
+
+
+        <template #settings>
+            <div class="automatic-layout">
+                <CheckBox v-model="isAuditHidden" label="Is Audit Hidden" />
+                <CheckBox v-model="isBadgesVisible" label="Is Badges Visible" />
+                <CheckBox v-model="isDeleteVisible" label="Is Delete Visible" />
+                <CheckBox v-model="isEditVisible" label="Is Edit Visible" />
+                <CheckBox v-model="isFollowVisible" label="Is Follow Visible" />
+                <CheckBox v-model="isSecurityHidden" label="Is Security Hidden" />
+                <CheckBox v-model="isTagsVisible" label="Is Tags Visible" />
+                <CheckBox v-model="showExperienceMode" label="Show Experience Mode" />
+            </div>
+
+            <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" horizontal />
+        </template>
+    </GalleryAndResult>
+</template>
+
+<style scoped>
+* :deep(.panel.panel-block.panel-flex) {
+    height: auto;
+}
+</style>
+
+<script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { sleep } from "@Obsidian/Utility/promiseUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { computed, ref } from "vue";
+    import { ComponentUsage, getTemplateImportPath } from "./common/utils.partial";
+
+    // #region Values
+
+    const simulateValues = ref<string[]>([]);
+    const colors = Array.apply(0, Array(256));
+    const entityTypeGuid = EntityType.Group;
+    const isAuditHidden = ref(false);
+    const isBadgesVisible = ref(true);
+    const isDeleteVisible = ref(true);
+    const isEditVisible = ref(true);
+    const isFollowVisible = ref(true);
+    const isSecurityHidden = ref(true);
+    const isTagsVisible = ref(true);
+    const showExperienceMode = ref(false);
+
+    const simulateOptions: ListItemBag[] = [
+        {
+            value: "headerActions",
+            text: "Header Actions"
+        },
+        {
+            value: "headerSecondaryActions",
+            text: "Header Secondary Actions"
+        },
+        {
+            value: "labels",
+            text: "Labels",
+        },
+        {
+            value: "footerActions",
+            text: "Footer Actions"
+        },
+        {
+            value: "footerSecondaryActions",
+            text: "Footer Secondary Actions"
+        },
+        {
+            value: "helpContent",
+            text: "Help Content"
+        }
+    ];
+
+    const importCode = getTemplateImportPath("detailBlock");
+
+    const exampleCode = computed(() => {
+        const usage = new ComponentUsage("DetailBlock");
+
+        usage.addAttribute("name", "Sample Entity");
+        usage.addAttribute(":entityTypeGuid", "entityTypeGuid");
+        usage.addAttribute("entityTypeName", "Entity Type");
+        usage.addAttribute("entityKey", "57dc00a3-ff88-4d4c-9878-30ae309117e2");
+        usage.addAttribute(":headerActions", "headerActions");
+        usage.addAttribute(":headerSecondaryActions", "headerSecondaryActions");
+        usage.addAttribute(":labels", "labels");
+        usage.addAttribute(":footerActions", "footerActions");
+        usage.addAttribute(":footerSecondaryActions", "footerSecondaryActions");
+        usage.addAttribute("isAuditHidden", isAuditHidden.value, false);
+        usage.addAttribute("isEditVisible", isEditVisible.value, false);
+        usage.addAttribute("isDeleteVisible", isDeleteVisible.value, false);
+        usage.addAttribute("isFollowVisible", isFollowVisible.value, false);
+        usage.addAttribute("isBadgesVisible", isBadgesVisible.value, false);
+        usage.addAttribute("isSecurityHidden", isSecurityHidden.value, false);
+        usage.addAttribute("isTagsVisible", isTagsVisible.value, false);
+        usage.addAttribute("showExperienceMode", showExperienceMode.value, false);
+
+        return usage.toString();
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    const headerActions = computed((): PanelAction[] => {
+        if (!simulateValues.value.includes("headerActions")) {
+            return [];
+        }
+
+        return [
+            {
+                iconCssClass: "ti ti-user",
+                title: "Action 1",
+                type: "default",
+                handler: () => alert("Action 1 selected.")
+            },
+            {
+                iconCssClass: "ti ti-users",
+                title: "Action 2",
+                type: "success",
+                handler: () => alert("Action 2 selected.")
+            }
+        ];
+    });
+
+    const labels = computed((): PanelAction[] => {
+        if (!simulateValues.value.includes("labels")) {
+            return [];
+        }
+
+        return [
+            {
+                iconCssClass: "ti ti-user",
+                title: "Action 1",
+                type: "info",
+                handler: () => alert("Action 1 selected.")
+            },
+            {
+                iconCssClass: "ti ti-users",
+                title: "Action 2",
+                type: "success",
+                handler: () => alert("Action 2 selected.")
+            }
+        ];
+    });
+
+    const headerSecondaryActions = computed((): PanelAction[] => {
+        if (!simulateValues.value.includes("headerSecondaryActions")) {
+            return [];
+        }
+
+        return [
+            {
+                iconCssClass: "ti ti-user",
+                title: "Action 1",
+                type: "default",
+                handler: () => alert("Action 1 selected.")
+            },
+            {
+                iconCssClass: "ti ti-users",
+                title: "Action 2",
+                type: "success",
+                handler: () => alert("Action 2 selected.")
+            }
+        ];
+    });
+
+    const footerActions = computed((): PanelAction[] => {
+        if (!simulateValues.value.includes("footerActions")) {
+            return [];
+        }
+
+        return [
+            {
+                iconCssClass: "ti ti-user",
+                title: "Action 1",
+                type: "default",
+                handler: () => alert("Action 1 selected.")
+            },
+            {
+                iconCssClass: "ti ti-users",
+                title: "Action 2",
+                type: "success",
+                handler: () => alert("Action 2 selected.")
+            }
+        ];
+    });
+
+    const footerSecondaryActions = computed((): PanelAction[] => {
+        if (!simulateValues.value.includes("footerSecondaryActions")) {
+            return [];
+        }
+
+        return [
+            {
+                iconCssClass: "ti ti-user",
+                title: "Action 1",
+                type: "default",
+                handler: () => alert("Action 1 selected.")
+            },
+            {
+                iconCssClass: "ti ti-users",
+                title: "Action 2",
+                type: "success",
+                handler: () => alert("Action 2 selected.")
+            }
+        ];
+    });
+
+    const simulateHelp = computed((): boolean => {
+        return simulateValues.value.includes("helpContent");
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    async function delayedHandler(): Promise<boolean> {
+        await sleep(1000);
+        return true;
+    }
+
+    async function delayedDeleteHandler(): Promise<false> {
+        await sleep(1000);
+        return false;
+    }
+
+    // #endregion
+</script>

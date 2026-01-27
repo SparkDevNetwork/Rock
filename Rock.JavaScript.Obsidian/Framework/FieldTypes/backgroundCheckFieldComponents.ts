@@ -73,7 +73,7 @@ export const EditComponent = defineComponent({
             */
 
             // Stop if the provider entity type did not change.
-            if (splitValues[0] == entityType?.value?.value) {
+            if (splitValues[0] === entityType?.value?.value) {
                 return;
             }
 

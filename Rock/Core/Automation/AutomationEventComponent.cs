@@ -31,7 +31,7 @@ namespace Rock.Core.Automation
     /// provide UI and logic for a specific event type in the automation
     /// system.
     /// </summary>
-    internal abstract class AutomationEventComponent : LightComponent
+    public abstract class AutomationEventComponent : LightComponent
     {
         #region Properties
 

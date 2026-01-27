@@ -105,7 +105,7 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
     /// <param name="fromPhone"></param>
     /// <param name="body"></param>
     /// <returns></returns>
-    public override Twilio.TwiML.Message ProcessMessage( HttpRequest request, string toPhone, string fromPhone, string body )
+    public override Twilio.TwiML.Messaging.Message ProcessMessage( HttpRequest request, string toPhone, string fromPhone, string body )
     {
         var message = new SmsMessage
         {
@@ -163,12 +163,31 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
 
                 var outcomes = SmsActionService.ProcessIncomingMessage( message, smsPipelineId );
                 var smsResponse = SmsActionService.GetResponseFromOutcomes( outcomes );
-                var twilioMessage = new Twilio.TwiML.Message();
 
                 if ( smsResponse == null )
                 {
                     return null;
                 }
+
+                var fromPersonAliasId = message.FromPerson?.PrimaryAliasId;
+                if ( fromPersonAliasId.HasValue )
+                {
+                    var responseCommunicationId = SmsActionService.CreateAndEnqueueResponseCommunication(
+                        smsResponse,
+                        fromPersonAliasId.Value,
+                        message.ToNumber,
+                        rockContext
+                    );
+
+                    if ( responseCommunicationId.HasValue )
+                    {
+                        // There's no need to send a message object back to the caller of this method since we've
+                        // already queued a response to be sent.
+                        return null;
+                    }
+                }
+
+                var twilioMessage = new Twilio.TwiML.Messaging.Message();
 
                 if ( smsResponse.Message.IsNotNullOrWhiteSpace() )
                 {
@@ -179,7 +198,10 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
                 {
                     foreach ( var binaryFile in smsResponse.Attachments )
                     {
-                        twilioMessage.Media( binaryFile.Url );
+                        if ( Uri.TryCreate( binaryFile.Url, UriKind.Absolute, out var uri ) )
+                        {
+                            twilioMessage.Media( uri );
+                        }
                     }
                 }
 

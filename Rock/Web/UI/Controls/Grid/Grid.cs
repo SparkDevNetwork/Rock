@@ -34,6 +34,7 @@ using OfficeOpenXml;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Core.Grid;
 using Rock.Lava;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -1259,13 +1260,13 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         /// </returns>
         protected override ICollection CreateColumns( PagedDataSource dataSource, bool useDataSource )
         {
-            if ( CustomColumns != null && CustomColumns.Any() )
+            if ( InternalCustomColumns != null && InternalCustomColumns.Any() )
             {
                 var columns = base.CreateColumns( dataSource, useDataSource ).OfType<DataControlField>().ToList();
-                foreach ( var columnConfig in CustomColumns )
+                foreach ( var columnConfig in InternalCustomColumns )
                 {
                     int insertPosition;
-                    if ( columnConfig.PositionOffsetType == CustomGridColumnsConfig.ColumnConfig.OffsetType.LastColumn )
+                    if ( columnConfig.PositionOffsetType == ColumnPositionAnchor.LastColumn )
                     {
                         insertPosition = columns.Count - columnConfig.PositionOffset;
                     }
@@ -1325,7 +1326,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         public int GetColumnIndex( DataControlField dataControlField )
         {
             // If the grid has custom columns and the columns have been created, get the index of the column from CreatedColumns
-            if ( CustomColumns != null && CustomColumns.Any() && this.CreatedColumns != null )
+            if ( InternalCustomColumns != null && InternalCustomColumns.Any() && this.CreatedColumns != null )
             {
                 return this.CreatedColumns.IndexOf( dataControlField );
             }
@@ -1343,7 +1344,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         public DataControlField GetColumnByHeaderText( string headerText )
         {
             // If the grid has custom columns and the columns have been created, get the datacontrolfield from CreatedColumns
-            if ( CustomColumns != null && CustomColumns.Any() && this.CreatedColumns != null )
+            if ( InternalCustomColumns != null && InternalCustomColumns.Any() && this.CreatedColumns != null )
             {
                 foreach ( DataControlField column in this.CreatedColumns )
                 {
@@ -1373,7 +1374,14 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         /// <value>
         /// The custom columns.
         /// </value>
+        [Obsolete( "This property is no longer used." )]
+        [RockObsolete( "19.0" )]
         public List<CustomGridColumnsConfig.ColumnConfig> CustomColumns { get; set; }
+
+        /// <summary>
+        /// The custom columns from blocks that implement ICustomGridColumns.
+        /// </summary>
+        internal List<CustomColumnConfig> InternalCustomColumns { get; set; }
 
         /// <summary>
         /// Creates the control hierarchy used to render the <see cref="T:System.Web.UI.WebControls.GridView" /> control using the specified data source.
@@ -1418,7 +1426,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 _table.Rows.Add( _actionFooterRow );
 
                 TableCell actionFooterCell = new TableCell();
-                int visibleColumnCount = this.Columns.OfType<DataControlField>().Where( a => a.Visible ).Count() + ( this.CustomColumns?.Count ?? 0 );
+                int visibleColumnCount = this.Columns.OfType<DataControlField>().Where( a => a.Visible ).Count() + ( this.InternalCustomColumns?.Count ?? 0 );
                 actionFooterCell.ColumnSpan = visibleColumnCount;
                 actionFooterCell.CssClass = "grid-actions";
                 _actionFooterRow.Cells.Add( actionFooterCell );
@@ -1975,6 +1983,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     var communicationService = new Rock.Model.CommunicationService( communicationRockContext );
                     var communication = new Rock.Model.Communication();
                     communication.Status = Model.CommunicationStatus.Transient;
+                    communication.CommunicationType = Rock.Model.CommunicationType.Email;
 
                     // Get a list of the mergefield names
                     List<string> mergeFields = communicationMergeFields.Select( f => f.Value ).Distinct().ToList();
@@ -2550,9 +2559,9 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                             }
                         }
 
-                        if ( CustomColumns != null && CustomColumns.Any() )
+                        if ( InternalCustomColumns != null && InternalCustomColumns.Any() )
                         {
-                            foreach ( var columnConfig in CustomColumns )
+                            foreach ( var columnConfig in InternalCustomColumns )
                             {
                                 var column = columnConfig.GetGridColumn();
                                 lavaFields.Add( column );

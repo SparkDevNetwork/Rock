@@ -13,4 +13,8 @@
     </Compile>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj" />
+  </ItemGroup>
+
 </Project>

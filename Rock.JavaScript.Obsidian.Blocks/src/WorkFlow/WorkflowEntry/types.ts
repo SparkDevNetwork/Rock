@@ -16,6 +16,7 @@
 //
 
 import { PropType } from "vue";
+import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
 
 /**
  * A custom error that indicates an error occurred while processing the
@@ -57,8 +58,16 @@ export type InteractiveActionProps = {
      * then it will be thrown as an InteractiveActionError.
      */
     submit: {
-        type: PropType<(data: Record<string, string | null | undefined>) => Promise<void>>,
+        type: PropType<(data: Record<string, string | null | undefined>, actionContext?: BlockActionContextBag | undefined) => Promise<void>>,
         required: true
+    },
+
+    /**
+     * Whether or not CAPTCHA validation is enabled for this action.
+     */
+    isCaptchaEnabled: {
+        type: PropType<boolean>;
+        default: boolean;
     }
 };
 
@@ -75,7 +84,12 @@ export const interactiveActionProps: InteractiveActionProps = {
     },
 
     submit: {
-        type: Function as PropType<(data: Record<string, string | null | undefined>) => Promise<void>>,
+        type: Function as PropType<(data: Record<string, string | null | undefined>, actionContext?: BlockActionContextBag | undefined) => Promise<void>>,
         required: true
+    },
+
+    isCaptchaEnabled: {
+        type: Boolean as PropType<boolean>,
+        default: false
     }
 };

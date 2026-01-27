@@ -3,114 +3,310 @@
     <Modal v-model="showTimingsModal"
            title="Page Debug Timings"
            cancelText="Close">
-        <table class="table table-bordered table-striped debug-timings" style="width:100%; margin-bottom: 48px;">
-            <thead>
-                <tr>
-                    <th class="debug-timestamp">Timestamp</th>
-                    <th>Event</th>
-                    <th class="debug-timestamp">Duration</th>
-                    <th class="debug-waterfall">Waterfall</th>
-                </tr>
-            </thead>
-            <tbody>
-                <PageDebugTimingRow v-for="(vm, i) in serverViewModels" :key="`s${i}-${vm.timestampMs}`" :viewModel="vm" :totalMs="clientRelativeEndTimeMs" />
-                <PageDebugTimingRow :viewModel="clientHeader" :totalMs="clientRelativeEndTimeMs" />
-                <PageDebugTimingRow v-for="(vm, i) in relativeClientViewModels" :key="`c${i}-${vm.timestampMs}`" :viewModel="vm" :totalMs="clientRelativeEndTimeMs" />
-            </tbody>
-        </table>
+        <div class="traces" style="margin: calc(0px - var(--spacing-large))">
+            <TabbedBar v-model="selectedTab" :tabs="tabs" />
+
+            <div class="mt-4">
+                <div v-if="selectedTab === 'traces'" class="traces-tab">
+                    <div class="traces-list">
+                        <div v-if="!traces">
+                            <LoadingIndicator />
+                        </div>
+
+                        <table v-else class="table table-bordered table-striped" style="width:100%;">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th class="trace-timestamp"><i class="ti ti-database"></i></th>
+                                    <th class="trace-timestamp"><i class="ti ti-clock"></i></th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <PageDebugTraceRow v-for="(trace, index) in traceGroups"
+                                                   :key="trace.spanId!"
+                                                   :trace="trace"
+                                                   :indentLevel="0"
+                                                   :isExpanded="traceGroups.length === 1 && index === 0"
+                                                   :startMs="trace.startTime"
+                                                   :totalMs="trace.duration"
+                                                   @select="selectedTrace = $event" />
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div v-if="selectedTrace" class="trace-detail well m-3">
+                        <div class="trace-detail-header">
+                            <span>{{ selectedTrace.name }}</span>
+                            <i class="ti ti-x" @click="selectedTrace = null"></i>
+                        </div>
+
+                        <div class="trace-tags">
+                            <table class="table table-bordered table-striped" style="width:100%;">
+                                <tbody>
+                                    <tr v-for="tag of selectedTrace.tags" :key="tag.value ?? undefined">
+                                        <td>{{ tag.value }}</td>
+                                        <td>{{ tag.text }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </Modal>
 </template>
 
-<style>
-.debug-timestamp {
+<style scoped>
+.traces :deep(.trace-timestamp),
+.traces :deep(.trace-queries) {
     text-align: right;
     text-wrap: nowrap;
 }
 
-td.debug-waterfall {
+.traces :deep(.trace-waterfall) {
     width: 40%;
-    position: relative;
     vertical-align: middle !important;
     padding: 0 !important;
+    overflow: hidden;
 }
 
-.debug-chart-bar {
+.traces :deep(.trace-chart) {
+    position: relative;
+    height: 1.125em;
+    margin: 0 2px;
+}
+
+.traces :deep(.trace-chart-bar) {
     position: absolute;
     display: block;
     min-width: 1px;
-    height: 1.125em;
+    height: 100%;
     background: #009ce3;
-    margin-top: -0.5625em;
+    border-radius: var(--rounded-xsmall);
+}
+
+.timings-tab {
+    max-height: calc(100vh - 250px);
+    overflow-y: auto;
+}
+
+.traces-tab {
+    max-height: calc(100vh - 250px);
+    display: flex;
+    flex-direction: column;
+}
+
+.traces-list {
+    flex-basis: 70%;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.trace-detail {
+    flex-basis: 30%;
+    flex-grow: 1;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh * 0.3);
+}
+
+.trace-detail-header {
+    display: flex;
+    gap: var(--spacing-small);
+    margin-bottom: var(--spacing-small);
+}
+
+.trace-detail-header .ti {
+    margin-left: auto;
+    cursor: pointer;
+}
+
+.trace-tags {
+    flex-grow: 1;
+    overflow-y: auto;
 }
 </style>
 
 <script setup lang="ts">
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
-    import PageDebugTimingRow from "./pageDebugTimingRow.obs";
-    import { computed, PropType, ref } from "vue";
-    import { DebugTiming } from "@Obsidian/ViewModels/Utility/debugTiming";
-    import { useStore } from "@Obsidian/PageState";
+    import PageDebugTraceRow from "./pageDebugTraceRow.partial.obs";
+    import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
+    import { computed, ref, watch } from "vue";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-    const store = useStore();
+    type TraceRecordBag = {
+        traceId?: string | null;
+        spanId?: string | null;
+        parentSpanId?: string | null;
+        name?: string | null;
+        startTime: number;
+        duration: number;
+        tags?: ListItemBag[] | null;
+    };
 
-    const props = defineProps({
-        serverViewModels: {
-            type: Array as PropType<DebugTiming[]>,
-            required: true
-        }
-    });
+    type TraceRecordTreeBag = TraceRecordBag & {
+        children: TraceRecordTreeBag[];
+
+        queries: number;
+
+        parent: TraceRecordTreeBag | null;
+    };
+
+    const http = useHttp();
 
     const showTimingsModal = ref(true);
+    const selectedTab = ref<("traces")>("traces");
+    const traces = ref<TraceRecordBag[]>();
+    const selectedTrace = ref<TraceRecordTreeBag | null>(null);
 
-    const serverEndTimeMs = computed((): number => {
-        if (!props.serverViewModels.length) {
-            return 0;
+    let loadDataTimeout: number | null = null;
+    let loadingDelay = 1000;
+
+    // #region Computed Values
+
+    const tabs = computed((): ListItemBag[] => {
+        const items: ListItemBag[] = [];
+
+        items.push({
+            value: "traces",
+            text: "Traces"
+        });
+
+        return items;
+    });
+
+    const traceGroups = computed((): TraceRecordTreeBag[] => {
+        if (!traces.value) {
+            return [];
         }
 
-        const lastIndex = props.serverViewModels.length - 1;
-        const lastViewModel = props.serverViewModels[lastIndex];
-        return lastViewModel.timestampMs + lastViewModel.durationMs;
-    });
+        const untrackedTraces = [...traces.value];
+        const groups: TraceRecordTreeBag[] = [];
+        const map = new Map<string, TraceRecordTreeBag>();
+        let foundChildren = false;
 
-    const firstClientRelativeStartTimeMs = computed((): number => {
-        if (!relativeClientViewModels.value.length) {
-            return serverEndTimeMs.value;
+        // First pass - find all root records.
+        for (const trace of traces.value) {
+            if (!trace.parentSpanId && trace.spanId) {
+                const treeItem = { ...trace, children: [], queries: 0, parent: null };
+                groups.push(treeItem);
+                map.set(trace.spanId, treeItem);
+            }
         }
 
-        const viewModel = relativeClientViewModels.value[0];
-        return viewModel.timestampMs;
+        // Subsequent passes - find children of existing records until no more are found.
+        do {
+            foundChildren = false;
+
+            for (let i = 0; i < untrackedTraces.length; i++) {
+                const trace = untrackedTraces[i];
+                if (trace.parentSpanId && trace.spanId) {
+                    const parent = map.get(trace.parentSpanId);
+
+                    if (parent) {
+                        const treeItem = { ...trace, children: [], queries: 0, parent };
+                        parent.children.push(treeItem);
+                        map.set(trace.spanId, treeItem);
+                        foundChildren = true;
+
+                        untrackedTraces.splice(i, 1);
+                        i--;
+
+                        if (trace.name?.startsWith("DB:") === true) {
+                            let current: TraceRecordTreeBag | null = treeItem;
+
+                            while (current) {
+                                current.queries++;
+                                current = current.parent;
+                            }
+                        }
+                    }
+                }
+            }
+        } while (untrackedTraces.length > 0 && foundChildren);
+
+        return groups;
     });
 
-    const clientRelativeEndTimeMs = computed((): number => {
-        if (!relativeClientViewModels.value.length) {
-            return serverEndTimeMs.value;
+    // #endregion
+
+    // #region Functions
+
+    async function loadTraceData(): Promise<void> {
+        const traceId = document.getElementById("lObsidianPageTimings")?.dataset["traceId"];
+
+        if (!traceId) {
+            console.log("No trace ID found.");
+            traces.value = [];
+            return;
         }
 
-        const lastIndex = relativeClientViewModels.value.length - 1;
-        const lastViewModel = relativeClientViewModels.value[lastIndex];
-        return lastViewModel.timestampMs + lastViewModel.durationMs;
+        const result = await http.get<TraceRecordBag[]>(`/api/v2/utilities/DebugTraceDetails?traceId=${traceId}`);
+
+        if (result.isSuccess && result.data) {
+            if (traces.value) {
+                traces.value = [...traces.value, ...result.data];
+            }
+            else {
+                traces.value = result.data;
+            }
+
+            if (loadDataTimeout) {
+                // Slowly back off the loading interval to reduce server load
+                // until we reach 10 seconds between loads. This makes it more
+                // responsive initially but avoids hammering the server over time.
+                loadingDelay = Math.min(loadingDelay + 1000, 10000);
+                loadDataTimeout = window.setTimeout(() => loadTraceData(), loadingDelay);
+            }
+        }
+        else if (!traces.value) {
+            traces.value = [];
+        }
+    }
+
+    function initializeOpenButton(): void {
+        const adminFooter = document.getElementById("cms-admin-footer");
+
+        if (!adminFooter) {
+            return;
+        }
+
+        const footers = Array.from(adminFooter.querySelectorAll(".cms-admin-footer-property"))
+            .filter(el => el.textContent?.trim().includes("Page Load Time"));
+
+        if (footers.length === 0) {
+            return;
+        }
+
+        const openButton = document.createElement("i");
+        openButton.classList.add("ml-2", "ti", "ti-external-link", "clickable");
+        openButton.addEventListener("click", () => {
+            showTimingsModal.value = true;
+        });
+
+        footers[0].appendChild(openButton);
+    }
+
+    // #endregion
+
+    watch(showTimingsModal, () => {
+        if (!showTimingsModal.value && loadDataTimeout) {
+            window.clearTimeout(loadDataTimeout);
+            loadDataTimeout = null;
+        }
+
+        if (showTimingsModal.value && !loadDataTimeout) {
+            loadDataTimeout = window.setTimeout(() => loadTraceData(), 1);
+        }
     });
 
-    const clientViewModels = computed((): DebugTiming[] => {
-        return store.state.debugTimings;
-    });
+    loadDataTimeout = window.setTimeout(() => loadTraceData(), 1000);
 
-    const relativeClientViewModels = computed((): DebugTiming[] => {
-        // Add the server end time so they appear after the server
-        return clientViewModels.value.map(vm => ({
-            ...vm,
-            timestampMs: serverEndTimeMs.value + vm.timestampMs
-        } as DebugTiming));
-    });
-
-    const clientHeader = computed((): DebugTiming => {
-        return {
-            durationMs: firstClientRelativeStartTimeMs.value - serverEndTimeMs.value,
-            indentLevel: 0,
-            isTitleBold: true,
-            title: "Client Mount Blocks",
-            timestampMs: serverEndTimeMs.value,
-            subTitle: ""
-        };
-    });
+    initializeOpenButton();
 </script>

@@ -16,8 +16,10 @@
                           label="Email" />
                 <DatePicker v-model="expirationDate"
                             label="Expiration Date" />
-                <CampusPicker label="Campus" v-model="campus"
-                              :rules="isCampusRequired" />
+                <CampusPicker v-model="campus"
+                              label="Campus"
+                              :rules="isCampusRequired"
+                              showBlankItem />
             </div>
 
             <div class="col-md-3">

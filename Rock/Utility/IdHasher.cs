@@ -60,6 +60,11 @@ namespace Rock.Utility
         /// <returns>The integer identifier contained in the hash, or <c>null</c> if not valid.</returns>
         public int? GetId( string hashedKey )
         {
+            if ( hashedKey.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
             var ids = _hasher.Decode( hashedKey );
 
             return ids.Length == 1 ? ( int? ) ids[0] : null;

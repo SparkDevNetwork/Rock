@@ -84,7 +84,6 @@ namespace Rock.Cms.ContentCollection.Indexers
             var now = RockDateTime.Now;
             List<ContentChannelItem> items;
             Dictionary<int, int> trending;
-            List<int> unapprovedItems = new List<int>();
 
             // Make sure the source is valid.
             if ( contentCollectionSourceCache == null || contentCollectionSourceCache.EntityTypeId != contentChannelEntityTypeId )
@@ -115,45 +114,43 @@ namespace Rock.Cms.ContentCollection.Indexers
                     ? GetTrendingRanksLookup( contentCollectionSourceCache, rockContext )
                     : null;
 
-                foreach( var item in items )
+                // Process all items while the RockContext is still available
+                // so that lazy load properties can be used in custom fields.
+                // This also requires that we process items sequentially since
+                // EF contexts are not thread-safe.
+                foreach ( var item in items )
                 {
-                    // If the content channel item is not approved, set "IsApproved" to false.
-                    if ( item.ContentChannel != null )
+                    try
                     {
-                        // If the content channel item is not approved, set "IsApproved" to false.
-                        if ( item.ContentChannel.RequiresApproval && item.ApprovedDateTime == null && !item.ContentChannelType.DisableStatus )
+                        var document = await ContentChannelItemDocument.LoadByModelAsync( item, contentCollectionSourceCache );
+
+                        if ( trending != null )
                         {
-                            unapprovedItems.Add( item.Id );
+                            document.IsTrending = trending.ContainsKey( document.EntityId );
+                            document.TrendingRank = document.IsTrending ? trending[document.EntityId] : 0;
                         }
+
+                        // If the content channel item is not approved, set "IsApproved" to false.
+                        if ( item.ContentChannel != null )
+                        {
+                            // If the content channel item is not approved, set "IsApproved" to false.
+                            if ( item.ContentChannel.RequiresApproval && item.ApprovedDateTime == null && !item.ContentChannelType.DisableStatus )
+                            {
+                                document.IsApproved = false;
+                            }
+                        }
+
+                        await ContentIndexContainer.IndexDocumentAsync( document );
+                    }
+                    catch ( Exception ex )
+                    {
+                        // If a single item fails, log the exception and continue processing.
+                        ExceptionLogService.LogException( ex );
                     }
                 }
+
+                return items.Count;
             }
-
-            // The RockContext is now closed. Any navigation properties that are
-            // used by the indexer must be included in the query itself and
-            // eager loaded. Navigation properties that lazy load are not
-            // thread-safe.
-            var processor = new ParallelProcessor( options.MaxConcurrency );
-
-            await processor.ExecuteAsync( items, async contentChannelItem =>
-            {
-                var document = await ContentChannelItemDocument.LoadByModelAsync( contentChannelItem, contentCollectionSourceCache );
-
-                if ( trending != null )
-                {
-                    document.IsTrending = trending.ContainsKey( document.EntityId );
-                    document.TrendingRank = document.IsTrending ? trending[document.EntityId] : 0;
-                }
-
-                if ( unapprovedItems.Contains( document.EntityId ) )
-                {
-                    document.IsApproved = false;
-                }
-
-                await ContentIndexContainer.IndexDocumentAsync( document );
-            } );
-
-            return items.Count;
         }
 
         /// <inheritdoc/>
@@ -191,31 +188,33 @@ namespace Rock.Cms.ContentCollection.Indexers
                 }
 
                 itemEntity.LoadAttributes( rockContext );
+
+                // Create or update any indexed documents for content collection sources.
+                var contentChannelEntityTypeId = EntityTypeCache.Get<ContentChannel>().Id;
+                var sources = ContentCollectionSourceCache.All()
+                    .Where( s => s.EntityTypeId == contentChannelEntityTypeId
+                        && s.EntityId == itemEntity.ContentChannelId )
+                    .ToList();
+
+                foreach ( var source in sources )
+                {
+                    try
+                    {
+                        var document = await ContentChannelItemDocument.LoadByModelAsync( itemEntity, source );
+                        document.IsApproved = isApproved;
+
+                        await ContentIndexContainer.IndexDocumentAsync( document );
+                    }
+                    catch ( Exception ex )
+                    {
+                        // If a single item fails, log the exception and continue processing.
+                        ExceptionLogService.LogException( ex );
+                    }
+
+                }
+
+                return sources.Count;
             }
-
-            // The RockContext is now closed. Any navigation properties that are
-            // used by the indexer must be included in the query itself and
-            // eager loaded. Navigation properties that lazy load are not
-            // thread-safe.
-
-            // Create or update any indexed documents for content collection sources.
-            var contentChannelEntityTypeId = EntityTypeCache.Get<ContentChannel>().Id;
-            var sources = ContentCollectionSourceCache.All()
-                .Where( s => s.EntityTypeId == contentChannelEntityTypeId
-                    && s.EntityId == itemEntity.ContentChannelId )
-                .ToList();
-
-            var processor = new ParallelProcessor( options.MaxConcurrency );
-
-            await processor.ExecuteAsync( sources, async source =>
-            {
-                var document = await ContentChannelItemDocument.LoadByModelAsync( itemEntity, source );
-                document.IsApproved = isApproved;
-
-                await ContentIndexContainer.IndexDocumentAsync( document );
-            } );
-
-            return sources.Count;
         }
 
         /// <summary>

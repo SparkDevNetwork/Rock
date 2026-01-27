@@ -114,15 +114,14 @@ namespace RockWeb.Blocks.Security
         defaultValue: Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR,
         order: 11,
         key: "NewPersonConnectionStatus")]
-    [CodeEditorField(
-        name: "Legal Note",
-        description: "A legal note outlining the Terms and Conditions for using Wi-Fi.",
-        mode: CodeEditorMode.Html,
-        height: 400,
-        required: false,
-        defaultValue: DEFAULT_LEGAL_NOTE,
-        order: 12,
-        key: "LegalNote" )]
+    [CodeEditorField( "Legal Note",
+        Description = "A legal note outlining the Terms and Conditions for using Wi-Fi.",
+        EditorMode = CodeEditorMode.Html,
+        EditorHeight = 400,
+        IsRequired = false,
+        DefaultValue = DEFAULT_LEGAL_NOTE,
+        Order = 12,
+        Key = "LegalNote" )]
 
     #endregion Block Settings
     [Rock.SystemGuid.BlockTypeGuid( "CCFCD227-C8F9-4952-8AC5-E427D519EE47" )]

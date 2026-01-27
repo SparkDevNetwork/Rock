@@ -51,8 +51,7 @@ BEGIN
                 AND g.IsArchived = 0
 			) fr
 		WHERE
-			[RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
-			AND [RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
+			[RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
 	    )
 		SELECT [PersonId], [FirstContributionDate], av.[Id] AttributeValueId, av.[ValueAsDateTime] ExistingValue
 		INTO #firstGiftWithGroup
@@ -128,8 +127,7 @@ BEGIN
                 AND g.IsArchived = 0
 			) fr
 		WHERE
-			[RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
-			AND [RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
+			[RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
 	    )
 
 		SELECT [PersonId], [FirstContributionDate], av.[Id] AttributeValueId, av.[ValueAsDateTime] ExistingValue
@@ -207,8 +205,7 @@ BEGIN
                 AND g.IsArchived = 0
 			) fr
 		WHERE
-			[RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
-			AND [RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
+			[RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
 	    )
 
 		SELECT [PersonId], [LastContributionDate], av.[Id] AttributeValueId, av.[ValueAsDateTime] ExistingValue
@@ -285,8 +282,7 @@ BEGIN
                 AND g.IsArchived = 0
 			) fr
 		WHERE
-			[RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
-			AND [RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
+			[RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
 	    )
 
 		SELECT [PersonId], [LastContributionDate], av.[Id] AttributeValueId, av.[ValueAsDateTime] ExistingValue
@@ -527,7 +523,7 @@ BEGIN
 		WHERE
 			[RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
 			AND [RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
-	    )
+	  )
 
 		SELECT [PersonId], [GiftCountDurationLong], av.[Id] AttributeValueId, av.[ValueAsDateTime] ExistingValue
 		INTO #giftCountLongWithGroup

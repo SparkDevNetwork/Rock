@@ -227,6 +227,7 @@
                                 type: 'time',
                                 time: {
                                     unit: false,
+                                    minUnit: 'day',
                                     tooltipFormat: '<%=this.LineChartTimeFormat%>',
                                 }
                             }]

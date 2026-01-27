@@ -41,11 +41,13 @@
                     <div class="commands">
                         <button v-if="showSecurity && modelValue?.idKey"
                                 class="btn btn-security btn-xs btn-square security"
+                                type="button"
                                 @click.prevent="onSecurityClick">
                             <i class="ti ti-lock"></i>
                         </button>
 
                         <button v-if="!hideCancel" class="edit-note-cancel btn btn-link btn-xs"
+                                type="button"
                                 @click.prevent="onCancelClick">
                             Cancel
                         </button>
@@ -79,7 +81,7 @@
 }
 
 .note-editor.auto-size .noteentry-control :deep(.note-text) {
-    background-color: #f8f9fa;
+    background-color: var(--color-interface-softer);
     transition: background-color 250ms ease;
 }
 

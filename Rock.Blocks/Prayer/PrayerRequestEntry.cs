@@ -229,7 +229,6 @@ namespace Rock.Blocks.Prayer
     [CodeEditorField( "Save Success Text",
         Description = "Text to display upon successful save. The 'PrayerRequest' merge field will contain the saved PrayerRequest. (Only applies if not navigating to parent page on save.) <span class='tip tip-lava'></span><span class='tip tip-html'></span>",
         EditorMode = CodeEditorMode.Html,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         DefaultValue = "<p>Thank you for allowing us to pray for you.</p>",
@@ -248,7 +247,7 @@ namespace Rock.Blocks.Prayer
 
     [BooleanField(
         "Disable Captcha Support",
-        Description = "If set to 'Yes' the CAPTCHA verification will be skipped. \n\nNote: If the CAPTCHA site key and/or secret key are not configured in the system settings, this option will be forced as 'Yes', even if 'No' is visually selected.",
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
         DefaultBooleanValue = false,
         Category = AttributeCategory.Features,
         Order = 25,

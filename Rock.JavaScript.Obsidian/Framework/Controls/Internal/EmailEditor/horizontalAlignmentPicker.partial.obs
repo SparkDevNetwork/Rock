@@ -10,14 +10,7 @@
                         :btnType="itemButtonType(get<HorizontalAlignment>('left'))"
                         title="Left"
                         @click="selectValue(get<HorizontalAlignment>('left'))">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
-                    <mask id="path-1-inside-1_2348_53830" fill="white">
-                        <path d="M0 0H20V20H0V0Z" />
-                    </mask>
-                    <path d="M2 20V0H-2V20H2Z" mask="url(#path-1-inside-1_2348_53830)" />
-                    <rect width="10" height="8" transform="translate(4 1)" />
-                    <rect width="16" height="8" transform="translate(4 11)" />
-                </svg>
+                <i class="ti ti-layout-align-left"></i>
             </RockButton>
 
             <RockButton :disabled="disabled"
@@ -25,11 +18,7 @@
                         :btnType="itemButtonType(get<HorizontalAlignment>('center'))"
                         title="Center"
                         @click="selectValue(get<HorizontalAlignment>('center'))">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 16 20">
-                    <rect width="10" height="6.15385" transform="translate(3 3.07715)" />
-                    <rect width="16" height="6.15385" transform="translate(0 10.769)" />
-                    <rect width="2" height="20" transform="translate(7)" />
-                </svg>
+                <i class="ti ti-layout-align-center"></i>
             </RockButton>
 
             <RockButton :disabled="disabled"
@@ -37,14 +26,7 @@
                         :btnType="itemButtonType(get<HorizontalAlignment>('right'))"
                         title="Right"
                         @click="selectValue(get<HorizontalAlignment>('right'))">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="18" viewBox="0 0 20 18">
-                    <mask id="path-1-inside-1_2348_53848" fill="white">
-                        <path d="M0 0H20V18H0V0Z" />
-                    </mask>
-                    <path d="M18 0V18H22V0H18Z" mask="url(#path-1-inside-1_2348_53848)" />
-                    <rect width="10" height="8" transform="translate(6)" />
-                    <rect width="16" height="8" transform="translate(0 10)" />
-                </svg>
+                <i class="ti ti-layout-align-right"></i>
             </RockButton>
         </template>
 
@@ -54,18 +36,6 @@
         </template>
     </SingleSelectButtonGroup>
 </template>
-
-<style scoped>
-svg {
-    height: 16px;
-    width: 16px;
-    fill: var(--color-interface-strong);
-}
-
-.btn-primary svg {
-    fill: var(--color-interface-softer);
-}
-</style>
 
 <script setup lang="ts">
     import { PropType } from "vue";

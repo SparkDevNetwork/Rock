@@ -310,7 +310,7 @@ namespace Rock.Model
         public List<DataViewPersistedValue> GetDataViewPersistedValuesForIds( IEnumerable<int> entityIds, IEnumerable<int> dataViewIds = null )
         {
             var entityIdsParamName = "@EntityIds";
-            var entityIdsParam = entityIds.ConvertToEntityIdListParameter( entityIdsParamName );
+            var entityIdsParam = entityIds.ConvertToIdListParameter( entityIdsParamName );
             var sql = $@"
                 SELECT [DataViewId]
                     , [EntityId]
@@ -321,7 +321,7 @@ namespace Rock.Model
             {
                 var dataViewIdsParamName = "@DataViewIds";
                 // If there's also a filter condition for dataViewIds add the condition and return the result.
-                var dataViewIdsParam = dataViewIds.ConvertToEntityIdListParameter( dataViewIdsParamName );
+                var dataViewIdsParam = dataViewIds.ConvertToIdListParameter( dataViewIdsParamName );
                 sql += $@"
                 JOIN {dataViewIdsParamName} [d] ON [dv].[DataViewId] = [d].Id";
                 return this.Context.Database.SqlQuery<DataViewPersistedValue>( sql, entityIdsParam, dataViewIdsParam ).ToList();

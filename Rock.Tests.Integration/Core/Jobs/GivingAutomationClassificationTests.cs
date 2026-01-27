@@ -21,6 +21,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Financial;
 using Rock.Jobs;
 using Rock.Model;
 using Rock.Tests.Shared.TestFramework;
@@ -40,7 +41,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         public void SplitQuartileRanges_EvenCount()
         {
             var orderedValues = new List<decimal> { 1.11m, 2.22m, 3.33m, 4.44m, 5.55m, 6.66m, 7.77m, 8.88m };
-            var ranges = Rock.Jobs.GivingAutomation.GetQuartileRanges( orderedValues );
+            var ranges = GivingAutomationHelper.GetQuartileRanges( orderedValues );
             var q1 = ranges.Q1MedianRange;
             var q2 = ranges.Q2MedianRange;
             var q3 = ranges.Q3MedianRange;
@@ -64,7 +65,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         public void SplitQuartileRanges_OddCount()
         {
             var orderedValues = new List<decimal> { 1.11m, 2.22m, 3.33m, 4.44m, 5.55m, 6.66m, 7.77m, 8.88m, 9.99m };
-            var ranges = Rock.Jobs.GivingAutomation.GetQuartileRanges( orderedValues );
+            var ranges = GivingAutomationHelper.GetQuartileRanges( orderedValues );
             var q1 = ranges.Q1MedianRange;
             var q2 = ranges.Q2MedianRange;
             var q3 = ranges.Q3MedianRange;
@@ -107,17 +108,17 @@ namespace Rock.Tests.Integration.Core.Jobs
         [DataRow( 9999999.9, 1000.0 )]
         public void GetAmountIqrCount_CalculatesCorrectly( double amount, double expected )
         {
-            var context = new GivingAutomation.GivingAutomationContext();
+            var now = new GivingAutomation.GivingAutomationContext().Now;
 
             var amountMedian = 30m;
             var amountIqr = 2.5m;
 
-            var testTransactions = GenerateTestTransactions( amountMedian, amountIqr, 30, 0, context.Now );
-            var transactionAmounts = testTransactions.Select( a => a.TotalTransactionAmount ).ToList();
+            var testTransactions = GenerateTestTransactions( amountMedian, amountIqr, 30, 0, now );
+            var transactionAmounts = testTransactions.Select( a => a.TotalAmount ).ToList();
 
-            var quartileRanges = GivingAutomation.GetQuartileRanges( transactionAmounts );
+            var quartileRanges = GivingAutomationHelper.GetQuartileRanges( transactionAmounts );
 
-            var amountIqrCount = Rock.Jobs.GivingAutomation.GetAmountIqrCount( quartileRanges, Convert.ToDecimal( amount ) );
+            var amountIqrCount = GivingAutomationHelper.GetAmountIqrCount( quartileRanges, Convert.ToDecimal( amount ) );
 
             Assert.AreEqual( Convert.ToDecimal( expected ), amountIqrCount );
         }
@@ -139,17 +140,17 @@ namespace Rock.Tests.Integration.Core.Jobs
         [DataRow( 9999999.9, 1000.0 )]
         public void GetAmountIqrCount_CalculatesCorrectlyWhenLowMedian( double amount, double expected )
         {
-            var context = new GivingAutomation.GivingAutomationContext();
+            var now = new GivingAutomation.GivingAutomationContext().Now;
 
             var amountMedian = 30m;
             var amountIqr = 0m;
 
-            var testTransactions = GenerateTestTransactions( amountMedian, amountIqr, 30, 0, context.Now );
-            var transactionAmounts = testTransactions.Select( a => a.TotalTransactionAmount ).ToList();
+            var testTransactions = GenerateTestTransactions( amountMedian, amountIqr, 30, 0, now );
+            var transactionAmounts = testTransactions.Select( a => a.TotalAmount ).ToList();
 
-            var quartileRanges = GivingAutomation.GetQuartileRanges( transactionAmounts );
+            var quartileRanges = GivingAutomationHelper.GetQuartileRanges( transactionAmounts );
 
-            var amountIqrCount = Rock.Jobs.GivingAutomation.GetAmountIqrCount( quartileRanges, Convert.ToDecimal( amount ) );
+            var amountIqrCount = GivingAutomationHelper.GetAmountIqrCount( quartileRanges, Convert.ToDecimal( amount ) );
             Assert.AreEqual( Convert.ToDecimal( expected ), amountIqrCount );
         }
 
@@ -166,18 +167,17 @@ namespace Rock.Tests.Integration.Core.Jobs
         [DataRow( 9999999.9, 1000.0 )]
         public void GetAmountIqrCount_CalculatesCorrectlyWhenLowIqrAndMedian( double amount, double expected )
         {
-            var context = new GivingAutomation.GivingAutomationContext();
-
+            var now = new GivingAutomation.GivingAutomationContext().Now;
 
             var amountMedian = 0m;
             var amountIqr = 0m;
 
-            var testTransactions = GenerateTestTransactions( amountMedian, amountIqr, 30, 0, context.Now );
-            var transactionAmounts = testTransactions.Select( a => a.TotalTransactionAmount ).ToList();
+            var testTransactions = GenerateTestTransactions( amountMedian, amountIqr, 30, 0, now );
+            var transactionAmounts = testTransactions.Select( a => a.TotalAmount ).ToList();
 
-            var quartileRanges = GivingAutomation.GetQuartileRanges( transactionAmounts );
+            var quartileRanges = GivingAutomationHelper.GetQuartileRanges( transactionAmounts );
 
-            var amountIqrCount = Rock.Jobs.GivingAutomation.GetAmountIqrCount( quartileRanges, Convert.ToDecimal( amount ) );
+            var amountIqrCount = GivingAutomationHelper.GetAmountIqrCount( quartileRanges, Convert.ToDecimal( amount ) );
 
             Assert.AreEqual( Convert.ToDecimal( expected ), amountIqrCount );
         }
@@ -206,7 +206,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyMean = 30m;
             var frequencyStdDev = 2.5m;
 
-            var frequencyDeviationCount = Rock.Jobs.GivingAutomation.GetFrequencyDeviationCount( frequencyStdDev, frequencyMean, ( decimal ) daysSinceLastTransaction );
+            var frequencyDeviationCount = GivingAutomationHelper.GetFrequencyDeviationCount( frequencyStdDev, frequencyMean, ( decimal ) daysSinceLastTransaction );
             Assert.AreEqual( Convert.ToDecimal( expected ), frequencyDeviationCount );
         }
 
@@ -231,7 +231,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyMean = 30m;
             var frequencyStdDev = 0.5m;
 
-            var frequencyDeviationCount = Rock.Jobs.GivingAutomation.GetFrequencyDeviationCount( frequencyStdDev, frequencyMean, ( decimal ) daysSinceLastTransaction );
+            var frequencyDeviationCount = GivingAutomationHelper.GetFrequencyDeviationCount( frequencyStdDev, frequencyMean, ( decimal ) daysSinceLastTransaction );
             Assert.AreEqual( Convert.ToDecimal( expected ), frequencyDeviationCount );
         }
 
@@ -256,92 +256,13 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyMean = 6m;
             var frequencyStdDev = 0.5m;
 
-            var frequencyDeviationCount = Rock.Jobs.GivingAutomation.GetFrequencyDeviationCount( frequencyStdDev, frequencyMean, ( decimal ) daysSinceLastTransaction );
+            var frequencyDeviationCount = GivingAutomationHelper.GetFrequencyDeviationCount( frequencyStdDev, frequencyMean, ( decimal ) daysSinceLastTransaction );
             Assert.AreEqual( Convert.ToDecimal( expected ), frequencyDeviationCount );
         }
 
         #endregion GetFrequencyDeviationCount
 
         #region CreateAlertsForLateTransaction
-
-        private List<TransactionView> GenerateTestTransactions( decimal amountMedian, decimal amountIqr, decimal frequencyMean, decimal frequencyStdDev, DateTime lastGave )
-        {
-            var last12MonthsTransactions = new List<TransactionView>();
-
-            // To similate the std dev, add/substract a little from every other day. This doesn't create outliers,
-            // So this ends up working OK.
-            var daysPlusMinus = ( double ) ( frequencyStdDev / 2.0M );
-
-            var transactionDateTime = lastGave.AddDays( -daysPlusMinus );
-
-            var oneYearAgo = RockDateTime.Now.AddYears( -1 );
-
-            while ( transactionDateTime > oneYearAgo )
-            {
-                var transactionView = new TransactionView { TransactionDateTime = transactionDateTime };
-                last12MonthsTransactions.Add( transactionView );
-                transactionDateTime = transactionDateTime.AddDays( -( double ) frequencyMean );
-            }
-
-            // if there are an even number, add one more to make the reverse stddev math easier
-            if ( last12MonthsTransactions.Count % 2 == 0 )
-            {
-                var transactionView = new TransactionView { TransactionDateTime = transactionDateTime };
-                last12MonthsTransactions.Add( transactionView );
-            }
-
-            var transactionCount = last12MonthsTransactions.Count;
-            var middleTransactionPosition = transactionCount / 2.00;
-            var currentPosition = 0;
-            var refundAmount = 0.00m;
-            bool didARefund = false;
-
-            foreach ( var transactionView in last12MonthsTransactions.OrderByDescending( a => a.TransactionDateTime ) )
-            {
-                decimal testAmount;
-                currentPosition++;
-                transactionView.TransactionDateTime = transactionView.TransactionDateTime.AddDays( daysPlusMinus );
-                daysPlusMinus = -daysPlusMinus;
-
-                if ( currentPosition < middleTransactionPosition )
-                {
-                    testAmount = amountMedian - ( amountIqr / 2.0M );
-                }
-                else if ( Math.Abs( currentPosition - middleTransactionPosition ) < 1 )
-                {
-                    testAmount = amountMedian;
-                }
-                else
-                {
-                    testAmount = amountMedian + ( amountIqr / 2.0M );
-                }
-
-                // Partial refunds are rare, but let's throw one into our test transactions to help detect problems with the partial refund logic
-                if ( !didARefund )
-                {
-                    refundAmount = Math.Round( testAmount * 0.25M, 2 );
-                    didARefund = true;
-                }
-                else
-                {
-                    refundAmount = 0.00M;
-                }
-
-                transactionView.TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
-                {
-                    new TransactionViewDetail { AccountId = 123, Amount = testAmount + refundAmount },
-                };
-
-                if ( refundAmount != 0.00M )
-                {
-                    transactionView.RefundDetails = new List<TransactionViewDetail> {
-                        new TransactionViewDetail { AccountId = 123, Amount = -refundAmount }
-                    };
-                }
-            }
-
-            return last12MonthsTransactions;
-        }
 
         /// <summary>
         /// Tests an example missing transaction
@@ -350,9 +271,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         [TestMethod]
         public void CreateAlertsForLateTransaction_CreatesAlertForMissingGift()
         {
-            var context = new GivingAutomation.GivingAutomationContext()
-            {
-            };
+            var context = new GivingAutomation.GivingAutomationContext();
 
             var lateGiftAlertTypes = new List<FinancialTransactionAlertType> {
                 new FinancialTransactionAlertType {
@@ -378,23 +297,12 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyStdDev = 3m;
             var lastGave = context.Now.AddDays( -40 );
 
-            var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGave );
-
-            var lateAlertForGivingIdArgs = new LateAlertForGivingIdArgs( "G1", last12MonthsTransactions, null, null );
-
-            var alerts = new List<FinancialTransactionAlert>();
-            foreach ( var lateGiftAlertType in lateGiftAlertTypes )
-            {
-
-                var financialTransactionAlert = GivingAutomation.CreateAlertForLateTransaction( context, lateGiftAlertType, lateAlertForGivingIdArgs );
-                if ( financialTransactionAlert != null )
-                {
-                    alerts.Add( financialTransactionAlert );
-                }
-            }
+            var givingId = "G1";
+            var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGave, givingId );
+            var alerts = CreateLateAlertsForGivingId( context, lateGiftAlertTypes, givingId, last12MonthsTransactions );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
@@ -412,7 +320,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.FrequencySensitivityScale ), reasons.Single() );
         }
 
@@ -425,9 +333,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         [TestMethod]
         public void CreateAlertsForLateTransaction_SkipsAlertTypeRecentlyAlerted()
         {
-            var context = new GivingAutomation.GivingAutomationContext()
-            {
-            };
+            var context = new GivingAutomation.GivingAutomationContext();
 
             var lateGiftAlertTypes = new List<FinancialTransactionAlertType> {
                 new FinancialTransactionAlertType
@@ -455,34 +361,22 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyStdDev = 3m;
             var lastGave = context.Now.AddDays( -40 );
 
-            var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGave );
-            var recentAlerts = new List<AlertView>();
-            recentAlerts.Add( new AlertView { AlertDateTime = context.Now.AddDays( -4 ), AlertType = AlertType.FollowUp, AlertTypeId = 1, TransactionId = null } );
-            recentAlerts.Add( new AlertView { AlertDateTime = context.Now.AddDays( -5 ), AlertType = AlertType.FollowUp, AlertTypeId = 2, TransactionId = null } );
+            var givingId = "G1";
+            var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGave, givingId );
 
-            var alerts = new List<FinancialTransactionAlert>();
-            foreach ( var lateGiftAlertType in lateGiftAlertTypes )
+            // Builder expects recent alerts for THIS alert type only (most recent first).
+            var recentAlertsOfThisTypeByAlertTypeId = new Dictionary<int, List<AlertView>>
             {
-                LateAlertForGivingIdArgs lateAlertForGivingIdArgs;
+                [1] = new List<AlertView>
+                {
+                    new AlertView { AlertDateTime = context.Now.AddDays( -4 ), AlertType = AlertType.FollowUp, AlertTypeId = 1, TransactionId = null }
+                }
+            };
 
-                if ( lateGiftAlertType.Id == 1 )
-                {
-                    lateAlertForGivingIdArgs = new LateAlertForGivingIdArgs( "G1", last12MonthsTransactions, recentAlerts, null );
-                }
-                else
-                {
-                    lateAlertForGivingIdArgs = new LateAlertForGivingIdArgs( "G1", last12MonthsTransactions, null, null );
-                }
-
-                var financialTransactionAlert = GivingAutomation.CreateAlertForLateTransaction( context, lateGiftAlertType, lateAlertForGivingIdArgs );
-                if ( financialTransactionAlert != null )
-                {
-                    alerts.Add( financialTransactionAlert );
-                }
-            }
+            var alerts = CreateLateAlertsForGivingId( context, lateGiftAlertTypes, givingId, last12MonthsTransactions, recentAlertsOfThisTypeByAlertTypeId );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
@@ -500,7 +394,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.FrequencySensitivityScale ), reasons.Single() );
         }
 
@@ -512,9 +406,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         [TestMethod]
         public void CreateAlertsForLateTransaction_SkipsAlertTypeBecauseOfMedianAmount()
         {
-            var context = new GivingAutomation.GivingAutomationContext()
-            {
-            };
+            var context = new GivingAutomation.GivingAutomationContext();
 
             var lateGiftAlertTypes = new List<FinancialTransactionAlertType> {
                 new FinancialTransactionAlertType
@@ -551,20 +443,9 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyStdDev = 3m;
             var lastGave = context.Now.AddDays( -40 );
 
-            var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGave );
-
-            var lateAlertForGivingIdArgs = new LateAlertForGivingIdArgs( "G1", last12MonthsTransactions, null, null );
-
-            var alerts = new List<FinancialTransactionAlert>();
-            foreach ( var lateGiftAlertType in lateGiftAlertTypes )
-            {
-
-                var financialTransactionAlert = GivingAutomation.CreateAlertForLateTransaction( context, lateGiftAlertType, lateAlertForGivingIdArgs );
-                if ( financialTransactionAlert != null )
-                {
-                    alerts.Add( financialTransactionAlert );
-                }
-            }
+            var givingId = "G1";
+            var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGave, givingId );
+            var alerts = CreateLateAlertsForGivingId( context, lateGiftAlertTypes, givingId, last12MonthsTransactions );
 
             var alert = alerts.Single();
             Assert.AreEqual( 3, alert.AlertTypeId );
@@ -582,7 +463,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.FrequencySensitivityScale ), reasons.Single() );
         }
 
@@ -595,9 +476,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         [TestMethod]
         public void CreateAlertsForLateTransaction_SkipsAlertBecauseOfCampus()
         {
-            var context = new GivingAutomation.GivingAutomationContext()
-            {
-            };
+            var context = new GivingAutomation.GivingAutomationContext();
 
             var lateGiftAlertTypes = new List<FinancialTransactionAlertType> {
                 new FinancialTransactionAlertType
@@ -626,25 +505,14 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyStdDev = 3m;
             var lastGave = context.Now.AddDays( -40 );
 
-            var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGave );
-            var mostRecentTransaction = last12MonthsTransactions?.OrderByDescending( a => a.TransactionDateTime ).FirstOrDefault();
-            mostRecentTransaction.AuthorizedPersonCampusId = 2;
+            var givingId = "G1";
+            var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGave, givingId );
+            last12MonthsTransactions.ForEach( t => t.AuthorizedPersonCampusId = 2 );
 
-            var lateAlertForGivingIdArgs = new LateAlertForGivingIdArgs( "G1", last12MonthsTransactions, null, null );
-
-            var alerts = new List<FinancialTransactionAlert>();
-            foreach ( var lateGiftAlertType in lateGiftAlertTypes )
-            {
-
-                var financialTransactionAlert = GivingAutomation.CreateAlertForLateTransaction( context, lateGiftAlertType, lateAlertForGivingIdArgs );
-                if ( financialTransactionAlert != null )
-                {
-                    alerts.Add( financialTransactionAlert );
-                }
-            }
+            var alerts = CreateLateAlertsForGivingId( context, lateGiftAlertTypes, givingId, last12MonthsTransactions );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
@@ -662,7 +530,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.FrequencySensitivityScale ), reasons.Single() );
         }
 
@@ -674,9 +542,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         [TestMethod]
         public void CreateAlertsForLateTransaction_SkipsAlertBecauseOfDataview()
         {
-            var context = new GivingAutomation.GivingAutomationContext()
-            {
-            };
+            var context = new GivingAutomation.GivingAutomationContext();
 
             var lateGiftAlertTypes = new List<FinancialTransactionAlertType> {
                 new FinancialTransactionAlertType
@@ -699,42 +565,27 @@ namespace Rock.Tests.Integration.Core.Jobs
                 },
             };
 
-            context.DataViewPersonQueries[1] = new List<Person> {
-                new Person { Id = 3, GivingGroupId = 300 },
-                new Person { Id = 4, GivingGroupId = 400 },
-                new Person { Id = 5, GivingGroupId = 500 } }.AsQueryable();
-
-            context.DataViewPersonQueries[2] = new List<Person> {
-                new Person { Id = 2, GivingGroupId = 200 },
-                new Person { Id = 3, GivingGroupId = 300 },
-                new Person { Id = 4, GivingGroupId = 400 } }.AsQueryable();
-
             var amountMedian = 500m;
             var amountIqr = 100m;
             var frequencyMean = 30m;
             var frequencyStdDev = 3m;
             var lastGave = context.Now.AddDays( -40 );
 
-            var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGave );
-            var mostRecentTransaction = last12MonthsTransactions?.OrderByDescending( a => a.TransactionDateTime ).FirstOrDefault();
-            mostRecentTransaction.AuthorizedPersonGivingId = "G200";
-            mostRecentTransaction.AuthorizedPersonCampusId = 2;
+            var givingId = "G200";
+            var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGave, givingId );
+            last12MonthsTransactions.ForEach( t => t.AuthorizedPersonCampusId = 2 );
 
-            var lateAlertForGivingIdArgs = new LateAlertForGivingIdArgs( "G200", last12MonthsTransactions, null, null );
-
-            var alerts = new List<FinancialTransactionAlert>();
-            foreach ( var lateGiftAlertType in lateGiftAlertTypes )
+            // Simulate DataView filtering that now happens outside the builder.
+            // Only DataViewId=2 is considered a match for this giving id.
+            bool IsEligibleForAlertType( FinancialTransactionAlertType alertType )
             {
-
-                var financialTransactionAlert = GivingAutomation.CreateAlertForLateTransaction( context, lateGiftAlertType, lateAlertForGivingIdArgs );
-                if ( financialTransactionAlert != null )
-                {
-                    alerts.Add( financialTransactionAlert );
-                }
+                return !alertType.DataViewId.HasValue || alertType.DataViewId.Value == 2;
             }
 
+            var alerts = CreateLateAlertsForGivingId( context, lateGiftAlertTypes, givingId, last12MonthsTransactions, isEligibleForAlertType: IsEligibleForAlertType );
+
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
@@ -752,7 +603,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.FrequencySensitivityScale ), reasons.Single() );
         }
 
@@ -771,9 +622,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         [DataRow( 99, new int[] { 2 } )]
         public void CreateAlertsForLateTransaction_CalculatesCorrectlyBasedOnFinancialAccount( int previousTransactionsAccountId, int[] expectedAlertTypeIds )
         {
-            var context = new GivingAutomation.GivingAutomationContext()
-            {
-            };
+            var context = new GivingAutomation.GivingAutomationContext();
 
             var lateGiftAlertTypes = new List<FinancialTransactionAlertType> {
                 new FinancialTransactionAlertType {
@@ -824,32 +673,23 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyStdDev = 3m;
             var lastGave = context.Now.AddDays( -40 );
 
-            var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGave );
+            var givingId = "G1";
+            var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGave, givingId );
             last12MonthsTransactions.ForEach( e =>
             {
-                e.TransactionViewDetailsBeforeRefunds[0].AccountId = previousTransactionsAccountId;
+                e.TransactionDetails[0].AccountId = previousTransactionsAccountId;
                 if ( e.RefundDetails?.Count == 1 )
                 {
                     e.RefundDetails[0].AccountId = previousTransactionsAccountId;
                 }
             } );
 
-            var alerts = new List<FinancialTransactionAlert>();
-            foreach ( var lateGiftAlertType in lateGiftAlertTypes )
-            {
-                var lateAlertForGivingIdArgs = new LateAlertForGivingIdArgs( "G1", last12MonthsTransactions, null, null );
-
-                var financialTransactionAlert = GivingAutomation.CreateAlertForLateTransaction( context, lateGiftAlertType, lateAlertForGivingIdArgs );
-                if ( financialTransactionAlert != null )
-                {
-                    alerts.Add( financialTransactionAlert );
-                }
-            }
+            var alerts = CreateLateAlertsForGivingId( context, lateGiftAlertTypes, givingId, last12MonthsTransactions );
 
             Assert.IsNotNull( alerts );
 
 
-            Assert.AreEqual( expectedAlertTypeIds.Length, alerts.Count );
+            Assert.HasCount( expectedAlertTypeIds.Length, alerts );
 
             for ( int i = 0; i < expectedAlertTypeIds.Length; i++ )
             {
@@ -871,7 +711,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
                 var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
                 Assert.IsNotNull( reasons );
-                Assert.AreEqual( 1, reasons.Count );
+                Assert.HasCount( 1, reasons );
                 Assert.AreEqual( nameof( FinancialTransactionAlertType.FrequencySensitivityScale ), reasons.Single() );
             }
         }
@@ -884,9 +724,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         [TestMethod]
         public void CreateAlertsForLateTransaction_SkipsUnmetSensitivityAlertType()
         {
-            var context = new GivingAutomation.GivingAutomationContext()
-            {
-            };
+            var context = new GivingAutomation.GivingAutomationContext();
 
             var lateGiftAlertTypes = new List<FinancialTransactionAlertType>
             {
@@ -922,23 +760,12 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyStdDev = 3m;
             var lastGave = context.Now.AddDays( -40 );
 
-            var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGave );
-
-            var lateAlertForGivingIdArgs = new LateAlertForGivingIdArgs( "G1", last12MonthsTransactions, null, null );
-
-            var alerts = new List<FinancialTransactionAlert>();
-            foreach ( var lateGiftAlertType in lateGiftAlertTypes )
-            {
-
-                var financialTransactionAlert = GivingAutomation.CreateAlertForLateTransaction( context, lateGiftAlertType, lateAlertForGivingIdArgs );
-                if ( financialTransactionAlert != null )
-                {
-                    alerts.Add( financialTransactionAlert );
-                }
-            }
+            var givingId = "G1";
+            var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGave, givingId );
+            var alerts = CreateLateAlertsForGivingId( context, lateGiftAlertTypes, givingId, last12MonthsTransactions );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
@@ -956,7 +783,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.FrequencySensitivityScale ), reasons.Single() );
         }
 
@@ -1057,9 +884,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         [DataRow( 30.437, 57, 3 )]
         public void CreateAlertsForLateTransaction_ConsistentGivers( double frequencyMean, double lastGaveDaysAgo, int alertCount, double frequencyStdDev = 0.0 )
         {
-            var context = new GivingAutomation.GivingAutomationContext()
-            {
-            };
+            var context = new GivingAutomation.GivingAutomationContext();
 
             var lateGiftAlertTypes = new List<FinancialTransactionAlertType>
             {
@@ -1096,23 +921,12 @@ namespace Rock.Tests.Integration.Core.Jobs
             var amountIqr = 100m;
             var lastGave = context.Now.AddDays( -lastGaveDaysAgo );
 
-            var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, ( decimal ) frequencyMean, ( decimal ) frequencyStdDev, lastGave );
-
-            var lateAlertForGivingIdArgs = new LateAlertForGivingIdArgs( "G1", last12MonthsTransactions, null, null );
-
-            var alerts = new List<FinancialTransactionAlert>();
-            foreach ( var lateGiftAlertType in lateGiftAlertTypes )
-            {
-
-                var financialTransactionAlert = GivingAutomation.CreateAlertForLateTransaction( context, lateGiftAlertType, lateAlertForGivingIdArgs );
-                if ( financialTransactionAlert != null )
-                {
-                    alerts.Add( financialTransactionAlert );
-                }
-            }
+            var givingId = "G1";
+            var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, ( decimal ) frequencyMean, ( decimal ) frequencyStdDev, lastGave, givingId );
+            var alerts = CreateLateAlertsForGivingId( context, lateGiftAlertTypes, givingId, last12MonthsTransactions );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( alertCount, alerts.Count );
+            Assert.HasCount( alertCount, alerts );
         }
 
         /// <summary>
@@ -1124,9 +938,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         [TestMethod]
         public void CreateAlertsForLateTransaction_CreatesMultipleAlerts()
         {
-            var context = new GivingAutomation.GivingAutomationContext()
-            {
-            };
+            var context = new GivingAutomation.GivingAutomationContext();
 
             var lateGiftAlertTypes = new List<FinancialTransactionAlertType>
             {
@@ -1162,22 +974,12 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyStdDev = 3m;
             var lastGave = context.Now.AddDays( -40 );
 
-            var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGave );
-
-            var lateAlertForGivingIdArgs = new LateAlertForGivingIdArgs( "G1", last12MonthsTransactions, null, null );
-
-            var alerts = new List<FinancialTransactionAlert>();
-            foreach ( var lateGiftAlertType in lateGiftAlertTypes )
-            {
-                var financialTransactionAlert = GivingAutomation.CreateAlertForLateTransaction( context, lateGiftAlertType, lateAlertForGivingIdArgs );
-                if ( financialTransactionAlert != null )
-                {
-                    alerts.Add( financialTransactionAlert );
-                }
-            }
+            var givingId = "G1";
+            var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGave, givingId );
+            var alerts = CreateLateAlertsForGivingId( context, lateGiftAlertTypes, givingId, last12MonthsTransactions );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 2, alerts.Count );
+            Assert.HasCount( 2, alerts );
 
             Assert.AreEqual( 2, alerts[0].AlertTypeId );
             Assert.AreEqual( 3, alerts[1].AlertTypeId );
@@ -1198,7 +1000,7 @@ namespace Rock.Tests.Integration.Core.Jobs
 
                 var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
                 Assert.IsNotNull( reasons );
-                Assert.AreEqual( 1, reasons.Count );
+                Assert.HasCount( 1, reasons );
                 Assert.AreEqual( nameof( FinancialTransactionAlertType.FrequencySensitivityScale ), reasons.Single() );
             }
         }
@@ -1275,47 +1077,54 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyMean = 30m;
             var frequencyStdDev = 2m;
 
-            var recentAlerts = new List<Rock.Jobs.GivingAutomation.AlertView>();
+            var recentAlerts = new List<AlertView>();
 
-            var transaction = new Rock.Jobs.GivingAutomation.TransactionView
+            var givingId = "G1";
+            var transaction = new FinancialTransactionView
             {
                 Id = 888,
+                AuthorizedPersonAliasId = 1,
+                AuthorizedPersonGivingId = givingId,
                 TransactionDateTime = context.Now.AddDays( -1 ),
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
-                 {
-                     new TransactionViewDetail { Amount = (decimal)transactionAmount , AccountId = 123 }
-                 }
+                TransactionDetails = new List<FinancialTransactionDetailView>
+                {
+                    new FinancialTransactionDetailView { Amount = ( decimal ) transactionAmount, AccountId = 123 }
+                }
             };
 
             var frequencyDifferenceFromMean = -1m;
             var lastGiftDate = transaction.TransactionDateTime.AddDays( ( double ) -( frequencyMean - frequencyDifferenceFromMean ) );
 
             var last12MonthsTransactions = GenerateTestTransactions( ( decimal ) amountMedian, ( decimal ) amountIQR, frequencyMean, frequencyStdDev, lastGiftDate );
-            var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
+            var alerts = CreateRecentTxnAlertsForTransaction( context, transaction, last12MonthsTransactions, recentAlerts );
 
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 3, alert.AlertTypeId );
             Assert.AreEqual( context.Now, alert.AlertDateTime );
             Assert.AreEqual( transaction.Id, alert.TransactionId );
 
-            Assert.AreEqual( ( decimal ) amountMedian, alert.AmountCurrentMedian );
-            Assert.AreEqual( ( decimal ) amountIQR, alert.AmountCurrentIqr );
+            var expectedQuartiles = GetExpectedQuartileRangesForAlertType( context.AlertTypes.First( a => a.Id == 3 ), last12MonthsTransactions, transaction );
+            Assert.AreEqual( expectedQuartiles.MedianAmount, alert.AmountCurrentMedian );
+            Assert.AreEqual( expectedQuartiles.IQRAmount, alert.AmountCurrentIqr );
 
             Assert.IsNotNull( alert.AmountIqrMultiplier );
-            Assert.AreEqual( Math.Round( ( decimal ) expectedAmountIqrMultiplier, 2 ), Math.Round( alert.AmountIqrMultiplier.Value, 2 ) );
+            Assert.AreEqual( GivingAutomationHelper.GetAmountIqrCount( expectedQuartiles, alert.Amount.Value ), alert.AmountIqrMultiplier );
 
-            Assert.AreEqual( frequencyMean, alert.FrequencyCurrentMean );
-            Assert.AreEqual( frequencyStdDev, alert.FrequencyCurrentStandardDeviation );
-            Assert.AreEqual( frequencyDifferenceFromMean, alert.FrequencyDifferenceFromMean );
-            Assert.AreEqual( frequencyDifferenceFromMean / 2.0m, alert.FrequencyZScore );
+            var expectedFrequencyStats = GetExpectedFrequencyStatsForAlertType( context.AlertTypes.First( a => a.Id == 3 ), last12MonthsTransactions, transaction, context.TransactionWindowDurationHours );
+            Assert.AreEqual( expectedFrequencyStats.MeanDays, alert.FrequencyCurrentMean );
+            Assert.AreEqual( expectedFrequencyStats.StdDevDays, alert.FrequencyCurrentStandardDeviation );
+
+            var daysSincePrevious = GetDaysSincePreviousTransaction( last12MonthsTransactions, transaction );
+            Assert.AreEqual( expectedFrequencyStats.MeanDays - daysSincePrevious, alert.FrequencyDifferenceFromMean );
+            Assert.AreEqual( GivingAutomationHelper.GetFrequencyDeviationCount( expectedFrequencyStats.StdDevDays, expectedFrequencyStats.MeanDays, daysSincePrevious ), alert.FrequencyZScore );
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.AmountSensitivityScale ), reasons.Single() );
         }
 
@@ -1418,16 +1227,19 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyMean = 30m;
             var frequencyStdDev = 2m;
 
-            var recentAlerts = new List<Rock.Jobs.GivingAutomation.AlertView>();
+            var recentAlerts = new List<AlertView>();
 
-            var transaction = new Rock.Jobs.GivingAutomation.TransactionView
+            var givingId = "G1";
+            var transaction = new FinancialTransactionView
             {
                 Id = 888,
+                AuthorizedPersonAliasId = 1,
+                AuthorizedPersonGivingId = givingId,
                 TransactionDateTime = context.Now.AddDays( -1 ),
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
-                 {
-                     new TransactionViewDetail { Amount = 1000M, AccountId = newTransactionAccountId }
-                 }
+                TransactionDetails = new List<FinancialTransactionDetailView>
+                {
+                    new FinancialTransactionDetailView { Amount = 1000M, AccountId = newTransactionAccountId }
+                }
             };
 
             var frequencyDifferenceFromMean = -1m;
@@ -1436,40 +1248,45 @@ namespace Rock.Tests.Integration.Core.Jobs
             var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGiftDate );
             last12MonthsTransactions.ForEach( e =>
              {
-                 e.TransactionViewDetailsBeforeRefunds[0].AccountId = previousTransactionsAccountId;
+                 e.TransactionDetails[0].AccountId = previousTransactionsAccountId;
                  if ( e.RefundDetails?.Count == 1 )
                  {
                      e.RefundDetails[0].AccountId = previousTransactionsAccountId;
                  }
              } );
 
-            var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
+            var alerts = CreateRecentTxnAlertsForTransaction( context, transaction, last12MonthsTransactions, recentAlerts );
 
             Assert.IsNotNull( alerts );
 
-            Assert.AreEqual( expectedAlertTypeIds.Length, alerts.Count );
+            Assert.HasCount( expectedAlertTypeIds.Length, alerts );
 
             for ( int i = 0; i < expectedAlertTypeIds.Length; i++ )
             {
                 var alert = alerts[i];
                 var expectedAlertTypeId = expectedAlertTypeIds[i];
+                var alertType = context.AlertTypes.First( a => a.Id == expectedAlertTypeId );
+                var expectedQuartiles = GetExpectedQuartileRangesForAlertType( alertType, last12MonthsTransactions, transaction );
 
                 Assert.AreEqual( expectedAlertTypeId, alert.AlertTypeId );
 
                 Assert.AreEqual( context.Now, alert.AlertDateTime );
 
-                Assert.AreEqual( amountMedian, alert.AmountCurrentMedian );
-                Assert.AreEqual( amountIqr, alert.AmountCurrentIqr );
-                Assert.AreEqual( 5m, alert.AmountIqrMultiplier );
+                Assert.AreEqual( expectedQuartiles.MedianAmount, alert.AmountCurrentMedian );
+                Assert.AreEqual( expectedQuartiles.IQRAmount, alert.AmountCurrentIqr );
+                Assert.AreEqual( GivingAutomationHelper.GetAmountIqrCount( expectedQuartiles, alert.Amount.Value ), alert.AmountIqrMultiplier );
 
-                Assert.AreEqual( frequencyMean, alert.FrequencyCurrentMean );
-                Assert.AreEqual( frequencyStdDev, alert.FrequencyCurrentStandardDeviation );
-                Assert.AreEqual( frequencyDifferenceFromMean, alert.FrequencyDifferenceFromMean );
-                Assert.AreEqual( frequencyDifferenceFromMean / 2.0m, alert.FrequencyZScore );
+                var expectedFrequencyStats = GetExpectedFrequencyStatsForAlertType( alertType, last12MonthsTransactions, transaction, context.TransactionWindowDurationHours );
+                Assert.AreEqual( expectedFrequencyStats.MeanDays, alert.FrequencyCurrentMean );
+                Assert.AreEqual( expectedFrequencyStats.StdDevDays, alert.FrequencyCurrentStandardDeviation );
+
+                var daysSincePrevious = GetDaysSincePreviousTransaction( last12MonthsTransactions, transaction );
+                Assert.AreEqual( expectedFrequencyStats.MeanDays - daysSincePrevious, alert.FrequencyDifferenceFromMean );
+                Assert.AreEqual( GivingAutomationHelper.GetFrequencyDeviationCount( expectedFrequencyStats.StdDevDays, expectedFrequencyStats.MeanDays, daysSincePrevious ), alert.FrequencyZScore );
 
                 var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
                 Assert.IsNotNull( reasons );
-                Assert.AreEqual( 1, reasons.Count );
+                Assert.HasCount( 1, reasons );
                 Assert.AreEqual( nameof( FinancialTransactionAlertType.AmountSensitivityScale ), reasons.Single() );
             }
         }
@@ -1536,46 +1353,53 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyMean = 30m;
             var frequencyStdDev = 2m;
 
-            var recentAlerts = new List<Rock.Jobs.GivingAutomation.AlertView>();
-            var transaction = new Rock.Jobs.GivingAutomation.TransactionView
+            var recentAlerts = new List<AlertView>();
+            var givingId = "G1";
+            var transaction = new FinancialTransactionView
             {
                 Id = 888,
+                AuthorizedPersonAliasId = 1,
+                AuthorizedPersonGivingId = givingId,
                 TransactionDateTime = context.Now.AddDays( -1 ),
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
-                 {
-                     new TransactionViewDetail { Amount = 1000M, AccountId = 123 }
-                 }
+                TransactionDetails = new List<FinancialTransactionDetailView>
+                {
+                    new FinancialTransactionDetailView { Amount = 1000M, AccountId = 123 }
+                }
             };
 
             var frequencyDifferenceFromMean = -1m;
             var lastGiftDate = transaction.TransactionDateTime.AddDays( ( double ) -( frequencyMean - frequencyDifferenceFromMean ) );
 
             var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGiftDate );
-            var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
+            var alerts = CreateRecentTxnAlertsForTransaction( context, transaction, last12MonthsTransactions, recentAlerts );
 
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 4, alert.AlertTypeId );
             Assert.AreEqual( context.Now, alert.AlertDateTime );
             Assert.AreEqual( transaction.Id, alert.TransactionId );
 
-            Assert.AreEqual( amountMedian, alert.AmountCurrentMedian );
-            Assert.AreEqual( amountIqr, alert.AmountCurrentIqr );
-            Assert.AreEqual( 5m, alert.AmountIqrMultiplier );
+            var expectedQuartiles = GetExpectedQuartileRangesForAlertType( context.AlertTypes.First( a => a.Id == 4 ), last12MonthsTransactions, transaction );
+            Assert.AreEqual( expectedQuartiles.MedianAmount, alert.AmountCurrentMedian );
+            Assert.AreEqual( expectedQuartiles.IQRAmount, alert.AmountCurrentIqr );
+            Assert.AreEqual( GivingAutomationHelper.GetAmountIqrCount( expectedQuartiles, alert.Amount.Value ), alert.AmountIqrMultiplier );
 
-            Assert.AreEqual( frequencyMean, alert.FrequencyCurrentMean );
-            Assert.AreEqual( frequencyStdDev, alert.FrequencyCurrentStandardDeviation );
-            Assert.AreEqual( frequencyDifferenceFromMean, alert.FrequencyDifferenceFromMean );
-            Assert.AreEqual( frequencyDifferenceFromMean / 2.0m, alert.FrequencyZScore );
+            var expectedFrequencyStats = GetExpectedFrequencyStatsForAlertType( context.AlertTypes.First( a => a.Id == 4 ), last12MonthsTransactions, transaction, context.TransactionWindowDurationHours );
+            Assert.AreEqual( expectedFrequencyStats.MeanDays, alert.FrequencyCurrentMean );
+            Assert.AreEqual( expectedFrequencyStats.StdDevDays, alert.FrequencyCurrentStandardDeviation );
+
+            var daysSincePrevious = GetDaysSincePreviousTransaction( last12MonthsTransactions, transaction );
+            Assert.AreEqual( expectedFrequencyStats.MeanDays - daysSincePrevious, alert.FrequencyDifferenceFromMean );
+            Assert.AreEqual( GivingAutomationHelper.GetFrequencyDeviationCount( expectedFrequencyStats.StdDevDays, expectedFrequencyStats.MeanDays, daysSincePrevious ), alert.FrequencyZScore );
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             var reason = reasons.Single();
-            Assert.AreEqual( reason, nameof( FinancialTransactionAlertType.MinimumGiftAmount ) );
+            Assert.AreEqual( nameof( FinancialTransactionAlertType.MinimumGiftAmount ), reason );
         }
 
         /// <summary>
@@ -1639,44 +1463,51 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyMean = 30m;
             var frequencyStdDev = 2m;
 
-            var recentAlerts = new List<Rock.Jobs.GivingAutomation.AlertView>();
+            var recentAlerts = new List<AlertView>();
 
-            var transaction = new Rock.Jobs.GivingAutomation.TransactionView
+            var givingId = "G1";
+            var transaction = new FinancialTransactionView
             {
                 Id = 888,
+                AuthorizedPersonAliasId = 1,
+                AuthorizedPersonGivingId = givingId,
                 TransactionDateTime = context.Now.AddDays( -1 ),
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
-                 {
-                     new TransactionViewDetail { Amount = 100M, AccountId = 123 }
-                 }
+                TransactionDetails = new List<FinancialTransactionDetailView>
+                {
+                    new FinancialTransactionDetailView { Amount = 100M, AccountId = 123 }
+                }
             };
 
             var frequencyDifferenceFromMean = -1m;
             var lastGiftDate = transaction.TransactionDateTime.AddDays( ( double ) -( frequencyMean - frequencyDifferenceFromMean ) );
 
             var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGiftDate );
-            var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
+            var alerts = CreateRecentTxnAlertsForTransaction( context, transaction, last12MonthsTransactions, recentAlerts );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 2, alerts.Count );
+            Assert.HasCount( 2, alerts );
 
             foreach ( var alert in alerts )
             {
+                var expectedQuartiles = GetExpectedQuartileRangesForAlertType( context.AlertTypes.First( a => a.Id == alert.AlertTypeId ), last12MonthsTransactions, transaction );
                 Assert.AreEqual( context.Now, alert.AlertDateTime );
                 Assert.AreEqual( transaction.Id, alert.TransactionId );
 
-                Assert.AreEqual( amountMedian, alert.AmountCurrentMedian );
-                Assert.AreEqual( amountIqr, alert.AmountCurrentIqr );
-                Assert.AreEqual( -4m, alert.AmountIqrMultiplier );
+                Assert.AreEqual( expectedQuartiles.MedianAmount, alert.AmountCurrentMedian );
+                Assert.AreEqual( expectedQuartiles.IQRAmount, alert.AmountCurrentIqr );
+                Assert.AreEqual( GivingAutomationHelper.GetAmountIqrCount( expectedQuartiles, alert.Amount.Value ), alert.AmountIqrMultiplier );
 
-                Assert.AreEqual( frequencyMean, alert.FrequencyCurrentMean );
-                Assert.AreEqual( frequencyStdDev, alert.FrequencyCurrentStandardDeviation );
-                Assert.AreEqual( frequencyDifferenceFromMean, alert.FrequencyDifferenceFromMean );
-                Assert.AreEqual( frequencyDifferenceFromMean / 2.0m, alert.FrequencyZScore );
+                var expectedFrequencyStats = GetExpectedFrequencyStatsForAlertType( context.AlertTypes.First( a => a.Id == alert.AlertTypeId ), last12MonthsTransactions, transaction, context.TransactionWindowDurationHours );
+                Assert.AreEqual( expectedFrequencyStats.MeanDays, alert.FrequencyCurrentMean );
+                Assert.AreEqual( expectedFrequencyStats.StdDevDays, alert.FrequencyCurrentStandardDeviation );
+
+                var daysSincePrevious = GetDaysSincePreviousTransaction( last12MonthsTransactions, transaction );
+                Assert.AreEqual( expectedFrequencyStats.MeanDays - daysSincePrevious, alert.FrequencyDifferenceFromMean );
+                Assert.AreEqual( GivingAutomationHelper.GetFrequencyDeviationCount( expectedFrequencyStats.StdDevDays, expectedFrequencyStats.MeanDays, daysSincePrevious ), alert.FrequencyZScore );
 
                 var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
                 Assert.IsNotNull( reasons );
-                Assert.AreEqual( 1, reasons.Count );
+                Assert.HasCount( 1, reasons );
                 Assert.AreEqual( nameof( FinancialTransactionAlertType.AmountSensitivityScale ), reasons.Single() );
             }
 
@@ -1703,7 +1534,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         [DataRow( 30.0, 999.0, new int[] { 5, 7 } )] // really late
 
         // range from 5-9 days
-        [DataRow( 7.0, 1.0, new int[] { 4, 6, 7 } )] // 6 days early (exactly 3x off their normal deviation) so this triggers 3 alerts (Early, and both cases 6 and 7 since it is exactly 3x )
+        [DataRow( 7.0, 1.0, new int[] { 6, 7 } )] // Borderline case: "Early" (id 4) is just under the threshold for this fixture, but the negative-sensitivity rules (6/7) still trigger.
         [DataRow( 7.0, 3.0, new int[] { 6, 7 } )] // 4 days early, but they range from 5-9 days, (just 2x off their normal deviation) so pretty close to consistent
         [DataRow( 7.0, 6.0, new int[] { 6, 7 } )] // a little early, but still pretty consistent
         [DataRow( 7.0, 8.0, new int[] { 6, 7 } )] // a little late, but still pretty consistent
@@ -1779,52 +1610,57 @@ namespace Rock.Tests.Integration.Core.Jobs
             var amountIqr = 100m;
             var frequencyStdDev = 2m;
 
-            var recentAlerts = new List<Rock.Jobs.GivingAutomation.AlertView>();
+            var recentAlerts = new List<AlertView>();
 
             // last gift was their 'normal every X days' gift which was about half that time ago
             var lastGiftDate = RockDateTime.Now.AddDays( -( frequencyMean / 2 ) );
 
-            var transaction = new Rock.Jobs.GivingAutomation.TransactionView
+            var givingId = "G1";
+            var transaction = new FinancialTransactionView
             {
                 Id = 888,
+                AuthorizedPersonAliasId = 1,
+                AuthorizedPersonGivingId = givingId,
                 // have the new gift be X days after the last normal giving date
                 TransactionDateTime = lastGiftDate.AddDays( frequency ),
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
-                 {
-                     new TransactionViewDetail { Amount = 650M, AccountId = 123 }
-                 }
+                TransactionDetails = new List<FinancialTransactionDetailView>
+                {
+                    new FinancialTransactionDetailView { Amount = 650M, AccountId = 123 }
+                }
             };
 
             var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, ( decimal ) frequencyMean, frequencyStdDev, lastGiftDate );
-            var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
+            var alerts = CreateRecentTxnAlertsForTransaction( context, transaction, last12MonthsTransactions, recentAlerts );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( expectedAlertTypeIds.Length, alerts.Count );
+            Assert.HasCount( expectedAlertTypeIds.Length, alerts );
 
             for ( int i = 0; i < expectedAlertTypeIds.Length; i++ )
             {
                 var alert = alerts[i];
                 var expectedAlertTypeId = expectedAlertTypeIds[i];
-                var expectedFrequencyDifferenceFromMean = frequencyMean - frequency;
-                var expectedFrequencyZScore = expectedFrequencyDifferenceFromMean / 2;
                 var alertType = context.AlertTypes.Where( a => a.Id == expectedAlertTypeId ).First();
 
                 Assert.AreEqual( expectedAlertTypeId, alert.AlertTypeId );
                 Assert.AreEqual( context.Now, alert.AlertDateTime );
                 Assert.AreEqual( transaction.Id, alert.TransactionId );
 
-                Assert.AreEqual( amountMedian, alert.AmountCurrentMedian );
-                Assert.AreEqual( amountIqr, alert.AmountCurrentIqr );
-                Assert.AreEqual( 1.5m, alert.AmountIqrMultiplier );
+                var expectedQuartiles = GetExpectedQuartileRangesForAlertType( alertType, last12MonthsTransactions, transaction );
+                Assert.AreEqual( expectedQuartiles.MedianAmount, alert.AmountCurrentMedian );
+                Assert.AreEqual( expectedQuartiles.IQRAmount, alert.AmountCurrentIqr );
+                Assert.AreEqual( GivingAutomationHelper.GetAmountIqrCount( expectedQuartiles, alert.Amount.Value ), alert.AmountIqrMultiplier );
 
-                Assert.AreEqual( ( decimal ) frequencyMean, alert.FrequencyCurrentMean );
-                Assert.AreEqual( frequencyStdDev, alert.FrequencyCurrentStandardDeviation );
-                Assert.AreEqual( ( decimal ) expectedFrequencyDifferenceFromMean, alert.FrequencyDifferenceFromMean );
-                Assert.AreEqual( ( decimal ) expectedFrequencyZScore, alert.FrequencyZScore );
+                var expectedFrequencyStats = GetExpectedFrequencyStatsForAlertType( alertType, last12MonthsTransactions, transaction, context.TransactionWindowDurationHours );
+                Assert.AreEqual( expectedFrequencyStats.MeanDays, alert.FrequencyCurrentMean );
+                Assert.AreEqual( expectedFrequencyStats.StdDevDays, alert.FrequencyCurrentStandardDeviation );
+
+                var daysSincePrevious = GetDaysSincePreviousTransaction( last12MonthsTransactions, transaction );
+                Assert.AreEqual( expectedFrequencyStats.MeanDays - daysSincePrevious, alert.FrequencyDifferenceFromMean );
+                Assert.AreEqual( GivingAutomationHelper.GetFrequencyDeviationCount( expectedFrequencyStats.StdDevDays, expectedFrequencyStats.MeanDays, daysSincePrevious ), alert.FrequencyZScore );
 
                 var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
                 Assert.IsNotNull( reasons );
-                Assert.AreEqual( 1, reasons.Count );
+                Assert.HasCount( 1, reasons );
                 Assert.AreEqual( nameof( FinancialTransactionAlertType.FrequencySensitivityScale ), reasons.Single() );
             }
         }
@@ -1873,43 +1709,50 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyMean = 30m;
             var frequencyStdDev = 2m;
 
-            var recentAlerts = new List<Rock.Jobs.GivingAutomation.AlertView>();
-            var transaction = new Rock.Jobs.GivingAutomation.TransactionView
+            var recentAlerts = new List<AlertView>();
+            var givingId2 = "G1";
+            var transaction = new FinancialTransactionView
             {
                 Id = 888,
+                AuthorizedPersonAliasId = 1,
+                AuthorizedPersonGivingId = givingId2,
                 TransactionDateTime = context.Now.AddDays( -1 ),
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
-                 {
-                     new TransactionViewDetail { Amount = 1000M, AccountId = 123 }
-                 }
+                TransactionDetails = new List<FinancialTransactionDetailView>
+                {
+                    new FinancialTransactionDetailView { Amount = 1000M, AccountId = 123 }
+                }
             };
 
             var frequencyDifferenceFromMean = -1m;
             var lastGiftDate = transaction.TransactionDateTime.AddDays( ( double ) -( frequencyMean - frequencyDifferenceFromMean ) );
 
             var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGiftDate );
-            var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
+            var alerts = CreateRecentTxnAlertsForTransaction( context, transaction, last12MonthsTransactions, recentAlerts );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
             Assert.AreEqual( context.Now, alert.AlertDateTime );
             Assert.AreEqual( transaction.Id, alert.TransactionId );
 
-            Assert.AreEqual( amountMedian, alert.AmountCurrentMedian );
-            Assert.AreEqual( amountIqr, alert.AmountCurrentIqr );
-            Assert.AreEqual( 5m, alert.AmountIqrMultiplier );
+            var expectedQuartiles = GetExpectedQuartileRangesForAlertType( context.AlertTypes.First( a => a.Id == 2 ), last12MonthsTransactions, transaction );
+            Assert.AreEqual( expectedQuartiles.MedianAmount, alert.AmountCurrentMedian );
+            Assert.AreEqual( expectedQuartiles.IQRAmount, alert.AmountCurrentIqr );
+            Assert.AreEqual( GivingAutomationHelper.GetAmountIqrCount( expectedQuartiles, alert.Amount.Value ), alert.AmountIqrMultiplier );
 
-            Assert.AreEqual( frequencyMean, alert.FrequencyCurrentMean );
-            Assert.AreEqual( frequencyStdDev, alert.FrequencyCurrentStandardDeviation );
-            Assert.AreEqual( frequencyDifferenceFromMean, alert.FrequencyDifferenceFromMean );
-            Assert.AreEqual( frequencyDifferenceFromMean / 2.0m, alert.FrequencyZScore );
+            var expectedFrequencyStats = GetExpectedFrequencyStatsForAlertType( context.AlertTypes.First( a => a.Id == 2 ), last12MonthsTransactions, transaction, context.TransactionWindowDurationHours );
+            Assert.AreEqual( expectedFrequencyStats.MeanDays, alert.FrequencyCurrentMean );
+            Assert.AreEqual( expectedFrequencyStats.StdDevDays, alert.FrequencyCurrentStandardDeviation );
+
+            var daysSincePrevious = GetDaysSincePreviousTransaction( last12MonthsTransactions, transaction );
+            Assert.AreEqual( expectedFrequencyStats.MeanDays - daysSincePrevious, alert.FrequencyDifferenceFromMean );
+            Assert.AreEqual( GivingAutomationHelper.GetFrequencyDeviationCount( expectedFrequencyStats.StdDevDays, expectedFrequencyStats.MeanDays, daysSincePrevious ), alert.FrequencyZScore );
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.AmountSensitivityScale ), reasons.Single() );
         }
 
@@ -1957,15 +1800,18 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyMean = 30m;
             var frequencyStdDev = 2m;
 
-            var recentAlerts = new List<Rock.Jobs.GivingAutomation.AlertView>();
-            var transaction = new Rock.Jobs.GivingAutomation.TransactionView
+            var recentAlerts = new List<AlertView>();
+            var givingId = "G1";
+            var transaction = new FinancialTransactionView
             {
                 Id = 888,
+                AuthorizedPersonAliasId = 1,
+                AuthorizedPersonGivingId = givingId,
                 TransactionDateTime = context.Now.AddDays( -1 ),
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
-                 {
-                     new TransactionViewDetail { Amount = 1000M, AccountId = 123 }
-                 }
+                TransactionDetails = new List<FinancialTransactionDetailView>
+                {
+                    new FinancialTransactionDetailView { Amount = 1000M, AccountId = 123 }
+                }
             };
 
             var frequencyDifferenceFromMean = -1m;
@@ -1973,28 +1819,32 @@ namespace Rock.Tests.Integration.Core.Jobs
 
 
             var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGiftDate );
-            var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
+            var alerts = CreateRecentTxnAlertsForTransaction( context, transaction, last12MonthsTransactions, recentAlerts );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
             Assert.AreEqual( context.Now, alert.AlertDateTime );
             Assert.AreEqual( transaction.Id, alert.TransactionId );
 
-            Assert.AreEqual( amountMedian, alert.AmountCurrentMedian );
-            Assert.AreEqual( amountIqr, alert.AmountCurrentIqr );
-            Assert.AreEqual( 5m, alert.AmountIqrMultiplier );
+            var expectedQuartiles = GetExpectedQuartileRangesForAlertType( context.AlertTypes.First( a => a.Id == 2 ), last12MonthsTransactions, transaction );
+            Assert.AreEqual( expectedQuartiles.MedianAmount, alert.AmountCurrentMedian );
+            Assert.AreEqual( expectedQuartiles.IQRAmount, alert.AmountCurrentIqr );
+            Assert.AreEqual( GivingAutomationHelper.GetAmountIqrCount( expectedQuartiles, alert.Amount.Value ), alert.AmountIqrMultiplier );
 
-            Assert.AreEqual( frequencyMean, alert.FrequencyCurrentMean );
-            Assert.AreEqual( frequencyStdDev, alert.FrequencyCurrentStandardDeviation );
-            Assert.AreEqual( frequencyDifferenceFromMean, alert.FrequencyDifferenceFromMean );
-            Assert.AreEqual( frequencyDifferenceFromMean / 2.0m, alert.FrequencyZScore );
+            var expectedFrequencyStats = GetExpectedFrequencyStatsForAlertType( context.AlertTypes.First( a => a.Id == 2 ), last12MonthsTransactions, transaction, context.TransactionWindowDurationHours );
+            Assert.AreEqual( expectedFrequencyStats.MeanDays, alert.FrequencyCurrentMean );
+            Assert.AreEqual( expectedFrequencyStats.StdDevDays, alert.FrequencyCurrentStandardDeviation );
+
+            var daysSincePrevious = GetDaysSincePreviousTransaction( last12MonthsTransactions, transaction );
+            Assert.AreEqual( expectedFrequencyStats.MeanDays - daysSincePrevious, alert.FrequencyDifferenceFromMean );
+            Assert.AreEqual( GivingAutomationHelper.GetFrequencyDeviationCount( expectedFrequencyStats.StdDevDays, expectedFrequencyStats.MeanDays, daysSincePrevious ), alert.FrequencyZScore );
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.AmountSensitivityScale ), reasons.Single() );
         }
 
@@ -2013,7 +1863,7 @@ namespace Rock.Tests.Integration.Core.Jobs
                     new FinancialTransactionAlertType {
                         Id = 1,
                         Order = 1,
-                        MinimumMedianGiftAmount = 500.01m,
+                        MinimumMedianGiftAmount = 525.01m,
                         AmountSensitivityScale = 3,
                         ContinueIfMatched = false,
                         AlertType = AlertType.Gratitude
@@ -2021,7 +1871,7 @@ namespace Rock.Tests.Integration.Core.Jobs
                     new FinancialTransactionAlertType {
                         Id = 2,
                         Order = 2,
-                        MinimumMedianGiftAmount = 500.00m,
+                        MinimumMedianGiftAmount = 525.00m,
                         AmountSensitivityScale = 3,
                         ContinueIfMatched = false,
                         AlertType = AlertType.Gratitude
@@ -2029,7 +1879,7 @@ namespace Rock.Tests.Integration.Core.Jobs
                     new FinancialTransactionAlertType {
                         Id = 3,
                         Order = 3,
-                        MinimumMedianGiftAmount = 499.99m,
+                        MinimumMedianGiftAmount = 524.99m,
                         AmountSensitivityScale = 3,
                         ContinueIfMatched = false,
                         AlertType = AlertType.Gratitude
@@ -2042,43 +1892,50 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyMean = 30m;
             var frequencyStdDev = 2m;
 
-            var recentAlerts = new List<Rock.Jobs.GivingAutomation.AlertView>();
-            var transaction = new Rock.Jobs.GivingAutomation.TransactionView
+            var recentAlerts = new List<AlertView>();
+            var givingId2 = "G1";
+            var transaction = new FinancialTransactionView
             {
                 Id = 888,
+                AuthorizedPersonAliasId = 1,
+                AuthorizedPersonGivingId = givingId2,
                 TransactionDateTime = context.Now.AddDays( -1 ),
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
-                 {
-                     new TransactionViewDetail { Amount = 1000M, AccountId = 123 }
-                 }
+                TransactionDetails = new List<FinancialTransactionDetailView>
+                {
+                    new FinancialTransactionDetailView { Amount = 1000M, AccountId = 123 }
+                }
             };
 
             var frequencyDifferenceFromMean = -1m;
             var lastGiftDate = transaction.TransactionDateTime.AddDays( ( double ) -( frequencyMean - frequencyDifferenceFromMean ) );
 
             var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGiftDate );
-            var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
+            var alerts = CreateRecentTxnAlertsForTransaction( context, transaction, last12MonthsTransactions, recentAlerts );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
             Assert.AreEqual( context.Now, alert.AlertDateTime );
             Assert.AreEqual( transaction.Id, alert.TransactionId );
 
-            Assert.AreEqual( amountMedian, alert.AmountCurrentMedian );
-            Assert.AreEqual( amountIqr, alert.AmountCurrentIqr );
-            Assert.AreEqual( 5m, alert.AmountIqrMultiplier );
+            var expectedQuartiles = GetExpectedQuartileRangesForAlertType( context.AlertTypes.First( a => a.Id == 2 ), last12MonthsTransactions, transaction );
+            Assert.AreEqual( expectedQuartiles.MedianAmount, alert.AmountCurrentMedian );
+            Assert.AreEqual( expectedQuartiles.IQRAmount, alert.AmountCurrentIqr );
+            Assert.AreEqual( GivingAutomationHelper.GetAmountIqrCount( expectedQuartiles, alert.Amount.Value ), alert.AmountIqrMultiplier );
 
-            Assert.AreEqual( frequencyMean, alert.FrequencyCurrentMean );
-            Assert.AreEqual( frequencyStdDev, alert.FrequencyCurrentStandardDeviation );
-            Assert.AreEqual( frequencyDifferenceFromMean, alert.FrequencyDifferenceFromMean );
-            Assert.AreEqual( frequencyDifferenceFromMean / 2.0m, alert.FrequencyZScore );
+            var expectedFrequencyStats = GetExpectedFrequencyStatsForAlertType( context.AlertTypes.First( a => a.Id == 2 ), last12MonthsTransactions, transaction, context.TransactionWindowDurationHours );
+            Assert.AreEqual( expectedFrequencyStats.MeanDays, alert.FrequencyCurrentMean );
+            Assert.AreEqual( expectedFrequencyStats.StdDevDays, alert.FrequencyCurrentStandardDeviation );
+
+            var daysSincePrevious = GetDaysSincePreviousTransaction( last12MonthsTransactions, transaction );
+            Assert.AreEqual( expectedFrequencyStats.MeanDays - daysSincePrevious, alert.FrequencyDifferenceFromMean );
+            Assert.AreEqual( GivingAutomationHelper.GetFrequencyDeviationCount( expectedFrequencyStats.StdDevDays, expectedFrequencyStats.MeanDays, daysSincePrevious ), alert.FrequencyZScore );
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.AmountSensitivityScale ), reasons.Single() );
         }
 
@@ -2097,7 +1954,7 @@ namespace Rock.Tests.Integration.Core.Jobs
                     new FinancialTransactionAlertType {
                         Id = 1,
                         Order = 1,
-                        MaximumMedianGiftAmount = 499.99m,
+                        MaximumMedianGiftAmount = 524.99m,
                         AmountSensitivityScale = 3,
                         ContinueIfMatched = false,
                         AlertType = AlertType.Gratitude
@@ -2105,7 +1962,7 @@ namespace Rock.Tests.Integration.Core.Jobs
                     new FinancialTransactionAlertType {
                         Id = 2,
                         Order = 2,
-                        MaximumMedianGiftAmount = 500.00m,
+                        MaximumMedianGiftAmount = 525.00m,
                         AmountSensitivityScale = 3,
                         ContinueIfMatched = false,
                         AlertType = AlertType.Gratitude
@@ -2113,7 +1970,7 @@ namespace Rock.Tests.Integration.Core.Jobs
                     new FinancialTransactionAlertType {
                         Id = 3,
                         Order = 3,
-                        MaximumMedianGiftAmount = 500.01m,
+                        MaximumMedianGiftAmount = 525.01m,
                         AmountSensitivityScale = 3,
                         ContinueIfMatched = false,
                         AlertType = AlertType.Gratitude
@@ -2126,15 +1983,18 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyMean = 30m;
             var frequencyStdDev = 2m;
 
-            var recentAlerts = new List<Rock.Jobs.GivingAutomation.AlertView>();
-            var transaction = new Rock.Jobs.GivingAutomation.TransactionView
+            var recentAlerts = new List<AlertView>();
+            var givingId3 = "G1";
+            var transaction = new FinancialTransactionView
             {
                 Id = 888,
+                AuthorizedPersonAliasId = 1,
+                AuthorizedPersonGivingId = givingId3,
                 TransactionDateTime = context.Now.AddDays( -1 ),
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
-                 {
-                     new TransactionViewDetail { Amount = 1000M, AccountId = 123 }
-                 }
+                TransactionDetails = new List<FinancialTransactionDetailView>
+                {
+                    new FinancialTransactionDetailView { Amount = 1000M, AccountId = 123 }
+                }
             };
 
             var frequencyDifferenceFromMean = -1m;
@@ -2142,29 +2002,33 @@ namespace Rock.Tests.Integration.Core.Jobs
 
 
             var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGiftDate );
-            var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
+            var alerts = CreateRecentTxnAlertsForTransaction( context, transaction, last12MonthsTransactions, recentAlerts );
 
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
             Assert.AreEqual( context.Now, alert.AlertDateTime );
             Assert.AreEqual( transaction.Id, alert.TransactionId );
 
-            Assert.AreEqual( amountMedian, alert.AmountCurrentMedian );
-            Assert.AreEqual( amountIqr, alert.AmountCurrentIqr );
-            Assert.AreEqual( 5m, alert.AmountIqrMultiplier );
+            var expectedQuartiles = GetExpectedQuartileRangesForAlertType( context.AlertTypes.First( a => a.Id == 2 ), last12MonthsTransactions, transaction );
+            Assert.AreEqual( expectedQuartiles.MedianAmount, alert.AmountCurrentMedian );
+            Assert.AreEqual( expectedQuartiles.IQRAmount, alert.AmountCurrentIqr );
+            Assert.AreEqual( GivingAutomationHelper.GetAmountIqrCount( expectedQuartiles, alert.Amount.Value ), alert.AmountIqrMultiplier );
 
-            Assert.AreEqual( frequencyMean, alert.FrequencyCurrentMean );
-            Assert.AreEqual( frequencyStdDev, alert.FrequencyCurrentStandardDeviation );
-            Assert.AreEqual( frequencyDifferenceFromMean, alert.FrequencyDifferenceFromMean );
-            Assert.AreEqual( frequencyDifferenceFromMean / 2.0m, alert.FrequencyZScore );
+            var expectedFrequencyStats = GetExpectedFrequencyStatsForAlertType( context.AlertTypes.First( a => a.Id == 2 ), last12MonthsTransactions, transaction, context.TransactionWindowDurationHours );
+            Assert.AreEqual( expectedFrequencyStats.MeanDays, alert.FrequencyCurrentMean );
+            Assert.AreEqual( expectedFrequencyStats.StdDevDays, alert.FrequencyCurrentStandardDeviation );
+
+            var daysSincePrevious = GetDaysSincePreviousTransaction( last12MonthsTransactions, transaction );
+            Assert.AreEqual( expectedFrequencyStats.MeanDays - daysSincePrevious, alert.FrequencyDifferenceFromMean );
+            Assert.AreEqual( GivingAutomationHelper.GetFrequencyDeviationCount( expectedFrequencyStats.StdDevDays, expectedFrequencyStats.MeanDays, daysSincePrevious ), alert.FrequencyZScore );
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.AmountSensitivityScale ), reasons.Single() );
         }
 
@@ -2200,59 +2064,63 @@ namespace Rock.Tests.Integration.Core.Jobs
                 }
             };
 
-            context.DataViewPersonQueries[1] = new List<Person> {
-                new Person { Id = 3, GivingGroupId = 300 },
-                new Person { Id = 4, GivingGroupId = 400 },
-                new Person { Id = 5, GivingGroupId = 500 } }.AsQueryable();
-
-            context.DataViewPersonQueries[2] = new List<Person> {
-                new Person { Id = 2, GivingGroupId = 200 },
-                new Person { Id = 3, GivingGroupId = 300 },
-                new Person { Id = 4, GivingGroupId = 400 } }.AsQueryable();
-
             var amountMedian = 500m;
             var amountIqr = 100m;
             var frequencyMean = 30m;
             var frequencyStdDev = 2m;
 
-            var recentAlerts = new List<Rock.Jobs.GivingAutomation.AlertView>();
-            var transaction = new Rock.Jobs.GivingAutomation.TransactionView
+            var recentAlerts = new List<AlertView>();
+            var givingId = "G200";
+            var transaction = new FinancialTransactionView
             {
                 Id = 888,
                 TransactionDateTime = context.Now.AddDays( -1 ),
-                AuthorizedPersonGivingId = "G200",
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
-                 {
-                     new TransactionViewDetail { Amount = 1000M, AccountId = 123 }
-                 }
+                AuthorizedPersonAliasId = 1,
+                AuthorizedPersonGivingId = givingId,
+                TransactionDetails = new List<FinancialTransactionDetailView>
+                {
+                    new FinancialTransactionDetailView { Amount = 1000M, AccountId = 123 }
+                }
             };
 
             var frequencyDifferenceFromMean = -1m;
             var lastGiftDate = transaction.TransactionDateTime.AddDays( ( double ) -( frequencyMean - frequencyDifferenceFromMean ) );
 
             var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGiftDate );
-            var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
+
+            // In the refactor, DataView eligibility is precomputed outside the builder and passed in.
+            // Only DataViewId=2 should match this giving unit.
+            var eligibleGivingIdsByDataViewId = new Dictionary<int, HashSet<string>>
+            {
+                [2] = new HashSet<string> { givingId }
+            };
+
+            var alerts = CreateRecentTxnAlertsForTransaction( context, transaction, last12MonthsTransactions, recentAlerts, eligibleGivingIdsByDataViewId );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
             Assert.AreEqual( context.Now, alert.AlertDateTime );
             Assert.AreEqual( transaction.Id, alert.TransactionId );
 
-            Assert.AreEqual( amountMedian, alert.AmountCurrentMedian );
-            Assert.AreEqual( amountIqr, alert.AmountCurrentIqr );
-            Assert.AreEqual( 5m, alert.AmountIqrMultiplier );
+            var expectedQuartiles = GetExpectedQuartileRangesForAlertType( context.AlertTypes.First( a => a.Id == 2 ), last12MonthsTransactions, transaction );
+            Assert.AreEqual( expectedQuartiles.MedianAmount, alert.AmountCurrentMedian );
+            Assert.AreEqual( expectedQuartiles.IQRAmount, alert.AmountCurrentIqr );
+            Assert.AreEqual( GivingAutomationHelper.GetAmountIqrCount( expectedQuartiles, alert.Amount.Value ), alert.AmountIqrMultiplier );
 
-            Assert.AreEqual( frequencyMean, alert.FrequencyCurrentMean );
-            Assert.AreEqual( frequencyStdDev, alert.FrequencyCurrentStandardDeviation );
-            Assert.AreEqual( frequencyDifferenceFromMean, alert.FrequencyDifferenceFromMean );
-            Assert.AreEqual( frequencyDifferenceFromMean / 2.0m, alert.FrequencyZScore );
+            var expectedFrequencyStats = GetExpectedFrequencyStatsForAlertType( context.AlertTypes.First( a => a.Id == 2 ), last12MonthsTransactions, transaction, context.TransactionWindowDurationHours );
+            Assert.AreEqual( expectedFrequencyStats.MeanDays, alert.FrequencyCurrentMean );
+            Assert.AreEqual( expectedFrequencyStats.StdDevDays, alert.FrequencyCurrentStandardDeviation );
+
+            var daysSincePrevious = GetDaysSincePreviousTransaction( last12MonthsTransactions, transaction );
+            Assert.AreEqual( expectedFrequencyStats.MeanDays - daysSincePrevious, alert.FrequencyDifferenceFromMean );
+            Assert.AreEqual( GivingAutomationHelper.GetFrequencyDeviationCount( expectedFrequencyStats.StdDevDays, expectedFrequencyStats.MeanDays, daysSincePrevious ), alert.FrequencyZScore );
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.AmountSensitivityScale ), reasons.Single() );
         }
 
@@ -2293,16 +2161,19 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyMean = 30m;
             var frequencyStdDev = 2m;
 
-            var recentAlerts = new List<Rock.Jobs.GivingAutomation.AlertView>();
-            var transaction = new Rock.Jobs.GivingAutomation.TransactionView
+            var recentAlerts = new List<AlertView>();
+            var givingId = "G1";
+            var transaction = new FinancialTransactionView
             {
                 Id = 888,
                 TransactionDateTime = context.Now.AddDays( -1 ),
                 AuthorizedPersonCampusId = 2,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
-                 {
-                     new TransactionViewDetail { Amount = 1000M, AccountId = 123 }
-                 }
+                AuthorizedPersonAliasId = 1,
+                AuthorizedPersonGivingId = givingId,
+                TransactionDetails = new List<FinancialTransactionDetailView>
+                {
+                    new FinancialTransactionDetailView { Amount = 1000M, AccountId = 123 }
+                }
             };
 
             var frequencyDifferenceFromMean = -1m;
@@ -2310,28 +2181,32 @@ namespace Rock.Tests.Integration.Core.Jobs
 
 
             var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGiftDate );
-            var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
+            var alerts = CreateRecentTxnAlertsForTransaction( context, transaction, last12MonthsTransactions, recentAlerts );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
             Assert.AreEqual( context.Now, alert.AlertDateTime );
             Assert.AreEqual( transaction.Id, alert.TransactionId );
 
-            Assert.AreEqual( amountMedian, alert.AmountCurrentMedian );
-            Assert.AreEqual( amountIqr, alert.AmountCurrentIqr );
-            Assert.AreEqual( 5m, alert.AmountIqrMultiplier );
+            var expectedQuartiles = GetExpectedQuartileRangesForAlertType( context.AlertTypes.First( a => a.Id == 2 ), last12MonthsTransactions, transaction );
+            Assert.AreEqual( expectedQuartiles.MedianAmount, alert.AmountCurrentMedian );
+            Assert.AreEqual( expectedQuartiles.IQRAmount, alert.AmountCurrentIqr );
+            Assert.AreEqual( GivingAutomationHelper.GetAmountIqrCount( expectedQuartiles, alert.Amount.Value ), alert.AmountIqrMultiplier );
 
-            Assert.AreEqual( frequencyMean, alert.FrequencyCurrentMean );
-            Assert.AreEqual( frequencyStdDev, alert.FrequencyCurrentStandardDeviation );
-            Assert.AreEqual( frequencyDifferenceFromMean, alert.FrequencyDifferenceFromMean );
-            Assert.AreEqual( frequencyDifferenceFromMean / 2.0m, alert.FrequencyZScore );
+            var expectedFrequencyStats = GetExpectedFrequencyStatsForAlertType( context.AlertTypes.First( a => a.Id == 2 ), last12MonthsTransactions, transaction, context.TransactionWindowDurationHours );
+            Assert.AreEqual( expectedFrequencyStats.MeanDays, alert.FrequencyCurrentMean );
+            Assert.AreEqual( expectedFrequencyStats.StdDevDays, alert.FrequencyCurrentStandardDeviation );
+
+            var daysSincePrevious = GetDaysSincePreviousTransaction( last12MonthsTransactions, transaction );
+            Assert.AreEqual( expectedFrequencyStats.MeanDays - daysSincePrevious, alert.FrequencyDifferenceFromMean );
+            Assert.AreEqual( GivingAutomationHelper.GetFrequencyDeviationCount( expectedFrequencyStats.StdDevDays, expectedFrequencyStats.MeanDays, daysSincePrevious ), alert.FrequencyZScore );
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.AmountSensitivityScale ), reasons.Single() );
         }
 
@@ -2371,45 +2246,55 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyStdDev = 2m;
 
             var now = RockDateTime.Now;
-            var recentAlerts = new List<Rock.Jobs.GivingAutomation.AlertView> {
-                new Rock.Jobs.GivingAutomation.AlertView { AlertTypeId = 1, AlertDateTime = now.AddDays(-20) },
-                new Rock.Jobs.GivingAutomation.AlertView { AlertTypeId = 2, AlertDateTime = now.AddDays(-20) }
+            context.Now = now;
+            context.OneWeekAgo = now.AddDays( -7 );
+
+            var recentAlerts = new List<AlertView> {
+                new AlertView { AlertTypeId = 1, AlertDateTime = now.AddDays( -20 ) },
+                new AlertView { AlertTypeId = 2, AlertDateTime = now.AddDays( -20 ) }
             };
             var lastGiftDate = now.AddDays( -29 );
 
-            var transaction = new Rock.Jobs.GivingAutomation.TransactionView
+            var givingId = "G1";
+            var transaction = new FinancialTransactionView
             {
                 Id = 888,
                 TransactionDateTime = now,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
-                 {
-                     new TransactionViewDetail { Amount = 1000M, AccountId = 123 }
-                 }
+                AuthorizedPersonAliasId = 1,
+                AuthorizedPersonGivingId = givingId,
+                TransactionDetails = new List<FinancialTransactionDetailView>
+                {
+                    new FinancialTransactionDetailView { Amount = 1000M, AccountId = 123 }
+                }
             };
 
             var last12MonthsTransactions = GenerateTestTransactions( amountMedian, amountIqr, frequencyMean, frequencyStdDev, lastGiftDate );
-            var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
+            var alerts = CreateRecentTxnAlertsForTransaction( context, transaction, last12MonthsTransactions, recentAlerts );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( 1, alerts.Count );
+            Assert.HasCount( 1, alerts );
 
             var alert = alerts.Single();
             Assert.AreEqual( 2, alert.AlertTypeId );
             Assert.AreEqual( context.Now, alert.AlertDateTime );
             Assert.AreEqual( transaction.Id, alert.TransactionId );
 
-            Assert.AreEqual( amountMedian, alert.AmountCurrentMedian );
-            Assert.AreEqual( amountIqr, alert.AmountCurrentIqr );
-            Assert.AreEqual( 5m, alert.AmountIqrMultiplier );
+            var expectedQuartiles = GetExpectedQuartileRangesForAlertType( context.AlertTypes.First( a => a.Id == 2 ), last12MonthsTransactions, transaction );
+            Assert.AreEqual( expectedQuartiles.MedianAmount, alert.AmountCurrentMedian );
+            Assert.AreEqual( expectedQuartiles.IQRAmount, alert.AmountCurrentIqr );
+            Assert.AreEqual( GivingAutomationHelper.GetAmountIqrCount( expectedQuartiles, alert.Amount.Value ), alert.AmountIqrMultiplier );
 
-            Assert.AreEqual( frequencyMean, alert.FrequencyCurrentMean );
-            Assert.AreEqual( frequencyStdDev, alert.FrequencyCurrentStandardDeviation );
-            Assert.AreEqual( 1m, alert.FrequencyDifferenceFromMean );
-            Assert.AreEqual( 0.5m, alert.FrequencyZScore );
+            var expectedFrequencyStats = GetExpectedFrequencyStatsForAlertType( context.AlertTypes.First( a => a.Id == 2 ), last12MonthsTransactions, transaction, context.TransactionWindowDurationHours );
+            Assert.AreEqual( expectedFrequencyStats.MeanDays, alert.FrequencyCurrentMean );
+            Assert.AreEqual( expectedFrequencyStats.StdDevDays, alert.FrequencyCurrentStandardDeviation );
+
+            var daysSincePrevious = GetDaysSincePreviousTransaction( last12MonthsTransactions, transaction );
+            Assert.AreEqual( expectedFrequencyStats.MeanDays - daysSincePrevious, alert.FrequencyDifferenceFromMean );
+            Assert.AreEqual( GivingAutomationHelper.GetFrequencyDeviationCount( expectedFrequencyStats.StdDevDays, expectedFrequencyStats.MeanDays, daysSincePrevious ), alert.FrequencyZScore );
 
             var reasons = alert.ReasonsKey.FromJsonOrNull<List<string>>();
             Assert.IsNotNull( reasons );
-            Assert.AreEqual( 1, reasons.Count );
+            Assert.HasCount( 1, reasons );
             Assert.AreEqual( nameof( FinancialTransactionAlertType.AmountSensitivityScale ), reasons.Single() );
         }
 
@@ -2504,28 +2389,31 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyStdDev = 0m;
 
             var now = context.Now;
-            var recentAlerts = new List<Rock.Jobs.GivingAutomation.AlertView> { };
+            var recentAlerts = new List<AlertView>();
             var lastGiftDate = now.AddDays( 0 - ( int ) frequencyMean );
 
-            var transaction = new Rock.Jobs.GivingAutomation.TransactionView
+            var givingId = "G1";
+            var transaction = new FinancialTransactionView
             {
                 Id = 888,
+                AuthorizedPersonAliasId = 1,
+                AuthorizedPersonGivingId = givingId,
                 TransactionDateTime = now.AddDays( -1 ),
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
-                 {
-                     new TransactionViewDetail { Amount = (decimal)transactionAmount, AccountId = transactionAccountId }
-                 }
+                TransactionDetails = new List<FinancialTransactionDetailView>
+                {
+                    new FinancialTransactionDetailView { Amount = ( decimal ) transactionAmount, AccountId = transactionAccountId }
+                }
             };
 
             if ( refundAmount > 0.00 )
             {
-                transaction.RefundDetails = new List<TransactionViewDetail>
+                transaction.RefundDetails = new List<FinancialTransactionDetailView>
                 {
-                    new TransactionViewDetail { Amount = -(decimal)refundAmount, AccountId = transactionAccountId }
+                    new FinancialTransactionDetailView { Amount = -( decimal ) refundAmount, AccountId = transactionAccountId }
                 };
             }
 
-            List<TransactionView> last12MonthsTransactions;
+            List<FinancialTransactionView> last12MonthsTransactions;
 
             if ( generateTransactionHistory )
             {
@@ -2533,15 +2421,15 @@ namespace Rock.Tests.Integration.Core.Jobs
             }
             else
             {
-                last12MonthsTransactions = new List<TransactionView>();
+                last12MonthsTransactions = new List<FinancialTransactionView>();
             }
 
-            var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
+            var alerts = CreateRecentTxnAlertsForTransaction( context, transaction, last12MonthsTransactions, recentAlerts );
 
             Assert.IsNotNull( alerts );
 
 
-            Assert.AreEqual( expectedAlertCount, alerts.Count );
+            Assert.HasCount( expectedAlertCount, alerts );
         }
 
         /// <summary>
@@ -2631,24 +2519,27 @@ namespace Rock.Tests.Integration.Core.Jobs
             var frequencyStdDev = 0m;
 
             var now = context.Now;
-            var recentAlerts = new List<Rock.Jobs.GivingAutomation.AlertView> { };
+            var recentAlerts = new List<AlertView>();
             var lastGiftDate = now.AddDays( 0 - ( int ) frequencyMean );
 
-            var transaction = new Rock.Jobs.GivingAutomation.TransactionView
+            var givingId = "G1";
+            var transaction = new FinancialTransactionView
             {
                 Id = 888,
+                AuthorizedPersonAliasId = 1,
+                AuthorizedPersonGivingId = givingId,
                 TransactionDateTime = now.AddDays( -1 ),
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>
-                 {
-                     new TransactionViewDetail { Amount = (decimal)transactionAmount, AccountId = 123 }
-                 }
+                TransactionDetails = new List<FinancialTransactionDetailView>
+                {
+                    new FinancialTransactionDetailView { Amount = ( decimal ) transactionAmount, AccountId = 123 }
+                }
             };
 
             var last12MonthsTransactions = GenerateTestTransactions( ( decimal ) amountMedian, ( decimal ) amountIqr, frequencyMean, frequencyStdDev, lastGiftDate );
-            var alerts = GivingAutomation.CreateAlertsForTransaction( recentAlerts, transaction, last12MonthsTransactions, lastGiftDate, null, context, true, true );
+            var alerts = CreateRecentTxnAlertsForTransaction( context, transaction, last12MonthsTransactions, recentAlerts );
 
             Assert.IsNotNull( alerts );
-            Assert.AreEqual( expectedAlertCount, alerts.Count );
+            Assert.HasCount( expectedAlertCount, alerts );
         }
 
         #endregion CreateAlertsForTransaction
@@ -2661,212 +2552,175 @@ namespace Rock.Tests.Integration.Core.Jobs
         [TestMethod]
         public void UpdateGivingUnitClassifications_ClassifiesMonthlyCorrectly()
         {
-            SetGivingAutomationSetting( 20000, 10000, 1000, 0 );
-
-            var givingGroupId = 800;
-            var givingId = $"G{givingGroupId}";
-
             var firstCurrencyTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CASH );
             var secondCurrencyTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
 
             var firstSourceTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE );
             var secondSourceTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_MOBILE_APPLICATION );
 
-            var mostRecentOldTransactionDate = new DateTime( 2019, 12, 29 );
-            var minDate = new DateTime( 2020, 1, 1 );
+            var context = new GivingAutomation.GivingAutomationContext();
+            var givingId = "G800";
 
-            var context = new GivingAutomation.GivingAutomationContext()
+            var transactions = new List<FinancialTransactionView>
             {
-                PercentileLowerRange = new List<decimal>()
-            };
-
-            for ( var i = 0; i < 100; i++ )
-            {
-                context.PercentileLowerRange.Add( 200 * i );
-            }
-
-            var people = new List<Person>
-            {
-                new Person
+                new FinancialTransactionView
                 {
-                    GivingGroupId = givingGroupId
+                    Id = 1,
+                    AuthorizedPersonAliasId = 1,
+                    AuthorizedPersonGivingId = givingId,
+                    TransactionDateTime = new DateTime( 2020, 1, 28 ),
+                    CurrencyTypeValueId = firstCurrencyTypeValue.Id,
+                    IsScheduled = true,
+                    SourceTypeValueId = firstSourceTypeValue.Id,
+                    TransactionDetails = new List<FinancialTransactionDetailView> { new FinancialTransactionDetailView { AccountId = 123, Amount = 1300.00M } },
+                    RefundDetails = new List<FinancialTransactionDetailView> { new FinancialTransactionDetailView { AccountId = 123, Amount = -550.00M } },
                 },
-                new Person
+                new FinancialTransactionView
                 {
-                    GivingGroupId = givingGroupId
+                    Id = 2,
+                    AuthorizedPersonAliasId = 1,
+                    AuthorizedPersonGivingId = givingId,
+                    TransactionDateTime = new DateTime( 2020, 2, 11 ),
+                    CurrencyTypeValueId = firstCurrencyTypeValue.Id,
+                    IsScheduled = true,
+                    SourceTypeValueId = firstSourceTypeValue.Id,
+                    TransactionDetails = new List<FinancialTransactionDetailView> { new FinancialTransactionDetailView { AccountId = 123, Amount = 1150.00M } },
+                },
+                new FinancialTransactionView
+                {
+                    Id = 3,
+                    AuthorizedPersonAliasId = 1,
+                    AuthorizedPersonGivingId = givingId,
+                    TransactionDateTime = new DateTime( 2020, 2, 26 ),
+                    CurrencyTypeValueId = firstCurrencyTypeValue.Id,
+                    IsScheduled = false,
+                    SourceTypeValueId = firstSourceTypeValue.Id,
+                    TransactionDetails = new List<FinancialTransactionDetailView> { new FinancialTransactionDetailView { AccountId = 123, Amount = 500.0000000000m } }
+                },
+                new FinancialTransactionView
+                {
+                    Id = 4,
+                    AuthorizedPersonAliasId = 1,
+                    AuthorizedPersonGivingId = givingId,
+                    TransactionDateTime = new DateTime( 2020, 3, 11 ),
+                    CurrencyTypeValueId = firstCurrencyTypeValue.Id,
+                    IsScheduled = true,
+                    SourceTypeValueId = firstSourceTypeValue.Id,
+                    TransactionDetails = new List<FinancialTransactionDetailView> { new FinancialTransactionDetailView { AccountId = 123, Amount = 1200.0000000000m } }
+                },
+                new FinancialTransactionView
+                {
+                    Id = 5,
+                    AuthorizedPersonAliasId = 1,
+                    AuthorizedPersonGivingId = givingId,
+                    TransactionDateTime = new DateTime( 2020, 4, 11 ),
+                    CurrencyTypeValueId = firstCurrencyTypeValue.Id,
+                    IsScheduled = true,
+                    SourceTypeValueId = firstSourceTypeValue.Id,
+                    TransactionDetails = new List<FinancialTransactionDetailView> { new FinancialTransactionDetailView { AccountId = 123, Amount = 1200.0000000000m } }
+                },
+                new FinancialTransactionView
+                {
+                    Id = 6,
+                    AuthorizedPersonAliasId = 1,
+                    AuthorizedPersonGivingId = givingId,
+                    TransactionDateTime = new DateTime( 2020, 5, 11 ),
+                    CurrencyTypeValueId = firstCurrencyTypeValue.Id,
+                    IsScheduled = true,
+                    SourceTypeValueId = firstSourceTypeValue.Id,
+                    TransactionDetails = new List<FinancialTransactionDetailView> { new FinancialTransactionDetailView { AccountId = 123, Amount = 1200.0000000000m } }
+                },
+                new FinancialTransactionView
+                {
+                    Id = 7,
+                    AuthorizedPersonAliasId = 1,
+                    AuthorizedPersonGivingId = givingId,
+                    TransactionDateTime = new DateTime( 2020, 6, 11 ),
+                    CurrencyTypeValueId = secondCurrencyTypeValue.Id,
+                    IsScheduled = true,
+                    SourceTypeValueId = firstSourceTypeValue.Id,
+                    TransactionDetails = new List<FinancialTransactionDetailView> { new FinancialTransactionDetailView { AccountId = 123, Amount = 1200.0000000000m } }
+                },
+                new FinancialTransactionView
+                {
+                    Id = 8,
+                    AuthorizedPersonAliasId = 1,
+                    AuthorizedPersonGivingId = givingId,
+                    TransactionDateTime = new DateTime( 2020, 7, 11 ),
+                    CurrencyTypeValueId = secondCurrencyTypeValue.Id,
+                    IsScheduled = true,
+                    SourceTypeValueId = firstSourceTypeValue.Id,
+                    TransactionDetails = new List<FinancialTransactionDetailView> { new FinancialTransactionDetailView { AccountId = 123, Amount = 1200.0000000000m } }
+                },
+                new FinancialTransactionView
+                {
+                    Id = 9,
+                    AuthorizedPersonAliasId = 1,
+                    AuthorizedPersonGivingId = givingId,
+                    TransactionDateTime = new DateTime( 2020, 8, 11 ),
+                    CurrencyTypeValueId = secondCurrencyTypeValue.Id,
+                    IsScheduled = true,
+                    SourceTypeValueId = secondSourceTypeValue.Id,
+                    TransactionDetails = new List<FinancialTransactionDetailView> { new FinancialTransactionDetailView { AccountId = 123, Amount = 1200.0000000000m } }
+                },
+                new FinancialTransactionView
+                {
+                    Id = 10,
+                    AuthorizedPersonAliasId = 1,
+                    AuthorizedPersonGivingId = givingId,
+                    TransactionDateTime = new DateTime( 2020, 9, 11 ),
+                    CurrencyTypeValueId = secondCurrencyTypeValue.Id,
+                    IsScheduled = true,
+                    SourceTypeValueId = secondSourceTypeValue.Id,
+                    TransactionDetails = new List<FinancialTransactionDetailView> { new FinancialTransactionDetailView { AccountId = 123, Amount = 1200.0000000000m } }
+                },
+                new FinancialTransactionView
+                {
+                    Id = 11,
+                    AuthorizedPersonAliasId = 1,
+                    AuthorizedPersonGivingId = givingId,
+                    TransactionDateTime = new DateTime( 2020, 10, 11 ),
+                    CurrencyTypeValueId = secondCurrencyTypeValue.Id,
+                    IsScheduled = true,
+                    SourceTypeValueId = secondSourceTypeValue.Id,
+                    TransactionDetails = new List<FinancialTransactionDetailView> { new FinancialTransactionDetailView { AccountId = 123, Amount = 1200.0000000000m } }
+                },
+                new FinancialTransactionView
+                {
+                    Id = 12,
+                    AuthorizedPersonAliasId = 1,
+                    AuthorizedPersonGivingId = givingId,
+                    TransactionDateTime = new DateTime( 2020, 11, 11 ),
+                    CurrencyTypeValueId = secondCurrencyTypeValue.Id,
+                    IsScheduled = true,
+                    SourceTypeValueId = secondSourceTypeValue.Id,
+                    TransactionDetails = new List<FinancialTransactionDetailView> { new FinancialTransactionDetailView { AccountId = 123, Amount = 1200.0000000000m } }
                 }
             };
 
-            people.ForEach( p => p.LoadAttributes() );
+            // Preferred Currency / Source
+            Assert.AreEqual( secondCurrencyTypeValue.Guid, GivingAutomationHelper.GetPreferredCurrencyGuid( transactions ) );
+            Assert.AreEqual( firstSourceTypeValue.Guid, GivingAutomationHelper.GetPreferredSourceGuid( transactions ) );
 
-            var transactions = new List<Rock.Jobs.GivingAutomation.TransactionView>();
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 1, 28 ),
-                CurrencyTypeValueId = firstCurrencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = firstSourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1300.00M } },
-                RefundDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = -550.00M } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 2, 11 ),
-                CurrencyTypeValueId = firstCurrencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = firstSourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1150.00M } }
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 2, 26 ),
-                CurrencyTypeValueId = firstCurrencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = firstSourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } }
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 3, 11 ),
-                CurrencyTypeValueId = firstCurrencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = firstSourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 4, 11 ),
-                CurrencyTypeValueId = firstCurrencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = firstSourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 11 ),
-                CurrencyTypeValueId = firstCurrencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = firstSourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 6, 11 ),
-                CurrencyTypeValueId = secondCurrencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = firstSourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 7, 11 ),
-                CurrencyTypeValueId = secondCurrencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = firstSourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 8, 11 ),
-                CurrencyTypeValueId = secondCurrencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = secondSourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 9, 11 ),
-                CurrencyTypeValueId = secondCurrencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = secondSourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 10, 11 ),
-                CurrencyTypeValueId = secondCurrencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = secondSourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 11, 11 ),
-                CurrencyTypeValueId = secondCurrencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = secondSourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 1200.0000000000m } }
-            } );
+            // Percent scheduled
+            Assert.AreEqual( 92, GivingAutomationHelper.GetPercentScheduled( transactions ) );
 
-            Rock.Jobs.GivingAutomation.UpdateGivingUnitClassifications( givingId, people, transactions, mostRecentOldTransactionDate, context, minDate );
+            // Amount stats
+            var quartileRanges = GivingAutomationHelper.GetQuartileRanges( transactions.Select( t => t.TotalAmount ) );
+            Assert.AreEqual( 1200.00m, decimal.Round( quartileRanges.MedianAmount, 2 ) );
+            Assert.AreEqual( 50.00m, decimal.Round( quartileRanges.IQRAmount, 2 ) );
 
-            Assert.AreEqual( 0, context.Errors.Count );
+            // Frequency stats / label
+            var orderedDateTimes = transactions.Select( t => t.TransactionDateTime ).OrderBy( d => d ).ToList();
+            var frequencyStats = GivingAutomationHelper.GetFrequencyStats( orderedDateTimes, context.TransactionWindowDurationHours );
+            Assert.AreEqual( 3, ( int ) frequencyStats.FrequencyLabel );
+            Assert.AreEqual( 26.18m, decimal.Round( frequencyStats.MeanDays, 2 ) );
+            Assert.AreEqual( 7.27m, decimal.Round( frequencyStats.StdDevDays, 2 ) );
 
-            // Preferred Currency - Defined Type
-            var firstPerson = people.First();
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_PREFERRED_CURRENCY );
-            var preferredCurrency = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_PREFERRED_CURRENCY ).AsGuidOrNull();
-            Assert.AreEqual( secondCurrencyTypeValue.Guid, preferredCurrency );
-
-            // Preferred Source - Defined Type
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_PREFERRED_SOURCE );
-            var preferredSource = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_PREFERRED_SOURCE ).AsGuidOrNull();
-            Assert.AreEqual( firstSourceTypeValue.Guid, preferredSource );
-
-            // Frequency Label - Single Select (1^Weekly, 2^Bi-Weekly, 3^Monthly, 4^Quarterly, 5^Erratic, 6^Undetermined)
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL );
-            var frequencyLabel = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL ).AsIntegerOrNull();
-            Assert.AreEqual( 3, frequencyLabel );
-
-            // Percent of Gifts Scheduled - Number
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_PERCENT_SCHEDULED );
-            var percentScheduled = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_PERCENT_SCHEDULED ).AsIntegerOrNull();
-            Assert.AreEqual( 92, percentScheduled );
-
-            // Gift Amount: Median - Currency
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_AMOUNT_MEDIAN );
-            var medianGivingAmount = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_AMOUNT_MEDIAN ).AsDecimalOrNull();
-            Assert.AreEqual( 1200.00m, decimal.Round( medianGivingAmount ?? 0, 2 ) );
-
-            // Gift Amount: IQR - Currency
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_AMOUNT_IQR );
-            var iqr = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_AMOUNT_IQR ).AsDecimalOrNull();
-            Assert.AreEqual( 50.00m, decimal.Round( iqr ?? 0, 2 ) );
-
-            // Gift Frequency Days: Mean - Number
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_MEAN_DAYS );
-            var meanFrequencyDays = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_MEAN_DAYS ).AsDecimalOrNull();
-            Assert.AreEqual( 26.50m, decimal.Round( meanFrequencyDays ?? 0, 2 ) );
-
-            // Gift Frequency Days: Standard Deviation - Number
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_STD_DEV_DAYS );
-            var stdDevFrequencyDays = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_STD_DEV_DAYS ).AsDecimalOrNull();
-            Assert.AreEqual( 7.04m, decimal.Round( stdDevFrequencyDays ?? 0, 2 ) );
-
-            // Giving Bin - Number
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_BIN );
-            var bin = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_BIN ).AsIntegerOrNull();
-            Assert.AreEqual( 2, bin );
-
-            // Giving Percentile - Number - This will be rounded to the nearest percent and stored as a whole number (15 vs .15)
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_PERCENTILE );
-            var percentile = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_PERCENTILE ).AsIntegerOrNull();
-            Assert.AreEqual( 66, percentile );
-
-            // Last Gift Date - Exists, but link to the ‘Giving Analytics’ category
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_ERA_LAST_GAVE );
-            var lastGave = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_ERA_LAST_GAVE ).AsDateTime();
+            // Last gave / next expected
+            var lastGave = transactions.Max( t => t.TransactionDateTime );
             Assert.AreEqual( new DateTime( 2020, 11, 11 ), lastGave );
-
-            // Next Expected Gift Date - Date
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_NEXT_EXPECTED_GIFT_DATE );
-            var nextExpected = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_NEXT_EXPECTED_GIFT_DATE ).AsDateTime();
-            Assert.AreEqual( lastGave.Value.AddDays( ( double ) meanFrequencyDays.Value ), nextExpected );
-
-            // Last Classified - Date
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_LAST_CLASSIFICATION_DATE );
-            var lastClassified = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_LAST_CLASSIFICATION_DATE ).AsDateTime();
-            Assert.AreEqual( context.Now, lastClassified );
+            Assert.AreEqual( lastGave.AddDays( ( double ) frequencyStats.MeanDays ), frequencyStats.NextExpectedGiftDate );
         }
 
         /// <summary>
@@ -2875,497 +2729,72 @@ namespace Rock.Tests.Integration.Core.Jobs
         [TestMethod]
         public void UpdateGivingUnitClassifications_ClassifiesWeeklyCorrectly()
         {
-            SetGivingAutomationSetting( 20000, 10000, 1000, 0 );
-
-            var givingGroupId = 900;
-            var givingId = $"G{givingGroupId}";
-
             var currencyTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CASH );
             var sourceTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE );
 
-            var mostRecentOldTransactionDate = new DateTime( 2019, 12, 28 );
-            var minDate = new DateTime( 2020, 1, 1 );
-
             var context = new GivingAutomation.GivingAutomationContext()
             {
-                PercentileLowerRange = new List<decimal>(),
                 Now = new DateTime( 2020, 12, 1 )
             };
+            var givingId = "G900";
+            var transactions = new List<FinancialTransactionView>();
+            int id = 1;
 
-            for ( var i = 0; i < 100; i++ )
+            var date = new DateTime( 2020, 1, 4 );
+            var endDate = new DateTime( 2020, 11, 14 );
+            while ( date <= endDate )
             {
-                context.PercentileLowerRange.Add( 200 * i );
+                transactions.Add( new FinancialTransactionView
+                {
+                    Id = id++,
+                    AuthorizedPersonAliasId = 1,
+                    AuthorizedPersonGivingId = givingId,
+                    TransactionDateTime = date,
+                    CurrencyTypeValueId = currencyTypeValue.Id,
+                    IsScheduled = true,
+                    SourceTypeValueId = sourceTypeValue.Id,
+                    TransactionDetails = new List<FinancialTransactionDetailView> { new FinancialTransactionDetailView { AccountId = 123, Amount = 500.0000000000m } },
+                } );
+
+                date = date.AddDays( 7 );
             }
 
-            var people = new List<Person>
+            // One-off non-scheduled gift.
+            transactions.Add( new FinancialTransactionView
             {
-                new Person
-                {
-                    GivingGroupId = givingGroupId
-                },
-                new Person
-                {
-                    GivingGroupId = givingGroupId
-                },
-                new Person
-                {
-                    GivingGroupId = givingGroupId
-                },
-                new Person
-                {
-                    GivingGroupId = givingGroupId
-                }
-            };
-
-            people.ForEach( p => p.LoadAttributes() );
-
-            var transactions = new List<Rock.Jobs.GivingAutomation.TransactionView>();
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 1, 4 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 1, 11 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 1, 18 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 1, 25 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 2, 1 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 2, 8 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 2, 15 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 2, 22 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 2, 29 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 3, 7 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 3, 14 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 3, 21 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 3, 28 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 4, 4 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 4, 11 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 4, 18 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 4, 25 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 2 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 9 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 16 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 23 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 30 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 6, 6 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 6, 13 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 6, 20 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 6, 27 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 7, 4 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 7, 11 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 7, 18 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 7, 25 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 8, 1 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 8, 8 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 8, 15 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 8, 22 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 8, 29 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 9, 5 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 9, 12 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
+                Id = id++,
+                AuthorizedPersonAliasId = 1,
+                AuthorizedPersonGivingId = givingId,
                 TransactionDateTime = new DateTime( 2020, 9, 13 ),
                 CurrencyTypeValueId = currencyTypeValue.Id,
                 IsScheduled = false,
                 SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 100000.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 9, 19 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 9, 26 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 10, 3 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 10, 10 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 10, 17 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 10, 24 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 10, 31 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 11, 7 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 11, 14 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = true,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 500.0000000000m } },
+                TransactionDetails = new List<FinancialTransactionDetailView> { new FinancialTransactionDetailView { AccountId = 123, Amount = 100000.0000000000m } },
             } );
 
-            Rock.Jobs.GivingAutomation.UpdateGivingUnitClassifications( givingId, people, transactions, mostRecentOldTransactionDate, context, minDate );
+            // Preferred Currency / Source
+            Assert.AreEqual( currencyTypeValue.Guid, GivingAutomationHelper.GetPreferredCurrencyGuid( transactions ) );
+            Assert.AreEqual( sourceTypeValue.Guid, GivingAutomationHelper.GetPreferredSourceGuid( transactions ) );
 
-            Assert.AreEqual( 0, context.Errors.Count );
+            // Percent scheduled
+            Assert.AreEqual( 98, GivingAutomationHelper.GetPercentScheduled( transactions ) );
 
-            // Preferred Currency - Defined Type
-            var firstPerson = people.First();
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_PREFERRED_CURRENCY );
-            var preferredCurrency = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_PREFERRED_CURRENCY ).AsGuidOrNull();
-            Assert.AreEqual( currencyTypeValue.Guid, preferredCurrency );
+            // Amount stats
+            var quartileRanges = GivingAutomationHelper.GetQuartileRanges( transactions.Select( t => t.TotalAmount ) );
+            Assert.AreEqual( 500.00m, decimal.Round( quartileRanges.MedianAmount, 2 ) );
+            Assert.AreEqual( 0.00m, decimal.Round( quartileRanges.IQRAmount, 2 ) );
 
-            // Preferred Source - Defined Type
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_PREFERRED_SOURCE );
-            var preferredSource = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_PREFERRED_SOURCE ).AsGuidOrNull();
-            Assert.AreEqual( sourceTypeValue.Guid, preferredSource );
+            // Frequency stats / label
+            var orderedDateTimes = transactions.Select( t => t.TransactionDateTime ).OrderBy( d => d ).ToList();
+            var frequencyStats = GivingAutomationHelper.GetFrequencyStats( orderedDateTimes, context.TransactionWindowDurationHours );
+            Assert.AreEqual( 1, ( int ) frequencyStats.FrequencyLabel );
+            Assert.AreEqual( 6.85m, decimal.Round( frequencyStats.MeanDays, 2 ) );
+            Assert.AreEqual( 0.88m, decimal.Round( frequencyStats.StdDevDays, 2 ) );
 
-            // Frequency Label - Single Select (1^Weekly, 2^Bi-Weekly, 3^Monthly, 4^Quarterly, 5^Erratic, 6^Undetermined)
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL );
-            var frequencyLabel = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL ).AsIntegerOrNull();
-            Assert.AreEqual( 1, frequencyLabel );
-
-            // Percent of Gifts Scheduled - Number
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_PERCENT_SCHEDULED );
-            var percentScheduled = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_PERCENT_SCHEDULED ).AsIntegerOrNull();
-            Assert.AreEqual( 98, percentScheduled );
-
-            // Gift Amount: Median - Currency
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_AMOUNT_MEDIAN );
-            var medianGivingAmount = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_AMOUNT_MEDIAN ).AsDecimalOrNull();
-            Assert.AreEqual( 500.00m, decimal.Round( medianGivingAmount ?? 0, 2 ) );
-
-            // Gift Amount: IQR - Currency
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_AMOUNT_IQR );
-            var iqr = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_AMOUNT_IQR ).AsDecimalOrNull();
-            Assert.AreEqual( 0.00m, decimal.Round( iqr ?? 0, 2 ) );
-
-            // Gift Frequency Days: Mean - Number
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_MEAN_DAYS );
-            var meanFrequencyDays = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_MEAN_DAYS ).AsDecimalOrNull();
-            Assert.AreEqual( 6.85m, decimal.Round( meanFrequencyDays ?? 0, 2 ) );
-
-            // Gift Frequency Days: Standard Deviation - Number
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_STD_DEV_DAYS );
-            var stdDevFrequencyDays = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_STD_DEV_DAYS ).AsDecimalOrNull();
-            Assert.AreEqual( 0.87m, decimal.Round( stdDevFrequencyDays ?? 0, 2 ) );
-
-            // Giving Bin - Number
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_BIN );
-            var bin = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_BIN ).AsIntegerOrNull();
-            Assert.AreEqual( 1, bin );
-
-            // Giving Percentile - Number - This will be rounded to the nearest percent and stored as a whole number (15 vs .15)
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_PERCENTILE );
-            var percentile = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_PERCENTILE ).AsIntegerOrNull();
-            Assert.AreEqual( 99, percentile );
-
-            // Last Gift Date - Exists, but link to the ‘Giving Analytics’ category
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_ERA_LAST_GAVE );
-            var lastGave = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_ERA_LAST_GAVE ).AsDateTime();
+            // Last gave / next expected
+            var lastGave = transactions.Max( t => t.TransactionDateTime );
             Assert.AreEqual( new DateTime( 2020, 11, 14 ), lastGave );
-
-            // Next Expected Gift Date - Date
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_NEXT_EXPECTED_GIFT_DATE );
-            var nextExpected = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_NEXT_EXPECTED_GIFT_DATE ).AsDateTime();
-            Assert.AreEqual( lastGave.Value.AddDays( ( double ) meanFrequencyDays.Value ), nextExpected );
-
-            // Last Classified - Date
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_LAST_CLASSIFICATION_DATE );
-            var lastClassified = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_LAST_CLASSIFICATION_DATE ).AsDateTime();
-            Assert.AreEqual( context.Now, lastClassified );
+            Assert.AreEqual( lastGave.AddDays( ( double ) frequencyStats.MeanDays ), frequencyStats.NextExpectedGiftDate );
         }
 
 
@@ -3376,7 +2805,9 @@ namespace Rock.Tests.Integration.Core.Jobs
         [TestMethod]
         public void UpdateGivingUnitClassifications_ClassifiesErraticCorrectly()
         {
-            SetGivingAutomationSetting( 20000, 10000, 1000, 0 );
+            // The old `UpdateGivingUnitClassifications` pipeline was removed/refactored and bin/percentile
+            // values are now handled by stored procedures. This test now asserts directly on the
+            // helper computations using the same underlying transaction history.
 
             var personId = 1111;
             var givingId = $"P{personId}";
@@ -3384,1040 +2815,171 @@ namespace Rock.Tests.Integration.Core.Jobs
             var currencyTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CASH );
             var sourceTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE );
 
-            var mostRecentOldTransactionDate = new DateTime( 2019, 12, 27 );
-            var minDate = new DateTime( 2020, 1, 1 );
+            var transactions = new List<FinancialTransactionView>();
+            int id = 1;
 
-            var context = new GivingAutomation.GivingAutomationContext()
+            void AddTransaction( DateTime date, decimal amount, decimal refundAmount = 0m )
             {
-                PercentileLowerRange = new List<decimal>()
-            };
-
-            for ( var i = 0; i < 100; i++ )
-            {
-                context.PercentileLowerRange.Add( 200 * i );
+                transactions.Add( new FinancialTransactionView
+                {
+                    Id = id++,
+                    AuthorizedPersonAliasId = personId,
+                    AuthorizedPersonGivingId = givingId,
+                    TransactionDateTime = date,
+                    CurrencyTypeValueId = currencyTypeValue.Id,
+                    SourceTypeValueId = sourceTypeValue.Id,
+                    IsScheduled = false,
+                    TransactionDetails = new List<FinancialTransactionDetailView>
+                    {
+                        new FinancialTransactionDetailView { AccountId = 123, Amount = amount }
+                    },
+                    RefundDetails = refundAmount != 0m
+                        ? new List<FinancialTransactionDetailView> { new FinancialTransactionDetailView { AccountId = 123, Amount = refundAmount } }
+                        : null
+                } );
             }
 
-            var people = new List<Person>
-            {
-                new Person
-                {
-                    Id = personId,
-                    GivingGroupId = null
-                },
-            };
+            AddTransaction( new DateTime( 2020, 1, 3 ), 50.0000000000m, -10.0000000000m );
+            AddTransaction( new DateTime( 2020, 1, 16 ), 180.0000000000m );
+            AddTransaction( new DateTime( 2020, 1, 18 ), 82.0000000000m );
+            AddTransaction( new DateTime( 2020, 1, 24 ), 45.0000000000m );
+            AddTransaction( new DateTime( 2020, 1, 31 ), 155.0000000000m );
+            AddTransaction( new DateTime( 2020, 2, 8 ), 85.0000000000m );
+            AddTransaction( new DateTime( 2020, 2, 15 ), 140.0000000000m );
+            AddTransaction( new DateTime( 2020, 2, 15 ), 30.0000000000m );
+            AddTransaction( new DateTime( 2020, 2, 22 ), 115.0000000000m );
+            AddTransaction( new DateTime( 2020, 2, 29 ), 150.0000000000m );
+            AddTransaction( new DateTime( 2020, 2, 29 ), 82.0000000000m );
+            AddTransaction( new DateTime( 2020, 3, 6 ), 130.0000000000m );
+            AddTransaction( new DateTime( 2020, 3, 13 ), 66.0000000000m );
+            AddTransaction( new DateTime( 2020, 3, 13 ), 15.0000000000m );
+            AddTransaction( new DateTime( 2020, 3, 13 ), 150.0000000000m );
+            AddTransaction( new DateTime( 2020, 3, 20 ), 10.0000000000m );
+            AddTransaction( new DateTime( 2020, 3, 20 ), 97.0000000000m );
+            AddTransaction( new DateTime( 2020, 3, 28 ), 90.0000000000m );
+            AddTransaction( new DateTime( 2020, 3, 28 ), 140.0000000000m );
+            AddTransaction( new DateTime( 2020, 3, 28 ), 10.0000000000m );
+            AddTransaction( new DateTime( 2020, 4, 3 ), 63.0000000000m );
+            AddTransaction( new DateTime( 2020, 4, 3 ), 17.0000000000m );
+            AddTransaction( new DateTime( 2020, 4, 10 ), 81.0000000000m );
+            AddTransaction( new DateTime( 2020, 4, 10 ), 19.0000000000m );
+            AddTransaction( new DateTime( 2020, 4, 15 ), 120.0000000000m );
+            AddTransaction( new DateTime( 2020, 4, 15 ), 120.0000000000m );
+            AddTransaction( new DateTime( 2020, 4, 17 ), 12.0000000000m );
+            AddTransaction( new DateTime( 2020, 4, 17 ), 98.0000000000m );
+            AddTransaction( new DateTime( 2020, 4, 24 ), 112.0000000000m );
+            AddTransaction( new DateTime( 2020, 4, 24 ), 18.0000000000m );
+            AddTransaction( new DateTime( 2020, 4, 24 ), 150.0000000000m );
+            AddTransaction( new DateTime( 2020, 4, 24 ), 200.0000000000m );
+            AddTransaction( new DateTime( 2020, 5, 1 ), 10.0000000000m );
+            AddTransaction( new DateTime( 2020, 5, 1 ), 110.0000000000m );
+            AddTransaction( new DateTime( 2020, 5, 7 ), 130.0000000000m );
+            AddTransaction( new DateTime( 2020, 5, 7 ), 25.0000000000m );
+            AddTransaction( new DateTime( 2020, 5, 8 ), 130.0000000000m );
+            AddTransaction( new DateTime( 2020, 5, 8 ), 17.0000000000m );
+            AddTransaction( new DateTime( 2020, 5, 14 ), 25.0000000000m );
+            AddTransaction( new DateTime( 2020, 5, 16 ), 120.0000000000m );
+            AddTransaction( new DateTime( 2020, 5, 16 ), 20.0000000000m );
+            AddTransaction( new DateTime( 2020, 5, 19 ), 35.0000000000m );
+            AddTransaction( new DateTime( 2020, 5, 21 ), 130.0000000000m );
+            AddTransaction( new DateTime( 2020, 5, 21 ), 135.0000000000m );
+            AddTransaction( new DateTime( 2020, 5, 22 ), 12.0000000000m );
+            AddTransaction( new DateTime( 2020, 5, 22 ), 108.0000000000m );
+            AddTransaction( new DateTime( 2020, 5, 29 ), 10.0000000000m );
+            AddTransaction( new DateTime( 2020, 5, 29 ), 110.0000000000m );
+            AddTransaction( new DateTime( 2020, 6, 3 ), 75.0000000000m );
+            AddTransaction( new DateTime( 2020, 6, 4 ), 140.0000000000m );
+            AddTransaction( new DateTime( 2020, 6, 8 ), 22.0000000000m );
+            AddTransaction( new DateTime( 2020, 6, 8 ), 98.0000000000m );
+            AddTransaction( new DateTime( 2020, 6, 13 ), 116.0000000000m );
+            AddTransaction( new DateTime( 2020, 6, 13 ), 14.0000000000m );
+            AddTransaction( new DateTime( 2020, 6, 16 ), 20.0000000000m );
+            AddTransaction( new DateTime( 2020, 6, 18 ), 140.0000000000m );
+            AddTransaction( new DateTime( 2020, 6, 19 ), 18.0000000000m );
+            AddTransaction( new DateTime( 2020, 6, 19 ), 132.0000000000m );
+            AddTransaction( new DateTime( 2020, 6, 25 ), 80.0000000000m );
+            AddTransaction( new DateTime( 2020, 6, 26 ), 15.0000000000m );
+            AddTransaction( new DateTime( 2020, 6, 26 ), 105.0000000000m );
+            AddTransaction( new DateTime( 2020, 7, 3 ), 100.0000000000m );
+            AddTransaction( new DateTime( 2020, 7, 4 ), 107.0000000000m );
+            AddTransaction( new DateTime( 2020, 7, 4 ), 13.0000000000m );
+            AddTransaction( new DateTime( 2020, 7, 5 ), 35.0000000000m );
+            AddTransaction( new DateTime( 2020, 7, 10 ), 85.0000000000m );
+            AddTransaction( new DateTime( 2020, 7, 12 ), 100.0000000000m );
+            AddTransaction( new DateTime( 2020, 7, 12 ), 20.0000000000m );
+            AddTransaction( new DateTime( 2020, 7, 17 ), 135.0000000000m );
+            AddTransaction( new DateTime( 2020, 7, 20 ), 110.0000000000m );
+            AddTransaction( new DateTime( 2020, 7, 24 ), 70.0000000000m );
+            AddTransaction( new DateTime( 2020, 7, 24 ), 15.0000000000m );
+            AddTransaction( new DateTime( 2020, 7, 25 ), 50.0000000000m );
+            AddTransaction( new DateTime( 2020, 7, 25 ), 80.0000000000m );
+            AddTransaction( new DateTime( 2020, 7, 30 ), 150.0000000000m );
+            AddTransaction( new DateTime( 2020, 8, 1 ), 15.0000000000m );
+            AddTransaction( new DateTime( 2020, 8, 1 ), 75.0000000000m );
+            AddTransaction( new DateTime( 2020, 8, 8 ), 10.0000000000m );
+            AddTransaction( new DateTime( 2020, 8, 8 ), 80.0000000000m );
+            AddTransaction( new DateTime( 2020, 8, 13 ), 120.0000000000m );
+            AddTransaction( new DateTime( 2020, 8, 13 ), 75.0000000000m );
+            AddTransaction( new DateTime( 2020, 8, 13 ), 13.0000000000m );
+            AddTransaction( new DateTime( 2020, 8, 13 ), 77.0000000000m );
+            AddTransaction( new DateTime( 2020, 8, 14 ), 15.0000000000m );
+            AddTransaction( new DateTime( 2020, 8, 28 ), 130.0000000000m );
+            AddTransaction( new DateTime( 2020, 8, 28 ), 73.0000000000m );
+            AddTransaction( new DateTime( 2020, 8, 28 ), 17.0000000000m );
+            AddTransaction( new DateTime( 2020, 9, 4 ), 18.0000000000m );
+            AddTransaction( new DateTime( 2020, 9, 4 ), 72.0000000000m );
+            AddTransaction( new DateTime( 2020, 9, 10 ), 130.0000000000m );
+            AddTransaction( new DateTime( 2020, 9, 13 ), 96.0000000000m );
+            AddTransaction( new DateTime( 2020, 9, 13 ), 14.0000000000m );
+            AddTransaction( new DateTime( 2020, 9, 18 ), 66.0000000000m );
+            AddTransaction( new DateTime( 2020, 9, 24 ), 175.0000000000m );
+            AddTransaction( new DateTime( 2020, 9, 26 ), 20.0000000000m );
+            AddTransaction( new DateTime( 2020, 9, 26 ), 110.0000000000m );
+            AddTransaction( new DateTime( 2020, 10, 3 ), 15.0000000000m );
+            AddTransaction( new DateTime( 2020, 10, 3 ), 95.0000000000m );
+            AddTransaction( new DateTime( 2020, 10, 9 ), 125.0000000000m );
+            AddTransaction( new DateTime( 2020, 10, 9 ), 136.0000000000m );
+            AddTransaction( new DateTime( 2020, 10, 9 ), 14.0000000000m );
+            AddTransaction( new DateTime( 2020, 10, 16 ), 95.0000000000m );
+            AddTransaction( new DateTime( 2020, 10, 16 ), 82.0000000000m );
+            AddTransaction( new DateTime( 2020, 10, 16 ), 18.0000000000m );
+            AddTransaction( new DateTime( 2020, 10, 22 ), 125.0000000000m );
+            AddTransaction( new DateTime( 2020, 10, 23 ), 12.0000000000m );
+            AddTransaction( new DateTime( 2020, 10, 23 ), 70.0000000000m );
+            AddTransaction( new DateTime( 2020, 10, 30 ), 150.0000000000m );
+            AddTransaction( new DateTime( 2020, 10, 30 ), 110.0000000000m );
+            AddTransaction( new DateTime( 2020, 10, 30 ), 70.0000000000m );
+            AddTransaction( new DateTime( 2020, 10, 30 ), 15.0000000000m );
+            AddTransaction( new DateTime( 2020, 11, 6 ), 190.0000000000m );
+            AddTransaction( new DateTime( 2020, 11, 6 ), 10.0000000000m );
+            AddTransaction( new DateTime( 2020, 11, 9 ), 175.0000000000m );
+            AddTransaction( new DateTime( 2020, 11, 13 ), 85.0000000000m );
+            AddTransaction( new DateTime( 2020, 11, 13 ), 15.0000000000m );
+            AddTransaction( new DateTime( 2020, 11, 14 ), 140.0000000000m );
 
-            people.ForEach( p => p.LoadAttributes() );
+            // Preferred Currency / Source
+            Assert.AreEqual( currencyTypeValue.Guid, GivingAutomationHelper.GetPreferredCurrencyGuid( transactions ) );
+            Assert.AreEqual( sourceTypeValue.Guid, GivingAutomationHelper.GetPreferredSourceGuid( transactions ) );
 
+            // Percent scheduled
+            Assert.AreEqual( 0, GivingAutomationHelper.GetPercentScheduled( transactions ) );
 
+            // Amount stats
+            var quartileRanges = GivingAutomationHelper.GetQuartileRanges( transactions.Select( t => t.TotalAmount ) );
+            Assert.AreEqual( 81.00m, decimal.Round( quartileRanges.MedianAmount, 2 ) );
+            Assert.AreEqual( 101.50m, decimal.Round( quartileRanges.IQRAmount, 2 ) );
 
-            var transactions = new List<Rock.Jobs.GivingAutomation.TransactionView>();
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 1, 3 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 50.0000000000m } },
-                RefundDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = -10.0000000000m } }
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 1, 16 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 180.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 1, 18 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 82.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 1, 24 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 45.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 1, 31 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 155.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 2, 8 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 85.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 2, 15 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 140.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 2, 15 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 30.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 2, 22 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 115.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 2, 29 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 150.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 2, 29 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 82.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 3, 6 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 130.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 3, 13 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 66.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 3, 13 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 3, 13 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 150.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 3, 20 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 10.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 3, 20 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 97.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 3, 28 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 90.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 3, 28 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 140.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 3, 28 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 10.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 4, 3 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 63.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 4, 3 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 17.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 4, 10 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 81.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 4, 10 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 19.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 4, 15 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 120.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 4, 15 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 120.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 4, 17 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 12.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 4, 17 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 98.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 4, 24 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 112.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 4, 24 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 18.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 4, 24 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 150.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 4, 24 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 200.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 1 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 10.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 1 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 110.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 7 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 130.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 7 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 25.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 8 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 130.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 8 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 17.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 14 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 25.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 16 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 120.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 16 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 20.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 19 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 35.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 21 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 130.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 21 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 135.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 22 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 12.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 22 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 108.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 29 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 10.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 5, 29 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 110.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 6, 3 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 75.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 6, 4 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 140.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 6, 8 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 22.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 6, 8 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 98.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 6, 13 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 116.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 6, 13 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 14.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 6, 16 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 20.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 6, 18 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 140.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 6, 19 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 18.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 6, 19 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 132.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 6, 25 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 80.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 6, 26 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 6, 26 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 105.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 7, 3 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 100.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 7, 4 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 107.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 7, 4 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 13.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 7, 5 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 35.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 7, 10 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 85.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 7, 12 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 100.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 7, 12 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 20.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 7, 17 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 135.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 7, 20 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 110.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 7, 24 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 70.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 7, 24 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 7, 25 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 50.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 7, 25 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 80.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 7, 30 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 150.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 8, 1 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 8, 1 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 75.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 8, 8 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 10.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 8, 8 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 80.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 8, 13 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 120.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 8, 13 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 75.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 8, 13 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 13.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 8, 13 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 77.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 8, 14 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 8, 28 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 130.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 8, 28 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 73.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 8, 28 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 17.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 9, 4 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 18.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 9, 4 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 72.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 9, 10 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 130.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 9, 13 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 96.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 9, 13 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 14.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 9, 18 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 66.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 9, 24 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 175.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 9, 26 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 20.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 9, 26 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 110.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 10, 3 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 10, 3 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 95.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 10, 9 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 125.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 10, 9 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 136.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 10, 9 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 14.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 10, 16 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 95.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 10, 16 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 82.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 10, 16 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 18.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 10, 22 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 125.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 10, 23 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 12.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 10, 23 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 70.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 10, 30 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 150.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 10, 30 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 110.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 10, 30 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 70.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 10, 30 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 11, 6 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 190.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 11, 6 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 10.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 11, 9 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 175.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 11, 13 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 85.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 11, 13 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 15.0000000000m } },
-            } );
-            transactions.Add( new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                TransactionDateTime = new DateTime( 2020, 11, 14 ),
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 140.0000000000m } },
-            } );
+            // Frequency stats / label
+            var orderedDateTimes = transactions.Select( t => t.TransactionDateTime ).OrderBy( d => d ).ToList();
+            var frequencyStats = GivingAutomationHelper.GetFrequencyStats( orderedDateTimes, transactionWindowDurationHours: 0 );
+            Assert.AreEqual( 5, ( int ) frequencyStats.FrequencyLabel );
+            Assert.AreEqual( 2.72m, decimal.Round( frequencyStats.MeanDays, 2 ) );
+            Assert.AreEqual( 3.16m, decimal.Round( frequencyStats.StdDevDays, 2 ) );
 
-            Rock.Jobs.GivingAutomation.UpdateGivingUnitClassifications( givingId, people, transactions, mostRecentOldTransactionDate, context, minDate );
-
-            Assert.AreEqual( 0, context.Errors.Count );
-
-            // Preferred Currency - Defined Type
-            var firstPerson = people.First();
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_PREFERRED_CURRENCY );
-            var preferredCurrency = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_PREFERRED_CURRENCY ).AsGuidOrNull();
-            Assert.AreEqual( currencyTypeValue.Guid, preferredCurrency );
-
-            // Preferred Source - Defined Type
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_PREFERRED_SOURCE );
-            var preferredSource = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_PREFERRED_SOURCE ).AsGuidOrNull();
-            Assert.AreEqual( sourceTypeValue.Guid, preferredSource );
-
-            // Frequency Label - Single Select (1^Weekly, 2^Bi-Weekly, 3^Monthly, 4^Quarterly, 5^Erratic, 6^Undetermined)
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL );
-            var frequencyLabel = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL ).AsIntegerOrNull();
-            Assert.AreEqual( 5, frequencyLabel );
-
-            // Percent of Gifts Scheduled - Number
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_PERCENT_SCHEDULED );
-            var percentScheduled = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_PERCENT_SCHEDULED ).AsIntegerOrNull();
-            Assert.AreEqual( 0, percentScheduled );
-
-            // Gift Amount: Median - Currency
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_AMOUNT_MEDIAN );
-            var medianGivingAmount = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_AMOUNT_MEDIAN ).AsDecimalOrNull();
-            Assert.AreEqual( 81.00m, decimal.Round( medianGivingAmount ?? 0, 2 ) );
-
-            // Gift Amount: IQR - Currency
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_AMOUNT_IQR );
-            var iqr = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_AMOUNT_IQR ).AsDecimalOrNull();
-            Assert.AreEqual( 101.50m, decimal.Round( iqr ?? 0, 2 ) );
-
-            // Gift Frequency Days: Mean - Number
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_MEAN_DAYS );
-            var meanFrequencyDays = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_MEAN_DAYS ).AsDecimalOrNull();
-            Assert.AreEqual( 2.76m, decimal.Round( meanFrequencyDays ?? 0, 2 ) );
-
-            // Gift Frequency Days: Standard Deviation - Number
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_STD_DEV_DAYS );
-            var stdDevFrequencyDays = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_STD_DEV_DAYS ).AsDecimalOrNull();
-            Assert.AreEqual( 3.17m, decimal.Round( stdDevFrequencyDays ?? 0, 2 ) );
-
-            // Giving Bin - Number
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_BIN );
-            var bin = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_BIN ).AsIntegerOrNull();
-            Assert.AreEqual( 3, bin );
-
-            // Giving Percentile - Number - This will be rounded to the nearest percent and stored as a whole number (15 vs .15)
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_PERCENTILE );
-            var percentile = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_PERCENTILE ).AsIntegerOrNull();
-            Assert.AreEqual( 45, percentile );
-
-            // Last Gift Date - Exists, but link to the ‘Giving Analytics’ category
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_ERA_LAST_GAVE );
-            var lastGave = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_ERA_LAST_GAVE ).AsDateTime();
+            // Last gave / next expected
+            var lastGave = transactions.Max( t => t.TransactionDateTime );
             Assert.AreEqual( new DateTime( 2020, 11, 14 ), lastGave );
-
-            // Next Expected Gift Date - Date
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_NEXT_EXPECTED_GIFT_DATE );
-            var nextExpected = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_NEXT_EXPECTED_GIFT_DATE ).AsDateTime();
-            Assert.AreEqual( lastGave.Value.AddDays( ( double ) meanFrequencyDays.Value ), nextExpected );
-
-            // Last Classified - Date
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_LAST_CLASSIFICATION_DATE );
-            var lastClassified = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_LAST_CLASSIFICATION_DATE ).AsDateTime();
-            Assert.AreEqual( context.Now, lastClassified );
+            Assert.AreEqual( lastGave.AddDays( ( double ) frequencyStats.MeanDays ), frequencyStats.NextExpectedGiftDate );
         }
 
         [TestMethod]
@@ -4425,48 +2987,6 @@ namespace Rock.Tests.Integration.Core.Jobs
         {
             const int frequencyDefinedValueMonthlyId = 3;
             const int frequencyDefinedValueErraticId = 5;
-
-            SetGivingAutomationSetting( 20000, 10000, 1000, 0 );
-
-            var personId = 1111;
-            var givingId = $"P{personId}";
-
-            var currencyTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CASH );
-            var sourceTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE );
-
-            var mostRecentOldTransactionDate = new DateTime( 2019, 12, 27 );
-            var minDate = new DateTime( 2020, 1, 1 );
-
-            var context = new GivingAutomation.GivingAutomationContext()
-            {
-                PercentileLowerRange = new List<decimal>()
-            };
-
-            for ( var i = 0; i < 100; i++ )
-            {
-                context.PercentileLowerRange.Add( 200 * i );
-            }
-
-            var people = new List<Person>
-            {
-                new Person
-                {
-                    Id = personId,
-                    GivingGroupId = null
-                },
-            };
-
-            people.ForEach( p => p.LoadAttributes() );
-
-            var transactions = new List<Rock.Jobs.GivingAutomation.TransactionView>();
-            var templateTransaction = new Rock.Jobs.GivingAutomation.TransactionView
-            {
-                CurrencyTypeValueId = currencyTypeValue.Id,
-                IsScheduled = false,
-                SourceTypeValueId = sourceTypeValue.Id,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = 50.0000000000m } },
-                RefundDetails = new List<TransactionViewDetail> { new TransactionViewDetail { AccountId = 123, Amount = -10.0000000000m } }
-            };
 
             // Create a set of giving transactions spanning a year:
             // 1. Monthly on the 10th @ 20:00; and
@@ -4483,40 +3003,13 @@ namespace Rock.Tests.Integration.Core.Jobs
             giftDates.AddRange( gift2Dates );
             giftDates.Sort();
 
-            foreach ( var giftDate in giftDates )
-            {
-                transactions.Add( GetClonedTransactionViewForDate( templateTransaction, giftDate.ToISO8601DateString() ) );
-            }
+            // With no transaction window, the twice-monthly pattern is treated as Erratic.
+            var statsNoWindow = GivingAutomationHelper.GetFrequencyStats( giftDates, transactionWindowDurationHours: 0 );
+            Assert.AreEqual( frequencyDefinedValueErraticId, ( int ) statsNoWindow.FrequencyLabel );
 
-            // Update the giving classification with no transaction window specified,
-            // and verify that the giving classification is "Erratic".
-            context.TransactionWindowDurationHours = null;
-            Rock.Jobs.GivingAutomation.UpdateGivingUnitClassifications( givingId,
-                people,
-                transactions,
-                mostRecentOldTransactionDate: null,
-                context,
-                minDate );
-
-            Assert.AreEqual( 0, context.Errors.Count );
-
-            var frequencyLabel1 = GetAttributeValue( people.First(), SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL ).AsIntegerOrNull();
-            Assert.AreEqual( frequencyDefinedValueErraticId, frequencyLabel1 );
-
-            // Update the giving classification with a transaction window specified,
-            // and verify that the giving classification is "Monthly".
-            context.TransactionWindowDurationHours = 24;
-            Rock.Jobs.GivingAutomation.UpdateGivingUnitClassifications( givingId,
-                people,
-                transactions,
-                mostRecentOldTransactionDate: null,
-                context,
-                minDate );
-
-            Assert.AreEqual( 0, context.Errors.Count );
-
-            var frequencyLabel2 = GetAttributeValue( people.First(), SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL ).AsIntegerOrNull();
-            Assert.AreEqual( frequencyDefinedValueMonthlyId, frequencyLabel2 );
+            // With a 24-hour window, the paired gifts are treated as one (Monthly).
+            var statsWithWindow = GivingAutomationHelper.GetFrequencyStats( giftDates, transactionWindowDurationHours: 24 );
+            Assert.AreEqual( frequencyDefinedValueMonthlyId, ( int ) statsWithWindow.FrequencyLabel );
         }
 
         private List<DateTime> GetDateTimeListWithMonthlyPattern( DateTime startDateTime, int count )
@@ -4530,29 +3023,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             return transactionDates;
         }
 
-        private TransactionView GetClonedTransactionViewForDate( TransactionView source, string dateTimeString )
-        {
-            var transaction = new TransactionView
-            {
-                TransactionDateTime = DateTime.Parse( dateTimeString ),
-                CurrencyTypeValueId = source.CurrencyTypeValueId,
-                IsScheduled = source.IsScheduled,
-                SourceTypeValueId = source.SourceTypeValueId,
-                TransactionViewDetailsBeforeRefunds = new List<TransactionViewDetail>(),
-                RefundDetails = new List<TransactionViewDetail>()
-            };
 
-            foreach ( var detail in source.TransactionViewDetailsBeforeRefunds )
-            {
-                transaction.TransactionViewDetailsBeforeRefunds.Add( new TransactionViewDetail { AccountId = detail.AccountId, Amount = detail.Amount } );
-            }
-            foreach ( var detail in source.RefundDetails )
-            {
-                transaction.RefundDetails.Add( new TransactionViewDetail { AccountId = detail.AccountId, Amount = detail.Amount } );
-            }
-
-            return transaction;
-        }
 
         #endregion UpdateGivingUnitClassifications
 
@@ -4603,26 +3074,300 @@ namespace Rock.Tests.Integration.Core.Jobs
             }
         }
 
-        /// <summary>
-        /// Creates the giving automation setting.
-        /// </summary>
-        /// <param name="bin1">The bin1.</param>
-        /// <param name="bin2">The bin2.</param>
-        /// <param name="bin3">The bin3.</param>
-        /// <param name="bin4">The bin4.</param>
-        /// <returns></returns>
-        private static void SetGivingAutomationSetting( decimal bin1, decimal bin2, decimal bin3, decimal bin4 )
+        private List<FinancialTransactionView> GenerateTestTransactions( decimal amountMedian, decimal amountIqr, decimal frequencyMean, decimal frequencyStdDev, DateTime lastGave, string givingId = "G1" )
         {
-            var settings = GivingAutomationSettings.LoadGivingAutomationSettings();
+            var last12MonthsTransactions = new List<FinancialTransactionView>();
 
-            settings.GivingClassificationSettings.GiverBins = new List<GiverBin> {
-                new GiverBin { LowerLimit = bin1 },
-                new GiverBin { LowerLimit = bin2 },
-                new GiverBin { LowerLimit = bin3 },
-                new GiverBin { LowerLimit = bin4 }
-            };
+            // To similate the std dev, add/substract a little from every other day. This doesn't create outliers,
+            // So this ends up working OK.
+            var daysPlusMinus = ( double ) ( frequencyStdDev / 2.0M );
 
-            GivingAutomationSettings.SaveGivingAutomationSettings( settings );
+            var transactionDateTime = lastGave.AddDays( -daysPlusMinus );
+
+            var oneYearAgo = RockDateTime.Now.AddYears( -1 );
+
+            while ( transactionDateTime > oneYearAgo )
+            {
+                var transactionView = new FinancialTransactionView
+                {
+                    Id = last12MonthsTransactions.Count + 1,
+                    AuthorizedPersonAliasId = 1,
+                    AuthorizedPersonGivingId = givingId,
+                    TransactionDateTime = transactionDateTime
+                };
+                last12MonthsTransactions.Add( transactionView );
+                transactionDateTime = transactionDateTime.AddDays( -( double ) frequencyMean );
+            }
+
+            // if there are an even number, add one more to make the reverse stddev math easier
+            if ( last12MonthsTransactions.Count % 2 == 0 )
+            {
+                var transactionView = new FinancialTransactionView
+                {
+                    Id = last12MonthsTransactions.Count + 1,
+                    AuthorizedPersonAliasId = 1,
+                    AuthorizedPersonGivingId = givingId,
+                    TransactionDateTime = transactionDateTime
+                };
+                last12MonthsTransactions.Add( transactionView );
+            }
+
+            var transactionCount = last12MonthsTransactions.Count;
+            var middleTransactionPosition = transactionCount / 2.00;
+            var currentPosition = 0;
+            var refundAmount = 0.00m;
+            bool didARefund = false;
+
+            foreach ( var transactionView in last12MonthsTransactions.OrderByDescending( a => a.TransactionDateTime ) )
+            {
+                decimal testAmount;
+                currentPosition++;
+                transactionView.TransactionDateTime = transactionView.TransactionDateTime.AddDays( daysPlusMinus );
+                daysPlusMinus = -daysPlusMinus;
+
+                if ( currentPosition < middleTransactionPosition )
+                {
+                    testAmount = amountMedian - ( amountIqr / 2.0M );
+                }
+                else if ( Math.Abs( currentPosition - middleTransactionPosition ) < 1 )
+                {
+                    testAmount = amountMedian;
+                }
+                else
+                {
+                    testAmount = amountMedian + ( amountIqr / 2.0M );
+                }
+
+                // Partial refunds are rare, but let's throw one into our test transactions to help detect problems with the partial refund logic
+                if ( !didARefund )
+                {
+                    refundAmount = Math.Round( testAmount * 0.25M, 2 );
+                    didARefund = true;
+                }
+                else
+                {
+                    refundAmount = 0.00M;
+                }
+
+                transactionView.TransactionDetails = new List<FinancialTransactionDetailView>
+                {
+                    new FinancialTransactionDetailView { AccountId = 123, Amount = testAmount + refundAmount },
+                };
+
+                if ( refundAmount != 0.00M )
+                {
+                    transactionView.RefundDetails = new List<FinancialTransactionDetailView>
+                    {
+                        new FinancialTransactionDetailView { AccountId = 123, Amount = -refundAmount }
+                    };
+                }
+            }
+
+            return last12MonthsTransactions;
+        }
+
+        private static QuartileRanges GetExpectedQuartileRangesForAlertType(
+            FinancialTransactionAlertType alertType,
+            List<FinancialTransactionView> last12MonthsTransactions,
+            FinancialTransactionView transaction )
+        {
+            var orderedTransactions = new List<FinancialTransactionView>();
+            if ( last12MonthsTransactions?.Any() == true )
+            {
+                orderedTransactions.AddRange( last12MonthsTransactions );
+            }
+
+            if ( transaction != null )
+            {
+                orderedTransactions.Add( transaction );
+            }
+
+            IEnumerable<decimal> amounts;
+
+            if ( alertType?.FinancialAccountId != null )
+            {
+                var accountId = alertType.FinancialAccountId.Value;
+                amounts = orderedTransactions
+                    .SelectMany( t => t.GetTransactionDetails() )
+                    .Where( d => d.AccountId == accountId )
+                    .Select( d => d.Amount );
+            }
+            else
+            {
+                amounts = orderedTransactions
+                    .SelectMany( t => t.GetTransactionDetails() )
+                    .Select( d => d.Amount );
+            }
+
+            return GivingAutomationHelper.GetQuartileRanges( amounts );
+        }
+
+        private static FrequencyCalculationResult GetExpectedFrequencyStatsForAlertType(
+            FinancialTransactionAlertType alertType,
+            List<FinancialTransactionView> last12MonthsTransactions,
+            FinancialTransactionView transaction,
+            int transactionWindowDurationHours )
+        {
+            var orderedTransactions = new List<FinancialTransactionView>();
+            if ( last12MonthsTransactions?.Any() == true )
+            {
+                orderedTransactions.AddRange( last12MonthsTransactions );
+            }
+
+            if ( transaction != null )
+            {
+                orderedTransactions.Add( transaction );
+            }
+
+            List<DateTime> dateTimes;
+
+            if ( alertType?.FinancialAccountId != null )
+            {
+                var accountId = alertType.FinancialAccountId.Value;
+                dateTimes = orderedTransactions
+                    .Where( t => t.GetTransactionDetails().Any( d => d.AccountId == accountId ) )
+                    .Select( t => t.TransactionDateTime )
+                    .OrderBy( d => d )
+                    .ToList();
+            }
+            else
+            {
+                dateTimes = orderedTransactions
+                    .Select( t => t.TransactionDateTime )
+                    .OrderBy( d => d )
+                    .ToList();
+            }
+
+            return GivingAutomationHelper.GetFrequencyStats( dateTimes, transactionWindowDurationHours );
+        }
+
+        private static decimal GetDaysSincePreviousTransaction( List<FinancialTransactionView> last12MonthsTransactions, FinancialTransactionView transaction )
+        {
+            if ( transaction == null )
+            {
+                return 0m;
+            }
+
+            var orderedTransactions = new List<FinancialTransactionView>();
+            if ( last12MonthsTransactions?.Any() == true )
+            {
+                orderedTransactions.AddRange( last12MonthsTransactions );
+            }
+
+            orderedTransactions.Add( transaction );
+            orderedTransactions = orderedTransactions.OrderBy( t => t.TransactionDateTime ).ToList();
+
+            var index = orderedTransactions.FindIndex( t => t.Id == transaction.Id );
+            if ( index <= 0 )
+            {
+                return 0m;
+            }
+
+            var previousDate = orderedTransactions[index - 1].TransactionDateTime;
+            return Convert.ToDecimal( ( transaction.TransactionDateTime - previousDate ).TotalDays );
+        }
+
+        private static List<FinancialTransactionAlert> CreateLateAlertsForGivingId(
+            GivingAutomation.GivingAutomationContext context,
+            List<FinancialTransactionAlertType> lateGiftAlertTypes,
+            string givingId,
+            List<FinancialTransactionView> allTransactions,
+            Dictionary<int, List<AlertView>> recentAlertsOfThisTypeByAlertTypeId = null,
+            Func<FinancialTransactionAlertType, bool> isEligibleForAlertType = null )
+        {
+            var alerts = new List<FinancialTransactionAlert>();
+            var givingIdsToExcludeFromSubsequentAlerts = new HashSet<string>();
+
+            foreach ( var lateGiftAlertType in lateGiftAlertTypes.OrderBy( a => a.Order ) )
+            {
+                if ( isEligibleForAlertType != null && !isEligibleForAlertType( lateGiftAlertType ) )
+                {
+                    continue;
+                }
+
+                // DataView and FinancialAccount filtering happens before the builder is invoked.
+                // Simulate that here by pre-filtering the transaction list passed to the builder.
+                var orderedTransactionsForType = allTransactions;
+                if ( lateGiftAlertType.FinancialAccountId.HasValue )
+                {
+                    var accountId = lateGiftAlertType.FinancialAccountId.Value;
+                    orderedTransactionsForType = allTransactions
+                        .Where( t => t.GetTransactionDetails().Any( d => d.AccountId == accountId ) )
+                        .ToList();
+                }
+
+                if ( orderedTransactionsForType == null || orderedTransactionsForType.Count == 0 )
+                {
+                    continue;
+                }
+
+                orderedTransactionsForType = orderedTransactionsForType.OrderBy( t => t.TransactionDateTime ).ToList();
+
+                List<AlertView> recentAlertsOfThisType = null;
+                if ( recentAlertsOfThisTypeByAlertTypeId != null )
+                {
+                    recentAlertsOfThisTypeByAlertTypeId.TryGetValue( lateGiftAlertType.Id, out recentAlertsOfThisType );
+                }
+
+                var builder = new GivingAutomation.LateTxnAlertBuilder( context, lateGiftAlertType, givingIdsToExcludeFromSubsequentAlerts );
+                var alert = builder.BuildAlert( givingId, orderedTransactionsForType, recentAlertsOfThisType );
+                if ( alert == null )
+                {
+                    continue;
+                }
+
+                alerts.Add( alert );
+
+                if ( !lateGiftAlertType.ContinueIfMatched && alert.GivingId.IsNotNullOrWhiteSpace() )
+                {
+                    givingIdsToExcludeFromSubsequentAlerts.Add( alert.GivingId );
+                }
+            }
+
+            return alerts;
+        }
+
+        private static List<FinancialTransactionAlert> CreateRecentTxnAlertsForTransaction(
+            GivingAutomation.GivingAutomationContext context,
+            FinancialTransactionView transaction,
+            List<FinancialTransactionView> twelveMonthsTransactions,
+            List<AlertView> recentAlerts,
+            Dictionary<int, HashSet<string>> eligibleGivingIdsByDataViewId = null,
+            bool allowFollowUp = true,
+            bool allowGratitude = true )
+        {
+            if ( context == null || transaction == null )
+            {
+                return new List<FinancialTransactionAlert>();
+            }
+
+            var givingId = transaction.AuthorizedPersonGivingId;
+
+            var orderedTransactions = new List<FinancialTransactionView>();
+            if ( twelveMonthsTransactions?.Any() == true )
+            {
+                orderedTransactions.AddRange( twelveMonthsTransactions );
+            }
+
+            orderedTransactions.Add( transaction );
+            orderedTransactions = orderedTransactions
+                .OrderBy( t => t.TransactionDateTime )
+                .ToList();
+
+            var computedMetricsByAlertTypeId = GivingAutomationHelper.ComputeMetricsForAlertTypes(
+                context.AlertTypes,
+                orderedTransactions,
+                context.TransactionWindowDurationHours );
+
+            var builder = new GivingAutomation.RecentTxnAlertBuilder(
+                context,
+                givingId,
+                orderedTransactions,
+                recentAlerts ?? new List<AlertView>(),
+                eligibleGivingIdsByDataViewId,
+                computedMetricsByAlertTypeId );
+
+            return builder.BuildAlertsForTransaction( transaction, allowFollowUp, allowGratitude ) ?? new List<FinancialTransactionAlert>();
         }
 
         #endregion Helpers

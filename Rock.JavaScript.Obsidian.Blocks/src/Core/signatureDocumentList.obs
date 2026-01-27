@@ -17,7 +17,7 @@
                     field="name"
                     :filter="textValueFilter"
                     visiblePriority="xs"
-                    width="30%" />
+                    width="25%" />
 
         <TextColumn name="documentType"
                     v-if="showDocumentType"
@@ -76,7 +76,7 @@
                     field="status"
                     :filter="pickExistingValueFilter"
                     visiblePriority="xs"
-                    width="7%" />
+                    width="8%" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
@@ -84,8 +84,9 @@
                 title="Document"
                 field="fileText"
                 itemClass="grid-columncommand justify-content-center"
+                headerClass="text-center"
                 visiblePriority="md"
-                width="88">
+                width="8%">
             <template #format="{ row }">
                 <a class="js-signature-document-link btn btn-default" :href="'/GetFile.ashx?guid=' + row.fileGuid">
                     <div v-html="row.fileText" />

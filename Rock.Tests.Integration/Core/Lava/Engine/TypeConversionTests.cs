@@ -80,7 +80,7 @@ StartTimeOfDay (Formatted): 10:30 AM +11:00
             {
                 EnabledCommands = "RockEntity",
                 IgnoreWhiteSpace = true,
-                LavaEngineTypes = new List<System.Type> { typeof(FluidEngine) }
+                LavaEngineTypes = new List<System.Type> { typeof( FluidEngine ) }
             };
 
             _TestHelper.AssertTemplateOutput( expectedOutput, template, options );

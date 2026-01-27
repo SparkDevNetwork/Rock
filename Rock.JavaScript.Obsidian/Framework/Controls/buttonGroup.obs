@@ -74,7 +74,7 @@
     });
 
     function itemButtonType(item: StandardListItemBag): LiteralUnion<BtnType> {
-        return item.value == internalValue.value ? props.selectedBtnType : props.unselectedBtnType;
+        return item.value === internalValue.value ? props.selectedBtnType : props.unselectedBtnType;
     }
 
     const standardFieldProps = useStandardRockFormFieldProps(props);

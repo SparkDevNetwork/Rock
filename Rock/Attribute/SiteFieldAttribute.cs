@@ -25,6 +25,22 @@ namespace Rock.Attribute
         private const string SHORTENING_SITES_ONLY = "shorteningSitesOnly";
 
         /// <summary>
+        /// Gets or sets a value indicating whether only sites that are enabled for shortening should be displayed.
+        /// </summary>
+        public bool ShorteningSitesOnly
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( SHORTENING_SITES_ONLY ).AsBoolean();
+            }
+            set
+            {
+                var configurationValue = new Field.ConfigurationValue( value.ToString() );
+                FieldConfigurationValues.AddOrReplace( SHORTENING_SITES_ONLY, configurationValue );
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SiteFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -38,8 +54,7 @@ namespace Rock.Attribute
         public SiteFieldAttribute( string name = "Site", string description = "", bool required = true, string defaultSiteId = "", string category = "", int order = 0, string key = null, bool shorteningSitesOnly = false )
             : base( name, description, required, defaultSiteId, category, order, key, typeof( Rock.Field.Types.SiteFieldType ).FullName )
         {
-            var htmlConfig = new Field.ConfigurationValue( shorteningSitesOnly.ToString() );
-            FieldConfigurationValues.Add( SHORTENING_SITES_ONLY, htmlConfig );
+            ShorteningSitesOnly = shorteningSitesOnly;
         }
     }
 }

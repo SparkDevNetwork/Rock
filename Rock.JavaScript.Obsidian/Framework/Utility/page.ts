@@ -28,6 +28,7 @@ export type PageConfig = {
     currentPerson: CurrentPersonBag | null;
     isAnonymousVisitor: boolean;
     loginUrlWithReturnUrl: string;
+    trailblazerMode: boolean;
 };
 
 export function smoothScrollToTop(): void {

@@ -32,6 +32,16 @@
                               rules="required"
                               :showEnabledForShortLinkOnly="true" />
             </div>
+
+            <div class="col-sm-6">
+                <NumberBox v-model="expireInDays"
+                           help="Sets the number of days before the short link expires. Once expired, the link and its tracking data will be permanently deleted. Leave blank for no expiration."
+                           label="Expire In Days">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">days</span>
+                    </template>
+                </NumberBox>
+            </div>
         </div>
 
         <div class="row">
@@ -120,7 +130,7 @@
      *   });
      * (/script)
      */
-    import { PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import { getToolbarButton, usePluginHelper } from "./utils.partial";
     import { Editor, Ui } from "@Obsidian/Libs/tinymce";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -184,6 +194,26 @@
     const destinationUrlHelpText = `Enter the full URL that the shortlink will direct to. Be sure to include "http://" or "https://".`;
     const tokenHelpText = `Provide a unique token for the shortlink. This will be the identifiable portion of the shortlink (e.g., "my-link" in "short.ly/my-link"). Use only letters, numbers, or dashes. Leave blank to generate a unique value for each recipient.`;
 
+    const createShortLinkLavaCommand = defineLavaCommand<{
+        token: string;
+        siteId: number | null;
+        overwrite: boolean;
+        randomLength: number;
+        categoryId: number | null;
+        isPinned: boolean;
+        expireInDays: number | null;
+    }>(
+        "CreateShortLink",
+        defineArg => {
+            defineArg("token", "''", v => v == null ? "null" : `'${v}'`);
+            defineArg("siteId", "null", v => v == null ? "null" : `${v}`);
+            defineArg("overwrite", "false", v => v ? "true" : "false");
+            defineArg("randomLength", "10", v => `${v}`);
+            defineArg("categoryId", "null", v => v == null ? "null" : `${v}`);
+            defineArg("isPinned", "false", v => v ? "true" : "false");
+            defineArg("expireInDays", "null", v => v == null ? "null" : `${v}`);
+        });
+
     //#region Values
 
     // UI state.
@@ -199,21 +229,91 @@
     const impersonationExpirationMinutes = ref<number | null>(null);
     const impersonationMaxUsageLimit = ref<number | null>(null);
     const impersonationPage = ref<PageRouteValueBag | null | undefined>();
+    const expireInDays = ref<number | null>(null);
 
     //#endregion
 
     //#region Computed Values
 
-    function hasMultipleValues<T>(someArray: T[] | null | undefined): someArray is T[] {
-        return Array.isArray(someArray) && someArray.length > 1;
-    }
+    const selectedSiteId = computed<number | null>(() => {
+        if (siteIdOrEmptyString.value) {
+            // A site was selected so return it.
+            return toNumberOrNull(siteIdOrEmptyString.value);
+        }
+        else if (props.sites?.length === 1) {
+            // There is only one site so return it by default.
+            return toNumberOrNull(props.sites[0].value);
+        }
+        else {
+            return null;
+        }
+    });
 
     //#endregion
 
     //#region Functions
 
+    function defineLavaCommand<T>(
+        command: string,
+        defineLavaCommandArgs: (
+            defineLavaCommandArg: <K extends keyof T>(
+                key: K,
+                defaultValue: string,
+                format: (value: T[K]) => string
+            ) => void
+        ) => void
+    ): { type: T; getLava: (args: Partial<T>) => string } {
+        // Store in a widened runtime form, but enforce types at definition time
+        const lavaCommandArgDefs: {
+            key: keyof T;
+            defaultValue: string;
+            format: (value: unknown) => string;
+        }[] = [];
+
+        const defineLavaCommandArg = <K extends keyof T>(
+            key: K,
+            defaultValue: string,
+            format: (value: T[K]) => string
+        ): void => {
+            lavaCommandArgDefs.push({
+                key,
+                defaultValue,
+                format: format as (value: unknown) => string
+            });
+        };
+
+        defineLavaCommandArgs(defineLavaCommandArg);
+
+        return {
+            type: undefined as unknown as T,
+            getLava: (args: Partial<T>): string => {
+                const commandArguments: string[] = [];
+                let last = -1;
+
+                for (let i = 0; i < lavaCommandArgDefs.length; i++) {
+                    const entry = lavaCommandArgDefs[i];
+                    const value = args[entry.key as keyof T];
+
+                    if (value !== undefined) {
+                        commandArguments.push(entry.format(value));
+                        last = i;
+                    }
+                    else {
+                        commandArguments.push(entry.defaultValue);
+                    }
+                }
+
+                if (last === -1) return command;
+                return `${command}:${commandArguments.slice(0, last + 1).join(",")}`;
+            }
+        };
+    }
+
+    function hasMultipleValues<T>(someArray: T[] | null | undefined): someArray is T[] {
+        return Array.isArray(someArray) && someArray.length > 1;
+    }
+
     async function getShortLinkLava(): Promise<string[]> {
-        const siteId = getSelectedSiteIdOrSingleValue() || "null";
 
         if (isImpersonationEnabled.value) {
             const separator = destinationUrl.value.includes("?") ? "&" : "?";
@@ -230,33 +330,42 @@
                 }
             }
 
+            const args: Partial<typeof createShortLinkLavaCommand.type> = {};
+
+            if (!isNullish(selectedSiteId.value)) {
+                args.siteId = selectedSiteId.value;
+            }
+            if (!isNullish(expireInDays.value)) {
+                args.expireInDays = expireInDays.value;
+            }
+
             return [
                 // Ensure all entries but the last one use '{%-' to ensure blank lines aren't added.
                 `{%- assign token = Person | PersonTokenCreate:${expiryMinutes},${usageLimit},${pageId} -%}`,
-                `{{ "${destinationUrl.value}${separator}rckipid=" | Append:token | CreateShortLink:'',${siteId} }}`
+                `{{ "${destinationUrl.value}${separator}rckipid=" | Append:token | ${createShortLinkLavaCommand.getLava(args)} }}`
             ];
         }
         else {
-            // All recipients should get the same shortlink (if it's not blank).
-            const useSameToken = token.value ? "true" : "false";
+            const args: Partial<typeof createShortLinkLavaCommand.type> = {};
+
+            if (token.value) {
+                args.token = token.value;
+
+                // All recipients should get the same shortlink (if it's not blank).
+                args.overwrite = true;
+            }
+
+            if (!isNullish(selectedSiteId.value)) {
+                args.siteId = selectedSiteId.value;
+            }
+
+            if (!isNullish(expireInDays.value)) {
+                args.expireInDays = expireInDays.value;
+            }
 
             return [
-                `{{ "${destinationUrl.value}" | CreateShortLink:'${token.value}',${siteId},${useSameToken} }}`
+                `{{ "${destinationUrl.value}" | ${createShortLinkLavaCommand.getLava(args)} }}`
             ];
-        }
-    }
-
-    function getSelectedSiteIdOrSingleValue(): string | null {
-        if (siteIdOrEmptyString.value) {
-            // A site was selected so return it.
-            return siteIdOrEmptyString.value;
-        }
-        else if (props.sites?.length === 1) {
-            // There is only one site so return it by default.
-            return props.sites[0].value ?? null;
-        }
-        else {
-            return null;
         }
     }
 
@@ -353,8 +462,7 @@
     async function onShortLinkPicked(): Promise<void> {
         if (editorInstance.value) {
             if (props.checkToken && token.value) {
-                const siteId = toNumberOrNull(getSelectedSiteIdOrSingleValue());
-                token.value = await props.checkToken(token.value, siteId ?? 0);
+                token.value = await props.checkToken(token.value, selectedSiteId.value ?? 0);
             }
 
             const shortLink = (await getShortLinkLava()).join("<br>");

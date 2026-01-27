@@ -59,7 +59,9 @@ namespace Rock.Field.Types
                     ["iconCssClass"] = GetItemIconCssClass( privateConfigurationValues ),
                     ["isMultiple"] = IsMultipleSelection.ToString(),
                     ["rootRestUrl"] = GetRootRestUrl( privateConfigurationValues ),
-                    ["context"] = GetStandardContext( privateConfigurationValues )
+                    ["context"] = GetStandardContext( privateConfigurationValues ),
+                    ["isDescendantSelectionAllowed"] = GetDescendantSelectionAllowed( privateConfigurationValues ).ToString(),
+                    ["isFolderSelectionDisabled"] = GetFolderSelectionDisabled( privateConfigurationValues ).ToString(),
                 };
 
                 var itemTypes = GetSelectableItemTypes( privateConfigurationValues );
@@ -170,6 +172,18 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Determines if folder selection should be disabled in the tree view.
+        /// Folders are any items where <see cref="TreeItemBag.IsFolder"/> is true.
+        /// This is typically set when working with Category based trees.
+        /// </summary>
+        /// <param name="privateConfigurationValues">The private configuration values.</param>
+        /// <returns><c>true</c> if folder selection should be disabled; otherwise <c>false</c> to allow folder selection.</returns>
+        protected virtual bool GetFolderSelectionDisabled( Dictionary<string, string> privateConfigurationValues )
+        {
+            return false;
+        }
+
+        /// <summary>
         /// Gets the context string to include with all API requests. This can
         /// be information you might need in handling the API request so that
         /// you can return the correct data. We also recommend you encode any
@@ -181,6 +195,17 @@ namespace Rock.Field.Types
         protected virtual string GetContext( Dictionary<string, string> privateConfigurationValues )
         {
             return null;
+        }
+
+        /// <summary>
+        /// Gets a value to determine if this field type supports selecting
+        /// all descendants in the UI picker.
+        /// </summary>
+        /// <param name="privateConfigurationValues">The private configuration values.</param>
+        /// <returns><c>true</c> if the UI should support selecting all descendants; otherwise <c>false</c>.</returns>
+        protected virtual bool GetDescendantSelectionAllowed( Dictionary<string, string> privateConfigurationValues )
+        {
+            return false;
         }
 
         #endregion
@@ -222,7 +247,8 @@ namespace Rock.Field.Types
             {
                 ID = id,
                 IconCssClass = GetItemIconCssClass( privateConfigurationValues ),
-                AllowMultiSelect = IsMultipleSelection
+                AllowMultiSelect = IsMultipleSelection,
+                ShowSelectChildren = GetDescendantSelectionAllowed( privateConfigurationValues ),
             };
 
             picker.SetItemRestUrl( GetRootRestUrl( privateConfigurationValues ) );

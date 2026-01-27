@@ -151,8 +151,13 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override GridBuilder<SignatureDocumentTemplateData> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<SignatureDocumentTemplateData>
+            {
+                LavaObject = row => row.SignatureDocumentTemplate
+            };
+
             return new GridBuilder<SignatureDocumentTemplateData>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.SignatureDocumentTemplate.IdKey )
                 .AddTextField( "name", a => a.SignatureDocumentTemplate.Name )
                 .AddTextField( "description", a => a.SignatureDocumentTemplate.Description )

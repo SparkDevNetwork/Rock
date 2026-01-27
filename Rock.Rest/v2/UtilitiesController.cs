@@ -15,12 +15,19 @@
 // </copyright>
 //
 
+using System.Linq;
+
+using Microsoft.Extensions.DependencyInjection;
+
+using Rock.Configuration;
+using Rock.Observability;
 using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 #if WEBFORMS
+using HttpGetAttribute = System.Web.Http.HttpGetAttribute;
 using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
 using IActionResult = System.Web.Http.IHttpActionResult;
 using RouteAttribute = System.Web.Http.RouteAttribute;
@@ -49,6 +56,39 @@ namespace Rock.Rest.v2
         public IActionResult GetImageFileExtensions()
         {
             return Ok( GlobalAttributesCache.Get().GetValue( "ContentImageFiletypeWhitelist" ) );
+        }
+
+        /// <summary>
+        /// Gets the debug trace details for the specified trace. This endpoint
+        /// is used internally and is not intended for public use.
+        /// </summary>
+        /// <param name="traceId">The identifier of the trace to retrieve.</param>
+        /// <returns>A list of objects that represent the trace spans.</returns>
+        [HttpGet]
+        [Route( "DebugTraceDetails" )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [Rock.SystemGuid.RestActionGuid( "9bca1f10-942d-45c6-97f8-e1b54f76a521" )]
+        public IActionResult GetDebugTraceDetails( string traceId )
+        {
+            var activities = RockApp.Current.GetRequiredService<DebugTraceObserver>().GetTraceActivities( traceId );
+
+            var items = activities
+                .Select( a => new
+                {
+                    TraceId = a.TraceId.ToString(),
+                    SpanId = a.SpanId.ToString(),
+                    ParentSpanId = a.ParentSpanId != default ? a.ParentSpanId.ToString() : null,
+                    Name = a.DisplayName,
+                    StartTime = a.StartTimeUtc.ToJavascriptMilliseconds(),
+                    Duration = a.Duration.TotalMilliseconds,
+                    Tags = a.TagObjects
+                        .Select( t => new ListItemBag { Value = t.Key, Text = t.Value.ToStringSafe() } )
+                        .OrderBy( t => t.Value )
+                        .ToList(),
+                } )
+                .ToList();
+
+            return Ok( items );
         }
     }
 }

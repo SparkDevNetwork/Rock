@@ -34,22 +34,99 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Create Short Link" )]
 
-    [SiteField("Site", "The site to use for the generated short url", true, "", "", 0, "Site", true )]
-    [WorkflowTextOrAttribute( "Token", "Token",
-        "The token to use for the short link. This is the unique value that will be appended to the site's domain to make the link unique. If left blank, a random token will be generated. <span class='tip tip-lava'></span>",
-        false, "", "", 1, "Token", new string[] { "Rock.Field.Types.TextFieldType" } )]
-    [WorkflowTextOrAttribute( "Target URL", "Target Url",
-        "The URL that the short link will redirect to. <span class='tip tip-lava'></span>",
-        true, "", "", 2, "Url", new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.UrlLinkFieldType" } )]
-    [CategoryField( "Category", "The category to use for the generated short url", false, "Rock.Model.PageShortLink", "", "", false, "", "", 3, "Category" )]
-    [BooleanField( "Is Pinned", "This is the boolean value used to indicate if the short link is pinned.", false, "", 4, "IsPinned" )]
-    [WorkflowAttribute( "Attribute", "The attribute to store the generated short link's URL to.",
-        false, "", "", 5, "Attribute", new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.UrlLinkFieldType" } )]
-    [IntegerField( "Random Token Length", "The number of characters to use when generating a random unique token.", false, 7, "", 6 )]
-    [BooleanField( "Allow Token Re-use", "If a short link already exists with the same token, should it be updated to the new URL? If this is not allowed, this action will fail due to existing short link.", true, "", 7, "Overwrite" )]
+    [SiteField(
+        "Site",
+        Description = "The site to use for the generated short url",
+        IsRequired = true,
+        Order = 0,
+        Key = AttributeKey.Site,
+        ShorteningSitesOnly = true )]
+
+    [WorkflowTextOrAttribute(
+        "Token",
+        "Token",
+        Description = "The token to use for the short link. This is the unique value that will be appended to the site's domain to make the link unique. If left blank, a random token will be generated. <span class='tip tip-lava'></span>",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType" },
+        IsRequired = false,
+        Key = AttributeKey.Token,
+        Order = 1 )]
+
+    [WorkflowTextOrAttribute(
+        "Target URL",
+        "Target Url",
+        Description = "The URL that the short link will redirect to. <span class='tip tip-lava'></span>",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.UrlLinkFieldType" },
+        IsRequired = true,
+        Key = AttributeKey.Url,
+        Order = 2 )]
+
+    [CategoryField(
+        "Category",
+        Description = "The category to use for the generated short url",
+        EntityTypeName = "Rock.Model.PageShortLink",
+        IsRequired = false,
+        Key = AttributeKey.Category,
+        Order = 3 )]
+
+    [BooleanField(
+        "Is Pinned",
+        Description = "This is the boolean value used to indicate if the short link is pinned.",
+        Key = AttributeKey.IsPinned,
+        Order = 4 )]
+
+    [WorkflowAttribute(
+        "Attribute",
+        Description = "The attribute to store the generated short link's URL to.",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.UrlLinkFieldType" },
+        IsRequired = false,
+        Key = AttributeKey.Attribute,
+        Order = 5 )]
+
+    [IntegerField(
+        "Random Token Length",
+        Description = "The number of characters to use when generating a random unique token.",
+        DefaultIntegerValue = 7,
+        IsRequired = false,
+        Key = AttributeKey.RandomTokenLength,
+        Order = 6 )]
+
+    [BooleanField(
+        "Allow Token Re-use",
+        Description = "If a short link already exists with the same token, should it be updated to the new URL? If this is not allowed, this action will fail due to existing short link.",
+        DefaultBooleanValue = true,
+        Key = AttributeKey.Overwrite,
+        Order = 7 )]
+
+    [IntegerField(
+        "Expire In Days",
+        Description = "Sets the number of days before the short link expires. Once expired, the link and its tracking data will be permanently deleted. Leave blank for no expiration.",
+        IsRequired = false,
+        Key = AttributeKey.ExpireInDays,
+        Order = 8 )]
+
     [Rock.SystemGuid.EntityTypeGuid( "AA995907-DAC1-4B7A-ACEF-AEC6CD057E72")]
     public class CreateShortLink : ActionComponent
     {
+        #region Keys
+
+        /// <summary>
+        /// Keys to use for Attributes
+        /// </summary>
+        private class AttributeKey
+        {
+            public const string ExpireInDays = "ExpireInDays";
+            public const string Site = "Site";
+            public const string Token = "Token";
+            public const string RandomTokenLength = "RandomTokenLength";
+            public const string Url = "Url";
+            public const string Category = "Category";
+            public const string IsPinned = "IsPinned";
+            public const string Overwrite = "Overwrite";
+            public const string Attribute = "Attribute";
+        }
+
+        #endregion
+        
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
@@ -68,7 +145,7 @@ namespace Rock.Workflow.Action
             var mergeFields = GetMergeFields( action );
 
             // Get the site
-            int siteId = GetAttributeValue( action, "Site", true ).AsInteger();
+            int siteId = GetAttributeValue( action, AttributeKey.Site, true ).AsInteger();
             SiteCache site = SiteCache.Get( siteId );
             if ( site == null )
             {
@@ -77,22 +154,22 @@ namespace Rock.Workflow.Action
             }
 
             // Get the token
-            string token = GetAttributeValue( action, "Token", true ).ResolveMergeFields( mergeFields );
+            string token = GetAttributeValue( action, AttributeKey.Token, true ).ResolveMergeFields( mergeFields );
             if ( token.IsNullOrWhiteSpace() )
             {
-                int tokenLen = GetAttributeValue( action, "RandomTokenLength" ).AsIntegerOrNull() ?? 7;
+                int tokenLen = GetAttributeValue( action, AttributeKey.RandomTokenLength ).AsIntegerOrNull() ?? 7;
                 token = service.GetUniqueToken( site.Id, tokenLen );
             }
 
             // Get the target url
-            string url = GetAttributeValue( action, "Url", true ).ResolveMergeFields( mergeFields ).RemoveCrLf().Trim();
+            var url = GetAttributeValue( action, AttributeKey.Url, true ).ResolveMergeFields( mergeFields ).RemoveCrLf().Trim();
             if ( url.IsNullOrWhiteSpace() )
             {
                 errorMessages.Add( "A valid Target URL was not specified." );
                 return false;
             }
 
-            int? categoryId = GetAttributeValue( action, "Category", true ).AsIntegerOrNull();
+            var categoryId = GetAttributeValue( action, AttributeKey.Category, true ).AsIntegerOrNull();
 
             if ( categoryId.HasValue )
             {
@@ -103,13 +180,18 @@ namespace Rock.Workflow.Action
                 }
             }
 
-            bool isPinned = GetAttributeValue( action, "IsPinned", true ).AsBoolean();
+            var isPinned = GetAttributeValue( action, AttributeKey.IsPinned, true ).AsBoolean();
+
+            var expireInDays = GetAttributeValue( action, AttributeKey.ExpireInDays, true ).AsIntegerOrNull();
+            var expireDate = expireInDays.HasValue && expireInDays.Value >= 0
+                ? RockDateTime.Today.AddDays( expireInDays.Value )
+                : ( DateTime? )null;
 
             // Save the short link
             var link = service.GetByToken( token, site.Id );
             if ( link != null )
             {
-                if ( !GetAttributeValue( action, "Overwrite" ).AsBoolean() )
+                if ( !GetAttributeValue( action, AttributeKey.Overwrite ).AsBoolean() )
                 {
                     errorMessages.Add( string.Format( "The selected token ('{0}') already exists. Please specify a unique token, or configure action to allow token re-use.", token ) );
                     return false;
@@ -121,19 +203,23 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                link = new PageShortLink();
-                link.SiteId = site.Id;
-                link.Token = token;
-                link.Url = url;
-                link.CategoryId = categoryId;
-                link.IsPinned = isPinned;
+                link = new PageShortLink
+                {
+                    SiteId = site.Id,
+                    Token = token,
+                    Url = url,
+                    CategoryId = categoryId,
+                    IsPinned = isPinned,
+                    ExpireDate = expireDate
+                };
 
                 service.Add( link );
             }
+
             rockContext.SaveChanges();
 
             // Save the resulting short link url
-            var attribute = AttributeCache.Get( GetAttributeValue( action, "Attribute" ).AsGuid(), rockContext );
+            var attribute = AttributeCache.Get( GetAttributeValue( action, AttributeKey.Attribute ).AsGuid(), rockContext );
             if ( attribute != null )
             {
                 string shortLink = link.ShortLinkUrl;
@@ -144,6 +230,5 @@ namespace Rock.Workflow.Action
 
             return true;
         }
-
     }
 }

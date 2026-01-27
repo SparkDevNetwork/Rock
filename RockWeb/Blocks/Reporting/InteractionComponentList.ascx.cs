@@ -39,7 +39,14 @@ namespace RockWeb.Blocks.Reporting
 
     [LinkedPage( "Component Detail Page", "Page reference to the component detail page. This will be included as a variable in the Lava.", false, order: 0 )]
     [LinkedPage( "Interaction Detail Page", "Page reference to the interaction detail page. This will be included as a variable in the Lava.", false, order: 1 )]
-    [CodeEditorField( "Default Template", "The Lava template to use as default.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, false, order: 2, defaultValue: @"
+
+    [CodeEditorField( "Default Template",
+        Description = "The Lava template to use as default.",
+        EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
+        EditorHeight = 300,
+        IsRequired = false,
+        Order = 2,
+        DefaultValue = @"
 	<div class='panel panel-block'>
         <div class='panel-heading'>
 			<h1 class='panel-title'>
@@ -75,7 +82,9 @@ namespace RockWeb.Blocks.Reporting
             </div>
 		</div>
 	</div>" )]
+
     [IntegerField( "Page Size", "The number of components to show per page.", true, 20, "", 3 )]
+
     [ContextAware( typeof( Person ) )]
     [Rock.SystemGuid.BlockTypeGuid( "00FF58B1-A433-43AA-82C9-45F8F58FBE9F" )]
     public partial class InteractionComponentList : Rock.Web.UI.RockBlock

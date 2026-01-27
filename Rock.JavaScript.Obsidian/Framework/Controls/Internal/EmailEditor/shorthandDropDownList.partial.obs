@@ -1,0 +1,287 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div :class="['shorthand-property-header', isMoreShown ? 'more' : '']">
+        <RockLabel class="shorthand-property-label" :help="help">{{ label }}</RockLabel>
+        <div class="more-switch">
+            <InlineSwitch v-model="isMoreShown"
+                          label="More" />
+        </div>
+    </div>
+
+    <TransitionVerticalCollapse>
+        <div v-if="!isMoreShown" class="row">
+            <div class="col-sm-6">
+                <DropDownList v-model="internalShorthandValue"
+                              v-bind="$attrs"
+                              :label="shorthandLabel"
+                              :items="items" />
+            </div>
+        </div>
+    </TransitionVerticalCollapse>
+
+    <TransitionVerticalCollapse>
+        <div v-if="isMoreShown">
+            <div class="row">
+                <div class="col-sm-6">
+                    <DropDownList v-model="internalTopValue"
+                                  v-bind="$attrs"
+                                  :label="topLabel"
+                                  :disableLabel="!topLabel"
+                                  :items="items" />
+                </div>
+
+                <div class="col-sm-6">
+                    <DropDownList v-model="internalBottomValue"
+                                  v-bind="$attrs"
+                                  :label="bottomLabel"
+                                  :disableLabel="!bottomLabel"
+                                  :items="items" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <DropDownList v-model="internalLeftValue"
+                                  v-bind="$attrs"
+                                  :label="leftLabel"
+                                  :disableLabel="!leftLabel"
+                                  :items="items" />
+                </div>
+
+                <div class="col-sm-6">
+                    <DropDownList v-model="internalRightValue"
+                                  v-bind="$attrs"
+                                  :label="rightLabel"
+                                  :disableLabel="!rightLabel"
+                                  :items="items" />
+                </div>
+            </div>
+        </div>
+    </TransitionVerticalCollapse>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { ShorthandModel } from "./types.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ShorthandModel<string | null> | null>,
+            required: true
+        },
+
+        help: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        items: {
+            type: Object as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        shorthandLabel: {
+            type: String as PropType<string>,
+            default: "All Sides"
+        },
+
+        topLabel: {
+            type: String as PropType<string>,
+            default: "Top"
+        },
+
+        bottomLabel: {
+            type: String as PropType<string>,
+            default: "Bottom"
+        },
+
+        leftLabel: {
+            type: String as PropType<string>,
+            default: "Left"
+        },
+
+        rightLabel: {
+            type: String as PropType<string>,
+            default: "Right"
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ShorthandModel<string | null> | null): void;
+    }>();
+
+    // #region Computed Props
+
+    const internalShorthandValue = computed<string>({
+        get(): string {
+            return props.modelValue?.top ?? "";
+        },
+        set(value: string): void {
+            if (!value) {
+                emit("update:modelValue", null);
+            }
+            else {
+                emit("update:modelValue", {
+                    top: value,
+                    bottom: value,
+                    left: value,
+                    right: value
+                });
+            }
+        }
+    });
+
+    const internalTopValue = computed<string>({
+        get(): string {
+            return props.modelValue?.top ?? "";
+        },
+        set(value: string): void {
+            if (!value
+                && !props.modelValue?.bottom
+                && !props.modelValue?.left
+                && !props.modelValue?.right
+            ) {
+                emit("update:modelValue", null);
+            }
+            else {
+                emit("update:modelValue", {
+                    top: value || null,
+                    bottom: props.modelValue?.bottom || null,
+                    left: props.modelValue?.left || null,
+                    right: props.modelValue?.right || null
+                });
+            }
+        }
+    });
+
+    const internalBottomValue = computed<string>({
+        get(): string {
+            return props.modelValue?.bottom ?? "";
+        },
+        set(value: string): void {
+            if (!value
+                && !props.modelValue?.top
+                && !props.modelValue?.left
+                && !props.modelValue?.right
+            ) {
+                emit("update:modelValue", null);
+            }
+            else {
+                emit("update:modelValue", {
+                    top: props.modelValue?.top || null,
+                    bottom: value || null,
+                    left: props.modelValue?.left || null,
+                    right: props.modelValue?.right || null
+                });
+            }
+        }
+    });
+
+    const internalRightValue = computed<string>({
+        get(): string {
+            return props.modelValue?.right ?? "";
+        },
+        set(value: string): void {
+            if (!value
+                && !props.modelValue?.top
+                && !props.modelValue?.bottom
+                && !props.modelValue?.left
+            ) {
+                emit("update:modelValue", null);
+            }
+            else {
+                emit("update:modelValue", {
+                    top: props.modelValue?.top || null,
+                    bottom: props.modelValue?.bottom || null,
+                    left: props.modelValue?.left || null,
+                    right: value || null
+                });
+            }
+        }
+    });
+
+    const internalLeftValue = computed<string>({
+        get(): string {
+            return props.modelValue?.left ?? "";
+        },
+        set(value: string): void {
+            if (!value
+                && !props.modelValue?.top
+                && !props.modelValue?.bottom
+                && !props.modelValue?.right
+            ) {
+                emit("update:modelValue", null);
+            }
+            else {
+                emit("update:modelValue", {
+                    top: props.modelValue?.top || null,
+                    bottom: props.modelValue?.bottom || null,
+                    left: value || null,
+                    right: props.modelValue?.right || null
+                });
+            }
+        }
+    });
+
+    // #endregion Computed Props
+
+    // #region Values
+
+    const isMoreShown = ref<boolean>(
+        (props.modelValue?.top ?? "") !== (props.modelValue?.bottom ?? "")
+        || (props.modelValue?.top ?? "") !== (props.modelValue?.left ?? "")
+        || (props.modelValue?.top ?? "") !== (props.modelValue?.right ?? "")
+        || (props.modelValue?.bottom ?? "") !== (props.modelValue?.left ?? "")
+        || (props.modelValue?.bottom ?? "") !== (props.modelValue?.right ?? "")
+        || (props.modelValue?.left ?? "") !== (props.modelValue?.right ?? "")
+    );
+
+    // #endregion Values
+
+    // #region Watchers
+
+    watch(isMoreShown, () => {
+        const isShorthandBeingShown = !isMoreShown.value;
+        if (isShorthandBeingShown) {
+            if (internalTopValue.value
+                || internalBottomValue.value
+                || internalLeftValue.value
+                || internalRightValue.value) {
+                // One of the sides is set and shorthand is being shown,
+                // so set all sides to the first non-empty value.
+                internalShorthandValue.value =
+                    internalTopValue.value
+                    || internalBottomValue.value
+                    || internalLeftValue.value
+                    || internalRightValue.value;
+            }
+        }
+    });
+
+    watch(() => props.modelValue, () => {
+        // Expand all sides when there are any individual values.
+        const hasDifferentIndividualValues =
+            (props.modelValue?.top ?? "") !== (props.modelValue?.bottom ?? "")
+            || (props.modelValue?.top ?? "") !== (props.modelValue?.left ?? "")
+            || (props.modelValue?.top ?? "") !== (props.modelValue?.right ?? "")
+            || (props.modelValue?.bottom ?? "") !== (props.modelValue?.left ?? "")
+            || (props.modelValue?.bottom ?? "") !== (props.modelValue?.right ?? "")
+            || (props.modelValue?.left ?? "") !== (props.modelValue?.right ?? "");
+
+        if (hasDifferentIndividualValues) {
+            isMoreShown.value = true;
+        }
+    });
+
+    // #endregion Watchers
+</script>

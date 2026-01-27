@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.SystemKey;
-using Rock.Utility.Enums;
+using Rock.Enums.Core;
 
 namespace Rock.Utility.Settings.Giving
 {
@@ -51,11 +51,7 @@ namespace Rock.Utility.Settings.Giving
             settings.GivingJourneySettings.DaysToUpdateGivingJourneys = settings.GivingJourneySettings.DaysToUpdateGivingJourneys ?? new DayOfWeek[1] { DayOfWeek.Tuesday };
             settings.GivingAlertingSettings = settings.GivingAlertingSettings ?? new GivingAlertingSettings();
             settings.GivingClassificationSettings = settings.GivingClassificationSettings ?? new GivingClassificationSettings();
-            settings.GivingClassificationSettings.GiverBins = settings.GivingClassificationSettings.GiverBins ?? new List<GiverBin>();
-            settings.GivingClassificationSettings.RunDays = settings.GivingClassificationSettings.RunDays ?? DayOfWeekFlag.All.AsDayOfWeekList().ToArray();
-
-            // This setting is currently not configurable.
-            settings.GivingJourneySettings.TransactionWindowDurationHours = 24;
+            settings.GivingClassificationSettings.RunDays = settings.GivingClassificationSettings.RunDays ?? DaysOfWeekFlags.All.AsDayOfWeekList().ToArray();
 
             return settings;
         }
@@ -75,7 +71,7 @@ namespace Rock.Utility.Settings.Giving
         * that null values wouldn't be an issue. This was causing problems with the JSON serialization and
         * deserialization. Particularly, lists of values were appended rather than being replaced when
         * deserializing the value from the attribute value. So it was possible to get a list of days of the
-        * week that contained 10+ values for instance. Same issue with Giver Bins list.
+        * week that contained 10+ values for instance.
         * 
         * Updated 2021-08-28 MDP
         * For example. Duplicates to build up if declaring a default value like this:
@@ -162,20 +158,22 @@ namespace Rock.Utility.Settings.Giving
         public DayOfWeek[] RunDays { get; set; }
 
         /// <summary>
-        /// Gets or sets the giver bins.
-        /// </summary>
-        /// <value>
-        /// The giver bins.
-        /// </value>
-        public List<GiverBin> GiverBins { get; set; }
-
-        /// <summary>
         /// Gets or sets the date and time that the <see cref="Rock.Jobs.GivingAutomation"/> job last completed successfully.
         /// </summary>
         /// <value>
         /// A <see cref="System.DateTime"/> representing the date and time of the last time that the giving automation Job completed successfully
         /// </value>
         public DateTime? LastRunDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Giving Automation filters have changed since the last time
+        /// the job was run.
+        /// </summary>
+        /// <remarks>
+        /// This is set when the effective filter inputs (transaction types + accounts, including child account expansion)
+        /// change. When true, jobs should reprocess all giving units and then clear this flag.
+        /// </remarks>
+        public bool FiltersChanged { get; set; }
     }
 
     /// <summary>
@@ -190,72 +188,78 @@ namespace Rock.Utility.Settings.Giving
         public DayOfWeek[] DaysToUpdateGivingJourneys { get; set; }
 
         /// <summary>
-        /// Gets or sets the former giver no contribution in the last days.
+        /// Gets or sets the maximum number of days since a giving unit's first qualifying gift to be classified as a New Giver.
         /// </summary>
-        /// <value>The former giver no contribution in the last days.</value>
-        public int? FormerGiverNoContributionInTheLastDays { get; set; } = 375;
+        /// <remarks>
+        /// This corresponds to <c>@NewGiverFirstGaveDays</c> in <c>spGivingAutomation_UpdateGivingJourneyStages</c>.
+        /// </remarks>
+        public int? NewGiverFirstGaveDays { get; set; } = 150;
 
         /// <summary>
-        /// Gets or sets the former giver median frequency less than days.
+        /// Gets or sets the minimum number of qualifying gifts (within the 24-month analysis window) required to be classified as a New Giver.
         /// </summary>
-        /// <value>The former giver median frequency less than days.</value>
-        public int? FormerGiverMedianFrequencyLessThanDays { get; set; } = 320;
-
-        /// <summary>
-        /// Gets or sets the lapsed giver no contribution in the last days.
-        /// </summary>
-        /// <value>The lapsed giver no contribution in the last days.</value>
-        public int? LapsedGiverNoContributionInTheLastDays { get; set; } = 150;
-
-        /// <summary>
-        /// Gets or sets the lapsed giver median frequency less than days.
-        /// </summary>
-        /// <value>The lapsed giver median frequency less than days.</value>
-        public int? LapsedGiverMedianFrequencyLessThanDays { get; set; } = 100;
-
-        /// <summary>
-        /// Gets or sets the first time giver contribution count between minimum.
-        /// </summary>
-        /// <value>The first time giver contribution count between minimum.</value>
+        /// <remarks>
+        /// This corresponds to <c>@NewGiverContributionCountBetweenMinimum</c> in <c>spGivingAutomation_UpdateGivingJourneyStages</c>.
+        /// </remarks>
         public int? NewGiverContributionCountBetweenMinimum { get; set; } = 1;
 
         /// <summary>
-        /// Gets or sets the first time giver contribution count between maximum.
+        /// Gets or sets the maximum number of qualifying gifts (within the 24-month analysis window) allowed to be classified as a New Giver.
         /// </summary>
-        /// <value>The first time giver contribution count between maximum.</value>
+        /// <remarks>
+        /// This corresponds to <c>@NewGiverContributionCountBetweenMaximum</c> in <c>spGivingAutomation_UpdateGivingJourneyStages</c>.
+        /// </remarks>
         public int? NewGiverContributionCountBetweenMaximum { get; set; } = 5;
 
         /// <summary>
-        /// Gets or sets the first time giver first gift in the last days.
+        /// Gets or sets the maximum number of days since the most recent qualifying gift (within the 24-month analysis window)
+        /// for a giving unit to be considered "active" for Consistent Giver classification.
         /// </summary>
-        /// <value>The first time giver first gift in the last days.</value>
-        public int? NewGiverFirstGiftInTheLastDays { get; set; } = 150;
+        /// <remarks>
+        /// This corresponds to <c>@ConsistentGiverLastGaveDays</c> in <c>spGivingAutomation_UpdateGivingJourneyStages</c>.
+        /// </remarks>
+        public int? ConsistentGiverLastGaveDays { get; set; } = 32;
 
         /// <summary>
-        /// Gets or sets the occasional giver median frequency days minimum.
+        /// Gets or sets the maximum mean frequency (average days between gifts) for a giving unit to be classified as a Consistent Giver.
         /// </summary>
-        /// <value>The occasional giver median frequency days minimum.</value>
-        public int? OccasionalGiverMedianFrequencyDaysMinimum { get; set; } = 33;
+        /// <remarks>
+        /// This corresponds to <c>@ConsistentGiverMeanFrequency</c> in <c>spGivingAutomation_UpdateGivingJourneyStages</c>.
+        /// </remarks>
+        public int? ConsistentGiverMeanFrequency { get; set; } = 32;
 
         /// <summary>
-        /// Gets or sets the occasional giver median frequency days maximum.
+        /// Gets or sets the maximum number of days since the most recent qualifying gift (within the 24-month analysis window)
+        /// for a giving unit to be considered "active" for Occasional Giver classification.
         /// </summary>
-        /// <value>The occasional giver median frequency days maximum.</value>
-        public int? OccasionalGiverMedianFrequencyDaysMaximum { get; set; } = 94;
+        /// <remarks>
+        /// This corresponds to <c>@OccasionalGiverLastGaveDays</c> in <c>spGivingAutomation_UpdateGivingJourneyStages</c>.
+        /// </remarks>
+        public int? OccasionalGiverLastGaveDays { get; set; } = 150;
 
         /// <summary>
-        /// Gets or sets the consistent giver median less than days.
+        /// Gets or sets the maximum mean frequency (average days between gifts) for a giving unit to be classified as an Occasional Giver.
         /// </summary>
-        /// <value>The consistent giver median less than days.</value>
-        public int? ConsistentGiverMedianLessThanDays { get; set; } = 32;
+        /// <remarks>
+        /// This corresponds to <c>@OccasionalGiverMeanFrequency</c> in <c>spGivingAutomation_UpdateGivingJourneyStages</c>.
+        /// </remarks>
+        public int? OccasionalGiverMeanFrequency { get; set; } = 94;
 
         /// <summary>
-        /// Gets or sets the time period within which transactions will be considered as a single giving event,
-        /// for the purposes of calculating giving frequency and consistency. If not specified, every transaction
-        /// is regarded as a unique giving event.
+        /// Gets or sets the number of days of inactivity after which a giving unit becomes a Lapsed Giver.
         /// </summary>
-        /// <value>A period of time in hours.</value>
-        public int? TransactionWindowDurationHours { get; set; } = 24;
+        /// <remarks>
+        /// This corresponds to <c>@LapsedGiverNoGiftDays</c> in <c>spGivingAutomation_UpdateGivingJourneyStages</c>.
+        /// </remarks>
+        public int? LapsedGiverNoGiftDays { get; set; } = 150;
+
+        /// <summary>
+        /// Gets or sets the mean frequency (average days between gifts) threshold for a giving unit to be classified as Lapsed.
+        /// </summary>
+        /// <remarks>
+        /// This corresponds to <c>@LapsedGiverMeanFrequency</c> in <c>spGivingAutomation_UpdateGivingJourneyStages</c>.
+        /// </remarks>
+        public int? LapsedGiverMeanFrequency { get; set; } = 100;
     }
 
     /// <summary>
@@ -288,17 +292,4 @@ namespace Rock.Utility.Settings.Giving
         public int? FollowupRepeatPreventionDurationDays { get; set; }
     }
 
-    /// <summary>
-    /// Information About the Giver Bin
-    /// </summary>
-    public class GiverBin
-    {
-        /// <summary>
-        /// Gets or sets the lower range.
-        /// </summary>
-        /// <value>
-        /// The lower range.
-        /// </value>
-        public decimal? LowerLimit { get; set; }
-    }
 }

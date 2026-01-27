@@ -35,6 +35,13 @@ namespace Rock.Cms.ThemeFields
         public string Name { get; }
 
         /// <summary>
+        /// The key to use when storing the value in the overrides. This will
+        /// default to the value in <see cref="Variable"/> if it hasn't been
+        /// defined explicitly.
+        /// </summary>
+        public string Key { get; }
+
+        /// <summary>
         /// The CSS variable name, this should not include the <c>--</c> prefix.
         /// </summary>
         public string Variable { get; }
@@ -61,6 +68,7 @@ namespace Rock.Cms.ThemeFields
         {
             Name = jField.GetValue( "name" )?.ToString();
             Variable = jField.GetValue( "variable" )?.ToString();
+            Key = jField.GetValue( "key" )?.ToString() ?? Variable;
             Description = jField.GetValue( "description" )?.ToString() ?? string.Empty;
             DefaultValue = jField.GetValue( "default" )?.ToString() ?? string.Empty;
 
@@ -83,7 +91,7 @@ namespace Rock.Cms.ThemeFields
         /// <returns>A string that contains the value.</returns>
         protected string GetValueOrDefault( IThemeOverrideBuilder builder )
         {
-            if ( builder.VariableValues.TryGetValue( Variable, out var rawValue ) )
+            if ( builder.VariableValues.TryGetValue( Key, out var rawValue ) )
             {
                 return rawValue ?? DefaultValue;
             }

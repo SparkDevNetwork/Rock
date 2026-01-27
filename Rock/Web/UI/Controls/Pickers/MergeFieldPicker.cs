@@ -464,8 +464,8 @@ namespace Rock.Web.UI.Controls
     Url: {{ campus.Url }}<br/>
     Phone Number: {{ campus.PhoneNumber }}<br/>
     Service Times:
-    {% for serviceTime in campus.ServiceTimes %}
-        {{ serviceTime.Day }} {{ serviceTime.Time }},
+    {% for campusSchedule in campus.CampusSchedules %}
+        {{ campusSchedule.Schedule.FriendlyScheduleText }},
     {% endfor %}
     <br/>
 {% endfor %}

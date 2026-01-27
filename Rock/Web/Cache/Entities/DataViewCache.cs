@@ -20,6 +20,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -298,7 +299,7 @@ namespace Rock.Web.Cache
                 }
 
                 var rockContext = options.DbContext
-                    ?? ( DisableUseOfReadOnlyContext ? new RockContext() : new RockContextReadOnly() );
+                    ?? ( DisableUseOfReadOnlyContext ? RockApp.Current.CreateRockContext() : new RockContextReadOnly() );
 
                 var entityIdQry = rockContext.Set<DataViewPersistedValue>()
                     .Where( pv => pv.DataViewId == Id )
@@ -393,7 +394,7 @@ namespace Rock.Web.Cache
                 }
 
                 bool ownsContext = options.DbContext == null;
-                var rockContext = options.DbContext ?? new RockContext();
+                var rockContext = options.DbContext ?? RockApp.Current.CreateRockContext();
 
                 var idQry = rockContext.Set<DataViewPersistedValue>()
                     .Where( pv => pv.DataViewId == Id )

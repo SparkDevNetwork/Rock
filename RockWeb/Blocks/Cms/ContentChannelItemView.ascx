@@ -24,7 +24,7 @@
                         <div class="col-md-12">
                             <Rock:RockDropDownList ID="ddlContentChannel" runat="server" Label="Content Channel" Help="Limits content channel items to a specific channel. In most cases you'll want to provide a Content Channel to limit which channel is shown — especially if you're using non-globally unique slugs." AutoPostBack="true" OnSelectedIndexChanged="ddlContentChannel_SelectedIndexChanged" />
                             <Rock:RockCheckBoxList ID="cblStatus" runat="server" Label="Status" RepeatDirection="Horizontal" Help="Include items with the following status." />
-                            <Rock:CodeEditor ID="ceLavaTemplate" runat="server" Label="Lava Template" Help="The template to use when formatting the content channel item." EditorMode="Lava" EditorTheme="Rock" EditorHeight="200" />
+                            <Rock:CodeEditor ID="ceLavaTemplate" runat="server" Label="Lava Template" Help="The template to use when formatting the content channel item." EditorMode="Lava" EditorHeight="200" />
                         </div>
                     </div>
 

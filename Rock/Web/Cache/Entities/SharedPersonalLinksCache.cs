@@ -19,6 +19,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -56,7 +57,7 @@ namespace Rock.Web.Cache
                         // check again if _links is null now that we are in the lock
                         if ( _links == null )
                         {
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 _links = new PersonalLinkService( rockContext )
                                     .Queryable().AsNoTracking()
@@ -132,7 +133,7 @@ namespace Rock.Web.Cache
                     return _lastUpdateDateTime;
                 }
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 // get the date of the most recently modified of Shared Section and Shared Links
                 var sharedSectionLastModifiedDateTimeQuery = new PersonalLinkSectionService( rockContext )

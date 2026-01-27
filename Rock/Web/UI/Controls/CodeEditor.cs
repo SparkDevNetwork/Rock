@@ -321,6 +321,8 @@ namespace Rock.Web.UI.Controls
         DefaultValue( "" ),
         Description( "The theme of the editor" )
         ]
+        [RockObsolete( "19.0" )]
+        [Obsolete( "The editor theme is now set by Rock and cannot be changed." )]
         public CodeEditorTheme EditorTheme
         {
             get
@@ -634,7 +636,7 @@ namespace Rock.Web.UI.Controls
             string script = string.Format(
                 scriptFormat,
                 this.ClientID,  // {0}
-                EditorThemeAsString( this.EditorTheme ),  // {1}
+                "github",  // {1}
                 EditorModeAsString( this.EditorMode ),  // {2}
                 this.OnChangeScript,  // {3}
                 this.ReadOnly.ToTrueFalse().ToLower(),  // {4}
@@ -676,20 +678,6 @@ namespace Rock.Web.UI.Controls
             string[] modeValues = new string[] { "text", "css", "html", "lava", "javascript", "less", "powershell", "sql", "typescript", "csharp", "markdown", "xml" };
 
             return modeValues[(int)mode];
-        }
-
-        /// <summary>
-        /// Gets the theme of the editor as text based on property
-        /// </summary>
-        /// <returns>The text value of the mode.</returns>
-        private string EditorThemeAsString( CodeEditorTheme theme )
-        {
-            string[] themeValues = new string[] { "github", "chrome", "crimson_editor", "dawn", "dreamweaver", "eclipse", "solarized_light", "textmate",
-                "tomorrow", "xcode", "github", "ambiance", "chaos", "clouds_midnight", "cobalt", "idle_fingers", "kr_theme",
-                "merbivore", "merbivore_soft", "mono_industrial", "monokai", "pastel_on_dark", "solarized_dark", "terminal", "tomorrow_night", "tomorrow_night_blue",
-                "tomorrow_night_bright", "tomorrow_night_eighties", "twilight", "vibrant_ink"};
-
-            return themeValues[(int)theme];
         }
 
         #region Events
@@ -778,6 +766,8 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// The CodeEditor Theme
     /// </summary>
+    [RockObsolete( "19.0" )]
+    [Obsolete( "The editor theme is now set by Rock and cannot be changed." )]
     public enum CodeEditorTheme
     {
         /// <summary>

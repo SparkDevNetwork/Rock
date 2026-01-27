@@ -363,11 +363,17 @@
   position: relative;
   width: 100%;
   padding-bottom: 60%;
-  border-radius: var(--rounded-xsmall) var(--rounded-xsmall) 0 0;
+  border-radius: var(--rounded-small) var(--rounded-small) 0 0;
+
+  .fluid-crop {
+    border-radius: var(--rounded-small) var(--rounded-small) 0 0;
+  }
+
+  img {
+    border-radius: var(--rounded-small) var(--rounded-small) 0 0;
+  }
 }
-.profile-squish img {
-  border-radius: var(--rounded-xsmall) var(--rounded-xsmall) 0 0;
-}
+
 
 .profile-notes .notes {
   .panel-noteadd-visible .panel-heading,
@@ -434,7 +440,7 @@
     }
 
     .settings {
-      padding: var(--spacing-tiny) var(--spacing-small) var(--spacing-xsmall);
+      padding: var(--spacing-xsmall);
     }
   }
 
@@ -443,6 +449,8 @@
     resize: none;
   }
 }
+
+
 
 .fluid-crop {
 position: absolute;
@@ -652,12 +660,83 @@ background: currentColor;
   content: "Deceased";
 }
 
-.card-profile-bio-condensed .person-name {
-  overflow: hidden;
-  font-size: 24px;
-  text-align: left;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.card-profile-bio.card-profile-bio-condensed {
+  flex-direction: row;
+  align-items: center;
+  height: 100%;
+  margin: 0;
+
+  .protection-profile {
+    padding: 14px 18px;
+  }
+
+  .profile-image {
+    position: relative;
+    flex-shrink: 0;
+    width: 25%;
+    height: 100%;
+
+    &.profile-image-sm .fluid-crop {
+      border-radius: var(--rounded-small) 0 0 var(--rounded-small);
+    }
+
+    img {
+      border-radius: var(--rounded-small) 0 0 var(--rounded-small);
+    }
+
+  }
+
+  .profile-data {
+    width: 75%;
+    padding: 14px 18px;
+  }
+
+  .person-name {
+    margin: 0;
+    overflow: hidden;
+    font-size: 24px;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    }
+
+  .dropdown {
+    padding-right: 32px;
+  }
+
+  .profile-toggle {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 var(--spacing-tiny);
+    color: var(--color-interface-stronger) !important;
+
+    &::after {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      bottom: -4px;
+      left: -4px;
+      z-index: -1;
+      content: '';
+      background: var(--color-interface-soft);
+      border-radius: 4px;
+      opacity: 0;
+    }
+    .person-name {
+      flex: 1 1 auto;
+    }
+
+    .dropdown-icon {
+      margin: 0 4px 0 12px;
+    }
+  }
+
+  .profile-toggle:hover::after,
+  .open .profile-toggle::after {
+    opacity: 1;
+  }
 }
 
 .profile-toggle {
@@ -669,24 +748,7 @@ background: currentColor;
 }
 .profile-toggle:hover {
   color: var(--color-interface-strong);
-  background: #eee;
-}
-
-.rockbadge-assessment a {
-  display: inline-flex;
-  color: inherit;
-}
-
-.rockbadge-assessment .ti-stacked-1x {
-  color: var(--color-interface-softest) !important;
-}
-
-.rockbadge-assessment .ti-stacked-2x {
-  color: currentColor !important;
-}
-
-.rockbadge-assessment.requested {
-  color: var(--color-link-strong) !important;
+  background-color: var(--color-interface-softer);
 }
 
 .avatar-lg {
@@ -730,7 +792,7 @@ background: currentColor;
 
 @media (max-width: ($screen-medium - 2)) {
   .person-profile-ext {
-    overflow-x: hidden;
+    overflow-x: clip;
     margin-left: 0;
     margin-right: 0;
 
@@ -848,7 +910,7 @@ background: currentColor;
 
     &,
     a {
-      color: #212529 !important;
+      color: var(--color-interface-stronger) !important;
     }
 
     strong {
@@ -857,6 +919,6 @@ background: currentColor;
   }
 
   dd {
-    color: #adb5bd;
+    color: var(--color-interface-medium);
   }
 }

@@ -1,0 +1,28 @@
+// imported by _core.scss
+
+// LIST GROUP EXTENSIONS
+
+
+// =============================================================
+// Table of Content
+//  + Base Style
+// =============================================================
+
+
+// ============================= BASE STYLE =============================
+
+
+li.list-group-item > a {
+  display: block;
+  padding: var(--spacing-small) var(--spacing-medium);
+}
+
+li.list-group-item:has(> a) {
+  padding: 0;
+}
+
+li.list-group-item:hover:has(> a) {
+  background-color: var(--color-interface-softer) !important;
+}
+
+// ==================== END BASE STYLE ==========================

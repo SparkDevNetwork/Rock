@@ -25,8 +25,6 @@ using System.Web;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-using OpenXmlPowerTools;
-
 using Rock.Communication.Chat;
 using Rock.Data;
 using Rock.Model;
@@ -44,13 +42,6 @@ namespace Rock.Lava
     /// </summary>
     public static class LavaHelper
     {
-        /// <summary>
-        /// The merge field prefix for internal merge fields. These merge fields
-        /// will be marked as internal so they are not available to Lava template
-        /// itself but can be used by filters and such.
-        /// </summary>
-        internal static readonly string InternalMergeFieldPrefix = "$_";
-
         /// <summary>
         /// This is used by <see cref="IsLavaProperty(PropertyInfo)"/> method
         /// to cache information calculated about a property. Since there is really
@@ -214,6 +205,7 @@ namespace Rock.Lava
             }
 
             mergeFields.Add( "IsChatEnabled", ChatHelper.IsChatEnabled );
+            mergeFields.Add( "ExperienceMode", Rock.Web.SystemSettings.GetValue( SystemKey.SystemSetting.TRAILBLAZER_MODE ).AsBoolean() ? "Trailblazer" : "Essentials" );
 
             return mergeFields;
         }
@@ -924,95 +916,6 @@ namespace Rock.Lava
             }
 
             return true;
-        }
-
-        #endregion
-
-        #region RockLiquid Lava Code
-
-        /// <summary>
-        /// Determines whether the specified command is authorized within the context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="command">The command.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified command is authorized; otherwise, <c>false</c>.
-        /// </returns>
-        [Obsolete( "This method was for DotLiquid which is no longer supported." )]
-        [RockObsolete( "18.0" )]
-        public static bool IsAuthorized( DotLiquid.Context context, string command )
-        {
-            throw new NotSupportedException( "DotLiquid is no longer supported." );
-        }
-
-        /// <summary>
-        /// Gets the current person.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <returns>The current person or null if not found.</returns>
-        /// <exception cref="ArgumentNullException">context</exception>
-        [Obsolete( "This method was for DotLiquid which is no longer supported." )]
-        [RockObsolete( "18.0" )]
-        public static Person GetCurrentPerson( DotLiquid.Context context )
-        {
-            throw new NotSupportedException( "DotLiquid is no longer supported." );
-        }
-
-        /// <summary>
-        /// Parses the Lava Command markup, first resolving merge fields and then harvesting any provided parameters.
-        /// </summary>
-        /// <param name="markup">The Lava Command markup.</param>
-        /// <param name="context">The DotLiquid context.</param>
-        /// <param name="parms">
-        /// A dictionary into which any parameters discovered within the <paramref name="markup"/> will be added or replaced.
-        /// Default values may be pre-loaded into this collection, and will be overwritten if a matching key is present within the <paramref name="markup"/>.
-        /// Note that parameter keys should be added in lower case.
-        /// <para>
-        /// When searching the <paramref name="markup"/> for key/value parameter pairs, the following <see cref="Regex"/> pattern will be used: @"\S+:('[^']+'|\d+)".
-        /// This means that the following patterns will be matched: "key:'value'" OR "key:integer". While this should work for most - if not all - Lava Command parameters,
-        /// you can always choose to not use this helper method and instead roll your own implementation.
-        /// </para>
-        /// </param>
-        [Obsolete( "This method was for DotLiquid which is no longer supported." )]
-        [RockObsolete( "18.0" )]
-        public static void ParseCommandMarkup( string markup, DotLiquid.Context context, Dictionary<string, string> parms )
-        {
-            throw new NotSupportedException( "DotLiquid is no longer supported." );
-        }
-
-        /// <summary>
-        /// Parse the provided Lava template using the current Lava engine, and write any errors to the exception log.
-        /// </summary>
-        /// <param name="content"></param>
-        [Obsolete( "This method was for DotLiquid which is no longer supported." )]
-        [RockObsolete( "18.0" )]
-        public static void VerifyParseTemplateForCurrentEngine( string content )
-        {
-            throw new NotSupportedException( "DotLiquid is no longer supported." );
-        }
-
-        /// <summary>
-        /// Wrap an existing Exception if it is not a LavaException.
-        /// </summary>
-        /// <param name="ex"></param>
-        /// <returns></returns>
-        [Obsolete( "This method was for DotLiquid which is no longer supported." )]
-        [RockObsolete( "18.0" )]
-        public static LavaException ConvertToLavaException( Exception ex )
-        {
-            throw new NotSupportedException( "DotLiquid is no longer supported." );
-        }
-
-        /// <summary>
-        /// Create a DotLiquid Template object from a string.
-        /// </summary>
-        /// <param name="templateString"></param>
-        /// <returns></returns>
-        [Obsolete( "This method was for DotLiquid which is no longer supported." )]
-        [RockObsolete( "18.0" )]
-        public static DotLiquid.Template CreateDotLiquidTemplate( string templateString )
-        {
-            throw new NotSupportedException( "DotLiquid is no longer supported." );
         }
 
         #endregion

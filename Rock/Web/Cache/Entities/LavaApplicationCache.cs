@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Cms;
 using Rock.Model;
@@ -187,7 +188,7 @@ namespace Rock.Web.Cache
                     {
                         if ( _lavaEndpointIds == null )
                         {
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 _lavaEndpointIds = new LavaEndpointService( rockContext )
                                     .GetByLavApplicationId( Id )

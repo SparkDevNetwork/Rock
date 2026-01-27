@@ -41,9 +41,10 @@ namespace Rock.Lava
         /// <summary>
         /// The current local scope.
         /// </summary>
+        [Obsolete( "[v19] This scope specifier is no longer used." )]
         Local = 3,
 
-        [Obsolete("The behavior of this setting is equivalent to Default. (v16.1).")]
+        [Obsolete( "[v16.1] The behavior of this setting is equivalent to Default." )]
         Root = 2
     }
 

@@ -4,11 +4,17 @@
                       :exampleCode="exampleCode"
                       enableReflection>
 
-        <DefinedValuePicker label="Defined Value" v-model="value" :definedTypeGuid="definedTypeGuid" :multiple="multiple" :enhanceForLongLists="enhanceForLongLists" :allowAdd="allowAdd" :displayStyle="displayStyle" />
+        <DefinedValuePicker label="Defined Value"
+                            v-model="value"
+                            :definedTypeGuid="definedTypeGuid"
+                            :multiple="multiple"
+                            :enhanceForLongLists="enhanceForLongLists"
+                            :allowAdd="allowAdd"
+                            :displayStyle="displayStyle" />
 
         <template #settings>
             <div class="row">
-                <TextBox formGroupClasses="col-md-4" label="Defined Type" v-model="definedTypeGuid" />
+                <DefinedTypePicker formGroupClasses="col-md-4" label="Defined Type" v-model="definedType" />
                 <CheckBox formGroupClasses="col-md-2" label="Multiple" v-model="multiple" />
                 <CheckBox formGroupClasses="col-md-3" label="Enhance For Long Lists" v-model="enhanceForLongLists" />
                 <CheckBox formGroupClasses="col-md-3" label="Allow Adding Values" v-model="allowAdd" />
@@ -23,18 +29,20 @@
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { getSfcControlImportPath } from "./common/utils.partial";
     import { Guid } from "@Obsidian/Types";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import DefinedTypePicker from "@Obsidian/Controls/definedTypePicker.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const multiple = ref(false);
     const enhanceForLongLists = ref(false);
     const displayStyle = computed(() => (multiple.value && !enhanceForLongLists.value) ? PickerDisplayStyle.List : PickerDisplayStyle.Auto);
 
     const allowAdd = ref(false);
-    const definedTypeGuid = ref<Guid>(DefinedType.PersonConnectionStatus);
+    const definedType = ref<ListItemBag | null>({ value: DefinedType.PersonConnectionStatus, text: "Connection Status" });
+    const definedTypeGuid = computed<Guid>(() => (definedType.value?.value as Guid) ?? DefinedType.PersonConnectionStatus);
     const value = ref(null);
     const importCode = getSfcControlImportPath("definedValuePicker");
     const exampleCode = `<DefinedValuePicker label="Defined Value" v-model="value" :definedTypeGuid="definedTypeGuid" :multiple="false" :enhanceForLongLists="false" />`;

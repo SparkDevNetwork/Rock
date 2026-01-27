@@ -642,25 +642,13 @@ namespace Rock
                 enabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" );
             }
 
-            var context = LavaService.NewRenderContext();
+            var context = LavaService.NewRenderContext( mergeObjects );
 
             context.SetEnabledCommands( enabledLavaCommands, "," );
 
             if ( currentPersonOverride != null )
             {
                 context.SetInternalField( "CurrentPerson", currentPersonOverride );
-            }
-
-            foreach ( var kvp in mergeObjects )
-            {
-                if ( kvp.Key.StartsWith( LavaHelper.InternalMergeFieldPrefix ) )
-                {
-                    context.SetInternalField( kvp.Key.Substring( LavaHelper.InternalMergeFieldPrefix.Length ), kvp.Value );
-                }
-                else
-                {
-                    context.SetMergeField( kvp.Key, kvp.Value );
-                }
             }
 
             var parameters = LavaRenderParameters.WithContext( context );

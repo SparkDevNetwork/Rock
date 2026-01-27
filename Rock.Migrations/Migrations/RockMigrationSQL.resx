@@ -409,4 +409,25 @@
   <data name="_202510221632361_UpdateCommunicationEntryWizardToExcludeArchivedCommunicationListMembers_spCommunicationRecipientDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Version 18.0\Version 18.0\202510221632361_UpdateCommunicationEntryWizardToExcludeArchivedCommunicationListMembers_spCommunicationRecipientDetails.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_202511051918499_UpdateGetGroupPlacementPeopleStoredProcedure_spGetGroupPlacementPeople" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Version 18.0\Version 18.0\202511051918499_UpdateGetGroupPlacementPeopleStoredProcedure_spGetGroupPlacementPeople.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_202512121548566_UpdateGroupRequirementsJob_spSteps_StepFlow" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202512121548566_UpdateGroupRequirementsJob_spSteps_StepFlow.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_202512121548566_UpdateGroupRequirementsJob_spUpdateGroupMemberRequirements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202512121548566_UpdateGroupRequirementsJob_spUpdateGroupMemberRequirements.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_202512182358368_UpdatespCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202512182358368_UpdatespCrm_PersonMerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingBinsAndPercentiles" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingBinsAndPercentiles.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingJourneyStages" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingJourneyStages.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_202601212358292_AddEntitySetAdditionalSettingsJson_spCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202601212358292_AddEntitySetAdditionalSettingsJson_spCrm_PersonMerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

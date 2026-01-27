@@ -66,7 +66,7 @@ namespace Rock.Tests.Integration.Core.Model
         {
             var expectedRecordCount = 15;
             var year = 2015;
-            using (var rockContext = new RockContext() )
+            using ( var rockContext = new RockContext() )
             {
                 var benevolenceRequestService = new BenevolenceRequestService( rockContext );
 

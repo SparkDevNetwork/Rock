@@ -75,9 +75,9 @@ namespace Rock.Jobs
                     ( a.ExpireDateTime == null || a.ExpireDateTime > currentDateTime ) &&
                     (
                         // Either the refresh interval is valid and elapsed
-                        ( a.RefreshIntervalMinutes.HasValue &&
+                        ( a.PersistedScheduleIntervalMinutes.HasValue &&
                             ( a.LastRefreshDateTime == null ||
-                            DbFunctions.AddMinutes( a.LastRefreshDateTime.Value, a.RefreshIntervalMinutes.Value ) < currentDateTime ) )
+                            DbFunctions.AddMinutes( a.LastRefreshDateTime.Value, a.PersistedScheduleIntervalMinutes.Value ) < currentDateTime ) )
                         ||
                         // Or it has a schedule
                         a.PersistedScheduleId != null
@@ -88,7 +88,7 @@ namespace Rock.Jobs
                     a.Name, // useful when debugging
                     a.Id,
                     a.LastRefreshDateTime,
-                    a.RefreshIntervalMinutes,
+                    a.PersistedScheduleIntervalMinutes,
                     a.PersistedScheduleId,
                 } )
                 .ToList();

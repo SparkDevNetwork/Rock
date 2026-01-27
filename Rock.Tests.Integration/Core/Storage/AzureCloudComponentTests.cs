@@ -20,7 +20,6 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Core.Storage
@@ -58,7 +57,7 @@ namespace Rock.Tests.Integration.Core.Storage
             // Just Assert Inconclusive if the AzureStorageAccountName and AzureAccountAccessKey are blank
             if ( string.IsNullOrEmpty( storageAccountName ) || string.IsNullOrEmpty( accountAccessKey ) || string.IsNullOrEmpty( defaultContainerName ) )
             {
-                Assert.That.Inconclusive( $"The AzureStorageAccountName, AzureAccountAccessKey and AzureDefaultContainerName must be set up in your Test > Test Settings > Test Setting File in order to run these tests." );
+                Assert.Inconclusive( $"The AzureStorageAccountName, AzureAccountAccessKey and AzureDefaultContainerName must be set up in your Test > Test Settings > Test Setting File in order to run these tests." );
             }
 
             try
@@ -106,7 +105,7 @@ namespace Rock.Tests.Integration.Core.Storage
             }
             catch ( System.Exception ex )
             {
-                Assert.That.Inconclusive( $"Unable to get the Azure Cloud Asset Storage Provider ({ex.Message})." );
+                Assert.Inconclusive( $"Unable to get the Azure Cloud Asset Storage Provider ({ex.Message})." );
             }
         }
 

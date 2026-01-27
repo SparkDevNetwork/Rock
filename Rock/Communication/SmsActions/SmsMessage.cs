@@ -23,7 +23,7 @@ using Rock.Model;
 namespace Rock.Communication.SmsActions
 {
     /// <summary>
-    /// 
+    /// An object to represent an SMS message sent either to or from Rock.
     /// </summary>
     public class SmsMessage : ILavaDataDictionary
     {
@@ -94,6 +94,12 @@ namespace Rock.Communication.SmsActions
         /// Gets or sets whether opt-in/opt-out tracking was processed for this message.
         /// </summary>
         public bool WasOptInOutTrackingProcessed { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether this message represents a response from Rock to an individual, and should be saved as
+        /// a <see cref="Model.Communication"/> record in order to track automated responses.
+        /// </summary>
+        public bool SaveAsResponse { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SmsMessage"/> class.

@@ -224,7 +224,7 @@ namespace RockWeb
             // If a rootFolder was specified in the URL, try decrypting it (It is encrypted to help prevent direct access to file system).
             if ( !string.IsNullOrWhiteSpace( encryptedRootFolder ) )
             {
-                trustedRootFolder = Encryption.DecryptString( encryptedRootFolder );
+                trustedRootFolder = Encryption.DecryptString( encryptedRootFolder, false );
             }
 
             // If we don't have a rootFolder, default to the ~/Content folder.

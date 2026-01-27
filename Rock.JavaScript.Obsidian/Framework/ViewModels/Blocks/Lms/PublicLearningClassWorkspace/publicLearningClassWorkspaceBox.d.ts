@@ -107,6 +107,9 @@ export type PublicLearningClassWorkspaceBox = {
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;
 
+    /** Gets or sets whethere the Communication Preference toggle should be shown. */
+    showCommunicationPreference: boolean;
+
     /** Whether to show grades on the class overview page. */
     showGrades: boolean;
 };

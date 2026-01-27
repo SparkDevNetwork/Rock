@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
@@ -26,6 +28,7 @@ using Rock.Tests.Shared;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+
 using static Rock.Tests.Integration.Crm.HistoryLogGridDataSource;
 
 namespace Rock.Tests.Integration.Crm
@@ -34,7 +37,7 @@ namespace Rock.Tests.Integration.Crm
     /// Tests that verify the operation of the History Log.
     /// </summary>
     [TestClass]
-    [Ignore("These tests specifically target historical data in the Spark database.")]
+    [Ignore( "These tests specifically target historical data in the Spark database." )]
     public class HistoryLogTests
     {
         #region Tests
@@ -187,7 +190,8 @@ namespace Rock.Tests.Integration.Crm
             {
                 TestHelper.Log( $"[{item.CreatedDateTime}] ({item.CreatedByPersonName}) {item.CategoryName}/{item.Verb}/{item.ValueName}/{item.FormattedCaption}" );
                 TestHelper.Log( $"{item.HistoryList.AsDelimited( "\n" )}" );
-            };
+            }
+            ;
 
             return pageItems;
         }

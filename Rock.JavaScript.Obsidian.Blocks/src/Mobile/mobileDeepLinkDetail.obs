@@ -1,0 +1,211 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="infoMessage" alertType="info" v-html="infoMessage"></NotificationBox>
+
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
+
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :labels="blockLabels"
+                 :entityKey="entityKey"
+                 :entityTypeName="'Deep Links'"
+                 :isAuditHidden="false"
+                 :isBadgesVisible="true"
+                 :isDeleteVisible="false"
+                 :isEditVisible="isEditable"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="true"
+                 @cancelEdit="onCancelEdit"
+                 @edit="onEdit"
+                 @save="onSave">
+        <template #view>
+            <ViewPanel :modelValue="mobileDeepLinkViewBag" :options="options" />
+        </template>
+
+        <template #edit>
+            <EditPanel v-model="mobileDeepLinkEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
+        </template>
+    </DetailBlock>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import EditPanel from "./MobileDeepLinkDetail/editPanel.partial.obs";
+    import ViewPanel from "./MobileDeepLinkDetail/viewPanel.partial.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { NavigationUrlKey } from "./MobileDeepLinkDetail/types.partial";
+    import { MobileDeepLinkDetailInitializationBox } from "@Obsidian/ViewModels/Blocks/Mobile/MobileDeepLinkDetail/mobileDeepLinkDetailInitializationBox";
+    import { MobileDeepLinkDetailBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileDeepLinkDetail/mobileDeepLinkDetailBag";
+    import { MobileDeepLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileDeepLinkDetail/mobileDeepLinkDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const config = useConfigurationValues<MobileDeepLinkDetailInitializationBox>();
+
+
+    const options = computed((): MobileDeepLinkDetailOptionsBag => {
+        return config.options ?? {} as MobileDeepLinkDetailOptionsBag;
+    });
+
+    const infoMessage = ref("");
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const mobileDeepLinkViewBag = ref(config.bag);
+    const mobileDeepLinkEditBag = ref<ValidPropertiesBox<MobileDeepLinkDetailBag>>({
+        bag: config.bag ?? {} as MobileDeepLinkDetailBag,
+        validProperties: config.bag ? Object.keys(config.bag) : []
+    });
+
+    const panelMode = config.isEditable ? ref<DetailPanelMode>(DetailPanelMode.Edit) : ref<DetailPanelMode>(DetailPanelMode.View);
+
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: undefined
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        return "Deep Links";
+    });
+
+    /**
+     * The identifier key value for this entity.
+     */
+    const entityKey = computed((): string => {
+        return mobileDeepLinkViewBag.value?.routeGuid ?? "";
+    });
+
+    /**
+     * Additional labels to display in the block panel.
+     */
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        const labels: PanelAction[] = [];
+
+        if (panelMode.value !== DetailPanelMode.View) {
+            return undefined;
+        }
+
+        return labels;
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function isGuidEmpty(guid?: string): boolean {
+        return !guid || guid === "00000000-0000-0000-0000-000000000000";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        // Always redirect to parent page after cancelling an Edit or Add
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            return config.navigationUrls[NavigationUrlKey.ParentPage];
+        }
+
+        return true;
+    }
+
+    /**
+     * Event handler for the Edit button being clicked. Request the edit
+     * details from the server and then enter edit mode.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+    async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<ValidPropertiesBox<MobileDeepLinkDetailBag>>("Edit", {
+            routeGuid: mobileDeepLinkViewBag.value?.routeGuid
+        });
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            mobileDeepLinkEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction("Save", {
+            box: mobileDeepLinkEditBag.value
+        });
+
+        if (result.isSuccess) {
+            // Always redirect to parent page after saving an Edit or Add
+            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+                return config.navigationUrls[NavigationUrlKey.ParentPage];
+            }
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save deep link.";
+
+        return false;
+    }
+
+    // #endregion
+
+    /** Reset error message if route changes */
+    watch(() => mobileDeepLinkEditBag.value.bag?.route ?? "", () => {
+        errorMessage.value = "";
+    });
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.bag) {
+        blockError.value = "The specified Mobile Deep Link could not be viewed.";
+    }
+    else if (isGuidEmpty(config.bag.routeGuid) && config.isEditable) {
+        mobileDeepLinkEditBag.value = { bag: config.bag };
+        panelMode.value = DetailPanelMode.Add;
+    }
+</script>

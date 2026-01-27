@@ -1118,6 +1118,7 @@ namespace Rock.Blocks.Types.Mobile.Security
             return CampusCache.All()
                 .Where( a => a.CampusStatusValueId.HasValue && campusStatusIds.Contains( a.CampusStatusValueId.Value ) )
                 .Where( a => a.CampusTypeValueId.HasValue && campusTypeIds.Contains( a.CampusTypeValueId.Value ) )
+                .Where( a =>  a.IsActive  ??  false  )
                 .Select( a => new MobileCampus
                 {
                     Guid = a.Guid,

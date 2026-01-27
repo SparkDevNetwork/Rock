@@ -87,5 +87,11 @@ namespace Rock.ViewModels.Blocks.Administration.SystemConfiguration
         /// The defined value GUIDs for countries from which access will be restricted to all pages.
         /// </value>
         public List<Guid> CountriesRestrictedFromAccessing { get; set; }
+
+        /// <summary>
+        /// Determines if the system is currently in Trailblazer Mode. When this
+        /// is enabled, the system will show more advanced configuration options.
+        /// </summary>
+        public bool IsTrailblazerMode { get; set; }
     }
 }

@@ -65,7 +65,6 @@ namespace RockWeb.Blocks.Cms
         "Template",
         Description = "The Lava template to use for rendering. This template would typically be in the theme's \"Assets/Lava\" folder.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = true,
         DefaultValue = @"{% include '~~/Assets/Lava/RSSFeedItem.lava' %}",

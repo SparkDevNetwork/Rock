@@ -218,6 +218,7 @@ namespace Rock.Slingshot
                         {
                             if ( personPhone.PhoneNumber.IsNullOrWhiteSpace() )
                             {
+                                invalidPhoneNumbers.Add( personPhone );
                                 continue;
                             }
                             if ( !dataValidator.ValidatePhoneNumber( personPhone, out string errorMessage ) )

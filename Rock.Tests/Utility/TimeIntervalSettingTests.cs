@@ -2,7 +2,6 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Tests.Shared;
 using Rock.Utility;
 
 namespace Rock.Tests.Utility
@@ -15,8 +14,8 @@ namespace Rock.Tests.Utility
         {
             var actualValue = new TimeIntervalSetting( null, null );
 
-            Assert.That.AreEqual( 0, actualValue.IntervalValue );
-            Assert.That.AreEqual( IntervalTimeUnit.Hour, actualValue.IntervalUnit );
+            Assert.AreEqual( 0, actualValue.IntervalValue );
+            Assert.AreEqual( IntervalTimeUnit.Hour, actualValue.IntervalUnit );
         }
 
         [TestMethod]
@@ -27,8 +26,8 @@ namespace Rock.Tests.Utility
 
             var actualValue = new TimeIntervalSetting( expectedIntervalValue, expectedIntervalUnit );
 
-            Assert.That.AreEqual( expectedIntervalValue, actualValue.IntervalValue );
-            Assert.That.AreEqual( expectedIntervalUnit, actualValue.IntervalUnit );
+            Assert.AreEqual( expectedIntervalValue, actualValue.IntervalValue );
+            Assert.AreEqual( expectedIntervalUnit, actualValue.IntervalUnit );
         }
 
         [TestMethod]
@@ -39,8 +38,8 @@ namespace Rock.Tests.Utility
 
             var actualValue = new TimeIntervalSetting( 60, expectedIntervalUnit );
 
-            Assert.That.AreEqual( expectedIntervalValue, actualValue.IntervalValue );
-            Assert.That.AreEqual( expectedIntervalUnit, actualValue.IntervalUnit );
+            Assert.AreEqual( expectedIntervalValue, actualValue.IntervalValue );
+            Assert.AreEqual( expectedIntervalUnit, actualValue.IntervalUnit );
         }
 
         [TestMethod]
@@ -51,8 +50,8 @@ namespace Rock.Tests.Utility
 
             var actualValue = new TimeIntervalSetting( null, expectedIntervalUnit, 15 );
 
-            Assert.That.AreEqual( expectedIntervalValue, actualValue.IntervalValue );
-            Assert.That.AreEqual( expectedIntervalUnit, actualValue.IntervalUnit );
+            Assert.AreEqual( expectedIntervalValue, actualValue.IntervalValue );
+            Assert.AreEqual( expectedIntervalUnit, actualValue.IntervalUnit );
         }
 
         [TestMethod]
@@ -63,8 +62,8 @@ namespace Rock.Tests.Utility
 
             var actualValue = new TimeIntervalSetting( 24, expectedIntervalUnit );
 
-            Assert.That.AreEqual( expectedIntervalValue, actualValue.IntervalValue );
-            Assert.That.AreEqual( expectedIntervalUnit, actualValue.IntervalUnit );
+            Assert.AreEqual( expectedIntervalValue, actualValue.IntervalValue );
+            Assert.AreEqual( expectedIntervalUnit, actualValue.IntervalUnit );
         }
 
         [TestMethod]
@@ -75,8 +74,8 @@ namespace Rock.Tests.Utility
 
             var actualValue = new TimeIntervalSetting( 32, expectedIntervalUnit );
 
-            Assert.That.AreEqual( expectedIntervalValue, actualValue.IntervalValue );
-            Assert.That.AreEqual( expectedIntervalUnit, actualValue.IntervalUnit );
+            Assert.AreEqual( expectedIntervalValue, actualValue.IntervalValue );
+            Assert.AreEqual( expectedIntervalUnit, actualValue.IntervalUnit );
         }
 
         [TestMethod]
@@ -91,13 +90,13 @@ namespace Rock.Tests.Utility
                 {1440, IntervalTimeUnit.Day },
             };
 
-            foreach(var key in testValues.Keys )
+            foreach ( var key in testValues.Keys )
             {
                 var expectedIntervalUnit = testValues[key];
 
                 var actualValue = new TimeIntervalSetting( key, null );
 
-                Assert.That.AreEqual( expectedIntervalUnit, actualValue.IntervalUnit );
+                Assert.AreEqual( expectedIntervalUnit, actualValue.IntervalUnit );
             }
         }
 
@@ -119,7 +118,7 @@ namespace Rock.Tests.Utility
 
                 var actualValue = new TimeIntervalSetting( key, null );
 
-                Assert.That.AreEqual( expectedIntervalValue, actualValue.IntervalValue );
+                Assert.AreEqual( expectedIntervalValue, actualValue.IntervalValue );
             }
         }
 
@@ -142,7 +141,7 @@ namespace Rock.Tests.Utility
 
                 var actualValue = new TimeIntervalSetting( key, null );
 
-                Assert.That.AreEqual( expectedIntervalMinutes, actualValue.IntervalMinutes );
+                Assert.AreEqual( expectedIntervalMinutes, actualValue.IntervalMinutes );
             }
         }
 
@@ -166,7 +165,7 @@ namespace Rock.Tests.Utility
 
                 var actualValue = new TimeIntervalSetting( key, null );
 
-                Assert.That.AreEqual( expectedIntervalValue, actualValue.ToString() );
+                Assert.AreEqual( expectedIntervalValue, actualValue.ToString() );
             }
         }
 
@@ -188,7 +187,7 @@ namespace Rock.Tests.Utility
 
                 var actualValue = new TimeIntervalSetting( key, null );
 
-                Assert.That.AreEqual( expectedMaxValue, actualValue.MaxValue );
+                Assert.AreEqual( expectedMaxValue, actualValue.MaxValue );
             }
         }
 
@@ -208,9 +207,9 @@ namespace Rock.Tests.Utility
             {
                 var expectedIntervalMinutes = testValues[key];
 
-                actualValue.IntervalValue = key;    
+                actualValue.IntervalValue = key;
 
-                Assert.That.AreEqual( expectedIntervalMinutes, actualValue.IntervalMinutes );
+                Assert.AreEqual( expectedIntervalMinutes, actualValue.IntervalMinutes );
             }
         }
 
@@ -232,7 +231,7 @@ namespace Rock.Tests.Utility
 
                 actualValue.IntervalUnit = key;
 
-                Assert.That.AreEqual( expectedIntervalMinutes, actualValue.IntervalMinutes );
+                Assert.AreEqual( expectedIntervalMinutes, actualValue.IntervalMinutes );
             }
         }
     }

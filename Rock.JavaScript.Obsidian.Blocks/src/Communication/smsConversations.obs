@@ -8,7 +8,7 @@
            titleIconCssClass="ti ti-messages"
            :hasFullscreen="true">
         <template #headerActions>
-            <div v-if="systemPhoneNumbers.length > 0" class="panel-heading pl-0">
+            <div v-if="systemPhoneNumbers.length > 0">
                 <HighlightLabel v-if="systemPhoneNumbers.length === 1" customClass="text-sm label-default system-phone-selection w-100 text-truncate" labelType="custom">{{ systemPhoneNumbers[0].text }}</HighlightLabel>
 
                 <DropDownList v-else

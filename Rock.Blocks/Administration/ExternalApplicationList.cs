@@ -38,9 +38,11 @@ namespace Rock.Blocks.Administration
     [Category( "Administration" )]
     [Description( "Will list all of the defined type values with the type of External Application.  This provides a way for users to select any one of these files." )]
     [IconCssClass( "ti ti-list" )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [SystemGuid.EntityTypeGuid( "0EB5D32A-D26F-4B4F-A336-D7206539895D" )]
-    [SystemGuid.BlockTypeGuid( "2A18F4BF-633F-47CE-A228-3F908AA5A189" )]
+    // Was [SystemGuid.BlockTypeGuid( "2A18F4BF-633F-47CE-A228-3F908AA5A189" )]
+    [Rock.SystemGuid.BlockTypeGuid( "850A0541-D31A-4559-94D1-9DAD5F52EFDF" )]
     [CustomizedGrid]
     public class ExternalApplicationList : RockListBlockType<ExternalApplicationList.ExternalApplicationData>
     {
