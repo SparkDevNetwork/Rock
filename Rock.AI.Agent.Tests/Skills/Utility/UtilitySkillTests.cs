@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -55,11 +54,11 @@ public class UtilitySkillTests : MockDatabaseTestsBase
         _ = await agent.GetChatMessageResponseAsync();
 
         // Assert: Function call logs
-        Assert.That.AreEqual( 0, logs.Count( l => l.Contains( "Function UtilitySkill-DetermineDateRange failed." ) ), "Function call failed." );
-        Assert.That.AreEqual( 1, logs.Count( l => l == "Function UtilitySkill-DetermineDateRange succeeded." ), "Multiple successful invocations may have been detected." );
+        Assert.AreEqual( 0, logs.Count( l => l.Contains( "Function UtilitySkill-DetermineDateRange failed." ) ), "Function call failed." );
+        Assert.AreEqual( 1, logs.Count( l => l == "Function UtilitySkill-DetermineDateRange succeeded." ), "Multiple successful invocations may have been detected." );
 
         // Assert: Output contains the expected query string
-        Assert.That.AreEqual( 1, output.Count, "Multiple output messages were logged." );
+        Assert.HasCount( 1, output, "Multiple output messages were logged." );
         if ( !expectedQueries.Contains( output[0] ) )
         {
             Assert.Fail( $"Expected one of {string.Join( ", ", expectedQueries.Select( x => $"<{x}>" ) )} but got <{output[0]}>." );
@@ -81,12 +80,12 @@ public class UtilitySkillTests : MockDatabaseTestsBase
         _ = await agent.GetChatMessageResponseAsync();
 
         // Assert: The correct function was called and succeeded
-        Assert.That.AreEqual( 0, logs.Count( l => l.Contains( "Function UtilitySkill-GetCurrentDateTime failed." ) ), "Function call failed." );
-        Assert.That.AreEqual( 1, logs.Count( l => l == "Function UtilitySkill-GetCurrentDateTime succeeded." ), "Multiple successful invocations may have been detected." );
+        Assert.AreEqual( 0, logs.Count( l => l.Contains( "Function UtilitySkill-GetCurrentDateTime failed." ) ), "Function call failed." );
+        Assert.AreEqual( 1, logs.Count( l => l == "Function UtilitySkill-GetCurrentDateTime succeeded." ), "Multiple successful invocations may have been detected." );
 
         // Assert: Output contains the expected ISO datetime string
-        Assert.That.AreEqual( 1, output.Count, "Multiple output messages were logged." );
-        Assert.That.AreEqual( expectedOutput, output[0], $"Expected '{expectedOutput}' but got '{output[0]}'" );
+        Assert.HasCount( 1, output, "Multiple output messages were logged." );
+        Assert.AreEqual( expectedOutput, output[0], $"Expected '{expectedOutput}' but got '{output[0]}'" );
     }
 
     #region Mock Skills / Functions

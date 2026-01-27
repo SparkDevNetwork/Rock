@@ -3,19 +3,24 @@ using System.Collections.Generic;
 using System.Configuration;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Moq;
 
 using Rock.AI.Agent.Providers;
 using Rock.Configuration;
 using Rock.Data;
-using Rock.Lava.Fluid;
-using Rock.Lava;
-using Rock.Tests.Shared.TestFramework;
-using Microsoft.Extensions.Logging;
-using Rock.Model;
 using Rock.Enums.AI.Agent;
+using Rock.Lava;
+using Rock.Lava.Fluid;
+using Rock.Model;
+using Rock.Tests.Shared.TestFramework;
+
+[assembly: DoNotParallelize]
 
 namespace Rock.AI.Agent.Tests;
+
 
 /// <summary>
 /// Builder pattern for setting up a test chat agent with configurable skills and functions.
