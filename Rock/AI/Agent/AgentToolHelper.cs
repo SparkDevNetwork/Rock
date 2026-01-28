@@ -41,7 +41,7 @@ namespace Rock.AI.Agent
     /// requests. This includes retrieving entities, updating properties,
     /// and managing bulk error responses.
     /// </summary>
-    internal class AgentEntityHelper
+    internal class AgentToolHelper
     {
         #region Fields
 
@@ -49,6 +49,13 @@ namespace Rock.AI.Agent
         /// The database context to use for reading and writing to the database.
         /// </summary>
         private readonly RockContext _rockContext;
+
+        /// <summary>
+        /// Indicates that the <see cref="_rockContext"/> is read-only and
+        /// should not be used to save changes. This is set when the context
+        /// comes from the <see cref="AgentRequestContext"/>.
+        /// </summary>
+        private readonly bool _isContextReadOnly;
 
         /// <summary>
         /// The context of the current agent request.
@@ -104,14 +111,31 @@ namespace Rock.AI.Agent
         #region Constructors
 
         /// <summary>
-        /// Creates a new instance of the <see cref="AgentEntityHelper"/> class.
+        /// Creates a new instance of the <see cref="AgentToolHelper"/> class.
         /// </summary>
         /// <param name="rockContext">The database context to use for reading and writing to the database.</param>
         /// <param name="agentRequestContext">The context of the current agent request.</param>
         /// <param name="logger">The logger to use for logging errors and information.</param>
-        public AgentEntityHelper( RockContext rockContext, AgentRequestContext agentRequestContext, ILogger logger )
+        public AgentToolHelper( RockContext rockContext, AgentRequestContext agentRequestContext, ILogger logger )
         {
             _rockContext = rockContext ?? throw new ArgumentNullException( nameof( rockContext ) );
+            _agentRequestContext = agentRequestContext ?? throw new ArgumentNullException( nameof( agentRequestContext ) );
+            _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
+        }
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="AgentToolHelper"/> class.
+        /// Do not use this constructor if you plan to make changes to the
+        /// database as the provided <see cref="RockContext"/> is considered
+        /// read-only. Any calls to <see cref="SaveChanges()"/> will
+        /// throw exceptions.
+        /// </summary>
+        /// <param name="agentRequestContext">The context of the current agent request.</param>
+        /// <param name="logger">The logger to use for logging errors and information.</param>
+        public AgentToolHelper( AgentRequestContext agentRequestContext, ILogger logger )
+        {
+            _rockContext = agentRequestContext.RockContext;
+            _isContextReadOnly = true;
             _agentRequestContext = agentRequestContext ?? throw new ArgumentNullException( nameof( agentRequestContext ) );
             _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
         }
@@ -566,22 +590,21 @@ namespace Rock.AI.Agent
 
         #endregion
 
-        #region Entity Update Methods
+        #region Update Methods
 
         /// <summary>
-        /// Updates the specified property of an entity with a new value or
+        /// Updates the specified property of an instance with a new value or
         /// clears the existing value. If <paramref name="parameter"/> is
         /// <c>null</c> then no action will be taken. Any errors will be added
         /// to the error list automatically.
         /// </summary>
-        /// <typeparam name="TEntity">The type of <see cref="IEntity"/> to be updated.</typeparam>
+        /// <typeparam name="TInstance">The type of object to be updated.</typeparam>
         /// <typeparam name="TProperty">The type of property in <paramref name="propertyExpression"/> to be updated.</typeparam>
-        /// <param name="entity">The <see cref="IEntity"/> to be updated.</param>
+        /// <param name="instance">The instance to be updated.</param>
         /// <param name="propertyExpression">The expression that identifies which property to update, such as <c>p =&gt; p.FirstName</c>.</param>
         /// <param name="parameter">The parameter that contains the value to be set or indicates the existing value should be cleared.</param>
         /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
-        public void UpdateProperty<TEntity, TProperty>( TEntity entity, Expression<Func<TEntity, TProperty?>> propertyExpression, SetOrClear<TProperty?> parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
-            where TEntity : IEntity
+        public void UpdateProperty<TInstance, TProperty>( TInstance instance, Expression<Func<TInstance, TProperty?>> propertyExpression, SetOrClear<TProperty?> parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
             where TProperty : struct
         {
             if ( parameterExpression.IsNullOrWhiteSpace() )
@@ -595,18 +618,18 @@ namespace Rock.AI.Agent
             }
 
             var propertyName = ExtractPropertyName( propertyExpression );
-            var property = entity.GetType().GetProperty( propertyName )
+            var property = instance.GetType().GetProperty( propertyName )
                 ?? throw new Exception( $"Property {propertyName} is not valid." );
 
             try
             {
                 if ( parameter.ClearValue )
                 {
-                    property.SetValue( entity, null );
+                    property.SetValue( instance, null );
                 }
                 else
                 {
-                    property.SetValue( entity, parameter.Value );
+                    property.SetValue( instance, parameter.Value );
                 }
             }
             catch
@@ -616,38 +639,36 @@ namespace Rock.AI.Agent
         }
 
         /// <summary>
-        /// Updates the specified property of an entity with a new value or
+        /// Updates the specified property of an instance with a new value or
         /// clears the existing value. If <paramref name="parameter"/> is
         /// <c>null</c> then no action will be taken. Any errors will be added
         /// to the error list automatically.
         /// </summary>
-        /// <typeparam name="TEntity">The type of <see cref="IEntity"/> to be updated.</typeparam>
+        /// <typeparam name="TInstance">The type of object to be updated.</typeparam>
         /// <typeparam name="TProperty">The type of property in <paramref name="propertyExpression"/> to be updated.</typeparam>
-        /// <param name="entity">The <see cref="IEntity"/> to be updated.</param>
+        /// <param name="instance">The instance to be updated.</param>
         /// <param name="propertyExpression">The expression that identifies which property to update, such as <c>p =&gt; p.FirstName</c>.</param>
         /// <param name="parameter">The parameter that contains the value to be set or indicates the existing value should be cleared.</param>
         /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
-        public void UpdateProperty<TEntity, TProperty>( TEntity entity, Expression<Func<TEntity, TProperty?>> propertyExpression, SetOrClear<TProperty> parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
-            where TEntity : IEntity
+        public void UpdateProperty<TInstance, TProperty>( TInstance instance, Expression<Func<TInstance, TProperty?>> propertyExpression, SetOrClear<TProperty> parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
             where TProperty : struct
         {
-            UpdateProperty( entity, propertyExpression, new SetOrClear<TProperty?> { Value = parameter.Value, ClearValue = parameter.ClearValue }, parameterExpression );
+            UpdateProperty( instance, propertyExpression, new SetOrClear<TProperty?> { Value = parameter.Value, ClearValue = parameter.ClearValue }, parameterExpression );
         }
 
         /// <summary>
-        /// Updates the specified property of an entity with a new value. If
+        /// Updates the specified property of an instance with a new value. If
         /// <paramref name="parameter"/> is <c>null</c> then no action will be
         /// taken. Any errors will be added to the error list automatically.
         /// Existing values are never cleared by this method.
         /// </summary>
-        /// <typeparam name="TEntity">The type of <see cref="IEntity"/> to be updated.</typeparam>
+        /// <typeparam name="TInstance">The type of object to be updated.</typeparam>
         /// <typeparam name="TProperty">The type of property in <paramref name="propertyExpression"/> to be updated.</typeparam>
-        /// <param name="entity">The <see cref="IEntity"/> to be updated.</param>
+        /// <param name="instance">The instance to be updated.</param>
         /// <param name="propertyExpression">The expression that identifies which property to update, such as <c>p =&gt; p.FirstName</c>.</param>
         /// <param name="parameter">The parameter that contains the value to be set.</param>
         /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
-        public void UpdateProperty<TEntity, TProperty>( TEntity entity, Expression<Func<TEntity, TProperty?>> propertyExpression, TProperty? parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
-            where TEntity : IEntity
+        public void UpdateProperty<TInstance, TProperty>( TInstance instance, Expression<Func<TInstance, TProperty?>> propertyExpression, TProperty? parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
             where TProperty : struct
         {
             if ( parameterExpression.IsNullOrWhiteSpace() )
@@ -660,22 +681,21 @@ namespace Rock.AI.Agent
                 return;
             }
 
-            UpdateProperty( entity, propertyExpression, new SetOrClear<TProperty?> { Value = parameter }, parameterExpression );
+            UpdateProperty( instance, propertyExpression, new SetOrClear<TProperty?> { Value = parameter }, parameterExpression );
         }
 
         /// <summary>
-        /// Updates the specified property of an entity with a new value. If
+        /// Updates the specified property of an instance with a new value. If
         /// <paramref name="parameter"/> is <c>null</c> then no action will be
         /// taken. Any errors will be added to the error list automatically.
         /// </summary>
-        /// <typeparam name="TEntity">The type of <see cref="IEntity"/> to be updated.</typeparam>
+        /// <typeparam name="TInstance">The type of object to be updated.</typeparam>
         /// <typeparam name="TProperty">The type of property in <paramref name="propertyExpression"/> to be updated.</typeparam>
-        /// <param name="entity">The <see cref="IEntity"/> to be updated.</param>
+        /// <param name="instance">The instance to be updated.</param>
         /// <param name="propertyExpression">The expression that identifies which property to update, such as <c>p =&gt; p.FirstName</c>.</param>
         /// <param name="parameter">The parameter that contains the value to be set.</param>
         /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
-        public void UpdateProperty<TEntity, TProperty>( TEntity entity, Expression<Func<TEntity, TProperty>> propertyExpression, TProperty? parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
-            where TEntity : IEntity
+        public void UpdateProperty<TInstance, TProperty>( TInstance instance, Expression<Func<TInstance, TProperty>> propertyExpression, TProperty? parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
             where TProperty : struct
         {
             if ( parameterExpression.IsNullOrWhiteSpace() )
@@ -689,12 +709,12 @@ namespace Rock.AI.Agent
             }
 
             var propertyName = ExtractPropertyName( propertyExpression );
-            var property = entity.GetType().GetProperty( propertyName )
+            var property = instance.GetType().GetProperty( propertyName )
                 ?? throw new Exception( $"Property {propertyName} is not valid." );
 
             try
             {
-                property.SetValue( entity, parameter.Value );
+                property.SetValue( instance, parameter.Value );
             }
             catch
             {
@@ -703,18 +723,17 @@ namespace Rock.AI.Agent
         }
 
         /// <summary>
-        /// Updates the specified property of an entity with a new value or
+        /// Updates the specified property of an instance with a new value or
         /// clears the existing value. If <paramref name="parameter"/> is
         /// <c>null</c> then no action will be taken. Any errors will be added
         /// to the error list automatically.
         /// </summary>
-        /// <typeparam name="TEntity">The type of <see cref="IEntity"/> to be updated.</typeparam>
-        /// <param name="entity">The <see cref="IEntity"/> to be updated.</param>
+        /// <typeparam name="TInstance">The type of object to be updated.</typeparam>
+        /// <param name="instance">The instance to be updated.</param>
         /// <param name="propertyExpression">The expression that identifies which property to update, such as <c>p =&gt; p.FirstName</c>.</param>
         /// <param name="parameter">The parameter that contains the value to be set or indicates the existing value should be cleared.</param>
         /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
-        public void UpdateProperty<TEntity>( TEntity entity, Expression<Func<TEntity, string>> propertyExpression, SetOrClear<string> parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
-            where TEntity : IEntity
+        public void UpdateProperty<TInstance>( TInstance instance, Expression<Func<TInstance, string>> propertyExpression, SetOrClear<string> parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
         {
             if ( parameterExpression.IsNullOrWhiteSpace() )
             {
@@ -727,18 +746,18 @@ namespace Rock.AI.Agent
             }
 
             var propertyName = ExtractPropertyName( propertyExpression );
-            var property = entity.GetType().GetProperty( propertyName )
+            var property = instance.GetType().GetProperty( propertyName )
                 ?? throw new Exception( $"Property {propertyName} is not valid." );
 
             try
             {
                 if ( parameter.ClearValue )
                 {
-                    property.SetValue( entity, null );
+                    property.SetValue( instance, null );
                 }
                 else
                 {
-                    property.SetValue( entity, parameter.Value );
+                    property.SetValue( instance, parameter.Value );
                 }
             }
             catch
@@ -1027,6 +1046,11 @@ namespace Rock.AI.Agent
         /// </summary>
         public void SaveChanges()
         {
+            if ( _isContextReadOnly )
+            {
+                throw new InvalidOperationException( "The RockContext is read-only and changes cannot be saved." );
+            }
+
             try
             {
                 _rockContext.WrapTransaction( () =>
@@ -1064,6 +1088,14 @@ namespace Rock.AI.Agent
         /// </summary>
         public void SaveChangesIfNoErrors()
         {
+            // Throw early here so the developer knows if they are using
+            // the wrong constructor. Otherwise, they might not get an error
+            // if there were other errors.
+            if ( _isContextReadOnly )
+            {
+                throw new InvalidOperationException( "The RockContext is read-only and changes cannot be saved." );
+            }
+
             if ( HasErrors )
             {
                 return;
