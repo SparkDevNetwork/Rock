@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -23,6 +24,7 @@ using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.AI.Agent.Classes.Skills.ConnectionSkill;
+using Rock.Data;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
 using Rock.SystemGuid;
@@ -56,7 +58,8 @@ namespace Rock.AI.Agent.Skills
             // TODO: This could be optimized by creating a connection opportunity cache. 
             var authorizedConnectionOpportunityIds = AuthorizedConnectionOpportunityIds();
 
-            var connectionRequestsQry = new ConnectionRequestService( AgentRequestContext.RockContext ).Queryable()
+            var connectionRequestsQry = new ConnectionRequestService( AgentRequestContext.RockContext )
+                .Queryable()
                 .Where( cr => authorizedConnectionOpportunityIds.Contains( cr.ConnectionOpportunityId ) );
 
             // Filter by requester
@@ -92,7 +95,49 @@ namespace Rock.AI.Agent.Skills
             }
 
             var connectionRequests = connectionRequestsQry
-                .Select( GetResultExpression() )
+                .AsExpandable()
+                .Select( cr => new ConnectionRequestResult
+                {
+                    Id = cr.Id,
+                    Requester = new PersonResult
+                    {
+                        Id = cr.PersonAlias.Person.Id,
+                        LastName = cr.PersonAlias.Person.LastName,
+                        NickName = cr.PersonAlias.Person.NickName,
+                        IncludeAvatarUrl = false,
+                    },
+                    ConnectionState = new KeyNameResult
+                    {
+                        Id = ( int ) cr.ConnectionState,
+                        Name = cr.ConnectionState.ToString()
+                    },
+                    ConnectionStatus = new KeyNameResult
+                    {
+                        Id = cr.ConnectionStatus.Id,
+                        Name = cr.ConnectionStatus.Name
+                    },
+                    ConnectionOpportunity = new ConnectionOpportunityResult
+                    {
+                        Id = cr.ConnectionOpportunity.Id,
+                        Name = cr.ConnectionOpportunity.Name,
+                        ConnectionType = new ConnectionTypeResult
+                        {
+                            Id = cr.ConnectionOpportunity.ConnectionType.Id,
+                            Name = cr.ConnectionOpportunity.ConnectionType.Name
+                        }
+                    },
+                    CreatedDateTime = cr.CreatedDateTime,
+                    Connector = cr.ConnectorPersonAlias != null
+                        ? new PersonResult
+                        {
+                            Id = cr.ConnectorPersonAlias.Person.Id,
+                            LastName = cr.ConnectorPersonAlias.Person.LastName,
+                            NickName = cr.ConnectorPersonAlias.Person.NickName,
+                            IncludeAvatarUrl = false,
+                        }
+                        : null,
+                    AttributeValues = cr.ConnectionRequestAttributeValues.GetAttributeValueResults( AgentRequestContext ).ToList(),
+                } )
                 .OrderBy( cr => cr.Id )
                 .Skip( offset )
                 .Take( take )
@@ -111,21 +156,21 @@ namespace Rock.AI.Agent.Skills
             }
 
             var meta = new Dictionary<string, object>
-                {
-                    { "personKey", requesterPersonIdKey },
-                    { "pageNumber", pageNumber },
-                    { "pageSize", basePageSize },
-                    { "returnedRows", connectionRequests.Count },
-                    { "hasMore", hasMore }
-                };
+            {
+                ["personKey"] = requesterPersonIdKey,
+                ["pageNumber"] = pageNumber,
+                ["pageSize"] = basePageSize,
+                ["returnedRows"] = connectionRequests.Count,
+                ["hasMore"] = hasMore,
+            };
 
             if ( !connectionRequests.Any() )
             {
-                return RockToolResult.NoData()
+                return NoData()
                     .WithMetadata( meta );
             }
 
-            return RockToolResult.Success( connectionRequests )
+            return Success( connectionRequests )
                 .WithMetadata( meta );
         }
 

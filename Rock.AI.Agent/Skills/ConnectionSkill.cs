@@ -29,6 +29,7 @@ using Rock.Data;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
 using Rock.SystemGuid;
+using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills
 {
@@ -67,72 +68,46 @@ namespace Rock.AI.Agent.Skills
 
         #region Methods
 
-        private ConnectionRequestResult GetResult( ConnectionRequest connectionRequest )
+        private ConnectionRequestResult GetFullConnectionRequestResult( ConnectionRequest connectionRequest )
         {
-            return GetResultExpression().Compile().Invoke( connectionRequest );
-        }
-
-        private Expression<Func<ConnectionRequest, ConnectionRequestResult>> GetResultExpression()
-        {
-            var isInternal = AgentRequestContext.AudienceType == AudienceType.Internal;
-
-            return cr => new ConnectionRequestResult
+            return new ConnectionRequestResult
             {
-                Id = cr.Id,
+                Id = connectionRequest.Id,
                 Requester = new PersonResult
                 {
-                    Id = cr.PersonAlias.Person.Id,
-                    FirstName = cr.PersonAlias.Person.FirstName,
-                    LastName = cr.PersonAlias.Person.LastName,
-                    NickName = cr.PersonAlias.Person.NickName,
-                    PhotoId = cr.PersonAlias.Person.PhotoId
+                    Id = connectionRequest.PersonAlias.Person.Id,
+                    FirstName = connectionRequest.PersonAlias.Person.FirstName,
+                    LastName = connectionRequest.PersonAlias.Person.LastName,
+                    NickName = connectionRequest.PersonAlias.Person.NickName,
+                    PhotoId = connectionRequest.PersonAlias.Person.PhotoId
                 },
-                Comments = cr.Comments,
-                ConnectionState = new KeyNameResult { Id = ( int ) cr.ConnectionState, Name = cr.ConnectionState.ToString() },
-                ConnectionStatus = new KeyNameResult { Id = cr.ConnectionStatus.Id, Name = cr.ConnectionStatus.Name },
+                Comments = connectionRequest.Comments,
+                ConnectionState = new KeyNameResult { Id = ( int ) connectionRequest.ConnectionState, Name = connectionRequest.ConnectionState.ToString() },
+                ConnectionStatus = new KeyNameResult { Id = connectionRequest.ConnectionStatus.Id, Name = connectionRequest.ConnectionStatus.Name },
                 ConnectionOpportunity = new ConnectionOpportunityResult
                 {
-                    Id = cr.ConnectionOpportunity.Id,
-                    Name = cr.ConnectionOpportunity.Name,
-                    ConnectionType = new ConnectionTypeResult { Id = cr.ConnectionOpportunity.ConnectionType.Id, Name = cr.ConnectionOpportunity.ConnectionType.Name }
-                },
-                CreatedDateTime = cr.CreatedDateTime,
-                ModifiedDateTime = cr.ModifiedDateTime,
-                FollowupDate = cr.FollowupDate,
-                Campus = cr.Campus != null ? new CampusResult { Id = cr.Campus.Id, Name = cr.Campus.Name } : null,
-                AssignedGroup = cr.AssignedGroup != null ? new GroupResult { Id = cr.AssignedGroup.Id, Name = cr.AssignedGroup.Name } : null,
-                Connector = cr.ConnectorPersonAlias != null ? new PersonResult
-                {
-                    Id = cr.ConnectorPersonAlias.Person.Id,
-                    FirstName = cr.ConnectorPersonAlias.Person.FirstName,
-                    LastName = cr.ConnectorPersonAlias.Person.LastName,
-                    NickName = cr.ConnectorPersonAlias.Person.NickName,
-                    PhotoId = cr.ConnectorPersonAlias.Person.PhotoId
-                } : null,
-                Activities = cr.ConnectionRequestActivities.Select( a => new ConnectionRequestActivityResult
-                {
-                    Id = a.Id,
-                    ActivityType = new KeyNameResult { Id = a.ConnectionActivityTypeId, Name = a.ConnectionActivityType.Name },
-                    Note = a.Note,
-                    CreatedDateTime = a.CreatedDateTime,
-                    Connector = a.ConnectorPersonAlias != null ? new PersonResult
+                    Id = connectionRequest.ConnectionOpportunity.Id,
+                    Name = connectionRequest.ConnectionOpportunity.Name,
+                    ConnectionType = new ConnectionTypeResult
                     {
-                        Id = a.CreatedByPersonAlias.Person.Id,
-                        FirstName = a.CreatedByPersonAlias.Person.FirstName,
-                        LastName = a.CreatedByPersonAlias.Person.LastName,
-                        NickName = a.CreatedByPersonAlias.Person.NickName,
-                        PhotoId = a.CreatedByPersonAlias.Person.PhotoId
-                    } : null
-                } ).ToList(),
-                Attributes = cr.ConnectionRequestAttributeValues
-                        .Where( a => isInternal || a.IsPublic )
-                        .Select( a => new AttributeResult
-                        {
-                            Id = a.AttributeId,
-                            Value = a.PersistedTextValue,
-                            Name = a.Name
-                        } )
-                        .ToList()
+                        Id = connectionRequest.ConnectionOpportunity.ConnectionType.Id,
+                        Name = connectionRequest.ConnectionOpportunity.ConnectionType.Name
+                    }
+                },
+                CreatedDateTime = connectionRequest.CreatedDateTime,
+                ModifiedDateTime = connectionRequest.ModifiedDateTime,
+                FollowupDate = connectionRequest.FollowupDate,
+                Campus = connectionRequest.Campus != null ? new CampusResult { Id = connectionRequest.Campus.Id, Name = connectionRequest.Campus.Name } : null,
+                AssignedGroup = connectionRequest.AssignedGroup != null ? new GroupResult { Id = connectionRequest.AssignedGroup.Id, Name = connectionRequest.AssignedGroup.Name } : null,
+                Connector = connectionRequest.ConnectorPersonAlias != null ? new PersonResult
+                {
+                    Id = connectionRequest.ConnectorPersonAlias.Person.Id,
+                    FirstName = connectionRequest.ConnectorPersonAlias.Person.FirstName,
+                    LastName = connectionRequest.ConnectorPersonAlias.Person.LastName,
+                    NickName = connectionRequest.ConnectorPersonAlias.Person.NickName,
+                    PhotoId = connectionRequest.ConnectorPersonAlias.Person.PhotoId
+                } : null,
+                AttributeValues = connectionRequest.ConnectionRequestAttributeValues.GetAttributeValueResults( AgentRequestContext ).ToList(),
             };
         }
 

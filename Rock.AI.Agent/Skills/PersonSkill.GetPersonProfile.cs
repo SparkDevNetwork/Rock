@@ -38,7 +38,7 @@ namespace Rock.AI.Agent.Skills
             var requestContext = AgentRequestContext.RockRequestContext;
             var currentPerson = requestContext?.CurrentPerson;
 
-            var profileResult = new PersonResult( AgentRequestContext );
+            var profileResult = new PersonResult();
 
             profileResult.Id = person.Id;
             profileResult.FirstName = person.FirstName;
@@ -149,17 +149,7 @@ namespace Rock.AI.Agent.Skills
 
             // Add Attributes
             person.LoadAttributes();
-            profileResult.Attributes = person.AttributeValues
-                        .Where( v => v.Value != null && v.Value.Value != null & v.Value.Value != string.Empty )
-                        .Where( v => person.Attributes[v.Key].IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
-                        .Select( a => new AttributeResult
-                        {
-                            Id = a.Value.AttributeId,
-                            Key = a.Key,
-                            Value = a.Value.PersistedTextValue,
-                            Category = a.Value.AttributeCategoryIds.Select( cId => CategoryCache.Get( cId ) ).Where( c => c != null ).Select( c => c.Name ).FirstOrDefault()
-                        } )
-                        .ToList();
+            profileResult.AttributeValues = person.GetAttributeValueResults( AgentRequestContext ).ToList();
 
             // Add Known Relationships
             var groupMemberService = new GroupMemberService( AgentRequestContext.RockContext );

@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -25,7 +24,6 @@ using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.AI.Agent.Classes.Skills.ConnectionSkill;
 using Rock.Model;
-using Rock.Net;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
@@ -44,12 +42,9 @@ namespace Rock.AI.Agent.Skills
         [AgentToolGuid( "21870C06-126F-0882-47E3-DBFC1846BD92" )]
         public RockToolResult LookupConnectionTypesAndOpportunities()
         {
-            var connectionTypes = RockCache.GetOrAddExisting( "rock.core.aiagent.lookupconnectiontypesandopportunties", null, () =>
-            {
-                return LoadConnectionTypes();
-            }, TimeSpan.FromMinutes( 3 ) ) as List<ConnectionTypeResult>;
+            var connectionTypes = LoadConnectionTypes();
 
-            return RockToolResult.Success( connectionTypes )
+            return Success( connectionTypes )
                 .WithHistoryContent( connectionTypes
                     .Select( ct => new
                     {
@@ -79,13 +74,12 @@ namespace Rock.AI.Agent.Skills
 
             if ( !connectionTypes.Any() )
             {
-                return new List<ConnectionTypeResult>();
+                return [];
             }
 
-            // TODO: is this the correct way to get the current person?
-            var currentPerson = RockRequestContextAccessor.Current?.CurrentPerson;
+            var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
 
-            var connectionTypeResult = connectionTypes
+            var connectionTypeResults = connectionTypes
                 .Where( cr => cr.IsActive )
                 .Where( cr => cr.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
                 .Select( cr => new ConnectionTypeResult
@@ -93,17 +87,7 @@ namespace Rock.AI.Agent.Skills
                     Id = cr.Id,
                     Name = cr.Name,
                     Description = cr.Description,
-                    Attributes = cr.AttributeValues
-                        .Where( v => v.Value != null && v.Value.Value != null & v.Value.Value != string.Empty )
-                        .Where( v => cr.Attributes[v.Key].IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
-                        .Select( a => new AttributeResult
-                        {
-                            Id = a.Value.AttributeId,
-                            Key = a.Key,
-                            Value = a.Value.PersistedTextValue,
-                            Category = a.Value.AttributeCategoryIds.Select( cId => CategoryCache.Get( cId ) ).Where( c => c != null ).Select( c => c.Name ).FirstOrDefault()
-                        } )
-                        .ToList(),
+                    AttributeValues = cr.GetAttributeValueResults( AgentRequestContext ).ToList(),
                 } )
                 .ToList();
 
@@ -111,42 +95,28 @@ namespace Rock.AI.Agent.Skills
             var connectionStatuses = new ConnectionStatusService( AgentRequestContext.RockContext )
                 .Queryable()
                 .Where( s => s.IsActive )
-                .Select( s => new
-                {
-                    s.Id,
-                    s.Name,
-                    s.ConnectionTypeId
-                } )
                 .GroupBy( s => s.ConnectionTypeId )
-                .ToDictionary( g => g.Key, g => g.ToList() );
+                .ToDictionary( g => g.Key, g => g.Select( s => new KeyNameResult( s.Id, s.Name ) ).ToList() );
 
-            foreach ( var connectionType in connectionTypeResult )
+            foreach ( var connectionType in connectionTypeResults )
             {
                 if ( connectionStatuses.TryGetValue( connectionType.Id, out var statuses ) )
                 {
-                    connectionType.Statuses = statuses
-                        .Select( s => new KeyNameResult
-                        {
-                            Id = s.Id,
-                            Name = s.Name
-                        } )
-                        .ToList();
+                    connectionType.Statuses = statuses;
                 }
             }
 
             // Add connection opportunities. There is no cache for this so we have to query it.
             var connectionOpportunities = new ConnectionOpportunityService( AgentRequestContext.RockContext )
-                .Queryable().AsNoTracking()
-                .Include( "ConnectionOpportunityCampuses" )
-                .Where( o =>
-                    o.IsActive
-                    && o.ConnectionType.IsActive
-                )
+                .Queryable()
+                .AsNoTracking()
+                .Include( co => co.ConnectionOpportunityCampuses )
+                .Where( o => o.IsActive && o.ConnectionType.IsActive )
                 .ToList();
 
             connectionOpportunities.LoadAttributes();
 
-            foreach ( var connectionType in connectionTypeResult )
+            foreach ( var connectionType in connectionTypeResults )
             {
                 connectionType.Opportunities = connectionOpportunities
                     .Where( co => co.ConnectionTypeId == connectionType.Id )
@@ -159,27 +129,21 @@ namespace Rock.AI.Agent.Skills
                         PublicName = co.PublicName,
                         Summary = co.Summary,
                         PhotoId = co.PhotoId,
-                        Campuses = co.ConnectionOpportunityCampuses.Select( c => new CampusResult
-                        {
-                            Id = c.CampusId,
-                            Name = c.Campus != null ? c.Campus.Name : string.Empty
-                        } ).ToList(),
-                        Attributes = co.AttributeValues
-                            .Where( v => v.Value != null && v.Value.Value != null & v.Value.Value != string.Empty )
-                            .Where( v => co.Attributes[v.Key].IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
-                            .Select( a => new AttributeResult
+                        Campuses = co.ConnectionOpportunityCampuses
+                            .Select( c => new CampusResult
                             {
-                                Id = a.Value.AttributeId,
-                                Key = a.Key,
-                                Value = a.Value.PersistedTextValue,
-                                Category = a.Value.AttributeCategoryIds.Select( cId => CategoryCache.Get( cId ) ).Where( c => c != null ).Select( c => c.Name ).FirstOrDefault()
+                                Id = c.CampusId,
+                                Name = c.Campus.Name
                             } )
                             .ToList(),
+                        AttributeValues = co.GetAttributeValueResults( AgentRequestContext ).ToList(),
                     } )
                     .ToList();
             }
 
-            return connectionTypeResult;
+            connectionTypeResults.ForEach( ct => ct.SanitizeForSecurity( currentPerson ) );
+
+            return connectionTypeResults;
         }
 
         #endregion
