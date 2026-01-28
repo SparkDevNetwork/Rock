@@ -20,7 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.Common.Mobile.Blocks.Engagement.BeaconDashboard;
+using Rock.Common.Mobile.Blocks.Engagement.OutreachDashboard;
 using Rock.Common.Mobile.Blocks.Engagement.ContactProfile;
 using Rock.Common.Mobile.Blocks.Engagement.OutreachOnboarding.cs;
 using Rock.Enums.Core;
@@ -34,10 +34,10 @@ namespace Rock.Blocks.Types.Mobile.Engagement
     /// <summary>
     /// Beacon dashboard allows you to view your touchpoint statistic and as well as start connecting with your contact.
     /// </summary>
-    [DisplayName( "Beacon Dashboard" )]
+    [DisplayName( "Outreach Dashboard" )]
     [Category( "Engagement" )]
     [IconCssClass( "ti ti-device-desktop" )]
-    [Description( "Beacon dashboard allows you to view your touchpoint statistic and as well as start connecting with your contact." )]
+    [Description( "Outreach dashboard allows you to view your touchpoint statistic and as well as start connecting with your contact." )]
     [SupportedSiteTypes( SiteType.Mobile )]
 
     [LinkedPage( "Detail Page",
@@ -52,9 +52,9 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         Key = AttributeKeys.MyContact,
         Order = 2 )]
 
-    [SystemGuid.EntityTypeGuid( SystemGuid.EntityType.MOBILE_OUTREACH_BEACON_DASHBOARD_BLOCK_TYPE )]
-    [SystemGuid.BlockTypeGuid( SystemGuid.BlockType.MOBILE_OUTREACH_BEACON_DASHBOARD )]
-    public class BeaconDashboard : RockBlockType
+    [SystemGuid.EntityTypeGuid( SystemGuid.EntityType.MOBILE_OUTREACH_OUTREACH_DASHBOARD_BLOCK_TYPE )]
+    [SystemGuid.BlockTypeGuid( SystemGuid.BlockType.MOBILE_OUTREACH_OUTREACH_BEACON_DASHBOARD )]
+    public class OutreachDashboard : RockBlockType
     {
         #region Constants
 
@@ -376,7 +376,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         /// <inheritdoc/>
         public override object GetMobileConfigurationValues()
         {
-            return new Rock.Common.Mobile.Blocks.Engagement.BeaconDashboard.Configuration
+            return new Rock.Common.Mobile.Blocks.Engagement.OutreachDashboard.Configuration
             {
                 DetailPage = GetAttributeValue( AttributeKeys.DetailPage ).AsGuidOrNull(),
                 BaptismInfoUrl = ResolveURL( GetAttributeValue( AttributeKeys.BaptismInfo ) ),

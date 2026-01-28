@@ -181,6 +181,115 @@ namespace Rock.AI.Agent
             _metadata.Add( new KeyValuePair<string, object>( key, value ) );
         }
 
+        /// <summary>
+        /// Gets a paginated result from the specified query. This will
+        /// construct a standard result with the items and standard pagination
+        /// metadata. Any errors on the helper will be ignored. Instructions
+        /// and additional metadata will still be included.
+        /// </summary>
+        /// <typeparam name="T">The type of object to be paginated.</typeparam>
+        /// <param name="queryable">The queryable that represents the data to be paginated from the database.</param>
+        /// <param name="pageNumber">The page number that was requested.</param>
+        /// <param name="pageSize">The size of each page.</param>
+        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.SanitizeForSecurity(Model.Person)"/>.</param>
+        /// <returns>A <see cref="RockToolResult"/> that contains the result data and any standard metadata.</returns>
+        public RockToolResult GetPaginatedResult<T>( IQueryable<T> queryable, int pageNumber, int pageSize, bool sanitizeForSecurity = true )
+        {
+            var pagedItems = queryable
+                .Skip( ( pageNumber - 1 ) * pageSize )
+                // N+1 so we can compute hasMore later.
+                .Take( pageSize + 1 )
+                .ToList();
+
+            return GetResultFromPaginatedList( pagedItems, pageNumber, pageSize, sanitizeForSecurity );
+        }
+
+        /// <summary>
+        /// Gets a paginated result from the specified query. This will
+        /// construct a standard result with the items and standard pagination
+        /// metadata. Any errors on the helper will be ignored. Instructions
+        /// and additional metadata will still be included.
+        /// </summary>
+        /// <typeparam name="T">The type of object to be paginated.</typeparam>
+        /// <param name="items">The in-memory items to be paginated.</param>
+        /// <param name="pageNumber">The page number that was requested.</param>
+        /// <param name="pageSize">The size of each page.</param>
+        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.SanitizeForSecurity(Model.Person)"/>.</param>
+        /// <returns>A <see cref="RockToolResult"/> that contains the result data and any standard metadata.</returns>
+        public RockToolResult GetPaginatedResult<T>( IEnumerable<T> items, int pageNumber, int pageSize, bool sanitizeForSecurity = true )
+        {
+            var pagedItems = items
+                .Skip( ( pageNumber - 1 ) * pageSize )
+                // N+1 so we can compute hasMore later.
+                .Take( pageSize + 1 )
+                .ToList();
+
+            return GetResultFromPaginatedList( pagedItems, pageNumber, pageSize, sanitizeForSecurity );
+        }
+
+        /// <summary>
+        /// Handles the common logic of constructing a paginated result from a
+        /// set of paged items.
+        /// </summary>
+        /// <typeparam name="T">The type of object to be paginated.</typeparam>
+        /// <param name="pagedItems">The items that have been paginated. This should have up to <paramref name="pageSize"/> + 1 items.</param>
+        /// <param name="pageNumber">The page number that was requested.</param>
+        /// <param name="pageSize">The size of each page. If <paramref name="pagedItems"/> contains more than <paramref name="pageSize"/> items, then the <c>hasMore</c> metadata key will be set to <c>true</c>.</param>
+        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.SanitizeForSecurity(Model.Person)"/>.</param>
+        /// <returns>A <see cref="RockToolResult"/> that contains the result data and any standard metadata.</returns>
+        private RockToolResult GetResultFromPaginatedList<T>( List<T> pagedItems, int pageNumber, int pageSize, bool sanitizeForSecurity )
+        {
+            var hasMore = pagedItems.Count > pageSize;
+
+            // Drop the lookahead row if we have it.
+            if ( hasMore )
+            {
+                pagedItems.RemoveAt( pagedItems.Count - 1 );
+            }
+
+            var meta = new Dictionary<string, object>
+            {
+                ["pageNumber"] = pageNumber,
+                ["pageSize"] = pageSize,
+                ["returnedItemCount"] = pagedItems.Count,
+                ["hasMore"] = hasMore,
+            };
+
+            RockToolResult result;
+
+            if ( !pagedItems.Any() )
+            {
+                result = RockToolResult.NoData()
+                    .WithMetadata( meta );
+            }
+            else
+            {
+
+                if ( sanitizeForSecurity == true && typeof( EntityResultBase ).IsAssignableFrom( typeof( T ) ) )
+                {
+                    foreach ( EntityResultBase item in pagedItems.Cast<EntityResultBase>() )
+                    {
+                        item.SanitizeForSecurity( _agentRequestContext.RockRequestContext.CurrentPerson );
+                    }
+                }
+
+                result = RockToolResult.Success( pagedItems )
+                    .WithMetadata( meta );
+            }
+
+            foreach ( var instruction in _instructions )
+            {
+                result.WithInstructions( instruction );
+            }
+
+            foreach ( var kvp in _metadata )
+            {
+                result.WithMetadata( kvp.Key, kvp.Value );
+            }
+
+            return result;
+        }
+
         #endregion
 
         #region Entity Accessor Methods
