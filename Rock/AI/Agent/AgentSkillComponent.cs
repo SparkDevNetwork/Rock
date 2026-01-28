@@ -18,10 +18,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
+using Rock.AI.Agent.Classes.Common;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.AI.Agent;
 using Rock.Extension;
 using Rock.Field;
 using Rock.Field.Types;
@@ -92,6 +93,59 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <returns>A collection of <see cref="AgentTool"/> objects that represent the dynamic tools.</returns>
         public virtual IReadOnlyCollection<AgentTool> GetDymanicTools() => Array.Empty<AgentTool>();
+
+        /// <summary>
+        /// Creates a <see cref="ToolStatus.Success"/> result with no content.
+        /// </summary>
+        /// <returns>A new instance of <see cref="RockToolResult"/>.</returns>
+        protected RockToolResult Success()
+        {
+            return RockToolResult.Success();
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ToolStatus.Success"/> result for the specified
+        /// payload content. The <paramref name="payload"/> may be either a single
+        /// object or an enumeration of objects that make up the payload.
+        /// </summary>
+        /// <param name="payload">The payload to return with the result.</param>
+        /// <returns>A new instance of <see cref="RockToolResult"/>.</returns>
+        protected RockToolResult Success( object payload )
+        {
+            return RockToolResult.Success( payload );
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ToolStatus.NoData"/> result. This should be
+        /// used for lookup type operations that 
+        /// </summary>
+        /// <returns>A new instance of <see cref="RockToolResult"/>.</returns>
+        protected RockToolResult NoData()
+        {
+            return RockToolResult.NoData();
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ToolStatus.Error"/> result with a single error
+        /// message.
+        /// </summary>
+        /// <param name="message">The error message to return.</param>
+        /// <returns>A new instance of <see cref="RockToolResult"/>.</returns>
+        protected RockToolResult Error( string message )
+        {
+            return RockToolResult.Error( message );
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ToolStatus.Error"/> result with one or more error
+        /// messages.
+        /// </summary>
+        /// <param name="messages">The error messages to return.</param>
+        /// <returns>A new instance of <see cref="RockToolResult"/>.</returns>
+        protected RockToolResult Error( IEnumerable<string> messages )
+        {
+            return RockToolResult.Error( messages );
+        }
 
         #endregion
 

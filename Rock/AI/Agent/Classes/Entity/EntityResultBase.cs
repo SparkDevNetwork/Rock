@@ -64,9 +64,9 @@ namespace Rock.AI.Agent.Classes.Entity
         public PersonResult ModifiedByPerson { get; set; }
 
         /// <summary>
-        /// Attributes of the defined value.
+        /// Attribute values of the entity.
         /// </summary>
-        public List<AttributeResult> Attributes { get; set; }
+        public List<AttributeValueResult> AttributeValues { get; set; }
 
         #region Public Methods
 
@@ -78,10 +78,6 @@ namespace Rock.AI.Agent.Classes.Entity
         public virtual bool SanitizeForSecurity( Person currentPerson )
         {
             // Default logic (very basic, override in subclasses for custom behavior)
-            //if ( currentPerson == null )
-            //{
-            //    return false;
-            //}
 
             // Remove attributes the current person does not have view access to.
             CheckAttributeSecurity( currentPerson );
@@ -100,15 +96,15 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <param name="currentPerson"></param>
         private void CheckAttributeSecurity( Person currentPerson )
         {
-            if ( Attributes != null )
+            if ( AttributeValues != null )
             {
-                for ( int i = Attributes.Count - 1; i >= 0; i-- )
+                for ( int i = AttributeValues.Count - 1; i >= 0; i-- )
                 {
-                    var isAllowedViewAccess = AttributeCache.Get( Attributes[i].Id )?.IsAuthorized( Authorization.VIEW, currentPerson ) ?? false;
+                    var isAllowedViewAccess = AttributeCache.Get( AttributeValues[i].AttributeId )?.IsAuthorized( Authorization.VIEW, currentPerson ) ?? false;
 
                     if ( !isAllowedViewAccess )
                     {
-                        Attributes.RemoveAt( i );
+                        AttributeValues.RemoveAt( i );
                     }
                 }
             }

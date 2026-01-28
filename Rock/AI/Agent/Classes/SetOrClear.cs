@@ -15,31 +15,25 @@
 // </copyright>
 //
 
-namespace Rock.AI.Agent.Classes.Entity
+namespace Rock.AI.Agent.Classes
 {
     /// <summary>
-    /// Represents a single attribute to the agent.
+    /// Wrapper indicating an intent to either set a value or clear an existing value.
     /// </summary>
-    internal class AttributeResult
+    /// <typeparam name="T">The value type. Usually nullable for clearing semantics.</typeparam>
+    /// <remarks>
+    /// Null instance ⇒ no change. <see cref="ClearValue"/> takes precedence over <see cref="Value"/>.
+    /// </remarks>
+    internal class SetOrClear<T>
     {
         /// <summary>
-        /// The name of the attribute.
+        /// The value to set when <see cref="ClearValue"/> is false. Ignored when clearing.
         /// </summary>
-        public string Name { get; set; }
+        public T Value { get; set; }
 
         /// <summary>
-        /// The key that identifies this specific attribute in requests and responses.
+        /// When true, clear the target field regardless of <see cref="Value"/>.
         /// </summary>
-        public string Key { get; set; }
-
-        /// <summary>
-        /// Describes the format of the values for this attribute.
-        /// </summary>
-        public string ValueFormat { get; set; }
-
-        /// <summary>
-        /// Indicates if this attribute is required.
-        /// </summary>
-        public bool IsRequired { get; set; }
+        public bool ClearValue { get; set; }
     }
 }

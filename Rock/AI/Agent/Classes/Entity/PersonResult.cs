@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 using Rock.AI.Agent.Classes.Common;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -31,30 +32,6 @@ namespace Rock.AI.Agent.Classes.Entity
     /// </summary>
     internal class PersonResult : EntityResultBase
     {
-        #region Private Variables
-        private AgentRequestContext _context;
-        #endregion
-
-        #region Constructors
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        public PersonResult()
-        {
-
-        }
-
-        /// <summary>
-        /// Constructor that takes an application root.
-        /// </summary>
-        /// <param name="context"></param>
-        public PersonResult( AgentRequestContext context )
-        {
-            _context = context;
-        }
-
-        #endregion
-
         #region Ignored Properties
         // These properties exist to help with internal logic but they should not be serialized to JSON.
 
@@ -106,7 +83,8 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <summary>
         /// The URL to the person's internal profile.
         /// </summary>
-        public string InternalProfileUrl {
+        public string InternalProfileUrl
+        {
             get
             {
                 if ( !IncludePublicProfile )
@@ -179,12 +157,7 @@ namespace Rock.AI.Agent.Classes.Entity
                     RecordTypeValueId,
                     AgeClassification );
 
-                if ( _context != null )
-                {
-                    url = _context.ResolveRockUrl( url );
-                }
-
-                return url;
+                return RockApp.Current.ResolveRockUrl( url );
             }
         }
 

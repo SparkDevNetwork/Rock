@@ -118,7 +118,7 @@ namespace Rock.AI.Agent.Classes.Common
         /// </summary>
         /// <param name="payload">The value to include in the result.</param>
         /// <returns>A new <see cref="RockToolResult"/> instance.</returns>
-        public static RockToolResult Success( object payload )
+        internal static RockToolResult Success( object payload )
         {
             var result = new RockToolResult { Status = ToolStatus.Success };
 
@@ -134,7 +134,7 @@ namespace Rock.AI.Agent.Classes.Common
         /// Creates a <see cref="ToolStatus.Success"/> result with no payload.
         /// </summary>
         /// <returns>A new <see cref="RockToolResult"/> instance.</returns>
-        public static RockToolResult Success()
+        internal static RockToolResult Success()
         {
             return new RockToolResult
             {
@@ -147,7 +147,7 @@ namespace Rock.AI.Agent.Classes.Common
         /// Creates a <see cref="ToolStatus.NoData"/> result with no payload.
         /// </summary>
         /// <returns>A new <see cref="RockToolResult"/> instance.</returns>
-        public static RockToolResult NoData() =>
+        internal static RockToolResult NoData() =>
             new RockToolResult
             {
                 Status = ToolStatus.NoData,
@@ -158,7 +158,7 @@ namespace Rock.AI.Agent.Classes.Common
         /// </summary>
         /// <param name="message">The error message. If <c>null</c> or whitespace, an empty string is added.</param>
         /// <returns>A new <see cref="RockToolResult"/> instance.</returns>
-        public static RockToolResult Error( string message ) =>
+        internal static RockToolResult Error( string message ) =>
             new RockToolResult
             {
                 Status = ToolStatus.Error,
@@ -170,7 +170,7 @@ namespace Rock.AI.Agent.Classes.Common
         /// </summary>
         /// <param name="messages">The collection of error messages.</param>
         /// <returns>A new <see cref="RockToolResult"/> instance.</returns>
-        public static RockToolResult Error( IEnumerable<string> messages ) =>
+        internal static RockToolResult Error( IEnumerable<string> messages ) =>
             new RockToolResult
             {
                 Status = ToolStatus.Error,

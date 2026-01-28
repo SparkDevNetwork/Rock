@@ -15,31 +15,41 @@
 // </copyright>
 //
 
+using System.Text.Json.Serialization;
+
 namespace Rock.AI.Agent.Classes.Entity
 {
     /// <summary>
-    /// Represents a single attribute to the agent.
+    /// POCO result for attribute values.
     /// </summary>
-    internal class AttributeResult
+    internal class AttributeValueResult
     {
         /// <summary>
-        /// The name of the attribute.
+        /// The identifier of the attribute. This is not sent to the agent but
+        /// must be included for internal processing such as security checks.
+        /// </summary>
+        [JsonIgnore]
+        public int AttributeId { get; set; }
+
+        /// <summary>
+        /// The attribute name.
         /// </summary>
         public string Name { get; set; }
 
         /// <summary>
-        /// The key that identifies this specific attribute in requests and responses.
+        /// The attribute value.
+        /// </summary>
+        public string Value { get; set; }
+
+        /// <summary>
+        /// The formatted text value of the attribute. Should be null if it is the
+        /// same as the raw value.
+        /// </summary>
+        public string TextValue { get; set; }
+
+        /// <summary>
+        /// The attribute key.
         /// </summary>
         public string Key { get; set; }
-
-        /// <summary>
-        /// Describes the format of the values for this attribute.
-        /// </summary>
-        public string ValueFormat { get; set; }
-
-        /// <summary>
-        /// Indicates if this attribute is required.
-        /// </summary>
-        public bool IsRequired { get; set; }
     }
 }
