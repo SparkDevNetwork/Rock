@@ -48,7 +48,7 @@ namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
         /// <summary>
         /// Gets or sets the state of the connection request.
         /// </summary>
-        public KeyNameResult ConnectionState { get; set; }
+        public ConnectionState ConnectionState { get; set; }
 
         /// <summary>
         /// Gets or sets the date that the connection request is scheduled for a follow-up.

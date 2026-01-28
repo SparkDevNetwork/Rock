@@ -117,7 +117,7 @@ namespace Rock.AI.Agent.Skills
             }
 
             using var rockContext = _rockContextFactory.CreateRockContext();
-            var helper = new AgentEntityHelper( rockContext, AgentRequestContext, _logger );
+            var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
             var personService = new PersonService( rockContext );
             var person = personService.Get( IdHasher.Instance.GetId( personIdKey ) ?? 0 );
             var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;

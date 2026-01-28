@@ -24,7 +24,6 @@ using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.AI.Agent.Classes.Skills.ConnectionSkill;
-using Rock.Data;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
 using Rock.SystemGuid;
@@ -47,12 +46,7 @@ namespace Rock.AI.Agent.Skills
             string connectorPersonIdKey = null,
             int pageNumber = 1 )
         {
-            // Paging
-            var basePageSize = 100;
-            var offset = ( pageNumber - 1 ) * basePageSize;
-            var take = basePageSize + 1; // N+1 to compute hasMore
-
-            var isInternal = AgentRequestContext.AudienceType == AudienceType.Internal;
+            var helper = new AgentToolHelper( AgentRequestContext, _logger );
 
             // We need to get a list of connection opportunities that the current user is authorized to see.
             // TODO: This could be optimized by creating a connection opportunity cache. 
@@ -94,23 +88,13 @@ namespace Rock.AI.Agent.Skills
                     .Where( cr => cr.ConnectionOpportunityId == connectionOpportunityId );
             }
 
-            var connectionRequests = connectionRequestsQry
+            var connectionRequestQry = connectionRequestsQry
                 .AsExpandable()
                 .Select( cr => new ConnectionRequestResult
                 {
                     Id = cr.Id,
-                    Requester = new PersonResult
-                    {
-                        Id = cr.PersonAlias.Person.Id,
-                        LastName = cr.PersonAlias.Person.LastName,
-                        NickName = cr.PersonAlias.Person.NickName,
-                        IncludeAvatarUrl = false,
-                    },
-                    ConnectionState = new KeyNameResult
-                    {
-                        Id = ( int ) cr.ConnectionState,
-                        Name = cr.ConnectionState.ToString()
-                    },
+                    Requester = PersonResult.NameOnly( cr.PersonAlias ),
+                    ConnectionState = cr.ConnectionState,
                     ConnectionStatus = new KeyNameResult
                     {
                         Id = cr.ConnectionStatus.Id,
@@ -127,51 +111,14 @@ namespace Rock.AI.Agent.Skills
                         }
                     },
                     CreatedDateTime = cr.CreatedDateTime,
-                    Connector = cr.ConnectorPersonAlias != null
-                        ? new PersonResult
-                        {
-                            Id = cr.ConnectorPersonAlias.Person.Id,
-                            LastName = cr.ConnectorPersonAlias.Person.LastName,
-                            NickName = cr.ConnectorPersonAlias.Person.NickName,
-                            IncludeAvatarUrl = false,
-                        }
-                        : null,
-                    AttributeValues = cr.ConnectionRequestAttributeValues.GetAttributeValueResults( AgentRequestContext ).ToList(),
+                    Connector = PersonResult.NameOnly( cr.ConnectorPersonAlias ),
+                    AttributeValues = cr.ConnectionRequestAttributeValues.GetGridAttributeValueResults( AgentRequestContext ).ToList(),
                 } )
-                .OrderBy( cr => cr.Id )
-                .Skip( offset )
-                .Take( take )
-                .ToList();
+                .OrderByDescending( cr => cr.CreatedDateTime.HasValue )
+                .ThenByDescending( cr => cr.CreatedDateTime )
+                .ThenBy( cr => cr.Id );
 
-            // Run security on each person (removes any data they shouldn't see)
-            foreach ( var request in connectionRequests )
-            {
-                request.SanitizeForSecurity( AgentRequestContext.RockRequestContext.CurrentPerson );
-            }
-
-            var hasMore = connectionRequests.Count > basePageSize;
-            if ( hasMore )
-            {
-                connectionRequests.RemoveAt( connectionRequests.Count - 1 ); // drop lookahead row
-            }
-
-            var meta = new Dictionary<string, object>
-            {
-                ["personKey"] = requesterPersonIdKey,
-                ["pageNumber"] = pageNumber,
-                ["pageSize"] = basePageSize,
-                ["returnedRows"] = connectionRequests.Count,
-                ["hasMore"] = hasMore,
-            };
-
-            if ( !connectionRequests.Any() )
-            {
-                return NoData()
-                    .WithMetadata( meta );
-            }
-
-            return Success( connectionRequests )
-                .WithMetadata( meta );
+            return helper.GetPaginatedResult( connectionRequestQry, pageNumber, 5 );
         }
 
         #endregion

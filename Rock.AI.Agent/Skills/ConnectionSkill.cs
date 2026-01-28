@@ -73,16 +73,9 @@ namespace Rock.AI.Agent.Skills
             return new ConnectionRequestResult
             {
                 Id = connectionRequest.Id,
-                Requester = new PersonResult
-                {
-                    Id = connectionRequest.PersonAlias.Person.Id,
-                    FirstName = connectionRequest.PersonAlias.Person.FirstName,
-                    LastName = connectionRequest.PersonAlias.Person.LastName,
-                    NickName = connectionRequest.PersonAlias.Person.NickName,
-                    PhotoId = connectionRequest.PersonAlias.Person.PhotoId
-                },
+                Requester = PersonResult.Basic( connectionRequest.PersonAlias ),
                 Comments = connectionRequest.Comments,
-                ConnectionState = new KeyNameResult { Id = ( int ) connectionRequest.ConnectionState, Name = connectionRequest.ConnectionState.ToString() },
+                ConnectionState = connectionRequest.ConnectionState,
                 ConnectionStatus = new KeyNameResult { Id = connectionRequest.ConnectionStatus.Id, Name = connectionRequest.ConnectionStatus.Name },
                 ConnectionOpportunity = new ConnectionOpportunityResult
                 {
@@ -99,14 +92,7 @@ namespace Rock.AI.Agent.Skills
                 FollowupDate = connectionRequest.FollowupDate,
                 Campus = connectionRequest.Campus != null ? new CampusResult { Id = connectionRequest.Campus.Id, Name = connectionRequest.Campus.Name } : null,
                 AssignedGroup = connectionRequest.AssignedGroup != null ? new GroupResult { Id = connectionRequest.AssignedGroup.Id, Name = connectionRequest.AssignedGroup.Name } : null,
-                Connector = connectionRequest.ConnectorPersonAlias != null ? new PersonResult
-                {
-                    Id = connectionRequest.ConnectorPersonAlias.Person.Id,
-                    FirstName = connectionRequest.ConnectorPersonAlias.Person.FirstName,
-                    LastName = connectionRequest.ConnectorPersonAlias.Person.LastName,
-                    NickName = connectionRequest.ConnectorPersonAlias.Person.NickName,
-                    PhotoId = connectionRequest.ConnectorPersonAlias.Person.PhotoId
-                } : null,
+                Connector = PersonResult.Basic( connectionRequest.ConnectorPersonAlias ),
                 AttributeValues = connectionRequest.ConnectionRequestAttributeValues.GetAttributeValueResults( AgentRequestContext ).ToList(),
             };
         }

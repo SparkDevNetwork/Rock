@@ -34,7 +34,7 @@ namespace Rock.AI.Agent.Skills
             string connectionOpportunityIdKey = null )
         {
             using var rockContext = _rockContextFactory.CreateRockContext();
-            var helper = new AgentEntityHelper( rockContext, AgentRequestContext, _logger );
+            var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
 
             if ( connectionRequestIdKey.IsNotNullOrWhiteSpace() )
             {
@@ -96,7 +96,7 @@ namespace Rock.AI.Agent.Skills
             List<AttributeValueResult> attributeValues = null )
         {
             using var rockContext = _rockContextFactory.CreateRockContext();
-            var helper = new AgentEntityHelper( rockContext, AgentRequestContext, _logger );
+            var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
 
             ConnectionRequest connectionRequest;
 
@@ -186,7 +186,7 @@ namespace Rock.AI.Agent.Skills
 
         #endregion
 
-        private static ConnectionStatus GetConnectionStatusOrDefault( AgentEntityHelper helper, string statusIdKey, ConnectionOpportunity opportunity )
+        private static ConnectionStatus GetConnectionStatusOrDefault( AgentToolHelper helper, string statusIdKey, ConnectionOpportunity opportunity )
         {
             if ( statusIdKey.IsNotNullOrWhiteSpace() )
             {
