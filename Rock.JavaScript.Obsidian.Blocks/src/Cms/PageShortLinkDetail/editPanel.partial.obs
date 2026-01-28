@@ -1,130 +1,134 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <fieldset>
-        <div class="text-right">
-            <Switch v-model="isScheduled"
-                    text="Enable Scheduled Redirects" />
-        </div>
+    <ContentSectionContainer :sidebar="false">
+        <ContentSection disableCollapse
+                        icon="ti ti-settings"
+                        title="General">
+            <ContentStack>
+                <div class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="site"
+                                      :showBlankItem="false"
+                                      label="Site"
+                                      rules="required"
+                                      help="The site to use for the short link."
+                                      :items="siteOptions" />
+                    </div>
+                </div>
+                <Switch v-model="isScheduled"
+                        text="Enable Scheduled Redirects" />
 
-        <div class="row">
-            <div class="col-md-6">
-                <DropDownList v-model="site"
-                              :showBlankItem="false"
-                              label="Site"
-                              rules="required"
-                              help="The site to use for the short link."
-                              :items="siteOptions" />
-            </div>
-            <div class="col-md-6">
-                <TextBox v-model="token"
-                         label="Token"
+                <TextBox v-model="url"
+                         :label="urlLabel"
                          rules="required"
-                         help="The token to use for the short link. Must be unique." />
-            </div>
-        </div>
+                         :help="urlHelp" />
 
-        <TextBox v-model="url"
-                 :label="urlLabel"
-                 rules="required"
-                 :help="urlHelp" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="token"
+                                 label="Token"
+                                 rules="required"
+                                 help="The token to use for the short link. Must be unique." />
+                    </div>
 
-        <div class="row">
-            <div class="col-md-6">
-                <CategoryPicker v-model="category"
-                                label="Category"
-                                :entityTypeGuid="EntityType.PageShortLink"
-                                :multiple="false" />
-            </div>
+                    <div class="col-md-6">
+                        <TextBox v-model="linkText"
+                                 label="Short Link"
+                                 :isReadOnly="true"
+                                 @click="selectShortLink">
+                            <template #inputGroupAppend>
+                                <div ref="copyShortLinkRef"
+                                     class="input-group-addon cursor-pointer"
+                                     title="Copy"
+                                     @click="copyShortLink">
+                                    <i class="ti ti-clipboard"></i>
+                                </div>
+                            </template>
+                        </TextBox>
+                    </div>
+                </div>
 
-            <div class="col-md-6">
-                <TextBox v-model="linkText"
-                         label="Short Link"
-                         :isReadOnly="true"
-                         @click="selectShortLink">
-                    <template #inputGroupAppend>
-                        <div ref="copyShortLinkRef"
-                             class="input-group-addon cursor-pointer"
-                             title="Copy"
-                             @click="copyShortLink">
-                            <i class="ti ti-clipboard"></i>
-                        </div>
-                    </template>
-                </TextBox>
-            </div>
-        </div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <NumberBox :modelValue="expireInDays"
+                                   help="Sets the number of days before the short link expires. Once expired, the link and its tracking data will be permanently deleted. Leave blank for no expiration."
+                                   label="Link Expiration"
+                                   @update:modelValue="expireInDays = $event">
+                            <template #inputGroupAppend>
+                                <span class="input-group-addon">Days</span>
+                            </template>
+                        </NumberBox>
+                    </div>
+                </div>
 
-        <div class="row">
-            <div class="col-md-6">
-                <CheckBox v-model="isPinned" label="Pinned" />
-            </div>
-            <div class="col-md-6">
-                <NumberBox :modelValue="expireInDays"
-                           help="Sets the number of days before the short link expires. Once expired, the link and its tracking data will be permanently deleted. Leave blank for no expiration."
-                           label="Expire In Days"
-                           @update:modelValue="expireInDays = $event" />
-            </div>
-        </div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <CategoryPicker v-model="category"
+                                        label="Category"
+                                        :entityTypeGuid="EntityType.PageShortLink"
+                                        :multiple="false" />
+                    </div>
+                </div>
 
-        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+                <CheckBox v-model="isPinned"
+                          help="Select this for your most important Short Links, those you will use often. Links you pin will be displayed at the top of your Short Links list."
+                          label="Pinned" />
+                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+            </ContentStack>
+        </ContentSection>
 
-        <template v-if="isScheduled">
-            <h2>Scheduled Redirects</h2>
+        <ContentSection v-if="isScheduled"
+                        icon="ti ti-route-alt-left"
+                        :isCollapsed="!isScheduledRedirectsExpandedByDefault"
+                        title="Scheduled Redirects">
+            <ContentStack description="Below, you can provide alternate URLs that will be activated according to the schedule you set. The configuration above will serve as the default when no scheduled links are active."
+                          headerLocation="top"
+                          title="Configure Your Redirects">
+                <Grid :data="scheduledRedirectsGridData" keyField="id" light liveUpdates>
+                    <ReorderColumn @orderChanged="onScheduledRedirectOrderChanged" />
 
-            <p>
-                Below, you can provide alternate URLs that will be activated
-                according to the schedule you set. The configuration above will
-                serve as the default when no scheduled links are active.
-            </p>
+                    <TextColumn name="url"
+                                title="URL"
+                                field="url" />
 
-            <Grid :data="scheduledRedirectsGridData" keyField="id" light liveUpdates>
-                <ReorderColumn @orderChanged="onScheduledRedirectOrderChanged" />
+                    <TextColumn name="schedule"
+                                title="Schedule"
+                                field="scheduleText" />
 
-                <TextColumn name="url"
-                            title="URL"
-                            field="url" />
+                    <TextColumn name="daterange"
+                                title="Date Range"
+                                field="scheduleRangeText" />
 
-                <TextColumn name="schedule"
-                            title="Schedule"
-                            field="scheduleText" />
+                    <EditColumn @click="onEditScheduledRedirectClick" />
 
-                <TextColumn name="daterange"
-                            title="Date Range"
-                            field="scheduleRangeText" />
+                    <DeleteColumn @click="onDeleteScheduledRedirectClick" />
+                </Grid>
 
-                <EditColumn @click="onEditScheduledRedirectClick" />
+                <div class="text-right">
+                    <RockButton btnSize="sm"
+                                isSquare
+                                @click="onAddScheduledRedirectClick">
+                        <i class="ti ti-plus"></i>
+                    </RockButton>
+                </div>
+            </ContentStack>
+        </ContentSection>
 
-                <DeleteColumn @click="onDeleteScheduledRedirectClick" />
-            </Grid>
-
-            <div class="text-right">
-                <RockButton btnSize="sm"
-                            isSquare
-                            @click="onAddScheduledRedirectClick">
-                    <i class="ti ti-plus"></i>
-                </RockButton>
-            </div>
-            <br />
-        </template>
-
-        <ContentSection title="Advanced Settings" isCollapsed>
+        <ContentSection icon="ti ti-target"
+                        isCollapsed
+                        title="Tracking Settings">
             <div class="row">
                 <div class="col-md-6">
-                    <DefinedValuePicker
-                                        v-model="utmSource"
+                    <DefinedValuePicker v-model="utmSource"
                                         label="UTM Source"
                                         :definedTypeGuid="DefinedType.UtmSource"
                                         help="The UTM source parameter identifies the origin of your traffic, like a search engine, newsletter, or specific website, helping to pinpoint which platforms are directing visitors to your site."
                                         showBlankItem
                                         allowAdd />
-                    <DefinedValuePicker
-                                        v-model="utmCampaign"
-                                        label="UTM Campaign"
-                                        :definedTypeGuid="DefinedType.UtmCampaign"
-                                        help="The UTM campaign parameter tags your traffic with specific campaign names, enabling you to measure the performance of individual marketing campaigns and understand their impact on your traffic."
-                                        showBlankItem
-                                        allowAdd />
                 </div>
+            </div>
 
+            <div class="row">
                 <div class="col-md-6">
                     <DefinedValuePicker
                                         v-model="utmMedium"
@@ -135,6 +139,18 @@
                                         allowAdd />
                 </div>
             </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <DefinedValuePicker v-model="utmCampaign"
+                                        label="UTM Campaign"
+                                        :definedTypeGuid="DefinedType.UtmCampaign"
+                                        help="The UTM campaign parameter tags your traffic with specific campaign names, enabling you to measure the performance of individual marketing campaigns and understand their impact on your traffic."
+                                        showBlankItem
+                                        allowAdd />
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col-md-6">
                     <TextBox
@@ -142,6 +158,9 @@
                              label="UTM Term"
                              help="The UTM term parameter is used to track the keywords or terms in a paid search campaign, providing insights into which specific words or phrases are most effective in driving traffic to your website." />
                 </div>
+            </div>
+
+            <div class="row">
                 <div class="col-md-6">
                     <TextBox
                              v-model="utmContent"
@@ -155,13 +174,15 @@
                                v-model="editScheduledRedirect"
                                @close="isEditScheduledRedirectVisible = false"
                                @save="onSaveScheduledRedirectClick" />
-    </fieldset>
+    </ContentSectionContainer>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch, onMounted } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
@@ -229,6 +250,8 @@
     const scheduledRedirectsGridData = ref<GridDataBag>({ rows: scheduledRedirects.value });
     const isEditScheduledRedirectVisible = ref(false);
     const editScheduledRedirect = ref<ScheduledRedirect>({ id: "" });
+
+    const isScheduledRedirectsExpandedByDefault = isScheduled.value;
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().

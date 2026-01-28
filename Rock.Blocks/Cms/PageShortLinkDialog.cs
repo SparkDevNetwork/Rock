@@ -88,6 +88,7 @@ namespace Rock.Blocks.Cms
             box.Entity.Site = defaultSite ?? new ListItemBag();
             box.Entity.Url = PageParameter( PageParameterKey.Url );
             box.Entity.IsPinned = true; // Set IsPinned to True by default for manual Short Link creations.
+            box.Entity.ExpireInDays = null;
 
             if ( defaultSiteId != 0 )
             {
@@ -226,6 +227,18 @@ namespace Rock.Blocks.Cms
 
             box.IfValidProperty( nameof( box.Bag.IsPinned ),
                 () => entity.IsPinned = box.Bag.IsPinned );
+
+            box.IfValidProperty( nameof( box.Bag.ExpireInDays ), () =>
+            {
+                if ( box.Bag.ExpireInDays.HasValue && box.Bag.ExpireInDays.Value >= 0 )
+                {
+                    entity.ExpireDate = RockDateTime.Today.AddDays( box.Bag.ExpireInDays.Value );
+                }
+                else
+                {
+                    entity.ExpireDate = null;
+                }
+            } );
 
             box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>

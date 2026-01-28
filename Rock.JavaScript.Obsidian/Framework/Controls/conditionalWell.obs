@@ -6,5 +6,5 @@
 </template>
 
 <script setup lang="ts">
-    // Implement logic here.
+    // No logic needed; this is just a styled container.
 </script>

@@ -33,6 +33,55 @@ namespace Rock.AI.Agent
     /// </summary>
     internal static class AttributeValueExtensions
     {
+        #region Constants
+
+        /// <summary>
+        /// The expression for <see cref="GetAttributeValueResults(IEnumerable{QueryableAttributeValue}, AgentRequestContext)"/>
+        /// and <see cref="GetAttributeValueResultsExpression"/>.
+        /// </summary>
+        private static readonly Expression<Func<IEnumerable<QueryableAttributeValue>, AgentRequestContext, IEnumerable<AttributeValueResult>>> _getAttributeValueResultsExpression = ( attributeValues, context ) => attributeValues
+            .Where( a => context.AudienceType == AudienceType.Internal || a.IsPublic )
+            .Select( a => new AttributeValueResult
+            {
+                AttributeId = a.AttributeId,
+                Value = a.PersistedTextValue,
+                Name = a.Name,
+                Key = a.Key,
+                TextValue = a.PersistedTextValue,
+            } );
+
+        /// <summary>
+        /// The compiled function for <see cref="GetAttributeValueResults(IEnumerable{QueryableAttributeValue}, AgentRequestContext)"/>.
+        /// </summary>
+        private static readonly Lazy<Func<IEnumerable<QueryableAttributeValue>, AgentRequestContext, IEnumerable<AttributeValueResult>>> _getAttributeValueResultsFunc =
+            new Lazy<Func<IEnumerable<QueryableAttributeValue>, AgentRequestContext, IEnumerable<AttributeValueResult>>>( () => _getAttributeValueResultsExpression.Compile() );
+
+        /// <summary>
+        /// The expression for <see cref="GetGridAttributeValueResults(IEnumerable{QueryableAttributeValue}, AgentRequestContext)"/>
+        /// and <see cref="GetGridAttributeValueResultsExpression"/>.
+        /// </summary>
+        private static readonly Expression<Func<IEnumerable<QueryableAttributeValue>, AgentRequestContext, IEnumerable<AttributeValueResult>>> _getGridAttributeValueResultsExpression = ( attributeValues, context ) => attributeValues
+            .Where( a => ( context.AudienceType == AudienceType.Internal || a.IsPublic )
+                && a.IsGridColumn )
+            .Select( a => new AttributeValueResult
+            {
+                AttributeId = a.AttributeId,
+                Value = a.PersistedTextValue,
+                Name = a.Name,
+                Key = a.Key,
+                TextValue = a.PersistedTextValue,
+            } );
+
+        /// <summary>
+        /// The compiled function for <see cref="GetGridAttributeValueResults(IEnumerable{QueryableAttributeValue}, AgentRequestContext)"/>.
+        /// </summary>
+        private static readonly Lazy<Func<IEnumerable<QueryableAttributeValue>, AgentRequestContext, IEnumerable<AttributeValueResult>>> _getGridAttributeValueResultsFunc =
+            new Lazy<Func<IEnumerable<QueryableAttributeValue>, AgentRequestContext, IEnumerable<AttributeValueResult>>>( () => _getGridAttributeValueResultsExpression.Compile() );
+
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Returns a collection of attribute value results from the queryable
         /// attribute values. This should be used when retrieving attribute values
@@ -40,22 +89,11 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <param name="attributeValues">The colleciton of queryable attribute values to be converted.</param>
         /// <param name="agentRequestContext">The agent's request context, this is used to perform additional security checks.</param>
-        /// <returns>A colleciton of <see cref="AttributeValueResult"/> objects that represent the attribute values.</returns>
+        /// <returns>A collection of <see cref="AttributeValueResult"/> objects that represent the attribute values.</returns>
         [Expandable( nameof( GetAttributeValueResultsExpression ) )]
         public static IEnumerable<AttributeValueResult> GetAttributeValueResults( this IEnumerable<QueryableAttributeValue> attributeValues, AgentRequestContext agentRequestContext )
         {
-            var isInternal = agentRequestContext.AudienceType == AudienceType.Internal;
-
-            return attributeValues
-                .Where( a => isInternal || a.IsPublic )
-                .Select( a => new AttributeValueResult
-                {
-                    AttributeId = a.AttributeId,
-                    Value = a.PersistedTextValue,
-                    Name = a.Name,
-                    Key = a.Key,
-                    TextValue = a.PersistedTextValue,
-                } );
+            return _getAttributeValueResultsFunc.Value( attributeValues, agentRequestContext );
         }
 
         /// <summary>
@@ -65,7 +103,7 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <param name="entity">The entity whose attributes need to be retrieved.</param>
         /// <param name="agentRequestContext"></param>
-        /// <returns></returns>
+        /// <returns>A collection of <see cref="AttributeValueResult"/> objects that represent the attribute values.</returns>
         public static IEnumerable<AttributeValueResult> GetAttributeValueResults( this IHasAttributes entity, AgentRequestContext agentRequestContext )
         {
             if ( entity == null )
@@ -95,22 +133,75 @@ namespace Rock.AI.Agent
         /// <summary>
         /// Returns a collection of attribute value results from the queryable
         /// attribute values. This should be used when retrieving attribute values
-        /// directly from the database without materializing the entity. This must
-        /// be kept in sync with <see cref="GetAttributeValueResults(IEnumerable{QueryableAttributeValue}, AgentRequestContext)"/>.
+        /// directly from the database without materializing the entity.
         /// </summary>
         /// <returns>An expression that can be used in LINQ to SQL to gather the attribute values.</returns>
         private static Expression<Func<IEnumerable<QueryableAttributeValue>, AgentRequestContext, IEnumerable<AttributeValueResult>>> GetAttributeValueResultsExpression()
         {
-            return ( attributeValues, context ) => attributeValues
-                .Where( a => context.AudienceType == AudienceType.Internal || a.IsPublic )
+            return _getAttributeValueResultsExpression;
+        }
+
+        /// <summary>
+        /// Returns a collection of attribute value results from the queryable
+        /// attribute values. This should be used when retrieving attribute values
+        /// directly from the database without materializing the entity. Only
+        /// values for attributes marked as Show on Grid are included.
+        /// </summary>
+        /// <param name="attributeValues">The colleciton of queryable attribute values to be converted.</param>
+        /// <param name="agentRequestContext">The agent's request context, this is used to perform additional security checks.</param>
+        /// <returns>A collection of <see cref="AttributeValueResult"/> objects that represent the attribute values.</returns>
+        [Expandable( nameof( GetGridAttributeValueResultsExpression ) )]
+        public static IEnumerable<AttributeValueResult> GetGridAttributeValueResults( this IEnumerable<QueryableAttributeValue> attributeValues, AgentRequestContext agentRequestContext )
+        {
+            return _getGridAttributeValueResultsFunc.Value( attributeValues, agentRequestContext );
+        }
+
+        /// <summary>
+        /// Returns a collection of attribute values that should be included
+        /// in the entity result object. This should be used when the entity
+        /// has been fully materialized into memory.
+        /// </summary>
+        /// <param name="entity">The entity whose attributes need to be retrieved.</param>
+        /// <param name="agentRequestContext"></param>
+        /// <returns>A collection of <see cref="AttributeValueResult"/> objects that represent the attribute values.</returns>
+        public static IEnumerable<AttributeValueResult> GetGridAttributeValueResults( this IHasAttributes entity, AgentRequestContext agentRequestContext )
+        {
+            if ( entity == null )
+            {
+                return Array.Empty<AttributeValueResult>();
+            }
+
+            if ( entity.Attributes == null )
+            {
+                entity.LoadAttributes( agentRequestContext.RockContext );
+            }
+
+            var isInternal = agentRequestContext.AudienceType == AudienceType.Internal;
+
+            return entity.Attributes.Values
+                .Where( a => ( isInternal || a.IsPublic )
+                    && a.IsGridColumn )
                 .Select( a => new AttributeValueResult
                 {
-                    AttributeId = a.AttributeId,
-                    Value = a.PersistedTextValue,
+                    AttributeId = a.Id,
+                    Value = entity.GetAttributeValue( a.Key ),
                     Name = a.Name,
                     Key = a.Key,
-                    TextValue = a.PersistedTextValue,
+                    TextValue = entity.GetAttributeTextValue( a.Key ),
                 } );
         }
+
+        /// <summary>
+        /// Returns a collection of attribute value results from the queryable
+        /// attribute values. This should be used when retrieving attribute values
+        /// directly from the database without materializing the entity.
+        /// </summary>
+        /// <returns>An expression that can be used in LINQ to SQL to gather the attribute values.</returns>
+        private static Expression<Func<IEnumerable<QueryableAttributeValue>, AgentRequestContext, IEnumerable<AttributeValueResult>>> GetGridAttributeValueResultsExpression()
+        {
+            return _getGridAttributeValueResultsExpression;
+        }
+
+        #endregion
     }
 }

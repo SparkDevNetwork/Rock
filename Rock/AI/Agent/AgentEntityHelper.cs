@@ -135,9 +135,9 @@ namespace Rock.AI.Agent
 
             var result = RockToolResult.Error( _errors );
 
-            if ( _instructions.Count > 0 )
+            foreach ( var instruction in _instructions )
             {
-                result.WithInstructions( string.Join( ";", _instructions ) );
+                result.WithInstructions( instruction );
             }
 
             foreach ( var kvp in _metadata )

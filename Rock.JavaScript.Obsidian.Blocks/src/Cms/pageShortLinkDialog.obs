@@ -60,8 +60,14 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-md-6">
                         <CheckBox v-model="isPinned" label="Pinned" />
+                    </div>
+                   <div class="col-md-6">
+                        <NumberBox :modelValue="expireInDays"
+                                   help="Sets the number of days before the short link expires. Once expired, the link and its tracking data will be permanently deleted. Leave blank for no expiration."
+                                   label="Expire In Days"
+                                   @update:modelValue="expireInDays = $event" />
                     </div>
                 </div>
                 <Panel title="Advanced Settings" hasCollapse>
@@ -119,24 +125,31 @@
 
 <script setup lang="ts">
     import { computed, ref, onMounted } from "vue";
-    import { propertyRef } from "@Obsidian/Utility/component";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import TextBox from "@Obsidian/Controls/textBox.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
-    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
-    import Panel from "@Obsidian/Controls/panel.obs";
-    import { getSecurityGrant, provideSecurityGrant, setPropertiesBoxValue, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { PageShortLinkBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkBag";
-    import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import {
+        getSecurityGrant,
+        provideSecurityGrant,
+        setPropertiesBoxValue,
+        useConfigurationValues,
+        useInvokeBlockAction
+    } from "@Obsidian/Utility/block";
+    import { propertyRef } from "@Obsidian/Utility/component";
     import { showTooltip, tooltip } from "@Obsidian/Utility/tooltip";
+    import { PageShortLinkBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkBag";
+    import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const invokeBlockAction = useInvokeBlockAction();
     const config = useConfigurationValues<DetailBlockBox<PageShortLinkBag, PageShortLinkDetailOptionsBag>>();
@@ -151,6 +164,7 @@
     const token = propertyRef(config?.entity?.token ?? "", "Token");
     const category = propertyRef(config?.entity?.category ?? {}, "Category");
     const isPinned = propertyRef(config?.entity?.isPinned ?? true, "IsPinned");
+    const expireInDays = propertyRef(config?.entity?.expireInDays, "ExpireInDays");
     const utmSource = ref(config?.entity?.utmSettings?.utmSource ?? {});
     const utmMedium = ref(config?.entity?.utmSettings?.utmMedium ?? {});
     const utmCampaign = ref(config?.entity?.utmSettings?.utmCampaign ?? {});
@@ -199,6 +213,7 @@
         setPropertiesBoxValue(box, "url", url.value);
         setPropertiesBoxValue(box, "category", category.value);
         setPropertiesBoxValue(box, "isPinned", isPinned.value);
+        setPropertiesBoxValue(box, "expireInDays", expireInDays.value);
         setPropertiesBoxValue(box, "utmSettings", {
             utmSource: utmSource.value,
             utmMedium: utmMedium.value,

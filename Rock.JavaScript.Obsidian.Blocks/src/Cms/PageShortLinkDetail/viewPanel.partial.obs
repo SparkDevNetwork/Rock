@@ -43,6 +43,7 @@
     import { PageShortLinkBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkBag";
     import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
     import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+    import { isNullish } from "@Obsidian/Utility/util";
 
     const props = defineProps({
         modelValue: {
@@ -96,6 +97,10 @@
             else {
                 valueBuilder.addTextValue("URL", props.modelValue.url);
             }
+        }
+
+        if (!isNullish(props.modelValue.expireInDays)) {
+            valueBuilder.addTextValue("Expire In Days", props.modelValue.expireInDays.toLocaleString());
         }
 
         if (props.modelValue.category?.text) {

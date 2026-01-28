@@ -58,7 +58,7 @@ namespace Rock.AI.Agent.Classes.Common
         /// Gets optional, model-facing guidance about what to do next (for example, ask for missing inputs).
         /// </summary>
         [JsonInclude, JsonIgnore( Condition = JsonIgnoreCondition.WhenWritingNull )]
-        internal string Instructions { get; private set; }
+        internal List<string> Instructions { get; private set; }
 
         /// <summary>
         /// Gets arbitrary content that should be added to chat history but not serialized in the tool result payload.
@@ -182,13 +182,20 @@ namespace Rock.AI.Agent.Classes.Common
         #region Fluent API
 
         /// <summary>
-        /// Adds optional, model-facing guidance to this result and returns the same instance.
+        /// Adds optional, model-facing guidance to this result and returns the
+        /// same instance. Multiple instructions can be added to a single result.
         /// </summary>
         /// <param name="instructions">The guidance text to include.</param>
         /// <returns>The same <see cref="RockToolResult"/> instance for further chaining.</returns>
         public RockToolResult WithInstructions( string instructions )
         {
-            Instructions = instructions;
+            if ( Instructions == null )
+            {
+                Instructions = new List<string>();
+            }
+
+            Instructions.Add( instructions );
+
             return this;
         }
 
