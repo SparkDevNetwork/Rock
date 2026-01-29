@@ -66,8 +66,14 @@
                    <div class="col-md-6">
                         <NumberBox :modelValue="expireInDays"
                                    help="Sets the number of days before the short link expires. Once expired, the link and its tracking data will be permanently deleted. Leave blank for no expiration."
-                                   label="Expire In Days"
-                                   @update:modelValue="expireInDays = $event" />
+                                   label="Link Expiration"
+                                   :maximumValue="2147483647"
+                                   :minimumValue="-2147483648"
+                                   @update:modelValue="expireInDays = $event">
+                            <template #inputGroupAppend>
+                                <span class="input-group-addon">Days</span>
+                            </template>
+                        </NumberBox>
                     </div>
                 </div>
                 <Panel title="Advanced Settings" hasCollapse>

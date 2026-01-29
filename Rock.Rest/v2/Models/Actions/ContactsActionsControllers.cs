@@ -97,13 +97,14 @@ namespace Rock.Rest.v2.Models.Actions
                     );
                 }
 
-                var contacts = qry.OrderByDescending( c => c.Id )
+                var contacts = qry.OrderBy( c => c.LastName )
                     .Skip( option.Offset )
                     .Take( option.Limit )
                     .ToList();
 
                 var result = contacts.Select( c => new ContactItem
                 {
+                    Gender = c.Gender.ToMobile(),
                     ContactIdKey = c.IdKey,
                     ContactId = c.Id,
                     Name = c.FirstName + " " + c.LastName,

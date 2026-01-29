@@ -26,6 +26,7 @@ import { CommunicationEntryWizardCommunicationBag } from "@Obsidian/ViewModels/B
 import { CommunicationEntryWizardCommunicationTemplateDetailBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateDetailBag";
 import { CommunicationEntryWizardCommunicationTemplateListItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateListItemBag";
 import { CommunicationEntryWizardRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardRecipientBag";
+import { SmsFromNumberListItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/smsFromNumberListItemBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Box containing initialization information for the Communication Entry Wizard block. */
@@ -42,6 +43,7 @@ export type CommunicationEntryWizardInitializationBox = {
     /** Gets or sets the communication details being created/edited. */
     communication?: CommunicationEntryWizardCommunicationBag | null;
 
+    /** Gets or sets the available communication list groups. */
     communicationListGroups?: ListItemBag[] | null;
 
     /** Gets or sets the initial communication template detail. */
@@ -65,6 +67,7 @@ export type CommunicationEntryWizardInitializationBox = {
     /** Gets or sets a value indicating whether adding individuals to recipient lists is disabled. */
     isAddingIndividualsToRecipientListsDisabled: boolean;
 
+    /** Gets or sets whether the duplicate prevention option should be shown. */
     isDuplicatePreventionOptionShown: boolean;
 
     /** Gets or sets whether the communication wizard block should be hidden. */
@@ -82,6 +85,7 @@ export type CommunicationEntryWizardInitializationBox = {
     /** Gets or sets the communication mediums. */
     mediums?: ListItemBag[] | null;
 
+    /** Gets or sets the merge fields. */
     mergeFields?: string[] | null;
 
     /** Gets or sets the minimum number of characters for short link tokens. */
@@ -96,6 +100,7 @@ export type CommunicationEntryWizardInitializationBox = {
     /** Gets or sets the applications that support push notifications. */
     pushApplications?: ListItemBag[] | null;
 
+    /** Gets or sets the recipients. */
     recipients?: CommunicationEntryWizardRecipientBag[] | null;
 
     /** Gets or sets the security grant token. */
@@ -110,7 +115,8 @@ export type CommunicationEntryWizardInitializationBox = {
     /** Gets or sets the SMS accepted MIME types. */
     smsAcceptedMimeTypes?: string[] | null;
 
-    smsFromNumbers?: ListItemBag[] | null;
+    /** Gets or sets the SMS "from" numbers. */
+    smsFromNumbers?: SmsFromNumberListItemBag[] | null;
 
     /** Gets or sets the SMS media size limit in bytes. */
     smsMediaSizeLimitBytes: number;

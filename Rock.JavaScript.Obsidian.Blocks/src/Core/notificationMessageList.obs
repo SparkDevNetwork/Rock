@@ -78,28 +78,36 @@
     import MessageComponent from "./NotificationMessageList/message.partial.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
-    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { computed, nextTick, reactive, ref, watch } from "vue";
     import { SlidingDateRange, calculateSlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
-    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { pluralize, safeParseJson } from "@Obsidian/Utility/stringUtils";
     import { MarkMessagesAsReadRequestBag } from "@Obsidian/ViewModels/Blocks/Core/NotificationMessageList/markMessagesAsReadRequestBag";
     import { MarkMessagesAsReadResponseBag } from "@Obsidian/ViewModels/Blocks/Core/NotificationMessageList/markMessagesAsReadResponseBag";
     import { NotificationMessageListInitializationBox } from "@Obsidian/ViewModels/Blocks/Core/NotificationMessageList/notificationMessageListInitializationBox";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { NotificationMessageBag } from "@Obsidian/ViewModels/Blocks/Core/NotificationMessageList/notificationMessageBag";
 
+    const enum PreferenceKey {
+        ShowReadFilter = "show-read-filter",
+        MessageFilterComponent = "message-filter-component",
+        DateRangeFilter = "date-range-filter"
+    }
+
     const config = useConfigurationValues<NotificationMessageListInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
     const disableAnimation = ref(false);
 
     const messagesContainerElement = ref<HTMLElement>();
     const allMessages = reactive<NotificationMessageBag[]>(config.messages ?? []);
-    const showReadFilter = ref<"" | "read" | "unread">("");
-    const messageComponentFilter = ref<string[]>([]);
+    const showReadFilter = ref<"" | "read" | "unread">((preferences.getValue(PreferenceKey.ShowReadFilter) as "" | "read" | "unread") ?? "");
+    const messageComponentFilter = ref<string[]>(safeParseJson(preferences.getValue(PreferenceKey.MessageFilterComponent)) ?? []);
     const messageComponentFilterItems = ref(config.componentTypes ?? []);
-    const dateRangeFilter = ref<SlidingDateRange | null>(null);
+    const dateRangeFilter = ref<SlidingDateRange | null>(safeParseJson(preferences.getValue(PreferenceKey.DateRangeFilter)) ?? null);
 
     const showReadFilterItems: ListItemBag[] = [
         {
@@ -262,6 +270,12 @@
     // #endregion
 
     watch([messageComponentFilter, showReadFilter, dateRangeFilter], () => {
+        preferences.setValue(PreferenceKey.MessageFilterComponent, JSON.stringify(messageComponentFilter.value));
+        preferences.setValue(PreferenceKey.ShowReadFilter, showReadFilter.value);
+        preferences.setValue(PreferenceKey.DateRangeFilter, JSON.stringify(dateRangeFilter.value));
+
+        preferences.save();
+
         disableAnimation.value = true;
         visibleMessages.value = getFilteredMessages();
         nextTick(() => disableAnimation.value = false);

@@ -37,12 +37,18 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays a list of businesses." )]
     [IconCssClass( "ti ti-building" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
+
+    #region Block Attributes
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the business details.",
         Key = AttributeKey.DetailPage )]
 
-    [Rock.SystemGuid.BlockTypeGuid( "1e60c390-98c4-404d-aee8-f9e3e9c69705" )]
+    #endregion Block Attributes
+
+    [Rock.SystemGuid.BlockTypeGuid( "1ACCF349-73A5-4568-B801-2A6A620791D9" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "1e60c390-98c4-404d-aee8-f9e3e9c69705" )]
     [CustomizedGrid]
     [Rock.SystemGuid.EntityTypeGuid( "1214E9D9-3D0C-49AD-BD99-58C427A8A7D2" )]
     public class BusinessList : RockListBlockType<BusinessListBag>
@@ -173,6 +179,23 @@ namespace Rock.Blocks.Finance
                        .Select( member => member.Person.LastName + ", " + member.Person.NickName )
                        .ToList()
             } );
+        }
+
+        protected override IQueryable<BusinessListBag> GetOrderedListQueryable( IQueryable<BusinessListBag> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( b => b.BusinessName );
+        }
+
+        protected override List<BusinessListBag> GetListItems( IQueryable<BusinessListBag> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+            
+            foreach ( var item in items )
+            {
+                item.IdKey = Rock.Utility.IdHasher.Instance.GetHash( item.Id );
+            }
+            
+            return items;
         }
 
         protected override GridBuilder<BusinessListBag> GetGridBuilder()

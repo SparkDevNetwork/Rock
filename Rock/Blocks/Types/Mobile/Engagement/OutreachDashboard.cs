@@ -52,6 +52,13 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         Key = AttributeKeys.MyContact,
         Order = 2 )]
 
+    [TextField( "Toolbox Name",
+        Description = "The name that you want to call this tool.",
+        IsRequired = false,
+        DefaultValue = "Beacon",
+        Key = AttributeKeys.ToolboxName,
+        Order = 3 )]
+
     [SystemGuid.EntityTypeGuid( SystemGuid.EntityType.MOBILE_OUTREACH_OUTREACH_DASHBOARD_BLOCK_TYPE )]
     [SystemGuid.BlockTypeGuid( SystemGuid.BlockType.MOBILE_OUTREACH_OUTREACH_BEACON_DASHBOARD )]
     public class OutreachDashboard : RockBlockType
@@ -63,6 +70,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
             public const string BaptismInfo = "BaptismInfo";
             public const string DetailPage = "DetailPage";
             public const string MyContact = "MyContact";
+            public const string ToolboxName = "ToolboxName";
         }
 
         #endregion
@@ -380,7 +388,8 @@ namespace Rock.Blocks.Types.Mobile.Engagement
             {
                 DetailPage = GetAttributeValue( AttributeKeys.DetailPage ).AsGuidOrNull(),
                 BaptismInfoUrl = ResolveURL( GetAttributeValue( AttributeKeys.BaptismInfo ) ),
-                MyContactPage = GetAttributeValue( AttributeKeys.MyContact ).AsGuidOrNull()
+                MyContactPage = GetAttributeValue( AttributeKeys.MyContact ).AsGuidOrNull(),
+                ToolboxName = GetAttributeValue( AttributeKeys.ToolboxName ),
             };
         }
     }

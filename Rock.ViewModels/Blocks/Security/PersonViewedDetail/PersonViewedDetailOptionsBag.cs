@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,28 +15,14 @@
 // </copyright>
 //
 
-export const enum NavigationUrlKey {
-    DetailPage = "DetailPage"
+namespace Rock.ViewModels.Blocks.Security.PersonViewedList
+{
+    /// <summary>
+    /// The additional configuration options for the Person Viewed List block.
+    /// </summary>
+    public class PersonViewedDetailOptionsBag
+    {
+        public string Title { get; set; }
+    }
 }
 
-export const enum PreferenceKey {
-    FilterRecordStatus = "filter-record-status",
-}
-
-export type GridSettingsOptions = {
-    recordStatus?: string | null;
-};
-
-export type Row = {
-    id: number;
-    idKey: string;
-    businessName: string;
-    phoneNumber: string;
-    email: string;
-    street: string;
-    city: string;
-    state: string;
-    zip: string;
-    contacts: string;
-    campus: string;
-};

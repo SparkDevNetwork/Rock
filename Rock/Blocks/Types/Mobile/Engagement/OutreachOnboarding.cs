@@ -50,6 +50,13 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         Key = AttributeKey.AfterFinishAction,
         Order = 1 )]
 
+    [TextField( "Toolbox Name",
+        Description = "The name that you want to call this tool.",
+        IsRequired = false,
+        DefaultValue = "Beacon",
+        Key = AttributeKey.ToolboxName,
+        Order = 2 )]
+
     #endregion
 
     [SystemGuid.EntityTypeGuid( SystemGuid.EntityType.MOBILE_OUTREACH_OUTREACH_ONBOARDING_BLOCK_TYPE )]
@@ -62,6 +69,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         {
             public const string AddContact = "AddContact";
             public const string AfterFinishAction = "AfterFinishAction";
+            public const string ToolboxName = "ToolboxName";
         }
 
         #endregion
@@ -108,6 +116,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
             return new Rock.Common.Mobile.Blocks.Engagement.OutreachOnboarding.Configuration
             {
                 AddContactPageGuid = GetAttributeValue( AttributeKey.AddContact ).AsGuidOrNull(),
+                ToolboxName = GetAttributeValue( AttributeKey.ToolboxName ),
                 AfterFinishAction = GetAttributeValue( AttributeKey.AfterFinishAction ).FromJsonOrNull<MobileNavigationActionViewModel>() ?? new MobileNavigationActionViewModel()
             };
         }

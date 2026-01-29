@@ -19,24 +19,3 @@ export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
 }
 
-export const enum PreferenceKey {
-    FilterRecordStatus = "filter-record-status",
-}
-
-export type GridSettingsOptions = {
-    recordStatus?: string | null;
-};
-
-export type Row = {
-    id: number;
-    idKey: string;
-    businessName: string;
-    phoneNumber: string;
-    email: string;
-    street: string;
-    city: string;
-    state: string;
-    zip: string;
-    contacts: string;
-    campus: string;
-};

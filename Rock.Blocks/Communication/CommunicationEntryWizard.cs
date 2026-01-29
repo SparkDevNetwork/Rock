@@ -2207,9 +2207,10 @@ namespace Rock.Blocks.Communication
         /// </summary>
         /// <param name="currentPerson">The currently logged-in person for authorization checks.</param>
         /// <returns>A list of <see cref="ListItemBag"/> objects representing available SMS sender numbers.</returns>
-        private List<ListItemBag> GetSmsFromNumberBags( Person currentPerson )
+        private List<SmsFromNumberListItemBag> GetSmsFromNumberBags( Person currentPerson )
         {
             var selectedNumberGuids = this.AllowedSmsNumbersAttributeValue;
+            var personAliasIds = currentPerson.Aliases.Select( pa => pa.Id ).ToList();
 
             return SystemPhoneNumberCache.All( false )
                 .Where( spn => spn.IsAuthorized( Authorization.VIEW, currentPerson ) )
@@ -2217,7 +2218,12 @@ namespace Rock.Blocks.Communication
                 .OrderBy( spn => spn.Order )
                 .ThenBy( spn => spn.Name )
                 .ThenBy( spn => spn.Id )
-                .ToListItemBagList();
+                .Select( spn => new SmsFromNumberListItemBag( spn.ToListItemBag() )
+                {
+                    IsNumberAssignedToCurrentPerson = spn.AssignedToPersonAliasId.HasValue
+                        && personAliasIds.Contains( spn.AssignedToPersonAliasId.Value )
+                } )
+                .ToList();
         }
 
         /// <summary>

@@ -53,6 +53,8 @@
                         <NumberBox :modelValue="expireInDays"
                                    help="Sets the number of days before the short link expires. Once expired, the link and its tracking data will be permanently deleted. Leave blank for no expiration."
                                    label="Link Expiration"
+                                   :maximumValue="2147483647"
+                                   :minimumValue="-2147483648"
                                    @update:modelValue="expireInDays = $event">
                             <template #inputGroupAppend>
                                 <span class="input-group-addon">Days</span>
@@ -117,57 +119,59 @@
         <ContentSection icon="ti ti-target"
                         isCollapsed
                         title="Tracking Settings">
-            <div class="row">
-                <div class="col-md-6">
-                    <DefinedValuePicker v-model="utmSource"
-                                        label="UTM Source"
-                                        :definedTypeGuid="DefinedType.UtmSource"
-                                        help="The UTM source parameter identifies the origin of your traffic, like a search engine, newsletter, or specific website, helping to pinpoint which platforms are directing visitors to your site."
-                                        showBlankItem
-                                        allowAdd />
+            <ContentStack>
+                <div class="row">
+                    <div class="col-md-6">
+                        <DefinedValuePicker v-model="utmSource"
+                                            label="UTM Source"
+                                            :definedTypeGuid="DefinedType.UtmSource"
+                                            help="The UTM source parameter identifies the origin of your traffic, like a search engine, newsletter, or specific website, helping to pinpoint which platforms are directing visitors to your site."
+                                            showBlankItem
+                                            allowAdd />
+                    </div>
                 </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <DefinedValuePicker
-                                        v-model="utmMedium"
-                                        label="UTM Medium"
-                                        :definedTypeGuid="DefinedType.UtmMedium"
-                                        help='The UTM medium parameter is used to identify the marketing or advertising medium that directed a user to your site. Examples include "email", "social", "cpc" (cost per click), or "organic" for non-paid search engine traffic.'
-                                        showBlankItem
-                                        allowAdd />
+                <div class="row">
+                    <div class="col-md-6">
+                        <DefinedValuePicker
+                                            v-model="utmMedium"
+                                            label="UTM Medium"
+                                            :definedTypeGuid="DefinedType.UtmMedium"
+                                            help='The UTM medium parameter is used to identify the marketing or advertising medium that directed a user to your site. Examples include "email", "social", "cpc" (cost per click), or "organic" for non-paid search engine traffic.'
+                                            showBlankItem
+                                            allowAdd />
+                    </div>
                 </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <DefinedValuePicker v-model="utmCampaign"
-                                        label="UTM Campaign"
-                                        :definedTypeGuid="DefinedType.UtmCampaign"
-                                        help="The UTM campaign parameter tags your traffic with specific campaign names, enabling you to measure the performance of individual marketing campaigns and understand their impact on your traffic."
-                                        showBlankItem
-                                        allowAdd />
+                <div class="row">
+                    <div class="col-md-6">
+                        <DefinedValuePicker v-model="utmCampaign"
+                                            label="UTM Campaign"
+                                            :definedTypeGuid="DefinedType.UtmCampaign"
+                                            help="The UTM campaign parameter tags your traffic with specific campaign names, enabling you to measure the performance of individual marketing campaigns and understand their impact on your traffic."
+                                            showBlankItem
+                                            allowAdd />
+                    </div>
                 </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <TextBox
-                             v-model="utmTerm"
-                             label="UTM Term"
-                             help="The UTM term parameter is used to track the keywords or terms in a paid search campaign, providing insights into which specific words or phrases are most effective in driving traffic to your website." />
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox
+                                 v-model="utmTerm"
+                                 label="UTM Term"
+                                 help="The UTM term parameter is used to track the keywords or terms in a paid search campaign, providing insights into which specific words or phrases are most effective in driving traffic to your website." />
+                    </div>
                 </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <TextBox
-                             v-model="utmContent"
-                             label="UTM Content"
-                             help="The UTM content parameter helps differentiate between links that point to the same URL within the same ad or campaign, allowing you to test the effectiveness of various content elements, like text or images, in your marketing efforts." />
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox
+                                 v-model="utmContent"
+                                 label="UTM Content"
+                                 help="The UTM content parameter helps differentiate between links that point to the same URL within the same ad or campaign, allowing you to test the effectiveness of various content elements, like text or images, in your marketing efforts." />
+                    </div>
                 </div>
-            </div>
+            </ContentStack>
         </ContentSection>
 
         <EditScheduledRedirect v-if="isEditScheduledRedirectVisible"

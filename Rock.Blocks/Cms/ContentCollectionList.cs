@@ -19,40 +19,37 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Security.AuthScopeList;
+using Rock.ViewModels.Blocks.Cms.ContentCollectionList;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.Security.Oidc
+namespace Rock.Blocks.Cms
 {
     /// <summary>
-    /// Displays a list of auth scopes.
+    /// Displays a list of content collections.
     /// </summary>
-    [DisplayName( "OpenID Connect Scopes" )]
-    [Category( "Security > OIDC" )]
-    [Description( "Block for displaying and editing available OpenID Connect scopes." )]
-    [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( SiteType.Web )]
 
-    #region Block Attributes
+    [DisplayName( "Content Collection List" )]
+    [Category( "CMS" )]
+    [Description( "Displays a list of content collections." )]
+    [IconCssClass( "fa fa-list" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
-        Description = "The page that will show the auth scope details.",
+        Description = "The page that will show the content collection details.",
         Key = AttributeKey.DetailPage )]
 
-    #endregion Block Attributes
-
-    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
-    [SystemGuid.EntityTypeGuid( "a4f6030a-c5a9-44f8-abb2-22df2fcb7d91" )]
-    [SystemGuid.BlockTypeGuid( "0E407FC8-B5B9-488E-81E4-8EA5F7CFCAB3" )]
-    // was [SystemGuid.BlockTypeGuid( "9ff39411-d9ce-4a5d-b04a-2db169a688f4" )]
+    [Rock.SystemGuid.EntityTypeGuid( "87323cba-9fb8-4dde-84ed-953f1da19049" )]
+    // WAS [Rock.SystemGuid.BlockTypeGuid( "55fde870-57b0-476e-bd86-63597a8de6c1" )]
+    [Rock.SystemGuid.BlockTypeGuid( "F305FE35-2EFA-4653-AA1A-87AE990EAFEB" )]
     [CustomizedGrid]
-    public class AuthScopeList : RockEntityListBlockType<AuthScope>
+    public class ContentCollectionList : RockEntityListBlockType<ContentCollection>
     {
         #region Keys
 
@@ -66,11 +63,6 @@ namespace Rock.Blocks.Security.Oidc
             public const string DetailPage = "DetailPage";
         }
 
-        public static class PageParameterKey
-        {
-            public const string ScopeDetailId = "ScopeId";
-        }
-
         #endregion Keys
 
         #region Methods
@@ -78,12 +70,11 @@ namespace Rock.Blocks.Security.Oidc
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var box = new ListBlockBox<AuthScopeListOptionsBag>();
+            var box = new ListBlockBox<ContentCollectionListOptionsBag>();
             var builder = GetGridBuilder();
-            var isAddDeleteEnabled = GetIsAddEnabled();
 
-            box.IsAddEnabled = isAddDeleteEnabled;
-            box.IsDeleteEnabled = isAddDeleteEnabled;
+            box.IsAddEnabled = GetIsAddEnabled();
+            box.IsDeleteEnabled = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -96,10 +87,9 @@ namespace Rock.Blocks.Security.Oidc
         /// Gets the box options required for the component to render the list.
         /// </summary>
         /// <returns>The options that provide additional details to the block.</returns>
-        private AuthScopeListOptionsBag GetBoxOptions()
+        private ContentCollectionListOptionsBag GetBoxOptions()
         {
-            var options = new AuthScopeListOptionsBag();
-
+            var options = new ContentCollectionListOptionsBag();
             return options;
         }
 
@@ -120,34 +110,32 @@ namespace Rock.Blocks.Security.Oidc
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string> { [PageParameterKey.ScopeDetailId] = "((Key))", ["autoEdit"] = "true", ["returnUrl"] = this.GetCurrentPageUrl() } )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "ContentCollectionId", "((Key))" )
             };
         }
 
-        /// <inheritdoc/>
-        protected override IQueryable<AuthScope> GetListQueryable( RockContext rockContext )
+        /// <inheritdoc/>p
+        protected override IQueryable<ContentCollection> GetListQueryable( RockContext rockContext )
         {
-            var authClientService = new AuthScopeService( rockContext );
-            var authScopeQuery = authClientService.Queryable().AsNoTracking();
-            return authScopeQuery;
+            return base.GetListQueryable( rockContext ).Include( a => a.ContentCollectionSources);
+        }
+
+        protected override IQueryable<ContentCollection> GetOrderedListQueryable( IQueryable<ContentCollection> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( c => c.Name);
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<AuthScope> GetOrderedListQueryable( IQueryable<AuthScope> queryable, RockContext rockContext )
+        protected override GridBuilder<ContentCollection> GetGridBuilder()
         {
-            return queryable.OrderBy( a => a.Name );
-        }
-
-        /// <inheritdoc/>
-        protected override GridBuilder<AuthScope> GetGridBuilder()
-        {
-            return new GridBuilder<AuthScope>()
+            return new GridBuilder<ContentCollection>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
-                .AddTextField( "publicName", a => a.PublicName )
-                .AddField( "isActive", a => a.IsActive )
-                .AddField( "isSystem", a => a.IsSystem );
+                .AddField( "sources", a => a.ContentCollectionSources.Count() )
+                .AddField( "itemCount", a => a.LastIndexItemCount )
+                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddAttributeFields( GetGridAttributes() );
         }
 
         #endregion
@@ -162,17 +150,17 @@ namespace Rock.Blocks.Security.Oidc
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            var entityService = new AuthScopeService( RockContext );
+            var entityService = new ContentCollectionService( RockContext );
             var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( entity == null )
             {
-                return ActionBadRequest( $"{AuthScope.FriendlyTypeName} not found." );
+                return ActionBadRequest( $"{ContentCollection.FriendlyTypeName} not found." );
             }
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete {AuthScope.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {ContentCollection.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

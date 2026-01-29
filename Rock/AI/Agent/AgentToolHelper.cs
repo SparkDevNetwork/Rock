@@ -32,6 +32,7 @@ using Rock.Data;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.AI.Agent
@@ -43,6 +44,15 @@ namespace Rock.AI.Agent
     /// </summary>
     internal class AgentToolHelper
     {
+        #region Constants
+
+        /// <summary>
+        /// The default page size to use when paginating results.
+        /// </summary>
+        private const int DefaultPageSize = 25;
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -173,6 +183,51 @@ namespace Rock.AI.Agent
         }
 
         /// <summary>
+        /// <para>
+        /// Handles the common logic of constructing a paginated result from a
+        /// set of paged items.
+        /// </para>
+        /// <para>
+        /// Any errors that have been reported until now are ignored, so you must
+        /// check for errors yourself before calling. This method will also
+        /// include any instructions and metadata that have been added to the
+        /// helper.
+        /// </para>
+        /// <para>
+        /// The returned <see cref="RockToolResult"/> object will be configured
+        /// to not have any history content.
+        /// </para>
+        /// </summary>
+        /// <typeparam name="T">The type of object to be paginated.</typeparam>
+        /// <param name="pagedItems">The items to be included in the results.</param>
+        /// <returns>A <see cref="RockToolResult"/> that contains the result data and any standard metadata.</returns>
+        public RockToolResult GetPaginatedResult<T>( IReadOnlyCollection<T> pagedItems )
+        {
+            RockToolResult result;
+
+            if ( !pagedItems.Any() )
+            {
+                result = RockToolResult.NoData();
+            }
+            else
+            {
+                result = RockToolResult.Success( pagedItems );
+            }
+
+            foreach ( var instruction in _instructions )
+            {
+                result.WithInstructions( instruction );
+            }
+
+            foreach ( var kvp in _metadata )
+            {
+                result.WithMetadata( kvp.Key, kvp.Value );
+            }
+
+            return result.WithoutHistoryContent();
+        }
+
+        /// <summary>
         /// Adds a new error message to the list of errors. This can be used
         /// while performing custom processing to accumulate errors instead of
         /// returning a failure at the first error encountered.
@@ -205,63 +260,73 @@ namespace Rock.AI.Agent
             _metadata.Add( new KeyValuePair<string, object>( key, value ) );
         }
 
+        #endregion
+
+        #region Pagination Methods
+
         /// <summary>
-        /// Gets a paginated result from the specified query. This will
-        /// construct a standard result with the items and standard pagination
-        /// metadata. Any errors on the helper will be ignored. Instructions
-        /// and additional metadata will still be included.
+        /// Gets the items that make up the requested page for the specified
+        /// query. Metadata describing the pagination details will be added to
+        /// the helper.
         /// </summary>
         /// <typeparam name="T">The type of object to be paginated.</typeparam>
         /// <param name="queryable">The queryable that represents the data to be paginated from the database.</param>
         /// <param name="pageNumber">The page number that was requested.</param>
-        /// <param name="pageSize">The size of each page.</param>
+        /// <param name="pageSize">The size of each page. If <c>null</c> then a default page size will be applied.</param>
         /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.SanitizeForSecurity(Model.Person)"/>.</param>
-        /// <returns>A <see cref="RockToolResult"/> that contains the result data and any standard metadata.</returns>
-        public RockToolResult GetPaginatedResult<T>( IQueryable<T> queryable, int pageNumber, int pageSize, bool sanitizeForSecurity = true )
+        /// <returns>A collection of items for the specified page.</returns>
+        public List<T> GetPaginatedItems<T>( IQueryable<T> queryable, int pageNumber, int? pageSize = null, bool sanitizeForSecurity = true )
         {
+            pageSize = pageSize ?? DefaultPageSize;
+
             var pagedItems = queryable
-                .Skip( ( pageNumber - 1 ) * pageSize )
+                .Skip( ( pageNumber - 1 ) * pageSize.Value )
                 // N+1 so we can compute hasMore later.
-                .Take( pageSize + 1 )
+                .Take( pageSize.Value + 1 )
                 .ToList();
 
-            return GetResultFromPaginatedList( pagedItems, pageNumber, pageSize, sanitizeForSecurity );
+            UpdatePaginatedMetadataAndCheckSecurity( pagedItems, pageNumber, pageSize.Value, sanitizeForSecurity );
+
+            return pagedItems;
         }
 
         /// <summary>
-        /// Gets a paginated result from the specified query. This will
-        /// construct a standard result with the items and standard pagination
-        /// metadata. Any errors on the helper will be ignored. Instructions
-        /// and additional metadata will still be included.
+        /// Gets the items that make up the requested page for the specified
+        /// set of items. Metadata describing the pagination details will be
+        /// added to the helper.
         /// </summary>
         /// <typeparam name="T">The type of object to be paginated.</typeparam>
         /// <param name="items">The in-memory items to be paginated.</param>
         /// <param name="pageNumber">The page number that was requested.</param>
-        /// <param name="pageSize">The size of each page.</param>
+        /// <param name="pageSize">The size of each page. If <c>null</c> then a default page size will be applied.</param>
         /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.SanitizeForSecurity(Model.Person)"/>.</param>
-        /// <returns>A <see cref="RockToolResult"/> that contains the result data and any standard metadata.</returns>
-        public RockToolResult GetPaginatedResult<T>( IEnumerable<T> items, int pageNumber, int pageSize, bool sanitizeForSecurity = true )
+        /// <returns>A collection of items for the specified page.</returns>
+        public List<T> GetPaginatedItems<T>( IEnumerable<T> items, int pageNumber, int? pageSize = null, bool sanitizeForSecurity = true )
         {
+            pageSize = pageSize ?? DefaultPageSize;
+
             var pagedItems = items
-                .Skip( ( pageNumber - 1 ) * pageSize )
+                .Skip( ( pageNumber - 1 ) * pageSize.Value )
                 // N+1 so we can compute hasMore later.
-                .Take( pageSize + 1 )
+                .Take( pageSize.Value + 1 )
                 .ToList();
 
-            return GetResultFromPaginatedList( pagedItems, pageNumber, pageSize, sanitizeForSecurity );
+            UpdatePaginatedMetadataAndCheckSecurity( pagedItems, pageNumber, pageSize.Value, sanitizeForSecurity );
+
+            return pagedItems;
         }
 
         /// <summary>
-        /// Handles the common logic of constructing a paginated result from a
-        /// set of paged items.
+        /// Adds the required metadata information describing this pagination
+        /// operation. This will also remove the lookahead item if present and
+        /// sanitize the items for security if requested.
         /// </summary>
         /// <typeparam name="T">The type of object to be paginated.</typeparam>
         /// <param name="pagedItems">The items that have been paginated. This should have up to <paramref name="pageSize"/> + 1 items.</param>
         /// <param name="pageNumber">The page number that was requested.</param>
         /// <param name="pageSize">The size of each page. If <paramref name="pagedItems"/> contains more than <paramref name="pageSize"/> items, then the <c>hasMore</c> metadata key will be set to <c>true</c>.</param>
         /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.SanitizeForSecurity(Model.Person)"/>.</param>
-        /// <returns>A <see cref="RockToolResult"/> that contains the result data and any standard metadata.</returns>
-        private RockToolResult GetResultFromPaginatedList<T>( List<T> pagedItems, int pageNumber, int pageSize, bool sanitizeForSecurity )
+        private void UpdatePaginatedMetadataAndCheckSecurity<T>( List<T> pagedItems, int pageNumber, int pageSize, bool sanitizeForSecurity )
         {
             var hasMore = pagedItems.Count > pageSize;
 
@@ -271,47 +336,18 @@ namespace Rock.AI.Agent
                 pagedItems.RemoveAt( pagedItems.Count - 1 );
             }
 
-            var meta = new Dictionary<string, object>
-            {
-                ["pageNumber"] = pageNumber,
-                ["pageSize"] = pageSize,
-                ["returnedItemCount"] = pagedItems.Count,
-                ["hasMore"] = hasMore,
-            };
+            AddMetadata( "pageNumber", pageNumber );
+            AddMetadata( "pageSize", pageSize );
+            AddMetadata( "returnedItemCount", pagedItems.Count );
+            AddMetadata( "hasMore", hasMore );
 
-            RockToolResult result;
-
-            if ( !pagedItems.Any() )
+            if ( sanitizeForSecurity == true && typeof( EntityResultBase ).IsAssignableFrom( typeof( T ) ) )
             {
-                result = RockToolResult.NoData()
-                    .WithMetadata( meta );
-            }
-            else
-            {
-
-                if ( sanitizeForSecurity == true && typeof( EntityResultBase ).IsAssignableFrom( typeof( T ) ) )
+                foreach ( EntityResultBase item in pagedItems.Cast<EntityResultBase>() )
                 {
-                    foreach ( EntityResultBase item in pagedItems.Cast<EntityResultBase>() )
-                    {
-                        item.SanitizeForSecurity( _agentRequestContext.RockRequestContext.CurrentPerson );
-                    }
+                    item.SanitizeForSecurity( _agentRequestContext.RockRequestContext.CurrentPerson );
                 }
-
-                result = RockToolResult.Success( pagedItems )
-                    .WithMetadata( meta );
             }
-
-            foreach ( var instruction in _instructions )
-            {
-                result.WithInstructions( instruction );
-            }
-
-            foreach ( var kvp in _metadata )
-            {
-                result.WithMetadata( kvp.Key, kvp.Value );
-            }
-
-            return result;
         }
 
         #endregion
@@ -1031,6 +1067,391 @@ namespace Rock.AI.Agent
             }
 
             return memberExpression.Member.Name;
+        }
+
+        #endregion
+
+        #region Query Methods
+
+        /// <summary>
+        /// Handles filtering a queryable by an IdKey parameter. If the parameter
+        /// is required then an error will be added if it is not provided. If the
+        /// value provided is not valid then an error will be added. Any errors
+        /// will cause the queryable to return no results.
+        /// </summary>
+        /// <typeparam name="TSource">The type of object being queried.</typeparam>
+        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
+        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
+        /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
+        /// <param name="isRequired">If <c>true</c> then an empty or missing <paramref name="parameter"/> value will be considered an error.</param>
+        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
+        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
+        private IQueryable<TSource> WhereIdKey<TSource>( IQueryable<TSource> queryable, Expression<Func<TSource, int>> propertyExpression, string parameter, bool isRequired, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
+        {
+            if ( parameterExpression.IsNullOrWhiteSpace() )
+            {
+                throw new ArgumentNullException( nameof( parameterExpression ), "The parameterExpression must be provided. It will be provided automatically if using C# 10, otherwise use 'nameof()' to get the name of the passed parameter." );
+            }
+
+            if ( parameter.IsNullOrWhiteSpace() )
+            {
+                if ( isRequired )
+                {
+                    AddError( $"{parameterExpression} is required." );
+                    return queryable.Where( a => false );
+                }
+
+                return queryable;
+            }
+
+            var id = IdHasher.Instance.GetId( parameter );
+
+            if ( !id.HasValue )
+            {
+                AddError( $"The value of {parameterExpression} is not valid." );
+
+                return queryable.Where( a => false );
+            }
+
+            var valueExpression = Expression.Constant( id.Value, typeof( int ) );
+            var body = Expression.Equal( propertyExpression.Body, valueExpression );
+            var lambda = Expression.Lambda<Func<TSource, bool>>( body, propertyExpression.Parameters[0] );
+
+            return queryable.Where( lambda );
+        }
+
+        /// <summary>
+        /// Handles filtering a queryable by an IdKey parameter. If the parameter
+        /// is required then an error will be added if it is not provided. If the
+        /// value provided is not valid then an error will be added. Any errors
+        /// will cause the queryable to return no results.
+        /// </summary>
+        /// <typeparam name="TSource">The type of object being queried.</typeparam>
+        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
+        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
+        /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
+        /// <param name="isRequired">If <c>true</c> then an empty or missing <paramref name="parameter"/> value will be considered an error.</param>
+        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
+        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
+        private IQueryable<TSource> WhereIdKey<TSource>( IQueryable<TSource> queryable, Expression<Func<TSource, int?>> propertyExpression, string parameter, bool isRequired, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
+        {
+            if ( parameterExpression.IsNullOrWhiteSpace() )
+            {
+                throw new ArgumentNullException( nameof( parameterExpression ), "The parameterExpression must be provided. It will be provided automatically if using C# 10, otherwise use 'nameof()' to get the name of the passed parameter." );
+            }
+
+            if ( parameter.IsNullOrWhiteSpace() )
+            {
+                if ( isRequired )
+                {
+                    AddError( $"{parameterExpression} is required." );
+                    return queryable.Where( a => false );
+                }
+
+                return queryable;
+            }
+
+            var id = IdHasher.Instance.GetId( parameter );
+
+            if ( !id.HasValue )
+            {
+                AddError( $"The value of {parameterExpression} is not valid." );
+
+                return queryable.Where( a => false );
+            }
+
+            var valueExpression = Expression.Constant( id.Value, typeof( int ) );
+            var body = Expression.Equal( propertyExpression.Body, valueExpression );
+            var lambda = Expression.Lambda<Func<TSource, bool>>( body, propertyExpression.Parameters[0] );
+
+            return queryable.Where( lambda );
+        }
+
+        /// <summary>
+        /// Handles filtering a queryable by a parameter. If the parameter
+        /// is required then an error will be added if it is not provided. Any
+        /// errors will cause the queryable to return no results.
+        /// </summary>
+        /// <typeparam name="TSource">The type of object being queried.</typeparam>
+        /// <typeparam name="TProperty">The type of property being queried.</typeparam>
+        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
+        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
+        /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
+        /// <param name="isRequired">If <c>true</c> then an empty or missing <paramref name="parameter"/> value will be considered an error.</param>
+        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
+        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
+        private IQueryable<TSource> WhereProperty<TSource, TProperty>( IQueryable<TSource> queryable, Expression<Func<TSource, TProperty>> propertyExpression, TProperty? parameter, bool isRequired, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
+            where TProperty : struct
+        {
+            if ( parameterExpression.IsNullOrWhiteSpace() )
+            {
+                throw new ArgumentNullException( nameof( parameterExpression ), "The parameterExpression must be provided. It will be provided automatically if using C# 10, otherwise use 'nameof()' to get the name of the passed parameter." );
+            }
+
+            if ( !parameter.HasValue )
+            {
+                if ( isRequired )
+                {
+                    AddError( $"{parameterExpression} is required." );
+                    return queryable.Where( a => false );
+                }
+
+                return queryable;
+            }
+
+            var valueExpression = Expression.Constant( parameter.Value, typeof( TProperty ) );
+            var body = Expression.Equal( propertyExpression.Body, valueExpression );
+            var lambda = Expression.Lambda<Func<TSource, bool>>( body, propertyExpression.Parameters[0] );
+
+            return queryable.Where( lambda );
+        }
+
+        /// <summary>
+        /// Handles filtering a queryable by a parameter. If the parameter
+        /// is required then an error will be added if it is not provided. Any
+        /// errors will cause the queryable to return no results.
+        /// </summary>
+        /// <typeparam name="TSource">The type of object being queried.</typeparam>
+        /// <typeparam name="TProperty">The type of property being queried.</typeparam>
+        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
+        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
+        /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
+        /// <param name="isRequired">If <c>true</c> then an empty or missing <paramref name="parameter"/> value will be considered an error.</param>
+        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
+        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
+        private IQueryable<TSource> WhereProperty<TSource, TProperty>( IQueryable<TSource> queryable, Expression<Func<TSource, TProperty?>> propertyExpression, TProperty? parameter, bool isRequired, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
+            where TProperty : struct
+        {
+            if ( parameterExpression.IsNullOrWhiteSpace() )
+            {
+                throw new ArgumentNullException( nameof( parameterExpression ), "The parameterExpression must be provided. It will be provided automatically if using C# 10, otherwise use 'nameof()' to get the name of the passed parameter." );
+            }
+
+            if ( !parameter.HasValue )
+            {
+                if ( isRequired )
+                {
+                    AddError( $"{parameterExpression} is required." );
+                    return queryable.Where( a => false );
+                }
+
+                return queryable;
+            }
+
+            var valueExpression = Expression.Constant( parameter.Value, typeof( TProperty ) );
+            var body = Expression.Equal( propertyExpression.Body, valueExpression );
+            var lambda = Expression.Lambda<Func<TSource, bool>>( body, propertyExpression.Parameters[0] );
+
+            return queryable.Where( lambda );
+        }
+
+        /// <summary>
+        /// Handles filtering a queryable by a parameter. If the parameter
+        /// is required then an error will be added if it is not provided. Any
+        /// errors will cause the queryable to return no results.
+        /// </summary>
+        /// <typeparam name="TSource">The type of object being queried.</typeparam>
+        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
+        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
+        /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
+        /// <param name="isRequired">If <c>true</c> then an empty or missing <paramref name="parameter"/> value will be considered an error.</param>
+        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
+        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
+        private IQueryable<TSource> WhereProperty<TSource>( IQueryable<TSource> queryable, Expression<Func<TSource, string>> propertyExpression, string parameter, bool isRequired, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
+        {
+            if ( parameterExpression.IsNullOrWhiteSpace() )
+            {
+                throw new ArgumentNullException( nameof( parameterExpression ), "The parameterExpression must be provided. It will be provided automatically if using C# 10, otherwise use 'nameof()' to get the name of the passed parameter." );
+            }
+
+            if ( parameter.IsNullOrWhiteSpace() )
+            {
+                if ( isRequired )
+                {
+                    AddError( $"{parameterExpression} is required." );
+                    return queryable.Where( a => false );
+                }
+
+                return queryable;
+            }
+
+            var valueExpression = Expression.Constant( parameter, typeof( string ) );
+            var body = Expression.Equal( propertyExpression.Body, valueExpression );
+            var lambda = Expression.Lambda<Func<TSource, bool>>( body, propertyExpression.Parameters[0] );
+
+            return queryable.Where( lambda );
+        }
+
+        /// <summary>
+        /// Handles filtering a queryable by an IdKey parameter. If the parameter
+        /// is blank then no filtering will be performed. If the value provided
+        /// is not valid then an error will be added. Any errors will cause the
+        /// queryable to return no results.
+        /// </summary>
+        /// <typeparam name="TSource">The type of object being queried.</typeparam>
+        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
+        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
+        /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
+        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
+        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
+        public IQueryable<TSource> WhereOptionalIdKey<TSource>( IQueryable<TSource> queryable, Expression<Func<TSource, int>> propertyExpression, string parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
+        {
+            return WhereIdKey( queryable, propertyExpression, parameter, isRequired: false, parameterExpression: parameterExpression );
+        }
+
+        /// <summary>
+        /// Handles filtering a queryable by an IdKey parameter. If the parameter
+        /// is blank then no filtering will be performed. If the value provided
+        /// is not valid then an error will be added. Any errors will cause the
+        /// queryable to return no results.
+        /// </summary>
+        /// <typeparam name="TSource">The type of object being queried.</typeparam>
+        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
+        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
+        /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
+        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
+        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
+        public IQueryable<TSource> WhereOptionalIdKey<TSource>( IQueryable<TSource> queryable, Expression<Func<TSource, int?>> propertyExpression, string parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
+        {
+            return WhereIdKey( queryable, propertyExpression, parameter, isRequired: false, parameterExpression: parameterExpression );
+        }
+
+        /// <summary>
+        /// Handles filtering a queryable by an IdKey parameter. If the parameter
+        /// is blank then an error will be added. If the value provided is not
+        /// valid then an error will be added. Any errors will cause the
+        /// queryable to return no results.
+        /// </summary>
+        /// <typeparam name="TSource">The type of object being queried.</typeparam>
+        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
+        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
+        /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
+        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
+        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
+        public IQueryable<TSource> WhereRequiredIdKey<TSource>( IQueryable<TSource> queryable, Expression<Func<TSource, int>> propertyExpression, string parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
+        {
+            return WhereIdKey( queryable, propertyExpression, parameter, isRequired: true, parameterExpression: parameterExpression );
+        }
+
+        /// <summary>
+        /// Handles filtering a queryable by an IdKey parameter. If the parameter
+        /// is blank then an error will be added. If the value provided is not
+        /// valid then an error will be added. Any errors will cause the
+        /// queryable to return no results.
+        /// </summary>
+        /// <typeparam name="TSource">The type of object being queried.</typeparam>
+        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
+        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
+        /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
+        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
+        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
+        public IQueryable<TSource> WhereRequiredIdKey<TSource>( IQueryable<TSource> queryable, Expression<Func<TSource, int?>> propertyExpression, string parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
+        {
+            return WhereIdKey( queryable, propertyExpression, parameter, isRequired: true, parameterExpression: parameterExpression );
+        }
+
+        /// <summary>
+        /// Handles filtering a queryable by a parameter. If the parameter
+        /// is <c>null</c> then no filtering will be performed. Any errors will
+        /// cause the queryable to return no results.
+        /// </summary>
+        /// <typeparam name="TSource">The type of object being queried.</typeparam>
+        /// <typeparam name="TProperty">The type of property being queried.</typeparam>
+        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
+        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
+        /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
+        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
+        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
+        public IQueryable<TSource> WhereOptionalProperty<TSource, TProperty>( IQueryable<TSource> queryable, Expression<Func<TSource, TProperty>> propertyExpression, TProperty? parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
+            where TProperty : struct
+        {
+            return WhereProperty( queryable, propertyExpression, parameter, isRequired: false, parameterExpression: parameterExpression );
+        }
+
+        /// <summary>
+        /// Handles filtering a queryable by a parameter. If the parameter
+        /// is <c>null</c> then no filtering will be performed. Any errors will
+        /// cause the queryable to return no results.
+        /// </summary>
+        /// <typeparam name="TSource">The type of object being queried.</typeparam>
+        /// <typeparam name="TProperty">The type of property being queried.</typeparam>
+        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
+        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
+        /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
+        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
+        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
+        public IQueryable<TSource> WhereOptionalProperty<TSource, TProperty>( IQueryable<TSource> queryable, Expression<Func<TSource, TProperty?>> propertyExpression, TProperty? parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
+            where TProperty : struct
+        {
+            return WhereProperty( queryable, propertyExpression, parameter, isRequired: false, parameterExpression: parameterExpression );
+        }
+
+        /// <summary>
+        /// Handles filtering a queryable by a parameter. If the parameter
+        /// is blank then no filtering will be performed. Any errors will
+        /// cause the queryable to return no results.
+        /// </summary>
+        /// <typeparam name="TSource">The type of object being queried.</typeparam>
+        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
+        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
+        /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
+        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
+        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
+        public IQueryable<TSource> WhereOptionalProperty<TSource>( IQueryable<TSource> queryable, Expression<Func<TSource, string>> propertyExpression, string parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
+        {
+            return WhereProperty( queryable, propertyExpression, parameter, isRequired: false, parameterExpression: parameterExpression );
+        }
+
+        /// <summary>
+        /// Handles filtering a queryable by a parameter. If the parameter
+        /// is <c>null</c> then an error will be added. Any errors will
+        /// cause the queryable to return no results.
+        /// </summary>
+        /// <typeparam name="TSource">The type of object being queried.</typeparam>
+        /// <typeparam name="TProperty">The type of property being queried.</typeparam>
+        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
+        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
+        /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
+        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
+        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
+        public IQueryable<TSource> WhereRequiredProperty<TSource, TProperty>( IQueryable<TSource> queryable, Expression<Func<TSource, TProperty>> propertyExpression, TProperty? parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
+            where TProperty : struct
+        {
+            return WhereProperty( queryable, propertyExpression, parameter, isRequired: true, parameterExpression: parameterExpression );
+        }
+
+        /// <summary>
+        /// Handles filtering a queryable by a parameter. If the parameter
+        /// is <c>null</c> then an error will be added. Any errors will
+        /// cause the queryable to return no results.
+        /// </summary>
+        /// <typeparam name="TSource">The type of object being queried.</typeparam>
+        /// <typeparam name="TProperty">The type of property being queried.</typeparam>
+        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
+        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
+        /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
+        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
+        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
+        public IQueryable<TSource> WhereRequiredProperty<TSource, TProperty>( IQueryable<TSource> queryable, Expression<Func<TSource, TProperty?>> propertyExpression, TProperty? parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
+            where TProperty : struct
+        {
+            return WhereProperty( queryable, propertyExpression, parameter, isRequired: true, parameterExpression: parameterExpression );
+        }
+
+        /// <summary>
+        /// Handles filtering a queryable by a parameter. If the parameter
+        /// is empty then an error will be added. Any errors will cause the
+        /// queryable to return no results.
+        /// </summary>
+        /// <typeparam name="TSource">The type of object being queried.</typeparam>
+        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
+        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
+        /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
+        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
+        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
+        public IQueryable<TSource> WhereRequiredProperty<TSource>( IQueryable<TSource> queryable, Expression<Func<TSource, string>> propertyExpression, string parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
+        {
+            return WhereProperty( queryable, propertyExpression, parameter, isRequired: true, parameterExpression: parameterExpression );
         }
 
         #endregion

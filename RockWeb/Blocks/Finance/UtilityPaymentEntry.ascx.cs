@@ -968,29 +968,21 @@ mission. We are so grateful for your commitment.</p>
             };
 
             _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, $"_hostedPaymentInfoControl_{this.FinancialGateway.Id}", hostedPaymentInfoControlOptions );
-            _hostedPaymentInfoControl.Visible = false;
+            _hostedPaymentInfoControl.Visible = true;
             phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
 
-            nbPaymentTokenError.Text = "Loading...";
-            nbPaymentTokenError.Visible = true;
-
-            if ( cpCaptcha.Visible )
-            {
-                btnHostedPaymentInfoNext.Visible = false;
-                btnSavedAccountPaymentInfoNext.Visible = false;
-            }
+            hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
 
             if ( Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() ) || !cpCaptcha.IsAvailable )
             {
-                hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
-                _hostedPaymentInfoControl.Visible = true;
-
-                nbPaymentTokenError.Visible = false;
-                nbPaymentTokenError.Text = string.Empty;
-
                 var isSavedAccount = rblSavedAccount.SelectedValue.AsInteger() > 0;
                 btnSavedAccountPaymentInfoNext.Visible = isSavedAccount;
                 btnHostedPaymentInfoNext.Visible = !isSavedAccount;
+            }
+            else
+            {
+                btnHostedPaymentInfoNext.Visible = false;
+                btnSavedAccountPaymentInfoNext.Visible = false;
             }
 
             if ( _hostedPaymentInfoControl is IHostedGatewayPaymentControlTokenEvent )

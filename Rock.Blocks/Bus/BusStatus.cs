@@ -11,6 +11,7 @@ namespace Rock.Blocks.Bus
     [DisplayName( "Bus Status" )]
     [Category( "Bus" )]
     [Description( "Gives insight into the message bus." )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -22,9 +23,10 @@ namespace Rock.Blocks.Bus
         Order = 1 )]
 
     #endregion Block Attributes
-
-    [Rock.SystemGuid.BlockTypeGuid( "C472300C-781F-4D73-B530-8C9F8A9927D4" )]
+    
     [Rock.SystemGuid.EntityTypeGuid( "9DFA8FD4-C3AA-440A-B1D6-1F8695C4AD5A" )]
+    [Rock.SystemGuid.BlockTypeGuid( "A9BB6B68-44CD-4EC2-9B26-CD6C941877EB" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "C472300C-781F-4D73-B530-8C9F8A9927D4" )]
     public class BusStatus : RockBlockType
     {
         #region Attribute Keys
