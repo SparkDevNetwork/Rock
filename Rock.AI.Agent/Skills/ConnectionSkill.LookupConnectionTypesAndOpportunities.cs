@@ -36,7 +36,7 @@ namespace Rock.AI.Agent.Skills
         /// <summary>
         /// Retrieves all configured connection types and opportunities in Rock. 
         /// </summary>
-        [Description( "Retrieves all configured websites in Rock." )]
+        [Description( "Retrieves all configured connection types and opportunities in Rock." )]
         [AgentPurpose( "Retrieves a list of all of the connection types and their configuration. This includes Connection Opportunities and Activity Types." )]
         [AgentPurpose( "This tool does not return any information about specific connection requests." )]
         [AgentToolGuid( "21870C06-126F-0882-47E3-DBFC1846BD92" )]

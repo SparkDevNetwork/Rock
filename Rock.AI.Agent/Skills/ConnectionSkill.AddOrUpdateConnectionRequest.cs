@@ -33,23 +33,19 @@ namespace Rock.AI.Agent.Skills
             string connectionRequestIdKey = null,
             string connectionOpportunityIdKey = null )
         {
-            using var rockContext = _rockContextFactory.CreateRockContext();
-            var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
+            var helper = new AgentToolHelper( AgentRequestContext, _logger );
+            ConnectionRequest connectionRequest;
 
             if ( connectionRequestIdKey.IsNotNullOrWhiteSpace() )
             {
-                var connectionRequest = helper.GetRequiredEntity<ConnectionRequest>( connectionRequestIdKey, checkSecurity: true );
+                connectionRequest = helper.GetRequiredEntity<ConnectionRequest>( connectionRequestIdKey, checkSecurity: true );
 
                 if ( connectionRequest == null )
                 {
                     return helper.ErrorResult;
                 }
-
-                connectionRequest.LoadAttributes( rockContext );
-
-                return RockToolResult.Success( helper.GetAvailableAttributes( connectionRequest ) );
             }
-            else if ( connectionOpportunityIdKey.IsNotNullOrWhiteSpace() )
+            else
             {
                 var opportunity = helper.GetRequiredEntity<ConnectionOpportunity>( connectionOpportunityIdKey, checkSecurity: true );
 
@@ -59,21 +55,16 @@ namespace Rock.AI.Agent.Skills
                         .WithInstructions( $"Call the {nameof( LookupConnectionTypesAndOpportunities )} function to determine available opportunities." );
                 }
 
-                var connectionRequest = new ConnectionRequest
+                connectionRequest = new ConnectionRequest
                 {
                     ConnectionOpportunityId = opportunity.Id,
                     ConnectionTypeId = opportunity.ConnectionTypeId,
                 };
-
-                connectionRequest.LoadAttributes( rockContext );
-
-                return Success( helper.GetAvailableAttributes( connectionRequest ) )
-                    .WithInstructions( "Attributes are additional data that can be provided to the Add and Update functions. An attribute value is a key that specifies which attribute and a value which contains the text of the attribute value. Attributes that are required must be provided when adding connection requests, but may be optional when updating." );
             }
-            else
-            {
-                return Error( "Either requestIdKey or opportunityIdKey must be specified." );
-            }
+
+            connectionRequest.LoadAttributes( AgentRequestContext.RockContext );
+
+            return RockToolResult.Success( helper.GetAvailableAttributes( connectionRequest ) );
         }
 
         [Description( "Adds new or updates existing connection request." )]
