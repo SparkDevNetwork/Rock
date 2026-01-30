@@ -52,43 +52,21 @@ namespace Rock.AI.Agent.Skills
             // TODO: This could be optimized by creating a connection opportunity cache. 
             var authorizedConnectionOpportunityIds = AuthorizedConnectionOpportunityIds();
 
-            var connectionRequestsQry = new ConnectionRequestService( AgentRequestContext.RockContext )
+            var query = new ConnectionRequestService( AgentRequestContext.RockContext )
                 .Queryable()
                 .Where( cr => authorizedConnectionOpportunityIds.Contains( cr.ConnectionOpportunityId ) );
 
-            // Filter by requester
-            if ( requesterPersonIdKey.IsNotNullOrWhiteSpace() )
+            query = helper.WhereOptionalIdKey( query, cr => cr.PersonAlias.PersonId, requesterPersonIdKey );
+            query = helper.WhereOptionalIdKey( query, cr => cr.ConnectorPersonAlias.PersonId, connectorPersonIdKey );
+            query = helper.WhereOptionalIdKey( query, cr => cr.ConnectionTypeId, connectionTypeIdKey );
+            query = helper.WhereOptionalIdKey( query, cr => cr.ConnectionOpportunityId, connectionOpportunityIdKey );
+
+            if ( helper.HasErrors )
             {
-                var requesterPersonId = IdHasher.Instance.GetId( requesterPersonIdKey );
-                connectionRequestsQry = connectionRequestsQry
-                    .Where( cr => cr.PersonAlias != null && cr.PersonAlias.PersonId == requesterPersonId );
+                return helper.ErrorResult;
             }
 
-            // Filter by connector
-            if ( connectorPersonIdKey.IsNotNullOrWhiteSpace() )
-            {
-                var connectorPersonId = IdHasher.Instance.GetId( connectorPersonIdKey );
-                connectionRequestsQry = connectionRequestsQry
-                    .Where( cr => cr.ConnectorPersonAlias != null && cr.ConnectorPersonAlias.PersonId == connectorPersonId );
-            }
-
-            // Filter by connection type
-            if ( connectionTypeIdKey.IsNotNullOrWhiteSpace() )
-            {
-                var connectionTypeId = IdHasher.Instance.GetId( connectionTypeIdKey );
-                connectionRequestsQry = connectionRequestsQry
-                    .Where( cr => cr.ConnectionTypeId == connectionTypeId );
-            }
-
-            // Filter by connection opportunity
-            if ( connectionOpportunityIdKey.IsNotNullOrWhiteSpace() )
-            {
-                var connectionOpportunityId = IdHasher.Instance.GetId( connectionOpportunityIdKey );
-                connectionRequestsQry = connectionRequestsQry
-                    .Where( cr => cr.ConnectionOpportunityId == connectionOpportunityId );
-            }
-
-            var connectionRequestQry = connectionRequestsQry
+            var connectionRequestQry = query
                 .AsExpandable()
                 .Select( cr => new ConnectionRequestResult
                 {
@@ -118,7 +96,9 @@ namespace Rock.AI.Agent.Skills
                 .ThenByDescending( cr => cr.CreatedDateTime )
                 .ThenBy( cr => cr.Id );
 
-            return helper.GetPaginatedResult( connectionRequestQry, pageNumber, 5 );
+            var connectionRequests = helper.GetPaginatedItems( connectionRequestQry, pageNumber );
+
+            return helper.GetPaginatedResult( connectionRequests );
         }
 
         #endregion
