@@ -141,7 +141,7 @@ namespace Rock.AI.Agent.Skills
                     .ToList();
             }
 
-            connectionTypeResults.ForEach( ct => ct.SanitizeForSecurity( currentPerson ) );
+            connectionTypeResults.ForEach( ct => ct.Sanitize( AgentRequestContext ) );
 
             return connectionTypeResults;
         }

@@ -67,6 +67,13 @@ namespace Rock.AI.Agent.Skills
 
         #region Methods
 
+        /// <summary>
+        /// Creates a result object to represent the full details of a
+        /// connection request. This will not include every property, but will
+        /// include the ones that would make sense to the language model.
+        /// </summary>
+        /// <param name="connectionRequest">The connection request to build the result from.</param>
+        /// <returns>A result object that represents <paramref name="connectionRequest"/>.</returns>
         private ConnectionRequestResult GetFullConnectionRequestResult( ConnectionRequest connectionRequest )
         {
             var result = new ConnectionRequestResult
@@ -92,10 +99,21 @@ namespace Rock.AI.Agent.Skills
                 Campus = connectionRequest.Campus != null ? new CampusResult { Id = connectionRequest.Campus.Id, Name = connectionRequest.Campus.Name } : null,
                 AssignedGroup = connectionRequest.AssignedGroup != null ? new GroupResult { Id = connectionRequest.AssignedGroup.Id, Name = connectionRequest.AssignedGroup.Name } : null,
                 Connector = PersonResult.Basic( connectionRequest.ConnectorPersonAlias ),
+                Activities = connectionRequest.ConnectionRequestActivities
+                    .OrderBy( a => a.CreatedDateTime )
+                    .Select( a => new ConnectionRequestActivityResult
+                    {
+                        Id = a.Id,
+                        ActivityType = new KeyNameResult { Id = a.ConnectionActivityType.Id, Name = a.ConnectionActivityType.Name },
+                        Connector = PersonResult.Basic( a.ConnectorPersonAlias ),
+                        CreatedDateTime = a.CreatedDateTime,
+                        Note = a.Note,
+                    } )
+                    .ToList(),
                 AttributeValues = connectionRequest.GetAttributeValueResults( AgentRequestContext ).ToList(),
             };
 
-            result.SanitizeForSecurity( AgentRequestContext.RockRequestContext.CurrentPerson );
+            result.Sanitize( AgentRequestContext );
 
             return result;
         }

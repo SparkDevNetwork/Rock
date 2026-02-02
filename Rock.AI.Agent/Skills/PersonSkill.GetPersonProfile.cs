@@ -221,7 +221,7 @@ namespace Rock.AI.Agent.Skills
                 .ToList();
 
             // Run security on profile result
-            var securityCheckPassed = profileResult.SanitizeForSecurity( currentPerson );
+            var securityCheckPassed = profileResult.Sanitize( AgentRequestContext );
 
             if ( !securityCheckPassed )
             {
