@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -84,11 +85,13 @@ namespace Rock.AI.Agent.Classes.Entity
         /// Sanitizes the entity for security related to the request context.
         /// </summary>
         /// <param name="agentRequestContext">The context that describes the current request.</param>
-        public virtual void Sanitize( AgentRequestContext agentRequestContext )
+        /// <returns><c>false</c> if the entire result should be excluded. This is used when nested properties to fully remove them.</returns>
+        public virtual bool Sanitize( AgentRequestContext agentRequestContext )
         {
-            SanitizeResult( agentRequestContext );
             SanitizeNestedProperties( agentRequestContext );
             SanitizeAttributeSecurity( agentRequestContext );
+
+            return SanitizeResult( agentRequestContext );
         }
 
         /// <summary>
@@ -96,8 +99,10 @@ namespace Rock.AI.Agent.Classes.Entity
         /// This is the method you will want to override most of the time.
         /// </summary>
         /// <param name="agentRequestContext">The context that describes the current request.</param>
-        protected virtual void SanitizeResult( AgentRequestContext agentRequestContext )
+        /// <returns><c>false</c> if the entire result should be excluded. This is used when nested properties to fully remove them.</returns>
+        protected virtual bool SanitizeResult( AgentRequestContext agentRequestContext )
         {
+            return true;
         }
 
         /// <summary>
@@ -116,7 +121,7 @@ namespace Rock.AI.Agent.Classes.Entity
 
                 var collectionProperties = rt.GetProperties()
                     .Where( pi => pi.PropertyType.IsGenericType
-                        && pi.PropertyType.GetGenericTypeDefinition() == typeof( IEnumerable<> )
+                        && pi.PropertyType.GetGenericTypeDefinition() == typeof( ICollection<> )
                         && entityResultBaseType.IsAssignableFrom( pi.PropertyType.GetGenericArguments()[0] ) )
                     .ToList();
 
@@ -127,20 +132,34 @@ namespace Rock.AI.Agent.Classes.Entity
             {
                 if ( property.GetValue( this ) is EntityResultBase nestedResult )
                 {
-                    nestedResult.Sanitize( agentRequestContext );
+                    var safe = nestedResult.Sanitize( agentRequestContext );
+
+                    if ( !safe )
+                    {
+                        property.SetValue( this, null );
+                    }
                 }
             }
 
             foreach ( var property in cache.CollectionProperties )
             {
-                if ( property.GetValue( this ) is System.Collections.IEnumerable nestedResults )
+                if ( !( property.GetValue( this ) is IEnumerable nestedResults ) )
                 {
-                    foreach ( var nestedResultObj in nestedResults )
+                    continue;
+                }
+
+                foreach ( var nestedResultObj in nestedResults )
+                {
+                    if ( !( nestedResultObj is EntityResultBase nestedResult ) )
                     {
-                        if ( nestedResultObj is EntityResultBase nestedResult )
-                        {
-                            nestedResult.Sanitize( agentRequestContext );
-                        }
+                        continue;
+                    }
+
+                    var safe = nestedResult.Sanitize( agentRequestContext );
+
+                    if ( !safe && nestedResults is IList listResults )
+                    {
+                        listResults.Remove( nestedResultObj );
                     }
                 }
             }
