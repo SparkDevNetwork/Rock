@@ -18,18 +18,17 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
-using System.Linq.Expressions;
 
 using Microsoft.Extensions.Logging;
+
+using Nest;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.AI.Agent.Classes.Skills.ConnectionSkill;
 using Rock.Data;
-using Rock.Enums.AI.Agent;
 using Rock.Model;
 using Rock.SystemGuid;
-using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills
 {
@@ -70,7 +69,7 @@ namespace Rock.AI.Agent.Skills
 
         private ConnectionRequestResult GetFullConnectionRequestResult( ConnectionRequest connectionRequest )
         {
-            return new ConnectionRequestResult
+            var result = new ConnectionRequestResult
             {
                 Id = connectionRequest.Id,
                 Requester = PersonResult.Basic( connectionRequest.PersonAlias ),
@@ -93,8 +92,12 @@ namespace Rock.AI.Agent.Skills
                 Campus = connectionRequest.Campus != null ? new CampusResult { Id = connectionRequest.Campus.Id, Name = connectionRequest.Campus.Name } : null,
                 AssignedGroup = connectionRequest.AssignedGroup != null ? new GroupResult { Id = connectionRequest.AssignedGroup.Id, Name = connectionRequest.AssignedGroup.Name } : null,
                 Connector = PersonResult.Basic( connectionRequest.ConnectorPersonAlias ),
-                AttributeValues = connectionRequest.ConnectionRequestAttributeValues.GetAttributeValueResults( AgentRequestContext ).ToList(),
+                AttributeValues = connectionRequest.GetAttributeValueResults( AgentRequestContext ).ToList(),
             };
+
+            result.SanitizeForSecurity( AgentRequestContext.RockRequestContext.CurrentPerson );
+
+            return result;
         }
 
         #endregion

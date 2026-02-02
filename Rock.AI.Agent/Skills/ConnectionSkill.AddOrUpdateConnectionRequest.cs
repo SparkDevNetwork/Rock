@@ -1,8 +1,24 @@
-﻿using System.Collections.Generic;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
@@ -13,59 +29,12 @@ using Rock.SystemGuid;
 //
 // 4. On that note, the ValueFormat has been working very well. I hard coded my Priority attribute to say "An integer between 0 and 10." and it can now translate words (like medium or high) to useful numbers.
 //    ANSWER: Research what we need to add to IFieldType. ValueFormat, AvailableValues, other?
-//
-// 8. Create documentation in Rockumentation book for the pattern of:
-//    a. Creating an Add/Update tool.
-//    b. Outline of how the pattern interacts with the LLM (tool call orders, etc.).
-//    c. Outline of all tools required/recommended for "entity access".
-//
 
 namespace Rock.AI.Agent.Skills
 {
     internal sealed partial class ConnectionSkill
     {
         #region Tool(s)
-
-        [Description( "Gets the available attributes that can be set when adding or updating a connection request." )]
-        [AgentPurpose( "This must be called when adding or updating connection requests if there is any extra data can not be directly mapped to a top-level parameter. Attributes must be used before comments." )]
-        [AgentToolGuid( "c660989a-ba62-42f8-8eed-49c0bf7e8bf6" )]
-        public RockToolResult GetConnectionRequestAvailableAttributes(
-            string connectionRequestIdKey = null,
-            string connectionOpportunityIdKey = null )
-        {
-            var helper = new AgentToolHelper( AgentRequestContext, _logger );
-            ConnectionRequest connectionRequest;
-
-            if ( connectionRequestIdKey.IsNotNullOrWhiteSpace() )
-            {
-                connectionRequest = helper.GetRequiredEntity<ConnectionRequest>( connectionRequestIdKey, checkSecurity: true );
-
-                if ( connectionRequest == null )
-                {
-                    return helper.ErrorResult;
-                }
-            }
-            else
-            {
-                var opportunity = helper.GetRequiredEntity<ConnectionOpportunity>( connectionOpportunityIdKey, checkSecurity: true );
-
-                if ( opportunity == null )
-                {
-                    return helper.ErrorResult
-                        .WithInstructions( $"Call the {nameof( LookupConnectionTypesAndOpportunities )} function to determine available opportunities." );
-                }
-
-                connectionRequest = new ConnectionRequest
-                {
-                    ConnectionOpportunityId = opportunity.Id,
-                    ConnectionTypeId = opportunity.ConnectionTypeId,
-                };
-            }
-
-            connectionRequest.LoadAttributes( AgentRequestContext.RockContext );
-
-            return RockToolResult.Success( helper.GetAvailableAttributes( connectionRequest ) );
-        }
 
         [Description( "Adds new or updates existing connection request." )]
         [AgentToolGuid( "8ee3913a-9bca-4971-a490-90abfc1690c3" )]

@@ -59,6 +59,16 @@ namespace Rock.AI.Agent.Skills
             query = helper.WhereOptionalIdKey( query, cr => cr.ConnectionTypeId, connectionTypeIdKey );
             query = helper.WhereOptionalIdKey( query, cr => cr.ConnectionOpportunityId, connectionOpportunityIdKey );
 
+            var hasAnyFilters = !string.IsNullOrWhiteSpace( connectionTypeIdKey )
+                || !string.IsNullOrWhiteSpace( connectionOpportunityIdKey )
+                || !string.IsNullOrWhiteSpace( requesterPersonIdKey )
+                || !string.IsNullOrWhiteSpace( connectorPersonIdKey );
+
+            if ( !hasAnyFilters )
+            {
+                helper.AddError( "At least one filter parameter must be provided to limit the results returned." );
+            }
+
             if ( helper.HasErrors )
             {
                 return helper.ErrorResult;
