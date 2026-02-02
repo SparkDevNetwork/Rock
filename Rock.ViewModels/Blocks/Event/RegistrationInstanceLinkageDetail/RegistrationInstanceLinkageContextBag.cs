@@ -17,22 +17,18 @@
 
 using System;
 
-namespace Rock.ViewModels.Rest.Controls
+using Rock.ViewModels.Utility;
+
+namespace Rock.ViewModels.Blocks.Event.RegistrationInstanceLinkageDetail
 {
     /// <summary>
-    /// The options that can be passed to the GetEventItems API action of
-    /// the EventItemPicker control.
+    /// Contains additional context information needed by the Registration Instance Linkage Detail block.
     /// </summary>
-    public class EventItemPickerGetEventItemsOptionsBag
+    public class RegistrationInstanceLinkageContextBag
     {
         /// <summary>
-        /// Whether or not to include inactive event items
+        /// Gets or sets the unique identifier of the registration instance.
         /// </summary>
-        /// <value>The option to include inactive event items</value>
-        public bool IncludeInactive { get; set; } = false;
-        /// <summary>
-        /// The root calendar to limit the event items to.
-        /// </summary>
-        public Guid RootCalendar { get; set; }
+        public Guid? RegistrationInstanceGroupTypeGuid { get; set; }
     }
 }

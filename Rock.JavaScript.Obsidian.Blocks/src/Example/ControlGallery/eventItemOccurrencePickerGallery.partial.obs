@@ -4,15 +4,25 @@
                       :exampleCode="exampleCode"
                       :scriptSetupCode="scriptSetupCode"
                       enableReflection>
-        <EventItemPicker label="Event Item"
-                         v-model="value"
-                         :multiple="multiple"
-                         :columnCount="columnCount"
-                         :enhanceForLongLists="enhanceForLongLists"
-                         :displayStyle="displayStyle"
-                         :showBlankItem="showBlankItem"
-                         :includeInactive="includeInactive"
-                         :rootCalendar="rootCalendar?.value ?? undefined" />
+        <EventItemOccurrencePicker label="Event Item Occurrence"
+                                   v-model="value"
+                                   :multiple="multiple"
+                                   :columnCount="columnCount"
+                                   :enhanceForLongLists="enhanceForLongLists"
+                                   :displayStyle="displayStyle"
+                                   :showBlankItem="showBlankItem"
+                                   :includeInactive="includeInactive"
+                                   :eventItem="eventItem?.value ?? undefined"
+                                   :dateRangeStart="dateRange?.lowerValue ?? undefined"
+                                   :dateRangeEnd="dateRange?.upperValue ?? undefined" />
+        <div class="row px-5 pt-4" style="background-color: #f3f3f3;">
+            <em>The control below is an Event Item Picker, which is not explicitly a part of the demonstrated Event Item Occurrence Picker above, however, for demonstration purposes; to see useful selections, an Event Item Picker is included to view the occcurences for.</em>
+        </div>
+        <div class="row px-5 pb-4" style="background-color: #f3f3f3;">
+            <EventItemPicker label="Event Item"
+                             v-model="eventItem"
+                             :multiple="false" />
+        </div>
         <template #settings>
             <div class="d-flex flex-row gap-3" style="max-height: 5vw;">
                 <ContentSection title="Demonstratable Settings"
@@ -47,7 +57,9 @@
                                          label="Title" />
                                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
                                 <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
-                                <EventCalendarPicker label="Event Calendar" v-model="rootCalendar" showBlankItem />
+                                <DateRangePicker v-model="dateRange"
+                                                 label="Date Range"
+                                                 :disallowPastDateSelection="false" />
                             </div>
                         </div>
 
@@ -68,33 +80,48 @@
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import EventItemPicker from "@Obsidian/Controls/eventItemPicker.obs";
+    import EventItemOccurrencePicker from "@Obsidian/Controls/eventItemOccurrencePicker.obs";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
-    import EventCalendarPicker from "@Obsidian/Controls/eventCalendarPicker.obs";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { getSfcControlImportPath, ComponentUsage, displayStyleItems } from "./common/utils.partial";
 
-    const label = ref("Event Item");
+    const dateNow = RockDateTime.now();
+
+    const modalDefaultDateRangeParts: DateRangeParts = {
+        lowerValue: dateNow.addYears(-1).addDays(1).date.toISOString(),
+        upperValue: dateNow.addYears(1).addDays(-1).date.toISOString()
+    };
+
+    const label = ref("Event Item Occurrence");
     const columnCount = ref(0);
     const displayStyle = ref(PickerDisplayStyle.Auto);
     const enhanceForLongLists = ref(false);
     const multiple = ref(false);
     const showBlankItem = ref(false);
     const includeInactive = ref(false);
-    const rootCalendar = ref<ListItemBag | null>(null);
-    const value = ref({});
-    const importCode = getSfcControlImportPath("eventItemPicker");
+    const eventItem = ref<ListItemBag | null>(null);
+    const dateRange = ref<DateRangeParts>({});
+    const value = ref<ListItemBag | ListItemBag[] | null>(null);
+    const importCode = getSfcControlImportPath("eventItemOccurrencePicker");
+
+    dateRange.value = { ...modalDefaultDateRangeParts };
 
     const exampleCode = computed(() => {
-        const usage = new ComponentUsage("EventItemPicker");
+        const usage = new ComponentUsage("EventItemOccurrencePicker");
 
         usage.addAttribute(`v-model="value"`, true, false);
         usage.addAttribute(`label="label"`, label.value !== "", false);
+        usage.addAttribute(`:eventItem="eventItem"`, true, false);
         usage.addAttribute(`:multiple="multiple"`, multiple.value, false);
-        usage.addAttribute(`:rootCalendar="rootCalendar?.value"`, rootCalendar.value !== null, false);
+        usage.addAttribute(`:dateRangeStart="dateRange?.lowerValue"`, dateRange.value.lowerValue !== undefined, false);
+        usage.addAttribute(`:dateRangeEnd="dateRange?.upperValue"`, dateRange.value.upperValue !== undefined, false);
         usage.addAttribute(`:showBlankItem="showBlankItem"`, showBlankItem.value, false);
         usage.addAttribute(`:includeInactive="includeInactive"`, includeInactive.value, false);
         usage.addAttribute(`:columnCount="columnCount"`, columnCount.value !== 0, false);
@@ -103,13 +130,27 @@
         return usage.toString();
     });
     const scriptSetupCode = computed(() => {
-        const usage = new ComponentUsage("EventItemPicker");
+        const usage = new ComponentUsage("EventItemOccurrencePicker");
 
         usage.addScriptBody("const value = ref<ListItemBag | ListItemBag[] | null>(null);");
+        usage.addScriptBodyWithComment(
+            "Define the default date range for the picker. It helps to set unreferenced defaults you can refer back to.",
+            `const dateNow = RockDateTime.now();`
+        );
+        usage.addScriptBody(
+            `const modalDefaultDateRangeParts: DateRangeParts = {lowerValue: dateNow.addYears(-1).addDays(1).date.toISOString(), upperValue: dateNow.addYears(1).addDays(-1).date.toISOString()};`
+        );
+        usage.addScriptBody(`const dateRange = ref<DateRangeParts>({});`);
+        usage.addScriptBody(`dateRange.value = { ...modalDefaultDateRangeParts };`);
+
+        usage.addScriptBodyWithComment(
+            "Define the event item to filter occurrences for.",
+            `const eventItem = ref<Guid>("${eventItem.value?.value}");`
+        );
 
         if (label.value !== "") {
             usage.addScriptBodyWithComment(
-                "Define the label for the EventItemPicker.",
+                "Define the label for the EventItemOccurrencePicker.",
                 `const label = ref<string>("${label.value}");`
             );
         }
@@ -118,13 +159,6 @@
             usage.addScriptBodyWithComment(
                 "Define whether multiple items can be selected.",
                 `const multiple = ref<boolean>(true);`
-            );
-        }
-
-        if (rootCalendar.value?.value) {
-            usage.addScriptBodyWithComment(
-                "Define the root event calendar to limit the event items to.",
-                `const rootCalendar = ref<ListItemBag | null>("${JSON.stringify(rootCalendar.value)}");`
             );
         }
 

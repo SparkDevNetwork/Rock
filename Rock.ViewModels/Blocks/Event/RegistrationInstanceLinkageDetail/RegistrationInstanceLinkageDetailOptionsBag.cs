@@ -15,24 +15,20 @@
 // </copyright>
 //
 
-using System;
+using System.Collections.Generic;
 
-namespace Rock.ViewModels.Rest.Controls
+using Rock.ViewModels.Utility;
+
+namespace Rock.ViewModels.Blocks.Event.RegistrationInstanceLinkageDetail
 {
     /// <summary>
-    /// The options that can be passed to the GetEventItems API action of
-    /// the EventItemPicker control.
+    /// Contains the options required for the Registration Instance Linkage Detail block.
     /// </summary>
-    public class EventItemPickerGetEventItemsOptionsBag
+    public class RegistrationInstanceLinkageDetailOptionsBag
     {
         /// <summary>
-        /// Whether or not to include inactive event items
+        /// Gets or sets the list of available calendars for selection.
         /// </summary>
-        /// <value>The option to include inactive event items</value>
-        public bool IncludeInactive { get; set; } = false;
-        /// <summary>
-        /// The root calendar to limit the event items to.
-        /// </summary>
-        public Guid RootCalendar { get; set; }
+        public List<ListItemBag> Calendars { get; set; }
     }
 }

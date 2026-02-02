@@ -23,7 +23,7 @@ namespace Rock.ViewModels.Rest.Controls
     /// The options that can be passed to the GetEventItems API action of
     /// the EventItemPicker control.
     /// </summary>
-    public class EventItemPickerGetEventItemsOptionsBag
+    public class EventItemOccurrencePickerGetEventItemOccurrencesOptionsBag
     {
         /// <summary>
         /// Whether or not to include inactive event items
@@ -33,6 +33,14 @@ namespace Rock.ViewModels.Rest.Controls
         /// <summary>
         /// The root calendar to limit the event items to.
         /// </summary>
-        public Guid RootCalendar { get; set; }
+        public Guid EventItem { get; set; }
+        /// <summary>
+        /// The start of the date range to limit occurrences to.
+        /// </summary>
+        public string DateRangeStart { get; set; }
+        /// <summary>
+        /// The end of the date range to limit occurrences to.
+        /// </summary>
+        public string DateRangeEnd { get; set; }
     }
 }

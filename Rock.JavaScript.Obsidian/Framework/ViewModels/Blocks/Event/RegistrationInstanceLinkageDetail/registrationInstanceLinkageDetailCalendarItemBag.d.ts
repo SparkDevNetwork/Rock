@@ -21,16 +21,22 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-/**
- * The options that can be passed to the GetEventItems API action of
- * the EventItemPicker control.
- */
-export type EventItemPickerGetEventItemsOptionsBag = {
-    /** Whether or not to include inactive event items */
-    includeInactive: boolean;
+/** Represents the details of a calendar item used in the Registration Instance Linkage Detail block. */
+export type RegistrationInstanceLinkageDetailCalendarItemBag = {
+    /** Gets or sets the end date of the date range. */
+    dateRangeEnd?: string | null;
 
-    /** The root calendar to limit the event items to. */
-    rootCalendar: Guid;
+    /** Gets or sets the start date of the date range. */
+    dateRangeStart?: string | null;
+
+    /** Gets or sets the selected calendar. */
+    selectedCalendar?: ListItemBag | null;
+
+    /** Gets or sets the selected calendar item. */
+    selectedCalendarItem?: ListItemBag | null;
+
+    /** Gets or sets the selected occurrence. */
+    selectedOccurrence?: ListItemBag | null;
 };

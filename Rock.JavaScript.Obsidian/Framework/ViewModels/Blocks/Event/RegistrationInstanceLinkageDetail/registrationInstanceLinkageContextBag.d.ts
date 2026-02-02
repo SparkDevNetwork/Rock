@@ -23,14 +23,8 @@
 
 import { Guid } from "@Obsidian/Types";
 
-/**
- * The options that can be passed to the GetEventItems API action of
- * the EventItemPicker control.
- */
-export type EventItemPickerGetEventItemsOptionsBag = {
-    /** Whether or not to include inactive event items */
-    includeInactive: boolean;
-
-    /** The root calendar to limit the event items to. */
-    rootCalendar: Guid;
+/** Contains additional context information needed by the Registration Instance Linkage Detail block. */
+export type RegistrationInstanceLinkageContextBag = {
+    /** Gets or sets the unique identifier of the registration instance. */
+    registrationInstanceGroupTypeGuid?: Guid | null;
 };

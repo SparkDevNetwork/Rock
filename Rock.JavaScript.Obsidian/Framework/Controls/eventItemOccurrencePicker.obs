@@ -3,17 +3,17 @@
     <BaseAsyncPicker v-model="internalValue"
                      v-bind="standardProps"
                      :items="actualItems"
-                     :grouped="!props.rootCalendar" />
+                     :grouped="false" />
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { PropType, ref, computed, watch } from "vue";
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import { Guid } from "@Obsidian/Types";
     import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
-    import { EventItemPickerGetEventItemsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/eventItemPickerGetEventItemsOptionsBag";
+    import { EventItemOccurrencePickerGetEventItemOccurrencesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/eventItemOccurrencePickerGetEventItemOccurrencesOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
@@ -27,8 +27,18 @@
             default: false
         },
 
-        rootCalendar: {
+        eventItem: {
             type: String as PropType<Guid>,
+            default: null
+        },
+
+        dateRangeStart: {
+            type: String as PropType<string>,
+            default: null
+        },
+
+        dateRangeEnd: {
+            type: String as PropType<string>,
             default: null
         },
 
@@ -50,7 +60,7 @@
 
     // #endregion
 
-    // #region Computed Values
+    // #region Functions
 
     /**
      * The actual items to make available to the picker. This allows us to do any
@@ -68,19 +78,18 @@
         return loadedItems.value;
     });
 
-    // #endregion
-
-    // #region Functions
-
     /**
      * Loads the items from the server.
      */
     async function loadOptions(): Promise<ListItemBag[]> {
-        const options: EventItemPickerGetEventItemsOptionsBag = {
+        const options: EventItemOccurrencePickerGetEventItemOccurrencesOptionsBag = {
             includeInactive: props.includeInactive,
-            rootCalendar: toGuidOrNull(props.rootCalendar) ?? emptyGuid,
+            eventItem: toGuidOrNull(props.eventItem) ?? emptyGuid,
+            dateRangeStart: props.dateRangeStart,
+            dateRangeEnd: props.dateRangeEnd
         };
-        const result = await http.post<ListItemBag[]>("/api/v2/Controls/EventItemPickerGetEventItems", undefined, options);
+
+        const result = await http.post<ListItemBag[]>("/api/v2/Controls/EventItemOccurrencePickerGetEventItemOccurrences", undefined, options);
 
         if (result.isSuccess && result.data) {
             loadedItems.value = result.data;
@@ -101,10 +110,19 @@
         loadedItems.value = null;
     });
 
-    watch(() => props.rootCalendar, () => {
+    watch(() => props.eventItem, () => {
         internalValue.value = null;
         loadedItems.value = null;
     });
 
+    watch(() => props.dateRangeStart, () => {
+        loadedItems.value = null;
+    });
+
+    watch(() => props.dateRangeEnd, () => {
+        loadedItems.value = null;
+    });
+
     // #endregion
+
 </script>

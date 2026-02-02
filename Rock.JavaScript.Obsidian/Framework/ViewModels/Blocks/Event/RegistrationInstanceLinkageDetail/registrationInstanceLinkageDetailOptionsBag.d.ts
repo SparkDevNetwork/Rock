@@ -21,16 +21,10 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-/**
- * The options that can be passed to the GetEventItems API action of
- * the EventItemPicker control.
- */
-export type EventItemPickerGetEventItemsOptionsBag = {
-    /** Whether or not to include inactive event items */
-    includeInactive: boolean;
-
-    /** The root calendar to limit the event items to. */
-    rootCalendar: Guid;
+/** Contains the options required for the Registration Instance Linkage Detail block. */
+export type RegistrationInstanceLinkageDetailOptionsBag = {
+    /** Gets or sets the list of available calendars for selection. */
+    calendars?: ListItemBag[] | null;
 };

@@ -5330,6 +5330,7 @@ namespace Rock.Rest.v2
             {
                 var eventItems = new EventCalendarItemService( rockContext ).Queryable()
                     .Include( eci => eci.EventCalendar )
+                    .Where( i => options.RootCalendar != Guid.Empty ? i.EventCalendar.Guid == options.RootCalendar : true )
                     .Where( i => options.IncludeInactive ? true : i.EventItem.IsActive )
                     .ToList()
                     .Where( eci => eci.EventCalendar.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
@@ -5344,6 +5345,67 @@ namespace Rock.Rest.v2
                     .ToList();
 
                 return Ok( eventItems );
+            }
+        }
+
+        #endregion
+
+        #region Event Item Occurrence Picker
+
+        /// <summary>
+        /// Gets the event items that can be displayed in the event item picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the event items.</returns>
+        [HttpPost]
+        [Route( "EventItemOccurrencePickerGetEventItemOccurrences" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [Rock.SystemGuid.RestActionGuid( "1E837165-A003-4CC7-B870-15D7640826EE" )]
+        public IActionResult EventItemOccurrencePickerGetEventItemOccurrences( [FromBody] EventItemOccurrencePickerGetEventItemOccurrencesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var lowerValue = options.DateRangeStart.AsDateTime() ?? RockDateTime.Today.AddYears( -1 ).AddDays( 1 );
+                var upperValue = options.DateRangeEnd.AsDateTime() ?? RockDateTime.Today.AddYears( 1 ).AddDays( -1 );
+
+                // Swap the values if they are backwards
+                if ( lowerValue > upperValue )
+                {
+                    var temp = lowerValue;
+                    lowerValue = upperValue;
+                    upperValue = temp;
+                }
+
+                var eventItemOccurences = new EventItemOccurrenceService( rockContext )
+                    .Queryable()
+                    .Where( c => c.EventItem.Guid == options.EventItem )
+                    .Where( c => options.IncludeInactive || c.EventItem.IsActive )
+                    .ToList()
+                    .Where( c => c.EventItem.GetStartTimes( lowerValue, upperValue ).Any() )
+                    .Select( c => new
+                    {
+                        c.Guid,
+                        c.NextStartDateTime,
+                        Campus = c.Campus != null ? c.Campus.Name : "All Campuses",
+                        Order = c.CampusId.HasValue ? 1 : 0
+                    }
+                    )
+                    .OrderBy( c => c.Order )
+                    .ThenBy( c => c.Campus )
+                    .ThenBy( c => c.NextStartDateTime ?? DateTime.MinValue )
+                    .Select( c => new ListItemBag
+                    {
+                        Text = c.NextStartDateTime.HasValue ?
+                                string.Format( "{0} - {1}", c.Campus, c.NextStartDateTime.Value.ToShortDateTimeString() ) :
+                                c.Campus,
+                        Value = c.Guid.ToString()
+                    }
+                    )
+                    .ToList();
+
+                return Ok( eventItemOccurences );
             }
         }
 

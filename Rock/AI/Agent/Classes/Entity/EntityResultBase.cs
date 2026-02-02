@@ -15,10 +15,12 @@
 // </copyright>
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text.Json.Serialization;
 
-using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -29,8 +31,17 @@ namespace Rock.AI.Agent.Classes.Entity
     /// </summary>
     internal class EntityResultBase
     {
+        #region Fields
+
+        private static readonly ConcurrentDictionary<Type, (List<PropertyInfo> IndividualProperties, List<PropertyInfo> CollectionProperties)> _nestedPropertiesCache
+            = new ConcurrentDictionary<Type, (List<PropertyInfo>, List<PropertyInfo>)>();
+
+        #endregion
+
+        #region Properties
+
         /// <summary>
-        /// The phone number id. This will not be show in the JSON output.
+        /// The entity id. This will not be show in the JSON output.
         /// </summary>
         [JsonIgnore]
         internal int Id { get; set; }
@@ -38,10 +49,7 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <summary>
         /// Internal identifier of the phone number.
         /// </summary>
-        public string IdKey
-        {
-            get { return Id.AsIdKey(); }
-        }
+        public string IdKey => Id.AsIdKey();
 
         /// <summary>
         /// Gets or sets the date and time that the entity was created.
@@ -68,44 +76,96 @@ namespace Rock.AI.Agent.Classes.Entity
         /// </summary>
         public List<AttributeValueResult> AttributeValues { get; set; }
 
-        #region Public Methods
-
-        /// <summary>
-        /// Sanitizes the entity for security by checking attribute security.
-        /// </summary>
-        /// <param name="currentPerson"></param>
-        /// <returns>True if the security checks passed; false if the checks failed.</returns>
-        public virtual bool SanitizeForSecurity( Person currentPerson )
-        {
-            // Default logic (very basic, override in subclasses for custom behavior)
-
-            // Remove attributes the current person does not have view access to.
-            CheckAttributeSecurity( currentPerson );
-
-            // Currently there is need to prevent the security from passing.
-            return true;
-        }
-
         #endregion
 
-        #region Private Methods
+        #region Methods
+
+        /// <summary>
+        /// Sanitizes the entity for security related to the request context.
+        /// </summary>
+        /// <param name="agentRequestContext">The context that describes the current request.</param>
+        public virtual void Sanitize( AgentRequestContext agentRequestContext )
+        {
+            SanitizeResult( agentRequestContext );
+            SanitizeNestedProperties( agentRequestContext );
+            SanitizeAttributeSecurity( agentRequestContext );
+        }
+
+        /// <summary>
+        /// Sanitizes this result for security related to the request context.
+        /// This is the method you will want to override most of the time.
+        /// </summary>
+        /// <param name="agentRequestContext">The context that describes the current request.</param>
+        protected virtual void SanitizeResult( AgentRequestContext agentRequestContext )
+        {
+        }
+
+        /// <summary>
+        /// Sanitizes any nested properties for security related to the request context.
+        /// </summary>
+        /// <param name="agentRequestContext">The context that describes the current request.</param>
+        protected void SanitizeNestedProperties( AgentRequestContext agentRequestContext )
+        {
+            var cache = _nestedPropertiesCache.GetOrAdd( GetType(), rt =>
+            {
+                var entityResultBaseType = typeof( EntityResultBase );
+
+                var individualProperties = rt.GetProperties()
+                    .Where( pi => entityResultBaseType.IsAssignableFrom( pi.PropertyType ) )
+                    .ToList();
+
+                var collectionProperties = rt.GetProperties()
+                    .Where( pi => pi.PropertyType.IsGenericType
+                        && pi.PropertyType.GetGenericTypeDefinition() == typeof( IEnumerable<> )
+                        && entityResultBaseType.IsAssignableFrom( pi.PropertyType.GetGenericArguments()[0] ) )
+                    .ToList();
+
+                return (individualProperties, collectionProperties);
+            } );
+
+            foreach ( var property in cache.IndividualProperties )
+            {
+                if ( property.GetValue( this ) is EntityResultBase nestedResult )
+                {
+                    nestedResult.Sanitize( agentRequestContext );
+                }
+            }
+
+            foreach ( var property in cache.CollectionProperties )
+            {
+                if ( property.GetValue( this ) is System.Collections.IEnumerable nestedResults )
+                {
+                    foreach ( var nestedResultObj in nestedResults )
+                    {
+                        if ( nestedResultObj is EntityResultBase nestedResult )
+                        {
+                            nestedResult.Sanitize( agentRequestContext );
+                        }
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Removes any attributes that the current person does not have view access to.
         /// </summary>
-        /// <param name="currentPerson"></param>
-        private void CheckAttributeSecurity( Person currentPerson )
+        /// <param name="agentRequestContext">The context that describes the current request.</param>
+        protected void SanitizeAttributeSecurity( AgentRequestContext agentRequestContext )
         {
-            if ( AttributeValues != null )
+            if ( AttributeValues == null )
             {
-                for ( int i = AttributeValues.Count - 1; i >= 0; i-- )
-                {
-                    var isAllowedViewAccess = AttributeCache.Get( AttributeValues[i].AttributeId )?.IsAuthorized( Authorization.VIEW, currentPerson ) ?? false;
+                return;
+            }
 
-                    if ( !isAllowedViewAccess )
-                    {
-                        AttributeValues.RemoveAt( i );
-                    }
+            var currentPerson = agentRequestContext.RockRequestContext.CurrentPerson;
+
+            for ( int i = AttributeValues.Count - 1; i >= 0; i-- )
+            {
+                var isAllowedViewAccess = AttributeCache.Get( AttributeValues[i].AttributeId )?.IsAuthorized( Authorization.VIEW, currentPerson ) ?? false;
+
+                if ( !isAllowedViewAccess )
+                {
+                    AttributeValues.RemoveAt( i );
                 }
             }
         }

@@ -277,7 +277,7 @@ namespace Rock.AI.Agent
         /// <param name="queryable">The queryable that represents the data to be paginated from the database.</param>
         /// <param name="pageNumber">The page number that was requested.</param>
         /// <param name="pageSize">The size of each page. If <c>null</c> then a default page size will be applied.</param>
-        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.SanitizeForSecurity(Model.Person)"/>.</param>
+        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.Sanitize(AgentRequestContext)"/>.</param>
         /// <returns>A collection of items for the specified page.</returns>
         public List<T> GetPaginatedItems<T>( IQueryable<T> queryable, int pageNumber, int? pageSize = null, bool sanitizeForSecurity = true )
         {
@@ -303,7 +303,7 @@ namespace Rock.AI.Agent
         /// <param name="items">The in-memory items to be paginated.</param>
         /// <param name="pageNumber">The page number that was requested.</param>
         /// <param name="pageSize">The size of each page. If <c>null</c> then a default page size will be applied.</param>
-        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.SanitizeForSecurity(Model.Person)"/>.</param>
+        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.Sanitize(AgentRequestContext)"/>.</param>
         /// <returns>A collection of items for the specified page.</returns>
         public List<T> GetPaginatedItems<T>( IEnumerable<T> items, int pageNumber, int? pageSize = null, bool sanitizeForSecurity = true )
         {
@@ -329,7 +329,7 @@ namespace Rock.AI.Agent
         /// <param name="pagedItems">The items that have been paginated. This should have up to <paramref name="pageSize"/> + 1 items.</param>
         /// <param name="pageNumber">The page number that was requested.</param>
         /// <param name="pageSize">The size of each page. If <paramref name="pagedItems"/> contains more than <paramref name="pageSize"/> items, then the <c>hasMore</c> metadata key will be set to <c>true</c>.</param>
-        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.SanitizeForSecurity(Model.Person)"/>.</param>
+        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.Sanitize(AgentRequestContext)"/>.</param>
         private void UpdatePaginatedMetadataAndSanitize<T>( List<T> pagedItems, int pageNumber, int pageSize, bool sanitizeForSecurity )
         {
             var hasMore = pagedItems.Count > pageSize;
@@ -349,7 +349,7 @@ namespace Rock.AI.Agent
             {
                 foreach ( EntityResultBase item in pagedItems.Cast<EntityResultBase>() )
                 {
-                    item.SanitizeForSecurity( _agentRequestContext.RockRequestContext.CurrentPerson );
+                    item.Sanitize( _agentRequestContext );
                 }
             }
         }

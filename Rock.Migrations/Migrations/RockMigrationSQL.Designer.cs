@@ -280,8 +280,7 @@ namespace Rock.Migrations.Migrations {
         ///    BEGIN
         ///	
         ///	    -- configuration of the duration in weeks
-        ///	    DECLARE @GivingDurationLongWeeks int = 52
-        /// [rest of string was truncated]&quot;;.
+        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202101292141445_Rollup_01291_spCrm_FamilyAnalyticsGiving {
             get {
@@ -1756,8 +1755,7 @@ namespace Rock.Migrations.Migrations {
         ///    &lt;/returns&gt;
         ///
         ///    &lt;param name=&apos;@RegistrationTemplatePlacementEntityTypeId&apos; datatype=&apos;int&apos;&gt;
-        ///		The EntityTypeId for RegistrationTemplatePlacement.
-        /// [rest of string was truncated]&quot;;.
+        ///		The EntityTypeId for RegistrationTemplatePlacement.        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202506232302341_AddAndSwapToObsidianGroupPlacementBlock_spGetGroupPlacementPeople {
             get {
@@ -1819,8 +1817,7 @@ namespace Rock.Migrations.Migrations {
         ///    &lt;/returns&gt;
         ///
         ///    &lt;param name=&apos;@RegistrationTemplatePlacementEntityTypeId&apos; datatype=&apos;int&apos;&gt;
-        ///		The EntityTypeId for RegistrationTemplatePlacement.
-        /// [rest of string was truncated]&quot;;.
+        ///		The EntityTypeId for RegistrationTemplatePlacement.        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202507162006509_UpdateGroupPlacementStoredProcedure_spGetGroupPlacementPeople {
             get {
@@ -1884,8 +1881,7 @@ namespace Rock.Migrations.Migrations {
         ///    &lt;/returns&gt;
         ///
         ///    &lt;param name=&apos;@RegistrationTemplatePlacementEntityTypeId&apos; datatype=&apos;int&apos;&gt;
-        ///		The EntityTypeId for RegistrationTemplatePlacement.
-        /// [rest of string was truncated]&quot;;.
+        ///		The EntityTypeId for RegistrationTemplatePlacement.        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202511051918499_UpdateGetGroupPlacementPeopleStoredProcedure_spGetGroupPlacementPeople {
             get {
@@ -2010,6 +2006,26 @@ namespace Rock.Migrations.Migrations {
         public static string _202601212358292_AddEntitySetAdditionalSettingsJson_spCrm_PersonMerge {
             get {
                 return ResourceManager.GetString("_202601212358292_AddEntitySetAdditionalSettingsJson_spCrm_PersonMerge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure merges the data from the non-primary person to the primary person.  It
+        ///		is used when merging people in Rock and should never be used outside of that process.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;&lt;/returns&gt;
+        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
+        ///	&lt;param name=&quot;New Id&quot; datatype=&quot;int&quot;&gt;The person id of the primary Person being merged&lt;/param&gt;
+        ///	&lt;remarks&gt;
+        ///        If calling this outside of C#, wrap in a transaction if you  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202602021859057_UpdatePersonMergeWithThrow {
+            get {
+                return ResourceManager.GetString("_202602021859057_UpdatePersonMergeWithThrow", resourceCulture);
             }
         }
         

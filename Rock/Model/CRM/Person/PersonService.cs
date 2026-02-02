@@ -3740,14 +3740,15 @@ namespace Rock.Model
                         }
 
                         RemoveAnonymousGiverUserLogins( userLoginService, rockContext );
+
+                        // Run merge proc to merge all associated data
+                        var parms = new Dictionary<string, object>();
+                        parms.Add( "OldId", personId );
+                        parms.Add( "NewId", anonymousPersonId.Value );
+                        DbService.ExecuteCommand( "spCrm_PersonMerge", CommandType.StoredProcedure, parms );
                     }
                 } );
 
-                // Run merge proc to merge all associated data
-                var parms = new Dictionary<string, object>();
-                parms.Add( "OldId", personId );
-                parms.Add( "NewId", anonymousPersonId.Value );
-                DbService.ExecuteCommand( "spCrm_PersonMerge", CommandType.StoredProcedure, parms );
             }
             catch ( Exception ex )
             {
