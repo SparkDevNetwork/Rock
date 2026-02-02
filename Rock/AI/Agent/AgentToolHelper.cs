@@ -525,7 +525,8 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <param name="entity">The entity whose attributes are to be set.</param>
         /// <param name="attributeValues">The values to be set.</param>
-        public void SetAttributeValues( IHasAttributes entity, List<AttributeValueResult> attributeValues )
+        /// <param name="enforceSecurity">Determines if security should be enforced or not when setting values.</param>
+        public void SetAttributeValues( IHasAttributes entity, List<AttributeValueResult> attributeValues, bool enforceSecurity = true )
         {
             if ( entity == null )
             {
@@ -552,9 +553,17 @@ namespace Rock.AI.Agent
                         continue;
                     }
 
-                    if ( !isInternal && !entity.Attributes[kvp.Key].IsPublic )
+                    var attribute = entity.Attributes[kvp.Key];
+
+                    if ( !isInternal && !attribute.IsPublic )
                     {
                         _errors.Add( $"The attribute '{kvp.Key}' is not available." );
+                        continue;
+                    }
+
+                    if ( enforceSecurity && !attribute.IsAuthorized( Authorization.EDIT, _agentRequestContext.RockRequestContext.CurrentPerson ) )
+                    {
+                        AddError( $"You do not have permission to edit the attribute '{kvp.Key}'." );
                         continue;
                     }
 
@@ -579,7 +588,14 @@ namespace Rock.AI.Agent
             // Check for any attribute values that are blank yet required.
             foreach ( var key in entity.Attributes.Keys )
             {
-                if ( !entity.Attributes[key].IsRequired )
+                var attribute = entity.Attributes[key];
+
+                if ( !attribute.IsRequired )
+                {
+                    continue;
+                }
+
+                if ( enforceSecurity && !attribute.IsAuthorized( Authorization.EDIT, _agentRequestContext.RockRequestContext.CurrentPerson ) )
                 {
                     continue;
                 }
@@ -602,8 +618,9 @@ namespace Rock.AI.Agent
         /// Gets the attributes that are available on the entity.
         /// </summary>
         /// <param name="entity">The entity whose attributes are to be retrieved.</param>
+        /// <param name="enforceSecurity">Determines if security should be enforced or not when getting attributes.</param>
         /// <returns></returns>
-        public ICollection<AttributeResult> GetAvailableAttributes( IHasAttributes entity )
+        public ICollection<AttributeResult> GetAvailableAttributes( IHasAttributes entity, bool enforceSecurity = true )
         {
             if ( entity == null || entity.Attributes == null )
             {
@@ -614,6 +631,7 @@ namespace Rock.AI.Agent
 
             return entity.Attributes.Values
                 .Where( a => isInternal || a.IsPublic )
+                .Where( a => !enforceSecurity || a.IsAuthorized( Authorization.EDIT, _agentRequestContext.RockRequestContext.CurrentPerson ) )
                 .Select( a =>
                 {
                     var attr = new AttributeResult
@@ -621,6 +639,7 @@ namespace Rock.AI.Agent
                         Key = a.Key,
                         Name = a.Name,
                         IsRequired = a.IsRequired,
+                        IsReadOnly = enforceSecurity && !a.IsAuthorized( Authorization.EDIT, _agentRequestContext.RockRequestContext.CurrentPerson ),
                     };
 
                     return attr;
@@ -798,6 +817,46 @@ namespace Rock.AI.Agent
                 else
                 {
                     property.SetValue( instance, parameter.Value );
+                }
+            }
+            catch
+            {
+                AddError( $"The value of {parameterExpression} is not valid." );
+            }
+        }
+
+        /// <summary>
+        /// Updates the specified property of an instance with a new value or
+        /// clears the existing value. If <paramref name="parameter"/> is
+        /// <c>null</c> or whitespace then no action will be taken. Any errors
+        /// will be added to the error list automatically.
+        /// </summary>
+        /// <typeparam name="TInstance">The type of object to be updated.</typeparam>
+        /// <param name="instance">The instance to be updated.</param>
+        /// <param name="propertyExpression">The expression that identifies which property to update, such as <c>p =&gt; p.FirstName</c>.</param>
+        /// <param name="parameter">The parameter that contains the value to be set or indicates the existing value should be cleared.</param>
+        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
+        public void UpdateProperty<TInstance>( TInstance instance, Expression<Func<TInstance, string>> propertyExpression, string parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
+        {
+            if ( parameterExpression.IsNullOrWhiteSpace() )
+            {
+                throw new ArgumentNullException( nameof( parameterExpression ), "The parameterExpression must be provided. It will be provided automatically if using C# 10, otherwise use 'nameof()' to get the name of the passed parameter." );
+            }
+
+            if ( parameter == null )
+            {
+                return;
+            }
+
+            var propertyName = ExtractPropertyName( propertyExpression );
+            var property = instance.GetType().GetProperty( propertyName )
+                ?? throw new Exception( $"Property {propertyName} is not valid." );
+
+            try
+            {
+                if ( parameter.IsNotNullOrWhiteSpace() )
+                {
+                    property.SetValue( instance, parameter );
                 }
             }
             catch
@@ -1465,7 +1524,7 @@ namespace Rock.AI.Agent
         /// <summary>
         /// Saves all changes made in this helper's <see cref="RockContext"/>.
         /// Additionally, any entities that had their attributes set via
-        /// <see cref="SetAttributeValues(IHasAttributes, List{AttributeValueResult})"/>
+        /// <see cref="SetAttributeValues(IHasAttributes, List{AttributeValueResult}, bool)"/>
         /// will have their attribute values saved as well. Any exceptions will
         /// be logged and automatically added to the error list.
         /// </summary>
@@ -1473,7 +1532,7 @@ namespace Rock.AI.Agent
         {
             if ( _isContextReadOnly )
             {
-                throw new InvalidOperationException( "The RockContext is read-only and changes cannot be saved." );
+                throw new InvalidOperationException( "The RockContext is read-only and changes cannot be saved. Use the constructor that takes a RockContext parameter." );
             }
 
             try
@@ -1487,6 +1546,8 @@ namespace Rock.AI.Agent
                         entity.SaveAttributeValues( _rockContext );
                     }
                 } );
+
+                _entitiesWithAttributesToSave.Clear();
             }
             catch ( Exception ex )
             {
@@ -1501,7 +1562,7 @@ namespace Rock.AI.Agent
         /// <para>
         /// Saves all changes made in this helper's <see cref="RockContext"/>.
         /// Additionally, any entities that had their attributes set via
-        /// <see cref="SetAttributeValues(IHasAttributes, List{AttributeValueResult})"/>
+        /// <see cref="SetAttributeValues(IHasAttributes, List{AttributeValueResult}, bool)"/>
         /// will have their attribute values saved as well. Any exceptions will
         /// be logged and automatically added to the error list.
         /// </para>
@@ -1518,7 +1579,7 @@ namespace Rock.AI.Agent
             // if there were other errors.
             if ( _isContextReadOnly )
             {
-                throw new InvalidOperationException( "The RockContext is read-only and changes cannot be saved." );
+                throw new InvalidOperationException( "The RockContext is read-only and changes cannot be saved. Use the constructor that takes a RockContext parameter." );
             }
 
             if ( HasErrors )
