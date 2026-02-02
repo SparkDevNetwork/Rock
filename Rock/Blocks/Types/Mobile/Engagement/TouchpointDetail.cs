@@ -112,7 +112,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         /// <returns></returns>
         private TouchpointViewBag GetTouchpointView( TouchpointType touchpointType, Contact contact )
         {
-            var genderedPronoun = GetGenderString( contact.Gender, "him", "her", contact.FirstName );
+            var genderedPronoun = GetGenderString( contact.Gender, "his", "her", contact.FirstName );
             switch ( touchpointType )
             {
                 case TouchpointType.Prayer:

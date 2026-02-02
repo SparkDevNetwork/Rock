@@ -160,7 +160,7 @@ namespace Rock.AI.Agent
         /// have been encountered then an exception will be thrown.
         /// </summary>
         /// <returns>A new instance of <see cref="RockToolResult"/>.</returns>
-        public RockToolResult GetErrorResult()
+        private RockToolResult GetErrorResult()
         {
             if ( _errors.Count == 0 )
             {
@@ -227,6 +227,10 @@ namespace Rock.AI.Agent
             return result.WithoutHistoryContent();
         }
 
+        #endregion
+
+        #region Reporting Methods
+
         /// <summary>
         /// Adds a new error message to the list of errors. This can be used
         /// while performing custom processing to accumulate errors instead of
@@ -285,7 +289,7 @@ namespace Rock.AI.Agent
                 .Take( pageSize.Value + 1 )
                 .ToList();
 
-            UpdatePaginatedMetadataAndCheckSecurity( pagedItems, pageNumber, pageSize.Value, sanitizeForSecurity );
+            UpdatePaginatedMetadataAndSanitize( pagedItems, pageNumber, pageSize.Value, sanitizeForSecurity );
 
             return pagedItems;
         }
@@ -311,7 +315,7 @@ namespace Rock.AI.Agent
                 .Take( pageSize.Value + 1 )
                 .ToList();
 
-            UpdatePaginatedMetadataAndCheckSecurity( pagedItems, pageNumber, pageSize.Value, sanitizeForSecurity );
+            UpdatePaginatedMetadataAndSanitize( pagedItems, pageNumber, pageSize.Value, sanitizeForSecurity );
 
             return pagedItems;
         }
@@ -326,7 +330,7 @@ namespace Rock.AI.Agent
         /// <param name="pageNumber">The page number that was requested.</param>
         /// <param name="pageSize">The size of each page. If <paramref name="pagedItems"/> contains more than <paramref name="pageSize"/> items, then the <c>hasMore</c> metadata key will be set to <c>true</c>.</param>
         /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.SanitizeForSecurity(Model.Person)"/>.</param>
-        private void UpdatePaginatedMetadataAndCheckSecurity<T>( List<T> pagedItems, int pageNumber, int pageSize, bool sanitizeForSecurity )
+        private void UpdatePaginatedMetadataAndSanitize<T>( List<T> pagedItems, int pageNumber, int pageSize, bool sanitizeForSecurity )
         {
             var hasMore = pagedItems.Count > pageSize;
 

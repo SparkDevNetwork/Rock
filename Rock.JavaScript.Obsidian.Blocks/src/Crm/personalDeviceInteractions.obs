@@ -13,7 +13,7 @@
 
         <template #gridHeaderBadges>
             <span class="header-highlight-label mr-3">
-                <HighlightLabel v-if="isFilteredByDevice && (platform && version)"
+                <HighlightLabel v-if="isFilteredByDevice && platform"
                                 labelType="custom"
                                 customClass="label-info d-flex align-items-center"
                                 :iconCssClass="iconCssClass">
@@ -72,9 +72,10 @@
                     width="15%"
                     :hideOnScreen="isFilteredByDevice"
                     :filter="textValueFilter"
+                    :filterValue="platformFilterValue"
                     visiblePriority="xs">
             <template #format="{ row }">
-                <span v-if="row.platform && row.version">
+                <span v-if="row.platform">
                     {{ row.platform }} {{ row.version }}
                 </span>
             </template>
@@ -160,6 +161,15 @@
     function assignedIndividualFilterValue(row: Record<string, unknown>): string {
         const person = row["assignedIndividual"] as PersonFieldBag;
         return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+     * Returns the filter value for the platform column.
+     *
+     * @param row The row to get the filter value for.
+     */
+    function platformFilterValue(row: Record<string, unknown>): string {
+        return `${row["platform"] ?? ""} ${row["version"] ?? ""}`.trim();
     }
 
     /**
