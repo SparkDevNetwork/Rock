@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -247,6 +248,30 @@ namespace Rock.Field.Types
         public ICollection<string> SplitMultipleValues( string privateValue )
         {
             return privateValue.Split( ',' );
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var campuses = GetListSource( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
+                .Select( kvp => new ListItemBag
+                {
+                    Value = kvp.Key,
+                    Text = kvp.Value
+                } )
+                .OrderBy( c => c.Text )
+                .ToList();
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = true,
+                Values = campuses,
+                ValueFormat = $"One or more comma delimited guids that represents entities from the Campus table.",
+            };
         }
 
         #endregion

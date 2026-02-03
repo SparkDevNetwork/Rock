@@ -470,6 +470,30 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var campuses = GetListSource( privateConfigurationValues )
+                .Select( kvp => new ListItemBag
+                {
+                    Value = kvp.Key,
+                    Text = kvp.Value
+                } )
+                .OrderBy( c => c.Text )
+                .ToList();
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = true,
+                Values = campuses,
+                ValueFormat = $"A guid that represents a single entity from the Campus table.",
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

@@ -56,6 +56,12 @@ namespace Rock.ViewModels.Controls
         public Dictionary<string, string> EditConfigurationValues { get; set; }
 
         /// <summary>
+        /// A string that describes the format of the raw value stored in the
+        /// database.
+        /// </summary>
+        public string ValueFormat { get; set; }
+
+        /// <summary>
         /// Gets or sets the default attribute value view model that corresponds
         /// to the current <see cref="EditConfigurationValues"/>.
         /// </summary>

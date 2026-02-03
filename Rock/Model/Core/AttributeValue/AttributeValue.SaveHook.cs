@@ -143,6 +143,8 @@ namespace Rock.Model
                     }
                 }
 
+                PostSaveDeleteUnreferencedBinaryFile();
+
                 // Previously we were doing this here:
                 //     UPDATE [AttributeValue] SET ValueAsDateTime = ...
                 // We no longer need to do this via SQL because it is handled in the PreSave call
@@ -152,13 +154,12 @@ namespace Rock.Model
             }
 
             /// <summary>
-            /// Delete the old binary file for UPDATE and DELETE and make sure new binary files are not temporary
+            /// Make sure new binary files are not temporary
             /// </summary>
             /// <param name="rockContext">The rock context.</param>
             private void PreSaveBinaryFile( RockContext rockContext )
             {
                 Guid? newBinaryFileGuid = null;
-                Guid? oldBinaryFileGuid = null;
 
                 if ( State == EntityContextState.Added || State == EntityContextState.Modified )
                 {
@@ -169,7 +170,37 @@ namespace Rock.Model
                     newBinaryFileGuid = Entity.Value.AsGuidOrNull() ?? ( parts.Length > 1 ? parts[1].AsGuidOrNull() : null );
                 }
 
-                if ( State == EntityContextState.Modified || State == EntityContextState.Deleted )
+                if ( newBinaryFileGuid.HasValue )
+                {
+                    BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                    var binaryFile = binaryFileService.Get( newBinaryFileGuid.Value );
+                    if ( binaryFile != null && binaryFile.IsTemporary )
+                    {
+                        binaryFile.IsTemporary = false;
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Deletes the binary file associated with the previous value if it is no longer referenced.
+            /// </summary>
+            /// <remarks>This helps prevent orphaned binary files and ensures that unused files are
+            /// removed from storage.</remarks>
+            private void PostSaveDeleteUnreferencedBinaryFile()
+            {
+                Guid? newBinaryFileGuid = null;
+                Guid? oldBinaryFileGuid = null;
+
+                if ( PreSaveState == EntityContextState.Added || PreSaveState == EntityContextState.Modified )
+                {
+                    // The value is either a Guid or a comma separated string with the first part being the
+                    // BackgroundCheckFieldType's provider component EntityTypeId and the second part
+                    // is the binary file guid.
+                    var parts = ( Entity.Value ?? "" ).Split( ',' );
+                    newBinaryFileGuid = Entity.Value.AsGuidOrNull() ?? ( parts.Length > 1 ? parts[1].AsGuidOrNull() : null );
+                }
+
+                if ( PreSaveState == EntityContextState.Modified || PreSaveState == EntityContextState.Deleted )
                 {
                     var originalValue = Entry.OriginalValues[nameof( Entity.Value )]?.ToString() ?? "";
                     var parts = originalValue.Split( ',' );
@@ -186,16 +217,6 @@ namespace Rock.Model
                         };
 
                         deleteBinaryFileAttributeMsg.Send();
-                    }
-                }
-
-                if ( newBinaryFileGuid.HasValue )
-                {
-                    BinaryFileService binaryFileService = new BinaryFileService( rockContext );
-                    var binaryFile = binaryFileService.Get( newBinaryFileGuid.Value );
-                    if ( binaryFile != null && binaryFile.IsTemporary )
-                    {
-                        binaryFile.IsTemporary = false;
                     }
                 }
             }

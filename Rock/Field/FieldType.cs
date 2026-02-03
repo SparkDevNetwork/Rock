@@ -1205,5 +1205,22 @@ namespace Rock.Field
         }
 
         #endregion
+
+        #region Value Hinting
+
+        /// <summary>
+        /// Provides hints about the field type values based on the
+        /// configuration values. This is intended to provide consumers with
+        /// information on how to best utilize the field type's raw value and
+        /// in some cases what values are available.
+        /// </summary>
+        /// <param name="privateConfigurationValues">The private configuration values that describe the field type settings.</param>
+        /// <returns>An instance of <see cref="FieldTypeHints"/> or <c>null</c> if no hints are available.</returns>
+        internal virtual FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return null;
+        }
+
+        #endregion
     }
 }

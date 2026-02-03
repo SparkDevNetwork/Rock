@@ -5487,11 +5487,19 @@ namespace Rock.Rest.v2
             // Get the public configuration options from the internal options (values).
             var publicEditConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Edit, options.DefaultValue );
 
+            string valueFormat = null;
+
+            if ( fieldType is Field.FieldType hintFieldType )
+            {
+                valueFormat = hintFieldType.GetFieldHints( configurationValues )?.ValueFormat;
+            }
+
             return Ok( new FieldTypeEditorUpdateAttributeConfigurationResultBag
             {
                 ConfigurationProperties = configurationProperties,
                 AdminConfigurationValues = publicAdminConfigurationValues,
                 EditConfigurationValues = publicEditConfigurationValues,
+                ValueFormat = valueFormat,
                 DefaultValue = fieldType.GetPublicEditValue( privateDefaultValue, configurationValues )
             } );
         }

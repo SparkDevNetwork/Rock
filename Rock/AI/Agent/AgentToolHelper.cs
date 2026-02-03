@@ -642,6 +642,16 @@ namespace Rock.AI.Agent
                         IsReadOnly = enforceSecurity && !a.IsAuthorized( Authorization.EDIT, _agentRequestContext.RockRequestContext.CurrentPerson ),
                     };
 
+                    if ( a.FieldType?.Field is Field.FieldType fieldType )
+                    {
+                        var hints = fieldType.GetFieldHints( a.ConfigurationValues );
+
+                        if ( hints != null && hints.ValueFormat.IsNotNullOrWhiteSpace() )
+                        {
+                            attr.ValueFormat = hints.ValueFormat;
+                        }
+                    }
+
                     return attr;
                 } )
                 .ToList();
