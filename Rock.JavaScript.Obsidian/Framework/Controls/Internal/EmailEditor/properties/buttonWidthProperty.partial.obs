@@ -22,7 +22,7 @@
     import { PropType, ref, watch } from "vue";
     import DropDownListProperty from "./dropDownListProperty.partial.obs";
     import NumberBoxProperty from "./numberBoxProperty.partial.obs";
-    import { ButtonWidth, ButtonWidthValues, ValueProvider } from "../types.partial";
+    import { ButtonWidthMode, ButtonWidthModel, ValueProvider } from "../types.partial";
     import { get } from "../utils.partial";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -44,7 +44,7 @@
         },
 
         valueProvider: {
-            type: Object as PropType<ValueProvider<ButtonWidthValues | null | undefined>>,
+            type: Object as PropType<ValueProvider<ButtonWidthModel | null | undefined>>,
             required: true
         }
     });
@@ -54,35 +54,35 @@
     const buttonWidthItems: ListItemBag[] = [
         {
             text: "Fit To Text",
-            value: get<ButtonWidth>("fitToText")
+            value: get<ButtonWidthMode>("fitToText")
         }, {
             text: "Full Width",
-            value: get<ButtonWidth>("full")
+            value: get<ButtonWidthMode>("full")
         }, {
             text: "Fixed Width",
-            value: get<ButtonWidth>("fixed")
+            value: get<ButtonWidthMode>("fixed")
         }
     ];
 
     // #region Values
 
-    const widthProviderWrapper = ref<ValueProvider<ButtonWidth | null | undefined>>(createWidthProviderWrapper());
+    const widthProviderWrapper = ref<ValueProvider<ButtonWidthMode | null | undefined>>(createWidthProviderWrapper());
     const fixedWidthProviderWrapper = ref<ValueProvider<number | null | undefined>>(createFixedWidthProviderWrapper());
 
     // #endregion Values
 
     // #region Functions
 
-    function createWidthProviderWrapper(): ValueProvider<ButtonWidth | null | undefined> {
+    function createWidthProviderWrapper(): ValueProvider<ButtonWidthMode | null | undefined> {
         return {
             set value(newValue) {
                 props.valueProvider.value = {
-                    width: newValue,
-                    fixedWidth: props.valueProvider.value?.fixedWidth
+                    mode: newValue ?? null,
+                    fixedWidthPx: props.valueProvider.value?.fixedWidthPx ?? null
                 };
             },
             get value() {
-                return props.valueProvider.value?.width;
+                return props.valueProvider.value?.mode;
             },
             dispose() {
                 // Do nothing here. The main value provider handles disposal.
@@ -94,12 +94,12 @@
         return {
             set value(newValue) {
                 props.valueProvider.value = {
-                    width: props.valueProvider.value?.width,
-                    fixedWidth: newValue
+                    mode: props.valueProvider.value?.mode ?? null,
+                    fixedWidthPx: newValue ?? null
                 };
             },
             get value() {
-                return props.valueProvider.value?.fixedWidth;
+                return props.valueProvider.value?.fixedWidthPx;
             },
             dispose() {
                 // Do nothing here. The main value provider handles disposal.

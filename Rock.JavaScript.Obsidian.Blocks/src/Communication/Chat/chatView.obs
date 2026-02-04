@@ -206,7 +206,8 @@
             channelId: cfg.channelId ?? undefined,
             jumpToMessageId: cfg.jumpToMessageId ?? undefined,
             chatViewStyle: cfg.chatStyle,
-            reactions: reactions ?? []
+            reactions: reactions ?? [],
+            directMessageAllowed: data.isDirectMessagingAllowed
         });
         suspense?.completeAsyncOperation(mountGuid);
     }
@@ -228,6 +229,7 @@
         jumpToMessageId?: string;
         chatViewStyle?: ChatViewStyle
         reactions: ChatReactionBag[]
+        directMessageAllowed: boolean;
     }
 </script>
 

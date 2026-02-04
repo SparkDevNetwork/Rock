@@ -713,8 +713,17 @@ namespace Rock.WebStartup
             // will be logged and stop running any more migrations for that assembly
             foreach ( var pluginMigration in pluginAssemblies )
             {
-                bool ranPluginMigration = RunPluginMigrations( pluginMigration );
-                migrationsWereRun = migrationsWereRun || ranPluginMigration;
+                try
+                {
+                    bool ranPluginMigration = RunPluginMigrations( pluginMigration );
+                    migrationsWereRun = migrationsWereRun || ranPluginMigration;
+                }
+                catch ( Exception ex )
+                {
+                    // Don't throw exceptions caused by plugins, just log them
+                    // and keep going so we don't prevent Rock from starting.
+                    ExceptionLogService.LogException( ex );
+                }
             }
 
             return migrationsWereRun;

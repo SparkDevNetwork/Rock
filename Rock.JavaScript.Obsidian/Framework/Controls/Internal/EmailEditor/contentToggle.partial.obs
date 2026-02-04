@@ -1,0 +1,61 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="form-group">
+        <InlineSwitch v-model="internalValue"
+                      v-bind="$attrs"
+                      :label="label" />
+    </div>
+
+    <TransitionVerticalCollapse>
+        <div v-if="internalValue">
+            <slot></slot>
+        </div>
+    </TransitionVerticalCollapse>
+</template>
+
+<script setup lang="ts">
+    import { PropType, watch } from "vue";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "on");
+        (e: "off");
+        (e: "toggle", value: boolean);
+    }>();
+
+    // #region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    // #endregion Values
+
+    // #region Watchers
+
+    watch(internalValue, (value: boolean) => {
+        if (value) {
+            emit("on");
+        }
+        else {
+            emit("off");
+        }
+
+        emit("toggle", value);
+    });
+
+    // #endregion Watchers
+</script>

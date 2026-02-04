@@ -909,6 +909,9 @@ The logged-in person's information will be used to complete the registrar inform
             var newRegistrationTemplate = registrationTemplate.CloneWithoutIdentity();
             newRegistrationTemplate.Name = registrationTemplate.Name + " - Copy";
 
+            // Copy navigation properties that will not be lazily loaded when accessing from the new copy.
+            newRegistrationTemplate.RequiredSignatureDocumentTemplate = registrationTemplate.RequiredSignatureDocumentTemplate;
+
             // Create temporary state objects for the new registration template.
             var newFormState = new List<RegistrationTemplateForm>();
             var newFormFieldsState = new Dictionary<Guid, List<RegistrationTemplateFormField>>();

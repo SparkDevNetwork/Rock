@@ -262,6 +262,7 @@ import ContextSlicerGallery from "./ControlGallery/contextSlicerGallery.partial.
 import CampusContextPickerGallery from "./ControlGallery/campusContextPickerGallery.partial.obs";
 import BarChartGallery from "./ControlGallery/barChartGallery.partial.obs";
 import PieChartGallery from "./ControlGallery/pieChartGallery.partial.obs";
+import DoughnutChartGallery from "./ControlGallery/doughnutChartGallery.partial.obs";
 
 const controlGalleryComponents: Record<string, Component> = [
     NotificationBoxGallery,
@@ -463,7 +464,8 @@ const controlGalleryComponents: Record<string, Component> = [
     ContextSlicerGallery,
     CampusContextPickerGallery,
     BarChartGallery,
-    PieChartGallery
+    PieChartGallery,
+    DoughnutChartGallery
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {

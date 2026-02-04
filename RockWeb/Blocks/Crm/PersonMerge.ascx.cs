@@ -374,7 +374,14 @@ namespace RockWeb.Blocks.Crm
                 PersonService.UpdateAccountProtectionProfileForPerson( personId.Value, new RockContext() );
 
                 // Get the people selected
-                var people = new PersonService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person,Users" )
+                var people = new PersonService( new RockContext() )
+                    .Queryable( new PersonService.PersonQueryOptions
+                    {
+                        IncludeDeceased = true,
+                        IncludeNameless = true,
+                    } )
+                    .Include( a => a.CreatedByPersonAlias.Person )
+                    .Include( a => a.Users )
                     .Where( p => selectedPersonIds.Contains( p.Id ) )
                     .ToList();
 
@@ -402,7 +409,14 @@ namespace RockWeb.Blocks.Crm
                     .Select( p => p.Id ).ToList();
 
                 // Get the people selected
-                var people = new PersonService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person,Users" )
+                var people = new PersonService( new RockContext() )
+                    .Queryable( new PersonService.PersonQueryOptions
+                    {
+                        IncludeDeceased = true,
+                        IncludeNameless = true,
+                    } )
+                    .Include( a => a.CreatedByPersonAlias.Person )
+                    .Include( a => a.Users )
                     .Where( p => selectedPersonIds.Contains( p.Id ) )
                     .ToList();
 
@@ -1857,9 +1871,9 @@ WHERE GMO.[PersonId] = @OldId
 			AND gmo.GroupMemberStatus = @GroupMemberStatusPending
 			)
 		)
-/*
+/**********************************************************************************************
  * Handle RegistrationRegistrant records
- */
+ **********************************************************************************************/
 -- NULL out RegistrationRegistrant Records for the @LessActiveGroupMembersIdsToDelete
 UPDATE [RegistrationRegistrant]
 SET [GroupMemberId] = NULL
@@ -1868,16 +1882,92 @@ WHERE [GroupMemberId] IN (
 		FROM @LessActiveGroupMembersIdsToDelete
 		)
 
-/*
+/*********************************************************************************************
  * Handle GroupMemberAssignment records
- */
--- Delete the GroupMemberAssignment Records for the @LessActiveGroupMembersIdsToDelete
-DELETE FROM [GroupMemberAssignment]
-WHERE [GroupMemberId] IN (
-		SELECT [Id]
-		FROM @LessActiveGroupMembersIdsToDelete
-		)
+ **********************************************************************************************/
+    DECLARE @Pairs TABLE (
+        OldGMId           INT NOT NULL,
+        KeepGMId          INT NOT NULL,
+        GroupId           INT NOT NULL,
+        FinalWinnerGMId   INT NOT NULL,
+        FinalLoserGMId    INT NOT NULL,
+        PRIMARY KEY (FinalLoserGMId, GroupId)
+    );
 
+    -- Because our initial 'Keep' record might be in the @LessActiveGroupMembersIdsToDelete
+    -- list, we need to adjust which one we'll keep based on that. 
+    INSERT INTO @Pairs (OldGMId, KeepGMId, GroupId, FinalWinnerGMId, FinalLoserGMId)
+    SELECT
+        GMOld.Id,
+        GMKeep.Id,
+        GMOld.GroupId,
+        CASE WHEN LA.Id IS NOT NULL THEN GMOld.Id ELSE GMKeep.Id END,
+        CASE WHEN LA.Id IS NOT NULL THEN GMKeep.Id ELSE GMOld.Id END
+    FROM dbo.GroupMember AS GMOld
+    JOIN dbo.GroupMember AS GMKeep ON GMKeep.GroupId = GMOld.GroupId
+     AND GMKeep.GroupRoleId = GMOld.GroupRoleId
+     AND GMKeep.PersonId    = @NewId
+    LEFT JOIN @LessActiveGroupMembersIdsToDelete AS LA ON LA.Id = GMKeep.Id
+    WHERE GMOld.PersonId = @OldId;
+
+    -----------------------------------------------------------------------------
+    --   @Assigns: losing assignments and their projected winner.
+    -----------------------------------------------------------------------------
+    DECLARE @Assigns TABLE (
+        GroupMemberAssignmentId INT NOT NULL PRIMARY KEY,
+        GroupId                 INT NOT NULL,
+        LocationId              INT NULL,
+        ScheduleId              INT NULL,
+        NewGroupMemberId        INT NOT NULL
+    );
+
+    INSERT INTO @Assigns (GroupMemberAssignmentId, GroupId, LocationId, ScheduleId, NewGroupMemberId)
+    SELECT
+        GMA.Id,
+        GMA.GroupId,
+        GMA.LocationId,
+        GMA.ScheduleId,
+        P.FinalWinnerGMId
+    FROM dbo.GroupMemberAssignment AS GMA
+    JOIN @Pairs AS P ON GMA.GroupMemberId = P.FinalLoserGMId
+       AND GMA.GroupId = P.GroupId;
+
+    /*
+        12/2/2025 - N.A.
+
+        Why does this appear to be so complicated?
+
+        Additional cleanup steps are required when updating GroupMember assignments due to 
+        the IX_GroupMemberIdLocationIdScheduleId index since you cannot have two 
+	    GroupMemberAssignments for the same groupmember, location and schedule.
+
+        Specifically:
+        1) A 'losing' row might match an existing 'winner' row after remapping, violating
+           the unique index. Therefore, the losing row must be deleted before the update.
+    */
+
+    -- (1) DELETE losing assignments that would collide with EXISTING winner rows.
+    DELETE GMA
+    FROM dbo.GroupMemberAssignment AS GMA
+    JOIN @Assigns AS A ON A.GroupMemberAssignmentId = GMA.Id
+    WHERE EXISTS (
+        SELECT 1
+        FROM dbo.GroupMemberAssignment AS W
+        WHERE W.GroupMemberId = A.NewGroupMemberId
+           AND W.GroupId       = A.GroupId
+           AND ( (W.LocationId = A.LocationId) OR (W.LocationId IS NULL AND A.LocationId IS NULL) )
+           AND ( (W.ScheduleId = A.ScheduleId) OR (W.ScheduleId IS NULL AND A.ScheduleId IS NULL) )
+    );
+
+    -- Update assignments from Loser -> Winner (@Pairs / @Assigns are scoped by GroupId)
+    UPDATE GMA
+    SET GMA.GroupMemberId = A.NewGroupMemberId
+    FROM dbo.GroupMemberAssignment AS GMA
+    JOIN @Assigns AS A ON A.GroupMemberAssignmentId = GMA.Id;
+
+/**********************************************************************************************
+ * Handle GroupMemberHistory records
+ **********************************************************************************************/
 -- If there is GroupMemberHistory, we can't delete, so create a list of GroupMemberIds that we'll archive instead of delete
 INSERT INTO @GroupMembersIdsToArchive 
 	SELECT [Id]	FROM @LessActiveGroupMembersIdsToDelete WHERE Id IN (SELECT GroupMemberId FROM GroupMemberHistorical)
@@ -1885,6 +1975,9 @@ INSERT INTO @GroupMembersIdsToArchive
 DELETE FROM @LessActiveGroupMembersIdsToDelete 
 	WHERE Id IN (SELECT Id FROM @GroupMembersIdsToArchive)
 
+/**********************************************************************************************
+ * Handle the final surviving GroupMember records
+ **********************************************************************************************/
 -- Delete the @LessActiveGroupMembersIdsToDelete for any GroupMember records that don't have GroupMemberHistory
 DELETE
 FROM GroupMember
@@ -1909,9 +2002,9 @@ WHERE GMO.[PersonId] = @OldId
 	AND GMN.[Id] IS NULL
 	and GMO.Id NOT IN (SELECT [Id] FROM @GroupMembersIdsToArchive)
 
-/*
+/**********************************************************************************************
  * Handle RegistrationRegistrant records
- */
+ **********************************************************************************************/
 -- Update any registrant groups that point to a group member about to be deleted 
 UPDATE [RegistrationRegistrant]
 SET [GroupMemberId] = NULL 
@@ -1921,9 +2014,10 @@ WHERE [GroupMemberId] IN (
 	WHERE [PersonId] = @OldId
 )
 
-/*
- * Handle GroupMemberAssignment records
- */
+/**********************************************************************************************
+ * Handle GroupMemberAssignment records (again)
+ *    NOTE: There should not be any if we did everything correctly earlier/above.
+ **********************************************************************************************/
 -- Delete any Group Assignments that point to a group member about to be deleted
 DELETE FROM [GroupMemberAssignment]
 WHERE [GroupMemberId] IN (

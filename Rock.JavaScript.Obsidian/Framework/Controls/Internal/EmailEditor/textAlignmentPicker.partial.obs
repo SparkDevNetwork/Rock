@@ -1,0 +1,89 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <SingleSelectButtonGroup v-model="internalTextAlignment"
+                             v-bind="standardFieldProps"
+                             :disableLabel="!label">
+        <template #default="{ btnSize, disabled, itemButtonType, toggleValue: selectValue }">
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('left')"
+                        title="Left"
+                        @click="selectValue('left')">
+                <i class="ti ti-align-left"></i>
+            </RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('center')"
+                        title="Center"
+                        @click="selectValue('center')">
+                <i class="ti ti-align-center"></i>
+            </RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('right')"
+                        title="Right"
+                        @click="selectValue('right')">
+                <i class="ti ti-align-right"></i>
+            </RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('justify')"
+                        title="Justify"
+                        @click="selectValue('justify')">
+                <i class="ti ti-align-justified"></i>
+            </RockButton>
+        </template>
+    </SingleSelectButtonGroup>
+</template>
+
+<style scoped>
+svg {
+    height: 16px;
+    width: 16px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import SingleSelectButtonGroup from "./singleSelectButtonGroup.partial.obs";
+    import { TextAlignment } from "./types.partial";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        ...standardRockFormFieldProps,
+
+        label: {
+            type: String as PropType<string>,
+            default: "Text Alignment" as const
+        },
+
+        modelValue: {
+            type: String as PropType<TextAlignment | null>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string | null): void;
+    }>();
+
+    const standardFieldProps = useStandardRockFormFieldProps(props);
+
+    // #region Computed Props
+
+    // Set the numeric value from the element OR from the input CSS styles.
+    const internalTextAlignment = computed<TextAlignment | "">({
+        get(): TextAlignment | "" {
+            return props.modelValue ?? "";
+        },
+        set(newValue: TextAlignment | ""): void {
+            emit("update:modelValue", newValue || null);
+        }
+    });
+
+    // #endregion Computed Props
+</script>

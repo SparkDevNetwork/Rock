@@ -212,19 +212,7 @@
 
     // Since themes can be passed in as the number or string, we need to convert it to the string version
     const themeName = computed<string>(() => {
-        if ((props.theme === 0 || props.theme === "rock") && props.editor === "ace") {
-            return "github";
-        }
-
-        if (typeof props.theme === "number" && props.editor === "ace") {
-            return aceThemes[props.theme];
-        }
-
-        if (typeof props.theme === "number" && props.editor === "monaco") {
-            return monacoThemes[props.theme];
-        }
-
-        return (props.theme as string)?.toLowerCase() ?? "github";
+        return props.editor === "ace" ? "github" : "vs";
     });
 
     // Since modes can be passed in as the number or string, we need to convert it to the string version

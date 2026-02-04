@@ -1,0 +1,91 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RangeSlider v-model="internalValueOrDefault"
+                 v-bind="$attrs"
+                 :min="min"
+                 :max="max"
+                 showValueBar
+                 valueSuffix="%"
+                 @update:modelValue="onRangeSliderUpdated">
+        <template #besideLabel>
+            <ClearStyleButton v-if="!isNullish(internalValue)" @click="onClearClicked" />
+        </template>
+    </RangeSlider>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ClearStyleButton from "./clearStyleButton.partial.obs";
+    import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { isNullish } from "@Obsidian/Utility/util";
+
+    const props = defineProps({
+        modelValue: {
+            type: Number as PropType<number | null>,
+            required: true
+        },
+
+        min: {
+            type: Number as PropType<number>,
+            default: 0
+        },
+
+        max: {
+            type: Number as PropType<number>,
+            default: 100
+        },
+
+        /**
+         * The default value to "display" when the modelValue is null.
+         *
+         * This does not change the actual modelValue, it only affects what is shown.
+         */
+        default: {
+            type: Number as PropType<number>,
+            default: 100
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: number | null): void;
+    }>();
+
+    // The RangeSlider will emit an updated value if we pass in null or undefined,
+    // which could make the provider think the value changed by the user.
+    // Keep track of the initialization state so the value provider only gets actual changes.
+    let isRangeSliderInitialized: boolean = false;
+
+    // #region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    // #endregion Values
+
+    // #region Computed Props
+
+    const internalValueOrDefault = computed<number>({
+        get(): number {
+            return internalValue.value ?? props.default;
+        },
+        set(value: number): void {
+            if (isRangeSliderInitialized) {
+                internalValue.value = value;
+            }
+        }
+    });
+
+    // #endregion Computed Props
+
+    // #region Event Handlers
+
+    function onRangeSliderUpdated(): void {
+        isRangeSliderInitialized = true;
+    }
+
+    function onClearClicked(): void {
+        internalValue.value = null;
+    }
+
+    // #endregion Event Handlers
+</script>

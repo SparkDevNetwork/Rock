@@ -1046,6 +1046,9 @@ namespace Rock.Model
                         // They have a warning for the requirement, and didn't have a warning already.
                         groupMemberRequirement.RequirementWarningDateTime = currentDateTime;
                     }
+
+                    groupMemberRequirement.RequirementMetDateTime = null;
+                    groupMemberRequirement.RequirementFailDateTime = null;
                 }
                 else
                 {

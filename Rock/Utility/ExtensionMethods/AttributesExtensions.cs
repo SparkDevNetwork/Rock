@@ -132,7 +132,7 @@ namespace Rock
         /// <param name="entities">The entities.</param>
         /// <param name="attributeFilter">The attribute filter.</param>
         /// <typeparam name="T">The entity type that will be used when loading attributes.</typeparam>
-        internal static void LoadFilteredAttributes<T>( this ICollection<T> entities, Func<AttributeCache, bool> attributeFilter )
+        public static void LoadFilteredAttributes<T>( this ICollection<T> entities, Func<AttributeCache, bool> attributeFilter )
             where T : class, IHasAttributes, new()
         {
             Attribute.Helper.LoadFilteredAttributes( entities, null, attributeFilter );
@@ -152,7 +152,7 @@ namespace Rock
         /// <param name="rockContext">The rock context.</param>
         /// <param name="attributeFilter">The attribute filter.</param>
         /// <typeparam name="T">The entity type that will be used when loading attributes.</typeparam>
-        internal static void LoadFilteredAttributes<T>( this ICollection<T> entities, RockContext rockContext, Func<AttributeCache, bool> attributeFilter )
+        public static void LoadFilteredAttributes<T>( this ICollection<T> entities, RockContext rockContext, Func<AttributeCache, bool> attributeFilter )
             where T : class, IHasAttributes, new()
         {
             Attribute.Helper.LoadFilteredAttributes( entities, rockContext, attributeFilter );

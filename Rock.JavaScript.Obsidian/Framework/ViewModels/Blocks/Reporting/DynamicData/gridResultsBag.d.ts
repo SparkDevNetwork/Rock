@@ -78,14 +78,6 @@ export type GridResultsBag = {
     isPersonReport: boolean;
 
     /**
-     * Gets or sets the field that will be used to uniquely identify each row.
-     * 
-     * This may be a simple field name (i.e. "id") or a dot-separated path to the
-     * key value within a particular field's object (i.e. "person.idKey").
-     */
-    keyField?: string | null;
-
-    /**
      * Gets or sets the field that will contain the person key.
      * 
      * This may be a simple field name (i.e. "id") or a dot-separated path to the

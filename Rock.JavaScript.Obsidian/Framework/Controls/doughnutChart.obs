@@ -1,0 +1,500 @@
+<template>
+    <div class="chart-container" :style="`height: ${height}; width: ${width};`">
+        <Chart :data="chartData" :options="chartOptions" type="doughnut" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import Chart from "./chart.obs";
+    import { LabelDateFormat, LegendAlign, LegendPosition, LineStyle, DoughnutSeries, TooltipCallback } from "@Obsidian/Core/Controls/chart";
+    import { Chart as ChartJS, ChartData, ChartOptions, TooltipItem, TooltipLabelStyle, ChartDataset, LegendItem } from "@Obsidian/Libs/chart";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
+
+    const defaultLegendIsHidden = false;
+    const defaultLegendPosition = LegendPosition.Bottom;
+    const defaultLegendAlign = LegendAlign.Center;
+
+    const props = defineProps({
+        /**
+         * The category axis label.
+         */
+        categoryLabel: {
+            type: String as PropType<string | undefined>
+        },
+
+        /**
+         * The maximum number of ticks to show on the category axis.
+         */
+        categoryMaxTickCount: {
+            type: Number as PropType<number | undefined>
+        },
+
+        /**
+         * Whether to show the category axis grid lines. Hidden by default.
+         */
+        categoryShowGridLines: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * The CSS style string to set the height of the doughnut chart component.
+         * - Accepts any valid CSS height value (e.g., "400px", "50vh") or undefined.
+         * - Value defaults to "100%" if undefined.
+         */
+        height: {
+            type: String as PropType<string | undefined>,
+            default: "100%"
+        },
+
+        /**
+         * Whether the legend is hidden.
+         */
+        hideLegend: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * The format to use for the date labels.
+         *
+         * When set, `labels` is treated as an array of ISO date strings.
+         */
+        labelDateFormat: {
+            type: String as PropType<LabelDateFormat | undefined>
+        },
+
+        /**
+         * When supplying date strings, they MUST be in ISO format and you MUST set `labelDateFormat`.
+         */
+        labels: {
+            type: Array as PropType<string[]>,
+            required: true
+        },
+
+        /**
+         * The alignment of the legend in the chart.
+         */
+        legendAlign: {
+            type: Object as PropType<LegendAlign | null | undefined>
+        },
+
+        /**
+         * The position of the legend in the chart.
+         */
+        legendPosition: {
+            type: Object as PropType<LegendPosition | undefined>
+        },
+
+        /**
+         * Whether the chart has linear connections between data points.
+         *
+         * The per series property, `props.data[n].isLinear`, overrides this setting.
+         */
+        linear: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * The line style to use for the chart.
+         *
+         * The per series property, `props.data[n].lineStyle`, overrides this setting.
+         */
+        lineStyle: {
+            type: String as PropType<LineStyle | undefined>
+        },
+
+        /**
+         * The series data to display in the chart.
+         */
+        series: {
+            type: Array as PropType<DoughnutSeries[]>,
+            required: true
+        },
+
+        /**
+         * Whether the chart has stacked lines.
+         */
+        stack: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * The title of the chart.
+         */
+        title: {
+            type: String as PropType<string | undefined>
+        },
+
+        /**
+         * The tooltip formatter function.
+         */
+        tooltip: {
+            type: Function as PropType<TooltipCallback | undefined>
+        },
+
+        /**
+         * The tooltip title formatter function.
+         */
+        tooltipTitle: {
+            type: Function as PropType<TooltipCallback | undefined>
+        },
+
+        /**
+         * The type of data represented in the chart.
+         *
+         * For "percent", the data MUST be in decimal form (e.g., 0.1 for 10%).
+         */
+        type: {
+            type: String as PropType<"number" | "percent">,
+            default: "number"
+        },
+
+        /**
+         * Whether the chart has unfilled areas.
+         *
+         * The per series property, `props.data[n].isUnfilled`, overrides this setting.
+         */
+        unfilled: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * Whether to hide the value axis grid lines. Shown by default.
+         */
+        valueHideGridLines: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * The value axis label.
+         */
+        valueLabel: {
+            type: String as PropType<string | undefined>
+        },
+
+        /**
+         * The maximum number of ticks to show on the value axis.
+         */
+        valueMaxTickCount: {
+            type: Number as PropType<number | undefined>
+        },
+
+        /**
+         * The minimum value to display in the value axis if there is nothing lower.
+         *
+         * This is useful for controlling the starting point of the value axis.
+         * The actual minimum value will be used if there is a lower value present.
+         */
+        valueSuggestedMin: {
+            type: Number as PropType<number | undefined>
+        },
+
+        /**
+         * The maximum value to display in the value axis if there is nothing higher.
+         *
+         * This is useful for controlling the ending point of the value axis.
+         * The actual maximum value will be used if there is a higher value present.
+         */
+        valueSuggestedMax: {
+            type: Number as PropType<number | undefined>
+        },
+
+        /**
+         * The number of ticks to show on the value axis.
+         *
+         * This overrides `valueMaxTickCount`.
+         */
+        valueTickCount: {
+            type: Number as PropType<number | undefined>
+        },
+
+        /**
+         * The CSS style string to set the width of the doughnut chart component.
+         * - Accepts any valid CSS width value (e.g., "600px", "100%") or undefined.
+         * - Value defaults to "100%" if undefined.
+         */
+        width: {
+            type: String as PropType<string | undefined>,
+            default: "100%"
+        },
+    });
+
+    // #region Computed Values
+
+    const chartData = computed<ChartData<"doughnut">>(() => {
+        return {
+            labels: props.labels,
+            // Doughnut datasets contain a point and color from each series.
+            datasets: props.series.map<ChartDataset<"doughnut", number[]>>((series, seriesIndex) => {
+                const expectedColorCount = series.data.length;
+
+                const colors =
+                    (expectedColorCount <= (series.colors?.length ?? 0))
+                        ? series.colors // there are enough colors specified to pair with the data points
+                        : Enumerable
+                            .from(Array(expectedColorCount))
+                            .withIndex()
+                            .select(([_, i]) => series.colors?.[i] || getCategoricalColor(i + 1, 5 * getWrappedNumber(seriesIndex, 0, 3)))
+                            .toArray();
+
+                const dataset: ChartDataset<"doughnut", number[]> = {
+                    backgroundColor: colors,
+
+                    // Use a tiny border to remove anti-aliasing gaps between doughnut slices.
+                    borderColor: colors,
+                    borderWidth: 1,
+
+                    data: series.data,
+                    label: series.label
+                };
+
+                return dataset;
+            })
+        };
+    });
+
+    const chartOptions = computed<ChartOptions<"doughnut">>(() => {
+        return {
+            // Allow the chart to change size with the parent container.
+            responsive: true,
+            maintainAspectRatio: false,
+
+            // This is what differentiates a doughnut chart from a pie chart.
+            cutout: "50%",
+
+            plugins: {
+                legend: {
+                    align: props.legendAlign ?? defaultLegendAlign,
+                    display: !((props.hideLegend ?? defaultLegendIsHidden) === true),
+
+                    labels: {
+                        font: {
+                            family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                            size: parseInt(getCssVar("--font-size-small")) || undefined,
+                            weight: getCssVar("--font-weight-semibold")
+                        },
+
+                        generateLabels: (chart) => {
+                            const data = chart.data;
+                            if (!data || !data.datasets) {
+                                return [];
+                            }
+
+                            return Enumerable
+                                .from(props.labels)
+                                .withIndex()
+                                .select<LegendItem>(([label, labelIndex]) => {
+                                    // Use the first dataset to get the colors.
+                                    return Enumerable
+                                        .from(data.datasets)
+                                        .withIndex()
+                                        .select<LegendItem>(([dataset, datasetIndex]) => {
+                                            return {
+                                                text: label,
+                                                pointStyle: "line",
+                                                strokeStyle: (dataset.backgroundColor as string[])[labelIndex],
+                                                hidden: !chart.getDataVisibility(labelIndex),
+                                                datasetIndex: datasetIndex,
+                                                index: labelIndex,
+                                                lineWidth: 4, // Line thickness
+                                                fontColor: getCssVar("--color-interface-strong"),
+                                                lineCap: "round"
+                                            };
+                                        })
+                                        .first();
+                                })
+                                .toArray();
+                        },
+
+                        // `usePointStyle: true` removes the boxes next to each legend item
+                        // and uses "points" instead. Control the "point" shape inside the
+                        // `generateLabels` callback.
+                        usePointStyle: true
+                    },
+
+                    position: props.legendPosition ?? defaultLegendPosition
+                },
+
+                title: {
+                    color: getCssVar("--color-interface-strong"),
+                    display: !!props.title,
+
+                    font: {
+                        family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                        size: parseInt(getCssVar("--font-size-small")) || undefined,
+                        weight: getCssVar("--font-weight-semibold")
+                    },
+
+                    text: props.title ?? undefined
+                },
+
+                tooltip: {
+                    backgroundColor: getCssVar("--color-interface-softest"),
+
+                    bodyColor: getCssVar("--color-interface-stronger"),
+
+                    bodyFont: {
+                        family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                        size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
+                        weight: getCssVar("--font-weight-regular")
+                    },
+
+                    borderColor: getCssVar("--color-interface-soft"),
+                    borderWidth: 1,
+
+                    // Adjust the colored box sizing next to the tooltip text (color is defined in `callbacks.labelColor`).
+                    boxHeight: parseInt(getCssVar("--font-size-regular")) || undefined,
+                    boxPadding: parseInt(getCssVar("--spacing-tiny")) || undefined,
+                    boxWidth: parseInt(getCssVar("--font-size-regular")) || undefined,
+
+                    callbacks: {
+                        title: props.tooltipTitle
+                            ? (tooltipItems: TooltipItem<"doughnut">[]) => {
+                                return Enumerable
+                                    .from(tooltipItems)
+                                    .select(tooltipItem => {
+                                        // There are 3 versions of the label.
+                                        // 1. The raw label (from prop.labels)
+                                        // 2. The formatted label (from the category axis; using the options.scales.x.ticks.callback formatter)
+                                        // 3. Unpredictable formatted label (from internal chart library formatting via `context.label`; unpredictable so don't use)
+                                        const rawLabel = props.labels[tooltipItem.dataIndex];
+
+                                        return props.tooltipTitle?.({
+                                            label: rawLabel,
+                                            formattedLabel: tooltipItem.label,// getFormattedLabel(tooltipItem.chart, tooltipItem.chart.data, tooltipItem.dataIndex) ?? rawLabel,
+                                            value: tooltipItem.raw as number | null,
+                                            formattedValue: tooltipItem.formattedValue,// getFormattedValue(tooltipItem.chart, tooltipItem.parsed, tooltipItem.dataIndex) ?? (tooltipItem.formattedValue || tooltipItem.parsed.toString()),
+                                            seriesLabel: tooltipItem.dataset.label ?? ""
+                                        });
+                                    })
+                                    .ofType((t): t is string => typeof t === "string")
+                                    .distinct()
+                                    .toArray();
+                            }
+                            : undefined,
+
+                        // Override the default tooltip using the following hierarchy:
+                        // 1. props.tooltip, use provided tooltip
+                        // 2. props.type === "percent", use percent-formatted tooltip
+                        // 3. use default
+                        label:
+                            props.tooltip
+                                ? (context) => {
+                                    // There are 3 versions of the label.
+                                    // 1. The raw label (from prop.labels)
+                                    // 2. The formatted label (from the category axis; using the options.scales.x.ticks.callback formatter)
+                                    // 3. Unpredictable formatted label (from internal chart library formatting via `context.label`; unpredictable so don't use)
+                                    const rawLabel = props.labels[context.dataIndex];
+
+                                    return props.tooltip?.({
+                                        label: rawLabel,
+                                        formattedLabel: context.label,// getFormattedLabel(context.chart, context.chart.data, context.dataIndex) ?? rawLabel,
+                                        value: context.raw as number | null,
+                                        formattedValue: context.formattedValue,// getFormattedValue(context.chart, context.parsed, context.dataIndex) ?? (context.formattedValue || context.parsed.toString()),
+                                        seriesLabel: context.dataset.label ?? ""
+                                    }) ?? "";
+                                }
+                                : props.type === "percent"
+                                    ? (context) => {
+                                        if (!isNullish(context.parsed)) {
+                                            return context.parsed.toLocaleString(
+                                                undefined,
+                                                { style: "percent", maximumFractionDigits: 2 }
+                                            );
+                                        }
+
+                                        return "";
+                                    }
+                                    : (context) => {
+                                        return context.formattedValue;
+                                    },
+
+                        labelColor: (context): TooltipLabelStyle => {
+                            return {
+                                backgroundColor: (context.dataset.backgroundColor as string[])[context.dataIndex],
+                                borderColor: "transparent",
+                                borderWidth: 0
+                            };
+                        }
+                    },
+
+                    cornerRadius: parseInt(getCssVar("--rounded-small")) || undefined,
+
+                    // Remove the little white box around the tooltip boxes.
+                    multiKeyBackground: "transparent",
+
+                    // Remove colored box preceding the value.
+                    //displayColors: false,
+
+                    padding: parseInt(getCssVar("--spacing-xsmall")) || undefined,
+
+                    titleColor: getCssVar("--color-interface-stronger"),
+
+                    titleFont: {
+                        family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
+                        size: parseInt(getCssVar("--font-size-small")) || undefined,
+                        weight: getCssVar("--font-weight-semibold")
+                    },
+                }
+            },
+        };
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    const cssVarValueCache = new Map<string, string>();
+
+    function getCssVar(varName: string): string {
+        if (cssVarValueCache.has(varName)) {
+            return cssVarValueCache.get(varName)!;
+        }
+
+        const value = getCssVariableValue(varName);
+
+        if (value) {
+            // Only cache if there is a value.
+            cssVarValueCache.set(varName, value);
+        }
+
+        return value;
+    }
+
+    function getCategoricalColor(num: number, alpha?: number): string {
+        // There are only 8 categorical colors so cycle through them.
+        num = getWrappedNumber(num, 1, 8);
+
+        const cssVar = getCssVar(`--color-categorical-${num}`);
+
+        if (isNullish(alpha)) {
+            return cssVar;
+        }
+
+        const color = new RockColor(cssVar);
+        color.darken(alpha);
+        return color.toHex();
+    }
+
+    function getWrappedNumber(num: number, min: number, max: number): number {
+        if (min > max) {
+            // Normalize range
+            [min, max] = [max, min];
+        }
+
+        if (min === max) {
+            // Only min can be returned
+            return min;
+        }
+
+        const span = (max - min) + 1; // inclusive range size
+        const normalized = (num - min) % span; // can be negative
+        return normalized < 0 ? max + 1 + normalized
+            : min + normalized;
+    }
+
+    // #endregion Functions
+</script>

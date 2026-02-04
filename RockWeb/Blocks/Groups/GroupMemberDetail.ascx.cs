@@ -1900,33 +1900,32 @@ namespace RockWeb.Blocks.Groups
                     return false;
                 }
 
-                // if the groupMember IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of GroupMember didn't pass.
-                // So, make sure a message is displayed in the validation summary
-                cvGroupMember.IsValid = groupMember.IsValidGroupMember( rockContext );
-
-                if ( !cvGroupMember.IsValid )
+                // using WrapTransaction because there are three Saves
+                try
                 {
-                    cvGroupMember.ErrorMessage = groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                    rockContext.WrapTransaction( () =>
+                    {
+                        if ( groupMember.Id.Equals( 0 ) )
+                        {
+                            groupMemberService.Add( groupMember );
+                        }
+
+                        rockContext.SaveChanges();
+                        groupMember.SaveAttributeValues( rockContext );
+
+                        if ( signUpGroupMemberAssignment != null )
+                        {
+                            signUpGroupMemberAssignment.SaveAttributeValues( rockContext );
+                        }
+                    } );
+                }
+                catch ( GroupMemberValidationException gmvex )
+                {
+                    // If the groupMember is not valid, display the reason in the CustomValidator's validation summary
+                    cvGroupMember.IsValid = false;
+                    cvGroupMember.ErrorMessage = gmvex.Message.Replace( "; ", "<br/>" );
                     return false;
                 }
-
-                // using WrapTransaction because there are three Saves
-                rockContext.WrapTransaction( () =>
-                {
-                    if ( groupMember.Id.Equals( 0 ) )
-                    {
-                        groupMemberService.Add( groupMember );
-                    }
-
-                    rockContext.SaveChanges();
-                    groupMember.SaveAttributeValues( rockContext );
-                    groupMember.CalculateRequirements( rockContext, true );
-
-                    if ( signUpGroupMemberAssignment != null )
-                    {
-                        signUpGroupMemberAssignment.SaveAttributeValues( rockContext );
-                    }
-                } );
             }
 
             return true;
@@ -2176,7 +2175,15 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ppGroupMemberPerson_SelectPerson( object sender, EventArgs e )
         {
-            CalculateRequirements();
+            var personId = ppGroupMemberPerson.PersonId.GetValueOrDefault();
+
+            // Only calculate this person's requirements once... meaning if it was already done OnLoad,
+            // their group requirement statuses will already be in the GroupRequirementStatusesByPersonState ViewState.
+            if ( this.GroupRequirementStatusesByPersonState == null || !this.GroupRequirementStatusesByPersonState.ContainsKey( personId ) )
+            {
+                CalculateRequirements();
+            }
+
             TryLoadExistingSignUpGroupMember();
         }
 

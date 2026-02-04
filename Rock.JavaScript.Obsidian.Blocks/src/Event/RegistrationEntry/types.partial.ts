@@ -32,7 +32,8 @@ export const enum Step {
     RegistrationEndForm = "registrationEndForm",
     Review = "review",
     Payment = "payment",
-    Success = "success"
+    Success = "success",
+    CapacityFullFailure = "capacityFullFailure"
 }
 
 export type RegistrantBasicInfo = {
@@ -85,6 +86,7 @@ export type RegistrationEntryState = {
     registrationSessionGuid: Guid;
     ownFamilyGuid: Guid;
     paymentPlan: RegistrationEntryCreatePaymentPlanRequestBag | null;
+    isCapacityFull: boolean;
 };
 
 export type PaymentPlanConfiguration = {

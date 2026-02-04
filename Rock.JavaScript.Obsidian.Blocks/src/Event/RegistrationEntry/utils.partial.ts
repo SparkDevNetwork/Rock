@@ -113,8 +113,13 @@ export function scrollToTopAfterNextRender(): void {
 /**
  * Injects a provided value.
  * Throws an exception if the value is undefined or not yet provided.
+ * @deprecated Use `injectRequired` instead.
  */
 export function use<T>(key: string | InjectionKey<T>): T {
+    return injectRequired<T>(key);
+}
+
+export function injectRequired<T>(key: string | InjectionKey<T>): T {
     const result = inject<T>(key);
 
     if (result === undefined) {

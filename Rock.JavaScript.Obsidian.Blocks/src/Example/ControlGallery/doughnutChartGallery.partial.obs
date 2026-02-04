@@ -1,0 +1,390 @@
+<template>
+    <GalleryAndResult :value="{ series: series, labels: labels }" hasMultipleValues :importCode="importCode" :exampleCode="exampleCode">
+
+        <div style="height: 300px;">
+            <DoughnutChart :labels="labels"
+                           :series="series"
+                           :hideLegend="isLegendHidden"
+                           :legendAlign="legendAlign"
+                           :legendPosition="legendPosition"
+                           :title="title"
+                           :tooltip="tooltip"
+                           :tooltipTitle="tooltipTitle"
+                           :type="isPercent ? 'percent' : isPercent === false ? 'number' : undefined" />
+        </div>
+
+        <template #settings>
+            <div class="settings">
+                <ContentSection title="Settings">
+                    <ContentStack title="General">
+                        <div class="autolayout">
+                            <TextBox :modelValue="title ?? ''"
+                                     label="Chart Title"
+                                     @update:modelValue="title = $event" />
+                        </div>
+                        <div class="autolayout">
+                            <TextBox :modelValue="height ?? ''"
+                                     label="Chart Container Height"
+                                     help="CSS size value (e.g., '300px' or '50%')."
+                                     @update:modelValue="height = $event" />
+                            <TextBox :modelValue="width ?? ''"
+                                     label="Chart Container Width"
+                                     help="CSS size value (e.g., '300px' or '50%')."
+                                     @update:modelValue="width = $event" />
+                        </div>
+                    </ContentStack>
+
+                    <ContentStack title="Data">
+                        <div class="autolayout">
+                            <NumberUpDown v-model="seriesCount"
+                                          label="Series Count"
+                                          :min="1"
+                                          :max="8" />
+
+                            <div class="button-wrapper">
+                                <RockButton btnType="primary"
+                                            @click="onRandomizeDataClicked">Randomize Data</RockButton>
+                            </div>
+
+                            <Switch :modelValue="isPercent ?? false"
+                                    help="For 'percent', the data must be in decimal form (e.g., 0.1 for 10%)."
+                                    label="Percent"
+                                    @update:modelValue="isPercent = $event" />
+
+                            <Switch :modelValue="hasCustomTooltip ?? false"
+                                    label="Custom Tooltip"
+                                    @update:modelValue="hasCustomTooltip = $event" />
+                        </div>
+                    </ContentStack>
+
+                    <ContentStack title="Legend">
+                        <div class="autolayout">
+                            <DropDownList :modelValue="legendPosition ?? ''"
+                                          :items="legendPositionItems"
+                                          label="Position"
+                                          @update:modelValue="legendPosition = <LegendPosition>$event" />
+
+                            <DropDownList :modelValue="legendAlign ?? ''"
+                                          :items="legendAlignItems"
+                                          label="Alignment"
+                                          @update:modelValue="legendAlign = <LegendAlign>$event" />
+
+                            <Switch :modelValue="isLegendHidden ?? false"
+                                    label="Hide"
+                                    @update:modelValue="isLegendHidden = $event" />
+                        </div>
+                    </ContentStack>
+                </ContentSection>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<style scoped>
+.button-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.settings {
+    max-height: 350px;
+    overflow: auto;
+}
+
+.autolayout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    column-gap: var(--spacing-small);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DoughnutChart from "@Obsidian/Controls/doughnutChart.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { LegendAlign, LegendPosition, LegendAlignDescription, LegendPositionDescription, DoughnutSeries, TooltipCallback } from "@Obsidian/Core/Controls/chart";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    const importCode = getSfcControlImportPath("chart");
+    const labels = [
+        "Male",
+        "Female",
+        "Unknown"
+    ];
+    const colors = [
+        getCssVariableValue("--color-info-tint"),
+        getCssVariableValue("--color-danger-tint"),
+        getCssVariableValue("--color-interface-soft")
+    ];
+    const legendPositionItems = [
+        { text: LegendPositionDescription[LegendPosition.Top], value: LegendPosition.Top },
+        { text: LegendPositionDescription[LegendPosition.Bottom], value: LegendPosition.Bottom },
+        { text: LegendPositionDescription[LegendPosition.Left], value: LegendPosition.Left },
+        { text: LegendPositionDescription[LegendPosition.Right], value: LegendPosition.Right }
+    ];
+    const legendAlignItems = [
+        { text: LegendAlignDescription[LegendAlign.Start], value: LegendAlign.Start },
+        { text: LegendAlignDescription[LegendAlign.Center], value: LegendAlign.Center },
+        { text: LegendAlignDescription[LegendAlign.End], value: LegendAlign.End }
+    ];
+
+    // #region Values
+
+    const series = ref<DoughnutSeries[]>([
+        {
+            label: "Series 1",
+            data: generateRandomData(3, 10, 40, false),
+            colors
+        }
+    ]);
+    const height = ref<string | undefined>();
+    const width = ref<string | undefined>();
+    const hasCustomTooltip = ref<boolean | undefined>();
+    const seriesCount = ref<number>(series.value.length);
+    const legendPosition = ref<LegendPosition | undefined>();
+    const legendAlign = ref<LegendAlign | undefined>();
+    const isLegendHidden = ref<boolean | undefined>();
+    const isPercent = ref<boolean | undefined>();
+    const title = ref<string | undefined>("Chart Title");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const exampleCode = computed<string>(() => {
+        let doughnutChartProps: string[] = [
+            `:labels="labels"`,
+            `:series="series"`
+        ];
+
+        if (!isNullish(height.value)) {
+            doughnutChartProps.push(`height="${height.value}"`);
+        }
+        if (!isNullish(width.value)) {
+            doughnutChartProps.push(`width="${width.value}"`);
+        }
+        if (!isNullish(isLegendHidden.value)) {
+            doughnutChartProps.push(`:hideLegend="${isLegendHidden.value}"`);
+        }
+        if (!isNullish(legendAlign.value)) {
+            doughnutChartProps.push(`legendAlign="${legendAlign.value}"`);
+        }
+        if (!isNullish(legendPosition.value)) {
+            doughnutChartProps.push(`legendPosition="${legendPosition.value}"`);
+        }
+        if (title.value) {
+            doughnutChartProps.push(`title="${title.value}"`);
+        }
+        if (!isNullish(isPercent.value)) {
+            if (isPercent.value) {
+                doughnutChartProps.push(`type="percent"`);
+            }
+            else {
+                doughnutChartProps.push(`type="number"`);
+            }
+        }
+
+        const prefix = "<DoughnutChart ";
+        const spaces = " ".repeat(prefix.length);
+        return `${prefix}${doughnutChartProps.join(`\n${spaces}`)} />`;
+    });
+
+    const tooltip = computed<TooltipCallback | undefined>(() => {
+        if (hasCustomTooltip.value) {
+            return (ctx) => {
+                if (isPercent.value) {
+                    return `The ${ctx.seriesLabel} value for ${ctx.formattedLabel} is ${ctx.value?.toLocaleString(undefined, { style: "percent", maximumFractionDigits: 2 })}.`;
+                }
+                else {
+                    return `The ${ctx.seriesLabel} value for ${ctx.formattedLabel} is ${ctx.value?.toLocaleString()}.`;
+                }
+            };
+        }
+    });
+
+    const tooltipTitle = computed<TooltipCallback | undefined>(() => {
+        if (hasCustomTooltip.value) {
+            return (ctx) => {
+                return RockDateTime.parseISO(ctx.label)?.toLocaleString({ dateStyle: "long" }) ?? ctx.formattedLabel;
+            };
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function generateSeries(): DoughnutSeries[] {
+        return Enumerable
+            .from(Array(seriesCount.value).keys())
+            .select(i => generateOneSeries(i))
+            .toArray();
+    }
+
+    function generateOneSeries(i: number): DoughnutSeries {
+        const min = 10;
+        const max = 40;
+        let data = generateRandomData(labels.length, min, max, false);
+        if (isPercent.value) {
+            data = Enumerable.from(data).select(n => typeof n === "number" ? n / 100 : n).toArray();
+        }
+        const s: DoughnutSeries = {
+            label: `Series ${i + 1}`,
+            data: data,
+            colors
+        };
+        return s;
+    }
+
+    function generateRandomData(
+        count: number,
+        min: number,
+        max: number,
+        startAtMin: boolean = true
+    ): number[] {
+        if (count <= 0) {
+            return [];
+        }
+
+        // Ensure min is less than or equal to max
+        if (min > max) {
+            [min, max] = [max, min]; // Swap if min is greater than max
+        }
+
+        const data: number[] = [];
+        let currentValue: number;
+
+        // Set the initial value, potentially starting exactly at 'min'
+        currentValue = startAtMin ? min : min + (max - min) * 0.1;
+
+        // Randomly decide if this run should trend downwards (~25% of the time)
+        const isDownwardTrend = Math.random() < 0.25;
+
+        // Generate a random upward/downward bias for this function call
+        const randomTrendBias = 1.0 + Math.random() * 1.5; // Random number between 1.0 and 2.5
+
+        // Volatility factor - making it more dynamic
+        const baseVolatility = (max - min) * 0.15; // 15% of the range
+
+        // Randomly decide if this run should end at the maximum (or minimum for downward trend)
+        const shouldEndAtMax = Math.random() < 0.3; // Lower the chance of hitting max/min at the end
+
+        for (let i = 0; i < count; i++) {
+            const progressFactor = i / (count - 1); // 0 at start, 1 at end
+
+            // Dynamically adjust momentum based on trend direction and progress
+            let momentum = isDownwardTrend
+                ? Math.pow(1 - progressFactor, 0.5) * randomTrendBias * -1 // Downward momentum, stronger at start
+                : Math.pow(progressFactor, 0.5) * randomTrendBias; // Upward momentum, stronger at end
+
+            const randomDirectionChange = (Math.random() * 2 - 1); // Between -1 and 1
+
+            let trendComponent = (randomDirectionChange + momentum) * baseVolatility;
+
+            // Adjust trend behavior near boundaries (Allowing it to fall after hitting max)
+            const rangeFactor = (currentValue - min) / (max - min); // 0 when at min, 1 when at max
+
+            if (isDownwardTrend) {
+                // If trending downwards, reduce downward push as it approaches min
+                if (rangeFactor < 0.3) {
+                    trendComponent *= rangeFactor; // Reduce downward push, increase volatility's impact
+                }
+            }
+            else {
+                // If trending upwards, and close to or at max, introduce a downward bias
+                if (rangeFactor > 0.95) { // If within 5% of the max
+                    trendComponent -= baseVolatility * (0.5 + Math.random() * 0.5); // Add a stronger push downwards, random factor for variability
+                }
+                else if (rangeFactor > 0.7) { // If in the upper 30% of the range
+                    trendComponent *= (1 - rangeFactor); // Reduce upward push
+                }
+            }
+
+            currentValue += trendComponent;
+
+            // Apply volatility directly to currentValue to add more swing
+            const fluctuation = (Math.random() * 2 - 1) * baseVolatility * (1 + Math.random());
+            currentValue += fluctuation;
+
+            // Constrain the value within the specified min and max bounds
+            currentValue = Math.max(min, Math.min(max, currentValue));
+
+            data.push(currentValue);
+
+            // If it's the last element AND we decided this run should end at max (or min for downward), force it
+            if (i === count - 1 && shouldEndAtMax) {
+                data[i] = isDownwardTrend ? min : max;
+            }
+        }
+
+        return data;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onRandomizeDataClicked(): void {
+        series.value = generateSeries();
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(seriesCount, (newCount, oldCount) => {
+        const amountToRemove = oldCount - newCount;
+
+        if (amountToRemove > 0) {
+            series.value = series.value.slice(0, newCount);
+        }
+        else {
+            const amountToAdd = newCount - oldCount;
+
+            if (amountToAdd > 0) {
+                series.value = [
+                    ...series.value,
+                    generateOneSeries(newCount - 1)
+                ];
+            }
+        }
+    });
+
+    watch(isPercent, (newValue) => {
+        if (newValue) {
+            series.value = Enumerable
+                .from(series.value)
+                .select(s => {
+                    return {
+                        ...s,
+                        data: Enumerable.from(s.data).select(n => typeof n === "number" ? n / 100 : n).toArray()
+                    };
+                })
+                .toArray();
+        }
+        else {
+            series.value = Enumerable
+                .from(series.value)
+                .select(s => {
+                    return {
+                        ...s,
+                        data: Enumerable.from(s.data).select(n => typeof n === "number" ? n * 100 : n).toArray()
+                    };
+                })
+                .toArray();
+        }
+    });
+
+    // #endregion Watchers
+</script>

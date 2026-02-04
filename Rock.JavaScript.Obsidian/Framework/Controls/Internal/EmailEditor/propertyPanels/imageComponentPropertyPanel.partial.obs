@@ -1,156 +1,146 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <ComponentPropertyPanelBase :componentElement="componentElement"
-                                :componentMigrationHelper="imageComponentHelper"
                                 :ltr="ltr"
                                 title="Image"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
                                 @delete="$emit('delete')"
                                 @migrate="$emit('migrate', $event)">
+        <AccordionGroup>
+            <Accordion title="Settings">
+                <div class="form-group">
+                    <ButtonGroup v-model="imageSourceType"
+                                 :items="imageSourceTypes" />
+                </div>
 
-        <template v-if="componentHelper">
-            <AccordionGroup>
-                <Accordion title="Settings">
-                    <div class="form-group">
-                        <ButtonGroup v-model="imageSourceType"
-                                     :items="imageSourceTypes"
-                                     @update:modelValue="onImageSourceTypeUpdated" />
+                <template v-if="imageSourceType === 'file'">
+                    <ImageUploader v-model="imageFile"
+                                   :binaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
+                                   label="Choose Image"
+                                   :uploadAsTemporary="false" />
+                    <p class="text-sm text-muted">
+                        *For best results, use static images ~600px wide, &lt;1MB. Avoid text overlays, patterns, or animations; they may not display correctly in some email clients.
+                    </p>
+                </template>
+
+                <div v-else-if="imageSourceType === 'asset'">
+                    <AssetPicker v-model="imageAsset"
+                                 label="Choose Asset" />
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <TextBox v-model="href"
+                                 help="Add the URL that the image will direct the recipient to."
+                                 label="Link">
+                            <template #inputGroupPrepend>
+                                <span class="input-group-addon">
+                                    <i class="ti ti-link"></i>
+                                </span>
+                            </template>
+                        </TextBox>
                     </div>
 
-                    <template v-if="imageSourceType === 'image'">
-                        <ImageUploader v-model="imageGuidAndName"
-                                       :binaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
-                                       label="Choose Image"
-                                       :uploadAsTemporary="false"
-                                       @update:modelValue="onImageUpdated" />
-                        <p class="text-sm text-muted">
-                            *For best results, use static images ~600px wide, &lt;1MB. Avoid text overlays, patterns, or animations; they may not display correctly in some email clients.
-                        </p>
-                    </template>
+                    <div class="col-sm-12">
+                        <TextBox v-model="altText"
+                                 help="Provide a brief description of the image or for better accessibility. Keep it concise and relevant."
+                                 label="Alt Text"
+                                 placeholder="Add image description..." />
+                    </div>
+                </div>
 
-                    <div v-else-if="imageSourceType === 'asset'">
-                        <AssetPicker v-model="fileAsset"
-                                     label="Choose Asset"
-                                     @update:modelValue="onAssetUpdated" />
+                <div class="row">
+                    <div class="col-sm-6">
+                        <DropDownList v-model="imageSizeType"
+                                      help="Choose how the image is displayed: Responsive fills the available space, Fixed trims/fits to dimensions, Original keeps the natural size."
+                                      :items="imageSizeItems"
+                                      label="Image Size"
+                                      :showBlankItem="false" />
+                    </div>
+                </div>
+
+                <template v-if="imageSize.type === 'responsive'">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <Switch v-if="imageSourceType === 'file'"
+                                    v-model="isHighResEnabled"
+                                    text="Enable High-Res Images" />
+                        </div>
+                    </div>
+                </template>
+
+                <template v-else-if="imageSize.type === 'fixed'">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <NumberBox v-model="imageWidth"
+                                       label="Width">
+                                <template #inputGroupAppend>
+                                    <span class="input-group-addon">px</span>
+                                </template>
+                            </NumberBox>
+                        </div>
+                        <div class="col-sm-6">
+                            <NumberBox v-model="imageHeight"
+                                       label="Height">
+                                <template #inputGroupAppend>
+                                    <span class="input-group-addon">px</span>
+                                </template>
+                            </NumberBox>
+                        </div>
                     </div>
 
                     <div class="row">
                         <div class="col-sm-12">
-                            <TextBox v-model="anchorHref"
-                                     help="Add the URL that the image will direct the recipient to."
-                                     label="Link"
-                                     @update:modelValue="onAnchorHrefUpdated">
-                                <template #inputGroupPrepend>
-                                    <span class="input-group-addon">
-                                        <i class="ti ti-link"></i>
-                                    </span>
-                                </template>
-                            </TextBox>
-                        </div>
-
-                        <div v-if="imageElement" class="col-sm-12">
-                            <AltAttributeProperty :element="imageElement"
-                                                  help="Provide a brief description of the image or for better accessibility. Keep it concise and relevant."
-                                                  label="Alt Text"
-                                                  placeholder="Add image description..." />
+                            <Switch v-if="imageSourceType === 'file'"
+                                    v-model="isHighResEnabled"
+                                    text="Enable High-Res Images" />
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-sm-6">
-                            <DropDownList v-model="imageSize"
-                                          help="Choose how the image is displayed: Responsive fills the available space, Fixed trims/fits to dimensions, Original keeps the natural size."
-                                          :items="imageSizeItems"
-                                          label="Image Size"
-                                          :showBlankItem="false"
-                                          @update:modelValue="onImageSizeUpdated" />
+                            <DropDownList v-model="resizeMode"
+                                          help="How the image fits its box: Cover fills by cropping, Contain fits without cropping, Stretch scales to fill."
+                                          :items="resizeModeItems"
+                                          label="Resize Mode"
+                                          :showBlankItem="false" />
                         </div>
                     </div>
+                </template>
 
-                    <template v-if="imageSize === 'responsive'">
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <Switch v-if="imageSourceType === 'image'"
-                                        v-model="isHighResEnabled"
-                                        text="Enable High-Res Images"
-                                        @update:modelValue="onIsHighResEnabledUpdated" />
-                            </div>
-                        </div>
-                    </template>
-
-                    <template v-else-if="imageSize === 'fixed'">
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <NumberBox v-model="imageWidth"
-                                           label="Width"
-                                           @update:modelValue="onFixedWidthUpdated">
-                                    <template #inputGroupAppend>
-                                        <span class="input-group-addon">px</span>
-                                    </template>
-                                </NumberBox>
-                            </div>
-                            <div class="col-sm-6">
-                                <NumberBox v-model="imageHeight"
-                                           label="Height"
-                                           @update:modelValue="onFixedHeightUpdated">
-                                    <template #inputGroupAppend>
-                                        <span class="input-group-addon">px</span>
-                                    </template>
-                                </NumberBox>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <Switch v-if="imageSourceType === 'image'"
-                                        v-model="isHighResEnabled"
-                                        text="Enable High-Res Images"
-                                        @update:modelValue="onIsHighResEnabledUpdated" />
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <DropDownList v-model="resizeMode"
-                                              help="How the image fits its box: Cover fills by cropping, Contain fits without cropping, Stretch scales to fill."
-                                              :items="resizeModeItems"
-                                              label="Resize Mode"
-                                              :showBlankItem="false"
-                                              @update:modelValue="onResizeModeUpdated" />
-                            </div>
-                        </div>
-                    </template>
-
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <HorizontalAlignmentTextAlignProperty :element="componentElement"
-                                                                  :hooks="{ onSourceValueUpdated: onHorizontalAlignmentUpdated }" />
-                        </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <HorizontalAlignmentPicker v-model="horizontalAlignment" />
                     </div>
+                </div>
 
-                    <div v-if="imageElement" class="row">
-                        <div class="col-sm-12">
-                            <BorderRadiusProperty :element="imageElement"
-                                                  :copyToElements="[componentHelper.marginWrapper.borderWrapper.td]" />
-                        </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <ShorthandPixelBox v-model="borderRadiusPx"
+                                           help="Rounded corners may not display correctly in some versions of Outlook or Windows Mail."
+                                           label="Border Radius"
+                                           topLabel="Top-Left"
+                                           bottomLabel="Top-Right"
+                                           leftLabel="Bottom-Left"
+                                           rightLabel="Bottom-Right" />
                     </div>
-                </Accordion>
+                </div>
+            </Accordion>
 
-                <Accordion title="Spacing">
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <PaddingProperty :element="componentHelper.marginWrapper.td"
-                                             label="Margin" />
-                        </div>
+            <Accordion title="Spacing">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <ShorthandPixelBox v-model="marginPx"
+                                           label="Margin" />
                     </div>
-                </Accordion>
+                </div>
+            </Accordion>
 
-                <Accordion v-if="imageElement" title="Border">
-                    <BorderPropertyGroup :element="imageElement" />
-                </Accordion>
-            </AccordionGroup>
-        </template>
+            <Accordion title="Border">
+                <BorderPicker v-model="border" />
+            </Accordion>
+        </AccordionGroup>
     </ComponentPropertyPanelBase>
 </template>
 
@@ -159,14 +149,11 @@
     import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
     import Accordion from "../accordion.partial.obs";
     import AccordionGroup from "../accordionGroup.partial.obs";
-    import AltAttributeProperty from "../properties/altAttributeProperty.partial.obs";
-    import BorderPropertyGroup from "../properties/borderPropertyGroup.partial.obs";
-    import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
-    import HorizontalAlignmentTextAlignProperty from "../properties/horizontalAlignmentTextAlignProperty.partial.obs";
-    import PaddingProperty from "../properties/paddingProperty.partial.obs";
-    import { getGlobalBodyWidthProvider } from "../providers.partial";
-    import { HorizontalAlignment } from "../types.partial";
-    import { get, getImageComponentHelper, getPaddingWrapperCellSelector, numberToStringConverter } from "../utils.partial";
+    import BorderPicker from "../borderPicker.partial.obs";
+    import HorizontalAlignmentPicker from "../horizontalAlignmentPicker.partial.obs";
+    import ShorthandPixelBox from "../shorthandPixelBox.partial.obs";
+    import { BorderModel, HorizontalAlignment, ImageSizeModel, ImageSourceModel, ResizeMode, ShorthandModel } from "../types.partial";
+    import { imageComponentAdapter, get } from "../utils.partial";
     import AssetPicker from "@Obsidian/Controls/Internal/assetPicker.obs";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
@@ -175,18 +162,13 @@
     import Switch from "@Obsidian/Controls/switch.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { Guid } from "@Obsidian/Types";
-    import { toGuidOrNull } from "@Obsidian/Utility/guid";
-    import { toKebabCase } from "@Obsidian/Utility/stringUtils";
-    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-    import { isNullish } from "@Obsidian/Utility/util";
     import { FileAsset } from "@Obsidian/ViewModels/Controls/fileAsset";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     // #region Types
 
-    type ImageSize = "original" | "fixed" | "responsive";
-    type ResizeMode = "crop" | "pad" | "stretch" | "";
-    type ImageSourceType = "image" | "asset";
+    type ImageSizeType = ImageSizeModel["type"];
+    type ImageSourceType = ImageSourceModel["type"];
 
     // #endregion Types
 
@@ -200,510 +182,213 @@
 
     // #region Constants
 
-    const imageSourceTypes = [{ text: "Image", value: "image" }, { text: "Asset", value: "asset" }];
-    const resizeModeItems = [
+    // Don't type this because the ButtonGroup above expects a privately defined type
+    const imageSourceTypes = [
+        { text: "Image", value: get<ImageSourceType>("file") },
+        { text: "Asset", value: get<ImageSourceType>("asset") }
+    ];
+
+    const resizeModeItems: ListItemBag[] = [
         { text: "Cover", value: get<ResizeMode>("crop") },
         { text: "Contain", value: get<ResizeMode>("pad") },
         { text: "Stretch", value: get<ResizeMode>("stretch") }
     ];
-    const placeholderImageSrc = "/Assets/Images/image-placeholder.jpg";
-    const imageComponentHelper = getImageComponentHelper();
 
-    // Data-attribute keys (backward compatible casing)
-    const dataAttributeKey = {
-        imageWidth: "imageWidth",
-        imageId: "imageId",
-        imageHeight: "imageHeight",
-        imageGuid: "imageGuid",
-        imageFileName: "imageFilename",
-        imgCssWidth: "imgcsswidth",
-        imageResizemode: "imageResizemode",
-        imageHighRes: "imageHighRes",
-        imageSize: "imageSize",
-
-        // Asset keys
-        imageAssetstorageproviderid: "imageAssetstorageproviderid",
-        imageKey: "imageKey",
-        imageIconpath: "imageIconpath",
-        imageName: "imageName",
-        imageUrl: "imageUrl"
-    } as const;
+    const imageSizeItems: ListItemBag[] = [
+        { text: "Responsive", value: get<ImageSizeType>("responsive") },
+        { text: "Fixed", value: get<ImageSizeType>("fixed") },
+        { text: "Original", value: get<ImageSizeType>("original") }
+    ];
 
     // #endregion Constants
 
     // #region Values
 
-    const componentHelper = ref(imageComponentHelper.getElements(props.componentElement));
-    const imageElement = ref<HTMLImageElement | null | undefined>(props.componentElement?.querySelector("img"));
-    const anchorElement = ref<HTMLAnchorElement | null | undefined>(imageElement.value?.closest("a") === imageElement.value?.parentElement ? imageElement.value?.parentElement as HTMLAnchorElement : null);
-    const anchorHref = ref<string>(anchorElement.value?.getAttribute("href") ?? "");
-    const imageGuidAndName = ref<ListItemBag | null | undefined>(getImageFromComponent());
-    const fileAsset = ref<FileAsset | undefined>(getAssetFromComponent());
-    const imageSourceType = ref<ImageSourceType>(fileAsset.value ? "asset" : "image");
-    const resizeMode = ref<ResizeMode>((props.componentElement?.dataset[dataAttributeKey.imageResizemode] as ResizeMode) ?? "");
-    const imageWidth = ref<number | null>(numberToStringConverter.toSource(props.componentElement?.dataset[dataAttributeKey.imageWidth] ?? null) ?? null);
-    const imageHeight = ref<number | null>(numberToStringConverter.toSource(props.componentElement?.dataset[dataAttributeKey.imageHeight] ?? null) ?? null);
-    const imageSize = ref<ImageSize>(getImageOrAssetSizeFromComponent());
-    const isHighResEnabled = ref<boolean>(getIsHighResEnabledFromComponent());
-    const emailContentTd = ref<HTMLTableCellElement | null | undefined>(getEmailContentTdFromComponent());
+    const initialLocalProps = imageComponentAdapter.readLocalProps(props.componentElement);
+    const altText = ref<string>(initialLocalProps.altText);
+    const border = ref<BorderModel | null>(initialLocalProps.border);
+    const borderRadiusPx = ref<ShorthandModel<number | null> | null>(initialLocalProps.borderRadiusPx);
+    const horizontalAlignment = ref<HorizontalAlignment | "">(initialLocalProps.horizontalAlignment ?? "");
+    const href = ref<string>(initialLocalProps.href ?? "");
+    const imageSize = ref<ImageSizeModel>(initialLocalProps.imageSize);
+    const imageSource = ref<ImageSourceModel>(initialLocalProps.imageSource);
+    const marginPx = ref<ShorthandModel<number | null> | null>(initialLocalProps.marginPx);
 
     // #endregion Values
 
     // #region Computed Values
 
-    const globalBodyWidth = computed<number | null | undefined>(() => getGlobalBodyWidthProvider(props.componentElement.ownerDocument).value);
+    const imageFile = computed<ListItemBag | undefined>({
+        get(): ListItemBag | undefined {
+            return imageSource.value.type === "file" ? imageSource.value.file ?? undefined : undefined;
+        },
+        set(value: ListItemBag | undefined) {
+            imageSource.value = {
+                type: "file",
+                isHighResolution: imageSource.value.type === "file" ? imageSource.value.isHighResolution : false,
+                file: value ?? null
+            };
+        }
+    });
 
-    // UI Items (same for Image & Asset now)
-    const imageSizeItems = computed(() => [
-        { text: "Responsive", value: get<ImageSize>("responsive") },
-        { text: "Fixed", value: get<ImageSize>("fixed") },
-        { text: "Original", value: get<ImageSize>("original") }
-    ]);
+    const imageAsset = computed<FileAsset | undefined>({
+        get(): FileAsset | undefined {
+            return imageSource.value.type === "asset" ? imageSource.value.asset ?? undefined : undefined;
+        },
+        set(value: FileAsset | undefined) {
+            imageSource.value = {
+                type: "asset",
+                asset: value ?? null
+            };
+        }
+    });
+
+    const imageSourceType = computed<ImageSourceType>({
+        get(): ImageSourceType {
+            return imageSource.value.type === "asset" ? "asset" : "file";
+        },
+        set(value: ImageSourceType) {
+            if (value === "asset") {
+                imageSource.value = {
+                    type: "asset",
+                    asset: null
+                };
+            }
+            else {
+                imageSource.value = {
+                    type: "file",
+                    isHighResolution: false,
+                    file: null
+                };
+            }
+        }
+    });
+
+    const imageSizeType = computed<ImageSizeType>({
+        get(): ImageSizeType {
+            return imageSize.value.type;
+        },
+        set(value: ImageSizeType) {
+            if (value === "original") {
+                imageSize.value = {
+                    type: "original"
+                };
+            }
+            else if (value === "fixed") {
+                imageSize.value = {
+                    type: "fixed",
+                    fixedWidthPx: null,
+                    fixedHeightPx: null,
+                    resizeMode: "crop"
+                };
+            }
+            else {
+                imageSize.value = {
+                    type: "responsive"
+                };
+            }
+        }
+    });
+
+    const resizeMode = computed<ResizeMode>({
+        get(): ResizeMode {
+            return imageSize.value.type === "fixed" ? imageSize.value.resizeMode : "crop";
+        },
+        set(value: ResizeMode) {
+            if (imageSize.value.type === "fixed") {
+                imageSize.value = {
+                    type: "fixed",
+                    fixedWidthPx: imageSize.value.fixedWidthPx,
+                    fixedHeightPx: imageSize.value.fixedHeightPx,
+                    resizeMode: value
+                };
+            }
+        }
+    });
+
+    const imageWidth = computed<number | null>({
+        get(): number | null {
+            return imageSize.value.type === "fixed" ? imageSize.value.fixedWidthPx : null;
+        },
+        set(value: number | null) {
+            if (imageSize.value.type === "fixed") {
+                imageSize.value = {
+                    type: "fixed",
+                    fixedWidthPx: value,
+                    fixedHeightPx: imageSize.value.fixedHeightPx,
+                    resizeMode: imageSize.value.resizeMode
+                };
+            }
+        }
+    });
+
+    const imageHeight = computed<number | null>({
+        get(): number | null {
+            return imageSize.value.type === "fixed" ? imageSize.value.fixedHeightPx : null;
+        },
+        set(value: number | null) {
+            if (imageSize.value.type === "fixed") {
+                imageSize.value = {
+                    type: "fixed",
+                    fixedWidthPx: imageSize.value.fixedWidthPx,
+                    fixedHeightPx: value,
+                    resizeMode: imageSize.value.resizeMode
+                };
+            }
+        }
+    });
+
+    const isHighResEnabled = computed<boolean>({
+        get(): boolean {
+            return imageSource.value.type === "file" ? imageSource.value.isHighResolution : false;
+        },
+        set(value: boolean) {
+            if (imageSource.value.type === "file") {
+                imageSource.value = {
+                    type: "file",
+                    isHighResolution: value,
+                    file: imageSource.value.file,
+                };
+            }
+        }
+    });
 
     // #endregion Computed Values
-
-    // #region Functions
-
-    function removeDatasetAttributes(element: HTMLElement, ...keys: string[]): void {
-        keys.forEach(key => element.removeAttribute(`data-${toKebabCase(key)}`));
-    }
-    function setPlaceholder(): void {
-        if (!imageElement.value) {
-            return;
-        }
-
-        imageElement.value.src = placeholderImageSrc;
-        imageElement.value.style.width = "100%";
-        imageElement.value.removeAttribute("height");
-        imageElement.value.removeAttribute("width");
-    }
-
-    function clearPlaceholder(): void {
-        if (!imageElement.value) {
-            return;
-        }
-
-        if (imageElement.value.src.includes(placeholderImageSrc)) {
-            imageElement.value.removeAttribute("src");
-        }
-    }
-
-    function applyImageSource(): void {
-        if (!imageElement.value) {
-            return;
-        }
-
-        // Ensure imgCssWidth marker when a source exists
-        if (imageGuidAndName.value || fileAsset.value) {
-            imageElement.value.dataset[dataAttributeKey.imgCssWidth] = "image";
-        }
-        else {
-            removeDatasetAttributes(imageElement.value, dataAttributeKey.imgCssWidth);
-        }
-
-        if (imageSourceType.value === "image") {
-            const fileGuid = props.componentElement.dataset[dataAttributeKey.imageGuid] || "";
-            const fileName = props.componentElement.dataset[dataAttributeKey.imageFileName] || "";
-
-            if (!fileGuid) {
-                setPlaceholder();
-                return;
-            }
-
-            clearPlaceholder();
-
-            const params = new URLSearchParams();
-            params.set("isBinaryFile", "T");
-            params.set("guid", fileGuid);
-            params.set("fileName", fileName);
-
-            if (imageSize.value === "fixed") {
-                const resolutionFactor = isHighResEnabled.value ? 2 : 1;
-
-                if (imageWidth.value) {
-                    params.set("width", `${imageWidth.value * resolutionFactor}`);
-                }
-
-                if (imageHeight.value) {
-                    params.set("height", `${imageHeight.value * resolutionFactor}`);
-                }
-
-                if (resizeMode.value) {
-                    params.set("mode", resizeMode.value);
-                }
-
-                params.set("scale", "both");
-            }
-            else if (imageSize.value === "responsive") {
-                const resolutionFactor = isHighResEnabled.value ? 2 : 1;
-                const rowSpecificBodyWidth = numberToStringConverter.toSource(((props.componentElement.closest("[data-component-body-width='true']") ?? null) as HTMLElement | null)?.getAttribute("width") ?? null);
-                const bodyWidth = rowSpecificBodyWidth ?? globalBodyWidth.value ?? 0;
-
-                if (bodyWidth) {
-                    params.set("width", `${bodyWidth * resolutionFactor}`);
-                }
-            }
-
-            imageElement.value.src = `/GetImage.ashx?${params.toString()}`;
-        }
-        else if (imageSourceType.value === "asset") {
-            const assetUrl = props.componentElement.dataset[dataAttributeKey.imageUrl];
-
-            if (!assetUrl) {
-                setPlaceholder(); return;
-            }
-
-            clearPlaceholder();
-            imageElement.value.src = assetUrl;
-            // Sizing for assets is handled via inline attributes/styles below
-        }
-
-        // Apply sizing styles common to both sources
-        applySizingStyles();
-    }
-
-    function applySizingStyles(): void {
-        if (!imageElement.value) {
-            return;
-        }
-
-        // Reset first
-        imageElement.value.style.removeProperty("width");
-        imageElement.value.style.removeProperty("height");
-        imageElement.value.style.removeProperty("object-fit");
-        imageElement.value.removeAttribute("width");
-        imageElement.value.removeAttribute("height");
-
-        if (imageSize.value === "responsive") {
-            imageElement.value.style.setProperty("width", "100%");
-        }
-        else if (imageSize.value === "fixed") {
-            if (!isNullish(imageWidth.value)) {
-                imageElement.value.style.setProperty("width", `${imageWidth.value}px`);
-                imageElement.value.setAttribute("width", `${imageWidth.value}`);
-            }
-
-            if (!isNullish(imageHeight.value)) {
-                imageElement.value.style.setProperty("height", `${imageHeight.value}px`);
-                imageElement.value.setAttribute("height", `${imageHeight.value}`);
-            }
-
-            // Resize mode for assets via CSS, for images via server param (already in URL) but we mirror in CSS for safety
-            if (imageSourceType.value === "asset") {
-                switch (resizeMode.value) {
-                    case "pad":
-                        imageElement.value.style.objectFit = "contain";
-                        break;
-                    case "stretch":
-                        imageElement.value.style.objectFit = "fill";
-                        break;
-                    case "crop":
-                    default:
-                        imageElement.value.style.objectFit = "cover";
-                        break;
-                }
-            }
-            else {
-                imageElement.value.style.removeProperty("object-fit");
-            }
-        }
-    }
-
-    function syncImageMetadataFromPicker(): void {
-        if (imageGuidAndName.value) {
-            const fileGuid = toGuidOrNull(imageGuidAndName.value.value);
-            const fileName = imageGuidAndName.value?.text ?? "";
-
-            if (fileGuid) {
-                props.componentElement.dataset[dataAttributeKey.imageGuid] = fileGuid;
-            }
-            else {
-                removeDatasetAttributes(props.componentElement, dataAttributeKey.imageGuid);
-            }
-
-            if (fileName) {
-                props.componentElement.dataset[dataAttributeKey.imageFileName] = fileName;
-            }
-            else {
-                removeDatasetAttributes(props.componentElement, dataAttributeKey.imageFileName);
-            }
-        }
-        else {
-            removeDatasetAttributes(props.componentElement, dataAttributeKey.imageGuid, dataAttributeKey.imageFileName);
-        }
-    }
-
-    function syncAssetMetadataFromPicker(): void {
-        if (fileAsset.value) {
-            props.componentElement.dataset[dataAttributeKey.imageAssetstorageproviderid] = `${fileAsset.value.assetStorageProviderId}`;
-            props.componentElement.dataset[dataAttributeKey.imageKey] = `${fileAsset.value.key}`;
-            props.componentElement.dataset[dataAttributeKey.imageIconpath] = `${fileAsset.value.iconPath}`;
-            props.componentElement.dataset[dataAttributeKey.imageName] = `${fileAsset.value.name}`;
-            props.componentElement.dataset[dataAttributeKey.imageUrl] = `${fileAsset.value.uri}`;
-        }
-        else {
-            removeDatasetAttributes(
-                props.componentElement,
-                dataAttributeKey.imageAssetstorageproviderid,
-                dataAttributeKey.imageKey,
-                dataAttributeKey.imageIconpath,
-                dataAttributeKey.imageName,
-                dataAttributeKey.imageUrl
-            );
-        }
-    }
-
-    function syncSizeMetadata(): void {
-        if (imageSize.value === "responsive") {
-            props.componentElement.dataset[dataAttributeKey.imageSize] = "responsive";
-        }
-        else {
-            removeDatasetAttributes(props.componentElement, dataAttributeKey.imageSize);
-        }
-
-        if (!isNullish(imageWidth.value)) {
-            props.componentElement.dataset[dataAttributeKey.imageWidth] = numberToStringConverter.toTarget(imageWidth.value) ?? "";
-        }
-        else {
-            removeDatasetAttributes(props.componentElement, dataAttributeKey.imageWidth);
-        }
-
-        if (!isNullish(imageHeight.value)) {
-            props.componentElement.dataset[dataAttributeKey.imageHeight] = numberToStringConverter.toTarget(imageHeight.value) ?? "";
-        }
-        else {
-            removeDatasetAttributes(props.componentElement, dataAttributeKey.imageHeight);
-        }
-
-        if (resizeMode.value) {
-            props.componentElement.dataset[dataAttributeKey.imageResizemode] = resizeMode.value;
-        }
-        else {
-            removeDatasetAttributes(props.componentElement, dataAttributeKey.imageResizemode);
-        }
-
-        if (imageSourceType.value === "image" && isHighResEnabled.value) {
-            props.componentElement.dataset[dataAttributeKey.imageHighRes] = "true";
-        }
-        else {
-            removeDatasetAttributes(props.componentElement, dataAttributeKey.imageHighRes);
-        }
-    }
-
-    function getEmailContentTdFromComponent(): HTMLTableCellElement | null | undefined {
-        const td = props.componentElement.querySelector(getPaddingWrapperCellSelector("image"));
-
-        if (td) {
-            return td as HTMLTableCellElement;
-        }
-    }
-
-    function getImageFromComponent(): ListItemBag | null | undefined {
-        const imageGuid = toGuidOrNull(props.componentElement?.dataset[dataAttributeKey.imageGuid]);
-        const imageFileName = props.componentElement.dataset[dataAttributeKey.imageFileName];
-
-        if (isNullish(imageGuid)) {
-            return;
-        }
-
-        return {
-            value: imageGuid,
-            text: imageFileName
-        };
-    }
-
-    function getAssetFromComponent(): FileAsset | undefined {
-        const imageAssetstorageproviderid = toNumberOrNull(props.componentElement.dataset[dataAttributeKey.imageAssetstorageproviderid]);
-        const imageKey = props.componentElement.dataset[dataAttributeKey.imageKey];
-        const imageIconpath = props.componentElement.dataset[dataAttributeKey.imageIconpath];
-        const imageName = props.componentElement.dataset[dataAttributeKey.imageName];
-        const imageUrl = props.componentElement.dataset[dataAttributeKey.imageUrl];
-
-        if (isNullish(imageAssetstorageproviderid)
-            || isNullish(imageKey)
-            || isNullish(imageIconpath)
-            || isNullish(imageName)
-            || isNullish(imageUrl)) {
-            return;
-        }
-
-        return {
-            assetStorageProviderId: imageAssetstorageproviderid,
-            key: imageKey,
-            iconPath: imageIconpath,
-            name: imageName,
-            uri: imageUrl,
-            description: "",
-            fileSize: 0,
-            formattedFileSize: "",
-            lastModifiedDateTime: "",
-            type: 0
-        };
-    }
-
-    function getImageOrAssetSizeFromComponent(): ImageSize {
-        if (props.componentElement.dataset[dataAttributeKey.imageResizemode]) {
-            return "fixed";
-        }
-
-        if (imageElement.value?.style.width === "100%") {
-            return "responsive";
-        }
-
-        if (imageElement.value?.src && !imageElement.value.src.includes("width=") && !imageElement.value.src.includes("height=")) {
-            return "original";
-        }
-
-        return "responsive"; // fallback
-    }
-
-    function getIsHighResEnabledFromComponent(): boolean {
-        return props.componentElement?.dataset[dataAttributeKey.imageHighRes] === "true";
-    }
-
-    // #region Event Handlers
-
-    function onIsHighResEnabledUpdated(): void {
-        syncSizeMetadata();
-        applyImageSource();
-    }
-
-    function onAnchorHrefUpdated(href: string): void {
-        if (href) {
-            if (!anchorElement.value) {
-                anchorElement.value = props.componentElement.ownerDocument.createElement("a");
-
-                if (imageElement.value) {
-                    imageElement.value.replaceWith(anchorElement.value);
-                    anchorElement.value.appendChild(imageElement.value);
-                }
-            }
-
-            anchorElement.value.setAttribute("href", href);
-        }
-        else if (anchorElement.value) {
-            if (imageElement.value) {
-                anchorElement.value.replaceWith(imageElement.value);
-            }
-            else {
-                anchorElement.value.remove();
-            }
-
-            anchorElement.value = null;
-        }
-    }
-
-    function onImageUpdated(): void {
-        syncImageMetadataFromPicker();
-        applyImageSource();
-    }
-
-    function onAssetUpdated(): void {
-        syncAssetMetadataFromPicker();
-        applyImageSource();
-    }
-
-    function onImageSizeUpdated(): void {
-        // v-model has already updated imageSize; watcher will clear W/H if leaving Fixed and re-apply rendering.
-        syncSizeMetadata();
-    }
-
-    function onHorizontalAlignmentUpdated(sourceValue: "" | HorizontalAlignment | null | undefined): void {
-        if (!emailContentTd.value) {
-            return;
-        }
-
-        const conversions: Record<string, string> = {
-            start: "left",
-            left: "left",
-            end: "right",
-            right: "right",
-            center: "center",
-            justify: "center"
-        };
-
-        const alignValue = conversions[sourceValue ?? ""];
-
-        if (alignValue) {
-            emailContentTd.value.setAttribute("align", alignValue);
-        }
-        else {
-            emailContentTd.value.removeAttribute("align");
-        }
-    }
-
-    function onImageSourceTypeUpdated(): void {
-        // Clear previous selections, preserve size choice
-        fileAsset.value = undefined;
-        imageGuidAndName.value = null;
-        resizeMode.value = "";
-        isHighResEnabled.value = false;
-
-        // Clear metadata associated with previous source
-        removeDatasetAttributes(
-            props.componentElement,
-            dataAttributeKey.imageGuid,
-            dataAttributeKey.imageFileName,
-            dataAttributeKey.imageAssetstorageproviderid,
-            dataAttributeKey.imageKey,
-            dataAttributeKey.imageIconpath,
-            dataAttributeKey.imageName,
-            dataAttributeKey.imageUrl
-        );
-
-        syncSizeMetadata();
-        applyImageSource();
-    }
-
-    function onFixedWidthUpdated(): void {
-        syncSizeMetadata();
-        applyImageSource();
-    }
-
-    function onFixedHeightUpdated(): void {
-        syncSizeMetadata();
-        applyImageSource();
-    }
-
-    function onResizeModeUpdated(): void {
-        syncSizeMetadata();
-        applyImageSource();
-    }
-
-    // #endregion Event Handlers
 
     // #region Watchers
 
     watch(() => props.componentElement, () => {
-        componentHelper.value = imageComponentHelper.getElements(props.componentElement);
-        imageElement.value = props.componentElement?.querySelector("img");
-        imageGuidAndName.value = getImageFromComponent();
-        fileAsset.value = getAssetFromComponent();
-        imageSourceType.value = fileAsset.value ? "asset" : "image";
-        resizeMode.value = (props.componentElement?.dataset[dataAttributeKey.imageResizemode] as ResizeMode) ?? "";
-        imageWidth.value = numberToStringConverter.toSource(props.componentElement?.dataset[dataAttributeKey.imageWidth] ?? null) ?? null;
-        imageHeight.value = numberToStringConverter.toSource(props.componentElement?.dataset[dataAttributeKey.imageHeight] ?? null) ?? null;
-        imageSize.value = getImageOrAssetSizeFromComponent();
-        isHighResEnabled.value = getIsHighResEnabledFromComponent();
-        emailContentTd.value = getEmailContentTdFromComponent();
+        const updatedLocalProps = imageComponentAdapter.readLocalProps(props.componentElement);
+        altText.value = updatedLocalProps.altText;
+        border.value = updatedLocalProps.border;
+        borderRadiusPx.value = updatedLocalProps.borderRadiusPx;
+        horizontalAlignment.value = updatedLocalProps.horizontalAlignment ?? "";
+        href.value = updatedLocalProps.href ?? "";
+        imageSize.value = updatedLocalProps.imageSize;
+        imageSource.value = updatedLocalProps.imageSource;
+        marginPx.value = updatedLocalProps.marginPx;
     });
 
     // When Image Size changes away from "fixed", clear width/height
-    watch(imageSize, (newVal, oldVal) => {
-        if (oldVal === "fixed" && newVal !== "fixed") {
-            imageWidth.value = null;
-            imageHeight.value = null;
-            resizeMode.value = "";
-            syncSizeMetadata();
-        }
-
-        // Re-apply rendering for any size change
-        applyImageSource();
+    watch([altText,
+        border,
+        borderRadiusPx,
+        horizontalAlignment,
+        href,
+        imageSize,
+        imageSource,
+        marginPx], () => {
+            imageComponentAdapter.writeLocalProps(props.componentElement, {
+                altText: altText.value,
+                border: border.value,
+                borderRadiusPx: borderRadiusPx.value,
+                horizontalAlignment: horizontalAlignment.value || null,
+                href: href.value || null,
+                imageSize: imageSize.value,
+                imageSource: imageSource.value,
+                marginPx: marginPx.value
+            });
     });
 
     // #endregion Watchers
-
-    // Initial paint
-    syncSizeMetadata();
-    applyImageSource();
 </script>

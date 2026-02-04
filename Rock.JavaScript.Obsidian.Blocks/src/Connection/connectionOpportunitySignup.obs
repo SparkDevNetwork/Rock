@@ -48,10 +48,12 @@
             <TextBox v-model="comments" :label="commentFieldLabel" textMode="multiline" :rows="3" />
 
             <div class="captcha-container">
-                <Captcha v-if="!config.disableCaptchaSupport" ref="captchaElement" validationTitle="Captcha" />
+                <div v-if="!config.disableCaptchaSupport" v-show="!isCaptchaComplete">
+                    <Captcha ref="captchaElement" validationTitle="Captcha" />
+                </div>
             </div>
 
-            <RockButton v-if="isCaptchaComplete" btnType="primary" type="submit">Connect</RockButton>
+            <RockButton v-if="isCaptchaComplete || config.disableCaptchaSupport" btnType="primary" type="submit">Connect</RockButton>
         </RockForm>
     </template>
 </template>
@@ -103,7 +105,6 @@
     const comments = ref("");
 
     const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
-    const captchaToken = ref<string | undefined>();
     const isCaptchaComplete = ref(false);
 
     // #endregion Values
@@ -118,7 +119,6 @@
 
         const token = await captchaElement.value.getToken();
         isCaptchaComplete.value = !!token;
-        captchaToken.value = token;
     }
 
     /**
@@ -142,13 +142,11 @@
         };
         const actionContext: BlockActionContextBag = {};
         if (!config.disableCaptchaSupport && captchaElement.value) {
-            actionContext.captcha = captchaToken.value;
-        }
-        const result = await invokeBlockAction<ConnectionOpportunitySignupResultBag>("Signup", { bag: requestBag }, actionContext);
-
-        if (!config.disableCaptchaSupport && captchaElement.value) {
+            actionContext.captcha = await captchaElement.value.getToken();
             captchaElement.value.refreshToken();
         }
+
+        const result = await invokeBlockAction<ConnectionOpportunitySignupResultBag>("Signup", { bag: requestBag }, actionContext);
 
         if (result.isError) {
             errorMessage.value = result.errorMessage || "An error occurred while processing your request.";

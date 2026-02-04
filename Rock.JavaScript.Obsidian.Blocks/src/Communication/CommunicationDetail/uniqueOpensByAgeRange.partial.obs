@@ -1,9 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div v-if="chartData" class="communication-detail-unique-opens-by-age">
-        <Chart type="bar"
-               :data="chartData"
-               :options="chartOptions" />
+        <BarChart title="Age Ranges"
+                  :labels="labels"
+                  :series="series"
+                  :categoryShowAllTicks="true"
+                  :hideLegend="true"
+                  type="number"
+                  valueLabel="Opens" />
     </div>
 </template>
 
@@ -15,15 +19,11 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
-    import { useChartStyles } from "./utils.partial";
-    import Chart from "@Obsidian/Controls/chart.obs";
-    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import BarChart from "@Obsidian/Controls/barChart.obs";
+    import { BarSeries } from "@Obsidian/Core/Controls/chart";
     import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
-    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
     import { isNullish } from "@Obsidian/Utility/util";
     import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
-
-    const chartStyles = useChartStyles();
 
     const props = defineProps({
         chartDataPoints: {
@@ -45,78 +45,47 @@
             ?? [];
     });
 
-    const chartData = computed((): ChartData | null => {
+    const chartData = computed<{ labels: string[]; series: BarSeries[] } | null>(() => {
         if (!dataPoints.value.length) {
             return null;
         }
 
-        const labels: string[] = [];
-        const data: number[] = [];
-        const backgroundColor: string[] = [];
+        const labels = new Set<string>();
+        const seriesDataSets = new Map<string, BarSeries>();
 
         dataPoints.value.forEach(dp => {
-            labels.push(dp.label!);
-            data.push(dp.value!);
-            backgroundColor.push(
-                getCssVariableValue(dp.color!, chartStyles.value.fallbackColor)
-            );
+            const seriesName = dp.seriesName!;
+            let seriesDataSet = seriesDataSets.get(seriesName);
+
+            const color = getCssVariableValue(dp.color!, "#8B8BA7");
+
+            if (!seriesDataSet) {
+                seriesDataSet = {
+                    label: "Opens",
+                    data: [],
+                    color: [],
+                };
+
+                seriesDataSets.set(seriesName, seriesDataSet);
+            }
+
+            labels.add(dp.label!);
+            seriesDataSet.data.push(dp.value!);
+            (seriesDataSet.color! as string[]).push(color);
         });
 
         return {
-            labels,
-            datasets: [{
-                label: dataPoints.value[0].seriesName!,
-                data,
-                backgroundColor
-            }]
+            labels: Array.from(labels),
+            series: Array.from(seriesDataSets.values())
         };
     });
 
-    const chartOptions = computed((): ChartOptions => {
-        return {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    labels: {
-                        boxWidth: 0,
-                        font: {
-                            family: chartStyles.value.fontFamily,
-                            size: chartStyles.value.fontSize,
-                            weight: chartStyles.value.fontWeight
-                        },
-                        color: chartStyles.value.fontColor
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: context => {
-                            const value = context.parsed.y;
-                            return `Opens: ${asFormattedString(value)}`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    grid: {
-                        drawOnChartArea: false
-                    }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: "Opens",
-                        font: {
-                            family: chartStyles.value.fontFamily,
-                            size: chartStyles.value.fontSize,
-                            weight: chartStyles.value.fontWeight
-                        },
-                        color: chartStyles.value.fontColor
-                    }
-                }
-            }
-        };
+    const labels = computed((): string[] => {
+        return chartData.value ? chartData.value.labels : [];
+    });
+
+    const series = computed((): BarSeries[] => {
+        return chartData.value ? chartData.value.series : [];
     });
 
     // #endregion Computed Values

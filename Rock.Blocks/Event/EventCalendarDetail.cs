@@ -348,10 +348,18 @@ namespace Rock.Blocks.Event
             }
 
             // Update the Attributes that were assigned in the UI
+            // The attributes are coming from the frontend already sorted in the correct order.
+            int order = 0;
             foreach ( var attributeState in viewStateAttributes )
             {
-                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, RockContext );
+                var attr = Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, RockContext );
+                if ( attr != null )
+                {
+                    attr.Order = order++;
+                }
             }
+
+            RockContext.SaveChanges();
         }
 
         /// <summary>
@@ -564,30 +572,6 @@ namespace Rock.Blocks.Event
             attributes.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
 
             return ActionOk( new { editableAttribute, reservedKeyNames } );
-        }
-
-        /// <summary>
-        /// Changes the ordered position of a single item.
-        /// </summary>
-        /// <param name="guid">The identifier of the item that will be moved.</param>
-        /// <param name="beforeGuid">The identifier of the item it will be placed before.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
-        [BlockAction]
-        public BlockActionResult ReorderAttributes( string idKey, Guid guid, Guid? beforeGuid )
-        {
-            // Get the queryable and make sure it is ordered correctly.
-            var id = Rock.Utility.IdHasher.Instance.GetId( idKey );
-
-            var attributes = GetEventAttributes( id?.ToString() );
-
-            if ( !attributes.ReorderEntity( guid.ToString(), beforeGuid.ToString() ) )
-            {
-                return ActionBadRequest( "Invalid reorder attempt." );
-            }
-
-            RockContext.SaveChanges();
-
-            return ActionOk();
         }
 
         #endregion

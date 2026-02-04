@@ -15,7 +15,8 @@
                      :replaceComponentRequest="replaceComponentRequest"
                      :cssVariables="cssVariables"
                      :getHtmlRequest="getHtmlRequest"
-                     @emailDocumentUpdated="$emit('emailDocumentUpdated', $event)" />
+                     @emailDocumentUpdated="$emit('emailDocumentUpdated', $event)"
+                     @componentAdded="$emit('componentAdded', $event)" />
         <Overlay :isVisible="isOverlayShown"
                  backgroundColor="transparent"
                  targetSelector=".editor-window"
@@ -49,6 +50,7 @@
         ComponentTypeDragLeaveRequest,
         ComponentTypeDragOverRequest,
         ComponentTypeDragStartRequest,
+        ComponentTypeName,
         DeleteComponentRequest,
         ReplaceComponentRequest
     } from "./types.partial";
@@ -109,7 +111,8 @@
     });
 
     const emit = defineEmits<{
-        (e: "emailDocumentUpdated", value: Document): void;
+        (e: "emailDocumentUpdated", value: { emailDocument: Document, areGlobalDefaultsRequired: boolean; }): void;
+        (e: "componentAdded", value: { componentTypeName: ComponentTypeName; componentElement: HTMLElement; }): void;
         (e: "update:selectedComponentElement", value: HTMLElement | null | undefined): void;
     }>();
 
@@ -129,7 +132,7 @@
     // #region Event Handlers
 
     function onComponentTypeDragStart(): void {
-        console.log(`"dragstart" designer component type`);
+        console.debug(`"dragstart" designer component type`);
 
         isOverlayShown.value = true;
         isDraggingComponentType.value = true;
@@ -143,7 +146,7 @@
      * so this handler will be invoked many times.
      */
     function onComponentTypeDragOver(event: MouseEvent | DragEvent): void {
-        console.log(`"dragover" designer component type`);
+        console.debug(`"dragover" designer component type`);
 
         if (!isDraggingComponentType.value || !editorWindowElement.value) {
             throw new Error("Unable to handle 'dragover' event. The iframe is not initialized.");
@@ -174,7 +177,7 @@
      * This should ultimately add the element representing the component type to the editor.
      */
     function onComponentTypeDragDrop(): void {
-        console.log(`"drop" designer component type`);
+        console.debug(`"drop" designer component type`);
 
         if (!isDraggingComponentType.value) {
             return;
@@ -195,7 +198,7 @@
      * This is the last event that is occurs in the drag-drop cycle.
      */
     function onComponentTypeDragLeave(): void {
-        console.log(`"dragleave" designer component type`);
+        console.debug(`"dragleave" designer component type`);
 
         if (!isDraggingComponentType.value) {
             return;
@@ -210,7 +213,7 @@
     }
 
     function onComponentTypeDragEnd(): void {
-        console.log(`"dragend" designer component type`);
+        console.debug(`"dragend" designer component type`);
 
         isOverlayShown.value = false;
     }

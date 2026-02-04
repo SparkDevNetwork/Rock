@@ -764,7 +764,55 @@ namespace Rock.Blocks.Communication
                 pageParams.AddOrReplace( PageParameterKey.Edit, "true" );
                 pageParams.Remove( PageParameterKey.Tab );
 
+                // Set the redirect URL to the current page with the Edit parameter.
+                // Next, we will check if we need to redirect to the Simple Communication Page instead.
                 redirectUrl = this.GetCurrentPageUrl( pageParams );
+
+                /*
+                    1/6/2026 - JMH
+                
+                    Approvers can land on either the wizard page or the simple communication page.
+                    When editing a "pending approval" communication, the Edit action must send them
+                    to a page that can actually render the communication in edit mode. That requires
+                    either the Communication Entry (simple communication) block or the
+                    Communication Entry Wizard block.
+
+                    If the communication has no template, or the template does not support the
+                    email wizard, the wizard block cannot edit it correctly. In that case, keep the
+                    approver out of the wizard flow and redirect them to the configured
+                    Simple Communication Page, if one is configured. If not, reload the current
+                    page, which is likely already the Simple Communication Page.
+                 */
+                if ( communication.CommunicationTemplate == null || !communication.CommunicationTemplate.SupportsEmailWizard() )
+                {
+                    var wizardBlock = this.PageCache.Blocks.FirstOrDefault( b =>
+                        b.BlockType.Guid == SystemGuid.BlockType.COMMUNICATION_ENTRY_WIZARD.AsGuid() // Legacy Communication Entry Wizard
+                        || b.BlockType.Guid == "9FFC7A4F-2061-4F30-AF79-D68C85EE9F27".AsGuid() // Obsidian Communication Entry Wizard
+                    );
+
+                    var simpleCommunicationPageAttributeValue = wizardBlock?.GetAttributeValue( "SimpleCommunicationPage" );
+
+                    if ( simpleCommunicationPageAttributeValue.IsNotNullOrWhiteSpace() )
+                    {
+                        var pageReference = new Rock.Web.PageReference( simpleCommunicationPageAttributeValue, pageParams != null ? new Dictionary<string, string>( pageParams ) : null );
+
+                        if ( pageReference.PageId > 0 )
+                        {
+                            // If a single route exists, use it to keep the redirect URL user friendly
+                            // rather than falling back to "/page/{id}".
+                            if ( pageReference.RouteId == 0 )
+                            {
+                                var pageCache = PageCache.Get( pageReference.PageId );
+                                if ( pageCache.PageRoutes.Count == 1 )
+                                {
+                                    pageReference.RouteId = pageCache.PageRoutes.First().Id;
+                                }                               
+                            }
+
+                            redirectUrl = pageReference.BuildUrl();
+                        }
+                    }
+                }
             }
             else
             {

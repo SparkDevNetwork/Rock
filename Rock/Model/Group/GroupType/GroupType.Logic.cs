@@ -76,6 +76,7 @@ namespace Rock.Model
         ///     </para>
         /// </remarks>
         [RockInternal( "17.0" )]
+		[NotMapped]
         public bool AreAnyRelationshipMultipliersCustomized =>
             LeaderToLeaderRelationshipMultiplier != 1m
             || LeaderToNonLeaderRelationshipMultiplier != 1m

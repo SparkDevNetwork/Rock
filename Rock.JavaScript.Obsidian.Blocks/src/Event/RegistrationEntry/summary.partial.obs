@@ -29,11 +29,13 @@
                 </ul>
             </div>
 
-            <Captcha v-if="!disableCaptchaSupport" ref="captchaElement" />
+            <div v-if="!disableCaptchaSupport" v-show="!isCaptchaComplete">
+                <Captcha ref="captchaElement" />
+            </div>
 
             <NotificationBox v-if="submitErrorMessage" alertType="danger">{{ submitErrorMessage }}</NotificationBox>
 
-            <div class="actions text-right">
+            <div v-if="isCaptchaComplete || disableCaptchaSupport" class="actions text-right">
                 <RockButton v-if="viewModel.allowRegistrationUpdates" class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading" autoDisable>
                     Previous
                 </RockButton>
@@ -45,7 +47,7 @@
     </div>
 </template>
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, ref, onMounted } from "vue";
     import CostSummary from "./costSummary.partial.obs";
     import DiscountCodeForm from "./discountCodeForm.partial.obs";
     import Registrar from "./registrar.partial.obs";
@@ -72,6 +74,7 @@
     const registrationEntryState = use(CurrentRegistrationEntryState);
     const disableCaptchaSupport = ref(registrationEntryState.viewModel.disableCaptchaSupport);
     const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
+    const isCaptchaComplete = ref(false);
     const persistSession = use(PersistSession);
     const registrationEntryTerms = use(RegistrationEntryTerms);
 
@@ -244,6 +247,15 @@
             args: getRegistrationEntryBlockArgs()
         }, actionContext);
 
+        if (result.isError && result.statusCode === 409) {
+            // The registration is full. Display special error message.
+            submitErrorMessage.value = result.errorMessage || "Unknown error";
+            registrationEntryState.isCapacityFull = true;
+
+            // Return true so the next step can be shown.
+            return true;
+        }
+
         if (result.isError || !result.data) {
             submitErrorMessage.value = result.errorMessage || "Unknown error";
         }
@@ -271,7 +283,20 @@
         return result.data || "";
     }
 
+    async function waitForCaptcha(): Promise<void> {
+        if (disableCaptchaSupport.value || !captchaElement.value) {
+            isCaptchaComplete.value = true;
+            return;
+        }
+        const token = await captchaElement.value.getToken();
+        isCaptchaComplete.value = !!token;
+    }
+
     // #endregion
+
+    onMounted(() => {
+        waitForCaptcha();
+    });
 
     if (!hasPaymentCost.value) {
         registrationEntryState.amountToPayToday = 0;

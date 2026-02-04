@@ -372,6 +372,7 @@ namespace RockWeb.Blocks.Cms
             ContentChannelItem contentItem = GetContentItem( rockContext );
 
             if ( contentItem != null &&
+                IsUserAuthorized( Authorization.EDIT ) &&
                 contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 StructuredContentHelper structuredContentHelper = null;
@@ -548,6 +549,11 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDelete_Click( object sender, EventArgs e )
         {
+            mdDelete.Show();
+        }
+
+        protected void mdDelete_SaveClick( object sender, EventArgs e )
+        {
             RockContext rockContext = new RockContext();
             var contentItemService = new ContentChannelItemService( rockContext );
             ContentChannelItem contentItem = null;
@@ -560,8 +566,27 @@ namespace RockWeb.Blocks.Cms
                     .FirstOrDefault( t => t.Id == contentItemId );
             }
 
+            mdDelete.Hide();
+
             if ( contentItem != null )
             {
+                var blockAllows = IsUserAuthorized( Authorization.EDIT );
+                var channelAllows = contentItem.ContentChannel != null && contentItem.ContentChannel.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                var itemAllows = contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson );
+
+                if ( !blockAllows || !channelAllows || !itemAllows )
+                {
+                    mdGridWarning.Show( "You are not authorized to delete this item.", ModalAlertType.Warning );
+                    return;
+                }
+
+                string errorMessage;
+                if ( !contentItemService.CanDelete( contentItem, out errorMessage ) )
+                {
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Warning );
+                    return;
+                }
+
                 contentItemService.Delete( contentItem );
                 rockContext.SaveChanges();
             }
@@ -1026,6 +1051,7 @@ namespace RockWeb.Blocks.Cms
             if ( contentItem != null &&
                 contentItem.ContentChannelType != null &&
                 contentItem.ContentChannel != null &&
+                IsUserAuthorized( Authorization.EDIT ) &&
                 contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 hfIsDirty.Value = "false";

@@ -1,0 +1,85 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <SingleSelectButtonGroup v-model="internalLetterCase"
+                             v-bind="standardFieldProps"
+                             :disableLabel="!label">
+        <template #default="{ btnSize, disabled, itemButtonType, toggleValue: selectValue }">
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('capitalize')"
+                        title="Capitalize"
+                        @click="selectValue('capitalize')">Ag</RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('lowercase')"
+                        title="Lowercase"
+                        @click="selectValue('lowercase')">ag</RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('uppercase')"
+                        title="Uppercase"
+                        @click="selectValue('uppercase')">AG</RockButton>
+        </template>
+
+        <template #afterBtnGroup>
+            <ClearStyleButton v-if="!!internalLetterCase"
+                              @click="onClearClicked" />
+        </template>
+    </SingleSelectButtonGroup>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ClearStyleButton from "./clearStyleButton.partial.obs";
+    import SingleSelectButtonGroup from "./singleSelectButtonGroup.partial.obs";
+    import { LetterCase } from "./types.partial";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        ...standardRockFormFieldProps,
+
+        modelValue: {
+            type: Object as PropType<LetterCase | null>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Text Transform"
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: LetterCase | null): void;
+    }>();
+
+    const standardFieldProps = useStandardRockFormFieldProps(props);
+
+    // #region Computed Props
+
+    // Set the value from the element OR from the input CSS styles.
+    const internalLetterCase = computed<LetterCase | "">({
+        get(): LetterCase | "" {
+            return props.modelValue ?? "";
+        },
+        set(newValue: LetterCase | ""): void {
+            emit("update:modelValue", newValue || "none");
+        }
+    });
+
+    // #endregion Computed Props
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the clear styles button being clicked.
+     */
+    function onClearClicked(): void {
+        emit("update:modelValue", null);
+    }
+
+    // #endregion Event Handlers
+</script>
