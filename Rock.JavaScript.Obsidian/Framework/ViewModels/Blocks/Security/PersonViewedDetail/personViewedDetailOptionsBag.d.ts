@@ -21,8 +21,8 @@
 // </copyright>
 //
 
-/** The additional configuration options for the Person Viewed List block. */
+/** The additional configuration options for the Person Viewed Detail block. */
 export type PersonViewedDetailOptionsBag = {
-    title: string
+    /** The title of the block based on target person viewed or target person viewing. */
+    title?: string | null;
 };
-

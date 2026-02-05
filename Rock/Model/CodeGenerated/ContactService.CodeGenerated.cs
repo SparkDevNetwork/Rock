@@ -53,6 +53,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
 
+            if ( new Service<ContactRelationshipChange>( Context ).Queryable().Any( a => a.ContactId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Contact.FriendlyTypeName, ContactRelationshipChange.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<ContactTouchpoint>( Context ).Queryable().Any( a => a.ContactId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Contact.FriendlyTypeName, ContactTouchpoint.FriendlyTypeName );

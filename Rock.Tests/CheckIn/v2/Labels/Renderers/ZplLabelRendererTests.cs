@@ -2971,7 +2971,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
         {
             var expectedPattern = new Regex( @"\^FD1234\^FS" );
 
-            var rockContext = MockDatabaseHelper.GetRockContextMock();
+            var rockContext = MockDatabaseHelper.CreateRockContextMock();
             var sampleSearchKey = new PersonSearchKey
             {
                 PersonAlias = new PersonAlias
@@ -2986,8 +2986,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
                 Id = 2
             };
 
-            rockContext.SetupDbSet( sampleSearchKey );
-            rockContext.SetupDbSet<Person>();
+            rockContext.Object.Set<PersonSearchKey>().Add( sampleSearchKey );
 
             var request = new PrintLabelRequest
             {
@@ -3031,7 +3030,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
         [TestMethod]
         public void WriteBarcodeField_WithAlternateIdAndNullSearchValue_DoesNotEmitField()
         {
-            var rockContext = MockDatabaseHelper.GetRockContextMock();
+            var rockContext = MockDatabaseHelper.CreateRockContextMock();
             var sampleSearchKey = new PersonSearchKey
             {
                 PersonAlias = new PersonAlias
@@ -3046,8 +3045,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
                 Id = 2
             };
 
-            rockContext.SetupDbSet( sampleSearchKey );
-            rockContext.SetupDbSet<Person>();
+            rockContext.Object.Set<PersonSearchKey>().Add( sampleSearchKey );
 
             var request = new PrintLabelRequest
             {
@@ -3091,14 +3089,11 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
         [TestMethod]
         public void WriteBarcodeField_WithMissingAlternateId_DoesNotEmitField()
         {
-            var rockContext = MockDatabaseHelper.GetRockContextMock();
+            var rockContext = MockDatabaseHelper.CreateRockContextMock();
             var person = new Person
             {
                 Id = 2
             };
-
-            rockContext.SetupDbSet<PersonSearchKey>();
-            rockContext.SetupDbSet<Person>();
 
             var request = new PrintLabelRequest
             {

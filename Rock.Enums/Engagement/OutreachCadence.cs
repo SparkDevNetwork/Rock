@@ -50,6 +50,11 @@ namespace Rock.Enums.Engagement
         /// <summary>
         /// Paused prayer cadence.
         /// </summary>
-        Paused = 5
+        Paused = 5,
+
+        /// <summary>
+        /// Daily prayer cadence.
+        /// </summary>
+        Daily = 6,
     }
-}
+} 

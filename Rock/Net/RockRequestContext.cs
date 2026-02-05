@@ -23,7 +23,6 @@ using System.Linq;
 using System.Web;
 
 using Rock.Attribute;
-using Rock.Communication.Chat;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
@@ -1040,7 +1039,6 @@ namespace Rock.Net
             }
 
             mergeFields.Add( "Geolocation", ClientInformation?.Geolocation );
-            mergeFields.Add( "IsChatEnabled", ChatHelper.IsChatEnabled );
             mergeFields.Add( "ExperienceMode", Rock.Web.SystemSettings.GetValue( SystemKey.SystemSetting.TRAILBLAZER_MODE ).AsBoolean() ? "Trailblazer" : "Essentials" );
             mergeFields.Add( $"{LavaRenderContextBase.InternalMergeFieldPrefix}RockRequestContext", this );
 

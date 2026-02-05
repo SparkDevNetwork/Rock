@@ -53,6 +53,12 @@ namespace Rock.AI.Agent.Classes.Entity
         public string IdKey => Id.AsIdKey();
 
         /// <summary>
+        /// The unique identifier of the entity. This should be filled in whenever
+        /// possible as it is required when dealing with attribute values.
+        /// </summary>
+        public Guid? Guid { get; set; }
+
+        /// <summary>
         /// Gets or sets the date and time that the entity was created.
         /// </summary>
         public DateTime? CreatedDateTime { get; set; }

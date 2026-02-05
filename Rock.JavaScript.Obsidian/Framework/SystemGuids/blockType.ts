@@ -131,12 +131,12 @@ export const BlockType = {
     MobileGroupsGroupScheduleUnavailability: "AEFF246D-A514-4D46-801E-D717E1D1D209",
     /** The mobile Add Contact &gt; Add Contact block type. */
     MobileOutreachAddContact: "DE2F490D-2598-40E8-8170-4753DDC0A0B0",
-    /** The mobile Outreach Beacon Dashboard &gt; Beacon Dashboard block type. */
-    MobileOutreachBeaconDashboard: "A1B2C3D4-E5F6-4789-ABCD-1234567890AB",
     /** The mobile contact profile &gt; Contact Profile block type."/&gt; */
     MobileOutreachContactProfile: "40E200AD-1E29-4855-A8A4-8055A63753FF",
     /** The mobile my contact &gt; My Contact block type. */
     MobileOutreachMyContacts: "5C8E3D6E-1F2D-4A2D-8E3C-2F3B1C6D7E8F",
+    /** The mobile Outreach Beacon Dashboard &gt; Beacon Dashboard block type. */
+    MobileOutreachOutreachBeaconDashboard: "A1B2C3D4-E5F6-4789-ABCD-1234567890AB",
     /** The mobile Outreach Onboarding &gt; Outreach Onboarding block type. */
     MobileOutreachOutreachOnboarding: "5F1E3C4B-6D7E-4A8F-9C2B-3D4E5F6A7B8C",
     /** The mobile outreach Recent Activity &gt; Outreach Recent Activity block type. */

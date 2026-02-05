@@ -26,7 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Security.PersonViewedList;
+using Rock.ViewModels.Blocks.Security.PersonViewedDetail;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Security

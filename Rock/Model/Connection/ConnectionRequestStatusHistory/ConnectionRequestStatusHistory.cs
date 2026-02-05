@@ -44,6 +44,12 @@ namespace Rock.Model
         public int ConnectionStatusId { get; set; }
 
         /// <summary>
+        /// The identifier of the connection request.
+        /// </summary>
+        [DataMember]
+        public int ConnectionRequestId { get; set; }
+
+        /// <summary>
         /// The start date time.
         /// </summary>
         [DataMember]
@@ -87,6 +93,15 @@ namespace Rock.Model
         public virtual ConnectionStatus ConnectionStatus { get; set; }
 
         /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.ConnectionRequest">type</see> of the status history.
+        /// </summary>
+        /// <value>
+        /// The connection request associated with the status history.
+        /// </value>
+        [LavaVisible]
+        public virtual ConnectionRequest ConnectionRequest { get; set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.PersonAlias">type</see> that the connection request status was completed by.
         /// </summary>
         /// <value>
@@ -111,6 +126,7 @@ namespace Rock.Model
         public ConnectionRequestStatusHistoryConfiguration()
         {
             this.HasRequired( p => p.ConnectionStatus ).WithMany().HasForeignKey( p => p.ConnectionStatusId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.ConnectionRequest ).WithMany( p => p.ConnectionRequestStatusHistories ).HasForeignKey( p => p.ConnectionRequestId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.CompletedByPersonAlias ).WithMany().HasForeignKey( p => p.CompletedByPersonAliasId ).WillCascadeOnDelete( false );
         }
     }

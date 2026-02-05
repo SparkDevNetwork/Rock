@@ -619,7 +619,7 @@ namespace RockWeb.Blocks.Mobile
             {
                 fields.Add( new KeyValuePair<string, string>( "Page URL", additionalSettings.WebPageUrl ) );
             }
-            fields.Add( new KeyValuePair<string, string>( "Display In Navigation", page.DisplayInNavWhen.GetDescription() ?? page.DisplayInNavWhen.ToStringSafe() ) );
+            fields.Add( new KeyValuePair<string, string>( "Display In Navigation", page.DisplayInNavWhen.GetDisplayName() ) );
 
             if ( page.IconBinaryFileId.HasValue )
             {

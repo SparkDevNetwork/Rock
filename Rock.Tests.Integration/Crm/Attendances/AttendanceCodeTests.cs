@@ -482,12 +482,7 @@ namespace Rock.Tests.Integration.Crm.Attendance
         /// <returns>A mocking object for <see cref="RockContext"/>.</returns>
         private Mock<RockContext> CreateRockContextMock()
         {
-            var rockContextMock = MockDatabaseHelper.GetRockContextMock();
-
-            rockContextMock.SetupDbSet( new List<AttendanceCode>() );
-            rockContextMock.Setup( m => m.SaveChanges() ).Returns( 0 );
-
-            return rockContextMock;
+            return MockDatabaseHelper.CreateRockContextMock();
         }
     }
 }

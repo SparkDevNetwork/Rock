@@ -119,6 +119,8 @@ namespace Rock.Migrations.RockStartup
             SystemGuid.ServiceJob.DATA_MIGRATIONS_181_ADD_FINANCIALBATCH_INDEX.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_190_SWAP_OBSIDIAN_BLOCKS.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_190_CHOP_REGISTRATION_ENTRY_FINAL.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_190_CHOP_SERVICE_METRIC_ENTRY_FINAL.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_190_CHOP_FILE_AND_ASSET_MANAGER_FINAL.AsGuid(),
         };
 
 

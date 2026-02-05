@@ -59,6 +59,21 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         Key = AttributeKeys.ToolboxName,
         Order = 3 )]
 
+    [TextField( "Toolbox subtitle",
+        Description = "The subtitle appears below the Toolbox name.",
+        IsRequired = false,
+        DefaultValue = "Small actions with eternal impact.",
+        Key = AttributeKeys.ToolboxSubtitle,
+        Order = 4 )]
+
+    [IntegerField(
+        "Completion Lookback Period",
+        Description = "Number of days to look back when calculating on-time completion",
+        IsRequired = true,
+        DefaultValue = "30",
+        Order = 5,
+        Key = AttributeKeys.CompletionLookbackPeriod )]
+
     [SystemGuid.EntityTypeGuid( SystemGuid.EntityType.MOBILE_OUTREACH_OUTREACH_DASHBOARD_BLOCK_TYPE )]
     [SystemGuid.BlockTypeGuid( SystemGuid.BlockType.MOBILE_OUTREACH_OUTREACH_BEACON_DASHBOARD )]
     public class OutreachDashboard : RockBlockType
@@ -71,6 +86,8 @@ namespace Rock.Blocks.Types.Mobile.Engagement
             public const string DetailPage = "DetailPage";
             public const string MyContact = "MyContact";
             public const string ToolboxName = "ToolboxName";
+            public const string ToolboxSubtitle = "ToolboxSubtitle";
+            public const string CompletionLookbackPeriod = "CompletionLookbackPeriod";
         }
 
         #endregion
@@ -218,9 +235,11 @@ namespace Rock.Blocks.Types.Mobile.Engagement
                 } ).ToList();
 
             // Calculate the percentage of touchpoints finished on time.
+            var lookbackPeriodStartDate = RockDateTime.Now.AddDays( -GetAttributeValue( AttributeKeys.CompletionLookbackPeriod ).AsInteger() );
             var onTimeStats = touchpointService.Queryable()
                 .Where( tp => personContactIds.Contains( tp.ContactId ) )
                 .Where( tp => tp.CompletedDateTime != null && tp.ScheduledDateTime != null )
+                .Where( tp => tp.ScheduledDateTime >= lookbackPeriodStartDate )
                 .GroupBy( _ => 1 )
                 .Select( g => new
                 {
@@ -306,7 +325,6 @@ namespace Rock.Blocks.Types.Mobile.Engagement
             person.OutreachEnableDailyNotification = savePreferenceBag.DailyNotificationsEnabled;
             person.OutreachNotificationTimeOfDay = savePreferenceBag.DailyNotificationsEnabled ? ( OutreachNotificationTimeOfDay? ) savePreferenceBag.TimeOfDay : null; // Clear out time of day if daily notifications are disabled
             person.OutreachEnableSpecialEventsNotification = savePreferenceBag.SpecialEventNotificationsEnabled;
-            person.OutreachTouchpointNotificationsEnabled = savePreferenceBag.DailyNotificationsEnabled || savePreferenceBag.SpecialEventNotificationsEnabled;
 
             RockContext.SaveChanges();
 
@@ -356,23 +374,13 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         [BlockAction]
         public BlockActionResult StopAllTouchpoints()
         {
-            ContactService contactService = new ContactService( RockContext );
             var person = RequestContext.CurrentPerson;
             if ( person == null )
             {
                 return ActionBadRequest( "Current person not found." );
             }
 
-            var personContactIds = contactService
-                .Queryable()
-                .Where( c => c.OwnerPersonAliasId == person.PrimaryAliasId )
-                .ToList();
-
-            foreach ( var contact in personContactIds )
-            {
-                contact.PrayerCadence = OutreachCadence.Paused;
-                contact.ConnectionCadence = OutreachCadence.Paused;
-            }
+            person.OutreachTouchpointGenerationEnabled = false;
 
             RockContext.SaveChanges();
 
@@ -390,6 +398,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
                 BaptismInfoUrl = ResolveURL( GetAttributeValue( AttributeKeys.BaptismInfo ) ),
                 MyContactPage = GetAttributeValue( AttributeKeys.MyContact ).AsGuidOrNull(),
                 ToolboxName = GetAttributeValue( AttributeKeys.ToolboxName ),
+                ToolboxSubtitle = GetAttributeValue( AttributeKeys.ToolboxSubtitle )
             };
         }
     }

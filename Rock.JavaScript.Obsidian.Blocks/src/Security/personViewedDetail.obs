@@ -2,7 +2,7 @@
 <template>
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
-          :title='config.options?.title'
+          :title='config.options?.title ?? "Person Viewed Detail"'
           keyField="idKey"
           itemTerm="View"
           :entityTypeGuid="EntityType.PersonViewed"

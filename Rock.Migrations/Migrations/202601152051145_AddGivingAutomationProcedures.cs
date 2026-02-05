@@ -46,14 +46,18 @@ namespace Rock.Migrations
         private void CreateAttributeValueUpdateListUserDefinedTableType()
         {
             Sql( @"
-CREATE TYPE dbo.AttributeValueUpdateList AS TABLE
-(
-    EntityId    INT            NOT NULL,
-    AttributeId INT            NOT NULL,
-    Value       NVARCHAR(4000) NOT NULL,
+IF TYPE_ID('dbo.AttributeValueUpdateList') IS NULL
+BEGIN
+    CREATE TYPE dbo.AttributeValueUpdateList AS TABLE
+    (
+        EntityId    INT            NOT NULL,
+        AttributeId INT            NOT NULL,
+        Value       NVARCHAR(4000) NOT NULL,
 
-    PRIMARY KEY NONCLUSTERED (AttributeId, EntityId)
-);" );
+        PRIMARY KEY NONCLUSTERED (AttributeId, EntityId)
+    );
+END
+" );
         }
 
         private void AddUpdateGivingBinsAndPercentilesProcedure()

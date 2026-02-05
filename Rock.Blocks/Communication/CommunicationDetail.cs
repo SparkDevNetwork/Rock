@@ -2049,7 +2049,7 @@ namespace Rock.Blocks.Communication
                 {
                     Label = Gender.Male.ConvertToString(),
                     Value = GetPercentage( maleCount ),
-                    Color = "--color-info-tint"
+                    Color = "--color-gender-male-strong"
                 } );
             }
 
@@ -2059,7 +2059,7 @@ namespace Rock.Blocks.Communication
                 {
                     Label = Gender.Female.ConvertToString(),
                     Value = GetPercentage( femaleCount ),
-                    Color = "--color-danger-tint"
+                    Color = "--color-gender-female-strong"
                 } );
             }
 

@@ -236,6 +236,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
                 LastUpdated = contact.ModifiedDateTime ?? contact.CreatedDateTime ?? DateTime.MinValue,
                 FirstName = contact.FirstName,
                 LastName = contact.LastName,
+                Gender = ( int ) contact.Gender.ToMobile(),
                 ConnectionNote = contact.ConnectionNote,
                 PrayerNote = contact.PrayerNote,
                 MobilePhone = contact.MobilePhone,

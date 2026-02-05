@@ -111,7 +111,7 @@ namespace Rock.Blocks.Group
             var listItemBag = new List<ListItemBag>();
             foreach ( Enum enumValue in Enum.GetValues( enumType ) )
             {
-                var text = enumValue.GetDescription() ?? enumValue.ToString().SplitCase();
+                var text = enumValue.GetDisplayName();
                 listItemBag.Add( new ListItemBag { Text = text, Value = enumValue.ToString() } );
             }
 

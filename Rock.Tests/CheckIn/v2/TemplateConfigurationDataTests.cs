@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Moq;
@@ -13,6 +14,7 @@ using Rock.Enums.CheckIn;
 using Rock.Enums.Controls;
 using Rock.Model;
 using Rock.SystemKey;
+using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
@@ -25,7 +27,7 @@ namespace Rock.Tests.CheckIn.v2
     /// </summary>
     /// <seealso cref="TemplateConfigurationData"/>
     [TestClass]
-    public class TemplateConfigurationDataTests : CheckInMockDatabase
+    public class TemplateConfigurationDataTests : MockDatabaseTestsBase
     {
         #region Constants
 
@@ -127,160 +129,216 @@ namespace Rock.Tests.CheckIn.v2
         [TestMethod]
         public void Constructor_WithSingleAttributeValue_InitializesProperty( string propertyName, object expectedValue, string attributeKey )
         {
-            var rockContextMock = GetRockContextMock();
-            rockContextMock.SetupDbSet<GroupType>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
-            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+            var groupType = new GroupType
+            {
+                Id = 1,
+                Guid = new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ),
+                Attributes = new Dictionary<string, AttributeCache>(),
+                AttributeValues = new Dictionary<string, AttributeValueCache>(),
+            };
 
             if ( expectedValue.GetType().IsEnum )
             {
-                groupType.SetMockAttributeValue( attributeKey, ( ( int ) expectedValue ).ToString() );
+                groupType.AttributeValues.Add( attributeKey, new AttributeValueCache
+                {
+                    Value = ( ( int ) expectedValue ).ToString()
+                } );
             }
             else
             {
-                groupType.SetMockAttributeValue( attributeKey, expectedValue.ToString() );
+                groupType.AttributeValues.Add( attributeKey, new AttributeValueCache
+                {
+                    Value = expectedValue.ToString()
+                } );
             }
 
-            var groupTypeCache = new GroupTypeCache();
-            groupTypeCache.SetFromEntity( groupType.Object );
+            rockContextMock.Object.Set<GroupType>().Add( groupType );
 
-            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
-
-            var propertyValue = instance.GetPropertyValue( propertyName );
-
-            // Convert the expected value if it is a special type that can't
-            // be represented at compile time.
-            if ( propertyValue is Guid propertyGuidValue )
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
             {
-                expectedValue = new Guid( expectedValue.ToString() );
+                var groupTypeCache = GroupTypeCache.Get( groupType.Id, rockContextMock.Object );
 
-                Assert.AreEqual( expectedValue, propertyGuidValue );
-            }
-            else if ( propertyValue is IReadOnlyCollection<Guid> propertyGuidValues )
-            {
-                var expectedValues = expectedValue.ToString().SplitDelimitedValues().AsGuidList();
+                var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
 
-                CollectionAssert.AreEqual( expectedValues, propertyGuidValues.ToList() );
-            }
-            else
-            {
-                Assert.AreEqual( expectedValue, propertyValue );
+                var propertyValue = instance.GetPropertyValue( propertyName );
+
+                // Convert the expected value if it is a special type that can't
+                // be represented at compile time.
+                if ( propertyValue is Guid propertyGuidValue )
+                {
+                    expectedValue = new Guid( expectedValue.ToString() );
+
+                    Assert.AreEqual( expectedValue, propertyGuidValue );
+                }
+                else if ( propertyValue is IReadOnlyCollection<Guid> propertyGuidValues )
+                {
+                    var expectedValues = expectedValue.ToString().SplitDelimitedValues().AsGuidList();
+
+                    CollectionAssert.AreEqual( expectedValues, propertyGuidValues.ToList() );
+                }
+                else
+                {
+                    Assert.AreEqual( expectedValue, propertyValue );
+                }
             }
         }
 
         [TestMethod]
         public void Constructor_WithDisplayAddressOnFamiliesSetting_InitializesProperty()
         {
-            var rockContextMock = GetRockContextMock();
-            rockContextMock.SetupDbSet<GroupType>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
-            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+            var groupType = new GroupType
+            {
+                Id = 1,
+                Guid = new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ),
+            };
 
             var settings = new CheckInTemplateSettings
             {
                 DisplayAddressOnFamilies = RequirementLevel.Required
             };
 
-            groupType.Object.SetAdditionalSettings( settings );
+            groupType.SetAdditionalSettings( settings );
 
-            var groupTypeCache = new GroupTypeCache();
-            groupTypeCache.SetFromEntity( groupType.Object );
+            rockContextMock.Object.Set<GroupType>().Add( groupType );
 
-            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            {
+                var groupTypeCache = GroupTypeCache.Get( groupType.Id, rockContextMock.Object );
 
-            Assert.AreEqual( RequirementLevel.Required, instance.DisplayAddressOnFamilies );
+                var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+
+                Assert.AreEqual( RequirementLevel.Required, instance.DisplayAddressOnFamilies );
+            }
         }
 
         [TestMethod]
         public void Constructor_WithDisplayMobilePhoneOnChildrenSetting_InitializesProperty()
         {
-            var rockContextMock = GetRockContextMock();
-            rockContextMock.SetupDbSet<GroupType>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
-            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+            var groupType = new GroupType
+            {
+                Id = 1,
+                Guid = new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ),
+            };
 
             var settings = new CheckInTemplateSettings
             {
                 DisplayMobilePhoneOnChildren = RequirementLevel.Required
             };
 
-            groupType.Object.SetAdditionalSettings( settings );
+            groupType.SetAdditionalSettings( settings );
 
-            var groupTypeCache = new GroupTypeCache();
-            groupTypeCache.SetFromEntity( groupType.Object );
+            rockContextMock.Object.Set<GroupType>().Add( groupType );
 
-            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            {
+                var groupTypeCache = GroupTypeCache.Get( groupType.Id, rockContextMock.Object );
 
-            Assert.AreEqual( RequirementLevel.Required, instance.DisplayMobilePhoneForChildren );
+                var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+
+                Assert.AreEqual( RequirementLevel.Required, instance.DisplayMobilePhoneForChildren );
+            }
         }
 
         [TestMethod]
         public void Constructor_WithDisplaySuffixSetting_InitializesProperty()
         {
-            var rockContextMock = GetRockContextMock();
-            rockContextMock.SetupDbSet<GroupType>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
-            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+            var groupType = new GroupType
+            {
+                Id = 1,
+                Guid = new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ),
+            };
 
             var settings = new CheckInTemplateSettings
             {
                 DisplaySuffix = AdultsOrChildrenSelectionMode.ChildrenOnly
             };
 
-            groupType.Object.SetAdditionalSettings( settings );
+            groupType.SetAdditionalSettings( settings );
 
-            var groupTypeCache = new GroupTypeCache();
-            groupTypeCache.SetFromEntity( groupType.Object );
+            rockContextMock.Object.Set<GroupType>().Add( groupType );
 
-            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            {
+                var groupTypeCache = GroupTypeCache.Get( groupType.Id, rockContextMock.Object );
 
-            Assert.AreEqual( AdultsOrChildrenSelectionMode.ChildrenOnly, instance.DisplaySuffix );
+                var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+
+                Assert.AreEqual( AdultsOrChildrenSelectionMode.ChildrenOnly, instance.DisplaySuffix );
+            }
         }
 
         [TestMethod]
         public void Constructor_WithForceSelectionOfKnownRelationshipTypeSetting_InitializesProperty()
         {
-            var rockContextMock = GetRockContextMock();
-            rockContextMock.SetupDbSet<GroupType>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
-            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+            var groupType = new GroupType
+            {
+                Id = 1,
+                Guid = new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ),
+            };
 
             var settings = new CheckInTemplateSettings
             {
                 ForceSelectionOfKnownRelationshipType = true
             };
 
-            groupType.Object.SetAdditionalSettings( settings );
+            groupType.SetAdditionalSettings( settings );
 
-            var groupTypeCache = new GroupTypeCache();
-            groupTypeCache.SetFromEntity( groupType.Object );
+            rockContextMock.Object.Set<GroupType>().Add( groupType );
 
-            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            {
+                var groupTypeCache = GroupTypeCache.Get( groupType.Id, rockContextMock.Object );
 
-            Assert.IsTrue( instance.ForceSelectionOfKnownRelationshipType );
+                var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+
+                Assert.IsTrue( instance.ForceSelectionOfKnownRelationshipType );
+            }
         }
 
         [TestMethod]
         public void Constructor_WithGradeConfirmationAgeSetting_InitializesProperty()
         {
-            var rockContextMock = GetRockContextMock();
-            rockContextMock.SetupDbSet<GroupType>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
-            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+            var groupType = new GroupType
+            {
+                Id = 1,
+                Guid = new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ),
+            };
 
             var settings = new CheckInTemplateSettings
             {
                 GradeConfirmationAge = 2.34M
             };
 
-            groupType.Object.SetAdditionalSettings( settings );
+            groupType.SetAdditionalSettings( settings );
 
-            var groupTypeCache = new GroupTypeCache();
-            groupTypeCache.SetFromEntity( groupType.Object );
+            rockContextMock.Object.Set<GroupType>().Add( groupType );
 
-            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            {
+                var groupTypeCache = GroupTypeCache.Get( groupType.Id, rockContextMock.Object );
 
-            Assert.AreEqual( 2.34M, instance.GradeConfirmationAge );
+                var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+
+                Assert.AreEqual( 2.34M, instance.GradeConfirmationAge );
+            }
         }
 
         [DataRow( nameof( TemplateConfigurationData.DisplayBirthdateForAdults ), GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONADULTS )]
@@ -296,21 +354,34 @@ namespace Rock.Tests.CheckIn.v2
             var expectedValue = RequirementLevel.Required;
             var attributeValue = global::Rock.CheckIn.ControlOptions.REQUIRED;
 
-            var rockContextMock = GetRockContextMock();
-            rockContextMock.SetupDbSet<GroupType>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
-            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+            var groupType = new GroupType
+            {
+                Id = 1,
+                Guid = new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ),
+                Attributes = new Dictionary<string, AttributeCache>(),
+                AttributeValues = new Dictionary<string, AttributeValueCache>()
+            };
 
-            groupType.SetMockAttributeValue( attributeKey, attributeValue );
+            groupType.AttributeValues.Add( attributeKey, new AttributeValueCache
+            {
+                Value = attributeValue
+            } );
 
-            var groupTypeCache = new GroupTypeCache();
-            groupTypeCache.SetFromEntity( groupType.Object );
+            rockContextMock.Object.Set<GroupType>().Add( groupType );
 
-            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            {
+                var groupTypeCache = GroupTypeCache.Get( groupType.Id, rockContextMock.Object );
 
-            var propertyValue = instance.GetPropertyValue( propertyName );
+                var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
 
-            Assert.AreEqual( expectedValue, propertyValue );
+                var propertyValue = instance.GetPropertyValue( propertyName );
+
+                Assert.AreEqual( expectedValue, propertyValue );
+            }
         }
 
         [DataRow( nameof( TemplateConfigurationData.FamilySearchType ), FamilySearchMode.PhoneNumber )]
@@ -334,19 +405,27 @@ namespace Rock.Tests.CheckIn.v2
         [TestMethod]
         public void Constructor_WithEmptyGroupTypeCache_InitializesDefaultPropertyValue( string propertyName, object expectedValue )
         {
-            var rockContextMock = GetRockContextMock();
-            rockContextMock.SetupDbSet<GroupType>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
-            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+            var groupType = new GroupType
+            {
+                Id = 1,
+                Guid = new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ),
+            };
 
-            var groupTypeCache = new GroupTypeCache();
-            groupTypeCache.SetFromEntity( groupType.Object );
+            rockContextMock.Object.Set<GroupType>().Add( groupType );
 
-            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            {
+                var groupTypeCache = GroupTypeCache.Get( groupType.Id, rockContextMock.Object );
 
-            var propertyValue = instance.GetPropertyValue( propertyName );
+                var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
 
-            Assert.AreEqual( expectedValue, propertyValue );
+                var propertyValue = instance.GetPropertyValue( propertyName );
+
+                Assert.AreEqual( expectedValue, propertyValue );
+            }
         }
 
         [TestMethod]
@@ -354,19 +433,32 @@ namespace Rock.Tests.CheckIn.v2
         {
             var expectedValue = new List<Guid>( new[] { Guid.NewGuid(), Guid.NewGuid() } );
 
-            var rockContextMock = GetRockContextMock();
-            rockContextMock.SetupDbSet<GroupType>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
-            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+            var groupType = new GroupType
+            {
+                Id = 1,
+                Guid = new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ),
+                Attributes = new Dictionary<string, AttributeCache>(),
+                AttributeValues = new Dictionary<string, AttributeValueCache>()
+            };
 
-            groupType.SetMockAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES, expectedValue.AsDelimited( ", " ) );
+            groupType.AttributeValues.Add( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES, new AttributeValueCache
+            {
+                Value = expectedValue.AsDelimited( ", " )
+            } );
 
-            var groupTypeCache = new GroupTypeCache();
-            groupTypeCache.SetFromEntity( groupType.Object );
+            rockContextMock.Object.Set<GroupType>().Add( groupType );
 
-            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            {
+                var groupTypeCache = GroupTypeCache.Get( groupType.Id, rockContextMock.Object );
 
-            CollectionAssert.AreEquivalent( expectedValue, instance.AchievementTypeGuids.ToList() );
+                var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+
+                CollectionAssert.AreEquivalent( expectedValue, instance.AchievementTypeGuids.ToList() );
+            }
         }
 
         [TestMethod]
@@ -374,19 +466,32 @@ namespace Rock.Tests.CheckIn.v2
         {
             var expectedValue = KioskCheckInMode.Family;
 
-            var rockContextMock = GetRockContextMock();
-            rockContextMock.SetupDbSet<GroupType>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
-            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+            var groupType = new GroupType
+            {
+                Id = 1,
+                Guid = new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ),
+                Attributes = new Dictionary<string, AttributeCache>(),
+                AttributeValues = new Dictionary<string, AttributeValueCache>()
+            };
 
-            groupType.SetMockAttributeValue( "core_checkin_CheckInType", "1" );
+            groupType.AttributeValues.Add( "core_checkin_CheckInType", new AttributeValueCache
+            {
+                Value = "1"
+            } );
 
-            var groupTypeCache = new GroupTypeCache();
-            groupTypeCache.SetFromEntity( groupType.Object );
+            rockContextMock.Object.Set<GroupType>().Add( groupType );
 
-            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            {
+                var groupTypeCache = GroupTypeCache.Get( groupType.Id, rockContextMock.Object );
 
-            Assert.AreEqual( expectedValue, instance.KioskCheckInType );
+                var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+
+                Assert.AreEqual( expectedValue, instance.KioskCheckInType );
+            }
         }
 
         [DataRow( FamilySearchMode.PhoneNumber, SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER )]
@@ -397,19 +502,32 @@ namespace Rock.Tests.CheckIn.v2
         [TestMethod]
         public void Constructor_WithFamilySearchTypeAttributeValue_InitializesFamilySearchType( FamilySearchMode expectedValue, string attributeValue )
         {
-            var rockContextMock = GetRockContextMock();
-            rockContextMock.SetupDbSet<GroupType>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
-            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+            var groupType = new GroupType
+            {
+                Id = 1,
+                Guid = new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ),
+                Attributes = new Dictionary<string, AttributeCache>(),
+                AttributeValues = new Dictionary<string, AttributeValueCache>()
+            };
 
-            groupType.SetMockAttributeValue( "core_checkin_SearchType", attributeValue );
+            groupType.AttributeValues.Add( "core_checkin_SearchType", new AttributeValueCache
+            {
+                Value = attributeValue
+            } );
 
-            var groupTypeCache = new GroupTypeCache();
-            groupTypeCache.SetFromEntity( groupType.Object );
+            rockContextMock.Object.Set<GroupType>().Add( groupType );
 
-            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            {
+                var groupTypeCache = GroupTypeCache.Get( groupType.Id, rockContextMock.Object );
 
-            Assert.AreEqual( expectedValue, instance.FamilySearchType );
+                var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+
+                Assert.AreEqual( expectedValue, instance.FamilySearchType );
+            }
         }
 
         [TestMethod]
@@ -419,19 +537,32 @@ namespace Rock.Tests.CheckIn.v2
         [DataRow( RequirementLevel.Unavailable, global::Rock.CheckIn.ControlOptions.HIDE )]
         public void Constructor_WithControlOption_ConvertsToRequirementLevel( RequirementLevel expectedRequirementLevel, string controlOption )
         {
-            var rockContextMock = GetRockContextMock();
-            rockContextMock.SetupDbSet<GroupType>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
-            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+            var groupType = new GroupType
+            {
+                Id = 1,
+                Guid = new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ),
+                Attributes = new Dictionary<string, AttributeCache>(),
+                AttributeValues = new Dictionary<string, AttributeValueCache>()
+            };
 
-            groupType.SetMockAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONADULTS, controlOption );
+            groupType.AttributeValues.Add( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONADULTS, new AttributeValueCache
+            {
+                Value = controlOption
+            } );
 
-            var groupTypeCache = new GroupTypeCache();
-            groupTypeCache.SetFromEntity( groupType.Object );
+            rockContextMock.Object.Set<GroupType>().Add( groupType );
 
-            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            {
+                var groupTypeCache = GroupTypeCache.Get( groupType.Id, rockContextMock.Object );
 
-            Assert.AreEqual( expectedRequirementLevel, instance.DisplayBirthdateForAdults );
+                var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+
+                Assert.AreEqual( expectedRequirementLevel, instance.DisplayBirthdateForAdults );
+            }
         }
 
         [TestMethod]
@@ -446,22 +577,35 @@ namespace Rock.Tests.CheckIn.v2
                 KnownRelationshipTypeTwoGuid
             };
 
-            var rockContextMock = GetRockContextMock();
-            rockContextMock.SetupDbSet<GroupType>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
             SetupGroupTypeRoleMocks( rockContextMock );
 
-            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
-            groupType.SetMockAttributeValue( attributeKey, $"{KnownRelationshipTypeOneId},{KnownRelationshipTypeTwoId}" );
+            var groupType = new GroupType
+            {
+                Id = 1,
+                Guid = new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ),
+                Attributes = new Dictionary<string, AttributeCache>(),
+                AttributeValues = new Dictionary<string, AttributeValueCache>()
+            };
 
-            var groupTypeCache = new GroupTypeCache();
-            groupTypeCache.SetFromEntity( groupType.Object );
+            groupType.AttributeValues.Add( attributeKey, new AttributeValueCache
+            {
+                Value = $"{KnownRelationshipTypeOneId},{KnownRelationshipTypeTwoId}"
+            } );
 
-            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+            rockContextMock.Object.Set<GroupType>().Add( groupType );
 
-            var propertyValue = instance.GetPropertyValue( propertyName );
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            {
+                var groupTypeCache = GroupTypeCache.Get( groupType.Id, rockContextMock.Object );
+                var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
 
-            CollectionAssert.AreEquivalent( expectedGuids, ( ( IReadOnlyCollection<Guid> ) propertyValue ).ToList() );
+                var propertyValue = instance.GetPropertyValue( propertyName );
+
+                CollectionAssert.AreEquivalent( expectedGuids, ( ( IReadOnlyCollection<Guid> ) propertyValue ).ToList() );
+            }
         }
 
         [TestMethod]
@@ -472,108 +616,162 @@ namespace Rock.Tests.CheckIn.v2
                 SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CHILD.AsGuid()
             };
 
-            var rockContextMock = GetRockContextMock();
-            rockContextMock.SetupDbSet<GroupType>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
             SetupGroupTypeRoleMocks( rockContextMock );
 
-            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
-            groupType.SetMockAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_CANCHECKINKNOWNRELATIONSHIPTYPES, "0" );
+            var groupType = new GroupType
+            {
+                Id = 1,
+                Guid = new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ),
+                Attributes = new Dictionary<string, AttributeCache>(),
+                AttributeValues = new Dictionary<string, AttributeValueCache>()
+            };
 
-            var groupTypeCache = new GroupTypeCache();
-            groupTypeCache.SetFromEntity( groupType.Object );
+            groupType.AttributeValues.Add( GroupTypeAttributeKey.CHECKIN_REGISTRATION_CANCHECKINKNOWNRELATIONSHIPTYPES, new AttributeValueCache
+            {
+                Value = "0"
+            } );
 
-            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+            rockContextMock.Object.Set<GroupType>().Add( groupType );
 
-            CollectionAssert.AreEquivalent( expectedGuids, instance.CanCheckInKnownRelationshipRoleGuids.ToList() );
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            {
+                var groupTypeCache = GroupTypeCache.Get( groupType.Id, rockContextMock.Object );
+
+                var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+
+                CollectionAssert.AreEquivalent( expectedGuids, instance.CanCheckInKnownRelationshipRoleGuids.ToList() );
+            }
         }
 
         [TestMethod]
         public void Constructor_WithGroupMemberRecordSourceValueId_InitializesPropertyWithGuid()
         {
-            var rockContextMock = GetRockContextMock();
-            rockContextMock.SetupDbSet<GroupType>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
-            var definedValue = CreateEntityMock<DefinedValue>( 12, new Guid( "8170716e-d9e7-469f-8dd2-6b196e803bc7" ) );
-            rockContextMock.SetupDbSet( definedValue.Object );
+            var groupType = new GroupType
+            {
+                Id = 1,
+                Guid = new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ),
+                GroupMemberRecordSourceValueId = 12,
+            };
+
+            var definedValue = new DefinedValue
+            {
+                Id = 12,
+                Guid = new Guid( "8170716e-d9e7-469f-8dd2-6b196e803bc7" ),
+            };
+
+            rockContextMock.Object.Set<DefinedValue>().Add( definedValue );
+            rockContextMock.Object.Set<GroupType>().Add( groupType );
 
             SetupGroupTypeRoleMocks( rockContextMock );
 
-            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
-            groupType.Object.GroupMemberRecordSourceValueId = 12;
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            {
+                var groupTypeCache = GroupTypeCache.Get( groupType.Id, rockContextMock.Object );
 
-            var groupTypeCache = new GroupTypeCache();
-            groupTypeCache.SetFromEntity( groupType.Object );
+                var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
 
-            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
-
-            Assert.AreEqual( definedValue.Object.Guid, instance.DefaultPersonRecordSourceGuid );
+                Assert.AreEqual( definedValue.Guid, instance.DefaultPersonRecordSourceGuid );
+            }
         }
 
         [TestMethod]
         public void Constructor_WithEmptyRegularExpressionFilterAttributeValue_InitializesPhoneNumberRegexToNull()
         {
-            var rockContextMock = GetRockContextMock();
-            rockContextMock.SetupDbSet<GroupType>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
+            var groupType = new GroupType
+            {
+                Id = 1,
+                Guid = new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ),
+            };
+
+            rockContextMock.Object.Set<GroupType>().Add( groupType );
             SetupGroupTypeRoleMocks( rockContextMock );
 
-            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            {
+                var groupTypeCache = GroupTypeCache.Get( groupType.Id, rockContextMock.Object );
 
-            var groupTypeCache = new GroupTypeCache();
-            groupTypeCache.SetFromEntity( groupType.Object );
+                var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
 
-            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
-
-            Assert.IsNull( instance.PhoneNumberRegex );
+                Assert.IsNull( instance.PhoneNumberRegex );
+            }
         }
 
         [TestMethod]
         public void Constructor_WithRegularExpressionFilterAttributeValue_InitializesPhoneNumberRegex()
         {
-            var rockContextMock = GetRockContextMock();
-            rockContextMock.SetupDbSet<GroupType>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
+            var groupType = new GroupType
+            {
+                Id = 1,
+                Guid = new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ),
+                Attributes = new Dictionary<string, AttributeCache>(),
+                AttributeValues = new Dictionary<string, AttributeValueCache>()
+            };
+
+            groupType.AttributeValues.Add( "core_checkin_RegularExpressionFilter", new AttributeValueCache
+            {
+                Value = "[0]*(\\d*)"
+            } );
+
+            rockContextMock.Object.Set<GroupType>().Add( groupType );
             SetupGroupTypeRoleMocks( rockContextMock );
 
-            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
-            groupType.SetMockAttributeValue( "core_checkin_RegularExpressionFilter", "[0]*(\\d*)" );
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            {
+                var groupTypeCache = GroupTypeCache.Get( groupType.Id, rockContextMock.Object );
 
-            var groupTypeCache = new GroupTypeCache();
-            groupTypeCache.SetFromEntity( groupType.Object );
+                var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
 
-            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+                Assert.IsNotNull( instance.PhoneNumberRegex );
 
-            Assert.IsNotNull( instance.PhoneNumberRegex );
+                var match = instance.PhoneNumberRegex.Match( "0003322" );
 
-            var match = instance.PhoneNumberRegex.Match( "0003322" );
-
-            Assert.IsTrue( match.Success );
-            Assert.AreEqual( "3322", match.Groups[1].Value );
+                Assert.IsTrue( match.Success );
+                Assert.AreEqual( "3322", match.Groups[1].Value );
+            }
         }
 
         [TestMethod]
         public void Constructor_WithNotificationTemplate_InitializesProperty()
         {
             var expectedValue = "You've been checked in.";
-            var rockContextMock = GetRockContextMock();
-            rockContextMock.SetupDbSet<GroupType>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
-            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+            var groupType = new GroupType
+            {
+                Id = 1,
+                Guid = new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ),
+            };
 
             var settings = new CheckInTemplateSettings
             {
                 ProximityAttendanceNotificationTemplate = expectedValue
             };
 
-            groupType.Object.SetAdditionalSettings( settings );
+            groupType.SetAdditionalSettings( settings );
 
-            var groupTypeCache = new GroupTypeCache();
-            groupTypeCache.SetFromEntity( groupType.Object );
+            rockContextMock.Object.Set<GroupType>().Add( groupType );
 
-            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            {
+                var groupTypeCache = GroupTypeCache.Get( groupType.Id, rockContextMock.Object );
 
-            Assert.AreEqual( expectedValue, instance.ProximityAttendanceNotificationTemplate );
+                var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+
+                Assert.AreEqual( expectedValue, instance.ProximityAttendanceNotificationTemplate );
+            }
         }
 
         [TestMethod]
@@ -601,34 +799,37 @@ namespace Rock.Tests.CheckIn.v2
         /// <param name="rockContextMock">The rock context mock.</param>
         private void SetupGroupTypeRoleMocks( Mock<RockContext> rockContextMock )
         {
-            var knownRelationshipsGroupType = CreateEntityMock<GroupType>( 2, SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
-            var relationshipOne = CreateEntityMock<GroupTypeRole>( KnownRelationshipTypeOneId, KnownRelationshipTypeOneGuid );
-            var relationshipTwo = CreateEntityMock<GroupTypeRole>( KnownRelationshipTypeTwoId, KnownRelationshipTypeTwoGuid );
-            var relationshipThree = CreateEntityMock<GroupTypeRole>( KnownRelationshipTypeThreeId, KnownRelationshipTypeThreeGuid );
-
-            var relationshipOneCache = new GroupTypeRoleCache();
-            var relationshipTwoCache = new GroupTypeRoleCache();
-            var relationshipThreeCache = new GroupTypeRoleCache();
-
-            relationshipOneCache.SetFromEntity( relationshipOne.Object );
-            relationshipTwoCache.SetFromEntity( relationshipTwo.Object );
-            relationshipThreeCache.SetFromEntity( relationshipThree.Object );
-
-            rockContextMock.SetupDbSet( knownRelationshipsGroupType.Object );
-
-            var knownRelationshipsGroupTypeCache = GroupTypeCache.Get( knownRelationshipsGroupType.Object.Id, rockContextMock.Object );
-            var roles = new List<GroupTypeRoleCache>
+            var knownRelationshipsGroupType = new GroupType
             {
-                relationshipOneCache,
-                relationshipTwoCache,
-                relationshipThreeCache
+                Id = 2,
+                Guid = SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid(),
             };
 
-            // Use reflection to set the backing field since we can't currently
-            // override the rock context used by the Roles property.
-            var internalRolesField = typeof( GroupTypeCache ).GetField( "_roles", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance );
+            var relationshipOne = new GroupTypeRole
+            {
+                Id = KnownRelationshipTypeOneId,
+                Guid = KnownRelationshipTypeOneGuid,
+                GroupTypeId = 2,
+            };
 
-            internalRolesField.SetValue( knownRelationshipsGroupTypeCache, roles );
+            var relationshipTwo = new GroupTypeRole
+            {
+                Id = KnownRelationshipTypeTwoId,
+                Guid = KnownRelationshipTypeTwoGuid,
+                GroupTypeId = 2,
+            };
+
+            var relationshipThree = new GroupTypeRole
+            {
+                Id = KnownRelationshipTypeThreeId,
+                Guid = KnownRelationshipTypeThreeGuid,
+                GroupTypeId = 2,
+            };
+
+            rockContextMock.Object.Set<GroupType>().Add( knownRelationshipsGroupType );
+            rockContextMock.Object.Set<GroupTypeRole>().Add( relationshipOne );
+            rockContextMock.Object.Set<GroupTypeRole>().Add( relationshipTwo );
+            rockContextMock.Object.Set<GroupTypeRole>().Add( relationshipThree );
         }
 
         #endregion

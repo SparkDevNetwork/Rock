@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Text.Json.Serialization;
 
 namespace Rock.AI.Agent.Classes.Common
@@ -28,6 +29,8 @@ namespace Rock.AI.Agent.Classes.Common
     /// </remarks>
     internal class KeyNameResult
     {
+        #region Properties
+
         /// <summary>
         /// Human-readable name for the entity.
         /// </summary>
@@ -55,10 +58,20 @@ namespace Rock.AI.Agent.Classes.Common
         private string _idKey;
 
         /// <summary>
+        /// The unique identifier of the entity. This should be filled in whenever
+        /// possible as it is required when dealing with attribute values.
+        /// </summary>
+        public Guid? Guid { get; set; }
+
+        /// <summary>
         /// The internal integer ID for the entity. This will not be show in the JSON output.
         /// </summary>
         [JsonIgnore]
         public int? Id { get; set; }
+
+        #endregion
+
+        #region Constructors
 
         /// <summary>
         /// Creates a new <see cref="KeyNameResult"/>.
@@ -81,12 +94,48 @@ namespace Rock.AI.Agent.Classes.Common
         /// <summary>
         /// Creates a new <see cref="KeyNameResult"/> with the provided id and name.
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="name"></param>
+        /// <param name="id">The integer identifier for the entity.</param>
+        /// <param name="name">The display name for the entity.</param>
         public KeyNameResult( int id, string name )
         {
             Id = id;
             Name = name;
         }
+
+        /// <summary>
+        /// Creates a new <see cref="KeyNameResult"/> with the provided values.
+        /// </summary>
+        /// <param name="id">The integer identifier for the entity.</param>
+        /// <param name="guid">The unique identifier for the entity.</param>
+        /// <param name="name">The display name for the entity.</param>
+        public KeyNameResult( int id, Guid guid, string name )
+        {
+            Id = id;
+            Name = name;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="KeyNameResult"/> from the provided entity.
+        /// This does not can't be used within a LINQ to SQL query as it requires
+        /// calling the <see cref="object.ToString()"/> method to get the name.
+        /// </summary>
+        /// <param name="entity">The entity to create the result from.</param>
+        /// <returns>A <see cref="KeyNameResult"/> object that represents the entity, or <c>null</c> if <paramref name="entity"/> was also <c>null</c>.</returns>
+        public static KeyNameResult FromEntity( Rock.Data.IEntity entity )
+        {
+            if ( entity == null )
+            {
+                return null;
+            }
+
+            return new KeyNameResult
+            {
+                Id = entity.Id,
+                Guid = entity.Guid,
+                Name = entity.ToString()
+            };
+        }
+
+        #endregion
     }
 }

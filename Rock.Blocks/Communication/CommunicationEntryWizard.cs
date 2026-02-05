@@ -2031,7 +2031,7 @@ namespace Rock.Blocks.Communication
         {
             // Get the person aliases from existing communication recipients.
             var personAliasIds = new PersonAliasService( rockContext )
-                .GetPrimaryAliasQuery()
+                .Queryable()
                 .AsNoTracking()
                 .Where( personAlias => personAliasGuids.Contains( personAlias.Guid ) )
                 .Select( pa => pa.Id )

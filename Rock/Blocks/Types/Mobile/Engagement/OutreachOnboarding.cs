@@ -96,10 +96,10 @@ namespace Rock.Blocks.Types.Mobile.Engagement
             }
 
             person.OutreachTouchpointSchedule = ( DaysOfWeekFlags ) option.DayOfWeekFlags;
-            person.OutreachTouchpointNotificationsEnabled = option.DailyNotificationsEnabled || option.SpecialEventNotificationsEnabled;
             person.OutreachEnableDailyNotification = option.DailyNotificationsEnabled;
             person.OutreachNotificationTimeOfDay = option.DailyNotificationsEnabled ? option.NotificationTime?.ToNative() : null; // Clear out time if daily notifications are not enabled
             person.OutreachEnableSpecialEventsNotification = option.SpecialEventNotificationsEnabled;
+            person.OutreachTouchpointGenerationEnabled = true;
 
             RockContext.SaveChanges();
 

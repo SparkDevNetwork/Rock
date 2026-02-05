@@ -15,13 +15,16 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Blocks.Security.PersonViewedList
+namespace Rock.ViewModels.Blocks.Security.PersonViewedDetail
 {
     /// <summary>
-    /// The additional configuration options for the Person Viewed List block.
+    /// The additional configuration options for the Person Viewed Detail block.
     /// </summary>
     public class PersonViewedDetailOptionsBag
     {
+        /// <summary>
+        /// The title of the block based on target person viewed or target person viewing.
+        /// </summary>
         public string Title { get; set; }
     }
 }

@@ -19,7 +19,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
     /// </summary>
     /// <seealso cref="MembershipOpportunityFilter"/>
     [TestClass]
-    public class MembershipOpportunityFilterTests : CheckInMockDatabase
+    public class MembershipOpportunityFilterTests : MockDatabaseTestsBase
     {
         #region IsGroupValid Tests
 
@@ -29,7 +29,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var groupId = 10;
             var personId = 20;
 
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var filter = CreateMembershipFilter( personId, rockContextMock.Object );
             var groupOpportunity = CreateGroupOpportunity( groupId, AttendanceRule.None );
 
@@ -44,7 +44,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var groupId = 10;
             var personId = 20;
 
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var filter = CreateMembershipFilter( personId, rockContextMock.Object );
             var groupOpportunity = CreateGroupOpportunity( groupId, AttendanceRule.AddOnCheckIn );
 
@@ -61,9 +61,9 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var groupMemberStatus = GroupMemberStatus.Active;
 
             var groupMemberMock = CreateGroupMemberMock( groupId, personId, groupMemberStatus, true );
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
 
-            rockContextMock.SetupDbSet( groupMemberMock.Object );
+            rockContextMock.Object.Set<GroupMember>().Add( groupMemberMock.Object );
 
             var filter = CreateMembershipFilter( personId, rockContextMock.Object );
             var groupOpportunity = CreateGroupOpportunity( groupId, AttendanceRule.AlreadyEnrolledInGroup );
@@ -81,9 +81,9 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var groupMemberStatus = GroupMemberStatus.Active;
 
             var groupMemberMock = CreateGroupMemberMock( groupId, personId, groupMemberStatus, false );
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
 
-            rockContextMock.SetupDbSet( groupMemberMock.Object );
+            rockContextMock.Object.Set<GroupMember>().Add( groupMemberMock.Object );
 
             var filter = CreateMembershipFilter( personId, rockContextMock.Object );
             var groupOpportunity = CreateGroupOpportunity( groupId, AttendanceRule.AlreadyEnrolledInGroup );
@@ -101,9 +101,9 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var groupMemberStatus = GroupMemberStatus.Inactive;
 
             var groupMemberMock = CreateGroupMemberMock( groupId, personId, groupMemberStatus, true );
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
 
-            rockContextMock.SetupDbSet( groupMemberMock.Object );
+            rockContextMock.Object.Set<GroupMember>().Add( groupMemberMock.Object );
 
             var filter = CreateMembershipFilter( personId, rockContextMock.Object );
             var groupOpportunity = CreateGroupOpportunity( groupId, AttendanceRule.AlreadyEnrolledInGroup );
@@ -121,9 +121,9 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var groupMemberStatus = GroupMemberStatus.Pending;
 
             var groupMemberMock = CreateGroupMemberMock( groupId, personId, groupMemberStatus, true );
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
 
-            rockContextMock.SetupDbSet( groupMemberMock.Object );
+            rockContextMock.Object.Set<GroupMember>().Add( groupMemberMock.Object );
 
             var filter = CreateMembershipFilter( personId, rockContextMock.Object );
             var groupOpportunity = CreateGroupOpportunity( groupId, AttendanceRule.AlreadyEnrolledInGroup );
@@ -139,9 +139,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var groupId = 10;
             var personId = 20;
 
-            var rockContextMock = GetRockContextMock();
-
-            rockContextMock.SetupDbSet<GroupMember>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
 
             var filter = CreateMembershipFilter( personId, rockContextMock.Object );
             var groupOpportunity = CreateGroupOpportunity( groupId, AttendanceRule.AlreadyEnrolledInGroup );
@@ -159,9 +157,9 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var groupMemberStatus = GroupMemberStatus.Active;
 
             var groupMemberMock = CreateGroupMemberMock( groupId, personId, groupMemberStatus, true );
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
 
-            rockContextMock.SetupDbSet( groupMemberMock.Object );
+            rockContextMock.Object.Set<GroupMember>().Add( groupMemberMock.Object );
 
             var filter = CreateMembershipFilter( personId, rockContextMock.Object );
             var groupOpportunity = CreateGroupOpportunity( groupId, AttendanceRule.AlreadyEnrolledInGroup, AlreadyEnrolledMatchingLogic.PreferEnrolledGroups );
@@ -177,9 +175,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var groupId = 10;
             var personId = 20;
 
-            var rockContextMock = GetRockContextMock();
-
-            rockContextMock.SetupDbSet<GroupMember>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
 
             var filter = CreateMembershipFilter( personId, rockContextMock.Object );
             var groupOpportunity = CreateGroupOpportunity( groupId, AttendanceRule.AlreadyEnrolledInGroup, AlreadyEnrolledMatchingLogic.MustBeEnrolled );
@@ -197,9 +193,9 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var groupMemberStatus = GroupMemberStatus.Active;
 
             var groupMemberMock = CreateGroupMemberMock( groupId, personId, groupMemberStatus, true );
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
 
-            rockContextMock.SetupDbSet( groupMemberMock.Object );
+            rockContextMock.Object.Set<GroupMember>().Add( groupMemberMock.Object );
 
             var filter = CreateMembershipFilter( personId, rockContextMock.Object );
             var groupOpportunity = CreateGroupOpportunity( groupId, AttendanceRule.AlreadyEnrolledInGroup, AlreadyEnrolledMatchingLogic.MustBeEnrolled );

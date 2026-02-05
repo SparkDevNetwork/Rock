@@ -78,7 +78,7 @@ namespace Rock
             var listItemBag = new List<ListItemBag>();
             foreach ( Enum enumValue in Enum.GetValues(enumType))
             {
-                var text = enumValue.GetDescription() ?? enumValue.ToString().SplitCase();
+                var text = enumValue.GetDisplayName();
                 var value = enumValue.ConvertToInt().ToString();
                 listItemBag.Add( new ListItemBag { Text = text, Value = value } );
             }

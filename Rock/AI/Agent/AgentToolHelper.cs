@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -50,6 +51,13 @@ namespace Rock.AI.Agent
         /// The default page size to use when paginating results.
         /// </summary>
         private const int DefaultPageSize = 25;
+
+        /// <summary>
+        /// The maximum number of attempts that will be made to fill a page of
+        /// results with cursor pagination. This is used to prevent an infinite
+        /// loop in cases where there are no items the person has access to.
+        /// </summary>
+        private const int MaxCursorFillAttempts = 20;
 
         #endregion
 
@@ -144,10 +152,10 @@ namespace Rock.AI.Agent
         /// <param name="logger">The logger to use for logging errors and information.</param>
         public AgentToolHelper( AgentRequestContext agentRequestContext, ILogger logger )
         {
-            _rockContext = agentRequestContext.RockContext;
-            _isContextReadOnly = true;
             _agentRequestContext = agentRequestContext ?? throw new ArgumentNullException( nameof( agentRequestContext ) );
             _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
+            _rockContext = agentRequestContext.RockContext;
+            _isContextReadOnly = true;
         }
 
         #endregion
@@ -164,7 +172,7 @@ namespace Rock.AI.Agent
         {
             if ( _errors.Count == 0 )
             {
-                throw new Exception( "Unexpected call to GetErrorResult with no errors." );
+                throw new InvalidOperationException( "Unexpected call to GetErrorResult with no errors." );
             }
 
             var result = RockToolResult.Error( _errors );
@@ -271,6 +279,77 @@ namespace Rock.AI.Agent
         /// <summary>
         /// Gets the items that make up the requested page for the specified
         /// query. Metadata describing the pagination details will be added to
+        /// the helper. This method should be used when querying entities that
+        /// need to be filtered based on the current person's permissions.
+        /// </summary>
+        /// <typeparam name="T">The type of object to be paginated.</typeparam>
+        /// <param name="queryable">The queryable that represents the data to be paginated from the database.</param>
+        /// <param name="cursor">The cursor that indicates the start of the page to retrieve or <c>null</c> to retrieve the first page.</param>
+        /// <param name="pageSize">The size of each page. If <c>null</c> then a default page size will be applied.</param>
+        /// <param name="enforceSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="ISecured"/>, then each item will be checked to see if the current person has View access before it is included in the results.</param>
+        /// <returns>A collection of items for the specified page.</returns>
+        public List<T> GetCursorPaginatedItems<T>( IQueryable<T> queryable, string cursor = null, int? pageSize = null, bool enforceSecurity = true )
+            where T : IEntity
+        {
+            pageSize = pageSize ?? DefaultPageSize;
+
+            var lastId = IdHasher.Instance.GetId( cursor ) ?? 0;
+            var pagedItems = new List<T>();
+
+            for ( int loops = 0; loops < MaxCursorFillAttempts && pagedItems.Count < pageSize.Value + 1; loops++ )
+            {
+                // Always load at least 5 at a time so we don't end up in a
+                // situation where we're only loading one item at a time.
+                var count = Math.Max( pageSize.Value - pagedItems.Count, 5 );
+
+                var items = queryable
+                    .Where( a => a.Id > lastId )
+                    // N+1 so we can compute hasMore later.
+                    .Take( count + 1 )
+                    .ToList();
+
+                foreach ( var item in items )
+                {
+                    if ( enforceSecurity && item is ISecured securedItem )
+                    {
+                        if ( !securedItem.IsAuthorized( Authorization.VIEW, _agentRequestContext.RockRequestContext.CurrentPerson ) )
+                        {
+                            continue;
+                        }
+                    }
+
+                    pagedItems.Add( item );
+                }
+
+                if ( items.Count == 0 )
+                {
+                    break;
+                }
+
+                lastId = items.Last().Id;
+            }
+
+            var hasMore = pagedItems.Count > pageSize;
+
+            // Drop the lookahead row if we have it.
+            while ( pagedItems.Count > pageSize )
+            {
+                pagedItems.RemoveAt( pagedItems.Count - 1 );
+            }
+
+            lastId = pagedItems.Count > 0 ? pagedItems.Last().Id : 0;
+
+            AddMetadata( "nextCursor", lastId.AsIdKey() );
+            AddMetadata( "pageSize", pageSize );
+            AddMetadata( "returnedItemCount", pagedItems.Count );
+            AddMetadata( "hasMore", hasMore );
+
+            return pagedItems;
+        }
+
+        /// <summary>
+        /// Gets the items that make up the requested page for the specified
+        /// query. Metadata describing the pagination details will be added to
         /// the helper.
         /// </summary>
         /// <typeparam name="T">The type of object to be paginated.</typeparam>
@@ -289,7 +368,26 @@ namespace Rock.AI.Agent
                 .Take( pageSize.Value + 1 )
                 .ToList();
 
-            UpdatePaginatedMetadataAndSanitize( pagedItems, pageNumber, pageSize.Value, sanitizeForSecurity );
+            var hasMore = pagedItems.Count > pageSize;
+
+            // Drop the lookahead row if we have it.
+            while ( pagedItems.Count > pageSize )
+            {
+                pagedItems.RemoveAt( pagedItems.Count - 1 );
+            }
+
+            AddMetadata( "pageNumber", pageNumber );
+            AddMetadata( "pageSize", pageSize );
+            AddMetadata( "returnedItemCount", pagedItems.Count );
+            AddMetadata( "hasMore", hasMore );
+
+            if ( sanitizeForSecurity == true && typeof( EntityResultBase ).IsAssignableFrom( typeof( T ) ) )
+            {
+                foreach ( EntityResultBase item in pagedItems.Cast<EntityResultBase>() )
+                {
+                    item.Sanitize( _agentRequestContext );
+                }
+            }
 
             return pagedItems;
         }
@@ -307,51 +405,7 @@ namespace Rock.AI.Agent
         /// <returns>A collection of items for the specified page.</returns>
         public List<T> GetPaginatedItems<T>( IEnumerable<T> items, int pageNumber, int? pageSize = null, bool sanitizeForSecurity = true )
         {
-            pageSize = pageSize ?? DefaultPageSize;
-
-            var pagedItems = items
-                .Skip( ( pageNumber - 1 ) * pageSize.Value )
-                // N+1 so we can compute hasMore later.
-                .Take( pageSize.Value + 1 )
-                .ToList();
-
-            UpdatePaginatedMetadataAndSanitize( pagedItems, pageNumber, pageSize.Value, sanitizeForSecurity );
-
-            return pagedItems;
-        }
-
-        /// <summary>
-        /// Adds the required metadata information describing this pagination
-        /// operation. This will also remove the lookahead item if present and
-        /// sanitize the items for security if requested.
-        /// </summary>
-        /// <typeparam name="T">The type of object to be paginated.</typeparam>
-        /// <param name="pagedItems">The items that have been paginated. This should have up to <paramref name="pageSize"/> + 1 items.</param>
-        /// <param name="pageNumber">The page number that was requested.</param>
-        /// <param name="pageSize">The size of each page. If <paramref name="pagedItems"/> contains more than <paramref name="pageSize"/> items, then the <c>hasMore</c> metadata key will be set to <c>true</c>.</param>
-        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.Sanitize(AgentRequestContext)"/>.</param>
-        private void UpdatePaginatedMetadataAndSanitize<T>( List<T> pagedItems, int pageNumber, int pageSize, bool sanitizeForSecurity )
-        {
-            var hasMore = pagedItems.Count > pageSize;
-
-            // Drop the lookahead row if we have it.
-            if ( hasMore )
-            {
-                pagedItems.RemoveAt( pagedItems.Count - 1 );
-            }
-
-            AddMetadata( "pageNumber", pageNumber );
-            AddMetadata( "pageSize", pageSize );
-            AddMetadata( "returnedItemCount", pagedItems.Count );
-            AddMetadata( "hasMore", hasMore );
-
-            if ( sanitizeForSecurity == true && typeof( EntityResultBase ).IsAssignableFrom( typeof( T ) ) )
-            {
-                foreach ( EntityResultBase item in pagedItems.Cast<EntityResultBase>() )
-                {
-                    item.Sanitize( _agentRequestContext );
-                }
-            }
+            return GetPaginatedItems( items.AsQueryable(), pageNumber, pageSize, sanitizeForSecurity );
         }
 
         #endregion
@@ -386,8 +440,7 @@ namespace Rock.AI.Agent
                 return null;
             }
 
-            var service = Rock.Reflection.GetServiceForEntityType( typeof( TEntity ), _rockContext ) as Service<TEntity>
-                ?? throw new Exception( $"Entity type ${typeof( TEntity ).FullName} does not have a support Service class." );
+            var service = ( Service<TEntity> ) Rock.Reflection.GetServiceForEntityType( typeof( TEntity ), _rockContext );
 
             var entity = service.Get( parameter, allowIntegerIdentifier: false );
 
@@ -407,6 +460,8 @@ namespace Rock.AI.Agent
                 if ( !securedEntity.IsAuthorized( Authorization.VIEW, _agentRequestContext.RockRequestContext.CurrentPerson ) )
                 {
                     _errors.Add( $"The {parameterExpression} is not valid." );
+
+                    return null;
                 }
             }
 
@@ -433,7 +488,7 @@ namespace Rock.AI.Agent
         /// <param name="checkSecurity"><c>true</c> if <see cref="Authorization.VIEW"/> access should be checked for the current person.</param>
         /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
         /// <returns>An instance of <typeparamref name="TEntity"/> or <c>null</c> if an error occurred or it was not found.</returns>
-        public TEntity GetOptionalEntity<TEntity>( string parameter, bool checkSecurity = false, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
+        public TEntity GetOptionalEntity<TEntity>( string parameter, bool checkSecurity = true, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
             where TEntity : class, IEntity, new()
         {
             return GetEntity<TEntity>( parameter, parameterExpression, isRequired: false, checkSecurity: checkSecurity );
@@ -452,7 +507,7 @@ namespace Rock.AI.Agent
         /// <param name="checkSecurity"><c>true</c> if <see cref="Authorization.VIEW"/> access should be checked for the current person.</param>
         /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
         /// <returns><c>true</c> if an entity was found and loaded into <paramref name="entity"/>; otherwise <c>false</c> if an error occurred or <paramref name="parameter"/> was not specified.</returns>
-        public bool TryGetOptionalEntity<TEntity>( string parameter, out TEntity entity, bool checkSecurity = false, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
+        public bool TryGetOptionalEntity<TEntity>( string parameter, out TEntity entity, bool checkSecurity = true, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
             where TEntity : class, IEntity, new()
         {
             entity = GetEntity<TEntity>( parameter, parameterExpression, isRequired: false, checkSecurity: checkSecurity );
@@ -472,7 +527,7 @@ namespace Rock.AI.Agent
         /// <param name="checkSecurity"><c>true</c> if <see cref="Authorization.VIEW"/> access should be checked for the current person.</param>
         /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
         /// <returns>An instance of <typeparamref name="TEntity"/> or <c>null</c> if an error occurred or it was not found.</returns>
-        public TEntity GetRequiredEntity<TEntity>( string parameter, bool checkSecurity = false, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
+        public TEntity GetRequiredEntity<TEntity>( string parameter, bool checkSecurity = true, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
             where TEntity : class, IEntity, new()
         {
             return GetEntity<TEntity>( parameter, parameterExpression, isRequired: true, checkSecurity: checkSecurity );
@@ -491,7 +546,7 @@ namespace Rock.AI.Agent
         /// <param name="checkSecurity"><c>true</c> if <see cref="Authorization.VIEW"/> access should be checked for the current person.</param>
         /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
         /// <returns><c>true</c> if an entity was found and loaded into <paramref name="entity"/>; otherwise <c>false</c> if an error occurred or <paramref name="parameter"/> was not specified.</returns>
-        public bool TryGetRequiredEntity<TEntity>( string parameter, out TEntity entity, bool checkSecurity = false, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
+        public bool TryGetRequiredEntity<TEntity>( string parameter, out TEntity entity, bool checkSecurity = true, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
             where TEntity : class, IEntity, new()
         {
             entity = GetEntity<TEntity>( parameter, parameterExpression, isRequired: true, checkSecurity: checkSecurity );
@@ -622,16 +677,21 @@ namespace Rock.AI.Agent
         /// <returns></returns>
         public ICollection<AttributeResult> GetAvailableAttributes( IHasAttributes entity, bool enforceSecurity = true )
         {
-            if ( entity == null || entity.Attributes == null )
+            if ( entity == null )
             {
                 return Array.Empty<AttributeResult>();
+            }
+
+            if ( entity.Attributes == null )
+            {
+                entity.LoadAttributes( _rockContext );
             }
 
             var isInternal = _agentRequestContext.AudienceType == AudienceType.Internal;
 
             return entity.Attributes.Values
                 .Where( a => isInternal || a.IsPublic )
-                .Where( a => !enforceSecurity || a.IsAuthorized( Authorization.EDIT, _agentRequestContext.RockRequestContext.CurrentPerson ) )
+                .Where( a => !enforceSecurity || a.IsAuthorized( Authorization.VIEW, _agentRequestContext.RockRequestContext.CurrentPerson ) )
                 .Select( a =>
                 {
                     var attr = new AttributeResult
@@ -646,10 +706,7 @@ namespace Rock.AI.Agent
                     {
                         var hints = fieldType.GetFieldHints( a.ConfigurationValues );
 
-                        if ( hints != null && hints.ValueFormat.IsNotNullOrWhiteSpace() )
-                        {
-                            attr.ValueFormat = hints.ValueFormat;
-                        }
+                        attr.ValueFormat = hints.ValueFormat.ToStringOrDefault( null );
                     }
 
                     return attr;
@@ -686,9 +743,7 @@ namespace Rock.AI.Agent
                 return;
             }
 
-            var propertyName = ExtractPropertyName( propertyExpression );
-            var property = instance.GetType().GetProperty( propertyName )
-                ?? throw new Exception( $"Property {propertyName} is not valid." );
+            var property = ExtractProperty( propertyExpression );
 
             try
             {
@@ -722,6 +777,16 @@ namespace Rock.AI.Agent
         public void UpdateProperty<TInstance, TProperty>( TInstance instance, Expression<Func<TInstance, TProperty?>> propertyExpression, SetOrClear<TProperty> parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
             where TProperty : struct
         {
+            if ( parameterExpression.IsNullOrWhiteSpace() )
+            {
+                throw new ArgumentNullException( nameof( parameterExpression ), "The parameterExpression must be provided. It will be provided automatically if using C# 10, otherwise use 'nameof()' to get the name of the passed parameter." );
+            }
+
+            if ( parameter == null )
+            {
+                return;
+            }
+
             UpdateProperty( instance, propertyExpression, new SetOrClear<TProperty?> { Value = parameter.Value, ClearValue = parameter.ClearValue }, parameterExpression );
         }
 
@@ -750,7 +815,7 @@ namespace Rock.AI.Agent
                 return;
             }
 
-            UpdateProperty( instance, propertyExpression, new SetOrClear<TProperty?> { Value = parameter }, parameterExpression );
+            UpdateProperty( instance, propertyExpression, new SetOrClear<TProperty> { Value = parameter.Value }, parameterExpression );
         }
 
         /// <summary>
@@ -777,9 +842,7 @@ namespace Rock.AI.Agent
                 return;
             }
 
-            var propertyName = ExtractPropertyName( propertyExpression );
-            var property = instance.GetType().GetProperty( propertyName )
-                ?? throw new Exception( $"Property {propertyName} is not valid." );
+            var property = ExtractProperty( propertyExpression );
 
             try
             {
@@ -814,9 +877,7 @@ namespace Rock.AI.Agent
                 return;
             }
 
-            var propertyName = ExtractPropertyName( propertyExpression );
-            var property = instance.GetType().GetProperty( propertyName )
-                ?? throw new Exception( $"Property {propertyName} is not valid." );
+            var property = ExtractProperty( propertyExpression );
 
             try
             {
@@ -853,21 +914,16 @@ namespace Rock.AI.Agent
                 throw new ArgumentNullException( nameof( parameterExpression ), "The parameterExpression must be provided. It will be provided automatically if using C# 10, otherwise use 'nameof()' to get the name of the passed parameter." );
             }
 
-            if ( parameter == null )
+            if ( parameter.IsNullOrWhiteSpace() )
             {
                 return;
             }
 
-            var propertyName = ExtractPropertyName( propertyExpression );
-            var property = instance.GetType().GetProperty( propertyName )
-                ?? throw new Exception( $"Property {propertyName} is not valid." );
+            var property = ExtractProperty( propertyExpression );
 
             try
             {
-                if ( parameter.IsNotNullOrWhiteSpace() )
-                {
-                    property.SetValue( instance, parameter );
-                }
+                property.SetValue( instance, parameter );
             }
             catch
             {
@@ -912,18 +968,13 @@ namespace Rock.AI.Agent
                 return;
             }
 
-            var navigationPropertyName = ExtractPropertyName( propertyExpression );
-            var navigationProperty = entity.GetType().GetProperty( navigationPropertyName );
-            var navigationIdProperty = entity.GetType().GetProperty( $"{navigationPropertyName}Id" );
-
-            if ( navigationProperty == null || navigationIdProperty == null )
-            {
-                throw new Exception( $"Navigation property {navigationPropertyName} is not valid." );
-            }
+            var navigationProperty = ExtractProperty( propertyExpression );
+            var navigationIdProperty = entity.GetType().GetProperty( $"{navigationProperty.Name}Id" )
+                ?? throw new Exception( $"Navigation property {navigationProperty.Name} is not valid." );
 
             if ( navigationIdProperty.PropertyType != typeof( int ) && navigationIdProperty.PropertyType != typeof( int? ) )
             {
-                throw new Exception( $"Navigation Id property {navigationPropertyName}Id is not valid." );
+                throw new Exception( $"Navigation Id property {navigationProperty.Name}Id is not valid." );
             }
 
             if ( parameter.ClearValue )
@@ -1034,18 +1085,13 @@ namespace Rock.AI.Agent
                 return;
             }
 
-            var navigationPropertyName = ExtractPropertyName( propertyExpression );
-            var navigationProperty = entity.GetType().GetProperty( navigationPropertyName );
-            var navigationIdProperty = entity.GetType().GetProperty( $"{navigationPropertyName}Id" );
-
-            if ( navigationProperty == null || navigationIdProperty == null )
-            {
-                throw new Exception( $"Defined value property {navigationPropertyName} is not valid." );
-            }
+            var navigationProperty = ExtractProperty( propertyExpression );
+            var navigationIdProperty =  entity.GetType().GetProperty( $"{navigationProperty.Name}Id" )
+                ?? throw new Exception( $"Defined value property {navigationProperty.Name} is not valid." );
 
             if ( navigationIdProperty.PropertyType != typeof( int ) && navigationIdProperty.PropertyType != typeof( int? ) )
             {
-                throw new Exception( $"Defined value Id property {navigationPropertyName}Id is not valid." );
+                throw new Exception( $"Defined value Id property {navigationProperty.Name}Id is not valid." );
             }
 
             if ( parameter.ClearValue )
@@ -1122,8 +1168,9 @@ namespace Rock.AI.Agent
         /// not valid then an exception will be thrown.
         /// </summary>
         /// <param name="propertyExpression">The property expression containing a property accessor.</param>
-        /// <returns>The name of the property accessed by the expression.</returns>
-        private static string ExtractPropertyName( LambdaExpression propertyExpression )
+        /// <returns>The reflected property accessed by the expression.</returns>
+        [ExcludeFromCodeCoverage]
+        private static PropertyInfo ExtractProperty( LambdaExpression propertyExpression )
         {
             // Extract the property name from the expression
             var memberExpression = propertyExpression.Body as MemberExpression;
@@ -1134,64 +1181,17 @@ namespace Rock.AI.Agent
                 memberExpression = unaryExpression.Operand as MemberExpression;
             }
 
-            if ( memberExpression == null )
+            if ( memberExpression?.Member is PropertyInfo property )
             {
-                throw new ArgumentException( "Expression must be a property accessor.", nameof( propertyExpression ) );
+                return property;
             }
 
-            return memberExpression.Member.Name;
+            throw new ArgumentException( "Expression must be a property accessor.", nameof( propertyExpression ) );
         }
 
         #endregion
 
         #region Query Methods
-
-        /// <summary>
-        /// Handles filtering a queryable by an IdKey parameter. If the parameter
-        /// is required then an error will be added if it is not provided. If the
-        /// value provided is not valid then an error will be added. Any errors
-        /// will cause the queryable to return no results.
-        /// </summary>
-        /// <typeparam name="TSource">The type of object being queried.</typeparam>
-        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
-        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
-        /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
-        /// <param name="isRequired">If <c>true</c> then an empty or missing <paramref name="parameter"/> value will be considered an error.</param>
-        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
-        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
-        private IQueryable<TSource> WhereIdKey<TSource>( IQueryable<TSource> queryable, Expression<Func<TSource, int>> propertyExpression, string parameter, bool isRequired, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
-        {
-            if ( parameterExpression.IsNullOrWhiteSpace() )
-            {
-                throw new ArgumentNullException( nameof( parameterExpression ), "The parameterExpression must be provided. It will be provided automatically if using C# 10, otherwise use 'nameof()' to get the name of the passed parameter." );
-            }
-
-            if ( parameter.IsNullOrWhiteSpace() )
-            {
-                if ( isRequired )
-                {
-                    AddError( $"{parameterExpression} is required." );
-                    return queryable.Where( a => false );
-                }
-
-                return queryable;
-            }
-
-            var id = IdHasher.Instance.GetId( parameter );
-
-            if ( !id.HasValue )
-            {
-                AddError( $"The value of {parameterExpression} is not valid." );
-
-                return queryable.Where( a => false );
-            }
-
-            var valueExpression = Expression.Constant( id.Value, typeof( int ) );
-            var body = Expression.Equal( propertyExpression.Body, valueExpression );
-            var lambda = Expression.Lambda<Func<TSource, bool>>( body, propertyExpression.Parameters[0] );
-
-            return queryable.Where( lambda );
-        }
 
         /// <summary>
         /// Handles filtering a queryable by an IdKey parameter. If the parameter
@@ -1233,47 +1233,17 @@ namespace Rock.AI.Agent
                 return queryable.Where( a => false );
             }
 
-            var valueExpression = Expression.Constant( id.Value, typeof( int ) );
-            var body = Expression.Equal( propertyExpression.Body, valueExpression );
-            var lambda = Expression.Lambda<Func<TSource, bool>>( body, propertyExpression.Parameters[0] );
+            var property = ExtractProperty( propertyExpression );
+            var memberExpression = propertyExpression.Body;
 
-            return queryable.Where( lambda );
-        }
-
-        /// <summary>
-        /// Handles filtering a queryable by a parameter. If the parameter
-        /// is required then an error will be added if it is not provided. Any
-        /// errors will cause the queryable to return no results.
-        /// </summary>
-        /// <typeparam name="TSource">The type of object being queried.</typeparam>
-        /// <typeparam name="TProperty">The type of property being queried.</typeparam>
-        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
-        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
-        /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
-        /// <param name="isRequired">If <c>true</c> then an empty or missing <paramref name="parameter"/> value will be considered an error.</param>
-        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
-        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
-        private IQueryable<TSource> WhereProperty<TSource, TProperty>( IQueryable<TSource> queryable, Expression<Func<TSource, TProperty>> propertyExpression, TProperty? parameter, bool isRequired, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
-            where TProperty : struct
-        {
-            if ( parameterExpression.IsNullOrWhiteSpace() )
+            // If the property is a value type, it will be boxed, so handle UnaryExpression
+            if ( memberExpression is UnaryExpression unaryExpression )
             {
-                throw new ArgumentNullException( nameof( parameterExpression ), "The parameterExpression must be provided. It will be provided automatically if using C# 10, otherwise use 'nameof()' to get the name of the passed parameter." );
+                memberExpression = unaryExpression.Operand;
             }
 
-            if ( !parameter.HasValue )
-            {
-                if ( isRequired )
-                {
-                    AddError( $"{parameterExpression} is required." );
-                    return queryable.Where( a => false );
-                }
-
-                return queryable;
-            }
-
-            var valueExpression = Expression.Constant( parameter.Value, typeof( TProperty ) );
-            var body = Expression.Equal( propertyExpression.Body, valueExpression );
+            var valueExpression = Expression.Constant( id.Value, property.PropertyType );
+            var body = Expression.Equal( memberExpression, valueExpression );
             var lambda = Expression.Lambda<Func<TSource, bool>>( body, propertyExpression.Parameters[0] );
 
             return queryable.Where( lambda );
@@ -1311,8 +1281,17 @@ namespace Rock.AI.Agent
                 return queryable;
             }
 
-            var valueExpression = Expression.Constant( parameter.Value, typeof( TProperty ) );
-            var body = Expression.Equal( propertyExpression.Body, valueExpression );
+            var property = ExtractProperty( propertyExpression );
+            var memberExpression = propertyExpression.Body;
+
+            // If the property is a value type, it will be boxed, so handle UnaryExpression
+            if ( memberExpression is UnaryExpression unaryExpression )
+            {
+                memberExpression = unaryExpression.Operand;
+            }
+
+            var valueExpression = Expression.Constant( parameter.Value, property.PropertyType );
+            var body = Expression.Equal( memberExpression, valueExpression );
             var lambda = Expression.Lambda<Func<TSource, bool>>( body, propertyExpression.Parameters[0] );
 
             return queryable.Where( lambda );
@@ -1367,23 +1346,6 @@ namespace Rock.AI.Agent
         /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
         /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
         /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
-        public IQueryable<TSource> WhereOptionalIdKey<TSource>( IQueryable<TSource> queryable, Expression<Func<TSource, int>> propertyExpression, string parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
-        {
-            return WhereIdKey( queryable, propertyExpression, parameter, isRequired: false, parameterExpression: parameterExpression );
-        }
-
-        /// <summary>
-        /// Handles filtering a queryable by an IdKey parameter. If the parameter
-        /// is blank then no filtering will be performed. If the value provided
-        /// is not valid then an error will be added. Any errors will cause the
-        /// queryable to return no results.
-        /// </summary>
-        /// <typeparam name="TSource">The type of object being queried.</typeparam>
-        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
-        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
-        /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
-        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
-        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
         public IQueryable<TSource> WhereOptionalIdKey<TSource>( IQueryable<TSource> queryable, Expression<Func<TSource, int?>> propertyExpression, string parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
         {
             return WhereIdKey( queryable, propertyExpression, parameter, isRequired: false, parameterExpression: parameterExpression );
@@ -1401,44 +1363,9 @@ namespace Rock.AI.Agent
         /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
         /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
         /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
-        public IQueryable<TSource> WhereRequiredIdKey<TSource>( IQueryable<TSource> queryable, Expression<Func<TSource, int>> propertyExpression, string parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
-        {
-            return WhereIdKey( queryable, propertyExpression, parameter, isRequired: true, parameterExpression: parameterExpression );
-        }
-
-        /// <summary>
-        /// Handles filtering a queryable by an IdKey parameter. If the parameter
-        /// is blank then an error will be added. If the value provided is not
-        /// valid then an error will be added. Any errors will cause the
-        /// queryable to return no results.
-        /// </summary>
-        /// <typeparam name="TSource">The type of object being queried.</typeparam>
-        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
-        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
-        /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
-        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
-        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
         public IQueryable<TSource> WhereRequiredIdKey<TSource>( IQueryable<TSource> queryable, Expression<Func<TSource, int?>> propertyExpression, string parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
         {
             return WhereIdKey( queryable, propertyExpression, parameter, isRequired: true, parameterExpression: parameterExpression );
-        }
-
-        /// <summary>
-        /// Handles filtering a queryable by a parameter. If the parameter
-        /// is <c>null</c> then no filtering will be performed. Any errors will
-        /// cause the queryable to return no results.
-        /// </summary>
-        /// <typeparam name="TSource">The type of object being queried.</typeparam>
-        /// <typeparam name="TProperty">The type of property being queried.</typeparam>
-        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
-        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
-        /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
-        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
-        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
-        public IQueryable<TSource> WhereOptionalProperty<TSource, TProperty>( IQueryable<TSource> queryable, Expression<Func<TSource, TProperty>> propertyExpression, TProperty? parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
-            where TProperty : struct
-        {
-            return WhereProperty( queryable, propertyExpression, parameter, isRequired: false, parameterExpression: parameterExpression );
         }
 
         /// <summary>
@@ -1473,24 +1400,6 @@ namespace Rock.AI.Agent
         public IQueryable<TSource> WhereOptionalProperty<TSource>( IQueryable<TSource> queryable, Expression<Func<TSource, string>> propertyExpression, string parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
         {
             return WhereProperty( queryable, propertyExpression, parameter, isRequired: false, parameterExpression: parameterExpression );
-        }
-
-        /// <summary>
-        /// Handles filtering a queryable by a parameter. If the parameter
-        /// is <c>null</c> then an error will be added. Any errors will
-        /// cause the queryable to return no results.
-        /// </summary>
-        /// <typeparam name="TSource">The type of object being queried.</typeparam>
-        /// <typeparam name="TProperty">The type of property being queried.</typeparam>
-        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
-        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
-        /// <param name="parameter">The parameter that contains the value to be filtered against.</param>
-        /// <param name="parameterExpression">The expression that describes what was passed to <paramref name="parameter"/>, this is used when generating error messages.</param>
-        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
-        public IQueryable<TSource> WhereRequiredProperty<TSource, TProperty>( IQueryable<TSource> queryable, Expression<Func<TSource, TProperty>> propertyExpression, TProperty? parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
-            where TProperty : struct
-        {
-            return WhereProperty( queryable, propertyExpression, parameter, isRequired: true, parameterExpression: parameterExpression );
         }
 
         /// <summary>
