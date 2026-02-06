@@ -310,7 +310,7 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <summary>
         /// The compiled function representing <see cref="_nameOnlyPersonAliasExpression"/>.
         /// </summary>
-        private static readonly Lazy<Func<Person, PersonResult>> _nameOnlyPersonAliasFunc = new Lazy<Func<Person, PersonResult>>( () => _nameOnlyExpression.Compile() );
+        private static readonly Lazy<Func<PersonAlias, PersonResult>> _nameOnlyPersonAliasFunc = new Lazy<Func<PersonAlias, PersonResult>>( () => _nameOnlyPersonAliasExpression.Compile() );
 
         /// <summary>
         /// The expression for constructing a <see cref="PersonResult"/> with
@@ -395,7 +395,7 @@ namespace Rock.AI.Agent.Classes.Entity
         [Expandable( nameof( NameOnlyPersonAliasExpression ) )]
         public static PersonResult NameOnly( PersonAlias personAlias )
         {
-            return _nameOnlyPersonAliasFunc.Value( personAlias.Person );
+            return _nameOnlyPersonAliasFunc.Value( personAlias );
         }
 
         /// <summary>

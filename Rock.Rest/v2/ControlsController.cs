@@ -4103,61 +4103,6 @@ namespace Rock.Rest.v2
 
         #endregion
 
-        #region Defined Type Picker
-
-        /// <summary>
-        /// Gets the defined types that can be displayed in the defined type picker.
-        /// </summary>
-        /// <param name="options">The options that describe which items to load.</param>
-        /// <returns>A List of <see cref="ListItemBag"/> objects that represent defined types.</returns>
-        [HttpPost]
-        [Route( "DefinedTypePickerGetDefinedTypes" )]
-        [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
-        [Rock.SystemGuid.RestActionGuid( "50319D0D-7399-43C7-8239-495E11CA958A" )]
-        public IActionResult DefinedTypePickerGetDefinedTypes( [FromBody] DefinedTypePickerGetDefinedTypesOptionsBag options )
-        {
-            var definedTypes = DefinedTypeCache.All()
-                .Where( dt => dt.IsAuthorized( Rock.Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
-                .ToList();
-
-            if ( options.DefinedTypes != null && options.DefinedTypes.Count > 0 )
-            {
-                definedTypes = definedTypes.Where( dt => options.DefinedTypes.Contains( dt.Guid ) ).ToList();
-            }
-
-            if ( options.ExcludeDefinedTypes != null && options.ExcludeDefinedTypes.Any() )
-            {
-                definedTypes = definedTypes.Where( dt => !options.ExcludeDefinedTypes.Contains( dt.Guid ) ).ToList();
-            }
-
-            if ( options.IsSortedByName )
-            {
-                definedTypes = definedTypes.OrderBy( dt => dt.Name ).ToList();
-            }
-            else
-            {
-                // Matches the ordering of the DefinedTypeList block
-                definedTypes = definedTypes
-                    .OrderBy( dt => dt.Category?.Name ?? string.Empty )
-                    .ThenBy( dt => dt.Name )
-                    .ToList();
-            }
-
-            var results = definedTypes
-                .Select( dt => new ListItemBag
-                {
-                    Value = dt.Guid.ToString(),
-                    Text = dt.Name
-                } )
-                .ToList();
-
-            return Ok( results );
-        }
-
-        #endregion
-
         #region Defined Value Picker
 
         /// <summary>

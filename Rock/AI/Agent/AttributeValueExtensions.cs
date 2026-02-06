@@ -93,6 +93,11 @@ namespace Rock.AI.Agent
         [Expandable( nameof( GetAttributeValueResultsExpression ) )]
         public static IEnumerable<AttributeValueResult> GetAttributeValueResults( this IEnumerable<QueryableAttributeValue> attributeValues, AgentRequestContext agentRequestContext )
         {
+            if ( attributeValues == null )
+            {
+                return Enumerable.Empty<AttributeValueResult>();
+            }
+
             return _getAttributeValueResultsFunc.Value( attributeValues, agentRequestContext );
         }
 
@@ -108,7 +113,7 @@ namespace Rock.AI.Agent
         {
             if ( entity == null )
             {
-                return Array.Empty<AttributeValueResult>();
+                return Enumerable.Empty<AttributeValueResult>();
             }
 
             if ( entity.Attributes == null )
@@ -153,6 +158,11 @@ namespace Rock.AI.Agent
         [Expandable( nameof( GetGridAttributeValueResultsExpression ) )]
         public static IEnumerable<AttributeValueResult> GetGridAttributeValueResults( this IEnumerable<QueryableAttributeValue> attributeValues, AgentRequestContext agentRequestContext )
         {
+            if ( attributeValues == null )
+            {
+                return Enumerable.Empty<AttributeValueResult>();
+            }
+
             return _getGridAttributeValueResultsFunc.Value( attributeValues, agentRequestContext );
         }
 
@@ -168,7 +178,7 @@ namespace Rock.AI.Agent
         {
             if ( entity == null )
             {
-                return Array.Empty<AttributeValueResult>();
+                return Enumerable.Empty<AttributeValueResult>();
             }
 
             if ( entity.Attributes == null )

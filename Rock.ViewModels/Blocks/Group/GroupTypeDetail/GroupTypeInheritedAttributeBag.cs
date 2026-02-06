@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,51 +14,45 @@
 // limitations under the License.
 // </copyright>
 //
-
 using System;
 
-namespace Rock.Model
+namespace Rock.ViewModels.Blocks.Group.GroupTypeDetail
 {
     /// <summary>
-    /// Represents and indicates the type of location picker to use when setting a location for a group and/or when searching for group(s)
+    /// Represents a group attribute that is inherited from a parent (or grandparent) group type.
     /// </summary>
-    [Flags]
-    public enum GroupLocationPickerMode
+    public class GroupTypeInheritedAttributeBag
     {
         /// <summary>
-        /// The none
+        /// Gets or sets the name.
         /// </summary>
-        None = 0,
+        public string Name { get; set; }
 
         /// <summary>
-        /// An Address
+        /// Gets or sets the description.
         /// </summary>
-        Address = 1,
+        public string Description { get; set; }
 
         /// <summary>
-        /// A Named location (Building, Room)
+        /// Gets or sets the key.
         /// </summary>
-        Named = 2,
+        public string Key { get; set; }
 
         /// <summary>
-        /// A Geographic point (Latitude/Longitude)
+        /// Gets or sets the unique identifier.
         /// </summary>
-        Point = 4,
+        public Guid Guid { get; set; }
 
         /// <summary>
-        /// A Geographic Polygon
+        /// Gets or sets the name of the group type this attribute was inherited from.
         /// </summary>
-        Polygon = 8,
+        public string InheritedFromGroupTypeName { get; set; }
 
         /// <summary>
-        /// A Group Member's address
+        /// Gets or sets the URL to the group type this attribute was inherited from.
         /// </summary>
-        GroupMember = 16,
-
-        /// <summary>
-        /// All
-        /// </summary>
-        All = Address | Named | Point | Polygon | GroupMember
-
+        public string InheritedFromGroupTypeUrl { get; set; }
     }
 }
+
+

@@ -372,7 +372,6 @@ namespace RockWeb.Blocks.Cms
             ContentChannelItem contentItem = GetContentItem( rockContext );
 
             if ( contentItem != null &&
-                IsUserAuthorized( Authorization.EDIT ) &&
                 contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 StructuredContentHelper structuredContentHelper = null;
@@ -570,11 +569,8 @@ namespace RockWeb.Blocks.Cms
 
             if ( contentItem != null )
             {
-                var blockAllows = IsUserAuthorized( Authorization.EDIT );
-                var channelAllows = contentItem.ContentChannel != null && contentItem.ContentChannel.IsAuthorized( Authorization.EDIT, CurrentPerson );
-                var itemAllows = contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson );
-
-                if ( !blockAllows || !channelAllows || !itemAllows )
+                var authorized = contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                if ( !authorized )
                 {
                     mdGridWarning.Show( "You are not authorized to delete this item.", ModalAlertType.Warning );
                     return;
@@ -1051,7 +1047,6 @@ namespace RockWeb.Blocks.Cms
             if ( contentItem != null &&
                 contentItem.ContentChannelType != null &&
                 contentItem.ContentChannel != null &&
-                IsUserAuthorized( Authorization.EDIT ) &&
                 contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 hfIsDirty.Value = "false";

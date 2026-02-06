@@ -15,41 +15,51 @@
 // </copyright>
 //
 
+using System;
+
 namespace Rock.Model
 {
     /// <summary>
-    /// Type of workflow trigger
+    /// Represents and indicates the type of location picker to use when setting a location for a group and/or when searching for group(s)
     /// </summary>
-    public enum GroupMemberWorkflowTriggerType
+    [Flags]
+    [Enums.EnumDomain( "Group" )]
+    public enum GroupLocationPickerMode
     {
         /// <summary>
-        /// AddedToGroup
+        /// The none
         /// </summary>
-        MemberAddedToGroup = 0,
+        None = 0,
 
         /// <summary>
-        /// RemovedFromGroup
+        /// An Address
         /// </summary>
-        MemberRemovedFromGroup = 1,
+        Address = 1,
 
         /// <summary>
-        /// StatusChanged
+        /// A Named location (Building, Room)
         /// </summary>
-        MemberStatusChanged = 2,
+        Named = 2,
 
         /// <summary>
-        /// RoleChanged
+        /// A Geographic point (Latitude/Longitude)
         /// </summary>
-        MemberRoleChanged = 3,
+        Point = 4,
 
         /// <summary>
-        /// Attended
+        /// A Geographic Polygon
         /// </summary>
-        MemberAttendedGroup = 4,
+        Polygon = 8,
 
         /// <summary>
-        /// Placed Elsewhere
+        /// A Group Member's address
         /// </summary>
-        MemberPlacedElsewhere = 5
+        GroupMember = 16,
+
+        /// <summary>
+        /// All
+        /// </summary>
+        All = Address | Named | Point | Polygon | GroupMember
+
     }
 }

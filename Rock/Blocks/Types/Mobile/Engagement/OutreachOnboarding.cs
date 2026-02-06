@@ -15,8 +15,10 @@
 // </copyright>
 
 using System.ComponentModel;
+using System.Data.Entity;
 
 using Rock.Attribute;
+using System.Linq;
 using Rock.Common.Mobile.Blocks.Engagement.OutreachOnboarding.cs;
 using Rock.Common.Mobile.ViewModel;
 using Rock.Enums.Core;
@@ -75,6 +77,23 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         #endregion
 
         #region Block Actions
+
+        /// <summary>
+        /// Gets a value indicating whether the current person has at least one contact.
+        /// </summary>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult GetHasAtOneContact()
+        {
+            var currPerson = GetCurrentPerson();
+
+            ContactService contactService = new ContactService( RockContext );
+            var contactCount = contactService.Queryable()
+                .Where( c => c.OwnerPersonAliasId == currPerson.PrimaryAliasId )
+                .Count();
+
+            return ActionOk( contactCount > 0 );
+        }
 
         /// <summary>
         /// Finishes the onboarding.

@@ -23,14 +23,14 @@
 
 import { Guid } from "@Obsidian/Types";
 
-/** The options for the Defined Type Picker's "get defined types" endpoint. */
-export type DefinedTypePickerGetDefinedTypesOptionsBag = {
-    /** List of Defined Type GUIDs to include in the picker. If null or empty, include all defined types. */
-    definedTypes?: Guid[] | null;
+/** Represents a schedule exclusion date range for a group type. */
+export type GroupTypeGroupScheduleExclusionBag = {
+    /** Gets or sets the end date of the exclusion. */
+    endDate?: string | null;
 
-    /** List of Defined Type GUIDs to exclude from the picker. */
-    excludeDefinedTypes?: Guid[] | null;
+    /** Gets or sets the unique identifier of the exclusion. */
+    guid: Guid;
 
-    /** Whether to sort by name of the defined type. Otherwise sort by order then name. */
-    isSortedByName: boolean;
+    /** Gets or sets the start date of the exclusion. */
+    startDate?: string | null;
 };

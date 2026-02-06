@@ -1,6 +1,7 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockFormField v-model="internalValue"
+                   v-bind="standardFieldProps"
                    formGroupClasses="rock-color-picker"
                    name="colorpicker">
         <template #default="{ uniqueId, field }">
@@ -27,6 +28,7 @@
 <script setup lang="ts">
     import { onMounted, PropType, ref, watch } from "vue";
     import RockFormField from "./rockFormField.obs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { DefinedValuePickerGetDefinedValuesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerGetDefinedValuesOptionsBag";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
@@ -49,12 +51,15 @@
         },
         modelModifiers: {
             type: Object as PropType<{ hex?: boolean } | undefined>
-        }
+        },
+        ...standardRockFormFieldProps
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: string): void;
     }>();
+
+    const standardFieldProps = useStandardRockFormFieldProps(props);
 
     const internalValue = ref(getModifiedValue(props.modelValue));
     const colorPicker = ref<HTMLElement>();

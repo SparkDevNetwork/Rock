@@ -229,7 +229,7 @@ namespace RockWeb.Blocks.Cms
 
                 lIcon.Text = string.Format( "<i class='{0}'></i>", cssIcon );
 
-                bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT ) && contentChannel != null && contentChannel.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                bool canAddEditDelete = contentChannel != null && contentChannel.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
                 gfFilter.ApplyFilterClick += gfFilter_ApplyFilterClick;
                 gfFilter.DisplayFilterValue += gfFilter_DisplayFilterValue;
@@ -388,10 +388,8 @@ namespace RockWeb.Blocks.Cms
 
             if ( contentItem != null )
             {
-                var blockAllows = IsUserAuthorized( Authorization.EDIT );
-                var channelAllows = ContentChannelCache.Get( contentItem.ContentChannelId )?.IsAuthorized( Authorization.EDIT, CurrentPerson ) == true;
-                var itemAllows = contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson );
-                if ( !blockAllows || !channelAllows || !itemAllows )
+                var authorized = contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                if ( !authorized )
                 {
                     mdGridWarning.Show( "You are not authorized to delete this item.", ModalAlertType.Alert );
                     return;

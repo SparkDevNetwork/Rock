@@ -133,7 +133,6 @@ import FullscreenGallery from "./ControlGallery/fullscreenGallery.partial.obs";
 import PanelGallery from "./ControlGallery/panelGallery.partial.obs";
 import FileUploaderGallery from "./ControlGallery/fileUploaderGallery.partial.obs";
 import SlidingDateRangePickerGallery from "./ControlGallery/slidingDateRangePickerGallery.partial.obs";
-import DefinedTypePickerGallery from "./ControlGallery/definedTypePickerGallery.partial.obs";
 import DefinedValuePickerGallery from "./ControlGallery/definedValuePickerGallery.partial.obs";
 import EntityTypePickerGallery from "./ControlGallery/entityTypePickerGallery.partial.obs";
 import AchievementTypePickerGallery from "./ControlGallery/achievementTypePickerGallery.partial.obs";
@@ -307,7 +306,6 @@ const controlGalleryComponents: Record<string, Component> = [
     FileUploaderGallery,
     ImageUploaderGallery,
     SlidingDateRangePickerGallery,
-    DefinedTypePickerGallery,
     DefinedValuePickerGallery,
     CampusPickerGallery,
     EntityTypePickerGallery,

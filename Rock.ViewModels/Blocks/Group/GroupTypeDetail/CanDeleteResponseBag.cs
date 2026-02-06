@@ -15,31 +15,23 @@
 // </copyright>
 //
 
-using System;
-using System.Collections.Generic;
-
-namespace Rock.ViewModels.Rest.Controls
+namespace Rock.ViewModels.Blocks.Group.GroupTypeDetail
 {
     /// <summary>
-    /// The options for the Defined Type Picker's "get defined types" endpoint.
+    /// Response bag used to indicate whether a specific entity can be deleted,
+    /// along with an optional explanation when deletion is not allowed.
     /// </summary>
-    public class DefinedTypePickerGetDefinedTypesOptionsBag
+    public class CanDeleteResponseBag
     {
         /// <summary>
-        /// List of Defined Type GUIDs to include in the picker. If null or empty, include all defined types.
+        /// Gets or sets a value indicating whether the entity can be deleted.
         /// </summary>
-        public List<Guid> DefinedTypes { get; set; }
+        public bool CanDelete { get; set; }
 
         /// <summary>
-        /// List of Defined Type GUIDs to exclude from the picker.
+        /// Gets or sets the error message explaining why the entity cannot be deleted.
+        /// This value should be <c>null</c> or empty when <see cref="CanDelete"/> is <c>true</c>.
         /// </summary>
-        public List<Guid> ExcludeDefinedTypes { get; set; }
-
-        /// <summary>
-        /// Whether to sort by name of the defined type. Otherwise sort by order then name.
-        /// </summary>
-        public bool IsSortedByName { get; set; }
+        public string ErrorMessage { get; set; }
     }
 }
-
-

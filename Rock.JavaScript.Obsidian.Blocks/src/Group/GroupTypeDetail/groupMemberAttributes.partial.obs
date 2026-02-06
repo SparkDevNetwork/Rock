@@ -1,0 +1,264 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentStack v-if="inheritedGridData.rows.length > 0"
+                  title="Inherited Attributes"
+                  headerLocation="top"
+                  class="remove-gap"
+                  help="These Group Member Attributes are inherited from the selected group type defined in the 'Inherit Group Type Attributes From' setting, including all attributes within the group type's inheritance hierarchy.">
+        <Grid :data="inheritedGridData" keyField="guid" itemTerm="Inherited Attribute" liveUpdates light
+              :isFooterHidden="true">
+            <TextColumn name="name" field="name" width="15%" />
+            <TextColumn name="description" field="description" width="60%" />
+            <TextColumn name="inheritedFrom" field="inheritedFrom" width="25%">
+                <template #format="{ row }">
+                    <template v-if="row.inheritedFromGroupTypeUrl">
+                        <span>
+                            (Inherited from
+                            <a :href="row.inheritedFromGroupTypeUrl" target="_blank" class="fw-bold">
+                                {{ row.inheritedFromGroupTypeName }}
+                            </a>)
+                        </span>
+                    </template>
+                    <span v-else class="fw-bold">
+                        (Inherited from {{ row.inheritedFromGroupTypeName }})
+                    </span>
+                </template>
+            </TextColumn>
+        </Grid>
+    </ContentStack>
+
+    <ContentStack title="Configure Group Member Attributes"
+                  description="Configure the Group Member Attributes that should be available for members of Groups of this Group Type."
+                  headerLocation="top">
+        <Grid :data="gridData" keyField="guid" itemTerm="Group Member Attribute" liveUpdates light @addItem="onAdd">
+            <ReorderColumn @orderChanged="onOrderChanged" />
+            <TextColumn name="name" field="name" title="Attribute" />
+            <TextColumn name="description" field="description" title="Description" />
+            <BooleanColumn name="isRequired" field="isRequired" title="Required" />
+            <EditColumn @click="onEdit" />
+            <DeleteColumn @click="onDelete" disableConfirmation />
+        </Grid>
+    </ContentStack>
+
+    <Modal v-model="isModalVisible" title="Group Member Attributes" saveText="Save" cancelText="Cancel" :onSave="onSave">
+        <AttributeEditor v-model="theAttribute" :reservedKeyNames="reservedKeyNames" />
+    </Modal>
+</template>
+
+<style scoped>
+.remove-gap {
+    gap: var(--spacing-small) !important;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import Grid, { BooleanColumn, DeleteColumn, EditColumn, ReorderColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
+    import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
+    import { GroupTypeInheritedAttributeBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeDetail/groupTypeInheritedAttributeBag";
+    import { createNewAttribute } from "./utility.partial";
+
+    const props = defineProps({
+        /**
+         * The editable list of group member attributes configured for this group type.
+         */
+        groupMemberAttributes: {
+            type: Object as PropType<PublicEditableAttributeBag[]>,
+            required: true
+        },
+
+        /**
+         * The inherited (read-only) attributes coming from the selected inherited group type chain.
+         */
+        inheritedGroupMemberAttributes: {
+            type: Object as PropType<GroupTypeInheritedAttributeBag[]>,
+            required: true
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:groupMemberAttributes", value: PublicEditableAttributeBag[]): void
+    }>();
+
+    // #region Values
+
+    const reservedKeyNames = ref<string[]>([]);
+    const isModalVisible = ref(false);
+    const theAttribute = ref<PublicEditableAttributeBag | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const attributes = computed({
+        get(): PublicEditableAttributeBag[] {
+            return props.groupMemberAttributes ?? [];
+        },
+        set(value: PublicEditableAttributeBag[]) {
+            emit("update:groupMemberAttributes", value);
+        }
+    });
+
+    const gridData = computed(() => {
+        const rows = (attributes.value ?? []).map(a => ({
+            guid: a.guid,
+            name: a.name,
+            description: a.description,
+            isRequired: a.isRequired
+        }));
+
+        return { rows };
+    });
+
+    const inheritedGridData = computed(() => {
+        const rows = (props.inheritedGroupMemberAttributes ?? []).map(a => ({
+            guid: a.guid,
+            name: a.name,
+            description: a.description,
+            inheritedFromGroupTypeName: a.inheritedFromGroupTypeName ?? "",
+            inheritedFromGroupTypeUrl: a.inheritedFromGroupTypeUrl ?? ""
+        }));
+
+        return { rows };
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when the Add Attribute button is clicked.
+     */
+    function onAdd(): void {
+        theAttribute.value = createNewAttribute();
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Called when the Edit button for an attribute row is clicked.
+     *
+     * @param guid The unique identifier of the attribute to edit.
+     */
+    function onEdit(guid: string): void {
+        const selected = (attributes.value ?? []).find(x => x.guid === guid);
+
+        if (selected) {
+            theAttribute.value = {
+                ...selected,
+                configurationValues: { ...(selected.configurationValues ?? {}) },
+                categories: (selected.categories ?? []).map(c => ({ ...c }))
+            };
+            isModalVisible.value = true;
+        }
+        else {
+            onAdd();
+        }
+    }
+
+    /**
+     * Called when the Delete button for an attribute row is clicked.
+     *
+     * @param guid The unique identifier of the attribute to delete.
+     */
+    function onDelete(guid: string): void {
+        isModalVisible.value = false;
+        attributes.value = (attributes.value ?? []).filter(a => a.guid !== guid);
+    }
+
+    /**
+     * Called when the attribute modal Save button is clicked.
+     */
+    function onSave(): void {
+        if (!theAttribute.value) {
+            return;
+        }
+
+        const currentAttributes = attributes.value ?? [];
+        const idx = currentAttributes.findIndex(a => a.guid === theAttribute.value?.guid);
+
+        let updatedAttributes: PublicEditableAttributeBag[];
+
+        if (idx !== -1) {
+            updatedAttributes = [...currentAttributes];
+            updatedAttributes.splice(idx, 1, { ...theAttribute.value });
+        }
+        else {
+            updatedAttributes = [...currentAttributes, { ...theAttribute.value }];
+        }
+
+        attributes.value = updatedAttributes;
+        isModalVisible.value = false;
+    }
+
+    /**
+     * Called when an attribute row is reordered in the grid.
+     *
+     * @param item The row being moved.
+     * @param beforeItem The row the moved item was placed before, or null if moved to end.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const itemGuid = item["guid"] as string;
+        const beforeItemGuid = beforeItem?.["guid"] as string | null;
+
+        const currentItems = [...(attributes.value ?? [])];
+        const idx = currentItems.findIndex(i => i.guid === itemGuid);
+
+        if (idx < 0) {
+            return false;
+        }
+
+        const itemToMove = currentItems.splice(idx, 1)[0];
+
+        if (beforeItemGuid) {
+            const beforeIndex = currentItems.findIndex(i => i.guid === beforeItemGuid);
+            if (beforeIndex < 0) {
+                currentItems.push(itemToMove);
+            }
+            else {
+                currentItems.splice(beforeIndex, 0, itemToMove);
+            }
+        }
+        else {
+            currentItems.push(itemToMove);
+        }
+
+        attributes.value = currentItems;
+        return true;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(isModalVisible, () => {
+        if (isModalVisible.value) {
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== theAttribute.value?.key);
+        }
+        else {
+            if (theAttribute.value?.key && !reservedKeyNames.value.some(k => k === theAttribute.value?.key)) {
+                reservedKeyNames.value.push(theAttribute.value.key);
+            }
+        }
+    });
+
+    watch([() => props.groupMemberAttributes, () => props.inheritedGroupMemberAttributes], () => {
+        const inheritedKeys = (props.inheritedGroupMemberAttributes ?? [])
+            .map(a => a.key)
+            .filter((k): k is string => !!k);
+
+        const ownKeys = (props.groupMemberAttributes ?? [])
+            .map(a => a.key)
+            .filter((k): k is string => !!k);
+
+        reservedKeyNames.value = [...inheritedKeys, ...ownKeys];
+    }, { immediate: true, deep: true });
+
+    // #endregion Watchers
+</script>

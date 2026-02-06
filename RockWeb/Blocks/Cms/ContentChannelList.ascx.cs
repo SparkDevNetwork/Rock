@@ -264,7 +264,8 @@ namespace RockWeb.Blocks.Cms
 
             if ( contentChannel != null )
             {
-                if ( !IsUserAuthorized( Authorization.EDIT ) || !contentChannel.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                var authorized = contentChannel.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                if ( !authorized )
                 {
                     mdGridWarning.Show( "You are not authorized to delete this Content Channel.", ModalAlertType.Warning );
                     return;

@@ -1201,6 +1201,15 @@ namespace Rock.Model
         public virtual SystemCommunication ScheduleReminderSystemCommunication { get; set; }
 
         /// <summary>
+        /// Gets or sets the system communication to use for sending an RSVP reminder.
+        /// </summary>
+        /// <value>
+        /// The RSVP reminder system communication.
+        /// </value>
+        [DataMember]
+        public virtual SystemCommunication RSVPReminderSystemCommunication { get; set; }
+
+        /// <summary>
         /// Gets or sets the WorkflowType to execute when a person indicates they won't be able to attend at their scheduled time
         /// </summary>
         /// <value>
@@ -1333,6 +1342,7 @@ namespace Rock.Model
             this.HasOptional( p => p.InheritedGroupType ).WithMany().HasForeignKey( p => p.InheritedGroupTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ScheduleConfirmationSystemCommunication ).WithMany().HasForeignKey( p => p.ScheduleConfirmationSystemCommunicationId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ScheduleReminderSystemCommunication ).WithMany().HasForeignKey( p => p.ScheduleReminderSystemCommunicationId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.RSVPReminderSystemCommunication ).WithMany().HasForeignKey( p => p.RSVPReminderSystemCommunicationId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ScheduleCancellationWorkflowType ).WithMany().HasForeignKey( p => p.ScheduleCancellationWorkflowTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.AttendanceReminderSystemCommunication ).WithMany().HasForeignKey( p => p.AttendanceReminderSystemCommunicationId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.GroupMemberRecordSourceValue ).WithMany().HasForeignKey( p => p.GroupMemberRecordSourceValueId ).WillCascadeOnDelete( false );
