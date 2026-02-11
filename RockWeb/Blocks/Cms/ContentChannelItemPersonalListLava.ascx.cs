@@ -64,7 +64,6 @@ namespace RockWeb.Blocks.Cms
         "Lava Template",
         Description = "The Lava template to use.",
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
-        EditorTheme = Rock.Web.UI.Controls.CodeEditorTheme.Rock,
         EditorHeight = 300,
         Order = 3,
         DefaultValue = LavaTemplateDefaultValue,

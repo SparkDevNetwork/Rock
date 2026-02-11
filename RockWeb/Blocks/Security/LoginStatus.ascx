@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="LoginStatus.ascx.cs" Inherits="RockWeb.Blocks.Security.LoginStatus" %>
 
-<ul class="nav navbar-nav loginstatus">
+<ul id="ulContainer" runat="server" class="nav navbar-nav loginstatus">
     <li class="dropdown" ID="liDropdown" runat="server">
 
         <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
@@ -8,7 +8,7 @@
                 <div id="divProfilePhoto" runat="server" class="profile-photo"></div>
                 <asp:PlaceHolder ID="phHello" runat="server"><asp:Literal ID="lHello" runat="server" /></asp:PlaceHolder>
             </div>
-            <b class="ti ti-caret-down-filled"></b>
+            <b id="bCaret" runat="server" class="ti ti-caret-down-filled"></b>
         </a>
 
         <ul class="dropdown-menu">
@@ -28,7 +28,7 @@
                 </li>
             </asp:PlaceHolder>
             <asp:Literal ID="lDropdownItems" runat="server" />
-            <li class="divider"></li>
+            <li id="liDivider" runat="server" class="divider"></li>
             <li><asp:LinkButton ID="lbLoginLogout" runat="server" OnClick="lbLoginLogout_Click" CausesValidation="false"></asp:LinkButton></li>
         </ul>
 

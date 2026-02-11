@@ -18,3 +18,19 @@
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
 }
+
+export const enum PreferenceKey {
+    FilterPublicOrPrivate = "filter-public-private",
+    FilterActive = "filter-active",
+    FilterUrgent = "filter-urgent",
+    FilterCommenting = "filter-commenting",
+    FilterShowExpiredRequests = "filter-show-expired-requests"
+}
+
+export type GridSettingsOptions = {
+    publicOrPrivate: string;
+    active: string;
+    urgent: string;
+    commenting: string;
+    showExpiredRequests: boolean;
+};

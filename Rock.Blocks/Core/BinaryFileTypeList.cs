@@ -154,6 +154,17 @@ namespace Rock.Blocks.Core
         }
 
         /// <inheritdoc/>
+        protected override List<BinaryFileTypeData> GetListItems( IQueryable<BinaryFileTypeData> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+
+            // Load attribute values for the grid-selected attributes.
+            GridAttributeLoader.LoadFor( items, a => a.BinaryFileType, _gridAttributes.Value, rockContext );
+
+            return items;
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<BinaryFileTypeData> GetGridBuilder()
         {
             var blockOptions = new GridBuilderGridOptions<BinaryFileTypeData>

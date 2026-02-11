@@ -149,7 +149,7 @@ namespace Rock.Tests.Web.UI.Controls
                 [expectedKey2] = expectedValue2
             };
 
-            CollectionAssert.AreEquivalent(expectedValue, control.GetValueAsDictionary() );
+            CollectionAssert.AreEquivalent( expectedValue, control.GetValueAsDictionary() );
         }
 
         [TestMethod]
@@ -186,7 +186,7 @@ namespace Rock.Tests.Web.UI.Controls
                 Value = null
             };
 
-            Assert.That.IsNull( control.GetValueAsDictionaryOrNull() );
+            Assert.IsNull( control.GetValueAsDictionaryOrNull() );
         }
 
         [TestMethod]
@@ -197,11 +197,11 @@ namespace Rock.Tests.Web.UI.Controls
                 Value = string.Empty
             };
 
-            Assert.That.IsNull( control.GetValueAsDictionaryOrNull() );
+            Assert.IsNull( control.GetValueAsDictionaryOrNull() );
         }
 
         [TestMethod]
-        [DynamicData( nameof( GetValueAsDictionary_WithPredefinedValue_DecodesValue_DataSource ), DynamicDataSourceType.Method )]
+        [DynamicData( nameof( GetValueAsDictionary_WithPredefinedValue_DecodesValue_DataSource ) )]
         public void GetValueAsDictionary_WithPredefinedValue_DecodesValue( string value, Dictionary<string, string> expectedValue )
         {
             var control = new KeyValueList

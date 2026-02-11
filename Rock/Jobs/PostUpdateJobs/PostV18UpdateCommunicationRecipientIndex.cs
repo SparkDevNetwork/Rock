@@ -44,6 +44,14 @@ namespace Rock.Jobs
         /// <inheritdoc />
         public override void Execute()
         {
+            /*
+                12/8/2025 - JPH
+
+                This is no longer needed, as Rock v18.1 introduces an improved version of this index.
+                https://github.com/SparkDevNetwork/Rock/blob/fbcd238722974b80411eb4cdbefaeb517aaf4b6d/Rock/Jobs/PostUpdateJobs/PostV181AddIndexesForCommunicationPrep.cs#L52-L65
+
+                -- Begin: Original Job Migration -----
+
             // Get the configured timeout, or default to 240 minutes if it is blank.
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
             var jobMigration = new JobMigration( commandTimeout );
@@ -62,6 +70,11 @@ CREATE NONCLUSTERED INDEX [IX_CommunicationId] ON [dbo].[CommunicationRecipient]
     [OpenedDateTime] ASC
 )
 INCLUDE ([PersonAliasId], [UnsubscribeDateTime]);" );
+
+                -- End: Original Job Migration -----
+
+                Reason: Prevent an unneeded index migration.
+            */
 
             DeleteJob();
         }

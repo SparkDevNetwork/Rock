@@ -24,7 +24,6 @@
 import { CompletionFlow } from "@Obsidian/Enums/Engagement/completionFlow";
 import { StepProgramWorkflowTriggerBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/stepProgramWorkflowTriggerBag";
 import { StepStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/stepStatusBag";
-import { SankeyDiagramSettingsBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramSettingsBag";
 import { SlidingDateRangeBag } from "@Obsidian/ViewModels/Controls/slidingDateRangeBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
@@ -97,9 +96,6 @@ export type StepProgramBag = {
 
     /** Gets or sets the status options. */
     statusOptions?: ListItemBag[] | null;
-
-    /** Gets or sets the Sep Flow Configuration settings used to display the Step Flow diagram. */
-    stepFlowConfigurationBag?: SankeyDiagramSettingsBag | null;
 
     /** Gets or sets the step flow page URL. */
     stepFlowPageUrl?: string | null;

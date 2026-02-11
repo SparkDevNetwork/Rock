@@ -109,7 +109,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
             Guid guid,
             string name,
             string key,
-            int? parentAccountId = null)
+            int? parentAccountId = null )
         {
             var account = _accountService.GetByGuids( new List<Guid> { guid } ).FirstOrDefault();
 
@@ -271,7 +271,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
                 }
 
                 // Dates are going backwards in time, adjuect start
-                if (transactionDateTime < _startDate)
+                if ( transactionDateTime < _startDate )
                 {
                     _startDate = transactionDateTime;
                 }
@@ -404,7 +404,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
             bool isActive = true,
             int maxAllowed = 1,
             bool allowOver = false,
-            int numberToAccumulate = 1)
+            int numberToAccumulate = 1 )
         {
             var achievement = new AchievementType
             {
@@ -456,7 +456,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
         /// <summary>
         /// Runs after all tests in this class is executed.
         /// </summary>
-        [ClassCleanup( ClassCleanupBehavior.EndOfClass )]
+        [ClassCleanup]
         public static void ClassCleanup()
         {
             if ( !IsContainersEnabled )
@@ -489,7 +489,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
             int attemptCount,
             int accumulateCount,
             int achievementId,
-            List<int> allowedAccountIds)
+            List<int> allowedAccountIds )
         {
             var attemptsQuery = new AchievementAttemptService( _rockContext ).Queryable()
                 .AsNoTracking()
@@ -497,7 +497,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
                 .OrderBy( saa => saa.AchievementAttemptStartDateTime );
 
             // There should be no attempts
-            Assert.That.AreEqual( 0, attemptsQuery.Count() );
+            Assert.AreEqual( 0, attemptsQuery.Count() );
 
             var achievementTypeCache = AchievementTypeCache.Get( achievementId );
             var component = AchievementContainer.GetComponent( ComponentEntityTypeName );
@@ -512,7 +512,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
                 var transactionAccountIds = ft.TransactionDetails.Select( d => d.AccountId ).Distinct();
                 foreach ( var accountId in transactionAccountIds )
                 {
-                    Assert.That.IsTrue( allowedAccountIds.Contains( accountId ) );
+                    Assert.Contains( accountId, allowedAccountIds );
                 }
 
                 // See Rock.Model.Engagement.AchievementType.AchievementTypeService
@@ -525,24 +525,24 @@ namespace Rock.Tests.Integration.Engagement.Achievements
             }
 
             var attempts = attemptsQuery.ToList();
-            Assert.That.IsNotNull( attempts );
-            Assert.That.AreEqual( attemptCount, attempts.Count );
+            Assert.IsNotNull( attempts );
+            Assert.HasCount( attemptCount, attempts );
 
             if ( attemptCount > 0 )
             {
                 for ( int i = 0; i < attempts.Count(); i++ )
                 {
-                    Assert.That.IsTrue( attempts[i].Progress >= 0m );
+                    Assert.IsGreaterThanOrEqualTo( 0m, attempts[i].Progress );
 
-                    if (attempts[i].Progress >= 1m)
+                    if ( attempts[i].Progress >= 1m )
                     {
-                        Assert.That.IsTrue( attempts[i].IsClosed );
-                        Assert.That.IsTrue( attempts[i].IsSuccessful );
+                        Assert.IsTrue( attempts[i].IsClosed );
+                        Assert.IsTrue( attempts[i].IsSuccessful );
                     }
                     else
                     {
-                        Assert.That.IsFalse( attempts[i].IsClosed );
-                        Assert.That.IsFalse( attempts[i].IsSuccessful );
+                        Assert.IsFalse( attempts[i].IsClosed );
+                        Assert.IsFalse( attempts[i].IsSuccessful );
                     }
                 }
             }

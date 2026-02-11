@@ -213,7 +213,7 @@ namespace Rock.Storage.AssetStorage
                     }
 
                     request.ContinuationToken = response.NextContinuationToken;
-                } while ( response.IsTruncated );
+                } while ( response.IsTruncated == true );
 
                 return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
@@ -280,7 +280,7 @@ namespace Rock.Storage.AssetStorage
 
                     request.ContinuationToken = response.NextContinuationToken;
 
-                } while ( response.IsTruncated );
+                } while ( response.IsTruncated == true );
 
                 return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
@@ -345,7 +345,7 @@ namespace Rock.Storage.AssetStorage
 
                     request.ContinuationToken = response.NextContinuationToken;
 
-                } while ( response.IsTruncated );
+                } while ( response.IsTruncated == true );
 
                 return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
@@ -655,7 +655,7 @@ namespace Rock.Storage.AssetStorage
 
                     request.ContinuationToken = response.NextContinuationToken;
 
-                } while ( response.IsTruncated );
+                } while ( response.IsTruncated == true );
 
                 // Add the subfolders to the asset collection
                 foreach ( string subFolder in subFolders )
@@ -804,7 +804,7 @@ namespace Rock.Storage.AssetStorage
                     Uri = $"https://{s3Object.BucketName}.s3.{regionEndpoint}.amazonaws.com/{uriKey}",
                     Type = assetType,
                     IconPath = assetType == AssetType.Folder ? string.Empty : GetThumbnail( assetStorageProvider, s3Object.Key, s3Object.LastModified ),
-                    FileSize = s3Object.Size,
+                    FileSize = s3Object.Size ?? 0,
                     LastModifiedDateTime = s3Object.LastModified,
                     Description = s3Object.StorageClass == null ? string.Empty : s3Object.StorageClass.ToString()
                 };
@@ -822,7 +822,7 @@ namespace Rock.Storage.AssetStorage
                     Uri = $"https://{s3Object.BucketName}.s3.{regionEndpoint}.amazonaws.com/{uriKey}",
                     Type = assetType,
                     IconPath = assetType == AssetType.Folder ? string.Empty : GetCorruptImageAssetImage(),
-                    FileSize = s3Object.Size,
+                    FileSize = s3Object.Size ?? 0,
                     LastModifiedDateTime = s3Object.LastModified,
                     Description = s3Object.StorageClass == null ? string.Empty : s3Object.StorageClass.ToString(),
                     HasError = true

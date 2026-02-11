@@ -446,7 +446,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             filter.FilterGroups( opportunities );
 
-            Assert.AreEqual( 0, opportunities.Groups.Count );
+            Assert.IsEmpty( opportunities.Groups );
             Assert.IsTrue( filter.Person.IsUnavailable );
             Assert.IsNotNull( filter.Person.UnavailableMessage );
         }

@@ -58,7 +58,7 @@
         // Collapse empty categories:
         // If this category has no values and only has one categories, make that category
         // the current base and keep doing that until we have a category with values
-        while (root && root.childCategories?.length == 1 && (!root.childValues || root.childValues.length == 0)) {
+        while (root && root.childCategories?.length === 1 && (!root.childValues || root.childValues.length === 0)) {
             root = root.childCategories[0];
         }
 
@@ -89,16 +89,16 @@
     });
 
     const fullSelectedCategory = computed(() => {
-        if (selectedCategory.value == "" || selectedCategory.value == emptyGuid) {
+        if (selectedCategory.value === "" || selectedCategory.value === emptyGuid) {
             return null;
         }
         else {
-            return internalRoot.value?.childCategories?.find(cat => cat.value == selectedCategory.value) ?? null;
+            return internalRoot.value?.childCategories?.find(cat => cat.value === selectedCategory.value) ?? null;
         }
     });
 
     const showValues = computed(() => {
-        return hasValues.value && (selectedCategory.value == emptyGuid || !hasCategories.value);
+        return hasValues.value && (selectedCategory.value === emptyGuid || !hasCategories.value);
     });
 
     const showNextLevel = computed(() => {
@@ -117,7 +117,7 @@
         // If internalValue was set to a value in a child level and then we change category here,
         // we need to make sure that internalValue gets reset, because setting selectedValue to an
         // empty string won't cause any changes since it already equals an empty string.
-        if (selectedValue.value == "" && internalValue.value != null) {
+        if (selectedValue.value === "" && internalValue.value != null) {
             internalValue.value = null;
         }
 
@@ -133,7 +133,7 @@
             internalValue.value = null;
         }
 
-        const fullSelectedValue = internalRoot.value?.childValues?.find((v) => v.value == selectedValue.value);
+        const fullSelectedValue = internalRoot.value?.childValues?.find((v) => v.value === selectedValue.value);
 
         if (fullSelectedValue) {
             updateRefValue(internalValue, {
@@ -165,7 +165,7 @@
      */
     function setBasedOnModelValue(): void {
         // Does our root have this value?
-        const value = internalValue.value != null && internalRoot.value?.childValues?.find((v) => v.value == internalValue.value?.value);
+        const value = internalValue.value != null && internalRoot.value?.childValues?.find((v) => v.value === internalValue.value?.value);
 
         if (value) {
             // Yup, set the selected value to this value and set the category to this category
@@ -205,7 +205,7 @@
 
     function hasDescendantValue(base: CategorizedValuePickerNodeBag, valToFind: ListItemBag): boolean {
         // Does our base have this value?
-        const isValFound = base.childValues?.find((v) => v.value == valToFind.value);
+        const isValFound = base.childValues?.find((v) => v.value === valToFind.value);
 
         // Yup we found it
         if (isValFound) {
@@ -228,7 +228,7 @@
      * changes that break what we're attempting to do. This allows us to easily skip those watchers that have been
      * configured to be skippable.
      */
-    async function skipWatchTriggers() {
+    async function skipWatchTriggers(): Promise<void> {
         willSkipWatchTriggers = true;
         await nextTick();
         willSkipWatchTriggers = false;
@@ -243,5 +243,5 @@
         setBasedOnModelValue();
     }
 
-        // #endregion
+    // #endregion
 </script>

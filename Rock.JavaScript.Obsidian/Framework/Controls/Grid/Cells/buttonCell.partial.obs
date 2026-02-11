@@ -4,6 +4,7 @@
         <button v-if="isVisible"
                 class="btn btn-default btn-sm"
                 :title="title"
+                type="button"
                 :disabled="isDisabled"
                 @click.prevent.stop="onClick">
             <i :class="iconClass"></i>

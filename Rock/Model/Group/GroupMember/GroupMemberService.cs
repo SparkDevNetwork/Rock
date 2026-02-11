@@ -1142,6 +1142,8 @@ namespace Rock.Model
 
             public int GroupRoleId { get; }
 
+            public DateTimeOffset? DateTimeAdded { get; }
+
             public GroupMemberUpdatedState( GroupMember groupMember, EntityContextState state )
             {
                 if ( groupMember == null )
@@ -1155,6 +1157,7 @@ namespace Rock.Model
                 PersonId = groupMember.PersonId;
                 GroupId = groupMember.GroupId;
                 GroupRoleId = groupMember.GroupRoleId;
+                DateTimeAdded = groupMember.DateTimeAdded?.ToRockDateTimeOffset();
             }
         }
 
@@ -1326,7 +1329,8 @@ namespace Rock.Model
 						GroupMemberIdKey = Rock.Utility.IdHasher.Instance.GetHash( item.Id ),
 						GroupMemberGuid = item.Guid,
 						GroupRoleIdKey = Rock.Utility.IdHasher.Instance.GetHash( item.GroupRoleId ),
-						Person = new ViewModels.Blocks.Group.GroupPlacement.PersonBag
+                        DateTimeAdded = item.DateTimeAdded,
+                        Person = new ViewModels.Blocks.Group.GroupPlacement.PersonBag
 						{   
 							PersonIdKey = person.IdKey,
 							FirstName = person.FirstName,

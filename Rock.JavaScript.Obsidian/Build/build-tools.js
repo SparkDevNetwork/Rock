@@ -410,9 +410,6 @@ class DeclarationBuilder {
         /** @type BuildTask[] */
         this.buildTasks = [];
 
-        /** @type string */
-        this.execPath = path.join(__dirname, "obs-tsc.js");
-
         /** @type string[] */
         this.arguments = ["--declaration", "--emitDeclarationOnly"];
     }
@@ -529,7 +526,7 @@ class DeclarationBuilder {
                 continue;
             }
 
-            const proc = spawn("node", [this.execPath, ...this.arguments, "-p", project.projectFile]);
+            const proc = spawn("npx", ["vue-tsc", ...this.arguments, "-p", project.projectFile], { shell: true, stdio: "inherit" });
 
             this.buildTasks.push({
                 projectFile: project.projectFile,
@@ -559,9 +556,6 @@ class DeclarationBuilder {
                 const relativeFile = path.relative(process.cwd(), project.projectFile);
 
                 console.log(`Project '${relativeFile}' ${project.failed ? "failed to build" : "built"} in ${duration.toLocaleString()}ms.`);
-
-                proc.stderr.pipe(process.stderr);
-                proc.stdout.pipe(process.stdout);
 
                 this.buildTasks.splice(buildIndex, 1);
 

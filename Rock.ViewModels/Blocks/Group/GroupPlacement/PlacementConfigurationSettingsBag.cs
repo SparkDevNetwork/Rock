@@ -99,5 +99,13 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
         ///   <c>true</c> if [hide full groups]; otherwise, <c>false</c>.
         /// </value>
         public bool AreFullGroupsHidden { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person-level filters used to limit which people are included in placement.
+        /// </summary>
+        /// <value>
+        /// The filters applied to restrict a set of people
+        /// </value>
+        public PersonFiltersBag PersonFilters { get; set; }
     }
 }

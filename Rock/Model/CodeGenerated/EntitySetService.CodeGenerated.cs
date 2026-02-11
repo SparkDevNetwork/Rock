@@ -136,6 +136,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this EntitySet target, EntitySet source )
         {
             target.Id = source.Id;
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.EntitySetPurposeValueId = source.EntitySetPurposeValueId;
             target.EntityTypeId = source.EntityTypeId;
             target.ExpireDateTime = source.ExpireDateTime;

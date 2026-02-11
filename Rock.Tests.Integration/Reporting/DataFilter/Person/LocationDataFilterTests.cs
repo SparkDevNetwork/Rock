@@ -44,10 +44,10 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
             var results = personQuery.ToList();
 
             // Verify that only members of the family residing at this address are returned.
-            Assert.That.IsTrue( results.Any( x => x.Guid == new Guid( TestGuids.TestPeople.TedDecker ) ) );
-            Assert.That.IsTrue( results.Any( x => x.Guid == new Guid( TestGuids.TestPeople.CindyDecker ) ) );
+            Assert.IsTrue( results.Any( x => x.Guid == new Guid( TestGuids.TestPeople.TedDecker ) ) );
+            Assert.IsTrue( results.Any( x => x.Guid == new Guid( TestGuids.TestPeople.CindyDecker ) ) );
 
-            Assert.That.IsFalse( results.Any( x => x.Guid == new Guid( TestGuids.TestPeople.BillMarble ) ) );
+            Assert.IsFalse( results.Any( x => x.Guid == new Guid( TestGuids.TestPeople.BillMarble ) ) );
         }
 
         /// <summary>

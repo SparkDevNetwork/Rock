@@ -1,0 +1,107 @@
+<template>
+    <div class="rostergrid-navbar">
+        <button v-for="item in menuItems"
+                type="button"
+                :class="item.class"
+                @click="onClick($event, item.mode)">
+            {{ item.text }} <span class="badge">{{ item.count }}</span>
+        </button>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { RosterSingleAttendanceRecord, RosterViewMode } from "./types.partial";
+    import { CheckInStatus } from "@Obsidian/Enums/Event/checkInStatus";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+
+    const props = defineProps({
+        modelValue: {
+            type: Number as PropType<RosterViewMode>,
+            required: true
+        },
+
+        attendances: {
+            type: Object as PropType<RosterSingleAttendanceRecord[]>,
+            required: true
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: RosterViewMode): void;
+    }>();
+
+    // #region Computed Values
+
+    /** The menu items for the roster view modes. */
+    const menuItems = computed((): { text: string, class: string, count: number, mode: RosterViewMode }[] => {
+        const items: { text: string, class: string, count: number, mode: RosterViewMode }[] = [
+            {
+                text: "All",
+                class: props.modelValue === RosterViewMode.All ? "btn btn-info btn-sm" : "btn btn-default btn-sm",
+                count: getAttendanceCount(undefined),
+                mode: RosterViewMode.All,
+            },
+            {
+                text: "Checked-In",
+                class: props.modelValue === RosterViewMode.CheckedIn ? "btn btn-primary btn-sm" : "btn btn-default btn-sm",
+                count: getAttendanceCount(CheckInStatus.NotPresent),
+                mode: RosterViewMode.CheckedIn,
+            },
+            {
+                text: "Present",
+                class: props.modelValue === RosterViewMode.Present ? "btn btn-success btn-sm" : "btn btn-default btn-sm",
+                count: getAttendanceCount(CheckInStatus.Present),
+                mode: RosterViewMode.Present,
+            },
+            {
+                text: "Checked-Out",
+                class: props.modelValue === RosterViewMode.CheckedOut ? "btn btn-checked-out btn-sm" : "btn btn-default btn-sm",
+                count: getAttendanceCount(CheckInStatus.CheckedOut),
+                mode: RosterViewMode.CheckedOut,
+            }
+        ];
+
+        return items;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the count of unique attendees for the given check-in status.
+     *
+     * @param state The check-in status to be matched.
+     *
+     * @returns The count of unique attendees.
+     */
+    function getAttendanceCount(state: CheckInStatus | undefined): number {
+        if (state === undefined) {
+            return Enumerable.from(props.attendances)
+                .groupBy(a => a.attendee.idKey)
+                .count();
+        }
+
+        return Enumerable.from(props.attendances)
+            .where(a => a.status === state)
+            .groupBy(a => a.attendee.idKey)
+            .count();
+    }
+
+    /**
+     * Handles when a menu item is clicked.
+     *
+     * @param event The mouse event.
+     * @param mode The roster view mode to switch to.
+     */
+    function onClick(event: MouseEvent, mode: RosterViewMode): void {
+        if (event.target instanceof HTMLElement) {
+            event.target.blur();
+        }
+
+        emit("update:modelValue", mode);
+    }
+
+    // #endregion
+</script>

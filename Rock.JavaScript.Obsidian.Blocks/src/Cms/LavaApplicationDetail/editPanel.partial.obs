@@ -26,7 +26,6 @@
         </div>
         <CodeEditor v-model="configurationRigging"
                     label="Configuration Rigging"
-                    theme="rock"
                     mode="text"
                     :editorHeight="400"
                     help="Use this field to specify your application's configuration settings in JSON format. It provides a structured way to customize your application's settings. You can reference this configuration as an object in your endpoint template using the merge field 'ConfigurationRigging'." />

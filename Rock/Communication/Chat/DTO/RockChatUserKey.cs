@@ -36,6 +36,12 @@ namespace Rock.Communication.Chat.DTO
         /// </summary>
         public int PersonId { get; set; }
 
+        /// <inheritdoc cref="Person.NickName"/>
+        public string NickName { get; set; }
+
+        /// <inheritdoc cref="Person.LastName"/>
+        public string LastName { get; set; }
+
         /// <summary>
         /// Gets or sets the chat-specific <see cref="PersonAlias"/> identifier.
         /// </summary>
@@ -47,7 +53,7 @@ namespace Rock.Communication.Chat.DTO
         public Guid? ChatPersonAliasGuid { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="ChatUser.Key"/>.
+        /// Gets or sets the <see cref="ChatUser.Key"/>.
         /// </summary>
         public string ChatUserKey
         {
@@ -59,6 +65,11 @@ namespace Rock.Communication.Chat.DTO
                 }
 
                 return _chatUserKey;
+            }
+
+            set
+            {
+                _chatUserKey = value;
             }
         }
     }

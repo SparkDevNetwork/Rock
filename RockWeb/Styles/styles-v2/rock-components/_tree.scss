@@ -98,9 +98,9 @@
 ul.rocktree,
 ul.rocktree-children {
   padding:          0;
-  margin-bottom:    $grid-gutter-width;
+  margin-bottom:    var(--spacing-large);
   font-size:        var(--font-size-small);
-  line-height:      30px;
+  line-height:      var(--line-height-xloose);
   list-style-type:  none;
 }
 
@@ -142,8 +142,9 @@ ul.rocktree-children {
     display:          inline-flex;
     align-items:      center;
     justify-content:  center;
-    width:            30px;
-    height:           30px;
+    width:            24px;
+    height:           24px;
+    line-height:      var(--line-height-xloose);
     padding:          var(--spacing-tiny);
     font-size:        var(--font-size-xsmall);
     cursor: pointer;
@@ -165,39 +166,21 @@ ul.rocktree-children {
     flex-grow:      1;
     width:          calc(100% - 48px);
     padding:        0 var(--spacing-medium) 0 0;
-    line-height:    30px;
+    line-height:    var(--line-height-xloose);
     cursor:         pointer;
     border-radius:  var(--border-radius-base, 3px);
 
     i {
-      margin-right: 2px;
+      margin: 0 var(--spacing-tiny)
     }
 
     &:hover {
       color: var(--color-interface-stronger);
+      background-color: var(--color-interface-softer);
     }
 
-    &::before {
-      position:       absolute;
-      top:            0;
-      bottom:         0;
-      left:           -5px;
-      z-index:        -1;
-      width:          100vw;
-      content:        "";
-      border-radius:  var(--rounded-small) 0 0 var(--rounded-small);
-    }
-
-    &:hover::before {
-      background: var(--color-interface-softer);
-    }
-  }
-
-  .selected {
-    color:          var(--color-interface-stronger);
-
-    &::before {
-      background:   var(--color-info-soft) !important;
+    &.selected {
+      background:   var(--color-info-soft);
     }
   }
 
@@ -215,7 +198,7 @@ ul.rocktree-children {
   }
 
   .rocktree-leaf {
-    padding-left: 30px; // TODO need to use variable
+    padding-left: var(--spacing-large);
   }
 
   .label-tree {

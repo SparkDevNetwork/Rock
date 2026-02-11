@@ -5,6 +5,7 @@
                             :filterMode="filterMode"
                             groupSources
                             disableRemoval
+                            enhanceForLongSourceLists
                             allowBlankFieldSelection />
     </div>
 </template>

@@ -5,6 +5,8 @@ using System.Linq;
 
 using Microsoft.Extensions.Logging;
 
+using OpenXmlPowerTools;
+
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes;
 using Rock.AI.Agent.Classes.Common;
@@ -39,12 +41,12 @@ namespace Rock.AI.Agent.Skills
             bool? isEmailActive = null,
             string emailNote = null,
             AgeClassification? ageClassification = null,
-            SetOrClear<int?> birthYear = null,
-            SetOrClear<int?> birthDay = null,
-            SetOrClear<int?> birthMonth = null,
-            SetOrClear<DateTime?> anniversaryDate = null,
+            SetOrClear<int> birthYear = null,
+            SetOrClear<int> birthDay = null,
+            SetOrClear<int> birthMonth = null,
+            SetOrClear<DateTime> anniversaryDate = null,
             [Description( "Setting this will also update the person's record status to inactive with a reason of deceased." )]
-            SetOrClear<DateTime?> deceasedDate = null,
+            SetOrClear<DateTime> deceasedDate = null,
             string campusIdKey = null,
             string connectionStatusValueIdKey = null, // Not clearable
             string recordStatusValueIdKey = null,     // Not clearable
@@ -115,10 +117,13 @@ namespace Rock.AI.Agent.Skills
             }
 
             using var rockContext = _rockContextFactory.CreateRockContext();
+            var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
             var personService = new PersonService( rockContext );
             var person = personService.Get( IdHasher.Instance.GetId( personIdKey ) ?? 0 );
             var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
-            var instructions = "";
+            var inactivePersonRecordStatusGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid();
+            var inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid(), rockContext );
+            var deceasedReason = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid(), rockContext );
 
             if ( person == null )
             {
@@ -138,166 +143,97 @@ namespace Rock.AI.Agent.Skills
             }
 
             // Anniversary Date.
-            SetOrClearUtilities.SetOrClearValue<DateTime?>( anniversaryDate, v => person.AnniversaryDate = v, () => person.AnniversaryDate = null );
+            helper.UpdateProperty( person, p => p.AnniversaryDate, anniversaryDate );
 
             // Birth date related values.
-            SetOrClearUtilities.SetOrClearValue<int?>( birthYear, v => person.BirthYear = v, () => person.BirthYear = null );
-            SetOrClearUtilities.SetOrClearValue<int?>( birthMonth, v =>
+            helper.UpdateProperty( person, p => p.BirthYear, birthYear );
+
+            if ( birthMonth != null && birthMonth.ClearValue )
             {
-                if ( v.HasValue && ( v < 1 || v > 12 ) )
+                person.BirthMonth = null;
+            }
+            else if ( birthMonth != null )
+            {
+                if ( birthMonth.Value < 1 || birthMonth.Value > 12 )
                 {
-                    throw new ArgumentException( "If provided, the birth month must be between 1 and 12." );
+                    helper.AddError( "If provided, the birth month must be between 1 and 12." );
                 }
-                person.BirthMonth = v;
-            }, () => person.BirthMonth = null );
-
-            SetOrClearUtilities.SetOrClearValue<int?>( birthDay, v =>
-            {
-                if ( v.HasValue && ( v < 1 || v > 31 ) )
+                else
                 {
-                    throw new ArgumentException( "If provided, the birth day must be between 1 and 31." );
+                    person.BirthMonth = birthMonth.Value;
                 }
-                person.BirthDay = v;
-            }, () => person.BirthDay = null );
-
-            // Age Classification.
-            if ( ageClassification.HasValue )
-            {
-                person.AgeClassification = ageClassification.Value;
             }
 
-            // Communication Preference.
-            if ( communicationPreference.HasValue )
+            if ( birthDay != null && birthDay.ClearValue )
             {
-                person.CommunicationPreference = communicationPreference.Value;
+                person.BirthDay = null;
             }
-
-            // Campus.
-            if ( campusIdKey.IsNotNullOrWhiteSpace() )
+            else if ( birthDay != null )
             {
-                var campusId = IdHasher.Instance.GetId( campusIdKey );
-                if ( !campusId.HasValue || campusId <= 0 )
+                if ( birthDay.Value < 1 || birthDay.Value > 31 )
                 {
-                    return RockToolResult.Error( "The provided campusIdKey is not valid." );
+                    helper.AddError( "If provided, the birth day must be between 1 and 31." );
                 }
-
-                var campus = CampusCache.Get( campusId.Value );
-                if ( campus == null )
+                else
                 {
-                    return RockToolResult.Error( "No campus could be found with the provided campusIdKey." );
+                    person.BirthDay = birthDay.Value;
                 }
-
-                person.PrimaryCampusId = campus.Id;
             }
 
-            // Connection Status Defined Value.
-            if ( !TryUpdateDefinedValueProperty( connectionStatusValueIdKey, Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, id => person.ConnectionStatusValueId = id, null, false, out errorMessage ) )
+            helper.UpdateProperty( person, p => p.AgeClassification, ageClassification );
+            helper.UpdateProperty( person, p => p.CommunicationPreference, communicationPreference );
+            helper.UpdateNavigationProperty( person, p => p.PrimaryCampus, campusIdKey );
+            helper.UpdateDefinedValueProperty( person, p => p.ConnectionStatusValue, connectionStatusValueIdKey );
+            helper.UpdateDefinedValueProperty( person, p => p.RecordStatusValue, recordStatusValueIdKey );
+            helper.UpdateDefinedValueProperty( person, p => p.RecordStatusReasonValue, inactiveReasonValueIdKey );
+            helper.UpdateDefinedValueProperty( person, p => p.RecordTypeValue, recordTypeValueIdKey );
+            helper.UpdateDefinedValueProperty( person, p => p.RecordSourceValue, recordSourceValueIdKey );
+            helper.UpdateDefinedValueProperty( person, p => p.EthnicityValue, ethnicityValueIdKey );
+            helper.UpdateDefinedValueProperty( person, p => p.RaceValue, raceValueIdKey );
+            helper.UpdateDefinedValueProperty( person, p => p.SuffixValue, suffixValueIdKey );
+            helper.UpdateDefinedValueProperty( person, p => p.TitleValue, titleValueIdKey );
+            helper.UpdateDefinedValueProperty( person, p => p.PreferredLanguageValue, preferredLanguageValueIdKey );
+            helper.UpdateDefinedValueProperty( person, p => p.MaritalStatusValue, maritalStatusValueIdKey );
+
+            // Deceased Date.
+            if ( deceasedDate != null && deceasedDate.ClearValue )
             {
-                return RockToolResult.Error( errorMessage );
+                person.DeceasedDate = null;
             }
-
-            // Record Status Defined Value.
-            var recordStatusUpdated = false;
-            if ( !TryUpdateDefinedValueProperty( recordStatusValueIdKey, Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS, id => { person.RecordStatusValueId = id; recordStatusUpdated = true; }, null, false, out errorMessage ) )
+            else if ( deceasedDate != null )
             {
-                return RockToolResult.Error( errorMessage );
+                person.RecordStatusValueId = inactiveStatus.Id;
+                person.RecordStatusReasonValueId = deceasedReason.Id;
+                person.DeceasedDate = deceasedDate.Value;
             }
 
-            var inactivePersonRecordStatusGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid();
-            if ( recordStatusUpdated )
+            if ( recordStatusValueIdKey.IsNotNullOrWhiteSpace() && !helper.HasErrors )
             {
                 // If the record status was updated to inactive and there was no inactive reason provided, append instructions to follow up.
                 if ( person.RecordStatusValue?.Guid == inactivePersonRecordStatusGuid && inactiveReasonValueIdKey.IsNullOrWhiteSpace() )
                 {
-                    instructions += "The person has been marked inactive. Follow up to see if there should be a reason specified.";
+                    helper.AddInstructions( "The person has been marked inactive. Follow up to see if there should be a reason specified." );
                 }
-            }
-
-            // Inactive Reason Defined Value.
-            if ( !TryUpdateDefinedValueProperty( inactiveReasonValueIdKey, Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON, id => person.RecordStatusReasonValueId = id, () => person.RecordStatusReasonValueId = null, true, out errorMessage ) )
-            {
-                return RockToolResult.Error( errorMessage );
-            }
-
-            // Record type.
-            if ( !TryUpdateDefinedValueProperty( recordTypeValueIdKey, Rock.SystemGuid.DefinedType.PERSON_RECORD_TYPE, id => person.RecordTypeValueId = id, null, false, out errorMessage ) )
-            {
-                return RockToolResult.Error( errorMessage );
-            }
-
-            // Record Source Reason Defined Value.
-            if ( !TryUpdateDefinedValueProperty( recordSourceValueIdKey, Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE, id => person.RecordSourceValueId = id, () => person.RecordSourceValueId = null, true, out errorMessage ) )
-            {
-                return RockToolResult.Error( errorMessage );
             }
 
             if ( inactiveReasonNote.IsNotNullOrWhiteSpace() )
             {
                 if ( person.RecordStatusValue?.Guid != inactivePersonRecordStatusGuid )
                 {
-                    return RockToolResult.Error( "The inactiveReasonNote can only be set if the person's record status is set to Inactive." )
-                        .WithInstructions( "Ask the user if they would like you to mark the record inactive." );
+                    helper.AddError( "The inactiveReasonNote can only be set if the person's record status is set to Inactive." );
+                    helper.AddInstructions( "Ask the user if they would like you to mark the record inactive." );
                 }
-                person.InactiveReasonNote = inactiveReasonNote;
+                else
+                {
+                    person.InactiveReasonNote = inactiveReasonNote;
+                }
             }
 
-            // Ethnicity.
-            if ( !TryUpdateDefinedValueProperty( ethnicityValueIdKey, Rock.SystemGuid.DefinedType.PERSON_ETHNICITY, id => person.EthnicityValueId = id, () => person.EthnicityValueId = null, true, out errorMessage ) )
-            {
-                return RockToolResult.Error( errorMessage );
-            }
+            helper.SaveChangesIfNoErrors();
 
-            // Race.
-            if ( !TryUpdateDefinedValueProperty( raceValueIdKey, Rock.SystemGuid.DefinedType.PERSON_RACE, id => person.RaceValueId = id, () => person.RaceValueId = null, true, out errorMessage ) )
+            if ( helper.HasErrors )
             {
-                return RockToolResult.Error( errorMessage );
-            }
-
-            // Suffix.
-            if ( !TryUpdateDefinedValueProperty( suffixValueIdKey, Rock.SystemGuid.DefinedType.PERSON_SUFFIX, id => person.SuffixValueId = id, () => person.SuffixValueId = null, true, out errorMessage ) )
-            {
-                return RockToolResult.Error( errorMessage );
-            }
-
-            // Title.
-            if ( !TryUpdateDefinedValueProperty( titleValueIdKey, Rock.SystemGuid.DefinedType.PERSON_TITLE, id => person.TitleValueId = id, () => person.TitleValueId = null, true, out errorMessage ) )
-            {
-                return RockToolResult.Error( errorMessage );
-            }
-
-            // Preferred Language.
-            if ( !TryUpdateDefinedValueProperty( preferredLanguageValueIdKey, Rock.SystemGuid.DefinedType.LANGUAGES, id => person.PreferredLanguageValueId = id, () => person.PreferredLanguageValueId = null, true, out errorMessage ) )
-            {
-                return RockToolResult.Error( errorMessage );
-            }
-
-            // Marital Status.
-            if ( !TryUpdateDefinedValueProperty( maritalStatusValueIdKey, Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, id => person.MaritalStatusValueId = id, () => person.MaritalStatusValueId = null, true, out errorMessage ) )
-            {
-                return RockToolResult.Error( errorMessage );
-            }
-
-            var inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
-            var deceasedReason = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() );
-
-            // Deceased Date.
-            SetOrClearUtilities.SetOrClearValue<DateTime?>( deceasedDate, v => SetDeceased( person, v ), () => person.DeceasedDate = null );
-            void SetDeceased( Rock.Model.Person p, DateTime? dt )
-            {
-                p.RecordStatusValueId = inactiveStatus.Id;
-                p.RecordStatusReasonValueId = deceasedReason.Id;
-                p.DeceasedDate = dt;
-            }
-
-            // Save changes.
-            try
-            {
-                rockContext.SaveChanges();
-            }
-            catch ( Exception ex )
-            {
-                _logger.LogError( ex, "UpdatePerson failed for PersonIdKey={PersonIdKey}", personIdKey );
-                return RockToolResult.Error( "Failed to update person. " + ex.Message );
+                return helper.ErrorResult;
             }
 
             return RockToolResult.Success( new PersonResult
@@ -468,94 +404,6 @@ namespace Rock.AI.Agent.Skills
             {
                 person.IsEmailActive = isEmailActive.Value;
             }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Resolves and applies a DefinedValue by IdKey, or clears it (if allowed).
-        /// </summary>
-        /// <param name="idKey">
-        /// Null = no change; empty string = clear (when <paramref name="allowClear"/> is true); otherwise must be a valid IdKey.
-        /// </param>
-        /// <param name="definedTypeGuid">The defined type GUID constant (e.g., <c>Rock.SystemGuid.DefinedType.PERSON_RACE</c>).</param>
-        /// <param name="setAction">Called with the resolved DefinedValue Id.</param>
-        /// <param name="clearAction">Called when clearing (only if <paramref name="allowClear"/> is true and <paramref name="idKey"/> is empty).</param>
-        /// <param name="allowClear">Whether clearing via empty string is permitted.</param>
-        /// <param name="errorMessage">Populated when returning false.</param>
-        /// <returns>
-        /// True if applied/no-op; false if the IdKey is invalid or a prohibited clear was requested.
-        /// </returns>
-        private bool TryUpdateDefinedValueProperty(
-            string idKey,
-            string definedTypeGuid,
-            Action<int> setAction,
-            Action clearAction,
-            bool allowClear,
-            out string errorMessage )
-        {
-            errorMessage = null;
-
-            // no matter what null means no change.
-            if ( idKey == null )
-            {
-                return true;
-            }
-
-            // clear the value if requested and allowed.
-            if ( idKey == string.Empty )
-            {
-                if ( !allowClear )
-                {
-                    errorMessage = "Clearing out this value is not allowed";
-                    return false;
-                }
-
-                clearAction();
-                return true;
-            }
-
-            if ( !TryGetDefinedValueOfType( idKey, definedTypeGuid, out var dvc, out errorMessage ) )
-            {
-                return false;
-            }
-
-            setAction( dvc.Id );
-            return true;
-        }
-
-        private static bool TryGetDefinedValueOfType( string definedValueIdKey, string definedTypeGuid, out DefinedValueCache dvc, out string errorMessage )
-        {
-            dvc = null;
-            errorMessage = string.Empty;
-
-            if ( definedValueIdKey.IsNullOrWhiteSpace() )
-            {
-                errorMessage = "The definedValueIdKey is required.";
-                return false;
-            }
-
-            var id = IdHasher.Instance.GetId( definedValueIdKey );
-            if ( !id.HasValue || id <= 0 )
-            {
-                errorMessage = "The definedValueIdKey is not valid.";
-                return false;
-            }
-
-            var definedValue = DefinedValueCache.Get( id.Value );
-            if ( definedValue == null )
-            {
-                errorMessage = "No defined value could be found with the provided definedValueIdKey.";
-                return false;
-            }
-
-            if ( !definedValue.DefinedType.Guid.Equals( definedTypeGuid.AsGuid() ) )
-            {
-                errorMessage = "The provided definedValueIdKey is not of the expected type.";
-                return false;
-            }
-
-            dvc = definedValue;
 
             return true;
         }

@@ -67,7 +67,7 @@ export const EditComponent = defineComponent({
             return Number(this.configurationValues[ConfigurationValueKey.RepeatColumns]) ?? 1;
         },
         enhance(): boolean {
-            return this.configurationValues[ConfigurationValueKey.EnhancedForLongLists] == "True";
+            return this.configurationValues[ConfigurationValueKey.EnhancedForLongLists] === "True";
         }
     },
 

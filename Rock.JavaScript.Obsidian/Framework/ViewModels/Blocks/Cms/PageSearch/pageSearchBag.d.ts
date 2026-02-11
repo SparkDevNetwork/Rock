@@ -25,5 +25,9 @@ import { PageSearchPageBag } from "@Obsidian/ViewModels/Blocks/Cms/PageSearch/pa
 
 /** The additional configuration options for the Page List block. */
 export type PageSearchBag = {
+    /** The HTML content that should be displayed below the section list. */
+    additionalContent?: string | null;
+
+    /** The list of pages that should be displayed. */
     pages?: PageSearchPageBag[] | null;
 };

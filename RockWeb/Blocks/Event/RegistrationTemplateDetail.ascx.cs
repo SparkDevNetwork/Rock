@@ -56,7 +56,6 @@ namespace RockWeb.Blocks.Event
         Key = AttributeKey.DefaultConfirmationEmail,
         Description = "The default Confirmation Email Template value to use for a new template",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 300,
         IsRequired = false,
         Order = 1,
@@ -162,7 +161,6 @@ namespace RockWeb.Blocks.Event
         Key = AttributeKey.DefaultReminderEmail,
         Description = "The default Reminder Email Template value to use for a new template",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 300,
         IsRequired = false,
         Order = 2,
@@ -230,7 +228,6 @@ namespace RockWeb.Blocks.Event
         Key = AttributeKey.DefaultSuccessText,
         Description = "The success text default to use for a new template",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 300,
         IsRequired = false,
         Order = 3,
@@ -326,7 +323,6 @@ namespace RockWeb.Blocks.Event
         Key = AttributeKey.DefaultPaymentReminderEmail,
         Description = "The default Payment Reminder Email Template value to use for a new template",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 300,
         IsRequired = false,
         Order = 4,
@@ -387,7 +383,6 @@ namespace RockWeb.Blocks.Event
         Key = AttributeKey.DefaultWaitListTransitionEmail,
         Description = "The default Wait List Transition Email Template value to use for a new template",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 300,
         IsRequired = false,
         Order = 5,
@@ -843,7 +838,7 @@ The logged-in person's information will be used to complete the registrar inform
             var rockContext = new RockContext();
             var registrationTemplate = new RegistrationTemplateService( rockContext ).Get( hfRegistrationTemplateId.Value.AsInteger() );
 
-            if ( registrationTemplate != null && ( UserCanEdit || registrationTemplate.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) ) )
+            if ( registrationTemplate != null && ( UserCanEdit || registrationTemplate.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ) )
             {
                 LoadStateDetails( registrationTemplate, rockContext );
                 ShowEditDetails( registrationTemplate, rockContext );
@@ -864,7 +859,7 @@ The logged-in person's information will be used to complete the registrar inform
 
             if ( registrationTemplate != null )
             {
-                if ( !UserCanEdit && !registrationTemplate.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                if ( !( UserCanEdit || registrationTemplate.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || registrationTemplate.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) ) )
                 {
                     mdDeleteWarning.Show( "You are not authorized to delete this registration template.", ModalAlertType.Information );
                     return;
@@ -908,6 +903,9 @@ The logged-in person's information will be used to complete the registrar inform
             // Clone the registration template.
             var newRegistrationTemplate = registrationTemplate.CloneWithoutIdentity();
             newRegistrationTemplate.Name = registrationTemplate.Name + " - Copy";
+
+            // Copy navigation properties that will not be lazily loaded when accessing from the new copy.
+            newRegistrationTemplate.RequiredSignatureDocumentTemplate = registrationTemplate.RequiredSignatureDocumentTemplate;
 
             // Create temporary state objects for the new registration template.
             var newFormState = new List<RegistrationTemplateForm>();
@@ -1069,10 +1067,8 @@ The logged-in person's information will be used to complete the registrar inform
                 registrationTemplate = registrationTemplateService.Get( registrationTemplateId.Value );
             }
 
-            var newTemplate = false;
             if ( registrationTemplate == null )
             {
-                newTemplate = true;
                 registrationTemplate = new RegistrationTemplate();
             }
 
@@ -1221,6 +1217,27 @@ The logged-in person's information will be used to complete the registrar inform
                  && !registrationTemplate.FinancialGatewayId.HasValue )
             {
                 validationErrors.Add( "A Financial Gateway is required when the registration has a cost or additional fees or is configured to allow instances to set a cost." );
+            }
+
+            // Check security on category to verify they are authorized to use it.
+            var categoryId = cpCategory.SelectedValueAsInt();
+            if ( categoryId.HasValue )
+            {
+                var category = CategoryCache.Get( categoryId.Value );
+                if ( !category.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                {
+                    var categoryValidator = cpCategory.RequiredFieldValidator;
+                    categoryValidator.IsValid = false;
+                    categoryValidator.ErrorMessage = "You are not authorized to create or edit templates for the selected category.";
+                    return;
+                }
+            }
+            else
+            {
+                var categoryValidator = cpCategory.RequiredFieldValidator;
+                categoryValidator.IsValid = false;
+                categoryValidator.ErrorMessage = "You must select a valid category.";
+                return;
             }
 
             if ( validationErrors.Any() )
@@ -1544,22 +1561,6 @@ The logged-in person's information will be used to complete the registrar inform
                         rockContext.SaveChanges();
 
                         SaveAttributes( new Registration().TypeId, "RegistrationTemplateId", registrationTemplate.Id.ToString(), RegistrationAttributesState, rockContext );
-
-                        // If this is a new template, give the current user and the Registration Administrators role administrative
-                        // rights to this template, and staff, and staff like roles edit rights
-                        if ( newTemplate )
-                        {
-                            registrationTemplate.AllowPerson( Authorization.ADMINISTRATE, CurrentPerson, rockContext );
-
-                            var registrationAdmins = groupService.Get( Rock.SystemGuid.Group.GROUP_EVENT_REGISTRATION_ADMINISTRATORS.AsGuid() );
-                            registrationTemplate.AllowSecurityRole( Authorization.ADMINISTRATE, registrationAdmins, rockContext );
-
-                            var staffLikeUsers = groupService.Get( Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS.AsGuid() );
-                            registrationTemplate.AllowSecurityRole( Authorization.EDIT, staffLikeUsers, rockContext );
-
-                            var staffUsers = groupService.Get( Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS.AsGuid() );
-                            registrationTemplate.AllowSecurityRole( Authorization.EDIT, staffUsers, rockContext );
-                        }
                     } );
 
                     var qryParams = new Dictionary<string, string>
@@ -2560,10 +2561,18 @@ The logged-in person's information will be used to complete the registrar inform
 
             if ( registrationTemplate == null )
             {
+                var parentCategory = new Category();
+
+                if ( parentCategoryId.HasValue )
+                {
+                    parentCategory = new CategoryService( rockContext ).Get( parentCategoryId.Value );
+                }
+
                 registrationTemplate = new RegistrationTemplate
                 {
                     Id = 0,
                     IsActive = true,
+                    Category = parentCategory,
                     CategoryId = parentCategoryId,
                     ConfirmationFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}",
                     ConfirmationFromEmail = "{{ RegistrationInstance.ContactEmail }}",
@@ -2598,8 +2607,8 @@ The logged-in person's information will be used to complete the registrar inform
 
             nbEditModeMessage.Text = string.Empty;
 
-            // User must have 'Edit' rights to block, or 'Administrate' rights to template
-            if ( !UserCanEdit && !registrationTemplate.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+            // User must have 'Edit' rights to block, or 'Edit' rights to template
+            if ( !( UserCanEdit || registrationTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Heading = "Information";
@@ -3311,7 +3320,8 @@ The logged-in person's information will be used to complete the registrar inform
                     formField = new RegistrationTemplateFormField
                     {
                         Guid = formFieldGuid,
-                        FieldSource = RegistrationFieldSource.PersonAttribute
+                        FieldSource = RegistrationFieldSource.PersonAttribute,
+                        ShowOnWaitlist = true
                     };
                 }
                 else
@@ -3444,6 +3454,12 @@ The logged-in person's information will be used to complete the registrar inform
                     formField.PersonFieldType == RegistrationPersonFieldType.FirstName ||
                     formField.PersonFieldType == RegistrationPersonFieldType.LastName );
 
+                if ( lPersonField.Visible )
+                {
+                    // Force show on waitlist to be true for FirstName and LastName fields.
+                    cbShowOnWaitList.Checked = true;
+                }
+
                 SetFieldDisplay();
             }
 
@@ -3488,6 +3504,12 @@ The logged-in person's information will be used to complete the registrar inform
 
             cbShowOnWaitList.Visible = cbWaitListEnabled.Visible && cbWaitListEnabled.Checked;
             cbShowOnWaitList.Enabled = fieldSource != RegistrationFieldSource.GroupMemberAttribute;
+
+            if ( protectedField )
+            {
+                // FirstName or LastName field. Do not allow changing show on wait list.
+                cbShowOnWaitList.Enabled = false;
+            }
         }
 
         /// <summary>

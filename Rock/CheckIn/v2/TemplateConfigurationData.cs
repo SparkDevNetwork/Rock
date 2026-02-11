@@ -462,6 +462,12 @@ namespace Rock.CheckIn.v2
         public virtual Guid DefaultPersonConnectionStatusGuid { get; }
 
         /// <summary>
+        /// Controls how the family address field displayed when adding or
+        /// editing a family during registration.
+        /// </summary>
+        public virtual RequirementLevel DisplayAddressOnFamilies { get; }
+
+        /// <summary>
         /// Gets the default person record source unique identifier when
         /// adding a new person on the kiosk registration screen.
         /// </summary>
@@ -704,6 +710,7 @@ namespace Rock.CheckIn.v2
             AddPersonWorkflowTypeGuids = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_ADDPERSONWORKFLOWTYPES ).SplitDelimitedValues().AsGuidList();
             CanCheckInKnownRelationshipRoleGuids = GetRelationshipRoleGuids( groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_CANCHECKINKNOWNRELATIONSHIPTYPES ), rockContext );
             DefaultPersonConnectionStatusGuid = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTPERSONCONNECTIONSTATUS ).AsGuidOrNull() ?? SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid();
+            DisplayAddressOnFamilies = templateSettings.DisplayAddressOnFamilies;
             DefaultPersonRecordSourceGuid = groupTypeCache.GroupMemberRecordSourceValueId.HasValue
                 ? DefinedValueCache.Get( groupTypeCache.GroupMemberRecordSourceValueId.Value, rockContext ).Guid
                 : SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_CHECK_IN.AsGuid();

@@ -85,7 +85,7 @@ export const EditComponent = defineComponent({
             try {
                 const valueOptions = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ValueItem[];
                 addedOptions.value.forEach(addedOption => {
-                    if (valueOptions.find(a => a.value == addedOption.value) == null) {
+                    if (valueOptions.find(a => a.value === addedOption.value) == null) {
                         valueOptions.push(addedOption);
                     }
                 });

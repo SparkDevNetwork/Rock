@@ -10,6 +10,7 @@
 //  + Electronic Signatures
 //  + Rapid Attendance
 //  + Reminder List
+//  + Notifications
 // =============================================================
 
 .rock-fullscreen-toggle {
@@ -498,11 +499,46 @@
   }
 }
 
+.notes-container-editor-with-filter,
+.notes-container-editor-without-filter {
+  display: flex;
+}
+
+.notes-container-editor-with-filter .notes-container-editor .note-editor {
+  // Reduce the editor's right padding when the filter button is shown.
+  padding-right: var(--spacing-medium) !important;
+}
+
+.notes-container-editor {
+  flex: 1 1 auto;
+}
+
+.notes-container-filter {
+  flex: 0 0 auto;
+  padding-top: var(--spacing-medium);
+  padding-right: var(--spacing-medium);
+
+  .btn.btn-notes-container-filter {
+    border-radius: var(--rounded-small);
+  }
+
+  .btn.btn-notes-container-filter:hover,
+  .dropdown.open .btn.btn-notes-container-filter,
+  .btn.btn-notes-container-filter-active {
+    color: var(--color-interface-stronger);
+    background-color: var(--color-interface-soft);
+  }
+
+  .dropdown-menu {
+    white-space: nowrap;
+  }
+}
+
 .note-editor {
   .meta-body {
     background:     var(--color-interface-softest);
     border:         1px solid var(--color-interface-soft);
-    border-radius:  var(--color-interface-soft)-radius;
+    border-radius:  var(--rounded-xsmall);
   }
 
   .settings {
@@ -663,7 +699,7 @@
   &.active,
   &.active:focus,
   &.active:hover {
-    background: var(--color-info-strong);
+    background: var(--color-info-soft);
   }
 
   &.btn-primary {
@@ -1183,3 +1219,26 @@ body.hide-block-role-secondary .block-instance.block-role-secondary:not(.block-r
 }
 
 // ====================== END REMINDER LIST ======================
+
+// ====================== MY DASHBOARD - NOTIFICATIONS ======================
+
+.notification-messages {
+
+  .notification-item {
+      margin-bottom: var(--spacing-medium);
+  }
+
+  .notification-item:last-child {
+      margin-bottom: 0;
+  }
+
+  .filter-button.active {
+      background-color: var(--color-interface-soft);
+      padding: var(--spacing-tiny) var(--spacing-xsmall);
+      border-radius: var(--rounded-xsmall);
+  }
+
+}
+
+
+// ====================== END MY DASHBOARD - NOTIFICATIONS ======================

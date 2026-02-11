@@ -21,6 +21,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -79,6 +80,8 @@ namespace Rock.Web
 
         #region Static Methods
 
+        private const string InstallationDateCacheKey = "Rock:SystemSettings:InstallationDate";
+
         private static string CacheKey
         {
             get
@@ -99,6 +102,28 @@ namespace Rock.Web
         public static Guid GetRockInstanceId()
         {
             return GetValue( Rock.SystemKey.SystemSetting.ROCK_INSTANCE_ID ).AsGuidOrNull() ?? new Guid();
+        }
+
+        /// <summary>
+        /// Gets the date and time that Rock was installed. Newer Rock installs
+        /// explicitely set this during install. Older Rock installs will
+        /// attempt to estimate this based on the database creation date, which
+        /// may not be accurate because of backup and restore operations.
+        /// </summary>
+        /// <returns>A <see cref="DateTime"/> object representing when Rock was originally installed.</returns>
+        public static DateTime GetRockInstallationDateTime()
+        {
+            return ( DateTime ) RockCache.GetOrAddExisting( InstallationDateCacheKey, () =>
+            {
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
+                {
+                    var installDateTime = new AttributeService( rockContext )
+                        .GetSystemSetting( SystemKey.SystemSetting.ROCK_INSTANCE_ID )
+                        ?.CreatedDateTime;
+
+                    return installDateTime ?? RockDateTime.Now;
+                }
+            } );
         }
 
         /// <summary>
@@ -321,7 +346,7 @@ namespace Rock.Web
                 SystemSettingsValues = new ConcurrentDictionary<string, string>()
             };
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var systemSettingAttributes = new AttributeService( rockContext ).GetSystemSettings().ToAttributeCacheList();
 

@@ -17,7 +17,9 @@
         <div class="side-panel-content">
             <template v-if="selectedSidePanelMenuItem === 'blocks'">
                 <ComponentPropertyPanel v-if="internalSelectedComponentElement"
+                                        :buttonGlobalProps="buttonGlobalProps"
                                         :componentElement="internalSelectedComponentElement"
+                                        :dividerGlobalProps="dividerGlobalProps"
                                         :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
                                         :ltr="ltr"
                                         :mergeFields="mergeFields"
@@ -135,10 +137,15 @@
 
             <template v-else-if="selectedSidePanelMenuItem === 'styles'">
                 <GlobalPropertyPanel v-if="emailDocument"
-                                     v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
+                                     v-model:bodyGlobalProps="internalBodyGlobalProps"
+                                     v-model:buttonGlobalProps="internalButtonGlobalProps"
+                                     v-model:dividerGlobalProps="internalDividerGlobalProps"
                                      :document="emailDocument"
-                                     :communicationTemplates="communicationTemplates"
-                                     :hasScrollableBody="true" />
+                                     :hasScrollableBody="true">
+                    <template v-if="$slots.bodySettingsPrepend" #bodySettingsPrepend>
+                        <slot name="bodySettingsPrepend"></slot>
+                    </template>
+                </GlobalPropertyPanel>
             </template>
         </div>
 
@@ -332,8 +339,8 @@
     import EmailSectionModal from "./emailSectionModal.partial.obs";
     import FlatPanel from "./flatPanel.partial.obs";
     import GlobalPropertyPanel from "./propertyPanels/globalPropertyPanel.partial.obs";
-    import { CloneComponentRequest, CompleteComponentRequest, ComponentTypeDragEndRequest, ComponentTypeDragStartRequest, DeleteComponentRequest, EditorComponentTypeName, ReplaceComponentRequest } from "./types.partial";
-    import { UsageType } from "./types";
+    import { BodyGlobalProps, ButtonGlobalProps, CloneComponentRequest, CompleteComponentRequest, ComponentTypeDragEndRequest, ComponentTypeDragStartRequest, DeleteComponentRequest, DividerGlobalProps, EditorComponentTypeName, ReplaceComponentRequest } from "./types.partial";
+    import { UsageType } from "./types.partial";
     import { getComponentIconHtml, getComponentTitle } from "./utils.partial";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
@@ -371,14 +378,19 @@
     // #endregion Types
 
     const props = defineProps({
-        communicationTemplateGuid: {
-            type: String as PropType<Guid | null | undefined>,
-            required: false
+        bodyGlobalProps: {
+            type: Object as PropType<BodyGlobalProps>,
+            required: true
         },
 
-        communicationTemplates: {
-            type: Object as PropType<ListItemBag[] | null | undefined>,
-            required: false
+        buttonGlobalProps: {
+            type: Object as PropType<ButtonGlobalProps>,
+            required: true
+        },
+
+        dividerGlobalProps: {
+            type: Object as PropType<DividerGlobalProps>,
+            required: true
         },
 
         emailDocument: {
@@ -445,6 +457,9 @@
         (e: "componentTypeDragEnd", value: ComponentTypeDragEndRequest): void;
         (e: "deleteComponent", value: DeleteComponentRequest): void;
         (e: "replaceComponent", value: ReplaceComponentRequest): void;
+        (e: "update:bodyGlobalProps", value: BodyGlobalProps): void;
+        (e: "update:buttonGlobalProps", value: ButtonGlobalProps): void;
+        (e: "update:dividerGlobalProps", value: DividerGlobalProps): void;
         (e: "update:selectedComponentElement", value: HTMLElement | null | undefined): void;
         (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
     }>();
@@ -496,8 +511,10 @@
 
     const api = useApi();
 
+    const internalBodyGlobalProps = useVModelPassthrough(props, "bodyGlobalProps", emit);
+    const internalButtonGlobalProps = useVModelPassthrough(props, "buttonGlobalProps", emit);
+    const internalDividerGlobalProps = useVModelPassthrough(props, "dividerGlobalProps", emit);
     const selectedSidePanelMenuItem = ref<SidePanelMenuItemType>("blocks");
-    const internalCommunicationTemplateGuid = useVModelPassthrough(props, "communicationTemplateGuid", emit);
     const internalSelectedComponentElement = useVModelPassthrough(props, "selectedComponentElement", emit);
     const emailSectionFilterByCategory = ref<ListItemBag | ListItemBag[] | null | undefined>({
         value: Category.EmailSectionStarterSections,
@@ -754,7 +771,7 @@
      * and passes arguments to the child editor iframe to handle the event in the editor.
      */
     function onComponentTypeDragStart(event: MouseEvent | TouchEvent, componentTypeName: EditorComponentTypeName, customHtml?: string | null | undefined): void {
-        console.log(`"dragstart" toolbox component type`, componentTypeName);
+        console.debug(`"dragstart" toolbox component type`, componentTypeName);
 
         // Prevent right-clicks from starting the drag event cycle.
         if (isMouseEvent(event) && event.button !== 0) {
@@ -786,7 +803,7 @@
             }
 
             function unsub(): void {
-                console.log("unsub");
+                console.debug("unsub");
                 window.removeEventListener("touchmove", onMousemove);
                 window.removeEventListener("mousemove", onMousemove);
                 window.removeEventListener("mouseup", unsub);
@@ -889,7 +906,7 @@
      * This is the last event that is occurs in the drag-drop cycle.
      */
     function onComponentTypeDragEnd(): void {
-        console.log(`"dragend" toolbox component type`);
+        console.debug(`"dragend" toolbox component type`);
 
         document.removeEventListener("mouseup", onComponentTypeDragEnd);
         document.removeEventListener("touchend", onComponentTypeDragEnd);

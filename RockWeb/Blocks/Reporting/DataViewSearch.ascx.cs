@@ -37,7 +37,13 @@ namespace RockWeb.Blocks.Reporting
     [DisplayName( "DataView Search" )]
     [Category( "Reporting" )]
     [Description( "Handles displaying dataview search results and redirects to the dataview result page (via route ~/reporting/dataViews?) when only one match was found." )]
-    [CodeEditorField( "DataView URL Format", "The URL to use for linking to a dataView. <span class='tip tip-lava'></span>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "/reporting/dataViews?DataViewId={{ DataView.Id }}" )]
+
+    [CodeEditorField( "DataView URL Format",
+        Description = "The URL to use for linking to a dataView. <span class='tip tip-lava'></span>",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 200,
+        IsRequired = false,
+        DefaultValue = "/reporting/dataViews?DataViewId={{ DataView.Id }}" )]
 
     [Rock.SystemGuid.BlockTypeGuid( "BFB625F7-75CA-48FE-9C82-90E47374242B" )]
     public partial class DataViewSearch : RockBlock

@@ -221,16 +221,16 @@ namespace Rock.Blocks.Cms
                 MemoryCacheDurationHours = entity.MemoryCacheDurationMS,
                 Name = entity.Name,
                 PersistedScheduleId = entity.PersistedScheduleId,
-                RefreshInterval = entity.RefreshIntervalMinutes,
-                PersistenceType = entity.PersistedScheduleId.HasValue ? "Schedule" : ( entity.RefreshIntervalMinutes.HasValue ? "Interval" : null ),
+                RefreshInterval = entity.PersistedScheduleIntervalMinutes,
+                PersistenceType = entity.PersistedScheduleId.HasValue ? "Schedule" : ( entity.PersistedScheduleIntervalMinutes.HasValue ? "Interval" : null ),
                 PersistedScheduleType = isNamedSchedule ? "NamedSchedule" : "Unique",
                 PersistedSchedule = iCalContent,
                 FriendlyScheduleText = friendlyScheduleText
             };
 
-            if ( entity.RefreshIntervalMinutes.HasValue )
+            if ( entity.PersistedScheduleIntervalMinutes.HasValue )
             {
-                entityBag.RefreshIntervalHours = Convert.ToInt32( TimeSpan.FromMinutes( entity.RefreshIntervalMinutes.Value ).TotalHours );
+                entityBag.RefreshIntervalHours = Convert.ToInt32( TimeSpan.FromMinutes( entity.PersistedScheduleIntervalMinutes.Value ).TotalHours );
             }
 
             if ( entity.MemoryCacheDurationMS.HasValue )
@@ -238,10 +238,10 @@ namespace Rock.Blocks.Cms
                 entityBag.MemoryCacheDurationHours = Convert.ToInt32( TimeSpan.FromMilliseconds( entity.MemoryCacheDurationMS.Value ).TotalHours );
             }
 
-            // Set PersistedScheduleIntervalType by RefreshIntervalMinutes
-            if ( entity.RefreshIntervalMinutes.HasValue )
+            // Set PersistedScheduleIntervalType by PersistedScheduleIntervalMinutes
+            if ( entity.PersistedScheduleIntervalMinutes.HasValue )
             {
-                int intervalMinutes = entity.RefreshIntervalMinutes.Value;
+                int intervalMinutes = entity.PersistedScheduleIntervalMinutes.Value;
 
                 if ( intervalMinutes % 1440 == 0 ) // Check if it's in days
                 {
@@ -346,7 +346,7 @@ namespace Rock.Blocks.Cms
                 () => entity.IsActive = box.Entity.IsActive );
 
             box.IfValidProperty( nameof( box.Entity.RefreshInterval ),
-                () => entity.RefreshIntervalMinutes = box.Entity.RefreshInterval );
+                () => entity.PersistedScheduleIntervalMinutes = box.Entity.RefreshInterval );
 
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );
@@ -373,15 +373,13 @@ namespace Rock.Blocks.Cms
                     () => entity.MemoryCacheDurationMS = ( int ) TimeSpan.FromHours( box.Entity.MemoryCacheDurationHours.Value ).TotalMilliseconds );
             }
 
-
-
             if ( box.Entity.RefreshIntervalHours.HasValue )
             {
                 box.IfValidProperty( nameof( box.Entity.RefreshIntervalHours ),
-                    () => entity.RefreshIntervalMinutes = ( int ) TimeSpan.FromHours( box.Entity.RefreshIntervalHours.Value ).TotalMinutes );
+                    () => entity.PersistedScheduleIntervalMinutes = ( int ) TimeSpan.FromHours( box.Entity.RefreshIntervalHours.Value ).TotalMinutes );
             }
 
-            // Update RefreshIntervalMinutes based on Interval Type
+            // Update PersistedScheduleIntervalMinutes based on Interval Type
             if ( box.Entity.PersistenceType == "Interval" && box.Entity.RefreshInterval.HasValue )
             {
                 // Ensure the schedule is removed if the PersistenceType is Interval
@@ -401,13 +399,13 @@ namespace Rock.Blocks.Cms
                         break;
                 }
 
-                // Update the entity's RefreshIntervalMinutes
-                entity.RefreshIntervalMinutes = intervalMinutes;
+                // Update the entity's PersistedScheduleIntervalMinutes
+                entity.PersistedScheduleIntervalMinutes = intervalMinutes;
             }
             else
             {
                 // If the PersistenceType is not 'Interval', reset the interval minutes
-                entity.RefreshIntervalMinutes = null;
+                entity.PersistedScheduleIntervalMinutes = null;
             }
 
             return true;

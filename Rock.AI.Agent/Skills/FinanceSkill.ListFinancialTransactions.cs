@@ -154,7 +154,7 @@ namespace Rock.AI.Agent.Skills
 
             var meta = new Dictionary<string, object>
             {
-                { "filters", new Dictionary<string, object?>
+                { "filters", new Dictionary<string, object>
                     {
                         { "personIdKey", personIdKey },
                         { "campusIdKey", campusIdKey },

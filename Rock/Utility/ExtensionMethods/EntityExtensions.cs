@@ -415,7 +415,8 @@ namespace Rock
         {
             if ( type != null )
             {
-                return type.Namespace == "System.Data.Entity.DynamicProxies";
+                return type.Namespace == "System.Data.Entity.DynamicProxies"
+                    || type.Namespace == "Castle.Proxies";
             }
             else
             {
@@ -652,11 +653,23 @@ namespace Rock
             // excessively deep summaries.
             for ( int i = 0; i < 50 && obj != null; i++ )
             {
-                var summary = new LinkageSummary
+                var summary = new LinkageSummary();
+
+                if ( obj is IEntity objEntity )
                 {
-                    EntityTypeId = entity.TypeId,
-                    EntityId = entity.Id
-                };
+                    summary.EntityTypeId = objEntity.TypeId;
+                    summary.EntityId = objEntity.Id;
+                }
+                else if ( obj is IEntityCache objEntityCache )
+                {
+                    summary.EntityTypeId = objEntityCache.CachedEntityTypeId;
+                    summary.EntityId = objEntityCache.Id;
+
+                }
+                else
+                {
+                    break;
+                }
 
                 // If this is the first summary object, set the root variable that
                 // will be returned at the end.

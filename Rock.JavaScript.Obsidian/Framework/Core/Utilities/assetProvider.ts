@@ -95,7 +95,7 @@ export function findFolder(tree: Array<TreeItemBag>, searchName: string | null, 
         const itemName = item.value?.replace(assetProviderSuffixRegex, "") as string;
 
         // If this is the item we're searching for, then return all the information we have
-        if (itemName == trueSearchName) {
+        if (itemName === trueSearchName) {
             folder = item;
             return { folder, parent, index };
         }

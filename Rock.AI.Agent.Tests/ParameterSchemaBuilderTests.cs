@@ -210,7 +210,7 @@ namespace Rock.AI.Agent.Tests
             var schema = builder.BuildKernelParameterMetadata( parameter ).Schema;
 
             Assert.IsTrue( schema.RootElement.TryGetProperty( "enum", out var enumProperty ) );
-            Assert.IsTrue( enumProperty.ValueKind == JsonValueKind.Array );
+            Assert.AreEqual( JsonValueKind.Array, enumProperty.ValueKind );
             Assert.AreEqual( 3, enumProperty.GetArrayLength() );
             Assert.AreEqual( "Value1", enumProperty[0].GetString() );
             Assert.AreEqual( "Value2", enumProperty[1].GetString() );
@@ -233,7 +233,7 @@ namespace Rock.AI.Agent.Tests
 
             Assert.IsTrue( schema.RootElement.TryGetProperty( "items", out var itemsProperty ) );
             Assert.IsTrue( itemsProperty.TryGetProperty( "enum", out var enumProperty ) );
-            Assert.IsTrue( enumProperty.ValueKind == JsonValueKind.Array );
+            Assert.AreEqual( JsonValueKind.Array, enumProperty.ValueKind );
             Assert.AreEqual( 3, enumProperty.GetArrayLength() );
             Assert.AreEqual( "Value1", enumProperty[0].GetString() );
             Assert.AreEqual( "Value2", enumProperty[1].GetString() );

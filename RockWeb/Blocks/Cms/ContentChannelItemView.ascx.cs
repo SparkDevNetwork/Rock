@@ -85,7 +85,6 @@ namespace RockWeb.Blocks.Cms
         "Lava Template",
         Description = "The template to use when formatting the content channel item.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         Category = "CustomSetting",

@@ -30,7 +30,8 @@
                                :is="actionComponent"
                                :configuration="actionConfiguration"
                                :data="actionData"
-                               :submit="onActionDataChanged" />
+                              :submit="onActionDataChanged"
+                               :isCaptchaEnabled="config.isCaptchaEnabled" />
                 </div>
             </div>
         </div>
@@ -48,13 +49,10 @@
                             @saveNote="onSaveNote"
                             @deleteNote="onDeleteNote" />
         </div>
-    </div>
-
-    <Captcha v-if="config.isCaptchaEnabled" ref="captchaElement"></Captcha>
+   </div>
 </template>
 
 <script setup lang="ts">
-    import Captcha from "@Obsidian/Controls/captcha.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import InteractiveMessage from "./WorkflowEntry/interactiveMessage.partial.obs";
     import NotesContainer from "@Obsidian/Controls/Internal/notesContainer.obs";
@@ -64,7 +62,6 @@
     import { alert } from "@Obsidian/Utility/dialogs";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { useSuspense } from "@Obsidian/Utility/suspense";
-    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
     import { WorkflowEntryOptionsBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowEntry/workflowEntryOptionsBag";
     import { InteractiveActionBag } from "@Obsidian/ViewModels/Workflow/interactiveActionBag";
     import { InteractiveMessageBag } from "@Obsidian/ViewModels/Workflow/interactiveMessageBag";
@@ -86,8 +83,6 @@
     const actionComponent = ref<Component>();
     const actionConfiguration = ref<Record<string, string | null | undefined>>({});
     const actionData = ref<Record<string, string | null | undefined>>({});
-
-    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
 
     // #endregion
 
@@ -167,19 +162,15 @@
      *
      * @param componentData The data from the component that should be sent to the server.
      */
-    async function onActionDataChanged(componentData: Record<string, string | null | undefined>): Promise<void> {
+    async function onActionDataChanged(
+        componentData: Record<string, string | null | undefined>,
+        actionContext?: Record<string, string | null | undefined>
+    ): Promise<void> {
         const data = {
             workflowGuid: currentAction.value?.workflowGuid,
             actionTypeGuid: currentAction.value?.actionTypeGuid,
             componentData: componentData
         };
-
-        const actionContext: BlockActionContextBag = {};
-
-        if (captchaElement.value) {
-            actionContext.captcha = await captchaElement.value.getToken();
-            captchaElement.value.refreshToken();
-        }
 
         const response = await invokeBlockAction<InteractiveActionBag>("GetNextInteractiveAction", data, actionContext);
 

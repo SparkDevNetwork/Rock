@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Cms;
+using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
@@ -25,15 +28,23 @@ namespace Rock.Tests.Web.Cache
         {
             var expectedUrl = "https://www.rockrms.com";
 
-            var rockContextMock = MockDatabaseHelper.GetRockContextMock();
-            var pageShortLink = MockDatabaseHelper.CreateEntityMock<PageShortLink>( 1, new Guid( "2248633d-e109-4349-b2b6-27628e73010f" ) );
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            var pageShortLink = new PageShortLink
+            {
+                Id = 1,
+                Guid = new Guid( "2248633d-e109-4349-b2b6-27628e73010f" ),
+                Url = expectedUrl,
+            };
 
-            pageShortLink.Object.Url = expectedUrl;
+            rockContextMock.Object.Set<PageShortLink>().Add( pageShortLink );
 
-            var pageShortLinkCache = new PageShortLinkCache();
-            pageShortLinkCache.SetFromEntity( pageShortLink.Object );
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            {
+                var pageShortLinkCache = PageShortLinkCache.Get( pageShortLink.Id, rockContextMock.Object );
 
-            Assert.AreEqual( expectedUrl, pageShortLinkCache.GetCurrentUrl( rockContextMock.Object ) );
+                Assert.AreEqual( expectedUrl, pageShortLinkCache.GetCurrentUrl( rockContextMock.Object ) );
+            }
         }
 
         [TestMethod]
@@ -53,16 +64,25 @@ namespace Rock.Tests.Web.Cache
                 }
             };
 
-            var rockContextMock = MockDatabaseHelper.GetRockContextMock();
-            var pageShortLink = MockDatabaseHelper.CreateEntityMock<PageShortLink>( 1, new Guid( "2248633d-e109-4349-b2b6-27628e73010f" ) );
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            var pageShortLink = new PageShortLink
+            {
+                Id = 1,
+                Guid = new Guid( "2248633d-e109-4349-b2b6-27628e73010f" ),
+                Url = "https://rock.rocksolidchurchdemo.com",
+            };
 
-            pageShortLink.Object.Url = "https://rock.rocksolidchurchdemo.com";
-            pageShortLink.Object.SetScheduleData( scheduleData );
+            pageShortLink.SetScheduleData( scheduleData );
 
-            var pageShortLinkCache = new PageShortLinkCache();
-            pageShortLinkCache.SetFromEntity( pageShortLink.Object );
+            rockContextMock.Object.Set<PageShortLink>().Add( pageShortLink );
 
-            Assert.AreEqual( expectedUrl, pageShortLinkCache.GetCurrentUrl( rockContextMock.Object ) );
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            {
+                var pageShortLinkCache = PageShortLinkCache.Get( pageShortLink.Id, rockContextMock.Object );
+
+                Assert.AreEqual( expectedUrl, pageShortLinkCache.GetCurrentUrl( rockContextMock.Object ) );
+            }
         }
 
         [TestMethod]
@@ -83,16 +103,25 @@ namespace Rock.Tests.Web.Cache
                 }
             };
 
-            var rockContextMock = MockDatabaseHelper.GetRockContextMock();
-            var pageShortLink = MockDatabaseHelper.CreateEntityMock<PageShortLink>( 1, new Guid( "2248633d-e109-4349-b2b6-27628e73010f" ) );
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            var pageShortLink = new PageShortLink
+            {
+                Id = 1,
+                Guid = new Guid( "2248633d-e109-4349-b2b6-27628e73010f" ),
+                Url = expectedUrl,
+            };
 
-            pageShortLink.Object.Url = expectedUrl;
-            pageShortLink.Object.SetScheduleData( scheduleData );
+            pageShortLink.SetScheduleData( scheduleData );
 
-            var pageShortLinkCache = new PageShortLinkCache();
-            pageShortLinkCache.SetFromEntity( pageShortLink.Object );
+            rockContextMock.Object.Set<PageShortLink>().Add( pageShortLink );
 
-            Assert.AreEqual( expectedUrl, pageShortLinkCache.GetCurrentUrl( rockContextMock.Object ) );
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            {
+                var pageShortLinkCache = PageShortLinkCache.Get( pageShortLink.Id, rockContextMock.Object );
+
+                Assert.AreEqual( expectedUrl, pageShortLinkCache.GetCurrentUrl( rockContextMock.Object ) );
+            }
         }
 
         private string GetScheduleContentForNow()

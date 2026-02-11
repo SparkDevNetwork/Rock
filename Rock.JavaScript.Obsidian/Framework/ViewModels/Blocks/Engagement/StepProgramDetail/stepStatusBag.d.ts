@@ -26,10 +26,7 @@ import { Guid } from "@Obsidian/Types";
 /** The step status details for the Step Program Detail workflow trigger grid. */
 export type StepStatusBag = {
     /** Gets or sets the unique identifier. */
-    guid?: Guid | null;
-
-    /** Gets or sets the Step Status identifier. */
-    id: number;
+    guid: Guid;
 
     /** Gets or sets a value indicating whether this status is active. */
     isActive: boolean;

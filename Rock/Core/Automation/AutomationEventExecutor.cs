@@ -24,7 +24,7 @@ namespace Rock.Core.Automation
     /// This provides the basic functionality for executing one or more
     /// automation requests.
     /// </summary>
-    internal abstract class AutomationEventExecutor : IDisposable
+    public abstract class AutomationEventExecutor : IDisposable
     {
         /// <summary>
         /// <c>true</c> if the instance has already been disposed.

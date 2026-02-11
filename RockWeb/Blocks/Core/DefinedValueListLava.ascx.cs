@@ -47,7 +47,6 @@ namespace RockWeb.Blocks.Core
     [CodeEditorField( "Lava Template",
         Description = "Lava template to use to display content",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = true,
         DefaultValue = @"{% for definedValue in DefinedValues %}

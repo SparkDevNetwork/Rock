@@ -64,7 +64,7 @@ public abstract class BaseFunctionCallTests : MockDatabaseTestsBase
         providerMock.Setup( m => m.GetAttributeValue( "Seed" ) ).Returns( seed.ToString() );
 
         // Create mocks for accessing the database.
-        var rockContextMock = MockDatabaseHelper.GetRockContextMock();
+        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
         var rockContextFactoryMock = new Mock<IRockContextFactory>();
 
         // Create a mock for accessing the request context. This is used to

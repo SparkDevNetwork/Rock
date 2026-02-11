@@ -340,14 +340,14 @@ namespace Rock.Tests.Integration.Core.Jobs
             var stepProgramService = new StepProgramService( rockContext );
             var stepProgram = stepProgramService.Queryable( "StepTypes.Steps.StepStatus" ).FirstOrDefault( sp => sp.ForeignKey == ForeignKey );
 
-            Assert.AreEqual( 4, stepProgram.StepTypes.Count );
+            Assert.HasCount( 4, stepProgram.StepTypes );
 
             foreach ( var stepType in stepProgram.StepTypes )
             {
                 if ( stepType.AutoCompleteDataViewId.HasValue )
                 {
                     // The three people in the dataview should have completed steps
-                    Assert.AreEqual( 3, stepType.Steps.Count );
+                    Assert.HasCount( 3, stepType.Steps );
 
                     foreach ( var step in stepType.Steps )
                     {
@@ -359,7 +359,7 @@ namespace Rock.Tests.Integration.Core.Jobs
                 else
                 {
                     // No steps should exist for a step type with no auto-complete dataview
-                    Assert.AreEqual( 0, stepType.Steps.Count );
+                    Assert.HasCount( 0, stepType.Steps );
                 }
             }
         }
@@ -411,14 +411,14 @@ namespace Rock.Tests.Integration.Core.Jobs
                 var stepProgram = stepProgramService.Queryable( "StepTypes.Steps.StepStatus" ).FirstOrDefault( sp => sp.ForeignKey == ForeignKey );
                 var foundOriginalStep = false;
 
-                Assert.AreEqual( 4, stepProgram.StepTypes.Count );
+                Assert.HasCount( 4, stepProgram.StepTypes );
 
                 foreach ( var stepType in stepProgram.StepTypes )
                 {
                     if ( stepType.AutoCompleteDataViewId.HasValue )
                     {
                         // The 3 people of the dataview should have a completed step
-                        Assert.AreEqual( 3, stepType.Steps.Count );
+                        Assert.HasCount( 3, stepType.Steps );
 
                         foreach ( var step in stepType.Steps )
                         {
@@ -436,7 +436,7 @@ namespace Rock.Tests.Integration.Core.Jobs
                     else
                     {
                         // No steps should exist for a type with no auto-complete dataview
-                        Assert.AreEqual( 0, stepType.Steps.Count );
+                        Assert.HasCount( 0, stepType.Steps );
                     }
                 }
 
@@ -492,14 +492,14 @@ namespace Rock.Tests.Integration.Core.Jobs
                 var stepProgram = stepProgramService.Queryable( "StepTypes.Steps.StepStatus" ).FirstOrDefault( sp => sp.ForeignKey == ForeignKey );
                 var foundOriginalStep = false;
 
-                Assert.AreEqual( 4, stepProgram.StepTypes.Count );
+                Assert.HasCount( 4, stepProgram.StepTypes );
 
                 foreach ( var stepType in stepProgram.StepTypes )
                 {
                     if ( stepType.AutoCompleteDataViewId.HasValue )
                     {
                         // 3 people in the dataview should have a completed step
-                        Assert.AreEqual( 3, stepType.Steps.Count );
+                        Assert.HasCount( 3, stepType.Steps );
 
                         foreach ( var step in stepType.Steps )
                         {
@@ -519,7 +519,7 @@ namespace Rock.Tests.Integration.Core.Jobs
                     else
                     {
                         // No steps should exist for a type with no auto-complete dataview
-                        Assert.AreEqual( 0, stepType.Steps.Count );
+                        Assert.HasCount( 0, stepType.Steps );
                     }
                 }
 
@@ -577,7 +577,7 @@ namespace Rock.Tests.Integration.Core.Jobs
                 var stepProgram = stepProgramService.Queryable( "StepTypes.Steps.StepStatus" ).FirstOrDefault( sp => sp.ForeignKey == ForeignKey );
                 var foundOriginalStep = false;
 
-                Assert.AreEqual( 4, stepProgram.StepTypes.Count );
+                Assert.HasCount( 4, stepProgram.StepTypes );
 
                 foreach ( var stepType in stepProgram.StepTypes )
                 {
@@ -585,7 +585,7 @@ namespace Rock.Tests.Integration.Core.Jobs
                     {
                         // This is the allow multiple type with an autocomplete dataview
                         // There should be the original step and now also 3 new ones.
-                        Assert.AreEqual( 4, stepType.Steps.Count );
+                        Assert.HasCount( 4, stepType.Steps );
 
                         foreach ( var step in stepType.Steps )
                         {
@@ -605,7 +605,7 @@ namespace Rock.Tests.Integration.Core.Jobs
                     else if ( stepType.AutoCompleteDataViewId.HasValue )
                     {
                         // There should be a completed step for each person in the dataview
-                        Assert.AreEqual( 3, stepType.Steps.Count );
+                        Assert.HasCount( 3, stepType.Steps );
 
                         foreach ( var step in stepType.Steps )
                         {
@@ -617,7 +617,7 @@ namespace Rock.Tests.Integration.Core.Jobs
                     else
                     {
                         // No steps for types with no dataview
-                        Assert.AreEqual( 0, stepType.Steps.Count );
+                        Assert.HasCount( 0, stepType.Steps );
                     }
                 }
 

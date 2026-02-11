@@ -1,0 +1,50 @@
+<template>
+    <ul class="nav navbar-nav contextsetter contextsetter-campus">
+        <li class="dropdown">
+            <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
+                {{ config.currentSelectionText }}
+                <b class="ti ti-caret-down-filled"></b>
+            </a>
+
+            <ul class="dropdown-menu" :class="{ 'dropdown-menu-right': config.alignment === 2 }">
+                <li v-for="campus in config.campuses"
+                    :key="campus.value ?? undefined"
+                    class="dropdown">
+                    <a href="#" @click.prevent="onCampusSelected(campus.value)">{{ campus.text }}</a>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { CampusContextSetterOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CampusContextSetter/campusContextSetterOptionsBag";
+
+    // NOTE: We intentionally are not using the CampusContextPicker control here
+    // because we need to maintain backwards compatability with how the block
+    // is rendered so it can be a drop in replacement for the WebForms version.
+
+    const config = useConfigurationValues<CampusContextSetterOptionsBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    /**
+     * Called when a campus is selected from the dropdown.
+     *
+     * @param campusValue The campus value that was selected.
+     */
+    async function onCampusSelected(campusValue: string | null | undefined): Promise<void> {
+        var data = {
+            campusGuid: campusValue ?? emptyGuid,
+            url: window.location.href
+        };
+
+        const result = await invokeBlockAction<{ redirectUrl?: string | null }>("SetCampus", data);
+
+        if (result.isSuccess && result.data?.redirectUrl) {
+            window.location.href = makeUrlRedirectSafe(result.data.redirectUrl);
+        }
+    }
+</script>

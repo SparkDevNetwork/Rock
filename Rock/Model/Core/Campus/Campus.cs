@@ -134,6 +134,8 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 500 )]
+        [RockObsolete( "19.0" )]
+        [Obsolete( "Use the CampusSchedules navigation property instead." )]
         public string ServiceTimes { get; set; }
 
         /// <summary>

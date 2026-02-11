@@ -77,7 +77,15 @@ namespace RockWeb.Blocks.Security.Oidc
         {
             get
             {
-                return PageParameter( PageParameterKey.ScopeDetailId ).AsIntegerOrNull();
+                var scopeKey = PageParameter( PageParameterKey.ScopeDetailId );
+
+                var scopeId = scopeKey.AsIntegerOrNull();
+                if ( scopeId.HasValue )
+                {
+                    return scopeId.Value;
+                }
+
+                return Rock.Utility.IdHasher.Instance.GetId( scopeKey );
             }
         }
 

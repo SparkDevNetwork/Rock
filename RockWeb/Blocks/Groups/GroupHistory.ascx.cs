@@ -35,9 +35,17 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Displays a timeline of history for a group" )]
 
-    [CodeEditorField( "Timeline Lava Template", "The Lava Template to use when rendering the timeline view of the history.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, @"{% include '~~/Assets/Lava/GroupHistoryTimeline.lava' %}", order: 1 )]
+    [CodeEditorField( "Timeline Lava Template",
+        Description = "The Lava Template to use when rendering the timeline view of the history.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 100,
+        IsRequired = false,
+        DefaultValue = @"{% include '~~/Assets/Lava/GroupHistoryTimeline.lava' %}",
+        Order = 1 )]
+
     [LinkedPage( "Group History Grid Page", defaultValue: Rock.SystemGuid.Page.GROUP_HISTORY_GRID, required: true, order: 2 )]
     [LinkedPage( "Group Member History Page", defaultValue: Rock.SystemGuid.Page.GROUP_MEMBER_HISTORY, required: true, order: 3 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "E916D65E-5D30-4086-9A11-8E891CCD930E" )]
     public partial class GroupHistory : RockBlock, ICustomGridColumns
     {

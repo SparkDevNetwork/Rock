@@ -171,7 +171,7 @@
             else {
                 chartData.value = {} as ChartData;
                 hideChart.value = true;
-                if (result.statusCode == 404) {
+                if (result.statusCode === 404) {
                     notificationMessage.value = result.errorMessage ?? "";
                 }
                 else {

@@ -106,12 +106,12 @@ flex: 1
 
 /* Workspace Class Overview */
 .workspace-class-sidebar .section:not(:last-child) {
-margin-bottom: var(--spacing-large) 0;
-padding-bottom: var(--spacing-large);
+    margin-bottom: var(--spacing-large) 0;
+    padding-bottom: var(--spacing-large);
 }
 
 .class-progress-bar .progress {
-margin-bottom: 4px !important;
+    margin-bottom: 4px !important;
 }
 
 .overview-section,
@@ -119,9 +119,9 @@ margin-bottom: 4px !important;
 .notifications-section,
 .empty-announcements-container,
 .empty-notifications-container {
-border: 1px solid var(--color-interface-soft);
-border-radius: 12px;
-padding: var(--spacing-large);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: 12px;
+    padding: var(--spacing-large);
 }
 
 /* Override the default h4 margins in the overview section. */
@@ -135,60 +135,60 @@ h4.section-label {
 }
 
 .facilitator-email {
-margin-top: 4px;
+    margin-top: 4px;
 }
 
 .announcement-cards-container,
 .notification-cards-container {
-display: flex;
-flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 
 .empty-announcements-container,
 .empty-notifications-container {
-align-items: center;
-background-color: var(--color-interface-softer);
+    align-items: center;
+    background-color: var(--color-interface-softer);
 }
 
 .no-announcements-icon,
 .no-notifications-icon {
-color: var(--color-interface-strong);
+    color: var(--color-interface-strong);
 }
 
 .no-announcements-title,
 .no-notifications-title {
-font-weight: var(--font-weight-bold);
-padding-top: var(--spacing-xsmall);
-padding-bottom: var(--spacing-tiny);
-margin: 0;
+    font-weight: var(--font-weight-bold);
+    padding-top: var(--spacing-xsmall);
+    padding-bottom: var(--spacing-tiny);
+    margin: 0;
 }
 
 .no-announcements-text,
 .no-notifications-text {
-font-size: var(--font-size-small);
-color: var(--color-interface-medium);
+    font-size: var(--font-size-small);
+    color: var(--color-interface-medium);
 }
 
 .view-all-button > .btn-link:focus {
-outline: none;
+    outline: none;
 }
 
 .view-all-button > .btn-link > .fa {
-text-decoration-line: none;
-margin-left: var(--spacing-tiny);
+    text-decoration-line: none;
+    margin-left: var(--spacing-tiny);
 }
 
 .empty-grade {
-background-color: var(--color-interface-soft);
-color: var(--color-interface-strongest);
+    background-color: var(--color-interface-soft);
+    color: var(--color-interface-strongest);
 }
 
 .card-notification,
 .card-announcement {
-margin-bottom: var(--spacing-medium);
-background-color: var(--color-interface-softer) !important;
-display: flex;
-flex-direction: column;
+    margin-bottom: var(--spacing-medium);
+    background-color: var(--color-interface-softer) !important;
+    display: flex;
+    flex-direction: column;
 }
 
 .notification-title {
@@ -202,52 +202,52 @@ flex-direction: column;
 }
 
 .view-all-button {
-display: flex;
-justify-content: center;
+    display: flex;
+    justify-content: center;
 }
 
 .card-date {
-color: var(--color-interface-medium);
+    color: var(--color-interface-medium);
 }
 
 .notification-section:not(:last-child),
 .announcment-section:not(:last-child) {
-margin-bottom: var(--spacing-large);
+    margin-bottom: var(--spacing-large);
 }
 
 .overview-section h3.title,
 .notifications-section h3.title,
 .announcements-section h3.title {
-margin-bottom: var(--spacing-large);
-margin-top: 0;
+    margin-bottom: var(--spacing-large);
+    margin-top: 0;
 }
 
 .notification-title { // Card Title
-margin-top: var(--spacing-tiny);
-margin-bottom: 0;
-}
+    margin-top: var(--spacing-tiny);
+    margin-bottom: 0;
+    }
 
 .announcement-title { // Card Title
-font-size: var(--font-size-h4);
-margin-top: var(--spacing-tiny);
-margin-bottom: var(--spacing-medium);
+    font-size: var(--font-size-h4);
+    margin-top: var(--spacing-tiny);
+    margin-bottom: var(--spacing-medium);
 }
 
 .announcement-content {
-h1, h2 {
-font-size: var(--font-size-h5);
-}
+    h1, h2 {
+        font-size: var(--font-size-h5);
+    }
 }
 
 .announcement-content {
-h1, h2 {
-    font-size: var(--font-size-h5);
-}
+    h1, h2 {
+        font-size: var(--font-size-h5);
+    }
 
-h3, h4, h5, h6 {
-    font-size: var(--font-size-small);
-    font-weight: var(--font-weight-bold);
-}
+    h3, h4, h5, h6 {
+        font-size: var(--font-size-small);
+        font-weight: var(--font-weight-bold);
+    }
 }
 
 .facilitators-list {
@@ -256,23 +256,23 @@ h3, h4, h5, h6 {
 }
 
 .facilitator-comment-container {
-padding: var(--spacing-small);
+    padding: var(--spacing-small);
 }
 
 /* Workspace Activities */
 @media (min-width: 768px) {
-.workspace-block-content {
-    display: flex;
-}
+    .workspace-block-content {
+        display: flex;
+    }
 
-.workspace-navigation-pane {
-    width: 33%;
-    margin-right: var(--spacing-large);
-}
+    .workspace-navigation-pane {
+        width: 33%;
+        margin-right: var(--spacing-large);
+    }
 
-.workspace-main-content {
-    width: 67%;
-}
+    .workspace-main-content {
+        width: 67%;
+    }
 }
 
 .workspace-navigation-pane {
@@ -290,38 +290,39 @@ padding: var(--spacing-small);
 }
 
 .course-completed-content {
-display: flex;
-flex-direction: column;
-align-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .workspace-main-content-header {
-display: flex;
-flex-direction: column;
-margin-bottom: var(--spacing-medium)
+    display: flex;
+    flex-direction: column;
+    margin-bottom: var(--spacing-medium)
 }
 
 /* Activity List */
 .custom-select-item-content {
-display: flex;
-justify-content: space-between;
-align-items: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .activity-item-content {
-display: flex;
-align-items: center;
-width: 100%;
-gap: var(--spacing-medium);
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: var(--spacing-small);
 }
 
-.activity-item-content h5 {
-margin: 0;
-font-weight: var(--font-weight-semibold);
+.activity-item-content h6 {
+    margin: 0;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-h6);
 }
 
-.activity-item-content .activity-item-icon .icon {
-color: #fff;
+.activity-item-content i {
+    font-size: var(--font-size-h4);
 }
 
 .activity-time {
@@ -330,28 +331,28 @@ color: #fff;
 }
 
 .custom-select-mobile-wrapper {
-margin-bottom: var(--spacing-large);
-/* add spacing below the activity selector on mobile */
+    margin-bottom: var(--spacing-large);
+    /* add spacing below the activity selector on mobile */
 }
 
 .available {
-background-color: var(--color-interface-softest);
+    background-color: var(--color-interface-softest);
 }
 
 .not-available {
-background-color: var(--color-interface-softest);
+    background-color: var(--color-interface-softest);
 }
 
 .is-completed {
-background-color: var(--color-interface-softest);
+    background-color: var(--color-interface-softest);
 }
 
 .is-incomplete {
-color: var(--color-interface-medium);
+    color: var(--color-interface-medium);
 }
 
 .is-selected {
-background-color: var(--color-interface-softer);
+    background-color: var(--color-interface-softer);
 }
 
 
@@ -361,9 +362,9 @@ background-color: var(--color-interface-softer);
 // --------------------------------
 
 .activity-item-detail-container {
-width: 100%;
-display: flex;
-flex-direction: column;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .activity-item-time {
@@ -375,20 +376,20 @@ flex-direction: column;
 }
 
 .activity-item-grade-container {
-width: 80px;
-display: flex;
-flex-direction: column;
-align-items: center;
+    width: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .content-page-container {
-border: 1px solid var(--color-interface-soft);
-border-radius: 12px;
-padding: var(--spacing-large);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: 12px;
+    padding: var(--spacing-large);
 }
 
 .content-page-container h1:first-of-type {
-margin-top: 0;
+    margin-top: 0;
 }
 
 .footer-button-section {
@@ -396,7 +397,7 @@ margin-top: var(--spacing-large);
 }
 
 .student-completion-summary-header h2 {
-margin-top: 0;
+    margin-top: 0;
 }
 
 

@@ -90,7 +90,6 @@ namespace RockWeb.Blocks.Cms
         "HTML Form",
         Description = "The HTML for the form the user will complete. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = false,
         DefaultValue = HTML_FORM_DEFAULT_VALUE,
@@ -100,7 +99,6 @@ namespace RockWeb.Blocks.Cms
         "Message Body",
         Description = "The email message body. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = false,
         DefaultValue = MESSAGE_BODY_DEFAULT_VALUE,
@@ -110,7 +108,6 @@ namespace RockWeb.Blocks.Cms
         "Response Message",
         Description = "The message the user will see when they submit the form if no response page if provided. Lava merge fields are available for you to use in your message.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         DefaultValue = @"<div class=""alert alert-info"">
@@ -158,7 +155,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.SaveCommunicationHistory )]
     [BooleanField(
         "Disable Captcha Support",
-        Description = "If set to 'Yes' the CAPTCHA verification will be skipped. \n\nNote: If the CAPTCHA site key and/or secret key are not configured in the system settings, this option will be forced as 'Yes', even if 'No' is visually selected.",
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
         DefaultBooleanValue = false,
         Order = 15,
         Key = AttributeKey.DisableCaptchaSupport )]

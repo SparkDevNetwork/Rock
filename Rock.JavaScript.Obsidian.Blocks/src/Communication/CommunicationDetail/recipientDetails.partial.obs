@@ -200,7 +200,6 @@
 </template>
 
 <style scoped>
-
 .communication-detail-recipient-details {
     padding-top: var(--spacing-medium);
 }
@@ -366,7 +365,7 @@
      */
     function getIsRowIsDeliveryFailure(row: Record<string, unknown>): boolean {
         const status = (row as RecipientGridRow).status;
-        return status == CommunicationRecipientStatus.Failed;
+        return status === CommunicationRecipientStatus.Failed;
     }
 
     /**

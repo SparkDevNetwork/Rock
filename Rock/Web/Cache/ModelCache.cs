@@ -21,6 +21,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -312,7 +313,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public virtual void SaveAttributeValues()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new Service<TT>( rockContext );
             var model = service.Get( Id );
 

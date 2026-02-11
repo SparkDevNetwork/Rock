@@ -33,6 +33,14 @@
         },
 
         /**
+         * If true, the avatar will not be hidden based on the screensize.
+         */
+        alwaysShowAvatar: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
          * If true, when hovering the avatar, a popover will be shown with additional information
          * about the person. This requires that the personIdKey is also specified.
          */
@@ -89,8 +97,17 @@
         }
     });
 
+    const imgHideClass = computed((): string => {
+        if (props.alwaysShowAvatar) {
+            return "";
+        }
+        else {
+            return `hidden-xs`;
+        }
+    });
+
     const cssClasses = computed((): string => {
-        return `photo-icon photo-round flex-shrink-0 ${imgSizeClass.value} ${marginClass.value}`;
+        return `photo-icon photo-round flex-shrink-0 ${imgHideClass.value} ${imgSizeClass.value} ${marginClass.value}`;
     });
 
     const styles = computed((): Record<string, string> => {

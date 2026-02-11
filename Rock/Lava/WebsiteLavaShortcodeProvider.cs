@@ -104,6 +104,7 @@ namespace Rock.Lava
 
             newShortcode.Name = shortcodeDefinition.Name;
             newShortcode.TemplateMarkup = shortcodeDefinition.Markup;
+            newShortcode.ShortcodeScopeBehavior = shortcodeDefinition.ShortcodeScopeBehavior;
 
             var parameters = RockSerializableDictionary.FromUriEncodedString( shortcodeDefinition.Parameters );
 

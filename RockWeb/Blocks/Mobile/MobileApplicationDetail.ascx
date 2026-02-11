@@ -407,9 +407,19 @@
                         <div class="col-md-6">
                             <Rock:PagePicker ID="ppEditSmsConversationPage" runat="server" Label="SMS Conversation Page" Help="If you are using the SMS conversations, then set this to the page that contains the SMS Conversation block." />
                         </div>
+
                         <div class="col-md-6">
-                          <Rock:PagePicker ID="ppEditChatPage" runat="server" Label="Chat Page" />
+                            <Rock:PagePicker ID="ppEditChatPage" runat="server" Label="Chat Page" />
                       </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:PagePicker ID="ppEditOutreachToolboxTouchpointPage" runat="server" Label="Outreach Toolbox Touchpoint Page" Help="If you are using the Outreach Toolbox, this should be set to the page that has the Touchpoint Detail block on it. When an individual receives and taps on a notification from the Outreach Toolbox they will be taken to this page." />
+                        </div>
+
+                        <div class="col-md-6">
+                        </div>
                     </div>
 
                     <div class="row">

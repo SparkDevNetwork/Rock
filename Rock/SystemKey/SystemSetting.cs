@@ -327,6 +327,11 @@ namespace Rock.SystemKey
         public const string CAPTCHA_SECRET_KEY = "core_CaptchaSecretKey";
 
         /// <summary>
+        /// The Captcha mode.
+        /// </summary>
+        public const string CAPTCHA_MODE = "core_CaptchaMode";
+
+        /// <summary>
         /// The protocol to use for sending telemetry for observability.
         /// </summary>
         public const string OBSERVABILITY_ENDPOINT_PROTOCOL = "core_ObservabilityEndpointProtocol";
@@ -455,5 +460,11 @@ namespace Rock.SystemKey
         /// The system settings for AI Agent features.
         /// </summary>
         public const string AI_AGENT_SYSTEM_SETTINGS = "core_AIAgentSystemSettings";
+
+        /// <summary>
+        /// When trailblazer mode is enabled the system will show more advanced
+        /// configuration options in the UI.
+        /// </summary>
+        public const string TRAILBLAZER_MODE = "core_TrailblazerMode";
     }
 }

@@ -94,7 +94,7 @@
                                     <Rock:RockCheckBox ID="cbPreventInactivePeople" runat="server" Label="Prevent Inactive People"
                                         Help="Should people who are inactive be excluded from being able to check-in?" />
                                     <Rock:RockCheckBox ID="cbPreventDuplicateCheckin" runat="server" Label="Prevent Duplicate Check-in"
-                                        Help="Should people be prevented from checking into a specifice service time (schedule) more than once?" />
+                                        Help="Should people be prevented from checking into a specific service time (schedule) more than once?" />
 
                                     <Rock:RockCheckBox ID="cbEnableProximityCheckIn" runat="server" Label="Enable Proximity Check-in"
                                         Help="Makes this check-in configuration and all areas and groups available for proximity check-in with a native Rock Mobile application."
@@ -228,6 +228,7 @@
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplayEthnicityOnChildren" runat="server" Label="Display Ethnicity on Children" Help="How should ethnicity be displayed for children?" />
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplayMobilePhoneOnChildren" runat="server" Label="Display Mobile Phone on Children" Help="How should Mobile Phone be displayed for children?" />
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplaySuffix" runat="server" Label="Display Suffix" Help="Show or hide the suffix field when editing an individual." />
+                                    <Rock:RockDropDownList ID="ddlRegistrationDisplayAddressOnFamilies" runat="server" Label="Display Address on Families" Help="Controls how the family address field displayed when adding or editing a family during registration." />
                                 </div>
                             </div>
                         </Rock:PanelWidget>

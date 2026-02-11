@@ -32,9 +32,12 @@ SELECT 'Person' AS [Entity]
         WHEN p.[Gender] = 2 THEN 'Female'
       END AS [Gender]
     , p.[BirthDate]
+    , dv_recordSource.[Value] AS [RecordSource]
 FROM [Person] p
 LEFT OUTER JOIN [PersonAlias] pa
     ON pa.[PersonId] = p.[Id] AND pa.[AliasPersonId] = p.[Id]
+LEFT OUTER JOIN [DefinedValue] dv_recordSource
+    ON dv_recordSource.[Id] = p.[RecordSourceValueId]
 WHERE (@LastName IS NULL OR @LastName = '' OR p.[LastName] LIKE '%' + @LastName + '%')
 ORDER BY p.[PrimaryFamilyId]
     , p.[AgeClassification]

@@ -29,7 +29,6 @@ export type PageDebugTiming = {
 
 // This is the private state that we can modify.
 const state: State = reactive({
-    areSecondaryBlocksShown: true,
     currentPerson: null,
     isAnonymousVisitor: false,
     pageParameters: {},
@@ -40,7 +39,8 @@ const state: State = reactive({
     interactionGuid: "",
     executionStartTime: RockDateTime.now().toMilliseconds(),
     debugTimings: [],
-    loginUrlWithReturnUrl: ""
+    loginUrlWithReturnUrl: "",
+    trailblazerMode: false,
 });
 
 export class Store {
@@ -50,8 +50,9 @@ export class Store {
         this.state = shallowReadonly(state);
     }
 
+    /** @deprecated since v18.0 - This function will be removed in the future. */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setAreSecondaryBlocksShown(areSecondaryBlocksShown: boolean): void {
-        state.areSecondaryBlocksShown = areSecondaryBlocksShown;
     }
 
     initialize(pageConfig: PageConfig): void {
@@ -64,6 +65,7 @@ export class Store {
         state.interactionGuid = pageConfig.interactionGuid;
         state.executionStartTime = pageConfig.executionStartTime;
         state.loginUrlWithReturnUrl = pageConfig.loginUrlWithReturnUrl;
+        state.trailblazerMode = pageConfig.trailblazerMode;
     }
 
     addPageDebugTiming(timing: PageDebugTiming): void {
@@ -94,6 +96,10 @@ export class Store {
 
     getPageParameter(key: string): unknown {
         return state.pageParameters[key];
+    }
+
+    setTrailblazerMode(isTrailblazer: boolean): void {
+        state.trailblazerMode = isTrailblazer;
     }
 }
 

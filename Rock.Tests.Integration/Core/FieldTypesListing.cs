@@ -42,11 +42,11 @@ namespace Rock.Tests.Integration.Core
 
                     notSupportedBuilder.AppendLine( $"{fieldType.Name}" );
                 }
-                catch(Exception ex )
+                catch ( Exception ex )
                 {
                     Debug.WriteLine( ex.Message );
                 }
-                    
+
             }
 
             Debug.WriteLine( "Supported Field Types:" );

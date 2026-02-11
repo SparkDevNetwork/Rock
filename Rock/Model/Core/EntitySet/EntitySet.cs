@@ -36,7 +36,7 @@ namespace Rock.Model
     [CodeGenerateRest( DisableEntitySecurity = true )]
     [NotAudited]
     [Rock.SystemGuid.EntityTypeGuid( "50E3F9C8-4010-41AF-8F61-08308DC44640")]
-    public partial class EntitySet : Model<EntitySet>, IOrdered
+    public partial class EntitySet : Model<EntitySet>, IOrdered, IHasAdditionalSettings
     {
         #region Entity Properties
 
@@ -104,6 +104,10 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Note { get; set; }
+
+        /// <inheritdoc/>
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
 
         #endregion
 

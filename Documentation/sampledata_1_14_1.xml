@@ -1031,7 +1031,6 @@
     <group type="serving" name="A/V Team" guid="0BA93D66-21B1-4229-979D-F76CEB57666D" description="Responsible for all A/V equipment. Useful for testing volunteer Group Scheduling." parentGroupGuid="31730962-4c7b-425b-bd73-4185331f37ef">
       <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
       <person fullname="Jim Simmons" guid="FB5D2DC6-5AB4-4CBD-B02F-3FB9ADBEFD33"/>
-      <person fullname="Admin Admin" guid="AD28DA19-4AF1-408F-9090-2672F8376F27"/>
       <location guid="17382278-9bf4-45b2-bc6a-021605680fef">
         <schedule guid="7883CAC8-6E30-482B-95A7-2F0DEE859BE1" minimumCapacity="1" desiredCapacity="2" maximumCapacity="4" />
         <schedule guid="33FF69E9-059B-4702-B1E5-4D499CB7B07A" minimumCapacity="1" desiredCapacity="2" maximumCapacity="4" />
@@ -1064,7 +1063,6 @@
           studyTopic="General Bible Study" groupSchedule="weekly,Tuesday,18:00:00"
           description ="A general Bible study group perfect for people who are new to Christianity. We meet near W Cactus and 31st Ave.">
       <person fullname="Bill Marble" guid="1EA811BB-3118-42D1-B020-32A82BC8081A" isLeader="true"/>
-      <person fullname="Admin Admin" guid="AD28DA19-4AF1-408F-9090-2672F8376F27" isLeader="true"/>
       <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23" />
       <person fullname="Jackson Harper" guid="9b2cdbbf-9144-4be4-80ef-05ada0e63ed2" />
       <person fullname="William Jones" guid="160a4747-9d65-44dd-97b6-91a0e583c1bc" />
@@ -1327,7 +1325,6 @@
     </group>
     <group name="Staff Users" guid="2C112948-FF4C-46E7-981A-0257681EADF4" >
       <members>
-        <person fullname="Admin Admin" guid="AD28DA19-4AF1-408F-9090-2672F8376F27"/>
         <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
         <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
         <person fullname="Peter Foster" guid="BE66C5D3-F43E-4F9A-BA62-B7C0103BF54C"/>

@@ -1,0 +1,203 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      :scriptSetupCode="scriptSetupCode"
+                      enableReflection>
+        <EventItemOccurrencePicker label="Event Item Occurrence"
+                                   v-model="value"
+                                   :multiple="multiple"
+                                   :columnCount="columnCount"
+                                   :enhanceForLongLists="enhanceForLongLists"
+                                   :displayStyle="displayStyle"
+                                   :showBlankItem="showBlankItem"
+                                   :includeInactive="includeInactive"
+                                   :eventItem="eventItem?.value ?? undefined"
+                                   :dateRangeStart="dateRange?.lowerValue ?? undefined"
+                                   :dateRangeEnd="dateRange?.upperValue ?? undefined" />
+        <div class="row px-5 pt-4" style="background-color: #f3f3f3;">
+            <em>The control below is an Event Item Picker, which is not explicitly a part of the demonstrated Event Item Occurrence Picker above, however, for demonstration purposes; to see useful selections, an Event Item Picker is included to view the occcurences for.</em>
+        </div>
+        <div class="row px-5 pb-4" style="background-color: #f3f3f3;">
+            <EventItemPicker label="Event Item"
+                             v-model="eventItem"
+                             :multiple="false" />
+        </div>
+        <template #settings>
+            <div class="d-flex flex-row gap-3" style="max-height: 5vw;">
+                <ContentSection title="Demonstratable Settings"
+                                icon="ti ti-settings"
+                                disableCollapse>
+                    <p class="text-semibold font-italic">The settings apply across many use-cases, so their usage and demonstration will show and occur if enabled or changed from defaults.</p>
+                    <ContentStack title="Toggle Properties"
+                                  description="Properties that typically are either true or false.">
+                        <div class="d-flex flex-row gap-3">
+                            <div class="col-md-4">
+                                <CheckBox label="Multiple" v-model="multiple" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+                            </div>
+                            <div class="col-md-4">
+                                <CheckBox label="Include Inactive Items" v-model="includeInactive" />
+                            </div>
+                        </div>
+                    </ContentStack>
+                    <ContentStack title="Value Properties"
+                                  description="Properties that typically require a value to be set.">
+                        <div class="d-flex flex-row gap-1">
+                            <div class="col-md-6">
+                                <p class="text-semibold">Display Style/Filtering</p>
+                                <TextBox v-model="label"
+                                         label="Title" />
+                                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+                                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+                                <DateRangePicker v-model="dateRange"
+                                                 label="Date Range"
+                                                 :disallowPastDateSelection="false" />
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-row gap-1">
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+                    </ContentStack>
+                </ContentSection>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import EventItemPicker from "@Obsidian/Controls/eventItemPicker.obs";
+    import EventItemOccurrencePicker from "@Obsidian/Controls/eventItemOccurrencePicker.obs";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { getSfcControlImportPath, ComponentUsage, displayStyleItems } from "./common/utils.partial";
+
+    const dateNow = RockDateTime.now();
+
+    const modalDefaultDateRangeParts: DateRangeParts = {
+        lowerValue: dateNow.addYears(-1).addDays(1).date.toISOString(),
+        upperValue: dateNow.addYears(1).addDays(-1).date.toISOString()
+    };
+
+    const label = ref("Event Item Occurrence");
+    const columnCount = ref(0);
+    const displayStyle = ref(PickerDisplayStyle.Auto);
+    const enhanceForLongLists = ref(false);
+    const multiple = ref(false);
+    const showBlankItem = ref(false);
+    const includeInactive = ref(false);
+    const eventItem = ref<ListItemBag | null>(null);
+    const dateRange = ref<DateRangeParts>({});
+    const value = ref<ListItemBag | ListItemBag[] | null>(null);
+    const importCode = getSfcControlImportPath("eventItemOccurrencePicker");
+
+    dateRange.value = { ...modalDefaultDateRangeParts };
+
+    const exampleCode = computed(() => {
+        const usage = new ComponentUsage("EventItemOccurrencePicker");
+
+        usage.addAttribute(`v-model="value"`, true, false);
+        usage.addAttribute(`label="label"`, label.value !== "", false);
+        usage.addAttribute(`:eventItem="eventItem"`, true, false);
+        usage.addAttribute(`:multiple="multiple"`, multiple.value, false);
+        usage.addAttribute(`:dateRangeStart="dateRange?.lowerValue"`, dateRange.value.lowerValue !== undefined, false);
+        usage.addAttribute(`:dateRangeEnd="dateRange?.upperValue"`, dateRange.value.upperValue !== undefined, false);
+        usage.addAttribute(`:showBlankItem="showBlankItem"`, showBlankItem.value, false);
+        usage.addAttribute(`:includeInactive="includeInactive"`, includeInactive.value, false);
+        usage.addAttribute(`:columnCount="columnCount"`, columnCount.value !== 0, false);
+        usage.addAttribute(`:enhanceForLongLists="enhanceForLongLists"`, enhanceForLongLists.value, false);
+        usage.addAttribute(`:displayStyle="displayStyle"`, displayStyle.value !== PickerDisplayStyle.Auto, false);
+        return usage.toString();
+    });
+    const scriptSetupCode = computed(() => {
+        const usage = new ComponentUsage("EventItemOccurrencePicker");
+
+        usage.addScriptBody("const value = ref<ListItemBag | ListItemBag[] | null>(null);");
+        usage.addScriptBodyWithComment(
+            "Define the default date range for the picker. It helps to set unreferenced defaults you can refer back to.",
+            `const dateNow = RockDateTime.now();`
+        );
+        usage.addScriptBody(
+            `const modalDefaultDateRangeParts: DateRangeParts = {lowerValue: dateNow.addYears(-1).addDays(1).date.toISOString(), upperValue: dateNow.addYears(1).addDays(-1).date.toISOString()};`
+        );
+        usage.addScriptBody(`const dateRange = ref<DateRangeParts>({});`);
+        usage.addScriptBody(`dateRange.value = { ...modalDefaultDateRangeParts };`);
+
+        usage.addScriptBodyWithComment(
+            "Define the event item to filter occurrences for.",
+            `const eventItem = ref<Guid>("${eventItem.value?.value}");`
+        );
+
+        if (label.value !== "") {
+            usage.addScriptBodyWithComment(
+                "Define the label for the EventItemOccurrencePicker.",
+                `const label = ref<string>("${label.value}");`
+            );
+        }
+
+        if (multiple.value) {
+            usage.addScriptBodyWithComment(
+                "Define whether multiple items can be selected.",
+                `const multiple = ref<boolean>(true);`
+            );
+        }
+
+        if (showBlankItem.value) {
+            usage.addScriptBodyWithComment(
+                "Define whether to show a blank item.",
+                `const showBlankItem = ref<boolean>(true);`
+            );
+        }
+
+        if (includeInactive.value) {
+            usage.addScriptBodyWithComment(
+                "Define whether to include inactive items.",
+                `const includeInactive = ref<boolean>(true);`
+            );
+        }
+
+        if (columnCount.value !== 0) {
+            usage.addScriptBodyWithComment(
+                "Define the number of columns to use when displaying items.",
+                `const columnCount = ref<number>(${columnCount.value});`
+            );
+        }
+
+        if (enhanceForLongLists.value) {
+            usage.addScriptBodyWithComment(
+                "Define whether to enhance the picker for long lists.",
+                `const enhanceForLongLists = ref<boolean>(true);`
+            );
+        }
+
+        if (displayStyle.value !== PickerDisplayStyle.Auto) {
+            usage.addScriptImport('import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";');
+            usage.addScriptBodyWithComment(
+                "Define the display style for the picker.",
+                `const displayStyle = ref<PickerDisplayStyle>(PickerDisplayStyle.${Object.keys(PickerDisplayStyle).find(key => PickerDisplayStyle[key as keyof typeof PickerDisplayStyle] === displayStyle.value)});`
+            );
+        }
+
+        return usage.toScriptSetupString();
+    });
+</script>

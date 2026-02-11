@@ -6,7 +6,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Core.EntitySearch;
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.ViewModels.Core;
 
 namespace Rock.Tests.Core.EntitySearch
@@ -47,7 +46,7 @@ namespace Rock.Tests.Core.EntitySearch
             var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
             var items = results.Items.Cast<dynamic>().ToList();
 
-            Assert.That.Equal( typeof( Group ), ( Type ) items[0].GetType() );
+            Assert.AreEqual( typeof( Group ), ( Type ) items[0].GetType() );
         }
 
         [TestMethod]
@@ -63,8 +62,8 @@ namespace Rock.Tests.Core.EntitySearch
             var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
             var items = results.Items.Cast<dynamic>().ToList();
 
-            Assert.That.Equal( 1, results.Items.Count );
-            Assert.That.Equal( 2, ( int ) items[0].Id );
+            Assert.HasCount( 1, results.Items );
+            Assert.AreEqual( 2, ( int ) items[0].Id );
         }
 
         [TestMethod]
@@ -79,7 +78,7 @@ namespace Rock.Tests.Core.EntitySearch
 
             var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
 
-            Assert.That.Equal( 0, results.Items.Count );
+            Assert.IsEmpty( results.Items );
         }
 
         #endregion
@@ -100,7 +99,7 @@ namespace Rock.Tests.Core.EntitySearch
             var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
             var items = results.Items.Cast<dynamic>().ToList();
 
-            Assert.That.Equal( "Group Type 1", ( string ) items[0] );
+            Assert.AreEqual( "Group Type 1", ( string ) items[0] );
         }
 
         #endregion
@@ -131,7 +130,7 @@ namespace Rock.Tests.Core.EntitySearch
 
             var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
 
-            Assert.That.Equal( 2, results.Items.Count );
+            Assert.HasCount( 2, results.Items );
         }
 
         [TestMethod]
@@ -164,11 +163,11 @@ namespace Rock.Tests.Core.EntitySearch
             var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
             var items = results.Items.Cast<dynamic>().ToList();
 
-            Assert.That.Equal( 2, results.Items.Count );
-            Assert.That.Equal( 1, ( int ) items[0].GroupTypeId );
-            Assert.That.Equal( 2, ( int ) items[1].GroupTypeId );
-            Assert.That.Equal( groupType1Count, ( int ) items[0].Count );
-            Assert.That.Equal( groupType2Count, ( int ) items[1].Count );
+            Assert.HasCount( 2, results.Items );
+            Assert.AreEqual( 1, ( int ) items[0].GroupTypeId );
+            Assert.AreEqual( 2, ( int ) items[1].GroupTypeId );
+            Assert.AreEqual( groupType1Count, ( int ) items[0].Count );
+            Assert.AreEqual( groupType2Count, ( int ) items[1].Count );
         }
 
         #endregion
@@ -191,7 +190,7 @@ namespace Rock.Tests.Core.EntitySearch
 
             var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, userQuery, null );
 
-            Assert.That.Equal( queryable.Count(), results.Count );
+            Assert.AreEqual( queryable.Count(), results.Count );
         }
 
         [TestMethod]
@@ -210,7 +209,7 @@ namespace Rock.Tests.Core.EntitySearch
 
             var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, userQuery, null );
 
-            Assert.That.Null( results.Items );
+            Assert.IsNull( results.Items );
         }
 
         [TestMethod]
@@ -245,7 +244,7 @@ namespace Rock.Tests.Core.EntitySearch
             // We have more than two groups, so make sure we only get back "2"
             // which would indicate the count is for the number of groupings
             // rather than the individual groups.
-            Assert.That.Equal( 2, results.Count );
+            Assert.AreEqual( 2, results.Count );
         }
 
         #endregion
@@ -263,7 +262,7 @@ namespace Rock.Tests.Core.EntitySearch
 
             var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
 
-            Assert.That.Equal( queryable.Count(), results.Items.Count );
+            Assert.HasCount( queryable.Count(), results.Items );
         }
 
         #endregion

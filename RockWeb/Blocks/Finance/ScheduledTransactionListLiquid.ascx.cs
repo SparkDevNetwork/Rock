@@ -43,7 +43,6 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.Template,
         Description = "Lava template for the display of the scheduled transactions.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = true,
         DefaultValue = @"{% include '~~/Assets/Lava/ScheduledTransactionListLiquid.lava' %}",

@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -168,7 +169,7 @@ namespace Rock.Web.Cache
                 return QueryDbWithContext( entityTypeId, rockContext );
             }
 
-            using ( var rockContext2 = new RockContext() )
+            using ( var rockContext2 = RockApp.Current.CreateRockContext() )
             {
                 return QueryDbWithContext( entityTypeId, rockContext2 );
             }

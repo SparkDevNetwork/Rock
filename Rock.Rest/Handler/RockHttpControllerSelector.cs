@@ -36,29 +36,37 @@ namespace Rock.Rest.Handler
         private readonly HttpConfiguration _configuration;
         private readonly Lazy<Dictionary<string, HttpControllerDescriptor>> _controllerTypes;
         private readonly Lazy<Dictionary<string, HttpControllerDescriptor>> _duplicateControllerTypes;
-        private readonly Lazy<Dictionary<string, HttpControllerDescriptor>> _prefixedDuplicateControllers;
+        private readonly Lazy<Dictionary<string, PrefixedControllerSegment>> _prefixedControllers;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockHttpControllerSelector"/> class
+        /// using the specified HTTP configuration.
+        /// </summary>
+        /// <param name="configuration">The HTTP configuration that provides settings and services for controller selection.</param>
         public RockHttpControllerSelector( HttpConfiguration configuration ) : base( configuration )
         {
             _configuration = configuration;
             _controllerTypes = new Lazy<Dictionary<string, HttpControllerDescriptor>>( GetControllerTypes );
             _duplicateControllerTypes = new Lazy<Dictionary<string, HttpControllerDescriptor>>( GetDuplicateControllerTypes );
-            _prefixedDuplicateControllers = new Lazy<Dictionary<string, HttpControllerDescriptor>>( GetPrefixedDuplicateControllers );
+            _prefixedControllers = new Lazy<Dictionary<string, PrefixedControllerSegment>>( GetPrefixedControllers );
         }
 
+        /// <inheritdoc/>
         public override HttpControllerDescriptor SelectController( HttpRequestMessage request )
         {
             var path = request.RequestUri.AbsolutePath.Trim( '/' );
 
-            foreach ( var prefixedController in _prefixedDuplicateControllers.Value )
+            if ( path.IsNotNullOrWhiteSpace() )
             {
-                if ( path.Equals( prefixedController.Key, StringComparison.OrdinalIgnoreCase ) || path.StartsWith( prefixedController.Key + "/", StringComparison.OrdinalIgnoreCase ) )
+                var prefixedController = GetPrefixedController( _prefixedControllers.Value, path.Split( '/' ) );
+
+                if ( prefixedController != null )
                 {
-                    return prefixedController.Value;
+                    return prefixedController;
                 }
             }
 
-            // Handle duplicate controller names.http://localhost:6229/page/814?CommunicationId=101#
+            // Handle duplicate controller names.
             var routeData = request.GetRouteData();
             if ( routeData.Values != null && routeData.Values.TryGetValue( ControllerKey, out var cn ) && _duplicateControllerTypes.Value.ContainsKey( cn.ToString() ) )
             {
@@ -80,21 +88,94 @@ namespace Rock.Rest.Handler
             return result;
         }
 
-        private Dictionary<string, HttpControllerDescriptor> GetPrefixedDuplicateControllers()
+        /// <summary>
+        /// Builds a dictionary of route prefixes mapped to their corresponding
+        /// controller segments.
+        /// </summary>
+        /// <returns>A dictionary that represens the route table of controllers with prefixes.</returns>
+        private Dictionary<string, PrefixedControllerSegment> GetPrefixedControllers()
         {
-            var prefixes = new Dictionary<string, HttpControllerDescriptor>();
+            var prefixes = new Dictionary<string, PrefixedControllerSegment>();
+            var assembliesResolver = _configuration.Services.GetAssembliesResolver();
+            var controllersResolver = _configuration.Services.GetHttpControllerTypeResolver();
+            var controllerTypes = controllersResolver.GetControllerTypes( assembliesResolver );
 
-            foreach ( var kvp in _duplicateControllerTypes.Value )
+            foreach ( var controllerType in controllerTypes )
             {
-                var parts = kvp.Key.Split( new[] { '-' }, 2 );
+                var prefix = controllerType.GetCustomAttribute<System.Web.Http.RoutePrefixAttribute>()?.Prefix?.Trim( '/' );
 
-                if ( parts.Length == 2 )
+                if ( prefix.IsNotNullOrWhiteSpace() )
                 {
-                    prefixes.TryAdd( parts[1], kvp.Value );
+                    var controllerName = controllerType.Name.Substring( 0, controllerType.Name.Length - ControllerSuffix.Length );
+                    var controllerDescriptor = new HttpControllerDescriptor( _configuration, controllerName, controllerType );
+
+                    AddPrefixedController( prefixes, prefix.Split( '/' ), controllerDescriptor );
                 }
             }
 
             return prefixes;
+        }
+
+        /// <summary>
+        /// Adds a controller descriptor to the specified prefix hierarchy,
+        /// creating any missing prefix segments as needed.
+        /// </summary>
+        /// <remarks>
+        /// If intermediate prefix segments do not exist in the hierarchy,
+        /// they are created automatically. The controller descriptor is
+        /// assigned to the last segment in the provided path.
+        /// </remarks>
+        /// <param name="prefixes">A dictionary mapping prefix segment names to their corresponding controller segment objects. Used to build or traverse the prefix hierarchy.</param>
+        /// <param name="segments">A span of strings representing the ordered segments of the prefix path. Each segment is processed to build the hierarchy.</param>
+        /// <param name="controllerDescriptor">The controller descriptor to associate with the final segment in the prefix path.</param>
+        private void AddPrefixedController( Dictionary<string, PrefixedControllerSegment> prefixes, Span<string> segments, HttpControllerDescriptor controllerDescriptor )
+        {
+            var segment = segments[0];
+
+            if ( !prefixes.TryGetValue( segment, out var prefix) )
+            {
+                prefix = new PrefixedControllerSegment( segment );
+                prefixes.Add( segment, prefix );
+            }
+
+            if ( segments.Length == 1 )
+            {
+                prefix.ControllerDescriptor = controllerDescriptor;
+            }
+            else
+            {
+                AddPrefixedController( prefix.Children, segments.Slice( 1 ), controllerDescriptor );
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the controller descriptor that matches the specified
+        /// route segments and their associated prefixes.
+        /// </summary>
+        /// <param name="prefixes">A dictionary mapping route segment prefixes to their corresponding controller segment information.</param>
+        /// <param name="segments">A span of route segments to match against the available prefixes.</param>
+        /// <returns>The <see cref="HttpControllerDescriptor"/> that corresponds to the matched route segments and prefixes; or <see langword="null"/> if no matching controller is found.</returns>
+        private HttpControllerDescriptor GetPrefixedController( Dictionary<string, PrefixedControllerSegment> prefixes, Span<string> segments )
+        {
+            var segment = segments[0];
+
+            if ( prefixes.TryGetValue( segment, out var prefix ) )
+            {
+                if ( segments.Length == 1 )
+                {
+                    return prefix.ControllerDescriptor;
+                }
+                else
+                {
+                    // Look for a child prefix with a more exact match, otherwise
+                    // return this prefix's controller descriptor.
+                    var controller = GetPrefixedController( prefix.Children, segments.Slice( 1 ) );
+
+                    return controller ?? prefix.ControllerDescriptor;
+                }
+            }
+
+            return null;
         }
 
         private Dictionary<string, HttpControllerDescriptor> GetDuplicateControllerTypes()
@@ -130,9 +211,25 @@ namespace Rock.Rest.Handler
             return result;
         }
 
+        /// <inheritdoc/>
         public override IDictionary<string, HttpControllerDescriptor> GetControllerMapping()
         {
             return _controllerTypes.Value;
+        }
+
+        private class PrefixedControllerSegment
+        {
+            public string Segment { get; }
+
+            public HttpControllerDescriptor ControllerDescriptor { get; set; }
+
+            public Dictionary<string, PrefixedControllerSegment> Children { get; }
+
+            public PrefixedControllerSegment( string segment )
+            {
+                Segment = segment;
+                Children = new Dictionary<string, PrefixedControllerSegment>( StringComparer.OrdinalIgnoreCase );
+            }
         }
     }
 }

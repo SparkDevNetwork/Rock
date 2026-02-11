@@ -10,12 +10,17 @@
         </NotificationBox>
         <component v-if="showConfigurationComponent" :is="configurationComponent" v-model="configurationValues" :configurationProperties="configurationProperties" @updateConfiguration="onUpdateConfiguration" @updateConfigurationValue="onUpdateConfigurationValue" />
         <RockField v-if="hasDefaultValue && !showConfigOnly" :modelValue="defaultValue" :attribute="defaultValueAttribute" @update:modelValue="onDefaultValueUpdate" isEditMode @updateConfigurationValue="onUpdateFieldConfigurationValue" dataEntryMode="defaultValue" />
+        <RockLiteral v-if="valueFormat"
+                     label="Value Format">
+            {{ valueFormat }}
+        </RockLiteral>
     </div>
 </template>
 
 <script setup lang="ts">
     import { Component, computed, PropType, ref, watch } from "vue";
     import RockField from "./rockField.obs";
+    import RockLiteral from "./rockLiteral.obs";
     import NotificationBox from "./notificationBox.obs";
     import DropDownList from "./dropDownList.obs";
     import StaticFormControl from "./staticFormControl.obs";
@@ -66,6 +71,9 @@
 
     // Tracks a pending resetToDefaults() call.
     let resetToDefaultsTimer: number | null = null;
+
+    /** The raw value format to display in the UI. */
+    const valueFormat = ref("");
 
     /** The details about the default value used for the field. */
     const defaultValue = ref("");
@@ -235,6 +243,7 @@
                     configurationProperties.value = result.data.configurationProperties;
                     configurationValues.value = result.data.adminConfigurationValues;
                     editConfigurationValues.value = result.data.editConfigurationValues;
+                    valueFormat.value = result.data.valueFormat ?? "";
                     defaultValue.value = result.data.defaultValue ?? "";
                     isInternalUpdate = false;
 

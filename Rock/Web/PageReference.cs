@@ -863,7 +863,7 @@ namespace Rock.Web
 
             // Get previous page references in nav history.
             var key = BuildStorageKey( keySuffix );
-            var pageReferenceHistory = ( Dictionary<int, (BreadCrumb pageBreadCrumb, List<BreadCrumb> blockBreadCrumbs)> ) HttpContext.Current.Session[key];
+            var pageReferenceHistory = ( Dictionary<int, (BreadCrumb pageBreadCrumb, List<BreadCrumb> blockBreadCrumbs)> ) HttpContext.Current?.Session?[key];
             var newPageReferenceHistory = new Dictionary<int, (BreadCrumb pageBreadCrumb, List<BreadCrumb> blockBreadCrumbs)>();
 
             // Current page hierarchy references.
@@ -959,59 +959,73 @@ namespace Rock.Web
                         }
                     }
 
-                    /*
-	                    09/26/2024 - JSC
-
-                        This section of code supports the legacy block breadcrumb behavior.
-                        It depends on session (and therefore the server's memory) to store
-                        route and querystring parameters. In the event the server is restarted
-                        any breadcrumbs that require a route or query string parameter will not
-	                    use the route and instead show the '/page/###' url.
-
-                        This can be prevented by implementing the IBreadCrumbBlock interface in
-                        any blocks that depend on page parameters for their route.
-
-	                    Reason: Server restart breaks breadcrumbs that use parameters.
-                    */
-                    if ( initialPage.Id != page.Id && pageReferenceHistory != null && pageReferenceHistory.TryGetValue( page.Id, out var cachedBreadCrumbs ) )
+                    if ( rockPage != null )
                     {
-                        pageBreadCrumb = cachedBreadCrumbs.pageBreadCrumb;
-                        blockBreadCrumbs.AddRange( cachedBreadCrumbs.blockBreadCrumbs );
+                        /*
+	                        09/26/2024 - JSC
 
-                        newPageReferenceHistory.Add( page.Id, cachedBreadCrumbs );
+                            This section of code supports the legacy block breadcrumb behavior.
+                            It depends on session (and therefore the server's memory) to store
+                            route and querystring parameters. In the event the server is restarted
+                            any breadcrumbs that require a route or query string parameter will not
+	                        use the route and instead show the '/page/###' url.
+
+                            This can be prevented by implementing the IBreadCrumbBlock interface in
+                            any blocks that depend on page parameters for their route.
+
+	                        Reason: Server restart breaks breadcrumbs that use parameters.
+                        */
+                        if ( initialPage.Id != page.Id && pageReferenceHistory != null && pageReferenceHistory.TryGetValue( page.Id, out var cachedBreadCrumbs ) )
+                        {
+                            pageBreadCrumb = cachedBreadCrumbs.pageBreadCrumb;
+                            blockBreadCrumbs.AddRange( cachedBreadCrumbs.blockBreadCrumbs );
+
+                            newPageReferenceHistory.Add( page.Id, cachedBreadCrumbs );
+                        }
+                        else
+                        {
+                            var blockPageReference = page.Id == initialPage.Id ? new PageReference( initialPageReference ) : new PageReference( page.Id );
+
+                            // Check the legacy blocks for custom breadcrumbs.
+                            foreach ( var block in pageBlocks.Where( b => b.BlockType.Path.IsNotNullOrWhiteSpace() ) )
+                            {
+                                try
+                                {
+                                    System.Web.UI.Control control = rockPage.TemplateControl.LoadControl( block.BlockType.Path );
+                                    if ( control is RockBlock rockBlock )
+                                    {
+                                        rockBlock.SetBlock( page, block );
+                                        rockBlock.GetBreadCrumbs( blockPageReference ).ForEach( c => blockPageReference.BreadCrumbs.Add( c ) );
+                                    }
+
+                                    control = null;
+                                }
+                                catch ( Exception ex )
+                                {
+                                    ExceptionLogService.LogException( ex, HttpContext.Current, initialPage.Id, initialPage.Layout.SiteId );
+                                }
+                            }
+
+                            blockBreadCrumbs.AddRange( blockPageReference.BreadCrumbs );
+
+                            if ( page.BreadCrumbText.IsNotNullOrWhiteSpace() )
+                            {
+                                pageBreadCrumb = new BreadCrumb( page.BreadCrumbText, blockPageReference.BuildUrl() );
+                            }
+
+                            newPageReferenceHistory.Add( page.Id, (pageBreadCrumb, blockPageReference.BreadCrumbs) );
+                        }
                     }
                     else
                     {
-                        var blockPageReference = page.Id == initialPage.Id ? new PageReference( initialPageReference ) : new PageReference( page.Id );
-
-                        // Check the legacy blocks for custom breadcrumbs.
-                        foreach ( var block in pageBlocks.Where( b => b.BlockType.Path.IsNotNullOrWhiteSpace() ) )
-                        {
-                            try
-                            {
-                                System.Web.UI.Control control = rockPage.TemplateControl.LoadControl( block.BlockType.Path );
-                                if ( control is RockBlock rockBlock )
-                                {
-                                    rockBlock.SetBlock( page, block );
-                                    rockBlock.GetBreadCrumbs( blockPageReference ).ForEach( c => blockPageReference.BreadCrumbs.Add( c ) );
-                                }
-
-                                control = null;
-                            }
-                            catch ( Exception ex )
-                            {
-                                ExceptionLogService.LogException( ex, HttpContext.Current, initialPage.Id, initialPage.Layout.SiteId );
-                            }
-                        }
-
-                        blockBreadCrumbs.AddRange( blockPageReference.BreadCrumbs );
-
                         if ( page.BreadCrumbText.IsNotNullOrWhiteSpace() )
                         {
-                            pageBreadCrumb = new BreadCrumb( page.BreadCrumbText, blockPageReference.BuildUrl() );
-                        }
+                            var pageRef = page.Id == initialPage.Id
+                                ? new PageReference( initialPageReference )
+                                : new PageReference( page.Id );
 
-                        newPageReferenceHistory.Add( page.Id, (pageBreadCrumb, blockPageReference.BreadCrumbs) );
+                            pageBreadCrumb = new BreadCrumb( page.BreadCrumbText, pageRef.BuildUrl() );
+                        }
                     }
 
                     var parentPageReference = new PageReference( page.Id );
@@ -1027,7 +1041,10 @@ namespace Rock.Web
                 }
             }
 
-            HttpContext.Current.Session[key] = newPageReferenceHistory;
+            if ( HttpContext.Current?.Session != null )
+            {
+                HttpContext.Current.Session[key] = newPageReferenceHistory;
+            }
 
             pageReferences.Reverse();
 

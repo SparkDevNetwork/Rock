@@ -20,7 +20,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Utility.Enums;
 using Rock.Web.Cache;
@@ -49,7 +48,7 @@ namespace Rock.Tests.Integration.Core.Model
                 rockContext.SaveChanges();
 
                 person = personService.Get( person.Id );
-                Assert.That.AreEqual( AccountProtectionProfile.Low, person.AccountProtectionProfile );
+                Assert.AreEqual( AccountProtectionProfile.Low, person.AccountProtectionProfile );
 
                 var userLogin = new UserLogin
                 {
@@ -64,7 +63,7 @@ namespace Rock.Tests.Integration.Core.Model
                 rockContext.SaveChanges();
 
                 person = personService.Get( person.Id );
-                Assert.That.AreEqual( AccountProtectionProfile.Medium, person.AccountProtectionProfile );
+                Assert.AreEqual( AccountProtectionProfile.Medium, person.AccountProtectionProfile );
             }
         }
 
@@ -91,7 +90,7 @@ namespace Rock.Tests.Integration.Core.Model
                 rockContext.SaveChanges();
 
                 person = personService.Get( person.Id );
-                Assert.That.AreEqual( ( AccountProtectionProfile ) expectedAccountProtectionProfile, person.AccountProtectionProfile );
+                Assert.AreEqual( ( AccountProtectionProfile ) expectedAccountProtectionProfile, person.AccountProtectionProfile );
 
                 var userLogin = new UserLogin
                 {
@@ -106,7 +105,7 @@ namespace Rock.Tests.Integration.Core.Model
                 rockContext.SaveChanges();
 
                 person = personService.Get( person.Id );
-                Assert.That.AreEqual( ( AccountProtectionProfile ) expectedAccountProtectionProfile, person.AccountProtectionProfile );
+                Assert.AreEqual( ( AccountProtectionProfile ) expectedAccountProtectionProfile, person.AccountProtectionProfile );
             }
         }
     }

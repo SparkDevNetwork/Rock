@@ -13,7 +13,7 @@ namespace Rock.AI.Agent.Tests.Skills.Utility
 
         #region Range Recognition
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "this week", "2025-07-28", "2025-08-04" )]
         [DataRow( "last week", "2025-07-21", "2025-07-28" )]
         [DataRow( "last 3 months", "2025-04-30", "2025-07-30" )]
@@ -39,7 +39,7 @@ namespace Rock.AI.Agent.Tests.Skills.Utility
 
         #region Single Date Recognition
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "tomorrow", 2025, 7, 31 )]
         [DataRow( "August 1st, 2025", 2025, 8, 1 )]
         public void RecognizeSingleDate_WorksAsExpected( string query, int year, int month, int day )
@@ -56,7 +56,7 @@ namespace Rock.AI.Agent.Tests.Skills.Utility
 
         #region Edge/Negative Cases
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "march 14th to july 31st from 2024", 2025, 3, 14, 2025, 7, 31 )]
         public void RecognizeRange_FromKeywordDoesNotWork( string query, int startYear, int startMonth, int startDay, int endYear, int endMonth, int endDay )
         {

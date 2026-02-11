@@ -41,7 +41,6 @@ namespace Rock.Blocks.Lms
         Key = AttributeKey.CourseDetailTemplate,
         Description = "The Lava template to use to render the page. Merge fields include: CourseInfo, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = false,
         DefaultValue = AttributeDefault.CourseDetailTemplate,

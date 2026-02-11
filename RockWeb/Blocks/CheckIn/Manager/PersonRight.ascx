@@ -23,21 +23,21 @@
 
         <!-- Gender, Age, Badges & the Reprint Label action -->
         <div class="panel panel-block">
-            <div class="row no-gutters mx-2 d-flex flex-wrap flex-column flex-sm-row">
+            <div class="row no-gutters mx-spacing-sm d-flex flex-wrap">
 
                 <div class="col d-flex flex-grow-1 justify-content-center justify-content-sm-start align-items-center">
-                    <div class="profile-widget widget-gender p-2 text-center">
+                    <div class="profile-widget widget-gender p-spacing-xs text-center">
                         <asp:Literal ID="lGender" runat="server" />
                     </div>
-                    <div class="profile-widget widget-age p-2 text-center">
+                    <div class="profile-widget widget-age p-spacing-xs text-center">
                         <asp:Literal ID="lAge" runat="server" />
                     </div>
-                    <div class="profile-widget widget-grade p-2 text-center">
+                    <div class="profile-widget widget-grade p-spacing-xs text-center">
                         <asp:Literal ID="lGrade" runat="server" />
                     </div>
                 </div>
 
-                <div class="col d-flex flex-column justify-content-center align-items-center">
+                <div class="col d-flex flex-column justify-content-center align-items-end">
                     <Rock:HiddenFieldWithClass ID="hfHasClientPrinter" runat="server" CssClass="js-has-client-printer" />
                     <Rock:NotificationBox ID="nbReprintMessage" runat="server" CssClass="js-reprintlabel-notification" Visible="false"></Rock:NotificationBox>
                     <Rock:ModalAlert ID="maNoLabelsFound" runat="server"></Rock:ModalAlert>
@@ -45,8 +45,8 @@
                     <asp:HiddenField ID="hfCurrentAttendanceIds" runat="server" />
                     <asp:HiddenField ID="hfPersonId" runat="server" />
                     <div>
-                        <asp:LinkButton ID="btnPersonAttendanceHistory" runat="server" OnClick="btnPersonAttendanceHistory_Click" ToolTip="Attendance History" CssClass="btn btn-default btn-sm my-2"><i class="ti ti-history"></i></asp:LinkButton>
-                        <asp:LinkButton ID="btnReprintLabels" runat="server" OnClick="btnReprintLabels_Click" ToolTip="Reprint Labels" CssClass="btn btn-default btn-sm my-2"><i class="ti ti-printer"></i></asp:LinkButton>
+                        <asp:LinkButton ID="btnPersonAttendanceHistory" runat="server" OnClick="btnPersonAttendanceHistory_Click" ToolTip="Attendance History" CssClass="btn btn-default btn-sm my-spacing-xs"><i class="ti ti-history"></i></asp:LinkButton>
+                        <asp:LinkButton ID="btnReprintLabels" runat="server" OnClick="btnReprintLabels_Click" ToolTip="Reprint Labels" CssClass="btn btn-default btn-sm my-spacing-xs"><i class="ti ti-printer"></i></asp:LinkButton>
                     </div>
 
                     <Rock:ModalDialog ID="mdReprintLabels" runat="server" ValidationGroup="vgReprintLabels" Title="Label Reprints" OnSaveClick="mdReprintLabels_PrintClick" SaveButtonText="Print" Visible="false">
@@ -67,11 +67,11 @@
                 </div>
 
             </div>
-            <div class="row no-gutters d-flex flex-wrap">
-                <div class="badge-zone d-flex flex-grow-1 justify-content-center justify-content-md-start align-items-center border-top border-gray-400">
+            <div class="row no-gutters mx-spacing-sm d-flex flex-wrap">
+                <div class="badge-zone d-flex flex-grow-1 justify-content-center justify-content-sm-start align-items-center">
                     <Rock:BadgeListControl ID="blBadgesLeft" runat="server" />
                 </div>
-                <div class="badge-zone d-flex flex-grow-1 justify-content-center justify-content-md-end align-items-center border-top border-gray-400">
+                <div class="badge-zone d-flex flex-grow-1 justify-content-center justify-content-sm-end align-items-center">
                     <Rock:BadgeListControl ID="blBadgesRight" runat="server" />
                 </div>
             </div>

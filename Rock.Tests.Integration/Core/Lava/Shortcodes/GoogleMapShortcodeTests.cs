@@ -24,7 +24,7 @@ using Rock.Tests.Shared.Lava;
 namespace Rock.Tests.Integration.Core.Lava.Shortcodes
 {
     [TestClass]
-    [TestCategory("Core.Lava.Shortcodes")]
+    [TestCategory( "Core.Lava.Shortcodes" )]
     public class GoogleMapShortcodeTests : LavaIntegrationTestBase
     {
         #region GoogleMap

@@ -54,7 +54,7 @@ namespace Rock.Tests.Integration.Core.Lava.Engine
 
                 var enabledCommands = context.GetEnabledCommands();
 
-                Assert.That.Contains( enabledCommands, "Execute" );
+                Assert.Contains( "Execute", enabledCommands );
             } );
         }
 

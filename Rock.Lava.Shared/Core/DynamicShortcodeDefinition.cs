@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Enums.Cms;
+
 namespace Rock.Lava
 {
     /// <summary>
@@ -61,6 +63,11 @@ namespace Rock.Lava
         /// The type of Lava document element that this shortcode is substituted for, either an inline tag or a block element.
         /// </summary>
         public LavaShortcodeTypeSpecifier ElementType { get; set; }
+
+        /// <summary>
+        /// The scope behavior for variables that are defined within this shortcode.
+        /// </summary>
+        public ShortcodeScopeBehavior ShortcodeScopeBehavior { get; set; }
 
         #endregion
     }

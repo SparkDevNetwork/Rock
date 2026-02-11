@@ -429,7 +429,7 @@
         };
     });
 
-    const chartOptions = computed<ChartOptions<"line">>(() => {
+    const chartOptions = computed<ChartOptions<"line">>((): ChartOptions<"line"> => {
         return {
             // Allow the chart to change size with the parent container.
             responsive: true,
@@ -454,7 +454,7 @@
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                             size: parseInt(getCssVar("--font-size-small")) || undefined,
-                            weight: getCssVar("--font-weight-semibold")
+                            weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                         },
 
                         generateLabels: (chart) => {
@@ -497,7 +497,7 @@
                     font: {
                         family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                         size: parseInt(getCssVar("--font-size-small")) || undefined,
-                        weight: getCssVar("--font-weight-semibold")
+                        weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                     },
 
                     text: props.title ?? undefined
@@ -511,7 +511,7 @@
                     bodyFont: {
                         family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                         size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
-                        weight: getCssVar("--font-weight-regular")
+                        weight: getCssVar("--font-weight-regular") as "bold" | "normal" | "bolder" | "lighter"
                     },
 
                     borderColor: getCssVar("--color-interface-soft"),
@@ -538,7 +538,7 @@
                                             label: rawLabel,
                                             formattedLabel: getFormattedLabel(tooltipItem.chart, tooltipItem.chart.data, tooltipItem.dataIndex) ?? rawLabel,
                                             value: tooltipItem.raw as number | null,
-                                            formattedValue: getFormattedValue(tooltipItem.chart, tooltipItem.parsed.y, tooltipItem.dataIndex) ?? (tooltipItem.formattedValue || tooltipItem.parsed.y.toString()),
+                                            formattedValue: getFormattedValue(tooltipItem.chart, tooltipItem.parsed.y!, tooltipItem.dataIndex) ?? (tooltipItem.formattedValue || tooltipItem.parsed.y!.toString()),
                                             seriesLabel: tooltipItem.dataset.label ?? ""
                                         });
                                     })
@@ -574,7 +574,7 @@
                                     label: rawLabel,
                                     formattedLabel: getFormattedLabel(context.chart, context.chart.data, context.dataIndex) ?? rawLabel,
                                     value: context.raw as number | null,
-                                    formattedValue: getFormattedValue(context.chart, context.parsed.y, context.dataIndex) ?? (context.formattedValue || context.parsed.y.toString()),
+                                    formattedValue: getFormattedValue(context.chart, context.parsed.y!, context.dataIndex) ?? (context.formattedValue || context.parsed.y!.toString()),
                                     seriesLabel: context.dataset.label ?? ""
                                 }) ?? "";
                             }
@@ -649,7 +649,7 @@
                     titleFont: {
                         family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                         size: parseInt(getCssVar("--font-size-small")) || undefined,
-                        weight: getCssVar("--font-weight-semibold")
+                        weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                     },
                 }
             },
@@ -674,7 +674,7 @@
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                             size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
-                            weight: getCssVar("--font-weight-regular")
+                            weight: getCssVar("--font-weight-regular") as "bold" | "normal" | "bolder" | "lighter"
                         },
 
                         maxRotation: 45,
@@ -702,7 +702,7 @@
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                             size: parseInt(getCssVar("--font-size-small")) || undefined,
-                            weight: getCssVar("--font-weight-semibold")
+                            weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                         },
 
                         text: props.categoryLabel ?? undefined
@@ -781,7 +781,7 @@
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                             size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
-                            weight: getCssVar("--font-weight-regular")
+                            weight: getCssVar("--font-weight-regular") as "bold" | "normal" | "bolder" | "lighter"
                         },
 
                         maxTicksLimit: clamp(props.valueMaxTickCount, 0),
@@ -796,7 +796,7 @@
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                             size: parseInt(getCssVar("--font-size-small")) || undefined,
-                            weight: getCssVar("--font-weight-semibold")
+                            weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                         },
 
                         text: props.valueLabel ?? undefined

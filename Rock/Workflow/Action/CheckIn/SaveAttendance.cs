@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -47,7 +47,6 @@ namespace Rock.Workflow.Action.CheckIn
         Key = AttributeKey.NotCheckedInMessageFormat,
         Description = " <span class='tip tip-lava'></span>",
         EditorMode = Web.UI.Controls.CodeEditorMode.Lava,
-        EditorTheme = Web.UI.Controls.CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
          DefaultValue = @"

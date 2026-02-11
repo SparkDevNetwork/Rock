@@ -164,6 +164,7 @@ SELECT
     , pa.[PersonId] AS [PersonId]
     , p.[NickName]
     , p.[LastName]
+    , p.[SuffixValueId]
     , p.[ConnectionStatusValueId]
     , p.[PhotoId]
     , p.[BirthDay]
@@ -343,6 +344,7 @@ WHERE
                         Id = a.PersonId.Value,
                         NickName = a.NickName,
                         LastName = a.LastName,
+                        SuffixValueId = a.SuffixValueId,
                         ConnectionStatusValueId = a.ConnectionStatusValueId,
                         PhotoId = a.PhotoId,
                         BirthDay = a.BirthDay,
@@ -385,6 +387,9 @@ WHERE
 
             /// <inheritdoc cref="Person.LastName"/>
             public string LastName { get; set; }
+
+            /// <inheritdoc cref="Person.SuffixValueId"/>
+            public int? SuffixValueId { get; set; }
 
             /// <inheritdoc cref="Person.ConnectionStatusValueId"/>
             public int? ConnectionStatusValueId { get; set; }

@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="RockDbBackupManager" GeneratedClassName="BackupManager">
+  <Profiles />
+  <Settings>
+    <Setting Name="BackupDirectory" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\Backup\</Value>
+    </Setting>
+    <Setting Name="IsWarningOnRestore" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

@@ -83,11 +83,11 @@ public class FunctionCallTests : BaseFunctionCallTests
         _ = await chat.GetChatMessageResponseAsync();
 
         // That no function calls failed and that we had one succeed.
-        Assert.That.AreEqual( 0, logs.Count( l => l.Contains( "Function Test-Search failed." ) ), "Function call failed." );
-        Assert.That.AreEqual( 1, logs.Count( l => l == "Function Test-Search succeeded." ), "Multiple successful invocations may have been detected." );
+        Assert.AreEqual( 0, logs.Count( l => l.Contains( "Function Test-Search failed." ) ), "Function call failed." );
+        Assert.AreEqual( 1, logs.Count( l => l == "Function Test-Search succeeded." ), "Multiple successful invocations may have been detected." );
 
         // Ensure the output data is valid.
-        Assert.That.AreEqual( 1, output.Count, "Multiple output messages were logged." );
+        Assert.HasCount( 1, output, "Multiple output messages were logged." );
         if ( !expectedOutput.Contains( output[0] ) )
         {
             Assert.Fail( $"Expected one of {expectedOutput.Select( s => $"<{s}>" ).JoinStrings( "," )} but got <{output[0]}>." );
@@ -153,11 +153,11 @@ public class FunctionCallTests : BaseFunctionCallTests
         _ = await chat.GetChatMessageResponseAsync();
 
         // That no function calls failed and that we had one succeed.
-        Assert.That.AreEqual( 0, logs.Count( l => l.Contains( "Function Test-Search failed." ) ), "Function call failed." );
-        Assert.That.AreEqual( 1, logs.Count( l => l == "Function Test-Search succeeded." ), "Multiple successful invocations may have been detected." );
+        Assert.AreEqual( 0, logs.Count( l => l.Contains( "Function Test-Search failed." ) ), "Function call failed." );
+        Assert.AreEqual( 1, logs.Count( l => l == "Function Test-Search succeeded." ), "Multiple successful invocations may have been detected." );
 
         // Ensure the output data is valid.
-        Assert.That.AreEqual( 1, output.Count, "Multiple output messages were logged." );
+        Assert.HasCount( 1, output, "Multiple output messages were logged." );
         if ( !expectedOutput.Contains( output[0] ) )
         {
             Assert.Fail( $"Expected one of {expectedOutput.Select( s => $"<{s}>" ).JoinStrings( "," )} but got <{output[0]}>." );
@@ -233,11 +233,11 @@ public class FunctionCallTests : BaseFunctionCallTests
         _ = await chat.GetChatMessageResponseAsync();
 
         // That no function calls failed and that we had one succeed.
-        Assert.That.AreEqual( 0, logs.Count( l => l.Contains( "Function Test-Search failed." ) ), "Function call failed." );
-        Assert.That.AreEqual( 1, logs.Count( l => l == "Function Test-Search succeeded." ), "Multiple successful invocations may have been detected." );
+        Assert.AreEqual( 0, logs.Count( l => l.Contains( "Function Test-Search failed." ) ), "Function call failed." );
+        Assert.AreEqual( 1, logs.Count( l => l == "Function Test-Search succeeded." ), "Multiple successful invocations may have been detected." );
 
         // Ensure the output data is valid.
-        Assert.That.AreEqual( 1, output.Count, "Multiple output messages were logged." );
+        Assert.HasCount( 1, output, "Multiple output messages were logged." );
         if ( !expectedOutput.Contains( output[0] ) )
         {
             Assert.Fail( $"Expected one of {expectedOutput.Select( s => $"<{s}>" ).JoinStrings( "," )} but got <{output[0]}>." );
@@ -312,11 +312,11 @@ public class FunctionCallTests : BaseFunctionCallTests
         _ = await chat.GetChatMessageResponseAsync();
 
         // That no function calls failed and that we had one succeed.
-        Assert.That.AreEqual( 0, logs.Count( l => l.Contains( "Function Test-Search failed." ) ), "Function call failed." );
-        Assert.That.AreEqual( 1, logs.Count( l => l == "Function Test-Search succeeded." ), "Multiple successful invocations may have been detected." );
+        Assert.AreEqual( 0, logs.Count( l => l.Contains( "Function Test-Search failed." ) ), "Function call failed." );
+        Assert.AreEqual( 1, logs.Count( l => l == "Function Test-Search succeeded." ), "Multiple successful invocations may have been detected." );
 
         // Ensure the output data is valid.
-        Assert.That.AreEqual( 1, output.Count, "Multiple output messages were logged." );
+        Assert.HasCount( 1, output, "Multiple output messages were logged." );
         if ( !expectedOutput.Contains( output[0] ) )
         {
             Assert.Fail( $"Expected one of {expectedOutput.Select( s => $"<{s}>" ).JoinStrings( "," )} but got <{output[0]}>." );

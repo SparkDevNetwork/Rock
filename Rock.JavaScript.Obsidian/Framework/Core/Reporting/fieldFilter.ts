@@ -273,7 +273,7 @@ export class FieldFilterFunctionBuilder<T = unknown> {
 
         // Look for the standard "attributes" property for entities.
         const attributes = instance["attributes"] as Record<string, PublicAttributeBag> | null | undefined;
-        if (!attributes || !Array.isArray(attributes)) {
+        if (!attributes || typeof attributes !== "object") {
             return undefined;
         }
 
@@ -302,7 +302,7 @@ export class FieldFilterFunctionBuilder<T = unknown> {
 
         // Look for the standard "attributes" property for entities.
         const attributes = instance["attributes"] as Record<string, PublicAttributeBag> | null | undefined;
-        if (!attributes || !Array.isArray(attributes)) {
+        if (!attributes || typeof attributes !== "object") {
             return undefined;
         }
 

@@ -17,7 +17,9 @@
 //  + Photo Request
 //  + Duplicate Pages
 //  + DISC & Assessments
-//  + Connection Request
+//  + Edit Person
+//  + People Merge
+//  + Giving Configuration
 // =============================================================
 
 
@@ -453,7 +455,7 @@ $badge-count-width: 18px;
   }
 
   &.requested {
-    color:    var(--color-link-strong) !important;
+    color:    var(--color-link-tint) !important;
   }
 }
 
@@ -933,3 +935,42 @@ tr.inactive {
 }
 
 // ======================= END PEOPLE MERGE ======================
+
+
+// ====================== GIVING CONFIGURATION ======================
+
+.giving-configuration {
+
+  .rollover-container-nested {
+      transition: background-color 0.3s;
+  }
+
+  .rollover-container-nested:hover {
+      background-color: var(--color-interface-lightest);
+  }
+
+  .btn-link:hover {
+      text-decoration: underline;
+  }
+
+  .showinactive {
+      background-color: var(--color-interface-lightest);
+      border: none;
+      color: var(--color-link);
+  }
+
+  .separator {
+      margin-top: 2px;
+      margin-bottom: var(--spacing-large);
+      border: 0;
+      border-top: 1px solid var(--color-interface-soft) !important;
+      width: calc(100% + 32px);
+      margin-left: -16px;
+  }
+
+  .content-section {
+      margin-top: var(--spacing-medium);
+      margin-bottom: var(--spacing-medium);
+  }
+}
+// ==================== END GIVING CONFIGURATION ====================

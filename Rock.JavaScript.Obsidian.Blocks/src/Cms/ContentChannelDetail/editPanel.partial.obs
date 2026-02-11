@@ -1,64 +1,49 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
-        <ModalAlert v-model="isChannelTypeModalVisible" :type="ModalAlertType.Warning">Changing the content type will result in all of this channel's items losing any data that is specific to the original content type!</ModalAlert>
+        <ModalAlert v-model="isChannelTypeModalVisible" :type="ModalAlertType.Warning">Changing the content type will
+            result in all of this channel's items losing any data that is specific to the original content type!
+        </ModalAlert>
 
         <div class="row">
             <div class="col-md-6">
-                <TextBox v-model="name"
-                         label="Name"
-                         rules="required" />
+                <TextBox v-model="name" label="Name" rules="required" />
             </div>
 
         </div>
 
-        <TextBox v-model="description"
-                 label="Description"
-                 textMode="multiline" />
+        <TextBox v-model="description" label="Description" textMode="multiline" />
 
         <div class="row">
             <div class="col-md-6">
-                <DropDownList v-model="contentChannelTypeValue"
-                              label="Type"
-                              :items="contentChannelTypes"
+                <DropDownList v-model="contentChannelTypeValue" label="Type" :items="contentChannelTypes"
                               rules="required" />
 
-                <CategoryPicker v-model="categories"
-                                label="Categories"
-                                :entityTypeGuid="EntityType.ContentChannel"
+                <CategoryPicker v-model="categories" label="Categories" :entityTypeGuid="EntityType.ContentChannel"
                                 multiple />
 
                 <div v-if="isButtonGroupVisible" class="form-group button-group toggle-container">
                     <RockLabel class="control-label">Editor Type</RockLabel>
                     <div class="control-wrapper">
-                        <ButtonGroup v-model="editorType"
-                                     :btnSize="BtnSize.ExtraSmall"
-                                     :btnType="BtnType.Default"
+                        <ButtonGroup v-model="editorType" :btnSize="BtnSize.ExtraSmall" :btnType="BtnType.Default"
                                      :items="editorTypes" />
                     </div>
                 </div>
 
-                <DefinedValuePicker v-if="isEditorToolPickerVisible"
-                                    v-model="structuredContentToolValue"
-                                    label="Editor Tool Configuration"
-                                    :definedTypeGuid="DefinedType.StructuredContentEditorTools"
+                <DefinedValuePicker v-if="isEditorToolPickerVisible" v-model="structuredContentToolValue"
+                                    label="Editor Tool Configuration" :definedTypeGuid="DefinedType.StructuredContentEditorTools"
                                     showBlankItem />
 
-                <DropDownList v-if="isContentControTypeVisible"
-                              v-model="contentControlType"
-                              label="Default Content Control"
-                              :items="contentControlTypes"
-                              rules="required" />
+                <DropDownList v-if="isContentControTypeVisible" v-model="contentControlType"
+                              label="Default Content Control" :items="contentControlTypes" rules="required" />
 
-                <TextBox v-if="isRootImageDirectoryVisible"
-                         v-model="rootImageDirectory"
-                         label="Root Image Directory"
+                <TextBox v-if="isRootImageDirectoryVisible" v-model="rootImageDirectory" label="Root Image Directory"
                          help="The path to use for the HTML editor's image folder root (e.g. '~/content/my_channel_images' ) " />
             </div>
             <div class="col-md-6">
-                <IconPicker v-model="iconCssClass"
-                            label="Icon CSS Class" />
-                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+                <IconPicker v-model="iconCssClass" label="Icon CSS Class" />
+                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode
+                                          :numberOfColumns="2" />
                 <CheckBoxList v-model="settings" :items="settingsOptions" label="Settings" />
             </div>
         </div>
@@ -69,17 +54,18 @@
             </div>
             <div class="col-md-6">
                 <RockLabel>Child Content Channels</RockLabel>
-                <HelpBlock text="The types of content channel items that can be added as children to items of this type. This is used to define the item hierarchy. To allow an unlimited hierarchy add this type as an allowed child content channel type.">Child Content Channels</HelpBlock>
+                <HelpBlock
+                           text="The types of content channel items that can be added as children to items of this type. This is used to define the item hierarchy. To allow an unlimited hierarchy add this type as an allowed child content channel type.">
+                    Child Content Channels</HelpBlock>
                 <div class="grid">
-                    <Grid :data="childContentChannelGridData" keyField="key" itemTerm="Content Channel" liveUpdates light @addItem="onAddChildChannel">
+                    <Grid :data="childContentChannelGridData" keyField="key" itemTerm="Content Channel" liveUpdates
+                          light @addItem="onAddChildChannel">
                         <TextColumn name="name" field="name" />
                         <DeleteColumn @click="onDeleteChildChannel" />
                     </Grid>
                 </div>
                 <Modal v-model="isContentChannelModalOpen" saveText="Save" @save="onSaveChildChannel">
-                    <DropDownList v-model="childChannel"
-                                  label="Child Content Channel"
-                                  :items="availableChannels"
+                    <DropDownList v-model="childChannel" label="Child Content Channel" :items="availableChannels"
                                   ValidationGroup="ChildContentChannels" />
                 </Modal>
             </div>
@@ -87,7 +73,8 @@
 
         <Panel :isDrawerOpen="false" :hasCollapse="true" title="Item Attributes">
             <div class="grid">
-                <Grid :data="attributesGridData" keyField="key" itemTerm="Item Attribute" liveUpdates light @addItem="onAddAttribute">
+                <Grid :data="attributesGridData" keyField="key" itemTerm="Item Attribute" liveUpdates light
+                      @addItem="onAddAttribute">
                     <ReorderColumn @orderChanged="onOrderChanged" />
                     <TextColumn field="name" name="attribute" title="Attribute" />
                     <TextColumn field="description" name="description" title="Description" />
@@ -96,38 +83,50 @@
                     <DeleteColumn @click="onDeleteAttribute" :disableConfirmation="true" />
                 </Grid>
             </div>
-            <Modal v-model="isAttributeModalOpen" title="Content Channel Item Attributes" saveText="Save" @save="onSaveAttribute">
+            <Modal v-model="isAttributeModalOpen" title="Content Channel Item Attributes" saveText="Save"
+                   @save="onSaveAttribute">
                 <AttributeEditor v-model="itemAttribute" :reservedKeyNames="reservedKeyNames" />
             </Modal>
         </Panel>
 
         <Panel :isDrawerOpen="false" :hasCollapse="true" title="Content Library">
             <div class="form-group">
-                The Content Library feature enables you to upload and download content from the community library. By enabling this feature, you agree to allow other organizations to use your uploaded content based on the license you have chosen. Please note that once the content has been uploaded to the library, you will not be able to change to a more restrictive license. For further details on this feature, refer to the <a href="https://www.rockrms.com/library/licenses?utm_source=rock-channel-update" target="_blank" rel="noopener noreferrer">Spark Content Library License</a> page.
+                The Content Library feature enables you to upload and download content from the community library. By
+                enabling this feature, you agree to allow other organizations to use your uploaded content based on the
+                license you have chosen. Please note that once the content has been uploaded to the library, you will
+                not be able to change to a more restrictive license. For further details on this feature, refer to the
+                <a href="https://www.rockrms.com/library/licenses?utm_source=rock-channel-update" target="_blank"
+                   rel="noopener noreferrer">Spark Content Library License</a> page.
             </div>
 
             <div v-if="isOrganizationConfigured">
                 <div class="form-group">
                     <CheckBox v-model="isContentLibraryEnabled" label="" text="Enable Library for This Channel" />
                 </div>
-                <RadioButtonList v-model="licenseTypeGuid" label="License" :items="availableLicenses" :rules="licenseTypeRules" horizontal />
+                <RadioButtonList v-model="licenseTypeGuid" label="License" :items="availableLicenses"
+                                 :rules="licenseTypeRules" horizontal />
                 <NotificationBox v-if="licenceMessage" alertType="info" v-html="licenceMessage"></NotificationBox>
 
                 <div class="row">
                     <div class="col-md-6">
-                        <DropDownList v-model="summaryAttributeGuid" :items="contentLibraryAttributes" label="Summary Attribute" />
+                        <DropDownList v-model="summaryAttributeGuid" :items="contentLibraryAttributes"
+                                      label="Summary Attribute" />
                         <div>
-                            <DropDownList v-model="imageAttributeGuid" :items="contentLibraryAttributes" label="Image Attribute" />
+                            <DropDownList v-model="imageAttributeGuid" :items="contentLibraryAttributes"
+                                          label="Image Attribute" />
                             <span class="-mt-form-group help-block small">Recommend image size 1140x570.</span>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <DropDownList v-model="authorAttributeGuid" :items="contentLibraryAttributes" label="Author Attribute" />
+                        <DropDownList v-model="authorAttributeGuid" :items="contentLibraryAttributes"
+                                      label="Author Attribute" />
                     </div>
                 </div>
             </div>
 
-            <NotificationBox v-else heading="Link Your Organization" alertType="warning"> Your Rock instance is currently not associated with any organization. To proceed, <a :href="linkOrganizationUrl">please link your instance to an organization</a>.</NotificationBox>
+            <NotificationBox v-else heading="Link Your Organization" alertType="warning"> Your Rock instance is
+                currently not associated with any organization. To proceed, <a :href="linkOrganizationUrl">please link
+                    your instance to an organization</a>.</NotificationBox>
         </Panel>
 
         <Panel :isDrawerOpen="false" :hasCollapse="true" title="Advanced">
@@ -135,31 +134,26 @@
                 <div class="col-md-6">
                     <CheckBox v-model="enableRss" label="Enable RSS" />
                     <div v-if="enableRss">
-                        <TextBox v-model="channelUrl"
-                                 label="Channel URL"
+                        <TextBox v-model="channelUrl" label="Channel URL"
                                  help="The Content Channel Item Publishing Point will be used for the Item URL in the RSS feed." />
                         <div class="row">
                             <div class="col-md-4">
-                                <NumberBox v-model="timeToLive"
-                                           label="Time to Live (TTL)"
+                                <NumberBox v-model="timeToLive" label="Time to Live (TTL)"
                                            help="The number of minutes a feed can stay cached before it is refreshed from the source." />
                             </div>
                         </div>
                     </div>
-                    <TextBox v-model="itemUrl"
-                             label="Content Channel Publishing Point"
+                    <TextBox v-model="itemUrl" label="Content Channel Publishing Point"
                              help="Lava template to the URL that the content item can be viewed (Keys: 'Id', 'Title', 'ContentChannelId', 'Slug')." />
                 </div>
                 <div class="col-md-6">
                     <div class="row">
                         <div class="col-xs-6">
-                            <CheckBox v-model="isTaggingEnabled"
-                                      label="Enable Tagging"
+                            <CheckBox v-model="isTaggingEnabled" label="Enable Tagging"
                                       help="When enabled, items can be tagged by editors however if categories (below) are used, the category must have 'Tag' security rights for people to use existing organizational tags." />
                         </div>
                         <div v-if="isTaggingEnabled" class="col-xs-6">
-                            <CategoryPicker v-model="itemTagCategory"
-                                            :entityTypeGuid="EntityType.Tag"
+                            <CategoryPicker v-model="itemTagCategory" :entityTypeGuid="EntityType.Tag"
                                             label="Tag Category"
                                             help="Remember to apply appropriate security (action level 'Tag') to these categories." />
                         </div>
@@ -272,7 +266,7 @@
     const availableLicenses = ref(props.options.availableLicenses ?? []);
     const isOrganizationConfigured = ref(props.options.isOrganizationConfigured);
     const disableContentField = ref(props.options.disableContentField);
-    const editorType = ref(props.modelValue?.bag?.isStructuredContent == true ? "1" : "2");
+    const editorType = ref(props.modelValue?.bag?.isStructuredContent === true ? "1" : "2");
     const editorTypes = [
         {
             text: "Structured Content",
@@ -305,11 +299,11 @@
     });
 
     const availableChannels = computed((): ListItemBag[] => {
-        return contentChannelList.value.filter(channel => !childContentChannels.value.find(child => child.value == channel.value));
+        return contentChannelList.value.filter(channel => !childContentChannels.value.find(child => child.value === channel.value));
     });
 
     const licenseTypeRules = computed((): string => {
-        return isContentLibraryEnabled.value == true ? "required" : "";
+        return isContentLibraryEnabled.value === true ? "required" : "";
     });
 
     const isButtonGroupVisible = computed((): boolean => {
@@ -325,7 +319,7 @@
     });
 
     const isRootImageDirectoryVisible = computed((): boolean => {
-        return contentControlType.value == "1";
+        return contentControlType.value === "1";
     });
 
     // #endregion
@@ -439,8 +433,8 @@
             const index = itemAttributes.value.findIndex(a => a.guid === itemAttribute.value?.guid);
             if (index !== -1) {
                 // Get the updated attribute and rowItem.
-                let editedAttribute = itemAttributes.value.find(a => a.guid == itemAttribute.value?.guid);
-                let rowItem = attributesGridData.rows?.find(x => x.key == itemAttribute.value?.guid);
+                let editedAttribute = itemAttributes.value.find(a => a.guid === itemAttribute.value?.guid);
+                let rowItem = attributesGridData.rows?.find(x => x.key === itemAttribute.value?.guid);
 
                 if (editedAttribute) {
                     // Replace old attribute with updated attribute.
@@ -476,16 +470,39 @@
     *
     * @returns `true` if the operation succeeded; otherwise `false`.
     */
-    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
-        const data = {
-            idKey: props.modelValue?.bag?.idKey,
-            guid: item["guid"],
-            beforeGuid: beforeItem?.["guid"] ?? null
-        };
+    function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): boolean {
+        const itemGuid = item["guid"] as string;
+        const beforeGuid = (beforeItem?.["guid"] as string | undefined) ?? null;
 
-        const result = await invokeBlockAction<string>("ReorderAttributes", data);
+        const currentItems = [...itemAttributes.value];
+        const idx = currentItems.findIndex(i => i.guid === itemGuid);
 
-        return result.isSuccess;
+        if (idx < 0) {
+            return false;
+        }
+
+        const itemToMove = currentItems.splice(idx, 1)[0];
+
+        if (beforeGuid) {
+            const beforeIndex = currentItems.findIndex(i => i.guid === beforeGuid);
+            if (beforeIndex < 0) {
+                currentItems.push(itemToMove);
+            }
+            else {
+                currentItems.splice(beforeIndex, 0, itemToMove);
+            }
+        }
+        else {
+            currentItems.push(itemToMove);
+        }
+
+        itemAttributes.value = currentItems;
+
+        if (attributesGridData.rows) {
+            attributesGridData.rows = itemAttributes.value.map(x => convertToAttributeGridRowItem(x));
+        }
+
+        return true;
     }
 
     watch(isAttributeModalOpen, () => {
@@ -580,7 +597,7 @@
         if (result.isSuccess && result.data) {
 
             disableContentField.value = result.data.disableContentField ?? false;
-            const requireApprovalSetting = settingsOptions.value.find(s => s.value == requireApprovalSettingValue);
+            const requireApprovalSetting = settingsOptions.value.find(s => s.value === requireApprovalSettingValue);
             if (result.data.disableStatus) {
                 settingsOptions.value = settingsOptions.value.filter(s => s.value !== requireApprovalSettingValue);
             }
@@ -594,7 +611,7 @@
     });
 
     watch(editorType, () => {
-        const isStructuredContentChecked = editorType.value == "1";
+        const isStructuredContentChecked = editorType.value === "1";
 
         if (isStructuredContentChecked) {
             isStructuredContent.value = true;

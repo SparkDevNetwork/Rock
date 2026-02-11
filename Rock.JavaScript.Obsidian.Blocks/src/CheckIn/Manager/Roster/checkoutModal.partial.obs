@@ -1,0 +1,87 @@
+<template>
+    <Modal v-model="isModalVisible"
+           title="Mark as Checked-Out"
+           saveText="Confirm"
+           @closeModal="onCloseModal"
+           @save="onSaveClick">
+        <p>Which scheduled time would you like to mark {{ rows[0].attendee.fullName }} as checked-out?</p>
+
+        <CheckBoxList v-model="selectedSchedules"
+                      label="Schedules"
+                      horizontal
+                      rules="required"
+                      :items="scheduleItems" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { ref } from "vue";
+    import { RosterSingleAttendanceRecord } from "./types.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
+
+    defineExpose({ show });
+
+    // #region Values
+
+    const isModalVisible = ref(false);
+    const rows = ref<RosterSingleAttendanceRecord[]>([]);
+    const selectedSchedules = ref<string[]>([]);
+    const scheduleItems = ref<ListItemBag[]>([]);
+
+    let promiseSource: PromiseCompletionSource<string[] | null> | null = null;
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Shows the modal to checkout the specified records. When confirmed, the
+     * callback will be invoked with the list of attendance keys to checkout.
+     *
+     * @param records The records that will be displayed as possible checkout options.
+     * @param callback The callback to perform the checkout before the modal is closed.
+     */
+    async function show(records: RosterSingleAttendanceRecord[], callback: ((values: string[]) => Promise<void>)): Promise<void> {
+        rows.value = records;
+        scheduleItems.value = records.map(r => r.schedule);
+        selectedSchedules.value = [];
+        isModalVisible.value = true;
+
+        promiseSource = new PromiseCompletionSource<string[] | null>();
+        const result = await promiseSource.promise;
+        promiseSource = null;
+
+        if (result) {
+            await callback(result);
+        }
+
+        isModalVisible.value = false;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles when the modal is closed without confirming.
+     */
+    function onCloseModal(): void {
+        promiseSource?.resolve(null);
+    }
+
+    /**
+     * Handles when the save button is clicked.
+     */
+    async function onSaveClick(): Promise<void> {
+        const idKeys = rows.value
+            .filter(r => selectedSchedules.value.includes(r.schedule.value ?? ""))
+            .map(r => r.idKey);
+
+        promiseSource?.resolve(idKeys.length > 0 ? idKeys : null);
+    }
+
+    // #endregion
+</script>

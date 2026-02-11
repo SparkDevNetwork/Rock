@@ -1,0 +1,650 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSectionContainer :sidebar="false">
+        <ContentSection title="Contact Information"
+                        light
+                        disableCollapse>
+            <ContentStack>
+                <!-- Avatar / Name -->
+                <div class="d-flex align-items-center mb-4" style="height: 60px;">
+                    <PersonAvatar class=""
+                                  :photoUrl="requesterPhotoUrl"
+                                  :personIdKey="requesterAvatarId"
+                                  :photoSize="60"
+                                  :enableHoverInfo="!!entity.requester?.personIdKey" />
+                    <div class="d-flex flex-column">
+                        <h3 class="mt-3 mb-1">{{ requesterDisplayName }}</h3>
+                        <span class="mb-3">
+                            <HighlightLabel labelType="success"
+                                            tooltip="Requester's Connection Status"
+                                            tooltipPlacement="bottom">
+                                {{ requesterConnectionStatus }}
+                            </HighlightLabel>
+                            <RockButton v-if="entity.requester?.personIdKey"
+                                        :btnSize="BtnSize.ExtraSmall"
+                                        :btnType="BtnType.Link"
+                                        @click="onPersonProfileClick()">
+                                View Profile
+                            </RockButton>
+                        </span>
+                    </div>
+                </div>
+
+                <ValueDetailList :modelValue="contactInfoTopValues" />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <ValueDetailList :modelValue="contactInfoLeftSideValues" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <ValueDetailList :modelValue="contactInfoRightSideValues" />
+                    </div>
+                </div>
+
+                <div v-if="hasAuthorizedManualWorkflows" class="row">
+                    <div class="col-md-12">
+                        <NotificationBox v-if="launchWorkflowError" alertType="danger" class="mt-2">
+                            <strong><i class="ti ti-exclamation-circle"></i> Error Launching Workflow</strong>
+                            <span>{{ launchWorkflowError }}</span>
+                        </NotificationBox>
+                        <dl>
+                            <dt>Available Workflows</dt>
+                            <dd>
+                                <RockButton v-for="workflow in authorizedManualWorkflows"
+                                            class="m-1"
+                                            :key="workflow.typeId"
+                                            :btnType="BtnType.Default"
+                                            :btnSize="BtnSize.ExtraSmall"
+                                            @click="onWorkflowButtonClick(workflow.typeName, workflow.launchUrl)">
+                                    <i :class="workflow.iconCssClass"></i> {{ workflow.typeName }}
+                                </RockButton>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <ValueDetailList :modelValue="contactInfoBottomValues" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Request Details"
+                        light
+                        disableCollapse>
+            <ContentStack>
+
+                <ValueDetailList :modelValue="requestDetailsTopValues" />
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <ValueDetailList :modelValue="requestDetailsLeftSideValues" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <ValueDetailList :modelValue="requestDetailsRightSideValues" />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Summary of Results"
+                        light
+                        disableCollapse>
+            <ContentStack>
+
+                <ValueDetailList :modelValue="resultSummaryTopValues" />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <ValueDetailList :modelValue="resultSummaryLeftSideValues" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <ValueDetailList :modelValue="resultSummaryRightSideValues" />
+                    </div>
+                </div>
+
+                <BenevolenceResultsList v-if="isShowingFinancialInfo"
+                                        @update:requestResults="onResultsListUpdate"
+                                        :modelValue="entity"
+                                        :isEditable="props.isEditable"
+                                        :options="props.options" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection v-if="hasAttributes" title="Extended Attributes" icon="ti ti-adjustments-plus">
+            <ContentStack>
+                <fieldset>
+
+                    <ValueDetailList :modelValue="topValues" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ValueDetailList :modelValue="leftSideValues" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <ValueDetailList :modelValue="rightSideValues" />
+                        </div>
+                    </div>
+
+                    <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+
+                </fieldset>
+            </ContentStack>
+        </ContentSection>
+    </ContentSectionContainer>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, ref } from "vue";
+    import BenevolenceResultsList from "./benevolenceResultsList.partial.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { BenevolenceRequestBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceRequestBag";
+    import { PersonBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/personBag";
+    import { BenevolenceResultBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceResultBag";
+    import { BenevolenceRequestDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceRequestDetailOptionsBag";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { isNotNullish } from "@Obsidian/Utility/util";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { BenevolenceRequestWorkflowBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceRequestWorkflowBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<BenevolenceRequestBag | null | undefined>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<BenevolenceRequestDetailOptionsBag>,
+            required: true
+        },
+
+        isEditable: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:requestResults", value: BenevolenceResultBag[]): void,
+    }>();
+
+    const launchWorkflowError = ref("");
+
+    // #region Value Builders
+
+    /** The values to display full-width at the top of the block. */
+    const contactInfoTopValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const contactInfoLeftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (hasNoContactInfo.value) {
+            valueBuilder.addTextValue("", "No contact information entered for this requester.");
+            return valueBuilder.build();
+        }
+
+        if (hasEmail.value) {
+            const requesterIdKey = entity.requester?.personIdKey;
+            if (requesterIdKey !== "" && requesterIdKey !== "0" && requesterIdKey !== null && requesterIdKey !== undefined) {
+                valueBuilder.addHtmlValue("Email", `<a href="${window.location.origin}/Communication/?person=${requesterIdKey}">${entity.requester?.email ?? ""}</a>`);
+            }
+            else {
+                const subject = `Benevolence Request - ${props.options.benevolenceRequestTypes?.find(type => Number(type.id) === entity.benevolenceTypeId)?.name ?? ""}`;
+                valueBuilder.addHtmlValue("Email", `<a href="mailto:${entity.requester?.email ?? ""}?subject=${encodeURIComponent(subject)}">${entity.requester?.email ?? ""}</a>`);
+            }
+        }
+
+        if (hasPhone.value) {
+            if (requesterHomePhoneNumber !== "") {
+                valueBuilder.addTextValue("Home Phone", requesterHomePhoneNumber);
+            }
+
+            if (requesterCellPhoneNumber !== "") {
+                valueBuilder.addTextValue("Cell Phone", requesterCellPhoneNumber);
+            }
+
+            if (requesterWorkPhoneNumber !== "") {
+                valueBuilder.addTextValue("Work Phone", requesterWorkPhoneNumber);
+            }
+        }
+
+        if (hasAddress.value) {
+            const addressLines: string[] = [];
+
+            if (entity.requester?.location == null || entity.requester?.location === undefined) {
+                return valueBuilder.build();
+            }
+
+            if (entity.requester.location.addressFields == null || entity.requester.location.addressFields === undefined) {
+                return valueBuilder.build();
+            }
+
+            if (!isNullOrEmpty(entity.requester!.location!.addressFields.street1 ?? "")) {
+                addressLines.push(entity.requester!.location!.addressFields.street1!);
+            }
+
+            if (!isNullOrEmpty(entity.requester!.location!.addressFields.street2 ?? "")) {
+                addressLines.push(entity.requester!.location!.addressFields.street2!);
+            }
+
+            const cityStateZip = [
+                entity.requester!.location!.addressFields.city,
+                entity.requester!.location!.addressFields.state,
+                entity.requester!.location!.addressFields.postalCode
+            ].filter(part => !isNullOrEmpty(part ?? "")).join(", ");
+
+            if (cityStateZip !== "") {
+                addressLines.push(cityStateZip);
+            }
+
+            valueBuilder.addHtmlValue("Address", addressLines.join("<br>"));
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const contactInfoRightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+
+    const contactInfoBottomValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (hasRequestLavaTemplateDetails.value) {
+            valueBuilder.addHtmlValue("", benevolenceRequestTypeLavaDetails);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display full-width at the top of the block. */
+    const requestDetailsTopValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (entity.requestText) {
+            valueBuilder.addTextValue("Description of Request", entity.requestText);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const requestDetailsLeftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        valueBuilder.addTextValue("Request Date", formattedRequestDate);
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const requestDetailsRightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        const caseWorkerProfile =
+            `<div class="d-flex align-items-center">
+                <img src="${caseWorkerPhotoUrl}" alt="Case Worker" style="width:30px;height:30px;margin-right:3px;border-radius:50%;" />
+                <span>
+                    ${entity.caseWorker?.firstName && entity.caseWorker?.lastName ? caseWorkerDisplayName : "Not Assigned"}
+                </span>
+            </div>`;
+
+        valueBuilder.addHtmlValue("Assigned To", caseWorkerProfile);
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display full-width at the top of the block. */
+    const resultSummaryTopValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const resultSummaryLeftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        valueBuilder.addTextValue("Results Summary", entity.resultSummary ?? "");
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const resultSummaryRightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        valueBuilder.addTextValue("Next Steps", entity.providedNextSteps ?? "");
+
+        return valueBuilder.build();
+    });
+
+    // #endregion Value Builders
+
+    // #region Values
+
+    const entity: BenevolenceRequestBag = props.modelValue ?? getEmptyBenevolenceRequestBag();
+
+    /** The requester's photo URL or a default image if none exists. */
+    const requesterPhotoUrl = isNotNullish(entity.requester?.photoUrl) && entity.requester?.photoUrl !== ""
+        ? entity.requester!.photoUrl
+        : "/Assets/Images/person-no-photo-unknown.svg";
+
+    /** The case worker's photo URL or a default image if none exists. */
+    const caseWorkerPhotoUrl = isNotNullish(entity.caseWorker?.photoUrl) && entity.caseWorker?.photoUrl !== ""
+        ? entity.caseWorker!.photoUrl
+        : "/Assets/Images/person-no-photo-unknown.svg";
+
+    /** The display name of the requester using nickname if available. */
+    const requesterDisplayName = entity.requester?.nickName ?
+        `${entity.requester?.nickName} ${entity.requester?.lastName}` :
+        `${entity.requester?.firstName} ${entity.requester?.lastName}`;
+
+    /** The display name of the case worker using nickname if available. */
+    const caseWorkerDisplayName = entity.caseWorker?.nickName ?
+        `${entity.caseWorker?.nickName} ${entity.caseWorker?.lastName}` :
+        `${entity.caseWorker?.firstName} ${entity.caseWorker?.lastName}`;
+
+    const requesterConnectionStatus = entity.requester?.connectionStatus?.connectionStatusName ?? "Unknown";
+
+    const requesterHomePhoneNumber = entity.requester?.homePhoneNumber
+        ? entity.requester?.homePhoneNumber.countryCode !== null
+            && entity.requester?.homePhoneNumber.countryCode !== undefined
+            && entity.requester?.homePhoneNumber.countryCode !== ""
+            && props.options.countryCodesEnabled
+            ? `+${entity.requester?.homePhoneNumber?.countryCode} ${entity.requester?.homePhoneNumber?.numberFormatted}`
+            : `${entity.requester?.homePhoneNumber?.numberFormatted}`
+        : "";
+
+    const requesterCellPhoneNumber = entity.requester?.cellPhoneNumber
+        ? entity.requester?.cellPhoneNumber.countryCode !== null
+            && entity.requester?.cellPhoneNumber.countryCode !== undefined
+            && entity.requester?.cellPhoneNumber.countryCode !== ""
+            && props.options.countryCodesEnabled
+            ? `+${entity.requester?.cellPhoneNumber?.countryCode} ${entity.requester?.cellPhoneNumber?.numberFormatted}`
+            : `${entity.requester?.cellPhoneNumber?.numberFormatted}`
+        : "";
+
+    const requesterWorkPhoneNumber = entity.requester?.workPhoneNumber
+        ? entity.requester?.workPhoneNumber.countryCode !== null
+            && entity.requester?.workPhoneNumber.countryCode !== undefined
+            && entity.requester?.workPhoneNumber.countryCode !== ""
+            && props.options.countryCodesEnabled
+            ? `+${entity.requester?.workPhoneNumber?.countryCode} ${entity.requester?.workPhoneNumber?.numberFormatted}`
+            : `${entity.requester?.workPhoneNumber?.numberFormatted}`
+        : "";
+
+    /** The request date string formatted to display date and days ago. */
+    const formattedRequestDate = formatRequestDate(entity.requestDateTime ?? "");
+
+    const attributes = ref(entity.attributes ?? {});
+    const attributeValues = ref(entity.attributeValues ?? {});
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** Whether or not the requester has at least one email or phone number. */
+
+    const requesterAvatarId = computed((): string => {
+        return entity.requester?.personIdKey?.toString() ?? "";
+    });
+
+    const hasEmail = computed((): boolean => {
+        if (entity.requester == null || entity.requester === undefined) {
+            return false;
+        }
+
+        return isNotNullish(entity.requester.email) && entity.requester.email !== "";
+    });
+
+    const hasPhone = computed((): boolean => {
+        if (entity.requester == null || entity.requester === undefined) {
+            return false;
+        }
+
+        return (isNotNullish(entity.requester.homePhoneNumber) && entity.requester.homePhoneNumber.number !== "")
+            || (isNotNullish(entity.requester.cellPhoneNumber) && entity.requester.cellPhoneNumber.number !== "")
+            || (isNotNullish(entity.requester.workPhoneNumber) && entity.requester.workPhoneNumber.number !== "");
+    });
+
+    /** Whether or not the requester has the required address fields for a valid address. */
+    const hasAddress = computed((): boolean => {
+        if (entity.requester?.location?.addressFields == null || entity.requester?.location?.addressFields === undefined) {
+            return false;
+        }
+
+        return !isNullOrEmpty(entity.requester.location.addressFields.street1 ?? "")
+            && !isNullOrEmpty(entity.requester.location.addressFields.city ?? "")
+            && !isNullOrEmpty(entity.requester.location.addressFields.state ?? "");
+    });
+
+    /** Whether or not the requester has no contact information. */
+    const hasNoContactInfo = computed((): boolean => {
+        return !hasEmail.value && !hasPhone.value && !hasAddress.value;
+    });
+
+    const requestType = props.options.benevolenceRequestTypes?.find(requestType => requestType.id === entity.benevolenceTypeId);
+
+    const hasAuthorizedManualWorkflows = computed((): boolean => {
+        return props.modelValue?.workflows != null
+            && props.modelValue?.workflows !== undefined
+            && props.modelValue?.workflows.length > 0;
+    });
+    const authorizedManualWorkflows = computed((): BenevolenceRequestWorkflowBag[] => {
+        return props.modelValue?.workflows ?? [];
+    });
+
+    const benevolenceRequestTypeLavaDetails = requestType?.lavaDetails ?? "";
+    const hasRequestLavaTemplateDetails = computed((): boolean => {
+        return benevolenceRequestTypeLavaDetails !== null
+            && benevolenceRequestTypeLavaDetails !== undefined
+            && benevolenceRequestTypeLavaDetails !== "";
+    });
+
+    const isShowingFinancialInfo = computed((): boolean => {
+        return requestType?.options?.isShowingFinancialResults ?? false;
+    });
+
+    /** Whether or not there are any attributes to display. */
+    const hasAttributes = computed((): boolean => {
+        return Object.keys(attributes.value).length > 0;
+    });
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the right side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Get an empty PersonBag
+     * @returns An empty PersonBag
+     */
+    function getEmptyPersonBag(): PersonBag {
+        return {
+            personAliasGuid: emptyGuid,
+            raceGuid: emptyGuid,
+            ethnicityGuid: emptyGuid,
+        };
+    }
+
+    /**
+     * Get an empty BenevolenceRequestBag
+     * @returns An empty BenevolenceRequestBag
+     */
+    function getEmptyBenevolenceRequestBag(): BenevolenceRequestBag {
+        return {
+            benevolenceTypeId: 0,
+            requester: getEmptyPersonBag(),
+            caseWorker: getEmptyPersonBag(),
+            results: [],
+        };
+    }
+
+    /**
+     * Handles when a person's profile is clicked.
+     * @param idKey The person's identifier key.
+     */
+    function onPersonProfileClick(): void {
+        if (entity.requester && entity.requester.personIdKey) {
+            window.location.href = `${window.location.origin}/person/${entity.requester.personIdKey}`;
+        }
+    }
+
+    /**
+     * Formats the request date into a local date and includes how many days ago it was.
+     * @param date The ISO date string to format.
+     * @return The formatted date string.
+     */
+    function formatRequestDate(date: string): string {
+        const parsedDate = RockDateTime.parseISO(date)?.toASPString("d");
+        if (parsedDate) {
+            const now = RockDateTime.now();
+            const requestDate = RockDateTime.parseISO(date);
+            let daysAgo = 0;
+            if (now && requestDate) {
+                const msPerDay = 1000 * 60 * 60 * 24;
+                daysAgo = Math.floor((now.toMilliseconds() - requestDate.toMilliseconds()) / msPerDay);
+            }
+            return `${parsedDate} (${daysAgo === 0 ? "Today" : daysAgo === 1 ? "1 day ago" : `${daysAgo} days ago`})`;
+        }
+        return parsedDate ?? "";
+    }
+
+    /**
+     * Checks if a string is null or empty.
+     * @param value The string to check.
+     * @return True if the string is null or empty; otherwise false.
+    */
+    function isNullOrEmpty(value: string): boolean {
+        return value == null || value.trim() === "";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles when the results list is updated.
+     * @param newValue The updated list of benevolence results.
+     * @returns void
+    */
+    function onResultsListUpdate(newValue: BenevolenceResultBag[]): void {
+        // Update our local entity with the new bag values
+        entity.results = newValue;
+
+        // Emit the updated entity to the parent
+        emit("update:requestResults", newValue);
+    }
+
+    /**
+     * Opens a workflow launch URL in a new tab.
+     * @param url The workflow launch URL.
+     */
+    async function onWorkflowButtonClick(workflowName: string | null | undefined, url: string | null | undefined): Promise<void> {
+        if (!workflowName || !url) {
+            return;
+        }
+
+        await confirm(`A '${workflowName}' workflow has been started.`);
+        window.open(url, "_blank");
+    }
+
+    // #endregion
+</script>

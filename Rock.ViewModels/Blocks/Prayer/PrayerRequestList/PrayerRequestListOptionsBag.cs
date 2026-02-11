@@ -22,5 +22,10 @@ namespace Rock.ViewModels.Blocks.Prayer.PrayerRequestList
     /// </summary>
     public class PrayerRequestListOptionsBag
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether the current person is authorized
+        /// to approve prayer requests (via the block's "Approve" security action).
+        /// </summary>
+        public bool ShowIsApprovedColumn { get; set; }
     }
 }

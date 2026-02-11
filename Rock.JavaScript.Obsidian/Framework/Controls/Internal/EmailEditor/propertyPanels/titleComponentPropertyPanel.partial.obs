@@ -1,19 +1,18 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <ComponentPropertyPanelBase :componentElement="componentElement"
-                                :componentMigrationHelper="titleComponentHelper"
                                 :ltr="ltr"
                                 title="Title"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
                                 @delete="$emit('delete')"
                                 @migrate="$emit('migrate', $event)">
-        <template v-if="componentHelper?.headingEl">
             <AccordionGroup>
                 <Accordion title="Text">
                     <div class="row">
                         <div class="col-sm-12">
-                            <TextContentProperty :element="componentHelper.headingEl" />
+                            <TextBox v-model="text"
+                                     label="Text" />
                         </div>
                     </div>
 
@@ -26,20 +25,43 @@
                         </div>
                     </div>
 
-                    <FontPropertyGroup :element="componentHelper.headingEl" />
+                    <div class="row">
+                        <div class="col-sm-8">
+                            <FontFamilyPicker v-model="fontFamily" />
+                        </div>
+
+                        <div class="col-sm-4 pl-0">
+                            <PixelBox v-model="fontSizePx"
+                                      label="Font Size" />
+                        </div>
+                    </div>
+
+                    <TextFormatPicker v-model:isBold="isBold"
+                                      v-model:isUnderlined="isUnderlined"
+                                      v-model:isItalicized="isItalicized" />
+
+                    <LetterCasePicker v-model="letterCase" />
+
+                    <TextAlignmentPicker v-model="textAlignment" />
+
+                    <LineHeightPicker v-model="lineHeight" />
+
+                    <ColorPicker v-model.hex="textColor"
+                                 label="Text Color" />
                 </Accordion>
 
                 <Accordion title="Spacing">
                     <div class="row">
                         <div class="col-sm-12">
-                            <PaddingProperty :element="componentHelper.paddingEl" />
+                            <ShorthandPixelBox v-model="paddingPx"
+                                               label="Padding" />
                         </div>
                     </div>
 
-                    <div v-if="componentHelper?.marginWrapper" class="row">
+                    <div class="row">
                         <div class="col-sm-12">
-                            <PaddingProperty :element="componentHelper.marginEl"
-                                             label="Margin" />
+                            <ShorthandPixelBox v-model="marginPx"
+                                               label="Margin" />
                         </div>
                     </div>
                 </Accordion>
@@ -47,35 +69,48 @@
                 <Accordion title="Border">
                     <div class="row">
                         <div class="col-sm-12">
-                            <BorderPropertyGroup :element="componentHelper.borderEl" />
+                            <BorderPicker v-model="border" />
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-sm-12">
-                            <BorderRadiusProperty :element="componentHelper.borderEl" />
+                            <ShorthandPixelBox v-model="borderRadiusPx"
+                                               help="Rounded corners may not display correctly in some versions of Outlook or Windows Mail."
+                                               label="Corner Radius"
+                                               topLabel="Top-Left"
+                                               bottomLabel="Top-Right"
+                                               leftLabel="Bottom-Left"
+                                               rightLabel="Bottom-Right" />
                         </div>
                     </div>
                 </Accordion>
             </AccordionGroup>
-        </template>
     </ComponentPropertyPanelBase>
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { onMounted, onUnmounted, PropType, ref, watch } from "vue";
     import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
     import AccordionGroup from "../accordionGroup.partial.obs";
     import Accordion from "../accordion.partial.obs";
-    import BorderPropertyGroup from "../properties/borderPropertyGroup.partial.obs";
-    import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
-    import FontPropertyGroup from "../properties/fontPropertyGroup.partial.obs";
-    import PaddingProperty from "../properties/paddingProperty.partial.obs";
-    import TextContentProperty from "../properties/textContentProperty.partial.obs";
-    import { getTitleComponentHelper, SupportedHeadingLevel, SupportedHeadingLevels } from "../utils.partial";
+    import BorderPicker from "../borderPicker.partial.obs";
+    import FontFamilyPicker from "../fontFamilyPicker.partial.obs";
+    import LetterCasePicker from "../letterCasePicker.partial.obs";
+    import LineHeightPicker from "../lineHeightPicker2.partial.obs";
+    import PixelBox from "../pixelBox.partial.obs";
+    import ShorthandPixelBox from "../shorthandPixelBox.partial.obs";
+    import TextAlignmentPicker from "../textAlignmentPicker.partial.obs";
+    import TextFormatPicker from "../textFormatPicker2.partial.obs";
+    import { BorderModel, HeadingLevel, LetterCase, ShorthandModel, TextAlignment } from "../types.partial";
+    import { addRockContentEditableEventListener, removeRockContentEditableEventListener, titleComponentAdapter } from "../utils.partial";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { Enumerable } from "@Obsidian/Utility/linq";
+
+    const supportedHeadingLevels: HeadingLevel[] = ["h1", "h2", "h3"];
 
     const props = defineProps({
         componentElement: {
@@ -97,7 +132,7 @@
     }>();
 
     const headingLevels: ListItemBag[] = Enumerable
-        .from(SupportedHeadingLevels)
+        .from(supportedHeadingLevels)
         .orderBy(l => l)
         .select(l => ({
             text: l.replace("h", "Heading "),
@@ -107,41 +142,125 @@
 
     // #region Values
 
-    const titleComponentHelper = getTitleComponentHelper();
-    const componentHelper = ref(titleComponentHelper.getElements(props.componentElement));
-    const headingLevel = ref<SupportedHeadingLevel>(componentHelper.value?.headingEl?.tagName?.toLowerCase() as SupportedHeadingLevel ?? "h1");
+    const text = ref<string>("");
+    const headingLevel = ref<HeadingLevel>("h1");
+    const fontFamily = ref<string | null>("");
+    const fontSizePx = ref<number | null>(null);
+    const isBold = ref<boolean | null>(null);
+    const isItalicized = ref<boolean | null>(null);
+    const isUnderlined = ref<boolean | null>(null);
+    const letterCase = ref<LetterCase | null>(null);
+    const textAlignment = ref<TextAlignment | null>(null);
+    const lineHeight = ref<number | null>(null);
+    const textColor = ref<string>("");
+    const paddingPx = ref<ShorthandModel<number | null> | null>(null);
+    const marginPx = ref<ShorthandModel<number | null> | null>(null);
+    const border = ref<BorderModel | null>(null);
+    const borderRadiusPx = ref<ShorthandModel<number | null> | null>(null);
 
     // #endregion
+
+    // #region Functions
+
+    function readProps(): void {
+        const localProps = titleComponentAdapter.readLocalProps(props.componentElement);
+        text.value = localProps.text;
+        headingLevel.value = localProps.headingLevel;
+        fontFamily.value = localProps.fontFamily;
+        fontSizePx.value = localProps.fontSizePx;
+        isBold.value = localProps.isBold;
+        isItalicized.value = localProps.isItalicized;
+        isUnderlined.value = localProps.isUnderlined;
+        letterCase.value = localProps.letterCase;
+        textAlignment.value = localProps.textAlignment;
+        lineHeight.value = localProps.lineHeight;
+        textColor.value = localProps.textColor ?? "";
+        paddingPx.value = localProps.paddingPx;
+        marginPx.value = localProps.marginPx;
+        border.value = localProps.border;
+        borderRadiusPx.value = localProps.borderRadiusPx;
+    }
+
+    function writeProps(): void {
+        titleComponentAdapter.writeLocalProps(props.componentElement, {
+            text: text.value,
+            headingLevel: headingLevel.value,
+            fontFamily: fontFamily.value,
+            fontSizePx: fontSizePx.value,
+            isBold: isBold.value,
+            isItalicized: isItalicized.value,
+            isUnderlined: isUnderlined.value,
+            letterCase: letterCase.value,
+            textAlignment: textAlignment.value,
+            lineHeight: lineHeight.value,
+            textColor: textColor.value || null,
+            paddingPx: paddingPx.value,
+            marginPx: marginPx.value,
+            border: border.value,
+            borderRadiusPx: borderRadiusPx.value
+        });
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onInput(): void {
+        const { text: enteredText } = titleComponentAdapter.readLocalProps(props.componentElement);
+        text.value = enteredText;
+    }
 
     // #region Watchers
 
-    watch(headingLevel, (value: SupportedHeadingLevel) => {
-        if (!value || !componentHelper.value?.headingEl || componentHelper.value.headingEl.tagName.toLowerCase() === value) {
-            // No need to change heading level.
-            return;
+    // Handle text changes separately to avoid double-writing
+    // when the user is editing the content of the element itself.
+    watch(text, (value: string) => {
+        const { text: currentText } = titleComponentAdapter.readLocalProps(props.componentElement);
+
+        if (value !== currentText) {
+            writeProps();
         }
-
-        const newHeadingElement = props.componentElement.ownerDocument.createElement(value);
-
-        // Copy attributes from old to new heading element.
-        [...componentHelper.value.headingEl.attributes].forEach(attr => {
-            newHeadingElement.setAttribute(attr.name, attr.value);
-        });
-
-        // Copy the inner content from old to new heading element.
-        newHeadingElement.innerHTML = componentHelper.value.headingEl.innerHTML;
-
-        // Replace the old heading element with the new one.
-        componentHelper.value.headingEl.parentNode?.replaceChild(newHeadingElement, componentHelper.value.headingEl);
-
-        // Update the wrapper classes to ensure global and component styles work correctly.
-        titleComponentHelper.setCssClasses(componentHelper.value);
     });
 
-    watch(() => props.componentElement, () => {
-        componentHelper.value = titleComponentHelper.getElements(props.componentElement);
-        headingLevel.value = componentHelper.value?.headingEl?.tagName.toLowerCase() as SupportedHeadingLevel ?? "h1";
+    watch([
+        // `text` is handled in its own watcher above
+        headingLevel,
+        fontFamily,
+        fontSizePx,
+        isBold,
+        isItalicized,
+        isUnderlined,
+        letterCase,
+        textAlignment,
+        lineHeight,
+        textColor,
+        paddingPx,
+        marginPx,
+        border,
+        borderRadiusPx
+    ], () => {
+        writeProps();
+    });
+
+    watch(() => props.componentElement, (newComponentElement, oldComponentElement) => {
+        readProps();
+
+        removeRockContentEditableEventListener(oldComponentElement, onInput);
+        addRockContentEditableEventListener(newComponentElement, onInput);
     });
 
     // #endregion
+
+    // #region Hooks
+
+    onMounted(() => {
+        readProps();
+        addRockContentEditableEventListener(props.componentElement, onInput);
+    });
+
+    onUnmounted(() => {
+        removeRockContentEditableEventListener(props.componentElement, onInput);
+    });
+
+    // #endregion Hooks
 </script>

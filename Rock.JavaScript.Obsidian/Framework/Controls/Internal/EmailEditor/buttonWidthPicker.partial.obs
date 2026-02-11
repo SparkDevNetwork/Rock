@@ -1,0 +1,90 @@
+<template>
+    <DropDownList v-model="internalWidthModeAsString"
+                  :items="widthModeItems"
+                  label="Width"
+                  :showBlankItem="showBlankItem" />
+
+    <PixelBox v-if="widthMode === 'fixed'"
+              v-model="fixedWidthPx"
+              label="Fixed Width" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import PixelBox from "./pixelBox.partial.obs";
+    import { ButtonWidthMode, ButtonWidthModel } from "./types.partial";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ButtonWidthModel | null>,
+            required: true
+        },
+
+        showBlankItem: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ButtonWidthModel | null): void;
+    }>();
+
+    const buttonWidthModeLabels: Record<ButtonWidthMode, string> = {
+        fitToText: "Fit to Text",
+        full: "Full Width",
+        fixed: "Fixed Width"
+    };
+
+    const widthModeItems = Enumerable
+        .from(Object.entries(buttonWidthModeLabels))
+        .select<ListItemBag>(([value, text]) => {
+            return {
+                text,
+                value
+            };
+        })
+        .toArray();
+
+    // #region Values
+
+    const widthMode = ref<ButtonWidthMode | null>(props.modelValue?.mode ?? null);
+    const fixedWidthPx = ref<number | null>(props.modelValue?.fixedWidthPx ?? null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const internalWidthModeAsString = computed<string>({
+        get(): string {
+            return widthMode.value ?? "";
+        },
+        set(value: string) {
+            widthMode.value = (value || null) as ButtonWidthMode | null;
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Watchers
+
+    watch([
+        widthMode,
+        fixedWidthPx
+    ], () => {
+        if (!widthMode.value) {
+            emit("update:modelValue", null);
+        }
+        else {
+            emit("update:modelValue", {
+                mode: widthMode.value,
+                fixedWidthPx: fixedWidthPx.value
+            });
+        }
+    });
+
+    // #endregion Watchers
+</script>

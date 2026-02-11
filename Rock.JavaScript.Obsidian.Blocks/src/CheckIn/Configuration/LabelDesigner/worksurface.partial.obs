@@ -14,7 +14,7 @@
             </div>
             <div ref="menuFieldSelectElement"
                  class="menu-group">
-                <button class="header">Select Field</button>
+                <button class="header" type="button">Select Field</button>
             </div>
         </div>
     </div>
@@ -252,7 +252,7 @@
 
                     // If nothing selected or this shape is selected then
                     // just continue.
-                    if (selectedNodes.length === 0 || selectedNodes[0]._id == shape?._id) {
+                    if (selectedNodes.length === 0 || selectedNodes[0]._id === shape?._id) {
                         return origCreateDragElement.apply(shape, [evt]);
                     }
 
@@ -972,7 +972,7 @@
             showFieldActionMenu(field);
         }
 
-        if (nodes.length == 1) {
+        if (nodes.length === 1) {
             hideFieldSelectMenu();
         }
         else {

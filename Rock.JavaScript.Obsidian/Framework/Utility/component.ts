@@ -159,7 +159,17 @@ type StandardRockFormFieldProps = {
     isRequiredIndicatorHidden: {
         type: PropType<boolean>,
         default: false
-    }
+    },
+
+    /**
+     * True if the field is only available when the page is in trailblazer
+     * mode. The field will automatically be hidden and not participate in any
+     * form validation.
+     */
+    trailblazerField: {
+        type: PropType<boolean>,
+        default: false
+    },
 };
 
 /** The standard component props that should be included when using RockFormField. */
@@ -197,7 +207,12 @@ export const standardRockFormFieldProps: StandardRockFormFieldProps = {
     isRequiredIndicatorHidden: {
         type: Boolean as PropType<boolean>,
         default: false
-    }
+    },
+
+    trailblazerField: {
+        type: Boolean as PropType<boolean>,
+        default: false
+    },
 };
 
 /**
@@ -232,7 +247,8 @@ export function useStandardRockFormFieldProps(props: ExtractPropTypes<StandardRo
         rules: props.rules,
         formGroupClasses: props.formGroupClasses,
         validationTitle: props.validationTitle,
-        isRequiredIndicatorHidden: props.isRequiredIndicatorHidden
+        isRequiredIndicatorHidden: props.isRequiredIndicatorHidden,
+        trailblazerField: props.trailblazerField,
     });
 
     watch([() => props.formGroupClasses, () => props.help, () => props.label, () => props.rules, () => props.validationTitle], () => {

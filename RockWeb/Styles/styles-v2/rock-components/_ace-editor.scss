@@ -3,28 +3,44 @@
 
 
 // =============================================================
-// Table of Content           
+// Table of Content
 //  + Base style
 // =============================================================
 
 
 // ======================== BASE STYLE ========================
+
 .ace-tm, .ace-github {
     .ace_gutter-active-line {
-        background: var(--color-interface-soft) !important;
+        background: var(--color-info-tint) !important;
+        color: var(--color-interface-strong) !important;
     }
 }
 
 .ace-tm, .ace-github {
     .ace_marker-layer .ace_active-line {
-        background-color: var(--color-interface-softer) !important;
+        background: var(--color-info-soft) !important;
     }
 }
+
+.ace_selected-word {
+    background: var(--color-info-soft) !important;
+    border: 1px solid var(--color-info-soft) !important;
+}
+
+.ace_bracket {
+    border: 1px solid var(--color-info-strong) !important;
+}
+
 .ace_scroller {
     background-color: var(--color-interface-softest) !important;
 }
 .ace_line {
     color: var(--color-interface-strongest);
+    .ace_string,
+    .ace_text {
+        color: var(--color-danger-strong) !important;
+    }
 }
 
 .ace_editor .ace_marker-layer .ace_selection {

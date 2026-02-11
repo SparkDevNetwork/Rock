@@ -44,6 +44,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public string Name { get; private set; }
 
+        /// <inheritdoc cref="Rock.Model.Schedule.AbbreviatedName" />
+        [DataMember]
+        public string AbbreviatedName { get; private set; }
+
         /// <inheritdoc cref="Rock.Model.Schedule.CategoryId" />
         [DataMember]
         public int? CategoryId { get; private set; }
@@ -123,6 +127,7 @@ namespace Rock.Web.Cache
             }
 
             this.Name = schedule.Name;
+            this.AbbreviatedName = schedule.AbbreviatedName;
             this.CategoryId = schedule.CategoryId;
             this.IsActive = schedule.IsActive;
             this.FriendlyScheduleText = schedule.ToFriendlyScheduleText();

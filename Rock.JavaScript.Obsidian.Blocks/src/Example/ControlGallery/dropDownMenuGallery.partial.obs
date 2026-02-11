@@ -1,17 +1,94 @@
 <template>
-    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+    <GalleryAndResult :value="menuItems"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      :scriptSetupCode="scriptSetupCode"
+                      enableReflection>
         <div style="padding-left: calc(50% - 18px); display: flex; background-color: #f3f3f3;">
-            <DropDownMenu :items="menuItems" :align="align" />
+            <DropDownMenu :items="menuItems"
+                          :title="demoTitleText"
+                          :anchorButtonSize="anchorButtonSize"
+                          :anchorButtonType="anchorButtonType"
+                          :align="align"
+                          :verticalAlign="verticalAlign"
+                          :anchorIconCssClass="anchorIconCssClass"
+                          :anchorButtonCssClass="anchorButtonCssClass"
+                          :isAnchorButtonOverflow="isAnchorButtonOverflow" />
         </div>
 
         <template #settings>
-            <div class="row">
-                <div class="col-md-3">
-                    <DropDownList label="Align"
-                                  v-model="align"
-                                  :items="alignItems"
-                                  :showBlankItem="false" />
-                </div>
+            <div class="d-flex flex-row gap-3" style="max-height: 5vw;">
+                <ContentSection title="Demonstratable Settings"
+                                icon="ti ti-settings"
+                                disableCollapse>
+                    <p class="text-semibold font-italic">The settings apply across many use-cases, so their usage and demonstration will show and occur if enabled or changed from defaults.</p>
+                    <ContentStack title="Toggle Properties"
+                                  description="Properties that typically are either true or false.">
+                        <div class="d-flex flex-row gap-3">
+                            <Switch v-model="isAnchorButtonOverflow"
+                                    label="Anchor Button is Overflow"
+                                    help="Determines if the Anchor Button needs to overflow css class 'btn-overflow'." />
+                        </div>
+                    </ContentStack>
+                    <ContentStack title="Value Properties"
+                                  description="Properties that typically require a value to be set.">
+                        <div class="d-flex flex-row gap-1">
+                            <div class="col-md-6">
+                                <p class="text-semibold">Anchor Button</p>
+                                <DropDownList v-model="anchorButtonType"
+                                              label="Type"
+                                              help="Sets the type of the anchor button for the drop down menu."
+                                              :items="btnTypeItems"
+                                              :showBlankItem="false" />
+                                <DropDownList v-model="anchorButtonSize"
+                                              label="Size"
+                                              help="Sets the size of the anchor button for the drop down menu."
+                                              :items="btnSizeItems"
+                                              :showBlankItem="false" />
+                                <TextBox v-model="anchorIconCssClass"
+                                         label="Icon CSS Class"
+                                         help="CSS class for the icon displayed on the anchor button. Defaults `to ti ti-dots-vertical`" />
+                                <TextBox v-model="anchorButtonCssClass"
+                                         label="Button CSS Class"
+                                         help="Any supplemental CSS class(es) for the button displayed as the anchor for the drop down menu." />
+                            </div>
+                            <div class="col-md-6">
+                                <p class="text-semibold">Menu Alignment</p>
+                                <DropDownList v-model="align"
+                                              label="Align"
+                                              help="Sets the horizontal alignment for the drop down menu in relation to the anchor button."
+                                              :items="alignDemonstrationItems"
+                                              :showBlankItem="false" />
+                                <DropDownList v-model="verticalAlign"
+                                              label="Align"
+                                              help="Sets the vertical alignment for the drop down menu in relation to the anchor button."
+                                              :items="verticalAlignDemonstrationItems"
+                                              :showBlankItem="false" />
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-row gap-1">
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+                    </ContentStack>
+                </ContentSection>
+
+                <ContentSection title="Context-Specific Settings"
+                                icon="ti ti-book"
+                                disableCollapse>
+                    <p class="text-semibold font-italic">The settings are too context-specific, so their usage will show if enabled, but no demonstration will occur.</p>
+                    <ContentStack title="Toggle Properties"
+                                  description="Properties that typically are either true or false.">
+                        <div class="d-flex flex-row gap-1">
+                            <div class="col-md-12">
+                                <TextBox v-model="title"
+                                         label="Tooltip Title"
+                                         help="The tooltip title used for the drop down menu anchor button on hover. This must be set statically and cannot be changed dynamically." />
+                            </div>
+                        </div>
+                    </ContentStack>
+                </ContentSection>
             </div>
         </template>
     </GalleryAndResult>
@@ -21,24 +98,17 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { getSfcControlImportPath, ComponentUsage } from "./common/utils.partial";
     import { computed, ref } from "vue";
-
-    const align = ref<"left" | "right">("left");
-
-    const alignItems: ListItemBag[] = [
-        {
-            value: "left",
-            text: "Left"
-        },
-        {
-            value: "right",
-            text: "Right"
-        }
-    ];
 
     const menuItems: MenuAction[] = [
         {
@@ -65,12 +135,119 @@
         }
     ];
 
+    const demoTitleText = "Drop Down Menu Button Tooltip Title";
+    const title = ref<string>("");
+
+    const anchorButtonType = ref<BtnType>(BtnType.Link);
+
+    // Convert BtnType enum to ListItemBag[]
+    const btnTypeItems: ListItemBag[] = Object.entries(BtnType).map(([key, value]) => ({
+        value: value,
+        text: key
+    }));
+
+    const anchorButtonSize = ref<BtnSize>(BtnSize.Default);
+
+    const btnSizeItems: ListItemBag[] = Object.entries(BtnSize).map(([key, value]) => ({
+        value: value,
+        text: key
+    }));
+
+    const align = ref<"left" | "right">("left");
+
+    const alignDemonstrationItems: ListItemBag[] = [
+        {
+            value: "left",
+            text: "Left"
+        },
+        {
+            value: "right",
+            text: "Right"
+        }
+    ];
+
+    const verticalAlign = ref<"up" | "down">("down");
+
+    const verticalAlignDemonstrationItems: ListItemBag[] = [
+        {
+            value: "down",
+            text: "Down"
+        },
+        {
+            value: "up",
+            text: "Up"
+        }
+    ];
+
+    const anchorIconCssClass = ref("ti ti-dots-vertical");
+
+    const anchorButtonCssClass = ref<string>("");
+
+    const isAnchorButtonOverflow = ref(true);
+
     const importCode = getSfcControlImportPath("dropDownMenu");
 
-    const exampleCode = computed((): string => {
-        return `<DropDownMenu :items="menuItems" align="${align.value}">
-    <!-- Optional content -->
-    <i class="ti ti-dots-vertical"></i>
-</DropDownMenu>`;
+    const exampleCode = computed(() => {
+        const usage = new ComponentUsage("DropDownMenu");
+
+        usage.addAttribute(':items="dropDownMenuItems"', true, false);
+        usage.addAttribute(`title="${title.value}"`, title.value !== "", false);
+        usage.addAttribute(`:anchorButtonType="dropDownMenuAnchorButtonType"`, true, false);
+        usage.addAttribute(`:anchorButtonSize="dropDownMenuAnchorButtonSize"`, true, false);
+        usage.addAttribute(`:align="dropDownMenuHorizontalAlign"`, true, false);
+        usage.addAttribute(`:verticalAlign="dropDownMenuVerticalAlign"`, true, false);
+        usage.addAttribute(`:anchorIconCssClass="dropDownAnchorIconCssClass"`, anchorIconCssClass.value !== "ti ti-dots-vertical", false);
+        usage.addAttribute(`:anchorButtonCssClass="dropDownAnchorButtonCssClass"`, anchorButtonCssClass.value !== "", false);
+        usage.addAttribute(`isAnchorButtonOverflow`, isAnchorButtonOverflow.value, true);
+
+        return usage.toString();
+    });
+    const scriptSetupCode = computed(() => {
+        const usage = new ComponentUsage("PageTree");
+
+        usage.addScriptImport('import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";');
+        usage.addScriptBody("const dropDownMenuItems = ref<{MenuAction[]}>(undefined);");
+
+        if (anchorButtonType.value !== BtnType.Link) {
+            usage.addScriptImport('import { BtnType } from "@Obsidian/Enums/Controls/btnType";');
+            usage.addScriptBodyWithComment(
+                "Define the type of the drop down menu's anchor button.",
+                `const dropDownMenuAnchorButtonType = ref<BtnType>(BtnType.${Object.keys(BtnType).find(key => BtnType[key as keyof typeof BtnType] === anchorButtonType.value)});`
+            );
+        }
+
+        if (anchorButtonSize.value !== BtnSize.Default) {
+            usage.addScriptImport('import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";');
+            usage.addScriptBodyWithComment(
+                "Define the size of the drop down menu's anchor button.",
+                `const dropDownMenuAnchorButtonSize = ref<BtnSize>(BtnSize.${Object.keys(BtnSize).find(key => BtnSize[key as keyof typeof BtnSize] === anchorButtonSize.value)});`
+            );
+        }
+
+        usage.addScriptBodyWithComment(
+            "Define the horizontal alignment of the drop down menu.",
+            `const dropDownMenuHorizontalAlign = ref<"left" | "right">(${align.value === "left" ? '"left"' : '"right"'});`
+        );
+
+        usage.addScriptBodyWithComment(
+            "Define the vertical alignment of the drop down menu.",
+            `const dropDownMenuVerticalAlign = ref<"down" | "up">(${verticalAlign.value === "down" ? '"down"' : '"up"'});`
+        );
+
+        if (anchorIconCssClass.value !== "ti ti-dots-vertical") {
+            usage.addScriptBodyWithComment(
+                "Define the icon CSS class for the drop down menu's anchor button.",
+                `const dropDownAnchorIconCssClass = ref<string>("${anchorIconCssClass.value}");`
+            );
+        }
+
+        if (anchorButtonCssClass.value !== "") {
+            usage.addScriptBodyWithComment(
+                "Define any supplementary CSS class(es) for the drop down menu's anchor button.",
+                `const dropDownAnchorButtonCssClass = ref<string>("${anchorButtonCssClass.value}");`
+            );
+        }
+
+        return usage.toScriptSetupString();
     });
 </script>

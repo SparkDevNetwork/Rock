@@ -22,7 +22,7 @@
 
 <script setup lang="ts">
     import { onUnmounted, PropType, ref, watch } from "vue";
-    import { UsageType } from "../types";
+    import { UsageType } from "../types.partial";
     import { RockCssClassContentEditable } from "../utils.partial";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";

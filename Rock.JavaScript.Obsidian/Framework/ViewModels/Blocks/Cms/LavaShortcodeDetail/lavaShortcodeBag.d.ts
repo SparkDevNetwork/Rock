@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
@@ -47,6 +48,9 @@ export type LavaShortcodeBag = {
     /** Gets or sets the enabled commands. */
     enabledCommands?: ListItemBag[] | null;
 
+    /** Gets or sets the unique identifier of the shortcode. */
+    guid: Guid;
+
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
@@ -64,6 +68,9 @@ export type LavaShortcodeBag = {
 
     /** Gets or sets the parameters. */
     parameters?: ListItemBag[] | null;
+
+    /** Gets or sets how variables defined within this shortcode are scoped. */
+    shortcodeScopeBehavior?: string | null;
 
     /** Gets or sets the name of the tag. */
     tagName?: string | null;

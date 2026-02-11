@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.CheckIn.v2;
 using Rock.Enums.CheckIn;
 using Rock.Model;
+using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
@@ -17,7 +20,7 @@ namespace Rock.Tests.CheckIn.v2
     /// </summary>
     /// <seealso cref="AreaConfigurationData"/>
     [TestClass]
-    public class AreaConfigurationDataTests : CheckInMockDatabase
+    public class AreaConfigurationDataTests : MockDatabaseTestsBase
     {
         #region Constructor Tests
 
@@ -29,27 +32,40 @@ namespace Rock.Tests.CheckIn.v2
             var expectedPrintTo = PrintTo.Location;
             var expectedLocationSelectionStrategy = LocationSelectionStrategy.Balance;
 
-            var rockContextMock = GetRockContextMock();
-            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
-            groupType.Object.AttendanceRule = expectedAttendanceRule;
-            groupType.Object.AttendancePrintTo = expectedPrintTo;
-            groupType.Object.AlreadyEnrolledMatchingLogic = expectedAlreadyEnrolledMatchingLogic;
-            groupType.Object.IsConcurrentCheckInPrevented = true;
-            groupType.Object.IsSchedulingEnabled = true;
-            groupType.SetMockAttributeValue( SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_LOCATION_SELECTION_STRATEGY, LocationSelectionStrategy.Balance.ConvertToInt().ToString() );
+            var groupType = new GroupType
+            {
+                Id = 1,
+                AttendanceRule = expectedAttendanceRule,
+                AttendancePrintTo = expectedPrintTo,
+                AlreadyEnrolledMatchingLogic = expectedAlreadyEnrolledMatchingLogic,
+                IsConcurrentCheckInPrevented = true,
+                IsSchedulingEnabled = true,
+                Attributes = new Dictionary<string, AttributeCache>(),
+                AttributeValues = new Dictionary<string, AttributeValueCache>(),
+            };
 
-            var groupTypeCache = new GroupTypeCache();
-            groupTypeCache.SetFromEntity( groupType.Object );
+            groupType.AttributeValues.Add( SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_LOCATION_SELECTION_STRATEGY, new AttributeValueCache
+            {
+                Value = expectedLocationSelectionStrategy.ConvertToInt().ToString()
+            } );
 
-            var instance = new AreaConfigurationData( groupTypeCache, rockContextMock.Object );
+            rockContextMock.Object.Set<GroupType>().Add( groupType );
 
-            Assert.AreEqual( expectedAttendanceRule, instance.AttendanceRule );
-            Assert.AreEqual( expectedAlreadyEnrolledMatchingLogic, instance.AlreadyEnrolledMatchingLogic );
-            Assert.IsTrue( instance.IsConcurrentCheckInPrevented );
-            Assert.IsTrue( instance.IsSchedulingEnabled );
-            Assert.AreEqual( expectedPrintTo, instance.PrintTo );
-            Assert.AreEqual( expectedLocationSelectionStrategy, instance.LocationSelectionStrategy );
+            using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
+            {
+                var groupTypeCache = GroupTypeCache.Get( groupType.Id, rockContextMock.Object );
+                var instance = new AreaConfigurationData( groupTypeCache, rockContextMock.Object );
+
+                Assert.AreEqual( expectedAttendanceRule, instance.AttendanceRule );
+                Assert.AreEqual( expectedAlreadyEnrolledMatchingLogic, instance.AlreadyEnrolledMatchingLogic );
+                Assert.IsTrue( instance.IsConcurrentCheckInPrevented );
+                Assert.IsTrue( instance.IsSchedulingEnabled );
+                Assert.AreEqual( expectedPrintTo, instance.PrintTo );
+                Assert.AreEqual( expectedLocationSelectionStrategy, instance.LocationSelectionStrategy );
+            }
         }
 
         [TestMethod]

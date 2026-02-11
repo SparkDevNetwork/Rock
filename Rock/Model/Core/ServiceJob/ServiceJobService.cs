@@ -16,22 +16,21 @@
 //
 
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.Concurrent;
 
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Jobs;
-using CronExpressionDescriptor;
-using Rock.Attribute;
-using System.Collections.Generic;
-using Rock.ViewModels.Utility;
 using Rock.ViewModels.Blocks.Core.ServiceJobDetail;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Model
 {
@@ -308,23 +307,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="cronExpression">The cron expression.</param>
         /// <returns>string.</returns>
+        [Obsolete( "The CronExpressionDescriptor library is no longer supported." )]
+        [RockObsolete( "19.0" )]
         public static string GetCronDescription( string cronExpression )
         {
-            if ( Quartz.CronExpression.IsValidExpression( cronExpression ) )
-            {
-                try
-                {
-                    return ExpressionDescriptor.GetDescription( cronExpression, new Options { ThrowExceptionOnParseError = true } );
-                }
-                catch
-                {
-                    return "Invalid Cron Expression";
-                }
-            }
-            else
-            {
-                return "Invalid Cron Expression";
-            }
+            return "Not Supported";
         }
 
         /// <summary>

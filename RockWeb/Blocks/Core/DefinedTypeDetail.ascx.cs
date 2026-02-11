@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Core
         Key = AttributeKey.DefinedType )]
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
-    [Rock.SystemGuid.BlockTypeGuid( "08C35F15-9AF7-468F-9D50-CDFD3D21220C" )]
+    [Rock.SystemGuid.BlockTypeGuid( "D5EDF24A-0453-4C0D-B7F0-DFAE48F89ED2" )]
     public partial class DefinedTypeDetail : RockBlock
     {
         public static class AttributeKey

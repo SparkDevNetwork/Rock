@@ -521,7 +521,7 @@ export async function initializeDynamicComponentWrapper(rootElementId: string, c
 
         for (const mutation of mutations) {
             for (const node of mutation.removedNodes) {
-                if (node == rootElement || node.contains(rootElement)) {
+                if (node === rootElement || node.contains(rootElement)) {
                     removed = true;
                 }
             }

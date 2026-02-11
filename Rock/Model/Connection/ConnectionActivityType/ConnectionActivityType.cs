@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Connection;
 using Rock.Lava;
 using Rock.Utility;
 
@@ -67,6 +68,18 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool IsActive { get; set; } = true;
+
+        /// <summary>
+        /// Determines whether a Person Note summarizing this activity should be created when the activity is added to a Connection Request.
+        /// </summary>
+        [DataMember]
+        public PersonNoteCreationBehavior? PersonNoteCreationBehavior { get; set; }
+
+        /// <summary>
+        /// The note type to use when creating person notes for this request.
+        /// </summary>
+        [DataMember]
+        public int? PersonNoteTypeId { get; set; }
 
         #endregion
 

@@ -16,7 +16,9 @@
 //
 
 using Rock.Data;
+using Rock.Enums.Core;
 using Rock.Enums.Crm;
+using Rock.Enums.Engagement;
 using Rock.Lava;
 using Rock.UniversalSearch;
 using Rock.Utility.Enums;
@@ -754,6 +756,42 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public bool? IsChatOpenDirectMessageAllowed { get; set; }
+
+        /// <summary>
+        /// Gets or sets the outreach schedule.
+        /// </summary>
+        [DataMember]
+        public DaysOfWeekFlags OutreachTouchpointSchedule { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether touchpoint is generated for this Person.
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if we are generating touchpoint for this Person; otherwise <c>false</c>.
+        /// </value>
+        /// </summary>
+        [DataMember]
+        public bool OutreachTouchpointGenerationEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether outreach daily notification is enable.
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if daily push notification is turn on for this person; otherwise <c>false</c>.
+        /// </value>
+        /// </summary>
+        public bool OutreachEnableDailyNotification { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether outreach special events notification is enable.
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if special event push notification is turn on for this person; otherwise <c>false</c>.
+        /// </value>
+        /// </summary>
+        public bool OutreachEnableSpecialEventsNotification { get; set; }
+
+        /// <summary>
+        /// Gets or sets the outreach notification time of day.
+        /// </summary>
+        public OutreachNotificationTimeOfDay? OutreachNotificationTimeOfDay { get; set; }
 
         #endregion
 

@@ -77,6 +77,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<ConnectionType>( Context ).Queryable().Any( a => a.SnippetCategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, ConnectionType.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<ContentChannel>( Context ).Queryable().Any( a => a.ItemTagCategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, ContentChannel.FriendlyTypeName );

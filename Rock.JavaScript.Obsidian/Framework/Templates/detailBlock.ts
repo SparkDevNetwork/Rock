@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { computed, defineComponent, PropType, ref, watch } from "vue";
+import { computed, defineComponent, onBeforeUnmount, PropType, ref, watch } from "vue";
 import Panel from "@Obsidian/Controls/panel.obs";
 import Modal from "@Obsidian/Controls/modal.obs";
 import { Guid } from "@Obsidian/Types";
@@ -27,6 +27,7 @@ import { FollowingSetFollowingOptionsBag } from "@Obsidian/ViewModels/Rest/Contr
 import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
 import BadgeList from "@Obsidian/Controls/badgeList.obs";
 import EntityTagList from "@Obsidian/Controls/tagList.obs";
+import ExperienceModePicker from "@Obsidian/Controls/experienceModePicker.obs";
 import RockButton from "@Obsidian/Controls/rockButton.obs";
 import RockForm from "@Obsidian/Controls/rockForm.obs";
 import RockSuspense from "@Obsidian/Controls/rockSuspense.obs";
@@ -36,7 +37,7 @@ import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 import { splitCase } from "@Obsidian/Utility/stringUtils";
 import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
-import { hideBlockRole, showBlockRole, useBlockBrowserBus, useEntityTypeGuid, useEntityTypeName } from "@Obsidian/Utility/block";
+import { hideBlockRole, showBlockRole, useBlockBrowserBus, useEntityTypeGuid, useEntityTypeName, useReloadBlock } from "@Obsidian/Utility/block";
 import { BlockMessages } from "@Obsidian/Utility/browserBus";
 import { BlockRole } from "@Obsidian/Enums/Cms/blockRole";
 
@@ -47,6 +48,7 @@ export default defineComponent({
     components: {
         AuditDetail,
         EntityTagList,
+        ExperienceModePicker,
         Modal,
         Panel,
         RockButton,
@@ -264,16 +266,25 @@ export default defineComponent({
             default: false
         },
 
+        /**
+         * Shows the experience mode picker for this block.
+         */
+        showExperienceMode: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
     },
 
     emits: {
-        "update:mode": (_value: DetailPanelMode) => true
+        "update:mode": (_value: DetailPanelMode) => true,
+        "update:isFullscreen": (_value: boolean) => true
     },
 
     setup(props, { emit }) {
         // #region Values
 
         const http = useHttp();
+        const reloadBlock = useReloadBlock();
         const internalMode = ref(props.mode);
         const isEditModeLoading = ref(false);
         const isEntityFollowed = ref<boolean | null>(null);
@@ -772,6 +783,38 @@ export default defineComponent({
             showAuditDetailsModal.value = true;
         };
 
+        /**
+         * Called when the page is shown.
+         *
+         * @param event The page transition event.
+         */
+        const onPageShow = (event: PageTransitionEvent): void => {
+            // When in auto-edit mode, detect when the page is being restored
+            // from the back/forward cache (bfcache) so we can reload the block
+            // to ensure we have fresh data.
+            if (!isAutoEditMode.value) {
+                return;
+            }
+
+            // event.persisted is true when restored from bfcache (common case).
+            // nav.type === "back_forward" covers some browsers that don't set
+            // persisted reliably.
+            let isBackForward = event.persisted;
+            if (!isBackForward) {
+                try {
+                    const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+                    isBackForward = nav?.type === "back_forward";
+                }
+                catch {
+                    // Fail silently.
+                }
+            }
+
+            if (isBackForward) {
+                reloadBlock();
+            }
+        };
+
         // #endregion
 
         watch(() => props.mode, () => {
@@ -786,7 +829,7 @@ export default defineComponent({
             // If the edit mode state changed then we need to either hide or
             // show the secondary blocks. This is rare but can happen if the
             // parent component decides to manually change the mode.
-            if (wasEditMode != newEditMode) {
+            if (wasEditMode !== newEditMode) {
                 if (newEditMode) {
                     hideBlockRole(BlockRole.Secondary);
                 }
@@ -827,6 +870,12 @@ export default defineComponent({
             hideBlockRole(BlockRole.Secondary);
         }
 
+        window.addEventListener("pageshow", onPageShow);
+
+        onBeforeUnmount(() => {
+            window.removeEventListener("pageshow", onPageShow);
+        });
+
         return {
             editForm,
             entityTypeName,
@@ -865,13 +914,18 @@ export default defineComponent({
     :titleIconCssClass="panelTitleIconCssClass"
     :hasFullscreen="isFullScreenVisible"
     :worksurfaceMode="worksurfaceMode"
-    :headerSecondaryActions="internalHeaderSecondaryActions">
+    :headerSecondaryActions="internalHeaderSecondaryActions"
+    @update:isFullscreen="$emit('update:isFullscreen', $event)">
 
     <template v-if="$slots.sidebar" #sidebar>
         <slot name="sidebar" />
     </template>
 
     <template #headerActions>
+        <div v-if="showExperienceMode" class="action panel-experience-mode">
+            <ExperienceModePicker />
+        </div>
+
         <span v-for="action in headerActions" :class="getClassForIconAction(action)" :title="action.title" @click="onActionClick(action, $event)">
             <i :class="getActionIconCssClass(action)"></i>
         </span>

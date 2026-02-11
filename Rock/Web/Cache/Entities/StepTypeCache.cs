@@ -137,6 +137,12 @@ namespace Rock.Web.Cache
         public int? OrganizationalObjectiveValueId { get; private set; }
 
         /// <summary>
+        /// Gets or sets the order of the step type.
+        /// </summary>
+        [DataMember]
+        public int Order { get; private set; }
+
+        /// <summary>
         /// Gets a <see cref="Rock.Web.Cache.DefinedValueCache"/> of the step type's organizational objective.
         /// </summary>
         /// <value>
@@ -197,6 +203,7 @@ namespace Rock.Web.Cache
             EngagementType = sourceModel.EngagementType;
             ImpactWeight = sourceModel.ImpactWeight;
             OrganizationalObjectiveValueId = sourceModel.OrganizationalObjectiveValueId;
+            Order = sourceModel.Order;
             IsActive = sourceModel.IsActive;
         }
 

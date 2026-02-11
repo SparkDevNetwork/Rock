@@ -1,5 +1,11 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SystemInfo.ascx.cs" Inherits="RockWeb.Blocks.Administration.SystemInfo" %>
 
+<style>
+    #routes table td {
+        word-break: break-all;
+    }
+</style>
+
 <script type="text/javascript">
 
     function pageLoad() {
@@ -95,6 +101,11 @@
         <p>
             <strong>Rock Application Start Time:</strong><br />
             <asp:Literal ID="lRockApplicationStartTime" runat="server" />
+        </p>
+
+        <p>
+            <strong>Installation Date Time:</strong><br />
+            <asp:Literal ID="lInstallDateTime" runat="server" />
         </p>
 
         <p>

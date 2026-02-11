@@ -83,6 +83,7 @@ namespace Rock.Blocks.Example
             securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
             securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
             securityGrant.AddRule( new EmailEditorSecurityGrantRule() );
+            securityGrant.AddRule( new ConnectionRequestPickerSecurityGrantRule() );
 
             return securityGrant.ToToken();
         }

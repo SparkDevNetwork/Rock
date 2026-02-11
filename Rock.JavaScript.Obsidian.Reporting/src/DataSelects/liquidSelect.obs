@@ -3,7 +3,7 @@
                 mode="lava"
                 label="Template"
                 editor="monaco"
-                help="Use Lava syntax to get the values of any of the fields in this report. For example, to create a link to the Person record, use <code>&amp;lt;a href=&quot;~/Person/{{ Id }}&quot;&amp;gt;{{ NickName }} {{ LastName }}&amp;lt;/a&amp;gt;</code>. For some fields, use the dot notation to get the property you want. <code>{{ Phone.Number }}</code> or <code> {{ Phone.IsMessagingEnabled }}</code><br />Note: The fieldname will be the Column Label without spaces or special characters." />
+                :help="helpText" />
 </template>
 
 <script setup lang="ts">
@@ -18,6 +18,8 @@
     }>();
 
     const template = ref(props.modelValue.template ?? "");
+
+    const helpText = `Use Lava syntax to get the values of any of the fields in this report. For example, to create a link to the Person record, use <code>&amp;lt;a href=&quot;~/Person/{{ Id }}&quot;&amp;gt;{{ NickName }} {{ LastName }}&amp;lt;/a&amp;gt;</code>. For some fields, use the dot notation to get the property you want. <code>{{ Phone.Number }}</code> or <code> {{ Phone.IsMessagingEnabled }}</code><br />Note: The fieldname will be the Column Label without spaces or special characters.`;
 
     watch([template], () => {
         const newData = {

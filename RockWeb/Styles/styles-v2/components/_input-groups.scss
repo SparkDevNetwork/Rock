@@ -14,7 +14,6 @@
 .input-group {
   position:         relative; // For dropdowns
   display:          table;
-  height:           100%;
   border-collapse:  separate; // prevent input groups from inheriting border styles from table cells when placed within a table
 
   // Undo padding and float of grid classes
@@ -74,10 +73,6 @@
 }
 */
 
-.input-group-btn > .btn-square {
-  padding: 6px 0;
-}
-
 // ===================== END SIZING =====================
 
 
@@ -89,7 +84,6 @@
 
   &:not(:first-child):not(:last-child) {
     border-radius: 0;
-    box-shadow: var(--input-box-shadow);
   }
 }
 
@@ -166,7 +160,6 @@
 
 .input-group-addon:last-child {
   border-left:    0;
-  box-shadow: var(--input-box-shadow);
 }
 
 .input-group-btn {
@@ -175,7 +168,6 @@
   // `font-size` in combination with `inline-block` on buttons.
   font-size:    0;
   white-space:  nowrap;
-  height:       100%;
 
   // Negative margin for spacing, position for bringing hovered/focused/actived
   // element above the siblings.
@@ -226,14 +218,6 @@
 .input-group-btn:last-child > .btn-group:not(:last-child) > .btn {
   border-top-right-radius:    0;
   border-bottom-right-radius: 0;
-  padding-top:                0;
-  padding-bottom:             0;
-}
-
-.input-group-btn:first-child > .dropdown-toggle {
-  height: 100%;
-  padding-top: var(--spacing-tiny);
-  padding-bottom: var(--spacing-tiny);
 }
 
 .input-group-addon:first-child {
@@ -242,26 +226,12 @@
 
 .input-group .form-control:not(.ant-select):last-child,
 .input-group-addon:last-child,
-.input-group-btn:last-child > .btn:not(.btn-sm),
 .input-group-btn:last-child > .btn-group > .btn,
 .input-group-btn:last-child > .dropdown-toggle,
 .input-group-btn:first-child > .btn:not(:first-child),
 .input-group-btn:first-child > .btn-group:not(:first-child) > .btn {
   border-top-left-radius:     0;
   border-bottom-left-radius:  0;
-  padding-top:                6px;
-  padding-bottom:             6px;
-  height:                     100%;
-  box-shadow:                 var(--input-box-shadow);
-}
-
-.input-group-btn:last-child > .btn.btn-sm {
-  border-top-left-radius:    0;
-  border-bottom-left-radius: 0;
-}
-
-.input-group:has(.ant-select:last-child) .form-control {
-  height: 38px;
 }
 
 // ===================== END BORDER =====================

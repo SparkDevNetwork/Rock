@@ -63,6 +63,28 @@ namespace Rock.Web.Cache
         [DataMember]
         public string Number { get; private set; }
 
+
+        /// <summary>
+        /// The backing field for the <see cref="NumberAsNumeric"/> property.
+        /// </summary>
+        private string _numberAsNumeric = null;
+
+        /// <summary>
+        /// Gets the phone number as numeric only (no formatting or whitespace).
+        /// </summary>
+        public string NumberAsNumeric
+        {
+            get
+            {
+                if ( _numberAsNumeric.IsNullOrWhiteSpace() )
+                {
+                    _numberAsNumeric = Number.RemoveAllNonNumericCharacters();
+                }
+
+                return _numberAsNumeric;
+            }
+        }
+
         /// <summary>
         /// Gets a value indicating whether this phone number is active.
         /// </summary>
@@ -262,6 +284,28 @@ namespace Rock.Web.Cache
             }
 
             return allSystemPhoneNumbers.Where( c => c.IsActive ).OrderBy( c => c.Order ).ToList();
+        }
+
+        /// <summary>
+        /// Gets the first <see cref="SystemPhoneNumberCache"/> whose <see cref="Number"/> matches the provided
+        /// <paramref name="phoneNumber"/>.
+        /// </summary>
+        /// <param name="phoneNumber">The string representation of the phone number whose <see cref="SystemPhoneNumberCache"/> to find.</param>
+        /// <returns>A <see cref="SystemPhoneNumberCache"/> instance if a match is found; otherwise, null.</returns>
+        /// <remarks>
+        /// All non-numeric characters will be removed from the provided <paramref name="phoneNumber"/> and each
+        /// <see cref="Number"/> while performing the search.
+        /// </remarks>
+        public static SystemPhoneNumberCache GetByNumber( string phoneNumber )
+        {
+            if ( phoneNumber.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var phoneNumberNumeric = phoneNumber.RemoveAllNonNumericCharacters();
+
+            return All().FirstOrDefault( s => s.NumberAsNumeric == phoneNumberNumeric );
         }
 
         #endregion

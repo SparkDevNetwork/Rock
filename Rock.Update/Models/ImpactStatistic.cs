@@ -41,6 +41,11 @@ namespace Rock.Update.Models
         public string Version { get; set; }
 
         /// <summary>
+        /// The date and time the Rock instance was installed.
+        /// </summary>
+        public DateTime InstallDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the ip address.
         /// </summary>
         /// <value>

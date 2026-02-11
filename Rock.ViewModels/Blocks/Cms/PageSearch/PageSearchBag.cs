@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-
 using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Cms.PageSearch
@@ -26,8 +25,13 @@ namespace Rock.ViewModels.Blocks.Cms.PageSearch
     public class PageSearchBag
     {
         /// <summary>
-        /// 
+        /// The list of pages that should be displayed.
         /// </summary>
         public List<PageSearchPageBag> Pages { get; set; }
+
+        /// <summary>
+        /// The HTML content that should be displayed below the section list.
+        /// </summary>
+        public string AdditionalContent { get; set; }
     }
 }

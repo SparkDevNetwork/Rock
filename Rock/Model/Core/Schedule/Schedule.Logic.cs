@@ -310,6 +310,7 @@ namespace Rock.Model
         /// <value>
         /// The name of the abbreviated.
         /// </value>
+        [LavaVisible]
         [MaxLength( 50 )]
         [DataMember]
         public string AbbreviatedName

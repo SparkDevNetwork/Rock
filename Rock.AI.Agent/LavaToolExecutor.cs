@@ -81,7 +81,7 @@ namespace Rock.AI.Agent
             var proxyFunctionResponse = new Dictionary<string, object>();
 
             mergeFields["AgentContext"] = _agentRequestContext;
-            mergeFields[$"{LavaHelper.InternalMergeFieldPrefix}ProxyFunction"] = proxyFunctionResponse;
+            mergeFields["$_ProxyFunction"] = proxyFunctionResponse;
 
             AddParametersToMergeFields( mergeFields, function.Parameters, args );
 

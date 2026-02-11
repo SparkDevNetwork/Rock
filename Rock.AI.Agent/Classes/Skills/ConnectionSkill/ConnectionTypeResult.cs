@@ -38,6 +38,11 @@ namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
         public List<KeyNameResult> ActivityTypes { get; set; }
 
         /// <summary>
+        /// The list of statuses that the connection type supports.
+        /// </summary>
+        public List<KeyNameResult> Statuses { get; set; }
+
+        /// <summary>
         /// The connection opportunities associated with the connection type.
         /// </summary>
         public List<ConnectionOpportunityResult> Opportunities { get; set; }

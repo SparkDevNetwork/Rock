@@ -3,13 +3,18 @@
                       :importCode="importCode"
                       :exampleCode="exampleCode"
                       enableReflection>
-        <CategoryPicker label="Category Picker" v-model="value" :multiple="multiple" :entityTypeGuid="entityTypeGuid" />
+        <CategoryPicker label="Category Picker"
+                        v-model="value"
+                        :multiple="multiple"
+                        :entityTypeGuid="entityTypeGuid"
+                        :selectFirstByDefault="selectFirstByDefault" />
 
         <template #settings>
 
             <div class="row">
                 <div class="col-md-6">
                     <CheckBox label="Multiple" v-model="multiple" />
+                    <CheckBox label="Select First By Default" v-model="selectFirstByDefault" />
                 </div>
                 <div class="col-md-6">
                     <EntityTypePicker label="For Entity Type" v-model="entityType" enhanceForLongLists showBlankItem />
@@ -39,6 +44,7 @@
         return toGuidOrNull(entityType?.value?.value) ?? undefined;
     });
     const multiple = ref(false);
+    const selectFirstByDefault = ref(false);
     const value = ref(null);
     const importCode = getSfcControlImportPath("categoryPicker");
     const exampleCode = `<CategoryPicker label="Category Picker" v-model="value" :multiple="false" :entityTypeGuid="entityTypeGuid" />`;

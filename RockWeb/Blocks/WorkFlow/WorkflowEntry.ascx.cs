@@ -65,7 +65,6 @@ namespace RockWeb.Blocks.WorkFlow
         Description = "Lava template for determining the title of the block. If not specified, the name of the Workflow Type will be shown.",
         Key = AttributeKey.BlockTitleTemplate,
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
         IsRequired = false,
         Order = 2 )]
@@ -401,7 +400,7 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="eventArgument">A <see cref="T:System.String" /> that represents an optional event argument to be passed to the event handler.</param>
         public void RaisePostBackEvent( string eventArgument )
         {
-            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            var disableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
             if ( !disableCaptchaSupport && cpCaptcha.IsAvailable && !IsCaptchaValid )
             {
                 ShowMessage( NotificationBoxType.Validation, string.Empty, "There was an issue processing your request. Please try again. If the issue persists please contact us." );
@@ -483,8 +482,8 @@ namespace RockWeb.Blocks.WorkFlow
             // Get the block setting to disable passing WorkflowTypeID set.
             bool allowPassingWorkflowTypeId = !this.GetAttributeValue( AttributeKey.DisablePassingWorkflowTypeId ).AsBoolean();
 
-            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
-            pnlCaptcha.Visible = !disableCaptchaSupport;
+            var disableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
+            pnlCaptcha.Visible = !( disableCaptchaSupport || !cpCaptcha.IsAvailable );
 
             if ( workflowType == null )
             {
@@ -1297,9 +1296,9 @@ namespace RockWeb.Blocks.WorkFlow
                 ShowNotes( false );
             }
 
-            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
+            var disableCaptcha = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
 
-            if ( disableCaptcha || IsCaptchaValid )
+            if ( disableCaptcha || !cpCaptcha.IsAvailable || IsCaptchaValid )
             {
                 AddSubmitButtons( form );
             }

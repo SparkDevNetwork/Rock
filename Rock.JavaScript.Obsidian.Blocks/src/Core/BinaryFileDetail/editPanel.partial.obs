@@ -161,7 +161,7 @@
 
                 // If isLabelFile status changes e.g. after uploading a check-in lable file, emit event so parent block can show
                 // the Edit Label Contents button.
-                if (result.data.isLabelFile != props.modelValue?.bag?.isLabelFile) {
+                if (result.data.isLabelFile !== props.modelValue?.bag?.isLabelFile) {
                     emit("labelFileChanged", result.data);
                 }
             }

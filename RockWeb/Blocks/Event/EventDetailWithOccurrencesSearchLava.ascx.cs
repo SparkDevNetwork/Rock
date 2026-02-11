@@ -37,7 +37,12 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Block that shows details of a specific event with a search for occurrences of the event" )]
 
-    [CodeEditorField( "Event Lava Template", "The lava template for display details of the Event", CodeEditorMode.Lava, CodeEditorTheme.Rock, order: 1, required: false, defaultValue: @"
+    [CodeEditorField( "Event Lava Template",
+        Description = "The lava template for display details of the Event",
+        EditorMode = CodeEditorMode.Lava,
+        Order = 1,
+        IsRequired = false,
+        DefaultValue = @"
 <h1>{{ Event.Name }}</h1>
 <p>{{ Event.Description }}</p>
 {% if Event.Photo.Guid %}
@@ -47,7 +52,12 @@ namespace RockWeb.Blocks.Event
 {% endif %}
 " )]
 
-    [CodeEditorField( "Results Lava Template", "The lava template for display the results of the search", CodeEditorMode.Lava, CodeEditorTheme.Rock, order: 2, required: false, defaultValue: @"
+    [CodeEditorField( "Results Lava Template",
+        Description = "The lava template for display the results of the search",
+        EditorMode = CodeEditorMode.Lava,
+        Order = 2,
+        IsRequired = false,
+        DefaultValue = @"
 {% for occurrence in EventItemOccurrences %}
         
     <div class='row margin-b-lg'>

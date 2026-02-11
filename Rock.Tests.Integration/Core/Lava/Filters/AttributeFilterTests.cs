@@ -50,7 +50,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
 
             var options = new LavaTestRenderOptions { MergeFields = values };
 
-            TestHelper.AssertTemplateOutput("2001-09-13",
+            TestHelper.AssertTemplateOutput( "2001-09-13",
                 "{{ Person | Attribute:'BaptismDate' | Date:'yyyy-MM-dd' }}",
                 options );
         }

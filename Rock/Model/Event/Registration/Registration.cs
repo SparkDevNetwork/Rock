@@ -144,10 +144,10 @@ namespace Rock.Model
         public int? GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is temporary.
+        /// Gets or sets a value indicating whether this instance is temporary (started from another page).
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is temporary; otherwise, <c>false</c>.
+        ///   <c>true</c> if this instance is temporary (started from another page); otherwise, <c>false</c>.
         /// </value>
         [DataMember]
         public bool IsTemporary { get; set; }
@@ -197,6 +197,10 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> the event occured
         /// </value>
+        /// <remarks>
+        /// [IgnoreCanDelete] since there is a ON DELETE SET NULL cascade on this
+        /// </remarks>
+        [IgnoreCanDelete]
         [DataMember]
         [FieldType(Rock.SystemGuid.FieldType.CAMPUS)]
         public int? CampusId { get; set; }
@@ -311,7 +315,7 @@ namespace Rock.Model
             this.HasRequired( r => r.RegistrationInstance ).WithMany( t => t.Registrations ).HasForeignKey( r => r.RegistrationInstanceId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.Group ).WithMany().HasForeignKey( r => r.GroupId ).WillCascadeOnDelete( false );
-            this.HasOptional( a => a.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( true );
+            this.HasOptional( a => a.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
 
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
             // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed

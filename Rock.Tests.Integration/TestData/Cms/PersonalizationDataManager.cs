@@ -369,7 +369,7 @@ namespace Rock.Tests.Integration.TestData.Crm
             var personalizationSegmentService = new PersonalizationSegmentService( rockContext );
 
             var segmentIdList = new List<int>();
-            foreach (var segmentIdentifier in segmentIdentifiers )
+            foreach ( var segmentIdentifier in segmentIdentifiers )
             {
                 var segment = personalizationSegmentService.GetByIdentifierOrThrow( segmentIdentifier );
                 segmentIdList.Add( segment.Id );

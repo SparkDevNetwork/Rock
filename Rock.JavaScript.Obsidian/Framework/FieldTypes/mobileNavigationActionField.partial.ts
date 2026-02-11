@@ -46,7 +46,7 @@ export class MobileNavigationActionFieldType extends FieldTypeBase {
                 return "None";
 
             case MobileNavigationActionType.PopPage:
-                return `Pop ${actionValue.popCount ?? 1} page${actionValue.popCount == 1 ? "" : "s"}`;
+                return `Pop ${actionValue.popCount ?? 1} page${actionValue.popCount === 1 ? "" : "s"}`;
 
             case MobileNavigationActionType.ResetToPage:
                 return `Reset to '${actionValue.page?.text ?? "page"}'`;

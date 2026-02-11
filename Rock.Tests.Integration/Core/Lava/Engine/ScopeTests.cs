@@ -137,6 +137,6 @@ Document Value (Level 1): document_2";
 
             TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
-}
+    }
 
 }

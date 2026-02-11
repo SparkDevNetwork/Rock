@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Reporting
         "Use Obsidian Components",
         Key = AttributeKey.UseObsidianComponents,
         Description = "Switches the filter components to use Obsidian if supported.",
-        DefaultBooleanValue = true,
+        DefaultBooleanValue = false,
         Category = "Advanced" )]
 
     [Rock.SystemGuid.BlockTypeGuid( "EB279DF9-D817-4905-B6AC-D9883F0DA2E4" )]

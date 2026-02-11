@@ -67,6 +67,11 @@ namespace Rock.ViewModels.Group.GroupMember
         public string GroupRoleIdKey { get; set; }
 
         /// <summary>
+        /// The date and time the group member was added.
+        /// </summary>
+        public DateTimeOffset? DateTimeAdded { get; set; }
+
+        /// <summary>
         /// The person associated with the group member.
         /// </summary>
         public PersonBag Person { get; set; }

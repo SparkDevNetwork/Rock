@@ -12,53 +12,51 @@
                panelBodyCssClass="panel-body-wizard"
                type="block">
             <template #title>
-                <div class="email-editor-panel-title">
-                    <span>{{ title }}</span>
-                    <div class="email-editor-panel-title-right">
-                        <HighlightLabel v-if="isSaveSuccessMessageShown"
-                                        labelType="success">
-                            The communication has been saved.
-                            <button type="button" class="close btn-dismiss-alert" aria-label="Hide This Alert" @click.prevent="isSaveSuccessMessageShown = false">
-                                <i class="ti ti-x" aria-hidden="true"></i>
-                            </button>
-                        </HighlightLabel>
-
-                        <HighlightLabel v-if="isSendTestErrorMessageShown"
-                                        labelType="danger"
-                                        :dismissible="true"
-                                        @dismiss="isSendTestErrorMessageShown = false">
-                            <div v-html="sendTestErrorMessage" style="font-weight: var(--font-weight-regular)"></div>
-                            <button type="button" class="close btn-dismiss-alert" aria-label="Hide This Alert" @click.prevent="isSendTestErrorMessageShown = false">
-                                <i class="ti ti-x" aria-hidden="true"></i>
-                            </button>
-                        </HighlightLabel>
-
-                        <HighlightLabel labelType="info">
-                            <template v-if="isFetchingRecipients"><i class="ti ti-rotate-clockwise-2 ti-pulse"></i> Recipients</template>
-                            <template v-else>{{ recipientsLabel }}</template>
-                        </HighlightLabel>
-                    </div>
-                </div>
+                <span>{{ title }}</span>
             </template>
 
             <template #headerActions>
-                <span class="action panel-action-preview clickable"
+
+                <HighlightLabel v-if="isSaveSuccessMessageShown"
+                                labelType="success">
+                    The communication has been saved.
+                    <button type="button" class="close btn-dismiss-alert" aria-label="Hide This Alert" @click.prevent="isSaveSuccessMessageShown = false">
+                        <i class="ti ti-x" aria-hidden="true"></i>
+                    </button>
+                </HighlightLabel>
+
+                <HighlightLabel v-if="isSendTestErrorMessageShown"
+                                labelType="danger"
+                                :dismissible="true"
+                                @dismiss="isSendTestErrorMessageShown = false">
+                    <div v-html="sendTestErrorMessage" style="font-weight: var(--font-weight-regular)"></div>
+                    <button type="button" class="close btn-dismiss-alert" aria-label="Hide This Alert" @click.prevent="isSendTestErrorMessageShown = false">
+                        <i class="ti ti-x" aria-hidden="true"></i>
+                    </button>
+                </HighlightLabel>
+
+                <HighlightLabel labelType="info">
+                    <template v-if="isFetchingRecipients"><i class="ti ti-rotate-clockwise-2 ti-pulse"></i> Recipients</template>
+                    <template v-else>{{ recipientsLabel }}</template>
+                </HighlightLabel>
+
+                <button class="btn btn-panel-action clickable"
                       :disabled="isDisabled"
                       @click="onClickPreview">
                     <i ref="previewElement"
                        data-toggle="tooltip"
                        title="Preview"
                        class="ti ti-eye"></i>
-                </span>
+            </button>
 
-                <span class="action panel-action-save clickable"
+                <button class="btn btn-panel-action clickable"
                       :disabled="isDisabled"
                       @click="onSaveCommunication">
                     <i ref="saveElement"
                        data-toggle="tooltip"
                        title="Save Draft"
                        class="ti ti-device-floppy"></i>
-                </span>
+                </button>
             </template>
 
             <template #default>

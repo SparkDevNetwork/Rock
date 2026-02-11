@@ -198,7 +198,6 @@ export const ConfigurationComponent = defineComponent({
     <CodeEditor v-model="imageTagTemplate"
         label="Image Tag Template"
         help="The Lava template to use when rendering as an html img tag."
-        theme="rock"
         mode="lava"
         :editorHeight="100" />
 </div>

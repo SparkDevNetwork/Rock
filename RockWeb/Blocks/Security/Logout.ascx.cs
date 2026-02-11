@@ -31,7 +31,12 @@ namespace RockWeb.Blocks.Security
     [Description( "This block logs the current person out." )]
 
     [LinkedPage( "Redirect Page", "The page to redirect the user to.", false, order: 0 )]
-    [CodeEditorField( "Message", "The message to display if no redirect page was provided.", Rock.Web.UI.Controls.CodeEditorMode.Lava, defaultValue: @"<div class=""alert alert-success"">You have been logged out.</div>", order: 1 )]
+
+    [CodeEditorField( "Message",
+        Description = "The message to display if no redirect page was provided.",
+        EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
+        DefaultValue = @"<div class=""alert alert-success"">You have been logged out.</div>",
+        Order = 1 )]
 
     [Rock.SystemGuid.BlockTypeGuid( "CCB87054-8AA3-4F44-AA48-19BD028C4190" )]
     public partial class Logout : Rock.Web.UI.RockBlock

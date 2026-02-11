@@ -10,6 +10,8 @@ namespace Rock.Tests.Utility.ExtensionMethods
     [TestClass]
     public class EntityExtensionsTests
     {
+        public TestContext TestContext { get; set; }
+
         #region SummarizeLinkage Tests
 
         [TestMethod]
@@ -103,7 +105,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         }
 
         [TestMethod]
-        [Timeout( 2000 )]
+        [Timeout( 2000, CooperativeCancellation = true )]
         public void SummarizeLinkage_WithInfiniteLoop_BreaksLoop()
         {
             var entityMock = new Mock<IEntity>();
@@ -114,7 +116,16 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             var summaryMock = entityMock.As<IHasLinkageSummary>();
             summaryMock.Setup( s => s.SummaryValue( It.IsAny<RockContext>() ) ).Returns( "test" );
-            summaryMock.Setup( s => s.SummaryParent( It.IsAny<RockContext>() ) ).Returns( () => entityMock.Object );
+            summaryMock.Setup( s => s.SummaryParent( It.IsAny<RockContext>() ) )
+                .Returns( () =>
+                {
+                    if ( TestContext.CancellationToken.IsCancellationRequested )
+                    {
+                        Assert.Fail( "The SummarizeLinkage method did not break the infinite loop as expected." );
+                    }
+
+                    return entityMock.Object;
+                } );
 
             var summary = entityMock.Object.SummarizeLinkage( null );
 
@@ -125,7 +136,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
                 summary = summary.Parent;
             }
 
-            Assert.IsTrue( count > 1, "The linkage summary should have included at least one parent." );
+            Assert.IsGreaterThan( 1, count, "The linkage summary should have included at least one parent." );
         }
 
         #endregion

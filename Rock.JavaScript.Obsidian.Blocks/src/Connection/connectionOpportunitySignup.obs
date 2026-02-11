@@ -48,10 +48,15 @@
             <TextBox v-model="comments" :label="commentFieldLabel" textMode="multiline" :rows="3" />
 
             <div class="captcha-container">
-                <Captcha v-if="!config.disableCaptchaSupport" ref="captchaElement" validationTitle="Captcha" />
+                <div v-if="!config.disableCaptchaSupport" v-show="!isCaptchaComplete">
+                    <Captcha ref="captchaElement" validationTitle="Captcha" />
+                </div>
             </div>
 
-            <RockButton v-if="isCaptchaComplete" btnType="primary" type="submit">Connect</RockButton>
+          <RockButton v-if="isCaptchaComplete || config.disableCaptchaSupport"
+                        btnType="primary"
+                        :disabled="isRegistering"
+                        type="submit">Connect</RockButton>
         </RockForm>
     </template>
 </template>
@@ -81,30 +86,31 @@
     import { PhoneNumberBoxWithSmsControlBag } from "@Obsidian/ViewModels/Controls/phoneNumberBoxWithSmsControlBag";
     import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
     import { ConnectionOpportunitySignupResultType } from "@Obsidian/Enums/Blocks/Connection/ConnectionOpportunitySignup/connectionOpportunitySignupResultType";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
     // #region Values
 
     const config = useConfigurationValues<ConnectionOpportunitySignupInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
 
-    const firstName = ref(config.firstName ?? "");
-    const lastName = ref(config.lastName ?? "");
-    const email = ref(config.email ?? "");
+    const firstName = ref<string>(config.firstName ?? "");
+    const lastName = ref<string>(config.lastName ?? "");
+    const email = ref<string>(config.email ?? "");
     const homePhone = ref<PhoneNumberBoxWithSmsControlBag | undefined>(config.homePhone ?? undefined);
     const mobilePhone = ref<PhoneNumberBoxWithSmsControlBag | undefined>(config.mobilePhone ?? undefined);
-    const selectedCampusId = ref(config.selectedCampusId?.toString() ?? "");
-    const attributes = ref(config.attributes ?? {});
+    const selectedCampusId = ref<string>(config.selectedCampusId?.toString() ?? "");
+    const attributes = ref<Record<string, PublicAttributeBag>>(config.attributes ?? {});
     const commentFieldLabel = config.commentFieldLabel ?? "Comments";
 
-    const isSuccess = ref(false);
-    const errorMessage = ref("");
-    const responseMessage = ref("");
+    const isSuccess = ref<boolean>(false);
+    const errorMessage = ref<string>("");
+    const responseMessage = ref<string>("");
     const attributeValues = ref<Record<string, string>>({});
-    const comments = ref("");
+    const comments = ref<string>("");
+    const isRegistering = ref<boolean>(false);
 
     const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
-    const captchaToken = ref<string | undefined>();
-    const isCaptchaComplete = ref(false);
+    const isCaptchaComplete = ref<boolean>(false);
 
     // #endregion Values
 
@@ -118,7 +124,6 @@
 
         const token = await captchaElement.value.getToken();
         isCaptchaComplete.value = !!token;
-        captchaToken.value = token;
     }
 
     /**
@@ -128,48 +133,51 @@
      * @returns {Promise<void>} A promise that resolves when the submission is complete.
      */
     async function onSubmit(): Promise<void> {
-        errorMessage.value = "";
+        try {
+            isRegistering.value = true;
+            errorMessage.value = "";
 
-        const requestBag: ConnectionOpportunitySignupRequestBag = {
-            firstName: firstName.value,
-            lastName: lastName.value,
-            email: email.value,
-            homePhone: homePhone.value,
-            mobilePhone: mobilePhone.value,
-            campusId: selectedCampusId.value ? Number(selectedCampusId.value) : null,
-            comments: comments.value,
-            attributeValues: attributeValues.value
-        };
-        const actionContext: BlockActionContextBag = {};
-        if (!config.disableCaptchaSupport && captchaElement.value) {
-            actionContext.captcha = captchaToken.value;
+            const requestBag: ConnectionOpportunitySignupRequestBag = {
+                firstName: firstName.value,
+                lastName: lastName.value,
+                email: email.value,
+                homePhone: homePhone.value,
+                mobilePhone: mobilePhone.value,
+                campusId: selectedCampusId.value ? Number(selectedCampusId.value) : null,
+                comments: comments.value,
+                attributeValues: attributeValues.value
+            };
+            const actionContext: BlockActionContextBag = {};
+            if (!config.disableCaptchaSupport && captchaElement.value) {
+                actionContext.captcha = await captchaElement.value.getToken();
+            }
+
+            const result = await invokeBlockAction<ConnectionOpportunitySignupResultBag>("Signup", { bag: requestBag }, actionContext);
+
+            if (result.isError) {
+                errorMessage.value = result.errorMessage || "An error occurred while processing your request.";
+                return;
+            }
+
+            switch (result.data?.resultType) {
+                // Successful signup
+                case ConnectionOpportunitySignupResultType.Success:
+                    responseMessage.value = result.data.responseMessage || "";
+                    isSuccess.value = true;
+                    break;
+
+                case ConnectionOpportunitySignupResultType.CaptchaInvalid:
+                case ConnectionOpportunitySignupResultType.InvalidRequest:
+                case ConnectionOpportunitySignupResultType.OpportunityNotFound:
+                case ConnectionOpportunitySignupResultType.InvalidConnectionRequest:
+                case ConnectionOpportunitySignupResultType.UnknownError:
+                default:
+                    errorMessage.value = result.data?.responseMessage || "An unknown error occurred, please try again.";
+                    break;
+            }
         }
-        const result = await invokeBlockAction<ConnectionOpportunitySignupResultBag>("Signup", { bag: requestBag }, actionContext);
-
-        if (!config.disableCaptchaSupport && captchaElement.value) {
-            captchaElement.value.refreshToken();
-        }
-
-        if (result.isError) {
-            errorMessage.value = result.errorMessage || "An error occurred while processing your request.";
-            return;
-        }
-
-        switch (result.data?.resultType) {
-            // Successful signup
-            case ConnectionOpportunitySignupResultType.Success:
-                responseMessage.value = result.data.responseMessage || "";
-                isSuccess.value = true;
-                break;
-
-            case ConnectionOpportunitySignupResultType.CaptchaInvalid:
-            case ConnectionOpportunitySignupResultType.InvalidRequest:
-            case ConnectionOpportunitySignupResultType.OpportunityNotFound:
-            case ConnectionOpportunitySignupResultType.InvalidConnectionRequest:
-            case ConnectionOpportunitySignupResultType.UnknownError:
-            default:
-                errorMessage.value = result.data?.responseMessage || "An unknown error occurred, please try again.";
-                break;
+        finally {
+            isRegistering.value = false;
         }
     }
 

@@ -37,11 +37,20 @@ namespace RockWeb.Blocks.Store
     [DisplayName( "Package List Lava" )]
     [Category( "Store" )]
     [Description( "Lists Rock Store packages using a Lava template." )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the packages", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Assets/Lava/Store/PackageList.lava' %}", "", 2 )]
+
+    [CodeEditorField( "Lava Template",
+        Description = "Lava template to use to display the packages",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = @"{% include '~/Assets/Lava/Store/PackageList.lava' %}",
+        Order = 2 )]
+
     [CustomRadioListField("Package Type", "Display the packages of the specified type", "External Application, Theme", true, "", "", 0)]
     [TextField("Category Id", "Filters packages for a specific category id. If none is provided it will show all packages.", false, "","", 1)]
     [LinkedPage( "Detail Page", "Page reference to use for the detail page.", false, "", "", 4 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the category name (category name must be provided via the query string as &CategoryName=.)", false )]
+
     [Rock.SystemGuid.BlockTypeGuid( "A494D4DD-0C96-4BA7-AF1B-43EFEF078261" )]
     public partial class PackageListLava : Rock.Web.UI.RockBlock
     {

@@ -1,0 +1,159 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList v-model="publicOrPrivate" label="Public / Private" :items="publicOrPrivateItems" />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="active" label="Active" :items="activeItems" />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="urgent" label="Urgent" :items="urgentItems" />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="commenting" label="Commenting" :items="commentingItems" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox v-model="showExpiredRequests" label="Show Expired Requests" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const publicOrPrivate = ref(props.modelValue.publicOrPrivate ?? "");
+    const active = ref(props.modelValue.active ?? "");
+    const urgent = ref(props.modelValue.urgent ?? "");
+    const commenting = ref(props.modelValue.commenting ?? "");
+    const showExpiredRequests = ref(props.modelValue.showExpiredRequests);
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const publicOrPrivateItems: ListItemBag[] = [
+        {
+            text: "[All]",
+            value: ""
+        },
+        {
+            text: "Public",
+            value: "Public"
+        },
+        {
+            text: "Private",
+            value: "Private"
+        }
+    ];
+
+    const activeItems: ListItemBag[] = [
+        {
+            text: "[All]",
+            value: ""
+        },
+        {
+            text: "Active",
+            value: "Active"
+        },
+        {
+            text: "Inactive",
+            value: "Inactive"
+        }
+    ];
+
+    const urgentItems: ListItemBag[] = [
+        {
+            text: "[All]",
+            value: ""
+        },
+        {
+            text: "Urgent",
+            value: "Urgent"
+        },
+        {
+            text: "Non-Urgent",
+            value: "Non-Urgent"
+        }
+    ];
+
+    const commentingItems: ListItemBag[] = [
+        {
+            text: "[All]",
+            value: ""
+        },
+        {
+            text: "Allowed",
+            value: "Allowed"
+        },
+        {
+            text: "Not Allowed",
+            value: "Not Allowed"
+        }
+    ];
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            publicOrPrivate: publicOrPrivate.value,
+            active: active.value,
+            urgent: urgent.value,
+            commenting: commenting.value,
+            showExpiredRequests: showExpiredRequests.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        publicOrPrivate.value = props.modelValue.publicOrPrivate ?? "";
+        active.value = props.modelValue.active ?? "";
+        urgent.value = props.modelValue.urgent ?? "";
+        commenting.value = props.modelValue.commenting ?? "";
+        showExpiredRequests.value = props.modelValue.showExpiredRequests;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

@@ -15,10 +15,13 @@
 // </copyright>
 
 using System;
+using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text.Json.Serialization;
 
-using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -29,8 +32,17 @@ namespace Rock.AI.Agent.Classes.Entity
     /// </summary>
     internal class EntityResultBase
     {
+        #region Fields
+
+        private static readonly ConcurrentDictionary<Type, (List<PropertyInfo> IndividualProperties, List<PropertyInfo> CollectionProperties)> _nestedPropertiesCache
+            = new ConcurrentDictionary<Type, (List<PropertyInfo>, List<PropertyInfo>)>();
+
+        #endregion
+
+        #region Properties
+
         /// <summary>
-        /// The phone number id. This will not be show in the JSON output.
+        /// The entity id. This will not be show in the JSON output.
         /// </summary>
         [JsonIgnore]
         internal int Id { get; set; }
@@ -38,10 +50,13 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <summary>
         /// Internal identifier of the phone number.
         /// </summary>
-        public string IdKey
-        {
-            get { return Id.AsIdKey(); }
-        }
+        public string IdKey => Id.AsIdKey();
+
+        /// <summary>
+        /// The unique identifier of the entity. This should be filled in whenever
+        /// possible as it is required when dealing with attribute values.
+        /// </summary>
+        public Guid? Guid { get; set; }
 
         /// <summary>
         /// Gets or sets the date and time that the entity was created.
@@ -64,52 +79,118 @@ namespace Rock.AI.Agent.Classes.Entity
         public PersonResult ModifiedByPerson { get; set; }
 
         /// <summary>
-        /// Attributes of the defined value.
+        /// Attribute values of the entity.
         /// </summary>
-        public List<AttributeResult> Attributes { get; set; }
-
-        #region Public Methods
-
-        /// <summary>
-        /// Sanitizes the entity for security by checking attribute security.
-        /// </summary>
-        /// <param name="currentPerson"></param>
-        /// <returns>True if the security checks passed; false if the checks failed.</returns>
-        public virtual bool SanitizeForSecurity( Person currentPerson )
-        {
-            // Default logic (very basic, override in subclasses for custom behavior)
-            //if ( currentPerson == null )
-            //{
-            //    return false;
-            //}
-
-            // Remove attributes the current person does not have view access to.
-            CheckAttributeSecurity( currentPerson );
-
-            // Currently there is need to prevent the security from passing.
-            return true;
-        }
+        public List<AttributeValueResult> AttributeValues { get; set; }
 
         #endregion
 
-        #region Private Methods
+        #region Methods
+
+        /// <summary>
+        /// Sanitizes the entity for security related to the request context.
+        /// </summary>
+        /// <param name="agentRequestContext">The context that describes the current request.</param>
+        /// <returns><c>false</c> if the entire result should be excluded. This is used when nested properties to fully remove them.</returns>
+        public virtual bool Sanitize( AgentRequestContext agentRequestContext )
+        {
+            SanitizeNestedProperties( agentRequestContext );
+            SanitizeAttributeSecurity( agentRequestContext );
+
+            return SanitizeResult( agentRequestContext );
+        }
+
+        /// <summary>
+        /// Sanitizes this result for security related to the request context.
+        /// This is the method you will want to override most of the time.
+        /// </summary>
+        /// <param name="agentRequestContext">The context that describes the current request.</param>
+        /// <returns><c>false</c> if the entire result should be excluded. This is used when nested properties to fully remove them.</returns>
+        protected virtual bool SanitizeResult( AgentRequestContext agentRequestContext )
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Sanitizes any nested properties for security related to the request context.
+        /// </summary>
+        /// <param name="agentRequestContext">The context that describes the current request.</param>
+        protected void SanitizeNestedProperties( AgentRequestContext agentRequestContext )
+        {
+            var cache = _nestedPropertiesCache.GetOrAdd( GetType(), rt =>
+            {
+                var entityResultBaseType = typeof( EntityResultBase );
+
+                var individualProperties = rt.GetProperties()
+                    .Where( pi => entityResultBaseType.IsAssignableFrom( pi.PropertyType ) )
+                    .ToList();
+
+                var collectionProperties = rt.GetProperties()
+                    .Where( pi => pi.PropertyType.IsGenericType
+                        && pi.PropertyType.GetGenericTypeDefinition() == typeof( ICollection<> )
+                        && entityResultBaseType.IsAssignableFrom( pi.PropertyType.GetGenericArguments()[0] ) )
+                    .ToList();
+
+                return (individualProperties, collectionProperties);
+            } );
+
+            foreach ( var property in cache.IndividualProperties )
+            {
+                if ( property.GetValue( this ) is EntityResultBase nestedResult )
+                {
+                    var safe = nestedResult.Sanitize( agentRequestContext );
+
+                    if ( !safe )
+                    {
+                        property.SetValue( this, null );
+                    }
+                }
+            }
+
+            foreach ( var property in cache.CollectionProperties )
+            {
+                if ( !( property.GetValue( this ) is IEnumerable nestedResults ) )
+                {
+                    continue;
+                }
+
+                foreach ( var nestedResultObj in nestedResults )
+                {
+                    if ( !( nestedResultObj is EntityResultBase nestedResult ) )
+                    {
+                        continue;
+                    }
+
+                    var safe = nestedResult.Sanitize( agentRequestContext );
+
+                    if ( !safe && nestedResults is IList listResults )
+                    {
+                        listResults.Remove( nestedResultObj );
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Removes any attributes that the current person does not have view access to.
         /// </summary>
-        /// <param name="currentPerson"></param>
-        private void CheckAttributeSecurity( Person currentPerson )
+        /// <param name="agentRequestContext">The context that describes the current request.</param>
+        protected void SanitizeAttributeSecurity( AgentRequestContext agentRequestContext )
         {
-            if ( Attributes != null )
+            if ( AttributeValues == null )
             {
-                for ( int i = Attributes.Count - 1; i >= 0; i-- )
-                {
-                    var isAllowedViewAccess = AttributeCache.Get( Attributes[i].Id )?.IsAuthorized( Authorization.VIEW, currentPerson ) ?? false;
+                return;
+            }
 
-                    if ( !isAllowedViewAccess )
-                    {
-                        Attributes.RemoveAt( i );
-                    }
+            var currentPerson = agentRequestContext.RockRequestContext.CurrentPerson;
+
+            for ( int i = AttributeValues.Count - 1; i >= 0; i-- )
+            {
+                var isAllowedViewAccess = AttributeCache.Get( AttributeValues[i].AttributeId )?.IsAuthorized( Authorization.VIEW, currentPerson ) ?? false;
+
+                if ( !isAllowedViewAccess )
+                {
+                    AttributeValues.RemoveAt( i );
                 }
             }
         }

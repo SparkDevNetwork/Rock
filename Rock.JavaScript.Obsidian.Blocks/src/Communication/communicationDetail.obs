@@ -147,30 +147,6 @@
                            @createPersonalTemplate="onCreatePersonalTemplate" />
 </template>
 
-<style scoped>
-.communication-detail-sub-header-left,
-.communication-detail-sub-header-right {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--spacing-xsmall);
-}
-
-.communication-detail-source-page-button {
-    color: var(--color-primary);
-    font-weight: var(--font-weight-semibold);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-tiny);
-}
-
-.communication-detail-footer-secondary-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-xsmall);
-}
-</style>
-
 <script setup lang="ts">
     import { computed, Ref, ref } from "vue";
     import PersonalTemplateModal from "./CommunicationDetail/personalTemplateModal.partial.obs";

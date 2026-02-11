@@ -180,14 +180,12 @@ namespace Rock.Blocks.Core
             }
 
             box.IfValidProperty( nameof( box.Bag.ExpirationDate ),
-                () => {
-                    if ( !box.Bag.ExpirationDate.HasValue )
-                    {
-                        return false;
-                    }
+                () =>
+                {
                     entity.ExpirationDate = box.Bag.ExpirationDate?.DateTime;
                     return true;
                 }, true );
+
             box.IfValidProperty( nameof( box.Bag.Note ),
                 () => entity.Note = box.Bag.Note );
 
@@ -229,7 +227,7 @@ namespace Rock.Blocks.Core
                 .AddPersonField( "owner", a => a.OwnerPersonAlias.Person )
                 .AddTextField( "note", a => a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ? a.Note : string.Empty )
                 .AddDateTimeField( "expirationDate", a => a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ? a.ExpirationDate : null )
-                .AddAttributeFields( GetGridAttributes() );
+                .AddAttributeFields( GetGridAttributes().Where( a => a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ) );
         }
 
         #endregion

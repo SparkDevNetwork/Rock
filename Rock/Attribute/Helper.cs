@@ -30,6 +30,7 @@ using System.Web.UI.WebControls;
 
 using Microsoft.EntityFrameworkCore;
 
+using Rock.Configuration;
 using Rock.Core;
 using Rock.Data;
 using Rock.Model;
@@ -147,7 +148,7 @@ namespace Rock.Attribute
                 entityProperties.Add( ( FieldAttribute ) customAttribute );
             }
 
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             var customizedGrid = type.GetCustomAttribute<Blocks.CustomizedGridAttribute>();
 
@@ -224,7 +225,7 @@ namespace Rock.Attribute
         {
             bool updated = false;
 
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             var attributeService = new AttributeService( rockContext );
             var attributeQualifierService = new AttributeQualifierService( rockContext );
@@ -486,7 +487,7 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <param name="entity">The item.</param>
         public static void LoadAttributes( Rock.Attribute.IHasAttributes entity )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 LoadAttributes( entity, rockContext );
             }
@@ -499,7 +500,7 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <param name="limitToAttributes">The limit to attributes.</param>
         public static void LoadAttributes( Rock.Attribute.IHasAttributes entity, List<AttributeCache> limitToAttributes )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 LoadAttributes( entity, rockContext, limitToAttributes );
             }
@@ -555,7 +556,7 @@ This can be due to multiple threads updating the same attribute at the same time
             //
             if ( entity is Rock.Attribute.IHasInheritedAttributes entityWithInheritedAttributes )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 allAttributes = entityWithInheritedAttributes.GetInheritedAttributes( rockContext );
                 inheritedAttributes = entityWithInheritedAttributes.GetAlternateEntityIdsByType( rockContext );
             }
@@ -633,7 +634,7 @@ This can be due to multiple threads updating the same attribute at the same time
                 // If loading attributes for a saved item, read the item's value(s) for each attribute 
                 if ( !entityTypeCache.IsEntity || entity.Id != 0 )
                 {
-                    rockContext = rockContext ?? new RockContext();
+                    rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                     var attributeValueService = new Rock.Model.AttributeValueService( rockContext );
 
                     List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
@@ -923,7 +924,7 @@ This can be due to multiple threads updating the same attribute at the same time
             // load that data now. If they don't provide any then generate empty lists.
             if ( typeof( Rock.Attribute.IHasInheritedAttributes ).IsAssignableFrom( entityType ) )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
                 foreach ( var entity in entities )
                 {
@@ -973,7 +974,7 @@ This can be due to multiple threads updating the same attribute at the same time
                 return;
             }
 
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             // Build the list of primary entity ids to load values for.
             var valueEntityKeys = entities
@@ -1312,14 +1313,15 @@ INNER JOIN @EntityKey entityKey ON entityKey.[EntityTypeId] = A.[EntityTypeId] A
                 var attributeIdsTable = new DataTable();
                 attributeIdsTable.Columns.Add( "Id", typeof( int ) );
 
-                for ( int i = 0; i < attributes.Count; i++ )
+                var distinctAttributes = attributes.DistinctBy( a => a.Id ).ToList();
+                for ( int i = 0; i < distinctAttributes.Count; i++ )
                 {
-                    attributeIdsTable.Rows.Add( attributes[i].Id );
+                    attributeIdsTable.Rows.Add( distinctAttributes[i].Id );
                 }
 
                 var attributeIdsParameter = new SqlParameter( "@AttributeId", SqlDbType.Structured )
                 {
-                    TypeName = "dbo.EntityIdList",
+                    TypeName = "dbo.IdList",
                     Value = attributeIdsTable
                 };
 
@@ -1451,7 +1453,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
         public static Rock.Model.Attribute SaveAttributeEdits( AttributeEditor edtAttribute, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, RockContext rockContext = null )
         {
             // Create and update a new attribute object with new values
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             var internalAttributeService = new AttributeService( rockContext );
 
             Rock.Model.Attribute attribute = null;
@@ -1490,7 +1492,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
         /// </remarks>
         public static Rock.Model.Attribute SaveAttributeEdits( PublicEditableAttributeBag attribute, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             var attributeService = new AttributeService( rockContext );
             Rock.Model.Attribute existingAttribute = null;
@@ -1645,7 +1647,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
         /// </remarks>
         public static Rock.Model.Attribute SaveAttributeEdits( Rock.Model.Attribute newAttribute, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             var internalAttributeService = new AttributeService( rockContext );
             var attributeQualifierService = new AttributeQualifierService( rockContext );
@@ -1743,7 +1745,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
 
             rockContext.ExecuteAfterCommit( () =>
             {
-                using ( var innerContext = new RockContext() )
+                using ( var innerContext = RockApp.Current.CreateRockContext() )
                 {
                     // Don't use the cache because we aren't 100% confident it is
                     // safe to hit the cache right now.
@@ -1797,7 +1799,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
         {
             if ( model != null && model.Attributes != null && model.AttributeValues != null && model.Attributes.Any() && model.AttributeValues.Any() )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 var attributeValueService = new Model.AttributeValueService( rockContext );
 
                 var attributeIds = model.Attributes.Select( y => y.Value.Id ).ToList();
@@ -1849,7 +1851,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                     var changedValueIds = attributeValuesThatWereChanged.Select( av => av.Id ).ToList();
                     var attributeValueReferenceValues = new List<AttributeValue>();
 
-                    using ( var innerContext = new RockContext() )
+                    using ( var innerContext = RockApp.Current.CreateRockContext() )
                     {
                         var changedAttributeValues = new AttributeValueService( innerContext )
                             .Queryable()
@@ -1898,7 +1900,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
         {
             if ( model != null && attribute != null )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 var attributeValueService = new Model.AttributeValueService( rockContext );
 
                 var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id );
@@ -1923,7 +1925,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                     // could cause deadlock inside a transaction.
                     rockContext.ExecuteAfterCommit( () =>
                     {
-                        using ( var innerContext = new RockContext() )
+                        using ( var innerContext = RockApp.Current.CreateRockContext() )
                         {
                             var innerAttributeValue = new AttributeValueService( innerContext ).Get( attributeValue.Id );
 
@@ -1970,7 +1972,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
         {
             if ( attribute != null )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 var attributeValueService = new Model.AttributeValueService( rockContext );
 
                 var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, entityId );
@@ -1995,7 +1997,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                     // could cause deadlock inside a transaction.
                     rockContext.ExecuteAfterCommit( () =>
                     {
-                        using ( var innerContext = new RockContext() )
+                        using ( var innerContext = RockApp.Current.CreateRockContext() )
                         {
                             var innerAttributeValue = new AttributeValueService( innerContext ).Get( attributeValue.Id );
 
@@ -2106,14 +2108,14 @@ WHERE [AttributeId] = @AttributeId
             var attributeIdsTable = new DataTable();
             attributeIdsTable.Columns.Add( "Id", typeof( int ) );
 
-            foreach ( var valueId in valueIds )
+            foreach ( var valueId in valueIds.Distinct() )
             {
                 attributeIdsTable.Rows.Add( valueId );
             }
 
             var valueIdParameter = new SqlParameter( "@ValueId", SqlDbType.Structured )
             {
-                TypeName = "dbo.EntityIdList",
+                TypeName = "dbo.IdList",
                 Value = attributeIdsTable
             };
 
@@ -2264,7 +2266,7 @@ INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]",
 
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     // Make this 5 minutes because on large data sets this could take a while.
                     // And by large I mean like 300,000 attribute values.
@@ -2376,14 +2378,14 @@ WHERE [AttributeId] = @AttributeId
             var attributeIdsTable = new DataTable();
             attributeIdsTable.Columns.Add( "Id", typeof( int ) );
 
-            foreach ( var valueId in valueIds )
+            foreach ( var valueId in valueIds.Distinct() )
             {
                 attributeIdsTable.Rows.Add( valueId );
             }
 
             var valueIdParameter = new SqlParameter( "@ValueId", SqlDbType.Structured )
             {
-                TypeName = "dbo.EntityIdList",
+                TypeName = "dbo.IdList",
                 Value = attributeIdsTable
             };
 

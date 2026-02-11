@@ -22,8 +22,8 @@
     <param name='DateRangeEndDate' datatype='datetime'>The end date to filter steps for.</param>
     <param name='DataViewId' datatype='int'>The data view to filter people who took the steps. This data view must be persisted.</param>
     <param name='CampusId' datatype='int'>The campus to filter steps for.</param>
-    <param name='StartingStepTypeIds' datatype='dbo.EntityIdList'>
-        A table-valued parameter (EntityId INT). If provided, only step completions 
+    <param name='StartingStepTypeIds' datatype='dbo.IdList'>
+        A table-valued parameter (Id INT). If provided, only step completions 
         whose very first step type is in this list will be included. If empty, no filter is applied.
     </param>
 
@@ -40,15 +40,15 @@
 
     <code>
         -- Show all steps in program 1, showing 4 levels
-        EXEC [dbo].[spSteps_StepFlow] 1, 4, NULL, NULL, NULL, NULL, @StartingStepTypeIds = dbo.EntityIdList()
+        EXEC [dbo].[spSteps_StepFlow] 1, 4, NULL, NULL, NULL, NULL, @StartingStepTypeIds = dbo.IdList()
 
         -- Show steps in program 1 for 2014, showing 4 levels
-        EXEC [dbo].[spSteps_StepFlow] 1, 4, '2014-01-01', '2015-01-01', NULL, NULL, @StartingStepTypeIds = dbo.EntityIdList()
+        EXEC [dbo].[spSteps_StepFlow] 1, 4, '2014-01-01', '2015-01-01', NULL, NULL, @StartingStepTypeIds = dbo.IdList()
 
         -- Show steps in program 1 for 2014, restricted to DataView 10, Campus 1, and only completions 
         -- that started with StepTypeId 5 or 6
-        DECLARE @ids dbo.EntityIdList;
-        INSERT INTO @ids (EntityId) VALUES (5), (6);
+        DECLARE @ids dbo.IdList;
+        INSERT INTO @ids (Id) VALUES (5), (6);
 
         EXEC [dbo].[spSteps_StepFlow] 1, 4, '2014-01-01', '2015-01-01', 10, 1, @ids;
     </code>
@@ -62,7 +62,7 @@ ALTER PROCEDURE [dbo].[spSteps_StepFlow]
     @DateRangeEndDate DATETIME = NULL,   -- null means don't filter by end date
     @DataViewId INT = NULL,              -- null means don't filter by a data view
     @CampusId INT = NULL,                -- null means all campuses
-    @StartingStepTypeIds dbo.EntityIdList READONLY -- table-valued param; empty = no filter
+    @StartingStepTypeIds dbo.IdList READONLY -- table-valued param; empty = no filter
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -78,8 +78,8 @@ BEGIN
         (
             SELECT 
                   pa.[PersonId]
-   , s.[StepProgramCompletionId]
-                , s.[CompletedDateTime]
+                , s.[StepProgramCompletionId]
+        , s.[CompletedDateTime]
                 , st.[Id] AS [TargetStepTypeId]
                 , LAG(st.[Id]) OVER (
                       PARTITION BY pa.[PersonId], s.[StepProgramCompletionId] 

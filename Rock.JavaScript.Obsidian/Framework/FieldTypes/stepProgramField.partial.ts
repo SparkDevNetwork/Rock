@@ -42,7 +42,7 @@ export class StepProgramFieldType extends FieldTypeBase {
 
         try {
             const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
-            const selectedValue = values.find(o => o.value == value)?.text ?? "";
+            const selectedValue = values.find(o => o.value === value)?.text ?? "";
             return selectedValue;
         }
         catch {

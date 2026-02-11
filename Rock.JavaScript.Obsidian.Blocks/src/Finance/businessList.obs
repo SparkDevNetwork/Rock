@@ -100,7 +100,7 @@
                     width="5%" />
     </Grid>
     <GridSettingsModal v-model="gridSettings"
-                        v-model:visible="isGridSettingsVisible" />
+                       v-model:visible="isGridSettingsVisible" />
 </template>
 
 <script setup lang="ts">
@@ -169,10 +169,8 @@
     // Watch for changes in searchTerm and reload grid data
     watch(gridData, () => {
         if (gridData.value?.rows?.length === 1 && searchTerm.value) {
-            const businessId = gridData.value.rows[0].id as number;
-            if (typeof businessId === "number") {
-                navigateToDetailPage(businessId);
-            }
+            const businessId = gridData.value.rows[0].idKey as string;
+            navigateToDetailPage(businessId);
         }
     });
 
@@ -181,7 +179,7 @@
         gridDataSource.value = loadGridData(searchTerm.value);
     }, { immediate: true });
 
-    function navigateToDetailPage(businessId: number): void {
+    function navigateToDetailPage(businessId: string): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", businessId.toString());
         }
@@ -252,11 +250,15 @@
      */
     function onSelectItem(key: string): void {
         if (gridData && gridData.value?.rows?.length === 1 && searchTerm.value) {
-            const businessId = gridData.value?.rows[0].id as number;
+            const businessId = gridData.value?.rows[0].idKey as string;
             navigateToDetailPage(businessId);
         }
         else if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+            const business = gridData.value?.rows?.find(r => (r as Row).id.toString() === key);
+
+            if (business) {
+                window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", business?.idKey as string);
+            }
         }
     }
 

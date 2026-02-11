@@ -11,9 +11,31 @@
                         <CheckBox v-model="enableMultipleTimeZoneSupport"
                                   label="Enable Multiple Time Zone Support"
                                   help="When checked, Mutliple Time Zone is supported." />
+                    </div>
+
+                    <div class="col-md-6">
+                        <CheckBox v-model="showBusinessInPersonPicker"
+                                  label="Always Show Businesses in Person Picker"
+                                  help="When enabled, businesses will always be included in the search results of the person picker." />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
                         <UrlLinkBox v-model="pdfExternalRenderEndpoint"
                                     label="PDF External Render Endpoint"
                                     help="Specify a URL to use an external service like browserless.io to generate PDFs instead of using the internal PDF Generator." />
+                    </div>
+
+                    <div class="col-md-6">
+                        <CheckBox v-model="enableKeepAlive"
+                                  label="Enable Keep Alive"
+                                  help="Enable this setting to have Rock poll itself to keep it alive during times of inactivity. This setting is not needed if your AppPool's Idle Time-out is set to 0 (Highly Recommended). See the Rock Solid Internal Hosting guide for recommended AppPool settings." />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
                         <NumberBox v-model="visitorCookiePersistenceLength"
                                    label="Visitor Cookie Persistence Length"
                                    inputGroupClasses="input-width-lg"
@@ -23,18 +45,9 @@
                                 <span class="input-group-addon">days</span>
                             </template>
                         </NumberBox>
-
-                        <TextBox v-model="realTimeHostname"
-                                 label="Real-time Hostname"
-                                 help="Overrides the default hostname used to connect to Rock's real-time engine. Helpful when using a proxy or CDN." />
                     </div>
+
                     <div class="col-md-6">
-                        <CheckBox v-model="showBusinessInPersonPicker"
-                                  label="Always Show Businesses in Person Picker"
-                                  help="When enabled, businesses will always be included in the search results of the person picker." />
-                        <CheckBox v-model="enableKeepAlive"
-                                  label="Enable Keep Alive"
-                                  help="Enable this setting to have Rock poll itself to keep it alive during times of inactivity. This setting is not needed if your AppPool's Idle Time-out is set to 0 (Highly Recommended). See the Rock Solid Internal Hosting guide for recommended AppPool settings." />
                         <NumberBox v-model="personalizationCookieCacheLengthMinutes"
                                    label="Personalization Segment Cookie Affinity Duration"
                                    inputGroupClasses="input-width-lg"
@@ -44,6 +57,25 @@
                             </template>
                         </NumberBox>
                     </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="realTimeHostname"
+                                 label="Real-time Hostname"
+                                 help="Overrides the default hostname used to connect to Rock's real-time engine. Helpful when using a proxy or CDN." />
+                    </div>
+
+                    <div class="col-md-6">
+                        <DropDownList v-model="isTrailblazerMode"
+                                      label="Experience Mode"
+                                      help="Controls how much of Rock's settings and features are visible. Essentials offers a simplified view for ease of use, while Trailblazer unlocks advanced tools for greater flexibility."
+                                      :showBlankItem="false"
+                                      :items="experienceModeItems" />
+                    </div>
+                </div>
+
+                <div class="row">
                     <div class="col-md-6">
                         <ValueList v-model="countriesRestrictedFromAccessing"
                                    label="Countries Restricted from Accessing"
@@ -51,6 +83,7 @@
                                    :customValues="countries" />
                     </div>
                 </div>
+
                 <RockButton :btnType="BtnType.Primary"
                             type="submit"
                             loadingText="Saving..."
@@ -80,14 +113,10 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <TextBox v-model="captchaSiteKey"
-                                 label="Captcha Site Key"
-                                 help="The Captcha site key." />
-                    </div>
-                    <div class="col-md-6">
-                        <TextBox v-model="captchaSecretKey"
-                                 label="Captcha Secret Key"
-                                 help="The Captcha secret key." />
+                        <DropDownList v-model="captchaModeAsString"
+                                      label="Captcha Mode"
+                                      :items="captchaModes"
+                                      :help="captchaModeHelpText" />
                     </div>
                 </div>
 
@@ -352,15 +381,22 @@
     import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
     import { FeatureFlags, FeatureFlagsDescription } from "@Obsidian/Enums/Observability/featureFlags";
     import { TraceLevel, TraceLevelDescription } from "@Obsidian/Enums/Observability/traceLevel";
+    import { CaptchaMode, CaptchaModeDescription } from "@Obsidian/Enums/Security/captchaMode";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 
     const config = useConfigurationValues<SystemConfigurationInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
+    const captchaModeHelpText: string = `Defines how CAPTCHA is applied to supported forms:<br><br>
+<strong>Visible:</strong> Displays a CAPTCHA that individuals must complete manually.<br>
+<strong>Invisible:</strong> Executes CAPTCHA automatically without showing a control.<br>
+<strong>Disabled:</strong> Disables CAPTCHA completely; no validation is run.`;
 
     // #region Values
 
     const endpointProtocols = ref<ListItemBag[]>(config.observabilityEndpointProtocols ?? []);
     const timeZones = ref<ListItemBag[]>(config.timeZones ?? []);
     const countries = ref<ListItemBag[]>(config.countries ?? []);
+    const captchaModes = enumToListItemBag(CaptchaModeDescription);
 
     // General Configuration
     const enableMultipleTimeZoneSupport = ref(config.generalConfigurationBag?.isMultipleTimeZoneSupportEnabled ?? false);
@@ -371,16 +407,21 @@
     const enableKeepAlive = ref(config.generalConfigurationBag?.enableKeepAlive ?? false);
     const personalizationCookieCacheLengthMinutes = ref(config.generalConfigurationBag?.personalizationCookieCacheLengthMinutes);
     const countriesRestrictedFromAccessing = ref(config.generalConfigurationBag?.countriesRestrictedFromAccessing ?? []);
+    const isTrailblazerMode = ref((config.generalConfigurationBag?.isTrailblazerMode ?? false) ? "true" : "false");
 
     const isSavingGeneralConfigForm = ref(false);
     const generalConfigNotificationMessage = ref("");
     const generalConfigNotificationAlertType = ref("");
 
+    const experienceModeItems: ListItemBag[] = [
+        { text: "Essentials", value: "false" },
+        { text: "Trailblazer", value: "true" }
+    ];
+
     // UI Settings
     const personRaceLabel = ref(config.uiSettingsConfigurationBag?.raceLabel ?? "");
     const personEthnicityLabel = ref(config.uiSettingsConfigurationBag?.ethnicityLabel ?? "");
-    const captchaSiteKey = ref(config.uiSettingsConfigurationBag?.captchaSiteKey ?? "");
-    const captchaSecretKey = ref(config.uiSettingsConfigurationBag?.captchaSecretKey ?? "");
+    const captchaModeAsString = ref(`${config.uiSettingsConfigurationBag?.captchaMode ?? CaptchaMode.Visible}`);
     const smsOptInMessage = ref(config.uiSettingsConfigurationBag?.smsOptInMessage ?? "");
     const enableDefaultAddressStateSelection = ref(config.uiSettingsConfigurationBag?.enableDefaultAddressStateSelection ?? false);
 
@@ -494,7 +535,8 @@
                 personalizationCookieCacheLengthMinutes: personalizationCookieCacheLengthMinutes.value,
                 realTimeHostname: realTimeHostname.value,
                 visitorCookiePersistenceLengthDays: visitorCookiePersistenceLength.value,
-                countriesRestrictedFromAccessing: countriesRestrictedFromAccessing.value
+                countriesRestrictedFromAccessing: countriesRestrictedFromAccessing.value,
+                isTrailblazerMode: isTrailblazerMode.value === "true",
             };
 
             const result = await invokeBlockAction<SaveConfigurationResponseBag>("SaveGeneralConfiguration", { bag });
@@ -525,8 +567,7 @@
             isSavingUiSettingsForm.value = true;
 
             const bag: UiSettingsConfigurationBag = {
-                captchaSecretKey: captchaSecretKey.value,
-                captchaSiteKey: captchaSiteKey.value,
+                captchaMode: <CaptchaMode>(toNumberOrNull(captchaModeAsString.value) ?? CaptchaMode.Visible),
                 enableDefaultAddressStateSelection: enableDefaultAddressStateSelection.value,
                 ethnicityLabel: personEthnicityLabel.value,
                 raceLabel: personRaceLabel.value,

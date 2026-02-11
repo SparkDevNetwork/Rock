@@ -43,14 +43,15 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of media accounts." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the media account details.",
         Key = AttributeKey.DetailPage )]
 
     [Rock.SystemGuid.EntityTypeGuid( "4b445e33-8ae3-4831-a5dc-88ed46d1ccea" )]
-    [Rock.SystemGuid.BlockTypeGuid( "baf39b55-c4e5-4eb4-a834-b4f820dd2f42" )]
+    // Was [Rock.SystemGuid.BlockTypeGuid( "baf39b55-c4e5-4eb4-a834-b4f820dd2f42" )]
+    [Rock.SystemGuid.BlockTypeGuid( "7537AB61-F80B-43B1-998B-1D2B03303B36" )]
     [CustomizedGrid]
     public class MediaAccountList : RockListBlockType<MediaAccountData>
     {
@@ -178,6 +179,16 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
+        protected override List<MediaAccountData> GetListItems( IQueryable<MediaAccountData> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+
+            GridAttributeLoader.LoadFor( items, a => a.MediaAccount, _gridAttributes.Value, rockContext );
+
+            return items;
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<MediaAccountData> GetGridBuilder()
         {
             var blockOptions = new GridBuilderGridOptions<MediaAccountData>
@@ -186,7 +197,7 @@ namespace Rock.Blocks.Cms
             };
 
             return new GridBuilder<MediaAccountData>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.MediaAccount.IdKey )
                 .AddTextField( "name", a => a.MediaAccount.Name )
                 .AddTextField( "componentEntityType", a => a.MediaAccount.ComponentEntityType?.FriendlyName )

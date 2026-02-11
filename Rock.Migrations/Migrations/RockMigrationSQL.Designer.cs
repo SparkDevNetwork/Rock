@@ -19,7 +19,7 @@ namespace Rock.Migrations.Migrations {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class RockMigrationSQL {
@@ -280,7 +280,8 @@ namespace Rock.Migrations.Migrations {
         ///    BEGIN
         ///	
         ///	    -- configuration of the duration in weeks
-        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
+        ///	    DECLARE @GivingDurationLongWeeks int = 52
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202101292141445_Rollup_01291_spCrm_FamilyAnalyticsGiving {
             get {
@@ -1755,7 +1756,8 @@ namespace Rock.Migrations.Migrations {
         ///    &lt;/returns&gt;
         ///
         ///    &lt;param name=&apos;@RegistrationTemplatePlacementEntityTypeId&apos; datatype=&apos;int&apos;&gt;
-        ///		The EntityTypeId for RegistrationTemplatePlacement.        /// [rest of string was truncated]&quot;;.
+        ///		The EntityTypeId for RegistrationTemplatePlacement.
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202506232302341_AddAndSwapToObsidianGroupPlacementBlock_spGetGroupPlacementPeople {
             get {
@@ -1817,7 +1819,8 @@ namespace Rock.Migrations.Migrations {
         ///    &lt;/returns&gt;
         ///
         ///    &lt;param name=&apos;@RegistrationTemplatePlacementEntityTypeId&apos; datatype=&apos;int&apos;&gt;
-        ///		The EntityTypeId for RegistrationTemplatePlacement.        /// [rest of string was truncated]&quot;;.
+        ///		The EntityTypeId for RegistrationTemplatePlacement.
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202507162006509_UpdateGroupPlacementStoredProcedure_spGetGroupPlacementPeople {
             get {
@@ -1864,6 +1867,191 @@ namespace Rock.Migrations.Migrations {
             get {
                 return ResourceManager.GetString("_202510221632361_UpdateCommunicationEntryWizardToExcludeArchivedCommunicationList" +
                         "Members_spCommunicationRecipientDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        This stored procedure retrieves placed and unplaced people for all supported configurations
+        ///        of the Group Placement block in Rock RMS. It supports filtering by template, instance, groups,
+        ///        and entity sets.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        A result set containing placement people for group placements.
+        ///    &lt;/returns&gt;
+        ///
+        ///    &lt;param name=&apos;@RegistrationTemplatePlacementEntityTypeId&apos; datatype=&apos;int&apos;&gt;
+        ///		The EntityTypeId for RegistrationTemplatePlacement.
+        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202511051918499_UpdateGetGroupPlacementPeopleStoredProcedure_spGetGroupPlacementPeople {
+            get {
+                return ResourceManager.GetString("_202511051918499_UpdateGetGroupPlacementPeopleStoredProcedure_spGetGroupPlacement" +
+                        "People", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        This stored procedure returns the data needed to create a Step Flow 
+        ///        chart for a provided Step Program. It supports filtering on date 
+        ///        ranges, data views, campuses, and an optional list of starting 
+        ///        step type IDs via a table-valued parameter.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        * Level - The step level. 1 = Steps that were a person&apos;s first step, 2 = The second steps, etc.
+        ///        * SourceStepTypeId - The last step taken before the current o [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202512121548566_UpdateGroupRequirementsJob_spSteps_StepFlow {
+            get {
+                return ResourceManager.GetString("_202512121548566_UpdateGroupRequirementsJob_spSteps_StepFlow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        Evaluates requirement status for applicable Group Members and updates 
+        ///        or inserts corresponding GroupMemberRequirement records. Also returns 
+        ///        any records that should trigger automatic &apos;Not Met&apos; or &apos;Warning&apos; workflows.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;param name=&quot;GroupRequirementId&quot; datatype=&quot;int&quot;&gt;
+        ///        The Id of the GroupRequirement definition being evaluated.
+        ///    &lt;/param&gt;
+        ///
+        ///    &lt;param name=&quot;GroupId&quot; datatype=&quot;int&quot;&gt;
+        ///        The Id of the Group whose members  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202512121548566_UpdateGroupRequirementsJob_spUpdateGroupMemberRequirements {
+            get {
+                return ResourceManager.GetString("_202512121548566_UpdateGroupRequirementsJob_spUpdateGroupMemberRequirements", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure merges the data from the non-primary person to the primary person.  It
+        ///		is used when merging people in Rock and should never be used outside of that process. 
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
+        ///	&lt;param name=&quot;New Id&quot; datatype=&quot;int&quot;&gt;The person id of the primary Person being merged&lt;/param&gt;
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: 790E [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202512182358368_UpdatespCrm_PersonMerge {
+            get {
+                return ResourceManager.GetString("_202512182358368_UpdatespCrm_PersonMerge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CREATE PROCEDURE dbo.spGivingAutomation_UpdateGivingBinsAndPercentiles
+        ///    @CurrentRockDateTime DATETIME,
+        ///    @TransactionTypeIds dbo.IdList READONLY,        -- List of allowed TransactionTypeValueIds ( Defined in Giving Automation Configuration Block )
+        ///    @FinancialAccountIds dbo.IdList READONLY        -- List of allowed FinancialAccounts ( Defined in Giving Automation Configuration Block )
+        ///AS
+        ///BEGIN
+        ///    SET NOCOUNT ON;
+        ///
+        ///    DECLARE @EndDate DATETIME = @CurrentRockDateTime;
+        ///    DECLARE @StartDate  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingBinsAndPercentiles {
+            get {
+                return ResourceManager.GetString("_202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingBin" +
+                        "sAndPercentiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CREATE PROCEDURE dbo.spGivingAutomation_UpdateGivingJourneyStages
+        ///    @CurrentRockDateTime DATETIME,
+        ///    @TransactionTypeIds dbo.IdList READONLY,                -- List of allowed TransactionTypeValueIds ( Defined in Giving Automation Configuration Block )
+        ///    @FinancialAccountIds dbo.IdList READONLY,               -- List of allowed FinancialAccounts ( Defined in Giving Automation Configuration Block )
+        ///    @NewGiverFirstGaveDays INT = 150,                       -- Max days since the first gift for some [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingJourneyStages {
+            get {
+                return ResourceManager.GetString("_202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingJou" +
+                        "rneyStages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure merges the data from the non-primary person to the primary person.  It
+        ///		is used when merging people in Rock and should never be used outside of that process. 
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
+        ///	&lt;param name=&quot;New Id&quot; datatype=&quot;int&quot;&gt;The person id of the primary Person being merged&lt;/param&gt;
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: 790E [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202601212358292_AddEntitySetAdditionalSettingsJson_spCrm_PersonMerge {
+            get {
+                return ResourceManager.GetString("_202601212358292_AddEntitySetAdditionalSettingsJson_spCrm_PersonMerge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure merges the data from the non-primary person to the primary person.  It
+        ///		is used when merging people in Rock and should never be used outside of that process.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;&lt;/returns&gt;
+        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
+        ///	&lt;param name=&quot;New Id&quot; datatype=&quot;int&quot;&gt;The person id of the primary Person being merged&lt;/param&gt;
+        ///	&lt;remarks&gt;
+        ///        If calling this outside of C#, wrap in a transaction if you  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202602021859057_UpdatePersonMergeWithThrow {
+            get {
+                return ResourceManager.GetString("_202602021859057_UpdatePersonMergeWithThrow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        Evaluates requirement status for applicable Group Members and updates 
+        ///        or inserts corresponding GroupMemberRequirement records. Also returns 
+        ///        any records that should trigger automatic &apos;Not Met&apos; or &apos;Warning&apos; workflows.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;param name=&quot;GroupRequirementId&quot; datatype=&quot;int&quot;&gt;
+        ///        The Id of the GroupRequirement definition being evaluated.
+        ///    &lt;/param&gt;
+        ///
+        ///    &lt;param name=&quot;GroupId&quot; datatype=&quot;int&quot;&gt;
+        ///        The Id of the Group whose members  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202602062214190_GroupRequirementsImprovements_spUpdateGroupMemberRequiremennts {
+            get {
+                return ResourceManager.GetString("_202602062214190_GroupRequirementsImprovements_spUpdateGroupMemberRequiremennts", resourceCulture);
             }
         }
         

@@ -30,6 +30,12 @@ import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/
  * photo, and associated registrants or source group memberships.
  */
 export type PersonBag = {
+    /**
+     * The Date time the person was added to a specific Destination Group.
+     * (This is only used for date sorting in Obsidian and should not be populated/used in any other way.)
+     */
+    dateTimeAddedToDestinationGroup?: string | null;
+
     /** The person’s first name. */
     firstName?: string | null;
 

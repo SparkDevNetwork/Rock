@@ -392,7 +392,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The mobile group members &gt; <see cref="Rock.Blocks.Types.Mobile.Crm.GroupMembers">Group Members</see> block type.
         /// </summary>
-        public const string MOBILE_CRM_GROUP_MEMBERS  = "1F1E7598-8D51-4750-8D61-E5791A226FDB";
+        public const string MOBILE_CRM_GROUP_MEMBERS = "1F1E7598-8D51-4750-8D61-E5791A226FDB";
 
         /// <summary>
         /// The mobile scheduled transaction list &gt; <see cref="Rock.Blocks.Types.Mobile.Finance.ScheduledTransactionList">Scheduled Transaction</see> block type.
@@ -418,6 +418,42 @@ namespace Rock.SystemGuid
         /// The mobile transaction list &gt; <see cref="Rock.Blocks.Types.Mobile.Finance.TransactionList">Transaction List</see> block type.
         /// </summary>
         public const string MOBILE_FINANCE_TRANSACTION_LIST = "D29C24EA-A52B-4470-A8D9-D7082FFF19DE";
+
+        /// <summary>
+        /// The mobile my contact &gt; <see cref="Rock.Blocks.Types.Mobile.Engagement.MyContacts">My Contact</see> block type.
+        /// </summary>
+        public const string MOBILE_OUTREACH_MY_CONTACTS = "5C8E3D6E-1F2D-4A2D-8E3C-2F3B1C6D7E8F";
+
+        /// <summary>
+        /// The mobile contact profile &gt; <see cref="Rock.Blocks.Types.Mobile.Engagement.ContactProfile">Contact Profile</see> block type."/>
+        /// </summary>
+        public const string MOBILE_OUTREACH_CONTACT_PROFILE = "40E200AD-1E29-4855-A8A4-8055A63753FF";
+
+        /// <summary>
+        /// The mobile Add Contact &gt; <see cref="Rock.Blocks.Types.Mobile.Engagement.AddContact">Add Contact</see> block type.
+        /// </summary>
+        public const string MOBILE_OUTREACH_ADD_CONTACT = "DE2F490D-2598-40E8-8170-4753DDC0A0B0";
+
+        /// <summary>
+        /// The mobile Outreach Onboarding &gt; <see cref="Rock.Blocks.Types.Mobile.Engagement.OutreachOnboarding">Outreach Onboarding</see> block type.
+        /// </summary>
+        public const string MOBILE_OUTREACH_OUTREACH_ONBOARDING = "5F1E3C4B-6D7E-4A8F-9C2B-3D4E5F6A7B8C";
+
+        /// <summary>
+        /// The mobile Outreach Beacon Dashboard &gt; <see cref="Rock.Blocks.Types.Mobile.Engagement.OutreachDashboard">Beacon Dashboard</see> block type.
+        /// </summary>
+        public const string MOBILE_OUTREACH_OUTREACH_BEACON_DASHBOARD = "A1B2C3D4-E5F6-4789-ABCD-1234567890AB";
+
+        /// <summary>
+        /// The mobile outreach touchpoint detail &gt; <see cref="Rock.Blocks.Types.Mobile.Engagement.TouchpointDetail"></see>
+        /// </summary>
+        public const string MOBILE_OUTREACH_TOUCHPOINT_DETAIL = "616DD7C7-CB7A-444E-A99E-25F2398D56EB";
+
+        /// <summary>
+        /// The mobile outreach Recent Activity &gt; <see cref="Rock.Blocks.Types.Mobile.Engagement.OutreachRecentActivity">Outreach Recent Activity</see> block type.
+        /// </summary>
+        public const string MOBILE_OUTREACH_OUTREACH_RECENT_ACTIVITY = "469B0581-C7F6-4F8B-913F-E20F5B49E39D";
+
         #endregion
 
         #region Obsidian Block Types

@@ -42,7 +42,6 @@ namespace RockWeb.Blocks.Core
     [CodeEditorField( "Display Lava",
         Description = "The Lava template to use when displaying the current campus.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 300,
         IsRequired = true,
         DefaultValue = @"{% if Device %}

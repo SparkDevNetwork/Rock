@@ -44,6 +44,7 @@ namespace Rock.Blocks.Finance
     [Description( "Displays the details of the given business." )]
     [IconCssClass( "ti ti-question-mark" )]
     [Rock.Web.UI.ContextAware]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -106,7 +107,6 @@ namespace Rock.Blocks.Finance
         Key = AttributeKey.AdditionalCustomActions,
         Description = BlockAttributeDescription.AdditionalCustomActions,
         EditorMode = CodeEditorMode.Html,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         Order = 7 )]
@@ -114,7 +114,8 @@ namespace Rock.Blocks.Finance
     #endregion BlockAttributes
 
     [SystemGuid.EntityTypeGuid( "d54d7307-40f2-4beb-819d-8112dfbfbb12" )]
-    [SystemGuid.BlockTypeGuid( "729e1953-4cff-46f0-8715-9d7892badb4e" )]
+    [Rock.SystemGuid.BlockTypeGuid( "3CB1F9F0-11B2-4A46-B9D1-464811E5015C" )]
+    // was [SystemGuid.BlockTypeGuid( "729e1953-4cff-46f0-8715-9d7892badb4e" )]
     public class BusinessDetail : RockEntityDetailBlockType<Person, BusinessDetailBag>
     {
         #region Keys

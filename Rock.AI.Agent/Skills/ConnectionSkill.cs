@@ -17,9 +17,17 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
 
 using Microsoft.Extensions.Logging;
 
+using Nest;
+
+using Rock.AI.Agent.Classes.Common;
+using Rock.AI.Agent.Classes.Entity;
+using Rock.AI.Agent.Classes.Skills.ConnectionSkill;
+using Rock.Data;
+using Rock.Model;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills
@@ -38,6 +46,8 @@ namespace Rock.AI.Agent.Skills
 
         private readonly ILogger<ConnectionSkill> _logger;
 
+        private readonly IRockContextFactory _rockContextFactory;
+
         #endregion
 
         #region Constructors
@@ -45,10 +55,67 @@ namespace Rock.AI.Agent.Skills
         /// <summary>
         /// The constructor for the Connection Skill.
         /// </summary>
-        /// <param name="logger">The logger.</param>
-        public ConnectionSkill( ILogger<ConnectionSkill> logger )
+        /// <param name="rockContextFactory">Factory to create rock contexts.</param>
+        /// <param name="logger">Logger for diagnostics and error reporting.</param>
+        public ConnectionSkill( IRockContextFactory rockContextFactory, ILogger<ConnectionSkill> logger )
         {
+            _rockContextFactory = rockContextFactory ?? throw new ArgumentNullException( nameof( rockContextFactory ) );
             _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Creates a result object to represent the full details of a
+        /// connection request. This will not include every property, but will
+        /// include the ones that would make sense to the language model.
+        /// </summary>
+        /// <param name="connectionRequest">The connection request to build the result from.</param>
+        /// <returns>A result object that represents <paramref name="connectionRequest"/>.</returns>
+        private ConnectionRequestResult GetFullConnectionRequestResult( ConnectionRequest connectionRequest )
+        {
+            var result = new ConnectionRequestResult
+            {
+                Id = connectionRequest.Id,
+                Requester = PersonResult.Basic( connectionRequest.PersonAlias ),
+                Comments = connectionRequest.Comments,
+                ConnectionState = connectionRequest.ConnectionState,
+                ConnectionStatus = new KeyNameResult { Id = connectionRequest.ConnectionStatus.Id, Name = connectionRequest.ConnectionStatus.Name },
+                ConnectionOpportunity = new ConnectionOpportunityResult
+                {
+                    Id = connectionRequest.ConnectionOpportunity.Id,
+                    Name = connectionRequest.ConnectionOpportunity.Name,
+                    ConnectionType = new ConnectionTypeResult
+                    {
+                        Id = connectionRequest.ConnectionOpportunity.ConnectionType.Id,
+                        Name = connectionRequest.ConnectionOpportunity.ConnectionType.Name
+                    }
+                },
+                CreatedDateTime = connectionRequest.CreatedDateTime,
+                ModifiedDateTime = connectionRequest.ModifiedDateTime,
+                FollowupDate = connectionRequest.FollowupDate,
+                Campus = connectionRequest.Campus != null ? new CampusResult { Id = connectionRequest.Campus.Id, Name = connectionRequest.Campus.Name } : null,
+                AssignedGroup = connectionRequest.AssignedGroup != null ? new GroupResult { Id = connectionRequest.AssignedGroup.Id, Name = connectionRequest.AssignedGroup.Name } : null,
+                Connector = PersonResult.Basic( connectionRequest.ConnectorPersonAlias ),
+                Activities = connectionRequest.ConnectionRequestActivities
+                    .OrderBy( a => a.CreatedDateTime )
+                    .Select( a => new ConnectionRequestActivityResult
+                    {
+                        Id = a.Id,
+                        ActivityType = new KeyNameResult { Id = a.ConnectionActivityType.Id, Name = a.ConnectionActivityType.Name },
+                        Connector = PersonResult.Basic( a.ConnectorPersonAlias ),
+                        CreatedDateTime = a.CreatedDateTime,
+                        Note = a.Note,
+                    } )
+                    .ToList(),
+                AttributeValues = connectionRequest.GetAttributeValueResults( AgentRequestContext ).ToList(),
+            };
+
+            result.Sanitize( AgentRequestContext );
+
+            return result;
         }
 
         #endregion

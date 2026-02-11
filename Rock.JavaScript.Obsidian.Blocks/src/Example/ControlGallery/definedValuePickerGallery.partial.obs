@@ -4,7 +4,13 @@
                       :exampleCode="exampleCode"
                       enableReflection>
 
-        <DefinedValuePicker label="Defined Value" v-model="value" :definedTypeGuid="definedTypeGuid" :multiple="multiple" :enhanceForLongLists="enhanceForLongLists" :allowAdd="allowAdd" :displayStyle="displayStyle" />
+        <DefinedValuePicker label="Defined Value"
+                            v-model="value"
+                            :definedTypeGuid="definedTypeGuid"
+                            :multiple="multiple"
+                            :enhanceForLongLists="enhanceForLongLists"
+                            :allowAdd="allowAdd"
+                            :displayStyle="displayStyle" />
 
         <template #settings>
             <div class="row">
@@ -30,11 +36,11 @@
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
 
     const multiple = ref(false);
+    const definedTypeGuid = ref<Guid>(DefinedType.PersonConnectionStatus);
     const enhanceForLongLists = ref(false);
     const displayStyle = computed(() => (multiple.value && !enhanceForLongLists.value) ? PickerDisplayStyle.List : PickerDisplayStyle.Auto);
 
     const allowAdd = ref(false);
-    const definedTypeGuid = ref<Guid>(DefinedType.PersonConnectionStatus);
     const value = ref(null);
     const importCode = getSfcControlImportPath("definedValuePicker");
     const exampleCode = `<DefinedValuePicker label="Defined Value" v-model="value" :definedTypeGuid="definedTypeGuid" :multiple="false" :enhanceForLongLists="false" />`;

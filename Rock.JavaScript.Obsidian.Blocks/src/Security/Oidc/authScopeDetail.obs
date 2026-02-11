@@ -84,7 +84,7 @@
             : ""
     );
 
-    // #endregion
+    // #endregion Values
 
     // #region Computed Values
 
@@ -146,11 +146,11 @@
         return authScopeEditBag.value?.bag?.isSystem === true;
     });
 
-    // #endregion
+    // #endregion Computed Values
 
     // #region Functions
 
-    // #endregion
+    // #endregion Functions
 
     // #region Event Handlers
 
@@ -225,7 +225,7 @@
         return false;
     }
 
-    // #endregion
+    // #endregion Event Handlers
 
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {

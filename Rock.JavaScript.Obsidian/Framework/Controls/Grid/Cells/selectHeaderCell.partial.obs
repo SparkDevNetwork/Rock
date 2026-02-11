@@ -11,11 +11,12 @@
 <script setup lang="ts">
     import { standardHeaderCellProps } from "@Obsidian/Core/Controls/grid";
     import { onUnmounted, ref } from "vue";
+    import { IGridState } from "@Obsidian/Types/Controls/grid";
 
     const props = defineProps(standardHeaderCellProps);
 
     const showCheckbox = ref(false);
-    if (props.column.props.enableRowExclusions) {
+    if (typeof props.column.props.excludeRow === "function") {
         showCheckbox.value = !!props.column.props.forceAllowSelectAll;
     }
     else {
@@ -34,11 +35,11 @@
             props.grid.selectedKeys = [];
         }
         else {
-            if (props.column.props.enableRowExclusions && props.column.props.forceAllowSelectAll) {
+            if (typeof props.column.props.excludeRow === "function" && props.column.props.forceAllowSelectAll) {
                 // Select all rows that have a SelectCell with a checkbox
                 props.grid.selectedKeys = props.grid.filteredRows
                     .filter(r => {
-                        return (props.column.props.excludeRow as ((row: unknown) => boolean))(r);
+                        return (props.column.props.rowDisabled as ((row: Record<string, unknown>, grid: IGridState) => boolean))(r, props.grid);
                     })
                     .map(r => props.grid.getRowKey(r))
                     .filter(k => k !== undefined) as string[];

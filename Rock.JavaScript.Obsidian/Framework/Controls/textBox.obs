@@ -208,8 +208,8 @@
         return {
             "input-group col-xs-12": isInputGroup.value,
             [props.inputGroupClasses]: isInputGroup.value,
-            "input-group-sm": isInputGroup.value && props.size == "small",
-            "input-group-lg": isInputGroup.value && props.size == "large"
+            "input-group-sm": isInputGroup.value && props.size === "small",
+            "input-group-lg": isInputGroup.value && props.size === "large"
         };
     });
 
@@ -217,8 +217,8 @@
         return {
             "form-control": true,
             [props.inputClasses]: true,
-            "input-sm": props.size == "small",
-            "input-lg": props.size == "large"
+            "input-sm": props.size === "small",
+            "input-lg": props.size === "large"
         };
     });
 

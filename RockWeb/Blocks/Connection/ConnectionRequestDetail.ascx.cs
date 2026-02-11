@@ -1180,21 +1180,6 @@ namespace RockWeb.Blocks.Connection
                     {
                         var newOpportunity = new ConnectionOpportunityService( rockContext ).Get( newOpportunityId.Value );
 
-                        // Check if a connection request in the target opportunity already exists for the same person
-                        var existingRequest = connectionRequestService.Queryable().AsNoTracking()
-                            .Where( r => r.PersonAliasId == connectionRequest.PersonAliasId && 
-                                        r.ConnectionOpportunityId == newOpportunityId.Value &&
-                                        r.Id != connectionRequest.Id &&
-                                        ( r.ConnectionState == ConnectionState.Active || r.ConnectionState == ConnectionState.FutureFollowUp ) )
-                            .FirstOrDefault();
-
-                        if ( existingRequest != null )
-                        {
-                            nbTranferFailed.Text = "This person already has an active connection request for the selected opportunity. Transfer cannot be completed.";
-                            nbTranferFailed.Visible = true;
-                            return;
-                        }
-
                         ConnectionRequestActivity connectionRequestActivity = new ConnectionRequestActivity();
                         connectionRequestActivity.ConnectionRequestId = connectionRequest.Id;
                         connectionRequestActivity.ConnectionOpportunityId = newOpportunityId.Value;

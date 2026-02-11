@@ -42,7 +42,7 @@ namespace Rock.Tests.Integration.Engagement.Connections
                 testConnectionWorkflow = new ConnectionWorkflow();
 
                 // Whatever workflow type id. 13 is 'External Inquiry'
-                var workflowType = new WorkflowTypeService(rockContext).Get( 13 );
+                var workflowType = new WorkflowTypeService( rockContext ).Get( 13 );
                 if ( !workflowType.IsPersisted )
                 {
                     // make sure it is Persisted so that the produced workflow gets saved to the database
@@ -93,7 +93,7 @@ namespace Rock.Tests.Integration.Engagement.Connections
                 }
 
                 // clean up if we needed to create a testConnectionWorkflow
-                if ( testConnectionWorkflow != null)
+                if ( testConnectionWorkflow != null )
                 {
                     new ConnectionWorkflowService( rockContext ).Delete( testConnectionWorkflow );
                     rockContext.SaveChanges();

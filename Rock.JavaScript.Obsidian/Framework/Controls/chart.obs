@@ -65,7 +65,7 @@
         }
 
         // If the type changes, we need to recreate the chart. We can't just update it.
-        if (config.value.type != previousType) {
+        if (config.value.type !== previousType) {
             previousType = config.value.type;
             chart.destroy();
             chart = new Chart(chartEl.value, config.value);

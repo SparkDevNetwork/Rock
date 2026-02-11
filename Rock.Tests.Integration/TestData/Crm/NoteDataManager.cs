@@ -213,7 +213,7 @@ namespace Rock.Tests.Integration.TestData.Crm
                                 throw new Exception( "Could not replace existing item." );
                             }
                         }
-                        else if (existingItemStrategy == CreateExistingItemStrategySpecifier.Ignore )
+                        else if ( existingItemStrategy == CreateExistingItemStrategySpecifier.Ignore )
                         {
                             return;
                         }

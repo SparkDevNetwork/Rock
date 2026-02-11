@@ -5,7 +5,7 @@
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
-            <div class="panel-heading">
+            <div class="panel-header">
                 <h1 class="panel-title">
                     <asp:Literal ID="lPanelTitle" runat="server" Text="Room List" />
                 </h1>
@@ -16,11 +16,11 @@
                     </asp:LinkButton>
                 </div>
             </div>
-            <asp:Panel ID="pnlFilterCriteria" runat="server" CssClass="panel-heading" Visible="false">
+            <asp:Panel ID="pnlFilterCriteria" runat="server" CssClass="panel-header panel-filter" Visible="false">
                 <div class="w-100">
                     <Rock:RockListBox ID="lbSchedules" runat="server" Label="Schedules" ValidationGroup="vgFilterCriteria" />
                 </div>
-                <div class="actions mt-2">
+                <div class="actions mt-spacing-xs">
                     <asp:LinkButton ID="btnApplyFilter" runat="server" CssClass="filter btn btn-action btn-xs" Text="Apply Filter" OnClick="btnApplyFilter_Click" ValidationGroup="vgFilterCriteria" CausesValidation="true" />
                     <asp:LinkButton ID="btnClearFilter" runat="server" CssClass="filter-clear btn btn-default btn-xs" Text="Clear Filter" OnClick="btnClearFilter_Click" CausesValidation="false" />
                 </div>

@@ -80,7 +80,7 @@ namespace Rock.Blocks.Finance
                             var uniqueCampuses = campusDict.Select( c => new ListItemBag { Text = c.Value, Value = c.Key } ).OrderBy( i => i.Text ).ToList();
 
                             var uniqueGroups = peopleData.Select( p => p.GroupName ).Distinct().ToList();
-                            var hasMultipleCampuses = CampusCache.All().Count( c => ( bool ) c.IsActive ) > 1;
+                            var hasMultipleCampuses = CampusCache.All().Count( c => c.IsActive == true ) > 1;
 
                             box.UniqueCampuses = uniqueCampuses;
                             box.UniqueGroups = uniqueGroups;
@@ -198,7 +198,17 @@ namespace Rock.Blocks.Finance
                 }
 
                 dataset.UpdateResultData();
-                rockContext.SaveChanges();
+                /*
+                    2/10/2026 - NA
+                    We are calling the SaveChanges( true ) overload that disables pre/post processing hooks
+                    because we only want to change the properties changed in UpdateResultData(). If we don't disable
+                    these hooks, the [ModifiedDateTime] value will also be updated every time a DataView is
+                    run, which is not what we want here.
+
+                    Reason: See Asana task "Persisted Datasets Don't Have CreatedBy/ModifiedBy Values"
+                    https://app.asana.com/1/20866866924293/task/1213202694111290
+                */
+                rockContext.SaveChanges( true );
 
                 PersistedDatasetCache.UpdateCachedEntity( dataset.Id, System.Data.Entity.EntityState.Modified );
 

@@ -14,12 +14,22 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Lava
 {
     /// <summary>
     /// A Lava file system provides a means of accessing external files from a template.
     /// A file system implementation is required for the Liquid "{% include %}" command to load partial templates during the rendering process.
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         <strong>This is an internal API</strong> that supports the Rock
+    ///         infrastructure and not subject to the same compatibility standards
+    ///         as public APIs. It may be changed or removed without notice in any
+    ///         release and should therefore not be directly used in any plug-ins.
+    ///     </para>
+    /// </remarks>
     public interface ILavaFileSystem
     {
         /// <summary>
@@ -36,5 +46,19 @@ namespace Rock.Lava
         /// <param name="templateName"></param>
         /// <returns></returns>
         string ReadTemplateFile( ILavaRenderContext context, string templateName );
+
+        /// <summary>
+        /// Resolves the specified file path to an absolute file system path.
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        string ResolveTemplatePath( string filePath );
+
+        /// <summary>
+        /// Gets the date and time that the specified file was last modified.
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        DateTimeOffset? FileLastModified( string filePath );
     }
 }

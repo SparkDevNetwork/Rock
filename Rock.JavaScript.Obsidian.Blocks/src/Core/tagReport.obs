@@ -20,35 +20,35 @@
         <SelectColumn v-if="isPersonTag" />
 
         <TextColumn name="entityName"
-            :title="entityTypeName"
-            field="entityName"
-            visiblePriority="xs"
-            width="50%" />
+                    :title="entityTypeName"
+                    field="entityName"
+                    visiblePriority="xs"
+                    width="50%" />
 
         <DateColumn name="dateTagged"
-            title="Date Tagged"
-            field="dateTagged"
-            headerClass="'text-right'"
-            itemClass="'justify-content-end text-end'"
-            visiblePriority="xs"
-            width="50%" />
+                    title="Date Tagged"
+                    field="dateTagged"
+                    headerClass="'text-right'"
+                    itemClass="'justify-content-end text-end'"
+                    visiblePriority="xs"
+                    width="50%" />
 
-       <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 
     <Modal v-model="isPersonModalShown"
-            title="Add Person"
-            saveText="Save"
-            saveThenAddText="Save Then Add"
-            @save="onSave"
-            @saveThenAdd="onSaveThenAdd">
-            <NotificationBox v-if="errorMessage" :alertType="AlertType.Danger">
-                {{ errorMessage }}
-            </NotificationBox>
-                <PersonPicker v-model="person"
-                    label="Person"
-                    v-model:isSearchModeOpen="isSearchModeOpen"
-                    :key="addNextPersonCount" />
+           title="Add Person"
+           saveText="Save"
+           saveThenAddText="Save Then Add"
+           @save="onSave"
+           @saveThenAdd="onSaveThenAdd">
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Danger">
+            {{ errorMessage }}
+        </NotificationBox>
+        <PersonPicker v-model="person"
+                      label="Person"
+                      v-model:isSearchModeOpen="isSearchModeOpen"
+                      :key="addNextPersonCount" />
     </Modal>
 </template>
 
@@ -75,7 +75,7 @@
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
-    const addNextPersonCount = ref<number> (0); // key to refresh the personpicker so that it opens up in full screen for the next input.
+    const addNextPersonCount = ref<number>(0); // key to refresh the personpicker so that it opens up in full screen for the next input.
     let gridData: GridDataBag | undefined;
     const tagName = config.options?.tagName ?? "";
     const title = config.options?.title ?? "";
@@ -109,7 +109,7 @@
      * Called when a new person tag needs to be added.
      */
     async function addPerson(): Promise<void> {
-        if(!person.value) {
+        if (!person.value) {
             errorMessage.value = "Person is required.";
             return;
         }
@@ -134,7 +134,7 @@
     async function onSelectItem(key: string): Promise<void> {
         const selectedItem = gridData?.rows?.find(r => r["entityId"] === key);
         const entityGuid = selectedItem && selectedItem["entityGuid"];
-        if(!entityGuid) {
+        if (!entityGuid) {
             return;
         }
         const result = await invokeBlockAction<string>("SelectRow", { entityGuid, tagId });
@@ -154,11 +154,11 @@
      * happens only if they have confirmed the delete action.
      */
     async function onDeleteClick(key: string): Promise<void> {
-        if(!gridData || !gridData.rows) {
+        if (!gridData || !gridData.rows) {
             return;
         }
         const index = gridData.rows.findIndex(r => r["entityId"] === key);
-        if(index == -1) {
+        if (index === -1) {
             return;
         }
         const entityGuid = gridData.rows[index]["entityGuid"];
@@ -185,7 +185,7 @@
 
     async function onSaveThenAdd(): Promise<void> {
         await addPerson();
-        if(errorMessage.value) {
+        if (errorMessage.value) {
             return;
         }
         isSearchModeOpen.value = true;
@@ -194,7 +194,7 @@
 
     async function onSave(): Promise<void> {
         await addPerson();
-        if(errorMessage.value) {
+        if (errorMessage.value) {
             return;
         }
         isPersonModalShown.value = false;

@@ -10,7 +10,6 @@ using Rock.Enums.AI.Agent;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Net;
-using Rock.Tests.Shared;
 
 namespace Rock.AI.Agent.Tests;
 
@@ -31,7 +30,7 @@ public class LavaToolExecutorTests
 
         LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
 
-        Assert.AreEqual( 0, mergeFields.Count );
+        Assert.IsEmpty( mergeFields );
     }
 
     [TestMethod]
@@ -163,7 +162,7 @@ public class LavaToolExecutorTests
     {
         var result = LavaToolExecutor.ConvertValueToCollection( "null", ParameterSchemaDataType.String );
 
-        Assert.That.Empty( result );
+        Assert.IsEmpty( result );
     }
 
     #endregion

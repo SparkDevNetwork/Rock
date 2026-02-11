@@ -25,7 +25,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;
 using Rock.Storage.AssetStorage;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Core.Storage
@@ -119,7 +118,7 @@ namespace Rock.Tests.Integration.Core.Storage
                 bool isSuccess = assetStorageComponent.CreateFolder( assetStorageProvider, rootAsset );
                 if ( !isSuccess )
                 {
-                    Assert.That.Inconclusive( $"Unable to create root folder while seeding data" );
+                    Assert.Inconclusive( $"Unable to create root folder while seeding data" );
                 }
 
                 var parentFolder = new Asset();
@@ -173,8 +172,8 @@ namespace Rock.Tests.Integration.Core.Storage
                 };
 
                 var actualAsset = assetStorageComponent.GetObject( assetStorageProvider, expectedAsset );
-                Assert.That.IsNotNull( actualAsset );
-                Assert.That.Equal( expectedFileName, actualAsset.Name );
+                Assert.IsNotNull( actualAsset );
+                Assert.AreEqual( expectedFileName, actualAsset.Name );
 
                 var actualBytes = new byte[0];
                 try
@@ -188,10 +187,10 @@ namespace Rock.Tests.Integration.Core.Storage
                 }
                 catch ( Exception ex )
                 {
-                    Assert.That.Fail( $"An exception occurred while trying to downloaded file. {ex.Message}" );
+                    Assert.Fail( $"An exception occurred while trying to downloaded file. {ex.Message}" );
                 }
 
-                Assert.That.AreEqual( _testTextFileBytes.AsEnumerable<byte>(), actualBytes.AsEnumerable<byte>() );
+                Assert.AreEqual( _testTextFileBytes.AsEnumerable<byte>(), actualBytes.AsEnumerable<byte>() );
             }
         }
 
@@ -213,8 +212,8 @@ namespace Rock.Tests.Integration.Core.Storage
                 };
 
                 var actualAsset = assetStorageComponent.GetObject( assetStorageProvider, expectedAsset );
-                Assert.That.IsNotNull( actualAsset );
-                Assert.That.AreEqual( expectedFileName, actualAsset.Name );
+                Assert.IsNotNull( actualAsset );
+                Assert.AreEqual( expectedFileName, actualAsset.Name );
 
                 var actualBytes = new byte[0];
                 try
@@ -228,10 +227,10 @@ namespace Rock.Tests.Integration.Core.Storage
                 }
                 catch ( Exception ex )
                 {
-                    Assert.That.Fail( $"An exception occurred while trying to downloaded file. {ex.Message}" );
+                    Assert.Fail( $"An exception occurred while trying to downloaded file. {ex.Message}" );
                 }
 
-                Assert.That.AreEqual( _testTextFileBytes.AsEnumerable<byte>(), actualBytes.AsEnumerable<byte>() );
+                Assert.AreEqual( _testTextFileBytes.AsEnumerable<byte>(), actualBytes.AsEnumerable<byte>() );
             }
         }
 
@@ -256,14 +255,14 @@ namespace Rock.Tests.Integration.Core.Storage
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
                 var isFolderCreated = assetStorageComponent.CreateFolder( assetStorageProvider, expectedAsset );
-                Assert.That.IsTrue( isFolderCreated );
+                Assert.IsTrue( isFolderCreated );
 
                 var assets = assetStorageComponent.ListFoldersInFolder( assetStorageProvider, rootAsset );
-                Assert.That.IsNotEmpty( assets );
-                Assert.That.IsTrue( assets.Any( a => a.Type == AssetType.Folder && a.Name == expectedAsset.Name ) );
+                Assert.IsNotEmpty( assets );
+                Assert.IsTrue( assets.Any( a => a.Type == AssetType.Folder && a.Name == expectedAsset.Name ) );
 
                 bool isSuccess = assetStorageComponent.DeleteAsset( assetStorageProvider, expectedAsset );
-                Assert.That.IsTrue( isSuccess, "New Created Folder can't be deleted in TestGoogleCreateFolderByName" );
+                Assert.IsTrue( isSuccess, "New Created Folder can't be deleted in TestGoogleCreateFolderByName" );
             }
         }
 
@@ -282,14 +281,14 @@ namespace Rock.Tests.Integration.Core.Storage
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
                 var isFolderCreated = assetStorageComponent.CreateFolder( assetStorageProvider, expectedAsset );
-                Assert.That.IsTrue( isFolderCreated );
+                Assert.IsTrue( isFolderCreated );
 
                 var assets = assetStorageComponent.ListFoldersInFolder( assetStorageProvider, new Asset { Key = "FolderCreateTest/", Type = AssetType.Folder } );
-                Assert.That.IsNotEmpty( assets );
-                Assert.That.IsTrue( assets.Any( a => a.Type == AssetType.Folder && a.Key == expectedAsset.Key ) );
+                Assert.IsNotEmpty( assets );
+                Assert.IsTrue( assets.Any( a => a.Type == AssetType.Folder && a.Key == expectedAsset.Key ) );
 
                 bool isSuccess = assetStorageComponent.DeleteAsset( assetStorageProvider, expectedAsset );
-                Assert.That.IsTrue( isSuccess, "New Created Folder can't be deleted in TestGoogleCreateFolderByName" );
+                Assert.IsTrue( isSuccess, "New Created Folder can't be deleted in TestGoogleCreateFolderByName" );
             }
         }
 
@@ -310,14 +309,14 @@ namespace Rock.Tests.Integration.Core.Storage
                 };
 
                 bool hasUploaded = assetStorageComponent.UploadObject( assetStorageProvider, expectedAsset );
-                Assert.That.IsTrue( hasUploaded );
+                Assert.IsTrue( hasUploaded );
 
                 var actualAsset = assetStorageComponent.GetObject( assetStorageProvider, expectedAsset );
-                Assert.That.IsNotNull( actualAsset );
-                Assert.That.Equal( expectedFileName, actualAsset.Name );
+                Assert.IsNotNull( actualAsset );
+                Assert.AreEqual( expectedFileName, actualAsset.Name );
 
                 bool isSuccess = assetStorageComponent.DeleteAsset( assetStorageProvider, actualAsset );
-                Assert.That.IsTrue( isSuccess, "New uploaded file can't be deleted in TestUploadObjectByName" );
+                Assert.IsTrue( isSuccess, "New uploaded file can't be deleted in TestUploadObjectByName" );
             }
         }
 
@@ -338,14 +337,14 @@ namespace Rock.Tests.Integration.Core.Storage
                 };
 
                 bool hasUploaded = assetStorageComponent.UploadObject( assetStorageProvider, expectedAsset );
-                Assert.That.IsTrue( hasUploaded );
+                Assert.IsTrue( hasUploaded );
 
                 var actualAsset = assetStorageComponent.GetObject( assetStorageProvider, expectedAsset );
-                Assert.That.IsNotNull( actualAsset );
-                Assert.That.Equal( expectedFileName, actualAsset.Name );
+                Assert.IsNotNull( actualAsset );
+                Assert.AreEqual( expectedFileName, actualAsset.Name );
 
                 bool isSuccess = assetStorageComponent.DeleteAsset( assetStorageProvider, actualAsset );
-                Assert.That.IsTrue( isSuccess, "New uploaded file can't be deleted in TestUploadObjectByName" );
+                Assert.IsTrue( isSuccess, "New uploaded file can't be deleted in TestUploadObjectByName" );
             }
         }
 
@@ -360,7 +359,7 @@ namespace Rock.Tests.Integration.Core.Storage
                 var asset = new Asset();
 
                 var assetList = assetStorageComponent.ListObjects( assetStorageProvider, asset );
-                Assert.That.IsTrue( assetList.Any( a => a.Name == "ParentFolder" ) );
+                Assert.IsTrue( assetList.Any( a => a.Name == "ParentFolder" ) );
             }
         }
 
@@ -392,7 +391,7 @@ namespace Rock.Tests.Integration.Core.Storage
                 var asset = new Asset { Key = "/" };
 
                 var assetList = assetStorageComponent.ListObjects( assetStorageProvider, asset );
-                Assert.That.IsTrue( assetList.Any( a => a.Name == expectedFolderName ) );
+                Assert.IsTrue( assetList.Any( a => a.Name == expectedFolderName ) );
             }
         }
 
@@ -409,16 +408,16 @@ namespace Rock.Tests.Integration.Core.Storage
             };
 
             var assetList = assetStorageComponent.ListObjectsInFolder( assetStorageProvider, asset );
-            Assert.That.IsTrue( assetList.Where( a => a.Type == AssetType.File ).Count() >= 10 );
+            Assert.IsGreaterThanOrEqualTo( 10, assetList.Where( a => a.Type == AssetType.File ).Count() );
             for ( int i = 1; i <= 10; i++ )
             {
-                Assert.That.IsTrue( assetList.Any( a => a.Name == $"TestFile-{i}.txt" ) );
+                Assert.IsTrue( assetList.Any( a => a.Name == $"TestFile-{i}.txt" ) );
             }
 
-            Assert.That.IsTrue( assetList.Where( a => a.Type == AssetType.Folder ).Count() >= 10 );
+            Assert.IsGreaterThanOrEqualTo( 10, assetList.Where( a => a.Type == AssetType.Folder ).Count() );
             for ( int i = 1; i <= 10; i++ )
             {
-                Assert.That.IsTrue( assetList.Any( a => a.Name == $"TestFolder-{i}" ) );
+                Assert.IsTrue( assetList.Any( a => a.Name == $"TestFolder-{i}" ) );
             }
         }
 
@@ -435,16 +434,16 @@ namespace Rock.Tests.Integration.Core.Storage
             };
 
             var assetList = assetStorageComponent.ListObjectsInFolder( assetStorageProvider, asset );
-            Assert.That.IsTrue( assetList.Where( a => a.Type == AssetType.File ).Count() >= 10 );
+            Assert.IsGreaterThanOrEqualTo( 10, assetList.Where( a => a.Type == AssetType.File ).Count() );
             for ( int i = 1; i <= 10; i++ )
             {
-                Assert.That.IsTrue( assetList.Any( a => a.Name == $"TestFile-{i}.txt" ) );
+                Assert.IsTrue( assetList.Any( a => a.Name == $"TestFile-{i}.txt" ) );
             }
 
-            Assert.That.IsTrue( assetList.Where( a => a.Type == AssetType.Folder ).Count() >= 10 );
+            Assert.IsGreaterThanOrEqualTo( 10, assetList.Where( a => a.Type == AssetType.Folder ).Count() );
             for ( int i = 1; i <= 10; i++ )
             {
-                Assert.That.IsTrue( assetList.Any( a => a.Name == $"TestFolder-{i}" ) );
+                Assert.IsTrue( assetList.Any( a => a.Name == $"TestFolder-{i}" ) );
             }
         }
 
@@ -462,8 +461,8 @@ namespace Rock.Tests.Integration.Core.Storage
             };
 
             var assetList = assetStorageComponent.ListFoldersInFolder( assetStorageProvider, asset );
-            Assert.That.AreEqual( expectedFolderCount, assetList.Count() );
-            Assert.That.AreEqual( expectedFolderCount, assetList.Count( f => f.Name.StartsWith( "TestFolder-" ) ) );
+            Assert.AreEqual( expectedFolderCount, assetList.Count() );
+            Assert.AreEqual( expectedFolderCount, assetList.Count( f => f.Name.StartsWith( "TestFolder-" ) ) );
         }
 
         [TestMethod]
@@ -480,8 +479,8 @@ namespace Rock.Tests.Integration.Core.Storage
             };
 
             var assetList = assetStorageComponent.ListFoldersInFolder( assetStorageProvider, asset );
-            Assert.That.AreEqual( expectedFolderCount, assetList.Count() );
-            Assert.That.AreEqual( expectedFolderCount, assetList.Count( f => f.Name.StartsWith( "TestFolder-" ) ) );
+            Assert.AreEqual( expectedFolderCount, assetList.Count() );
+            Assert.AreEqual( expectedFolderCount, assetList.Count( f => f.Name.StartsWith( "TestFolder-" ) ) );
         }
 
         [TestMethod]
@@ -492,8 +491,8 @@ namespace Rock.Tests.Integration.Core.Storage
             var expectedFolderCount = 1;
 
             var assetList = assetStorageComponent.ListFoldersInFolder( assetStorageProvider );
-            Assert.That.AreEqual( expectedFolderCount, assetList.Count() );
-            Assert.That.AreEqual( expectedFolderCount, assetList.Count( f => f.Name.StartsWith( "ParentFolder" ) ) );
+            Assert.AreEqual( expectedFolderCount, assetList.Count() );
+            Assert.AreEqual( expectedFolderCount, assetList.Count( f => f.Name.StartsWith( "ParentFolder" ) ) );
         }
 
         [TestMethod]
@@ -515,23 +514,23 @@ namespace Rock.Tests.Integration.Core.Storage
                 };
 
                 bool hasUploaded = assetStorageComponent.UploadObject( assetStorageProvider, assetToRename );
-                Assert.That.IsTrue( hasUploaded );
+                Assert.IsTrue( hasUploaded );
 
                 var isRenameSuccess = assetStorageComponent.RenameAsset( assetStorageProvider, assetToRename, newFilename );
-                Assert.That.IsTrue( isRenameSuccess );
+                Assert.IsTrue( isRenameSuccess );
 
 
                 var fileList = assetStorageComponent.ListFilesInFolder( assetStorageProvider, new Asset { Name = parentFolder, Type = AssetType.Folder } );
-                Assert.That.IsNotNull( fileList );
+                Assert.IsNotNull( fileList );
 
                 var expectedAsset = fileList.FirstOrDefault( a => a.Name == newFilename );
-                Assert.That.IsNotNull( expectedAsset );
+                Assert.IsNotNull( expectedAsset );
 
-                Assert.That.IsTrue( fileList.Any( a => a.Name == newFilename ) );
-                Assert.That.IsFalse( fileList.Any( a => a.Name == originalFilename ) );
+                Assert.IsTrue( fileList.Any( a => a.Name == newFilename ) );
+                Assert.IsFalse( fileList.Any( a => a.Name == originalFilename ) );
 
                 bool isSuccess = assetStorageComponent.DeleteAsset( assetStorageProvider, expectedAsset );
-                Assert.That.IsTrue( isSuccess, "Rename file can't be deleted" );
+                Assert.IsTrue( isSuccess, "Rename file can't be deleted" );
             }
         }
 
@@ -554,23 +553,23 @@ namespace Rock.Tests.Integration.Core.Storage
                 };
 
                 bool hasUploaded = assetStorageComponent.UploadObject( assetStorageProvider, assetToRename );
-                Assert.That.IsTrue( hasUploaded );
+                Assert.IsTrue( hasUploaded );
 
                 var isRenameSuccess = assetStorageComponent.RenameAsset( assetStorageProvider, assetToRename, newFilename );
-                Assert.That.IsTrue( isRenameSuccess );
+                Assert.IsTrue( isRenameSuccess );
 
 
                 var fileList = assetStorageComponent.ListFilesInFolder( assetStorageProvider, new Asset { Key = parentFolder, Type = AssetType.Folder } );
-                Assert.That.IsNotNull( fileList );
+                Assert.IsNotNull( fileList );
 
                 var expectedAsset = fileList.FirstOrDefault( a => a.Name == newFilename );
-                Assert.That.IsNotNull( expectedAsset );
+                Assert.IsNotNull( expectedAsset );
 
-                Assert.That.IsTrue( fileList.Any( a => a.Name == newFilename ) );
-                Assert.That.IsFalse( fileList.Any( a => a.Name == originalFilename ) );
+                Assert.IsTrue( fileList.Any( a => a.Name == newFilename ) );
+                Assert.IsFalse( fileList.Any( a => a.Name == originalFilename ) );
 
                 bool isSuccess = assetStorageComponent.DeleteAsset( assetStorageProvider, expectedAsset );
-                Assert.That.IsTrue( isSuccess, "Rename file can't be deleted" );
+                Assert.IsTrue( isSuccess, "Rename file can't be deleted" );
             }
         }
 
@@ -596,7 +595,7 @@ namespace Rock.Tests.Integration.Core.Storage
 
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                Assert.That.IsTrue( assetStorageComponent.CreateFolder( assetStorageProvider, expectedAsset ) );
+                Assert.IsTrue( assetStorageComponent.CreateFolder( assetStorageProvider, expectedAsset ) );
 
                 var expectedFileAsset = new Asset
                 {
@@ -605,19 +604,19 @@ namespace Rock.Tests.Integration.Core.Storage
                     Type = AssetType.File
                 };
 
-                Assert.That.IsTrue( assetStorageComponent.UploadObject( assetStorageProvider, expectedFileAsset ) );
+                Assert.IsTrue( assetStorageComponent.UploadObject( assetStorageProvider, expectedFileAsset ) );
 
                 var folders = assetStorageComponent.ListFoldersInFolder( assetStorageProvider, rootAsset );
-                Assert.That.True( folders.Any( a => a.Key == expectedAsset.Key ) );
+                Assert.IsTrue( folders.Any( a => a.Key == expectedAsset.Key ) );
 
                 bool hasDeleted = assetStorageComponent.DeleteAsset( assetStorageProvider, expectedAsset );
-                Assert.That.IsTrue( hasDeleted );
+                Assert.IsTrue( hasDeleted );
 
                 folders = assetStorageComponent.ListFoldersInFolder( assetStorageProvider, rootAsset );
-                Assert.That.IsFalse( folders.Any( a => a.Key == expectedAsset.Key ) );
+                Assert.IsFalse( folders.Any( a => a.Key == expectedAsset.Key ) );
 
                 var files = assetStorageComponent.ListFilesInFolder( assetStorageProvider, expectedAsset );
-                Assert.That.IsFalse( folders.Any( a => a.Key == expectedFileAsset.Key ) );
+                Assert.IsFalse( folders.Any( a => a.Key == expectedFileAsset.Key ) );
             }
         }
 
@@ -643,7 +642,7 @@ namespace Rock.Tests.Integration.Core.Storage
 
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                Assert.That.IsTrue( assetStorageComponent.CreateFolder( assetStorageProvider, expectedAsset ) );
+                Assert.IsTrue( assetStorageComponent.CreateFolder( assetStorageProvider, expectedAsset ) );
 
                 var expectedFileAsset = new Asset
                 {
@@ -652,19 +651,19 @@ namespace Rock.Tests.Integration.Core.Storage
                     Type = AssetType.File
                 };
 
-                Assert.That.IsTrue( assetStorageComponent.UploadObject( assetStorageProvider, expectedFileAsset ) );
+                Assert.IsTrue( assetStorageComponent.UploadObject( assetStorageProvider, expectedFileAsset ) );
 
                 var folders = assetStorageComponent.ListFoldersInFolder( assetStorageProvider, rootAsset );
-                Assert.That.True( folders.Any( a => a.Name == expectedAsset.Name ) );
+                Assert.IsTrue( folders.Any( a => a.Name == expectedAsset.Name ) );
 
                 bool hasDeleted = assetStorageComponent.DeleteAsset( assetStorageProvider, expectedAsset );
-                Assert.That.IsTrue( hasDeleted );
+                Assert.IsTrue( hasDeleted );
 
                 folders = assetStorageComponent.ListFoldersInFolder( assetStorageProvider, rootAsset );
-                Assert.That.IsFalse( folders.Any( a => a.Name == expectedAsset.Name ) );
+                Assert.IsFalse( folders.Any( a => a.Name == expectedAsset.Name ) );
 
                 var files = assetStorageComponent.ListFilesInFolder( assetStorageProvider, expectedAsset );
-                Assert.That.IsFalse( folders.Any( a => a.Name == expectedFileAsset.Name ) );
+                Assert.IsFalse( folders.Any( a => a.Name == expectedFileAsset.Name ) );
             }
         }
 
@@ -697,8 +696,8 @@ namespace Rock.Tests.Integration.Core.Storage
 
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
-                Assert.That.IsTrue( assetStorageComponent.CreateFolder( assetStorageProvider, expectedAsset ) );
-                Assert.That.IsTrue( assetStorageComponent.CreateFolder( assetStorageProvider, subfolderAsset ) );
+                Assert.IsTrue( assetStorageComponent.CreateFolder( assetStorageProvider, expectedAsset ) );
+                Assert.IsTrue( assetStorageComponent.CreateFolder( assetStorageProvider, subfolderAsset ) );
 
                 var expectedFileAsset = new Asset
                 {
@@ -707,25 +706,25 @@ namespace Rock.Tests.Integration.Core.Storage
                     Type = AssetType.File
                 };
 
-                Assert.That.IsTrue( assetStorageComponent.UploadObject( assetStorageProvider, expectedFileAsset ) );
+                Assert.IsTrue( assetStorageComponent.UploadObject( assetStorageProvider, expectedFileAsset ) );
 
                 var folders = assetStorageComponent.ListFoldersInFolder( assetStorageProvider, rootAsset );
-                Assert.That.True( folders.Any( a => a.Name == expectedAsset.Name ) );
+                Assert.IsTrue( folders.Any( a => a.Name == expectedAsset.Name ) );
 
                 folders = assetStorageComponent.ListFoldersInFolder( assetStorageProvider, expectedAsset );
-                Assert.That.True( folders.Any( a => a.Key.Contains( subfolderAsset.Name ) ) );
+                Assert.IsTrue( folders.Any( a => a.Key.Contains( subfolderAsset.Name ) ) );
 
                 bool hasDeleted = assetStorageComponent.DeleteAsset( assetStorageProvider, expectedAsset );
-                Assert.That.IsTrue( hasDeleted );
+                Assert.IsTrue( hasDeleted );
 
                 folders = assetStorageComponent.ListFoldersInFolder( assetStorageProvider, rootAsset );
-                Assert.That.IsFalse( folders.Any( a => a.Key.Contains( expectedAsset.Name ) ) );
+                Assert.IsFalse( folders.Any( a => a.Key.Contains( expectedAsset.Name ) ) );
 
                 folders = assetStorageComponent.ListFoldersInFolder( assetStorageProvider, expectedAsset );
-                Assert.That.IsFalse( folders.Any( a => a.Key.Contains( subfolderAsset.Name ) ) );
+                Assert.IsFalse( folders.Any( a => a.Key.Contains( subfolderAsset.Name ) ) );
 
                 var files = assetStorageComponent.ListFilesInFolder( assetStorageProvider, expectedAsset );
-                Assert.That.IsFalse( folders.Any( a => a.Name == expectedFileAsset.Name ) );
+                Assert.IsFalse( folders.Any( a => a.Name == expectedFileAsset.Name ) );
             }
         }
 
@@ -792,8 +791,8 @@ namespace Rock.Tests.Integration.Core.Storage
                     assetStorageComponent.DeleteAsset( assetStorageProvider, subFolder );
                 }
 
-                Assert.That.AreEqual( expectedFileCount, actualFileCount, "Did not find all 2000 files." );
-                Assert.That.AreEqual( expectedFolderCount, expectedFolderCount, "Did not find all 10 folders." );
+                Assert.AreEqual( expectedFileCount, actualFileCount, "Did not find all 2000 files." );
+                Assert.AreEqual( expectedFolderCount, expectedFolderCount, "Did not find all 10 folders." );
             }
         }
 
@@ -816,10 +815,10 @@ namespace Rock.Tests.Integration.Core.Storage
                 };
 
                 bool hasUploaded = assetStorageComponent.UploadObject( assetStorageProvider, expectedAsset );
-                Assert.That.IsTrue( hasUploaded );
+                Assert.IsTrue( hasUploaded );
 
                 var actualAsset = assetStorageComponent.GetObject( assetStorageProvider, expectedAsset );
-                Assert.That.IsNotNull( actualAsset );
+                Assert.IsNotNull( actualAsset );
 
                 string url = assetStorageComponent.CreateDownloadLink( assetStorageProvider, expectedAsset );
                 bool valid = false;
@@ -843,11 +842,11 @@ namespace Rock.Tests.Integration.Core.Storage
                         System.Net.HttpWebResponse httpResponse = ( System.Net.HttpWebResponse ) response;
                         if ( httpResponse.StatusCode == System.Net.HttpStatusCode.Forbidden )
                         {
-                            Assert.That.Inconclusive( $"File ({expectedAsset.Key}) was forbidden from viewing." );
+                            Assert.Inconclusive( $"File ({expectedAsset.Key}) was forbidden from viewing." );
                         }
                         if ( httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized )
                         {
-                            Assert.That.Inconclusive( $"Anonymous download is not allowed for ({expectedAsset.Key})." );
+                            Assert.Inconclusive( $"Anonymous download is not allowed for ({expectedAsset.Key})." );
                         }
                     }
                 }
@@ -856,8 +855,8 @@ namespace Rock.Tests.Integration.Core.Storage
                     assetStorageComponent.DeleteAsset( assetStorageProvider, actualAsset );
                 }
 
-                Assert.That.IsTrue( valid );
-                Assert.That.AreEqual( _testJpgFileBytes.AsEnumerable(), actualBytes.AsEnumerable() );
+                Assert.IsTrue( valid );
+                Assert.AreEqual( _testJpgFileBytes.AsEnumerable(), actualBytes.AsEnumerable() );
             }
         }
 
@@ -880,10 +879,10 @@ namespace Rock.Tests.Integration.Core.Storage
                 };
 
                 bool hasUploaded = assetStorageComponent.UploadObject( assetStorageProvider, expectedAsset );
-                Assert.That.IsTrue( hasUploaded );
+                Assert.IsTrue( hasUploaded );
 
                 var actualAsset = assetStorageComponent.GetObject( assetStorageProvider, expectedAsset );
-                Assert.That.IsNotNull( actualAsset );
+                Assert.IsNotNull( actualAsset );
 
                 string url = assetStorageComponent.CreateDownloadLink( assetStorageProvider, expectedAsset );
                 bool valid = false;
@@ -903,11 +902,11 @@ namespace Rock.Tests.Integration.Core.Storage
                         System.Net.HttpWebResponse httpResponse = ( System.Net.HttpWebResponse ) response;
                         if ( httpResponse.StatusCode == System.Net.HttpStatusCode.Forbidden )
                         {
-                            Assert.That.Inconclusive( $"File ({expectedAsset.Key}) was forbidden from viewing." );
+                            Assert.Inconclusive( $"File ({expectedAsset.Key}) was forbidden from viewing." );
                         }
                         if ( httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized )
                         {
-                            Assert.That.Inconclusive( $"Anonymous download is not allowed for ({expectedAsset.Key})." );
+                            Assert.Inconclusive( $"Anonymous download is not allowed for ({expectedAsset.Key})." );
                         }
                     }
                 }

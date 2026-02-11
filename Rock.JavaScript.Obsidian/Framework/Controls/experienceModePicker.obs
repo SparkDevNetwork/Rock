@@ -1,0 +1,120 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue" v-bind="standardFieldProps" name="experience-mode-picker">
+        <template #default="{ field, uniqueId }">
+            <div class="dropdown experience-mode-picker">
+                <div :class="{ open: isDropDownOpen }" ref="dropdownElement">
+                    <RockButton class="dropdown-toggle"
+                                :btnType="internalValue ? 'warning' : 'success'"
+                                :aria-expanded="isDropDownOpen ? 'true' : 'false'"
+                                @click.prevent.stop="isDropDownOpen = !isDropDownOpen"
+                                :id="uniqueId"
+                                v-bind="field">
+                        <i v-if="!internalValue" class="ti ti-seeding seedling"></i>
+                        <i v-if="internalValue" class="ti ti-compass"></i>
+
+                        {{ internalValue ? "Trailblazer" : "Essentials" }}
+                        <span class="ti ti-caret-down-filled"></span>
+                    </RockButton>
+
+                    <ul class="dropdown-menu">
+                        <li @click.stop="selectValue(false)">
+                            <a>Essentials</a>
+                        </li>
+
+                        <li @click.stop="selectValue(true)">
+                            <a>Trailblazer</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { useStore } from "@Obsidian/PageState";
+    import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { PropType, ref, watch } from "vue";
+
+    const props = defineProps({
+        /**
+         * If provided, the control will not update the page state. Instead it
+         * will behave as a local only control that simply tracks the currently
+         * selected experience mode.
+         */
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            default: undefined
+        },
+
+        ...standardRockFormFieldProps,
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    const standardFieldProps = useStandardRockFormFieldProps(props);
+    const store = useStore();
+
+    // #region Values
+
+    const dropdownElement = ref<HTMLElement>();
+    const internalValue = ref(props.modelValue === undefined ? store.state.trailblazerMode : props.modelValue);
+    const isDropDownOpen = ref(false);
+
+    // #endregion
+
+    // #region Functions
+
+    function selectValue(value: boolean): void {
+        internalValue.value = value;
+
+        if (props.modelValue === undefined) {
+            store.setTrailblazerMode(internalValue.value);
+        }
+        else {
+            emit("update:modelValue", internalValue.value);
+        }
+
+        isDropDownOpen.value = false;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when the mouse is pressed down somewhere in the
+     * document.
+     *
+     * @param event The current event.
+     */
+    function onDocumentMouseDown(event: MouseEvent): void {
+        if (event.target instanceof HTMLElement && dropdownElement.value?.contains(event.target) !== true) {
+            isDropDownOpen.value = false;
+        }
+    }
+
+    // #endregion
+
+    // Watch for the drop down being opened or closed and add/remove the
+    // event handler for detecting clicks outside the dropdown.
+    watch(isDropDownOpen, () => {
+        if (isDropDownOpen.value) {
+            document.addEventListener("mousedown", onDocumentMouseDown);
+        }
+        else {
+            document.removeEventListener("mousedown", onDocumentMouseDown);
+        }
+    });
+
+    watch(() => store.state.trailblazerMode, () => {
+        if (props.modelValue === undefined) {
+            updateRefValue(internalValue, store.state.trailblazerMode);
+        }
+    });
+</script>

@@ -21,7 +21,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
 
 namespace Rock.Tests.Integration.Core.Lava.Shortcodes
@@ -74,6 +73,7 @@ Font Bold: true
         }
 
         [TestMethod]
+        [TestCategory( "ShortcodeScopeBehavior" )]
         public void Shortcode_ReferencingItemFromParentScope_CorrectlyResolvesItem()
         {
             var shortcodeTemplate = @"
@@ -213,7 +213,7 @@ Main Output: The Lava command 'execute' is not configured for this template.<br>
         /// <summary>
         /// Using the BootstrapAlert shortcode produces the expected output.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "{[ bootstrapalert ]}This is an information message.{[ endbootstrapalert ]}", "<div class='alert alert-info'>This is an information message.</div>" )]
         [DataRow( "{[ bootstrapalert type:'success' ]}This is a success message.{[ endbootstrapalert ]}", "<div class='alert alert-success'>This is a success message.</div>" )]
         public void BootstrapAlertShortcode_VariousTypes_ProducesCorrectHtml( string input, string expectedResult )
@@ -255,7 +255,7 @@ Main Output: The Lava command 'execute' is not configured for this template.<br>
         /// <summary>
         /// Using the Scripturize shortcode produces the expected output.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "John 3:16", "<a href=\"https://www.bible.com/bible/116/JHN.3.16.NLT\"  class=\"scripture\" title=\"YouVersion\">John 3:16</a>" )]
         [DataRow( "Jn 3:16", "<a href=\"https://www.bible.com/bible/116/JHN.3.16.NLT\"  class=\"scripture\" title=\"YouVersion\">Jn 3:16</a>" )]
         [DataRow( "John 3", "<a href=\"https://www.bible.com/bible/116/JHN.3..NLT\"  class=\"scripture\" title=\"YouVersion\">John 3</a>" )]
@@ -271,6 +271,56 @@ Main Output: The Lava command 'execute' is not configured for this template.<br>
         {
             TestHelper.AssertTemplateOutput( "<!--the landing site provided to the scripturize shortcode was not correct-->John 3:16",
                                           "{[ scripturize defaulttranslation:'NLT' landingsite:'InvalidSite' cssclass:'scripture' ]}John 3:16{[ endscripturize ]}" );
+        }
+
+        #endregion
+
+        #region Workflow Activate
+
+        [TestMethod]
+        [DataRow( "Workflow", "some workflow" )]
+        [DataRow( "Activity", "some activity" )]
+        public void WorkflowActivate_WithPreexistingReservedMergeField_SavesAndRestoresMergeFieldValue( string mergeFieldKey, string mergeFieldValue )
+        {
+            var input = $@"
+{{% workflowactivate workflowtype:'51FE9641-FB8F-41BF-B09E-235900C3E53E' %}}
+{{% endworkflowactivate %}}
+Restored Value: {{{{{mergeFieldKey}}}}}";
+
+            var expectedOutput = $"Restored Value: {mergeFieldValue}";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var options = new LavaTestRenderOptions()
+                    .WithContextVariable( mergeFieldKey, mergeFieldValue )
+                    .WithEnabledCommands( "workflowactivate" );
+
+                var output = TestHelper.GetTemplateOutput( engine, input, options );
+
+                Assert.Contains( expectedOutput, output, $"Reserved merge field with key '{mergeFieldKey}' was not restored." );
+            } );
+        }
+
+        [TestMethod]
+        public void WorkflowActivate_WithPreexistingErrorMergeField_SavesAndRestoresMergeFieldValue()
+        {
+            var input = @"
+{% workflowactivate workflowtype:'some-invalid-workflow-type-guid' %}
+{% endworkflowactivate %}
+Restored Value: {{Error}}";
+
+            var expectedOutput = $"Restored Value: some error";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var options = new LavaTestRenderOptions()
+                    .WithContextVariable( "Error", "some error" )
+                    .WithEnabledCommands( "workflowactivate" );
+
+                var output = TestHelper.GetTemplateOutput( engine, input, options );
+
+                Assert.Contains( expectedOutput, output, $"Reserved merge field with key 'Error' was not restored." );
+            } );
         }
 
         #endregion
@@ -295,14 +345,14 @@ Main Output: The Lava command 'execute' is not configured for this template.<br>
 
                 // Verify that the result emits the expected parse error.
                 var error = result.Error;
-                if ( !(error is LavaException ) )
+                if ( !( error is LavaException ) )
                 {
                     throw new Exception( "Lava Exception expected but not encountered." );
                 }
 
                 if ( engine.GetType() == typeof( FluidEngine ) )
                 {
-                    Assert.That.IsTrue( error.Message.Contains( "Unknown shortcode 'testshortcode1'" ), "Unexpected Lava error message." );
+                    Assert.Contains( "Unknown shortcode 'testshortcode1'", error.Message, "Unexpected Lava error message." );
                 }
             } );
 
@@ -453,7 +503,7 @@ Main Output: The Lava command 'execute' is not configured for this template.<br>
         /// Verify that a shortcode embedded in an [[ item ]] tag is rendered correctly.
         /// </summary>
         [TestMethod]
-        [Ignore("This test documents a potential bug. The nested [[ item ]] tag is not resolved correctly.")]
+        [Ignore( "This test documents a potential bug. The nested [[ item ]] tag is not resolved correctly." )]
         public void ShortcodeParsing_ShortcodeEmbeddedInItemElement_IsParsedCorrectly()
         {
             var input = @"

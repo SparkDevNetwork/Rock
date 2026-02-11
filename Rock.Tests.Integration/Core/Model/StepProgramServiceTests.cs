@@ -369,7 +369,7 @@ namespace Rock.Tests.Integration.Core.Model
             var result = service.GetPersonCompletingProgramQuery( stepProgram.Id ).ToList();
 
             Assert.IsNotNull( result );
-            Assert.AreEqual( 2, result.Count );
+            Assert.HasCount( 2, result );
 
             var personService = new PersonService( rockContext );
             var kathy = personService.Get( KathyKolePersonGuidString.AsGuid() );

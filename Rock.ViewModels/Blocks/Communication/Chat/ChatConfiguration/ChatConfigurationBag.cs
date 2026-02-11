@@ -50,5 +50,10 @@ namespace Rock.ViewModels.Blocks.Communication.Chat.ChatConfiguration
         /// Gets or sets the list of data views that will be used to populate badges in the external chat application.
         /// </summary>
         public List<ListItemBag> ChatBadgeDataViews { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data view that will be used to determine who has direct message access.
+        /// </summary>
+        public ListItemBag DirectMessageAccessDataView { get; set; }
     }
 }

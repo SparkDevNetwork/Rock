@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,19 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
+using System;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.AI.Agent.Classes.Skills.ConnectionSkill;
-using Rock.Enums.AI.Agent;
+using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
-using Rock.Utility;
 
 namespace Rock.AI.Agent.Skills
 {
@@ -43,164 +41,77 @@ namespace Rock.AI.Agent.Skills
             string connectionOpportunityIdKey = null,
             string requesterPersonIdKey = null,
             string connectorPersonIdKey = null,
-            int pageNumber = 1 )
+            string cursor = null )
         {
-            // Paging
-            var basePageSize = 100;
-            var offset = ( pageNumber - 1 ) * basePageSize;
-            var take = basePageSize + 1; // N+1 to compute hasMore
+            var helper = new AgentToolHelper( AgentRequestContext, _logger );
+            var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
 
-            var isInternal = AgentRequestContext.AudienceType == AudienceType.Internal;
+            var query = new ConnectionRequestService( AgentRequestContext.RockContext )
+                .Queryable();
 
-            // We need to get a list of connection opportunities that the current user is authorized to see.
-            // TODO: This could be optimized by creating a connection opportunity cache. 
-            var authorizedConnectionOpportunityIds = AuthorizedConnectionOpportunityIds();
+            query = helper.WhereOptionalIdKey( query, cr => cr.PersonAlias.PersonId, requesterPersonIdKey );
+            query = helper.WhereOptionalIdKey( query, cr => cr.ConnectorPersonAlias.PersonId, connectorPersonIdKey );
+            query = helper.WhereOptionalIdKey( query, cr => cr.ConnectionTypeId, connectionTypeIdKey );
+            query = helper.WhereOptionalIdKey( query, cr => cr.ConnectionOpportunityId, connectionOpportunityIdKey );
 
-            var connectionRequestsQry = new ConnectionRequestService( AgentRequestContext.RockContext ).Queryable()
-                .Where( cr => authorizedConnectionOpportunityIds.Contains( cr.ConnectionOpportunityId ) );
+            var hasAnyFilters = !string.IsNullOrWhiteSpace( connectionTypeIdKey )
+                || !string.IsNullOrWhiteSpace( connectionOpportunityIdKey )
+                || !string.IsNullOrWhiteSpace( requesterPersonIdKey )
+                || !string.IsNullOrWhiteSpace( connectorPersonIdKey );
 
-            // Filter by requester
-            if ( requesterPersonIdKey.IsNotNullOrWhiteSpace() )
+            if ( !hasAnyFilters )
             {
-                var requesterPersonId = IdHasher.Instance.GetId( requesterPersonIdKey );
-                connectionRequestsQry = connectionRequestsQry
-                    .Where( cr => cr.PersonAlias != null && cr.PersonAlias.PersonId == requesterPersonId );
+                helper.AddError( "At least one filter parameter must be provided to limit the results returned." );
             }
 
-            // Filter by connector
-            if ( connectorPersonIdKey.IsNotNullOrWhiteSpace() )
+            if ( helper.HasErrors )
             {
-                var connectorPersonId = IdHasher.Instance.GetId( connectorPersonIdKey );
-                connectionRequestsQry = connectionRequestsQry
-                    .Where( cr => cr.ConnectorPersonAlias != null && cr.ConnectorPersonAlias.PersonId == connectorPersonId );
+                return helper.ErrorResult;
             }
 
-            // Filter by connection type
-            if ( connectionTypeIdKey.IsNotNullOrWhiteSpace() )
-            {
-                var connectionTypeId = IdHasher.Instance.GetId( connectionTypeIdKey );
-                connectionRequestsQry = connectionRequestsQry
-                    .Where( cr => cr.ConnectionTypeId == connectionTypeId );
-            }
+            var paginator = new CursorPaginator<ConnectionRequest>( currentPerson, qry => qry
+                .OrderByDescending( cr => cr.CreatedDateTime.HasValue )
+                .ThenByDescending( cr => cr.CreatedDateTime )
+                .ThenBy( cr => cr.Id ) );
 
-            // Filter by connection opportunity
-            if ( connectionOpportunityIdKey.IsNotNullOrWhiteSpace() )
-            {
-                var connectionOpportunityId = IdHasher.Instance.GetId( connectionOpportunityIdKey );
-                connectionRequestsQry = connectionRequestsQry
-                    .Where( cr => cr.ConnectionOpportunityId == connectionOpportunityId );
-            }
+            var cursorPage = helper.GetCursorPaginatedItems( query, paginator, cursor );
 
-            var connectionRequests = connectionRequestsQry
+            cursorPage.Items.LoadAttributes( AgentRequestContext.RockContext );
+
+            var resultPage = cursorPage.WithItems( cursorPage.Items
                 .Select( cr => new ConnectionRequestResult
                 {
                     Id = cr.Id,
-                    Requester = new PersonResult
+                    Requester = PersonResult.NameOnly( cr.PersonAlias ),
+                    ConnectionState = cr.ConnectionState,
+                    ConnectionStatus = new KeyNameResult
                     {
-                        Id = cr.PersonAlias.Person.Id,
-                        FirstName = cr.PersonAlias.Person.FirstName,
-                        LastName = cr.PersonAlias.Person.LastName,
-                        NickName = cr.PersonAlias.Person.NickName,
-                        PhotoId = cr.PersonAlias.Person.PhotoId
+                        Id = cr.ConnectionStatus.Id,
+                        Name = cr.ConnectionStatus.Name
                     },
-                    Comments = cr.Comments,
-                    ConnectionState = new KeyNameResult { Id = ( int ) cr.ConnectionState, Name = cr.ConnectionState.ToString() },
-                    ConnectionStatus = new KeyNameResult { Id = cr.ConnectionStatus.Id, Name = cr.ConnectionStatus.Name },
                     ConnectionOpportunity = new ConnectionOpportunityResult
                     {
                         Id = cr.ConnectionOpportunity.Id,
                         Name = cr.ConnectionOpportunity.Name,
-                        ConnectionType = new ConnectionTypeResult { Id = cr.ConnectionOpportunity.ConnectionType.Id, Name = cr.ConnectionOpportunity.ConnectionType.Name }
+                        ConnectionType = new ConnectionTypeResult
+                        {
+                            Id = cr.ConnectionOpportunity.ConnectionType.Id,
+                            Name = cr.ConnectionOpportunity.ConnectionType.Name
+                        }
                     },
                     CreatedDateTime = cr.CreatedDateTime,
-                    ModifiedDateTime = cr.ModifiedDateTime,
-                    FollowupDate = cr.FollowupDate,
-                    Campus = cr.Campus != null ? new CampusResult { Id = cr.Campus.Id, Name = cr.Campus.Name } : null,
-                    AssignedGroup = cr.AssignedGroup != null ? new GroupResult { Id = cr.AssignedGroup.Id, Name = cr.AssignedGroup.Name } : null,
-                    Connector = cr.ConnectorPersonAlias != null ? new PersonResult
-                    {
-                        Id = cr.ConnectorPersonAlias.Person.Id,
-                        FirstName = cr.ConnectorPersonAlias.Person.FirstName,
-                        LastName = cr.ConnectorPersonAlias.Person.LastName,
-                        NickName = cr.ConnectorPersonAlias.Person.NickName,
-                        PhotoId = cr.ConnectorPersonAlias.Person.PhotoId
-                    } : null,
-                    Activities = cr.ConnectionRequestActivities.Select( a => new ConnectionRequestActivityResult
-                    {
-                        Id = a.Id,
-                        ActivityType = new KeyNameResult { Id = a.ConnectionActivityTypeId, Name = a.ConnectionActivityType.Name },
-                        Note = a.Note,
-                        CreatedDateTime = a.CreatedDateTime,
-                        Connector = a.ConnectorPersonAlias != null ? new PersonResult
-                        {
-                            Id = a.CreatedByPersonAlias.Person.Id,
-                            FirstName = a.CreatedByPersonAlias.Person.FirstName,
-                            LastName = a.CreatedByPersonAlias.Person.LastName,
-                            NickName = a.CreatedByPersonAlias.Person.NickName,
-                            PhotoId = a.CreatedByPersonAlias.Person.PhotoId
-                        } : null
-                    } ).ToList(),
-                    Attributes = cr.ConnectionRequestAttributeValues
-                        .Where( a => isInternal || a.IsPublic )
-                        .Select( a =>
-                            new AttributeResult { Id = a.AttributeId, Value = a.PersistedTextValue, Name = a.Name } ).ToList()
-
+                    Connector = PersonResult.NameOnly( cr.ConnectorPersonAlias ),
+                    AttributeValues = cr.GetGridAttributeValueResults( AgentRequestContext ).ToList(),
                 } )
-                .OrderBy( cr => cr.Id )
-                .Skip( offset )
-                .Take( take )
-                .ToList();
+                .ToList() );
 
-            // Run security on each person (removes any data they shouldn't see)
-            foreach ( var request in connectionRequests )
+            var historyPage = cursorPage.WithItems( cursorPage.Items.Select( cr => new KeyNameResult
             {
-                request.SanitizeForSecurity( AgentRequestContext.RockRequestContext.CurrentPerson );
-            }
+                Id = cr.Id,
+                Name = cr.ToString()
+            } ) );
 
-            var hasMore = connectionRequests.Count > basePageSize;
-            if ( hasMore )
-            {
-                connectionRequests.RemoveAt( connectionRequests.Count - 1 ); // drop lookahead row
-            }
-
-            var meta = new Dictionary<string, object>
-                {
-                    { "personKey", requesterPersonIdKey },
-                    { "pageNumber", pageNumber },
-                    { "pageSize", basePageSize },
-                    { "returnedRows", connectionRequests.Count },
-                    { "hasMore", hasMore }
-                };
-
-            if ( !connectionRequests.Any() )
-            {
-                return RockToolResult.NoData()
-                    .WithMetadata( meta );
-            }
-
-            return RockToolResult.Success( connectionRequests )
-                .WithMetadata( meta );
-        }
-
-        #endregion
-
-        #region Helper Methods
-
-        private List<int> AuthorizedConnectionOpportunityIds()
-        {
-            var authorizedConnectionOpportunityIds = new List<int>();
-
-            var connectionOpportunities = new ConnectionOpportunityService( AgentRequestContext.RockContext ).Queryable().AsNoTracking();
-
-            foreach ( var opportunity in connectionOpportunities )
-            {
-                if ( opportunity.IsAuthorized( Rock.Security.Authorization.VIEW, AgentRequestContext.RockRequestContext.CurrentPerson ) )
-                {
-                    authorizedConnectionOpportunityIds.Add( opportunity.Id );
-                }
-            }
-
-            return authorizedConnectionOpportunityIds;
+            return helper.GetPaginatedResult( resultPage, historyPage );
         }
 
         #endregion

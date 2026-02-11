@@ -1,0 +1,139 @@
+﻿ <!--
+//<copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//</copyright>
+-->
+<Window x:Class="RockDbBackupManager.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RockDbBackupManager"
+        mc:Ignorable="d"
+        Title="RockDB Backup Manager" Height="435" Width="965" MinHeight="565" MinWidth="965">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <Menu.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <DockPanel HorizontalAlignment="Stretch"/>
+                </ItemsPanelTemplate>
+            </Menu.ItemsPanel>
+            <MenuItem Header="File">
+                <MenuItem Header="Exit" Click="ExitMenuItem_Click"/>
+            </MenuItem>
+            <MenuItem Header="Reset">
+                <MenuItem Header="Reset 'Restore Database' Warning" Click="RestoreWarningMenuItem_Click"/>
+            </MenuItem>
+            <MenuItem Header="Help" HorizontalAlignment="Right">
+                <MenuItem Header="Usage" Click="AboutMenuUsageItem_Click"/>
+                <MenuItem Header="About" Click="AboutMenuHelpItem_Click"/>
+            </MenuItem>
+        </Menu>
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Shared Controls -->
+            <Grid Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Database:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <ComboBox  Grid.Column="1" x:Name="DatabaseNameComboBox" Width="150" Margin="0,0,20,0" SelectionChanged="DatabaseNameComboBox_SelectionChanged"/>
+                <TextBlock  Grid.Column="2" Text="Backup Directory:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <TextBox Grid.Column="3" x:Name="BackupDirectoryTextBox" IsReadOnly="True" Text="C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\Backup\"/>
+                <Button Grid.Column="4"
+                    Width="24"
+                    Height="24"
+                    Margin="10,0,0,0"
+                    Padding="0"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    BorderBrush="Transparent"
+                    Focusable="False"
+                    ToolTip="The directory where your database backups will be stored. You can change this to any folder, however, the SQL Server service account (typically NT SERVICE\MSSQLSERVER) must have write access to this directory, or backups will fail.">
+                    <TextBlock Text="?" FontWeight="Bold" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                </Button>
+                <Button Grid.Column="5" x:Name="BrowseBackupDirectoryButton" Content="Browse..." Width="80" Margin="10,0,0,0" Click="BrowseBackupDirectoryButton_Click"/>
+            </Grid>
+
+            <!-- Backup Controls (Top) -->
+            <GroupBox Header="Backup" Grid.Row="1" Grid.Column="0" Margin="0,0,0,10">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                        <TextBlock Text="Additional Tags:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBox x:Name="AdditionalTagsTextBox" Width="200"/>
+                        <Button Width="24" Height="24" Margin="10,0,0,0" Padding="0"
+                            Background="Transparent" BorderThickness="0" BorderBrush="Transparent" Focusable="False"
+                            ToolTip="Comma separated tags to add to the backup filename. Only alphanumeric characters are used. For example, 'clean, migrated' will result in a filename like yyyy_MM_dd_HHmmss_dbName_clean_migrated.bak. Note: All non-alphanumeric characters, including whitespace, are removed.">
+                            <TextBlock Text="?" FontWeight="Bold" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Button>
+                    </StackPanel>
+                    <Button x:Name="BackupButton" Content="Backup Selected Database" Width="150" Margin="0,10,0,10" Click="BackupButton_Click"/>
+                </StackPanel>
+            </GroupBox>
+
+            <!-- Restore Controls (Bottom) -->
+            <GroupBox Header="Restore" Grid.Row="2" Grid.Column="0" Margin="0,0,0,0">
+                <Grid Margin="20,0,20,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Available Backups:" Margin="0,0,0,5"/>
+                    <ListBox Grid.Row="1" x:Name="BackupFilesListBox"
+                         MinHeight="120"
+                         VerticalAlignment="Stretch"
+                         Height="Auto"
+                         SelectionChanged="BackupFilesListBox_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <Button Content="X" Width="24" Height="24" Padding="0" Margin="0,0,0,0"
+                                        Background="Transparent" BorderThickness="0" BorderBrush="Transparent"
+                                        Focusable="False" Click="DeleteBackupButton_Click"
+                                        Tag="{Binding}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,0">
+                        <TextBox x:Name="RestoreFileTextBox" Width="200" IsReadOnly="True"/>
+                        <Button x:Name="BrowseRestoreFileButton" Content="Browse..." Width="80" Margin="10,0,0,0" Click="BrowseRestoreFileButton_Click"/>
+                    </StackPanel>
+                    <Button Grid.Row="4" x:Name="RestoreButton" Content="Restore Database" Width="150" Margin="0,10,0,0" Click="RestoreButton_Click"/>
+                </Grid>
+            </GroupBox>
+
+            <!-- Status -->
+            <TextBlock x:Name="StatusTextBlock" Grid.Row="3" Grid.Column="0" Margin="0,20,0,0" Foreground="DarkGreen" HorizontalAlignment="Stretch" TextWrapping="Wrap"/>
+        </Grid>
+    </DockPanel>
+</Window>

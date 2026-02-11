@@ -37,10 +37,19 @@ namespace RockWeb.Blocks.Store
     [DisplayName( "Promo List Lava" )]
     [Category( "Store" )]
     [Description( "Lists Rock Store promotions using a Lava template." )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the promotions", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Assets/Lava/Store/PromoList.lava' %}", "", 2 )]
+
+    [CodeEditorField( "Lava Template",
+        Description = "Lava template to use to display the promotions",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = @"{% include '~/Assets/Lava/Store/PromoList.lava' %}",
+        Order = 2 )]
+
     [CustomRadioListField("Promo Type", "Display the promos of the specified type", "All, Top Paid, Top Free, Featured", true, "Normal", "", 0)]
     [TextField("Category Id", "Filters promos for a specific category id. If none is provided it will show promos with no category.", false, "","", 1)]
     [LinkedPage( "Detail Page", "Page reference to use for the detail page.", false, "", "", 4 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "B8F1B648-8C5F-4529-8F8B-B564C2A19061" )]
     public partial class PromoListLava : Rock.Web.UI.RockBlock
     {

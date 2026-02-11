@@ -65,6 +65,10 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> that was checked in to.
         /// </value>
+        /// <remarks>
+        /// [IgnoreCanDelete] since there is a ON DELETE SET NULL cascade on this
+        /// </remarks>
+        [IgnoreCanDelete]
         [DataMember]
         [FieldType( Rock.SystemGuid.FieldType.CAMPUS )]
         public int? CampusId { get; set; }
@@ -475,7 +479,7 @@ namespace Rock.Model
         {
             this.HasRequired( a => a.Occurrence ).WithMany( o => o.Attendees ).HasForeignKey( p => p.OccurrenceId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete( true );
-            this.HasOptional( a => a.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( true );
+            this.HasOptional( a => a.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.Device ).WithMany().HasForeignKey( d => d.DeviceId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.SearchTypeValue ).WithMany().HasForeignKey( v => v.SearchTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.SearchResultGroup ).WithMany().HasForeignKey( p => p.SearchResultGroupId ).WillCascadeOnDelete( false );

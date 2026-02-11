@@ -24,6 +24,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
+    import Cron from "@Obsidian/Libs/cronstrue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
@@ -94,8 +95,8 @@
             return valueBuilder.build();
         }
 
-        if (props.modelValue.cronDescription) {
-            valueBuilder.addTextValue("Cron Description", props.modelValue.cronDescription);
+        if (props.modelValue.cronExpression) {
+            valueBuilder.addTextValue("Cron Description", getCronDescription(props.modelValue.cronExpression));
         }
 
         return valueBuilder.build();
@@ -113,6 +114,20 @@
     // #endregion
 
     // #region Functions
+
+    function getCronDescription(value: string): string {
+        if (value) {
+            try {
+                return Cron.toString(value);
+            }
+            catch {
+                return "Invalid Cron Expression";
+            }
+        }
+        else {
+            return "";
+        }
+    }
 
     // #endregion
 

@@ -553,11 +553,11 @@ namespace RockWeb.Blocks.Groups
                 {
                     if ( _groupMemberIdsThatDoNotMeetGroupRequirements.Contains( groupMember.Id ) )
                     {
-                        sbNameHtml.Append( " <i class='ti ti-alert-triangle text-danger'></i>" );
+                        sbNameHtml.Append( " <i class='ti ti-alert-triangle text-danger' title='does not meet requirements'></i>" );
                     }
                     else if ( _groupMemberIdsThatHaveGroupRequirementWarnings.Contains( groupMember.Id ) )
                     {
-                        sbNameHtml.Append( " <i class='ti ti-alert-triangle text-warning'></i>" );
+                        sbNameHtml.Append( " <i class='ti ti-alert-triangle text-warning' title='has requirement warnings'></i>" );
                     }
                 }
 

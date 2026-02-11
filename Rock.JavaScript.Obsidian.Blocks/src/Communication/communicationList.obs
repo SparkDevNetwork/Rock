@@ -209,19 +209,20 @@
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { useStore } from "@Obsidian/PageState";
+    import { formatAspDate } from "@Obsidian/Utility/aspDateFormat";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock, usePersonPreferences } from "@Obsidian/Utility/block";
     import { asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
     import { alert } from "@Obsidian/Utility/dialogs";
+    import { Enumerable } from "@Obsidian/Utility/linq";
     import { asFormattedString, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
-    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { debounceAsync } from "@Obsidian/Utility/util";
     import { CommunicationListOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationList/communicationListOptionsBag";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
-    import { formatAspDate } from "@Obsidian/Utility/aspDateFormat";
-    import { CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { debounceAsync } from "@Obsidian/Utility/util";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const config = useConfigurationValues<ListBlockBox<CommunicationListOptionsBag>>();
@@ -650,9 +651,25 @@
      * @param key The key of the row that was selected.
      */
     function onSelectItem(key: string): void {
+        const row = findRow(key);
+        if (row?.isLegacyCommunication) {
+            if (config.navigationUrls?.[NavigationUrlKey.LegacyDetailPage]) {
+                window.location.href = config.navigationUrls[NavigationUrlKey.LegacyDetailPage].replace("((Key))", key);
+                return;
+            }
+        }
+
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+            return;
         }
+    }
+
+    function findRow(key: string): Row | undefined {
+        return Enumerable.from(gridData?.rows ?? [])
+            .cast<Row>((r): r is Row => true)
+            .where(r => r.idKey === key)
+            .firstOrDefault();
     }
 
     /**

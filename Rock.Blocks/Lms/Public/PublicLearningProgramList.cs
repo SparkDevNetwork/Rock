@@ -62,7 +62,6 @@ namespace Rock.Blocks.Lms
         Key = AttributeKey.LavaTemplate,
         Description = "The lava template to use to render the page. Merge fields include: Programs (a list of ProgramInfos), ShowCompletionStatus, BannerImageGuid, PageTitle, PageDescription, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = false,
         DefaultValue = AttributeDefault.ProgramListTemplate,

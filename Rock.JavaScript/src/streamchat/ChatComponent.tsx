@@ -40,7 +40,8 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
     selectedChannelId,
     jumpToMessageId,
     chatViewStyle,
-    reactions
+    reactions,
+    directMessageAllowed
 }) => {
 
     const [, setChannelListKey] = useState(0);
@@ -95,7 +96,8 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
                 directMessageChannelTypeKey,
                 chatViewStyle: chatViewStyle || ChatViewStyle.Conversational,
                 refreshChat,
-                reactions: reactions || []
+                reactions: reactions || [],
+                directMessageAllowed: directMessageAllowed
             }}>
             <ChannelListControllerContext.Provider value={{ refresh: refreshChannelList }}>
                 <ChannelMemberListProvider>

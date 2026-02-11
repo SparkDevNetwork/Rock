@@ -232,7 +232,7 @@ export function useGetBootstrapColumnClass(columnsInContainer: number): (columns
  */
 function useGetBootstrapColumns(columnsInContainer: number): (columns: number) => number {
     return (columns: number): number => {
-        if ((columns != 3 && columns != 6) || columnsInContainer === 4) {
+        if ((columns !== 3 && columns !== 6) || columnsInContainer === 4) {
             return columns;
         }
 

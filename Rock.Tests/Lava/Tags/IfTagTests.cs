@@ -135,7 +135,7 @@ namespace Rock.Tests.Lava.Tags
 ";
             var output = "3...2...1...go!";
 
-            TestHelper.AssertTemplateOutput( output, input, ignoreWhitespace:true );
+            TestHelper.AssertTemplateOutput( output, input, ignoreWhitespace: true );
         }
 
         [TestMethod]
@@ -153,7 +153,7 @@ Slow
 ";
             var expectedOutput = @"Moderate";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, ignoreWhitespace:true );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, ignoreWhitespace: true );
         }
 
         [TestMethod]
@@ -164,7 +164,7 @@ Slow
 {% if isTruthy %}true{% else %}false{% endif %}
 ";
 
-            TestHelper.AssertTemplateOutput( "true", input, ignoreWhitespace:true );
+            TestHelper.AssertTemplateOutput( "true", input, ignoreWhitespace: true );
         }
 
         [TestMethod]
@@ -175,7 +175,7 @@ Slow
 {% if isTruthy %}true{% else %}false{% endif %}
 ";
 
-            TestHelper.AssertTemplateOutput( "true", input, ignoreWhitespace:true );
+            TestHelper.AssertTemplateOutput( "true", input, ignoreWhitespace: true );
         }
     }
 }

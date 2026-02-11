@@ -143,25 +143,29 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            int? pageId = PageParameter( "Page" ).AsIntegerOrNull();
+            var page = new PageService( new RockContext() )
+                .Get( PageParameter( "Page" ), !PageCache.Layout.Site.DisablePredictableIds );
+
+            var isCreatingNewPage = PageParameter( "Page" ) == "0";
+            var pageIdHasValue = page != null;
 
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Page ) ).Id;
 
             // only show if there was a Page parameter specified
-            this.Visible = pageId.HasValue;
+            this.Visible = pageIdHasValue || isCreatingNewPage;
 
-            if ( pageId.HasValue )
+            if ( pageIdHasValue || isCreatingNewPage )
             {
                 // hide the current page in the page picker to prevent setting this page's parent page to itself (or one of it's child pages)
-                ppParentPage.HiddenPageIds = new int[] { pageId.Value };
+                ppParentPage.HiddenPageIds = new int[] { page?.Id ?? 0 };
 
-                var pageCache = PageCache.Get( pageId.Value );
+                var pageCache = PageCache.Get( page?.Id ?? 0 );
 
                 DialogPage dialogPage = this.Page as DialogPage;
                 if ( dialogPage != null )
                 {
                     dialogPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
-                    dialogPage.SubTitle = string.Format( "Id: {0}", pageId );
+                    dialogPage.SubTitle = $"Id: {page?.IdKey ?? "0"}";
                 }
 
                 ddlMenuWhen.BindToEnum<DisplayInNavWhen>();
@@ -231,7 +235,8 @@ namespace RockWeb.Blocks.Administration
                     vlCountriesRestrictedFromAccessing.CustomValues = locationCountries;
                     vlCountriesRestrictedFromAccessing.Visible = true;
                 }
-                else {
+                else
+                {
                     vlCountriesRestrictedFromAccessing.Visible = false;
                 }
             }
@@ -339,10 +344,20 @@ namespace RockWeb.Blocks.Administration
         {
             if ( !Page.IsPostBack )
             {
-                string pageIdParam = PageParameter( "Page" );
-                if ( !string.IsNullOrEmpty( pageIdParam ) )
+                if ( !string.IsNullOrEmpty( PageParameter( "Page" ) ) )
                 {
-                    ShowDetail( pageIdParam.AsInteger(), PageParameter( "ParentPageId" ).AsIntegerOrNull() );
+
+                    var pageService = new PageService( new RockContext() );
+
+                    var page = pageService
+                        .GetQueryableByKey( PageParameter( "Page" ), !PageCache.Layout.Site.DisablePredictableIds )
+                        .FirstOrDefault();
+
+                    var parentPage = pageService
+                        .GetQueryableByKey( PageParameter( "ParentPageId" ), !PageCache.Layout.Site.DisablePredictableIds )
+                        .FirstOrDefault();
+
+                    ShowDetail( page?.Id ?? 0, parentPage?.Id );
                 }
                 else
                 {
@@ -355,7 +370,7 @@ namespace RockWeb.Blocks.Administration
                 {
                     // Load the Attribute Controls
                     var pageService = new PageService( new RockContext() );
-                    var page = pageService.Get( hfPageId.Value.AsInteger() );
+                    var page = pageService.Get( hfPageId.Value, !PageCache.Layout.Site.DisablePredictableIds );
                     if ( page == null )
                     {
                         page = new Rock.Model.Page();
@@ -439,7 +454,7 @@ namespace RockWeb.Blocks.Administration
                 }
             }
 
-            hfPageId.Value = page.Id.ToString();
+            hfPageId.Value = page.IdKey;
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -668,12 +683,22 @@ namespace RockWeb.Blocks.Administration
             var routeService = new PageRouteService( rockContext );
             var contextService = new PageContextService( rockContext );
 
-            int pageId = hfPageId.Value.AsInteger();
+            int? pageId = pageService
+                .Get( PageParameter( "Page" ), !PageCache.Layout.Site.DisablePredictableIds )?.Id;
 
-            var page = pageService.Get( pageId );
-            if ( page == null )
+            var isCreatingNewPage = PageParameter( "Page" ) == "0";
+
+            if ( !pageId.HasValue && !isCreatingNewPage )
             {
-                page = new Rock.Model.Page();
+                throw new Exception( "Page ID is not valid" );
+            }
+
+            var page = isCreatingNewPage
+                ? new Rock.Model.Page()
+                : pageService.Get( pageId.Value );
+
+            if ( isCreatingNewPage )
+            {
                 pageService.Add( page );
             }
 
@@ -694,7 +719,7 @@ namespace RockWeb.Blocks.Administration
                 // validate for any duplicate routes
                 var duplicateRouteQry = routeService.Queryable()
                     .Where( r =>
-                        r.PageId != pageId &&
+                        r.PageId != pageId.Value &&
                         editorRoutes.Contains( r.Route ) );
                 if ( siteId.HasValue )
                 {
@@ -916,7 +941,7 @@ namespace RockWeb.Blocks.Administration
                 string script = "if (typeof window.parent.Rock.controls.modal.close === 'function') window.parent.Rock.controls.modal.close('PAGE_UPDATED');";
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
 
-                hfPageId.Value = page.Id.ToString();
+                hfPageId.Value = page.IdKey;
             }
         }
 
@@ -1073,7 +1098,7 @@ namespace RockWeb.Blocks.Administration
         protected void btnEdit_Click( object sender, EventArgs e )
         {
             PageService service = new PageService( new RockContext() );
-            Rock.Model.Page page = service.Get( hfPageId.ValueAsInt() );
+            Rock.Model.Page page = service.Get( hfPageId.Value, !PageCache.Layout.Site.DisablePredictableIds );
             ShowEditDetails( page );
         }
 
@@ -1098,8 +1123,10 @@ namespace RockWeb.Blocks.Administration
             var pageService = new PageService( rockContext );
             var siteService = new SiteService( rockContext );
 
-            int pageId = hfPageId.Value.AsInteger();
-            var page = pageService.Get( pageId );
+            var page = pageService
+                .GetQueryableByKey( hfPageId.Value, !PageCache.Layout.Site.DisablePredictableIds )
+                .FirstOrDefault();
+
             if ( page != null )
             {
                 string errorMessage = string.Empty;
@@ -1130,7 +1157,9 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
 
-                int? parentPageId = page.ParentPageId;
+                var parentPage = pageService
+                    .GetQueryableByKey( page.ParentPage.IdKey, !PageCache.Layout.Site.DisablePredictableIds )
+                    .FirstOrDefault();
 
                 pageService.Delete( page );
 
@@ -1149,16 +1178,16 @@ namespace RockWeb.Blocks.Administration
 
                 // reload page, selecting the deleted page's parent
                 var qryParams = new Dictionary<string, string>();
-                if ( parentPageId.HasValue )
+                if ( parentPage != null )
                 {
-                    qryParams["Page"] = parentPageId.ToString();
+                    qryParams["Page"] = parentPage.IdKey;
 
                     string expandedIds = this.Request.Params["ExpandedIds"];
                     if ( expandedIds != null )
                     {
                         // remove the current pageId param to avoid extra treeview flash
-                        var expandedIdList = expandedIds.SplitDelimitedValues().AsIntegerList();
-                        expandedIdList.Remove( parentPageId.Value );
+                        var expandedIdList = expandedIds.SplitDelimitedValues().ToList();
+                        expandedIdList.Remove( parentPage.IdKey );
 
                         qryParams["ExpandedIds"] = expandedIdList.AsDelimited( "," );
                     }
@@ -1180,31 +1209,35 @@ namespace RockWeb.Blocks.Administration
                 // Let's not navigate away from the error message shall we??
                 masterPage_OnSave( sender, e );
 
+                var pageService = new PageService( new RockContext() );
+
                 // reload page using the current page
-                var pageId = hfPageId.Value.AsIntegerOrNull();
+                var page = pageService
+                    .GetQueryableByKey( hfPageId.Value, !PageCache.Layout.Site.DisablePredictableIds )
+                    .FirstOrDefault();
+
                 var qryParams = new Dictionary<string, string>();
-                if ( pageId.HasValue )
+                if ( page != null )
                 {
-                    qryParams["Page"] = pageId.ToString();
+                    qryParams["Page"] = page.IdKey;
 
                     string expandedIds = this.Request.Params["ExpandedIds"];
                     if ( expandedIds != null )
                     {
                         // remove the current pageId param to avoid extra treeview flash
-                        var expandedIdList = expandedIds.SplitDelimitedValues().AsIntegerList();
-                        expandedIdList.Remove( pageId.Value );
+                        var expandedIdList = expandedIds.SplitDelimitedValues().ToList();
+                        expandedIdList.Remove( page.IdKey );
 
                         // add the parentPageId to the expanded ids
                         var parentPageParam = this.Request.Params["ParentPageId"];
-                        if ( !string.IsNullOrEmpty( parentPageParam ) )
+                        var parentPage = pageService
+                            .GetQueryableByKey( hfPageId.Value, !PageCache.Layout.Site.DisablePredictableIds )
+                            .FirstOrDefault();
+                        if ( parentPage != null )
                         {
-                            var parentPageId = parentPageParam.AsIntegerOrNull();
-                            if ( parentPageId.HasValue )
+                            if ( !expandedIdList.Contains( parentPage.IdKey ) )
                             {
-                                if ( !expandedIdList.Contains( parentPageId.Value ) )
-                                {
-                                    expandedIdList.Add( parentPageId.Value );
-                                }
+                                expandedIdList.Add( parentPage.IdKey );
                             }
                         }
 
@@ -1227,22 +1260,24 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            if ( hfPageId.Value.Equals( "0" ) )
+            if ( hfPageId.Value.Equals( "0" ) || string.IsNullOrEmpty( hfPageId.Value ) )
             {
-                // Cancelling on Add, and we know the parentPageId, so we are probably in treeview mode, so navigate to the current page
-                int? parentPageId = PageParameter( "ParentPageId" ).AsIntegerOrNull();
+                // Cancelling on Add, and we know the parentPage, so we are probably in treeview mode, so navigate to the current page
+                var parentPage = new PageService( new RockContext() )
+                    .GetQueryableByKey( PageParameter( "ParentPageId" ), !PageCache.Layout.Site.DisablePredictableIds )
+                    .FirstOrDefault();
                 var qryParams = new Dictionary<string, string>();
-                qryParams["Page"] = parentPageId.ToString();
+                qryParams["Page"] = parentPage.IdKey;
 
                 string expandedIds = this.Request.Params["ExpandedIds"];
                 if ( expandedIds.IsNotNullOrWhiteSpace() )
                 {
                     // remove the current pageId param to avoid extra treeview flash
-                    var expandedIdList = expandedIds.SplitDelimitedValues().AsIntegerList();
+                    var expandedIdList = expandedIds.SplitDelimitedValues().ToList();
 
-                    if ( parentPageId.HasValue )
+                    if ( parentPage != null )
                     {
-                        expandedIdList.Remove( parentPageId.Value );
+                        expandedIdList.Remove( parentPage.IdKey );
                     }
 
                     qryParams["ExpandedIds"] = expandedIdList.AsDelimited( "," );
@@ -1254,7 +1289,7 @@ namespace RockWeb.Blocks.Administration
             {
                 // Cancelling on Edit.  Return to Details
                 PageService service = new PageService( new RockContext() );
-                Rock.Model.Page page = service.Get( hfPageId.ValueAsInt() );
+                Rock.Model.Page page = service.Get( hfPageId.Value );
                 ShowReadonlyDetails( page );
             }
         }
@@ -1278,9 +1313,12 @@ namespace RockWeb.Blocks.Administration
         {
             RockContext rockContext = new RockContext();
             PageService pageService = new PageService( rockContext );
-            int sourcePageId = hfPageId.ValueAsInt();
 
-            Guid? copiedPageGuid = pageService.CopyPage( sourcePageId, cbCopyPageIncludeChildPages.Checked, this.CurrentPersonAliasId );
+            var sourcePage = new PageService( new RockContext() )
+                .GetQueryableByKey( hfPageId.Value, !PageCache.Layout.Site.DisablePredictableIds )
+                .FirstOrDefault();
+
+            Guid? copiedPageGuid = pageService.CopyPage( sourcePage.Id, cbCopyPageIncludeChildPages.Checked, this.CurrentPersonAliasId );
             if ( copiedPageGuid.HasValue )
             {
                 var copiedPage = PageCache.Get( copiedPageGuid.Value );
@@ -1289,25 +1327,28 @@ namespace RockWeb.Blocks.Administration
                 var qryParams = new Dictionary<string, string>();
                 if ( copiedPage != null )
                 {
-                    qryParams["Page"] = copiedPage.Id.ToString();
+                    qryParams["Page"] = copiedPage.IdKey;
 
                     string expandedIds = this.Request.Params["ExpandedIds"];
                     if ( expandedIds != null )
                     {
                         // remove the current pageId param to avoid extra treeview flash
-                        var expandedIdList = expandedIds.SplitDelimitedValues().AsIntegerList();
-                        expandedIdList.Remove( copiedPage.Id );
+                        var expandedIdList = expandedIds.SplitDelimitedValues().ToList();
+                        expandedIdList.Remove( copiedPage.IdKey );
 
                         // add the parentPageId to the expanded ids
                         var parentPageParam = this.Request.Params["ParentPageId"];
                         if ( !string.IsNullOrEmpty( parentPageParam ) )
                         {
-                            var parentPageId = parentPageParam.AsIntegerOrNull();
-                            if ( parentPageId.HasValue )
+                            var parentPage = new PageService( new RockContext() )
+                                .GetQueryableByKey( parentPageParam, !PageCache.Layout.Site.DisablePredictableIds )
+                                .FirstOrDefault();
+
+                            if ( parentPage != null )
                             {
-                                if ( !expandedIdList.Contains( parentPageId.Value ) )
+                                if ( !expandedIdList.Contains( parentPage.IdKey ) )
                                 {
-                                    expandedIdList.Add( parentPageId.Value );
+                                    expandedIdList.Add( parentPage.IdKey );
                                 }
                             }
                         }

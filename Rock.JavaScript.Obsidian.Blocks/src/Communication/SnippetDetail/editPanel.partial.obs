@@ -37,7 +37,7 @@
                                   v-if="!isShared"
                                   label="Owner"
                                   :help="ownerHelpText"
-                                  rules="required"/>
+                                  rules="required" />
                 </div>
             </div>
             <div class="col-md-3">
@@ -68,11 +68,10 @@
                 <div v-if="!isLava">
                     <TextBox v-model="content"
                              textMode="multiline"
-                             :rows="10"/>
+                             :rows="10" />
                 </div>
                 <div v-else="isLava">
                     <CodeEditor v-model="content"
-                                theme="rock"
                                 mode="text"
                                 :editorHeight="200" />
                 </div>

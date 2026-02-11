@@ -5,6 +5,7 @@
                     formGroupClasses="category-picker"
                     iconCssClass="ti ti-filter"
                     :provider="itemProvider"
+                    autoExpand
                     :multiple="multiple"
                     disableFolderSelection />
 </template>

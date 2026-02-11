@@ -90,20 +90,36 @@ namespace Rock.Rest
                     return BadRequest( errorMessage );
                 }
 
-                if ( !CheckAuthorized( Security.Authorization.EDIT, entity, out var authorizationResult ) )
-                {
-                    return authorizationResult;
-                }
-
-                if ( CheckIsSystem( entity, out var isSystemResult ) )
-                {
-                    return isSystemResult;
-                }
-
                 using ( var rockContext = new RockContext() )
                 {
                     var service = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
-                    service.Add( entity );
+
+                    // If the entity is not a dynamic proxy entity, then make it
+                    // one so that lazy loading will work during the security
+                    // check.
+                    if ( !entity.IsDynamicProxyEntity() )
+                    {
+                        var clone = rockContext.Set<TEntity>().Create();
+
+                        service.Add( clone );
+                        service.SetValues( entity, clone );
+
+                        entity = clone;
+                    }
+                    else
+                    {
+                        service.Add( entity );
+                    }
+
+                    if ( !CheckAuthorized( Security.Authorization.EDIT, entity, out var authorizationResult ) )
+                    {
+                        return authorizationResult;
+                    }
+
+                    if ( CheckIsSystem( entity, out var isSystemResult ) )
+                    {
+                        return isSystemResult;
+                    }
 
                     rockContext.SaveChanges();
                 }

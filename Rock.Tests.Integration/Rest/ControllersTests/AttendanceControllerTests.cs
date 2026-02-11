@@ -3,7 +3,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Rest.Controllers;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Rest.ControllersTests
@@ -24,7 +23,7 @@ namespace Rock.Tests.Integration.Rest.ControllersTests
             var attendancesController = new AttendancesController();
 
             var attendance = attendancesController.AddAttendance( groupId, locationId, scheduleId, occurrenceDate, personId, personAliasId );
-            Assert.That.IsNotNull( attendance );
+            Assert.IsNotNull( attendance );
         }
 
         [TestMethod]
@@ -51,7 +50,7 @@ namespace Rock.Tests.Integration.Rest.ControllersTests
             }
             finally
             {
-                Assert.That.IsTrue( exception.Response.StatusCode == System.Net.HttpStatusCode.BadRequest );
+                Assert.AreEqual( System.Net.HttpStatusCode.BadRequest, exception.Response.StatusCode );
             }
         }
     }

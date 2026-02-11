@@ -795,7 +795,7 @@
                                 break;
                             }
                         }
-                        if (!selected) {
+                        if (!selected && !childNodes[i].isSelectionDisabled) {
                             allChildNodesAlreadySelected = false;
                             break;
                         }
@@ -819,7 +819,9 @@
                     // If all the child nodes were not already selected, select all them
                     if (!allChildNodesAlreadySelected) {
                         for (var i = 0; i < childNodes.length; i++) {
-                            newSelectedNodes.push(childNodes[i]);
+                            if (!childNodes[i].isSelectionDisabled) {
+                                newSelectedNodes.push(childNodes[i]);
+                            }
                         }
                     }
 

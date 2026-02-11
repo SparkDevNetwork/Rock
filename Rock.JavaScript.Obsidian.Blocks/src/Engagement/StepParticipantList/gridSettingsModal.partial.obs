@@ -31,7 +31,6 @@
     import { GridSettingsOptions } from "./types.partial";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { deepEqual } from "@Obsidian/Utility/util";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { calculateSlidingDateRange, RangeType, SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
     import { TimeUnitType } from "@Obsidian/Enums/Controls/timeUnitType";
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";

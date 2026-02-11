@@ -1,9 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Tests.Shared;
 using Rock.Utility;
 
 namespace Rock.Tests.Utility
@@ -20,7 +18,7 @@ namespace Rock.Tests.Utility
             var actualCallCount = 0;
             var result = methodRetry.Execute( () => actualCallCount++, ( callCount ) => false );
 
-            Assert.That.AreEqual( expectedCallCount, actualCallCount );
+            Assert.AreEqual( expectedCallCount, actualCallCount );
         }
 
         [TestMethod]
@@ -32,7 +30,7 @@ namespace Rock.Tests.Utility
             var actualCallCount = 0;
             var result = methodRetry.Execute( () => actualCallCount++, ( callCount ) => true );
 
-            Assert.That.AreEqual( expectedCallCount, actualCallCount );
+            Assert.AreEqual( expectedCallCount, actualCallCount );
         }
 
         [TestMethod]
@@ -44,7 +42,7 @@ namespace Rock.Tests.Utility
             var actualCallCount = 0;
             var result = methodRetry.Execute( () => actualCallCount++, ( callCount ) => callCount == ( expectedCallCount - 1 ) );
 
-            Assert.That.AreEqual( expectedCallCount, actualCallCount );
+            Assert.AreEqual( expectedCallCount, actualCallCount );
         }
 
         [TestMethod]
@@ -59,10 +57,13 @@ namespace Rock.Tests.Utility
             var result = methodRetry.Execute( () => actualCallCount++, _ => false );
             stopWatch.Stop();
 
-            var minExpectedRuntime = expectedWait * expectedCallCount;
+            // Shave off a little time from the expected 4,000ms to account
+            // for slight clock drift or other timing issues that might cause
+            // the async to finish in just under 4,000ms.
+            var minExpectedRuntime = 3900;
             if ( minExpectedRuntime > stopWatch.ElapsedMilliseconds )
             {
-                Assert.That.Fail( $"Execute did not take long enough to run. Expected a minimum of {minExpectedRuntime}ms, but only for {stopWatch.ElapsedMilliseconds}ms" );
+                Assert.Fail( $"Execute did not take long enough to run. Expected a minimum of {minExpectedRuntime}ms, but only for {stopWatch.ElapsedMilliseconds}ms" );
             }
 
             // Testing the maximum expected runtime is more complex and random
@@ -80,7 +81,7 @@ namespace Rock.Tests.Utility
             var actualCallCount = 0;
             var result = await methodRetry.ExecuteAsync( async () => await Task.FromResult( actualCallCount++ ), ( callCount ) => false ).ConfigureAwait( false );
 
-            Assert.That.AreEqual( expectedCallCount, actualCallCount );
+            Assert.AreEqual( expectedCallCount, actualCallCount );
         }
 
         [TestMethod]
@@ -92,7 +93,7 @@ namespace Rock.Tests.Utility
             var actualCallCount = 0;
             var result = await methodRetry.ExecuteAsync( () => Task.FromResult( actualCallCount++ ), ( callCount ) => true );
 
-            Assert.That.AreEqual( expectedCallCount, actualCallCount );
+            Assert.AreEqual( expectedCallCount, actualCallCount );
         }
 
         [TestMethod]
@@ -104,7 +105,7 @@ namespace Rock.Tests.Utility
             var actualCallCount = 0;
             var result = await methodRetry.ExecuteAsync<int>( () => Task.FromResult( actualCallCount++ ), ( callCount ) => callCount == ( expectedCallCount - 1 ) );
 
-            Assert.That.AreEqual( expectedCallCount, actualCallCount );
+            Assert.AreEqual( expectedCallCount, actualCallCount );
         }
 
         [TestMethod]
@@ -119,10 +120,13 @@ namespace Rock.Tests.Utility
             var result = await methodRetry.ExecuteAsync( () => Task.FromResult( actualCallCount++ ), _ => false );
             stopWatch.Stop();
 
-            var minExpectedRuntime = expectedWait * expectedCallCount;
+            // Shave off a little time from the expected 4,000ms to account
+            // for slight clock drift or other timing issues that might cause
+            // the async to finish in just under 4,000ms.
+            var minExpectedRuntime = 3900;
             if ( minExpectedRuntime > stopWatch.ElapsedMilliseconds )
             {
-                Assert.That.Fail( $"Execute did not take long enough to run. Expected a minimum of {minExpectedRuntime}ms, but only for {stopWatch.ElapsedMilliseconds}ms" );
+                Assert.Fail( $"Execute did not take long enough to run. Expected a minimum of {minExpectedRuntime}ms, but only for {stopWatch.ElapsedMilliseconds}ms" );
             }
 
             // Testing the maximum expected runtime is more complex and random

@@ -91,6 +91,7 @@ namespace Rock.Update
             {
                 RockInstanceId = SystemSettings.GetRockInstanceId(),
                 Version = version,
+                InstallDateTime = SystemSettings.GetRockInstallationDateTime(),
                 IpAddress = ipAddress,
                 PublicUrl = publicUrl,
                 OrganizationName = organizationName,

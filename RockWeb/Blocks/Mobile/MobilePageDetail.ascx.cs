@@ -118,8 +118,6 @@ namespace RockWeb.Blocks.Mobile
                 int pageId = PageParameter( PageParameterKeys.Page ).AsInteger();
                 int siteId = PageParameter( PageParameterKeys.SiteId ).AsInteger();
 
-                BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ) );
-
                 // Load page picker
                 if ( siteId != 0 )
                 {
@@ -621,7 +619,7 @@ namespace RockWeb.Blocks.Mobile
             {
                 fields.Add( new KeyValuePair<string, string>( "Page URL", additionalSettings.WebPageUrl ) );
             }
-            fields.Add( new KeyValuePair<string, string>( "Display In Navigation", page.DisplayInNavWhen.GetDescription() ?? page.DisplayInNavWhen.ToStringSafe() ) );
+            fields.Add( new KeyValuePair<string, string>( "Display In Navigation", page.DisplayInNavWhen.GetDisplayName() ) );
 
             if ( page.IconBinaryFileId.HasValue )
             {

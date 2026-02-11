@@ -24,6 +24,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Controls;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
@@ -273,6 +274,9 @@ namespace Rock.Blocks.Cms
             // Load all the Short Links into memory.
             var items = queryable.ToList();
 
+            // Load attribute values for the grid-selected attributes.
+            GridAttributeLoader.LoadFor( items, a => a.PageShortLink, _gridAttributes.Value, rockContext );
+
             // Get all SiteIds referenced by the short links
             var siteIds = items
                 .Select( x => x.PageShortLink.SiteId )
@@ -300,8 +304,13 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override GridBuilder<PageShortLinkWithClicks> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<PageShortLinkWithClicks>
+            {
+                LavaObject = row => row.PageShortLink
+            };
+
             return new GridBuilder<PageShortLinkWithClicks>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.PageShortLink.IdKey )
                 .AddTextField( "url", a => a.PageShortLink.Url )
                 .AddTextField( "site", a => a.PageShortLink.Site?.Name )

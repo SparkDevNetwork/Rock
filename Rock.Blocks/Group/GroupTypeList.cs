@@ -41,14 +41,15 @@ namespace Rock.Blocks.Group
     [Category( "Group" )]
     [Description( "Displays a list of group types." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the group type details.",
         Key = AttributeKey.DetailPage )]
 
     [Rock.SystemGuid.EntityTypeGuid( "562ed873-bd66-4287-ae9f-d7c43fecd7a8" )]
-    [Rock.SystemGuid.BlockTypeGuid( "8885f47d-9262-48b0-b969-9bee003370eb" )]
+    // Was [Rock.SystemGuid.BlockTypeGuid( "8885f47d-9262-48b0-b969-9bee003370eb" )]
+    [Rock.SystemGuid.BlockTypeGuid( "80306BB1-FE4B-436F-AC7A-691CF0BC0F5E" )]
     [CustomizedGrid]
     public class GroupTypeList : RockListBlockType<GroupTypeWithGroupCounts>
     {
@@ -72,6 +73,15 @@ namespace Rock.Blocks.Group
         }
 
         #endregion Keys
+
+        #region Fields
+
+        /// <summary>
+        /// The GroupType attributes configured to show on the grid.
+        /// </summary>
+        private readonly Lazy<List<AttributeCache>> _gridAttributes = new System.Lazy<List<AttributeCache>>( BuildGridAttributes );
+
+        #endregion
 
         #region Methods
 
@@ -145,17 +155,49 @@ namespace Rock.Blocks.Group
         }
 
         /// <inheritdoc/>
+        protected override List<GroupTypeWithGroupCounts> GetListItems( IQueryable<GroupTypeWithGroupCounts> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+
+            GridAttributeLoader.LoadFor( items, g => g.GroupType, _gridAttributes.Value, rockContext );
+
+            return items;
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<GroupTypeWithGroupCounts> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<GroupTypeWithGroupCounts>
+            {
+                LavaObject = row => row.GroupType
+            };
+
             return new GridBuilder<GroupTypeWithGroupCounts>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.GroupType.IdKey )
                 .AddTextField( "purpose", a => a.GroupTypePurpose )
                 .AddField( "groupsCount", a => a.GroupsCount )
                 .AddTextField( "name", a => a.GroupType.Name )
                 .AddField( "showInNavigation", a => a.GroupType.ShowInNavigation )
                 .AddField( "isSystem", a => a.GroupType.IsSystem )
-                .AddField( "isSecurityDisabled", a => !a.GroupType.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
+                .AddField( "isSecurityDisabled", a => !a.GroupType.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddAttributeFieldsFrom( a => a.GroupType, _gridAttributes.Value );
+        }
+
+        /// <summary>
+        /// Builds the list of grid attributes that should be included on the Grid.
+        /// </summary>
+        /// <returns>A list of <see cref="AttributeCache"/> objects.</returns>
+        private static List<AttributeCache> BuildGridAttributes()
+        {
+            var entityTypeId = EntityTypeCache.Get<GroupType>( false )?.Id;
+
+            if ( entityTypeId.HasValue )
+            {
+                return AttributeCache.GetOrderedGridAttributes( entityTypeId.Value, string.Empty, string.Empty );
+            }
+
+            return new List<AttributeCache>();
         }
 
         #endregion

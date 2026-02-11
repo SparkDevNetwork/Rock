@@ -53,7 +53,14 @@ namespace Rock.Model
         {
             get
             {
-                return this.ParentGroup != null ? this.ParentGroup : base.ParentAuthority;
+                if ( ParentGroupId.HasValue )
+                {
+                    return GroupCache.Get( ParentGroupId.Value );
+                }
+                else
+                {
+                    return base.ParentAuthority;
+                }
             }
         }
 
@@ -110,6 +117,7 @@ namespace Rock.Model
         ///     </para>
         /// </remarks>
         [RockInternal( "17.0" )]
+        [NotMapped]
         public bool IsOverridingGroupTypePeerNetworkConfiguration
         {
             get
@@ -171,6 +179,7 @@ namespace Rock.Model
         ///     </para>
         /// </remarks>
         [RockInternal( "17.0" )]
+		[NotMapped]
         public bool AreAnyRelationshipMultipliersCustomized
         {
             get

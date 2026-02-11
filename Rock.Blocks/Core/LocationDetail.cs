@@ -51,7 +51,6 @@ namespace Rock.Blocks.Core
     [CodeEditorField( "Map HTML",
         Description = "The HTML to use for displaying group location maps. Lava syntax is used to render data from the following data structure: points[type, latitude, longitude], polygons[type, polygon_wkt, google_encoded_polygon]",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 300,
         IsRequired = false,
         DefaultValue = @"{% if point or polygon %}
@@ -148,6 +147,14 @@ namespace Rock.Blocks.Core
         private bool ValidateLocation( Location location, out string errorMessage )
         {
             errorMessage = null;
+
+            // If the location IsValid is false, and the UI controls didn't report any errors, it is probably because
+            // the custom rules of location didn't pass. Make sure a message is displayed in the validation summary.
+            if ( !location.IsValid )
+            {
+                errorMessage = location.ValidationResults.Select( r => r.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                return false;
+            }
 
             return true;
         }
@@ -392,7 +399,18 @@ namespace Rock.Blocks.Core
                 () => entity.Name = box.Bag.Name );
 
             box.IfValidProperty( nameof( box.Bag.ParentLocation ),
-                () => entity.ParentLocationId = box.Bag.ParentLocation.GetEntityId<Location>( RockContext ) );
+                () =>
+                {
+                    var parentLocationId = box.Bag.ParentLocation.GetEntityId<Location>( RockContext );
+
+                    if ( entity.ParentLocationId != parentLocationId )
+                    {
+                        entity.ParentLocationId = parentLocationId;
+
+                        // Clear this navigation property so validation is performed on the new parent location instead of the old one.
+                        entity.ParentLocation = null;
+                    }
+                } );
 
             box.IfValidProperty( nameof( box.Bag.PrinterDevice ),
                 () => entity.PrinterDeviceId = box.Bag.PrinterDevice.GetEntityId<Device>( RockContext ) );

@@ -60,7 +60,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
         /// <summary>
         /// The Format filter should format a numeric input using a recognized .NET format string correctly.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1234567.89", "$1,234,567.89", "en-US" )]
         [DataRow( "1234567.89", "$123.456.789,00", "de-DE" )]
         public void FormatAsCurrency_ProducesValidNumber_AgainstClientCulture( string input, string expectedResult, string clientCulture )
@@ -75,7 +75,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
         /// <summary>
         /// The Format filter should format a numeric input using a recognized .NET format string correctly.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1234567.89", "$1,234,567.89", "en-US" )]
         [DataRow( "1234567.89", "$1,234,567.89", "de-DE" )]
         public void FormatAsCurrency_WithSetCulture_AsInvariant_UsingValidDotNetCustomFormatString_ProducesValidNumber_AgainstClientCulture( string input, string expectedResult, string clientCulture )
@@ -90,7 +90,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
         /// <summary>
         /// The Format filter should format a numeric input using a recognized .NET format string correctly.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "1234567.89", "$1,234,567.89", "en-US" )]
         [DataRow( "1234567.89", "$123.456.789,00", "de-DE" )]
         public void FormatAsCurrency_WithSetCulture_AsClient_UsingValidDotNetCustomFormatString_ProducesValidNumber_AgainstClientCulture( string input, string expectedResult, string clientCulture )

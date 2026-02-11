@@ -55,7 +55,6 @@ namespace RockWeb.Blocks.Security
         "Text Message Template",
         Description = "The template to use for the SMS message.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         DefaultValue = "Your {{ 'Global' | Attribute:'OrganizationName' }} verification code is {{ ConfirmationCode }}",
@@ -74,7 +73,6 @@ namespace RockWeb.Blocks.Security
         "Initial Instructions",
         Description = "The instructions to show on the initial screen.<span class='tip tip-lava'></span><span class='tip tip-html'></span>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
         DefaultValue = "Please enter your mobile phone number below. We’ll use this number for verification.",
         IsRequired = false,
@@ -85,7 +83,6 @@ namespace RockWeb.Blocks.Security
         "Verification Instructions",
         Description = "The instructions to show on the Verification screen.<span class='tip tip-lava'></span><span class='tip tip-html'></span>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
         DefaultValue = "Please enter the six digit confirmation code below.",
         IsRequired = false,
@@ -96,7 +93,6 @@ namespace RockWeb.Blocks.Security
         "Individual Selection Instructions",
         Description = "The instructions to show on the Individual Selection screen.<span class='tip tip-lava'></span><span class='tip tip-html'></span>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
         DefaultValue = "The phone number provided matches several individuals in our records. Please select yourself from the list.",
         IsRequired = false,
@@ -107,7 +103,6 @@ namespace RockWeb.Blocks.Security
         "Phone Number Not Found Message",
         Description = "The instructions to show when the phone number is not found in Rock after the phone number has been verified.<span class='tip tip-lava'></span><span class='tip tip-html'></span>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
         DefaultValue = "We did not find the phone number you provided in our records.",
         IsRequired = false,
@@ -242,6 +237,7 @@ namespace RockWeb.Blocks.Security
                     var errorList = new List<string>();
                     if ( smsMessage.Send( out errorList ) )
                     {
+                        hfPhoneNumberLookup.Value = phoneNumber;
                         IdentityVerificationId = identityVerification.Id;
                         ShowVerificationPage();
                     }
@@ -508,7 +504,6 @@ namespace RockWeb.Blocks.Security
                     if ( user != null )
                     {
                         var userName = user.UserName;
-                        UserLoginService.UpdateLastLogin( new UpdateLastLoginArgs { UserName = userName } );
 
                         /*
                             10/20/2023 - JMH
@@ -534,6 +529,26 @@ namespace RockWeb.Blocks.Security
                             isPersisted: false,
                             isImpersonated: false,
                             isTwoFactorAuthenticated );
+
+                        /*
+                            11/25/2025 - JPH
+
+                            Since we're sure the person was authenticated at this point, let's log a record to the
+                            HistoryLogin table for auditing purposes. We won't tie it to a UserLoginId since this is
+                            a non-standard login process, and we want to properly capture the context of the login.
+
+                            Reason: Login History Accuracy
+                         */
+
+                        new HistoryLogin
+                        {
+                            UserName = hfPhoneNumberLookup.Value,
+                            PersonAliasId = person.PrimaryAliasId,
+                            SourceSiteId = PageCache?.SiteId,
+                            WasLoginSuccessful = true
+                        }
+                        .WithContext( "Phone Number Lookup" )
+                        .SaveAfterDelay();
                     }
                     else
                     {

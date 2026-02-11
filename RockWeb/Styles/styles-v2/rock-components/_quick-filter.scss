@@ -1,0 +1,61 @@
+﻿
+// Quick Filter - Used in Grid and Panel Headers (Rock Component)
+
+// =============================================================
+// Table of Content
+//  + Base Style
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+
+.quick-filter {
+  height: 100%;
+  display: flex;
+}
+
+.quick-filter > .quick-filter-search {
+  width: 0;
+  overflow: hidden;
+  transition: width 0.3s ease;
+  display: inline-flex;
+  align-items: stretch;
+}
+
+.quick-filter.quick-filter-active > .quick-filter-search {
+  width: 240px;
+}
+
+.quick-filter.quick-filter-active > .quick-filter-search > form {
+  width: 100%;
+}
+
+// Low specificity so it can be overridden with :focused styles, Etc.
+.quick-filter .form-control {
+  border: 0;
+}
+
+.quick-filter > .quick-filter-search > .control-wrapper,
+.quick-filter > .quick-filter-search > form > .control-wrapper,
+.quick-filter > .quick-filter-search > form > .control-wrapper > div,
+.quick-filter > .quick-filter-search > form > .control-wrapper > div > .form-control {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+
+.quick-filter > .quick-filter-search > .control-wrapper > div {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.quick-filter > .quick-filter-search > .control-wrapper .form-control {
+  height: 100%;
+  width: 100%;
+  border-radius: 0;
+}
+
+// ====================== END BASE STYLE ======================

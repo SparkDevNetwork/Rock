@@ -299,7 +299,7 @@ namespace Rock.Blocks.Engagement
             {
                 var structureName = ( new StreakTypeService( rockContext ) ).GetStructureName( entity.StructureType, entity.StructureEntityId );
                 structureTypeString = string.Format( "{0}{1}",
-                        entity.StructureType.Value.GetDescription() ?? "",
+                        entity.StructureType.Value.GetDisplayName(),
                         string.Format( "{0}{1}",
                             structureName.IsNullOrWhiteSpace() ? string.Empty : " - ",
                             structureName

@@ -87,7 +87,7 @@
 		<ul>
 			{% for member in Group.Members %}
 
-			{% if member.GroupRole.IsLeader %}
+			{% if member.GroupRole.IsLeader and member.GroupMemberStatus == 'Active' %}
 			<li>
 			{{ member.Person.FullName }} <small>({{ member.GroupRole.Name }})</small>
 			</li>

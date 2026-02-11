@@ -23,8 +23,10 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Web;
 using System.Web.UI.WebControls;
+
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Data.LinqKit;
 using Rock.Model;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -785,6 +787,65 @@ namespace Rock
                 var filterExpressionVisitor = new ParameterExpressionVisitor( parameterExpression, parameterName );
 
                 return filterExpressionVisitor.Visit( expression );
+        }
+
+        #endregion
+
+        #region Expandable Extensions
+
+        /// <summary>
+        /// Modifies the queryable so that it can make use of expandable methods.
+        /// These are special methods that get replaced by expressions at runtime
+        /// so that they can be properly translated to SQL.
+        /// </summary>
+        /// <typeparam name="T">The data type of the queryable.</typeparam>
+        /// <param name="query">The query object.</param>
+        /// <returns>A new queryable object that will expand certain methods into expressions before they are translated to SQL.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static IQueryable<T> AsExpandable<T>( this IQueryable<T> query )
+        {
+            if ( query == null )
+            {
+                throw new ArgumentNullException( nameof( query ) );
+            }
+
+            if ( query is ExpandableQuery<T> )
+            {
+                return query;
+            }
+
+            return ExpandableQueryFactory<T>.Create( query, e => e );
+        }
+
+        /// <summary>
+        /// Helper class that creates ExpandableQuery instances.
+        /// </summary>
+        /// <typeparam name="T">The data type of the queryable.</typeparam>
+        private static class ExpandableQueryFactory<T>
+        {
+            public static readonly Func<IQueryable<T>, Func<Expression, Expression>, ExpandableQuery<T>> Create;
+
+            static ExpandableQueryFactory()
+            {
+                if ( !typeof( T ).GetTypeInfo().IsClass )
+                {
+                    Create = ( query, optimizer ) => new ExpandableQuery<T>( query, optimizer );
+                    return;
+                }
+
+                var queryType = typeof( IQueryable<T> );
+                var optimizerType = typeof( Func<Expression, Expression> );
+
+                var ctorInfo = typeof( ExpandableQueryOfClass<> ).MakeGenericType( typeof( T ) ).GetConstructor( new[] { queryType, optimizerType } );
+
+                var queryParam = Expression.Parameter( queryType );
+                var optimizerParam = Expression.Parameter( optimizerType );
+
+                var newExpr = Expression.New( ctorInfo, queryParam, optimizerParam );
+                var createExpr = Expression.Lambda<Func<IQueryable<T>, Func<Expression, Expression>, ExpandableQuery<T>>>( newExpr, queryParam, optimizerParam );
+
+                Create = createExpr.Compile();
+            }
         }
 
         #endregion

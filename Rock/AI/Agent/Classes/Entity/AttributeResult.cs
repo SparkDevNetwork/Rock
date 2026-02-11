@@ -18,28 +18,33 @@
 namespace Rock.AI.Agent.Classes.Entity
 {
     /// <summary>
-    /// POCO result for attributes.
+    /// Represents a single attribute to the agent.
     /// </summary>
-    internal class AttributeResult : EntityResultBase
+    internal class AttributeResult
     {
         /// <summary>
-        /// The attribute name.
+        /// The name of the attribute.
         /// </summary>
         public string Name { get; set; }
 
         /// <summary>
-        /// The attribute value.
-        /// </summary>
-        public string Value { get; set; }
-
-        /// <summary>
-        /// The attribute key.
+        /// The key that identifies this specific attribute in requests and responses.
         /// </summary>
         public string Key { get; set; }
 
         /// <summary>
-        /// The attribute category.
+        /// Describes the format of the values for this attribute.
         /// </summary>
-        public string Category { get; set; }
+        public string ValueFormat { get; set; }
+
+        /// <summary>
+        /// Indicates if this attribute is required.
+        /// </summary>
+        public bool IsRequired { get; set; }
+
+        /// <summary>
+        /// Indicates that this attribute's values are read-only and can't be changed.
+        /// </summary>
+        public bool IsReadOnly { get; set; }
     }
 }

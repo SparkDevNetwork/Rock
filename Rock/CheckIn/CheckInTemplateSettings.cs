@@ -70,5 +70,11 @@ namespace Rock.CheckIn
         /// displayed when a person's proximity is detected.
         /// </summary>
         public string ProximityAttendanceNotificationTemplate { get; set; }
+
+        /// <summary>
+        /// Controls how the family address field displayed when adding or
+        /// editing a family during registration.
+        /// </summary>
+        public RequirementLevel DisplayAddressOnFamilies { get; set; } = RequirementLevel.Optional;
     }
 }

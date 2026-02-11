@@ -15,8 +15,9 @@
 // </copyright>
 //
 
-using Rock.ViewModels.Utility;
 using System.Collections.Generic;
+
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Cms.LavaShortcodeDetail
 {
@@ -32,5 +33,13 @@ namespace Rock.ViewModels.Blocks.Cms.LavaShortcodeDetail
         /// The tag types.
         /// </value>
         public List<ListItemBag> TagTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the shortcode scope behaviors.
+        /// </summary>
+        /// <value>
+        /// The shortcode scope behaviors.
+        /// </value>
+        public List<ListItemBag> ShortcodeScopeBehaviors { get; set; }
     }
 }

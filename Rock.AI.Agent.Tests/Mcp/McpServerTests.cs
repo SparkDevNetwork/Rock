@@ -237,7 +237,7 @@ namespace Rock.AI.Agent.Tests.Mcp
 
             var result = ( ListToolsResult ) rpcResult.Result;
 
-            Assert.AreEqual( 1, result.Tools.Count );
+            Assert.HasCount( 1, result.Tools );
             Assert.AreEqual( "IndividualFunctions__TestTool", result.Tools[0].Name );
         }
 
@@ -308,7 +308,7 @@ namespace Rock.AI.Agent.Tests.Mcp
 
             var result = ( CallToolResult ) rpcResult.Result;
 
-            Assert.AreEqual( 1, result.Content.Count );
+            Assert.HasCount( 1, result.Content );
             Assert.AreEqual( "text", result.Content[0].Type );
             Assert.AreEqual( "String Tool", result.Content[0].Text );
         }
@@ -329,7 +329,7 @@ namespace Rock.AI.Agent.Tests.Mcp
 
             var result = ( CallToolResult ) rpcResult.Result;
 
-            Assert.AreEqual( 1, result.Content.Count );
+            Assert.HasCount( 1, result.Content );
 
             var element = JsonSerializer.Deserialize<JsonElement>( result.Content[0].Text );
 

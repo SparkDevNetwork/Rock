@@ -54,7 +54,7 @@
             valueBuilder.addTextValue("Workflow Name", props.modelValue.workflowName);
         }
 
-        const triggerType = props.modelValue.workflowTriggerTypes?.find(t => t.value == props.modelValue?.workflowTriggerType);
+        const triggerType = props.modelValue.workflowTriggerTypes?.find(t => t.value === props.modelValue?.workflowTriggerType);
         if (triggerType?.text) {
             valueBuilder.addTextValue("Trigger Type", triggerType?.text);
         }

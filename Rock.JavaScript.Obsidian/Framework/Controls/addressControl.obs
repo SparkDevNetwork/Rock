@@ -46,11 +46,10 @@
     import { AddressControlGetConfigurationOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/addressControlGetConfigurationOptionsBag";
     import { AddressControlConfigurationBag } from "@Obsidian/ViewModels/Rest/Controls/addressControlConfigurationBag";
     import { RequirementLevel } from "@Obsidian/Enums/Controls/requirementLevel";
-    import { post } from "@Obsidian/Utility/http";
+    import { useHttp } from "@Obsidian/Utility/http";
     import Loading from "./loading.obs";
     import type { ValidationRule } from "@Obsidian/Types/validationRules";
     import { containsRequiredRule, rulesPropType } from "@Obsidian/ValidationRules";
-
 
     type FullAddress = Required<{
         [Property in keyof AddressControlBag]: NonNullable<AddressControlBag[Property]>
@@ -115,6 +114,8 @@
     const emit = defineEmits<{
         (e: "update:modelValue", value: AddressControlBag): void
     }>();
+
+    const http = useHttp();
 
     const internalValue = reactive<FullAddress>({
         city: props.modelValue.city ?? "",
@@ -219,22 +220,22 @@
         }
 
         if (isRequired.value || internalValue.street1) {
-            if (address1.rules == RequirementLevel.Required) {
+            if (address1.rules === RequirementLevel.Required) {
                 rules.street1 = "required";
             }
-            if (address2.rules == RequirementLevel.Required) {
+            if (address2.rules === RequirementLevel.Required) {
                 rules.street2 = "required";
             }
-            if (city.rules == RequirementLevel.Required) {
+            if (city.rules === RequirementLevel.Required) {
                 rules.city = "required";
             }
-            if (county.rules == RequirementLevel.Required) {
+            if (county.rules === RequirementLevel.Required) {
                 rules.locality = "required";
             }
-            if (state.rules == RequirementLevel.Required) {
+            if (state.rules === RequirementLevel.Required) {
                 rules.state = "required";
             }
-            if (zip.rules == RequirementLevel.Required) {
+            if (zip.rules === RequirementLevel.Required) {
                 rules.postalCode = "required";
             }
         }
@@ -258,7 +259,7 @@
         };
 
         // TODO: At some point, we should find some way to cache this
-        const result = await post<AddressControlConfigurationBag>("/api/v2/Controls/AddressControlGetConfiguration", undefined, options);
+        const result = await http.post<AddressControlConfigurationBag>("/api/v2/Controls/AddressControlGetConfiguration", undefined, options);
 
         if (result.isSuccess && result.data) {
             const data = result.data;
@@ -267,28 +268,36 @@
             isInternational.value = data.showCountrySelection;
 
             // Label is static
-            address1.isVisible = data.addressLine1Requirement != RequirementLevel.Unavailable;
+            address1.isVisible = data.addressLine1Requirement !== RequirementLevel.Unavailable;
             address1.rules = data.addressLine1Requirement;
 
             // Address Line 2 is only shown if it's required or it's requested by the prop; Label is static
-            address2.isVisible = !(data.addressLine2Requirement == RequirementLevel.Unavailable || (!props.disableFrontEndValidation && !props.showAddressLine2 && data.addressLine2Requirement == RequirementLevel.Optional));
-            address2.rules = data.addressLine2Requirement;
+            const address2LocalityRequirement = (!props.disableFrontEndValidation && data.addressLine2Requirement === RequirementLevel.Optional && !props.showAddressLine2)
+                ? RequirementLevel.Unavailable
+                : data.addressLine2Requirement;
 
-            // County / Locality is only shown if it's required or it's requested by the prop
-            county.isVisible = !(data.localityRequirement == RequirementLevel.Unavailable || (!props.disableFrontEndValidation && props.showCounty && data.localityRequirement == RequirementLevel.Optional));
-            county.rules = data.localityRequirement;
+            address2.isVisible = !(address2LocalityRequirement === RequirementLevel.Unavailable);
+            address2.rules = address2LocalityRequirement;
+
+            // County / Locality is only shown if not unavailable or it's requested by the prop
+            const countyLocalityRequirement = (!props.disableFrontEndValidation && data.localityRequirement === RequirementLevel.Optional && !props.showCounty)
+                ? RequirementLevel.Unavailable
+                : data.localityRequirement;
+
+            county.isVisible = !(countyLocalityRequirement === RequirementLevel.Unavailable);
+            county.rules = countyLocalityRequirement;
             county.label = data.localityLabel ?? county.label;
 
-            city.isVisible = data.cityRequirement != RequirementLevel.Unavailable;
+            city.isVisible = data.cityRequirement !== RequirementLevel.Unavailable;
             city.rules = data.cityRequirement;
             city.label = data.cityLabel ?? city.label;
             city.autocomplete = county.isVisible ? "address-level3" : "address-level2";
 
-            state.isVisible = data.stateRequirement != RequirementLevel.Unavailable;
+            state.isVisible = data.stateRequirement !== RequirementLevel.Unavailable;
             state.rules = data.stateRequirement;
             state.label = data.stateLabel ?? state.label;
 
-            zip.isVisible = data.postalCodeRequirement != RequirementLevel.Unavailable;
+            zip.isVisible = data.postalCodeRequirement !== RequirementLevel.Unavailable;
             zip.rules = data.postalCodeRequirement;
             zip.label = data.postalCodeLabel ?? zip.label;
 
@@ -318,7 +327,7 @@
     }
 
     watch(() => internalValue.country, (currentVal, oldVal) => {
-        if (currentVal != oldVal) {
+        if (currentVal !== oldVal) {
             getConfiguration(currentVal);
         }
     }, { deep: true });

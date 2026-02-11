@@ -1,0 +1,140 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="d-flex flex-fill align-items-center">
+        <div class="attendee-avatar">
+            <div v-if="isFirstTime" class="attendee-first-time" title="First Time Attendee">
+                <i class="ti ti-star-filled"></i>
+            </div>
+            <div :style="avatarStyle" class="photo-icon photo-round flex-shrink-0 mr-spacing-md"></div>
+        </div>
+
+        <div class="flex-grow-1">
+            <div class="d-flex flex-column">
+                <p class="font-weight-semibold mb-spacing-none">{{ fullName }}</p>
+                <p v-if="detailText" class="text-muted font-size-sm mb-spacing-tiny">{{ detailText }}</p>
+            </div>
+            <div >
+                <span v-for="badge in badges" :title="badge.text ?? undefined" class="attendee-badge">
+                    <i :class="badge.iconCssClass" :style="getBadgeStyle(badge)"></i>
+                </span>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { RosterAttendeeBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/Roster/rosterAttendeeBag";
+    import { RosterAttendeeBadgeBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/Roster/rosterAttendeeBadgeBag";
+    import { RosterAttendanceRecord } from "../types.partial";
+    import { getSingleAttendanceRecords } from "../utilities.partial";
+
+    const props = defineProps(standardCellProps);
+
+    // #region Computed Values
+
+    /** Contains the URL for the avatar. */
+    const photoUrl = computed((): string => {
+        if (!props.column.field) {
+            return "";
+        }
+
+        const value = props.row[props.column.field] as RosterAttendeeBag;
+
+        if (!value || typeof value !== "object") {
+            return "";
+        }
+
+        return value.photoUrl ?? "";
+    });
+
+    /** The styles to apply to the avatar image. */
+    const avatarStyle = computed((): Record<string, string> => {
+        const styles: Record<string, string> = {
+            backgroundImage: `url('${photoUrl.value}')`,
+            width: "51px",
+            height: "51px",
+        };
+
+        return styles;
+    });
+
+    const isFirstTime = computed((): boolean => {
+        const value = props.row as RosterAttendanceRecord;
+
+        if (!value) {
+            return false;
+        }
+
+        const records = getSingleAttendanceRecords(value);
+
+        return records.some(a => a.isFirstTime);
+    });
+
+    /** Contains the full name in the correct format. */
+    const fullName = computed((): string => {
+        if (!props.column.field) {
+            return "";
+        }
+
+        const value = props.row[props.column.field] as RosterAttendeeBag;
+
+        if (!value || typeof value !== "object") {
+            return "";
+        }
+
+        return value.fullName ?? "";
+    });
+
+    /** Contains the detail text to display */
+    const detailText = computed((): string => {
+        if (!props.column.field) {
+            return "";
+        }
+
+        const value = props.row[props.column.field] as RosterAttendeeBag;
+
+        if (!value || typeof value !== "object") {
+            return "";
+        }
+
+        return value.parents ?? "";
+    });
+
+    /** Contains the detail text to display */
+    const badges = computed((): RosterAttendeeBadgeBag[] => {
+        if (!props.column.field) {
+            return [];
+        }
+
+        const value = props.row[props.column.field] as RosterAttendeeBag;
+
+        if (!value || typeof value !== "object") {
+            return [];
+        }
+
+        return value.badges ?? [];
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the style attribute value for the badge.
+     *
+     * @param badge The badge to be displayed.
+     */
+    function getBadgeStyle(badge: RosterAttendeeBadgeBag): Record<string, string> {
+        const styles: Record<string, string> = {};
+
+        if (badge.color) {
+            styles.color = badge.color;
+        }
+
+        return styles;
+    }
+
+    // #endregion
+</script>

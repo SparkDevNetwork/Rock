@@ -278,6 +278,21 @@ namespace RockWeb.Blocks.Core
                 category = categoryService.Get( categoryId );
             }
 
+            // Check security on parent category to verify they are authorized to use it.
+            var parentCategoryId = cpParentCategory.SelectedValueAsInt();
+            if ( parentCategoryId.HasValue )
+            {
+                var parentCategory = CategoryCache.Get( parentCategoryId.Value );
+                if ( ! ( parentCategory.IsAuthorized( Authorization.EDIT, CurrentPerson ) || parentCategory.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) ) )
+                {
+                    var parentCategoryValidator = cpParentCategory.RequiredFieldValidator;
+                    parentCategoryValidator.IsValid = false;
+                    cvCategory.IsValid = false;
+                    parentCategoryValidator.ErrorMessage = "You are not authorized to create or edit for the selected parent category.";
+                    return;
+                }
+            }
+
             category.Name = tbName.Text;
             category.Description = tbDescription.Text;
             category.ParentCategoryId = cpParentCategory.SelectedValueAsInt();

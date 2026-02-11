@@ -67,7 +67,7 @@ export const EditComponent = defineComponent({
             return Number(this.configurationValues[ConfigurationValueKey.RepeatColumns]) ?? 1;
         },
         enhance(): boolean {
-            return this.configurationValues[ConfigurationValueKey.EnhancedForLongLists] == "True";
+            return this.configurationValues[ConfigurationValueKey.EnhancedForLongLists] === "True";
         }
     },
 
@@ -151,7 +151,7 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes in properties that require new configuration
         // properties to be retrieved from the server.
         watch([enhanceForLongLists, repeatColumns], () => {
-            if(repeatColumns.value === null) {
+            if (repeatColumns.value === null) {
                 // The value of the repeatColumns field happens to be null when it is being updated by the individual in the remote device.
                 // Updating the configuration now might interfere with the update being made in the remote device.
                 return;

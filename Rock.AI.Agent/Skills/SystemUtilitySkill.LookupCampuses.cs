@@ -71,11 +71,11 @@ namespace Rock.AI.Agent.Skills
                             ScheduleType = s.ScheduleTypeValue.Value,
                         } )
                         .ToList(),
-                    Attributes = c.AttributeValues
+                    AttributeValues = c.AttributeValues
                         .Where( a => a.Value.AttributeIsPublic == true || isInternal == true )
-                        .Select( a => new AttributeResult
+                        .Select( a => new AttributeValueResult
                         {
-                            Id = a.Value.AttributeId,
+                            AttributeId = a.Value.AttributeId,
                             Key = a.Key,
                             Value = a.Value.ValueFormatted
                         } )

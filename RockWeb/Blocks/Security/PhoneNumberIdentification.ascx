@@ -7,6 +7,8 @@
                 <Rock:NotificationBox ID="nbConfigurationError" runat="server" NotificationBoxType="Danger" Text="This block is not yet configured for use." Visible="false" />
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Danger" Visible="false" />
 
+                <asp:HiddenField ID="hfPhoneNumberLookup" runat="server" />
+
                 <asp:Panel ID="pnlPhoneNumberEntry" runat="server">
                     <asp:ValidationSummary ID="valValidation"
                         runat="server"

@@ -11,7 +11,7 @@
         <slot name="prepend" />
 
         <div v-if="badgeText" class="displaycard-badge">
-            <Badge badgeType="success">{{ badgeText }}</Badge>
+            <Badge :badgeType="badgeType">{{ badgeText }}</Badge>
         </div>
 
         <div class="displaycard-heading">
@@ -29,6 +29,14 @@
             </div>
         </div>
 
+        <div v-if="$slots.middleSection" class="displaycard-content">
+            <slot name="middleSection" />
+        </div>
+
+        <div v-if="$slots.rightMiddleSection" class="displaycard-content">
+            <slot name="rightMiddleSection" />
+        </div>
+
         <div v-if="asideIconCssClass || aside" class="displaycard-aside">
             <i v-if="asideIconCssClass" :class="`${asideIconCssClass}`"></i>
             <small v-if="aside">{{ aside }}</small>
@@ -41,6 +49,7 @@
                         <RockButton v-if="action.iconCssClass"
                                     isSquare btnSize="sm"
                                     :btnType="action.type"
+                                    :title="action.title"
                                     :tooltip="action.title"
                                     :disabled="action.disabled"
                                     @click.stop="action.handler">
@@ -49,6 +58,7 @@
 
                         <RockButton v-else btnSize="sm"
                                     :btnType="action.type"
+                                    :title="action.title"
                                     :tooltip="action.title"
                                     :disabled="action.disabled"
                                     @click.stop="action.handler">
@@ -76,6 +86,7 @@
     import HighlightLabel from "./highlightLabel.obs";
     import RockButton from "./rockButton.obs";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
 
     const highlightLabelTypes = ["default", "primary", "success", "info", "warning", "danger", "type", "campus", "custom"] as const;
     type HighlightLabelType = (typeof highlightLabelTypes)[number];
@@ -94,6 +105,12 @@
         badgeText: {
             type: String as PropType<string | null | undefined>,
             required: false
+        },
+
+        badgeType: {
+            type: String as PropType<BadgeType>,
+            required: false,
+            default: "success" as const
         },
 
         iconCssClass: {

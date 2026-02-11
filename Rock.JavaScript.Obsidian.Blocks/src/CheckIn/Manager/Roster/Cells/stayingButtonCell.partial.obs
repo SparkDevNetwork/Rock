@@ -1,0 +1,24 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockButton btnType="default"
+                autoDisable
+                @click.stop="rosterContext.onAttendanceStayingClick(record)"
+                title="Staying">
+        <i class="ti ti-user-down"></i>
+    </RockButton>
+</template>
+
+<script setup lang="ts">
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { computed } from "vue";
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { useRosterContext } from "../utilities.partial";
+    import { RosterAttendanceRecord } from "../types.partial";
+
+    const props = defineProps(standardCellProps);
+    const rosterContext = useRosterContext();
+
+    const record = computed((): RosterAttendanceRecord => {
+        return props.row as RosterAttendanceRecord;
+    });
+</script>

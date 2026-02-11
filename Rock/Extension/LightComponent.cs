@@ -23,7 +23,7 @@ namespace Rock.Extension
     /// This is here for future use in case we want to add common methods or
     /// properties to all light components.
     /// </remarks>
-    internal class LightComponent
+    public class LightComponent
     {
     }
 }

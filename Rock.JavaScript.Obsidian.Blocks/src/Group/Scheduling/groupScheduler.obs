@@ -665,7 +665,9 @@
     }
 
     /**
-     * Observes this group scheduler's descendent schedule elements' sizes.
+     * Observes this group scheduler's "js-schedule-column" elements' sizes so
+     * we can adjust the heights of their parent "js-schedule-columns" and
+     * "js-occurrence-date" elements accordingly.
      */
     function observeScheduleSizes(): void {
         if (!window.ResizeObserver || !snapContainerElement.value) {
@@ -673,53 +675,108 @@
         }
 
         if (schedulesResizeObserver) {
-            // Stop observing any previous schedule elements.
+            // Stop observing any previous "js-schedule-column" elements.
             schedulesResizeObserver.disconnect();
         }
         else {
             schedulesResizeObserver = new ResizeObserver((_: ResizeObserverEntry[]) => {
+                setEqualScheduleColumnsHeights();
                 setEqualOccurrenceDateHeights();
             });
         }
 
-        // Start observing any current schedule elements.
+        // Start observing any current "js-schedule-column" elements.
         snapContainerElement.value.querySelectorAll(".js-schedule-column").forEach((schedule: Element) => {
             schedulesResizeObserver?.observe(schedule);
         });
     }
 
     /**
-     * Sets this group scheduler's descendent occurrence date elements to have a minimum height equal to
-     * their tallest sibling occurrence date element.
+     * Sets this group scheduler's "js-schedule-columns" elements to have a minimum
+     * height equal to their tallest sibling "js-schedule-columns" element.
+     */
+    function setEqualScheduleColumnsHeights(): void {
+        if (!snapContainerElement.value) {
+            return;
+        }
+
+        const scheduleColumnsElems = snapContainerElement.value.querySelectorAll<HTMLElement>(".js-schedule-columns");
+
+        // Start by setting all "js-schedule-columns" elements back to "auto"
+        // minimum height. This will reclaim any vertical space that is no
+        // longer needed (if an individual was removed).
+        scheduleColumnsElems.forEach((scheduleColumnsElem: HTMLElement) => {
+            scheduleColumnsElem.style.minHeight = "auto";
+        });
+
+        // Synchronize heights, but wait until the next tick to allow the above
+        // "auto" minimum heights to take effect first. We want this to happen
+        // for both mobile and non-mobile widths, since equal "js-schedule-columns"
+        // element heights are needed for consistent "sticky" header behavior.
+        nextTick(() => {
+            let maxHeight = 0;
+
+            // Loop through all "js-schedule-columns" elements to find the tallest one.
+            scheduleColumnsElems.forEach((scheduleColumnsElem: HTMLElement) => {
+                if (maxHeight < scheduleColumnsElem.offsetHeight) {
+                    maxHeight = scheduleColumnsElem.offsetHeight;
+                }
+            });
+
+            // Loop through all "js-schedule-columns" elements again to set each
+            // minimum height to match their tallest sibling.
+            scheduleColumnsElems.forEach((scheduleColumnsElem: HTMLElement) => {
+                scheduleColumnsElem.style.minHeight = `${maxHeight}px`;
+            });
+        });
+    }
+
+    /**
+     * Sets this group scheduler's "js-occurrence-date" elements to have a minimum
+     * height equal to their tallest sibling "js-occurrence-date" element.
      */
     function setEqualOccurrenceDateHeights(): void {
         if (!snapContainerElement.value) {
             return;
         }
 
-        const occurrenceDates = snapContainerElement.value.querySelectorAll<HTMLElement>(".js-occurrence-date");
+        const occurrenceDateElems = snapContainerElement.value.querySelectorAll<HTMLElement>(".js-occurrence-date");
 
-        // Start by setting all occurrence dates back to "auto" minimum height. This will do two things:
-        //  1. Reclaim any vertical space that is no longer needed (if an individual was removed).
-        //  2. Set up the UI for mobile widths (as we won't synchronize heights in that case).
-        occurrenceDates.forEach((occurrenceDate: HTMLElement) => {
-            occurrenceDate.style.minHeight = "auto";
+        // Start by setting all "js-occurrence-date" elements back to "auto"
+        // minimum height. This will reclaim any vertical space that is no
+        // longer needed (if an individual was removed).
+        occurrenceDateElems.forEach((occurrenceDateElem: HTMLElement) => {
+            occurrenceDateElem.style.minHeight = "auto";
         });
 
-        // For non-mobile widths, synchronize heights.
+        // Synchronize heights, but wait until the next tick to allow the above
+        // "auto" minimum heights to take effect first. We want this to happen
+        // for both mobile and non-mobile widths, since equal "js-occurrence-date"
+        // element heights are needed for consistent "sticky" header behavior.
         nextTick(() => {
             let maxHeight = 0;
 
-            // Loop through all occurrence dates to find the tallest one.
-            occurrenceDates.forEach((occurrenceDate: HTMLElement) => {
-                if (maxHeight < occurrenceDate.offsetHeight) {
-                    maxHeight = occurrenceDate.offsetHeight;
+            // Loop through all "js-occurrence-date" elements to find the tallest
+            // one. We'll base each height on the combined height of all of its
+            // child elements, as the non-static positioning of its child
+            // elements can cause the reported offsetHeight of the
+            // "js-occurrence-date" element itself to be inaccurate.
+            occurrenceDateElems.forEach((occurrenceDateElem: HTMLElement) => {
+                var childrenHeight = 0;
+
+                Array.from(occurrenceDateElem.children).forEach(child => {
+                    childrenHeight += (child as HTMLElement).offsetHeight;
+                });
+
+                if (maxHeight < childrenHeight) {
+                    maxHeight = childrenHeight;
                 }
             });
 
-            // Loop through all occurrence dates again to set each minimum height to match their tallest sibling.
-            occurrenceDates.forEach((occurrenceDate: HTMLElement) => {
-                occurrenceDate.style.minHeight = `${maxHeight}px`;
+            // Loop through all "js-occurrence-date" elements again to set each
+            // minimum height to match their tallest sibling.
+            occurrenceDateElems.forEach((occurrenceDateElem: HTMLElement) => {
+                occurrenceDateElem.style.minHeight = `${maxHeight}px`;
             });
         });
     }
@@ -733,9 +790,9 @@
      */
     function scrollToSchedule(currentDateIndex: number, currentScheduleIndex: number, direction: ScrollDirection): void {
         let targetSchedules = scheduleComponentsByOccurrenceDate.value[currentDateIndex];
-        let targetScheduleIndex = direction == ScrollDirection.Previous ? currentScheduleIndex - 1 : currentScheduleIndex + 1;
+        let targetScheduleIndex = direction === ScrollDirection.Previous ? currentScheduleIndex - 1 : currentScheduleIndex + 1;
 
-        if (direction == ScrollDirection.Previous) {
+        if (direction === ScrollDirection.Previous) {
             if (targetScheduleIndex < 0) {
                 // The first schedule of a given occurrence date is currently within view.
                 if (occurrenceDateCount.value > 1) {
@@ -757,7 +814,7 @@
                 }
             }
         }
-        else if (direction == ScrollDirection.Next) {
+        else if (direction === ScrollDirection.Next) {
             if (!targetSchedules) {
                 return;
             }

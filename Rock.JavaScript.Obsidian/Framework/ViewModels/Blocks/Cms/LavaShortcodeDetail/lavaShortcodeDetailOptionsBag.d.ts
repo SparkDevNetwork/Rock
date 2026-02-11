@@ -24,6 +24,9 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type LavaShortcodeDetailOptionsBag = {
+    /** Gets or sets the shortcode scope behaviors. */
+    shortcodeScopeBehaviors?: ListItemBag[] | null;
+
     /** Gets or sets the tag types. */
     tagTypes?: ListItemBag[] | null;
 };

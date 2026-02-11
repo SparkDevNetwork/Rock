@@ -262,10 +262,10 @@
         }
 
         const index = gridData.rows.findIndex(a => a.guid === result.data?.guid);
-        const matchesCurrentEntityType = result.data.entityTypeGuid == entityTypeGuid.value;
+        const matchesCurrentEntityType = result.data.entityTypeGuid === entityTypeGuid.value;
 
         const activeFilterVal = asBooleanOrNull(activeFilter.value);
-        const matchesCurrentActiveFilter = activeFilterVal === null || result.data.isActive == activeFilterVal;
+        const matchesCurrentActiveFilter = activeFilterVal === null || result.data.isActive === activeFilterVal;
 
         if (index !== -1) {
             if (matchesCurrentEntityType && matchesCurrentActiveFilter) {

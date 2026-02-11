@@ -3,7 +3,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Tests.Lava;
-using Rock.Tests.Shared;
 
 namespace Rock.Tests.Utility.ExtensionMethods
 {
@@ -38,7 +37,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             if ( expected == null )
             {
-                Assert.That.IsNull( result );
+                Assert.IsNull( result );
             }
             else
             {
@@ -48,7 +47,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
                     .Replace( "MM", now.Month.ToString( "D2" ) )
                     .Replace( "DD", now.Day.ToString( "D2" ) );
 
-                Assert.That.AreEqual( DateTime.Parse( expected ), result );
+                Assert.AreEqual( DateTime.Parse( expected ), result );
             }
         }
 
@@ -63,7 +62,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         public void AsDouble_InvalidBoolean()
         {
             var output = @"True".AsDoubleOrNull();
-            Assert.That.IsNull( output );
+            Assert.IsNull( output );
         }
 
         /// <summary>
@@ -73,7 +72,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         public void AsDouble_ValidInteger()
         {
             var output = @"3".AsDoubleOrNull();
-            Assert.That.AreEqual( 3.0d, output );
+            Assert.AreEqual( 3.0d, output );
         }
 
         /// <summary>
@@ -83,7 +82,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         public void AsDouble_ValidDouble()
         {
             var output = @"3.141592".AsDoubleOrNull();
-            Assert.That.AreEqual( ( double ) 3.141592d, output );
+            Assert.AreEqual( ( double ) 3.141592d, output );
         }
 
         /// <summary>
@@ -93,7 +92,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         public void AsDouble_ValidString()
         {
             var output = @"$3.14".AsDoubleOrNull();
-            Assert.That.AreEqual( ( double ) 3.14d, output );
+            Assert.AreEqual( ( double ) 3.14d, output );
         }
 
         /// <summary>
@@ -103,7 +102,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         public void AsDouble_InvalidString()
         {
             var output = @"a".AsDoubleOrNull();
-            Assert.That.IsNull( output );
+            Assert.IsNull( output );
         }
 
         /// <summary>
@@ -113,7 +112,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         public void AsDouble_EmptyString()
         {
             var output = @"".AsDoubleOrNull();
-            Assert.That.IsNull( output );
+            Assert.IsNull( output );
         }
 
         /// <summary>
@@ -123,7 +122,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         public void AsDouble_InvalidDecimalString()
         {
             var output = @"T3.V3".AsDoubleOrNull();
-            Assert.That.IsNull( output );
+            Assert.IsNull( output );
         }
 
         #endregion
@@ -134,7 +133,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         {
             string url = string.Empty;
             bool isValidUrl = url.IsValidUrl();
-            Assert.That.IsFalse( isValidUrl );
+            Assert.IsFalse( isValidUrl );
         }
 
         [TestMethod]
@@ -142,7 +141,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         {
             string url = @"http://www.rocksolidchurch.org";
             bool isValidUrl = url.IsValidUrl();
-            Assert.That.IsTrue( isValidUrl );
+            Assert.IsTrue( isValidUrl );
         }
 
         [TestMethod]
@@ -150,7 +149,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         {
             string url = @"http://www.rocksolidchurch.org";
             bool isValidUrl = url.IsValidUrl();
-            Assert.That.IsTrue( isValidUrl );
+            Assert.IsTrue( isValidUrl );
         }
 
         [TestMethod]
@@ -158,7 +157,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         {
             string url = @"http://www.rocksolidchurch";
             bool isValidUrl = url.IsValidUrl();
-            Assert.That.IsTrue( isValidUrl );
+            Assert.IsTrue( isValidUrl );
         }
 
         [TestMethod]
@@ -166,7 +165,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         {
             string url = @"www.rocksolidchurch.org";
             bool isValidUrl = url.IsValidUrl();
-            Assert.That.IsFalse( isValidUrl );
+            Assert.IsFalse( isValidUrl );
         }
 
         [TestMethod]
@@ -174,7 +173,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         {
             string url = @"https://www.rocksolidchurch.church";
             bool isValidUrl = url.IsValidUrl();
-            Assert.That.IsTrue( isValidUrl );
+            Assert.IsTrue( isValidUrl );
         }
 
         [TestMethod]
@@ -183,7 +182,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
             string url = @"http://localhost:6229/page/1";
             //bool isValidUrl = Uri.IsWellFormedUriString( url, UriKind.Absolute );
             bool isValidUrl = url.IsValidUrl();
-            Assert.That.IsTrue( isValidUrl );
+            Assert.IsTrue( isValidUrl );
         }
 
         #endregion
@@ -195,49 +194,49 @@ namespace Rock.Tests.Utility.ExtensionMethods
         {
             string test = null;
             var output = test.SubstringSafe( 1, 3 );
-            Assert.That.AreEqual( string.Empty, output );
+            Assert.AreEqual( string.Empty, output );
         }
 
         [TestMethod]
         public void SubstringSafe_NegativeIndex()
         {
             var output = "Test".SubstringSafe( -1, 3 );
-            Assert.That.AreEqual( string.Empty, output );
+            Assert.AreEqual( string.Empty, output );
         }
 
         [TestMethod]
         public void SubstringSafe_IndexTooLarge()
         {
             var output = "Test".SubstringSafe( 10, 3 );
-            Assert.That.AreEqual( string.Empty, output );
+            Assert.AreEqual( string.Empty, output );
         }
 
         [TestMethod]
         public void SubstringSafe_NegativeLength()
         {
             var output = "Test".SubstringSafe( 1, -3 );
-            Assert.That.AreEqual( string.Empty, output );
+            Assert.AreEqual( string.Empty, output );
         }
 
         [TestMethod]
         public void SubstringSafe_LengthTooLarge()
         {
             var output = "Test".SubstringSafe( 1, 30 );
-            Assert.That.AreEqual( "est", output );
+            Assert.AreEqual( "est", output );
         }
 
         [TestMethod]
         public void SubstringSafe_EmptyString()
         {
             var output = "".SubstringSafe( 0, 3 );
-            Assert.That.AreEqual( string.Empty, output );
+            Assert.AreEqual( string.Empty, output );
         }
 
         [TestMethod]
         public void SubstringSafe_StartIndexOnly_EmptyString()
         {
             var output = "".SubstringSafe( 3 );
-            Assert.That.AreEqual( string.Empty, output );
+            Assert.AreEqual( string.Empty, output );
         }
 
         [TestMethod]
@@ -245,28 +244,28 @@ namespace Rock.Tests.Utility.ExtensionMethods
         {
             string test = null;
             var output = test.SubstringSafe( 1 );
-            Assert.That.AreEqual( string.Empty, output );
+            Assert.AreEqual( string.Empty, output );
         }
 
         [TestMethod]
         public void SubstringSafe_StartIndexOnly_NegativeIndex()
         {
             var output = "Test".SubstringSafe( -1 );
-            Assert.That.AreEqual( string.Empty, output );
+            Assert.AreEqual( string.Empty, output );
         }
 
         [TestMethod]
         public void SubstringSafe_StartIndexOnly_IndexTooLarge()
         {
             var output = "Test".SubstringSafe( 10 );
-            Assert.That.AreEqual( string.Empty, output );
+            Assert.AreEqual( string.Empty, output );
         }
 
         [TestMethod]
         public void SubstringSafe_StartIndexOnly_ProperUse()
         {
             var output = "Test".SubstringSafe( 1 );
-            Assert.That.AreEqual( "est", output );
+            Assert.AreEqual( "est", output );
         }
 
         #endregion
@@ -277,7 +276,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         public void AsNumeric_NumbersOnly()
         {
             var output = "0abcd123-45-6&78$9".AsNumeric();
-            Assert.That.AreEqual( "0123456789", output );
+            Assert.AreEqual( "0123456789", output );
         }
 
         #endregion
@@ -288,11 +287,11 @@ namespace Rock.Tests.Utility.ExtensionMethods
         [DataRow( "test&nbsp;test" )]
         [DataRow( "Occurrence=2023-09-28T09:00:00" )]                   // Valid date input.
         [DataRow( "Occurrence%253d2023-09-28T09%25253a00%25253a00" )]   // Valid date input, partially double and triple encoded.
-        [DataTestMethod]
+        [TestMethod]
         public void RedirectUrlContainsXss_ValidInput( string input )
         {
             var output = input.RedirectUrlContainsXss();
-            Assert.That.AreEqual( output, false );
+            Assert.IsFalse( output );
 
         }
 
@@ -308,11 +307,11 @@ namespace Rock.Tests.Utility.ExtensionMethods
         [DataRow( "&#x6A;&#x61;&#x76;&#x61;&#x73;&#x63;&#x72;&#x69;&#x70;&#x74;&#x3A;" )]
         // javascript: (HTML-encoded decimal character reference, no separators).
         [DataRow( "&#0000106&#0000097&#0000118&#0000097&#0000115&#0000099&#0000114&#0000105&#0000112&#0000116&#0000058&#0000097&#0000108&#0000101&#0000114&#0000116&#0000040&#0000039&#0000088&#0000083&#0000083&#0000039&#0000041" )]
-        [DataTestMethod]
+        [TestMethod]
         public void RedirectUrlContainsXss_RiskyInput( string input )
         {
             var output = input.RedirectUrlContainsXss();
-            Assert.That.AreEqual( output, true );
+            Assert.IsTrue( output );
         }
 
         #endregion RedirectUrlContainsXss
@@ -329,7 +328,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             var actualString = testString.Truncate( maxLength, true );
 
-            Assert.That.AreEqual( expectedString, actualString );
+            Assert.AreEqual( expectedString, actualString );
         }
 
         [TestMethod]
@@ -342,7 +341,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             var actualString = testString.Truncate( maxLength, true );
 
-            Assert.That.AreEqual( expectedString, actualString );
+            Assert.AreEqual( expectedString, actualString );
         }
 
         #endregion
@@ -353,63 +352,63 @@ namespace Rock.Tests.Utility.ExtensionMethods
         public void AsDecimalPercentage_Invalid()
         {
             var output = @"25p".AsDecimalPercentage();
-            Assert.That.AreEqual( 0m, output );
+            Assert.AreEqual( 0m, output );
         }
 
         [TestMethod]
         public void AsDecimalPercentage_ValidInteger()
         {
             var output = @"25".AsDecimalPercentage();
-            Assert.That.AreEqual( 0.25m, output );
+            Assert.AreEqual( 0.25m, output );
         }
 
         [TestMethod]
         public void AsDecimalPercentage_ValidIntegerWithPercentageSymbol()
         {
             var output = @"25%".AsDecimalPercentage();
-            Assert.That.AreEqual( 0.25m, output );
+            Assert.AreEqual( 0.25m, output );
         }
 
         [TestMethod]
         public void AsDecimalPercentage_ValidIntegerWithSpaceAndPercentageSymbol()
         {
             var output = @"25 %".AsDecimalPercentage();
-            Assert.That.AreEqual( 0.25m, output );
+            Assert.AreEqual( 0.25m, output );
         }
 
         [TestMethod]
         public void AsDecimalPercentage_ValidIntegerGreaterThan100()
         {
             var output = @"567".AsDecimalPercentage();
-            Assert.That.AreEqual( 5.67m, output );
+            Assert.AreEqual( 5.67m, output );
         }
 
         [TestMethod]
         public void AsDecimalPercentage_ValidIntegerLessThanZero()
         {
             var output = @"-33".AsDecimalPercentage();
-            Assert.That.AreEqual( -0.33m, output );
+            Assert.AreEqual( -0.33m, output );
         }
 
         [TestMethod]
         public void AsDecimalPercentage_ValidIntegerOverridePrecision()
         {
             var output = @"35".AsDecimalPercentage( precision: 1 );
-            Assert.That.AreEqual( 0.4m, output );
+            Assert.AreEqual( 0.4m, output );
         }
 
         [TestMethod]
         public void AsDecimalPercentage_ValidIntegerLessThanMinimumPercentage()
         {
             var output = @"4".AsDecimalPercentage( minPercentage: 5 );
-            Assert.That.AreEqual( 0.05m, output );
+            Assert.AreEqual( 0.05m, output );
         }
 
         [TestMethod]
         public void AsDecimalPercentage_ValidIntegerMoreThanMaximumPercentage()
         {
             var output = @"80".AsDecimalPercentage( maxPercentage: 75 );
-            Assert.That.AreEqual( 0.75m, output );
+            Assert.AreEqual( 0.75m, output );
         }
 
         #endregion
@@ -420,63 +419,63 @@ namespace Rock.Tests.Utility.ExtensionMethods
         public void AsDecimalPercentageOrNull_Invalid()
         {
             var output = @"25p".AsDecimalPercentageOrNull();
-            Assert.That.IsNull( output );
+            Assert.IsNull( output );
         }
 
         [TestMethod]
         public void AsDecimalPercentageOrNull_ValidInteger()
         {
             var output = @"25".AsDecimalPercentageOrNull();
-            Assert.That.AreEqual( 0.25m, output );
+            Assert.AreEqual( 0.25m, output );
         }
 
         [TestMethod]
         public void AsDecimalPercentageOrNull_ValidIntegerWithPercentageSymbol()
         {
             var output = @"25%".AsDecimalPercentageOrNull();
-            Assert.That.AreEqual( 0.25m, output );
+            Assert.AreEqual( 0.25m, output );
         }
 
         [TestMethod]
         public void AsDecimalPercentageOrNull_ValidIntegerWithSpaceAndPercentageSymbol()
         {
             var output = @"25 %".AsDecimalPercentageOrNull();
-            Assert.That.AreEqual( 0.25m, output );
+            Assert.AreEqual( 0.25m, output );
         }
 
         [TestMethod]
         public void AsDecimalPercentageOrNull_ValidIntegerGreaterThan100()
         {
             var output = @"567".AsDecimalPercentageOrNull();
-            Assert.That.AreEqual( 5.67m, output );
+            Assert.AreEqual( 5.67m, output );
         }
 
         [TestMethod]
         public void AsDecimalPercentageOrNull_ValidIntegerLessThanZero()
         {
             var output = @"-33".AsDecimalPercentageOrNull();
-            Assert.That.AreEqual( -0.33m, output );
+            Assert.AreEqual( -0.33m, output );
         }
 
         [TestMethod]
         public void AsDecimalPercentageOrNull_ValidIntegerOverridePrecision()
         {
             var output = @"35".AsDecimalPercentageOrNull( precision: 1 );
-            Assert.That.AreEqual( 0.4m, output );
+            Assert.AreEqual( 0.4m, output );
         }
 
         [TestMethod]
         public void AsDecimalPercentageOrNull_ValidIntegerLessThanMinimumPercentage()
         {
             var output = @"4".AsDecimalPercentageOrNull( minPercentage: 5 );
-            Assert.That.AreEqual( 0.05m, output );
+            Assert.AreEqual( 0.05m, output );
         }
 
         [TestMethod]
         public void AsDecimalPercentageOrNull_ValidIntegerMoreThanMaximumPercentage()
         {
             var output = @"80".AsDecimalPercentageOrNull( maxPercentage: 75 );
-            Assert.That.AreEqual( 0.75m, output );
+            Assert.AreEqual( 0.75m, output );
         }
 
         #endregion

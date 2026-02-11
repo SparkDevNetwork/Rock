@@ -25,7 +25,7 @@ namespace Rock.Core.Automation
     /// <summary>
     /// Represents a single value type that can exist in an <see cref="AutomationRequest"/>.
     /// </summary>
-    internal class AutomationValueDefinition
+    public class AutomationValueDefinition
     {
         /// <summary>
         /// The key in the values dictionary for an automation request that

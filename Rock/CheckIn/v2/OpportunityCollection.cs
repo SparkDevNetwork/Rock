@@ -134,8 +134,9 @@ namespace Rock.CheckIn.v2
                     var groupCache = GroupCache.Get( glc.GroupId, rockContext );
 
                     // If the group itself is not active then it is not a valid
-                    // option for check-in.
-                    if ( groupCache == null || !groupCache.IsActive )
+                    // option for check-in. If the group is archived then it is
+                    // not a valid option either.
+                    if ( groupCache == null || !groupCache.IsActive || groupCache.IsArchived )
                     {
                         return false;
                     }

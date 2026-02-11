@@ -24,6 +24,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Controls;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
@@ -155,8 +156,9 @@ namespace Rock.Blocks.Engagement
                 this.PersonPreferences.Save();
             }
 
-            box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = true;
+            var canEdit = GetCanEdit();
+            box.IsAddEnabled = canEdit;
+            box.IsDeleteEnabled = canEdit;
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -205,10 +207,10 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <summary>
-        /// Determines if the add button should be enabled in the grid.
+        /// Determines if the current person can edit the Steps
         /// <summary>
-        /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
-        private bool GetIsAddEnabled()
+        /// <returns>A boolean value that indicates if the current person can edit.</returns>
+        private bool GetCanEdit()
         {
             var stepType = GetStepType();
             var currentPerson = GetCurrentPerson();
@@ -276,7 +278,7 @@ namespace Rock.Blocks.Engagement
                 queryable = queryable.Where( s => s.Step.CampusId == campusContext.Id );
             }
 
-            queryable = FilterByCreatedDate( queryable );
+            queryable = FilterByDate( queryable );
 
             return queryable;
         }
@@ -289,6 +291,9 @@ namespace Rock.Blocks.Engagement
         protected override List<StepParticipantRow> GetListItems( IQueryable<StepParticipantRow> queryable, RockContext rockContext )
         {
             var stepParticipantData = queryable.ToList();
+
+            // Load attribute values for the grid-selected attributes.
+            GridAttributeLoader.LoadFor( stepParticipantData, a => a.Step, GetGridAttributes(), rockContext );
 
             foreach ( var participant in stepParticipantData )
             {
@@ -316,9 +321,15 @@ namespace Rock.Blocks.Engagement
         /// <inheritdoc/>
         protected override GridBuilder<StepParticipantRow> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<StepParticipantRow>
+            {
+                LavaObject = row => row.Step
+            };
+
             var inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
+
             return new GridBuilder<StepParticipantRow>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.Step.IdKey )
                 .AddField( "person", a => a.Person )
                 .AddTextField( "fullName", a => a.Person.FullName )
@@ -330,7 +341,7 @@ namespace Rock.Blocks.Engagement
                 .AddTextField( "note", a => a.Step.Note )
                 .AddTextField( "signalMarkup", a => Rock.Model.Person.GetSignalMarkup( a.Person.TopSignalColor, a.Person.TopSignalIconCssClass ) )
                 .AddField( "isDeceased", a => a.Person.IsDeceased )
-                .AddField( "isInactive", a => a.Person.RecordStatusValueId == inactiveStatus.Id )
+                .AddField( "isActive", a => a.Person.RecordStatusValueId != inactiveStatus.Id )
                 .AddField( "id", a => a.Step.Id )
                 .AddField( "personId", a => a.Person.Id )
                 .AddField( "stepStatusId", a => a.Step.StepStatusId )
@@ -375,7 +386,7 @@ namespace Rock.Blocks.Engagement
         /// </summary>
         /// <param name="queryable">The <see cref="StepParticipantRow"/> queryable</param>
         /// <returns></returns>
-        private IQueryable<StepParticipantRow> FilterByCreatedDate( IQueryable<StepParticipantRow> queryable )
+        private IQueryable<StepParticipantRow> FilterByDate( IQueryable<StepParticipantRow> queryable )
         {
             // Default to the last 180 days if a null/invalid range was selected.
             var defaultSlidingDateRange = new SlidingDateRangeBag
@@ -391,8 +402,19 @@ namespace Rock.Blocks.Engagement
 
             queryable = queryable
                 .Where( c =>
-                    c.Step.CreatedDateTime >= dateTimeStart &&
-                    c.Step.CreatedDateTime <= dateTimeEnd );
+                    (
+                        c.Step.CreatedDateTime ??
+                        c.Step.StartDateTime ??
+                        c.Step.CompletedDateTime ??
+                        c.Step.EndDateTime
+                    ) >= dateTimeStart &&
+                    (
+                        c.Step.CreatedDateTime ??
+                        c.Step.StartDateTime ??
+                        c.Step.CompletedDateTime ??
+                        c.Step.EndDateTime
+                    ) <= dateTimeEnd );
+
 
             return queryable;
         }
@@ -462,7 +484,7 @@ namespace Rock.Blocks.Engagement
                     return ActionBadRequest( $"{Step.FriendlyTypeName} not found." );
                 }
 
-                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) && !entity.IsAuthorized( Authorization.MANAGE_STEPS, RequestContext.CurrentPerson ) )
                 {
                     return ActionBadRequest( $"Not authorized to delete {Step.FriendlyTypeName}." );
                 }

@@ -1,0 +1,91 @@
+<template>
+    <TransitionVerticalCollapse>
+        <Panel v-if="isVisible" :hasTitle="false">
+            <div class="choose-experience-mode">
+                <div class="choose-experience-logo">
+                    <svg width="126" height="126" viewBox="0 0 126 126" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M102.342 0H23.6664C10.5963 0 0 10.5907 0 23.6581V102.342C0 115.409 10.5907 126 23.6581 126H102.342C115.412 126 126 115.409 126 102.342V23.6581C126 10.5907 115.409 0 102.342 0ZM110.575 76.1657C109.021 79.4568 105.705 81.5566 102.065 81.5566H82.7811L109.281 113.775H84.9114L55.5882 78.1243C53.275 75.3125 52.793 71.4202 54.3471 68.1264C55.9012 64.8353 59.2172 62.7354 62.8573 62.7354H82.1412L60.5192 36.4484L38.8973 62.7354H14.5245L53.2473 15.6548C55.0341 13.4801 57.7019 12.2224 60.5165 12.2224C63.331 12.2224 65.996 13.4829 67.7856 15.6548L109.334 66.1706C111.647 68.9824 112.129 72.8746 110.575 76.1685V76.1657Z" fill="white" />
+                    </svg>
+                </div>
+
+                <div class="choose-experience-body">
+                    <div class="choose-experience-header">
+                        <i class="ti ti-map-2"></i>
+                        <div>
+                            <h3>Choose Your Rock Experience</h3>
+                            <p>Rock can be as simple or powerful as you need. Choose the experience mode that fits your needs:</p>
+                        </div>
+                    </div>
+
+                    <ul class="choose-experience-body-options">
+                        <li>
+                            <strong>Essentials</strong> - A streamlined view showing only the most commonly used settings. Perfect for new admins or those who want to keep things simple.
+                        </li>
+
+                        <li>
+                            <strong>Trailblazer</strong> - Unlock the full range of advanced settings and configuration tools. Ideal for experienced admins and technical leaders.
+                        </li>
+                    </ul>
+
+                    <div>
+                        You can switch modes anytime. Many settings pages also let you temporarily override your current mode to access additional options when needed.
+                    </div>
+
+                    <div class="choose-experience-actions">
+                        <ExperienceModePicker v-model="internalValue" />
+
+                        <RockButton btnType="primary"
+                                    type="button"
+                                    autoDisable
+                                    autoLoading
+                                    @click="onSaveClick">
+                            Save
+                        </RockButton>
+                    </div>
+                </div>
+            </div>
+        </Panel>
+    </TransitionVerticalCollapse>
+</template>
+
+<script setup lang="ts">
+    import ExperienceModePicker from "@Obsidian/Controls/experienceModePicker.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ref } from "vue";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const isVisible = ref(true);
+    const internalValue = ref(false);
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles the Save button click event. Invoke the block action to save the
+     * new setting and hide the panel if successful.
+     */
+    async function onSaveClick(): Promise<void> {
+        const data = {
+            trailblazerMode: internalValue.value
+        };
+
+        const result = await invokeBlockAction("SaveExperienceMode", data);
+
+        if (result.isSuccess) {
+            isVisible.value = false;
+        }
+        else {
+            await alert(result.errorMessage || "An unknown error occurred while saving your experience mode.");
+        }
+    }
+
+    // #endregion
+</script>
