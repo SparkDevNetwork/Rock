@@ -255,6 +255,12 @@ export default class VirtualScroller {
             // too much buffer.
             if (start === this.range.startIndex && firstVisibleIndex - start > (this.options.bufferCount * 3)) {
                 start = Math.max(firstVisibleIndex - (this.options.bufferCount * 2), 0);
+
+                // Don't let start exceed the end of the list of items. Otherwise
+                // the keep growing the size of the grid as the user scrolls down
+                // because we keep adding padding for the "start" count. This can
+                // happen if there is a ton of content below the grid.
+                start = Math.min(start, this.getLastIndex());
             }
         }
 

@@ -393,14 +393,40 @@ namespace Rock.Web.Cache
             foreach ( var achievementTypeCache in sortedAchievementTypes )
             {
                 var loopRockContext = RockApp.Current.CreateRockContext();
-                var component = achievementTypeCache.AchievementComponent;
-                var loopUpdatedAttempts = component.Process( loopRockContext, achievementTypeCache, sourceEntity );
-                loopRockContext.SaveChanges();
 
-                foreach ( var attempt in loopUpdatedAttempts )
+                /*
+                     2/6/2026 - NA
+
+                     Wrapped the per-achievement SaveChanges call in a RockContext transaction to ensure
+                     AchievementAttempt follow-up workflows are not triggered before the new AchievementAttempt
+                     has been committed to the database.
+
+                     When achievements are recorded very quickly, AchievementAttempt.SaveHook.PreSave() creates and
+                     schedules a message (via SendWhen( DbContext.WrappedTransactionCompletedTask )) that later
+                     runs UpdateAchievementAttempt.Execute() on the message bus. In some cases, the DbContext is
+                     not currently in a wrapped SaveChanges transaction (_transactionInProgress is false), so the
+                     message is sent immediately during PreSave. If the message bus processes that message before
+                     the saving thread finishes, UpdateAchievementAttempt.Execute() looks up the attempt by GUID
+                     and gets null (the row is not in the database yet), and that is a problem.
+
+                     By wrapping loopRockContext.SaveChanges() in loopRockContext.WrapTransaction(...), the DbContext
+                     is marked as having a transaction in progress, which causes SendWhen to delay the message
+                     until the wrapped transaction completes and the attempt is persisted.
+
+                     Reason: Prevent message bus workflow triggers from racing ahead of the database commit when
+                     many AchievementAttempts are created in rapid succession.
+                */
+                loopRockContext.WrapTransaction( () =>
                 {
-                    updatedAttempts[attempt.Id] = attempt;
-                }
+                    var component = achievementTypeCache.AchievementComponent;
+                    var loopUpdatedAttempts = component.Process( loopRockContext, achievementTypeCache, sourceEntity );
+                    loopRockContext.SaveChanges();
+
+                    foreach ( var attempt in loopUpdatedAttempts )
+                    {
+                        updatedAttempts[attempt.Id] = attempt;
+                    }
+                } );
             }
 
             return updatedAttempts.Values.ToList();

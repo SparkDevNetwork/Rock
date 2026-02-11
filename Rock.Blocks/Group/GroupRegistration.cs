@@ -280,6 +280,11 @@ namespace Rock.Blocks.Group
                 {
                     box.ErrorMessage = "The selected group is a restricted group type therefore this block cannot be used to add people to these groups (unless configured to allow).";
                 }
+
+                if ( !group.IsActive || group.IsArchived )
+                {
+                    box.ErrorMessage = "The selected group does not exist or it has been archived.";
+                }
             }
 
             var connectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
@@ -703,6 +708,11 @@ namespace Rock.Blocks.Group
                 if ( targetGroup.IsSecurityRole )
                 {
                     return ActionBadRequest( "The group is a restricted group type." );
+                }
+
+                if ( !targetGroup.IsActive || targetGroup.IsArchived )
+                {
+                    return ActionBadRequest( "The selected group does not exist or it has been archived." );
                 }
 
                 var isCurrentPerson = RequestContext.CurrentPerson != null

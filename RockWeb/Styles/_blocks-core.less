@@ -5,7 +5,7 @@
   2. Schedule Builder - block for building schedules
   3. Workflow - styles for workflow blocks
   4. Electronic Signatures
-
+  5. Notifications - styles for notification message list block
 */
 
 // Fullscreen Toggle
@@ -1041,4 +1041,26 @@
 
 body.hide-block-role-secondary .block-instance.block-role-secondary:not(.block-role-action-aware) {
     display: none;
+}
+
+
+// 5. Notifications
+// -------------------------
+
+.notification-messages {
+
+  .notification-item {
+      margin-bottom: var(--spacing-medium);
+  }
+
+  .notification-item:last-child {
+      margin-bottom: 0;
+  }
+
+  .filter-button.active {
+      background-color: var(--color-interface-soft);
+      padding: var(--spacing-tiny) var(--spacing-xsmall);
+      border-radius: var(--rounded-xsmall);
+  }
+
 }

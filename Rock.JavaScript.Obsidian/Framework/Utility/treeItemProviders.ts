@@ -183,6 +183,11 @@ export class LocationTreeItemProvider implements ITreeItemProvider {
     public securityGrantToken?: string | null;
 
     /**
+     * The root location to restrict the tree to.
+     */
+    public rootLocationGuid?: Guid | null;
+
+    /**
      * Gets the child items from the server.
      *
      * @param parentGuid The parent item whose children are retrieved.
@@ -193,7 +198,7 @@ export class LocationTreeItemProvider implements ITreeItemProvider {
     private async getItems(parentGuid?: Guid | null, expandToValues?: string[]): Promise<TreeItemBag[]> {
         const options: LocationItemPickerGetActiveChildrenOptionsBag = {
             guid: toGuidOrNull(parentGuid) ?? emptyGuid,
-            rootLocationGuid: emptyGuid,
+            rootLocationGuid: this.rootLocationGuid ?? emptyGuid,
             expandToValues: expandToValues,
             securityGrantToken: this.securityGrantToken
         };

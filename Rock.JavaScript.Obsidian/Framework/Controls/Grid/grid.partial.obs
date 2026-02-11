@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="grid-obsidian styled-scroll" :class="{ 'grid-sticky': isStickyHeader, 'grid-light': light, 'grid-bordered': !light, 'grid-striped': !light, 'grid-hover': !light }">
+    <div class="grid-obsidian styled-scroll" :class="{ 'grid-sticky': isStickyHeader, 'grid-light': light, 'grid-bordered': !light, 'grid-striped': !light, 'grid-hover': !light, 'grid-comfy': comfy }">
         <div class="grid-header">
             <FilterHeaderRow v-if="!light && !hideFilterHeaderRow"
                              v-model:quickFilterValue="quickFilterValue"
@@ -255,6 +255,15 @@
          * that are embedded inside other blocks or controls.
          */
         light: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * A comfy grid changes the display style of the rows so they look more
+         * like pills instead of traditional rows.
+         */
+        comfy: {
             type: Boolean as PropType<boolean>,
             default: false
         },

@@ -5,11 +5,11 @@
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
-            <div class="panel-heading">
+            <div class="panel-header">
                 <h1 class="panel-title">People En Route
                 </h1>
             </div>
-            <div class="panel-body">
+            <div class="panel-body en-route-filters">
                 <Rock:GroupPicker ID="gpGroups" runat="server" Label="Groups" AllowMultiSelect="true" ValidationGroup="vgFilterCriteria" EnableFullWidth="true" />
                 <small>
                     <asp:Literal ID="lblIncludeChildGroups" runat="server" Text="Child Groups Included" Visible="false" /></small>
@@ -23,7 +23,7 @@
                     <asp:LinkButton ID="btnClearFilter" runat="server" CssClass="filter-clear btn btn-default btn-xs" Text="Clear Filter" OnClick="btnClearFilter_Click" CausesValidation="false" />
                 </div>
             </div>
-            <div class="panel-body">
+            <div class="panel-body en-route-list">
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gAttendees" runat="server" DisplayType="Light" UseFullStylesForLightGrid="true" OnRowDataBound="gAttendees_RowDataBound" DataKeyNames="PersonGuid,AttendanceIds" ShowActionRow="false">
                         <Columns>
@@ -38,6 +38,7 @@
                         </Columns>
                     </Rock:Grid>
                 </div>
+            </div>
         </asp:Panel>
 
         <Rock:ModalDialog ID="mdMovePerson" runat="server" Title="Move Person" SaveButtonText="Move" OnSaveClick="mdMovePerson_SaveClick">

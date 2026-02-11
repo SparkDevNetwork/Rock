@@ -2019,7 +2019,7 @@ namespace Rock.Blocks.Group
 
                     fakeSourceGroupMember.LoadAttributes();
 
-                    attributeFiltersBag.SourceAttributesForFilter = fakeSourceGroupMember.GetPublicAttributesForEdit( GetCurrentPerson(), true, attributeFilter: a => displayedSourceAttributeIds.Contains( a.Id ) );
+                    attributeFiltersBag.SourceAttributesForFilter = fakeSourceGroupMember.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedSourceAttributeIds.Contains( a.Id ) );
                 }
                 else if ( registrationTemplateId.HasValue )
                 {
@@ -2030,7 +2030,7 @@ namespace Rock.Blocks.Group
 
                     fakeRegistrant.LoadAttributes();
 
-                    attributeFiltersBag.SourceAttributesForFilter = fakeRegistrant.GetPublicAttributesForEdit( GetCurrentPerson(), true, attributeFilter: a => displayedSourceAttributeIds.Contains( a.Id ) );
+                    attributeFiltersBag.SourceAttributesForFilter = fakeRegistrant.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedSourceAttributeIds.Contains( a.Id ) );
                 }
             }
 
@@ -2040,7 +2040,7 @@ namespace Rock.Blocks.Group
 
                 fakeDestinationGroup.LoadAttributes();
 
-                attributeFiltersBag.DestinationGroupAttributesForFilter = fakeDestinationGroup.GetPublicAttributesForEdit( GetCurrentPerson(), true, attributeFilter: a => groupAttributeIds.Contains( a.Id ) );
+                attributeFiltersBag.DestinationGroupAttributesForFilter = fakeDestinationGroup.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => groupAttributeIds.Contains( a.Id ) );
             }
 
             if ( placementConfiguration.DestinationGroupMemberAttributesToDisplay?.Any() == true && fakeDestinationGroup != null )
@@ -2054,7 +2054,7 @@ namespace Rock.Blocks.Group
 
                 fakeDestinationGroupMember.LoadAttributes();
 
-                attributeFiltersBag.DestinationGroupMemberAttributesForFilter = fakeDestinationGroupMember.GetPublicAttributesForEdit( GetCurrentPerson(), true, attributeFilter: a => groupMemberAttributeIds.Contains( a.Id ) );
+                attributeFiltersBag.DestinationGroupMemberAttributesForFilter = fakeDestinationGroupMember.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => groupMemberAttributeIds.Contains( a.Id ) );
             }
 
             if ( placementConfiguration.AreFeesDisplayed && registrationTemplateId.HasValue )

@@ -163,7 +163,7 @@ namespace Rock.Model
             target.Order = source.Order;
             target.OwnerPersonAliasId = source.OwnerPersonAliasId;
             target.RequestBadgeLava = source.RequestBadgeLava;
-            target.RequestDueDateOffestInDays = source.RequestDueDateOffestInDays;
+            target.RequestDueDateOffsetInDays = source.RequestDueDateOffsetInDays;
             target.RequestDueSoonOffsetInDays = source.RequestDueSoonOffsetInDays;
             target.RequestHeaderLava = source.RequestHeaderLava;
             target.RequiresPlacementGroupToConnect = source.RequiresPlacementGroupToConnect;

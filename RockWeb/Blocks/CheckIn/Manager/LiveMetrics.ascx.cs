@@ -411,7 +411,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var img = e.Item.FindControl( "imgPerson" ) as Literal;
             if ( img != null )
             {
-                img.Text = Rock.Model.Person.GetPersonPhotoImageTag( person, 50, 50, className: "avatar avatar-lg mr-3" );
+                img.Text = Rock.Model.Person.GetPersonPhotoImageTag( person, 50, 50, className: "avatar avatar-lg mr-spacing-md" );
             }
 
             string desktopStatus = string.Empty;

@@ -10,6 +10,7 @@
 //  + Electronic Signatures
 //  + Rapid Attendance
 //  + Reminder List
+//  + Notifications
 // =============================================================
 
 .rock-fullscreen-toggle {
@@ -1218,3 +1219,26 @@ body.hide-block-role-secondary .block-instance.block-role-secondary:not(.block-r
 }
 
 // ====================== END REMINDER LIST ======================
+
+// ====================== MY DASHBOARD - NOTIFICATIONS ======================
+
+.notification-messages {
+
+  .notification-item {
+      margin-bottom: var(--spacing-medium);
+  }
+
+  .notification-item:last-child {
+      margin-bottom: 0;
+  }
+
+  .filter-button.active {
+      background-color: var(--color-interface-soft);
+      padding: var(--spacing-tiny) var(--spacing-xsmall);
+      border-radius: var(--rounded-xsmall);
+  }
+
+}
+
+
+// ====================== END MY DASHBOARD - NOTIFICATIONS ======================

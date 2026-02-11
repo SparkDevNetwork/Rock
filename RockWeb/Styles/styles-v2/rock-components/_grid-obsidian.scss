@@ -1,3 +1,21 @@
+// imported in _core.scss
+
+// Obsidian Grid Styles
+
+
+// =============================================================
+// Table of Content
+//  + Control Labels
+//  + Grid Header
+//  + Grid Column Headers
+//  + Grid Body
+//  + Grid Footing
+//  + Comfy Grid styles
+// =============================================================
+
+
+// ======================CONTROL LABELS=====================
+
 .grid-overflow {
     overflow-x: auto;
 }
@@ -74,25 +92,59 @@
     align-items: center;
 }
 
-.grid-obsidian > .grid-header > .grid-title-header > .grid-actions {
-    background-color: initial;
-    text-align: initial;
-    &:last-child {
-        border-top-right-radius: var(--rounded-small);
-        .btn-grid-action:last-child {
-            border-top-right-radius: var(--rounded-small);
-        }
-        .btn-grid-action.btn-quick-filter {
-            border-top-right-radius: var(--rounded-small);
-        }
-    }
-}
-
-.grid-obsidian > .grid-header > .grid-title-header > .grid-actions .btn-grid-action {
+.grid-obsidian > .grid-header > .grid-title-header > .grid-actions button.btn-grid-action {
     width: 56px;
     height: 56px;
     margin: 0;
     border-radius: 0;
+
+    &:last-child {
+        border-top-right-radius: var(--rounded-small);
+    }
+}
+
+.grid-obsidian > .grid-header > .grid-title-header {
+
+    .grid-actions {
+        background-color: initial;
+        text-align: initial;
+
+        &:last-child {
+            border-top-right-radius: var(--rounded-small);
+
+            .btn-grid-action:last-child {
+                border-top-right-radius: var(--rounded-small);
+            }
+
+        }
+
+    }
+
+    // If there are multiple action groups, remove the border radius between them
+    .grid-actions:has(+.grid-actions),
+    .grid-actions + .grid-actions:has(+.grid-actions) {
+        border-radius: 0;
+
+        .btn-grid-action {
+            border-radius: 0;
+        }
+    }
+
+    @media (max-width: $screen-medium) {
+        .grid-actions:last-child,
+        .quick-filter.grid-actions,
+        .quick-filter.grid-actions + .grid-actions {
+            border-top-right-radius: 0;
+
+            .quick-filter-open form input,
+            .btn-grid-action,
+            .btn-grid-action:last-child {
+                border-top-right-radius: 0;
+            }
+        }
+
+    }
+
 }
 
 .grid-obsidian > .grid-header > .grid-title-header > .grid-actions .btn-grid-action.active {
@@ -577,3 +629,127 @@
         top: calc(var(--sticky-element-offset) + 114px);
     }
 }
+
+
+// ==================== COMFY GRID =====================
+
+// Grid Content-Container Styling
+
+.grid-comfy {
+
+  .grid-header {
+    z-index: 4; // Ensure header is above sticky column headers
+  }
+
+  .grid-content-container {
+    padding: 0 var(--spacing-medium) var(--spacing-medium) var(--spacing-medium);
+    background-color: var(--color-interface-softer);
+
+    .grid-column-header-container.sticky-column-header {
+        background-color: inherit;
+
+        @media (max-width: 742px) {
+            top: calc(var(--sticky-element-offset) + 164px); // Hard coded offset for when badges wrap at smaller widths
+        }
+    }
+
+    .grid-column-header {
+      border-bottom: none;
+    }
+
+    .grid-body {
+      display: flex;
+      flex-direction: column;
+      border-bottom-left-radius: var(--rounded-medium);
+      border-bottom-right-radius: var(--rounded-medium);
+      background-color: inherit;
+
+      .grid-row {
+        padding-bottom: var(--spacing-small);
+
+        &:last-of-type {
+          padding-bottom: 0;
+        }
+
+        &:not(:has(.grid-columnreorder)):nth-last-child(2) {
+            padding-bottom: 0; // Remove padding from next to last row to account for the lazy row loader at the bottom, taking into account the reorder column.
+        }
+
+        &:has(.table-empty) {
+          padding-bottom: 0;
+          border-bottom: 0;
+        }
+
+        .grid-cell {
+            border: 1px solid var(--color-interface-soft);
+
+            &.grid-cell-text .highlight-title {
+                font-weight: var(--font-weight-regular); // Override bolding of highlighted text for group name
+            }
+
+            &:first-of-type.table-empty { // Full width border for empty state
+                width: 100%;
+                border-right: 1px solid var(--color-interface-soft);
+            }
+
+        }
+
+        .grid-cell:first-of-type {
+          border-top-left-radius: var(--rounded-medium);
+          border-bottom-left-radius: var(--rounded-medium);
+          border-right: none;
+        }
+
+        .grid-cell:last-of-type {
+          border-top-right-radius: var(--rounded-medium);
+          border-bottom-right-radius: var(--rounded-medium);
+          border-right: 1px solid var(--color-interface-soft);
+        }
+
+        .grid-cell:not(:last-of-type) {
+          border-right: none;
+        }
+
+        .grid-cell:not(:first-of-type) {
+          border-left: none;
+        }
+
+      }
+
+    }
+
+  }
+
+  // Add a border to the top of the footing when there is a paging footer
+  .grid-footing:has(.grid-paging-footer) {
+    border-top: 1px solid var(--color-interface-soft);
+  }
+
+  // If there is no footer, round the bottom corners of the content container
+  &:not(:has(.grid-footing .grid-paging-footer)) {
+
+    .grid-content-container {
+        border-bottom-left-radius: var(--rounded-medium);
+        border-bottom-right-radius: var(--rounded-medium);
+    }
+
+  }
+
+  // Light Grid variant
+  &.grid-light {
+
+    .grid-content-container {
+      background-color: inherit;
+      padding-bottom: 0;
+    }
+
+    .grid-content-container .grid-body .grid-row:nth-last-child(2) {
+        padding-bottom: var(--spacing-small); // Add padding back to next to last row for light grid variant
+    }
+  }
+
+}
+
+
+
+// ===================== END COMFY GRID =====================

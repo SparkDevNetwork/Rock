@@ -355,7 +355,7 @@
     });
     const attendanceGroupByDelegate = computed<AttendanceGroupByDelegate | null>(() => {
         // Always group by last name regardless of sort.
-        return (attendance: GroupAttendanceDetailAttendanceBag) => attendance.lastName?.charAt(0) || "?";
+        return (attendance: GroupAttendanceDetailAttendanceBag) => attendance.lastName?.trim().charAt(0).toUpperCase() || "?";
     });
     const isBackButtonHidden = computed<boolean>(() => config.value.isBackButtonHidden || !config.value.backPageUrl);
     const isLongListDisabled = computed<boolean>(() => config.value.isLongListDisabled || attendances.value.length <= 50);

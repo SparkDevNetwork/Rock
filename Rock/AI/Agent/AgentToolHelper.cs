@@ -208,10 +208,19 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <typeparam name="T">The type of object to be paginated.</typeparam>
         /// <param name="pagedItems">The items to be included in the results.</param>
+        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.Sanitize(AgentRequestContext)"/>.</param>
         /// <returns>A <see cref="RockToolResult"/> that contains the result data and any standard metadata.</returns>
-        public RockToolResult GetPaginatedResult<T>( IReadOnlyCollection<T> pagedItems )
+        public RockToolResult GetPaginatedResult<T>( IReadOnlyCollection<T> pagedItems, bool sanitizeForSecurity = true )
         {
             RockToolResult result;
+
+            if ( sanitizeForSecurity == true && typeof( EntityResultBase ).IsAssignableFrom( typeof( T ) ) )
+            {
+                foreach ( var item in pagedItems.Cast<EntityResultBase>() )
+                {
+                    item.Sanitize( _agentRequestContext );
+                }
+            }
 
             if ( !pagedItems.Any() )
             {
@@ -284,67 +293,23 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <typeparam name="T">The type of object to be paginated.</typeparam>
         /// <param name="queryable">The queryable that represents the data to be paginated from the database.</param>
+        /// <param name="paginator">The cursor paginator instance that will handle the core pagination logic.</param>
         /// <param name="cursor">The cursor that indicates the start of the page to retrieve or <c>null</c> to retrieve the first page.</param>
         /// <param name="pageSize">The size of each page. If <c>null</c> then a default page size will be applied.</param>
-        /// <param name="enforceSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="ISecured"/>, then each item will be checked to see if the current person has View access before it is included in the results.</param>
         /// <returns>A collection of items for the specified page.</returns>
-        public List<T> GetCursorPaginatedItems<T>( IQueryable<T> queryable, string cursor = null, int? pageSize = null, bool enforceSecurity = true )
-            where T : IEntity
+        public IList<T> GetCursorPaginatedItems<T>( IQueryable<T> queryable, CursorPaginator<T> paginator, string cursor = null, int? pageSize = null )
+            where T : class, IEntity
         {
             pageSize = pageSize ?? DefaultPageSize;
 
-            var lastId = IdHasher.Instance.GetId( cursor ) ?? 0;
-            var pagedItems = new List<T>();
+            var page = paginator.GetNextPage( queryable, cursor, pageSize.Value, true );
 
-            for ( int loops = 0; loops < MaxCursorFillAttempts && pagedItems.Count < pageSize.Value + 1; loops++ )
-            {
-                // Always load at least 5 at a time so we don't end up in a
-                // situation where we're only loading one item at a time.
-                var count = Math.Max( pageSize.Value - pagedItems.Count, 5 );
-
-                var items = queryable
-                    .Where( a => a.Id > lastId )
-                    // N+1 so we can compute hasMore later.
-                    .Take( count + 1 )
-                    .ToList();
-
-                foreach ( var item in items )
-                {
-                    if ( enforceSecurity && item is ISecured securedItem )
-                    {
-                        if ( !securedItem.IsAuthorized( Authorization.VIEW, _agentRequestContext.RockRequestContext.CurrentPerson ) )
-                        {
-                            continue;
-                        }
-                    }
-
-                    pagedItems.Add( item );
-                }
-
-                if ( items.Count == 0 )
-                {
-                    break;
-                }
-
-                lastId = items.Last().Id;
-            }
-
-            var hasMore = pagedItems.Count > pageSize;
-
-            // Drop the lookahead row if we have it.
-            while ( pagedItems.Count > pageSize )
-            {
-                pagedItems.RemoveAt( pagedItems.Count - 1 );
-            }
-
-            lastId = pagedItems.Count > 0 ? pagedItems.Last().Id : 0;
-
-            AddMetadata( "nextCursor", lastId.AsIdKey() );
+            AddMetadata( "nextCursor", page.NextCursor );
             AddMetadata( "pageSize", pageSize );
-            AddMetadata( "returnedItemCount", pagedItems.Count );
-            AddMetadata( "hasMore", hasMore );
+            AddMetadata( "returnedItemCount", page.Items.Count );
+            AddMetadata( "hasMore", page.HasMore );
 
-            return pagedItems;
+            return page.Items;
         }
 
         /// <summary>
@@ -356,9 +321,8 @@ namespace Rock.AI.Agent
         /// <param name="queryable">The queryable that represents the data to be paginated from the database.</param>
         /// <param name="pageNumber">The page number that was requested.</param>
         /// <param name="pageSize">The size of each page. If <c>null</c> then a default page size will be applied.</param>
-        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.Sanitize(AgentRequestContext)"/>.</param>
         /// <returns>A collection of items for the specified page.</returns>
-        public List<T> GetPaginatedItems<T>( IQueryable<T> queryable, int pageNumber, int? pageSize = null, bool sanitizeForSecurity = true )
+        public IList<T> GetPaginatedItems<T>( IQueryable<T> queryable, int pageNumber, int? pageSize = null )
         {
             pageSize = pageSize ?? DefaultPageSize;
 
@@ -381,14 +345,6 @@ namespace Rock.AI.Agent
             AddMetadata( "returnedItemCount", pagedItems.Count );
             AddMetadata( "hasMore", hasMore );
 
-            if ( sanitizeForSecurity == true && typeof( EntityResultBase ).IsAssignableFrom( typeof( T ) ) )
-            {
-                foreach ( EntityResultBase item in pagedItems.Cast<EntityResultBase>() )
-                {
-                    item.Sanitize( _agentRequestContext );
-                }
-            }
-
             return pagedItems;
         }
 
@@ -401,11 +357,10 @@ namespace Rock.AI.Agent
         /// <param name="items">The in-memory items to be paginated.</param>
         /// <param name="pageNumber">The page number that was requested.</param>
         /// <param name="pageSize">The size of each page. If <c>null</c> then a default page size will be applied.</param>
-        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.Sanitize(AgentRequestContext)"/>.</param>
         /// <returns>A collection of items for the specified page.</returns>
-        public List<T> GetPaginatedItems<T>( IEnumerable<T> items, int pageNumber, int? pageSize = null, bool sanitizeForSecurity = true )
+        public IList<T> GetPaginatedItems<T>( IEnumerable<T> items, int pageNumber, int? pageSize = null )
         {
-            return GetPaginatedItems( items.AsQueryable(), pageNumber, pageSize, sanitizeForSecurity );
+            return GetPaginatedItems( items.AsQueryable(), pageNumber, pageSize );
         }
 
         #endregion
@@ -1086,7 +1041,7 @@ namespace Rock.AI.Agent
             }
 
             var navigationProperty = ExtractProperty( propertyExpression );
-            var navigationIdProperty =  entity.GetType().GetProperty( $"{navigationProperty.Name}Id" )
+            var navigationIdProperty = entity.GetType().GetProperty( $"{navigationProperty.Name}Id" )
                 ?? throw new Exception( $"Defined value property {navigationProperty.Name} is not valid." );
 
             if ( navigationIdProperty.PropertyType != typeof( int ) && navigationIdProperty.PropertyType != typeof( int? ) )

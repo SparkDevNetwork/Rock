@@ -1162,8 +1162,26 @@ namespace RockWeb.Blocks.Cms
                         }
                     }
 
-                    person.Email = tbEmail.Text.Trim();
-                    person.EmailPreference = rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>();
+                    // If the person's email address is being changed, set it to Active since it could have been inactive
+                    // due to a bounced email in the past. 
+                    if ( person.Email != tbEmail.Text.Trim() )
+                    {
+                        person.Email = tbEmail.Text.Trim();
+                        person.IsEmailActive = true;
+                    }
+
+                    // Check if the person's email preference is being changed...
+                    var selectedEmailPreference = rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>();
+                    if ( person.EmailPreference != selectedEmailPreference )
+                    {
+                        // And, if their preference is NOT set to DoNotEmail, make it active since it could have been inactive
+                        // due to a bounced email in the past.
+                        if ( selectedEmailPreference != EmailPreference.DoNotEmail )
+                        {
+                            person.IsEmailActive = true;
+                        }
+                        person.EmailPreference = selectedEmailPreference;
+                    }
 
                     /* 2020-10-06 MDP
                      To help prevent a person from setting their communication preference to SMS, even if they don't have an SMS number,

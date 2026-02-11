@@ -148,6 +148,14 @@ namespace Rock.Blocks.Core
         {
             errorMessage = null;
 
+            // If the location IsValid is false, and the UI controls didn't report any errors, it is probably because
+            // the custom rules of location didn't pass. Make sure a message is displayed in the validation summary.
+            if ( !location.IsValid )
+            {
+                errorMessage = location.ValidationResults.Select( r => r.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                return false;
+            }
+
             return true;
         }
 
@@ -391,7 +399,18 @@ namespace Rock.Blocks.Core
                 () => entity.Name = box.Bag.Name );
 
             box.IfValidProperty( nameof( box.Bag.ParentLocation ),
-                () => entity.ParentLocationId = box.Bag.ParentLocation.GetEntityId<Location>( RockContext ) );
+                () =>
+                {
+                    var parentLocationId = box.Bag.ParentLocation.GetEntityId<Location>( RockContext );
+
+                    if ( entity.ParentLocationId != parentLocationId )
+                    {
+                        entity.ParentLocationId = parentLocationId;
+
+                        // Clear this navigation property so validation is performed on the new parent location instead of the old one.
+                        entity.ParentLocation = null;
+                    }
+                } );
 
             box.IfValidProperty( nameof( box.Bag.PrinterDevice ),
                 () => entity.PrinterDeviceId = box.Bag.PrinterDevice.GetEntityId<Device>( RockContext ) );

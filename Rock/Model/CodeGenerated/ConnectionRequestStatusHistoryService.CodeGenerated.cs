@@ -137,6 +137,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.Note = source.Note;
+            target.PreviousConnectionStatusId = source.PreviousConnectionStatusId;
             target.StartDateTime = source.StartDateTime;
             target.WasCompletedOnTime = source.WasCompletedOnTime;
             target.CreatedDateTime = source.CreatedDateTime;

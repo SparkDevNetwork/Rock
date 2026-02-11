@@ -159,7 +159,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var connectionOpportunity = new ConnectionOpportunityService( rockContext ).GetNoTracking( connectionOpportunityGuid );
                 bool hasMore;
-                List<ConnectionRequest> requests;
+                List<ConnectionRequest> requests = null;
+                IQueryable<ConnectionRequest> qry = null;
 
                 if ( filterViewModel.OnlyMyConnections && RequestContext.CurrentPerson == null )
                 {
@@ -180,30 +181,16 @@ namespace Rock.Blocks.Types.Mobile.Connection
                         filterOptions.ConnectorPersonIds = new List<int> { RequestContext.CurrentPerson.Id };
                     }
 
-                    if( filterViewModel.CampusGuid.HasValue )
+                    if ( filterViewModel.CampusGuid.HasValue )
                     {
                         filterOptions.CampusGuid = filterViewModel.CampusGuid;
                     }
 
-                    var qry = connectionRequestService.GetConnectionRequestsQuery( filterOptions );
+                    qry = connectionRequestService.GetConnectionRequestsQuery( filterOptions );
 
                     // We currently don't support showing connected connection requests
                     // since that could end up being a massive list for mobile.
                     qry = qry.Where( r => r.ConnectionState != ConnectionState.Connected );
-
-                    // Put all the requests in memory so we can check security and
-                    // then get the current set of requests, plus one. The extra is
-                    // so that we can tell if there are more to load.
-                    requests = qry.ToList()
-                        .Where( r => r.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
-                        .Skip( ( pageNumber * MaxRequestsToShow ) )
-                        .Take( MaxRequestsToShow + 1 )
-                        .ToList();
-
-                    // Determine if we have more requests to show and then properly
-                    // limit the requests to the correct amount.
-                    hasMore = requests.Count > MaxRequestsToShow;
-                    requests = requests.Take( MaxRequestsToShow ).ToList();
                 }
 
                 var sortProperty = filterViewModel.SortProperty;
@@ -213,59 +200,67 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     switch ( sortProperty )
                     {
                         case ConnectionRequestViewModelSortProperty.Requestor:
-                            requests = requests
+                            qry = qry
                                 .OrderBy( cr => cr.PersonAlias.Person.LastName )
                                 .ThenBy( cr => cr.PersonAlias.Person.NickName )
                                 .ThenBy( cr => cr.Order )
-                                .ThenBy( cr => cr.Id )
-                                .ToList();
+                                .ThenBy( cr => cr.Id );
                             break;
-
                         case ConnectionRequestViewModelSortProperty.Connector:
-                            requests = requests
-                                .OrderBy( cr => cr.ConnectorPersonAlias?.Person.FirstName )
-                                .ThenBy( cr => cr.ConnectorPersonAlias?.Person.NickName )
+                            qry = qry
+                                .OrderBy( cr => cr.ConnectorPersonAlias != null && cr.ConnectorPersonAlias.Person != null ? cr.ConnectorPersonAlias.Person.FirstName : string.Empty )
+                                .ThenBy( cr => cr.ConnectorPersonAlias != null && cr.ConnectorPersonAlias.Person != null ? cr.ConnectorPersonAlias.Person.NickName : string.Empty )
                                 .ThenBy( cr => cr.Order )
-                                .ThenBy( cr => cr.Id )
-                                .ToList();
+                                .ThenBy( cr => cr.Id );
                             break;
 
                         case ConnectionRequestViewModelSortProperty.DateAdded:
-                            requests = requests
+                            qry = qry
                                 .OrderBy( cr => cr.CreatedDateTime )
                                 .ThenBy( cr => cr.Order )
-                                .ThenBy( cr => cr.Id )
-                                .ToList();
+                                .ThenBy( cr => cr.Id );
                             break;
 
                         case ConnectionRequestViewModelSortProperty.DateAddedDesc:
-                            requests = requests
+                            qry = qry
                                 .OrderByDescending( cr => cr.CreatedDateTime )
                                 .ThenByDescending( cr => cr.Order )
-                                .ThenByDescending( cr => cr.Id )
-                                .ToList();
+                                .ThenByDescending( cr => cr.Id );
                             break;
 
                         case ConnectionRequestViewModelSortProperty.LastActivity:
-                            requests = requests
+                            qry = qry
                                 .OrderBy( cr => cr.ConnectionRequestActivities.Max( cra => cra.CreatedDateTime ) )
                                 .ThenBy( cr => cr.Order )
-                                .ThenBy( cr => cr.Id )
-                                .ToList();
+                                .ThenBy( cr => cr.Id );
                             break;
 
                         case ConnectionRequestViewModelSortProperty.LastActivityDesc:
-                            requests = requests
+                            qry = qry
                                 .OrderByDescending( cr => cr.ConnectionRequestActivities.Max( cra => cra.CreatedDateTime ) )
                                 .ThenByDescending( cr => cr.Order )
-                                .ThenByDescending( cr => cr.Id )
-                                .ToList();
+                                .ThenByDescending( cr => cr.Id );
                             break;
 
                         default:
                             break;
                     }
                 }
+
+                // Put all the requests in memory so we can check security and
+                // then get the current set of requests, plus one. The extra is
+                // so that we can tell if there are more to load.
+                requests = qry.ToList()
+                    .Where( r => r.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                    .Skip( ( pageNumber * MaxRequestsToShow ) )
+                    .Take( MaxRequestsToShow + 1 )
+                    .ToList();
+
+                // Determine if we have more requests to show and then properly
+                // limit the requests to the correct amount.
+                hasMore = requests.Count > MaxRequestsToShow;
+
+                requests = requests.Take( MaxRequestsToShow ).ToList();
 
                 // Process the connection requests with the template.
                 var mergeFields = RequestContext.GetCommonMergeFields();

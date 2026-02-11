@@ -7,6 +7,7 @@
               keyField="key"
               liveUpdates
               :light="light"
+              :comfy="comfy"
               :markInactiveRows="markInactiveRows"
               itemTerm="Widget"
               @addItem="onAddItem"
@@ -46,6 +47,7 @@
         <template #settings>
             <div class="automatic-layout">
                 <CheckBox label="Light" v-model="light" />
+                <CheckBox label="Comfy" v-model="comfy" />
                 <CheckBox label="Reorder Column" :modelValue="showReorder" @update:modelValue="onShowReorderChanged" />
                 <CheckBox label="Show Export" v-model="showExport" />
                 <CheckBox label="Mark Inactive Rows" v-model="markInactiveRows" />
@@ -69,6 +71,7 @@
 
     const showGrid = ref(true);
     const light = ref(false);
+    const comfy = ref(false);
     const showReorder = ref(false);
     const showExport = ref(false);
     const markInactiveRows = ref(false);
@@ -98,6 +101,7 @@
         usage.addAttribute("liveUpdates", true);
         usage.addAttribute("itemTerm", "Widget");
         usage.addAttribute("light", light.value, false);
+        usage.addAttribute("comfy", comfy.value, false);
         usage.addAttribute("showExport", showExport.value, false);
         usage.addAttribute("markInactiveRows", markInactiveRows.value, false);
 

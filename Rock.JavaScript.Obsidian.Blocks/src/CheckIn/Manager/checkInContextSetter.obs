@@ -1,0 +1,187 @@
+<template>
+    <div class="context-setters-container">
+        <ul class="nav navbar-nav contextsetter contextsetter-campus" style="margin: 0;">
+            <li class="dropdown">
+                <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
+                    <span class="campus-text">{{ selectedCampus?.text ?? 'Select Campus' }}</span>
+                    <b class="ti ti-caret-down-filled"></b>
+                </a>
+
+                <ul class="dropdown-menu">
+                    <li v-for="campus in config.campuses"
+                        :key="campus.value ?? undefined"
+                        class="dropdown">
+                        <a href="#" @click.prevent="onCampusSelected(campus)">{{ campus.text }}</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+
+        <div class="nav navbar-nav contextsetter contextsetter-location">
+            <TreeItemPicker :modelValue="location"
+                        formGroupClasses="location-item-picker"
+                        iconCssClass=""
+                        :blankValue="!!selectedCampus ? 'Select Location' : 'Select Campus'"
+                        :provider="locationProvider"
+                        autoExpand
+                        :disabled="!selectedCampus"
+                        @update:modelValue="onLocationSelected($event as ListItemBag | null)">
+            </TreeItemPicker>
+        </div>
+
+        <ul class="nav navbar-nav contextsetter contextsetter-schedule" style="margin: 0;">
+            <li class="dropdown">
+                <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
+                    <span class="schedule-text">{{ schedule?.text ?? 'All Schedules' }}</span>
+                    <b class="ti ti-caret-down-filled"></b>
+                </a>
+
+                <ul class="dropdown-menu">
+                    <li class="dropdown">
+                        <a href="#" @click.prevent="onScheduleSelected(null)">All Schedules</a>
+                    </li>
+
+                    <li v-for="schedule in scheduleItems"
+                        :key="schedule.value ?? undefined"
+                        class="dropdown">
+                        <a href="#" @click.prevent="onScheduleSelected(schedule)">{{ schedule.text }}</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import TreeItemPicker from "@Obsidian/Controls/treeItemPicker.obs";
+    import { useContextEntities } from "@Obsidian/Core/Utilities/contextEntity";
+    import { ContextEntityChangedData, Message } from "@Obsidian/Types/Utility/browserBus";
+    import { useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { PageMessages } from "@Obsidian/Utility/browserBus";
+    import { ITreeItemProvider, LocationTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
+    import { CheckInContextSetterOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/CheckInContextSetter/checkInContextSetterOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ref } from "vue";
+
+    const config = useConfigurationValues<CheckInContextSetterOptionsBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const contextEntities = useContextEntities();
+    const bus = useBlockBrowserBus();
+
+    // #region Values
+
+    const selectedCampus = ref<ListItemBag | null>(config.selectedCampus ?? null);
+
+    const location = ref<ListItemBag | null>(config.selectedLocation ?? null);
+    const locationProvider = ref<ITreeItemProvider>(createLocationProvider(config.selectedCampus?.value));
+
+    const schedule = ref<ListItemBag | null>(config.selectedSchedule ?? null);
+    const scheduleItems = ref(config.schedules ?? []);
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Creates a location provider for the given campus.
+     *
+     * @param campusGuid The campus GUID to create the provider for.
+     *
+     * @returns The location provider.
+     */
+    function createLocationProvider(campusGuid: string | null | undefined): ITreeItemProvider {
+        const provider = new LocationTreeItemProvider();
+
+        if (campusGuid) {
+            provider.rootLocationGuid = config.rootLocations?.[campusGuid];
+        }
+
+        return provider;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a campus is selected from the dropdown.
+     *
+     * @param campusValue The campus value that was selected.
+     */
+    async function onCampusSelected(campusValue: ListItemBag): Promise<void> {
+        await contextEntities.set("Rock.Model.Campus", campusValue);
+    }
+
+    /**
+     * Called when a location is selected from the dropdown.
+     *
+     * @param locationValue The location value that was selected.
+     */
+    async function onLocationSelected(locationValue: ListItemBag | null): Promise<void> {
+        await contextEntities.set("Rock.Model.Location", locationValue);
+    }
+
+    /**
+     * Called when a schedule is selected from the dropdown.
+     *
+     * @param scheduleValue The schedule value that was selected.
+     */
+    async function onScheduleSelected(scheduleValue: ListItemBag | null): Promise<void> {
+        await contextEntities.set("Rock.Model.Schedule", scheduleValue);
+    }
+
+    async function loadSchedules(): Promise<void> {
+        if (!location.value?.value) {
+            scheduleItems.value = [];
+            schedule.value = null;
+            return;
+        }
+
+        const data = {
+            locationGuid: location.value.value,
+        };
+
+        const result = await invokeBlockAction<ListItemBag[]>("GetSchedulesByLocation", data);
+
+        if (result.isSuccess && result.data) {
+            scheduleItems.value = result.data;
+
+            // Reset selected schedule if it's not in the new list
+            if (schedule.value && !scheduleItems.value.find(s => s.value === schedule.value?.value)) {
+                schedule.value = null;
+            }
+        }
+        else {
+            scheduleItems.value = [];
+            schedule.value = null;
+        }
+    }
+
+    /**
+     * Called when a context entity has changed by something (including us) on
+     * the page.
+     *
+     * @param message The message that was received.
+     */
+    async function onContextEntityChanged(message: Message<ContextEntityChangedData>): Promise<void> {
+        if (message.data.entityType === "Rock.Model.Campus") {
+            const campus = await contextEntities.get("Rock.Model.Campus");
+            selectedCampus.value = campus ?? null;
+            locationProvider.value = createLocationProvider(campus?.value);
+        }
+        else if (message.data.entityType === "Rock.Model.Location") {
+            const locationEntity = await contextEntities.get("Rock.Model.Location");
+            location.value = locationEntity ?? null;
+
+            loadSchedules();
+        }
+        else if (message.data.entityType === "Rock.Model.Schedule") {
+            const scheduleEntity = await contextEntities.get("Rock.Model.Schedule");
+            schedule.value = scheduleEntity ?? null;
+        }
+    }
+
+    // #endregion
+
+    bus.subscribe(PageMessages.ContextEntityChanged, onContextEntityChanged);
+</script>

@@ -30,9 +30,21 @@
     &:not(:has(tfoot)) tr:last-child > td:first-child {
       border-bottom-left-radius: var(--rounded-medium);
     }
+
     &:not(:has(tfoot)) tr:last-child > td:last-child {
       border-bottom-right-radius: var(--rounded-medium);
     }
+
+    // If there is a table footer without any elements, round the bottom corners of the last row, first and last cell to match the rounded grid panel.
+    &:not(:has(tfoot > *)) tr:last-child,
+    &:not(:has(tfoot > *)) tr:last-child > td:first-child {
+      border-bottom-left-radius: var(--rounded-medium);
+    }
+
+    &:not(:has(tfoot > *)) tr:last-child > td:last-child {
+      border-bottom-right-radius: var(--rounded-medium);
+    }
+
   }
 
 }

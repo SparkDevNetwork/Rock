@@ -52,24 +52,6 @@
     </Panel>
 </template>
 
-<style scoped>
-.notification-item {
-    margin-bottom: 18px;
-}
-
-.notification-item:last-child {
-    margin-bottom: 0;
-}
-
-.filter-button {
-    padding: 2px 8px;
-    border-radius: 4px;
-}
-
-.filter-button.active {
-    background-color: #eee;
-}
-</style>
 
 <script setup lang="ts">
     import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";

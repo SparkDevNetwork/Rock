@@ -63,7 +63,7 @@
                          <Rock:DateTimePicker ID="dtpEnd" runat="server" SourceTypeName="Rock.Model.Attendance" PropertyName="EndDateTime" Required="false" Label="Check-out Date/Time" />
                      </div>
                 </asp:Panel>
-                <div class="well mb-0">
+                <div class="well mb-spacing-none">
                     <h4>Move Individual</h4>
                     <div class="row">
                         <div class="col-md-4">
@@ -78,7 +78,7 @@
                     </div>
                 </div>
 
-                <Rock:NotificationBox ID="nbMovePersonLocationFull" runat="server" NotificationBoxType="Warning" />
+                <Rock:NotificationBox ID="nbMovePersonLocationFull" runat="server" NotificationBoxType="Warning" CssClass="mt-spacing-md mb-spacing-none" />
 
             </Content>
         </Rock:ModalDialog>

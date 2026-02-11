@@ -39,8 +39,8 @@
                 backgroundColor: '#000',
                 bodyFontColor: '#fff',
                 titleFontColor: '#fff'
-            }
-            , scales: {
+            },
+            scales: {
                 yAxes: [{
                     ticks: {
                         beginAtZero: true,
@@ -48,6 +48,14 @@
                         precision: 0
                     },
                 }]
+            },
+            layout: {
+                padding: {
+                    left: 8,
+                    right: 16,
+                    top: 16,
+                    bottom: 0
+                }
             }
         };
 
@@ -84,13 +92,6 @@
 
     }
 </script>
-<style>
-    .metric {
-        border: 1px solid #ccc;
-        padding: 12px;
-        margin-bottom: 12px;
-    }
-</style>
 
 <Rock:RockUpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -99,11 +100,11 @@
 
         <asp:Panel ID="pnlContent" runat="server" CssClass="checkin-manager">
 
-            <div class="panel-heading hidden">
+            <div class="panel-header hidden">
                 <h1 class="panel-title"><i class="ti ti-sitemap"></i>&nbsp;<asp:Literal ID="lGroupTypeName" runat="server" /></h1>
             </div>
 
-            <div class="panel">
+            <div class="panel checkin-chart">
                 <asp:HiddenField ID="hfChartData" runat="server" />
                 <asp:HiddenField ID="hfChartLabel" runat="server" />
                 <asp:Literal ID="lChartCanvas" runat="server" />
@@ -113,27 +114,27 @@
             </div>
 
             <div class="row">
-                <asp:Panel ID="pnlCheckedInCount" runat="server" CssClass="col-lg-4">
-                    <div class="panel">
+                <asp:Panel ID="pnlCheckedInCount" runat="server" CssClass="col-sm-4">
+                    <div class="panel checkin-metric">
                         <div class="panel-body">
-                            <span class="h3 font-weight-bolder"><asp:Literal ID="lCheckedInPeopleCount" runat="server" /></span>
-                            <span class="d-block small text-muted font-weight-bold">Checked-in</span>
+                            <span class="h3 font-weight-semibold"><asp:Literal ID="lCheckedInPeopleCount" runat="server" /></span>
+                            <span class="d-block small text-muted font-weight-semibold">Checked-in</span>
                         </div>
                     </div>
                 </asp:Panel>
-                <asp:Panel ID="pnlPresentCount" runat="server" CssClass="col-lg-4">
-                    <div class="panel">
+                <asp:Panel ID="pnlPresentCount" runat="server" CssClass="col-sm-4">
+                    <div class="panel checkin-metric">
                         <div class="panel-body">
-                            <span class="h3 font-weight-bolder"><asp:Literal ID="lPresentPeopleCount" runat="server" /></span>
-                            <span class="d-block small text-muted font-weight-bold">Present</span>
+                            <span class="h3 font-weight-semibold"><asp:Literal ID="lPresentPeopleCount" runat="server" /></span>
+                            <span class="d-block small text-muted font-weight-semibold">Present</span>
                         </div>
                     </div>
                 </asp:Panel>
-                <asp:Panel ID="pnlTotalCount" runat="server" CssClass="col-lg-4">
-                    <div class="panel">
+                <asp:Panel ID="pnlTotalCount" runat="server" CssClass="col-sm-4">
+                    <div class="panel checkin-metric">
                         <div class="panel-body">
-                            <span class="h3 font-weight-bolder"><asp:Literal ID="lTotalPeopleCount" runat="server" /></span>
-                            <span class="d-block small text-muted font-weight-bold">Total</span>
+                            <span class="h3 font-weight-semibold"><asp:Literal ID="lTotalPeopleCount" runat="server" /></span>
+                            <span class="d-block small text-muted font-weight-semibold">Total</span>
                         </div>
                     </div>
                 </asp:Panel>
@@ -143,7 +144,7 @@
 
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
-                <asp:Panel ID="pnlNavHeading" runat="server" CssClass="panel-heading cursor-pointer clearfix">
+                <asp:Panel ID="pnlNavHeading" runat="server" CssClass="panel-header cursor-pointer clearfix">
                     <asp:PlaceHolder runat="server">
                         <div class="pull-left">
                             <i class="ti ti-chevron-left"></i>
@@ -152,14 +153,14 @@
                         <div class="pull-right">
                             <Rock:Toggle ID="tglHeadingRoom" runat="server" OnText="Open" OffText="Close" ButtonSizeCssClass="btn-xs" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tglRoom_CheckedChanged" />
                         </div>
-                        <asp:Panel ID="pnlThreshold" runat="server" CssClass="location-threshold pull-right d-flex mr-2 js-threshold">
-                            <span class="small align-self-center mr-1">Threshold: </span>
+                        <asp:Panel ID="pnlThreshold" runat="server" CssClass="location-threshold pull-right d-flex mr-spacing-tiny js-threshold">
+                            <span class="small align-self-center mr-spacing-tiny">Threshold: </span>
                             <Rock:HiddenFieldWithClass ID="hfThreshold" runat="server" CssClass="js-threshold-hf" />
-                            <asp:Label ID="lThreshold" runat="server" CssClass="js-threshold-view js-threshold-l small align-self-center mr-2" />
-                            <a class="btn btn-default btn-xs btn-square js-threshold-view js-threshold-btn-edit mr-1"><i class="ti ti-edit"></i></a>
-                            <Rock:NumberBox ID="nbThreshold" runat="server" CssClass="input-xs input-width-xs js-threshold-edit js-threshold-nb mr-1" NumberType="Integer" Style="display: none"></Rock:NumberBox>
-                            <asp:LinkButton ID="lbUpdateThreshold" runat="server" CssClass="btn btn-primary btn-xs btn-square js-threshold-edit js-threshold-btn-save paneleditor-button mr-1" OnClick="lbUpdateThreshold_Click" Style="display: none"><i class="ti ti-check"></i></asp:LinkButton>
-                            <a class="btn btn-default btn-xs btn-square js-threshold-edit js-threshold-btn-cancel paneleditor-button mr-1" style="display: none"><i class="ti ti-ban"></i></a>
+                            <asp:Label ID="lThreshold" runat="server" CssClass="js-threshold-view js-threshold-l small align-self-center mr-spacing-xs" />
+                            <a class="btn btn-default btn-xs btn-square js-threshold-view js-threshold-btn-edit mr-spacing-tiny"><i class="ti ti-edit"></i></a>
+                            <Rock:NumberBox ID="nbThreshold" runat="server" CssClass="input-xs input-width-xs js-threshold-edit js-threshold-nb mr-spacing-tiny" NumberType="Integer" Style="display: none"></Rock:NumberBox>
+                            <asp:LinkButton ID="lbUpdateThreshold" runat="server" CssClass="btn btn-primary btn-xs btn-square js-threshold-edit js-threshold-btn-save paneleditor-button mr-spacing-tiny" OnClick="lbUpdateThreshold_Click" Style="display: none"><i class="ti ti-check"></i></asp:LinkButton>
+                            <a class="btn btn-default btn-xs btn-square js-threshold-edit js-threshold-btn-cancel paneleditor-button mr-spacing-tiny" style="display: none"><i class="ti ti-ban"></i></a>
                         </asp:Panel>
                     </asp:PlaceHolder>
                 </asp:Panel>
@@ -171,8 +172,8 @@
                                 <div class="content"><%# Eval("Name") %></div>
                                 <div class="pull-right d-flex align-items-center">
                                     <asp:Label ID="lblCurrentCount" runat="server" CssClass="badge" />
-                                    <Rock:Toggle ID="tglRoom" runat="server" CssClass="ml-3" OnText="Open" OffText="Close" ButtonSizeCssClass="btn-xs" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tglRoom_CheckedChanged"  />
-                                    <i class='ti ti-fw ti-chevron-right ml-3'></i>
+                                    <Rock:Toggle ID="tglRoom" runat="server" CssClass="ml-spacing-md" OnText="Open" OffText="Close" ButtonSizeCssClass="btn-xs" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tglRoom_CheckedChanged"  />
+                                    <i class='ti ti-fw ti-chevron-right ml-spacing-md'></i>
                                 </div>
                             </li>
                         </ItemTemplate>

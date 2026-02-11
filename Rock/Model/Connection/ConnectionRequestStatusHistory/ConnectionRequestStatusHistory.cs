@@ -79,6 +79,12 @@ namespace Rock.Model
         [DataMember]
         public string Note { get; set; }
 
+        /// <summary>
+        /// The identifier of the previous connection status, if applicable. This is used to determine the status prior to the <see cref="Rock.Model.ConnectionRequestStatusHistory.ConnectionStatusId"/> of this history record.
+        /// </summary>
+        [DataMember]
+        public int? PreviousConnectionStatusId { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -110,6 +116,15 @@ namespace Rock.Model
         [LavaVisible]
         public virtual PersonAlias CompletedByPersonAlias { get; set; }
 
+        /// <summary>
+        /// Gets or sets the previous <see cref="Rock.Model.ConnectionStatus"/>, if applicable. This represents the connection status prior to the current status of this history record.
+        /// </summary>
+        /// <value>
+        /// The previous connection status.
+        /// </value>
+        [LavaVisible]
+        public virtual ConnectionStatus PreviousConnectionStatus { get; set; }
+
         #endregion
     }
 
@@ -128,6 +143,7 @@ namespace Rock.Model
             this.HasRequired( p => p.ConnectionStatus ).WithMany().HasForeignKey( p => p.ConnectionStatusId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.ConnectionRequest ).WithMany( p => p.ConnectionRequestStatusHistories ).HasForeignKey( p => p.ConnectionRequestId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.CompletedByPersonAlias ).WithMany().HasForeignKey( p => p.CompletedByPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.PreviousConnectionStatus ).WithMany().HasForeignKey( p => p.PreviousConnectionStatusId ).WillCascadeOnDelete( false );
         }
     }
 

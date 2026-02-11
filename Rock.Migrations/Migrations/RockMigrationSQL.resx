@@ -433,4 +433,7 @@
   <data name="_202602021859057_UpdatePersonMergeWithThrow" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>202602021859057_UpdatePersonMergeWithThrow.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
+  <data name="_202602062214190_GroupRequirementsImprovements_spUpdateGroupMemberRequiremennts" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202602062214190_GroupRequirementsImprovements_spUpdateGroupMemberRequiremennts.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>
