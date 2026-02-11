@@ -191,6 +191,78 @@
 }
 // ======================== END ADMIN FOOTER ========================
 
+// ======================== PAGE DEBUG ========================
+
+.traces {
+
+  .trace-timestamp,
+  .trace-queries {
+      text-align: right;
+      text-wrap: nowrap;
+  }
+
+  .timings-tab {
+      max-height: calc(100vh - 250px);
+      overflow-y: auto;
+  }
+
+  .traces-tab {
+      max-height: calc(100vh - 250px);
+      display: flex;
+      flex-direction: column;
+  }
+
+  .traces-list {
+      flex-basis: 70%;
+      flex-grow: 1;
+      overflow-y: auto;
+  }
+
+  .trace-detail {
+      flex-basis: 30%;
+      flex-grow: 1;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100vh * 0.3);
+  }
+
+  .trace-detail-header {
+      display: flex;
+      gap: var(--spacing-small);
+      margin-bottom: var(--spacing-small);
+  }
+
+  .trace-detail-header .ti {
+      margin-left: auto;
+      cursor: pointer;
+  }
+
+  .trace-tags {
+      flex-grow: 1;
+      overflow-y: auto;
+  }
+
+  .ti-chevron-right,
+  .ti-chevron-down,
+  .trace-name {
+      cursor: pointer;
+  }
+
+  .trace-title {
+      display: flex;
+      gap: var(--spacing-small);
+      align-items: center;
+  }
+
+  .trace-title .trace-name {
+      flex-grow: 1;
+  }
+
+}
+
+// ======================== END PAGE DEBUG ========================
+
 
 // ======================== RESPONSIVE RULES ========================
 @media (min-width: $screen-small) {

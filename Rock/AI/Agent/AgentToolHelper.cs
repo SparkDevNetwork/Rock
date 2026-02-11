@@ -207,28 +207,55 @@ namespace Rock.AI.Agent
         /// </para>
         /// </summary>
         /// <typeparam name="T">The type of object to be paginated.</typeparam>
-        /// <param name="pagedItems">The items to be included in the results.</param>
+        /// <param name="page">The items to be included in the results.</param>
         /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.Sanitize(AgentRequestContext)"/>.</param>
         /// <returns>A <see cref="RockToolResult"/> that contains the result data and any standard metadata.</returns>
-        public RockToolResult GetPaginatedResult<T>( IReadOnlyCollection<T> pagedItems, bool sanitizeForSecurity = true )
+        public RockToolResult GetPaginatedResult<T>( PaginatedResult<T> page, bool sanitizeForSecurity = true )
+        {
+            return GetPaginatedResult<T, object>( page, null, sanitizeForSecurity );
+        }
+
+        /// <summary>
+        /// <para>
+        /// Handles the common logic of constructing a paginated result from a
+        /// set of paged items.
+        /// </para>
+        /// <para>
+        /// Any errors that have been reported until now are ignored, so you must
+        /// check for errors yourself before calling. This method will also
+        /// include any instructions and metadata that have been added to the
+        /// helper.
+        /// </para>
+        /// <para>
+        /// The returned <see cref="RockToolResult"/> object will be configured
+        /// to not have any history content.
+        /// </para>
+        /// </summary>
+        /// <typeparam name="T">The type of object to be paginated.</typeparam>
+        /// <typeparam name="THistory">The type of object to be used in the history.</typeparam>
+        /// <param name="page">The items to be included in the results.</param>
+        /// <param name="historyPage">The page result to use for the history content.</param>
+        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.Sanitize(AgentRequestContext)"/>.</param>
+        /// <returns>A <see cref="RockToolResult"/> that contains the result data and any standard metadata.</returns>
+        public RockToolResult GetPaginatedResult<T, THistory>( PaginatedResult<T> page, PaginatedResult<THistory> historyPage, bool sanitizeForSecurity = true )
         {
             RockToolResult result;
 
             if ( sanitizeForSecurity == true && typeof( EntityResultBase ).IsAssignableFrom( typeof( T ) ) )
             {
-                foreach ( var item in pagedItems.Cast<EntityResultBase>() )
+                foreach ( var item in page.Items.Cast<EntityResultBase>() )
                 {
                     item.Sanitize( _agentRequestContext );
                 }
             }
 
-            if ( !pagedItems.Any() )
+            if ( !page.Items.Any() )
             {
                 result = RockToolResult.NoData();
             }
             else
             {
-                result = RockToolResult.Success( pagedItems );
+                result = RockToolResult.Success( page );
             }
 
             foreach ( var instruction in _instructions )
@@ -241,7 +268,12 @@ namespace Rock.AI.Agent
                 result.WithMetadata( kvp.Key, kvp.Value );
             }
 
-            return result.WithoutHistoryContent();
+            if ( historyPage == null )
+            {
+                return result.WithHistoryContent( page.WithItems( Array.Empty<object>() ) );
+            }
+
+            return result.WithHistoryContent( historyPage );
         }
 
         #endregion
@@ -297,19 +329,21 @@ namespace Rock.AI.Agent
         /// <param name="cursor">The cursor that indicates the start of the page to retrieve or <c>null</c> to retrieve the first page.</param>
         /// <param name="pageSize">The size of each page. If <c>null</c> then a default page size will be applied.</param>
         /// <returns>A collection of items for the specified page.</returns>
-        public IList<T> GetCursorPaginatedItems<T>( IQueryable<T> queryable, CursorPaginator<T> paginator, string cursor = null, int? pageSize = null )
+        public PaginatedResult<T> GetCursorPaginatedItems<T>( IQueryable<T> queryable, CursorPaginator<T> paginator, string cursor = null, int? pageSize = null )
             where T : class, IEntity
         {
             pageSize = pageSize ?? DefaultPageSize;
 
             var page = paginator.GetNextPage( queryable, cursor, pageSize.Value, true );
 
-            AddMetadata( "nextCursor", page.NextCursor );
-            AddMetadata( "pageSize", pageSize );
-            AddMetadata( "returnedItemCount", page.Items.Count );
-            AddMetadata( "hasMore", page.HasMore );
-
-            return page.Items;
+            return new PaginatedResult<T>
+            {
+                Items = page.Items,
+                NextCursor = page.NextCursor,
+                PageSize = pageSize,
+                ReturnedItemCount = page.Items.Count,
+                HasMoreItems = page.HasMore,
+            };
         }
 
         /// <summary>
@@ -322,7 +356,7 @@ namespace Rock.AI.Agent
         /// <param name="pageNumber">The page number that was requested.</param>
         /// <param name="pageSize">The size of each page. If <c>null</c> then a default page size will be applied.</param>
         /// <returns>A collection of items for the specified page.</returns>
-        public IList<T> GetPaginatedItems<T>( IQueryable<T> queryable, int pageNumber, int? pageSize = null )
+        public PaginatedResult<T> GetPaginatedItems<T>( IQueryable<T> queryable, int pageNumber, int? pageSize = null )
         {
             pageSize = pageSize ?? DefaultPageSize;
 
@@ -340,12 +374,14 @@ namespace Rock.AI.Agent
                 pagedItems.RemoveAt( pagedItems.Count - 1 );
             }
 
-            AddMetadata( "pageNumber", pageNumber );
-            AddMetadata( "pageSize", pageSize );
-            AddMetadata( "returnedItemCount", pagedItems.Count );
-            AddMetadata( "hasMore", hasMore );
-
-            return pagedItems;
+            return new PaginatedResult<T>
+            {
+                Items = pagedItems,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                ReturnedItemCount = pagedItems.Count,
+                HasMoreItems = hasMore,
+            };
         }
 
         /// <summary>
@@ -358,7 +394,7 @@ namespace Rock.AI.Agent
         /// <param name="pageNumber">The page number that was requested.</param>
         /// <param name="pageSize">The size of each page. If <c>null</c> then a default page size will be applied.</param>
         /// <returns>A collection of items for the specified page.</returns>
-        public IList<T> GetPaginatedItems<T>( IEnumerable<T> items, int pageNumber, int? pageSize = null )
+        public PaginatedResult<T> GetPaginatedItems<T>( IEnumerable<T> items, int pageNumber, int? pageSize = null )
         {
             return GetPaginatedItems( items.AsQueryable(), pageNumber, pageSize );
         }

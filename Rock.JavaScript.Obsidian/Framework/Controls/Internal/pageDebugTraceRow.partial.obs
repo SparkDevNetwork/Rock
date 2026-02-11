@@ -19,9 +19,9 @@
             {{ asFormattedString(trace.duration, 2) }} ms
         </td>
 
-        <td class="trace-waterfall">
-            <div class="trace-chart">
-                <span class="trace-chart-bar" :style="waterfallStyle"></span>
+        <td class="waterfall-cell">
+            <div class="waterfall-cell-chart">
+                <span class="waterfall-cell-chart-bar" :style="waterfallStyle"></span>
             </div>
         </td>
     </tr>
@@ -35,24 +35,6 @@
                        :totalMs="totalMs"
                        @select="emit('select', $event)" />
 </template>
-
-<style scoped>
-.ti-chevron-right,
-.ti-chevron-down,
-.trace-name {
-    cursor: pointer;
-}
-
-.trace-title {
-    display: flex;
-    gap: var(--spacing-small);
-    align-items: center;
-}
-
-.trace-title .trace-name {
-    flex-grow: 1;
-}
-</style>
 
 <script setup lang="ts">
     import { asFormattedString } from "@Obsidian/Utility/numberUtils";

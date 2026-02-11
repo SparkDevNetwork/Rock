@@ -63,6 +63,34 @@ td.grid-actions {
 
 // ===================== END GRID TABLE ===================
 
+// ===================== GANTT / WATERFALL CHART  ===================
+
+td.waterfall-cell {
+    width: 40%;
+    vertical-align: middle !important;
+    padding: 0 !important;
+    overflow: hidden;
+
+    .waterfall-cell-chart {
+      position: relative;
+      height: 18px;
+      margin: 0 var(--spacing-tiny);
+    }
+
+    .waterfall-cell-chart-bar {
+      position: absolute;
+      display: block;
+      min-width: 1px;
+      height: 100%;
+      background: var(--color-categorical-1);
+      border-radius: var(--rounded-xsmall);
+    }
+
+}
+
+
+// ===================== END GANTT / WATERFALL CHART  ===================
+
 // ======================= MISC =======================
 
 table tbody tr td .required-indicator::after {

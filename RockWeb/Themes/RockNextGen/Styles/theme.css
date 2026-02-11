@@ -1347,6 +1347,60 @@ iframe {
   box-shadow: none;
 }
 
+.traces .trace-timestamp,
+.traces .trace-queries {
+  text-align: right;
+  text-wrap: nowrap;
+}
+.traces .timings-tab {
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+}
+.traces .traces-tab {
+  max-height: calc(100vh - 250px);
+  display: flex;
+  flex-direction: column;
+}
+.traces .traces-list {
+  flex-basis: 70%;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+.traces .trace-detail {
+  flex-basis: 30%;
+  flex-grow: 1;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 30vh;
+}
+.traces .trace-detail-header {
+  display: flex;
+  gap: var(--spacing-small);
+  margin-bottom: var(--spacing-small);
+}
+.traces .trace-detail-header .ti {
+  margin-left: auto;
+  cursor: pointer;
+}
+.traces .trace-tags {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+.traces .ti-chevron-right,
+.traces .ti-chevron-down,
+.traces .trace-name {
+  cursor: pointer;
+}
+.traces .trace-title {
+  display: flex;
+  gap: var(--spacing-small);
+  align-items: center;
+}
+.traces .trace-title .trace-name {
+  flex-grow: 1;
+}
+
 @media (min-width: 768px) {
   #cms-admin-footer {
     opacity: 0;
@@ -20641,6 +20695,26 @@ td.grid-actions .form-control {
   border-bottom-left-radius: var(--rounded-medium);
 }
 
+td.waterfall-cell {
+  width: 40%;
+  vertical-align: middle !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+td.waterfall-cell .waterfall-cell-chart {
+  position: relative;
+  height: 18px;
+  margin: 0 var(--spacing-tiny);
+}
+td.waterfall-cell .waterfall-cell-chart-bar {
+  position: absolute;
+  display: block;
+  min-width: 1px;
+  height: 100%;
+  background: var(--color-categorical-1);
+  border-radius: var(--rounded-xsmall);
+}
+
 table tbody tr td .required-indicator::after {
   margin-left: var(--spacing-tiny);
   background-color: var(--color-danger-strong);
@@ -33987,6 +34061,38 @@ address {
 
 .text-link-shade {
   color: var(--color-link-shade);
+}
+
+.gap-spacing-none {
+  gap: 0 !important;
+}
+
+.gap-spacing-tiny {
+  gap: var(--spacing-tiny) !important;
+}
+
+.gap-spacing-xs {
+  gap: var(--spacing-xsmall) !important;
+}
+
+.gap-spacing-sm {
+  gap: var(--spacing-small) !important;
+}
+
+.gap-spacing-md {
+  gap: var(--spacing-medium) !important;
+}
+
+.gap-spacing-lg {
+  gap: var(--spacing-large) !important;
+}
+
+.gap-spacing-xl {
+  gap: var(--spacing-xlarge) !important;
+}
+
+.gap-spacing-huge {
+  gap: var(--spacing-huge) !important;
 }
 
 .p-spacing-none {
