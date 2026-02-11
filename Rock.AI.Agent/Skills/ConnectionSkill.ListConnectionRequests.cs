@@ -15,15 +15,14 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.AI.Agent.Classes.Skills.ConnectionSkill;
+using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -42,17 +41,13 @@ namespace Rock.AI.Agent.Skills
             string connectionOpportunityIdKey = null,
             string requesterPersonIdKey = null,
             string connectorPersonIdKey = null,
-            int pageNumber = 1 )
+            string cursor = null )
         {
             var helper = new AgentToolHelper( AgentRequestContext, _logger );
-
-            // We need to get a list of connection opportunities that the current user is authorized to see.
-            // TODO: This could be optimized by creating a connection opportunity cache. 
-            var authorizedConnectionOpportunityIds = AuthorizedConnectionOpportunityIds();
+            var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
 
             var query = new ConnectionRequestService( AgentRequestContext.RockContext )
-                .Queryable()
-                .Where( cr => authorizedConnectionOpportunityIds.Contains( cr.ConnectionOpportunityId ) );
+                .Queryable();
 
             query = helper.WhereOptionalIdKey( query, cr => cr.PersonAlias.PersonId, requesterPersonIdKey );
             query = helper.WhereOptionalIdKey( query, cr => cr.ConnectorPersonAlias.PersonId, connectorPersonIdKey );
@@ -74,8 +69,16 @@ namespace Rock.AI.Agent.Skills
                 return helper.ErrorResult;
             }
 
-            var connectionRequestQry = query
-                .AsExpandable()
+            var paginator = new CursorPaginator<ConnectionRequest>( currentPerson, qry => qry
+                .OrderByDescending( cr => cr.CreatedDateTime.HasValue )
+                .ThenByDescending( cr => cr.CreatedDateTime )
+                .ThenBy( cr => cr.Id ) );
+
+            var cursorPage = helper.GetCursorPaginatedItems( query, paginator, cursor );
+
+            cursorPage.Items.LoadAttributes( AgentRequestContext.RockContext );
+
+            var resultPage = cursorPage.WithItems( cursorPage.Items
                 .Select( cr => new ConnectionRequestResult
                 {
                     Id = cr.Id,
@@ -98,36 +101,17 @@ namespace Rock.AI.Agent.Skills
                     },
                     CreatedDateTime = cr.CreatedDateTime,
                     Connector = PersonResult.NameOnly( cr.ConnectorPersonAlias ),
-                    AttributeValues = cr.ConnectionRequestAttributeValues.GetGridAttributeValueResults( AgentRequestContext ).ToList(),
+                    AttributeValues = cr.GetGridAttributeValueResults( AgentRequestContext ).ToList(),
                 } )
-                .OrderByDescending( cr => cr.CreatedDateTime.HasValue )
-                .ThenByDescending( cr => cr.CreatedDateTime )
-                .ThenBy( cr => cr.Id );
+                .ToList() );
 
-            var connectionRequests = helper.GetPaginatedItems( connectionRequestQry, pageNumber );
-
-            return helper.GetPaginatedResult( connectionRequests );
-        }
-
-        #endregion
-
-        #region Helper Methods
-
-        private List<int> AuthorizedConnectionOpportunityIds()
-        {
-            var authorizedConnectionOpportunityIds = new List<int>();
-
-            var connectionOpportunities = new ConnectionOpportunityService( AgentRequestContext.RockContext ).Queryable().AsNoTracking();
-
-            foreach ( var opportunity in connectionOpportunities )
+            var historyPage = cursorPage.WithItems( cursorPage.Items.Select( cr => new KeyNameResult
             {
-                if ( opportunity.IsAuthorized( Rock.Security.Authorization.VIEW, AgentRequestContext.RockRequestContext.CurrentPerson ) )
-                {
-                    authorizedConnectionOpportunityIds.Add( opportunity.Id );
-                }
-            }
+                Id = cr.Id,
+                Name = cr.ToString()
+            } ) );
 
-            return authorizedConnectionOpportunityIds;
+            return helper.GetPaginatedResult( resultPage, historyPage );
         }
 
         #endregion
