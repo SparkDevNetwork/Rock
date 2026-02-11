@@ -79,8 +79,7 @@ namespace Rock.AI.Agent.Skills
 
             rockContext.SaveChanges();
 
-            return RockToolResult.Success()
-                .WithInstructions( $"The phone number for {person.FullName} has been updated to {personPhone.NumberFormatted} with messaging set to {isMessagingEnabled} and unlisted set to {isUnlisted}." );
+            return RockToolResult.Success( $"The phone number for {person.FullName} has been updated to {personPhone.NumberFormatted} with messaging set to {isMessagingEnabled} and unlisted set to {isUnlisted}." );
         }
 
         #endregion
