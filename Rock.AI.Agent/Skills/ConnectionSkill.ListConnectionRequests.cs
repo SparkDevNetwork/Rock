@@ -47,7 +47,8 @@ namespace Rock.AI.Agent.Skills
             var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
 
             var query = new ConnectionRequestService( AgentRequestContext.RockContext )
-                .Queryable();
+                .Queryable()
+                .Where( cr => !cr.ConnectedDateTime.HasValue );
 
             query = helper.WhereOptionalIdKey( query, cr => cr.PersonAlias.PersonId, requesterPersonIdKey );
             query = helper.WhereOptionalIdKey( query, cr => cr.ConnectorPersonAlias.PersonId, connectorPersonIdKey );
