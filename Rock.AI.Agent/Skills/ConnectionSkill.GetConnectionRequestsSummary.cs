@@ -35,7 +35,7 @@ namespace Rock.AI.Agent.Skills
         [AgentPurpose( "Retrieves summary counts of connection requests." )]
         [AgentUsage( "Connectors are people who are assigned a request." )]
         [AgentToolGuid( "b3df0351-aa63-44bf-98fd-16fc56ad2d39" )]
-        public RockToolResult GetConnectionRequestSummary(
+        public RockToolResult GetConnectionRequestsSummary(
             string connectionTypeIdKey = null,
             string connectionOpportunityIdKey = null,
             string campusIdKey = null,
