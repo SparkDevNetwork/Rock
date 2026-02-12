@@ -25,11 +25,6 @@ using Rock.AI.Agent.Classes.Entity;
 using Rock.Model;
 using Rock.SystemGuid;
 
-// DISCUSSION:
-//
-// 4. On that note, the ValueFormat has been working very well. I hard coded my Priority attribute to say "An integer between 0 and 10." and it can now translate words (like medium or high) to useful numbers.
-//    ANSWER: Research what we need to add to IFieldType. ValueFormat, AvailableValues, other?
-
 namespace Rock.AI.Agent.Skills
 {
     internal sealed partial class ConnectionSkill
