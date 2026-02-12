@@ -545,14 +545,109 @@
 }
 
 // When there is nothing in the footer, round the bottom corners of the last row and cells to match the rounded grid panel.
-.grid-obsidian:not(:has(.grid-footing > *)) .grid-row:not(:has(~ .grid-row)) {
-    border-bottom-left-radius: var(--rounded-medium);
-    border-bottom-right-radius: var(--rounded-medium);
-    .grid-cell:first-child {
-      border-bottom-left-radius: var(--rounded-medium);
+.grid-obsidian:not(:has(.grid-footing > *)) {
+    .grid-row:not(:has(~ .grid-row)) {
+        border-bottom-left-radius: var(--rounded-medium);
+        border-bottom-right-radius: var(--rounded-medium);
+
+        .grid-cell:first-child {
+            border-bottom-left-radius: var(--rounded-medium);
+        }
+        .grid-cell:last-child {
+            border-bottom-right-radius: var(--rounded-medium);
+        }
     }
-    .grid-cell:last-child {
-      border-bottom-right-radius: var(--rounded-medium);
+
+    .grid-column-header-row {
+
+        .grid-column-header:first-child {
+            border-top-left-radius: var(--rounded-medium);
+        }
+        .grid-column-header:last-child {
+            border-top-right-radius: var(--rounded-medium);
+        }
+    }
+}
+
+// When there are column headers but no footer, round the bottom corners of the empty row to match the rounded grid panel.
+.grid-obsidian:not(:has(.grid-column-header-row)):has(.grid-footing > *),
+.grid-obsidian:not(:has(.grid-column-header-row > *)):has(.grid-footing > *) {
+
+    .grid-body,
+    .grid-row {
+        border-radius: var(--rounded-medium);
+    }
+}
+
+
+
+// When there are column headers but no footer, round the bottom corners of the last row and cells to match the rounded grid panel.
+.grid-obsidian:not(:has(.grid-column-header-row)):not(:has(.grid-footing > *)) {
+
+    .grid-body {
+        border-radius: var(--rounded-medium);
+    }
+
+    .grid-row:only-child {
+        border-top-left-radius: var(--rounded-medium);
+        border-top-right-radius: var(--rounded-medium);
+
+        .grid-cell {
+            border-bottom: none;
+        }
+
+        .grid-cell:first-child {
+            border-top-left-radius: var(--rounded-medium);
+            border-bottom-left-radius: var(--rounded-medium);
+        }
+
+        .grid-cell:last-child {
+            border-top-right-radius: var(--rounded-medium);
+            border-bottom-right-radius: var(--rounded-medium);
+        }
+    }
+
+    .grid-row:not(:has(~ .grid-row)) {
+        border-bottom-left-radius: var(--rounded-medium);
+        border-bottom-right-radius: var(--rounded-medium);
+
+        .grid-cell:first-child {
+            border-bottom-left-radius: var(--rounded-medium);
+        }
+
+        .grid-cell:last-child {
+            border-bottom-right-radius: var(--rounded-medium);
+        }
+    }
+
+    .grid-row:not(:only-child):first-child {
+        border-top-left-radius: var(--rounded-medium);
+        border-top-right-radius: var(--rounded-medium);
+
+        .grid-cell:first-child {
+            border-top-left-radius: var(--rounded-medium);
+        }
+
+        .grid-cell:last-child {
+            border-top-right-radius: var(--rounded-medium);
+        }
+    }
+
+    .grid-row:not(:only-child):last-child {
+        border-bottom-left-radius: var(--rounded-medium);
+        border-bottom-right-radius: var(--rounded-medium);
+
+        .grid-cell {
+            border-bottom: none;
+        }
+
+        .grid-cell:first-child {
+            border-bottom-left-radius: var(--rounded-medium);
+        }
+
+        .grid-cell:last-child {
+            border-bottom-right-radius: var(--rounded-medium);
+        }
     }
 }
 
@@ -578,6 +673,7 @@
         .grid-hover .grid-row:hover:has(.table-empty) .grid-cell {
             background-color: transparent;
         }
+
         // If there is no footer content, round the bottom corners of the last row
         &:has(.grid-footing:empty) .grid-row {
             border-bottom-left-radius: var(--rounded-medium);
@@ -595,6 +691,7 @@
             }
         }
     }
+
     // If there is a footer, but the last row is empty, don't round the bottom corners of the last row
     &:has(.grid-footing) .grid-row:has(.table-empty) {
         border-bottom-left-radius: 0;
@@ -612,6 +709,7 @@
         }
     }
 
+    // If there is a footer, but the last row is empty, don't round the bottom corners of the last row, even if there is no content in the footer
     &:not(:has(.grid-footing > *)) .grid-row:has(.table-empty) {
         border-bottom-left-radius: var(--rounded-medium);
         border-bottom-right-radius: var(--rounded-medium);
@@ -629,6 +727,52 @@
         top: calc(var(--sticky-element-offset) + 114px);
     }
 }
+
+// ===================== LIGHT GRID =====================
+
+.grid-light {
+
+    .grid-column-header-container {
+        border-top-left-radius: var(--rounded-medium);
+        border-top-right-radius: var(--rounded-medium);
+    }
+}
+
+// Inherited Attributes - Light Grid
+
+.inherited-attributes {
+
+    .grid-light {
+
+        .grid-content-container {
+
+            .grid-body {
+
+                .grid-row {
+                    border-top: 1px solid var(--color-interface-soft);
+                    border-right: 1px solid var(--color-interface-soft);
+                    border-left: 1px solid var(--color-interface-soft);
+                    border-bottom: none;
+
+                    &:last-child {
+                        border-bottom: 1px solid var(--color-interface-soft);
+                    }
+
+                    .grid-cell {
+                        background-color: var(--color-interface-softer);
+                        border-bottom: none;
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+}
+
+// =================== END LIGHT GRID =====================
 
 
 // ==================== COMFY GRID =====================
@@ -749,7 +893,5 @@
   }
 
 }
-
-
 
 // ===================== END COMFY GRID =====================

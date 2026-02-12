@@ -41,7 +41,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
     [SupportedSiteTypes( SiteType.Mobile )]
 
     [TextField( "Baptism Info",
-        Description = "URL to navigate to when in the pulse touchpoint baptism questionnaire.",
+        Description = "The URL to open within a Pulse touchpoint during the baptism questionnaire.",
         IsRequired = false,
         DefaultValue = "",
         Key = AttributeKeys.BaptismInfo,

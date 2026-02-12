@@ -105,6 +105,11 @@
         }
       }
 
+      // If a dropdown contains a .btn-panel-action, remove the right margin from the dropdown to ensure the spacing is consistent with other action buttons.
+      .dropdown:has(.btn-panel-action) {
+        margin-right: 0;
+      }
+
       .btn-panel-action:last-child,
       .panel-secondary-actions:last-child .btn-panel-action,
       .quick-filter:last-child,
