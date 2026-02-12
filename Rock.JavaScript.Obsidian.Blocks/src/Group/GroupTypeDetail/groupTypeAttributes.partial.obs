@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <ContentStack v-if="inheritedGridData.rows.length > 0" title="Inherited Group Type Attributes" headerLocation="top"
-        class="remove-gap"
-        help="These Group Type Attributes are inherited from the selected group type defined in the 'Inherit Group Type Attributes From' setting, including all attributes within the group type's inheritance hierarchy.">
+        class="inherited-attributes"
+        description="These Group Type Attributes are inherited from the selected group type defined in the 'Inherit Group Type Attributes From' setting, including all attributes within the group type's inheritance hierarchy.">
         <Grid :data="inheritedGridData" keyField="guid" itemTerm="Inherited Attribute" liveUpdates light
             :isFooterHidden="true">
             <TextColumn name="name" field="name" width="15%" />
@@ -45,12 +45,6 @@
         <AttributeEditor v-model="theAttribute" :reservedKeyNames="reservedKeyNames" />
     </Modal>
 </template>
-
-<style scoped>
-.remove-gap {
-    gap: var(--spacing-small) !important;
-}
-</style>
 
 <script setup lang="ts">
 import { computed, PropType, ref, watch } from "vue";

@@ -12,6 +12,7 @@ using Moq;
 
 using Rock.AI.Agent;
 using Rock.AI.Agent.Classes;
+using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.Configuration;
 using Rock.Data;
@@ -172,7 +173,7 @@ namespace Rock.Tests.AI.Agent
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
 
-            var result = helper.GetPaginatedResult( new string[0] );
+            var result = helper.GetPaginatedResult( new PaginatedResult<string> { Items = new string[0] } );
 
             Assert.AreEqual( ToolStatus.NoData, result.Status );
         }
@@ -186,7 +187,7 @@ namespace Rock.Tests.AI.Agent
 
             var helper = new AgentToolHelper( rockContext, agentRequestContext, logger );
 
-            var result = helper.GetPaginatedResult( new string[] { "item 1" } );
+            var result = helper.GetPaginatedResult( new PaginatedResult<string> { Items = new string[] { "item 1" } } );
 
             Assert.AreEqual( ToolStatus.Success, result.Status );
         }
@@ -203,7 +204,7 @@ namespace Rock.Tests.AI.Agent
             helper.AddInstructions( "First instructions." );
             helper.AddInstructions( "Second instructions." );
 
-            var result = helper.GetPaginatedResult( new string[] { "item 1" } );
+            var result = helper.GetPaginatedResult( new PaginatedResult<string> { Items = new string[] { "item 1" } } );
 
             Assert.Contains( "First instructions.", result.Instructions );
             Assert.Contains( "Second instructions.", result.Instructions );
@@ -221,7 +222,7 @@ namespace Rock.Tests.AI.Agent
             helper.AddMetadata( "one", 1 );
             helper.AddMetadata( "two", 2 );
 
-            var result = helper.GetPaginatedResult( new string[] { "item 1" } );
+            var result = helper.GetPaginatedResult( new PaginatedResult<string> { Items = new string[] { "item 1" } } );
 
             Assert.Contains( "one", result.Meta.Keys );
             Assert.AreEqual( 1, result.Meta["one"] );
@@ -244,7 +245,7 @@ namespace Rock.Tests.AI.Agent
 
             var originalItems = new[] { itemMock.Object };
 
-            var result = helper.GetPaginatedResult( originalItems, sanitizeForSecurity: true );
+            var result = helper.GetPaginatedResult( new PaginatedResult<EntityResultBase> { Items = originalItems }, sanitizeForSecurity: true );
 
             itemMock.Verify( m => m.Sanitize( It.IsAny<AgentRequestContext>() ), Times.Once );
         }
@@ -263,7 +264,7 @@ namespace Rock.Tests.AI.Agent
 
             var originalItems = new[] { itemMock.Object };
 
-            var result = helper.GetPaginatedResult( originalItems, sanitizeForSecurity: false );
+            var result = helper.GetPaginatedResult( new PaginatedResult<EntityResultBase> { Items = originalItems }, sanitizeForSecurity: false );
 
             itemMock.Verify( m => m.Sanitize( It.IsAny<AgentRequestContext>() ), Times.Never );
         }
@@ -349,12 +350,12 @@ namespace Rock.Tests.AI.Agent
 
             var result = helper.GetPaginatedItems( originalItems, 2, 5 );
 
-            Assert.HasCount( 5, result );
-            Assert.AreEqual( 6, result[0] );
-            Assert.AreEqual( 7, result[1] );
-            Assert.AreEqual( 8, result[2] );
-            Assert.AreEqual( 9, result[3] );
-            Assert.AreEqual( 10, result[4] );
+            Assert.HasCount( 5, result.Items );
+            Assert.AreEqual( 6, result.Items[0] );
+            Assert.AreEqual( 7, result.Items[1] );
+            Assert.AreEqual( 8, result.Items[2] );
+            Assert.AreEqual( 9, result.Items[3] );
+            Assert.AreEqual( 10, result.Items[4] );
         }
 
         [TestMethod]
@@ -370,12 +371,12 @@ namespace Rock.Tests.AI.Agent
 
             var result = helper.GetPaginatedItems( originalItems, 2, 5 );
 
-            Assert.HasCount( 5, result );
-            Assert.AreEqual( 6, result[0] );
-            Assert.AreEqual( 7, result[1] );
-            Assert.AreEqual( 8, result[2] );
-            Assert.AreEqual( 9, result[3] );
-            Assert.AreEqual( 10, result[4] );
+            Assert.HasCount( 5, result.Items );
+            Assert.AreEqual( 6, result.Items[0] );
+            Assert.AreEqual( 7, result.Items[1] );
+            Assert.AreEqual( 8, result.Items[2] );
+            Assert.AreEqual( 9, result.Items[3] );
+            Assert.AreEqual( 10, result.Items[4] );
         }
 
         #endregion
@@ -400,53 +401,13 @@ namespace Rock.Tests.AI.Agent
 
             var result = helper.GetCursorPaginatedItems( originalItems, paginator, cursor: page.NextCursor, pageSize: 5 );
 
-            Assert.HasCount( 5, result );
-            Assert.AreEqual( 6, result[0].Id );
-            Assert.AreEqual( 7, result[1].Id );
-            Assert.AreEqual( 8, result[2].Id );
-            Assert.AreEqual( 9, result[3].Id );
-            Assert.AreEqual( 10, result[4].Id );
+            Assert.HasCount( 5, result.Items );
+            Assert.AreEqual( 6, result.Items[0].Id );
+            Assert.AreEqual( 7, result.Items[1].Id );
+            Assert.AreEqual( 8, result.Items[2].Id );
+            Assert.AreEqual( 9, result.Items[3].Id );
+            Assert.AreEqual( 10, result.Items[4].Id );
         }
-
-        //[TestMethod]
-        //public void GetCursorPaginatedItems_WithLotsOfDeniedItems_BailsOutEarly()
-        //{
-        //    var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-        //    var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
-
-        //    using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
-        //    {
-        //        var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
-        //        var logger = new Mock<ILogger>().Object;
-        //        var helper = new AgentToolHelper( agentRequestContext, logger );
-
-        //        var campusEntityTypeId = EntityTypeCache.Get<Campus>( true, rockContextMock.Object ).Id;
-        //        // Generate a set of 1,000 campuses. The first and last being
-        //        // allowed access while the rest deny access. We should only
-        //        // get the first item in our result due to early bail out.
-        //        Enumerable.Range( 1, 1000 )
-        //            .ToList()
-        //            .ForEach( i =>
-        //            {
-        //                rockContextMock.Object.Set<Campus>().Add( new Campus { Id = i } );
-
-        //                rockContextMock.Object.Set<Auth>().Add( new Auth
-        //                {
-        //                    Id = 1,
-        //                    EntityTypeId = campusEntityTypeId,
-        //                    EntityId = i,
-        //                    SpecialRole = SpecialRole.AllUsers,
-        //                    Action = Authorization.VIEW,
-        //                    AllowOrDeny = i == 1 || i == 1000 ? "A" : "D",
-        //                } );
-        //            } );
-
-        //        var result = helper.GetCursorPaginatedItems( rockContextMock.Object.Set<Campus>(), null, pageSize: 10, enforceSecurity: true );
-
-        //        Assert.HasCount( 1, result );
-        //        Assert.AreEqual( 1, result[0].Id );
-        //    }
-        //}
 
         #endregion
 

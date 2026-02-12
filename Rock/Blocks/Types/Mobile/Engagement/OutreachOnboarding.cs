@@ -40,12 +40,12 @@ namespace Rock.Blocks.Types.Mobile.Engagement
 
     [LinkedPage(
         "Add Contact Page",
-        Description = "Page to link to when user taps on the plus button.",
+        Description = "The page to open for adding a contact.",
         IsRequired = true,
         Key = AttributeKey.AddContact,
         Order = 0 )]
 
-    [MobileNavigationActionField( "After Finish Action",
+    [MobileNavigationActionField( "Completion Action",
         Description = "The navigation action to perform when the delete button is pressed.",
         IsRequired = false,
         DefaultValue = MobileNavigationActionFieldAttribute.PopSinglePageValue,
@@ -53,7 +53,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         Order = 1 )]
 
     [TextField( "Toolbox Name",
-        Description = "The name that you want to call this tool.",
+        Description = "The public name of this experience.",
         IsRequired = false,
         DefaultValue = "Beacon",
         Key = AttributeKey.ToolboxName,

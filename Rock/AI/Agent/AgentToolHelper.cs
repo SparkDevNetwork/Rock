@@ -52,13 +52,6 @@ namespace Rock.AI.Agent
         /// </summary>
         private const int DefaultPageSize = 25;
 
-        /// <summary>
-        /// The maximum number of attempts that will be made to fill a page of
-        /// results with cursor pagination. This is used to prevent an infinite
-        /// loop in cases where there are no items the person has access to.
-        /// </summary>
-        private const int MaxCursorFillAttempts = 20;
-
         #endregion
 
         #region Fields
@@ -1498,6 +1491,127 @@ namespace Rock.AI.Agent
             }
 
             SaveChanges();
+        }
+
+        #endregion
+
+        #region Summary Methods
+
+        /// <summary>
+        /// Populates child summary groupings for each parent group using the
+        /// specified function. This will set the <see cref="SummaryGroupResult.Groups"/>
+        /// property to the list returned by <paramref name="populate"/>.
+        /// </summary>
+        /// <typeparam name="TState">The type of the state object passed to the callback function for each group.</typeparam>
+        /// <param name="parentGroups">The collection of parent summary group results to which child groupings will be added.</param>
+        /// <param name="state">A state object that provides contextual information to the callback function for each group.</param>
+        /// <param name="populate">A function that returns a list of child summary group results to associate with the parent.</param>
+        /// <returns>A list containing all child summary group results generated for the parent groups.</returns>
+        public List<SummaryGroupResult> PopulateSummaryGroupings<TState>( IEnumerable<SummaryGroupResult> parentGroups, TState state, Func<SummaryGroupResult, TState, List<SummaryGroupResult>> populate )
+        {
+            return parentGroups.SelectMany( g =>
+            {
+                var newGroups = populate( g, state );
+
+                g.Groups = newGroups;
+
+                return newGroups;
+            } ).ToList();
+        }
+
+        /// <summary>
+        /// Configures the primary dimension for a set of dimensions. This moves
+        /// that dimension to the front of the list. If the dimension was not
+        /// found then an error is reported.
+        /// </summary>
+        /// <param name="primaryDimension">The dimension that should be made primary in the result set.</param>
+        /// <param name="dimensions">The set of valid dimensions and the order they will be processed in.</param>
+        public void SetPrimaryDimension( string primaryDimension, List<string> dimensions )
+        {
+            if ( primaryDimension.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            var operationIndex = dimensions.FindIndex( o =>
+                o.Equals( primaryDimension, StringComparison.OrdinalIgnoreCase ) );
+
+            if ( operationIndex >= 0 )
+            {
+                // Move the specified grouping to the front of the list so
+                // it will be the primary grouping.
+                var operation = dimensions[operationIndex];
+
+                dimensions.RemoveAt( operationIndex );
+                dimensions.Insert( 0, operation );
+            }
+            else
+            {
+                AddError( $"The specified primary grouping '{primaryDimension}' is not valid. Valid options are: {string.Join( ", ", dimensions )}." );
+            }
+        }
+
+        /// <summary>
+        /// Removes the specified <paramref name="dimensionsToRemove"/> from
+        /// <paramref name="dimensions"/> if <paramref name="filterValue"/> is
+        /// not null or empty.
+        /// </summary>
+        /// <param name="filterValue">The value used as an optional filter.</param>
+        /// <param name="dimensions">The set of dimensions that will be updated.</param>
+        /// <param name="dimensionsToRemove">The dimensions to remove if the filter condition is satisfied.</param>
+        public void RemoveSatisfiedDimensions( string filterValue, List<string> dimensions, IEnumerable<string> dimensionsToRemove )
+        {
+            if ( filterValue.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            foreach ( var dimension in dimensionsToRemove )
+            {
+                dimensions.Remove( dimension );
+            }
+        }
+
+        /// <summary>
+        /// Removes the specified <paramref name="dimensionsToRemove"/> from
+        /// <paramref name="dimensions"/> if <paramref name="filterValue"/> is
+        /// not null.
+        /// </summary>
+        /// <param name="filterValue">The value used as an optional filter.</param>
+        /// <param name="dimensions">The set of dimensions that will be updated.</param>
+        /// <param name="dimensionsToRemove">The dimensions to remove if the filter condition is satisfied.</param>
+        public void RemoveSatisfiedDimensions( int? filterValue, List<string> dimensions, IEnumerable<string> dimensionsToRemove )
+        {
+            if ( !filterValue.HasValue )
+            {
+                return;
+            }
+
+            foreach ( var dimension in dimensionsToRemove )
+            {
+                dimensions.Remove( dimension );
+            }
+        }
+
+        /// <summary>
+        /// Removes the specified <paramref name="dimensionsToRemove"/> from
+        /// <paramref name="dimensions"/> if <paramref name="filterValue"/> is
+        /// not null.
+        /// </summary>
+        /// <param name="filterValue">The value used as an optional filter.</param>
+        /// <param name="dimensions">The set of dimensions that will be updated.</param>
+        /// <param name="dimensionsToRemove">The dimensions to remove if the filter condition is satisfied.</param>
+        public void RemoveSatisfiedDimensions( bool? filterValue, List<string> dimensions, IEnumerable<string> dimensionsToRemove )
+        {
+            if ( !filterValue.HasValue )
+            {
+                return;
+            }
+
+            foreach ( var dimension in dimensionsToRemove )
+            {
+                dimensions.Remove( dimension );
+            }
         }
 
         #endregion

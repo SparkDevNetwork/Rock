@@ -265,7 +265,7 @@
             </ContentStack>
 
             <TransitionVerticalCollapse>
-                <div v-if="isSchedulingEnabled" class="vertical-collapse-container">
+                <div v-if="isSchedulingEnabled" class="contentsection-body-collapse">
                     <ContentStack title="Confirmations"
                                   description="Controls how and when group members are notified about their scheduled assignments, including confirmation messages and coordinator notifications.">
                         <DropDownList label="Schedule Confirmation Communication"
@@ -335,7 +335,7 @@
             </ContentStack>
 
             <TransitionVerticalCollapse>
-                <div v-if="isPeerNetworkEnabled" class="vertical-collapse-container">
+                <div v-if="isPeerNetworkEnabled" class="contentsection-body-collapse">
                     <ContentStack title="Relationship Settings"
                                   description="Manage how connected group members are and if their relationships can develop over time.">
                         <RadioButtonList label="Group Relationship Strength" v-model="relationshipStrengthValue"
@@ -418,7 +418,7 @@
             </ContentStack>
 
             <TransitionVerticalCollapse>
-                <div v-if="takesAttendance" class="vertical-collapse-container">
+                <div v-if="takesAttendance" class="contentsection-body-collapse">
                     <ContentStack title="Attendance Settings"
                                   description="Define how attendance is tracked for this group, including schedule options, exclusions, and location or schedule requirements.">
 
@@ -430,16 +430,18 @@
                         <NotificationBox v-if="scheduleExclusionsErrorMessage" :alertType="AlertType.Danger">
                             {{ scheduleExclusionsErrorMessage }}
                         </NotificationBox>
-                        <RockLabel
-                                   help="Defines the date ranges when groups of this type do not meet, regardless of their individual schedules.">
-                            Schedule Exclusions
-                        </RockLabel>
-                        <Grid :data="groupScheduleExclusionsGridData" keyField="guid" itemTerm="Schedule Exclusion"
-                              liveUpdates light @addItem="onAddScheduleExclusion">
-                            <TextColumn name="dateRange" field="dateRange" />
-                            <EditColumn @click="onEditScheduleExclusion" />
-                            <DeleteColumn @click="onDeleteScheduleExclusion" disableConfirmation />
-                        </Grid>
+                        <div class="form-group">
+                            <RockLabel
+                                    help="Defines the date ranges when groups of this type do not meet, regardless of their individual schedules.">
+                                Schedule Exclusions
+                            </RockLabel>
+                            <Grid :data="groupScheduleExclusionsGridData" keyField="guid" itemTerm="Schedule Exclusion"
+                                liveUpdates light @addItem="onAddScheduleExclusion">
+                                <TextColumn name="dateRange" field="dateRange" />
+                                <EditColumn @click="onEditScheduleExclusion" />
+                                <DeleteColumn @click="onDeleteScheduleExclusion" disableConfirmation />
+                            </Grid>
+                        </div>
 
                         <div class="form-group">
                             <InlineCheckBox label="Count Attendance Toward Weekend Service"
@@ -514,7 +516,7 @@
             </ContentStack>
 
             <TransitionVerticalCollapse>
-                <div v-if="enableRSVP" class="vertical-collapse-container">
+                <div v-if="enableRSVP" class="contentsection-body-collapse">
                     <ContentStack title="Reminder Settings"
                                   description="Configure RSVP reminders and messages sent to members before an event.">
                         <DropDownList label="RSVP Reminder Communication" v-model="rsvpReminderSystemCommunicationGuid"
@@ -559,7 +561,7 @@
             </ContentStack>
 
             <TransitionVerticalCollapse>
-                <div v-if="isChatAllowed" class="vertical-collapse-container">
+                <div v-if="isChatAllowed" class="contentsection-body-collapse">
                     <ContentStack title="Group Chat Settings"
                                   description="Control how group chat works for this group type.">
                         <div class="form-group">
@@ -611,15 +613,6 @@
         </ContentSection>
     </ContentSectionContainer>
 </template>
-
-<style scoped>
-/* Needed in order to make the spacing of the ContentStacks work correctly... being wrapped within a TransitionVerticalCollapse */
-.vertical-collapse-container {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-large);
-}
-</style>
 
 
 <script setup lang="ts">

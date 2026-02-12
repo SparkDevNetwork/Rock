@@ -46,29 +46,29 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         Key = AttributeKeys.DetailPage,
         Order = 1 )]
 
-    [LinkedPage( "My Contact Page",
-        Description = "The page to link to when user taps on a contact button",
+    [LinkedPage( "Contact List Page",
+        Description = "The page to open when someone taps on a contact.",
         IsRequired = false,
         Key = AttributeKeys.MyContact,
         Order = 2 )]
 
     [TextField( "Toolbox Name",
-        Description = "The name that you want to call this tool.",
+        Description = "The public name of this experience.",
         IsRequired = false,
         DefaultValue = "Beacon",
         Key = AttributeKeys.ToolboxName,
         Order = 3 )]
 
-    [TextField( "Toolbox subtitle",
+    [TextField( "Toolbox Subtitle",
         Description = "The subtitle appears below the Toolbox name.",
         IsRequired = false,
-        DefaultValue = "Small actions with eternal impact.",
+        DefaultValue = "The subtitle that appears below the Toolbox Name.",
         Key = AttributeKeys.ToolboxSubtitle,
         Order = 4 )]
 
     [IntegerField(
         "Completion Lookback Period",
-        Description = "Number of days to look back when calculating on-time completion",
+        Description = "The number of days to look back when calculating on-time completion.",
         IsRequired = true,
         DefaultValue = "30",
         Order = 5,

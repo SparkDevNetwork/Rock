@@ -39,30 +39,30 @@ namespace Rock.Blocks.Types.Mobile.Engagement
 
     [LinkedPage(
         "Add Contact Page",
-        Description = "Page to link to when user taps on the plus button.",
+        Description = "The page to open when someone taps on the Plus button.",
         IsRequired = true,
         Key = AttributeKey.AddContact,
         Order = 0 )]
 
     [LinkedPage(
-        "Contact Profile",
-        Description = "Page to link to when the user taps on the contact.",
+        "Contact Profile Page",
+        Description = "The page to open when someone taps on a contact.",
         IsRequired = true,
-        Key = AttributeKey.ContactProfil,
+        Key = AttributeKey.ContactProfile,
         Order = 1 )]
 
     #endregion
 
     [SystemGuid.EntityTypeGuid( SystemGuid.EntityType.MOBILE_OUTREACH_MY_CONTACTS_BLOCK_TYPE )]
     [SystemGuid.BlockTypeGuid( SystemGuid.BlockType.MOBILE_OUTREACH_MY_CONTACTS )]
-    public class MyContacts : RockBlockType
+    public class MyContact : RockBlockType
     {
         #region Attribute Keys
 
         private static class AttributeKey
         {
             public const string AddContact = "AddContact";
-            public const string ContactProfil = "ContactProfile";
+            public const string ContactProfile = "ContactProfile";
         }
 
         #endregion
@@ -132,7 +132,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
             return new Rock.Common.Mobile.Blocks.Engagement.MyContact.Configuration
             {
                 AddContactPageGuid = GetAttributeValue( AttributeKey.AddContact ).AsGuidOrNull(),
-                ContactProfileGuid = GetAttributeValue( AttributeKey.ContactProfil ).AsGuidOrNull()
+                ContactProfileGuid = GetAttributeValue( AttributeKey.ContactProfile ).AsGuidOrNull()
             };
         }
 

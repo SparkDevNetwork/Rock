@@ -23,62 +23,55 @@
         </template>
 
         <template #headerActions>
-            <div class="d-flex gap-1">
-                <DropDownList v-model="fallbackRegistrationTemplatePlacement"
-                              v-if="box.registrationTemplatePlacements"
-                              :items="box.registrationTemplatePlacements"
-                              :showBlankItem="false"
-                              inputClasses="placements-dropdown" />
-                <div class="dropdown">
-                    <RockButton :btnType="BtnType.Default"
-                                :btnSize="BtnSize.Small"
-                                :isSquare="true"
-                                title="Sort Items"
-                                data-toggle="dropdown">
-                        <i class="ti ti-caret-up-down"></i>
-                    </RockButton>
-                    <ul class="dropdown-menu dropdown-menu-right">
-                        <li>
-                            <span class="dropdown-header">
-                                Sort Person Order
-                            </span>
-                        </li>
-                        <li v-for="[key, label] in sortOptions"
-                            :key="key"
-                            :class="{ 'selected': currentSortOrder === key }">
-                            <a href="#" @click.prevent="changeSort(key)">
-                                {{ label }}
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                <RockButton :btnType="BtnType.Default"
-                            :btnSize="BtnSize.Small"
-                            :isSquare="true"
-                            title="Toggle Gender Highlight View"
-                            @click="toggleHighlightGender">
-                    <i class="ti ti-gender-male"></i>
-                </RockButton>
-                <RockButton :btnType="BtnType.Default"
-                            :btnSize="BtnSize.Small"
-                            :isSquare="true"
-                            title="Toggle Details"
-                            @click="toggleCardExpansion">
-                    <i class="ti ti-info-circle"></i>
-                </RockButton>
-                <RockButton :btnType="BtnType.Default"
-                            :btnSize="BtnSize.Small"
-                            :isSquare="true"
-                            @click="openPlacementConfigSettings">
-                    <i class="ti ti-settings"></i>
-                </RockButton>
-                <RockButton :btnType="BtnType.Default"
-                            :btnSize="BtnSize.Small"
-                            :isSquare="true"
-                            @click="toggleFullScreen">
-                    <i class="ti ti-maximize"></i>
-                </RockButton>
+            <DropDownList v-model="fallbackRegistrationTemplatePlacement"
+                            v-if="box.registrationTemplatePlacements"
+                            :items="box.registrationTemplatePlacements"
+                            :showBlankItem="false"
+                            inputClasses="placements-dropdown" />
+            <div class="dropdown">
+                <button class="btn btn-panel-action"
+                        type="button"
+                        title="Sort Items"
+                        data-toggle="dropdown">
+                    <i class="ti ti-caret-up-down"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-right">
+                    <li>
+                        <span class="dropdown-header">
+                            Sort Person Order
+                        </span>
+                    </li>
+                    <li v-for="[key, label] in sortOptions"
+                        :key="key"
+                        :class="{ 'selected': currentSortOrder === key }">
+                        <a href="#" @click.prevent="changeSort(key)">
+                            {{ label }}
+                        </a>
+                    </li>
+                </ul>
             </div>
+            <button class="btn btn-panel-action"
+                        type="button"
+                        title="Toggle Gender Highlight View"
+                        @click="toggleHighlightGender">
+                <i class="ti ti-gender-male"></i>
+            </button>
+            <button class="btn btn-panel-action"
+                        type="button"
+                        title="Toggle Details"
+                        @click="toggleCardExpansion">
+                <i class="ti ti-info-circle"></i>
+            </button>
+            <button class="btn btn-panel-action"
+                        type="button"
+                        @click="openPlacementConfigSettings">
+                <i class="ti ti-settings"></i>
+            </button>
+            <button class="btn btn-panel-action"
+                        type="button"
+                        @click="toggleFullScreen">
+                <i class="ti ti-maximize"></i>
+            </button>
         </template>
 
         <NotificationBox v-if="!isNullOrWhiteSpace(dataRetrievalError)" alertType="danger">

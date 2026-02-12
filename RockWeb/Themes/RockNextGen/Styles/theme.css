@@ -10759,6 +10759,10 @@ ul ul, ol ul, ul ol, ol ol {
   background-color: var(--color-interface-soft);
   color: var(--color-interface-stronger);
 }
+.panel.panel-flex > .panel-heading .panel-header-actions .dropdown:has(.btn-panel-action),
+.panel.panel-flex > .panel-header .panel-header-actions .dropdown:has(.btn-panel-action) {
+  margin-right: 0;
+}
 .panel.panel-flex > .panel-heading .panel-header-actions .btn-panel-action:last-child,
 .panel.panel-flex > .panel-heading .panel-header-actions .panel-secondary-actions:last-child .btn-panel-action,
 .panel.panel-flex > .panel-heading .panel-header-actions .quick-filter:last-child,
@@ -11785,6 +11789,71 @@ ul ul, ol ul, ul ol, ol ol {
 .grid-obsidian:not(:has(.grid-footing > *)) .grid-row:not(:has(~ .grid-row)) .grid-cell:last-child {
   border-bottom-right-radius: var(--rounded-medium);
 }
+.grid-obsidian:not(:has(.grid-footing > *)) .grid-column-header-row .grid-column-header:first-child {
+  border-top-left-radius: var(--rounded-medium);
+}
+.grid-obsidian:not(:has(.grid-footing > *)) .grid-column-header-row .grid-column-header:last-child {
+  border-top-right-radius: var(--rounded-medium);
+}
+
+.grid-obsidian:not(:has(.grid-column-header-row)):has(.grid-footing > *) .grid-body,
+.grid-obsidian:not(:has(.grid-column-header-row)):has(.grid-footing > *) .grid-row,
+.grid-obsidian:not(:has(.grid-column-header-row > *)):has(.grid-footing > *) .grid-body,
+.grid-obsidian:not(:has(.grid-column-header-row > *)):has(.grid-footing > *) .grid-row {
+  border-radius: var(--rounded-medium);
+}
+
+.grid-obsidian:not(:has(.grid-column-header-row)):not(:has(.grid-footing > *)) .grid-body {
+  border-radius: var(--rounded-medium);
+}
+.grid-obsidian:not(:has(.grid-column-header-row)):not(:has(.grid-footing > *)) .grid-row:only-child {
+  border-top-left-radius: var(--rounded-medium);
+  border-top-right-radius: var(--rounded-medium);
+}
+.grid-obsidian:not(:has(.grid-column-header-row)):not(:has(.grid-footing > *)) .grid-row:only-child .grid-cell {
+  border-bottom: none;
+}
+.grid-obsidian:not(:has(.grid-column-header-row)):not(:has(.grid-footing > *)) .grid-row:only-child .grid-cell:first-child {
+  border-top-left-radius: var(--rounded-medium);
+  border-bottom-left-radius: var(--rounded-medium);
+}
+.grid-obsidian:not(:has(.grid-column-header-row)):not(:has(.grid-footing > *)) .grid-row:only-child .grid-cell:last-child {
+  border-top-right-radius: var(--rounded-medium);
+  border-bottom-right-radius: var(--rounded-medium);
+}
+.grid-obsidian:not(:has(.grid-column-header-row)):not(:has(.grid-footing > *)) .grid-row:not(:has(~ .grid-row)) {
+  border-bottom-left-radius: var(--rounded-medium);
+  border-bottom-right-radius: var(--rounded-medium);
+}
+.grid-obsidian:not(:has(.grid-column-header-row)):not(:has(.grid-footing > *)) .grid-row:not(:has(~ .grid-row)) .grid-cell:first-child {
+  border-bottom-left-radius: var(--rounded-medium);
+}
+.grid-obsidian:not(:has(.grid-column-header-row)):not(:has(.grid-footing > *)) .grid-row:not(:has(~ .grid-row)) .grid-cell:last-child {
+  border-bottom-right-radius: var(--rounded-medium);
+}
+.grid-obsidian:not(:has(.grid-column-header-row)):not(:has(.grid-footing > *)) .grid-row:not(:only-child):first-child {
+  border-top-left-radius: var(--rounded-medium);
+  border-top-right-radius: var(--rounded-medium);
+}
+.grid-obsidian:not(:has(.grid-column-header-row)):not(:has(.grid-footing > *)) .grid-row:not(:only-child):first-child .grid-cell:first-child {
+  border-top-left-radius: var(--rounded-medium);
+}
+.grid-obsidian:not(:has(.grid-column-header-row)):not(:has(.grid-footing > *)) .grid-row:not(:only-child):first-child .grid-cell:last-child {
+  border-top-right-radius: var(--rounded-medium);
+}
+.grid-obsidian:not(:has(.grid-column-header-row)):not(:has(.grid-footing > *)) .grid-row:not(:only-child):last-child {
+  border-bottom-left-radius: var(--rounded-medium);
+  border-bottom-right-radius: var(--rounded-medium);
+}
+.grid-obsidian:not(:has(.grid-column-header-row)):not(:has(.grid-footing > *)) .grid-row:not(:only-child):last-child .grid-cell {
+  border-bottom: none;
+}
+.grid-obsidian:not(:has(.grid-column-header-row)):not(:has(.grid-footing > *)) .grid-row:not(:only-child):last-child .grid-cell:first-child {
+  border-bottom-left-radius: var(--rounded-medium);
+}
+.grid-obsidian:not(:has(.grid-column-header-row)):not(:has(.grid-footing > *)) .grid-row:not(:only-child):last-child .grid-cell:last-child {
+  border-bottom-right-radius: var(--rounded-medium);
+}
 
 .grid-obsidian .grid-row:has(.table-empty) {
   border-bottom: 1px solid var(--color-interface-soft);
@@ -11845,6 +11914,25 @@ ul ul, ol ul, ul ol, ol ol {
     top: calc(var(--sticky-element-offset) + 114px);
   }
 }
+.grid-light .grid-column-header-container {
+  border-top-left-radius: var(--rounded-medium);
+  border-top-right-radius: var(--rounded-medium);
+}
+
+.inherited-attributes .grid-light .grid-content-container .grid-body .grid-row {
+  border-top: 1px solid var(--color-interface-soft);
+  border-right: 1px solid var(--color-interface-soft);
+  border-left: 1px solid var(--color-interface-soft);
+  border-bottom: none;
+}
+.inherited-attributes .grid-light .grid-content-container .grid-body .grid-row:last-child {
+  border-bottom: 1px solid var(--color-interface-soft);
+}
+.inherited-attributes .grid-light .grid-content-container .grid-body .grid-row .grid-cell {
+  background-color: var(--color-interface-softer);
+  border-bottom: none;
+}
+
 .grid-comfy .grid-header {
   z-index: 4;
 }
@@ -18682,6 +18770,12 @@ iframe.file-browser {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-large);
+  /* Body Collapse - This is needed in order to make the spacing of the ContentStacks work correctly when conditionally rendering stacks... wrapped within a TransitionVerticalCollapse */
+}
+.contentsection-body .contentsection-body-collapse {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-large);
 }
 
 .contentsection-header + div > .contentsection-body {
@@ -19784,6 +19878,10 @@ iframe.file-browser {
 .panel.panel-flex > .panel-header .panel-header-actions .btn-panel-action:hover {
   background-color: var(--color-interface-soft);
   color: var(--color-interface-stronger);
+}
+.panel.panel-flex > .panel-heading .panel-header-actions .dropdown:has(.btn-panel-action),
+.panel.panel-flex > .panel-header .panel-header-actions .dropdown:has(.btn-panel-action) {
+  margin-right: 0;
 }
 .panel.panel-flex > .panel-heading .panel-header-actions .btn-panel-action:last-child,
 .panel.panel-flex > .panel-heading .panel-header-actions .panel-secondary-actions:last-child .btn-panel-action,
