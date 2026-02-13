@@ -1,18 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net472;net6.0</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <RootNamespace>Rock.Blocks</RootNamespace>
-    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;REVIEW_NET5_0_OR_GREATER</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DefineConstants>TRACE;REVIEW_NET5_0_OR_GREATER</DefineConstants>
+  <PropertyGroup>
+    <DefineConstants Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">$(DefineConstants);WEBFORMS</DefineConstants>
+    <DefineConstants Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">$(DefineConstants);REVIEW_WEBFORMS</DefineConstants>
+    <DefineConstants Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">$(DefineConstants);REVIEW_NET5_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
